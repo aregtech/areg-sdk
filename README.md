@@ -16,12 +16,12 @@ areg-sdk            --> the root folder of AREG SDK
     |   |
     |   +- system   --> the development platform specific common codes
     |
-	+- examples     --> examples and tests of AREG SDK
-	|
-	+- tools        --> code generator
-	|
-	+- License.txt  --> the license. Please read before use or distribute.
-	
+    +- examples     --> examples and tests of AREG SDK
+    |
+    +- tools        --> code generator
+    |
+    +- License.txt  --> the license. Please read before use or distribute.
+    
 The compiled codes output in "areg-sdk/product/build/<platform info>" folder
 
 Preprocessor directives:
