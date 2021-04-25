@@ -4,11 +4,13 @@ Contact: info[at]aregtech.com
 
 Current sources of AREG SDK support Windows and POSIX API
 
+<code>
 areg-sdk
 
     |
 
     +- test --> this is a test
+</code>
 
 File system structure:
 
