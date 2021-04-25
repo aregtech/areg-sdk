@@ -48,10 +48,6 @@
     <ClCompile Include="areg\src\appbase\private\CEApplicationWin.cpp" />
     <ClCompile Include="areg\src\appbase\private\configure.cpp" />
     <ClCompile Include="areg\src\appbase\private\CEApplication.cpp" />
-    <ClCompile Include="areg\src\base\private\linux\CEFileLinux.cpp" />
-    <ClCompile Include="areg\src\base\private\linux\CEProcessLinux.cpp" />
-    <ClCompile Include="areg\src\base\private\linux\CEThreadLinux.cpp" />
-    <ClCompile Include="areg\src\base\private\linux\NEUtilitiesLinux.cpp" />
     <ClCompile Include="areg\src\base\private\posix\CECriticalSectionIX.cpp" />
     <ClCompile Include="areg\src\base\private\posix\CEFilePosix.cpp" />
     <ClCompile Include="areg\src\base\private\posix\CEMutexIX.cpp" />
@@ -410,7 +406,6 @@
     <ClInclude Include="areg\src\trace\private\IETraceConfiguration.hpp" />
     <ClInclude Include="areg\src\trace\private\NELogConfig.hpp" />
     <ClInclude Include="areg\src\persist\CEPropertyKey.hpp" />
-    <ClInclude Include="system\src\linux\GELinux.h" />
     <ClInclude Include="system\src\posix\GEPosix.h" />
     <ClInclude Include="system\src\windows\GEWindows.h" />
     <ClInclude Include="system\src\GEPlatform.h" />

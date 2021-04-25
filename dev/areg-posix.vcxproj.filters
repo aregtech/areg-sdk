@@ -480,13 +480,7 @@
     <ClCompile Include="areg\src\base\private\NESocket.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\src\base\private\linux\CEProcessLinux.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="areg\src\base\private\posix\CEProcessPosix.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="areg\src\base\private\linux\CEFileLinux.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="areg\src\base\private\posix\CEFilePosix.cpp">
@@ -505,9 +499,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="areg\src\base\private\posix\CEThreadPosix.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="areg\src\base\private\linux\CEThreadLinux.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="areg\src\base\private\win32\CEThreadWin32.cpp">
@@ -532,9 +523,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="areg\src\base\private\posix\NEUtilitiesPosix.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="areg\src\base\private\linux\NEUtilitiesLinux.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="areg\src\base\private\win32\NEUtilitiesWin32.cpp">
@@ -1131,9 +1119,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\src\base\private\posix\CEWaitableTimerIX.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="system\src\linux\GELinux.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\src\base\private\posix\IESynchObjectBaseIX.hpp">

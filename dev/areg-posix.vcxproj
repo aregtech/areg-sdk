@@ -53,10 +53,8 @@
     <ClCompile Include="areg\src\appbase\private\CEApplicationWin.cpp" />
     <ClCompile Include="areg\src\appbase\private\configure.cpp" />
     <ClCompile Include="areg\src\base\private\CEDateTime.cpp" />
-    <ClCompile Include="areg\src\base\private\linux\CEFileLinux.cpp" />
     <ClCompile Include="areg\src\base\private\posix\CEFilePosix.cpp" />
     <ClCompile Include="areg\src\base\private\CEProcess.cpp" />
-    <ClCompile Include="areg\src\base\private\linux\CEProcessLinux.cpp" />
     <ClCompile Include="areg\src\base\private\posix\CEMutexIX.cpp" />
     <ClCompile Include="areg\src\base\private\posix\CEProcessPosix.cpp" />
     <ClCompile Include="areg\src\base\private\CERingPosition.cpp" />
@@ -65,7 +63,6 @@
     <ClCompile Include="areg\src\base\private\CEBufferStreamBase.cpp" />
     <ClCompile Include="areg\src\base\private\posix\CECriticalSectionIX.cpp" />
     <ClCompile Include="areg\src\base\private\posix\CESynchLockAndWaitIX.cpp" />
-    <ClCompile Include="areg\src\base\private\linux\CEThreadLinux.cpp" />
     <ClCompile Include="areg\src\base\private\posix\CEWaitableTimerIX.cpp" />
     <ClCompile Include="areg\src\base\private\posix\IESynchObjectBaseIX.cpp" />
     <ClCompile Include="areg\src\base\private\posix\IEWaitableBaseIX.cpp" />
@@ -86,7 +83,6 @@
     <ClCompile Include="areg\src\base\private\NEString.cpp" />
     <ClCompile Include="areg\src\base\private\NEMath.cpp" />
     <ClCompile Include="areg\src\base\private\NEUtfString.cpp" />
-    <ClCompile Include="areg\src\base\private\linux\NEUtilitiesLinux.cpp" />
     <ClCompile Include="areg\src\base\private\posix\NEUtilitiesPosix.cpp" />
     <ClCompile Include="areg\src\base\private\win32\NEUtilitiesWin32.cpp" />
     <ClCompile Include="areg\src\component\private\CEClientBase.cpp" />
@@ -421,7 +417,6 @@
     <ClInclude Include="areg\src\trace\private\NELogConfig.hpp" />
     <ClInclude Include="areg\src\persist\CEPropertyKey.hpp" />
     <ClInclude Include="areg\src\base\private\posix\CESynchObjectBaseIX.hpp" />
-    <ClInclude Include="system\src\linux\GELinux.h" />
     <ClInclude Include="system\src\posix\GEPosix.h" />
     <ClInclude Include="system\src\windows\GEWindows.h" />
     <ClInclude Include="system\src\GEPlatform.h" />

@@ -474,18 +474,6 @@
     <ClCompile Include="areg\src\base\private\ETemplateBase.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\src\base\private\linux\CEFileLinux.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="areg\src\base\private\linux\CEProcessLinux.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="areg\src\base\private\linux\CEThreadLinux.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="areg\src\base\private\linux\NEUtilitiesLinux.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="areg\src\base\private\posix\CEFilePosix.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -1083,9 +1071,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\src\base\private\NESynchTypesIX.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="system\src\linux\GELinux.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\src\base\ETemplateBase.hpp">

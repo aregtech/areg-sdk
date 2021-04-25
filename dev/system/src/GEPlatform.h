@@ -45,22 +45,14 @@
 
     #undef WINDOWS
     #undef _WINDOWS
-    #undef LINUX
-    #undef _LINUX
 
     #include "system/src/posix/GEPosix.h"
 
 #elif defined(_WINDOWS) || defined(WINDOWS)
 
-    #undef LINUX
-    #undef _LINUX
 
     #include "system/src/windows/GEWindows.h"
 
-#elif defined(_LINUX) || defined(LINUX)
-
-    #include "system/src/linux/GELinux.h"
-
-#endif // _WIN32
+#endif // 
 
 #endif // AREG_GEPLATFORM_H
