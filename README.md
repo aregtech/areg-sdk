@@ -4,16 +4,8 @@ Contact: info[at]aregtech.com
 
 Current sources of AREG SDK support Windows and POSIX API
 
-<code>
-areg-sdk
-
-    |
-
-    +- test --> this is a test
-</code>
-
-File system structure:
-
+## File system structure:
+```
 areg-sdk            --> the root folder of AREG SDK
     |
     +- dev          --> the source codes of AREG Framework and Multicasting Router
@@ -29,15 +21,15 @@ areg-sdk            --> the root folder of AREG SDK
     +- tools        --> code generator
     |
     +- License.txt  --> the license. Please read before use or distribute.
-    
+```
 The compiled codes output in "areg-sdk/product/build/<platform info>" folder
 
-Preprocessor directives:
+##Preprocessor directives:
 
-To compile sources with WIndows API, specify WINDOWS (or _WINDOWS) preprocessor directive.
-To compile sources with POSIX API, specify POSIX (or _POSIX) preprocessor directive.
+1. To compile sources with Windows API, specify **WINDOWS** (or **_WINDOWS**) preprocessor directive.
+2. To compile sources with POSIX API, specify **POSIX** (or **_POSIX**) preprocessor directive.
 
-Other preprocessor directives:
+**Other preprocessor directives:**
 - DEBUG to compile debug version
 - NDEBUG to compile release version
 - ENABLE_TRACES to enable tracing / logging
@@ -46,12 +38,11 @@ Other preprocessor directives:
 - IMP_AREG_LIB or IMPORT_STATIC_SYMBOLS to link SDK static lirary
 - IMP_AREG_DLL or IMPORT_SHARED_SYMBOLS to link SDK shared / dynamic linked library
 - OUTPUT_DEBUG_LEVEL=N, where N is one of following numbers to enable debug outputs: 
-    -- 0 no outputs
-    -- 1 output only errors
-    -- 2 outpt errors and warnings
-    -- 3 output errors, warnings and information
-    -- 4 or higher output all
-
+  - 0 no outputs
+  - 1 output only errors
+  - 2 outpt errors and warnings
+  - 3 output errors, warnings and information
+  - 4 or higher output all
 
 In source codes, all paths are relative to "areg-sdk/dev" folder
 
