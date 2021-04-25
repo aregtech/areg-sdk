@@ -1,8 +1,8 @@
-This file is part of AREG SDK, the multi-tasking application development platform.
+_This file is part of AREG SDK, the multi-tasking application development platform.
 Copyright (c) Aregtech, 2019-2021
-Contact: info[at]aregtech.com
+Contact: info[at]aregtech.com_
 
-Current sources of AREG SDK support Windows and POSIX API
+Current sources of AREG SDK support _Windows_ and _POSIX_ API
 
 ## File system structure:
 ```
@@ -24,7 +24,7 @@ areg-sdk            --> the root folder of AREG SDK
 ```
 The compiled codes output in "areg-sdk/product/build/<platform info>" folder
 
-##Preprocessor directives:
+## Preprocessor directives:
 
 1. To compile sources with Windows API, specify **WINDOWS** (or **_WINDOWS**) preprocessor directive.
 2. To compile sources with POSIX API, specify **POSIX** (or **_POSIX**) preprocessor directive.
