@@ -4,6 +4,10 @@ Contact: info[at]aregtech.com
 
 Current sources of AREG SDK support Windows and POSIX API
 
+areg-sdk
+    |
+    +- test --> this is a test
+
 File system structure:
 
 areg-sdk            --> the root folder of AREG SDK
