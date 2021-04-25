@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<ServiceInterface FormatVesion="1.0.0">
+    <Overview ID="1" Name="CentralMessager" Version="1.0.0" isRemote="true">
+        <Description>This service is used to receive messages from connected edge when typing or 
+sending messages. The service receives text message from initiator and
+broadcast to all clients, which have subscribed on event.
+It as well broadcasts own text message to all connected clients.</Description>
+    </Overview>
+    <MethodList>
+        <Method ID="2" MethodType="Request" Name="SendMessage">
+            <Description>Request to sends message that all clients can see.</Description>
+            <ParamList>
+                <Parameter DataType="String" ID="3" Name="nickName">
+                    <Description>The nick name of initiator</Description>
+                </Parameter>
+                <Parameter DataType="uint32" ID="4" Name="cookie">
+                    <Description>Cookie given by connection manager. Should not be invalid.</Description>
+                </Parameter>
+                <Parameter DataType="String" ID="5" Name="newMessage">
+                    <Description>The message sent by connected initiator</Description>
+                </Parameter>
+                <Parameter DataType="DateTime" ID="6" Name="dateTime">
+                    <Description>The timestamp create on local host of initiator</Description>
+                </Parameter>
+            </ParamList>
+        </Method>
+        <Method ID="7" MethodType="Request" Name="KeyTyping">
+            <Description>Sent each time when typing a key</Description>
+            <ParamList>
+                <Parameter DataType="String" ID="8" Name="nickName">
+                    <Description>The nick name of initiator</Description>
+                </Parameter>
+                <Parameter DataType="uint32" ID="9" Name="cookie">
+                    <Description>The cookie assigned to initiator</Description>
+                </Parameter>
+                <Parameter DataType="String" ID="10" Name="newMessage">
+                    <Description>The message typed.</Description>
+                </Parameter>
+            </ParamList>
+        </Method>
+        <Method ID="11" MethodType="Broadcast" Name="SendMessage">
+            <Description>The response, sent by connection manager to notify the message typing update</Description>
+            <ParamList>
+                <Parameter DataType="String" ID="12" Name="nickName">
+                    <Description>The nick name of initiator</Description>
+                </Parameter>
+                <Parameter DataType="uint32" ID="13" Name="cookie">
+                    <Description>The cookie assigned to initiator</Description>
+                </Parameter>
+                <Parameter DataType="String" ID="14" Name="newMessage">
+                    <Description>The message sent by initiator</Description>
+                </Parameter>
+                <Parameter DataType="DateTime" ID="15" Name="dateTime">
+                    <Description>The local timestamp of initiator</Description>
+                </Parameter>
+            </ParamList>
+        </Method>
+        <Method ID="16" MethodType="Broadcast" Name="KeyTyping">
+            <Description>Sent each time when a client is typing a key</Description>
+            <ParamList>
+                <Parameter DataType="String" ID="17" Name="nickName">
+                    <Description>The nick name of initiator</Description>
+                </Parameter>
+                <Parameter DataType="uint32" ID="18" Name="cookie">
+                    <Description>Assigned cookie of initiator</Description>
+                </Parameter>
+                <Parameter DataType="String" ID="19" Name="newMessage">
+                    <Description>The message typed by initiator</Description>
+                </Parameter>
+            </ParamList>
+        </Method>
+        <Method ID="20" MethodType="Broadcast" Name="BroadcastMessage">
+            <Description>Server broadcasts a message to all clients.</Description>
+            <ParamList>
+                <Parameter DataType="String" ID="21" Name="serverMessage">
+                    <Description>The message sent by servicing server</Description>
+                </Parameter>
+                <Parameter DataType="DateTime" ID="22" Name="dateTime">
+                    <Description>The timestamp of servicing component</Description>
+                </Parameter>
+            </ParamList>
+        </Method>
+    </MethodList>
+    <ConstantList>
+        <Constant DataType="uint32" ID="23" Name="MessageMaxLen">
+            <Value>NECommonSettings::MaxlenMessage</Value>
+            <Description>The maximum length of messages.</Description>
+        </Constant>
+    </ConstantList>
+    <IncludeList>
+        <Location ID="24" Name="shared/NECommonSettings.hpp">
+            <Description>The shared namespace to include</Description>
+        </Location>
+    </IncludeList>
+</ServiceInterface>

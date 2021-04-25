@@ -1,0 +1,441 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(SolutionDir)\config_compile.props" Label="LocalAppCompileSettings" />
+  </ImportGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{692F38CB-CF66-4405-B3DF-5B38D4DAD2BB}</ProjectGuid>
+    <ProjectName>areg-posix</ProjectName>
+    <RootNamespace>areg</RootNamespace>
+    <Keyword>Win32Proj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+  </PropertyGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(SolutionDir)\config_project.props" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <ItemDefinitionGroup Condition="'$(ConfigShortName)'=='Debug'">
+    <ClCompile>
+      <PreprocessorDefinitions>$(ProjectCommonDefines);_USRDLL;EXP_AREG_DLL=1;_POSIX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='dbg_vc142|Win32'">D:\cygwin64\usr\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <UndefinePreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='dbg_vc142|Win32'">_WINDOWS;WINDOWS;_WIN32;WIN32;%(UndefinePreprocessorDefinitions)</UndefinePreprocessorDefinitions>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='dbg_vc141|Win32'">D:\cygwin64\usr\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='dbg_vc140|Win32'">D:\cygwin64\usr\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='dbg_vc110|Win32'">D:\cygwin64\usr\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='dbg_vc100|Win32'">D:\cygwin64\usr\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='dbg_vc120|Win32'">D:\cygwin64\usr\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(ConfigShortName)'=='Release'">
+    <ClCompile>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>$(ProjectCommonDefines);_USRDLL;EXP_AREG_DLL=1;_POSIX%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='rls_vc110|Win32'">D:\cygwin64\usr\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='rls_vc100|Win32'">D:\cygwin64\usr\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='rls_vc120|Win32'">D:\cygwin64\usr\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='rls_vc142|Win32'">D:\cygwin64\usr\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='rls_vc141|Win32'">D:\cygwin64\usr\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='rls_vc140|Win32'">D:\cygwin64\usr\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="areg\src\appbase\private\CEApplicationPosix.cpp" />
+    <ClCompile Include="areg\src\appbase\private\CEApplicationWin.cpp" />
+    <ClCompile Include="areg\src\appbase\private\configure.cpp" />
+    <ClCompile Include="areg\src\base\private\CEDateTime.cpp" />
+    <ClCompile Include="areg\src\base\private\linux\CEFileLinux.cpp" />
+    <ClCompile Include="areg\src\base\private\posix\CEFilePosix.cpp" />
+    <ClCompile Include="areg\src\base\private\CEProcess.cpp" />
+    <ClCompile Include="areg\src\base\private\linux\CEProcessLinux.cpp" />
+    <ClCompile Include="areg\src\base\private\posix\CEMutexIX.cpp" />
+    <ClCompile Include="areg\src\base\private\posix\CEProcessPosix.cpp" />
+    <ClCompile Include="areg\src\base\private\CERingPosition.cpp" />
+    <ClCompile Include="areg\src\base\private\CERingBuffer.cpp" />
+    <ClCompile Include="areg\src\base\private\CEBufferPosition.cpp" />
+    <ClCompile Include="areg\src\base\private\CEBufferStreamBase.cpp" />
+    <ClCompile Include="areg\src\base\private\posix\CECriticalSectionIX.cpp" />
+    <ClCompile Include="areg\src\base\private\posix\CESynchLockAndWaitIX.cpp" />
+    <ClCompile Include="areg\src\base\private\linux\CEThreadLinux.cpp" />
+    <ClCompile Include="areg\src\base\private\posix\CEWaitableTimerIX.cpp" />
+    <ClCompile Include="areg\src\base\private\posix\IESynchObjectBaseIX.cpp" />
+    <ClCompile Include="areg\src\base\private\posix\IEWaitableBaseIX.cpp" />
+    <ClCompile Include="areg\src\base\private\posix\CEThreadPosix.cpp" />
+    <ClCompile Include="areg\src\base\private\CEWideString.cpp" />
+    <ClCompile Include="areg\src\base\private\ESynchObjects.cpp" />
+    <ClCompile Include="areg\src\base\private\posix\CEWaitableEventIX.cpp" />
+    <ClCompile Include="areg\src\base\private\posix\CEWaitableMutexIX.cpp" />
+    <ClCompile Include="areg\src\base\private\posix\CEWaitableSemaphoreIX.cpp" />
+    <ClCompile Include="areg\src\base\private\posix\ESynchObjectsPosix.cpp" />
+    <ClCompile Include="areg\src\base\private\ETemplateBase.cpp" />
+    <ClCompile Include="areg\src\base\private\IESynchObject.cpp" />
+    <ClCompile Include="areg\src\base\private\NECommon.cpp" />
+    <ClCompile Include="areg\src\base\private\posix\NEDebugPosix.cpp" />
+    <ClCompile Include="areg\src\base\private\win32\NEDebugWin32.cpp" />
+    <ClCompile Include="areg\src\base\private\NESocket.cpp" />
+    <ClCompile Include="areg\src\base\private\posix\NESocketPosix.cpp" />
+    <ClCompile Include="areg\src\base\private\NEString.cpp" />
+    <ClCompile Include="areg\src\base\private\NEMath.cpp" />
+    <ClCompile Include="areg\src\base\private\NEUtfString.cpp" />
+    <ClCompile Include="areg\src\base\private\linux\NEUtilitiesLinux.cpp" />
+    <ClCompile Include="areg\src\base\private\posix\NEUtilitiesPosix.cpp" />
+    <ClCompile Include="areg\src\base\private\win32\NEUtilitiesWin32.cpp" />
+    <ClCompile Include="areg\src\component\private\CEClientBase.cpp" />
+    <ClCompile Include="areg\src\component\private\CEClientInfo.cpp" />
+    <ClCompile Include="areg\src\component\private\CEClientList.cpp" />
+    <ClCompile Include="areg\src\component\private\CEComponent.cpp" />
+    <ClCompile Include="areg\src\component\private\CEComponentAddress.cpp" />
+    <ClCompile Include="areg\src\appbase\private\CEApplication.cpp" />
+    <ClCompile Include="areg\src\base\private\CESocketTemp.cpp" />
+    <ClCompile Include="areg\src\component\private\CEEventData.cpp" />
+    <ClCompile Include="areg\src\component\private\CERemoteEventFactory.cpp" />
+    <ClCompile Include="areg\src\component\private\CERequestEvents.cpp" />
+    <ClCompile Include="areg\src\component\private\CEResponseEvents.cpp" />
+    <ClCompile Include="areg\src\component\private\CEServiceAddress.cpp" />
+    <ClCompile Include="areg\src\component\private\CEServiceItem.cpp" />
+    <ClCompile Include="areg\src\component\private\CEStubConnectEvent.cpp" />
+    <ClCompile Include="areg\src\component\private\CEStubEvent.cpp" />
+    <ClCompile Include="areg\src\component\private\CEComponentInfo.cpp" />
+    <ClCompile Include="areg\src\component\private\CEComponentLoader.cpp" />
+    <ClCompile Include="areg\src\component\private\CEComponentThread.cpp" />
+    <ClCompile Include="areg\src\base\private\EContainers.cpp" />
+    <ClCompile Include="areg\src\component\private\CEDispatcherThread.cpp" />
+    <ClCompile Include="areg\src\component\private\CEEventDataStream.cpp" />
+    <ClCompile Include="areg\src\component\private\CEEvent.cpp" />
+    <ClCompile Include="areg\src\component\private\CEEventConsumerMap.cpp" />
+    <ClCompile Include="areg\src\component\private\CEEventDispatcher.cpp" />
+    <ClCompile Include="areg\src\component\private\CEEventDispatcherBase.cpp" />
+    <ClCompile Include="areg\src\component\private\CEEventQueue.cpp" />
+    <ClCompile Include="areg\src\base\private\CEFile.cpp" />
+    <ClCompile Include="areg\src\base\private\CEFileBase.cpp" />
+    <ClCompile Include="areg\src\base\private\CEFileBuffer.cpp" />
+    <ClCompile Include="areg\src\base\private\CEIdentifier.cpp" />
+    <ClCompile Include="areg\src\component\private\CEExitEvent.cpp" />
+    <ClCompile Include="areg\src\component\private\CENotificationEvent.cpp" />
+    <ClCompile Include="areg\src\base\private\CEObject.cpp" />
+    <ClCompile Include="areg\src\component\private\CEProxyAddress.cpp" />
+    <ClCompile Include="areg\src\component\private\CEProxyBase.cpp" />
+    <ClCompile Include="areg\src\component\private\CEProxyConnectEvent.cpp" />
+    <ClCompile Include="areg\src\component\private\CEProxyEvent.cpp" />
+    <ClCompile Include="areg\src\base\private\CERawBuffer.cpp" />
+    <ClCompile Include="areg\src\base\private\CEReadConverter.cpp" />
+    <ClCompile Include="areg\src\base\private\CERuntimeBase.cpp" />
+    <ClCompile Include="areg\src\base\private\CERuntimeClassID.cpp" />
+    <ClCompile Include="areg\src\base\private\CERuntimeObject.cpp" />
+    <ClCompile Include="areg\src\component\private\CEServerInfo.cpp" />
+    <ClCompile Include="areg\src\component\private\CEServerList.cpp" />
+    <ClCompile Include="areg\src\component\private\CEServiceManager.cpp" />
+    <ClCompile Include="areg\src\component\private\CEServiceManagerEvents.cpp" />
+    <ClCompile Include="areg\src\component\private\CEServiceRequestEvent.cpp" />
+    <ClCompile Include="areg\src\component\private\CEServiceResponseEvent.cpp" />
+    <ClCompile Include="areg\src\base\private\CESharedBuffer.cpp" />
+    <ClCompile Include="areg\src\component\private\CEStreamableEvent.cpp" />
+    <ClCompile Include="areg\src\base\private\CEString.cpp" />
+    <ClCompile Include="areg\src\component\private\CEStubAddress.cpp" />
+    <ClCompile Include="areg\src\component\private\CEStubBase.cpp" />
+    <ClCompile Include="areg\src\base\private\win32\ESynchObjectsWin32.cpp" />
+    <ClCompile Include="areg\src\base\private\CEThread.cpp" />
+    <ClCompile Include="areg\src\component\private\CEThreadEventBase.cpp" />
+    <ClCompile Include="areg\src\base\private\CEThreadLocalStorage.cpp" />
+    <ClCompile Include="areg\src\component\private\CETimer.cpp" />
+    <ClCompile Include="areg\src\component\private\CETimerEvent.cpp" />
+    <ClCompile Include="areg\src\component\private\CETimerEventData.cpp" />
+    <ClCompile Include="areg\src\component\private\CETimerInfo.cpp" />
+    <ClCompile Include="areg\src\component\private\CETimerManager.cpp" />
+    <ClCompile Include="areg\src\component\private\posix\CETimerManagerPosix.cpp" />
+    <ClCompile Include="areg\src\component\private\posix\CETimerPosix.cpp" />
+    <ClCompile Include="areg\src\component\private\win32\CETimerManagerWin32.cpp" />
+    <ClCompile Include="areg\src\component\private\CETimerManagingEvent.cpp" />
+    <ClCompile Include="areg\src\base\private\CEVersion.cpp" />
+    <ClCompile Include="areg\src\component\private\CEWorkerThread.cpp" />
+    <ClCompile Include="areg\src\base\private\CEWriteConverter.cpp" />
+    <ClCompile Include="areg\src\base\private\GEGlobal.cpp" />
+    <ClCompile Include="areg\src\base\private\IEByteBuffer.cpp" />
+    <ClCompile Include="areg\src\base\private\IECursorPosition.cpp" />
+    <ClCompile Include="areg\src\component\private\IEEventConsumer.cpp" />
+    <ClCompile Include="areg\src\component\private\IEEventDispatcher.cpp" />
+    <ClCompile Include="areg\src\component\private\IEEventRouter.cpp" />
+    <ClCompile Include="areg\src\base\private\IEGenericObject.cpp" />
+    <ClCompile Include="areg\src\base\private\IEIOStream.cpp" />
+    <ClCompile Include="areg\src\component\private\IEProxyListener.cpp" />
+    <ClCompile Include="areg\src\component\private\IEQueueListener.cpp" />
+    <ClCompile Include="areg\src\base\private\IEThreadConsumer.cpp" />
+    <ClCompile Include="areg\src\component\private\IEWorkerThreadConsumer.cpp" />
+    <ClCompile Include="areg\src\base\private\NEBasicShape.cpp" />
+    <ClCompile Include="areg\src\base\private\NEDebug.cpp" />
+    <ClCompile Include="areg\src\base\private\NEMemory.cpp" />
+    <ClCompile Include="areg\src\component\private\NERegistry.cpp" />
+    <ClCompile Include="areg\src\component\private\NEService.cpp" />
+    <ClCompile Include="areg\src\base\private\NEUtilities.cpp" />
+    <ClCompile Include="areg\src\component\private\TEEvent.cpp" />
+    <ClCompile Include="areg\src\base\private\win32\CEFileWin32.cpp" />
+    <ClCompile Include="areg\src\base\private\win32\CEProcessWin32.cpp" />
+    <ClCompile Include="areg\src\base\private\CERemoteMessage.cpp" />
+    <ClCompile Include="areg\src\base\private\CESocketAccepted.cpp" />
+    <ClCompile Include="areg\src\base\private\CEThreadAddress.cpp" />
+    <ClCompile Include="areg\src\base\private\win32\CEThreadWin32.cpp" />
+    <ClCompile Include="areg\src\component\private\CEChannel.cpp" />
+    <ClCompile Include="areg\src\base\private\CESocket.cpp" />
+    <ClCompile Include="areg\src\base\private\CESocketClient.cpp" />
+    <ClCompile Include="areg\src\base\private\CESocketServer.cpp" />
+    <ClCompile Include="areg\src\base\private\win32\NESocketWin32.cpp" />
+    <ClCompile Include="areg\src\component\private\IERemoteEventConsumer.cpp" />
+    <ClCompile Include="areg\src\ipc\private\CEClientConnection.cpp" />
+    <ClCompile Include="areg\src\ipc\private\CEClientService.cpp" />
+    <ClCompile Include="areg\src\ipc\private\CEClientServiceEvent.cpp" />
+    <ClCompile Include="areg\src\ipc\private\CEClientReceiveThread.cpp" />
+    <ClCompile Include="areg\src\ipc\private\CEConnectionConfiguration.cpp" />
+    <ClCompile Include="areg\src\ipc\private\CEListServiceProxies.cpp" />
+    <ClCompile Include="areg\src\ipc\private\CERemoteServiceEvent.cpp" />
+    <ClCompile Include="areg\src\ipc\private\CEClientSendThread.cpp" />
+    <ClCompile Include="areg\src\ipc\private\CEServerConnection.cpp" />
+    <ClCompile Include="areg\src\ipc\private\CEServerReceiveThread.cpp" />
+    <ClCompile Include="areg\src\ipc\private\CEServerSendThread.cpp" />
+    <ClCompile Include="areg\src\ipc\private\CEServerService.cpp" />
+    <ClCompile Include="areg\src\ipc\private\CEServerServiceEvent.cpp" />
+    <ClCompile Include="areg\src\ipc\private\CEServiceRegistry.cpp" />
+    <ClCompile Include="areg\src\ipc\private\CEServiceProxy.cpp" />
+    <ClCompile Include="areg\src\ipc\private\CEServiceStub.cpp" />
+    <ClCompile Include="areg\src\ipc\private\CESocketConnectionBase.cpp" />
+    <ClCompile Include="areg\src\ipc\private\IERemoteService.cpp" />
+    <ClCompile Include="areg\src\ipc\private\IERemoteServiceConsumer.cpp" />
+    <ClCompile Include="areg\src\ipc\private\IERemoteServiceHandler.cpp" />
+    <ClCompile Include="areg\src\ipc\private\IEServerConnectionHandler.cpp" />
+    <ClCompile Include="areg\src\ipc\private\NEConnection.cpp" />
+    <ClCompile Include="areg\src\ipc\private\NERemoteService.cpp" />
+    <ClCompile Include="areg\src\persist\private\CEPersistenceManager.cpp" />
+    <ClCompile Include="areg\src\persist\private\CEProperty.cpp" />
+    <ClCompile Include="areg\src\persist\private\CEPropertyKey.cpp" />
+    <ClCompile Include="areg\src\persist\private\CEPropertyMap.cpp" />
+    <ClCompile Include="areg\src\persist\private\CEPropertyValue.cpp" />
+    <ClCompile Include="areg\src\persist\private\NEPersistence.cpp" />
+    <ClCompile Include="areg\src\trace\private\CEDebugOutputLogger.cpp" />
+    <ClCompile Include="areg\src\trace\private\CELayoutManager.cpp" />
+    <ClCompile Include="areg\src\trace\private\ELayouts.cpp" />
+    <ClCompile Include="areg\src\trace\private\CELogMessage.cpp" />
+    <ClCompile Include="areg\src\trace\private\CETraceManager.cpp" />
+    <ClCompile Include="areg\src\trace\private\CETraceMessage.cpp" />
+    <ClCompile Include="areg\src\trace\private\CETraceScope.cpp" />
+    <ClCompile Include="areg\src\trace\private\NETrace.cpp" />
+    <ClCompile Include="areg\src\trace\private\CETraceEvent.cpp" />
+    <ClCompile Include="areg\src\trace\private\CETraceProperty.cpp" />
+    <ClCompile Include="areg\src\trace\private\CETracePropertyKey.cpp" />
+    <ClCompile Include="areg\src\trace\private\CETracePropertyValue.cpp" />
+    <ClCompile Include="areg\src\trace\private\NELogConfig.cpp" />
+    <ClCompile Include="areg\src\trace\private\CEFileLogger.cpp" />
+    <ClCompile Include="areg\src\trace\private\CELoggerBase.cpp" />
+    <ClCompile Include="areg\src\trace\private\IETraceConfiguration.cpp" />
+    <ClCompile Include="areg\src\base\private\posix\CESynchObjectBaseIX.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="areg\src\base\CEDateTime.hpp" />
+    <ClInclude Include="areg\src\base\CEWideString.hpp" />
+    <ClInclude Include="areg\src\base\ETemplateBase.hpp" />
+    <ClInclude Include="areg\src\base\IESynchObject.hpp" />
+    <ClInclude Include="areg\src\base\NECommon.hpp" />
+    <ClInclude Include="areg\src\base\NEString.hpp" />
+    <ClInclude Include="areg\src\base\NEUtfString.hpp" />
+    <ClInclude Include="areg\src\base\private\CERingPosition.hpp" />
+    <ClInclude Include="areg\src\base\CERingBuffer.hpp" />
+    <ClInclude Include="areg\src\appbase\private\configure.hpp" />
+    <ClInclude Include="areg\src\base\private\CEBufferPosition.hpp" />
+    <ClInclude Include="areg\src\base\CEBufferStreamBase.hpp" />
+    <ClInclude Include="areg\src\base\private\posix\CEMutexIX.hpp" />
+    <ClInclude Include="areg\src\base\private\posix\CECriticalSectionIX.hpp" />
+    <ClInclude Include="areg\src\base\private\posix\CESynchLockAndWaitIX.hpp" />
+    <ClInclude Include="areg\src\base\private\posix\CEWaitableTimerIX.hpp" />
+    <ClInclude Include="areg\src\base\private\posix\IESynchObjectBaseIX.hpp" />
+    <ClInclude Include="areg\src\base\private\posix\IEWaitableBaseIX.hpp" />
+    <ClInclude Include="areg\src\base\private\posix\CEWaitableEventIX.hpp" />
+    <ClInclude Include="areg\src\base\private\posix\CEWaitableMutexIX.hpp" />
+    <ClInclude Include="areg\src\base\private\posix\CEWaitableSemaphoreIX.hpp" />
+    <ClInclude Include="areg\src\base\private\posix\NESynchTypesIX.hpp" />
+    <ClInclude Include="areg\src\base\TEResourceListMap.hpp" />
+    <ClInclude Include="areg\src\base\TERingStack.hpp" />
+    <ClInclude Include="areg\src\base\TEString.hpp" />
+    <ClInclude Include="areg\src\component\CEClientBase.hpp" />
+    <ClInclude Include="areg\src\component\private\CEClientInfo.hpp" />
+    <ClInclude Include="areg\src\component\private\CEClientList.hpp" />
+    <ClInclude Include="areg\src\component\CEComponent.hpp" />
+    <ClInclude Include="areg\src\component\CEComponentAddress.hpp" />
+    <ClInclude Include="areg\src\appbase\CEApplication.hpp" />
+    <ClInclude Include="areg\src\appbase\NEApplication.hpp" />
+    <ClInclude Include="areg\src\base\CESocketTemp.hpp" />
+    <ClInclude Include="areg\src\component\CEEventData.hpp" />
+    <ClInclude Include="areg\src\component\CERemoteEventFactory.hpp" />
+    <ClInclude Include="areg\src\component\CERequestEvents.hpp" />
+    <ClInclude Include="areg\src\component\CEResponseEvents.hpp" />
+    <ClInclude Include="areg\src\component\CEServiceItem.hpp" />
+    <ClInclude Include="areg\src\component\CEStubEvent.hpp" />
+    <ClInclude Include="areg\src\component\private\CEComponentInfo.hpp" />
+    <ClInclude Include="areg\src\component\CEComponentLoader.hpp" />
+    <ClInclude Include="areg\src\component\CEComponentThread.hpp" />
+    <ClInclude Include="areg\src\base\EContainers.hpp" />
+    <ClInclude Include="areg\src\component\CEDispatcherThread.hpp" />
+    <ClInclude Include="areg\src\component\CEEventDataStream.hpp" />
+    <ClInclude Include="areg\src\component\CEEvent.hpp" />
+    <ClInclude Include="areg\src\component\private\CEEventConsumerMap.hpp" />
+    <ClInclude Include="areg\src\component\CEEventDispatcher.hpp" />
+    <ClInclude Include="areg\src\component\private\CEEventDispatcherBase.hpp" />
+    <ClInclude Include="areg\src\component\private\CEEventQueue.hpp" />
+    <ClInclude Include="areg\src\base\CEFile.hpp" />
+    <ClInclude Include="areg\src\base\CEFileBase.hpp" />
+    <ClInclude Include="areg\src\base\CEFileBuffer.hpp" />
+    <ClInclude Include="areg\src\base\CEIdentifier.hpp" />
+    <ClInclude Include="areg\src\component\CENotificationEvent.hpp" />
+    <ClInclude Include="areg\src\base\CEObject.hpp" />
+    <ClInclude Include="areg\src\component\CEProxyAddress.hpp" />
+    <ClInclude Include="areg\src\component\CEProxyBase.hpp" />
+    <ClInclude Include="areg\src\component\private\CEExitEvent.hpp" />
+    <ClInclude Include="areg\src\component\private\CEProxyConnectEvent.hpp" />
+    <ClInclude Include="areg\src\component\CEProxyEvent.hpp" />
+    <ClInclude Include="areg\src\base\CERawBuffer.hpp" />
+    <ClInclude Include="areg\src\base\private\CEReadConverter.hpp" />
+    <ClInclude Include="areg\src\base\private\CERuntimeBase.hpp" />
+    <ClInclude Include="areg\src\base\CERuntimeClassID.hpp" />
+    <ClInclude Include="areg\src\base\CERuntimeObject.hpp" />
+    <ClInclude Include="areg\src\component\private\CEServerInfo.hpp" />
+    <ClInclude Include="areg\src\component\private\CEServerList.hpp" />
+    <ClInclude Include="areg\src\component\private\CEServiceManager.hpp" />
+    <ClInclude Include="areg\src\component\private\CEServiceManagerEvents.hpp" />
+    <ClInclude Include="areg\src\component\CEServiceRequestEvent.hpp" />
+    <ClInclude Include="areg\src\component\CEServiceResponseEvent.hpp" />
+    <ClInclude Include="areg\src\base\CESharedBuffer.hpp" />
+    <ClInclude Include="areg\src\component\CEStreamableEvent.hpp" />
+    <ClInclude Include="areg\src\base\CEString.hpp" />
+    <ClInclude Include="areg\src\component\CEStubAddress.hpp" />
+    <ClInclude Include="areg\src\component\CEStubBase.hpp" />
+    <ClInclude Include="areg\src\base\ESynchObjects.hpp" />
+    <ClInclude Include="areg\src\base\private\CETemplateConstants.hpp" />
+    <ClInclude Include="areg\src\base\CEThread.hpp" />
+    <ClInclude Include="areg\src\component\private\CEThreadEventBase.hpp" />
+    <ClInclude Include="areg\src\base\CEThreadLocalStorage.hpp" />
+    <ClInclude Include="areg\src\component\CETimer.hpp" />
+    <ClInclude Include="areg\src\component\CETimerEvent.hpp" />
+    <ClInclude Include="areg\src\component\private\CETimerEventData.hpp" />
+    <ClInclude Include="areg\src\component\private\CETimerInfo.hpp" />
+    <ClInclude Include="areg\src\component\private\CETimerManager.hpp" />
+    <ClInclude Include="areg\src\component\private\CETimerManagingEvent.hpp" />
+    <ClInclude Include="areg\src\base\CEVersion.hpp" />
+    <ClInclude Include="areg\src\component\CEWorkerThread.hpp" />
+    <ClInclude Include="areg\src\base\private\CEWriteConverter.hpp" />
+    <ClInclude Include="areg\src\base\GEGlobal.h" />
+    <ClInclude Include="areg\src\base\GEMacros.h" />
+    <ClInclude Include="areg\src\base\GESwitches.h" />
+    <ClInclude Include="areg\src\base\IEByteBuffer.hpp" />
+    <ClInclude Include="areg\src\base\IECursorPosition.hpp" />
+    <ClInclude Include="areg\src\component\IEEventConsumer.hpp" />
+    <ClInclude Include="areg\src\component\private\IEEventDispatcher.hpp" />
+    <ClInclude Include="areg\src\component\IEEventRouter.hpp" />
+    <ClInclude Include="areg\src\base\IEGenericObject.hpp" />
+    <ClInclude Include="areg\src\base\IEIOStream.hpp" />
+    <ClInclude Include="areg\src\component\IEProxyListener.hpp" />
+    <ClInclude Include="areg\src\component\private\IEQueueListener.hpp" />
+    <ClInclude Include="areg\src\base\IEThreadConsumer.hpp" />
+    <ClInclude Include="areg\src\component\IEWorkerThreadConsumer.hpp" />
+    <ClInclude Include="areg\src\base\NEBasicShape.hpp" />
+    <ClInclude Include="areg\src\base\private\NEDebug.hpp" />
+    <ClInclude Include="areg\src\base\NEMath.hpp" />
+    <ClInclude Include="areg\src\base\NEMemory.hpp" />
+    <ClInclude Include="areg\src\component\NERegistry.hpp" />
+    <ClInclude Include="areg\src\component\NEService.hpp" />
+    <ClInclude Include="areg\src\base\NEUtilities.hpp" />
+    <ClInclude Include="areg\src\base\TEArrayList.hpp" />
+    <ClInclude Include="areg\src\component\private\posix\CETimerPosix.hpp" />
+    <ClInclude Include="areg\src\component\TEEvent.hpp" />
+    <ClInclude Include="areg\src\base\TEFixedArray.hpp" />
+    <ClInclude Include="areg\src\base\TEHashMap.hpp" />
+    <ClInclude Include="areg\src\base\TELinkedList.hpp" />
+    <ClInclude Include="areg\src\base\TEPair.hpp" />
+    <ClInclude Include="areg\src\base\TEResourceMap.hpp" />
+    <ClInclude Include="areg\src\base\TERuntimeResourceMap.hpp" />
+    <ClInclude Include="areg\src\base\TEStack.hpp" />
+    <ClInclude Include="areg\src\base\CESocketAccepted.hpp" />
+    <ClInclude Include="areg\src\base\CERemoteMessage.hpp" />
+    <ClInclude Include="areg\src\base\CEThreadAddress.hpp" />
+    <ClInclude Include="areg\src\base\GETypes.h" />
+    <ClInclude Include="areg\src\base\TESortedLinkedList.hpp" />
+    <ClInclude Include="areg\src\component\CEChannel.hpp" />
+    <ClInclude Include="areg\src\base\CESocketClient.hpp" />
+    <ClInclude Include="areg\src\base\CESocket.hpp" />
+    <ClInclude Include="areg\src\base\CESocketServer.hpp" />
+    <ClInclude Include="areg\src\base\NESocket.hpp" />
+    <ClInclude Include="areg\src\component\IERemoteEventConsumer.hpp" />
+    <ClInclude Include="areg\src\component\CEServiceAddress.hpp" />
+    <ClInclude Include="areg\src\component\private\CEStubConnectEvent.hpp" />
+    <ClInclude Include="areg\src\ipc\CEClientService.hpp" />
+    <ClInclude Include="areg\src\ipc\CEServerService.hpp" />
+    <ClInclude Include="areg\src\ipc\IERemoteService.hpp" />
+    <ClInclude Include="areg\src\ipc\IERemoteServiceConsumer.hpp" />
+    <ClInclude Include="areg\src\ipc\NERemoteService.hpp" />
+    <ClInclude Include="areg\src\ipc\private\CEClientConnection.hpp" />
+    <ClInclude Include="areg\src\ipc\private\CEClientServiceEvent.hpp" />
+    <ClInclude Include="areg\src\ipc\private\CEClientReceiveThread.hpp" />
+    <ClInclude Include="areg\src\ipc\CEConnectionConfiguration.hpp" />
+    <ClInclude Include="areg\src\ipc\private\CEListServiceProxies.hpp" />
+    <ClInclude Include="areg\src\ipc\private\CERemoteServiceEvent.hpp" />
+    <ClInclude Include="areg\src\ipc\private\CEClientSendThread.hpp" />
+    <ClInclude Include="areg\src\ipc\private\CEServerConnection.hpp" />
+    <ClInclude Include="areg\src\ipc\private\CEServerReceiveThread.hpp" />
+    <ClInclude Include="areg\src\ipc\private\CEServerSendThread.hpp" />
+    <ClInclude Include="areg\src\ipc\private\CEServerServiceEvent.hpp" />
+    <ClInclude Include="areg\src\ipc\private\CEServiceRegistry.hpp" />
+    <ClInclude Include="areg\src\ipc\private\CEServiceProxy.hpp" />
+    <ClInclude Include="areg\src\ipc\private\CEServiceStub.hpp" />
+    <ClInclude Include="areg\src\ipc\private\CESocketConnectionBase.hpp" />
+    <ClInclude Include="areg\src\ipc\private\IERemoteServiceHandler.hpp" />
+    <ClInclude Include="areg\src\ipc\private\IEServerConnectionHandler.hpp" />
+    <ClInclude Include="areg\src\ipc\private\NEConnection.hpp" />
+    <ClInclude Include="areg\src\persist\CEProperty.hpp" />
+    <ClInclude Include="areg\src\persist\CEPropertyValue.hpp" />
+    <ClInclude Include="areg\src\persist\private\CEPersistenceManager.hpp" />
+    <ClInclude Include="areg\src\persist\private\CEPropertyMap.hpp" />
+    <ClInclude Include="areg\src\persist\private\NEPersistence.hpp" />
+    <ClInclude Include="areg\src\trace\CETraceMessage.hpp" />
+    <ClInclude Include="areg\src\trace\CETraceScope.hpp" />
+    <ClInclude Include="areg\src\trace\NETrace.hpp" />
+    <ClInclude Include="areg\src\base\CEProcess.hpp" />
+    <ClInclude Include="areg\src\trace\GETrace.h" />
+    <ClInclude Include="areg\src\trace\private\CEDebugOutputLogger.hpp" />
+    <ClInclude Include="areg\src\trace\private\CEFileLogger.hpp" />
+    <ClInclude Include="areg\src\trace\private\CELayoutManager.hpp" />
+    <ClInclude Include="areg\src\trace\private\ELayouts.hpp" />
+    <ClInclude Include="areg\src\trace\private\CELogMessage.hpp" />
+    <ClInclude Include="areg\src\base\TEProperty.hpp" />
+    <ClInclude Include="areg\src\trace\private\CETraceEvent.hpp" />
+    <ClInclude Include="areg\src\trace\private\CETraceManager.hpp" />
+    <ClInclude Include="areg\src\trace\private\CETraceProperty.hpp" />
+    <ClInclude Include="areg\src\trace\private\CETracePropertyKey.hpp" />
+    <ClInclude Include="areg\src\trace\private\CETracePropertyValue.hpp" />
+    <ClInclude Include="areg\src\trace\private\CELoggerBase.hpp" />
+    <ClInclude Include="areg\src\trace\private\IETraceConfiguration.hpp" />
+    <ClInclude Include="areg\src\trace\private\NELogConfig.hpp" />
+    <ClInclude Include="areg\src\persist\CEPropertyKey.hpp" />
+    <ClInclude Include="areg\src\base\private\posix\CESynchObjectBaseIX.hpp" />
+    <ClInclude Include="system\src\linux\GELinux.h" />
+    <ClInclude Include="system\src\posix\GEPosix.h" />
+    <ClInclude Include="system\src\windows\GEWindows.h" />
+    <ClInclude Include="system\src\GEPlatform.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="$(SrcRes)\areg\areg.rc" />
+    <ClInclude Include="$(SrcRes)\areg\resource.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="$(ProjectScriptDir)\areg_post_build.bat" />
+    <None Include="$(SrcRes)\areg\log.init" />
+    <None Include="resources\areg\mcrouter.init" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

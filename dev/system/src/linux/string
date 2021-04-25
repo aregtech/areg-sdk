@@ -1,0 +1,45 @@
+#ifndef AREG_SYSTEM_GCC_STRING_H
+#define AREG_SYSTEM_GCC_STRING_H
+
+/************************************************************************
+ * \file        system/gcc/string
+ * \ingroup     Framework, GCC proxies
+ * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \brief       AREG Framework, platform dependent includes
+ *
+ ************************************************************************/
+/************************************************************************
+ * Include files.
+ ************************************************************************/
+
+#include <string.h>
+// for memcmp
+#include <cstring>
+// this does NOT work, includes this file again!
+// #include <string>
+// however, there is a neat #includenext for exactly this purpose: 
+// see https://gcc.gnu.org/onlinedocs/cpp/Wrapper-Headers.html
+#include_next <string>
+
+// if no errno_t, define it:
+#ifndef HAVE_ERRNO_T
+typedef int errno_t;
+#define HAVE_ERRNO_T 1
+#endif
+
+// MS specific memory functions:
+extern errno_t memcpy_s(void* dest, size_t destSize, const void* src, size_t count);
+extern errno_t memmove_s(void* dest, size_t destSize, const void* src, size_t count);
+
+// MS specific sprintf 
+extern int vsprintf_s(char *buffer, size_t bufSize, const char *format, va_list argptr);
+extern int vswprintf_s(wchar_t *buffer, size_t bufSize, const wchar_t *format, va_list argptr);
+extern errno_t strcpy_s(char *dest, size_t destSize, const char *src);
+
+
+// atoi etc. are defined in <cstdlib>
+#include <cstdlib>
+// _atoi64 is named atoll
+#define _atoi64 atoll
+
+#endif // AREG_SYSTEM_GCC_STRING_H

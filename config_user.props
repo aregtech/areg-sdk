@@ -1,0 +1,313 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <ImportGroup Label="PropertySheets" />
+    <!-- ****************************************************************************************************************************************************************** -->
+    <!-- User Property name.                                                                                                                                                -->
+    <!-- ****************************************************************************************************************************************************************** -->
+    <PropertyGroup>
+        <_PropertySheetDisplayName>config_user</_PropertySheetDisplayName>
+    </PropertyGroup>
+
+    <!-- ****************************************************************************************************************************************************************** -->
+    <!-- User Macro names and values. Definition.                                                                                                                           -->
+    <!-- ****************************************************************************************************************************************************************** -->
+    <PropertyGroup Label="UserMacros">
+    
+        <!-- ************************************************************************************************************************************************************** -->
+        <!-- User Project settings and environment change definitions                                                                                                       -->
+        <!-- ************************************************************************************************************************************************************** -->
+    
+        <!-- ************************************************************************************************************************************************************** -->
+        <!-- BASIC    SETTINGS     CHANGE                                                                                                                                   -->
+        <!-- ************************************************************************************************************************************************************** -->
+
+        <!-- ************************************************************************************************************************************************************** -->
+        <!-- The root directory of project. Change your project root directory. Please set backslash at the end!                                                            -->
+        <!-- ************************************************************************************************************************************************************** -->
+        <!-- ProjectRootDir>D:\Projects\areg\</ProjectRootDir -->
+        <ProjectRootDir>$(SolutionDir)</ProjectRootDir>
+
+        <!-- ************************************************************************************************************************************************************** -->
+        <!-- Third-Party source root folder. By default, it is solution folder. Change if it differs or solution file is moved to other folder.                             -->
+        <!-- ************************************************************************************************************************************************************** -->
+        <ThirdSources>$(ProjectRootDir)thirdparty</ThirdSources>
+
+        <!-- ************************************************************************************************************************************************************** -->
+        <!-- Advanced settings change                                                                                                                                       -->
+        <!-- ************************************************************************************************************************************************************** -->
+
+        <!-- ************************************************************************************************************************************************************** -->
+        <!-- User Definitions                                                                                                                                               -->
+        <!-- ************************************************************************************************************************************************************** -->
+
+        <!-- ************************************************************************************************************************************************************** -->
+        <!-- Add user preprocessor defines here for Debug and Release builds, which will be automatically added for all projects. By default there are 2 defines:           -->
+        <!-- COMPILE_ENABLED_TRACES : set 1 (default value) to enable compilation with logging; set 0, if no logging required.                                              -->
+        <!-- COMPILE_ENABLED_LEAK_DETECT : set 1 to enable memory leak detector; set 0 (default value) if no memory leak detect is required.                                -->
+        <!-- The COMPILE_ENABLED_LEAK_DETECT is available ONLY for Debug. In Release this preprocessor define is ignored, even if it is set, and plays no role.             -->
+        <UserPreprocessorDefines Condition="'$(ConfigShortName)'=='Debug'">ENABLED_TRACES;COMPILE_ENABLED_LEAK_DETECT=0;</UserPreprocessorDefines>
+        <UserPreprocessorDefines Condition="'$(ConfigShortName)'=='Release'">ENABLED_TRACES;</UserPreprocessorDefines>
+
+        <!-- ************************************************************************************************************************************************************** -->
+        <!-- Add user special include folders. If Visual Leak Detector is installed as a separate project, add include folder here.                                         -->
+        <!-- User Includes are available for Debug and Release versions. They will be automatically added in every project.                                                 -->
+        <!-- As an example:                                                                                                                                                 -->
+        <!-- UserDefIncludes Condition="'$(ConfigShortName)'=='Debug'">"C:\Tools\Visual Leak Detector\include"</UserDefIncludes                             -->
+        <UserDefIncludes Condition="'$(ConfigShortName)'=='Debug'"></UserDefIncludes>
+        <UserDefIncludes Condition="'$(ConfigShortName)'=='Release'"></UserDefIncludes>
+
+        <!-- ************************************************************************************************************************************************************** -->
+        <!-- Add user special library folders. If Visual Leak Detector is installed as a separate project, add library folder here.                                         -->
+        <!-- User Libraries are available for Debug and Release versions. They will be automatically added in every project.                                                -->
+        <!-- As an example:                                                                                                                                                 -->
+        <!-- UserDefLibs Condition="'$(ConfigShortName)'=='Debug'">"C:\Tools\Visual Leak Detector\lib\Win32"</UserDefLibs                                   -->
+        <UserDefLibs Condition="'$(ConfigShortName)'=='Debug'"></UserDefLibs>
+        <UserDefLibs Condition="'$(ConfigShortName)'=='Release'"></UserDefLibs>
+
+        <!-- ************************************************************************************************************************************************************** -->
+        <!-- Add user special binary folders. If Visual Leak Detector is installed as a separate project, add binary folder here.                                           -->
+        <!-- User Binaries are available for Debug and Release versions. They SHOULD BE MANUALLY ADDED in every executable projects.                                        -->
+        <!-- As an example:                                                                                                                                                 -->
+        <!-- UserDefLibs Condition="'$(ConfigShortName)'=='Debug'">"C:\Tools\Visual Leak Detector\bin\Win32"</UserDefLibs                                   -->
+        <UserDefBins Condition="'$(ConfigShortName)'=='Debug'"></UserDefBins>
+        <UserDefBins Condition="'$(ConfigShortName)'=='Release'"></UserDefBins>
+
+        <!-- ************************************************************************************************************************************************************** -->
+        <!-- Add user special resource folder. This is used to pass as a parameter to the post-build script and available as Debug and Release versions.                    -->
+        <UserResourceDir Condition="'$(ConfigShortName)'=='Debug'"></UserResourceDir>
+        <UserResourceDir Condition="'$(ConfigShortName)'=='Release'"></UserResourceDir>
+
+        <!-- ************************************************************************************************************************************************************** -->
+        <!-- ************************************************************************************************************************************************************** -->
+        <!-- The name of project Output folder. Change this name if using other name.                                                                                       -->
+        <ProjectProductDirName>product</ProjectProductDirName>
+        <!-- ************************************************************************************************************************************************************** -->
+        <!-- The name of folder where test applications are created. Change this name if using other name.                                                                  -->
+        <ProjectTestDirName>examples</ProjectTestDirName>
+        <!-- ************************************************************************************************************************************************************** -->
+        <!-- The name of folder where should output the build. The path is crated as $(ProjectProductDirName)\$(DirBuild). Change this name if using other name.            -->
+        <DirBuild>build\$(PlatformToolset)\$(Platform)</DirBuild>
+        <!-- ************************************************************************************************************************************************************** -->
+        <!-- Compiled binaries folder name. The path is crated as $(ProjectProductDirName)\$(DirBuild)\$(Configuration)\$(DirBin). Change this name if using other name.    -->
+        <DirBin>exe</DirBin>
+        <!-- ************************************************************************************************************************************************************** -->
+        <!-- Compiled libraries folder name. The path is crated as $(ProjectProductDirName)\$(DirBuild)\$(Configuration)\$(DirLib). Change this name if using other name.   -->
+        <DirLib>lib</DirLib>
+        <!-- ************************************************************************************************************************************************************** -->
+        <!-- Compiled object files folder name. The path is crated as $(ProjectProductDirName)\$(DirBuild)\$(Configuration)\$(DirObj). Change this name if using other name -->
+        <DirObj>obj</DirObj>
+        <!-- ************************************************************************************************************************************************************** -->
+        <!-- The name of folder to output generated files. The path is crated as $(ProjectProductDirName)\$(DirGen)\. Change this name if using other name.                 -->
+        <DirGen>gen</DirGen>
+
+        <!-- ************************************************************************************************************************************************************** -->
+        <!-- Path of Project Outputs Folder. Change path if using other.                                                                                                    -->
+        <ProjectOutputDir>$(ProjectRootDir)$(ProjectProductDirName)\$(DirBuild)</ProjectOutputDir>
+        <!-- ************************************************************************************************************************************************************** -->
+        <!-- Path of Project Generated Files Folder. Change path if using other.                                                                                            -->
+        <ProjectGeneratedDir>$(ProjectRootDir)$(ProjectProductDirName)\$(DirGen)</ProjectGeneratedDir>
+        <!-- ************************************************************************************************************************************************************** -->
+        <!-- Path of Project Binaries Folder. Change path if using other.                                                                                                   -->
+        <ProjectBinDir>$(ProjectOutputDir)\$(Configuration)\$(DirBin)</ProjectBinDir>
+        <!-- ************************************************************************************************************************************************************** -->
+        <!-- Path of Project Libraries Folder. Change path if using other.                                                                                                  -->
+        <ProjectLibDir>$(ProjectOutputDir)\$(Configuration)\$(DirLib)</ProjectLibDir>
+        <!-- ************************************************************************************************************************************************************** -->
+        <!-- Path of Project Object files Folder. Change path if using other.                                                                                               -->
+        <ProjectObjectDir>$(ProjectOutputDir)\$(Configuration)\$(DirObj)\$(ProjectName)</ProjectObjectDir>
+        <!-- ************************************************************************************************************************************************************** -->
+        <!-- End of advanced settings.                                                                                                                                      -->
+        <!-- ************************************************************************************************************************************************************** -->
+
+        <!-- ************************************************************************************************************************************************************** -->
+        <!-- Settings of  output directories. Do not change. Instead, modify project specific paths and/or names.                                                           -->
+        <!-- ************************************************************************************************************************************************************** -->
+
+        <OutBinDir>$(ProjectBinDir)</OutBinDir>
+        <OutLibDir>$(ProjectLibDir)</OutLibDir>
+        <OutObjDir>$(ProjectObjectDir)</OutObjDir>
+
+        <!-- ************************************************************************************************************************************************************** -->
+        <!-- End of user specific settings.                                                                                                                                 -->
+        <!-- ************************************************************************************************************************************************************** -->
+
+        <!-- ************************************************************************************************************************************************************** -->
+        <!-- Environment variables                                                                                                                                          -->
+        <!-- ************************************************************************************************************************************************************** -->
+        <Param1></Param1>
+        <Param2></Param2>
+        <Param3></Param3>
+        <Param4></Param4>
+        <Param5></Param5>
+
+        <!-- ************************************************************************************************************************************************************** -->
+        <!-- User Development Macro definitions.                                                                                                                            -->
+        <!-- ************************************************************************************************************************************************************** -->
+
+        <!-- ************************************************************************************************************************************************************** -->
+        <!-- The path of project development folder. Change this name if using other name.                                                                                  -->
+        <ProjectDevDir>$(ProjectRootDir)dev</ProjectDevDir>
+        <!-- ************************************************************************************************************************************************************** -->
+        <!-- The path of project source folder. Change this name if using other name.                                                                                       -->
+        <ProjectSourceDir>$(ProjectDevDir)</ProjectSourceDir>
+        <!-- ************************************************************************************************************************************************************** -->
+        <!-- The path of source include folder. Change this name if using other name.                                                                                       -->
+        <SrcInc>$(ProjectSourceDir)</SrcInc>
+        <!-- ************************************************************************************************************************************************************** -->
+        <!-- The path of source implementation folder. Change this name if using other name.                                                                                -->
+        <SrcImp>$(ProjectSourceDir)</SrcImp>
+        <!-- ************************************************************************************************************************************************************** -->
+        <!-- The path of source resources folder. Change this name if using other name.                                                                                     -->
+        <SrcRes>$(ProjectSourceDir)\$(ProjectName)\resources</SrcRes>
+        <!-- ************************************************************************************************************************************************************** -->
+        <!-- The project specific preprocessor definitions. Change this name if using other name.                                                                           -->
+        <ProjectPreprocessorDefines></ProjectPreprocessorDefines>
+        <!-- ************************************************************************************************************************************************************** -->
+        <!-- The project specific additional include folders. Change this name if using other name.                                                                         -->
+        <ProjectAdditionalIncludes></ProjectAdditionalIncludes>
+        <!-- ************************************************************************************************************************************************************** -->
+        <!-- The project specific additional include folders. Change this name if using other name.                                                                         -->
+        <ProjectAdditionalLibs></ProjectAdditionalLibs>
+        <!-- ************************************************************************************************************************************************************** -->
+        <!-- The project specific resource folder location. Change this name if using other name.                                                                           -->
+        <ProjectResourceDir>$(SrcRes)</ProjectResourceDir>
+        <!-- ************************************************************************************************************************************************************** -->
+        <!-- The project specific script folder location. Change this name if using other name.                                                                             -->
+        <ProjectScriptDir>$(ProjectResourceDir)</ProjectScriptDir>
+
+    </PropertyGroup>
+  
+    <!-- ****************************************************************************************************************************************************************** -->
+    <!-- User Macro defines. Do not make changes here!                                                                                                                      -->
+    <!-- ****************************************************************************************************************************************************************** -->
+    <ItemGroup>
+        <BuildMacro Include="ProjectRootDir">
+            <Value>$(ProjectRootDir)</Value>
+        </BuildMacro>
+        
+        <BuildMacro Include="ThirdSources">
+            <Value>$(ThirdSources)</Value>
+        </BuildMacro>
+        
+        <BuildMacro Include="UserPreprocessorDefines">
+            <Value>$(UserPreprocessorDefines)</Value>
+        </BuildMacro>
+        <BuildMacro Include="UserDefIncludes">
+            <Value>$(UserDefIncludes)</Value>
+        </BuildMacro>
+        <BuildMacro Include="UserDefLibs">
+            <Value>$(UserDefLibs)</Value>
+        </BuildMacro>
+        <BuildMacro Include="UserDefBins">
+            <Value>$(UserDefBins)</Value>
+        </BuildMacro>
+        <BuildMacro Include="UserResourceDir">
+            <Value>$(UserResourceDir)</Value>
+        </BuildMacro>
+        
+        <BuildMacro Include="ProjectProductDirName">
+            <Value>$(ProjectProductDirName)</Value>
+        </BuildMacro>
+        <BuildMacro Include="ProjectTestDirName">
+            <Value>$(ProjectTestDirName)</Value>
+        </BuildMacro>
+        <BuildMacro Include="DirBuild">
+            <Value>$(DirBuild)</Value>
+        </BuildMacro>
+        <BuildMacro Include="DirLib">
+            <Value>$(DirLib)</Value>
+        </BuildMacro>
+        <BuildMacro Include="DirObj">
+            <Value>$(DirObj)</Value>
+        </BuildMacro>
+        <BuildMacro Include="DirGen">
+            <Value>$(DirGen)</Value>
+        </BuildMacro>
+
+        <BuildMacro Include="ProjectOutputDir">
+            <Value>$(ProjectOutputDir)</Value>
+        </BuildMacro>
+        <BuildMacro Include="ProjectGeneratedDir">
+            <Value>$(ProjectGeneratedDir)</Value>
+        </BuildMacro>
+        <BuildMacro Include="ProjectBinDir">
+            <Value>$(ProjectBinDir)</Value>
+        </BuildMacro>
+        <BuildMacro Include="ProjectLibDir">
+            <Value>$(ProjectLibDir)</Value>
+        </BuildMacro>
+        <BuildMacro Include="ProjectObjectDir">
+            <Value>$(ProjectObjectDir)</Value>
+        </BuildMacro>
+
+        <BuildMacro Include="OutBinDir">
+            <Value>$(OutBinDir)</Value>
+        </BuildMacro>
+        <BuildMacro Include="OutLibDir">
+            <Value>$(OutLibDir)</Value>
+        </BuildMacro>
+        <BuildMacro Include="OutObjDir">
+            <Value>$(OutObjDir)</Value>
+        </BuildMacro>
+
+        <!-- ************************************************************************************************************************************************************** -->
+        <!-- Environment variables                                                                                                                                          -->
+        <!-- ************************************************************************************************************************************************************** -->
+        <BuildMacro Include="Param1">
+            <Value>$(Param1)</Value>
+            <EnvironmentVariable>true</EnvironmentVariable>
+        </BuildMacro>
+        <BuildMacro Include="Param2">
+            <Value>$(Param2)</Value>
+            <EnvironmentVariable>true</EnvironmentVariable>
+        </BuildMacro>
+        <BuildMacro Include="Param3">
+            <Value>$(Param3)</Value>
+            <EnvironmentVariable>true</EnvironmentVariable>
+        </BuildMacro>
+        <BuildMacro Include="Param4">
+            <Value>$(Param4)</Value>
+            <EnvironmentVariable>true</EnvironmentVariable>
+        </BuildMacro>
+        <BuildMacro Include="Param5">
+            <Value>$(Param5)</Value>
+            <EnvironmentVariable>true</EnvironmentVariable>
+        </BuildMacro>
+
+        <!-- ************************************************************************************************************************************************************** -->
+        <!-- User Development Macro definitions.                                                                                                                            -->
+        <!-- ************************************************************************************************************************************************************** -->
+
+        <BuildMacro Include="ProjectDevDir">
+            <Value>$(ProjectDevDir)</Value>
+        </BuildMacro>
+        <BuildMacro Include="ProjectSourceDir">
+            <Value>$(ProjectSourceDir)</Value>
+        </BuildMacro>
+        <BuildMacro Include="SrcInc">
+            <Value>$(SrcInc)</Value>
+        </BuildMacro>
+        <BuildMacro Include="SrcImp">
+            <Value>$(SrcImp)</Value>
+        </BuildMacro>
+        <BuildMacro Include="SrcRes">
+            <Value>$(SrcRes)</Value>
+        </BuildMacro>
+        <BuildMacro Include="ProjectPreprocessorDefines">
+            <Value>$(ProjectPreprocessorDefines)</Value>
+        </BuildMacro>
+        <BuildMacro Include="ProjectAdditionalIncludes">
+            <Value>$(ProjectAdditionalIncludes)</Value>
+        </BuildMacro>
+        <BuildMacro Include="ProjectAdditionalLibs">
+            <Value>$(ProjectAdditionalLibs)</Value>
+        </BuildMacro>
+        <BuildMacro Include="ProjectResourceDir">
+            <Value>$(ProjectResourceDir)</Value>
+        </BuildMacro>
+        <BuildMacro Include="ProjectScriptDir">
+            <Value>$(ProjectScriptDir)</Value>
+        </BuildMacro>
+        
+    </ItemGroup>
+</Project>

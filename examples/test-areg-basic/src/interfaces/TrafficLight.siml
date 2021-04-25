@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<ServiceInterface FormatVesion="1.0.0">
+    <Overview ID="1" Name="TrafficLight" Version="0.1.0">
+        <Description>The traffic light to change lights.</Description>
+    </Overview>
+    <DataTypeList>
+        <DataType ID="13" Name="eLight" Type="Enumerate" Values="default">
+            <Description>The colors of traffic light.</Description>
+            <FieldList>
+                <EnumEntry ID="14" Name="LightOff">
+                    <Value/>
+                    <Description>No color, the light is off</Description>
+                </EnumEntry>
+                <EnumEntry ID="15" Name="Red">
+                    <Value/>
+                    <Description>Red color of light</Description>
+                </EnumEntry>
+                <EnumEntry ID="16" Name="RedYellow">
+                    <Value/>
+                    <Description>Red and Yellow color of light.</Description>
+                </EnumEntry>
+                <EnumEntry ID="17" Name="Yellow">
+                    <Value/>
+                    <Description>The yellow color of the light.</Description>
+                </EnumEntry>
+                <EnumEntry ID="18" Name="Green">
+                    <Value/>
+                    <Description>Green color of the light.</Description>
+                </EnumEntry>
+            </FieldList>
+        </DataType>
+    </DataTypeList>
+    <AttributeList>
+        <Attribute DataType="eLight" ID="19" Name="TrafficLight" Notify="OnChange">
+            <Description>The current color of traffic light</Description>
+        </Attribute>
+    </AttributeList>
+    <MethodList>
+        <Method ID="9" MethodType="Request" Name="ChangeLight" Response="ChangeLight">
+            <Description>Requested rapidly to change the light.</Description>
+            <ParamList>
+                <Parameter DataType="eLight" ID="20" Name="lightColor"/>
+                <Parameter DataType="bool" ID="22" Name="holdon">
+                    <Description>If true, it will holdon the light until next request to change color. 
+Otherwise, the timer will trigger next color.</Description>
+                </Parameter>
+            </ParamList>
+        </Method>
+        <Method ID="11" MethodType="Response" Name="ChangeLight">
+            <Description>Resonse to change the light color.</Description>
+            <ParamList>
+                <Parameter DataType="eLight" ID="23" Name="lightColor">
+                    <Description>The light of trafic light.</Description>
+                </Parameter>
+            </ParamList>
+        </Method>
+    </MethodList>
+    <ConstantList>
+        <Constant DataType="uint32" ID="24" Name="TIMEOUT_RED">
+            <Value>5000</Value>
+            <Description>Timeout to remain in red -- 5000 ms (5 secs)</Description>
+        </Constant>
+        <Constant DataType="uint32" ID="25" Name="TIMEOUT_YELLOW">
+            <Value>3000</Value>
+            <Description>Timeout to remain in yellow, 3000 milliseconds (3 secs)</Description>
+        </Constant>
+        <Constant DataType="uint32" ID="26" Name="TIMEOUT_CHANGE">
+            <Value>6500</Value>
+            <Description>The timeout in milliseconds to wait in Green and Red (6500 ms = 6.5 secs), 
+i.e. in Red-Yellow it will remain 1500 ms (1.5 secs).</Description>
+        </Constant>
+    </ConstantList>
+</ServiceInterface>

@@ -1,0 +1,58 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <!-- **************************************************************************************************************************************************************   -->
+    <!-- Project Property name.                                                                                                                                           -->
+    <!-- **************************************************************************************************************************************************************   -->
+    <PropertyGroup>
+        <_PropertySheetDisplayName>config_project_default</_PropertySheetDisplayName>
+    </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+    <PropertyGroup>
+        <RegisterForComInterop>false</RegisterForComInterop>
+        <SignAssembly>false</SignAssembly>
+		<GenerateManifest>true</GenerateManifest>
+		<EmbedManifest>true</EmbedManifest>
+        <EnableManagedIncrementalBuild>true</EnableManagedIncrementalBuild>
+        <UseDebugLibraries Condition="'$(ConfigShortName)'=='Debug'">true</UseDebugLibraries>
+        <UseDebugLibraries Condition="'$(ConfigShortName)'=='Release'">false</UseDebugLibraries>
+        <LinkIncremental Condition="'$(ConfigShortName)'=='Debug'">true</LinkIncremental>
+        <LinkIncremental Condition="'$(ConfigShortName)'=='Release'">false</LinkIncremental>
+    </PropertyGroup>
+    <ItemDefinitionGroup>
+        <ClCompile>
+            <MultiProcessorCompilation>true</MultiProcessorCompilation>
+            <MinimalRebuild>false</MinimalRebuild>
+            <WarningLevel>Level3</WarningLevel>
+            <BasicRuntimeChecks Condition="'$(ConfigShortName)'=='Debug'">EnableFastChecks</BasicRuntimeChecks>
+            <BasicRuntimeChecks Condition="'$(ConfigShortName)'=='Release'">Default</BasicRuntimeChecks>
+            <DebugInformationFormat Condition="'$(ConfigShortName)'=='Debug'">EditAndContinue</DebugInformationFormat>
+            <DebugInformationFormat Condition="'$(ConfigShortName)'=='Release'">ProgramDatabase</DebugInformationFormat>
+            <RuntimeLibrary Condition="'$(ConfigShortName)'=='Debug'">MultiThreadedDebugDLL</RuntimeLibrary>
+            <RuntimeLibrary Condition="'$(ConfigShortName)'=='Release'">MultiThreaded</RuntimeLibrary>
+            <Optimization Condition="'$(ConfigShortName)'=='Debug'">Disabled</Optimization>
+            <Optimization Condition="'$(ConfigShortName)'=='Release'">Full</Optimization>
+            <!-- **************************************************************************************************************************************************************   -->
+            <!-- Release version only                                                                                                                                             -->
+            <!-- **************************************************************************************************************************************************************   -->
+			<InlineFunctionExpansion Condition="'$(ConfigShortName)'=='Release'">AnySuitable</InlineFunctionExpansion>
+			<ExceptionHandling Condition="'$(ConfigShortName)'=='Release'">false</ExceptionHandling>
+			<DebugInformationFormat Condition="'$(ConfigShortName)'=='Release'">None</DebugInformationFormat>
+            <FunctionLevelLinking Condition="'$(ConfigShortName)'=='Release'">true</FunctionLevelLinking>
+            <IntrinsicFunctions Condition="'$(ConfigShortName)'=='Release'">true</IntrinsicFunctions>
+            <WholeProgramOptimization Condition="'$(ConfigShortName)'=='Release'">true</WholeProgramOptimization>
+        </ClCompile>			
+        <Link>
+            <LinkErrorReporting>QueueForNextLogin</LinkErrorReporting>
+            <EnableCOMDATFolding Condition="'$(ConfigShortName)'=='Debug'">false</EnableCOMDATFolding>
+            <EnableCOMDATFolding Condition="'$(ConfigShortName)'=='Release'">true</EnableCOMDATFolding>
+            <GenerateDebugInformation Condition="'$(ConfigShortName)'=='Debug'">true</GenerateDebugInformation>
+            <GenerateDebugInformation Condition="'$(ConfigShortName)'=='Release'">false</GenerateDebugInformation>
+            <OptimizeReferences Condition="'$(ConfigShortName)'=='Debug'">false</OptimizeReferences>
+            <OptimizeReferences Condition="'$(ConfigShortName)'=='Release'">true</OptimizeReferences>
+        </Link>
+        <ResourceCompile>
+        </ResourceCompile>
+    </ItemDefinitionGroup>
+</Project>

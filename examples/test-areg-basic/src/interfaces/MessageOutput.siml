@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<ServiceInterface FormatVesion="1.0.0">
+    <Overview ID="1" Name="MessageOutput" Version="0.1.0">
+        <Description>The message output service to interact with user.</Description>
+    </Overview>
+    <DataTypeList>
+        <DataType ID="19" Name="eRequestedActons" Type="Enumerate" Values="default">
+            <Description>The actions requested by user.</Description>
+            <FieldList>
+                <EnumEntry ID="20" Name="NoAction">
+                    <Value/>
+                    <Description>No action is requested.</Description>
+                </EnumEntry>
+                <EnumEntry ID="21" Name="ActionStart">
+                    <Value/>
+                    <Description>Requested action to start, console commands:
+start, -s</Description>
+                </EnumEntry>
+                <EnumEntry ID="22" Name="ActionStop">
+                    <Value/>
+                    <Description>Requested action to stop. Console commands:
+stop, -p</Description>
+                </EnumEntry>
+                <EnumEntry ID="23" Name="ActionQuit">
+                    <Value/>
+                    <Description>Requested to quit applicaton. Console commands:
+quit, exit, -q</Description>
+                </EnumEntry>
+            </FieldList>
+        </DataType>
+    </DataTypeList>
+    <AttributeList>
+        <Attribute DataType="String" ID="3" Name="LastMessage" Notify="OnChange">
+            <Description>The last message to output on console.</Description>
+        </Attribute>
+    </AttributeList>
+    <MethodList>
+        <Method ID="6" MethodType="Request" Name="OutputMessage">
+            <Description>Sent to service to output message on console.</Description>
+            <ParamList>
+                <Parameter DataType="String" ID="14" Name="msgOutput">
+                    <Description>The message requested to output on console.</Description>
+                </Parameter>
+                <Parameter DataType="DateTime" ID="16" Name="dateTime">
+                    <Description>The date and the time when it was requested.</Description>
+                </Parameter>
+            </ParamList>
+        </Method>
+        <Method ID="4" MethodType="Broadcast" Name="ActionRequest">
+            <Description>Informs the action requested by a user</Description>
+            <ParamList>
+                <Parameter DataType="eRequestedActons" ID="24" Name="userAction">
+                    <Description>The action requested by user.</Description>
+                </Parameter>
+            </ParamList>
+        </Method>
+        <Method ID="13" MethodType="Broadcast" Name="InputMessage">
+            <Description>The input message from the user.</Description>
+            <ParamList>
+                <Parameter DataType="String" ID="15" Name="msgInput">
+                    <Description>The input message from the user.</Description>
+                </Parameter>
+            </ParamList>
+        </Method>
+    </MethodList>
+</ServiceInterface>

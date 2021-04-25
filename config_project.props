@@ -1,0 +1,62 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <!-- **************************************************************************************************************************************************************   -->
+    <!-- Project Property name.                                                                                                                                           -->
+    <!-- **************************************************************************************************************************************************************   -->
+    <PropertyGroup>
+        <_PropertySheetDisplayName>config_project</_PropertySheetDisplayName>
+    </PropertyGroup>
+    <ImportGroup Label="PropertySheets">
+        <Import Project="$(SolutionDir)/config_project_default.props"/>
+    </ImportGroup>
+    <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+    <ImportGroup Label="ExtensionSettings">
+    </ImportGroup>
+    <ImportGroup Label="PropertySheets">
+        <Import Project="$(SolutionDir)\config_user.props" />
+    </ImportGroup>
+    <PropertyGroup Label="UserMacros">
+        <ProjectIncludes>$(SrcInc);$(ProjectSourceDir);$(ProjectDevDir);$(ProjectGeneratedDir);$(ProjectDir);</ProjectIncludes>
+        <ProjectCommonDefines Condition="'$(Platform)'=='Win32'">
+            $(ProjectPreprocessorDefines);$(UserPreprocessorDefines);$(ThirdPreprocessorDefines);WIN32;_WIN32;_WINDOWS
+        </ProjectCommonDefines>
+        <ProjectCommonDefines Condition="'$(Platform)'=='x64'"  >
+			$(ProjectPreprocessorDefines);$(UserPreprocessorDefines);$(ThirdPreprocessorDefines);WIN32;_WIN32;_WINDOWS;WIN64;_WIN64
+		</ProjectCommonDefines>
+    </PropertyGroup>
+    <PropertyGroup>
+        <IntDir>$(OutObjDir)\</IntDir>
+        <OutDir>$(OutBinDir)\</OutDir>
+    </PropertyGroup>
+    <PropertyGroup>
+        <OutputPath>$(OutDir)</OutputPath>
+        <IntermediateOutputPath>$(IntDir)</IntermediateOutputPath>
+        <BaseIntermediateOutputPath>$(ProjectGeneratedDir)</BaseIntermediateOutputPath>
+        <CoreCompileDependsOn>$(CoreCompileDependsOn);AddToolOutput</CoreCompileDependsOn>
+    </PropertyGroup>
+    <ItemDefinitionGroup>
+        <ClCompile>
+            <AdditionalIncludeDirectories>$(UserDefIncludes);$(ProjectIncludes);$(ThirdSources);$(ThirdDefIncludes);%(AdditionalIncludeDirectories);</AdditionalIncludeDirectories>
+            <AdditionalUsingDirectories>$(OutDir);%(AdditionalUsingDirectories)</AdditionalUsingDirectories>
+            <PreprocessorDefinitions Condition="'$(ConfigShortName)'=='Debug'">$(ProjectCommonDefines);_DEBUG;DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+            <PreprocessorDefinitions Condition="'$(ConfigShortName)'=='Release'">$(ProjectCommonDefines);NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+        </ClCompile>
+        <Link>
+            <ImportLibrary>$(OutLibDir)\$(TargetName).lib</ImportLibrary>
+            <AdditionalLibraryDirectories>$(OutLibDir);$(ProjectAdditionalLibs);$(UserDefLibs);$(ThirdDefLibs);$(OutBinDir);$(UserDefBinss);$(ThirdDefBins);%(AdditionalLibraryDirectories);</AdditionalLibraryDirectories>
+        </Link>
+        <ResourceCompile>
+            <AdditionalIncludeDirectories>$(UserDefIncludes);$(ProjectIncludes);$(ThirdDefIncludes);%(AdditionalIncludeDirectories);</AdditionalIncludeDirectories>
+            <PreprocessorDefinitions Condition="'$(ConfigShortName)'=='Debug'">$(ProjectCommonDefines);_DEBUG;DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+            <PreprocessorDefinitions Condition="'$(ConfigShortName)'=='Release'">$(ProjectCommonDefines);NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+        </ResourceCompile>
+    </ItemDefinitionGroup>
+    <ItemGroup>
+        <BuildMacro Include="ProjectIncludes">
+            <Value>$(ProjectIncludes)</Value>
+        </BuildMacro>
+        <BuildMacro Include="ProjectCommonDefines">
+            <Value>$(ProjectCommonDefines)</Value>
+        </BuildMacro>
+    </ItemGroup>
+</Project>

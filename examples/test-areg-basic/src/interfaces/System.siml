@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<ServiceInterface FormatVesion="1.0.0">
+    <Overview ID="1" Name="System" Version="0.1.0">
+        <Description>The system state.</Description>
+    </Overview>
+    <DataTypeList>
+        <DataType ID="6" Name="eSystemState" Type="Enumerate" Values="default">
+            <Description>The description of system states.</Description>
+            <FieldList>
+                <EnumEntry ID="7" Name="SystemUndefined">
+                    <Value>0</Value>
+                    <Description>Undefined state</Description>
+                </EnumEntry>
+                <EnumEntry ID="8" Name="SystemPowerOff">
+                    <Value>1</Value>
+                    <Description>System power is off. Normally, when user requests to quit to shuts down</Description>
+                </EnumEntry>
+                <EnumEntry ID="9" Name="SystemPowerOn">
+                    <Value>2</Value>
+                    <Description>System power is on. When starts and during the entire time of system run.</Description>
+                </EnumEntry>
+                <EnumEntry ID="10" Name="SystemStart">
+                    <Value>6</Value>
+                    <Description>System start, all service run, power on bit-field is set.</Description>
+                </EnumEntry>
+                <EnumEntry ID="11" Name="SystemShutdown">
+                    <Value>11</Value>
+                    <Description>User requested to shutdown. Power on to power off bit-fields are set.</Description>
+                </EnumEntry>
+                <EnumEntry ID="12" Name="SystemRunning">
+                    <Value>22</Value>
+                    <Description>System started and running. Power on and system start bit-fields are set.</Description>
+                </EnumEntry>
+            </FieldList>
+        </DataType>
+    </DataTypeList>
+    <AttributeList>
+        <Attribute DataType="eSystemState" ID="13" Name="SystemState" Notify="OnChange">
+            <Description>The system state.</Description>
+        </Attribute>
+    </AttributeList>
+    <MethodList>
+        <Method ID="2" MethodType="Request" Name="PowerOff">
+            <Description>Requested to power off.</Description>
+        </Method>
+        <Method ID="3" MethodType="Request" Name="PowerOn">
+            <Description>requested to power on</Description>
+        </Method>
+        <Method ID="4" MethodType="Request" Name="Shutdown">
+            <Description>requested to shutdown</Description>
+        </Method>
+        <Method ID="5" MethodType="Request" Name="Start">
+            <Description>requested to start.</Description>
+        </Method>
+    </MethodList>
+</ServiceInterface>

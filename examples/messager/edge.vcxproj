@@ -1,0 +1,163 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(SolutionDir)\config_compile.props" Label="LocalAppCompileSettings" />
+  </ImportGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{DB6BDE22-DB74-49FD-AB01-8DB5FCEE16FD}</ProjectGuid>
+    <ProjectName>edge</ProjectName>
+    <RootNamespace>edge</RootNamespace>
+    <Keyword>MFCProj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseOfMfc>Dynamic</UseOfMfc>
+  </PropertyGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(SolutionDir)\config_project.props" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <ItemDefinitionGroup Condition="'$(ConfigShortName)'=='Debug'">
+    <ClCompile>
+      <PreprocessorDefinitions>IMPORT_SHARED_SYMBOLS=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <SDLCheck>true</SDLCheck>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+    </Link>
+    <Midl>
+      <MkTypLibCompatible>false</MkTypLibCompatible>
+      <ValidateAllParameters>true</ValidateAllParameters>
+      <PreprocessorDefinitions>IMPORT_SHARED_SYMBOLS=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </Midl>
+    <ResourceCompile>
+      <Culture>0x0409</Culture>
+      <PreprocessorDefinitions>IMPORT_SHARED_SYMBOLS=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(ConfigShortName)'=='Release'">
+    <ClCompile>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>IMPORT_SHARED_SYMBOLS=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <SDLCheck>true</SDLCheck>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+    </Link>
+    <Midl>
+      <MkTypLibCompatible>false</MkTypLibCompatible>
+      <ValidateAllParameters>true</ValidateAllParameters>
+      <PreprocessorDefinitions>IMPORT_SHARED_SYMBOLS=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </Midl>
+    <ResourceCompile>
+      <Culture>0x0409</Culture>
+      <PreprocessorDefinitions>IMPORT_SHARED_SYMBOLS=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="edge\services\CEChatParticipantService.hpp" />
+    <ClInclude Include="edge\services\CEChatPrticipantHandler.hpp" />
+    <ClInclude Include="edge\services\CEConnectionHandler.hpp" />
+    <ClInclude Include="edge\services\CEDirectConnectionClient.hpp" />
+    <ClInclude Include="edge\services\CEDirectChatService.hpp" />
+    <ClInclude Include="edge\services\CEDirectConnectionService.hpp" />
+    <ClInclude Include="edge\services\CEConnectionList.hpp" />
+    <ClInclude Include="edge\services\CEDirectMessagingClient.hpp" />
+    <ClInclude Include="edge\services\CENetworkSetup.hpp" />
+    <ClInclude Include="edge\services\CECentralMessaging.hpp" />
+    <ClInclude Include="edge\ui\CEPageChat.hpp" />
+    <ClInclude Include="edge\ui\CEPageConnections.hpp" />
+    <ClInclude Include="edge\ui\CEPageMessaging.hpp" />
+    <ClInclude Include="edge\ui\CEDistributedDialog.hpp" />
+    <ClInclude Include="edge\ui\CEPageNetworkSetup.hpp" />
+    <ClInclude Include="edge\services\CEConnectionServicing.hpp" />
+    <ClInclude Include="edge\NEDistributedApp.hpp" />
+    <ClInclude Include="edge\CEDistrbutedApp.hpp" />
+    <ClInclude Include="edge\res\resource.h" />
+    <ClInclude Include="edge\res\stdafx.h" />
+    <ClInclude Include="edge\res\targetver.h" />
+    <ClInclude Include="shared\generated\CECentralMessagerClientBase.hpp" />
+    <ClInclude Include="shared\generated\CEConnectionManagerClientBase.hpp" />
+    <ClInclude Include="shared\generated\CEDirectConnectionClientBase.hpp" />
+    <ClInclude Include="shared\generated\CEDirectMessagerClientBase.hpp" />
+    <ClInclude Include="shared\generated\NECentralMessager.hpp" />
+    <ClInclude Include="shared\generated\NEConnectionManager.hpp" />
+    <ClInclude Include="shared\generated\NEDirectConnection.hpp" />
+    <ClInclude Include="shared\generated\private\CECentralMessagerEvents.hpp" />
+    <ClInclude Include="shared\generated\private\CEConnectionManagerEvents.hpp" />
+    <ClInclude Include="shared\generated\private\CEDirectConnectionEvents.hpp" />
+    <ClInclude Include="shared\generated\private\CEDirectConnectionProxy.hpp" />
+    <ClInclude Include="shared\generated\private\CEDirectConnectionStub.hpp" />
+    <ClInclude Include="shared\NECommonSettings.hpp" />
+    <ClInclude Include="shared\generated\NEDirectMessager.hpp" />
+    <ClInclude Include="shared\generated\private\CECentralMessagerProxy.hpp" />
+    <ClInclude Include="shared\generated\private\CEConnectionManagerProxy.hpp" />
+    <ClInclude Include="shared\generated\private\CEDirectMessagerEvents.hpp" />
+    <ClInclude Include="shared\generated\private\CEDirectMessagerProxy.hpp" />
+    <ClInclude Include="shared\generated\private\CEDirectMessagerStub.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="edge\services\CEChatParticipantService.cpp" />
+    <ClCompile Include="edge\services\CEConnectionHandler.cpp" />
+    <ClCompile Include="edge\services\CEConnectionList.cpp" />
+    <ClCompile Include="edge\services\CEDirectConnectionClient.cpp" />
+    <ClCompile Include="edge\services\CEDirectChatService.cpp" />
+    <ClCompile Include="edge\services\CEDirectConnectionService.cpp" />
+    <ClCompile Include="edge\services\CEDirectMessagingClient.cpp" />
+    <ClCompile Include="edge\services\CENetworkSetup.cpp" />
+    <ClCompile Include="edge\services\CECentralMessaging.cpp" />
+    <ClCompile Include="edge\services\CEChatPrticipantHandler.cpp" />
+    <ClCompile Include="edge\ui\CEPageChat.cpp" />
+    <ClCompile Include="edge\ui\CEPageConnections.cpp" />
+    <ClCompile Include="edge\ui\CEPageMessaging.cpp" />
+    <ClCompile Include="edge\ui\CEDistributedDialog.cpp" />
+    <ClCompile Include="edge\ui\CEPageNetworkSetup.cpp" />
+    <ClCompile Include="edge\services\CEConnectionServicing.cpp" />
+    <ClCompile Include="edge\CEDistrbutedApp.cpp" />
+    <ClCompile Include="edge\NEDistributedApp.cpp" />
+    <ClCompile Include="edge\res\stdafx.cpp" />
+    <ClCompile Include="shared\generated\private\CECentralMessagerClientBase.cpp" />
+    <ClCompile Include="shared\generated\private\CECentralMessagerEvents.cpp" />
+    <ClCompile Include="shared\generated\private\CECentralMessagerProxy.cpp" />
+    <ClCompile Include="shared\generated\private\CEConnectionManagerClientBase.cpp" />
+    <ClCompile Include="shared\generated\private\CEConnectionManagerEvents.cpp" />
+    <ClCompile Include="shared\generated\private\CEConnectionManagerProxy.cpp" />
+    <ClCompile Include="shared\generated\private\CEDirectConnectionClientBase.cpp" />
+    <ClCompile Include="shared\generated\private\CEDirectConnectionEvents.cpp" />
+    <ClCompile Include="shared\generated\private\CEDirectConnectionProxy.cpp" />
+    <ClCompile Include="shared\generated\private\CEDirectConnectionStub.cpp" />
+    <ClCompile Include="shared\generated\private\CEDirectMessagerClientBase.cpp" />
+    <ClCompile Include="shared\generated\private\CEDirectMessagerEvents.cpp" />
+    <ClCompile Include="shared\generated\private\CEDirectMessagerProxy.cpp" />
+    <ClCompile Include="shared\generated\private\CEDirectMessagerStub.cpp" />
+    <ClCompile Include="shared\generated\private\NECentralMessager.cpp" />
+    <ClCompile Include="shared\generated\private\NEConnectionManager.cpp" />
+    <ClCompile Include="shared\generated\private\NEDirectConnection.cpp" />
+    <ClCompile Include="shared\generated\private\NEDirectMessager.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="edge\res\edge.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="edge\res\edge.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="edge\res\edge.rc2" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="edge\res\ReadMe.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="resources\CentralMessager.siml" />
+    <None Include="resources\ConnectionManager.siml" />
+    <None Include="resources\DirectConnection.siml" />
+    <None Include="resources\DirectMessager.siml" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

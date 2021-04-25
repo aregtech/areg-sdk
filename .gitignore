@@ -1,0 +1,14 @@
+*.aps
+*.opensdf
+*.suo
+*.sdf
+*.user
+.vs/*
+product/*
+dev/areg/Debug/*
+dev/areg/Release/*
+dev/mcrouter/Debug/*
+dev/mcrouter/Release/*
+examples/test-areg-basic/Debug/*
+examples/test-areg-basic/Release/*
+tools/*.zip

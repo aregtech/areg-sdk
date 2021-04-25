@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<ServiceInterface FormatVesion="1.0.0">
+    <Overview ID="1" Name="DirectConnection" Version="1.0.0" isRemote="true">
+        <Description>Direct Connection service interface. It is used to send connection messages 
+to distributed applications. As soon as the distributed applications are connected, 
+each application has one instance of implemented service where 
+the role name is a nick name of a registered application.</Description>
+    </Overview>
+    <DataTypeList>
+        <DataType ID="2" Name="sParticipant" Type="Imported">
+            <Namespace>NECommonSettings</Namespace>
+            <Location>shared/NECommonSettings.hpp</Location>
+        </DataType>
+        <DataType ID="3" Name="sInitiator" Type="Imported">
+            <Namespace>NECommonSettings</Namespace>
+            <Location>shared/NECommonSettings.hpp</Location>
+        </DataType>
+        <DataType ID="4" Name="ListParticipants" Type="Imported">
+            <Namespace>NECommonSettings</Namespace>
+            <Location>shared/NECommonSettings.hpp</Location>
+        </DataType>
+        <DataType ID="5" Name="PairParticipants" Type="Imported">
+            <Namespace>NECommonSettings</Namespace>
+            <Location>shared/NECommonSettings.hpp</Location>
+        </DataType>
+        <DataType ID="6" Name="MapParticipants" Type="Imported">
+            <Namespace>NECommonSettings</Namespace>
+            <Location>shared/NECommonSettings.hpp</Location>
+        </DataType>
+        <DataType ID="41" Name="sParticipant" Type="DefinedType">
+            <Description>Localizing Participant structure</Description>
+            <Container>New Type</Container>
+            <BaseTypeValue>NECommonSettings::sParticipant</BaseTypeValue>
+        </DataType>
+        <DataType ID="42" Name="sInitiator" Type="DefinedType">
+            <Description>Localizing Initiator structure</Description>
+            <Container>New Type</Container>
+            <BaseTypeValue>NECommonSettings::sInitiator</BaseTypeValue>
+        </DataType>
+        <DataType ID="44" Name="ListParticipants" Type="DefinedType">
+            <Description>Localizing the list of participants</Description>
+            <Container>New Type</Container>
+            <BaseTypeValue>NECommonSettings::ListParticipants</BaseTypeValue>
+        </DataType>
+        <DataType ID="45" Name="MapParticipants" Type="DefinedType">
+            <Description>Localizing the map of participants</Description>
+            <Container>New Type</Container>
+            <BaseTypeValue>NECommonSettings::MapParticipants</BaseTypeValue>
+        </DataType>
+    </DataTypeList>
+    <AttributeList>
+        <Attribute DataType="MapParticipants" ID="46" Name="InitiatedConnections" Notify="OnChange">
+            <Description>The map of initiated connections and list of participants.</Description>
+        </Attribute>
+    </AttributeList>
+    <MethodList>
+        <Method ID="12" MethodType="Request" Name="ConnectoinSetup" Response="ConnectoinSetup">
+            <Description>Request to setup the direct connection to chat room initiator.</Description>
+            <ParamList>
+                <Parameter DataType="sInitiator" ID="40" Name="initiator">
+                    <Description>The initiator to setup connection</Description>
+                </Parameter>
+                <Parameter DataType="ListParticipants" ID="43" Name="listParticipants">
+                    <Description>The list of chat-room participants</Description>
+                </Parameter>
+            </ParamList>
+        </Method>
+        <Method ID="15" MethodType="Response" Name="ConnectoinSetup">
+            <Description>The response of connection setup</Description>
+            <ParamList>
+                <Parameter DataType="bool" ID="16" Name="succeeded">
+                    <Description>Flag, indicating whether the connection setup succeeded or not.</Description>
+                </Parameter>
+                <Parameter DataType="sParticipant" ID="48" Name="target">
+                    <Description>The targeted participant to include in chat-room</Description>
+                </Parameter>
+                <Parameter DataType="sInitiator" ID="49" Name="initiator">
+                    <Description>The chat-room initiator</Description>
+                </Parameter>
+                <Parameter DataType="ListParticipants" ID="50" Name="listParticipants">
+                    <Description>List of chat-room participants</Description>
+                </Parameter>
+            </ParamList>
+        </Method>
+        <Method ID="20" MethodType="Request" Name="AddParticipant" Response="AddParticipant">
+            <Description>The request to add a participant in the direct chat-room.</Description>
+            <ParamList>
+                <Parameter DataType="sInitiator" ID="51" Name="initiator">
+                    <Description>The initiator to add to chat-room</Description>
+                </Parameter>
+                <Parameter DataType="ListParticipants" ID="52" Name="listParticipants">
+                    <Description>List of participants</Description>
+                </Parameter>
+            </ParamList>
+        </Method>
+        <Method ID="23" MethodType="Response" Name="AddParticipant">
+            <Description>The response to add initiator to chat room</Description>
+            <ParamList>
+                <Parameter DataType="bool" ID="24" Name="succeeded">
+                    <Description>Flag, indicating whether operation succeeded.</Description>
+                </Parameter>
+                <Parameter DataType="ListParticipants" ID="53" Name="listParticipants">
+                    <Description>New list of participants</Description>
+                </Parameter>
+            </ParamList>
+        </Method>
+        <Method ID="26" MethodType="Request" Name="RemoveParticipant" Response="RemoveParticipant">
+            <Description>Request to remove initiator from chat-room</Description>
+            <ParamList>
+                <Parameter DataType="sInitiator" ID="54" Name="initiator">
+                    <Description>The initiator to remove from chat-room</Description>
+                </Parameter>
+                <Parameter DataType="ListParticipants" ID="55" Name="listParticipants">
+                    <Description>List of chat-room participants</Description>
+                </Parameter>
+            </ParamList>
+        </Method>
+        <Method ID="30" MethodType="Response" Name="RemoveParticipant">
+            <Description>Response to remove initiator from chat-room</Description>
+            <ParamList>
+                <Parameter DataType="bool" ID="31" Name="succeeded">
+                    <Description>Flag, indicating whther operation succeeded or not.</Description>
+                </Parameter>
+                <Parameter DataType="ListParticipants" ID="56" Name="listParticipants">
+                    <Description>New lsit of chat-room participants.</Description>
+                </Parameter>
+            </ParamList>
+        </Method>
+        <Method ID="33" MethodType="Request" Name="CloseConnection">
+            <Description>Request to close chat-room. There is no response expected.</Description>
+            <ParamList>
+                <Parameter DataType="sInitiator" ID="57" Name="initiator">
+                    <Description>The initiator to close chat-room.</Description>
+                </Parameter>
+            </ParamList>
+        </Method>
+    </MethodList>
+    <ConstantList>
+        <Constant DataType="uint64" ID="36" Name="InvalidSession">
+            <Value>NECommonSettings::InvalidSession</Value>
+            <Description>Indicates Invalid session</Description>
+        </Constant>
+        <Constant DataType="uint32" ID="37" Name="InvalidCookie">
+            <Value>NECommonSettings::InvalidCookie</Value>
+            <Description>Indicates Invalid cookie</Description>
+        </Constant>
+        <Constant DataType="String" ID="38" Name="ServicePrefixStub">
+            <Value>"ChatStub"</Value>
+            <Description>The prefix to add when create stub instance</Description>
+        </Constant>
+        <Constant DataType="String" ID="39" Name="ServicePrefixClient">
+            <Value>"ChatClient"</Value>
+            <Description>The prefix when instantiate chat proxy.</Description>
+        </Constant>
+    </ConstantList>
+    <IncludeList>
+        <Location ID="47" Name="shared/NECommonSettings.hpp">
+            <Description>Shared data</Description>
+        </Location>
+    </IncludeList>
+</ServiceInterface>
