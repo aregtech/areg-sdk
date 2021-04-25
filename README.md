@@ -1,6 +1,8 @@
-_This file is part of AREG SDK, the multi-tasking application development platform.
+```
+This file is part of AREG SDK, the multi-tasking application development platform.
 Copyright (c) Aregtech, 2019-2021
-Contact: info[at]aregtech.com_
+Contact: info[at]aregtech.com
+```
 
 Current sources of AREG SDK support _Windows_ and _POSIX_ API
 
