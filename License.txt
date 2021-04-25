@@ -1,0 +1,10 @@
+This file is part of AREG SDK, the multi-tasking application development platform.
+Copyright (c) Aregtech, 2019-2021
+Contact: info[at]aregtech.com
+
+These source codes:
+1. Are free for use for individuals, educational and non-profitable organizations, small businesses, which annual turnover is not higher than 1 mln USD (one million US dollars). 
+2. For any other businesses and government organizations the use of source codes and supplied tools require additional license.
+3. By use and distribution of compiled binaries or open sources, the distirbuter must keep the copyright or Aregtech.
+4. Aregtech  any time may change the source code distribution policy.
+
