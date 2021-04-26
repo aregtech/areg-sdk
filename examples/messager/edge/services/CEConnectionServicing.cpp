@@ -4,11 +4,11 @@
  ************************************************************************/
 
 #include "edge/res/stdafx.h"
-#include "areg/base/GEGlobal.h"
+#include "areg/src/base/GEGlobal.h"
 #include "edge/services/CEConnectionServicing.hpp"
-#include "areg/component/NERegistry.hpp"
-#include "areg/component/CEComponentLoader.hpp"
-#include "areg/component/CEComponentThread.hpp"
+#include "areg/src/component/NERegistry.hpp"
+#include "areg/src/component/CEComponentLoader.hpp"
+#include "areg/src/component/CEComponentThread.hpp"
 #include "shared/NECommonSettings.hpp"
 #include "edge/NEDistributedApp.hpp"
 #include "edge/CEDistrbutedApp.hpp"

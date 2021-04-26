@@ -19,7 +19,7 @@ CEDirectConnectionClient::~CEDirectConnectionClient( )
 {
 }
 
-bool CEDirectConnectionClient::ServiceConnected( const bool isConnected, CEProxyBase & proxy )
+bool CEDirectConnectionClient::ServiceConnected( bool isConnected, CEProxyBase & proxy )
 {
     bool result = false;
     if ( (isConnected == true) && CEDirectConnectionClientBase::ServiceConnected( isConnected, proxy ) )

@@ -3,9 +3,9 @@
 //////////////////////////////////////////////////////////////////////////
 
 /************************************************************************
- * (c) copyright    2019
+ * (c) copyright    2021
  *                  Create by AREGtech code generator tool from source ConnectionManager.
- * Generated at     03.09.2019  02:48:08 GMT+02:00 
+ * Generated at     25.04.2021  23:50:44 GMT+02:00 
  ************************************************************************/
 
 /************************************************************************
@@ -29,20 +29,20 @@
 /**
  * \brief   CEConnectionManagerRequestEvent Event runtime implementation
  **/
-IMPLEMENT_RUNTIME_EVENT( CEConnectionManagerRequestEvent, CERemoteRequestEvent );
+IMPLEMENT_RUNTIME_EVENT( CEConnectionManagerRequestEvent, CERemoteRequestEvent )
 
 //////////////////////////////////////////////////////////////////////////
 // CEConnectionManagerRequestEvent class, Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
 
-CEConnectionManagerRequestEvent::CEConnectionManagerRequestEvent( const CEProxyAddress & fromSource, const CEStubAddress & toTarget, const unsigned int reqId )
+CEConnectionManagerRequestEvent::CEConnectionManagerRequestEvent( const CEProxyAddress & fromSource, const CEStubAddress & toTarget, unsigned int reqId )
     : CERemoteRequestEvent( fromSource, toTarget, reqId )
 {
     ; // do nothing
 }
 
-CEConnectionManagerRequestEvent::CEConnectionManagerRequestEvent( const CEEventDataStream & args, const CEProxyAddress & fromSource, const CEStubAddress & toTarget, const unsigned int reqId )
-    : CERemoteRequestEvent( args, fromSource, toTarget, reqId, NEConnectionManager::GetString( static_cast<const NEConnectionManager::eMessageIDs>(reqId) ) )
+CEConnectionManagerRequestEvent::CEConnectionManagerRequestEvent( const CEEventDataStream & args, const CEProxyAddress & fromSource, const CEStubAddress & toTarget, unsigned int reqId )
+    : CERemoteRequestEvent( args, fromSource, toTarget, reqId, NEConnectionManager::GetString( static_cast<NEConnectionManager::eMessageIDs>(reqId) ) )
 {
     ; // do nothing
 }
@@ -66,13 +66,13 @@ CEConnectionManagerRequestEvent::~CEConnectionManagerRequestEvent( void )
 // CEConnectionManagerNotifyRequestEvent class, Runtime implementation
 //////////////////////////////////////////////////////////////////////////
 
-IMPLEMENT_RUNTIME_EVENT( CEConnectionManagerNotifyRequestEvent, CERemoteNotifyRequestEvent );
+IMPLEMENT_RUNTIME_EVENT( CEConnectionManagerNotifyRequestEvent, CERemoteNotifyRequestEvent )
 
 //////////////////////////////////////////////////////////////////////////
 // CEConnectionManagerNotifyRequestEvent class, Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
 
-CEConnectionManagerNotifyRequestEvent::CEConnectionManagerNotifyRequestEvent( const CEProxyAddress & fromProxy, const CEStubAddress & toStub, const unsigned int msgId, const NEService::eRequestType & reqType )
+CEConnectionManagerNotifyRequestEvent::CEConnectionManagerNotifyRequestEvent( const CEProxyAddress & fromProxy, const CEStubAddress & toStub, unsigned int msgId, NEService::eRequestType reqType )
     : CERemoteNotifyRequestEvent( fromProxy, toStub, msgId, reqType )
 {
     ; // do nothing
@@ -97,20 +97,20 @@ CEConnectionManagerNotifyRequestEvent::~CEConnectionManagerNotifyRequestEvent( v
 // CEConnectionManagerResponseEvent class, Runtime implementation
 //////////////////////////////////////////////////////////////////////////
 
-IMPLEMENT_RUNTIME_EVENT( CEConnectionManagerResponseEvent, CERemoteResponseEvent );
+IMPLEMENT_RUNTIME_EVENT( CEConnectionManagerResponseEvent, CERemoteResponseEvent )
 
 //////////////////////////////////////////////////////////////////////////
 // CEConnectionManagerResponseEvent class, Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
 
-CEConnectionManagerResponseEvent::CEConnectionManagerResponseEvent( const CEProxyAddress & proxyTarget, const NEService::eResultType & result, const unsigned int responseId, unsigned int seqNr /* = NEService::SEQUENCE_NUMBER_NOTIFY */ )
+CEConnectionManagerResponseEvent::CEConnectionManagerResponseEvent( const CEProxyAddress & proxyTarget, NEService::eResultType result, unsigned int responseId, unsigned int seqNr /* = NEService::SEQUENCE_NUMBER_NOTIFY */ )
     : CERemoteResponseEvent( proxyTarget, result, responseId, seqNr )
 {
     ; // do nothing
 }
 
-CEConnectionManagerResponseEvent::CEConnectionManagerResponseEvent( const CEEventDataStream & args, const CEProxyAddress & proxyTarget, const NEService::eResultType & result, const unsigned int responseId, unsigned int seqNr /* = NEService::SEQUENCE_NUMBER_NOTIFY */ )
-    : CERemoteResponseEvent( args, proxyTarget, result, responseId, seqNr, NEConnectionManager::GetString(static_cast<const NEConnectionManager::eMessageIDs>(responseId)) )
+CEConnectionManagerResponseEvent::CEConnectionManagerResponseEvent( const CEEventDataStream & args, const CEProxyAddress & proxyTarget, NEService::eResultType result, unsigned int responseId, unsigned int seqNr /* = NEService::SEQUENCE_NUMBER_NOTIFY */ )
+    : CERemoteResponseEvent( args, proxyTarget, result, responseId, seqNr, NEConnectionManager::GetString(static_cast<NEConnectionManager::eMessageIDs>(responseId)) )
 {
     ; // do nothing
 }
@@ -148,7 +148,7 @@ CEServiceResponseEvent* CEConnectionManagerResponseEvent::CloneEventForTarget( c
 // CEConnectionManagerNotificationEvent class, Runtime implementation
 //////////////////////////////////////////////////////////////////////////
 
-IMPLEMENT_RUNTIME_EVENT( CEConnectionManagerNotificationEvent, CENotificationEvent );
+IMPLEMENT_RUNTIME_EVENT( CEConnectionManagerNotificationEvent, CENotificationEvent )
 
 //////////////////////////////////////////////////////////////////////////
 // CEConnectionManagerNotificationEvent class, Constructors / Destructor

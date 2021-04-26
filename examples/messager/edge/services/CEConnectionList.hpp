@@ -69,7 +69,7 @@ protected:
      *          i.e. if passed Proxy address is equal to the Proxy object that client has.
      *          If Proxy objects are not equal, it should return false;
      **/
-    virtual bool ServiceConnected( const bool isConnected, CEProxyBase & proxy );
+    virtual bool ServiceConnected( bool isConnected, CEProxyBase & proxy );
 
 private:
     CEConnectionHandler &   mConnectionHandler;

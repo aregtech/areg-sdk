@@ -297,20 +297,20 @@
     #define MACRO_MAKE_NUMBER32(num)	        (uint32_t)MACRO_MAKE_NUMBER64(num)
 #endif // !MACRO_MAKE_NUMBER32
 
+// #ifndef MACRO_MAKE_NUMBER
+//     #if defined(BIT32)
+//         #define MACRO_MAKE_NUMBER(num)          MAKE_NUMBER32(num)
+//     #else // !defined(BIT32)
+//         #define MACRO_MAKE_NUMBER(num)          MACRO_MAKE_NUMBER64(num)
+//     #endif // !defined(BIT32)
+// #endif  // !MACRO_MAKE_NUMBER
+
 #ifndef MACRO_MAKE_NUMBER
-    #if defined(BIT32)
-        #define MACRO_MAKE_NUMBER(num)          MAKE_NUMBER32(num)
-    #else // !defined(BIT32)
-        #define MACRO_MAKE_NUMBER(num)          MACRO_MAKE_NUMBER64(num)
-    #endif // !defined(BIT32)
+    #define MACRO_MAKE_NUMBER(num)              ((size_t)(num))
 #endif  // !MACRO_MAKE_NUMBER
 
 #ifndef MACRO_PTR2NUMBER
-    #if defined(BIT64)
-        #define MACRO_PTR2NUMBER(ptr)           static_cast<uint64_t>( MACRO_MAKE_PTR(ptr) - MACRO_MAKE_PTR(NULL) )
-    #else // !defined(BIT64)
-        #define MACRO_PTR2NUMBER(ptr)           static_cast<uint32_t>( MACRO_MAKE_PTR(ptr) - MACRO_MAKE_PTR(NULL) )
-    #endif  // !defined(BIT64)
+    #define MACRO_PTR2NUMBER(ptr)               static_cast<size_t>( MACRO_MAKE_PTR(ptr) - MACRO_MAKE_PTR(NULL) )
 #endif  // MACRO_PTR2NUMBER
 
 #ifndef MACRO_PTR2COUNT

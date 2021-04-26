@@ -2,9 +2,9 @@
 // Begin generate shared/generated/private/CEDirectConnectionStub.cpp file
 //////////////////////////////////////////////////////////////////////////
 /************************************************************************
- * (c) copyright    2019
+ * (c) copyright    2021
  *                  Create by AREGtech code generator tool from source DirectConnection.
- * Generated at     03.09.2019  02:48:09 GMT+02:00 
+ * Generated at     25.04.2021  23:50:45 GMT+02:00 
  ************************************************************************/
 
 /************************************************************************
@@ -19,9 +19,9 @@
 #include "shared/generated/CEDirectConnectionStub.hpp"
 #include "shared/generated/private/CEDirectConnectionEvents.hpp"
 
-#include "areg/component/CEServiceResponseEvent.hpp"
-#include "areg/base/CEThread.hpp"
-#include "areg/trace/GETrace.h"
+#include "areg/src/component/CEServiceResponseEvent.hpp"
+#include "areg/src/base/CEThread.hpp"
+#include "areg/src/trace/GETrace.h"
 
 //////////////////////////////////////////////////////////////////////////
 // CEDirectConnectionStub class implementation
@@ -91,17 +91,17 @@ void CEDirectConnectionStub::ShutdownServiceIntrface( CEComponent & holder )
     CEStubBase::ShutdownServiceIntrface( holder );
 }
 
-const unsigned int CEDirectConnectionStub::GetNumberOfRequests( void ) const
+unsigned int CEDirectConnectionStub::GetNumberOfRequests( void ) const
 {
     return NEDirectConnection::NumberofRequests;
 }
 
-const unsigned int CEDirectConnectionStub::GetNumberOfResponses( void ) const
+unsigned int CEDirectConnectionStub::GetNumberOfResponses( void ) const
 {
     return NEDirectConnection::NumberofResponses;
 }
 
-const unsigned int CEDirectConnectionStub::GetNumberOfAttributes( void ) const
+unsigned int CEDirectConnectionStub::GetNumberOfAttributes( void ) const
 {
     return NEDirectConnection::NumberofAttributes;
 }
@@ -121,7 +121,7 @@ const unsigned int * CEDirectConnectionStub::GetAttributeIds( void ) const
     return reinterpret_cast<const unsigned int *>(NEDirectConnection::AttributeIds);
 }
 
-CEResponseEvent * CEDirectConnectionStub::CreateResponseEvent( const CEProxyAddress & proxy, const unsigned int msgId, const NEService::eResultType result, const CEEventDataStream & data ) const
+CEResponseEvent * CEDirectConnectionStub::CreateResponseEvent( const CEProxyAddress & proxy, unsigned int msgId, NEService::eResultType result, const CEEventDataStream & data ) const
 {
     return (data.IsEmpty() == false ? DEBUG_NEW CEDirectConnectionResponseEvent(data, proxy, result, msgId) : DEBUG_NEW CEDirectConnectionResponseEvent(proxy, result, msgId));
 }
@@ -142,12 +142,12 @@ const CEVersion & CEDirectConnectionStub::GetImplVersion( void ) const
 }
 
 DEF_TRACE_SCOPE(shared_generated_CEDirectConnectionStub_SendNotification);
-void CEDirectConnectionStub::SendNotification( const unsigned int msgId )
+void CEDirectConnectionStub::SendNotification( unsigned int msgId )
 {
     CEEventDataStream args(CEEventDataStream::EventDataExternal);
     IEOutStream & stream = args.GetStreamForWrite();
 
-    switch ( static_cast<const NEDirectConnection::eMessageIDs>(msgId) )
+    switch ( static_cast<NEDirectConnection::eMessageIDs>(msgId) )
     {
     case NEDirectConnection::MSG_ID_InitiatedConnections:
         mInitiatedConnectionsState = NEService::DATA_OK;
@@ -165,12 +165,12 @@ void CEDirectConnectionStub::SendNotification( const unsigned int msgId )
     }
 }
 DEF_TRACE_SCOPE(shared_generated_CEDirectConnectionStub_ErrorRequest);
-void CEDirectConnectionStub::ErrorRequest( const unsigned int msgId, const bool msgCancel )
+void CEDirectConnectionStub::ErrorRequest( unsigned int msgId, bool msgCancel )
 {
     NEService::eResultType result = NEService::RESULT_NOT_PROCESSED;
     unsigned int listenerId = static_cast<unsigned int>(msgId);
     
-    switch ( static_cast<const NEDirectConnection::eMessageIDs>(msgId) )
+    switch ( static_cast<NEDirectConnection::eMessageIDs>(msgId) )
     {
 /************************************************************************
  * Attribute errors
@@ -199,7 +199,7 @@ void CEDirectConnectionStub::ErrorRequest( const unsigned int msgId, const bool 
     case NEDirectConnection::MSG_ID_RequestAddParticipant:
     case NEDirectConnection::MSG_ID_RequestRemoveParticipant:
     case NEDirectConnection::MSG_ID_RequestCloseConnection:
-        listenerId = NEDirectConnection::GetResponseId(static_cast<const NEDirectConnection::eMessageIDs>(msgId));
+        listenerId = NEDirectConnection::GetResponseId(static_cast< NEDirectConnection::eMessageIDs>(msgId));
         result = msgCancel ? NEService::RESULT_REQUEST_CANCELED : NEService::RESULT_REQUEST_ERROR;
         break;
 
@@ -407,7 +407,7 @@ void CEDirectConnectionStub::ProcessAttributeEvent( CEServiceRequestEvent & even
             }
 
             if (updId != NEDirectConnection::MSG_ID_NO_PROCEED)
-                SendUpdateEvent( static_cast<const unsigned int>(updId), args, validUpdate );
+                SendUpdateEvent( static_cast<unsigned int>(updId), args, validUpdate );
         }
     }
 }

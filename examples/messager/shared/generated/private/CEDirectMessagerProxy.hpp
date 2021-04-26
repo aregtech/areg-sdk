@@ -4,9 +4,9 @@
 #ifndef  SHARED_GENERATED_PRIVATE_CEDIRECTMESSAGERPROXY_HPP
 #define  SHARED_GENERATED_PRIVATE_CEDIRECTMESSAGERPROXY_HPP
 /************************************************************************
- * (c) copyright    2019
+ * (c) copyright    2021
  *                  Create by AREGtech code generator tool from source DirectMessager.
- * Generated at     03.09.2019  02:48:11 GMT+02:00 
+ * Generated at     25.04.2021  23:50:46 GMT+02:00 
  ************************************************************************/
 
 /************************************************************************
@@ -18,8 +18,9 @@
 /************************************************************************
  * Include files
  ************************************************************************/
+#include "areg/src/base/GEGlobal.h"
 #include "shared/generated/NEDirectMessager.hpp"
-#include "areg/component/CEProxyBase.hpp"
+#include "areg/src/component/CEProxyBase.hpp"
  
 /************************************************************************
  * Dependencies
@@ -55,7 +56,7 @@ private:
     //////////////////////////////////////////////////////////////////////////
     // Runtime internals
     //////////////////////////////////////////////////////////////////////////
-        DECLARE_RUNTIME_EVENT(CEDirectMessagerProxy::CEDirectMessagerServiceAvailableEvent);
+        DECLARE_RUNTIME_EVENT(CEDirectMessagerProxy::CEDirectMessagerServiceAvailableEvent)
 
     //////////////////////////////////////////////////////////////////////////
     // Constructor/ Destructor
@@ -89,7 +90,7 @@ public:
      * \param   ownerThread     The instance of thread to dispatch messages.
      * \return  Returns pointer to instantiated proxy object.
      **/
-    static CEDirectMessagerProxy * CreateProxy( const char * const roleName, IEProxyListener & connectListener, CEDispatcherThread & ownerThread );
+    static CEDirectMessagerProxy * CreateProxy( const char * roleName, IEProxyListener & connectListener, CEDispatcherThread & ownerThread );
 
     /**
      * \brief   Returns existing or creates new proxy object if it is not existing
@@ -100,7 +101,7 @@ public:
      *                          If NULL, current dispatching thread is used to dispatch messages.
      * \return  Returns pointer to instantiated proxy object.
      **/
-    static CEDirectMessagerProxy * CreateProxy( const char * const roleName, IEProxyListener & connectListener, const char * ownerThread = static_cast<const char *>(NULL) );
+    static CEDirectMessagerProxy * CreateProxy( const char * roleName, IEProxyListener & connectListener, const char * ownerThread = static_cast<const char *>(NULL) );
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor. Protected
@@ -113,7 +114,7 @@ protected:
      * \param   ownerThread The instance of thread to dispatch messages.
      *                      If NULL, current dispatching thread is used to dispatch messages.
      **/
-    CEDirectMessagerProxy( const char * const roleName, CEDispatcherThread * ownerThread = static_cast<CEDispatcherThread *>(NULL) );
+    CEDirectMessagerProxy( const char * roleName, CEDispatcherThread * ownerThread = static_cast<CEDispatcherThread *>(NULL) );
     /**
      * \brief   Destructor
      **/
@@ -283,14 +284,14 @@ public:
      *                          should be send to client immediately if the notification
      *                          already exists. By default it is false. 
      **/
-    inline void SetNotification( const NEDirectMessager::eMessageIDs notifyId, IENotificationEventConsumer & listener, bool notifyAlways = false );
+    inline void SetNotification( NEDirectMessager::eMessageIDs notifyId, IENotificationEventConsumer & listener, bool notifyAlways = false );
     /**
      * \brief   Clears listener entries of specified Notification Event consumer
      * \param   msgId       The Notification Message ID
      * \param   consumer    The pointer of Notification Event Consumer.
      * \return  
      **/
-    inline void ClearNotification( const NEDirectMessager::eMessageIDs notifyId, IENotificationEventConsumer & listener );
+    inline void ClearNotification( NEDirectMessager::eMessageIDs notifyId, IENotificationEventConsumer & listener );
     /**
      * \brief   Clears all notification for specified listener and unregisters it
      * \param   listener    The notification consumer object, which should be unregistered.
@@ -344,7 +345,7 @@ protected:
      * \param   reqId   The ID of request call.
      * \return  Return pointer of valid Request event.
      **/
-    virtual CEServiceRequestEvent * CreateRequestEvent( const CEEventDataStream & args, const unsigned int reqId );
+    virtual CEServiceRequestEvent * CreateRequestEvent( const CEEventDataStream & args, unsigned int reqId );
 
     /**
      * \brief   Creates event requesting to receive update notification events.
@@ -354,7 +355,7 @@ protected:
      * \param   reqType     The type of request.
      * \return  Returns valid pointer of created service request event object.
      **/
-    virtual CEServiceRequestEvent * CreateNotificationRequestEvent( const unsigned int msgId, const NEService::eRequestType reqType );
+    virtual CEServiceRequestEvent * CreateNotificationRequestEvent( unsigned int msgId, NEService::eRequestType reqType );
 
     /**
      * \brief   Overwrite method to create response event from streaming object for 
@@ -373,7 +374,7 @@ protected:
      * \param   reason      Failure reason set by system
      * \param   seqNr       The sequence number of processing message.
      **/
-    virtual CERemoteResponseEvent * CreateRemoteRequestFailedEvent( const CEProxyAddress & addrProxy, unsigned int msgId, const NEService::eResultType reason, unsigned int seqNr ) const;
+    virtual CERemoteResponseEvent * CreateRemoteRequestFailedEvent( const CEProxyAddress & addrProxy, unsigned int msgId, NEService::eResultType reason, unsigned int seqNr ) const;
 
     /**
      * \brief   Overwrite this method to create service available event to new instantiated clients.
@@ -483,7 +484,7 @@ private:
      * \param   respId      The response message ID, which received. 
      *                      It is either attribute or response message ID
      **/
-    void UpdateData( CEDirectMessagerResponseEvent & eventElem, const NEDirectMessager::eMessageIDs respId );
+    void UpdateData( CEDirectMessagerResponseEvent & eventElem, NEDirectMessager::eMessageIDs respId );
     /**
      * \brief   Starts processing response message. The received event contains
      *          ID of appropriate message to update and contains result flag.
@@ -511,7 +512,7 @@ private:
      *                      If NULL, current dispatching thread is used to dispatch messages.
      * \return  Pointer to instantiated proxy object.
      **/
-    static CEProxyBase * _createProxy( const char * const roleName, CEDispatcherThread * ownerThread = static_cast<CEDispatcherThread *>(NULL) );
+    static CEProxyBase * _createProxy( const char * roleName, CEDispatcherThread * ownerThread = static_cast<CEDispatcherThread *>(NULL) );
     /**
      * \brief   Creates and returns service interface data object.
      **/
@@ -530,10 +531,10 @@ private:
  * Inline operations
  ************************************************************************/
 
-inline void CEDirectMessagerProxy::SetNotification( const NEDirectMessager::eMessageIDs notifyId, IENotificationEventConsumer & listener, bool notifyAlways /* = false */ )
+inline void CEDirectMessagerProxy::SetNotification( NEDirectMessager::eMessageIDs notifyId, IENotificationEventConsumer & listener, bool notifyAlways /* = false */ )
 {   CEProxyBase::SetNotification(static_cast<unsigned int>(notifyId), &listener, notifyAlways); }
 
-inline void CEDirectMessagerProxy::ClearNotification( const NEDirectMessager::eMessageIDs notifyId, IENotificationEventConsumer & listener )
+inline void CEDirectMessagerProxy::ClearNotification( NEDirectMessager::eMessageIDs notifyId, IENotificationEventConsumer & listener )
 {   CEProxyBase::ClearNotification(static_cast<unsigned int>(notifyId), &listener); }
 
 inline void CEDirectMessagerProxy::ClearAllNotifications( IENotificationEventConsumer & listener )

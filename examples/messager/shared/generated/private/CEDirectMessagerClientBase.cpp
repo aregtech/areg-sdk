@@ -2,9 +2,9 @@
 // Begin generate shared/generated/private/CEDirectMessagerClientBase.cpp file
 //////////////////////////////////////////////////////////////////////////
 /************************************************************************
- * (c) copyright    2019
+ * (c) copyright    2021
  *                  Create by AREGtech code generator tool from source DirectMessager.
- * Generated at     03.09.2019  02:48:11 GMT+02:00 
+ * Generated at     25.04.2021  23:50:46 GMT+02:00 
  ************************************************************************/
 
 /************************************************************************
@@ -17,9 +17,9 @@
  * Include files
  ************************************************************************/
 #include "shared/generated/CEDirectMessagerClientBase.hpp"
-#include "areg/component/CEComponentThread.hpp"
-#include "areg/component/CEComponent.hpp"
-#include "areg/trace/GETrace.h"
+#include "areg/src/component/CEComponentThread.hpp"
+#include "areg/src/component/CEComponent.hpp"
+#include "areg/src/trace/GETrace.h"
 
 /************************************************************************
  * Request error handling initialization
@@ -29,7 +29,7 @@ namespace NEDirectMessager
     /**
      * \brief   Initialize request failure function pointers to make error handling
      **/
-    typedef void (CEDirectMessagerClientBase::* FuncRequestFailure) ( const NEService::eResultType );
+    typedef void (CEDirectMessagerClientBase::* FuncRequestFailure) ( NEService::eResultType );
     static FuncRequestFailure failureFunctions[] = 
     {
           &CEDirectMessagerClientBase::RequestChatJoinFailed
@@ -47,7 +47,7 @@ namespace NEDirectMessager
  * Constructor / Destructor
  ************************************************************************/
 
-CEDirectMessagerClientBase::CEDirectMessagerClientBase( const char* const roleName, const char * ownerThread /*= static_cast<const char *>(NULL)*/ )
+CEDirectMessagerClientBase::CEDirectMessagerClientBase( const char* roleName, const char * ownerThread /*= static_cast<const char *>(NULL)*/ )
     : IEProxyListener   ( )
     , CEClientBase      ( )
 
@@ -58,7 +58,7 @@ CEDirectMessagerClientBase::CEDirectMessagerClientBase( const char* const roleNa
     ; // do nothing
 }
 
-CEDirectMessagerClientBase::CEDirectMessagerClientBase( const char* const roleName, CEDispatcherThread & ownerThread )
+CEDirectMessagerClientBase::CEDirectMessagerClientBase( const char* roleName, CEDispatcherThread & ownerThread )
     : IEProxyListener   ( )
     , CEClientBase      ( )
 
@@ -69,7 +69,7 @@ CEDirectMessagerClientBase::CEDirectMessagerClientBase( const char* const roleNa
     ; // do nothing
 }
 
-CEDirectMessagerClientBase::CEDirectMessagerClientBase( const char* const roleName, CEComponent & owner )
+CEDirectMessagerClientBase::CEDirectMessagerClientBase( const char* roleName, CEComponent & owner )
     : IEProxyListener   ( )
     , CEClientBase      ( )
 
@@ -133,7 +133,7 @@ void CEDirectMessagerClientBase::ClearAllNotifications( void )
 }
 
 DEF_TRACE_SCOPE(shared_generated_CEDirectMessagerClientBase_ServiceConnected);
-bool CEDirectMessagerClientBase::ServiceConnected( const bool isConnected, CEProxyBase & proxy )
+bool CEDirectMessagerClientBase::ServiceConnected( bool isConnected, CEProxyBase & proxy )
 {
     TRACE_SCOPE(shared_generated_CEDirectMessagerClientBase_ServiceConnected);
     
@@ -147,7 +147,7 @@ bool CEDirectMessagerClientBase::ServiceConnected( const bool isConnected, CEPro
     return result;
 }
 
-void CEDirectMessagerClientBase::NotifyOn( const NEDirectMessager::eMessageIDs msgId, bool notify, bool always /* = false */ )
+void CEDirectMessagerClientBase::NotifyOn( NEDirectMessager::eMessageIDs msgId, bool notify, bool always /* = false */ )
 {
     if (notify)
         mProxy->SetNotification(msgId, static_cast<IENotificationEventConsumer &>(self()), always);
@@ -162,9 +162,9 @@ void CEDirectMessagerClientBase::NotifyOn( const NEDirectMessager::eMessageIDs m
 DEF_TRACE_SCOPE(shared_generated_CEDirectMessagerClientBase_ProcessNotificationEvent);
 void CEDirectMessagerClientBase::ProcessNotificationEvent( CENotificationEvent & eventElem )
 {
-    const CENotificationEventData & data    = static_cast<const CENotificationEvent &>(eventElem).GetData();
-    const NEService::eResultType result     = data.GetNotifyType();
-    const NEDirectMessager::eMessageIDs msgId = static_cast<NEDirectMessager::eMessageIDs>(data.GetNotifyId());
+    const CENotificationEventData & data= static_cast<const CENotificationEvent &>(eventElem).GetData();
+    NEService::eResultType result       = data.GetNotifyType();
+    NEDirectMessager::eMessageIDs msgId   = static_cast<NEDirectMessager::eMessageIDs>(data.GetNotifyId());
     mCurrSequenceNr = data.GetSequenceNr();
 
     switch (result)
@@ -306,7 +306,7 @@ void CEDirectMessagerClientBase::ProcessNotificationEvent( CENotificationEvent &
  * Error handling calls
  ************************************************************************/
 DEF_TRACE_SCOPE(shared_generated_CEDirectMessagerClientBase_InvalidResponse);
-void CEDirectMessagerClientBase::InvalidResponse( const NEDirectMessager::eMessageIDs InvalidRespId )
+void CEDirectMessagerClientBase::InvalidResponse( NEDirectMessager::eMessageIDs InvalidRespId )
 {
     TRACE_SCOPE(shared_generated_CEDirectMessagerClientBase_InvalidResponse);
     TRACE_WARN(">>> There is an invalid response [ %s ] (value = [ %d ]) in client CEDirectMessagerClientBase with path [ %s ], which cannot be processed! Make error handling! <<<"
@@ -318,7 +318,7 @@ void CEDirectMessagerClientBase::InvalidResponse( const NEDirectMessager::eMessa
 }
 
 DEF_TRACE_SCOPE(shared_generated_CEDirectMessagerClientBase_InvalidRequest);
-void CEDirectMessagerClientBase::InvalidRequest( const NEDirectMessager::eMessageIDs InvalidReqId )
+void CEDirectMessagerClientBase::InvalidRequest( NEDirectMessager::eMessageIDs InvalidReqId )
 {
     TRACE_SCOPE(shared_generated_CEDirectMessagerClientBase_InvalidRequest);
     TRACE_WARN(">>> There is an invalid request [ %s ] (value = [ %d ]) in client CEDirectMessagerClientBase with path [ %s ], which was not able to process! Make error handling! <<<"
@@ -330,7 +330,7 @@ void CEDirectMessagerClientBase::InvalidRequest( const NEDirectMessager::eMessag
 }
 
 DEF_TRACE_SCOPE(shared_generated_CEDirectMessagerClientBase_RequestFailed);
-void CEDirectMessagerClientBase::RequestFailed( const NEDirectMessager::eMessageIDs FailureMsgId, const NEService::eResultType FailureReason )
+void CEDirectMessagerClientBase::RequestFailed( NEDirectMessager::eMessageIDs FailureMsgId, NEService::eResultType FailureReason )
 {
     TRACE_SCOPE(shared_generated_CEDirectMessagerClientBase_RequestFailed);
     TRACE_WARN(">>> The request [ %s ] (value = [ %d ]) in Proxy [ %s ] of CEDirectMessagerClientBase failed with reason [ %s ]! Triggering appropriate request failed function! <<<"
@@ -357,7 +357,7 @@ void CEDirectMessagerClientBase::RequestFailed( const NEDirectMessager::eMessage
  * Attribute notifications
  ************************************************************************/
 
-void CEDirectMessagerClientBase::OnChatParticipantsUpdate( const NEDirectMessager::ListParticipants & /* ChatParticipants */, const NEService::eDataStateType /* state */ )
+void CEDirectMessagerClientBase::OnChatParticipantsUpdate( const NEDirectMessager::ListParticipants & /* ChatParticipants */, NEService::eDataStateType /* state */ )
 {
     CEClientBase::OnUpdateNotImplemented( "CEDirectMessagerClientBase", static_cast<unsigned int>(NEDirectMessager::MSG_ID_ChatParticipants) );
 }
@@ -366,22 +366,22 @@ void CEDirectMessagerClientBase::OnChatParticipantsUpdate( const NEDirectMessage
  * Request failure / Response and Broadcast notifications
  ************************************************************************/
  
-void CEDirectMessagerClientBase::RequestChatJoinFailed( const NEService::eResultType /* FailureReason */ )
+void CEDirectMessagerClientBase::RequestChatJoinFailed( NEService::eResultType /* FailureReason */ )
 {
     CEClientBase::RequestFailedNotImplemented( "CEDirectMessagerClientBase", static_cast<unsigned int>(NEDirectMessager::MSG_ID_RequestChatJoin) );
 }
 
-void CEDirectMessagerClientBase::RequestMessageSendFailed( const NEService::eResultType /* FailureReason */ )
+void CEDirectMessagerClientBase::RequestMessageSendFailed( NEService::eResultType /* FailureReason */ )
 {
     CEClientBase::RequestFailedNotImplemented( "CEDirectMessagerClientBase", static_cast<unsigned int>(NEDirectMessager::MSG_ID_RequestMessageSend) );
 }
 
-void CEDirectMessagerClientBase::RequestMessageTypeFailed( const NEService::eResultType /* FailureReason */ )
+void CEDirectMessagerClientBase::RequestMessageTypeFailed( NEService::eResultType /* FailureReason */ )
 {
     CEClientBase::RequestFailedNotImplemented( "CEDirectMessagerClientBase", static_cast<unsigned int>(NEDirectMessager::MSG_ID_RequestMessageType) );
 }
 
-void CEDirectMessagerClientBase::RequestChatLeaveFailed( const NEService::eResultType /* FailureReason */ )
+void CEDirectMessagerClientBase::RequestChatLeaveFailed( NEService::eResultType /* FailureReason */ )
 {
     CEClientBase::RequestFailedNotImplemented( "CEDirectMessagerClientBase", static_cast<unsigned int>(NEDirectMessager::MSG_ID_RequestChatLeave) );
 }

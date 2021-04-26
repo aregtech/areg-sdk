@@ -9,8 +9,8 @@
 #include "register/NECentralApp.hpp"
 #include "register/CECentralApp.hpp"
 #include "shared/NECommonSettings.hpp"
-#include "areg/component/NERegistry.hpp"
-#include "areg/component/CEComponentLoader.hpp"
+#include "areg/src/component/NERegistry.hpp"
+#include "areg/src/component/CEComponentLoader.hpp"
 
 #define MAKE_HWND(wnd)      reinterpret_cast<HWND>(wnd)
 
@@ -76,7 +76,7 @@ void CEConnectionManager::StartupServiceInterface( CEComponent & holder )
     CEConnectionManagerStub::StartupServiceInterface( holder );
     CECentralMessagerStub::StartupServiceInterface( holder );
 
-    srand( static_cast<unsigned int>( CEDateTime::GetNow(false).GetTime() ) );
+    srand( static_cast<unsigned int>( CEDateTime::GetNow().GetTime() ) );
     mCookies = rand();
 
     SetConnectionList( NEConnectionManager::MapConnection( ) );
@@ -142,14 +142,14 @@ void CEConnectionManager::RequestRegisterConnection( const CEString & nickName, 
                 int count = 0;
                 for ( MAPPOS pos = mapConnections.GetStartPosition(); pos != NULL; pos = mapConnections.GetNextPosition( pos ) )
                 {
-                    const NEConnectionManager::sConnection & entry = mapConnections.ElementAt( pos );
+                    const NEConnectionManager::sConnection & entry = mapConnections.GetAt( pos );
                     ASSERT(connection != entry);
                     listConnections.SetAt(count ++, entry);
                 }
 
                 uint32_t cookie = connection.cookie != NEConnectionManager::InvalidCookie ? connection.cookie : connectCookie;
                 connection.cookie       = cookie != NEConnectionManager::InvalidCookie ? cookie : getNextCookie();
-                connection.connectedTime= CEDateTime::GetNow( false );
+                connection.connectedTime= CEDateTime::GetNow( );
                 mapConnections.SetKey( connection.cookie, connection, false );
 
                 TRACE_DBG( "Accepted new connection registration [ %s ] at time [ %s ]", static_cast<const char *>(nickName), static_cast<const char *>(connection.connectedTime.FormatTime( )) );
@@ -169,7 +169,7 @@ void CEConnectionManager::RequestRegisterConnection( const CEString & nickName, 
                         data->dataSave      = connection.cookie;
                         data->timeSend      = connection.connectTime;
                         data->timeReceived  = connection.connectedTime;
-                        data->message[0]    = static_cast<TCHAR>(NEString::EndofString);
+                        data->message[0]    = static_cast<TCHAR>(NEString::EndOfString);
 
                         ::PostMessage( hWnd, NECentralApp::CmdRegistered, 0, reinterpret_cast<LPARAM>(data) );
                     }
@@ -224,7 +224,7 @@ void CEConnectionManager::RequestDiconnect( const CEString & nickName, const uin
                 data->dataSave      = connection.cookie;
                 data->timeSend      = connection.connectTime;
                 data->timeReceived  = connection.connectedTime;
-                data->message[0]    = static_cast<TCHAR>(NEString::EndofString);
+                data->message[0]    = static_cast<TCHAR>(NEString::EndOfString);
 
                 ::PostMessage( hWnd, NECentralApp::CmdUnregistered, 0, reinterpret_cast<LPARAM>(data) );
             }
@@ -267,7 +267,7 @@ void CEConnectionManager::RequestSendMessage( const CEString & nickName, const u
             data->dataSave      = connection.cookie;
             data->timeSend      = dateTime;
             data->timeReceived  = CEDateTime::GetNow();
-            data->message[0]    = static_cast<TCHAR>(NEString::EndofString);
+            data->message[0]    = static_cast<TCHAR>(NEString::EndOfString);
             NEString::copyString<TCHAR, char>( data->message, NECentralMessager::MessageMaxLen, newMessage.GetBuffer() );
 
             ::PostMessage( hWnd, NECentralApp::CmdSendMessage, 0, reinterpret_cast<LPARAM>(data) );
@@ -299,7 +299,7 @@ void CEConnectionManager::RequestKeyTyping( const CEString & nickName, const uin
             data->dataSave      = connection.cookie;
             data->timeSend      = connection.connectTime;
             data->timeReceived  = connection.connectedTime;
-            data->message[0]    = static_cast<TCHAR>(NEString::EndofString);
+            data->message[0]    = static_cast<TCHAR>(NEString::EndOfString);
             NEString::copyString<TCHAR, char>( data->message, NECentralMessager::MessageMaxLen, newMessage.GetBuffer() );
 
             ::PostMessage( hWnd, NECentralApp::CmdTypeMessage, 0, reinterpret_cast<LPARAM>(data) );

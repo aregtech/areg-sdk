@@ -5,9 +5,9 @@
 #define  SHARED_GENERATED_NECONNECTIONMANAGER_HPP
 
 /************************************************************************
- * (c) copyright    2019
+ * (c) copyright    2021
  *                  Create by AREGtech code generator tool from source ConnectionManager.
- * Generated at     03.09.2019  02:48:08 GMT+02:00 
+ * Generated at     25.04.2021  23:50:44 GMT+02:00 
  ************************************************************************/
 
 /************************************************************************
@@ -19,20 +19,21 @@
 /************************************************************************
  * Include files
  ************************************************************************/
+#include "areg/src/base/GEGlobal.h"
 
 //////////////////////////////////////////////////////////////////////////
 // Dependency includes
 //////////////////////////////////////////////////////////////////////////
 #include "shared/NECommonSettings.hpp"
-#include "areg/base/CEString.hpp"
-#include "areg/base/CEDateTime.hpp"
+#include "areg/src/base/CEString.hpp"
+#include "areg/src/base/CEDateTime.hpp"
 
 //////////////////////////////////////////////////////////////////////////
 // Mandatory includes
 //////////////////////////////////////////////////////////////////////////
-#include "areg/base/IEIOStream.hpp"
-#include "areg/base/CEVersion.hpp"
-#include "areg/component/NEService.hpp"
+#include "areg/src/base/IEIOStream.hpp"
+#include "areg/src/base/CEVersion.hpp"
+#include "areg/src/component/NEService.hpp"
 
 /************************************************************************
  * Dependencies
@@ -113,7 +114,7 @@ namespace   NEConnectionManager
     /**
      * \brief   Returns string value of NEConnectionManager::eConnectionResult
      **/
-    inline const char * const GetString( const NEConnectionManager::eConnectionResult enumValue );
+    inline const char * GetString( NEConnectionManager::eConnectionResult enumValue );
 
     /**
      * \brief   The connection structure.
@@ -218,7 +219,7 @@ namespace   NEConnectionManager
     /**
      * \brief   Returns string value of NEConnectionManager::eMessageIDs
      **/
-    inline const char * const GetString( const NEConnectionManager::eMessageIDs msgId );
+    inline const char * GetString( NEConnectionManager::eMessageIDs msgId );
      
 /************************************************************************
  * Service Interface standard functions and variables
@@ -232,12 +233,12 @@ namespace   NEConnectionManager
     /**
      * \brief   Returns the mapped Response ID of give Request ID.
      **/
-    NEConnectionManager::eMessageIDs GetResponseId( const NEConnectionManager::eMessageIDs reqId );
+    NEConnectionManager::eMessageIDs GetResponseId( NEConnectionManager::eMessageIDs reqId );
 
     /**
      * \brief   Returns the mapped Response ID of give Request ID.
      **/
-    NEConnectionManager::eMessageIDs GetRequestId( const NEConnectionManager::eMessageIDs respId );
+    NEConnectionManager::eMessageIDs GetRequestId( NEConnectionManager::eMessageIDs respId );
 
     /**
      * \brief   Array of supported Request IDs
@@ -296,12 +297,12 @@ IMPLEMENT_STREAMABLE( NEConnectionManager::eMessageIDs );
 /************************************************************************
  * NEConnectionManager::eConnectionResult enum declare streamable
  ************************************************************************/
-IMPLEMENT_STREAMABLE( NEConnectionManager::eConnectionResult );
+IMPLEMENT_STREAMABLE( NEConnectionManager::eConnectionResult )
 
 /**
  * Return string value of NEConnectionManager::eConnectionResult
  **/
-inline const char * const NEConnectionManager::GetString( const NEConnectionManager::eConnectionResult enumValue )
+inline const char * NEConnectionManager::GetString( NEConnectionManager::eConnectionResult enumValue )
 {
     switch ( enumValue )
     {
@@ -324,7 +325,7 @@ inline const char * const NEConnectionManager::GetString( const NEConnectionMana
 /**
  * Returns string value of NEConnectionManager::eMessageIDs
  **/
-inline const char * const NEConnectionManager::GetString( const NEConnectionManager::eMessageIDs msgId )
+inline const char * NEConnectionManager::GetString( NEConnectionManager::eMessageIDs msgId )
 {
     switch ( msgId )
     {

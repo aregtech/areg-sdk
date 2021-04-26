@@ -3,9 +3,9 @@
 //////////////////////////////////////////////////////////////////////////
 
 /************************************************************************
- * (c) copyright    2019
+ * (c) copyright    2021
  *                  Create by AREGtech code generator tool from source DirectConnection.
- * Generated at     03.09.2019  02:48:09 GMT+02:00 
+ * Generated at     25.04.2021  23:50:45 GMT+02:00 
  ************************************************************************/
 
 /************************************************************************
@@ -29,20 +29,20 @@
 /**
  * \brief   CEDirectConnectionRequestEvent Event runtime implementation
  **/
-IMPLEMENT_RUNTIME_EVENT( CEDirectConnectionRequestEvent, CERemoteRequestEvent );
+IMPLEMENT_RUNTIME_EVENT( CEDirectConnectionRequestEvent, CERemoteRequestEvent )
 
 //////////////////////////////////////////////////////////////////////////
 // CEDirectConnectionRequestEvent class, Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
 
-CEDirectConnectionRequestEvent::CEDirectConnectionRequestEvent( const CEProxyAddress & fromSource, const CEStubAddress & toTarget, const unsigned int reqId )
+CEDirectConnectionRequestEvent::CEDirectConnectionRequestEvent( const CEProxyAddress & fromSource, const CEStubAddress & toTarget, unsigned int reqId )
     : CERemoteRequestEvent( fromSource, toTarget, reqId )
 {
     ; // do nothing
 }
 
-CEDirectConnectionRequestEvent::CEDirectConnectionRequestEvent( const CEEventDataStream & args, const CEProxyAddress & fromSource, const CEStubAddress & toTarget, const unsigned int reqId )
-    : CERemoteRequestEvent( args, fromSource, toTarget, reqId, NEDirectConnection::GetString( static_cast<const NEDirectConnection::eMessageIDs>(reqId) ) )
+CEDirectConnectionRequestEvent::CEDirectConnectionRequestEvent( const CEEventDataStream & args, const CEProxyAddress & fromSource, const CEStubAddress & toTarget, unsigned int reqId )
+    : CERemoteRequestEvent( args, fromSource, toTarget, reqId, NEDirectConnection::GetString( static_cast<NEDirectConnection::eMessageIDs>(reqId) ) )
 {
     ; // do nothing
 }
@@ -66,13 +66,13 @@ CEDirectConnectionRequestEvent::~CEDirectConnectionRequestEvent( void )
 // CEDirectConnectionNotifyRequestEvent class, Runtime implementation
 //////////////////////////////////////////////////////////////////////////
 
-IMPLEMENT_RUNTIME_EVENT( CEDirectConnectionNotifyRequestEvent, CERemoteNotifyRequestEvent );
+IMPLEMENT_RUNTIME_EVENT( CEDirectConnectionNotifyRequestEvent, CERemoteNotifyRequestEvent )
 
 //////////////////////////////////////////////////////////////////////////
 // CEDirectConnectionNotifyRequestEvent class, Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
 
-CEDirectConnectionNotifyRequestEvent::CEDirectConnectionNotifyRequestEvent( const CEProxyAddress & fromProxy, const CEStubAddress & toStub, const unsigned int msgId, const NEService::eRequestType & reqType )
+CEDirectConnectionNotifyRequestEvent::CEDirectConnectionNotifyRequestEvent( const CEProxyAddress & fromProxy, const CEStubAddress & toStub, unsigned int msgId, NEService::eRequestType reqType )
     : CERemoteNotifyRequestEvent( fromProxy, toStub, msgId, reqType )
 {
     ; // do nothing
@@ -97,20 +97,20 @@ CEDirectConnectionNotifyRequestEvent::~CEDirectConnectionNotifyRequestEvent( voi
 // CEDirectConnectionResponseEvent class, Runtime implementation
 //////////////////////////////////////////////////////////////////////////
 
-IMPLEMENT_RUNTIME_EVENT( CEDirectConnectionResponseEvent, CERemoteResponseEvent );
+IMPLEMENT_RUNTIME_EVENT( CEDirectConnectionResponseEvent, CERemoteResponseEvent )
 
 //////////////////////////////////////////////////////////////////////////
 // CEDirectConnectionResponseEvent class, Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
 
-CEDirectConnectionResponseEvent::CEDirectConnectionResponseEvent( const CEProxyAddress & proxyTarget, const NEService::eResultType & result, const unsigned int responseId, unsigned int seqNr /* = NEService::SEQUENCE_NUMBER_NOTIFY */ )
+CEDirectConnectionResponseEvent::CEDirectConnectionResponseEvent( const CEProxyAddress & proxyTarget, NEService::eResultType result, unsigned int responseId, unsigned int seqNr /* = NEService::SEQUENCE_NUMBER_NOTIFY */ )
     : CERemoteResponseEvent( proxyTarget, result, responseId, seqNr )
 {
     ; // do nothing
 }
 
-CEDirectConnectionResponseEvent::CEDirectConnectionResponseEvent( const CEEventDataStream & args, const CEProxyAddress & proxyTarget, const NEService::eResultType & result, const unsigned int responseId, unsigned int seqNr /* = NEService::SEQUENCE_NUMBER_NOTIFY */ )
-    : CERemoteResponseEvent( args, proxyTarget, result, responseId, seqNr, NEDirectConnection::GetString(static_cast<const NEDirectConnection::eMessageIDs>(responseId)) )
+CEDirectConnectionResponseEvent::CEDirectConnectionResponseEvent( const CEEventDataStream & args, const CEProxyAddress & proxyTarget, NEService::eResultType result, unsigned int responseId, unsigned int seqNr /* = NEService::SEQUENCE_NUMBER_NOTIFY */ )
+    : CERemoteResponseEvent( args, proxyTarget, result, responseId, seqNr, NEDirectConnection::GetString(static_cast<NEDirectConnection::eMessageIDs>(responseId)) )
 {
     ; // do nothing
 }
@@ -148,7 +148,7 @@ CEServiceResponseEvent* CEDirectConnectionResponseEvent::CloneEventForTarget( co
 // CEDirectConnectionNotificationEvent class, Runtime implementation
 //////////////////////////////////////////////////////////////////////////
 
-IMPLEMENT_RUNTIME_EVENT( CEDirectConnectionNotificationEvent, CENotificationEvent );
+IMPLEMENT_RUNTIME_EVENT( CEDirectConnectionNotificationEvent, CENotificationEvent )
 
 //////////////////////////////////////////////////////////////////////////
 // CEDirectConnectionNotificationEvent class, Constructors / Destructor

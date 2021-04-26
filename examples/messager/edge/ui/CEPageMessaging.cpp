@@ -7,7 +7,7 @@
 #include "edge/CEDistrbutedApp.hpp"
 #include "edge/NEDistributedApp.hpp"
 #include "shared/generated/NEConnectionManager.hpp"
-#include "areg/base/GEGlobal.h"
+#include "areg/src/base/GEGlobal.h"
 #include "edge/services/CEConnectionHandler.hpp"
 
 // CEPageMessaging dialog
@@ -213,7 +213,7 @@ void CEPageMessaging::OnClickedButtonSend( )
     UpdateData( TRUE );
     if ( mCentralMessage != NULL)
     {
-        CEDateTime dateTime = CEDateTime::GetNow(false);
+        CEDateTime dateTime = CEDateTime::GetNow();
         outputMessage( CString( mConnectionHandler.GetNickName().GetBuffer() )
                      , mTextMsg
                      , CString( dateTime.FormatTime().String())

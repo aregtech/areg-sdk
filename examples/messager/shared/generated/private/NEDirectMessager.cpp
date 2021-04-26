@@ -3,9 +3,9 @@
 //////////////////////////////////////////////////////////////////////////
 
 /************************************************************************
- * (c) copyright    2019
+ * (c) copyright    2021
  *                  Create by AREGtech code generator tool from source DirectMessager.
- * Generated at     03.09.2019  02:48:11 GMT+02:00 
+ * Generated at     25.04.2021  23:50:46 GMT+02:00 
  ************************************************************************/
 
 /************************************************************************
@@ -87,20 +87,23 @@ const NEService::SInterfaceData & NEDirectMessager::CreateInterfaceData( void )
     return _getInterfaceData();
 }
 
-NEDirectMessager::eMessageIDs NEDirectMessager::GetResponseId( const NEDirectMessager::eMessageIDs reqId )
+NEDirectMessager::eMessageIDs NEDirectMessager::GetResponseId( NEDirectMessager::eMessageIDs reqId )
 {
-    const NEService::SInterfaceData& sid = _getInterfaceData();
+    const NEService::SInterfaceData & sid = _getInterfaceData();
 
     int index = GET_REQ_INDEX(reqId);
     return  ( index >= 0 && index < static_cast<int>(sid.idRequestCount) ? static_cast<NEDirectMessager::eMessageIDs>(sid.idRequestToResponseMap[index]) : NEDirectMessager::MSG_ID_INVALID );
 }
 
-NEDirectMessager::eMessageIDs NEDirectMessager::GetRequestId( const NEDirectMessager::eMessageIDs respId )
+NEDirectMessager::eMessageIDs NEDirectMessager::GetRequestId( NEDirectMessager::eMessageIDs respId )
 {
-    const NEService::SInterfaceData& sid = _getInterfaceData();
+    const NEService::SInterfaceData & sid = _getInterfaceData();
     NEDirectMessager::eMessageIDs result = NEDirectMessager::MSG_ID_INVALID;
-    for (unsigned int i = 0; result == NEDirectMessager::MSG_ID_INVALID && i < NEDirectMessager::NumberofRequests; i ++)
+    for ( unsigned int i = 0; result == NEDirectMessager::MSG_ID_INVALID && i < NEDirectMessager::NumberofRequests; ++ i )
+    {
         result = sid.idRequestToResponseMap[i] == static_cast<unsigned int>(respId) ? NEDirectMessager::RequestIds[i] : NEDirectMessager::MSG_ID_INVALID;
+    }
+    
     return result;
 }
 

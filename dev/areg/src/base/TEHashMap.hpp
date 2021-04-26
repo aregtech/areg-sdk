@@ -73,7 +73,7 @@
  *                      if default methods needs to be changed.
  **/
 
-template < typename KEY, typename VALUE, typename KEY_TYPE = KEY, typename VALUE_TYPE = VALUE, class Implement = TEHashMapImpl<VALUE_TYPE, KEY_TYPE> >
+template < typename KEY, typename VALUE, typename KEY_TYPE = KEY, typename VALUE_TYPE = VALUE, class Implement = TEHashMapImpl<KEY_TYPE, VALUE_TYPE> >
 class TEHashMap     : private   CETemplateConstants
                     , protected Implement
 {
@@ -90,7 +90,7 @@ public:
     //////////////////////////////////////////////////////////////////////////
     // TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::CEBlock class declaration
     //////////////////////////////////////////////////////////////////////////
-    class CEBlock   : public TEPair<KEY, VALUE, KEY_TYPE, VALUE_TYPE>
+    class CEBlock   : public TEPair<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>
     {
     //////////////////////////////////////////////////////////////////////////
     // constructor / destructor
@@ -214,8 +214,8 @@ public:
      * \param   stream  The streaming object for reading values
      * \param   input   The Hash Map object to save initialized values.
      **/
-     template <typename K, typename V, typename KT, typename VT>
-    friend const IEInStream & operator >> ( const IEInStream & stream, TEHashMap<K, V, KT, VT> & input);
+     template <typename K, typename V, typename KT, typename VT, class Impl>
+    friend const IEInStream & operator >> ( const IEInStream & stream, TEHashMap<K, V, KT, VT, Impl> & input);
     /**
      * \brief   Writes to the stream Hash Map values.
      *          The Elements of Hash Map will be written to the stream starting from start position.
@@ -224,8 +224,8 @@ public:
      * \param   stream  The streaming object to write values
      * \param   input   The Hash Map object to read out values.
      **/
-     template <typename K, typename V, typename KT, typename VT>
-    friend IEOutStream & operator << ( IEOutStream & stream, const TEHashMap<K, V, KT, VT> & output );
+     template <typename K, typename V, typename KT, typename VT, class Impl>
+    friend IEOutStream & operator << ( IEOutStream & stream, const TEHashMap<K, V, KT, VT, Impl> & output );
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -304,7 +304,7 @@ public:
      *                              without checking uniqueness of keys in hash map
      * \return  Returns position of updated or new inserted element.
      **/
-    inline MAPPOS SetKey( const TEPair<KEY, VALUE, KEY_TYPE, VALUE_TYPE> & newElement, bool searchBeforeInsert = true );
+    inline MAPPOS SetKey( const TEPair<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement> & newElement, bool searchBeforeInsert = true );
 
     /**
      * \brief   Updates Existing Key and returns the position in the map.
@@ -378,7 +378,7 @@ public:
      * \param	out_Element On output, this element contains pair of Key and Value
      * \return	Next position of element or next if it is last element in hash map.
      **/
-    inline MAPPOS GetNextPosition( MAPPOS atPosition, TEPair<KEY, VALUE, KEY_TYPE, VALUE_TYPE> & out_Element ) const;
+    inline MAPPOS GetNextPosition( MAPPOS atPosition, TEPair<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement> & out_Element ) const;
     /**
      * \brief	By given position value, returns next position
      * \param	atPosition  Starting Position to get next position of element
@@ -426,7 +426,7 @@ public:
      * \param	atPosition	The position of element to retrieve key and value
      * \param	out_Element On output, contains Key and Value pair of element of given position
      **/
-    inline void GetAt( MAPPOS atPosition, TEPair<KEY, VALUE, KEY_TYPE, VALUE_TYPE> & out_Element) const;
+    inline void GetAt( MAPPOS atPosition, TEPair<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement> & out_Element) const;
 
     /**
      * \brief   Returns the Key object value at the given position.
@@ -615,7 +615,7 @@ protected:
      * \param startAt   The pointer to Block object to start searching next entry. It must not be NULL,
      *                  otherwise assertion raised
      **/
-    CEBlock * GetNextValidBlock( CEBlock * startAt ) const
+    CEBlock * GetNextValidBlock( const CEBlock * startAt ) const
     {
         ASSERT(startAt != NULL);
         ASSERT(mElemCount != 0);
@@ -728,14 +728,14 @@ protected:
 
 template < typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename VALUE_TYPE /*= VALUE */, class Implement /* = CEHashMapBase */ >
 inline TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::CEBlock::CEBlock( void )
-    : TEPair<KEY, VALUE, KEY_TYPE, VALUE_TYPE>( )
+    : TEPair<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>( )
     , mNext (NULL)
     , mHash (0)
 {   ;   }
 
 template < typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename VALUE_TYPE /*= VALUE */, class Implement /* = CEHashMapBase */ >
 inline TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::CEBlock::CEBlock(unsigned int hash, KEY_TYPE key, VALUE_TYPE value)
-    : TEPair<KEY, VALUE, KEY_TYPE, VALUE_TYPE>(key, value)
+    : TEPair<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>(key, value)
     , mNext (NULL)
     , mHash (hash)
 {   ;   }
@@ -945,7 +945,7 @@ MAPPOS TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::SetKey(KEY_TYPE K
 }
 
 template < typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename VALUE_TYPE /*= VALUE */, class Implement /* = CEHashMapBase */ >
-inline MAPPOS TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::SetKey(const TEPair<KEY, VALUE, KEY_TYPE, VALUE_TYPE> &newItem, bool searchBeforeInsert /*= true*/)
+inline MAPPOS TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::SetKey(const TEPair<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement> &newItem, bool searchBeforeInsert /*= true*/)
 {
     return SetKey(newItem.mKey, newItem.mValue, searchBeforeInsert);
 }
@@ -1073,7 +1073,7 @@ MAPPOS TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::GetNextPosition(M
 }
 
 template < typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename VALUE_TYPE /*= VALUE */, class Implement /* = CEHashMapBase */ >
-inline MAPPOS TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::GetNextPosition(MAPPOS atPosition, TEPair<KEY, VALUE, KEY_TYPE, VALUE_TYPE> & out_Element) const
+inline MAPPOS TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::GetNextPosition(MAPPOS atPosition, TEPair<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement> & out_Element) const
 {
     return GetNextPosition(atPosition, out_Element.mKey, out_Element.mValue);
 }
@@ -1161,7 +1161,7 @@ inline void TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::GetAt(MAPPOS
 }
 
 template < typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename VALUE_TYPE /*= VALUE */, class Implement /* = CEHashMapBase */ >
-inline void TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::GetAt(MAPPOS atPosition, TEPair<KEY, VALUE, KEY_TYPE, VALUE_TYPE> & out_Element) const
+inline void TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::GetAt(MAPPOS atPosition, TEPair<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement> & out_Element) const
 {
     GetAt(atPosition, out_Element.mKey, out_Element.mValue);
 }
@@ -1290,30 +1290,30 @@ inline bool TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::EqualValues(
 // TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement> class friend methods
 //////////////////////////////////////////////////////////////////////////
 
-template < typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename VALUE_TYPE /*= VALUE */, class Implement /* = CEHashMapBase */ >
-const IEInStream & operator >> ( const IEInStream & stream, TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement> & input )
+template < typename K, typename V, typename KT, typename VT, class Impl >
+const IEInStream & operator >> ( const IEInStream & stream, TEHashMap<K, V, KT, VT, Impl> & input )
 {
     int size = 0;
     stream >> size;
     for (int i = 0; i < size; ++ i)
     {
-        TEPair<KEY, VALUE, KEY_TYPE, VALUE_TYPE> mapItem;
+        TEPair<K, V, KT, VT, Impl> mapItem;
         stream >> mapItem;
         input.SetKey(mapItem, false);
     }
     return stream;
 }
 
-template < typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename VALUE_TYPE /*= VALUE */, class Implement /* = CEHashMapBase */ >
-IEOutStream & operator << ( IEOutStream & stream, const TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement> & output )
+template < typename K, typename V, typename KT, typename VT, class Impl>
+IEOutStream & operator << ( IEOutStream & stream, const TEHashMap<K, V, KT, VT, Impl> & output )
 {
     int size = output.GetSize();
     stream << size;
     if ( size != 0 )
     {
-        typename TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::CEBlock * block = output.GetFirstValidBlock();
+        const class TEHashMap<K, V, KT, VT, Impl>::CEBlock * block = output.GetFirstValidBlock();
         for ( ; block != NULL; block = output.GetNextValidBlock(block))
-            stream << static_cast<const TEPair<KEY, VALUE, KEY_TYPE, VALUE_TYPE> &>(*block);
+            stream << static_cast<const TEPair<K, V, KT, VT, Impl> &>(*block);
     }
 
     return stream;

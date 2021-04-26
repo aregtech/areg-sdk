@@ -1,8 +1,8 @@
 #pragma once
 
-#include "areg/base/GEGlobal.h"
+#include "areg/src/base/GEGlobal.h"
 #include "edge/res/resource.h"
-#include "areg/base/CEString.hpp"
+#include "areg/src/base/CEString.hpp"
 #include "shared/generated/NEDirectConnection.hpp"
 #include "shared/generated/NEConnectionManager.hpp"
 

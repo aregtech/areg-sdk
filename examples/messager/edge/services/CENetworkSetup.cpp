@@ -2,8 +2,8 @@
 #include "edge/res/stdafx.h"
 #include "edge/services/CENetworkSetup.hpp"
 #include "edge/services/CEConnectionHandler.hpp"
-#include "areg/component/CEComponent.hpp"
-#include "areg/component/CEComponentThread.hpp"
+#include "areg/src/component/CEComponent.hpp"
+#include "areg/src/component/CEComponentThread.hpp"
 #include "edge/NEDistributedApp.hpp"
 #include "edge/ui/CEDistributedDialog.hpp"
 
@@ -23,7 +23,7 @@ CENetworkSetup::~CENetworkSetup( )
 
 void CENetworkSetup::ResponseConnect( const CEString & nickName, const uint32_t & cookie, const CEDateTime & dateTime, const NEConnectionManager::eConnectionResult & result )
 {
-    CEDateTime timeConnected = CEDateTime::GetNow(false);
+    CEDateTime timeConnected = CEDateTime::GetNow();
     if (result == NEConnectionManager::ConnectionAccepted)
     {
         mConnectionHandler.SetNickName(nickName);
@@ -45,7 +45,7 @@ void CENetworkSetup::ResponseConnect( const CEString & nickName, const uint32_t 
     CEDistributedDialog::PostServiceMessage( NEDistributedApp::CmdClientConnection, isConnected ? 1 : 0, reinterpret_cast<LPARAM>(dispThread) );
 }
 
-bool CENetworkSetup::ServiceConnected( const bool isConnected, CEProxyBase & proxy )
+bool CENetworkSetup::ServiceConnected( bool isConnected, CEProxyBase & proxy )
 {
     bool result = false;
     if ( CEConnectionManagerClientBase::ServiceConnected( true, proxy ) )

@@ -7,8 +7,8 @@
 #include "edge/services/CEDirectChatService.hpp"
 #include "edge/services/CEChatParticipantService.hpp"
 #include "edge/NEDistributedApp.hpp"
-#include "areg/component/CEComponentLoader.hpp"
-#include "areg/base/CEDateTime.hpp"
+#include "areg/src/component/CEComponentLoader.hpp"
+#include "areg/src/base/CEDateTime.hpp"
 #include "edge/services/CEDirectMessagingClient.hpp"
 
 LPCTSTR CEPageChat::HEADER_TITILES[] =
@@ -143,7 +143,7 @@ BOOL CEPageChat::OnInitDialog( )
     else
     {
         CEString nickName = mIsChatInitiator ? "[ " + initiator.nickName + " ]" : initiator.nickName;
-        outputMessage( CString( nickName.String( ) ), CString( "Is already registered..." ), CString( CEDateTime::GetNow( false ).FormatTime( ).String( ) ), CString( ), 0 );
+        outputMessage( CString( nickName.String( ) ), CString( "Is already registered..." ), CString( CEDateTime::GetNow().FormatTime( ).String( ) ), CString( ), 0 );
     }
 
     return TRUE;
@@ -194,7 +194,7 @@ void CEPageChat::OnClickedButtonChatSend( )
     if ( client != NULL )
     {
         UpdateData( TRUE );
-        client->RequestMessageSend( GetConnectionOwner( ), CEString( mChatMsg.GetString( ) ), CEDateTime::GetNow( false ) );
+        client->RequestMessageSend( GetConnectionOwner( ), CEString( mChatMsg.GetString( ) ), CEDateTime::GetNow() );
         mChatMsg= _T( "" );
         UpdateData( FALSE );
         GetDlgItem( IDC_EDIT_CHAT )->SetFocus( );
@@ -208,7 +208,7 @@ void CEPageChat::OnDestroy( )
     if ( client != NULL )
     {
         client->ClearAllNotifications();
-        client->RequestChatLeave( GetConnectionOwner( ), CEDateTime::GetNow( false ) );
+        client->RequestChatLeave( GetConnectionOwner( ), CEDateTime::GetNow() );
     }
 
 
@@ -231,7 +231,7 @@ void CEPageChat::OnClickedButtonCloseChat( )
     if ( client != NULL )
     {
         client->ClearAllNotifications();
-        client->RequestChatLeave( GetConnectionOwner( ), CEDateTime::GetNow( false ) );
+        client->RequestChatLeave( GetConnectionOwner( ), CEDateTime::GetNow() );
     }
 
     SetChatWindow( static_cast<HWND>(NULL) );

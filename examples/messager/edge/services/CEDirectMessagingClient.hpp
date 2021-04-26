@@ -4,8 +4,8 @@
  * \brief           The messaging service client object
  ************************************************************************/
 
-#include "areg/base/GEGlobal.h"
-#include "areg/component/CEComponent.hpp"
+#include "areg/src/base/GEGlobal.h"
+#include "areg/src/component/CEComponent.hpp"
 #include "shared/generated/CEDirectMessagerClientBase.hpp"
 #include "edge/NEDistributedApp.hpp"
 
@@ -105,7 +105,7 @@ protected:
      *          i.e. if passed Proxy address is equal to the Proxy object that client has.
      *          If Proxy objects are not equal, it should return false;
      **/
-    virtual bool ServiceConnected( const bool isConnected, CEProxyBase & proxy );
+    virtual bool ServiceConnected( bool isConnected, CEProxyBase & proxy );
 
 private:
     inline CEDirectMessagingClient & self( void );

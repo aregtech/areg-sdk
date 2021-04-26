@@ -4,9 +4,9 @@
 #ifndef  SHARED_GENERATED_CECENTRALMESSAGERCLIENTBASE_HPP
 #define  SHARED_GENERATED_CECENTRALMESSAGERCLIENTBASE_HPP
 /************************************************************************
- * (c) copyright    2019
- *                  Create by AREGtech code generator tool from source CentralMessager.
- * Generated at     03.09.2019  02:48:07 GMT+02:00 
+ * (c) copyright    2021
+ *                  Create by AREG SDK code generator tool from source CentralMessager.
+ * Generated at     25.04.2021  23:50:42 GMT+02:00 
  ************************************************************************/
 
 /************************************************************************
@@ -18,10 +18,11 @@
 /************************************************************************
  * Include files
  ************************************************************************/
+#include "areg/src/base/GEGlobal.h"
 #include "shared/generated/NECentralMessager.hpp"
-#include "areg/component/CEClientBase.hpp"
-#include "areg/component/IEProxyListener.hpp"
-#include "areg/component/CENotificationEvent.hpp"
+#include "areg/src/component/CEClientBase.hpp"
+#include "areg/src/component/IEProxyListener.hpp"
+#include "areg/src/component/CENotificationEvent.hpp"
 
 #include "shared/generated/private/CECentralMessagerProxy.hpp"
 
@@ -39,8 +40,8 @@ class CEDispatcherThread;
  *              Client base object. This object should be inherited
  *              and overrides should be implemented.
  *
- *              This service is receiving message from connected client when they are typed or 
- *              requested to be send. The service receives text message from initiator and
+ *              This service is used to receive messages from connected edge when typing or 
+ *              sending messages. The service receives text message from initiator and
  *              broadcast to all clients, which have subscribed on event.
  *              It as well broadcasts own text message to all connected clients.
  **/
@@ -56,14 +57,14 @@ protected:
      * \param   ownerThread The name of component owner thread to dispatch messages.
      *                      If NULL, all messages are dispatched in current component thread.
      **/
-    CECentralMessagerClientBase( const char* const roleName, const char * ownerThread = static_cast<const char *>(NULL) );
+    CECentralMessagerClientBase( const char* roleName, const char * ownerThread = static_cast<const char *>(NULL) );
 
     /**
      * \brief   Constructs and initialize CentralMessager Service Interface client object.
      * \param   roleName    The role name assigned to CentralMessager servicing component object.
      * \param   ownerThread The instance of component owner thread to dispatch messages.
      **/
-    CECentralMessagerClientBase( const char* const roleName, CEDispatcherThread & ownerThread );
+    CECentralMessagerClientBase( const char* roleName, CEDispatcherThread & ownerThread );
 
     /**
      * \brief   Constructs and initialize CentralMessager Service Interface client object.
@@ -72,7 +73,7 @@ protected:
      * \note    When this constructor is used, it is important that the CEComponent object is already initialized.
      *          and the component thread is set.
      **/
-    CECentralMessagerClientBase( const char* const roleName, CEComponent & owner );
+    CECentralMessagerClientBase( const char* roleName, CEComponent & owner );
 
     /**
      * \brief   Destructor.
@@ -93,7 +94,7 @@ public:
      *          Otherwise returns false.
      * \param   msgId   The ID of message to check.
      **/
-    const bool IsNotificationAssigned( const NECentralMessager::eMessageIDs msgId ) const;
+    bool IsNotificationAssigned( NECentralMessager::eMessageIDs msgId ) const;
 
     /**
      * \brief   Returns true if client object has got connection with servicing component
@@ -131,7 +132,7 @@ public:
      * \brief   Overwrite to handle error of SendMessage request call.
      * \param   FailureReason   The failure reason value of request call.
      **/
-    virtual void RequestSendMessageFailed( const NEService::eResultType FailureReason );
+    virtual void RequestSendMessageFailed( NEService::eResultType FailureReason );
     
 /************************************************************************
  * Request KeyTyping
@@ -149,7 +150,7 @@ public:
      * \brief   Overwrite to handle error of KeyTyping request call.
      * \param   FailureReason   The failure reason value of request call.
      **/
-    virtual void RequestKeyTypingFailed( const NEService::eResultType FailureReason );
+    virtual void RequestKeyTypingFailed( NEService::eResultType FailureReason );
     
 /************************************************************************
  * Broadcast SendMessage
@@ -243,7 +244,7 @@ protected:
      *          i.e. if passed Proxy address is equal to the Proxy object that client has.
      *          If Proxy objects are not equal, it should return false;
      **/
-    virtual bool ServiceConnected( const bool isConnected, CEProxyBase & proxy );
+    virtual bool ServiceConnected( bool isConnected, CEProxyBase & proxy );
 
 protected:
 /************************************************************************/
@@ -254,13 +255,13 @@ protected:
      * \brief   Overwrite this method if need to make error handling on invalid response
      * \param   InvalidRespId   The ID of invalid response
      **/
-    virtual void InvalidResponse( const NECentralMessager::eMessageIDs InvalidRespId );
+    virtual void InvalidResponse( NECentralMessager::eMessageIDs InvalidRespId );
 
     /**
      * \brief   Overwrite this method if need to make error handling on invalid request
      * \param   InvalidReqId    The ID of invalid request
      **/
-    virtual void InvalidRequest( const NECentralMessager::eMessageIDs InvalidReqId );
+    virtual void InvalidRequest( NECentralMessager::eMessageIDs InvalidReqId );
     
     /**
      * \brief   By default, the function calls appropriate request failure function.
@@ -268,7 +269,7 @@ protected:
      * \param   msgId           The ID of either response of request message, which failed. Normally ID of request.
      * \param   FailureReason   The failure reason value of request call.
      **/
-    virtual void RequestFailed( const NECentralMessager::eMessageIDs FailureMsgId, const NEService::eResultType FailureReason );
+    virtual void RequestFailed( NECentralMessager::eMessageIDs FailureMsgId, NEService::eResultType FailureReason );
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes
@@ -339,7 +340,7 @@ private:
      *                  assigned, then if parameter 'always' is true, it will trigger
      *                  notification immediately after call. 
      **/
-    void NotifyOn( const NECentralMessager::eMessageIDs msgId, bool notify, bool always = false );
+    void NotifyOn( NECentralMessager::eMessageIDs msgId, bool notify, bool always = false );
     /**
      * \brief   Returns reference of CECentralMessagerClientBase object
      **/
@@ -367,8 +368,8 @@ inline unsigned int CECentralMessagerClientBase::GetCurrentSequenceNr( void ) co
 inline bool CECentralMessagerClientBase::IsConnected( void ) const
 {   return mIsConnected;    }
 
-inline const bool CECentralMessagerClientBase::IsNotificationAssigned( const NECentralMessager::eMessageIDs msgId ) const
-{   return mProxy->HasNotificationListener(static_cast<const unsigned int>(msgId));   }
+inline bool CECentralMessagerClientBase::IsNotificationAssigned( NECentralMessager::eMessageIDs msgId ) const
+{   return mProxy->HasNotificationListener(static_cast<unsigned int>(msgId));   }
 
 /************************************************************************
  * Request calls

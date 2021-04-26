@@ -5,8 +5,8 @@
 
 #include "edge/res/stdafx.h"
 #include "edge/services/CECentralMessaging.hpp"
-#include "areg/component/CEComponent.hpp"
-#include "areg/component/CEComponentThread.hpp"
+#include "areg/src/component/CEComponent.hpp"
+#include "areg/src/component/CEComponentThread.hpp"
 #include "shared/NECommonSettings.hpp"
 #include "shared/generated/NEConnectionManager.hpp"
 #include "edge/NEDistributedApp.hpp"
@@ -32,7 +32,7 @@ CECentralMessaging::~CECentralMessaging( void )
 {
 }
 
-bool CECentralMessaging::ServiceConnected( const bool isConnected, CEProxyBase & proxy )
+bool CECentralMessaging::ServiceConnected( bool isConnected, CEProxyBase & proxy )
 {
     TRACE_SCOPE( distrbutedapp_CECentralMessaging_ServiceConnected );
     bool result = false;
@@ -66,7 +66,7 @@ void CECentralMessaging::BroadcastSendMessage( const CEString & nickName, const 
             NEString::copyString<TCHAR, char>( data->nickName, NECommonSettings::MAXLEN_NICKNAME, nickName.String() );
             NEString::copyString<TCHAR, char>( data->message, NECommonSettings::MAXLEN_MESSAGE, newMessage.String( ) );
             data->dataSave      = cookie;
-            data->timeReceived  = CEDateTime::GetNow(false);
+            data->timeReceived  = CEDateTime::GetNow();
             data->timeSend      = dateTime;
 
             CEDistributedDialog::PostServiceMessage(NEDistributedApp::CmdSendMessage, mConnectionHandler.GetCookie(), reinterpret_cast<LPARAM>(data));
@@ -106,7 +106,7 @@ void CECentralMessaging::BroadcastBroadcastMessage( const CEString & serverMessa
         NEString::copyString<TCHAR, char>( data->message, NECommonSettings::MAXLEN_MESSAGE, serverMessage.String( ) );
 
         data->dataSave      = -1;
-        data->timeReceived  = CEDateTime::GetNow(false);
+        data->timeReceived  = CEDateTime::GetNow();
         data->timeSend      = dateTime;
 
         CEDistributedDialog::PostServiceMessage( NEDistributedApp::CmdSendMessage, mConnectionHandler.GetCookie( ), reinterpret_cast<LPARAM>(data) );

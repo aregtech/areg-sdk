@@ -5,9 +5,9 @@
 #define  SHARED_GENERATED_NEDIRECTMESSAGER_HPP
 
 /************************************************************************
- * (c) copyright    2019
+ * (c) copyright    2021
  *                  Create by AREGtech code generator tool from source DirectMessager.
- * Generated at     03.09.2019  02:48:11 GMT+02:00 
+ * Generated at     25.04.2021  23:50:46 GMT+02:00 
  ************************************************************************/
 
 /************************************************************************
@@ -19,20 +19,21 @@
 /************************************************************************
  * Include files
  ************************************************************************/
+#include "areg/src/base/GEGlobal.h"
 
 //////////////////////////////////////////////////////////////////////////
 // Dependency includes
 //////////////////////////////////////////////////////////////////////////
 #include "shared/NECommonSettings.hpp"
-#include "areg/base/CEDateTime.hpp"
-#include "areg/base/CEString.hpp"
+#include "areg/src/base/CEDateTime.hpp"
+#include "areg/src/base/CEString.hpp"
 
 //////////////////////////////////////////////////////////////////////////
 // Mandatory includes
 //////////////////////////////////////////////////////////////////////////
-#include "areg/base/IEIOStream.hpp"
-#include "areg/base/CEVersion.hpp"
-#include "areg/component/NEService.hpp"
+#include "areg/src/base/IEIOStream.hpp"
+#include "areg/src/base/CEVersion.hpp"
+#include "areg/src/component/NEService.hpp"
 
 /************************************************************************
  * Dependencies
@@ -196,7 +197,7 @@ namespace   NEDirectMessager
     /**
      * \brief   Returns string value of NEDirectMessager::eMessageIDs
      **/
-    inline const char * const GetString( const NEDirectMessager::eMessageIDs msgId );
+    inline const char * GetString( NEDirectMessager::eMessageIDs msgId );
      
 /************************************************************************
  * Service Interface standard functions and variables
@@ -210,12 +211,12 @@ namespace   NEDirectMessager
     /**
      * \brief   Returns the mapped Response ID of give Request ID.
      **/
-    NEDirectMessager::eMessageIDs GetResponseId( const NEDirectMessager::eMessageIDs reqId );
+    NEDirectMessager::eMessageIDs GetResponseId( NEDirectMessager::eMessageIDs reqId );
 
     /**
      * \brief   Returns the mapped Response ID of give Request ID.
      **/
-    NEDirectMessager::eMessageIDs GetRequestId( const NEDirectMessager::eMessageIDs respId );
+    NEDirectMessager::eMessageIDs GetRequestId( NEDirectMessager::eMessageIDs respId );
 
     /**
      * \brief   Array of supported Request IDs
@@ -276,7 +277,7 @@ IMPLEMENT_STREAMABLE( NEDirectMessager::eMessageIDs );
 /**
  * Returns string value of NEDirectMessager::eMessageIDs
  **/
-inline const char * const NEDirectMessager::GetString( const NEDirectMessager::eMessageIDs msgId )
+inline const char * NEDirectMessager::GetString( NEDirectMessager::eMessageIDs msgId )
 {
     switch ( msgId )
     {

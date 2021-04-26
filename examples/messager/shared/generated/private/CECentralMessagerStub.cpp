@@ -2,9 +2,9 @@
 // Begin generate shared/generated/private/CECentralMessagerStub.cpp file
 //////////////////////////////////////////////////////////////////////////
 /************************************************************************
- * (c) copyright    2019
+ * (c) copyright    2021
  *                  Create by AREGtech code generator tool from source CentralMessager.
- * Generated at     03.09.2019  02:48:07 GMT+02:00 
+ * Generated at     25.04.2021  23:50:42 GMT+02:00 
  ************************************************************************/
 
 /************************************************************************
@@ -19,9 +19,9 @@
 #include "shared/generated/CECentralMessagerStub.hpp"
 #include "shared/generated/private/CECentralMessagerEvents.hpp"
 
-#include "areg/component/CEServiceResponseEvent.hpp"
-#include "areg/base/CEThread.hpp"
-#include "areg/trace/GETrace.h"
+#include "areg/src/component/CEServiceResponseEvent.hpp"
+#include "areg/src/base/CEThread.hpp"
+#include "areg/src/trace/GETrace.h"
 
 //////////////////////////////////////////////////////////////////////////
 // CECentralMessagerStub class implementation
@@ -88,17 +88,17 @@ void CECentralMessagerStub::ShutdownServiceIntrface( CEComponent & holder )
     CEStubBase::ShutdownServiceIntrface( holder );
 }
 
-const unsigned int CECentralMessagerStub::GetNumberOfRequests( void ) const
+unsigned int CECentralMessagerStub::GetNumberOfRequests( void ) const
 {
     return NECentralMessager::NumberofRequests;
 }
 
-const unsigned int CECentralMessagerStub::GetNumberOfResponses( void ) const
+unsigned int CECentralMessagerStub::GetNumberOfResponses( void ) const
 {
     return NECentralMessager::NumberofResponses;
 }
 
-const unsigned int CECentralMessagerStub::GetNumberOfAttributes( void ) const
+unsigned int CECentralMessagerStub::GetNumberOfAttributes( void ) const
 {
     return NECentralMessager::NumberofAttributes;
 }
@@ -118,7 +118,7 @@ const unsigned int * CECentralMessagerStub::GetAttributeIds( void ) const
     return reinterpret_cast<const unsigned int *>(NECentralMessager::AttributeIds);
 }
 
-CEResponseEvent * CECentralMessagerStub::CreateResponseEvent( const CEProxyAddress & proxy, const unsigned int msgId, const NEService::eResultType result, const CEEventDataStream & data ) const
+CEResponseEvent * CECentralMessagerStub::CreateResponseEvent( const CEProxyAddress & proxy, unsigned int msgId, NEService::eResultType result, const CEEventDataStream & data ) const
 {
     return (data.IsEmpty() == false ? DEBUG_NEW CECentralMessagerResponseEvent(data, proxy, result, msgId) : DEBUG_NEW CECentralMessagerResponseEvent(proxy, result, msgId));
 }
@@ -139,7 +139,7 @@ const CEVersion & CECentralMessagerStub::GetImplVersion( void ) const
 }
 
 DEF_TRACE_SCOPE(shared_generated_CECentralMessagerStub_SendNotification);
-void CECentralMessagerStub::SendNotification( const unsigned int msgId )
+void CECentralMessagerStub::SendNotification( unsigned int msgId )
 {
     TRACE_SCOPE(shared_generated_CECentralMessagerStub_SendNotification);
     TRACE_ERR("The Service Interface has no attribute. Unexpected attribute ID [ %d ] requested to send by Stub [ %s ].", msgId, CEStubAddress::ConvertAddressToPath(mAddress).GetBuffer());
@@ -147,12 +147,12 @@ void CECentralMessagerStub::SendNotification( const unsigned int msgId )
 }
 
 DEF_TRACE_SCOPE(shared_generated_CECentralMessagerStub_ErrorRequest);
-void CECentralMessagerStub::ErrorRequest( const unsigned int msgId, const bool msgCancel )
+void CECentralMessagerStub::ErrorRequest( unsigned int msgId, bool msgCancel )
 {
     NEService::eResultType result = NEService::RESULT_NOT_PROCESSED;
     unsigned int listenerId = static_cast<unsigned int>(msgId);
     
-    switch ( static_cast<const NECentralMessager::eMessageIDs>(msgId) )
+    switch ( static_cast<NECentralMessager::eMessageIDs>(msgId) )
     {
 /************************************************************************
  * Attribute errors
@@ -174,7 +174,7 @@ void CECentralMessagerStub::ErrorRequest( const unsigned int msgId, const bool m
  ************************************************************************/
     case NECentralMessager::MSG_ID_RequestSendMessage:
     case NECentralMessager::MSG_ID_RequestKeyTyping:
-        listenerId = NECentralMessager::GetResponseId(static_cast<const NECentralMessager::eMessageIDs>(msgId));
+        listenerId = NECentralMessager::GetResponseId(static_cast< NECentralMessager::eMessageIDs>(msgId));
         result = msgCancel ? NEService::RESULT_REQUEST_CANCELED : NEService::RESULT_REQUEST_ERROR;
         break;
 

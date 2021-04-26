@@ -3,10 +3,10 @@
  * \file            edge/services/CEConnectionHandler.hpp
  * \brief           The connection handler. Contains service name and
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
-#include "areg/base/CEString.hpp"
-#include "areg/base/CEDateTime.hpp"
-#include "areg/base/ESynchObjects.hpp"
+#include "areg/src/base/GEGlobal.h"
+#include "areg/src/base/CEString.hpp"
+#include "areg/src/base/CEDateTime.hpp"
+#include "areg/src/base/ESynchObjects.hpp"
 #include "shared/NECommonSettings.hpp"
 
 class CEConnectionHandler

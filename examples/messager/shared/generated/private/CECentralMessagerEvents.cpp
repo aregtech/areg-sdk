@@ -3,9 +3,9 @@
 //////////////////////////////////////////////////////////////////////////
 
 /************************************************************************
- * (c) copyright    2019
+ * (c) copyright    2021
  *                  Create by AREGtech code generator tool from source CentralMessager.
- * Generated at     03.09.2019  02:48:07 GMT+02:00 
+ * Generated at     25.04.2021  23:50:42 GMT+02:00 
  ************************************************************************/
 
 /************************************************************************
@@ -29,20 +29,20 @@
 /**
  * \brief   CECentralMessagerRequestEvent Event runtime implementation
  **/
-IMPLEMENT_RUNTIME_EVENT( CECentralMessagerRequestEvent, CERemoteRequestEvent );
+IMPLEMENT_RUNTIME_EVENT( CECentralMessagerRequestEvent, CERemoteRequestEvent )
 
 //////////////////////////////////////////////////////////////////////////
 // CECentralMessagerRequestEvent class, Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
 
-CECentralMessagerRequestEvent::CECentralMessagerRequestEvent( const CEProxyAddress & fromSource, const CEStubAddress & toTarget, const unsigned int reqId )
+CECentralMessagerRequestEvent::CECentralMessagerRequestEvent( const CEProxyAddress & fromSource, const CEStubAddress & toTarget, unsigned int reqId )
     : CERemoteRequestEvent( fromSource, toTarget, reqId )
 {
     ; // do nothing
 }
 
-CECentralMessagerRequestEvent::CECentralMessagerRequestEvent( const CEEventDataStream & args, const CEProxyAddress & fromSource, const CEStubAddress & toTarget, const unsigned int reqId )
-    : CERemoteRequestEvent( args, fromSource, toTarget, reqId, NECentralMessager::GetString( static_cast<const NECentralMessager::eMessageIDs>(reqId) ) )
+CECentralMessagerRequestEvent::CECentralMessagerRequestEvent( const CEEventDataStream & args, const CEProxyAddress & fromSource, const CEStubAddress & toTarget, unsigned int reqId )
+    : CERemoteRequestEvent( args, fromSource, toTarget, reqId, NECentralMessager::GetString( static_cast<NECentralMessager::eMessageIDs>(reqId) ) )
 {
     ; // do nothing
 }
@@ -66,13 +66,13 @@ CECentralMessagerRequestEvent::~CECentralMessagerRequestEvent( void )
 // CECentralMessagerNotifyRequestEvent class, Runtime implementation
 //////////////////////////////////////////////////////////////////////////
 
-IMPLEMENT_RUNTIME_EVENT( CECentralMessagerNotifyRequestEvent, CERemoteNotifyRequestEvent );
+IMPLEMENT_RUNTIME_EVENT( CECentralMessagerNotifyRequestEvent, CERemoteNotifyRequestEvent )
 
 //////////////////////////////////////////////////////////////////////////
 // CECentralMessagerNotifyRequestEvent class, Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
 
-CECentralMessagerNotifyRequestEvent::CECentralMessagerNotifyRequestEvent( const CEProxyAddress & fromProxy, const CEStubAddress & toStub, const unsigned int msgId, const NEService::eRequestType & reqType )
+CECentralMessagerNotifyRequestEvent::CECentralMessagerNotifyRequestEvent( const CEProxyAddress & fromProxy, const CEStubAddress & toStub, unsigned int msgId, NEService::eRequestType reqType )
     : CERemoteNotifyRequestEvent( fromProxy, toStub, msgId, reqType )
 {
     ; // do nothing
@@ -97,20 +97,20 @@ CECentralMessagerNotifyRequestEvent::~CECentralMessagerNotifyRequestEvent( void 
 // CECentralMessagerResponseEvent class, Runtime implementation
 //////////////////////////////////////////////////////////////////////////
 
-IMPLEMENT_RUNTIME_EVENT( CECentralMessagerResponseEvent, CERemoteResponseEvent );
+IMPLEMENT_RUNTIME_EVENT( CECentralMessagerResponseEvent, CERemoteResponseEvent )
 
 //////////////////////////////////////////////////////////////////////////
 // CECentralMessagerResponseEvent class, Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
 
-CECentralMessagerResponseEvent::CECentralMessagerResponseEvent( const CEProxyAddress & proxyTarget, const NEService::eResultType & result, const unsigned int responseId, unsigned int seqNr /* = NEService::SEQUENCE_NUMBER_NOTIFY */ )
+CECentralMessagerResponseEvent::CECentralMessagerResponseEvent( const CEProxyAddress & proxyTarget, NEService::eResultType result, unsigned int responseId, unsigned int seqNr /* = NEService::SEQUENCE_NUMBER_NOTIFY */ )
     : CERemoteResponseEvent( proxyTarget, result, responseId, seqNr )
 {
     ; // do nothing
 }
 
-CECentralMessagerResponseEvent::CECentralMessagerResponseEvent( const CEEventDataStream & args, const CEProxyAddress & proxyTarget, const NEService::eResultType & result, const unsigned int responseId, unsigned int seqNr /* = NEService::SEQUENCE_NUMBER_NOTIFY */ )
-    : CERemoteResponseEvent( args, proxyTarget, result, responseId, seqNr, NECentralMessager::GetString(static_cast<const NECentralMessager::eMessageIDs>(responseId)) )
+CECentralMessagerResponseEvent::CECentralMessagerResponseEvent( const CEEventDataStream & args, const CEProxyAddress & proxyTarget, NEService::eResultType result, unsigned int responseId, unsigned int seqNr /* = NEService::SEQUENCE_NUMBER_NOTIFY */ )
+    : CERemoteResponseEvent( args, proxyTarget, result, responseId, seqNr, NECentralMessager::GetString(static_cast<NECentralMessager::eMessageIDs>(responseId)) )
 {
     ; // do nothing
 }
@@ -148,7 +148,7 @@ CEServiceResponseEvent* CECentralMessagerResponseEvent::CloneEventForTarget( con
 // CECentralMessagerNotificationEvent class, Runtime implementation
 //////////////////////////////////////////////////////////////////////////
 
-IMPLEMENT_RUNTIME_EVENT( CECentralMessagerNotificationEvent, CENotificationEvent );
+IMPLEMENT_RUNTIME_EVENT( CECentralMessagerNotificationEvent, CENotificationEvent )
 
 //////////////////////////////////////////////////////////////////////////
 // CECentralMessagerNotificationEvent class, Constructors / Destructor

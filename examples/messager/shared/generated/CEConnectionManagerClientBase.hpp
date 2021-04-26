@@ -4,9 +4,9 @@
 #ifndef  SHARED_GENERATED_CECONNECTIONMANAGERCLIENTBASE_HPP
 #define  SHARED_GENERATED_CECONNECTIONMANAGERCLIENTBASE_HPP
 /************************************************************************
- * (c) copyright    2019
- *                  Create by AREGtech code generator tool from source ConnectionManager.
- * Generated at     03.09.2019  02:48:08 GMT+02:00 
+ * (c) copyright    2021
+ *                  Create by AREG SDK code generator tool from source ConnectionManager.
+ * Generated at     25.04.2021  23:50:44 GMT+02:00 
  ************************************************************************/
 
 /************************************************************************
@@ -18,10 +18,11 @@
 /************************************************************************
  * Include files
  ************************************************************************/
+#include "areg/src/base/GEGlobal.h"
 #include "shared/generated/NEConnectionManager.hpp"
-#include "areg/component/CEClientBase.hpp"
-#include "areg/component/IEProxyListener.hpp"
-#include "areg/component/CENotificationEvent.hpp"
+#include "areg/src/component/CEClientBase.hpp"
+#include "areg/src/component/IEProxyListener.hpp"
+#include "areg/src/component/CENotificationEvent.hpp"
 
 #include "shared/generated/private/CEConnectionManagerProxy.hpp"
 
@@ -53,14 +54,14 @@ protected:
      * \param   ownerThread The name of component owner thread to dispatch messages.
      *                      If NULL, all messages are dispatched in current component thread.
      **/
-    CEConnectionManagerClientBase( const char* const roleName, const char * ownerThread = static_cast<const char *>(NULL) );
+    CEConnectionManagerClientBase( const char* roleName, const char * ownerThread = static_cast<const char *>(NULL) );
 
     /**
      * \brief   Constructs and initialize ConnectionManager Service Interface client object.
      * \param   roleName    The role name assigned to ConnectionManager servicing component object.
      * \param   ownerThread The instance of component owner thread to dispatch messages.
      **/
-    CEConnectionManagerClientBase( const char* const roleName, CEDispatcherThread & ownerThread );
+    CEConnectionManagerClientBase( const char* roleName, CEDispatcherThread & ownerThread );
 
     /**
      * \brief   Constructs and initialize ConnectionManager Service Interface client object.
@@ -69,7 +70,7 @@ protected:
      * \note    When this constructor is used, it is important that the CEComponent object is already initialized.
      *          and the component thread is set.
      **/
-    CEConnectionManagerClientBase( const char* const roleName, CEComponent & owner );
+    CEConnectionManagerClientBase( const char* roleName, CEComponent & owner );
 
     /**
      * \brief   Destructor.
@@ -90,7 +91,7 @@ public:
      *          Otherwise returns false.
      * \param   msgId   The ID of message to check.
      **/
-    const bool IsNotificationAssigned( const NEConnectionManager::eMessageIDs msgId ) const;
+    bool IsNotificationAssigned( NEConnectionManager::eMessageIDs msgId ) const;
 
     /**
      * \brief   Returns true if client object has got connection with servicing component
@@ -142,7 +143,7 @@ public:
      * \param   ConnectionList  The value of ConnectionList attribute.
      * \param   state           The data validation flag.
      **/
-    virtual void OnConnectionListUpdate( const NEConnectionManager::MapConnection & ConnectionList, const NEService::eDataStateType state );
+    virtual void OnConnectionListUpdate( const NEConnectionManager::MapConnection & ConnectionList, NEService::eDataStateType state );
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -166,7 +167,7 @@ public:
      * \brief   Overwrite to handle error of Connet request call.
      * \param   FailureReason   The failure reason value of request call.
      **/
-    virtual void RequestConnetFailed( const NEService::eResultType FailureReason );
+    virtual void RequestConnetFailed( NEService::eResultType FailureReason );
     
 /************************************************************************
  * Request RegisterConnection
@@ -186,7 +187,7 @@ public:
      * \brief   Overwrite to handle error of RegisterConnection request call.
      * \param   FailureReason   The failure reason value of request call.
      **/
-    virtual void RequestRegisterConnectionFailed( const NEService::eResultType FailureReason );
+    virtual void RequestRegisterConnectionFailed( NEService::eResultType FailureReason );
     
 /************************************************************************
  * Request Diconnect
@@ -204,7 +205,7 @@ public:
      * \brief   Overwrite to handle error of Diconnect request call.
      * \param   FailureReason   The failure reason value of request call.
      **/
-    virtual void RequestDiconnectFailed( const NEService::eResultType FailureReason );
+    virtual void RequestDiconnectFailed( NEService::eResultType FailureReason );
     
 /************************************************************************
  * Response Connect
@@ -337,7 +338,7 @@ protected:
      *          i.e. if passed Proxy address is equal to the Proxy object that client has.
      *          If Proxy objects are not equal, it should return false;
      **/
-    virtual bool ServiceConnected( const bool isConnected, CEProxyBase & proxy );
+    virtual bool ServiceConnected( bool isConnected, CEProxyBase & proxy );
 
 protected:
 /************************************************************************/
@@ -348,13 +349,13 @@ protected:
      * \brief   Overwrite this method if need to make error handling on invalid response
      * \param   InvalidRespId   The ID of invalid response
      **/
-    virtual void InvalidResponse( const NEConnectionManager::eMessageIDs InvalidRespId );
+    virtual void InvalidResponse( NEConnectionManager::eMessageIDs InvalidRespId );
 
     /**
      * \brief   Overwrite this method if need to make error handling on invalid request
      * \param   InvalidReqId    The ID of invalid request
      **/
-    virtual void InvalidRequest( const NEConnectionManager::eMessageIDs InvalidReqId );
+    virtual void InvalidRequest( NEConnectionManager::eMessageIDs InvalidReqId );
     
     /**
      * \brief   By default, the function calls appropriate request failure function.
@@ -362,7 +363,7 @@ protected:
      * \param   msgId           The ID of either response of request message, which failed. Normally ID of request.
      * \param   FailureReason   The failure reason value of request call.
      **/
-    virtual void RequestFailed( const NEConnectionManager::eMessageIDs FailureMsgId, const NEService::eResultType FailureReason );
+    virtual void RequestFailed( NEConnectionManager::eMessageIDs FailureMsgId, NEService::eResultType FailureReason );
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes
@@ -433,7 +434,7 @@ private:
      *                  assigned, then if parameter 'always' is true, it will trigger
      *                  notification immediately after call. 
      **/
-    void NotifyOn( const NEConnectionManager::eMessageIDs msgId, bool notify, bool always = false );
+    void NotifyOn( NEConnectionManager::eMessageIDs msgId, bool notify, bool always = false );
     /**
      * \brief   Returns reference of CEConnectionManagerClientBase object
      **/
@@ -461,8 +462,8 @@ inline unsigned int CEConnectionManagerClientBase::GetCurrentSequenceNr( void ) 
 inline bool CEConnectionManagerClientBase::IsConnected( void ) const
 {   return mIsConnected;    }
 
-inline const bool CEConnectionManagerClientBase::IsNotificationAssigned( const NEConnectionManager::eMessageIDs msgId ) const
-{   return mProxy->HasNotificationListener(static_cast<const unsigned int>(msgId));   }
+inline bool CEConnectionManagerClientBase::IsNotificationAssigned( NEConnectionManager::eMessageIDs msgId ) const
+{   return mProxy->HasNotificationListener(static_cast<unsigned int>(msgId));   }
 
 /************************************************************************
  * Attribute inline functions

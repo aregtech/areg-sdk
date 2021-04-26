@@ -8,9 +8,9 @@
 
 #include "edge/services/CEDirectConnectionService.hpp"
 #include "edge/services/CEConnectionList.hpp"
-#include "areg/component/CEComponentLoader.hpp"
-#include "areg/base/GEGlobal.h"
-#include "areg/trace/GETrace.h"
+#include "areg/src/component/CEComponentLoader.hpp"
+#include "areg/src/base/GEGlobal.h"
+#include "areg/src/trace/GETrace.h"
 #include "shared/NECommonSettings.hpp"
 
 DEF_TRACE_SCOPE( distrbutedapp_ui_CEPageConnections_OnClientRegistration );
@@ -82,7 +82,7 @@ void CEPageConnections::OnServiceConnection( bool isConnected, CEDispatcherThrea
         const CEDateTime & dateTime = mConnectionHandler.GetTimeConnect();
         mClientConnections->NotifyOnBroadcastClientConnected( true );
         mClientConnections->NotifyOnBroadcastClientDisconnected( true );
-        mClientConnections->RequestRegisterConnection( mConnectionHandler.GetNickName( ), mConnectionHandler.GetCookieDirect( ), mConnectionHandler.GetConnectCookie(), dateTime.IsValid() ? dateTime : CEDateTime::GetNow(false) );
+        mClientConnections->RequestRegisterConnection( mConnectionHandler.GetNickName( ), mConnectionHandler.GetCookieDirect( ), mConnectionHandler.GetConnectCookie(), dateTime.IsValid() ? dateTime : CEDateTime::GetNow() );
     }
     else
     {

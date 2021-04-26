@@ -999,49 +999,6 @@ void TERingStack<VALUE, VALUE_TYPE, Implement>::_emptyStack( void )
 }
 
 //////////////////////////////////////////////////////////////////////////
-// TERingStack<VALUE, VALUE_TYPE, Implement> class template friend operators
-//////////////////////////////////////////////////////////////////////////
-
-template<typename V, typename VT, class Impl>
-const IEInStream & operator >> ( const IEInStream & stream, TERingStack<V, VT, Impl> & input )
-{
-    CELock lock(input.mSynchObject);
-
-    int size = 0;
-    stream >> size;
-
-    input.Remove();
-    if ( input.GetCapacity() < size )
-        input.Resize(size);
-
-    for (int i = 0; i < size; i ++)
-    {
-        V newElement;
-        stream >> newElement;
-        static_cast<void>(input.PushElement(newElement));
-    }
-
-    return stream;
-}
-
-template<typename V, typename VT, class Impl>
-IEOutStream & operator << ( IEOutStream & stream, const TERingStack<V, VT, Impl> & output )
-{
-    CELock lock(output.mSynchObject);
-
-    int size = output.mElemCount;
-    stream << size;
-    int pos = output.mStartPosition;
-    for ( int i = 0; i < size; i ++)
-    {
-        stream << output.mStackList[pos];
-        pos = ( pos + 1 ) % output.mCapacity;
-    }
-
-    return stream;
-}
-
-//////////////////////////////////////////////////////////////////////////
 // TELockRingStack<VALUE, VALUE_TYPE, Implement> class template implementation
 //////////////////////////////////////////////////////////////////////////
 template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /*= TEListImpl<VALUE_TYPE>*/>
@@ -1086,5 +1043,48 @@ TENolockRingStack<VALUE, VALUE_TYPE, Implement>::~TENolockRingStack( void )
 template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /*= TEListImpl<VALUE_TYPE>*/>
 inline const TENolockRingStack<VALUE, VALUE_TYPE, Implement> & TENolockRingStack<VALUE, VALUE_TYPE, Implement>::operator = ( const TERingStack<VALUE, VALUE_TYPE, Implement> & source )
 {   static_cast<TERingStack<VALUE, VALUE_TYPE, Implement> &>(*this) = source; return (*this);     }
+
+//////////////////////////////////////////////////////////////////////////
+// TERingStack<VALUE, VALUE_TYPE, Implement> class template friend operators
+//////////////////////////////////////////////////////////////////////////
+
+template<typename V, typename VT, class Impl>
+const IEInStream & operator >> ( const IEInStream & stream, TERingStack<V, VT, Impl> & input )
+{
+    CELock lock(input.mSynchObject);
+
+    int size = 0;
+    stream >> size;
+
+    input.Remove();
+    if ( input.GetCapacity() < size )
+        input.Resize(size);
+
+    for (int i = 0; i < size; i ++)
+    {
+        V newElement;
+        stream >> newElement;
+        static_cast<void>(input.PushElement(newElement));
+    }
+
+    return stream;
+}
+
+template<typename V, typename VT, class Impl>
+IEOutStream & operator << ( IEOutStream & stream, const TERingStack<V, VT, Impl> & output )
+{
+    CELock lock(output.mSynchObject);
+
+    int size = output.mElemCount;
+    stream << size;
+    int pos = output.mStartPosition;
+    for ( int i = 0; i < size; i ++)
+    {
+        stream << output.mStackList[pos];
+        pos = ( pos + 1 ) % output.mCapacity;
+    }
+
+    return stream;
+}
 
 #endif  // AREG_BASE_TERINGSTACK_HPP

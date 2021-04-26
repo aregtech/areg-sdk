@@ -2,9 +2,9 @@
 // Begin generate shared/generated/private/CEConnectionManagerClientBase.cpp file
 //////////////////////////////////////////////////////////////////////////
 /************************************************************************
- * (c) copyright    2019
+ * (c) copyright    2021
  *                  Create by AREGtech code generator tool from source ConnectionManager.
- * Generated at     03.09.2019  02:48:08 GMT+02:00 
+ * Generated at     25.04.2021  23:50:44 GMT+02:00 
  ************************************************************************/
 
 /************************************************************************
@@ -17,9 +17,9 @@
  * Include files
  ************************************************************************/
 #include "shared/generated/CEConnectionManagerClientBase.hpp"
-#include "areg/component/CEComponentThread.hpp"
-#include "areg/component/CEComponent.hpp"
-#include "areg/trace/GETrace.h"
+#include "areg/src/component/CEComponentThread.hpp"
+#include "areg/src/component/CEComponent.hpp"
+#include "areg/src/trace/GETrace.h"
 
 /************************************************************************
  * Request error handling initialization
@@ -29,7 +29,7 @@ namespace NEConnectionManager
     /**
      * \brief   Initialize request failure function pointers to make error handling
      **/
-    typedef void (CEConnectionManagerClientBase::* FuncRequestFailure) ( const NEService::eResultType );
+    typedef void (CEConnectionManagerClientBase::* FuncRequestFailure) ( NEService::eResultType );
     static FuncRequestFailure failureFunctions[] = 
     {
           &CEConnectionManagerClientBase::RequestConnetFailed
@@ -46,7 +46,7 @@ namespace NEConnectionManager
  * Constructor / Destructor
  ************************************************************************/
 
-CEConnectionManagerClientBase::CEConnectionManagerClientBase( const char* const roleName, const char * ownerThread /*= static_cast<const char *>(NULL)*/ )
+CEConnectionManagerClientBase::CEConnectionManagerClientBase( const char* roleName, const char * ownerThread /*= static_cast<const char *>(NULL)*/ )
     : IEProxyListener   ( )
     , CEClientBase      ( )
 
@@ -57,7 +57,7 @@ CEConnectionManagerClientBase::CEConnectionManagerClientBase( const char* const 
     ; // do nothing
 }
 
-CEConnectionManagerClientBase::CEConnectionManagerClientBase( const char* const roleName, CEDispatcherThread & ownerThread )
+CEConnectionManagerClientBase::CEConnectionManagerClientBase( const char* roleName, CEDispatcherThread & ownerThread )
     : IEProxyListener   ( )
     , CEClientBase      ( )
 
@@ -68,7 +68,7 @@ CEConnectionManagerClientBase::CEConnectionManagerClientBase( const char* const 
     ; // do nothing
 }
 
-CEConnectionManagerClientBase::CEConnectionManagerClientBase( const char* const roleName, CEComponent & owner )
+CEConnectionManagerClientBase::CEConnectionManagerClientBase( const char* roleName, CEComponent & owner )
     : IEProxyListener   ( )
     , CEClientBase      ( )
 
@@ -132,7 +132,7 @@ void CEConnectionManagerClientBase::ClearAllNotifications( void )
 }
 
 DEF_TRACE_SCOPE(shared_generated_CEConnectionManagerClientBase_ServiceConnected);
-bool CEConnectionManagerClientBase::ServiceConnected( const bool isConnected, CEProxyBase & proxy )
+bool CEConnectionManagerClientBase::ServiceConnected( bool isConnected, CEProxyBase & proxy )
 {
     TRACE_SCOPE(shared_generated_CEConnectionManagerClientBase_ServiceConnected);
     
@@ -146,7 +146,7 @@ bool CEConnectionManagerClientBase::ServiceConnected( const bool isConnected, CE
     return result;
 }
 
-void CEConnectionManagerClientBase::NotifyOn( const NEConnectionManager::eMessageIDs msgId, bool notify, bool always /* = false */ )
+void CEConnectionManagerClientBase::NotifyOn( NEConnectionManager::eMessageIDs msgId, bool notify, bool always /* = false */ )
 {
     if (notify)
         mProxy->SetNotification(msgId, static_cast<IENotificationEventConsumer &>(self()), always);
@@ -161,9 +161,9 @@ void CEConnectionManagerClientBase::NotifyOn( const NEConnectionManager::eMessag
 DEF_TRACE_SCOPE(shared_generated_CEConnectionManagerClientBase_ProcessNotificationEvent);
 void CEConnectionManagerClientBase::ProcessNotificationEvent( CENotificationEvent & eventElem )
 {
-    const CENotificationEventData & data    = static_cast<const CENotificationEvent &>(eventElem).GetData();
-    const NEService::eResultType result     = data.GetNotifyType();
-    const NEConnectionManager::eMessageIDs msgId = static_cast<NEConnectionManager::eMessageIDs>(data.GetNotifyId());
+    const CENotificationEventData & data= static_cast<const CENotificationEvent &>(eventElem).GetData();
+    NEService::eResultType result       = data.GetNotifyType();
+    NEConnectionManager::eMessageIDs msgId   = static_cast<NEConnectionManager::eMessageIDs>(data.GetNotifyId());
     mCurrSequenceNr = data.GetSequenceNr();
 
     switch (result)
@@ -296,7 +296,7 @@ void CEConnectionManagerClientBase::ProcessNotificationEvent( CENotificationEven
  * Error handling calls
  ************************************************************************/
 DEF_TRACE_SCOPE(shared_generated_CEConnectionManagerClientBase_InvalidResponse);
-void CEConnectionManagerClientBase::InvalidResponse( const NEConnectionManager::eMessageIDs InvalidRespId )
+void CEConnectionManagerClientBase::InvalidResponse( NEConnectionManager::eMessageIDs InvalidRespId )
 {
     TRACE_SCOPE(shared_generated_CEConnectionManagerClientBase_InvalidResponse);
     TRACE_WARN(">>> There is an invalid response [ %s ] (value = [ %d ]) in client CEConnectionManagerClientBase with path [ %s ], which cannot be processed! Make error handling! <<<"
@@ -308,7 +308,7 @@ void CEConnectionManagerClientBase::InvalidResponse( const NEConnectionManager::
 }
 
 DEF_TRACE_SCOPE(shared_generated_CEConnectionManagerClientBase_InvalidRequest);
-void CEConnectionManagerClientBase::InvalidRequest( const NEConnectionManager::eMessageIDs InvalidReqId )
+void CEConnectionManagerClientBase::InvalidRequest( NEConnectionManager::eMessageIDs InvalidReqId )
 {
     TRACE_SCOPE(shared_generated_CEConnectionManagerClientBase_InvalidRequest);
     TRACE_WARN(">>> There is an invalid request [ %s ] (value = [ %d ]) in client CEConnectionManagerClientBase with path [ %s ], which was not able to process! Make error handling! <<<"
@@ -320,7 +320,7 @@ void CEConnectionManagerClientBase::InvalidRequest( const NEConnectionManager::e
 }
 
 DEF_TRACE_SCOPE(shared_generated_CEConnectionManagerClientBase_RequestFailed);
-void CEConnectionManagerClientBase::RequestFailed( const NEConnectionManager::eMessageIDs FailureMsgId, const NEService::eResultType FailureReason )
+void CEConnectionManagerClientBase::RequestFailed( NEConnectionManager::eMessageIDs FailureMsgId, NEService::eResultType FailureReason )
 {
     TRACE_SCOPE(shared_generated_CEConnectionManagerClientBase_RequestFailed);
     TRACE_WARN(">>> The request [ %s ] (value = [ %d ]) in Proxy [ %s ] of CEConnectionManagerClientBase failed with reason [ %s ]! Triggering appropriate request failed function! <<<"
@@ -347,7 +347,7 @@ void CEConnectionManagerClientBase::RequestFailed( const NEConnectionManager::eM
  * Attribute notifications
  ************************************************************************/
 
-void CEConnectionManagerClientBase::OnConnectionListUpdate( const NEConnectionManager::MapConnection & /* ConnectionList */, const NEService::eDataStateType /* state */ )
+void CEConnectionManagerClientBase::OnConnectionListUpdate( const NEConnectionManager::MapConnection & /* ConnectionList */, NEService::eDataStateType /* state */ )
 {
     CEClientBase::OnUpdateNotImplemented( "CEConnectionManagerClientBase", static_cast<unsigned int>(NEConnectionManager::MSG_ID_ConnectionList) );
 }
@@ -356,17 +356,17 @@ void CEConnectionManagerClientBase::OnConnectionListUpdate( const NEConnectionMa
  * Request failure / Response and Broadcast notifications
  ************************************************************************/
  
-void CEConnectionManagerClientBase::RequestConnetFailed( const NEService::eResultType /* FailureReason */ )
+void CEConnectionManagerClientBase::RequestConnetFailed( NEService::eResultType /* FailureReason */ )
 {
     CEClientBase::RequestFailedNotImplemented( "CEConnectionManagerClientBase", static_cast<unsigned int>(NEConnectionManager::MSG_ID_RequestConnet) );
 }
 
-void CEConnectionManagerClientBase::RequestRegisterConnectionFailed( const NEService::eResultType /* FailureReason */ )
+void CEConnectionManagerClientBase::RequestRegisterConnectionFailed( NEService::eResultType /* FailureReason */ )
 {
     CEClientBase::RequestFailedNotImplemented( "CEConnectionManagerClientBase", static_cast<unsigned int>(NEConnectionManager::MSG_ID_RequestRegisterConnection) );
 }
 
-void CEConnectionManagerClientBase::RequestDiconnectFailed( const NEService::eResultType /* FailureReason */ )
+void CEConnectionManagerClientBase::RequestDiconnectFailed( NEService::eResultType /* FailureReason */ )
 {
     CEClientBase::RequestFailedNotImplemented( "CEConnectionManagerClientBase", static_cast<unsigned int>(NEConnectionManager::MSG_ID_RequestDiconnect) );
 }

@@ -8,10 +8,10 @@
 #include "edge/ui/CEPageNetworkSetup.hpp"
 #include "edge/ui/CEDistributedDialog.hpp"
 #include "shared/NECommonSettings.hpp"
-#include "areg/base/CEString.hpp"
-#include "areg/base/NESocket.hpp"
-#include "areg/ipc/CEConnectionConfiguration.hpp"
-#include "areg/appbase/CEApplication.hpp"
+#include "areg/src/base/CEString.hpp"
+#include "areg/src/base/NESocket.hpp"
+#include "areg/src/ipc/CEConnectionConfiguration.hpp"
+#include "areg/src/appbase/CEApplication.hpp"
 #include "edge/services/CEChatPrticipantHandler.hpp"
 
 // CEPageNetworkSetup dialog
@@ -86,7 +86,7 @@ void CEPageNetworkSetup::OnServiceNetwork( bool isConnected, CEDispatcherThread 
         if ( (mConnectionHandler.GetNickName().IsEmpty() == false) && (mConnectionHandler.GetCookie() == NECommonSettings::InvalidCookie) )
         {
             ASSERT(mNetworkSetup != NULL);
-            mNetworkSetup->RequestConnet(mConnectionHandler.GetNickName(), CEDateTime::GetNow(false) );
+            mNetworkSetup->RequestConnet(mConnectionHandler.GetNickName(), CEDateTime::GetNow() );
         }
     }
     mConnectPending = isConnected ? false : mConnectPending;
@@ -113,7 +113,7 @@ void CEPageNetworkSetup::OnClientRegistration( bool isRegistered, CEDispatcherTh
     }
     else if ( (isRegistered == false) && (mNetworkSetup != NULL) )
     {
-        mNetworkSetup->RequestDiconnect( mConnectionHandler.GetNickName(), mConnectionHandler.GetCookie(), CEDateTime::GetNow(false));
+        mNetworkSetup->RequestDiconnect( mConnectionHandler.GetNickName(), mConnectionHandler.GetCookie(), CEDateTime::GetNow());
         mConnectionHandler.ResetConnectionList( );
     }
 }
@@ -187,7 +187,7 @@ void CEPageNetworkSetup::OnClickedBrokerConnect()
             mBrokerPort = temp;
             CEString ipAddress;
             ipAddress.Format( "%u.%u.%u.%u", ip1, ip2, ip3, ip4 );
-            if ( CEApplication::StartBrokerClient( ipAddress, mBrokerPort ) )
+            if ( CEApplication::StartMessageRouterClient( ipAddress, mBrokerPort ) )
             {
                 CEApplication::StartModel( NECommonSettings::MODEL_NAME_DISTRIBUTED_CLIENT );
                 CWnd *wnd = GetDlgItem(IDC_EDIT_NICKNAME);
@@ -208,7 +208,7 @@ void CEPageNetworkSetup::OnClickedBrokerDisconnect()
         mConnectionHandler.ResetConnectionList();
 
         CEApplication::StopModel(NECommonSettings::MODEL_NAME_DISTRIBUTED_CLIENT);
-        CEApplication::StopBrokerClient();
+        CEApplication::StopMessageRouterClient();
         mConnectPending = false;
         mRegisterPending= false;
     }
@@ -225,7 +225,7 @@ void CEPageNetworkSetup::OnClickedButtonRegister( )
             mRegisterPending = true;
             mConnectionHandler.SetRegistered(false);
             mConnectionHandler.SetNickName(nickName);
-            mNetworkSetup->RequestConnet(nickName, CEDateTime::GetNow(false) );
+            mNetworkSetup->RequestConnet(nickName, CEDateTime::GetNow() );
         }
         else
         {
@@ -268,7 +268,7 @@ void CEPageNetworkSetup::OnBnUpdateBrokerConnect( CCmdUI* pCmdUI )
         mBrokerPort = 0xFFFFu;
     }
     
-    if ( (CEApplication::IsBrokerConnected( ) == false) && (mBrokerPort < 0xFFFFu) && (mCtrlAddress.IsBlank( ) == FALSE) )
+    if ( (CEApplication::IsRouterConnected( ) == false) && (mBrokerPort < 0xFFFFu) && (mCtrlAddress.IsBlank( ) == FALSE) )
     {
         pCmdUI->Enable( TRUE );
         if ( mConnectEnable == FALSE )
@@ -287,7 +287,7 @@ void CEPageNetworkSetup::OnBnUpdateBrokerConnect( CCmdUI* pCmdUI )
 
 void CEPageNetworkSetup::OnBnUdateBrokerDisconnect( CCmdUI* pCmdUI )
 {
-    if ( CEApplication::IsBrokerConnected( ) )
+    if ( CEApplication::IsRouterConnected( ) )
     {
         pCmdUI->Enable( TRUE );
         if ( mDisconnectEnabled == FALSE )
@@ -306,7 +306,7 @@ void CEPageNetworkSetup::OnBnUdateBrokerDisconnect( CCmdUI* pCmdUI )
 
 void CEPageNetworkSetup::OnUpdateRemoteData( CCmdUI* pCmdUI )
 {
-    pCmdUI->Enable( CEApplication::IsBrokerConnected( ) ? FALSE : TRUE );
+    pCmdUI->Enable( CEApplication::IsRouterConnected( ) ? FALSE : TRUE );
 }
 
 void CEPageNetworkSetup::OnUpdateNickname( CCmdUI* pCmdUI )
@@ -356,7 +356,7 @@ void CEPageNetworkSetup::OnUpdateButtonRegister( CCmdUI* pCmdUI )
 
 bool CEPageNetworkSetup::canRegistered( void ) const
 {
-    return (CEApplication::IsBrokerConnected( ) ? mConnectionHandler.GetRegistered() == false : false);
+    return (CEApplication::IsRouterConnected( ) ? mConnectionHandler.GetRegistered() == false : false);
 }
 
 void CEPageNetworkSetup::setFocusNickname( void ) const
@@ -377,7 +377,7 @@ BOOL CEPageNetworkSetup::OnInitDialog( )
     mCtrlPort.SetWindowText( _T( "8181" ) );
 
     CEConnectionConfiguration config;
-    if ( config.LoadConfiguration( NEApplication::DEFAULT_BROKER_CONFIG_FILE ) )
+    if ( config.LoadConfiguration( NEApplication::DEFAULT_ROUTER_CONFIG_FILE ) )
     {
         unsigned char field0, field1, field2, field3;
         if ( config.GetConnectionHostIpAddress( field0, field1, field2, field3, NERemoteService::ConnectionTcpip ) )

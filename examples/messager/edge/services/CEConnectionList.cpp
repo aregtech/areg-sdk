@@ -1,8 +1,8 @@
 
 #include "edge/res/stdafx.h"
 #include "edge/services/CEConnectionList.hpp"
-#include "areg/component/CEComponent.hpp"
-#include "areg/component/CEComponentThread.hpp"
+#include "areg/src/component/CEComponent.hpp"
+#include "areg/src/component/CEComponentThread.hpp"
 #include "edge/NEDistributedApp.hpp"
 #include "edge/services/CEConnectionHandler.hpp"
 #include "edge/ui/CEDistributedDialog.hpp"
@@ -25,7 +25,7 @@ CEConnectionList::~CEConnectionList( )
 {
 }
 
-bool CEConnectionList::ServiceConnected( const bool isConnected, CEProxyBase & proxy )
+bool CEConnectionList::ServiceConnected( bool isConnected, CEProxyBase & proxy )
 {
     bool result = false;
     if ( CEConnectionManagerClientBase::ServiceConnected( isConnected, proxy ) )
