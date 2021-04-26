@@ -5,12 +5,12 @@
  * \brief           Configurations, settings, etc..
  ************************************************************************/
 
-#include "areg/base/GEGlobal.h"
-#include "areg/trace/GETrace.h"
-#include "areg/base/CEDateTime.hpp"
-#include "areg/base/CEString.hpp"
-#include "areg/base/TEArrayList.hpp"
-#include "areg/base/TEHashMap.hpp"
+#include "areg/src/base/GEGlobal.h"
+#include "areg/src/trace/GETrace.h"
+#include "areg/src/base/CEDateTime.hpp"
+#include "areg/src/base/CEString.hpp"
+#include "areg/src/base/TEArrayList.hpp"
+#include "areg/src/base/TEHashMap.hpp"
 #include <tchar.h>
 
 namespace NECommonSettings
@@ -135,7 +135,7 @@ namespace NECommonSettings
 	     * \brief   Converts data to unsigned int, which might be used as a hash key value in map object.
          *          The conversion is a sum of each field of structure
 	     **/
-	     inline operator unsigned int ( void ) const;
+	     inline operator size_t ( void ) const;
 
 	//////////////////////////////////////////////////////////////////////////
 	// sConnection fields
@@ -229,7 +229,7 @@ namespace NECommonSettings
 	     * \brief   Converts data to unsigned int, which might be used as a hash key value in map object.
          *          The conversion is a sum of each field of structure
 	     **/
-	     inline operator unsigned int ( void ) const;
+	     inline operator size_t ( void ) const;
 
 	    /**
 	     * \brief   Declare NECommonSettings::sParticipant instance streamable.
@@ -349,9 +349,9 @@ inline bool NECommonSettings::sConnection::operator != ( const NECommonSettings:
  * \brief   Converts data to unsigned int, which might be used as a hash key value in map object.
  *          The conversion is a sum of each field of structure
  **/
- inline NECommonSettings::sConnection::operator unsigned int ( void ) const
+ inline NECommonSettings::sConnection::operator size_t ( void ) const
  {
-    return  ( static_cast<unsigned int>( cookie ) + static_cast<unsigned int>( nickName ) );
+    return  ( static_cast<size_t>( cookie ) + static_cast<size_t>( nickName ) );
  }
 /**
  * \brief   Streaming operator. Reads and instantiates NECommonSettings::sConnection structure field entries from stream.
@@ -446,9 +446,9 @@ inline bool NECommonSettings::sParticipant::operator != ( const NECommonSettings
  * \brief   Converts data to unsigned int, which might be used as a hash key value in map object.
  *          The conversion is a sum of each field of structure
  **/
- inline NECommonSettings::sParticipant::operator unsigned int ( void ) const
+ inline NECommonSettings::sParticipant::operator size_t ( void ) const
  {
-    return  ( static_cast<unsigned int>( sessionId ) + static_cast<unsigned int>( cookie ) + static_cast<unsigned int>( nickName ) );
+    return  ( static_cast<size_t>( sessionId ) + static_cast<size_t>( cookie ) + static_cast<size_t>( nickName ) );
  }
 /**
  * \brief   Streaming operator. Reads and instantiates NECommonSettings::sParticipant structure field entries from stream.

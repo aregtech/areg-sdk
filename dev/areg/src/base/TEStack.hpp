@@ -764,41 +764,6 @@ inline void TEStack<VALUE, VALUE_TYPE, Implement>::_copyElements( const TEStack<
 }
 
 //////////////////////////////////////////////////////////////////////////
-// TEStack<VALUE, VALUE_TYPE, Implement> friend operators implementation
-//////////////////////////////////////////////////////////////////////////
-template<typename V, typename VT, class Impl>
-const IEInStream & operator >> ( const IEInStream & stream, TEStack<V, VT, Impl> & input )
-{
-    CELock lock(input.mSynchObject);
-
-    input._cleanStack();
-    int size = 0;
-    stream >> size;
-    for (int i = 0; i < size; ++ i)
-    {
-        V newElement;
-        stream >> newElement;
-        static_cast<void>(input.PushElement(newElement));
-    }
-
-    return stream;
-}
-
-template<typename V, typename VT, class Impl>
-IEOutStream & operator << ( IEOutStream & stream, const TEStack<V, VT, Impl> & output )
-{
-    CELock lock(output.mSynchObject);
-
-    int size = output.GetSize();
-    stream << size;
-    class TEStack<V, VT>::CEBlock* block = output.mHead;
-    for ( ; block != NULL; block = block->mNext)
-        stream << block->mValue;
-
-    return stream;
-}
-
-//////////////////////////////////////////////////////////////////////////
 // TELockStack<VALUE, VALUE_TYPE, Implement> class template implementation
 //////////////////////////////////////////////////////////////////////////
 
@@ -847,5 +812,40 @@ TENolockStack<VALUE, VALUE_TYPE, Implement>::~TENolockStack( void )
 template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /*= TEListImpl<VALUE_TYPE>*/>
 inline const TENolockStack<VALUE, VALUE_TYPE, Implement> & TENolockStack<VALUE, VALUE_TYPE, Implement>::operator = ( const TEStack<VALUE, VALUE_TYPE, Implement> & source )
 {   static_cast<TEStack<VALUE, VALUE_TYPE, Implement> &>(*this) = source; return (*this);     }
+
+//////////////////////////////////////////////////////////////////////////
+// TEStack<VALUE, VALUE_TYPE, Implement> friend operators implementation
+//////////////////////////////////////////////////////////////////////////
+template<typename V, typename VT, class Impl>
+const IEInStream & operator >> ( const IEInStream & stream, TEStack<V, VT, Impl> & input )
+{
+    CELock lock(input.mSynchObject);
+
+    input._cleanStack();
+    int size = 0;
+    stream >> size;
+    for (int i = 0; i < size; ++ i)
+    {
+        V newElement;
+        stream >> newElement;
+        static_cast<void>(input.PushElement(newElement));
+    }
+
+    return stream;
+}
+
+template<typename V, typename VT, class Impl>
+IEOutStream & operator << ( IEOutStream & stream, const TEStack<V, VT, Impl> & output )
+{
+    CELock lock(output.mSynchObject);
+
+    int size = output.GetSize();
+    stream << size;
+    class TEStack<V, VT, Impl>::CEBlock* block = output.mHead;
+    for ( ; block != NULL; block = block->mNext)
+        stream << block->mValue;
+
+    return stream;
+}
 
 #endif  // AREG_BASE_TESTACK_HPP

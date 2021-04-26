@@ -130,7 +130,7 @@ void CEDirectChatService::RequestChatJoin( const NEDirectMessager::sParticipant 
             newParticipant = true;
         }
 
-        ResponseChatJoin(true, chatParticipants, timeConnect, CEDateTime::GetNow(false) );
+        ResponseChatJoin(true, chatParticipants, timeConnect, CEDateTime::GetNow() );
         if ( newParticipant )
         {
             BroadcastParticipantJoined( participant, timeConnect );

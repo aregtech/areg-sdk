@@ -8,11 +8,11 @@
 #include "register/NECentralApp.hpp"
 #include "shared/NECommonSettings.hpp"
 
-#include "areg/base/CEString.hpp"
-#include "areg/base/NESocket.hpp"
-#include "areg/appbase/CEApplication.hpp"
-#include "areg/ipc/CEConnectionConfiguration.hpp"
-#include "areg/component/CEComponentLoader.hpp"
+#include "areg/src/base/CEString.hpp"
+#include "areg/src/base/NESocket.hpp"
+#include "areg/src/appbase/CEApplication.hpp"
+#include "areg/src/ipc/CEConnectionConfiguration.hpp"
+#include "areg/src/component/CEComponentLoader.hpp"
 
 // CEPageBrokerSetup dialog
 
@@ -88,7 +88,7 @@ void CEPageBrokerSetup::OnBnClickedBrokerDisconnect( )
         }
 
         CEApplication::StopModel( NECommonSettings::MODEL_NAME_CENTRAL_SERVER );
-        CEApplication::StopBrokerClient();
+        CEApplication::StopMessageRouterClient();
         mIsConnected = false;
     }
 }
@@ -168,7 +168,7 @@ BOOL CEPageBrokerSetup::OnInitDialog( )
     mCtrlPort.SetWindowText( _T( "8181" ) );
 
     CEConnectionConfiguration config;
-    if ( config.LoadConfiguration(NEApplication::DEFAULT_BROKER_CONFIG_FILE) )
+    if ( config.LoadConfiguration(NEApplication::DEFAULT_ROUTER_CONFIG_FILE) )
     {
         unsigned char field0, field1, field2, field3;
         if ( config.GetConnectionHostIpAddress(field0, field1, field2, field3, NERemoteService::ConnectionTcpip) )

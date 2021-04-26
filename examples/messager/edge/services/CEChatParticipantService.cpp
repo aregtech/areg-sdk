@@ -4,7 +4,7 @@
  ************************************************************************/
 #include "edge/res/stdafx.h"
 #include "edge/services/CEChatParticipantService.hpp"
-#include "areg/component/CEComponentThread.hpp"
+#include "areg/src/component/CEComponentThread.hpp"
 #include "edge/ui/CEPageChat.hpp"
 
 CEComponent * CEChatParticipantService::CreateComponent( const NERegistry::CEComponentEntry & entry, CEComponentThread & owner )

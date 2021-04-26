@@ -6,7 +6,7 @@
 #include "register/res/resource.h"
 #include "register/NECentralApp.hpp"
 #include "shared/NECommonSettings.hpp"
-#include "areg/base/TEArrayList.hpp"
+#include "areg/src/base/TEArrayList.hpp"
 
 class CEPageConnections : public CPropertyPage
 {

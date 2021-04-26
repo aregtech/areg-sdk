@@ -5,9 +5,9 @@
 #define  SHARED_GENERATED_NECENTRALMESSAGER_HPP
 
 /************************************************************************
- * (c) copyright    2019
+ * (c) copyright    2021
  *                  Create by AREGtech code generator tool from source CentralMessager.
- * Generated at     03.09.2019  02:48:07 GMT+02:00 
+ * Generated at     25.04.2021  23:50:42 GMT+02:00 
  ************************************************************************/
 
 /************************************************************************
@@ -19,20 +19,21 @@
 /************************************************************************
  * Include files
  ************************************************************************/
+#include "areg/src/base/GEGlobal.h"
 
 //////////////////////////////////////////////////////////////////////////
 // Dependency includes
 //////////////////////////////////////////////////////////////////////////
 #include "shared/NECommonSettings.hpp"
-#include "areg/base/CEString.hpp"
-#include "areg/base/CEDateTime.hpp"
+#include "areg/src/base/CEString.hpp"
+#include "areg/src/base/CEDateTime.hpp"
 
 //////////////////////////////////////////////////////////////////////////
 // Mandatory includes
 //////////////////////////////////////////////////////////////////////////
-#include "areg/base/IEIOStream.hpp"
-#include "areg/base/CEVersion.hpp"
-#include "areg/component/NEService.hpp"
+#include "areg/src/base/IEIOStream.hpp"
+#include "areg/src/base/CEVersion.hpp"
+#include "areg/src/component/NEService.hpp"
 
 /************************************************************************
  * Dependencies
@@ -46,8 +47,8 @@
  * \brief   CentralMessager Service Interface defined constants, 
  *          types and structures message IDs, global static methods.
  *
- *          This service is receiving message from connected client when they are typed or 
- *          requested to be send. The service receives text message from initiator and
+ *          This service is used to receive messages from connected edge when typing or 
+ *          sending messages. The service receives text message from initiator and
  *          broadcast to all clients, which have subscribed on event.
  *          It as well broadcasts own text message to all connected clients.
  *
@@ -145,7 +146,7 @@ namespace   NECentralMessager
     /**
      * \brief   Returns string value of NECentralMessager::eMessageIDs
      **/
-    inline const char * const GetString( const NECentralMessager::eMessageIDs msgId );
+    inline const char * GetString( NECentralMessager::eMessageIDs msgId );
      
 /************************************************************************
  * Service Interface standard functions and variables
@@ -159,12 +160,12 @@ namespace   NECentralMessager
     /**
      * \brief   Returns the mapped Response ID of give Request ID.
      **/
-    NECentralMessager::eMessageIDs GetResponseId( const NECentralMessager::eMessageIDs reqId );
+    NECentralMessager::eMessageIDs GetResponseId( NECentralMessager::eMessageIDs reqId );
 
     /**
      * \brief   Returns the mapped Response ID of give Request ID.
      **/
-    NECentralMessager::eMessageIDs GetRequestId( const NECentralMessager::eMessageIDs respId );
+    NECentralMessager::eMessageIDs GetRequestId( NECentralMessager::eMessageIDs respId );
 
     /**
      * \brief   Array of supported Request IDs
@@ -220,7 +221,7 @@ IMPLEMENT_STREAMABLE( NECentralMessager::eMessageIDs );
 /**
  * Returns string value of NECentralMessager::eMessageIDs
  **/
-inline const char * const NECentralMessager::GetString( const NECentralMessager::eMessageIDs msgId )
+inline const char * NECentralMessager::GetString( NECentralMessager::eMessageIDs msgId )
 {
     switch ( msgId )
     {

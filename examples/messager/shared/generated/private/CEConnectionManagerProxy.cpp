@@ -3,9 +3,9 @@
 //////////////////////////////////////////////////////////////////////////
 
 /************************************************************************
- * (c) copyright    2019
+ * (c) copyright    2021
  *                  Create by AREGtech code generator tool from source ConnectionManager.
- * Generated at     03.09.2019  02:48:08 GMT+02:00 
+ * Generated at     25.04.2021  23:50:44 GMT+02:00 
  ************************************************************************/
 
 /************************************************************************
@@ -19,15 +19,15 @@
  ************************************************************************/
 #include "shared/generated/private/CEConnectionManagerProxy.hpp"
 #include "shared/generated/private/CEConnectionManagerEvents.hpp"
-#include "areg/component/IEProxyListener.hpp"
-#include "areg/base/CEThread.hpp"
-#include "areg/trace/GETrace.h"
+#include "areg/src/component/IEProxyListener.hpp"
+#include "areg/src/base/CEThread.hpp"
+#include "areg/src/trace/GETrace.h"
 
 //////////////////////////////////////////////////////////////////////////
 // CEConnectionManagerProxy::CEConnectionManagerServiceAvailableEvent class implementation
 //////////////////////////////////////////////////////////////////////////
 
-IMPLEMENT_RUNTIME_EVENT(CEConnectionManagerProxy::CEConnectionManagerServiceAvailableEvent, CEProxyBase::CEServiceAvailableEvent);
+IMPLEMENT_RUNTIME_EVENT(CEConnectionManagerProxy::CEConnectionManagerServiceAvailableEvent, CEProxyBase::CEServiceAvailableEvent)
 
 CEConnectionManagerProxy::CEConnectionManagerServiceAvailableEvent::CEConnectionManagerServiceAvailableEvent( IENotificationEventConsumer & consumer )
     : CEProxyBase::CEServiceAvailableEvent  ( consumer )
@@ -52,12 +52,12 @@ const NEService::SInterfaceData & CEConnectionManagerProxy::_createInterfaceData
     return NEConnectionManager::CreateInterfaceData( );
 }
 
-CEProxyBase * CEConnectionManagerProxy::_createProxy( const char * const roleName, CEDispatcherThread * ownerThread /*= static_cast<CEDispatcherThread *>(NULL)*/ )
+CEProxyBase * CEConnectionManagerProxy::_createProxy( const char * roleName, CEDispatcherThread * ownerThread /*= static_cast<CEDispatcherThread *>(NULL)*/ )
 {
     return DEBUG_NEW CEConnectionManagerProxy(roleName, ownerThread);
 }
 
-CEConnectionManagerProxy * CEConnectionManagerProxy::CreateProxy( const char * const roleName, IEProxyListener & connectListener, CEDispatcherThread & ownerThread )
+CEConnectionManagerProxy * CEConnectionManagerProxy::CreateProxy( const char * roleName, IEProxyListener & connectListener, CEDispatcherThread & ownerThread )
 {
     return static_cast<CEConnectionManagerProxy *>(CEProxyBase::FindOrCreateProxy( roleName
                                                                         , NEConnectionManager::CreateInterfaceData()
@@ -66,7 +66,7 @@ CEConnectionManagerProxy * CEConnectionManagerProxy::CreateProxy( const char * c
                                                                         , ownerThread) );
 }
 
-CEConnectionManagerProxy * CEConnectionManagerProxy::CreateProxy( const char * const roleName, IEProxyListener & connectListener, const char * ownerThread /*= static_cast<const char *>(NULL)*/ )
+CEConnectionManagerProxy * CEConnectionManagerProxy::CreateProxy( const char * roleName, IEProxyListener & connectListener, const char * ownerThread /*= static_cast<const char *>(NULL)*/ )
 {
     return static_cast<CEConnectionManagerProxy *>(CEProxyBase::FindOrCreateProxy( roleName
                                                                         , NEConnectionManager::CreateInterfaceData()
@@ -78,7 +78,7 @@ CEConnectionManagerProxy * CEConnectionManagerProxy::CreateProxy( const char * c
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
-CEConnectionManagerProxy::CEConnectionManagerProxy( const char * const roleName, CEDispatcherThread * ownerThread /*= static_cast<CEDispatcherThread *>(NULL)*/ )
+CEConnectionManagerProxy::CEConnectionManagerProxy( const char * roleName, CEDispatcherThread * ownerThread /*= static_cast<CEDispatcherThread *>(NULL)*/ )
     : CEProxyBase(roleName, CEConnectionManagerProxy::_createInterfaceData(), ownerThread)
 
 /************************************************************************
@@ -117,12 +117,12 @@ CENotificationEvent * CEConnectionManagerProxy::CreateNotificationEvent( const C
     return DEBUG_NEW CEConnectionManagerNotificationEvent(data);
 }
 
-CEServiceRequestEvent * CEConnectionManagerProxy::CreateRequestEvent( const CEEventDataStream & args, const unsigned int reqId )
+CEServiceRequestEvent * CEConnectionManagerProxy::CreateRequestEvent( const CEEventDataStream & args, unsigned int reqId )
 {
     return DEBUG_NEW CEConnectionManagerRequestEvent(args, GetProxyAddress(), GetStubAddress(), reqId);
 }
 
-CEServiceRequestEvent* CEConnectionManagerProxy::CreateNotificationRequestEvent( const unsigned int msgId, const NEService::eRequestType reqType )
+CEServiceRequestEvent* CEConnectionManagerProxy::CreateNotificationRequestEvent( unsigned int msgId, NEService::eRequestType reqType )
 {
     return DEBUG_NEW CEConnectionManagerNotifyRequestEvent(GetProxyAddress(), GetStubAddress(), msgId, reqType);
 }
@@ -132,7 +132,7 @@ CERemoteResponseEvent * CEConnectionManagerProxy::CreateRemoteResponseEvent(cons
     return static_cast<CERemoteResponseEvent *>( DEBUG_NEW CEConnectionManagerResponseEvent(stream) );
 }
 
-CERemoteResponseEvent * CEConnectionManagerProxy::CreateRemoteRequestFailedEvent(const CEProxyAddress & addrProxy, unsigned int msgId, const NEService::eResultType reason, unsigned int seqNr) const
+CERemoteResponseEvent * CEConnectionManagerProxy::CreateRemoteRequestFailedEvent(const CEProxyAddress & addrProxy, unsigned int msgId, NEService::eResultType reason, unsigned int seqNr) const
 {
     return static_cast<CERemoteResponseEvent *>( DEBUG_NEW CEConnectionManagerResponseEvent( addrProxy, reason, msgId, seqNr ) );
 }
@@ -166,7 +166,7 @@ unsigned int CEConnectionManagerProxy::RequestConnet( IENotificationEventConsume
     IEOutStream & stream = args.GetStreamForWrite();
     stream << nickName;
     stream << dateTime;
-    SendRequestEvent( static_cast<const unsigned int>(msgId), args, &caller );
+    SendRequestEvent( static_cast<unsigned int>(msgId), args, &caller );
     return mSequenceCount;
 }
     
@@ -179,7 +179,7 @@ unsigned int CEConnectionManagerProxy::RequestRegisterConnection( IENotification
     stream << cookie;
     stream << connectCookie;
     stream << dateRegister;
-    SendRequestEvent( static_cast<const unsigned int>(msgId), args, &caller );
+    SendRequestEvent( static_cast<unsigned int>(msgId), args, &caller );
     return mSequenceCount;
 }
     
@@ -191,7 +191,7 @@ void CEConnectionManagerProxy::RequestDiconnect( const CEString & nickName, cons
     stream << nickName;
     stream << cookie;
     stream << dateTime;
-    SendRequestEvent( static_cast<const unsigned int>(msgId), args, NULL );
+    SendRequestEvent( static_cast<unsigned int>(msgId), args, NULL );
 }
 /************************************************************************
  * Event processing.
@@ -224,7 +224,7 @@ void CEConnectionManagerProxy::ProcessAttributeEvent( CEServiceResponseEvent & e
  ************************************************************************/
 
 DEF_TRACE_SCOPE(shared_generated_private_CEConnectionManagerProxy_UpdateData);
-void CEConnectionManagerProxy::UpdateData( CEConnectionManagerResponseEvent & eventElem, const NEConnectionManager::eMessageIDs respId )
+void CEConnectionManagerProxy::UpdateData( CEConnectionManagerResponseEvent & eventElem, NEConnectionManager::eMessageIDs respId )
 {
     const IEInStream & stream = static_cast<const CEConnectionManagerResponseEvent &>(eventElem).GetData().GetReadStream();
 

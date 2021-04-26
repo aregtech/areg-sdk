@@ -4,9 +4,9 @@
 #ifndef  SHARED_GENERATED_PRIVATE_CECENTRALMESSAGEREVENTS_HPP
 #define  SHARED_GENERATED_PRIVATE_CECENTRALMESSAGEREVENTS_HPP
 /************************************************************************
- * (c) copyright    2019
+ * (c) copyright    2021
  *                  Create by AREGtech code generator tool from source CentralMessager.
- * Generated at     03.09.2019  02:48:07 GMT+02:00 
+ * Generated at     25.04.2021  23:50:42 GMT+02:00 
  ************************************************************************/
 
 /************************************************************************
@@ -18,10 +18,11 @@
 /************************************************************************
  * Include files
  ************************************************************************/
+#include "areg/src/base/GEGlobal.h"
 #include "shared/generated/NECentralMessager.hpp"
-#include "areg/component/CERequestEvents.hpp"
-#include "areg/component/CEResponseEvents.hpp"
-#include "areg/component/CENotificationEvent.hpp"
+#include "areg/src/component/CERequestEvents.hpp"
+#include "areg/src/component/CEResponseEvents.hpp"
+#include "areg/src/component/CENotificationEvent.hpp"
 
 /************************************************************************
  * Dependencies
@@ -63,7 +64,7 @@ class CECentralMessagerRequestEvent   : public CERemoteRequestEvent
 //////////////////////////////////////////////////////////////////////////
 // Declare Event Runtime
 //////////////////////////////////////////////////////////////////////////
-    DECLARE_RUNTIME_EVENT( CECentralMessagerRequestEvent );
+    DECLARE_RUNTIME_EVENT( CECentralMessagerRequestEvent )
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
@@ -75,7 +76,7 @@ public:
      * \param   toTarget    The Stub message target address to deliver event.
      * \param   reqId       The request message ID.
      **/
-    CECentralMessagerRequestEvent( const CEProxyAddress & fromSource, const CEStubAddress & toTarget, const unsigned int reqId );
+    CECentralMessagerRequestEvent( const CEProxyAddress & fromSource, const CEStubAddress & toTarget, unsigned int reqId );
     /**
      * \brief   Initialization constructor. Gets streamable data of arguments, message source proxy address, message target address  and message request ID.
      * \param   args        The streamable object containing message arguments.
@@ -83,7 +84,7 @@ public:
      * \param   toTarget    The Stub message target address to deliver event.
      * \param   reqId       The request message ID.
      **/
-    CECentralMessagerRequestEvent( const CEEventDataStream & args, const CEProxyAddress & fromSource, const CEStubAddress & toTarget, const unsigned int reqId );
+    CECentralMessagerRequestEvent( const CEEventDataStream & args, const CEProxyAddress & fromSource, const CEStubAddress & toTarget, unsigned int reqId );
     /**
      * \brief   Initialization constructor. Initializes request event from streaming object, where data is serialized. Used in remote messaging.
      * \param   stream      The streaming object, where event data is serialized.
@@ -115,7 +116,7 @@ class CECentralMessagerNotifyRequestEvent : public CERemoteNotifyRequestEvent
 //////////////////////////////////////////////////////////////////////////
 // Declare Event Runtime
 //////////////////////////////////////////////////////////////////////////
-    DECLARE_RUNTIME_EVENT( CECentralMessagerNotifyRequestEvent );
+    DECLARE_RUNTIME_EVENT( CECentralMessagerNotifyRequestEvent )
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
@@ -128,7 +129,7 @@ public:
      * \param   msgId       The ID of message. Normally either Attribute ID, Broadcast ID or Response ID. The Request IDs cannot be notified.
      * \param   reqType     The type of request.
      **/
-    CECentralMessagerNotifyRequestEvent( const CEProxyAddress & fromProxy, const CEStubAddress & toStub, const unsigned int msgId, const NEService::eRequestType & reqType );
+    CECentralMessagerNotifyRequestEvent( const CEProxyAddress & fromProxy, const CEStubAddress & toStub, unsigned int msgId, NEService::eRequestType reqType );
     /**
      * \brief   Initialization constructor. Initializes notification request event from streaming object, where data is serialized. Used in remote messaging.
      * \param   stream      The streaming object, where event data is serialized.
@@ -159,7 +160,7 @@ class CECentralMessagerResponseEvent  : public CERemoteResponseEvent
 //////////////////////////////////////////////////////////////////////////
 // Declare Event Runtime
 //////////////////////////////////////////////////////////////////////////
-    DECLARE_RUNTIME_EVENT( CECentralMessagerResponseEvent );
+    DECLARE_RUNTIME_EVENT( CECentralMessagerResponseEvent )
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
@@ -172,7 +173,7 @@ public:
      * \param   responseId  The response message ID. Normally either attribute, broadcast or response ID.
      * \param   seqNr       The sequence number of response call. By default it is NEService::SEQUENCE_NUMBER_NOTIFY.
      **/
-    CECentralMessagerResponseEvent( const CEProxyAddress & proxyTarget, const NEService::eResultType & result, const unsigned int responseId, unsigned int seqNr = NEService::SEQUENCE_NUMBER_NOTIFY );
+    CECentralMessagerResponseEvent( const CEProxyAddress & proxyTarget, NEService::eResultType result, unsigned int responseId, unsigned int seqNr = NEService::SEQUENCE_NUMBER_NOTIFY );
     /**
      * \brief   Initialization constructor. Used to send response messages from Stub to Proxy with arguments.
      * \param   args        The streamable object containing message arguments.
@@ -181,7 +182,7 @@ public:
      * \param   responseId  The response message ID. Normally either attribute, broadcast or response ID.
      * \param   seqNr       The sequence number of response call. By default it is NEService::SEQUENCE_NUMBER_NOTIFY.
      **/
-    CECentralMessagerResponseEvent( const CEEventDataStream & args, const CEProxyAddress & proxyTarget, const NEService::eResultType & result, const unsigned int responseId, unsigned int seqNr = NEService::SEQUENCE_NUMBER_NOTIFY );
+    CECentralMessagerResponseEvent( const CEEventDataStream & args, const CEProxyAddress & proxyTarget, NEService::eResultType result, unsigned int responseId, unsigned int seqNr = NEService::SEQUENCE_NUMBER_NOTIFY );
     /**
      * \brief   Initialization constructor. Used to clone same message for different Proxy objects.
      * \param   proxyTarget The target Proxy address to deliver message
@@ -238,7 +239,7 @@ class CECentralMessagerNotificationEvent  : public CENotificationEvent
 //////////////////////////////////////////////////////////////////////////
 // Declare Event Runtime
 //////////////////////////////////////////////////////////////////////////
-    DECLARE_RUNTIME_EVENT( CECentralMessagerNotificationEvent );
+    DECLARE_RUNTIME_EVENT( CECentralMessagerNotificationEvent )
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor

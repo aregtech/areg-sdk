@@ -10,7 +10,10 @@
 #ifdef _POSIX
 #include <stdio.h>
 #include <dirent.h>
+#include <unistd.h>
 #include "areg/src/base/CEFile.hpp"
+#include "areg/src/base/CEString.hpp"
+#include "areg/src/base/CEProcess.hpp"
 
 static int _getProcIdByName(const char * procName)
 {
@@ -69,8 +72,12 @@ bool CEApplication::_startRouterService( void )
     bool result = pid != -1;
     if (pid < 0)
     {
+        CEString fileName = CEString::EmptyString;
+        fileName += CEProcess::GetProcess().GetProcessPath();
+        fileName += CEFile::PATH_SEPARATOR;
+        fileName += NEApplication::DEFAULT_ROUTER_SERVICE_NAME;
         const char * argv0 = "--console";
-        result = execl(NEApplication::DEFAULT_ROUTER_SERVICE_NAME, argv0) > 0;
+        result = execl(fileName.GetBuffer(), fileName.GetBuffer(), argv0, NULL_STRING) > 0;
     }
 
     return result;

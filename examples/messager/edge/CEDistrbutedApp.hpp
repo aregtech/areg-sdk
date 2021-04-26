@@ -18,7 +18,7 @@
 #endif
 
 #include "edge/res/resource.h"       // main symbols
-#include "areg/component/NERegistry.hpp"
+#include "areg/src/component/NERegistry.hpp"
 
 
 // CEDistrbutedApp:

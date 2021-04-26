@@ -13,6 +13,7 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
+#include "areg/src/base/ETemplateBase.hpp"
 #include "areg/src/base/EContainers.hpp"
 #include "areg/src/base/ESynchObjects.hpp"
 
@@ -68,7 +69,7 @@
  * \tparam  HashMap         HashMap class to inherit, which has possibility
  *                          to calculate Hash value from RESOURCE_KEY type.
  **/
-template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Implement>
+template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Implement = TEResourceMapImpl<RESOURCE_KEY, RESOURCE_OBJECT>>
 class TEResourceMap     : protected HashMap
                         , protected Implement
 {
@@ -321,7 +322,7 @@ private:
  * \tparam  HashMap         HashMap class to inherit, which has possibility
  *                          to calculate Hash value from RESOURCE_KEY type.
  **/
-template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Implement>
+template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Implement = TEResourceMapImpl<RESOURCE_KEY, RESOURCE_OBJECT>>
 class TELockResourceMap    : public TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Implement>
 {
 //////////////////////////////////////////////////////////////////////////

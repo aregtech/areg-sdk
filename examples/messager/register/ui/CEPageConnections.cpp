@@ -7,9 +7,9 @@
 #include "register/services/CEConnectionManager.hpp"
 #include "register/NECentralApp.hpp"
 
-#include "areg/base/GEGlobal.h"
-#include "areg/base/GEMacros.h"
-#include "areg/base/NEMemory.hpp"
+#include "areg/src/base/GEGlobal.h"
+#include "areg/src/base/GEMacros.h"
+#include "areg/src/base/NEMemory.hpp"
 
 
 // CEPageConnections
@@ -107,7 +107,7 @@ void CEPageConnections::OnClickedButtonBroadcast()
     CEConnectionManager * service = !mTextBroadcast.IsEmpty() ? CEConnectionManager::GetService( ) : static_cast<CEConnectionManager *>(NULL);
     if ( service != static_cast<CEConnectionManager *>(NULL) )
     {
-        CEDateTime timestamp = CEDateTime::GetNow(false);
+        CEDateTime timestamp = CEDateTime::GetNow();
         CEString msg( mTextBroadcast.GetString() );
         service->BroadcastBroadcastMessage(msg, timestamp);
 

@@ -4,8 +4,8 @@
  * \brief           The connection manager client component implementation
  ************************************************************************/
 
-#include "areg/base/GEGlobal.h"
-#include "areg/component/CEComponent.hpp"
+#include "areg/src/base/GEGlobal.h"
+#include "areg/src/component/CEComponent.hpp"
 
 class CEConnectionServicing    : public  CEComponent
 {

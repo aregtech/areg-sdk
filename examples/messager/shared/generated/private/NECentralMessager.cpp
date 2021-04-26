@@ -3,9 +3,9 @@
 //////////////////////////////////////////////////////////////////////////
 
 /************************************************************************
- * (c) copyright    2019
+ * (c) copyright    2021
  *                  Create by AREGtech code generator tool from source CentralMessager.
- * Generated at     03.09.2019  02:48:07 GMT+02:00 
+ * Generated at     25.04.2021  23:50:42 GMT+02:00 
  ************************************************************************/
 
 /************************************************************************
@@ -82,20 +82,23 @@ const NEService::SInterfaceData & NECentralMessager::CreateInterfaceData( void )
     return _getInterfaceData();
 }
 
-NECentralMessager::eMessageIDs NECentralMessager::GetResponseId( const NECentralMessager::eMessageIDs reqId )
+NECentralMessager::eMessageIDs NECentralMessager::GetResponseId( NECentralMessager::eMessageIDs reqId )
 {
-    const NEService::SInterfaceData& sid = _getInterfaceData();
+    const NEService::SInterfaceData & sid = _getInterfaceData();
 
     int index = GET_REQ_INDEX(reqId);
     return  ( index >= 0 && index < static_cast<int>(sid.idRequestCount) ? static_cast<NECentralMessager::eMessageIDs>(sid.idRequestToResponseMap[index]) : NECentralMessager::MSG_ID_INVALID );
 }
 
-NECentralMessager::eMessageIDs NECentralMessager::GetRequestId( const NECentralMessager::eMessageIDs respId )
+NECentralMessager::eMessageIDs NECentralMessager::GetRequestId( NECentralMessager::eMessageIDs respId )
 {
-    const NEService::SInterfaceData& sid = _getInterfaceData();
+    const NEService::SInterfaceData & sid = _getInterfaceData();
     NECentralMessager::eMessageIDs result = NECentralMessager::MSG_ID_INVALID;
-    for (unsigned int i = 0; result == NECentralMessager::MSG_ID_INVALID && i < NECentralMessager::NumberofRequests; i ++)
+    for ( unsigned int i = 0; result == NECentralMessager::MSG_ID_INVALID && i < NECentralMessager::NumberofRequests; ++ i )
+    {
         result = sid.idRequestToResponseMap[i] == static_cast<unsigned int>(respId) ? NECentralMessager::RequestIds[i] : NECentralMessager::MSG_ID_INVALID;
+    }
+    
     return result;
 }
 

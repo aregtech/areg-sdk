@@ -4,9 +4,9 @@
  * \brief           The direct connection service client object
  ************************************************************************/
 
-#include "areg/base/GEGlobal.h"
+#include "areg/src/base/GEGlobal.h"
 #include "shared/generated/CEDirectConnectionClientBase.hpp"
-#include "areg/component/NERegistry.hpp"
+#include "areg/src/component/NERegistry.hpp"
 
 class CEChatPrticipantHandler;
 
@@ -57,7 +57,7 @@ protected:
      *          i.e. if passed Proxy address is equal to the Proxy object that client has.
      *          If Proxy objects are not equal, it should return false;
      **/
-    virtual bool ServiceConnected( const bool isConnected, CEProxyBase & proxy );
+    virtual bool ServiceConnected( bool isConnected, CEProxyBase & proxy );
 
 private:
     CEChatPrticipantHandler &       mParticipantsHandler;

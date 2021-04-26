@@ -3,9 +3,9 @@
 //////////////////////////////////////////////////////////////////////////
 
 /************************************************************************
- * (c) copyright    2019
+ * (c) copyright    2021
  *                  Create by AREGtech code generator tool from source DirectConnection.
- * Generated at     03.09.2019  02:48:09 GMT+02:00 
+ * Generated at     25.04.2021  23:50:45 GMT+02:00 
  ************************************************************************/
 
 /************************************************************************
@@ -84,20 +84,23 @@ const NEService::SInterfaceData & NEDirectConnection::CreateInterfaceData( void 
     return _getInterfaceData();
 }
 
-NEDirectConnection::eMessageIDs NEDirectConnection::GetResponseId( const NEDirectConnection::eMessageIDs reqId )
+NEDirectConnection::eMessageIDs NEDirectConnection::GetResponseId( NEDirectConnection::eMessageIDs reqId )
 {
-    const NEService::SInterfaceData& sid = _getInterfaceData();
+    const NEService::SInterfaceData & sid = _getInterfaceData();
 
     int index = GET_REQ_INDEX(reqId);
     return  ( index >= 0 && index < static_cast<int>(sid.idRequestCount) ? static_cast<NEDirectConnection::eMessageIDs>(sid.idRequestToResponseMap[index]) : NEDirectConnection::MSG_ID_INVALID );
 }
 
-NEDirectConnection::eMessageIDs NEDirectConnection::GetRequestId( const NEDirectConnection::eMessageIDs respId )
+NEDirectConnection::eMessageIDs NEDirectConnection::GetRequestId( NEDirectConnection::eMessageIDs respId )
 {
-    const NEService::SInterfaceData& sid = _getInterfaceData();
+    const NEService::SInterfaceData & sid = _getInterfaceData();
     NEDirectConnection::eMessageIDs result = NEDirectConnection::MSG_ID_INVALID;
-    for (unsigned int i = 0; result == NEDirectConnection::MSG_ID_INVALID && i < NEDirectConnection::NumberofRequests; i ++)
+    for ( unsigned int i = 0; result == NEDirectConnection::MSG_ID_INVALID && i < NEDirectConnection::NumberofRequests; ++ i )
+    {
         result = sid.idRequestToResponseMap[i] == static_cast<unsigned int>(respId) ? NEDirectConnection::RequestIds[i] : NEDirectConnection::MSG_ID_INVALID;
+    }
+    
     return result;
 }
 

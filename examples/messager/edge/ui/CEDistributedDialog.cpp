@@ -21,7 +21,7 @@
 #include "edge/services/CEConnectionServicing.hpp"
 #include "shared/NECommonSettings.hpp"
 #include "shared/generated/NEConnectionManager.hpp"
-#include "areg/appbase/CEApplication.hpp"
+#include "areg/src/appbase/CEApplication.hpp"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -413,7 +413,7 @@ LRESULT CEDistributedDialog::OnCmdChatClosed( WPARAM wParam, LPARAM lParam )
     {
         for ( MAPPOS pos = mMapChatPages.GetStartPosition( ); pos != NULL; pos = mMapChatPages.GetNextPosition( pos ) )
         {
-            CEPageChat * page = mMapChatPages.ElementAt( pos );
+            CEPageChat * page = mMapChatPages.GetAt( pos );
             if ( page == pageChat )
             {
                 mMapChatPages.RemoveAt( pos );
@@ -527,7 +527,7 @@ bool CEDistributedDialog::RemoveChatPage( const CEString & connectName )
     MAPPOS pos = mMapChatPages.Find(connectName);
     if ( pos != NULL )
     {
-        CEPageChat * chatPage = mMapChatPages.ElementAt(pos);
+        CEPageChat * chatPage = mMapChatPages.GetAt(pos);
         if ( chatPage != NULL )
         {
             RemovePage(chatPage);
@@ -542,7 +542,7 @@ void CEDistributedDialog::RemoveAllChatPages( void )
 {
     for ( MAPPOS pos = mMapChatPages.GetStartPosition(); pos != NULL; pos = mMapChatPages.GetNextPosition(pos) )
     {
-        CEPageChat * chatPage = mMapChatPages.ElementAt( pos );
+        CEPageChat * chatPage = mMapChatPages.GetAt( pos );
         if ( chatPage != NULL )
         {
             RemovePage( chatPage );

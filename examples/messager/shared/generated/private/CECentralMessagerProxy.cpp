@@ -3,9 +3,9 @@
 //////////////////////////////////////////////////////////////////////////
 
 /************************************************************************
- * (c) copyright    2019
+ * (c) copyright    2021
  *                  Create by AREGtech code generator tool from source CentralMessager.
- * Generated at     03.09.2019  02:48:07 GMT+02:00 
+ * Generated at     25.04.2021  23:50:42 GMT+02:00 
  ************************************************************************/
 
 /************************************************************************
@@ -19,15 +19,15 @@
  ************************************************************************/
 #include "shared/generated/private/CECentralMessagerProxy.hpp"
 #include "shared/generated/private/CECentralMessagerEvents.hpp"
-#include "areg/component/IEProxyListener.hpp"
-#include "areg/base/CEThread.hpp"
-#include "areg/trace/GETrace.h"
+#include "areg/src/component/IEProxyListener.hpp"
+#include "areg/src/base/CEThread.hpp"
+#include "areg/src/trace/GETrace.h"
 
 //////////////////////////////////////////////////////////////////////////
 // CECentralMessagerProxy::CECentralMessagerServiceAvailableEvent class implementation
 //////////////////////////////////////////////////////////////////////////
 
-IMPLEMENT_RUNTIME_EVENT(CECentralMessagerProxy::CECentralMessagerServiceAvailableEvent, CEProxyBase::CEServiceAvailableEvent);
+IMPLEMENT_RUNTIME_EVENT(CECentralMessagerProxy::CECentralMessagerServiceAvailableEvent, CEProxyBase::CEServiceAvailableEvent)
 
 CECentralMessagerProxy::CECentralMessagerServiceAvailableEvent::CECentralMessagerServiceAvailableEvent( IENotificationEventConsumer & consumer )
     : CEProxyBase::CEServiceAvailableEvent  ( consumer )
@@ -52,12 +52,12 @@ const NEService::SInterfaceData & CECentralMessagerProxy::_createInterfaceData( 
     return NECentralMessager::CreateInterfaceData( );
 }
 
-CEProxyBase * CECentralMessagerProxy::_createProxy( const char * const roleName, CEDispatcherThread * ownerThread /*= static_cast<CEDispatcherThread *>(NULL)*/ )
+CEProxyBase * CECentralMessagerProxy::_createProxy( const char * roleName, CEDispatcherThread * ownerThread /*= static_cast<CEDispatcherThread *>(NULL)*/ )
 {
     return DEBUG_NEW CECentralMessagerProxy(roleName, ownerThread);
 }
 
-CECentralMessagerProxy * CECentralMessagerProxy::CreateProxy( const char * const roleName, IEProxyListener & connectListener, CEDispatcherThread & ownerThread )
+CECentralMessagerProxy * CECentralMessagerProxy::CreateProxy( const char * roleName, IEProxyListener & connectListener, CEDispatcherThread & ownerThread )
 {
     return static_cast<CECentralMessagerProxy *>(CEProxyBase::FindOrCreateProxy( roleName
                                                                         , NECentralMessager::CreateInterfaceData()
@@ -66,7 +66,7 @@ CECentralMessagerProxy * CECentralMessagerProxy::CreateProxy( const char * const
                                                                         , ownerThread) );
 }
 
-CECentralMessagerProxy * CECentralMessagerProxy::CreateProxy( const char * const roleName, IEProxyListener & connectListener, const char * ownerThread /*= static_cast<const char *>(NULL)*/ )
+CECentralMessagerProxy * CECentralMessagerProxy::CreateProxy( const char * roleName, IEProxyListener & connectListener, const char * ownerThread /*= static_cast<const char *>(NULL)*/ )
 {
     return static_cast<CECentralMessagerProxy *>(CEProxyBase::FindOrCreateProxy( roleName
                                                                         , NECentralMessager::CreateInterfaceData()
@@ -78,7 +78,7 @@ CECentralMessagerProxy * CECentralMessagerProxy::CreateProxy( const char * const
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
-CECentralMessagerProxy::CECentralMessagerProxy( const char * const roleName, CEDispatcherThread * ownerThread /*= static_cast<CEDispatcherThread *>(NULL)*/ )
+CECentralMessagerProxy::CECentralMessagerProxy( const char * roleName, CEDispatcherThread * ownerThread /*= static_cast<CEDispatcherThread *>(NULL)*/ )
     : CEProxyBase(roleName, CECentralMessagerProxy::_createInterfaceData(), ownerThread)
 
 /************************************************************************
@@ -111,12 +111,12 @@ CENotificationEvent * CECentralMessagerProxy::CreateNotificationEvent( const CEN
     return DEBUG_NEW CECentralMessagerNotificationEvent(data);
 }
 
-CEServiceRequestEvent * CECentralMessagerProxy::CreateRequestEvent( const CEEventDataStream & args, const unsigned int reqId )
+CEServiceRequestEvent * CECentralMessagerProxy::CreateRequestEvent( const CEEventDataStream & args, unsigned int reqId )
 {
     return DEBUG_NEW CECentralMessagerRequestEvent(args, GetProxyAddress(), GetStubAddress(), reqId);
 }
 
-CEServiceRequestEvent* CECentralMessagerProxy::CreateNotificationRequestEvent( const unsigned int msgId, const NEService::eRequestType reqType )
+CEServiceRequestEvent* CECentralMessagerProxy::CreateNotificationRequestEvent( unsigned int msgId, NEService::eRequestType reqType )
 {
     return DEBUG_NEW CECentralMessagerNotifyRequestEvent(GetProxyAddress(), GetStubAddress(), msgId, reqType);
 }
@@ -126,7 +126,7 @@ CERemoteResponseEvent * CECentralMessagerProxy::CreateRemoteResponseEvent(const 
     return static_cast<CERemoteResponseEvent *>( DEBUG_NEW CECentralMessagerResponseEvent(stream) );
 }
 
-CERemoteResponseEvent * CECentralMessagerProxy::CreateRemoteRequestFailedEvent(const CEProxyAddress & addrProxy, unsigned int msgId, const NEService::eResultType reason, unsigned int seqNr) const
+CERemoteResponseEvent * CECentralMessagerProxy::CreateRemoteRequestFailedEvent(const CEProxyAddress & addrProxy, unsigned int msgId, NEService::eResultType reason, unsigned int seqNr) const
 {
     return static_cast<CERemoteResponseEvent *>( DEBUG_NEW CECentralMessagerResponseEvent( addrProxy, reason, msgId, seqNr ) );
 }
@@ -162,7 +162,7 @@ void CECentralMessagerProxy::RequestSendMessage( const CEString & nickName, cons
     stream << cookie;
     stream << newMessage;
     stream << dateTime;
-    SendRequestEvent( static_cast<const unsigned int>(msgId), args, NULL );
+    SendRequestEvent( static_cast<unsigned int>(msgId), args, NULL );
 }
 void CECentralMessagerProxy::RequestKeyTyping( const CEString & nickName, const unsigned int & cookie, const CEString & newMessage )
 {
@@ -172,7 +172,7 @@ void CECentralMessagerProxy::RequestKeyTyping( const CEString & nickName, const 
     stream << nickName;
     stream << cookie;
     stream << newMessage;
-    SendRequestEvent( static_cast<const unsigned int>(msgId), args, NULL );
+    SendRequestEvent( static_cast<unsigned int>(msgId), args, NULL );
 }
 /************************************************************************
  * Event processing.
@@ -205,7 +205,7 @@ void CECentralMessagerProxy::ProcessAttributeEvent( CEServiceResponseEvent & eve
  ************************************************************************/
 
 DEF_TRACE_SCOPE(shared_generated_private_CECentralMessagerProxy_UpdateData);
-void CECentralMessagerProxy::UpdateData( CECentralMessagerResponseEvent & eventElem, const NECentralMessager::eMessageIDs respId )
+void CECentralMessagerProxy::UpdateData( CECentralMessagerResponseEvent & eventElem, NECentralMessager::eMessageIDs respId )
 {
     const IEInStream & stream = static_cast<const CECentralMessagerResponseEvent &>(eventElem).GetData().GetReadStream();
 

@@ -4,13 +4,13 @@
  * \brief           The direct chat service with direct connection clients
  ************************************************************************/
 
-#include "areg/base/GEGlobal.h"
-#include "areg/component/CEComponent.hpp"
+#include "areg/src/base/GEGlobal.h"
+#include "areg/src/component/CEComponent.hpp"
 #include "shared/generated/CEDirectMessagerStub.hpp"
 #include "edge/services/CEDirectMessagingClient.hpp"
 
-#include "areg/component/NERegistry.hpp"
-#include "areg/base/TEResourceMap.hpp"
+#include "areg/src/component/NERegistry.hpp"
+#include "areg/src/base/TEResourceMap.hpp"
 #include "shared/generated/NEDirectConnection.hpp"
 #include "shared/NECommonSettings.hpp"
 #include "edge/NEDistributedApp.hpp"

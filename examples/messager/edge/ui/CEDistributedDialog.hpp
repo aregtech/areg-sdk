@@ -20,7 +20,7 @@
 #include "edge/ui/CEPageConnections.hpp"
 #include "edge/NEDistributedApp.hpp"
 #include "edge/services/CEConnectionHandler.hpp"
-#include "areg/base/TEHashMap.hpp"
+#include "areg/src/base/TEHashMap.hpp"
 
 class CEPageChat;
 typedef TEHashMap<CEString, CEPageChat *, const CEString &, CEPageChat *>   MapChatPages;

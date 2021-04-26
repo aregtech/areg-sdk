@@ -113,7 +113,7 @@ public:
     #pragma warning(disable: 4302)
 #endif  // _MSC_VER
 
-        return MACRO_MAKE_NUMBER32( Key );
+        return static_cast<unsigned int>(MACRO_MAKE_NUMBER( Key ));
 
 #if _MSC_VER
     #pragma warning(default: 4302)

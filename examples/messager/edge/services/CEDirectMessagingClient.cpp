@@ -6,7 +6,7 @@
 #include "edge/services/CEDirectMessagingClient.hpp"
 #include "edge/services/CEChatPrticipantHandler.hpp"
 #include "shared/NECommonSettings.hpp"
-#include "areg/trace/GETrace.h"
+#include "areg/src/trace/GETrace.h"
 
 DEF_TRACE_SCOPE( distrbutedapp_CEDirectMessagingClient_ServiceConnected );
 DEF_TRACE_SCOPE( distrbutedapp_CEDirectMessagingClient_ResponseChatJoin );
@@ -26,7 +26,7 @@ CEDirectMessagingClient::~CEDirectMessagingClient( )
 {
 }
 
-bool CEDirectMessagingClient::ServiceConnected( const bool isConnected, CEProxyBase & proxy )
+bool CEDirectMessagingClient::ServiceConnected( bool isConnected, CEProxyBase & proxy )
 {
     TRACE_SCOPE( distrbutedapp_CEDirectMessagingClient_ServiceConnected );
 
@@ -42,12 +42,12 @@ bool CEDirectMessagingClient::ServiceConnected( const bool isConnected, CEProxyB
             NotifyOnBroadcastParticipantJoined(true);
             NotifyOnBroadcastParticipantLeft(true);
 
-            RequestChatJoin( mParticipantsHandler.GetConnectionOwner(), CEDateTime::GetNow(false) );
+            RequestChatJoin( mParticipantsHandler.GetConnectionOwner(), CEDateTime::GetNow() );
         }
     }
     else
     {
-        RequestChatLeave( mParticipantsHandler.GetConnectionOwner(), CEDateTime::GetNow(false) );
+        RequestChatLeave( mParticipantsHandler.GetConnectionOwner(), CEDateTime::GetNow() );
         result = CEDirectMessagerClientBase::ServiceConnected( isConnected, proxy );
     }
     return result;
@@ -70,7 +70,7 @@ void CEDirectMessagingClient::ResponseChatJoin( const bool & succeed, const NEDi
 void CEDirectMessagingClient::BroadcastMessageSent( const NEDirectMessager::sParticipant & sender, const CEString & msgText, const CEDateTime & timeSent )
 {
     TRACE_SCOPE( distrbutedapp_CEDirectMessagingClient_BroadcastMessageSent );
-    updateChatOutput( NEDistributedApp::CmdChatMessage, sender, msgText, timeSent, CEDateTime::GetNow( false ) );
+    updateChatOutput( NEDistributedApp::CmdChatMessage, sender, msgText, timeSent, CEDateTime::GetNow() );
 }
 
 void CEDirectMessagingClient::BroadcastMessageTyped( const NEDirectMessager::sParticipant & participant, const CEString & msgText )
@@ -83,13 +83,13 @@ void CEDirectMessagingClient::BroadcastParticipantJoined( const NEDirectMessager
 {
     TRACE_SCOPE( distrbutedapp_CEDirectMessagingClient_BroadcastParticipantJoined );
     if ( participant != mParticipantsHandler.GetConnectionOwner() )
-        updateChatOutput( NEDistributedApp::CmdChatMessage, participant, CEString( "Joined chat" ), timeJoined, CEDateTime::GetNow( false ) );
+        updateChatOutput( NEDistributedApp::CmdChatMessage, participant, CEString( "Joined chat" ), timeJoined, CEDateTime::GetNow() );
 }
 
 void CEDirectMessagingClient::BroadcastParticipantLeft( const NEDirectMessager::sParticipant & participant, const CEDateTime & timeLeft )
 {
     TRACE_SCOPE( distrbutedapp_CEDirectMessagingClient_BroadcastParticipantLeft );
-    updateChatOutput( NEDistributedApp::CmdChatMessage, participant, CEString( "Left chat" ), timeLeft, CEDateTime::GetNow(false) );
+    updateChatOutput( NEDistributedApp::CmdChatMessage, participant, CEString( "Left chat" ), timeLeft, CEDateTime::GetNow() );
 }
 
 void CEDirectMessagingClient::BroadcastChatClosed( void )

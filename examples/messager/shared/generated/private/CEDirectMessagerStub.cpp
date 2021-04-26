@@ -2,9 +2,9 @@
 // Begin generate shared/generated/private/CEDirectMessagerStub.cpp file
 //////////////////////////////////////////////////////////////////////////
 /************************************************************************
- * (c) copyright    2019
+ * (c) copyright    2021
  *                  Create by AREGtech code generator tool from source DirectMessager.
- * Generated at     03.09.2019  02:48:11 GMT+02:00 
+ * Generated at     25.04.2021  23:50:46 GMT+02:00 
  ************************************************************************/
 
 /************************************************************************
@@ -19,9 +19,9 @@
 #include "shared/generated/CEDirectMessagerStub.hpp"
 #include "shared/generated/private/CEDirectMessagerEvents.hpp"
 
-#include "areg/component/CEServiceResponseEvent.hpp"
-#include "areg/base/CEThread.hpp"
-#include "areg/trace/GETrace.h"
+#include "areg/src/component/CEServiceResponseEvent.hpp"
+#include "areg/src/base/CEThread.hpp"
+#include "areg/src/trace/GETrace.h"
 
 //////////////////////////////////////////////////////////////////////////
 // CEDirectMessagerStub class implementation
@@ -91,17 +91,17 @@ void CEDirectMessagerStub::ShutdownServiceIntrface( CEComponent & holder )
     CEStubBase::ShutdownServiceIntrface( holder );
 }
 
-const unsigned int CEDirectMessagerStub::GetNumberOfRequests( void ) const
+unsigned int CEDirectMessagerStub::GetNumberOfRequests( void ) const
 {
     return NEDirectMessager::NumberofRequests;
 }
 
-const unsigned int CEDirectMessagerStub::GetNumberOfResponses( void ) const
+unsigned int CEDirectMessagerStub::GetNumberOfResponses( void ) const
 {
     return NEDirectMessager::NumberofResponses;
 }
 
-const unsigned int CEDirectMessagerStub::GetNumberOfAttributes( void ) const
+unsigned int CEDirectMessagerStub::GetNumberOfAttributes( void ) const
 {
     return NEDirectMessager::NumberofAttributes;
 }
@@ -121,7 +121,7 @@ const unsigned int * CEDirectMessagerStub::GetAttributeIds( void ) const
     return reinterpret_cast<const unsigned int *>(NEDirectMessager::AttributeIds);
 }
 
-CEResponseEvent * CEDirectMessagerStub::CreateResponseEvent( const CEProxyAddress & proxy, const unsigned int msgId, const NEService::eResultType result, const CEEventDataStream & data ) const
+CEResponseEvent * CEDirectMessagerStub::CreateResponseEvent( const CEProxyAddress & proxy, unsigned int msgId, NEService::eResultType result, const CEEventDataStream & data ) const
 {
     return (data.IsEmpty() == false ? DEBUG_NEW CEDirectMessagerResponseEvent(data, proxy, result, msgId) : DEBUG_NEW CEDirectMessagerResponseEvent(proxy, result, msgId));
 }
@@ -142,12 +142,12 @@ const CEVersion & CEDirectMessagerStub::GetImplVersion( void ) const
 }
 
 DEF_TRACE_SCOPE(shared_generated_CEDirectMessagerStub_SendNotification);
-void CEDirectMessagerStub::SendNotification( const unsigned int msgId )
+void CEDirectMessagerStub::SendNotification( unsigned int msgId )
 {
     CEEventDataStream args(CEEventDataStream::EventDataExternal);
     IEOutStream & stream = args.GetStreamForWrite();
 
-    switch ( static_cast<const NEDirectMessager::eMessageIDs>(msgId) )
+    switch ( static_cast<NEDirectMessager::eMessageIDs>(msgId) )
     {
     case NEDirectMessager::MSG_ID_ChatParticipants:
         mChatParticipantsState = NEService::DATA_OK;
@@ -165,12 +165,12 @@ void CEDirectMessagerStub::SendNotification( const unsigned int msgId )
     }
 }
 DEF_TRACE_SCOPE(shared_generated_CEDirectMessagerStub_ErrorRequest);
-void CEDirectMessagerStub::ErrorRequest( const unsigned int msgId, const bool msgCancel )
+void CEDirectMessagerStub::ErrorRequest( unsigned int msgId, bool msgCancel )
 {
     NEService::eResultType result = NEService::RESULT_NOT_PROCESSED;
     unsigned int listenerId = static_cast<unsigned int>(msgId);
     
-    switch ( static_cast<const NEDirectMessager::eMessageIDs>(msgId) )
+    switch ( static_cast<NEDirectMessager::eMessageIDs>(msgId) )
     {
 /************************************************************************
  * Attribute errors
@@ -202,7 +202,7 @@ void CEDirectMessagerStub::ErrorRequest( const unsigned int msgId, const bool ms
     case NEDirectMessager::MSG_ID_RequestMessageSend:
     case NEDirectMessager::MSG_ID_RequestMessageType:
     case NEDirectMessager::MSG_ID_RequestChatLeave:
-        listenerId = NEDirectMessager::GetResponseId(static_cast<const NEDirectMessager::eMessageIDs>(msgId));
+        listenerId = NEDirectMessager::GetResponseId(static_cast< NEDirectMessager::eMessageIDs>(msgId));
         result = msgCancel ? NEService::RESULT_REQUEST_CANCELED : NEService::RESULT_REQUEST_ERROR;
         break;
 
@@ -441,7 +441,7 @@ void CEDirectMessagerStub::ProcessAttributeEvent( CEServiceRequestEvent & eventE
             }
 
             if (updId != NEDirectMessager::MSG_ID_NO_PROCEED)
-                SendUpdateEvent( static_cast<const unsigned int>(updId), args, validUpdate );
+                SendUpdateEvent( static_cast<unsigned int>(updId), args, validUpdate );
         }
     }
 }

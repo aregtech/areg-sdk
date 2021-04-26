@@ -4,9 +4,9 @@
  ************************************************************************/
 #pragma once
 
-#include "areg/base/GEGlobal.h"
-#include "areg/component/CEComponent.hpp"
-#include "areg/base/NEMemory.hpp"
+#include "areg/src/base/GEGlobal.h"
+#include "areg/src/component/CEComponent.hpp"
+#include "areg/src/base/NEMemory.hpp"
 #include "shared/generated/CEConnectionManagerStub.hpp"
 #include "shared/generated/CECentralMessagerStub.hpp"
 

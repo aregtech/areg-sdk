@@ -4,9 +4,9 @@
 #ifndef  SHARED_GENERATED_CEDIRECTCONNECTIONSTUB_HPP
 #define  SHARED_GENERATED_CEDIRECTCONNECTIONSTUB_HPP
 /************************************************************************
- * (c) copyright    2019
+ * (c) copyright    2021
  *                  Create by AREGtech code generator tool from source DirectConnection.
- * Generated at     03.09.2019  02:48:09 GMT+02:00 
+ * Generated at     25.04.2021  23:50:45 GMT+02:00 
  ************************************************************************/
 
 /************************************************************************
@@ -18,8 +18,9 @@
 /************************************************************************
  * Include files
  ************************************************************************/
+#include "areg/src/base/GEGlobal.h"
 #include "shared/generated/NEDirectConnection.hpp"
-#include "areg/component/CEStubBase.hpp"
+#include "areg/src/component/CEStubBase.hpp"
 
 /************************************************************************
  * Dependencies
@@ -210,7 +211,7 @@ public:
      *
      * \param   msgId   The attribute message ID to notify clients.
      **/
-    virtual void SendNotification( const unsigned int msgId );
+    virtual void SendNotification( unsigned int msgId );
 
     /**
      * \brief   Sends error message to clients.
@@ -224,7 +225,7 @@ public:
      *                      This parameter has sense only for request IDs.
      *                      It is ignored for response and attributes IDs.
      **/
-    virtual void ErrorRequest( const unsigned int msgId, const bool msgCancel );
+    virtual void ErrorRequest( unsigned int msgId, bool msgCancel );
 
 protected:
 /************************************************************************/
@@ -255,17 +256,17 @@ protected:
     /**
      * \brief   Returns number of requests of Service Interface
      **/
-    virtual const unsigned int GetNumberOfRequests(void) const;
+    virtual unsigned int GetNumberOfRequests(void) const;
 
     /**
      * \brief   Returns number of responses of Service Interface
      **/
-    virtual const unsigned int GetNumberOfResponses( void ) const;
+    virtual unsigned int GetNumberOfResponses( void ) const;
 
     /**
      * \brief   Returns number of attributes of Service Interface
      **/
-    virtual const unsigned int GetNumberOfAttributes( void ) const;
+    virtual unsigned int GetNumberOfAttributes( void ) const;
 
     /**
      * \brief   Returns pointer of array of requests IDs of Service Interface
@@ -290,7 +291,7 @@ protected:
      * \param   data    The buffer of data to send to client. Can be Invalid buffer.
      * \return  Returns valid pointer to Response event object
      **/
-    virtual CEResponseEvent * CreateResponseEvent( const CEProxyAddress & proxy, const unsigned int msgId, const NEService::eResultType result, const CEEventDataStream & data ) const;
+    virtual CEResponseEvent * CreateResponseEvent( const CEProxyAddress & proxy, unsigned int msgId, NEService::eResultType result, const CEEventDataStream & data ) const;
 
     /**
      * \brief   Overwrite method to create remote service request event from streaming object for 
@@ -393,7 +394,7 @@ inline bool CEDirectConnectionStub::IsInitiatedConnectionsValid( void ) const
 {   return (mInitiatedConnectionsState  == NEService::DATA_OK); }
 
 inline void CEDirectConnectionStub::InvalidateInitiatedConnections( void )
-{   ErrorRequest( static_cast<const unsigned int &>(NEDirectConnection::MSG_ID_InitiatedConnections), false ); }
+{   ErrorRequest( static_cast<unsigned int>(NEDirectConnection::MSG_ID_InitiatedConnections), false ); }
 
 inline void CEDirectConnectionStub::NotifyInitiatedConnectionsUpdated( void )
 {   SendNotification( NEDirectConnection::MSG_ID_InitiatedConnections );   }

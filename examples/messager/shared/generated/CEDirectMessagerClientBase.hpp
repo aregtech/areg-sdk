@@ -4,9 +4,9 @@
 #ifndef  SHARED_GENERATED_CEDIRECTMESSAGERCLIENTBASE_HPP
 #define  SHARED_GENERATED_CEDIRECTMESSAGERCLIENTBASE_HPP
 /************************************************************************
- * (c) copyright    2019
- *                  Create by AREGtech code generator tool from source DirectMessager.
- * Generated at     03.09.2019  02:48:11 GMT+02:00 
+ * (c) copyright    2021
+ *                  Create by AREG SDK code generator tool from source DirectMessager.
+ * Generated at     25.04.2021  23:50:46 GMT+02:00 
  ************************************************************************/
 
 /************************************************************************
@@ -18,10 +18,11 @@
 /************************************************************************
  * Include files
  ************************************************************************/
+#include "areg/src/base/GEGlobal.h"
 #include "shared/generated/NEDirectMessager.hpp"
-#include "areg/component/CEClientBase.hpp"
-#include "areg/component/IEProxyListener.hpp"
-#include "areg/component/CENotificationEvent.hpp"
+#include "areg/src/component/CEClientBase.hpp"
+#include "areg/src/component/IEProxyListener.hpp"
+#include "areg/src/component/CENotificationEvent.hpp"
 
 #include "shared/generated/private/CEDirectMessagerProxy.hpp"
 
@@ -53,14 +54,14 @@ protected:
      * \param   ownerThread The name of component owner thread to dispatch messages.
      *                      If NULL, all messages are dispatched in current component thread.
      **/
-    CEDirectMessagerClientBase( const char* const roleName, const char * ownerThread = static_cast<const char *>(NULL) );
+    CEDirectMessagerClientBase( const char* roleName, const char * ownerThread = static_cast<const char *>(NULL) );
 
     /**
      * \brief   Constructs and initialize DirectMessager Service Interface client object.
      * \param   roleName    The role name assigned to DirectMessager servicing component object.
      * \param   ownerThread The instance of component owner thread to dispatch messages.
      **/
-    CEDirectMessagerClientBase( const char* const roleName, CEDispatcherThread & ownerThread );
+    CEDirectMessagerClientBase( const char* roleName, CEDispatcherThread & ownerThread );
 
     /**
      * \brief   Constructs and initialize DirectMessager Service Interface client object.
@@ -69,7 +70,7 @@ protected:
      * \note    When this constructor is used, it is important that the CEComponent object is already initialized.
      *          and the component thread is set.
      **/
-    CEDirectMessagerClientBase( const char* const roleName, CEComponent & owner );
+    CEDirectMessagerClientBase( const char* roleName, CEComponent & owner );
 
     /**
      * \brief   Destructor.
@@ -90,7 +91,7 @@ public:
      *          Otherwise returns false.
      * \param   msgId   The ID of message to check.
      **/
-    const bool IsNotificationAssigned( const NEDirectMessager::eMessageIDs msgId ) const;
+    bool IsNotificationAssigned( NEDirectMessager::eMessageIDs msgId ) const;
 
     /**
      * \brief   Returns true if client object has got connection with servicing component
@@ -142,7 +143,7 @@ public:
      * \param   ChatParticipants    The value of ChatParticipants attribute.
      * \param   state               The data validation flag.
      **/
-    virtual void OnChatParticipantsUpdate( const NEDirectMessager::ListParticipants & ChatParticipants, const NEService::eDataStateType state );
+    virtual void OnChatParticipantsUpdate( const NEDirectMessager::ListParticipants & ChatParticipants, NEService::eDataStateType state );
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -166,7 +167,7 @@ public:
      * \brief   Overwrite to handle error of ChatJoin request call.
      * \param   FailureReason   The failure reason value of request call.
      **/
-    virtual void RequestChatJoinFailed( const NEService::eResultType FailureReason );
+    virtual void RequestChatJoinFailed( NEService::eResultType FailureReason );
     
 /************************************************************************
  * Request MessageSend
@@ -184,7 +185,7 @@ public:
      * \brief   Overwrite to handle error of MessageSend request call.
      * \param   FailureReason   The failure reason value of request call.
      **/
-    virtual void RequestMessageSendFailed( const NEService::eResultType FailureReason );
+    virtual void RequestMessageSendFailed( NEService::eResultType FailureReason );
     
 /************************************************************************
  * Request MessageType
@@ -201,7 +202,7 @@ public:
      * \brief   Overwrite to handle error of MessageType request call.
      * \param   FailureReason   The failure reason value of request call.
      **/
-    virtual void RequestMessageTypeFailed( const NEService::eResultType FailureReason );
+    virtual void RequestMessageTypeFailed( NEService::eResultType FailureReason );
     
 /************************************************************************
  * Request ChatLeave
@@ -218,7 +219,7 @@ public:
      * \brief   Overwrite to handle error of ChatLeave request call.
      * \param   FailureReason   The failure reason value of request call.
      **/
-    virtual void RequestChatLeaveFailed( const NEService::eResultType FailureReason );
+    virtual void RequestChatLeaveFailed( NEService::eResultType FailureReason );
     
 /************************************************************************
  * Response ChatJoin
@@ -371,7 +372,7 @@ protected:
      *          i.e. if passed Proxy address is equal to the Proxy object that client has.
      *          If Proxy objects are not equal, it should return false;
      **/
-    virtual bool ServiceConnected( const bool isConnected, CEProxyBase & proxy );
+    virtual bool ServiceConnected( bool isConnected, CEProxyBase & proxy );
 
 protected:
 /************************************************************************/
@@ -382,13 +383,13 @@ protected:
      * \brief   Overwrite this method if need to make error handling on invalid response
      * \param   InvalidRespId   The ID of invalid response
      **/
-    virtual void InvalidResponse( const NEDirectMessager::eMessageIDs InvalidRespId );
+    virtual void InvalidResponse( NEDirectMessager::eMessageIDs InvalidRespId );
 
     /**
      * \brief   Overwrite this method if need to make error handling on invalid request
      * \param   InvalidReqId    The ID of invalid request
      **/
-    virtual void InvalidRequest( const NEDirectMessager::eMessageIDs InvalidReqId );
+    virtual void InvalidRequest( NEDirectMessager::eMessageIDs InvalidReqId );
     
     /**
      * \brief   By default, the function calls appropriate request failure function.
@@ -396,7 +397,7 @@ protected:
      * \param   msgId           The ID of either response of request message, which failed. Normally ID of request.
      * \param   FailureReason   The failure reason value of request call.
      **/
-    virtual void RequestFailed( const NEDirectMessager::eMessageIDs FailureMsgId, const NEService::eResultType FailureReason );
+    virtual void RequestFailed( NEDirectMessager::eMessageIDs FailureMsgId, NEService::eResultType FailureReason );
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes
@@ -467,7 +468,7 @@ private:
      *                  assigned, then if parameter 'always' is true, it will trigger
      *                  notification immediately after call. 
      **/
-    void NotifyOn( const NEDirectMessager::eMessageIDs msgId, bool notify, bool always = false );
+    void NotifyOn( NEDirectMessager::eMessageIDs msgId, bool notify, bool always = false );
     /**
      * \brief   Returns reference of CEDirectMessagerClientBase object
      **/
@@ -495,8 +496,8 @@ inline unsigned int CEDirectMessagerClientBase::GetCurrentSequenceNr( void ) con
 inline bool CEDirectMessagerClientBase::IsConnected( void ) const
 {   return mIsConnected;    }
 
-inline const bool CEDirectMessagerClientBase::IsNotificationAssigned( const NEDirectMessager::eMessageIDs msgId ) const
-{   return mProxy->HasNotificationListener(static_cast<const unsigned int>(msgId));   }
+inline bool CEDirectMessagerClientBase::IsNotificationAssigned( NEDirectMessager::eMessageIDs msgId ) const
+{   return mProxy->HasNotificationListener(static_cast<unsigned int>(msgId));   }
 
 /************************************************************************
  * Attribute inline functions

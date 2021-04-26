@@ -7,7 +7,7 @@
 #include "edge/services/CEDirectConnectionService.hpp"
 #include "edge/ui/CEDistributedDialog.hpp"
 #include "edge/NEDistributedApp.hpp"
-#include "areg/trace/GETrace.h"
+#include "areg/src/trace/GETrace.h"
 
 DEF_TRACE_SCOPE( distrbutedapp_CEDirectConnectionService_CreateComponent );
 DEF_TRACE_SCOPE( distrbutedapp_CEDirectConnectionService_DeleteComponent );

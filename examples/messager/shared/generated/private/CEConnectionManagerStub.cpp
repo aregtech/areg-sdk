@@ -2,9 +2,9 @@
 // Begin generate shared/generated/private/CEConnectionManagerStub.cpp file
 //////////////////////////////////////////////////////////////////////////
 /************************************************************************
- * (c) copyright    2019
+ * (c) copyright    2021
  *                  Create by AREGtech code generator tool from source ConnectionManager.
- * Generated at     03.09.2019  02:48:08 GMT+02:00 
+ * Generated at     25.04.2021  23:50:44 GMT+02:00 
  ************************************************************************/
 
 /************************************************************************
@@ -19,9 +19,9 @@
 #include "shared/generated/CEConnectionManagerStub.hpp"
 #include "shared/generated/private/CEConnectionManagerEvents.hpp"
 
-#include "areg/component/CEServiceResponseEvent.hpp"
-#include "areg/base/CEThread.hpp"
-#include "areg/trace/GETrace.h"
+#include "areg/src/component/CEServiceResponseEvent.hpp"
+#include "areg/src/base/CEThread.hpp"
+#include "areg/src/trace/GETrace.h"
 
 //////////////////////////////////////////////////////////////////////////
 // CEConnectionManagerStub class implementation
@@ -91,17 +91,17 @@ void CEConnectionManagerStub::ShutdownServiceIntrface( CEComponent & holder )
     CEStubBase::ShutdownServiceIntrface( holder );
 }
 
-const unsigned int CEConnectionManagerStub::GetNumberOfRequests( void ) const
+unsigned int CEConnectionManagerStub::GetNumberOfRequests( void ) const
 {
     return NEConnectionManager::NumberofRequests;
 }
 
-const unsigned int CEConnectionManagerStub::GetNumberOfResponses( void ) const
+unsigned int CEConnectionManagerStub::GetNumberOfResponses( void ) const
 {
     return NEConnectionManager::NumberofResponses;
 }
 
-const unsigned int CEConnectionManagerStub::GetNumberOfAttributes( void ) const
+unsigned int CEConnectionManagerStub::GetNumberOfAttributes( void ) const
 {
     return NEConnectionManager::NumberofAttributes;
 }
@@ -121,7 +121,7 @@ const unsigned int * CEConnectionManagerStub::GetAttributeIds( void ) const
     return reinterpret_cast<const unsigned int *>(NEConnectionManager::AttributeIds);
 }
 
-CEResponseEvent * CEConnectionManagerStub::CreateResponseEvent( const CEProxyAddress & proxy, const unsigned int msgId, const NEService::eResultType result, const CEEventDataStream & data ) const
+CEResponseEvent * CEConnectionManagerStub::CreateResponseEvent( const CEProxyAddress & proxy, unsigned int msgId, NEService::eResultType result, const CEEventDataStream & data ) const
 {
     return (data.IsEmpty() == false ? DEBUG_NEW CEConnectionManagerResponseEvent(data, proxy, result, msgId) : DEBUG_NEW CEConnectionManagerResponseEvent(proxy, result, msgId));
 }
@@ -142,12 +142,12 @@ const CEVersion & CEConnectionManagerStub::GetImplVersion( void ) const
 }
 
 DEF_TRACE_SCOPE(shared_generated_CEConnectionManagerStub_SendNotification);
-void CEConnectionManagerStub::SendNotification( const unsigned int msgId )
+void CEConnectionManagerStub::SendNotification( unsigned int msgId )
 {
     CEEventDataStream args(CEEventDataStream::EventDataExternal);
     IEOutStream & stream = args.GetStreamForWrite();
 
-    switch ( static_cast<const NEConnectionManager::eMessageIDs>(msgId) )
+    switch ( static_cast<NEConnectionManager::eMessageIDs>(msgId) )
     {
     case NEConnectionManager::MSG_ID_ConnectionList:
         mConnectionListState = NEService::DATA_OK;
@@ -165,12 +165,12 @@ void CEConnectionManagerStub::SendNotification( const unsigned int msgId )
     }
 }
 DEF_TRACE_SCOPE(shared_generated_CEConnectionManagerStub_ErrorRequest);
-void CEConnectionManagerStub::ErrorRequest( const unsigned int msgId, const bool msgCancel )
+void CEConnectionManagerStub::ErrorRequest( unsigned int msgId, bool msgCancel )
 {
     NEService::eResultType result = NEService::RESULT_NOT_PROCESSED;
     unsigned int listenerId = static_cast<unsigned int>(msgId);
     
-    switch ( static_cast<const NEConnectionManager::eMessageIDs>(msgId) )
+    switch ( static_cast<NEConnectionManager::eMessageIDs>(msgId) )
     {
 /************************************************************************
  * Attribute errors
@@ -200,7 +200,7 @@ void CEConnectionManagerStub::ErrorRequest( const unsigned int msgId, const bool
     case NEConnectionManager::MSG_ID_RequestConnet:
     case NEConnectionManager::MSG_ID_RequestRegisterConnection:
     case NEConnectionManager::MSG_ID_RequestDiconnect:
-        listenerId = NEConnectionManager::GetResponseId(static_cast<const NEConnectionManager::eMessageIDs>(msgId));
+        listenerId = NEConnectionManager::GetResponseId(static_cast< NEConnectionManager::eMessageIDs>(msgId));
         result = msgCancel ? NEService::RESULT_REQUEST_CANCELED : NEService::RESULT_REQUEST_ERROR;
         break;
 
@@ -423,7 +423,7 @@ void CEConnectionManagerStub::ProcessAttributeEvent( CEServiceRequestEvent & eve
             }
 
             if (updId != NEConnectionManager::MSG_ID_NO_PROCEED)
-                SendUpdateEvent( static_cast<const unsigned int>(updId), args, validUpdate );
+                SendUpdateEvent( static_cast<unsigned int>(updId), args, validUpdate );
         }
     }
 }

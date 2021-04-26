@@ -1,7 +1,7 @@
 #pragma once
 
-#include "areg/base/CEString.hpp"
-#include "areg/base/TEArrayList.hpp"
+#include "areg/src/base/CEString.hpp"
+#include "areg/src/base/TEArrayList.hpp"
 #include "shared/NECommonSettings.hpp"
 #include "edge/res/resource.h"
 #include "shared/generated/NEConnectionManager.hpp"

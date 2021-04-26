@@ -13,6 +13,7 @@
  /************************************************************************
   * Include files.
   ************************************************************************/
+#include "areg/src/base/ETemplateBase.hpp"
 #include "areg/src/base/EContainers.hpp"
 #include "areg/src/base/ESynchObjects.hpp"
 
@@ -61,7 +62,7 @@ template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class 
   *                             when need to clean resources, add and remove resource objects
   *                             to the resource list.
   **/
-template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class ResourceList, class Implement>
+template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class ResourceList, class Implement = TEResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>>
 class TEResourceListMap : protected HashMap
                         , protected Implement
 {
