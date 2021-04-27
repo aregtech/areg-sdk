@@ -6,7 +6,7 @@
 #include "edge/services/CEDirectMessagingClient.hpp"
 #include "edge/services/CEChatPrticipantHandler.hpp"
 #include "shared/NECommonSettings.hpp"
-#include "areg/src/trace/GETrace.h"
+#include "areg/trace/GETrace.h"
 
 DEF_TRACE_SCOPE( distrbutedapp_CEDirectMessagingClient_ServiceConnected );
 DEF_TRACE_SCOPE( distrbutedapp_CEDirectMessagingClient_ResponseChatJoin );

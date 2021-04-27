@@ -5,12 +5,12 @@
  * \brief           Configurations, settings, etc..
  ************************************************************************/
 
-#include "areg/src/base/GEGlobal.h"
-#include "areg/src/trace/GETrace.h"
-#include "areg/src/base/CEDateTime.hpp"
-#include "areg/src/base/CEString.hpp"
-#include "areg/src/base/TEArrayList.hpp"
-#include "areg/src/base/TEHashMap.hpp"
+#include "areg/base/GEGlobal.h"
+#include "areg/trace/GETrace.h"
+#include "areg/base/CEDateTime.hpp"
+#include "areg/base/CEString.hpp"
+#include "areg/base/TEArrayList.hpp"
+#include "areg/base/TEHashMap.hpp"
 #include <tchar.h>
 
 namespace NECommonSettings

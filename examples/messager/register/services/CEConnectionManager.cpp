@@ -9,8 +9,8 @@
 #include "register/NECentralApp.hpp"
 #include "register/CECentralApp.hpp"
 #include "shared/NECommonSettings.hpp"
-#include "areg/src/component/NERegistry.hpp"
-#include "areg/src/component/CEComponentLoader.hpp"
+#include "areg/component/NERegistry.hpp"
+#include "areg/component/CEComponentLoader.hpp"
 
 #define MAKE_HWND(wnd)      reinterpret_cast<HWND>(wnd)
 

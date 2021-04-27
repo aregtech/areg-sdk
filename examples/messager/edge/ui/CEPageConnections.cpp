@@ -8,9 +8,9 @@
 
 #include "edge/services/CEDirectConnectionService.hpp"
 #include "edge/services/CEConnectionList.hpp"
-#include "areg/src/component/CEComponentLoader.hpp"
-#include "areg/src/base/GEGlobal.h"
-#include "areg/src/trace/GETrace.h"
+#include "areg/component/CEComponentLoader.hpp"
+#include "areg/base/GEGlobal.h"
+#include "areg/trace/GETrace.h"
 #include "shared/NECommonSettings.hpp"
 
 DEF_TRACE_SCOPE( distrbutedapp_ui_CEPageConnections_OnClientRegistration );

@@ -4,12 +4,12 @@
  * \brief           The messaging service client object
  ************************************************************************/
 
-#include "areg/src/base/GEGlobal.h"
-#include "areg/src/component/CEComponent.hpp"
+#include "areg/base/GEGlobal.h"
+#include "areg/component/CEComponent.hpp"
 #include "shared/generated/CEDirectConnectionStub.hpp"
 
-#include "areg/src/base/CEDateTime.hpp"
-#include "areg/src/base/CEString.hpp"
+#include "areg/base/CEDateTime.hpp"
+#include "areg/base/CEString.hpp"
 #include <windows.h>
 
 class CEDirectConnectionService : public CEComponent

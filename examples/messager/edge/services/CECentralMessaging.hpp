@@ -4,7 +4,7 @@
  * \brief           The connection manager client component implementation
  ************************************************************************/
 
-#include "areg/src/base/GEGlobal.h"
+#include "areg/base/GEGlobal.h"
 #include "shared/generated/CECentralMessagerClientBase.hpp"
 
 class CEDispatcherThread;

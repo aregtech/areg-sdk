@@ -8,11 +8,11 @@
 #include "register/NECentralApp.hpp"
 #include "shared/NECommonSettings.hpp"
 
-#include "areg/src/base/CEString.hpp"
-#include "areg/src/base/NESocket.hpp"
-#include "areg/src/appbase/CEApplication.hpp"
-#include "areg/src/ipc/CEConnectionConfiguration.hpp"
-#include "areg/src/component/CEComponentLoader.hpp"
+#include "areg/base/CEString.hpp"
+#include "areg/base/NESocket.hpp"
+#include "areg/appbase/CEApplication.hpp"
+#include "areg/ipc/CEConnectionConfiguration.hpp"
+#include "areg/component/CEComponentLoader.hpp"
 
 // CEPageBrokerSetup dialog
 

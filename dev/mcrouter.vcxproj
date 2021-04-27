@@ -39,14 +39,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="mcrouter\src\private\CEMulticastRouter.cpp" />
-    <ClCompile Include="mcrouter\src\private\CEMulticastRouterPosix.cpp" />
-    <ClCompile Include="mcrouter\src\private\CEMulticastRouterWin32.cpp" />
+    <ClCompile Include="mcrouter\private\CEMulticastRouter.cpp" />
+    <ClCompile Include="mcrouter\private\CEMulticastRouterPosix.cpp" />
+    <ClCompile Include="mcrouter\private\CEMulticastRouterWin32.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="system\src\GEPlatform.h" />
-    <ClInclude Include="mcrouter\src\CEMulticastRouter.hpp" />
-    <ClInclude Include="mcrouter\src\NEMulticastRouterSettings.hpp" />
+    <ClInclude Include="system\GEPlatform.h" />
+    <ClInclude Include="mcrouter\CEMulticastRouter.hpp" />
+    <ClInclude Include="mcrouter\NEMulticastRouterSettings.hpp" />
     <ClInclude Include="mcrouter\resources\resource.hpp" />
     <ClInclude Include="mcrouter\resources\targetver.hpp" />
     <ResourceCompile Include="mcrouter\resources\mcrouter.rc" />

@@ -19,9 +19,9 @@
  ************************************************************************/
 #include "shared/generated/private/CEDirectMessagerProxy.hpp"
 #include "shared/generated/private/CEDirectMessagerEvents.hpp"
-#include "areg/src/component/IEProxyListener.hpp"
-#include "areg/src/base/CEThread.hpp"
-#include "areg/src/trace/GETrace.h"
+#include "areg/component/IEProxyListener.hpp"
+#include "areg/base/CEThread.hpp"
+#include "areg/trace/GETrace.h"
 
 //////////////////////////////////////////////////////////////////////////
 // CEDirectMessagerProxy::CEDirectMessagerServiceAvailableEvent class implementation

@@ -15,7 +15,7 @@
 #include "register/res/stdafx.h"
 #include "register/CECentralApp.hpp"
 #include "register/ui/CECentralDialog.hpp"
-#include "areg/src/appbase/CEApplication.hpp"
+#include "areg/appbase/CEApplication.hpp"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

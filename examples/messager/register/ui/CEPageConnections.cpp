@@ -7,9 +7,9 @@
 #include "register/services/CEConnectionManager.hpp"
 #include "register/NECentralApp.hpp"
 
-#include "areg/src/base/GEGlobal.h"
-#include "areg/src/base/GEMacros.h"
-#include "areg/src/base/NEMemory.hpp"
+#include "areg/base/GEGlobal.h"
+#include "areg/base/GEMacros.h"
+#include "areg/base/NEMemory.hpp"
 
 
 // CEPageConnections

@@ -19,21 +19,21 @@
 /************************************************************************
  * Include files
  ************************************************************************/
-#include "areg/src/base/GEGlobal.h"
+#include "areg/base/GEGlobal.h"
 
 //////////////////////////////////////////////////////////////////////////
 // Dependency includes
 //////////////////////////////////////////////////////////////////////////
 #include "shared/NECommonSettings.hpp"
-#include "areg/src/base/CEDateTime.hpp"
-#include "areg/src/base/CEString.hpp"
+#include "areg/base/CEDateTime.hpp"
+#include "areg/base/CEString.hpp"
 
 //////////////////////////////////////////////////////////////////////////
 // Mandatory includes
 //////////////////////////////////////////////////////////////////////////
-#include "areg/src/base/IEIOStream.hpp"
-#include "areg/src/base/CEVersion.hpp"
-#include "areg/src/component/NEService.hpp"
+#include "areg/base/IEIOStream.hpp"
+#include "areg/base/CEVersion.hpp"
+#include "areg/component/NEService.hpp"
 
 /************************************************************************
  * Dependencies

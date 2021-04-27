@@ -7,7 +7,7 @@
 #include "edge/CEDistrbutedApp.hpp"
 #include "edge/NEDistributedApp.hpp"
 #include "shared/generated/NEConnectionManager.hpp"
-#include "areg/src/base/GEGlobal.h"
+#include "areg/base/GEGlobal.h"
 #include "edge/services/CEConnectionHandler.hpp"
 
 // CEPageMessaging dialog

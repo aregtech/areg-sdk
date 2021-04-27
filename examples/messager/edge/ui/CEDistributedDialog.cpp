@@ -21,7 +21,7 @@
 #include "edge/services/CEConnectionServicing.hpp"
 #include "shared/NECommonSettings.hpp"
 #include "shared/generated/NEConnectionManager.hpp"
-#include "areg/src/appbase/CEApplication.hpp"
+#include "areg/appbase/CEApplication.hpp"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

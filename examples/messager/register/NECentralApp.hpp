@@ -5,8 +5,8 @@
  * \brief           Configurations, settings, etc..
  ************************************************************************/
 
-#include "areg/src/base/GEGlobal.h"
-#include "areg/src/trace/GETrace.h"
+#include "areg/base/GEGlobal.h"
+#include "areg/trace/GETrace.h"
 
 #include <windows.h>
 #include <tchar.h>

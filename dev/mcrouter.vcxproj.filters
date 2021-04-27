@@ -15,13 +15,13 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="mcrouter\src\CEMulticastRouter.hpp">
+    <ClInclude Include="mcrouter\CEMulticastRouter.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="mcrouter\src\NEMulticastRouterSettings.hpp">
+    <ClInclude Include="mcrouter\NEMulticastRouterSettings.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="system\src\GEPlatform.h">
+    <ClInclude Include="system\GEPlatform.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="mcrouter\resources\resource.hpp">
@@ -49,13 +49,13 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="mcrouter\src\private\CEMulticastRouter.cpp">
+    <ClCompile Include="mcrouter\private\CEMulticastRouter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="mcrouter\src\private\CEMulticastRouterPosix.cpp">
+    <ClCompile Include="mcrouter\private\CEMulticastRouterPosix.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="mcrouter\src\private\CEMulticastRouterWin32.cpp">
+    <ClCompile Include="mcrouter\private\CEMulticastRouterWin32.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

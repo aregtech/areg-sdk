@@ -4,9 +4,9 @@
  * \brief           The direct connection service client object
  ************************************************************************/
 
-#include "areg/src/base/GEGlobal.h"
+#include "areg/base/GEGlobal.h"
 #include "shared/generated/CEDirectConnectionClientBase.hpp"
-#include "areg/src/component/NERegistry.hpp"
+#include "areg/component/NERegistry.hpp"
 
 class CEChatPrticipantHandler;
 

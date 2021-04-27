@@ -5,8 +5,8 @@
 
 #include "edge/res/stdafx.h"
 #include "edge/services/CECentralMessaging.hpp"
-#include "areg/src/component/CEComponent.hpp"
-#include "areg/src/component/CEComponentThread.hpp"
+#include "areg/component/CEComponent.hpp"
+#include "areg/component/CEComponentThread.hpp"
 #include "shared/NECommonSettings.hpp"
 #include "shared/generated/NEConnectionManager.hpp"
 #include "edge/NEDistributedApp.hpp"

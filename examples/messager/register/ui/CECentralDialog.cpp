@@ -16,9 +16,9 @@
 #include "register/ui/CECentralDialog.hpp"
 #include "register/CECentralApp.hpp"
 #include "shared/NECommonSettings.hpp"
-#include "areg/src/base/CEDateTime.hpp"
-#include "areg/src/appbase/CEApplication.hpp"
-#include "areg/src/component/CEComponentLoader.hpp"
+#include "areg/base/CEDateTime.hpp"
+#include "areg/appbase/CEApplication.hpp"
+#include "areg/component/CEComponentLoader.hpp"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

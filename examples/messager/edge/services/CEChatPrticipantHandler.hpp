@@ -3,9 +3,9 @@
  * \file            edge/services/CEChatPrticipantHandler.hpp
  * \brief           The messaging service chat participant handling
  ************************************************************************/
-#include "areg/src/base/GEGlobal.h"
-#include "areg/src/base/CEString.hpp"
-#include "areg/src/base/ESynchObjects.hpp"
+#include "areg/base/GEGlobal.h"
+#include "areg/base/CEString.hpp"
+#include "areg/base/ESynchObjects.hpp"
 #include "shared/NECommonSettings.hpp"
 
 #include <windows.h>

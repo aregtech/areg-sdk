@@ -19,9 +19,9 @@
 #include "shared/generated/CEConnectionManagerStub.hpp"
 #include "shared/generated/private/CEConnectionManagerEvents.hpp"
 
-#include "areg/src/component/CEServiceResponseEvent.hpp"
-#include "areg/src/base/CEThread.hpp"
-#include "areg/src/trace/GETrace.h"
+#include "areg/component/CEServiceResponseEvent.hpp"
+#include "areg/base/CEThread.hpp"
+#include "areg/trace/GETrace.h"
 
 //////////////////////////////////////////////////////////////////////////
 // CEConnectionManagerStub class implementation

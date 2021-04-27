@@ -17,9 +17,9 @@
  * Include files
  ************************************************************************/
 #include "shared/generated/CEConnectionManagerClientBase.hpp"
-#include "areg/src/component/CEComponentThread.hpp"
-#include "areg/src/component/CEComponent.hpp"
-#include "areg/src/trace/GETrace.h"
+#include "areg/component/CEComponentThread.hpp"
+#include "areg/component/CEComponent.hpp"
+#include "areg/trace/GETrace.h"
 
 /************************************************************************
  * Request error handling initialization

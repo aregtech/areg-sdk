@@ -7,8 +7,8 @@
 #include "edge/services/CEDirectChatService.hpp"
 #include "edge/services/CEChatParticipantService.hpp"
 #include "edge/NEDistributedApp.hpp"
-#include "areg/src/component/CEComponentLoader.hpp"
-#include "areg/src/base/CEDateTime.hpp"
+#include "areg/component/CEComponentLoader.hpp"
+#include "areg/base/CEDateTime.hpp"
 #include "edge/services/CEDirectMessagingClient.hpp"
 
 LPCTSTR CEPageChat::HEADER_TITILES[] =

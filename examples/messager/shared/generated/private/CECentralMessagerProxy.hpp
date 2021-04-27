@@ -18,9 +18,9 @@
 /************************************************************************
  * Include files
  ************************************************************************/
-#include "areg/src/base/GEGlobal.h"
+#include "areg/base/GEGlobal.h"
 #include "shared/generated/NECentralMessager.hpp"
-#include "areg/src/component/CEProxyBase.hpp"
+#include "areg/component/CEProxyBase.hpp"
  
 /************************************************************************
  * Dependencies

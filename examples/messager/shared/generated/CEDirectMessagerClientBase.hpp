@@ -18,11 +18,11 @@
 /************************************************************************
  * Include files
  ************************************************************************/
-#include "areg/src/base/GEGlobal.h"
+#include "areg/base/GEGlobal.h"
 #include "shared/generated/NEDirectMessager.hpp"
-#include "areg/src/component/CEClientBase.hpp"
-#include "areg/src/component/IEProxyListener.hpp"
-#include "areg/src/component/CENotificationEvent.hpp"
+#include "areg/component/CEClientBase.hpp"
+#include "areg/component/IEProxyListener.hpp"
+#include "areg/component/CENotificationEvent.hpp"
 
 #include "shared/generated/private/CEDirectMessagerProxy.hpp"
 

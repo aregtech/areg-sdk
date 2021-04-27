@@ -4,9 +4,9 @@
  * \brief           The chat participant service
  ************************************************************************/
 
-#include "areg/src/base/GEGlobal.h"
-#include "areg/src/component/CEComponent.hpp"
-#include "areg/src/component/NERegistry.hpp"
+#include "areg/base/GEGlobal.h"
+#include "areg/component/CEComponent.hpp"
+#include "areg/component/NERegistry.hpp"
 #include "edge/services/CEDirectMessagingClient.hpp"
 #include "shared/NECommonSettings.hpp"
 

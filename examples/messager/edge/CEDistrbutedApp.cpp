@@ -15,7 +15,7 @@
 #include "edge/res/stdafx.h"
 #include "edge/CEDistrbutedApp.hpp"
 #include "edge/ui/CEDistributedDialog.hpp"
-#include "areg/src/appbase/CEApplication.hpp"
+#include "areg/appbase/CEApplication.hpp"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

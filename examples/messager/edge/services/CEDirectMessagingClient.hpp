@@ -4,8 +4,8 @@
  * \brief           The messaging service client object
  ************************************************************************/
 
-#include "areg/src/base/GEGlobal.h"
-#include "areg/src/component/CEComponent.hpp"
+#include "areg/base/GEGlobal.h"
+#include "areg/component/CEComponent.hpp"
 #include "shared/generated/CEDirectMessagerClientBase.hpp"
 #include "edge/NEDistributedApp.hpp"
 

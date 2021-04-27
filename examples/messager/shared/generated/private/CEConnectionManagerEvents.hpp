@@ -18,11 +18,11 @@
 /************************************************************************
  * Include files
  ************************************************************************/
-#include "areg/src/base/GEGlobal.h"
+#include "areg/base/GEGlobal.h"
 #include "shared/generated/NEConnectionManager.hpp"
-#include "areg/src/component/CERequestEvents.hpp"
-#include "areg/src/component/CEResponseEvents.hpp"
-#include "areg/src/component/CENotificationEvent.hpp"
+#include "areg/component/CERequestEvents.hpp"
+#include "areg/component/CEResponseEvents.hpp"
+#include "areg/component/CENotificationEvent.hpp"
 
 /************************************************************************
  * Dependencies
