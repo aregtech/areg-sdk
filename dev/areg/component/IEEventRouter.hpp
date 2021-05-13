@@ -15,7 +15,7 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class CEEvent;
+class Event;
 
 //////////////////////////////////////////////////////////////////////////
 // IEEventRouter class declarations
@@ -55,7 +55,7 @@ public:
      * \return	Returns true if target was found and the event
      *          delivered with success. Otherwise it returns false.
      **/
-    virtual bool PostEvent( CEEvent & eventElem ) = 0;
+    virtual bool postEvent( Event & eventElem ) = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

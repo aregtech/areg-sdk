@@ -6,8 +6,8 @@
  *
  ************************************************************************/
 #include "areg/base/IEIOStream.hpp"
-#include "areg/base/CEString.hpp"
-#include "areg/base/CEWideString.hpp"
+#include "areg/base/String.hpp"
+#include "areg/base/WideString.hpp"
 #include "areg/base/NEUtilities.hpp"
 
 //////////////////////////////////////////////////////////////////////////
@@ -24,31 +24,31 @@ IEInStream::~IEInStream( void )
     ; // do nothing
 }
 
-uint8_t IEInStream::Read8Bits(void) const
+uint8_t IEInStream::read8Bits(void) const
 {
     uint8_t result = 0;
-    Read( reinterpret_cast<unsigned char *>(&result), 1 );
+    read( reinterpret_cast<unsigned char *>(&result), 1 );
     return result;
 }
 
-uint16_t IEInStream::Read16Bits(void) const
+uint16_t IEInStream::read16Bits(void) const
 {
     uint16_t result = 0;
-    Read( reinterpret_cast<unsigned char *>(&result), 2 );
+    read( reinterpret_cast<unsigned char *>(&result), 2 );
     return result;
 }
 
-uint32_t IEInStream::Read32Bits(void) const
+uint32_t IEInStream::read32Bits(void) const
 {
     uint32_t result = 0;
-    Read( reinterpret_cast<unsigned char *>(&result), 4 );
+    read( reinterpret_cast<unsigned char *>(&result), 4 );
     return result;
 }
 
-uint64_t IEInStream::Read64Bits(void) const
+uint64_t IEInStream::read64Bits(void) const
 {
     uint64_t result = 0;
-    Read( reinterpret_cast<unsigned char *>(&result), 8 );
+    read( reinterpret_cast<unsigned char *>(&result), 8 );
     return result;
 }
 
@@ -66,24 +66,24 @@ IEOutStream::~IEOutStream( void )
     ; // do nothing
 }
 
-bool IEOutStream::Write8Bits( uint8_t value8Bit )
+bool IEOutStream::write8Bits( uint8_t value8Bit )
 {
-    return Write( reinterpret_cast<const unsigned char *>(&value8Bit), 1) == 1;
+    return write( reinterpret_cast<const unsigned char *>(&value8Bit), 1) == 1;
 }
 
-bool IEOutStream::Write16Bits( uint16_t value16Bit )
+bool IEOutStream::write16Bits( uint16_t value16Bit )
 {
-    return Write( reinterpret_cast<const unsigned char *>(&value16Bit), 2) == 2;
+    return write( reinterpret_cast<const unsigned char *>(&value16Bit), 2) == 2;
 }
 
-bool IEOutStream::Write32Bits( uint32_t value32Bit )
+bool IEOutStream::write32Bits( uint32_t value32Bit )
 {
-    return Write( reinterpret_cast<const unsigned char *>(&value32Bit), 4) == 4;
+    return write( reinterpret_cast<const unsigned char *>(&value32Bit), 4) == 4;
 }
 
-bool IEOutStream::Write64Bits( uint64_t value64Bit )
+bool IEOutStream::write64Bits( uint64_t value64Bit )
 {
-    return Write( reinterpret_cast<const unsigned char *>(&value64Bit), 8) == 8;
+    return write( reinterpret_cast<const unsigned char *>(&value64Bit), 8) == 8;
 }
 
 //////////////////////////////////////////////////////////////////////////

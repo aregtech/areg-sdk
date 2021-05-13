@@ -6,8 +6,8 @@
 
 /************************************************************************
  * (c) copyright    2021
- *                  Create by AREGtech code generator tool from source ConnectionManager.
- * Generated at     25.04.2021  23:50:44 GMT+02:00 
+ *                  Create by AREG SDK code generator tool from source ConnectionManager.
+ * Generated at     12.05.2021  16:41:22 GMT+02:00 
  ************************************************************************/
 
 /************************************************************************
@@ -25,14 +25,14 @@
 // Dependency includes
 //////////////////////////////////////////////////////////////////////////
 #include "shared/NECommonSettings.hpp"
-#include "areg/base/CEString.hpp"
-#include "areg/base/CEDateTime.hpp"
+#include "areg/base/String.hpp"
+#include "areg/base/DateTime.hpp"
 
 //////////////////////////////////////////////////////////////////////////
 // Mandatory includes
 //////////////////////////////////////////////////////////////////////////
 #include "areg/base/IEIOStream.hpp"
-#include "areg/base/CEVersion.hpp"
+#include "areg/base/Version.hpp"
 #include "areg/component/NEService.hpp"
 
 /************************************************************************
@@ -65,7 +65,7 @@ namespace   NEConnectionManager
      * \brief   Implemented Version
      *          NEConnectionManager::InterfaceVersion
      **/
-    const CEVersion       InterfaceVersion    = "1.0.0";
+    const Version         InterfaceVersion    = "1.0.0";
 
     /**
      * \brief   Indicates invalid cookie value
@@ -114,7 +114,7 @@ namespace   NEConnectionManager
     /**
      * \brief   Returns string value of NEConnectionManager::eConnectionResult
      **/
-    inline const char * GetString( NEConnectionManager::eConnectionResult enumValue );
+    inline const char * getString( NEConnectionManager::eConnectionResult enumValue );
 
     /**
      * \brief   The connection structure.
@@ -147,52 +147,52 @@ namespace   NEConnectionManager
      * Request IDs
      ************************************************************************/
         /**
-         * \brief   Request ID: MSG_ID_RequestConnet
+         * \brief   Request ID: MSG_ID_requestConnet
          *          The request to connect to system
          **/
-          MSG_ID_RequestConnet                = NEService::REQUEST_ID_FIRST     // void RequestConnet( const CEString & nickName, const CEDateTime & dateTime );
+          MSG_ID_requestConnet                = NEService::REQUEST_ID_FIRST     // void requestConnet( const String & nickName, const DateTime & dateTime );
         /**
-         * \brief   Request ID: MSG_ID_RequestRegisterConnection
+         * \brief   Request ID: MSG_ID_requestRegisterConnection
          *          Request to register direct connection service.
          **/
-        , MSG_ID_RequestRegisterConnection                                      // void RequestRegisterConnection( const CEString & nickName, const unsigned int & cookie, const unsigned int & connectCookie, const CEDateTime & dateRegister );
+        , MSG_ID_requestRegisterConnection                                      // void requestRegisterConnection( const String & nickName, unsigned int cookie, unsigned int connectCookie, const DateTime & dateRegister );
         /**
-         * \brief   Request ID: MSG_ID_RequestDiconnect
+         * \brief   Request ID: MSG_ID_requestDiconnect
          *          Request to disconnect.
          **/
-        , MSG_ID_RequestDiconnect                                               // void RequestDiconnect( const CEString & nickName, const unsigned int & cookie, const CEDateTime & dateTime );
+        , MSG_ID_requestDiconnect                                               // void requestDiconnect( const String & nickName, unsigned int cookie, const DateTime & dateTime );
      
     /************************************************************************
      * Response IDs
      ************************************************************************/
         /**
-         * \brief   Response ID: MSG_ID_ResponseConnect
+         * \brief   Response ID: MSG_ID_responseConnect
          *          The result of connection request.
          **/
-        , MSG_ID_ResponseConnect              = NEService::RESPONSE_ID_FIRST    // void ResponseConnect( const CEString & nickName, const unsigned int & cookie, const CEDateTime & dateTime, const NEConnectionManager::eConnectionResult & result );
+        , MSG_ID_responseConnect              = NEService::RESPONSE_ID_FIRST    // void responseConnect( const String & nickName, unsigned int cookie, const DateTime & dateTime, NEConnectionManager::eConnectionResult result );
         /**
-         * \brief   Response ID: MSG_ID_ResponseRegisterConnection
+         * \brief   Response ID: MSG_ID_responseRegisterConnection
          *          The result of request to register direct connection service.
          **/
-        , MSG_ID_ResponseRegisterConnection                                     // void ResponseRegisterConnection( const NEConnectionManager::sConnection & connection, const NEConnectionManager::ListConnection & connectionList, const bool & success );     
+        , MSG_ID_responseRegisterConnection                                     // void responseRegisterConnection( const NEConnectionManager::sConnection & connection, const NEConnectionManager::ListConnection & connectionList, bool success );     
     /************************************************************************
      * Broadcast IDs
      ************************************************************************/
         /**
-         * \brief   Broadcast ID: MSG_ID_BroadcastConnectionUpdated
+         * \brief   Broadcast ID: MSG_ID_broadcastConnectionUpdated
          *          Notifies all client components the connection has been updated.
          **/
-        , MSG_ID_BroadcastConnectionUpdated                                     // void BroadcastConnectionUpdated( const NEConnectionManager::MapConnection & updatedList );
+        , MSG_ID_broadcastConnectionUpdated                                     // void broadcastConnectionUpdated( const NEConnectionManager::MapConnection & updatedList );
         /**
-         * \brief   Broadcast ID: MSG_ID_BroadcastClientConnected
+         * \brief   Broadcast ID: MSG_ID_broadcastClientConnected
          *          Notifies that a new client has been connected.
          **/
-        , MSG_ID_BroadcastClientConnected                                       // void BroadcastClientConnected( const NEConnectionManager::sConnection & clientConnected );
+        , MSG_ID_broadcastClientConnected                                       // void broadcastClientConnected( const NEConnectionManager::sConnection & clientConnected );
         /**
-         * \brief   Broadcast ID: MSG_ID_BroadcastClientDisconnected
+         * \brief   Broadcast ID: MSG_ID_broadcastClientDisconnected
          *          Notifies a client has been disconnected.
          **/
-        , MSG_ID_BroadcastClientDisconnected                                    // void BroadcastClientDisconnected( const NEConnectionManager::sConnection & clientLeft );
+        , MSG_ID_broadcastClientDisconnected                                    // void broadcastClientDisconnected( const NEConnectionManager::sConnection & clientLeft );
      
     /************************************************************************
      * Attributes IDs
@@ -219,7 +219,7 @@ namespace   NEConnectionManager
     /**
      * \brief   Returns string value of NEConnectionManager::eMessageIDs
      **/
-    inline const char * GetString( NEConnectionManager::eMessageIDs msgId );
+    inline const char * getString( NEConnectionManager::eMessageIDs msgId );
      
 /************************************************************************
  * Service Interface standard functions and variables
@@ -228,26 +228,26 @@ namespace   NEConnectionManager
     /**
      * \brief   Creates and returns Service Interface Data
      **/
-    const NEService::SInterfaceData & CreateInterfaceData( void );
+    const NEService::SInterfaceData & createInterfaceData( void );
 
     /**
      * \brief   Returns the mapped Response ID of give Request ID.
      **/
-    NEConnectionManager::eMessageIDs GetResponseId( NEConnectionManager::eMessageIDs reqId );
+    NEConnectionManager::eMessageIDs getResponseId( NEConnectionManager::eMessageIDs reqId );
 
     /**
      * \brief   Returns the mapped Response ID of give Request ID.
      **/
-    NEConnectionManager::eMessageIDs GetRequestId( NEConnectionManager::eMessageIDs respId );
+    NEConnectionManager::eMessageIDs getRequestId( NEConnectionManager::eMessageIDs respId );
 
     /**
      * \brief   Array of supported Request IDs
      **/
     const eMessageIDs    RequestIds[] = 
     {
-          MSG_ID_RequestConnet
-        , MSG_ID_RequestRegisterConnection
-        , MSG_ID_RequestDiconnect
+          MSG_ID_requestConnet
+        , MSG_ID_requestRegisterConnection
+        , MSG_ID_requestDiconnect
     };
     /**
      * \brief   Number of supported Request entries
@@ -259,12 +259,12 @@ namespace   NEConnectionManager
      **/
     const eMessageIDs    ResponseIds[] = 
     {
-          MSG_ID_ResponseConnect
-        , MSG_ID_ResponseRegisterConnection
+          MSG_ID_responseConnect
+        , MSG_ID_responseRegisterConnection
 
-        , MSG_ID_BroadcastConnectionUpdated
-        , MSG_ID_BroadcastClientConnected
-        , MSG_ID_BroadcastClientDisconnected
+        , MSG_ID_broadcastConnectionUpdated
+        , MSG_ID_broadcastClientConnected
+        , MSG_ID_broadcastClientDisconnected
     };
     /**
      * \brief   Number of supported Response entries
@@ -302,7 +302,7 @@ IMPLEMENT_STREAMABLE( NEConnectionManager::eConnectionResult )
 /**
  * Return string value of NEConnectionManager::eConnectionResult
  **/
-inline const char * NEConnectionManager::GetString( NEConnectionManager::eConnectionResult enumValue )
+inline const char * NEConnectionManager::getString( NEConnectionManager::eConnectionResult enumValue )
 {
     switch ( enumValue )
     {
@@ -325,26 +325,26 @@ inline const char * NEConnectionManager::GetString( NEConnectionManager::eConnec
 /**
  * Returns string value of NEConnectionManager::eMessageIDs
  **/
-inline const char * NEConnectionManager::GetString( NEConnectionManager::eMessageIDs msgId )
+inline const char * NEConnectionManager::getString( NEConnectionManager::eMessageIDs msgId )
 {
     switch ( msgId )
     {
-    case    NEConnectionManager::MSG_ID_RequestConnet:
-        return "NEConnectionManager::MSG_ID_RequestConnet";
-    case    NEConnectionManager::MSG_ID_RequestRegisterConnection:
-        return "NEConnectionManager::MSG_ID_RequestRegisterConnection";
-    case    NEConnectionManager::MSG_ID_RequestDiconnect:
-        return "NEConnectionManager::MSG_ID_RequestDiconnect";
-    case    NEConnectionManager::MSG_ID_ResponseConnect:
-        return "NEConnectionManager::MSG_ID_ResponseConnect";
-    case    NEConnectionManager::MSG_ID_ResponseRegisterConnection:
-        return "NEConnectionManager::MSG_ID_ResponseRegisterConnection";
-    case    NEConnectionManager::MSG_ID_BroadcastConnectionUpdated:
-        return "NEConnectionManager::MSG_ID_BroadcastConnectionUpdated";
-    case    NEConnectionManager::MSG_ID_BroadcastClientConnected:
-        return "NEConnectionManager::MSG_ID_BroadcastClientConnected";
-    case    NEConnectionManager::MSG_ID_BroadcastClientDisconnected:
-        return "NEConnectionManager::MSG_ID_BroadcastClientDisconnected";
+    case    NEConnectionManager::MSG_ID_requestConnet:
+        return "NEConnectionManager::MSG_ID_requestConnet";
+    case    NEConnectionManager::MSG_ID_requestRegisterConnection:
+        return "NEConnectionManager::MSG_ID_requestRegisterConnection";
+    case    NEConnectionManager::MSG_ID_requestDiconnect:
+        return "NEConnectionManager::MSG_ID_requestDiconnect";
+    case    NEConnectionManager::MSG_ID_responseConnect:
+        return "NEConnectionManager::MSG_ID_responseConnect";
+    case    NEConnectionManager::MSG_ID_responseRegisterConnection:
+        return "NEConnectionManager::MSG_ID_responseRegisterConnection";
+    case    NEConnectionManager::MSG_ID_broadcastConnectionUpdated:
+        return "NEConnectionManager::MSG_ID_broadcastConnectionUpdated";
+    case    NEConnectionManager::MSG_ID_broadcastClientConnected:
+        return "NEConnectionManager::MSG_ID_broadcastClientConnected";
+    case    NEConnectionManager::MSG_ID_broadcastClientDisconnected:
+        return "NEConnectionManager::MSG_ID_broadcastClientDisconnected";
     case    NEConnectionManager::MSG_ID_ConnectionList:
         return "NEConnectionManager::MSG_ID_ConnectionList";
 

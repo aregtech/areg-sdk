@@ -18,16 +18,16 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/TEHashMap.hpp"
-#include "areg/base/CERuntimeClassID.hpp"
+#include "areg/base/RuntimeClassID.hpp"
 #include "areg/base/TEResourceMap.hpp"
 #include "areg/base/ESynchObjects.hpp"
 
 /************************************************************************
  * Hierarchies and list of declared classes
  ************************************************************************/
-// TEHashMap<CERuntimeClassID, RUNTIME_DELEGATE *, const CERuntimeClassID &, RUNTIME_DELEGATE *>
+// TEHashMap<RuntimeClassID, RUNTIME_DELEGATE *, const RuntimeClassID &, RUNTIME_DELEGATE *>
     template <typename RUNTIME_DELEGATE> class TERuntimeHashMap;
-        // TEResourceMap<CERuntimeClassID, RUNTIME_DELEGATE, TERuntimeHashMap<RUNTIME_DELEGATE>>
+        // TEResourceMap<RuntimeClassID, RUNTIME_DELEGATE, TERuntimeHashMap<RUNTIME_DELEGATE>>
             template <class RUNTIME_DELEGATE, class Implement> class TERuntimeResourceMap;
                 template <class RUNTIME_DELEGATE, class Implement> class TENolockRuntimeResourceMap;
                 template <class RUNTIME_DELEGATE, class Implement> class TELockRuntimeResourceMap;
@@ -46,7 +46,7 @@
  *          and modified from different threads.
  *
  *          As an example of using runtime resource map, see consumer registration map
- *          declared in CEEventConsumerMap.
+ *          declared in EventConsumerMap.
  *
  ************************************************************************/
 
@@ -61,7 +61,7 @@
  *          class template to hold runtime object information.
  **/
 template <typename RUNTIME_DELEGATE>
-class TERuntimeHashMapImpl : public TEHashMapImpl<const CERuntimeClassID &, RUNTIME_DELEGATE *>
+class TERuntimeHashMapImpl : public TEHashMapImpl<const RuntimeClassID &, RUNTIME_DELEGATE *>
 {
 public:
     /**
@@ -69,7 +69,7 @@ public:
      * \ param  Key     The object to calculate 32-bit hash key.
      * \return  Returns 32-bit hash key value.
      **/
-    inline unsigned int ImplHashKey( const CERuntimeClassID & Key ) const
+    inline unsigned int implHashKey( const RuntimeClassID & Key ) const
     {
         return static_cast<unsigned int>(Key);
     }
@@ -93,7 +93,7 @@ public:
  * \tparam  RUNTIME_DELEGATE    The type of runtime object to store in runtime resource map.
  **/
 template <typename RUNTIME_DELEGATE>
-class TERuntimeHashMap : public TEHashMap<CERuntimeClassID, RUNTIME_DELEGATE *, const CERuntimeClassID &, RUNTIME_DELEGATE *, TERuntimeHashMapImpl<RUNTIME_DELEGATE>>
+class TERuntimeHashMap : public TEHashMap<RuntimeClassID, RUNTIME_DELEGATE *, const RuntimeClassID &, RUNTIME_DELEGATE *, TERuntimeHashMapImpl<RUNTIME_DELEGATE>>
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -136,7 +136,7 @@ private:
  * \tparam  Implement           The implementation of resource clean call.
  **/
 template <class RUNTIME_DELEGATE, class Implement>
-class TERuntimeResourceMap : public TEResourceMap<CERuntimeClassID, RUNTIME_DELEGATE, TERuntimeHashMap<RUNTIME_DELEGATE>, Implement>
+class TERuntimeResourceMap : public TEResourceMap<RuntimeClassID, RUNTIME_DELEGATE, TERuntimeHashMap<RUNTIME_DELEGATE>, Implement>
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -169,14 +169,14 @@ private:
 /**
  * \brief       Non-blocking class template. It inherits 
  *              TERuntimeResourceMap class template and contains instance
- *              of CENolockSynchObject to pass to TERuntimeResourceMap.
+ *              of NolockSynchObject to pass to TERuntimeResourceMap.
  *              By this, any access to resource will not be blocked.
  *              Avoid using it if resources are accessed by more than one
  *              thread.
  * 
  * \details     Use instance of non-locking class if there is no need to
  *              synchronize resource access. The instance of
- *              CENolockSynchObject does not block thread
+ *              NolockSynchObject does not block thread
  *
  * \tparam  RUNTIME_DELEGATE    The type of runtime object to store in runtime resource map.
  * \tparam  Implement           The implementation of resource clean call.
@@ -205,7 +205,7 @@ private:
      * \brief   Non-locking synchronization object.
      *          It will not lock thread on access.
      **/
-    CENolockSynchObject mNoLock;
+    NolockSynchObject mNoLock;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden / Forbidden method calls
@@ -240,7 +240,7 @@ public:
     ~TELockRuntimeResourceMap( void );
 
 private:
-    CEResourceLock   mLock;
+    ResourceLock   mLock;
 
 private:
     TELockRuntimeResourceMap(const TELockRuntimeResourceMap<RUNTIME_DELEGATE, Implement> & /*src*/);
@@ -252,7 +252,7 @@ private:
 //////////////////////////////////////////////////////////////////////////
 template <typename RUNTIME_DELEGATE>
 TERuntimeHashMap<RUNTIME_DELEGATE>::TERuntimeHashMap( void )
-    : TEHashMap<CERuntimeClassID, RUNTIME_DELEGATE *, const CERuntimeClassID &, RUNTIME_DELEGATE *, TERuntimeHashMapImpl<RUNTIME_DELEGATE>>  ( )
+    : TEHashMap<RuntimeClassID, RUNTIME_DELEGATE *, const RuntimeClassID &, RUNTIME_DELEGATE *, TERuntimeHashMapImpl<RUNTIME_DELEGATE>>  ( )
 {
 
 }
@@ -268,7 +268,7 @@ TERuntimeHashMap<RUNTIME_DELEGATE>::~TERuntimeHashMap( void )
 //////////////////////////////////////////////////////////////////////////
 template <class RUNTIME_DELEGATE, class Implement>
 TERuntimeResourceMap<RUNTIME_DELEGATE, Implement>::TERuntimeResourceMap( IEResourceLock& synchObject )
-    : TEResourceMap<CERuntimeClassID, RUNTIME_DELEGATE, TERuntimeHashMap<RUNTIME_DELEGATE>, Implement> (synchObject)
+    : TEResourceMap<RuntimeClassID, RUNTIME_DELEGATE, TERuntimeHashMap<RUNTIME_DELEGATE>, Implement> (synchObject)
 {
     ; // do nothing
 }

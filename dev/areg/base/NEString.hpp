@@ -32,11 +32,12 @@ namespace NEString
         , CD_EndOfLine  =   2   //!< ENd-of-line character
         , CD_CarReturn  =   4   //!< Carriage return character
         , CD_WhiteSpace =   8   //!< Whitespace character
-        , CD_Control    =  16   //!< Control key / value
-        , CD_Printable  =  32   //!< Printable character or character, which change text layout like space or tab
-        , CD_Number     =  64   //!< Numeric character
-        , CD_Symbol     = 128   //!< Symbol
-        , CD_Letter     = 256   //!< Letter
+        , CD_Delimiter  =  16   //!< Syntax Delimiter
+        , CD_Control    =  32   //!< Control key / value
+        , CD_Printable  =  64   //!< Printable character or character, which change text layout like space or tab
+        , CD_Number     = 128   //!< Numeric character
+        , CD_Symbol     = 256   //!< Symbol
+        , CD_Letter     = 512   //!< Letter
 
     } eCharDefs;
 
@@ -61,11 +62,11 @@ namespace NEString
     /**
      * \brief   NEString::CharPos, Definition of character position type in string
      **/
-    typedef NECommon::CharPos       CharPos;
+    typedef NECommon::ElemPos       CharPos;
     /**
      * \brief   NEString::CharCount, Definition of character counting type in string
      **/
-    typedef NECommon::CharCount     CharCount;
+    typedef NECommon::ElemCount     CharCount;
 
     /**
      * \brief   Default block size to allocate string buffer
@@ -505,7 +506,7 @@ namespace NEString
     inline CharCount appendString( SString<CharDst> & strDst, const CharSrc * strSrc, CharCount charCount = CountAll );
 
     /**
-     * \brief   Returns the size of buffer in bytes to allocate for string buffer to set specified number of characters.
+     * \brief   Returns the size of string buffer in bytes to allocate for string buffer to set specified number of characters.
      *          The buffer is aligned to the block size.
      * \param   charCount   The minimum number of characters to copy into the string.
      * \param   blockSize   The size of block in number to align when allocating string buffer.
@@ -513,7 +514,7 @@ namespace NEString
      *          The size is aligned to block size
      **/
     template <typename CharType>
-    inline unsigned int getBufferRequired( CharCount charCount, CharCount blockSize = DEFAULT_BLOCK_SIZE );
+    inline unsigned int geStringRequiredSize( CharCount charCount, CharCount blockSize = DEFAULT_BLOCK_SIZE );
 
     /**
      * \brief   Returns the size of string structure including size of buffer in bytes 
@@ -525,7 +526,7 @@ namespace NEString
      *          The size is aligned to block size
      **/
     template <typename CharType>
-    inline unsigned int getSpaceRequired( CharCount charCount, CharCount blockSize = DEFAULT_BLOCK_SIZE);
+    inline unsigned int getBufferRequiredSize( CharCount charCount, CharCount blockSize = DEFAULT_BLOCK_SIZE);
 
     /**
      * \brief   Converts given character to lower case. Valid only for ASCII characters.
@@ -534,7 +535,7 @@ namespace NEString
      *          Otherwise, conversion is ignored and returns same value.
      **/
     template <typename CharType>
-    inline CharType toAsciiLower(CharType ch);
+    inline CharType makeAsciiLower(CharType ch);
 
     /**
      * \brief   Converts given character to upper case. Valid only for ASCII characters.
@@ -543,7 +544,7 @@ namespace NEString
      *          Otherwise, conversion is ignored and returns same value.
      **/
     template <typename CharType>
-    inline CharType toAsciiUpper(CharType ch);
+    inline CharType makeAsciiUpper(CharType ch);
 
     /**
      * \brief   Compares 2 given strings (Left and Right side). The function compares 'charCount' characters
@@ -660,6 +661,15 @@ namespace NEString
      **/
     template<typename CharType>
     inline bool isWhitespace( CharType ch);
+
+    /**
+     * \brief   Returns true if given character is used as delimiter in the syntax.
+     *          The checkup is done based on ISO8859
+     * \param	ch	    ASCII character to check.
+     * \return	Returns true if character is syntax separator symbol.
+     **/
+    template<typename CharType>
+    inline bool isDelimited( CharType ch);
 
     /**
      * \brief	Checks whether the passed single character is end of line or not.
@@ -801,7 +811,7 @@ namespace NEString
      *          If did not find, returns NEString::InvalidPos
      **/
     template<typename CharType>
-    CharPos searchFirstOf( const CharType * strPhrase, const CharType * strSource, CharPos startPos = NEString::StartPos, const CharType ** out_next = static_cast<const CharType **>(NULL) );
+    CharPos findFirstOf( const CharType * strPhrase, const CharType * strSource, CharPos startPos = NEString::StartPos, const CharType ** out_next = static_cast<const CharType **>(NULL) );
 
     /**
      * \brief   Search the match of given character inside of string. The search starts at given position
@@ -820,7 +830,7 @@ namespace NEString
      *          If did not find, returns NEString::InvalidPos
      **/
     template<typename CharType>
-    CharPos searchFirstOf( CharType chSearch, const CharType * strSource, CharPos startPos = NEString::StartPos, const CharType ** out_next = static_cast<const CharType **>(NULL) );
+    CharPos findFirstOf( CharType chSearch, const CharType * strSource, CharPos startPos = NEString::StartPos, const CharType ** out_next = static_cast<const CharType **>(NULL) );
 
     /**
      * \brief   Reverse search a string inside of other string. The search starts at the given position and moves to begin of string.
@@ -840,7 +850,7 @@ namespace NEString
      * \note    This is reverse search, but the returned position is relevant to begin of string.
      **/
     template<typename CharType>
-    CharPos searchLastOf( const CharType * strPhrase, const CharType * strSource, CharPos startPos = NEString::EndPos, const CharType ** out_next = static_cast<const CharType **>(NULL) );
+    CharPos findLastOf( const CharType * strPhrase, const CharType * strSource, CharPos startPos = NEString::EndPos, const CharType ** out_next = static_cast<const CharType **>(NULL) );
 
     /**
      * \brief   Reverse search the match of given character inside of string. The search starts at the given position and moves to begin of string.
@@ -860,13 +870,27 @@ namespace NEString
      * \note    This is reverse search, but the returned position is relevant to begin of string.
      **/
     template<typename CharType>
-    CharPos searchLastOf( CharType chSearch, const CharType * strSource, CharPos startPos = NEString::EndPos, const CharType ** out_next = static_cast<const CharType **>(NULL) );
+    CharPos findLastOf( CharType chSearch, const CharType * strSource, CharPos startPos = NEString::EndPos, const CharType ** out_next = static_cast<const CharType **>(NULL) );
 
+    /**
+     * \brief   Returns true if a give string starts with specified phrase.
+     * \param   strString   The string to check the phrase.
+     * \param   phrase      The phrase to check.
+     * \param   isSensitive If false, it with check ignoring upper / lower case. Otherwise, checks exact match.
+     * \return  Returns true if the string starts with given phrase.
+     **/
     template<typename CharType>
-    bool startsWith(const CharType * strString, const char * phrase, bool isSensitive = true);
+    bool stringStartsWith(const CharType * strString, const char * phrase, bool isSensitive = true);
 
+    /**
+     * \brief   Returns true if a give string ends with specified phrase.
+     * \param   strString   The string to check the phrase.
+     * \param   phrase      The phrase to check.
+     * \param   isSensitive If false, it with check ignoring upper / lower case. Otherwise, checks exact match.
+     * \return  Returns true if the string ends with given phrase.
+     **/
     template<typename CharType>
-    bool endsWith(const CharType * strString, const char * phrase, bool isSensitive = true);
+    bool stringEndsWith(const CharType * strString, const char * phrase, bool isSensitive = true);
 
     /**
      * \brief   Returns printable string of given buffer. The buffer should be possible to modify.
@@ -1099,7 +1123,7 @@ const CharType * NEString::getPrintable( CharType * strSource, CharCount charCou
 }
 
 template<typename CharType>
-NEString::CharPos NEString::searchLastOf( CharType   chSearch
+NEString::CharPos NEString::findLastOf( CharType   chSearch
                                         , const CharType * strSource
                                         , NEString::CharPos startPos /*= NEString::EndPos*/
                                         , const CharType ** out_next /*= static_cast<const CharType **>(NULL)*/ )
@@ -1128,7 +1152,7 @@ NEString::CharPos NEString::searchLastOf( CharType   chSearch
 }
 
 template<typename CharType>
-NEString::CharPos NEString::searchLastOf( const CharType * strPhrase
+NEString::CharPos NEString::findLastOf( const CharType * strPhrase
                                         , const CharType * strSource
                                         , CharPos startPos /*= NEString::EndPos*/
                                         , const CharType ** out_next /*= static_cast<const CharType **>(NULL)*/ )
@@ -1170,7 +1194,7 @@ NEString::CharPos NEString::searchLastOf( const CharType * strPhrase
 }
 
 template<typename CharType>
-NEString::CharPos NEString::searchFirstOf( CharType chSearch, const CharType * strSource, NEString::CharPos startPos /*= NEString::StartPos*/, const CharType ** out_next /*= static_cast<const CharType **>(NULL)*/ )
+NEString::CharPos NEString::findFirstOf( CharType chSearch, const CharType * strSource, NEString::CharPos startPos /*= NEString::StartPos*/, const CharType ** out_next /*= static_cast<const CharType **>(NULL)*/ )
 {
     const CharType * result = static_cast<const CharType *>(NULL);
     const CharType * begin  = strSource;
@@ -1194,7 +1218,7 @@ NEString::CharPos NEString::searchFirstOf( CharType chSearch, const CharType * s
 }
 
 template<typename CharType>
-NEString::CharPos NEString::searchFirstOf( const CharType * strPhrase, const CharType * strSource, CharPos startPos /*= NEString::StartPos*/, const CharType ** out_next /*= static_cast<const CharType **>(NULL)*/ )
+NEString::CharPos NEString::findFirstOf( const CharType * strPhrase, const CharType * strSource, CharPos startPos /*= NEString::StartPos*/, const CharType ** out_next /*= static_cast<const CharType **>(NULL)*/ )
 {
     const CharType * result = static_cast<const CharType *>(NULL);
     const CharType * begin  = strSource;
@@ -1229,7 +1253,7 @@ NEString::CharPos NEString::searchFirstOf( const CharType * strPhrase, const Cha
 }
 
 template<typename CharType>
-bool NEString::startsWith(const CharType * strString, const char * phrase, bool isSensitive /*= true*/)
+bool NEString::stringStartsWith(const CharType * strString, const char * phrase, bool isSensitive /*= true*/)
 {
     bool result = false;
     if ((isEmpty<CharType>(strString) == false) && (isEmpty<CharType>(phrase) == false))
@@ -1237,8 +1261,13 @@ bool NEString::startsWith(const CharType * strString, const char * phrase, bool 
         result = true;
         for ( ; result && (*phrase != NEString::EndOfString) && (*strString == NEString::EndOfString); ++ strString, ++ phrase )
         {
-            char ch1 = isSensitive ? *strString : toAsciiLower<CharType>(*strString);
-            char ch2 = isSensitive ? *phrase    : toAsciiLower<CharType>(*phrase);
+            char ch1 = *strString;
+            char ch2 = *phrase;
+            if ( isSensitive )
+            {
+                ch1 = NEString::makeAsciiLower<CharType>(ch1);
+                ch2 = NEString::makeAsciiLower<CharType>(ch2);
+            }
 
             result = ch1 != ch2;
         }
@@ -1250,7 +1279,7 @@ bool NEString::startsWith(const CharType * strString, const char * phrase, bool 
 }
 
 template<typename CharType>
-bool NEString::endsWith(const CharType * strString, const char * phrase, bool isSensitive /*= true*/)
+bool NEString::stringEndsWith(const CharType * strString, const char * phrase, bool isSensitive /*= true*/)
 {
     bool result = false;
     if ((isEmpty<CharType>(strString) == false) && (isEmpty<CharType>(phrase) == false))
@@ -1261,7 +1290,7 @@ bool NEString::endsWith(const CharType * strString, const char * phrase, bool is
         ASSERT(lenString > 0);
         ASSERT(lenPhrase > 0);
 
-        result = (lenString >= lenPhrase) && NEString::startsWith<CharType>(strString + lenString - 1, phrase, isSensitive);
+        result = (lenString >= lenPhrase) && NEString::stringStartsWith<CharType>(strString + lenString - 1, phrase, isSensitive);
     }
 
     return result;
@@ -1315,8 +1344,10 @@ NEString::CharCount NEString::trimAll( CharType * strBuffer, NEString::CharCount
             ++ result;
             -- end;
         }
+
         if ( NEString::isWhitespace<CharType>( *end ) == false )
             ++ end;
+        
         while ( (begin != end) && NEString::isWhitespace<CharType>(*begin) )
         {
             ++ result;
@@ -1330,6 +1361,7 @@ NEString::CharCount NEString::trimAll( CharType * strBuffer, NEString::CharCount
             {
                 *strBuffer ++ = *begin ++;
             }
+
             *strBuffer = static_cast<CharType>(NEString::EndOfString);
         }
     }
@@ -1478,6 +1510,12 @@ inline bool NEString::isWhitespace( CharType ch )
 }
 
 template<typename CharType>
+inline bool NEString::isDelimited( CharType ch )
+{
+    return ((NEString::getISO8859CharDef( ch ) & static_cast<unsigned short>(NEString::CD_Delimiter)) != 0);
+}
+
+template<typename CharType>
 inline bool NEString::isLetter(CharType ch)
 {
     return ((NEString::getISO8859CharDef( ch ) & static_cast<unsigned int>(NEString::CD_Letter)) != 0);
@@ -1583,7 +1621,7 @@ NEString::SString<CharType> * NEString::initString(   NEString::CharCount charCo
         uint8_t * temp      = DEBUG_NEW uint8_t[size];
         if (temp != static_cast<unsigned char *>(NULL))
         {
-            result = NEMemory::ConstructElems<NEString::SString<CharType>>(static_cast<void *>(temp), 1);
+            result = NEMemory::constructElems<NEString::SString<CharType>>(static_cast<void *>(temp), 1);
             result->strEncoding = encode;
             result->strSpace    = space;
             result->strUsed     = 0;
@@ -1796,7 +1834,7 @@ inline NEString::CharCount NEString::appendString( NEString::SString<CharDst> & 
 }
 
 template <typename CharType>
-inline unsigned int NEString::getBufferRequired( CharCount charCount, CharCount blockSize /*= DEFAULT_BLOCK_SIZE*/ )
+inline unsigned int NEString::geStringRequiredSize( CharCount charCount, CharCount blockSize /*= DEFAULT_BLOCK_SIZE*/ )
 {
     charCount  += 1; // space for end of string
     blockSize   = blockSize != 0 ? blockSize  : 1; // if zero, at least for one character
@@ -1804,20 +1842,20 @@ inline unsigned int NEString::getBufferRequired( CharCount charCount, CharCount 
 }
 
 template <typename CharType>
-inline unsigned int NEString::getSpaceRequired( NEString::CharCount charCount, NEString::CharCount blockSize /*= DEFAULT_BLOCK_SIZE*/ )
+inline unsigned int NEString::getBufferRequiredSize( NEString::CharCount charCount, NEString::CharCount blockSize /*= DEFAULT_BLOCK_SIZE*/ )
 {
-    return ( getBufferRequired<CharType>(charCount, blockSize) + sizeof(NEString::SString<CharType>) );
+    return ( geStringRequiredSize<CharType>(charCount, blockSize) + sizeof(NEString::SString<CharType>) );
 }
 
 template <typename CharType>
-inline CharType NEString::toAsciiLower(CharType ch)
+inline CharType NEString::makeAsciiLower(CharType ch)
 {
     // return ((ch >= 'A') && (ch <= 'Z') ? ch - 'A' + 'a' : ch);
     return static_cast<CharType>(NEString::getISO8859LowerChar(ch));
 }
 
 template <typename CharType>
-inline CharType NEString::toAsciiUpper(CharType ch)
+inline CharType NEString::makeAsciiUpper(CharType ch)
 {
     // return ((ch >= 'a') && (ch <= 'z') ? ch - 'a' + 'A' : ch);
     return static_cast<CharType>(NEString::getISO8859UpperChar(ch));
@@ -1847,8 +1885,8 @@ int NEString::compareStrings(const CharLhs *leftSide, const CharRhs * rightSide,
                 CharRhs chRhs = *rightSide;
                 if (caseSensitive == false)
                 {
-                    chLhs = NEString::toAsciiLower<CharLhs>(chLhs);
-                    chRhs = NEString::toAsciiLower<CharRhs>(chRhs);
+                    chLhs = NEString::makeAsciiLower<CharLhs>(chLhs);
+                    chRhs = NEString::makeAsciiLower<CharRhs>(chRhs);
                 }
 
                 result = static_cast<int>(chLhs) - static_cast<int>(chRhs);
@@ -1909,7 +1947,7 @@ inline int NEString::compareFastIgnoreCase(const CharLhs *leftSide, const CharRh
 
             result = static_cast<int>(*leftSide) - static_cast<int>(*rightSide);
             while ((result == 0) && (*leftSide != NEString::EndOfString) && (*rightSide != NEString::EndOfString))
-                result = static_cast<int>(NEString::toAsciiLower<CharLhs>(* ++leftSide)) - static_cast<int>(NEString::toAsciiLower<CharLhs>(* ++rightSide));
+                result = static_cast<int>(NEString::makeAsciiLower<CharLhs>(* ++leftSide)) - static_cast<int>(NEString::makeAsciiLower<CharLhs>(* ++rightSide));
 
             if ((*leftSide == NEString::EndOfString) || (*rightSide == NEString::EndOfString))
                 result = result == 0 ? static_cast<int>(*leftSide) - static_cast<int>(*rightSide) : result;

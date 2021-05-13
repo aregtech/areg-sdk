@@ -15,11 +15,11 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class CEStubAddress;
-class CEProxyAddress;
-class CERemoteMessage;
-class CEStreamableEvent;
-class CEDispatcherThread;
+class StubAddress;
+class ProxyAddress;
+class RemoteMessage;
+class StreamableEvent;
+class DispatcherThread;
 class IERemoteEventConsumer;
 
 //////////////////////////////////////////////////////////////////////////
@@ -65,7 +65,7 @@ public:
      *                      If NULL or empty, it will use default settings.
      * \return  Returns true if system could configure. Otherwise, it returns false.
      **/
-    virtual bool ServiceConfigure( const char * configFile ) = 0;
+    virtual bool configureRemoteServicing( const char * configFile ) = 0;
 
     /**
      * \brief   Call manually to set router service host name and port number.
@@ -74,33 +74,33 @@ public:
      * \param   hostName    IP-address or name of service broker host.
      * \param   portNr      Port number of service broker service.
      **/
-    virtual void SetRouterServiceAddress( const char * hostName, unsigned short portNr ) = 0;
+    virtual void setRemoteServiceAddress( const char * hostName, unsigned short portNr ) = 0;
 
     /**
      * \brief   Call to start remote service. The host name and port number should be already set.
      * \return  Returns true if start service is triggered.
      **/
-    virtual bool StartRemotingService( void ) = 0;
+    virtual bool startRemoteServicing( void ) = 0;
 
     /**
      * \brief   Call to stop service. No more remote communication should be possible.
      **/
-    virtual void StopRemotingService( void ) = 0;
+    virtual void stopRemoteServicing( void ) = 0;
 
     /**
      * \brief   Returns true, if remote service is started and ready to operate.
      **/
-    virtual bool IsServiceStarted( void ) const = 0;
+    virtual bool isRemoteServicingStarted( void ) const = 0;
 
     /**
      * \brief   Returns true if service is configured and ready to start
      **/
-    virtual bool IsServiceConfigured( void ) const = 0;
+    virtual bool isRemoteServicingConfigured( void ) const = 0;
 
     /**
      * \brief   Returns true if remote service is enabled.
      **/
-    virtual bool IsServiceEnabled( void ) const = 0;
+    virtual bool isRemoteServicingEnabled( void ) const = 0;
 
     /**
      * \brief   Enables or disables remote service.
@@ -108,7 +108,7 @@ public:
      *          remote service in case if it is already started.
      * \param   enable  If true, the service is enabled. Otherwise, it is disabled.
      **/
-    virtual void EnableService( bool enable ) = 0;
+    virtual void enableRemoteServicing( bool enable ) = 0;
 
     /**
      * \brief   Call to register remote service server stub object.
@@ -117,13 +117,13 @@ public:
      *                          The address contains service name and role name of service.
      * \return  Returns true if succeeded to start registration.
      **/
-    virtual bool RegisterService( const CEStubAddress & stubService ) = 0;
+    virtual bool registerService( const StubAddress & stubService ) = 0;
 
     /**
      * \brief   Call to unregister previously registered server stub interface.
      * \param   stubService     The address of server stub service to unregister in system.
      **/
-    virtual void UnregisterService( const CEStubAddress & stubService ) = 0;
+    virtual void unregisterService( const StubAddress & stubService ) = 0;
 
     /**
      * \brief   Call to register client proxy of service. If system already has registered
@@ -133,13 +133,13 @@ public:
      * \param   proxyService    The address of client proxy to register in system.
      * \return  Returns true if registration process started with success. Otherwise, it returns false.
      **/
-    virtual bool RegisterServiceClient( const CEProxyAddress & proxyService ) = 0;
+    virtual bool registerServiceClient( const ProxyAddress & proxyService ) = 0;
 
     /**
      * \brief   Call to unregister previously registered client prosy service.
      * \param   proxyService    The address of client proxy to unregister from system.
      **/
-    virtual void UnregisterServiceClient( const CEProxyAddress & proxyService ) = 0;
+    virtual void unregisterServiceClient( const ProxyAddress & proxyService ) = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

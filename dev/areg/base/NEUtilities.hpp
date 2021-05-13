@@ -17,7 +17,7 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class CEString;
+class String;
 class IEInStream;
 class IEOutStream;
 
@@ -78,20 +78,45 @@ namespace   NEUtilities
     const unsigned int          ITEM_NAMES_MAX_LENGTH       = 64;
 
     /**
-     * \brief   
+     * \brief   NEUtilities::WIN_TO_POSIX_EPOCH_BIAS_MICROSECS
+     *          The difference in microseconds between Windows and Unix epoch.
      **/
     const uint64_t              WIN_TO_POSIX_EPOCH_BIAS_MICROSECS   = 11644473600000000LL;
 
+    /**
+     * \brief   NEUtilities::SEC_TO_MICROSECS
+     *          Microseconds in 1 second.
+     **/
     const uint64_t              SEC_TO_MICROSECS                    = 1000000LL;
 
+    /**
+     * \brief   NEUtilities::SEC_TO_MILLISECS
+     *          Milliseconds in 1 second.
+     **/
     const uint64_t              SEC_TO_MILLISECS                    = 1000LL;
 
+    /**
+     * \brief   NEUtilities::MICROSEC_TO_100NS
+     *          100-nanoseconds in 1 microsecond.
+     **/
     const uint64_t              MICROSEC_TO_100NS                   = 10LL;
 
+    /**
+     * \brief   NEUtilities::MICROSEC_TO_NS
+     *          Nanoseconds in 1 microsecond.
+     **/
     const uint64_t              MICROSEC_TO_NS                      = 1000LL;
 
+    /**
+     * \brief   NEUtilities::MILLISEC_TO_NS
+     *          Nanoseconds in 1 millisecond.
+     **/
     const uint64_t              MILLISEC_TO_NS                      = 1000000LL;
 
+    /**
+     * \brief   NEUtilities::MILLISEC_TO_MICROSECS
+     *          Microseconds in 1 millisecond.
+     **/
     const uint64_t              MILLISEC_TO_MICROSECS               = 1000LL;
 
 /************************************************************************/
@@ -129,20 +154,20 @@ namespace   NEUtilities
      * \brief   Returns current time. On output 'out_sysTime' system time contains the date-time data.
      * \param   out_sysTime     On output the system time parameter contains date-time of current time.
      **/
-    AREG_API void GetSystemTimeNow( sSystemTime & out_sysTime );
+    AREG_API void systemTimeNow( sSystemTime & out_sysTime );
 
     /**
      * \brief   Returns current time. On output 'out_fileTime' time contains the date-time data.
      * \param   out_fileTime    On output the file-time parameter contains date-time of current time.
      **/
-    AREG_API void GetSystemTimeNow( sFileTime & out_fileTime );
+    AREG_API void systemTimeNow( sFileTime & out_fileTime );
 
     /**
      * \brief   Returns current system time data as a 64-bit integer value. The returned value is
      *          passed microseconds since January 1, 1970 (UNIX epoch).
      * \return  Returns microseconds passed since January 1, 1970 (UNIX epoch).
      **/
-    AREG_API TIME64 GetSystemTimeNow( void );
+    AREG_API TIME64 systemTimeNow( void );
 
     /**
      * \brief   Returns system time data as a 64-bit integer value. The returned value is
@@ -150,7 +175,7 @@ namespace   NEUtilities
      * \param   sysTime     The system time structure with data to convert.
      * \return  Returns microseconds passed since January 1, 1970 (UNIX epoch).
      **/
-    AREG_API TIME64 ConvertSystemTime( const sSystemTime & sysTime );
+    AREG_API TIME64 convToTime( const sSystemTime & sysTime );
 
     /**
      * \brief   Returns file time data as a 64-bit integer value. The returned value is
@@ -158,35 +183,35 @@ namespace   NEUtilities
      * \param   fileTime    The system time structure with data to convert.
      * \return  Returns microseconds passed since January 1, 1970 (UNIX epoch).
      **/
-    AREG_API TIME64 ConvertFileTime( const sFileTime & fileTime );
+    AREG_API TIME64 convToTime( const sFileTime & fileTime );
 
     /**
      * \brief   Converts 64-bit value of microseconds passed since January 1 1970 into system time data structure.
      * \param   timeValue       64-bit value as microseconds passed since January 1 1970.
      * \param   out_sysTime     On output the system time parameter contains date-time of converted time.
      **/
-    AREG_API void ConvertToSystemTime( const TIME64 &  timeValue, sSystemTime & out_sysTime );
+    AREG_API void convToSystemTime( const TIME64 &  timeValue, sSystemTime & out_sysTime );
 
     /**
      * \brief   Converts 64-bit value of microseconds passed since January 1 1970 into file time data structure.
      * \param   timeValue       64-bit value as microseconds passed since January 1 1970.
      * \param   out_fileTime    On output the file-time parameter contains date-time of converted time.
      **/
-    AREG_API void ConvertToFileTime( const TIME64 &  timeValue, sFileTime & out_fileTime );
+    AREG_API void convToFileTime( const TIME64 &  timeValue, sFileTime & out_fileTime );
 
     /**
      * \brief   Converts given file-time data structure into system time data structure.
      * \param   fileTime        The file-time data structure to convert.
      * \param   out_sysTime     On output the system time parameter contains date-time of converted time.
      **/
-    AREG_API void ConvertFileTimeToSystemTime( const sFileTime & fileTime, sSystemTime & out_sysTime );
+    AREG_API void convToSystemTime( const sFileTime & fileTime, sSystemTime & out_sysTime );
 
     /**
      * \brief   Converts given system-time data structure into file-time data structure.
      * \param   sysTime         The system-time data structure to convert.
      * \param   out_fileTime    On output the file-time parameter contains date-time of converted time.
      **/
-    AREG_API void ConvertSystemTimeToFileTime( const sSystemTime & sysTime, sFileTime & out_fileTime );
+    AREG_API void convToFileTime( const sSystemTime & sysTime, sFileTime & out_fileTime );
 
     /**
      * \brief   Compare 2 system-time data structures and returns result indicating equality of data.
@@ -197,7 +222,7 @@ namespace   NEUtilities
      *              - NEMath::CompEqual if both operands are equal
      *              - NEMath::CompGreater  if Left-Hand Operand 'lhs' is greater than Right-Hand Operand 'rhs'
      **/
-    AREG_API NEMath::eCompare CompareSystemTimes( const sSystemTime & lhs, const sSystemTime & rhs );
+    AREG_API NEMath::eCompare compareTimes( const sSystemTime & lhs, const sSystemTime & rhs );
 
     /**
      * \brief   Compare 2 file-time data structures and returns result indicating equality of data.
@@ -208,7 +233,7 @@ namespace   NEUtilities
      *              - NEMath::CompEqual if both operands are equal
      *              - NEMath::CompGreater  if Left-Hand Operand 'lhs' is greater than Right-Hand Operand 'rhs'
      **/
-    AREG_API NEMath::eCompare CompareFileTimes( const sFileTime & lhs, const sFileTime & rhs );
+    AREG_API NEMath::eCompare compareTimes( const sFileTime & lhs, const sFileTime & rhs );
 
     /**
      * \brief   Compare 2 64-bit time values and returns result indicating equality of data. The given 64-values
@@ -220,26 +245,26 @@ namespace   NEUtilities
      *              - NEMath::CompEqual if both operands are equal
      *              - NEMath::CompGreater  if Left-Hand Operand 'lhs' is greater than Right-Hand Operand 'rhs'
      **/
-    AREG_API NEMath::eCompare CompareTimes( const TIME64 & lhs, const TIME64 & rhs );
+    AREG_API NEMath::eCompare compareTimes( const TIME64 & lhs, const TIME64 & rhs );
 
     /**
      * \brief   Converts system-time data structure to standard 'tm' type. In conversion, a milliseconds part of data will be lost.
      * \param   sysTime     The system-time data structure to convert.
      * \param   out_time    On output the parameter contains date-time of converted system time without information of milliseconds.
      **/
-    AREG_API void SysTimeToTime( const sSystemTime & sysTime, tm & out_time );
+    AREG_API void convToTm( const sSystemTime & sysTime, tm & out_time );
 
     /**
      * \brief   Converts standard 'tm' type to system-time data structure. In conversion, a milliseconds part of data will not exist.
      * \param   time            Contains date-time of converted system time without information of milliseconds.
      * \param   out_sysTime     On output, the parameter contains date-time information in system-time data structure format without millisecond information.
      **/
-    AREG_API void TimeToSysTime( const tm & time, sSystemTime & out_sysTime );
+    AREG_API void convToSystemTime( const tm & time, sSystemTime & out_sysTime );
 
     /**
      * \brief   Returns the tick counts information in milliseconds since process has started.
      **/
-    AREG_API uint64_t GetTickCount( void );
+    AREG_API uint64_t getTickCount( void );
 
     /**
      * \brief   Converts the system UTC time to local time.
@@ -247,7 +272,7 @@ namespace   NEUtilities
      * \param   outLocalTime    On return this structure contains the local time information.
      * \return  Returns true if conversion succeeded.
      **/
-    AREG_API bool ToLocalTime( const sSystemTime &inUtcTime, sSystemTime & outLocalTime );
+    AREG_API bool convToLocalTime( const sSystemTime &inUtcTime, sSystemTime & outLocalTime );
 
     /**
      * \brief   Converts the system UTC time to local time.
@@ -255,7 +280,7 @@ namespace   NEUtilities
      * \param   outLocalTime    On return this structure contains the local time information.
      * \return  Returns true if conversion succeeded.
      **/
-    AREG_API bool ToLocalTime( const TIME64 & inUtcTime, sSystemTime & outLocalTime );
+    AREG_API bool convToLocalTime( const TIME64 & inUtcTime, sSystemTime & outLocalTime );
 
 /************************************************************************/
 // NEUtilities namespace utility functions, generate names
@@ -267,7 +292,7 @@ namespace   NEUtilities
      * \param   itemName        The name of component item.
      * \return  Returns created new string containing componentName and itemName separated by COMPONENT_ITEM_SEPARATOR.
      **/
-    AREG_API CEString CreateComponentItemName(const char * componentName, const char* itemName);
+    AREG_API String createComponentItemName(const char * componentName, const char* itemName);
 
     /**
      * \brief   This function generates and returns name 
@@ -285,7 +310,7 @@ namespace   NEUtilities
      *                  a prefix for name.
      * \return  Returns system generated unique name.
      **/
-    AREG_API CEString GenerateName( const char * prefix );
+    AREG_API String generateName( const char * prefix );
 
     /**
      * \brief   This function generates and returns name 
@@ -308,8 +333,8 @@ namespace   NEUtilities
      * \param   length      The length of buffer to set name.
      * \param   specChar    Special character used in generated name.
      **/
-    AREG_API void GenerateName( const char * prefix, char * out_buffer, int length);
-    AREG_API void GenerateName( const char * prefix, char * out_buffer, int length, const char * specChar);
+    AREG_API void generateName( const char * prefix, char * out_buffer, int length);
+    AREG_API void generateName( const char * prefix, char * out_buffer, int length, const char * specChar);
 
 /************************************************************************/
 // NEUtilities namespace utility functions, generate unique ID
@@ -317,7 +342,7 @@ namespace   NEUtilities
     /**
      * \brief	Generates and returns unique unsigned int value
      **/
-    AREG_API unsigned int GenerateUniqueId( void );
+    AREG_API unsigned int generateUniqueId( void );
 }
 
 #endif  // AREG_BASE_NEUTILITIES_HPP

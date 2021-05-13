@@ -6,9 +6,9 @@
  *
  ************************************************************************/
 #include "areg/trace/NETrace.hpp"
-#include "areg/trace/private/CETraceManager.hpp"
-#include "areg/base/CEThread.hpp"
-#include "areg/base/CEDateTime.hpp"
+#include "areg/trace/private/TraceManager.hpp"
+#include "areg/base/Thread.hpp"
+#include "areg/base/DateTime.hpp"
 
 AREG_API const char * const     NETrace::PRIO_NOTSET_STR       = "NOTSET";
 AREG_API const char * const     NETrace::PRIO_FATAL_STR        = "FATAL";
@@ -19,7 +19,7 @@ AREG_API const char * const     NETrace::PRIO_DEBUG_STR        = "DEBUG";
 AREG_API const char * const     NETrace::PRIO_SCOPE_STR        = "SCOPE";
 
 
-AREG_API const char * NETrace::ToString( NETrace::eLogPriority prio )
+AREG_API const char * NETrace::convToString( NETrace::eLogPriority prio )
 {
     switch ( prio )
     {
@@ -47,7 +47,7 @@ AREG_API const char * NETrace::ToString( NETrace::eLogPriority prio )
     }
 }
 
-AREG_API NETrace::eLogPriority NETrace::FromString( const char * strPrio )
+AREG_API NETrace::eLogPriority NETrace::convFromString( const char * strPrio )
 {
     if ( strPrio != NULL && *strPrio != '\0' )
     {
@@ -97,12 +97,12 @@ void NETrace::S_LogHeader::operator = (const NETrace::S_LogHeader & src)
 }
 
 NETrace::S_LogData::S_LogData(void)
-    : traceThreadId     ( CEThread::GetCurrentThreadId() )
+    : traceThreadId     ( Thread::getCurrentThreadId() )
     , traceScopeId      ( NETrace::TRACE_SCOPE_ID_NONE )
-    , traceTimestamp    ( CEDateTime::GetNow() )
+    , traceTimestamp    ( DateTime::getNow() )
     , traceMessagePrio  ( NETrace::PrioNotset )
 {
-    traceMessage[0] = CEString::EmptyChar;
+    traceMessage[0] = String::EmptyChar;
 }
 
 NETrace::S_LogData::S_LogData(const S_LogData & src)
@@ -115,12 +115,12 @@ NETrace::S_LogData::S_LogData(const S_LogData & src)
 }
 
 NETrace::S_LogData::S_LogData(unsigned int scopeId, NETrace::eLogPriority msgPrio, const char * message /*= NULL */)
-    : traceThreadId     ( CEThread::GetCurrentThreadId() )
+    : traceThreadId     ( Thread::getCurrentThreadId() )
     , traceScopeId      ( scopeId )
-    , traceTimestamp    ( CEDateTime::GetNow() )
+    , traceTimestamp    ( DateTime::getNow() )
     , traceMessagePrio  ( msgPrio )
 {
-    NEString::copyString<char, char>( traceMessage, NETrace::LOG_MESSAGE_BUFFER_SIZE, message != NULL ? message : CEString::EmptyString );
+    NEString::copyString<char, char>( traceMessage, NETrace::LOG_MESSAGE_BUFFER_SIZE, message != NULL ? message : String::EmptyString );
 }
 
 void NETrace::S_LogData::operator = (const S_LogData & src)
@@ -173,42 +173,42 @@ void NETrace::S_LogMessage::operator = (const S_LogMessage & src)
     }
 }
 
-AREG_API bool NETrace::StartLogging(const char * fileConfig /*= NULL */)
+AREG_API bool NETrace::startLogging(const char * fileConfig /*= NULL */)
 {
-    return CETraceManager::StartLogging(fileConfig);
+    return TraceManager::startLogging(fileConfig);
 }
 
-AREG_API void NETrace::StopLogging(void)
+AREG_API void NETrace::stopLogging(void)
 {
-    CETraceManager::StopLogging();
+    TraceManager::stopLogging();
 }
 
-AREG_API void NETrace::ActivateScope(CETraceScope & traceScope)
+AREG_API void NETrace::activateScope(TraceScope & traceScope)
 {
-    CETraceManager::ActivateTraceScope(traceScope);
+    TraceManager::activateTraceScope(traceScope);
 }
 
-AREG_API bool NETrace::IsStarted( void )
+AREG_API bool NETrace::isStarted( void )
 {
-    return CETraceManager::IsLoggingStarted();
+    return TraceManager::isLoggingStarted();
 }
 
-AREG_API bool NETrace::IsConfigured(void)
+AREG_API bool NETrace::isConfigured(void)
 {
-    return CETraceManager::IsLoggingEnabled();
+    return TraceManager::isLoggingEnabled();
 }
 
-AREG_API bool NETrace::LogingConfigure(const char * fileConfig)
+AREG_API bool NETrace::configureLoging(const char * fileConfig)
 {
-    return CETraceManager::LoggingConfigure(fileConfig);
+    return TraceManager::configureLogging(fileConfig);
 }
 
-AREG_API bool NETrace::IsEnabled(void)
+AREG_API bool NETrace::isEnabled(void)
 {
-    return CETraceManager::IsLoggingEnabled();
+    return TraceManager::isLoggingEnabled();
 }
 
-AREG_API bool NETrace::ForceStartLogging(void)
+AREG_API bool NETrace::forceStartLogging(void)
 {
-    return CETraceManager::ForceActivateLogging();
+    return TraceManager::forceActivateLogging();
 }

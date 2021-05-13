@@ -252,7 +252,7 @@ namespace NEMath
      *                  which has defined operator less ( operator < )
      **/
     template <typename Type>
-    inline Type & Min( const Type & a, const Type & b );
+    inline Type & getMin( const Type & a, const Type & b );
 
     /**
      * \brief   Returns maximum of 2 values passed to function.
@@ -264,20 +264,8 @@ namespace NEMath
      *                  which has defined operator more ( operator > )
      **/
     template <typename Type>
-    inline const Type & Max( const Type & a, const Type & b );
+    inline const Type & getMax( const Type & a, const Type & b );
 
-    /**
-     * \brief   Returns absolute value of passed parameter.
-     *          The type Type should support operator less to compare with 0
-     *          and multiplication.
-     * \param   a       A parameter to calculate absolute value
-     * \tparam  Type    The type of object. Can be primitive or an object,
-     *                  which has defined operator less ( operator > ),
-     *                  should be possible to compare with integer 0
-     *                  and should support multiplication.
-     **/
-    template <typename Type>
-    inline Type Abs( const Type & a );
 
     /**
      * \brief   Returns the sign of given object.
@@ -290,7 +278,7 @@ namespace NEMath
      *              c. NEMath::SignUndefined    if the object is equal to zero
      **/
     template<typename Type>
-    inline NEMath::eDigitSign SignOf( const Type & val );
+    inline NEMath::eDigitSign getSign( const Type & val );
 
 /************************************************************************/
 // NEMath namespace utility functions, operations with Large Number
@@ -302,21 +290,21 @@ namespace NEMath
      * \param	lo	    Low bits to set
      * \return	
      **/
-    AREG_API void SetBits( sLargeInteger & out_num, unsigned int hi, unsigned int lo);
+    AREG_API void setBits( sLargeInteger & out_num, unsigned int hi, unsigned int lo);
 
     /**
      * \brief	Returns High Bits value of Large Number
      * \param	num	    Large Number structure
      * \return	Returns High Bits value of Large Number
      **/
-    AREG_API unsigned int GetHighBits(const sLargeInteger & num);
+    AREG_API unsigned int getHighBits(const sLargeInteger & num);
 
     /**
      * \brief	Returns Low Bits value of Large Number
      * \param	num	    Large Number structure
      * \return	Returns Low Bits value of Large Number
      **/
-    AREG_API unsigned int GetLowBits(const sLargeInteger & num);
+    AREG_API unsigned int getLowBits(const sLargeInteger & num);
 
 /************************************************************************/
 // NEMath namespace utility functions, check-sum operations
@@ -329,7 +317,7 @@ namespace NEMath
      * \param	size	Size in bytes of given buffer
      * \return	32-bit value of Cyclic Redundancy Check (CRC)
      **/
-    AREG_API unsigned int Crc32Calculate( const unsigned char * data, int size );
+    AREG_API unsigned int crc32Calculate( const unsigned char * data, int size );
 
      /**
      * \brief	Cyclic Redundancy Check (CRC) calculation function on 
@@ -338,7 +326,7 @@ namespace NEMath
      * \param	strData Pointer to null-terminated string to calculate CRC
      * \return	32-bit value of Cyclic Redundancy Check (CRC)
      **/
-   AREG_API unsigned int Crc32Calculate( const char * strData  );
+   AREG_API unsigned int crc32Calculate( const char * strData  );
     /**
      * \brief	Cyclic Redundancy Check (CRC) calculation function on 
      *          standard IEEE 802.3, using lookup table (fast calculate).
@@ -346,12 +334,12 @@ namespace NEMath
      * \param	strData Pointer to null-terminated wide-string to calculate CRC
      * \return	32-bit value of Cyclic Redundancy Check (CRC)
      **/
-    AREG_API unsigned int Crc32Calculate( const wchar_t * strData );
+    AREG_API unsigned int crc32Calculate( const wchar_t * strData );
 
     /**
      * \brief	Return initial 32-bit value of Cyclic Redundancy Check (CRC)
      **/
-    AREG_API unsigned int Crc32Init( void );
+    AREG_API unsigned int crc32Init( void );
     /**
      * \brief	Starts 32-bit Cyclic Redundancy Check (CRC) calculation.
      *          The function can be called cyclic on continues data.
@@ -367,7 +355,7 @@ namespace NEMath
      * \param	size	    Size of given buffer
      * \return	32-bit value.
      **/
-    AREG_API unsigned int Crc32Start( unsigned int crc32Init, const unsigned char * data, int size );
+    AREG_API unsigned int crc32Start( unsigned int crc32Init, const unsigned char * data, int size );
 
     /**
      * \brief   NEMath::Crc32Start
@@ -386,7 +374,7 @@ namespace NEMath
      * \param	size	    Size of given buffer
      * \return	32-bit value.
      **/
-    AREG_API unsigned int Crc32Start( unsigned int crc32Init, const char * data );
+    AREG_API unsigned int crc32Start( unsigned int crc32Init, const char * data );
     /**
      * \brief	Returns 32-bit value of Cyclic Redundancy Check (CRC)
      *          as an end of calculation. This function is expected to be called
@@ -394,24 +382,67 @@ namespace NEMath
      * \param	crc32	The value returned by Crc32Start()
      * \return	32-bit CRC value
      **/
-    AREG_API unsigned int Crc32Finish( unsigned int crc32 );
+    AREG_API unsigned int crc32Finish( unsigned int crc32 );
 
     /**
      * \brief   Rounds passed double value to nearest integer
      * \param   val     A parameter to round. Normally float or double type.
      **/
-    AREG_API double Round( double val );
+    AREG_API double round( double val );
 
+    /**
+     * \brief   Returns absolute value of passed parameter.
+     *          The type Type should support operator less to compare with 0
+     *          and multiplication.
+     * \param   val     A parameter to get absolute value
+     * \tparam  Type    The type of object. Can be primitive or an object,
+     *                  which has defined operator less ( operator > ),
+     *                  should be possible to compare with integer 0
+     *                  and should support multiplication.
+     **/
+    template <typename Type>
+    inline Type getAbs( const Type & val );
+
+    /**
+     * \brief   Returns absolute value of given digit. The difference with getAbs() method
+     *          is that it works only for digits.
+     * \param   number  The number to get absolute value
+     * \return  Returns absolute value of digit.
+     **/
     template<typename DigitType>
-    DigitType makeAbsolute( DigitType number );
+    inline DigitType makeAbsolute( DigitType number );
 
 }
 //////////////////////////////////////////////////////////////////////////
 // NEMath namespace inline function implementation
 //////////////////////////////////////////////////////////////////////////
 
+template <typename Type>
+inline Type & NEMath::getMin( const Type & a, const Type & b )
+{
+    return MACRO_MIN(a, b);
+}
+
+template <typename Type>
+inline const Type & NEMath::getMax( const Type & a, const Type & b )
+{
+    return MACRO_MAX(a, b);
+}
+
+template <typename Type>
+inline Type NEMath::getAbs( const Type & val )
+{
+    return MACRO_ABS(val);
+}
+
+template<typename Type>
+inline NEMath::eDigitSign NEMath::getSign( const Type & val )
+{
+    return static_cast<eDigitSign>(MACRO_SIGN_OF(val));
+}
+
 template<typename DigitType>
-DigitType NEMath::makeAbsolute( DigitType number )
+inline DigitType NEMath::makeAbsolute( DigitType number )
 {
     DigitType mask = number >> (sizeof( DigitType ) * 8 - 1);
     return ((number + mask) ^ mask);
@@ -524,24 +555,5 @@ inline bool NEMath::sLargeInteger::operator != ( uint64_t other ) const
 // NEMath::sLargeInteger declare global operators to make streamable
 /************************************************************************/
 IMPLEMENT_STREAMABLE(NEMath::S_LargeInteger)
-
-/************************************************************************/
-// NEMath namespace global inline functions implementation
-/************************************************************************/
-template <typename Type>
-inline Type & NEMath::Min( const Type & a, const Type & b )
-{   return MACRO_MIN(a, b);         }
-
-template <typename Type>
-inline const Type & NEMath::Max( const Type & a, const Type & b )
-{   return MACRO_MAX(a, b);         }
-
-template <typename Type>
-inline Type NEMath::Abs( const Type & a )
-{   return MACRO_ABS(a);            }
-
-template<typename Type>
-inline NEMath::eDigitSign NEMath::SignOf( const Type & val )
-{   return static_cast<eDigitSign>(MACRO_SIGN_OF(val)); }
 
 #endif  // AREG_BASE_NEMATH_HPP

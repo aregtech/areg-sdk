@@ -9,7 +9,7 @@
 #include "areg/base/private/posix/IESynchObjectBaseIX.hpp"
 
 #ifdef _POSIX
-#include "areg/base/private/posix/CESynchLockAndWaitIX.hpp"
+#include "areg/base/private/posix/SynchLockAndWaitIX.hpp"
 #include "areg/base/NEString.hpp"
 #include <string.h>
 

@@ -20,7 +20,7 @@
 #define EOFS        static_cast<unsigned short>(NEString::CD_EOfS                                   )   /* End of string, null-termination */
 #define EOFL        static_cast<unsigned short>(NEString::CD_EndOfLine  | NEString::CD_WhiteSpace   )   /* End of line, regardless only '\n' is defining, but using to make binary buffer readable */
 #define DEOL        static_cast<unsigned short>(NEString::CD_CarReturn                              )   /* DOS End of Line, used only for carriage return */
-#define SPACE       static_cast<unsigned short>(NEString::CD_WhiteSpace                             )   /* White space, used for trimming */
+#define SPACE       static_cast<unsigned short>(NEString::CD_WhiteSpace | NEString::CD_Delimiter    )   /* White space, used for trimming, as we as syntax separator */
 #define CTRL        static_cast<unsigned short>(NEString::CD_Control    | NEString::CD_WhiteSpace   )   /* Control key value, also used to specify white space in conversion of binary buffer to readable */
 #define PRINT       static_cast<unsigned short>(NEString::CD_Printable                              )   /* All printable characters, symbols and numbers, which may change text, including tab and whitespace */
 #define NUMBER      static_cast<unsigned short>(NEString::CD_Number     | NEString::CD_Printable    )   /* All numbers */
@@ -33,7 +33,7 @@ static const unsigned short  ASCII_ISO8859_1_Table[]  =
     /*   0 -   0 */   EOFS  | EOFL                                                                                  //   NULL, end of string
     /*   1 -   4 */ , EOFL  | CTRL          , EOFL  | CTRL          , EOFL  | CTRL          , EOFL  | CTRL          //    1 == SOH  ,   2 == STX    ,   3 == ETX    ,   4 == EOT
     /*   5 -   8 */ , EOFL  | CTRL          , EOFL  | CTRL          , EOFL  | CTRL          , EOFL  | CTRL          //    5 == ENQ  ,   6 == ACK    ,   7 == BEL    ,   8 == '\b'
-    /*   9 -  12 */ , PRINT | CTRL          , EOFL  | CTRL | PRINT  , PRINT | CTRL          , EOFL  | CTRL          //    9 == '\t' ,  10 == '\n'   ,  11 == '\v'   ,  12 == '\f'
+    /*   9 -  12 */ , PRINT | CTRL | SPACE  , EOFL  | CTRL | PRINT  , PRINT | CTRL          , EOFL  | CTRL          //    9 == '\t' ,  10 == '\n'   ,  11 == '\v'   ,  12 == '\f'
     /*  13 -  16 */ , DEOL  | CTRL | PRINT  , EOFL  | CTRL          , EOFL  | CTRL          , EOFL  | CTRL          //   13 == '\r' ,  14 == SO     ,  15 == SI     ,  16 == DLE
     /*  17 -  20 */ , EOFL  | CTRL          , EOFL  | CTRL          , EOFL  | CTRL          , EOFL  | CTRL          //   17 == DC1  ,  18 == DC2    ,  19 == DC3    ,  20 == DC4
     /*  21 -  24 */ , EOFL  | CTRL          , EOFL  | CTRL          , EOFL  | CTRL          , EOFL  | CTRL          //   21 == NAK  ,  22 == SYN    ,  23 == ETB    ,  24 == CAN

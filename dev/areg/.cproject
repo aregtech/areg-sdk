@@ -72,7 +72,6 @@
 					</folderInfo>
 					<sourceEntries>
 						<entry excluding="src|src/imp|src/inc" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src"/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
@@ -143,7 +142,6 @@
 					</folderInfo>
 					<sourceEntries>
 						<entry excluding="src|src/imp|src/inc" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src"/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>

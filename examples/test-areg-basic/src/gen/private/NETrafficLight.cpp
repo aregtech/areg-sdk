@@ -4,8 +4,8 @@
 
 /************************************************************************
  * (c) copyright    2021
- *                  Create by AREGtech code generator tool from source TrafficLight.
- * Generated at     21.04.2021  18:33:59 GMT+02:00 
+ *                  Create by AREG SDK code generator tool from source TrafficLight.
+ * Generated at     12.05.2021  16:41:14 GMT+02:00 
  ************************************************************************/
 
 /************************************************************************
@@ -28,34 +28,34 @@ static NEService::SInterfaceData & _getInterfaceData(void)
     /**
      * \brief   TrafficLight Service Interface data
      **/
-    static NEService::SInterfaceData InterfaceData;
+    static NEService::SInterfaceData _InterfaceData;
 
-    if (InterfaceData.idIsInitialized == false)
+    if (_InterfaceData.idIsInitialized == false)
     {
-        InterfaceData.idServiceName     = NETrafficLight::ServiceName;
-        InterfaceData.idVersion         = NETrafficLight::InterfaceVersion;
-        InterfaceData.idServiceType     = NEService::ServiceLocal;
-        InterfaceData.idRequestCount    = NETrafficLight::NumberofRequests;
-        InterfaceData.idResponseCount   = NETrafficLight::NumberofResponses;
-        InterfaceData.idAttributeCount  = NETrafficLight::NumberofAttributes;
+        _InterfaceData.idServiceName    = NETrafficLight::ServiceName;
+        _InterfaceData.idVersion        = NETrafficLight::InterfaceVersion;
+        _InterfaceData.idServiceType    = NEService::ServiceLocal;
+        _InterfaceData.idRequestCount   = NETrafficLight::NumberofRequests;
+        _InterfaceData.idResponseCount  = NETrafficLight::NumberofResponses;
+        _InterfaceData.idAttributeCount = NETrafficLight::NumberofAttributes;
 
         /**
          * \brief   The map of requests and responses
          **/
-        static const unsigned int RequestToResponseMap[] = 
+        static const unsigned int _RequestToResponseMap[] = 
         {
-              static_cast<unsigned int>( NETrafficLight::MSG_ID_ResponseChangeLight  ) // RequestChangeLight( const NETrafficLight::eLight & lightColor, const bool & holdon )
+              static_cast<unsigned int>( NETrafficLight::MSG_ID_responseChangeLight  ) // requestChangeLight( NETrafficLight::eLight lightColor, bool holdon )
         };
 
         /**
          * \brief   Initialization of map of parameter entry validation map in responses and in broadcasts
          **/
-        static const unsigned int ResponseParamStateMap[] = 
+        static const unsigned int _ResponseParamStateMap[] = 
         {
         /************************************************************************
          * Responses
          ************************************************************************/
-            1, // void ResponseChangeLight( const NETrafficLight::eLight & lightColor )
+            1, // void responseChangeLight( NETrafficLight::eLight lightColor )
 
         /************************************************************************
          * Broadcasts
@@ -63,23 +63,24 @@ static NEService::SInterfaceData & _getInterfaceData(void)
 
         };
 
-        InterfaceData.idRequestToResponseMap    = RequestToResponseMap;
-        InterfaceData.idResponseParamCountMap   = ResponseParamStateMap;
-        InterfaceData.idIsInitialized           = true;
+        _InterfaceData.idRequestToResponseMap   = _RequestToResponseMap;
+        _InterfaceData.idResponseParamCountMap  = _ResponseParamStateMap;
+        _InterfaceData.idIsInitialized          = true;
     }
-    return InterfaceData;
+    
+    return _InterfaceData;
 }
 
 //////////////////////////////////////////////////////////////////////////
 // NETrafficLight functions implementation
 //////////////////////////////////////////////////////////////////////////
 
-const NEService::SInterfaceData & NETrafficLight::CreateInterfaceData( void )
+const NEService::SInterfaceData & NETrafficLight::createInterfaceData( void )
 {
     return _getInterfaceData();
 }
 
-NETrafficLight::eMessageIDs NETrafficLight::GetResponseId( NETrafficLight::eMessageIDs reqId )
+NETrafficLight::eMessageIDs NETrafficLight::getResponseId( NETrafficLight::eMessageIDs reqId )
 {
     const NEService::SInterfaceData & sid = _getInterfaceData();
 
@@ -87,7 +88,7 @@ NETrafficLight::eMessageIDs NETrafficLight::GetResponseId( NETrafficLight::eMess
     return  ( index >= 0 && index < static_cast<int>(sid.idRequestCount) ? static_cast<NETrafficLight::eMessageIDs>(sid.idRequestToResponseMap[index]) : NETrafficLight::MSG_ID_INVALID );
 }
 
-NETrafficLight::eMessageIDs NETrafficLight::GetRequestId( NETrafficLight::eMessageIDs respId )
+NETrafficLight::eMessageIDs NETrafficLight::getRequestId( NETrafficLight::eMessageIDs respId )
 {
     const NEService::SInterfaceData & sid = _getInterfaceData();
     NETrafficLight::eMessageIDs result = NETrafficLight::MSG_ID_INVALID;

@@ -9,50 +9,50 @@
 
 #pragma comment(lib, "areg.lib")
 
-static inline void _createRoleName( const CEString & nickName, uint32_t cookie, const char * prefix, CEString & output )
+static inline void _createRoleName( const String & nickName, uint32_t cookie, const char * prefix, String & output )
 {
-    if ( (nickName.IsEmpty( ) == false) && (cookie != NEDirectConnection::InvalidCookie) )
-        output.Format( "%s%s_%u", prefix, nickName.GetBuffer( ), cookie );
+    if ( (nickName.isEmpty( ) == false) && (cookie != NEDirectConnection::InvalidCookie) )
+        output.formatString( "%s%s_%u", prefix, nickName.getBuffer( ), cookie );
 }
 
-static inline void _createRoleName( const CEString & nickName, uint32_t cookie, uint64_t session, const char * prefix, CEString & output )
+static inline void _createRoleName( const String & nickName, uint32_t cookie, uint64_t session, const char * prefix, String & output )
 {
-    if ( (nickName.IsEmpty( ) == false) && (cookie != NEDirectConnection::InvalidCookie) && (session != NEDirectConnection::InvalidSession) )
-        output.Format( "%s%s_%u%llu", prefix, nickName.GetBuffer( ), cookie, session );
+    if ( (nickName.isEmpty( ) == false) && (cookie != NEDirectConnection::InvalidCookie) && (session != NEDirectConnection::InvalidSession) )
+        output.formatString( "%s%s_%u%llu", prefix, nickName.getBuffer( ), cookie, session );
 }
 
-CEString NEDistributedApp::getConnectionServiceRole( const CEString & nickName, uint32_t cookie )
+String NEDistributedApp::getConnectionServiceRole( const String & nickName, uint32_t cookie )
 {
-    CEString result;
+    String result;
     _createRoleName(nickName, cookie, NEDirectConnection::ServicePrefixStub, result);
     return result;
 }
 
-CEString NEDistributedApp::getDirectMessagingRole(const CEString & nickName, uint32_t cookie, uint64_t session, bool isInitiator)
+String NEDistributedApp::getDirectMessagingRole(const String & nickName, uint32_t cookie, uint64_t session, bool isInitiator)
 {
-    CEString result;
+    String result;
     _createRoleName(nickName, cookie, session, isInitiator ? PREFIX_INITIATOR : PREFIX_PARTICIPANT, result);
     return result;
 }
 
 /***
-CEString NEDistributedApp::getConnectionServiceClientRole( const CEString & nickName, uint32_t cookie, uint64_t session )
+String NEDistributedApp::getConnectionServiceClientRole( const String & nickName, uint32_t cookie, uint64_t session )
 {
-    CEString result;
+    String result;
     _createRoleName( nickName, cookie, session, NEDirectConnection::ServicePrefixClient, result );
     return result;
 }
 ***/
 
-CEString NEDistributedApp::getDirectConnectionName( const CEString & nickName, uint32_t cookie, uint64_t session )
+String NEDistributedApp::getDirectConnectionName( const String & nickName, uint32_t cookie, uint64_t session )
 {
-    CEString result;
-    if ( (nickName.IsEmpty( ) == false) && (cookie != NEDirectConnection::InvalidCookie) )
+    String result;
+    if ( (nickName.isEmpty( ) == false) && (cookie != NEDirectConnection::InvalidCookie) )
     {
         if ( session != NEDirectConnection::InvalidSession )
-            result.Format( "%s_%u%llu", nickName.String( ), cookie, session );
+            result.formatString( "%s_%u%llu", nickName.getString( ), cookie, session );
         else
-            result.Format( "%s_%u", nickName.String( ), cookie);
+            result.formatString( "%s_%u", nickName.getString( ), cookie);
     }
     return result;
 }

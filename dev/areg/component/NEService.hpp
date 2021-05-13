@@ -15,8 +15,8 @@
 #include "areg/base/GEGlobal.h"
 #include "areg/base/IEIOStream.hpp"
 #include "areg/base/TEFixedArray.hpp"
-#include "areg/base/CEVersion.hpp"
-#include "areg/base/CEString.hpp"
+#include "areg/base/Version.hpp"
+#include "areg/base/String.hpp"
 
 /************************************************************************
  * predefined macro
@@ -93,7 +93,7 @@ namespace NEService
     /**
      * \brief   Returns string value of NEService::eResultType type
      **/
-    inline const char* GetString(NEService::eResultType resultType);
+    inline const char* getString(NEService::eResultType resultType);
 
     /**
      * \brief   Data types
@@ -111,7 +111,7 @@ namespace NEService
     /**
      * \brief   Returns string value of NEService::eDataStateType type
      **/
-    inline const char* GetString(NEService::eDataStateType dataState);
+    inline const char* getString(NEService::eDataStateType dataState);
 
     /**
      * \brief   Type of request.
@@ -131,7 +131,7 @@ namespace NEService
     /**
      * \brief   Returns string value of NEService::eRequestType type
      **/
-    inline const char* GetString( NEService::eRequestType resultType );
+    inline const char* getString( NEService::eRequestType resultType );
 
     /**
      * \brief   Message Data types
@@ -151,12 +151,12 @@ namespace NEService
     /**
      * \brief   Returns string value of NEService::eMessageDataType type
      **/
-    inline const char* GetString( NEService::eMessageDataType dataType );
+    inline const char* getString( NEService::eMessageDataType dataType );
 
     /**
      * \brief   From passed message ID finds data type
      **/
-    inline NEService::eMessageDataType GetDataType( unsigned int msgId );
+    inline NEService::eMessageDataType getMessageDataType( unsigned int msgId );
 
     /**
      * \brief   NEService::eServiceConnection
@@ -175,7 +175,7 @@ namespace NEService
     /**
      * \brief   Returns string value of NEService::eDataType type
      **/
-    inline const char* GetString( NEService::eServiceConnection serviceConnection );
+    inline const char* getString( NEService::eServiceConnection serviceConnection );
 
     typedef enum E_ServiceRequestType
     {
@@ -188,7 +188,7 @@ namespace NEService
     /**
      * \brief   Returns string value of NEService::eServiceRequestType type
      **/
-    inline const char * GetString( NEService::eServiceRequestType svcRequestType );
+    inline const char * getString( NEService::eServiceRequestType svcRequestType );
 
     /**
      * \brief   NEService::eServiceType
@@ -205,7 +205,7 @@ namespace NEService
     /**
      * \brief   Returns string value of NEService::eServiceType type
      **/
-    inline const char * GetString( NEService::eServiceType srvcType );
+    inline const char * getString( NEService::eServiceType srvcType );
 
     /**
      * \brief   NEService::SEQUENCE_NUMBER_NOTIFY
@@ -256,15 +256,15 @@ namespace NEService
      **/
     const ITEM_ID   TARGET_LOCAL        = NEService::CookieLocal;
     /**
-     * \brief   NEService::SOURCE_UNKNOWN
+     * \brief   NEService::SOUR_UNKNOWN
      *          The unknown source ID
      **/
-    const ITEM_ID   SOURCE_UNKNOWN      = NEService::CookieInvalid;
+    const ITEM_ID   SOUR_UNKNOWN      = NEService::CookieInvalid;
     /**
-     * \brief   NEService::SOURCE_UNKNOWN
+     * \brief   NEService::SOUR_UNKNOWN
      *          The unknown source ID
      **/
-    const ITEM_ID   SOURCE_LOCAL        = NEService::CookieLocal;
+    const ITEM_ID   SOUR_LOCAL        = NEService::CookieLocal;
 
     /**
      * \brief   NEService::eServiceCalls
@@ -369,7 +369,7 @@ namespace NEService
     /**
      * \brief   Returns string value of NEService::eFuncIdRange type
      **/
-    inline const char * GetString( NEService::eFuncIdRange funcId );
+    inline const char * getString( NEService::eFuncIdRange funcId );
 
     /**
      * \brief   Constant no response. Should be used in Request to Response map for request
@@ -386,53 +386,53 @@ namespace NEService
     /**
      * \brief   Returns true if message ID is in range of attribute call.
      **/
-    inline bool IsAttributeId(unsigned int msgId);
+    inline bool isAttributeId(unsigned int msgId);
 
     /**
      * \brief   Returns true if message ID is in range of response call
      **/
-    inline bool IsResponseId(unsigned int msgId);
+    inline bool isResponseId(unsigned int msgId);
 
     /**
      * \brief   Returns true if message ID is in range of request call
      **/
-    inline bool IsRequestId(unsigned int msgId);
+    inline bool isRequestId(unsigned int msgId);
 
     /**
      * \brief   Returns true if message ID is a registration call
      **/
-    inline bool IsRegistrationId( unsigned int msgId );
+    inline bool isRegistrationId( unsigned int msgId );
 
     /**
      * \brief   Returns true if message ID is version notification
      **/
-    inline bool IsVersionNotifyId(unsigned int msgId);
+    inline bool isVersionNotifyId(unsigned int msgId);
 
     /**
      * \brief   Returns true if message ID is service connect
      **/
-    inline bool IsConnectNotifyId(unsigned int msgId);
+    inline bool isConnectNotifyId(unsigned int msgId);
 
     /**
      * \brief   Returns true if message ID is either request, or response, or attribute notification.
      **/
-    inline bool IsExecutableId( unsigned int msgId );
+    inline bool isExecutableId( unsigned int msgId );
 
     /**
      * \brief   Returns true if message ID is empty function
      **/
-    inline bool IsEmptyFunctionId(unsigned int msgId);
+    inline bool isEmptyFunctionId(unsigned int msgId);
 
-    class CEParameterArray;
+    class ParameterArray;
 
     //////////////////////////////////////////////////////////////////////////
-    // CEStateArray class declaration
+    // StateArray class declaration
     //////////////////////////////////////////////////////////////////////////
     typedef TEListImpl<NEService::eDataStateType>   ImplStateArray;
     /**
-     * \brief   CEStateArray class. Keeps data state information
+     * \brief   StateArray class. Keeps data state information
      **/
-    class AREG_API CEStateArray : public TEFixedArray<NEService::eDataStateType, NEService::eDataStateType, ImplStateArray>
+    class AREG_API StateArray : public TEFixedArray<NEService::eDataStateType, NEService::eDataStateType, ImplStateArray>
     {
     //////////////////////////////////////////////////////////////////////////
     // Constructors / Destructor
@@ -441,18 +441,18 @@ namespace NEService
         /**
          * \brief   Sets initial size of fixed array. The size of array cannot be changed dynamically.
          **/
-        CEStateArray(int size = 0);
+        StateArray(int size = 0);
 
         /**
          * \brief   Copy constructor.
          * \param   src     The source of data to copy.
          **/
-        CEStateArray(const CEStateArray & src);
+        StateArray(const StateArray & src);
 
         /**
          * \brief   Destructor
          **/
-        ~CEStateArray( void );
+        ~StateArray( void );
 
     //////////////////////////////////////////////////////////////////////////
     // Attributes and operations
@@ -461,39 +461,39 @@ namespace NEService
         /**
          * \brief   Resets states in array. All states will be set to NEService::DATA_UNAVAILABLE
          **/
-        inline void ResetStates( void );
+        inline void resetStates( void );
 
         /**
          * \brief   Returns true if array has parameters, i.e. the size is
          *          not zero.
          **/
-        inline bool HasParams( void ) const;
+        inline bool hasParams( void ) const;
 
         /**
          * \brief   Sets the state of certain entry in array.
          * \param   whichIndex  The index of entry in array which state should be changed
          * \param   newState    The state to set
          **/
-        inline void SetState(int whichIndex, NEService::eDataStateType newState);
+        inline void setState(int whichIndex, NEService::eDataStateType newState);
 
         /**
          * \brief   All entries are set to the same given state
          * \param   newState    The state to set for all entries
          **/
-        inline void SetAllState(NEService::eDataStateType newState);
+        inline void setAllState(NEService::eDataStateType newState);
 
     //////////////////////////////////////////////////////////////////////////
     // Hidden methods
     //////////////////////////////////////////////////////////////////////////
     private:
-        friend class CEParameterArray;
+        friend class ParameterArray;
 
         /**
          * \brief   Initialization constructor.
          *          Does not make hard-copy, only assigns given
          *          parameters
          **/
-        CEStateArray(unsigned char* thisBffer, int elemCount);
+        StateArray(unsigned char* thisBffer, int elemCount);
     };
 
     //////////////////////////////////////////////////////////////////////////
@@ -525,7 +525,7 @@ namespace NEService
         /**
          * \brief   Implementation version
          **/
-        CEVersion           idVersion;                  // interface version
+        Version           idVersion;                  // interface version
 
         /**
          * \brief   The service type. Either local or remote
@@ -565,7 +565,7 @@ namespace NEService
     } SInterfaceData;
 
     //////////////////////////////////////////////////////////////////////////
-    // CEParameterArray class declaration
+    // ParameterArray class declaration
     //////////////////////////////////////////////////////////////////////////
     /**
      * \brief   Map of parameters. Keeps information about parameter
@@ -580,7 +580,7 @@ namespace NEService
      *          the 'param1' state can be accessed by index pair
      *          param1State = states[GET_RESP_INDEX(UPD_ID_responseAREG)][0];
      **/
-    class AREG_API CEParameterArray
+    class AREG_API ParameterArray
     {
     //////////////////////////////////////////////////////////////////////////
     // Constructors / Destructor
@@ -594,7 +594,7 @@ namespace NEService
          * \param   ifData  The service interface data structure containing
          *                  parameter map table
          **/
-        CEParameterArray(const NEService::SInterfaceData& ifData);
+        ParameterArray(const NEService::SInterfaceData& ifData);
 
 
         /**
@@ -604,12 +604,12 @@ namespace NEService
          * \param   paramCountMap   The map table of number of parameters in every response
          * \param   count           Number of entries in map table
          **/
-        CEParameterArray(const unsigned int* paramCountMap, int count);
+        ParameterArray(const unsigned int* paramCountMap, int count);
 
         /**
          * \brief   Destructor
          **/
-        ~CEParameterArray( void );
+        ~ParameterArray( void );
 
     //////////////////////////////////////////////////////////////////////////
     // Operators
@@ -622,14 +622,14 @@ namespace NEService
          *          ('response ID' - NEService::RESPONSE_ID_FIRST) or use
          *          GET_RESP_INDEX() macro
          **/
-        inline NEService::CEStateArray& operator [] (int index);
+        inline NEService::StateArray& operator [] (int index);
         /**
          * \brief   Access read-only state by given index of array.
          *          The index is calculated by formula
          *          ('response ID' - NEService::RESPONSE_ID_FIRST) or use
          *          GET_RESP_INDEX() macro
          **/
-        inline const NEService::CEStateArray& operator [] (int index) const;
+        inline const NEService::StateArray& operator [] (int index) const;
 
     //////////////////////////////////////////////////////////////////////////
     // Attributes
@@ -645,7 +645,7 @@ namespace NEService
          *                  First parameter has index zero
          * \return  The state of parameter in call.
          **/
-        inline NEService::eDataStateType GetAt(int row, int col) const;
+        inline NEService::eDataStateType getAt(int row, int col) const;
 
         /**
          * \brief   Sets state of parameter of certain response.
@@ -655,13 +655,13 @@ namespace NEService
          *                      First parameter has index zero
          * \param   newValue    The state to set for parameter
          **/
-        inline void SetAt(int row, int col, NEService::eDataStateType newValue);
+        inline void setAt(int row, int col, NEService::eDataStateType newValue);
 
         /**
          * \brief   Returns true if specified response index has parameters.
          *          The response index is calculated by macro GET_RESP_INDEX('response ID')
          **/
-        inline bool HasParameters(int whichRespIndex) const;
+        inline bool hasParameters(int whichRespIndex) const;
         /**
          * \brief   Returns true if valid response index. For example,
          *          the response ID RESPONSE_ID_NONE does not have valid
@@ -671,7 +671,7 @@ namespace NEService
          *                          macro GET_RESP_INDEX('response ID')
          * \return  Returns true if given index is valid
          **/
-        inline bool IsValidParamIndex(int whichRespIndex) const;
+        inline bool isValidParamIndex(int whichRespIndex) const;
 
     //////////////////////////////////////////////////////////////////////////
     // Operations
@@ -680,7 +680,7 @@ namespace NEService
         /**
          * \brief   Resets all states of parameters
          **/
-        inline void ResetAllStates( void );
+        inline void resetAllStates( void );
 
         /**
          * \brief   Sets all parameter states of specified entry.
@@ -688,14 +688,14 @@ namespace NEService
          * \param   whichParam  The index of entry, should be calculated by GET_RESP_INDEX('response ID')
          * \param   newState    The state to set
          **/
-        inline void SetParamState(int whichParam, NEService::eDataStateType newState);
+        inline void setParamState(int whichParam, NEService::eDataStateType newState);
 
         /**
          * \brief   Resets all states of parameter of specified entry index.
          *          The index should be calculated by GET_RESP_INDEX('response ID')
          * \param   whichParam  The index of entry, should be calculated by GET_RESP_INDEX('response ID')
          **/
-        void ResetParamState(int whichParam);
+        void resetParamState(int whichParam);
 
     //////////////////////////////////////////////////////////////////////////
     // Hidden methods
@@ -706,12 +706,12 @@ namespace NEService
          * \param   params  Parameter count table
          * \param   count   Number of entries in table
          **/
-        void Construct(const unsigned int* params, int count);
+        void construct(const unsigned int* params, int count);
 
         /**
          * \brief   Counts size in bytes required for states
          **/
-        unsigned int CountParamSpace(const unsigned int* params, int count);
+        unsigned int countParamSpace(const unsigned int* params, int count);
 
     //////////////////////////////////////////////////////////////////////////
     // Member variables
@@ -727,34 +727,34 @@ namespace NEService
         /**
          * \brief   Table of parameter states
          **/
-        NEService::CEStateArray**  mParamList;
+        NEService::StateArray**  mParamList;
 
     //////////////////////////////////////////////////////////////////////////
     // Forbidden calls
     //////////////////////////////////////////////////////////////////////////
     private:
-        CEParameterArray( void );
-        CEParameterArray(const NEService::CEParameterArray & /*src*/ );
-        const NEService::CEParameterArray& operator = (const NEService::CEParameterArray & /*src*/ );
+        ParameterArray( void );
+        ParameterArray(const NEService::ParameterArray & /*src*/ );
+        const NEService::ParameterArray& operator = (const NEService::ParameterArray & /*src*/ );
     };
 
     /**
      * \brief   Type of parameter array
      **/
-    typedef NEService::CEParameterArray    ParamState;
+    typedef NEService::ParameterArray    ParamState;
     /**
      * \brief   Type of state array
      **/
-    typedef NEService::CEStateArray        AttrState;
+    typedef NEService::StateArray        AttrState;
 
     //////////////////////////////////////////////////////////////////////////
-    // NEService::CEProxyData class declaration
+    // NEService::ProxyData class declaration
     //////////////////////////////////////////////////////////////////////////
     /**
-     * \brief   CEProxyData class. 
+     * \brief   ProxyData class. 
      *          Contains info of Data required by Proxy object
      **/
-    class AREG_API CEProxyData
+    class AREG_API ProxyData
     {
     //////////////////////////////////////////////////////////////////////////
     // Constructor / Destructor
@@ -764,18 +764,18 @@ namespace NEService
          * \brief   Initialize data from given service interface data object.
          * \param   ifData  Service Interface data object.
          **/
-        CEProxyData(const NEService::SInterfaceData & ifData);
+        ProxyData(const NEService::SInterfaceData & ifData);
         /**
          * \brief   Destructor
          **/
-        ~CEProxyData( void );
+        ~ProxyData( void );
 
     public:
 
         /**
          * \brief   Resets states of Proxy Data
          **/
-        void ResetStates( void );
+        void resetStates( void );
 
         /**
          * \brief	Set state for specified request ID (range in NEService::eFuncIdRange)
@@ -790,29 +790,29 @@ namespace NEService
          *                      it will set state for all parameters of that response, 
          *                      if any exist.
          **/
-        void SetDataState(unsigned int msgId, NEService::eDataStateType newState);
+        void setDataState(unsigned int msgId, NEService::eDataStateType newState);
 
         /**
          * \brief   Returns data state of given message (attribute or response) ID.
          **/
-        NEService::eDataStateType GetDataState(unsigned int msgId) const;
+        NEService::eDataStateType getDataState(unsigned int msgId) const;
 
         /**
          * \brief   Returns the response message ID of given request message ID.
          *          If message is wrong and/or is not in request to response map,
          *          it will return NEService::INVALID_MESSAGE_ID
          **/
-        unsigned int GetResponseId(unsigned int requestId) const;
+        unsigned int getResponseId(unsigned int requestId) const;
 
         /**
          * \brief   Returns data state of given attribute ID
          **/
-        inline NEService::eDataStateType GetAttributeState(unsigned int msgId) const;
+        inline NEService::eDataStateType getAttributeState(unsigned int msgId) const;
 
         /**
          * \brief   Returns parameter state of given response ID
          **/
-        inline NEService::eDataStateType GetParamState(unsigned int msgId) const;
+        inline NEService::eDataStateType getParamState(unsigned int msgId) const;
 
     //////////////////////////////////////////////////////////////////////////
     // Member variables
@@ -858,28 +858,42 @@ IMPLEMENT_STREAMABLE(NEService::eFuncIdRange)
 // namespace NEService inline function implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline bool NEService::IsRequestId(unsigned int msgId)
-{   return (msgId & static_cast<unsigned int>(NEService::ServiceCallRequest))      != 0;   }
+inline bool NEService::isRequestId(unsigned int msgId)
+{
+    return (msgId & static_cast<unsigned int>(NEService::ServiceCallRequest)) != 0;
+}
 
-inline bool NEService::IsResponseId(unsigned int msgId)
-{   return (msgId & static_cast<unsigned int>(NEService::ServiceCallResponse))     != 0;   }
+inline bool NEService::isResponseId(unsigned int msgId)
+{
+    return (msgId & static_cast<unsigned int>(NEService::ServiceCallResponse)) != 0;
+}
 
-inline bool NEService::IsAttributeId(unsigned int msgId)
-{   return (msgId & static_cast<unsigned int>(NEService::ServiceCallAttribute))    != 0;   }
+inline bool NEService::isAttributeId(unsigned int msgId)
+{
+    return (msgId & static_cast<unsigned int>(NEService::ServiceCallAttribute)) != 0;
+}
 
-inline bool NEService::IsRegistrationId( unsigned int msgId )
-{   return (msgId & static_cast<unsigned int>(NEService::ServiceCallRegister))     != 0;   }
+inline bool NEService::isRegistrationId( unsigned int msgId )
+{
+    return (msgId & static_cast<unsigned int>(NEService::ServiceCallRegister)) != 0;
+}
 
-inline bool NEService::IsEmptyFunctionId(unsigned int msgId)
-{   return (msgId == static_cast<unsigned int>(NEService::EMPTY_FUNCTION_ID));             }
+inline bool NEService::isEmptyFunctionId(unsigned int msgId)
+{
+    return (msgId == static_cast<unsigned int>(NEService::EMPTY_FUNCTION_ID));
+}
 
-inline bool NEService::IsVersionNotifyId( unsigned int msgId )
-{   return (msgId == static_cast<unsigned int>(NEService::SI_NOTIFY_VERSION));             }
+inline bool NEService::isVersionNotifyId( unsigned int msgId )
+{
+    return (msgId == static_cast<unsigned int>(NEService::SI_NOTIFY_VERSION));
+}
 
-inline bool NEService::IsConnectNotifyId( unsigned int msgId )
-{   return (msgId == static_cast<unsigned int>(NEService::SI_SERVICE_CONNECTION_NOTIFY));  }
+inline bool NEService::isConnectNotifyId( unsigned int msgId )
+{
+    return (msgId == static_cast<unsigned int>(NEService::SI_SERVICE_CONNECTION_NOTIFY));
+}
 
-inline bool NEService::IsExecutableId(unsigned int msgId)
+inline bool NEService::isExecutableId(unsigned int msgId)
 {
     return ( (msgId & static_cast<unsigned int>(NEService::ServiceCallRequest))    != 0 ||
              (msgId & static_cast<unsigned int>(NEService::ServiceCallResponse))   != 0 ||
@@ -888,85 +902,115 @@ inline bool NEService::IsExecutableId(unsigned int msgId)
 }
 
 
-inline NEService::eMessageDataType NEService::GetDataType( unsigned int msgId )
+inline NEService::eMessageDataType NEService::getMessageDataType( unsigned int msgId )
 {
-    if ( NEService::IsRequestId(msgId) )
+    if ( NEService::isRequestId(msgId) )
         return NEService::REQUEST_DATA_TYPE;
-    else if (NEService::IsResponseId(msgId))
+    else if (NEService::isResponseId(msgId))
         return NEService::RESPONSE_DATA_TYPE;
-    else if (NEService::IsAttributeId(msgId))
+    else if (NEService::isAttributeId(msgId))
         return NEService::ATTRIBUTE_DATA_TYPE;
-    else if (NEService::IsRegistrationId(msgId))
+    else if (NEService::isRegistrationId(msgId))
         return NEService::SERVICE_DATA_TYPE;
     else
         return NEService::UNDEFINED_DATA_TYPE;
 }
 
 //////////////////////////////////////////////////////////////////////////
-// class NEService::CEStateArray inline function implementation
+// class NEService::StateArray inline function implementation
 //////////////////////////////////////////////////////////////////////////
-inline void NEService::CEStateArray::ResetStates( void )
-{   SetAllState(NEService::DATA_UNAVAILABLE);                                       }
-
-inline bool NEService::CEStateArray::HasParams( void ) const
-{   return (IsEmpty() == false);                                                    }
-
-inline void NEService::CEStateArray::SetState(int whichIndex, NEService::eDataStateType newState)
-{   ASSERT(IsValidIndex(whichIndex)); this->mValueList[whichIndex] = newState;      }
-
-inline void NEService::CEStateArray::SetAllState(NEService::eDataStateType newState)
-{   for ( int i = 0; i < this->mElemCount; ++ i ) this->mValueList[i] = newState;   }
-
-//////////////////////////////////////////////////////////////////////////
-// class NEService::CEParameterArray inline function implementation
-//////////////////////////////////////////////////////////////////////////
-inline NEService::CEStateArray& NEService::CEParameterArray::operator [] ( int index )
-{   ASSERT(IsValidParamIndex(index)); return *(mParamList[index]);                  }
-
-inline const NEService::CEStateArray& NEService::CEParameterArray::operator [] ( int index ) const
-{   ASSERT(IsValidParamIndex(index)); return *(mParamList[index]);                  }
-
-inline NEService::eDataStateType NEService::CEParameterArray::GetAt( int row, int col ) const
-{   ASSERT(IsValidParamIndex(row) && mParamList[row]->IsValidIndex(col));
-    return mParamList[row]->GetAt(col);                                             }
-
-inline void NEService::CEParameterArray::SetAt( int row, int col, NEService::eDataStateType newValue )
-{   ASSERT(IsValidParamIndex(row) && mParamList[row]->IsValidIndex(col));
-    mParamList[row]->SetAt(col, newValue);                                          }
-
-inline bool NEService::CEParameterArray::HasParameters( int whichRespIndex ) const
-{   ASSERT(IsValidParamIndex(whichRespIndex));
-    return mParamList[whichRespIndex]->HasParams();                                 }
-
-inline void NEService::CEParameterArray::ResetAllStates( void )
-{   for (int col = 0; col < mElemCount; col ++)
-        mParamList[col]->ResetStates();                                             }
-
-inline bool NEService::CEParameterArray::IsValidParamIndex(int whichRespIndex) const
-{   return (whichRespIndex >= 0 && whichRespIndex < mElemCount);                    }
-
-inline void NEService::CEParameterArray::SetParamState(int whichParam, NEService::eDataStateType newState)
-{   ASSERT(IsValidParamIndex(whichParam));
-    mParamList[whichParam]->SetAllState(newState);                                  }
-
-//////////////////////////////////////////////////////////////////////////
-// class NEService::CEProxyData inline function implementation
-//////////////////////////////////////////////////////////////////////////
-
-inline NEService::eDataStateType NEService::CEProxyData::GetAttributeState( unsigned int msgId ) const
-{   return NEService::IsVersionNotifyId(msgId) ? mImplVersion : mAttrState[GET_ATTR_INDEX(msgId)];   }
-
-inline NEService::eDataStateType NEService::CEProxyData::GetParamState( unsigned int msgId ) const
+inline void NEService::StateArray::resetStates( void )
 {
-    const NEService::CEStateArray& param = mParamState[GET_RESP_INDEX(msgId)];
-    return (param.HasParams() ? param[0] : NEService::DATA_UNAVAILABLE);
+    setAllState(NEService::DATA_UNAVAILABLE);
+}
+
+inline bool NEService::StateArray::hasParams( void ) const
+{
+    return (isEmpty() == false);
+}
+
+inline void NEService::StateArray::setState(int whichIndex, NEService::eDataStateType newState)
+{
+    ASSERT(isValidIndex(whichIndex));
+    mValueList[whichIndex] = newState;
+}
+
+inline void NEService::StateArray::setAllState(NEService::eDataStateType newState)
+{
+    for ( int i = 0; i < this->mElemCount; ++ i )
+        mValueList[i] = newState;
+}
+
+//////////////////////////////////////////////////////////////////////////
+// class NEService::ParameterArray inline function implementation
+//////////////////////////////////////////////////////////////////////////
+inline NEService::StateArray& NEService::ParameterArray::operator [] ( int index )
+{
+    ASSERT(isValidParamIndex(index));
+    return *(mParamList[index]);
+}
+
+inline const NEService::StateArray& NEService::ParameterArray::operator [] ( int index ) const
+{
+    ASSERT(isValidParamIndex(index));
+    return *(mParamList[index]);
+}
+
+inline NEService::eDataStateType NEService::ParameterArray::getAt( int row, int col ) const
+{
+    ASSERT(isValidParamIndex(row) && mParamList[row]->isValidIndex(col));
+    return mParamList[row]->getAt(col);
+}
+
+inline void NEService::ParameterArray::setAt( int row, int col, NEService::eDataStateType newValue )
+{
+    ASSERT(isValidParamIndex(row) && mParamList[row]->isValidIndex(col));
+    mParamList[row]->setAt(col, newValue);
+}
+
+inline bool NEService::ParameterArray::hasParameters( int whichRespIndex ) const
+{
+    ASSERT(isValidParamIndex(whichRespIndex));
+    return mParamList[whichRespIndex]->hasParams();
+}
+
+inline void NEService::ParameterArray::resetAllStates( void )
+{
+    for (int col = 0; col < mElemCount; col ++)
+        mParamList[col]->resetStates();
+}
+
+inline bool NEService::ParameterArray::isValidParamIndex(int whichRespIndex) const
+{
+    return ((whichRespIndex >= 0) && (whichRespIndex < mElemCount));
+}
+
+inline void NEService::ParameterArray::setParamState(int whichParam, NEService::eDataStateType newState)
+{
+    ASSERT(isValidParamIndex(whichParam));
+    mParamList[whichParam]->setAllState(newState);
+}
+
+//////////////////////////////////////////////////////////////////////////
+// class NEService::ProxyData inline function implementation
+//////////////////////////////////////////////////////////////////////////
+
+inline NEService::eDataStateType NEService::ProxyData::getAttributeState( unsigned int msgId ) const
+{
+    return NEService::isVersionNotifyId(msgId) ? mImplVersion : mAttrState[GET_ATTR_INDEX(msgId)];
+}
+
+inline NEService::eDataStateType NEService::ProxyData::getParamState( unsigned int msgId ) const
+{
+    const NEService::StateArray& param = mParamState[GET_RESP_INDEX(msgId)];
+    return (param.hasParams() ? param[0] : NEService::DATA_UNAVAILABLE);
 }
 
 //////////////////////////////////////////////////////////////////////////
 // class NEService enumerations string conversion
 //////////////////////////////////////////////////////////////////////////
 
-inline const char* NEService::GetString(NEService::eResultType resultType)
+inline const char* NEService::getString(NEService::eResultType resultType)
 {
     switch (resultType)
     {
@@ -1016,7 +1060,7 @@ inline const char* NEService::GetString(NEService::eResultType resultType)
     }
 }
 
-inline const char* NEService::GetString(NEService::eDataStateType dataState)
+inline const char* NEService::getString(NEService::eDataStateType dataState)
 {
     switch (dataState)
     {
@@ -1041,7 +1085,7 @@ inline const char* NEService::GetString(NEService::eDataStateType dataState)
     }
 }
 
-inline const char* NEService::GetString( NEService::eRequestType resultType )
+inline const char* NEService::getString( NEService::eRequestType resultType )
 {
     switch (resultType)
     {
@@ -1067,7 +1111,7 @@ inline const char* NEService::GetString( NEService::eRequestType resultType )
     }
 }
 
-inline const char* NEService::GetString( NEService::eMessageDataType dataType )
+inline const char* NEService::getString( NEService::eMessageDataType dataType )
 {
     switch (dataType)
     {
@@ -1089,7 +1133,7 @@ inline const char* NEService::GetString( NEService::eMessageDataType dataType )
     }
 }
 
-inline const char* NEService::GetString( NEService::eServiceConnection serviceConnection )
+inline const char* NEService::getString( NEService::eServiceConnection serviceConnection )
 {
     switch (serviceConnection)
     {
@@ -1113,7 +1157,7 @@ inline const char* NEService::GetString( NEService::eServiceConnection serviceCo
     }
 }
 
-inline const char * NEService::GetString( NEService::eServiceRequestType svcRequestType )
+inline const char * NEService::getString( NEService::eServiceRequestType svcRequestType )
 {
     switch ( svcRequestType )
     {
@@ -1130,7 +1174,7 @@ inline const char * NEService::GetString( NEService::eServiceRequestType svcRequ
     }
 }
 
-inline const char * NEService::GetString( NEService::eServiceType srvcType )
+inline const char * NEService::getString( NEService::eServiceType srvcType )
 {
     switch ( srvcType )
     {
@@ -1146,7 +1190,7 @@ inline const char * NEService::GetString( NEService::eServiceType srvcType )
 }
 
 
-inline const char * NEService::GetString( NEService::eFuncIdRange funcId )
+inline const char * NEService::getString( NEService::eFuncIdRange funcId )
 {
     switch ( funcId )
     {

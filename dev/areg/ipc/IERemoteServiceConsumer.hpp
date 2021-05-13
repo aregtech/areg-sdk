@@ -13,14 +13,14 @@
 #include "areg/base/GEGlobal.h"
 
 #include "areg/base/TEArrayList.hpp"
-#include "areg/component/CEStubAddress.hpp"
-#include "areg/component/CEProxyAddress.hpp"
+#include "areg/component/StubAddress.hpp"
+#include "areg/component/ProxyAddress.hpp"
 
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class CEStreamableEvent;
-class CEChannel;
+class StreamableEvent;
+class Channel;
 
 //////////////////////////////////////////////////////////////////////////
 // IERemoteServiceConsumer interface declaration
@@ -60,7 +60,7 @@ public:
      * \param   out_listStubs       On output, this contains list of remote stubs, created in current module.
      * \return  Returns size of remote stub server services in the list.
      **/
-    virtual void GetRemoteServiceList( TEArrayList<CEStubAddress, const CEStubAddress &> & out_listStubs) const = 0;
+    virtual void getRemoteServiceList( TEArrayList<StubAddress, const StubAddress &> & out_listStubs) const = 0;
 
     /**
      * \brief   Call to receive list of registered remote proxy services, created in current module. 
@@ -70,7 +70,7 @@ public:
      * \param   out_lisProxies      On output, this contains list of remote proxies, created in current module.
      * \return  Returns size of remote client proxy services in the list.
      **/
-    virtual void GetRemoteServiceList( TEArrayList<CEProxyAddress, const CEProxyAddress &> & out_lisProxies) const = 0;
+    virtual void getRemoteServiceList( TEArrayList<ProxyAddress, const ProxyAddress &> & out_lisProxies) const = 0;
 
     /**
      * \brief   Call to receive list of registered remote stub service, which connection cookie is equal to 
@@ -79,7 +79,7 @@ public:
      * \param   out_listStubs   On output this will contain list of remote stub addresses, which cookie is
      *                          equal to specified cookie value.
      **/
-    virtual void GetServiceList( ITEM_ID cookie, TEArrayList<CEStubAddress, const CEStubAddress &> out_listStubs ) const = 0;
+    virtual void getServiceList( ITEM_ID cookie, TEArrayList<StubAddress, const StubAddress &> out_listStubs ) const = 0;
 
     /**
      * \brief   Call to receive list of registered remote proxy service, which connection cookie is equal to 
@@ -88,44 +88,44 @@ public:
      * \param   out_lisProxies  On output this will contain list of remote proxy addresses, which cookie is
      *                          equal to specified cookie value.
      **/
-    virtual void GetServiceList( ITEM_ID cookie, TEArrayList<CEProxyAddress, const CEProxyAddress &> out_lisProxies ) const = 0;
+    virtual void getServiceList( ITEM_ID cookie, TEArrayList<ProxyAddress, const ProxyAddress &> out_lisProxies ) const = 0;
 
     /**
      * \brief   Registers remote stub in the current process.
      * \param   stub    The address of remote stub server to register
      **/
-    virtual void RegisterRemoteStub( const CEStubAddress & stub ) = 0;
+    virtual void registerRemoteStub( const StubAddress & stub ) = 0;
 
     /**
      * \brief   Registers remote proxy in the current process.
      * \param   proxy   The address of remote proxy client to register
      **/
-    virtual void RegisterRemoteProxy( const CEProxyAddress & proxy ) = 0;
+    virtual void registerRemoteProxy( const ProxyAddress & proxy ) = 0;
 
     /**
      * \brief   Unregisters remote stub in the current process.
      * \param   stub    The address of remote stub server to unregister
      **/
-    virtual void UnregisterRemoteStub( const CEStubAddress & stub ) = 0;
+    virtual void unregisterRemoteStub( const StubAddress & stub ) = 0;
 
     /**
      * \brief   Unregisters remote proxy in the current process.
      * \param   proxy   The address of remote proxy client to unregister
      **/
-    virtual void UnregisterRemoteProxy( const CEProxyAddress & proxy ) = 0;
+    virtual void unregisterRemoteProxy( const ProxyAddress & proxy ) = 0;
 
     /**
      * \brief   Triggered when remote service has been started and there is a
      *          connection established with service.
      * \param   channel     The connection channel of remote service broker.
      **/
-    virtual void RemoteServiceStarted( const CEChannel & channel ) = 0;
+    virtual void remoteServiceStarted( const Channel & channel ) = 0;
 
     /**
      * \brief   Triggered when connection with remote service has been stopped.
      * \param   channel     The connection channel of remote service broker.
      **/
-    virtual void RemoteServiceStopped( const CEChannel & channel ) = 0;
+    virtual void remoteServiceStopped( const Channel & channel ) = 0;
 
     /**
      * \brief   Triggered when connection with remote service broker is lost.
@@ -133,7 +133,7 @@ public:
      *          receive data, and there was not stop connection triggered.
      * \param   channel     The connection channel of remote service broker.
      **/
-    virtual void RemoveServiceLostConnection( const CEChannel & channel ) = 0;
+    virtual void removeServiceLostConnection( const Channel & channel ) = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

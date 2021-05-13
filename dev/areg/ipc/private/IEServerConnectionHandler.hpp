@@ -16,7 +16,7 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class CESocketAccepted;
+class SocketAccepted;
 
 //////////////////////////////////////////////////////////////////////////
 // IEServerConnectionHandler interface declaration
@@ -58,14 +58,14 @@ public:
      * \return  Returns true if client connection can be accepted. To reject and close
      *          connection with client, the method should return false.
      **/
-    virtual bool CanAcceptConnection( const CESocketAccepted & clientSocket ) = 0;
+    virtual bool canAcceptConnection( const SocketAccepted & clientSocket ) = 0;
 
     /**
      * \brief   Triggered, when lost connection with client.
      *          Passed clientSocket parameter specifies client socket, which lost connection.
      * \param   clientSocket    Client socket object, which lost connection.
      **/
-    virtual void ConnectionLost( CESocketAccepted & clientSocket ) = 0;
+    virtual void connectionLost( SocketAccepted & clientSocket ) = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

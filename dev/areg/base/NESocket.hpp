@@ -12,7 +12,7 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
-#include "areg/base/CEString.hpp"
+#include "areg/base/String.hpp"
 
 /************************************************************************
  * Dependencies
@@ -36,14 +36,14 @@ struct sockaddr_in;
 namespace NESocket
 {
 //////////////////////////////////////////////////////////////////////////
-// NESocket::CEInterlockedValue class declaration
+// NESocket::InterlockedValue class declaration
 //////////////////////////////////////////////////////////////////////////
     /**
      * \brief   Socket address object used to resolve names to get IP-address,
      *          to get IP-address of connected socket and to create socket
      *          address structure used in socket API calls.
      **/
-    class AREG_API CEInterlockedValue
+    class AREG_API InterlockedValue
     {
     //////////////////////////////////////////////////////////////////////////
     // COnstructors / Destructor
@@ -53,13 +53,13 @@ namespace NESocket
          * \brief   Default constructor. 
          *          Creates empty IP-address and invalid port number
          **/
-        CEInterlockedValue( void );
+        InterlockedValue( void );
 
         /**
          * \brief   Copy constructor.
          * \param   source  The source to copy data.
          **/
-        CEInterlockedValue( const NESocket::CEInterlockedValue & source );
+        InterlockedValue( const NESocket::InterlockedValue & source );
 
     //////////////////////////////////////////////////////////////////////////
     // Operators
@@ -69,21 +69,21 @@ namespace NESocket
          * \brief   Assigning operator. Copies IP-address and port number from given source.
          * \param   source  The source of Socket Address to copy data.
          **/
-        const NESocket::CEInterlockedValue & operator = ( const NESocket::CEInterlockedValue & source );
+        const NESocket::InterlockedValue & operator = ( const NESocket::InterlockedValue & source );
 
         /**
          * \brief   Checks equality of 2 objects.
          * \param   other   The second object to compare
          * \return  Returns true if 2 objects are equal.
          **/
-        bool operator == ( const NESocket::CEInterlockedValue & other ) const;
+        bool operator == ( const NESocket::InterlockedValue & other ) const;
 
         /**
          * \brief   Checks inequality of 2 objects.
          * \param   other   The second object to compare.
          * \return  Returns true if 2 objects are not equal.
          **/
-        bool operator != ( const NESocket::CEInterlockedValue & other ) const;
+        bool operator != ( const NESocket::InterlockedValue & other ) const;
 
     //////////////////////////////////////////////////////////////////////////
     // Operations
@@ -98,15 +98,14 @@ namespace NESocket
          * \return  Returns true if succeeded to convert human readable string
          *          IP-address and port number to sockaddr_in structure data.
          **/
-        bool ConvertAddress( struct sockaddr_in & out_sockAddr ) const;
+        bool getAddress( struct sockaddr_in & out_sockAddr ) const;
 
         /**
-         * \brief   Resolves and retrieves the address of the peer to which a socket is connected.
-         *          The function can be used only on a connected socket.
-         * \param   hSocket     The socket descriptor of connected socket.
-         * \return  Returns true if succeeded to resolve address of connected peer.
+         * \brief   Sets host IP-address and port number extracted from given
+         *          Internet address structure.
+         * \param   addrHost    The structure containing host address and port number.
          **/
-        bool ResolveSocket( SOCKETHANDLE hSocket );
+        void setAddress( const struct sockaddr_in & addrHost );
 
         /**
          * \brief   Resolves passed name to IP-address and saves in data.
@@ -122,34 +121,35 @@ namespace NESocket
          *                      or server socket. The server socket supposed to bind.
          * \return  Returns true if succeeded to resolve name.
          **/
-        bool ResolveAddress( const char * hostName, unsigned short portNr, bool isServer );
+        bool resolveAddress( const char * hostName, unsigned short portNr, bool isServer );
 
         /**
-         * \brief   Returns true if IP-address is not empty and port number is valid.
+         * \brief   Resolves and retrieves the address of the peer to which a socket is connected.
+         *          The function can be used only on a connected socket.
+         * \param   hSocket     The socket descriptor of connected socket.
+         * \return  Returns true if succeeded to resolve address of connected peer.
          **/
-        inline bool IsValid( void ) const;
+        bool resolveSocket( SOCKETHANDLE hSocket );
 
         /**
          * \brief   Returns IP address of host as readable string.
          **/
-        inline const CEString & GetHostAddress( void ) const;
+        inline const String & getHostAddress( void ) const;
 
         /**
          * \brief   Returns port number of host.
          **/
-        inline unsigned short GetHostPort( void ) const;
+        inline unsigned short getHostPort( void ) const;
 
         /**
          * \brief   Resets the IP-address and port number of address
          **/
-        inline void ResetAddress( void );
+        inline void resetAddress( void );
 
         /**
-         * \brief   Sets host IP-address and port number extracted from given
-         *          Internet address structure.
-         * \param   addrHost    The structure containing host address and port number.
+         * \brief   Returns true if IP-address is not empty and port number is valid.
          **/
-        void SetHostAddress( const struct sockaddr_in & addrHost );
+        inline bool isValid( void ) const;
 
     //////////////////////////////////////////////////////////////////////////
     // Member variables
@@ -158,7 +158,7 @@ namespace NESocket
         /**
          * \brief   The string containing human readable numeric IP-address.
          **/
-        CEString        mIpAddr;
+        String        mIpAddr;
         /**
          * \brief   The port number of socket to connect.
          **/
@@ -201,14 +201,14 @@ namespace NESocket
 //////////////////////////////////////////////////////////////////////////
 
     /**
-     * \brief   NESocket::IsSocketHandleValid
+     * \brief   NESocket::isSocketHandleValid
      *          Checks socket descriptor and returns true if it not equal to InvalidSocketHandle.
      * \param   hSocket     The socket descriptor to check
      **/
-    AREG_API bool IsSocketHandleValid( SOCKETHANDLE hSocket );
+    AREG_API bool isSocketHandleValid( SOCKETHANDLE hSocket );
 
     /**
-     * \brief   NESocket::SocketInitialize
+     * \brief   NESocket::socketInitialize
      *          Call to initialize socket in the current process.
      *          Function should be called before any socket operation is performed.
      *          Otherwise, all socket operations might fail.
@@ -219,43 +219,43 @@ namespace NESocket
      * \return  Returns true if socket is initialized and socket function might be called
      *          in the current process.
      **/
-    AREG_API bool SocketInitialize( void );
+    AREG_API bool socketInitialize( void );
 
     /**
-     * \brief   NESocket::SocketRelease
+     * \brief   NESocket::socketRelease
      *          Call to release socket and free resources in current process
      *          The call is not releasing socket until number of SocketRelease() calls
      *          is not equal to number of SocketInitialize() calls.
      **/
-    AREG_API void SocketRelease( void );
+    AREG_API void socketRelease( void );
 
     /**
-     * \brief   NESocket::SocketCreate
+     * \brief   NESocket::socketCreate
      *          Creates streaming TCP/IP socket for client or server.
      * \return  If function succeeds, returns valid socket descriptor not equal to
      *          NESocket::InvalidSocketHandle.
      **/
-    AREG_API SOCKETHANDLE SocketCreate( void );
+    AREG_API SOCKETHANDLE socketCreate( void );
 
     /**
-     * \brief   NESocket::SocketClose
+     * \brief   NESocket::socketClose
      *          Closes passed socket descriptor. No data sending or receiving via
      *          specified socket will be possible.
      * \param   hSocket     The socket to close.
      **/
-    AREG_API void SocketClose( SOCKETHANDLE hSocket );
+    AREG_API void socketClose( SOCKETHANDLE hSocket );
 
     /**
-     * \brief   NESocket::ClientSocketConnect
+     * \brief   NESocket::clientSocketConnect
      *          Creates client TCP/IP socket and connect to specified peer address.
      * \param   peerAddr    The object containing remote host IP-address and port number.
      * \return  Returns valid socket descriptor, if could create socket and connect to remote peer.
      *          Otherwise, it returns NESocket::InvalidSocketHandle value.
      **/
-    AREG_API SOCKETHANDLE ClientSocketConnect( const NESocket::CEInterlockedValue & peerAddr );
+    AREG_API SOCKETHANDLE clientSocketConnect( const NESocket::InterlockedValue & peerAddr );
 
     /**
-     * \brief   NESocket::ClientSocketConnect
+     * \brief   NESocket::clientSocketConnect
      *          Creates client TCP/IP socket and connect to specified remote host name and port number.
      *          The host name can be either numeric IP-address or human readable host name to resolve.
      *          If passed out_socketAddr pointer is not NULL, on output it will contain readable
@@ -265,20 +265,20 @@ namespace NESocket
      * \return  Returns valid socket descriptor, if could create socket and connect to remote peer.
      *          Otherwise, it returns NESocket::InvalidSocketHandle value.
      **/
-    AREG_API SOCKETHANDLE ClientSocketConnect( const char * hostName, unsigned short portNr, NESocket::CEInterlockedValue * out_socketAddr = NULL );
+    AREG_API SOCKETHANDLE clientSocketConnect( const char * hostName, unsigned short portNr, NESocket::InterlockedValue * out_socketAddr = NULL );
 
     /**
-     * \brief   NESocket::ServerSocketConnect
+     * \brief   NESocket::serverSocketConnect
      *          Creates server TCP/IP socket and binds to specified server address.
      *          Before accepting any connection, the socket should be set for listening.
      * \param   peerAddr    The object containing host IP-address and port number of server.
      * \return  Returns valid socket descriptor, if could create socket and bind to specified address.
      *          Otherwise, it returns NESocket::InvalidSocketHandle value.
      **/
-    AREG_API SOCKETHANDLE ServerSocketConnect( const NESocket::CEInterlockedValue & peerAddr );
+    AREG_API SOCKETHANDLE serverSocketConnect( const NESocket::InterlockedValue & peerAddr );
 
     /**
-     * \brief   NESocket::ServerSocketConnect
+     * \brief   NESocket::serverSocketConnect
      *          Creates server TCP/IP socket and binds to specified host name and port number.
      *          Before accepting any connection, the socket should be set for listening.
      *          The host name can be either numeric IP-address or human readable host name to resolve.
@@ -289,20 +289,20 @@ namespace NESocket
      * \return  Returns valid socket descriptor, if could create socket and bind to specified address.
      *          Otherwise, it returns NESocket::InvalidSocketHandle value.
      **/
-    AREG_API SOCKETHANDLE ServerSocketConnect( const char * hostName, unsigned short portNr, NESocket::CEInterlockedValue * out_socketAddr = NULL );
+    AREG_API SOCKETHANDLE serverSocketConnect( const char * hostName, unsigned short portNr, NESocket::InterlockedValue * out_socketAddr = NULL );
 
     /**
-     * \brief   NESocket::ServerListenConnection
+     * \brief   NESocket::serverListenConnection
      *          Called by server. Sets specified valid server socket for listening incoming connections.
      *          Note:   Before calling this method, the server socket should be created and bind.
      * \param   serverSocket    The valid socket descriptor of server.
      * \param   maxQueueSize    The maximum number of queue.
      * \return  Returns true if server is listening and ready to accept connections.
      **/
-    AREG_API bool ServerListenConnection( SOCKETHANDLE serverSocket, int maxQueueSize = NESocket::MAXIMUM_LISTEN_QUEUE_SIZE);
+    AREG_API bool serverListenConnection( SOCKETHANDLE serverSocket, int maxQueueSize = NESocket::MAXIMUM_LISTEN_QUEUE_SIZE);
 
     /**
-     * \brief   NESocket::ServerAcceptConnection
+     * \brief   NESocket::serverAcceptConnection
      *          Called by server when starts to accept connections.
      *          Note:   Before calling this method, the server socket should be created, bind and
      *                  should be in listening mode.
@@ -318,26 +318,26 @@ namespace NESocket
      * \return  If succeeds to accept connection, returns valid accepted socket descriptor.
      *          Otherwise, if server socket is not valid anymore, returns NESocket::InvalidSocketHandle.
      **/
-    AREG_API SOCKETHANDLE ServerAcceptConnection( SOCKETHANDLE serverSocket, const SOCKETHANDLE * masterList, int entriesCount, NESocket::CEInterlockedValue * out_socketAddr = NULL );
+    AREG_API SOCKETHANDLE serverAcceptConnection( SOCKETHANDLE serverSocket, const SOCKETHANDLE * masterList, int entriesCount, NESocket::InterlockedValue * out_socketAddr = NULL );
 
     /**
-     * \brief   NESocket::GetMaximumSendSize
+     * \brief   NESocket::getMaxSendSize
      *          Calculated the maximum number of package size in bytes, which can be sent.
      *          This value may vary by protocol.
      * \param   hSocket     The valid socket descriptor to retrieve value.
      **/
-    AREG_API int GetMaximumSendSize( SOCKETHANDLE hSocket );
+    AREG_API int getMaxSendSize( SOCKETHANDLE hSocket );
 
     /**
-     * \brief   NESocket::GetMaximumReceiveSize
+     * \brief   NESocket::getMaxReceiveSize
      *          Calculated the maximum number of package size in bytes, which can be received.
      *          This value may vary by protocol.
      * \param   hSocket     The valid socket descriptor to retrieve value.
      **/
-    AREG_API int GetMaximumReceiveSize( SOCKETHANDLE hSocket );
+    AREG_API int getMaxReceiveSize( SOCKETHANDLE hSocket );
 
     /**
-     * \brief   NESocket::SendData
+     * \brief   NESocket::sendData
      *          Send data to specified socket. The passed socket descriptor should be valid.
      *          If blockMaxSize value is negative, it will retrieve the maximum number of package size
      *          to send at once and try to send data.
@@ -350,10 +350,10 @@ namespace NESocket
      *          If failles, returns negative number.
      *          Returns zero if buffer is empty and nothing to sent.
      **/
-    AREG_API int SendData( SOCKETHANDLE hSocket, const unsigned char * dataBuffer, int dataLength, int blockMaxSize = -1 );
+    AREG_API int sendData( SOCKETHANDLE hSocket, const unsigned char * dataBuffer, int dataLength, int blockMaxSize = NECommon::DefaultSize );
 
     /**
-     * \brief   NESocket::ReceiveData
+     * \brief   NESocket::receiveData
      *          Receives data on specified socket. The passed socket descriptor should be valid.
      *          If blockMaxSize value is negative, it will retrieve the maximum number of package size
      *          to receive at once.
@@ -367,44 +367,56 @@ namespace NESocket
      *          In case of failure, the specified socket should be closed.
      *          Returns zero if buffer is empty and nothing to receive.
      **/
-    AREG_API int ReceiveData( SOCKETHANDLE hSocket, unsigned char * dataBuffer, int dataLength, int blockMaxSize  = -1 );
+    AREG_API int receiveData( SOCKETHANDLE hSocket, unsigned char * dataBuffer, int dataLength, int blockMaxSize  = NECommon::DefaultSize );
 
     /**
-     * \brief   Sets socket read-only, i.e. it will not be possible to send messages anymore.
+     * \brief   NESocket::disableSend
+     *          Sets socket read-only, i.e. it will not be possible to send messages anymore.
      * \param   hSocket     Valid socket handle to set in read-only mode, i.e. no send message is possible anymore.
      * \return  Returns true if operation succeeds. Otherwise, returns false.
      **/
-    AREG_API bool DisableSend( SOCKETHANDLE hSocket );
+    AREG_API bool disableSend( SOCKETHANDLE hSocket );
 
     /**
-     * \brief   Sets socket write-only, i.e. it will not be possible to receive messages anymore.
+     * \brief   NESocket::disableReceive
+     *          Sets socket write-only, i.e. it will not be possible to receive messages anymore.
      * \param   hSocket     Valid socket handle to set in read-only mode, i.e. no receive is possible anymore.
      * \return  Returns true if operation succeeds. Otherwise, returns false.
      **/
-    AREG_API bool DisableReceive( SOCKETHANDLE hSocket );
+    AREG_API bool disableReceive( SOCKETHANDLE hSocket );
 
     /**
-     * \brief   Returns the remaining amount of data in bytes to read in a single receive call.
+     * \brief   NESocket::remainDataRead
+     *          Returns the remaining amount of data in bytes to read in a single receive call.
      * \param   hSocket     The socket handle to check
      * \return  Returns the remaining amount of data in bytes to receive in single call.
      **/
-    AREG_API unsigned int GetRemainingDataRead( SOCKETHANDLE hSocket );
+    AREG_API unsigned int remainDataRead( SOCKETHANDLE hSocket );
 }
 
 //////////////////////////////////////////////////////////////////////////
-// NESocket::CEInterlockedValue class inline function
+// NESocket::InterlockedValue class inline function
 //////////////////////////////////////////////////////////////////////////
 
-inline bool NESocket::CEInterlockedValue::IsValid( void ) const
-{   return (mIpAddr.IsEmpty() == false && mPortNr != NESocket::InvalidPort);}
+inline bool NESocket::InterlockedValue::isValid( void ) const
+{
+    return ((mIpAddr.isEmpty() == false) && (mPortNr != NESocket::InvalidPort));
+}
 
-inline const CEString & NESocket::CEInterlockedValue::GetHostAddress( void ) const
-{   return mIpAddr;                                                         }
+inline const String & NESocket::InterlockedValue::getHostAddress( void ) const
+{
+    return mIpAddr;
+}
 
-inline unsigned short NESocket::CEInterlockedValue::GetHostPort( void ) const
-{   return mPortNr;                                                         }
+inline unsigned short NESocket::InterlockedValue::getHostPort( void ) const
+{
+    return mPortNr;
+}
 
-inline void NESocket::CEInterlockedValue::ResetAddress( void )
-{   mIpAddr = ""; mPortNr = NESocket::InvalidPort;                          }
+inline void NESocket::InterlockedValue::resetAddress( void )
+{
+    mIpAddr = String::EmptyString;
+    mPortNr = NESocket::InvalidPort;
+}
 
 #endif  // AREG_BASE_NESOCKET_HPP

@@ -6,8 +6,8 @@
 
 /************************************************************************
  * (c) copyright    2021
- *                  Create by AREGtech code generator tool from source System.
- * Generated at     21.04.2021  18:33:57 GMT+02:00 
+ *                  Create by AREG SDK code generator tool from source System.
+ * Generated at     12.05.2021  16:41:13 GMT+02:00 
  ************************************************************************/
 
 /************************************************************************
@@ -19,7 +19,7 @@
 /************************************************************************
  * Include files
  ************************************************************************/
-#include "areg/src/base/GEGlobal.h"
+#include "areg/base/GEGlobal.h"
 
 //////////////////////////////////////////////////////////////////////////
 // Dependency includes
@@ -28,9 +28,9 @@
 //////////////////////////////////////////////////////////////////////////
 // Mandatory includes
 //////////////////////////////////////////////////////////////////////////
-#include "areg/src/base/IEIOStream.hpp"
-#include "areg/src/base/CEVersion.hpp"
-#include "areg/src/component/NEService.hpp"
+#include "areg/base/IEIOStream.hpp"
+#include "areg/base/Version.hpp"
+#include "areg/component/NEService.hpp"
 
 /************************************************************************
  * Dependencies
@@ -62,7 +62,7 @@ namespace   NESystem
      * \brief   Implemented Version
      *          NESystem::InterfaceVersion
      **/
-    const CEVersion       InterfaceVersion    = "0.1.0";
+    const Version         InterfaceVersion    = "0.1.0";
 
 /************************************************************************/
 // Service Interface data types
@@ -103,7 +103,7 @@ namespace   NESystem
     /**
      * \brief   Returns string value of NESystem::eSystemState
      **/
-    inline const char * GetString( NESystem::eSystemState enumValue );
+    inline const char * getString( NESystem::eSystemState enumValue );
 
 /************************************************************************
  * Service Message IDs
@@ -118,25 +118,25 @@ namespace   NESystem
      * Request IDs
      ************************************************************************/
         /**
-         * \brief   Request ID: MSG_ID_RequestPowerOff
+         * \brief   Request ID: MSG_ID_requestPowerOff
          *          Requested to power off.
          **/
-          MSG_ID_RequestPowerOff  = NEService::REQUEST_ID_FIRST     // void RequestPowerOff( void );
+          MSG_ID_requestPowerOff  = NEService::REQUEST_ID_FIRST     // void requestPowerOff( void );
         /**
-         * \brief   Request ID: MSG_ID_RequestPowerOn
+         * \brief   Request ID: MSG_ID_requestPowerOn
          *          requested to power on
          **/
-        , MSG_ID_RequestPowerOn                                     // void RequestPowerOn( void );
+        , MSG_ID_requestPowerOn                                     // void requestPowerOn( void );
         /**
-         * \brief   Request ID: MSG_ID_RequestShutdown
+         * \brief   Request ID: MSG_ID_requestShutdown
          *          requested to shutdown
          **/
-        , MSG_ID_RequestShutdown                                    // void RequestShutdown( void );
+        , MSG_ID_requestShutdown                                    // void requestShutdown( void );
         /**
-         * \brief   Request ID: MSG_ID_RequestStart
+         * \brief   Request ID: MSG_ID_requestStart
          *          requested to start.
          **/
-        , MSG_ID_RequestStart                                       // void RequestStart( void );
+        , MSG_ID_requestStart                                       // void requestStart( void );
      
     /************************************************************************
      * Response IDs
@@ -170,7 +170,7 @@ namespace   NESystem
     /**
      * \brief   Returns string value of NESystem::eMessageIDs
      **/
-    inline const char * GetString( NESystem::eMessageIDs msgId );
+    inline const char * getString( NESystem::eMessageIDs msgId );
      
 /************************************************************************
  * Service Interface standard functions and variables
@@ -179,27 +179,27 @@ namespace   NESystem
     /**
      * \brief   Creates and returns Service Interface Data
      **/
-    const NEService::SInterfaceData & CreateInterfaceData( void );
+    const NEService::SInterfaceData & createInterfaceData( void );
 
     /**
      * \brief   Returns the mapped Response ID of give Request ID.
      **/
-    NESystem::eMessageIDs GetResponseId( NESystem::eMessageIDs reqId );
+    NESystem::eMessageIDs getResponseId( NESystem::eMessageIDs reqId );
 
     /**
      * \brief   Returns the mapped Response ID of give Request ID.
      **/
-    NESystem::eMessageIDs GetRequestId( NESystem::eMessageIDs respId );
+    NESystem::eMessageIDs getRequestId( NESystem::eMessageIDs respId );
 
     /**
      * \brief   Array of supported Request IDs
      **/
     const eMessageIDs    RequestIds[] = 
     {
-          MSG_ID_RequestPowerOff
-        , MSG_ID_RequestPowerOn
-        , MSG_ID_RequestShutdown
-        , MSG_ID_RequestStart
+          MSG_ID_requestPowerOff
+        , MSG_ID_requestPowerOn
+        , MSG_ID_requestShutdown
+        , MSG_ID_requestStart
     };
     /**
      * \brief   Number of supported Request entries
@@ -249,7 +249,7 @@ IMPLEMENT_STREAMABLE( NESystem::eSystemState )
 /**
  * Return string value of NESystem::eSystemState
  **/
-inline const char * NESystem::GetString( NESystem::eSystemState enumValue )
+inline const char * NESystem::getString( NESystem::eSystemState enumValue )
 {
     switch ( enumValue )
     {
@@ -274,18 +274,18 @@ inline const char * NESystem::GetString( NESystem::eSystemState enumValue )
 /**
  * Returns string value of NESystem::eMessageIDs
  **/
-inline const char * NESystem::GetString( NESystem::eMessageIDs msgId )
+inline const char * NESystem::getString( NESystem::eMessageIDs msgId )
 {
     switch ( msgId )
     {
-    case    NESystem::MSG_ID_RequestPowerOff:
-        return "NESystem::MSG_ID_RequestPowerOff";
-    case    NESystem::MSG_ID_RequestPowerOn:
-        return "NESystem::MSG_ID_RequestPowerOn";
-    case    NESystem::MSG_ID_RequestShutdown:
-        return "NESystem::MSG_ID_RequestShutdown";
-    case    NESystem::MSG_ID_RequestStart:
-        return "NESystem::MSG_ID_RequestStart";
+    case    NESystem::MSG_ID_requestPowerOff:
+        return "NESystem::MSG_ID_requestPowerOff";
+    case    NESystem::MSG_ID_requestPowerOn:
+        return "NESystem::MSG_ID_requestPowerOn";
+    case    NESystem::MSG_ID_requestShutdown:
+        return "NESystem::MSG_ID_requestShutdown";
+    case    NESystem::MSG_ID_requestStart:
+        return "NESystem::MSG_ID_requestStart";
     case    NESystem::MSG_ID_SystemState:
         return "NESystem::MSG_ID_SystemState";
 

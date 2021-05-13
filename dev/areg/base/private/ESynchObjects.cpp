@@ -9,7 +9,7 @@
 #include "areg/base/NEMemory.hpp"
 
 //////////////////////////////////////////////////////////////////////////
-// CEMultiLock class, constants
+// MultiLock class, constants
 //////////////////////////////////////////////////////////////////////////
 
 //////////////////////////////////////////////////////////////////////////
@@ -34,7 +34,7 @@ IEBlockingSynchObject::~IEBlockingSynchObject( void )
     ; // do nothing
 }
 
-bool IEBlockingSynchObject::TryLock(void)
+bool IEBlockingSynchObject::tryLock(void)
 {
     return false;
 }
@@ -48,121 +48,121 @@ bool IEBlockingSynchObject::TryLock(void)
 //////////////////////////////////////////////////////////////////////////
 
 //////////////////////////////////////////////////////////////////////////
-// CEMutex class, Methods
+// Mutex class, Methods
 //////////////////////////////////////////////////////////////////////////
 
-bool CEMutex::TryLock( void )
+bool Mutex::tryLock( void )
 {
-    return Lock(IESynchObject::DO_NOT_WAIT);
+    return lock(IESynchObject::DO_NOT_WAIT);
 }
 
 //////////////////////////////////////////////////////////////////////////
-// CESemaphore class, Methods
+// Semaphore class, Methods
 //////////////////////////////////////////////////////////////////////////
 
-bool CESemaphore::TryLock( void )
+bool Semaphore::tryLock( void )
 {
     return false;
 }
 
 //////////////////////////////////////////////////////////////////////////
-// CENolockSynchObject class implementation
+// NolockSynchObject class implementation
 //////////////////////////////////////////////////////////////////////////
 
 //////////////////////////////////////////////////////////////////////////
-// CENolockSynchObject class, Constructor / Destructor
+// NolockSynchObject class, Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
-CENolockSynchObject::CENolockSynchObject( bool /*lock = true*/, bool /*autoReset = true*/ )
+NolockSynchObject::NolockSynchObject( bool /*lock = true*/, bool /*autoReset = true*/ )
     : IEResourceLock(IESynchObject::SO_NOLOCK)
 {
     ; // do nothing
 }
 
-CENolockSynchObject::CENolockSynchObject( int /*maxCount*/, int /*initCount = 0*/ )
+NolockSynchObject::NolockSynchObject( int /*maxCount*/, int /*initCount = 0*/ )
     : IEResourceLock(IESynchObject::SO_NOLOCK)
 {
     ; // do nothing
 }
 
-CENolockSynchObject::~CENolockSynchObject( void )
+NolockSynchObject::~NolockSynchObject( void )
 {
     ; // do nothing
 }
 
 //////////////////////////////////////////////////////////////////////////
-// CENolockSynchObject class, Methods
+// NolockSynchObject class, Methods
 //////////////////////////////////////////////////////////////////////////
-bool CENolockSynchObject::Lock(unsigned int /*timeout = IESynchObject::WAIT_INFINITE*/)
+bool NolockSynchObject::lock(unsigned int /*timeout = IESynchObject::WAIT_INFINITE*/)
 {
     return true;
 }
 
-bool CENolockSynchObject::Unlock( void )
+bool NolockSynchObject::unlock( void )
 {
     return true;
 }
 
-bool CENolockSynchObject::TryLock( void )
+bool NolockSynchObject::tryLock( void )
 {
     return true;
 }
 
 //////////////////////////////////////////////////////////////////////////
-// CELock class implementation
+// Lock class implementation
 //////////////////////////////////////////////////////////////////////////
 
 //////////////////////////////////////////////////////////////////////////
-// CELock class, Constructor / Destructor
+// Lock class, Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
-CELock::CELock(IESynchObject &syncObj, bool autoLock /* = true */)
+Lock::Lock(IESynchObject &syncObj, bool autoLock /* = true */)
     : mSynchObject  (syncObj)
     , mAutoLock     (autoLock)
 {
-    if (mAutoLock && mSynchObject.IsValid() )
-        mSynchObject.Lock();
+    if (mAutoLock && mSynchObject.isValid() )
+        mSynchObject.lock();
 }
 
-CELock::~CELock( void )
+Lock::~Lock( void )
 {
-    if (mAutoLock && mSynchObject.IsValid())
-        mSynchObject.Unlock();
+    if (mAutoLock && mSynchObject.isValid())
+        mSynchObject.unlock();
 }
 
 //////////////////////////////////////////////////////////////////////////
-// CEMultiLock class implementation
+// MultiLock class implementation
 //////////////////////////////////////////////////////////////////////////
 
 //////////////////////////////////////////////////////////////////////////
-// CEMultiLock class, Constructor / Destructor
+// MultiLock class, Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
-CEMultiLock::CEMultiLock(IESynchObject* pObjects[], int count, bool autoLock /* = true */)
+MultiLock::MultiLock(IESynchObject* pObjects[], int count, bool autoLock /* = true */)
     : mSyncObjArray (pObjects)
-    , mSizeCount    (MACRO_MIN(count, CEMultiLock::MAXIMUM_WAITING_OBJECTS))
+    , mSizeCount    (MACRO_MIN(count, NECommon::MAXIMUM_WAITING_OBJECTS))
     , mAutoLock     (autoLock)
 {
-    // memset(mSyncHandles,  0, MAXIMUM_WAITING_OBJECTS * sizeof(HANDLE));
-    // memset(mLockedStates, 0, MAXIMUM_WAITING_OBJECTS * sizeof(eLockedState)  );
-    NEMemory::ZeroBuffer(static_cast<void *>(mLockedStates), MAXIMUM_WAITING_OBJECTS * sizeof(eLockedState)  );
+    // memset(mSyncHandles,  0, NECommon::MAXIMUM_WAITING_OBJECTS * sizeof(HANDLE));
+    // memset(mLockedStates, 0, NECommon::MAXIMUM_WAITING_OBJECTS * sizeof(eLockedState)  );
+    NEMemory::zeroBuffer(static_cast<void *>(mLockedStates), NECommon::MAXIMUM_WAITING_OBJECTS * sizeof(eLockedState)  );
     if (autoLock)
     {
-        Lock(IESynchObject::WAIT_INFINITE, true);
+        lock(IESynchObject::WAIT_INFINITE, true);
     }
 }
 
-CEMultiLock::~CEMultiLock( void )
+MultiLock::~MultiLock( void )
 {
     if (mAutoLock)
     {
-        Unlock();
+        unlock();
     }
 }
 
-bool CEMultiLock::Unlock( void )
+bool MultiLock::unlock( void )
 {
     for (int i = 0; i < mSizeCount; ++ i)
     {
-        if (mLockedStates[i] == static_cast<int>(CEMultiLock::STATE_LOCKED))
-            mSyncObjArray[i]->Unlock();
+        if (mLockedStates[i] == static_cast<int>(MultiLock::STATE_LOCKED))
+            mSyncObjArray[i]->unlock();
     }
 
     return true;

@@ -10,7 +10,7 @@
 
 #ifdef  _POSIX
 
-#include "areg/base/CEString.hpp"
+#include "areg/base/String.hpp"
 #include "areg/base/NEMemory.hpp"
 #include "areg/base/GEMacros.h"
 #include <time.h>
@@ -41,7 +41,7 @@ namespace NEUtilities {
             int tick7 = static_cast<int>(now.tm_mon + 1);
             int tick8 = static_cast<int>(now.tm_year + 1970);
 
-            CEString::PrintString( out_buffer, length, formatStr,
+            String::formatString( out_buffer, length, formatStr,
                 prefix != NULL ? prefix : NEUtilities::DEFAULT_GENERATED_NAME,
                 tick8, spec, tick7, spec, tick6, spec, tick5, spec, tick4, spec, tick3, spec, tick2, spec, tick1 );
         }
@@ -58,7 +58,7 @@ namespace NEUtilities {
     }
 }
 
-AREG_API bool NEUtilities::ToLocalTime( const TIME64 & inUtcTime, sSystemTime & outLocalTime )
+AREG_API bool NEUtilities::convToLocalTime( const TIME64 & inUtcTime, sSystemTime & outLocalTime )
 {
     bool result = false;
 
@@ -90,10 +90,10 @@ AREG_API bool NEUtilities::ToLocalTime( const TIME64 & inUtcTime, sSystemTime & 
     return result;
 }
 
-AREG_API bool NEUtilities::ToLocalTime( const sSystemTime &inUtcTime, sSystemTime & outLocalTime )
+AREG_API bool NEUtilities::convToLocalTime( const sSystemTime &inUtcTime, sSystemTime & outLocalTime )
 {
     bool result = false;
-    TIME64 quad = NEUtilities::ConvertSystemTime(inUtcTime);
+    TIME64 quad = NEUtilities::convToTime(inUtcTime);
 
     // time_t secs = static_cast<time_t>(quad / SEC_TO_MICROSECS);
     // time_t rest = quad - (secs * SEC_TO_MICROSECS);
@@ -123,7 +123,7 @@ AREG_API bool NEUtilities::ToLocalTime( const sSystemTime &inUtcTime, sSystemTim
     return result;
 }
 
-AREG_API uint64_t NEUtilities::GetTickCount( void )
+AREG_API uint64_t NEUtilities::getTickCount( void )
 {
     struct timespec ts;
     clock_gettime(CLOCK_MONOTONIC, &ts);
@@ -132,7 +132,7 @@ AREG_API uint64_t NEUtilities::GetTickCount( void )
     return result;
 }
 
-AREG_API void NEUtilities::GetSystemTimeNow( NEUtilities::sSystemTime & out_sysTime )
+AREG_API void NEUtilities::systemTimeNow( NEUtilities::sSystemTime & out_sysTime )
 {
     struct timespec ts;
     struct tm now;
@@ -157,7 +157,7 @@ AREG_API void NEUtilities::GetSystemTimeNow( NEUtilities::sSystemTime & out_sysT
     out_sysTime.stMicrosecs = micro;
 }
 
-AREG_API void NEUtilities::GetSystemTimeNow( NEUtilities::sFileTime & out_fileTime )
+AREG_API void NEUtilities::systemTimeNow( NEUtilities::sFileTime & out_fileTime )
 {
     struct timespec ts;
     clock_gettime(CLOCK_REALTIME, &ts);
@@ -167,7 +167,7 @@ AREG_API void NEUtilities::GetSystemTimeNow( NEUtilities::sFileTime & out_fileTi
     out_fileTime.ftHighDateTime = MACRO_64_HI_BYTE32(quad);
 }
 
-AREG_API TIME64 NEUtilities::GetSystemTimeNow( void )
+AREG_API TIME64 NEUtilities::systemTimeNow( void )
 {
     struct timespec ts;
     clock_gettime(CLOCK_REALTIME, &ts);
@@ -176,7 +176,7 @@ AREG_API TIME64 NEUtilities::GetSystemTimeNow( void )
     return quad;
 }
 
-AREG_API TIME64 NEUtilities::ConvertSystemTime( const NEUtilities::sSystemTime & sysTime )
+AREG_API TIME64 NEUtilities::convToTime( const NEUtilities::sSystemTime & sysTime )
 {
     TIME64 quad = 0;
 
@@ -199,9 +199,9 @@ AREG_API TIME64 NEUtilities::ConvertSystemTime( const NEUtilities::sSystemTime &
     return quad;
 }
 
-AREG_API void NEUtilities::ConvertToSystemTime( const TIME64 &  timeValue, NEUtilities::sSystemTime & out_sysTime )
+AREG_API void NEUtilities::convToSystemTime( const TIME64 &  timeValue, NEUtilities::sSystemTime & out_sysTime )
 {
-    NEMemory::ZeroBuffer(&out_sysTime, sizeof(NEUtilities::sSystemTime));
+    NEMemory::zeroBuffer(&out_sysTime, sizeof(NEUtilities::sSystemTime));
 
     // time_t secs = static_cast<time_t>(timeValue / SEC_TO_MICROSECS);
     // time_t rest = timeValue - (secs * SEC_TO_MICROSECS);
@@ -227,15 +227,15 @@ AREG_API void NEUtilities::ConvertToSystemTime( const TIME64 &  timeValue, NEUti
     }
 }
 
-AREG_API void NEUtilities::ConvertFileTimeToSystemTime( const NEUtilities::sFileTime & fileTime, NEUtilities::sSystemTime & out_sysTime )
+AREG_API void NEUtilities::convToSystemTime( const NEUtilities::sFileTime & fileTime, NEUtilities::sSystemTime & out_sysTime )
 {
     TIME64 quad = MACRO_MAKE_64(fileTime.ftHighDateTime, fileTime.ftLowDateTime);
-    NEUtilities::ConvertToSystemTime(quad, out_sysTime);
+    NEUtilities::convToSystemTime(quad, out_sysTime);
 }
 
-AREG_API void NEUtilities::ConvertSystemTimeToFileTime( const NEUtilities::sSystemTime & sysTime, NEUtilities::sFileTime & out_fileTime )
+AREG_API void NEUtilities::convToFileTime( const NEUtilities::sSystemTime & sysTime, NEUtilities::sFileTime & out_fileTime )
 {
-    TIME64 quad = NEUtilities::ConvertSystemTime(sysTime);
+    TIME64 quad = NEUtilities::convToTime(sysTime);
     out_fileTime.ftLowDateTime = MACRO_64_LO_BYTE32(quad);
     out_fileTime.ftHighDateTime= MACRO_64_HI_BYTE32(quad);
 }

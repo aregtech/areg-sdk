@@ -6,8 +6,8 @@
  *
  ************************************************************************/
 #include "areg/component/IERemoteEventConsumer.hpp"
-#include "areg/component/CERequestEvents.hpp"
-#include "areg/component/CEResponseEvents.hpp"
+#include "areg/component/RequestEvents.hpp"
+#include "areg/component/ResponseEvents.hpp"
 
 IERemoteEventConsumer::IERemoteEventConsumer(void)
 {
@@ -19,27 +19,27 @@ IERemoteEventConsumer::~IERemoteEventConsumer(void)
 
 }
 
-void IERemoteEventConsumer::StartEventProcessing(CEEvent & eventElem)
+void IERemoteEventConsumer::startEventProcessing(Event & eventElem)
 {
-    if ( (eventElem.GetEventType() & CEEvent::EventRemote) != 0 )
+    if ( (eventElem.getEventType() & Event::EventRemote) != 0 )
     {
-        CERemoteRequestEvent * requestEvent = RUNTIME_CAST(&eventElem, CERemoteRequestEvent);
+        RemoteRequestEvent * requestEvent = RUNTIME_CAST(&eventElem, RemoteRequestEvent);
         if ( requestEvent != NULL )
         {
-            ProcessRemoteEvent(*requestEvent);
+            processRemoteEvent(*requestEvent);
         }
         else
         {
-            CERemoteResponseEvent * responseEvent = RUNTIME_CAST(&eventElem, CERemoteResponseEvent);
+            RemoteResponseEvent * responseEvent = RUNTIME_CAST(&eventElem, RemoteResponseEvent);
             if ( responseEvent != NULL )
             {
-                ProcessRemoteEvent(*responseEvent);
+                processRemoteEvent(*responseEvent);
             }
             else
             {
-                CERemoteNotifyRequestEvent * requestNotifyEvent = RUNTIME_CAST(&eventElem, CERemoteNotifyRequestEvent);
+                RemoteNotifyRequestEvent * requestNotifyEvent = RUNTIME_CAST(&eventElem, RemoteNotifyRequestEvent);
                 if ( requestNotifyEvent != NULL )
-                    ProcessRemoteEvent(*requestNotifyEvent);
+                    processRemoteEvent(*requestNotifyEvent);
             }
         }
     }

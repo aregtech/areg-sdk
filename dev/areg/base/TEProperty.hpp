@@ -110,10 +110,14 @@ const TEProperty<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement> & TEProperty<KEY, 
 
 template <typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename VALUE_TYPE /*= VALUE*/, class Implement /* = TEPairImpl<KEY_TYPE, VALUE_TYPE> */>
 inline bool TEProperty<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::operator == ( const TEProperty<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement> & other ) const
-{   return (this == &other ? TEPair<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::EqualKeys(this->mKey, other.mKey) : true);   }
+{
+    return (this == &other ? TEPair<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::isEqualKeys(this->mKey, other.mKey) : true);
+}
 
 template <typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename VALUE_TYPE /*= VALUE*/, class Implement /* = TEPairImpl<KEY_TYPE, VALUE_TYPE> */>
 inline bool TEProperty<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::operator != ( const TEProperty<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement> & other ) const
-{   return (this != &other ? !TEPair<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::EqualKeys(this->mKey, other.mKey) : false); }
+{
+    return (this != &other ? !TEPair<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::isEqualKeys(this->mKey, other.mKey) : false);
+}
 
 #endif  // AREG_BASE_TEPROPERTY_HPP

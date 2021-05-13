@@ -1,5 +1,5 @@
-#ifndef AREG_PERSIST_PRIVATE_NEPERSISTENCE_HPP
-#define AREG_PERSIST_PRIVATE_NEPERSISTENCE_HPP
+#ifndef AREG_PERSIST_PRIVATE_NEPERSISTEN_HPP
+#define AREG_PERSIST_PRIVATE_NEPERSISTEN_HPP
 /************************************************************************
  * \file        areg/persist/private/NEPersistence.hpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
@@ -76,15 +76,10 @@ namespace NEPersistence
     const char * const      SYNTAX_DELIMITERS                   = " \t";
 
     /**
-     * \brief   List of valid whitespace symbols
-     **/
-    const char * const      SYNTAX_WHITESPACES                  = "\t\r\n";
-
-    /**
      * \brief   The length of comment string
      **/
     extern const int        SYNTAX_COMMENT_LEN;
 
 }
 
-#endif  // AREG_PERSIST_PRIVATE_NEPERSISTENCE_HPP
+#endif  // AREG_PERSIST_PRIVATE_NEPERSISTEN_HPP

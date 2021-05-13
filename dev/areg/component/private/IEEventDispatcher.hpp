@@ -19,8 +19,8 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class CEEvent;
-class CERuntimeClassID;
+class Event;
+class RuntimeClassID;
 class IEEventConsumer;
 
 //////////////////////////////////////////////////////////////////////////
@@ -60,12 +60,12 @@ public:
     /**
      * \brief   Call to start dispatcher. Returns true if successfully started.
      **/
-    virtual bool StartDispatcher( void ) = 0;
+    virtual bool startDispatcher( void ) = 0;
 
     /**
      * \brief   Call to stop running dispatcher.
      **/
-    virtual void StopDispatcher( void ) = 0;
+    virtual void stopDispatcher( void ) = 0;
 
     /**
      * \brief   Call to queue event object in the event queue of dispatcher.
@@ -75,7 +75,7 @@ public:
      * \return  Returns true, if Event was queued. Otherwise, it was not queued
      *          and the object should be deleted.
      **/
-    virtual bool QueueEvent( CEEvent & eventElem ) = 0;
+    virtual bool queueEvent( Event & eventElem ) = 0;
 
     /**
      * \brief   Call to register specified event consumer for the specified
@@ -85,7 +85,7 @@ public:
      * \param	whichClass	    The runtime class ID object of an event 
      *                          to register consumer.
      * \param	whichConsumer	Reference to event consumer object to register
-     *                          as an event listener. The ProcessEvent() function
+     *                          as an event listener. The processEvent() function
      *                          of consumer will be automatically triggered by
      *                          event dispatcher every time when appropriate
      *                          event class type has been picked from event queue.
@@ -93,7 +93,7 @@ public:
      *          If specified consumer is already registered for specified
      *          event class type, it returns false.
      **/
-    virtual bool RegisterEventConsumer( const CERuntimeClassID & whichClass, IEEventConsumer & whichConsumer ) = 0;
+    virtual bool registerEventConsumer( const RuntimeClassID & whichClass, IEEventConsumer & whichConsumer ) = 0;
 
     /**
      * \brief	Call to unregister specified event consumer previously registered
@@ -102,7 +102,7 @@ public:
      * \param	whichConsumer	Reference to consumer that should be unregistered.
      * \return	Returns true if successfully unregistered event consumer.
      **/
-    virtual bool UnregisterEventConsumer( const CERuntimeClassID & whichClass, IEEventConsumer & whichConsumer ) = 0;
+    virtual bool unregisterEventConsumer( const RuntimeClassID & whichClass, IEEventConsumer & whichConsumer ) = 0;
 
     /**
      * \brief	Call to remove specified consumer for all registered event class types,
@@ -110,7 +110,7 @@ public:
      * \param	whichConsumer	Reference to consumer object to unregister.
      * \return	Returns unregister count. If zero, consumer is not registered for any event.
      **/
-    virtual int  RemoveConsumer( IEEventConsumer & whichConsumer ) = 0;
+    virtual int  removeConsumer( IEEventConsumer & whichConsumer ) = 0;
 
     /**
      * \brief	Call to check whether specified event class type has any registered consumer.
@@ -118,7 +118,7 @@ public:
      * \return	Returns true if dispatcher has at least one registered consumer for
      *          specified runtime class ID.
      **/
-    virtual bool HasRegisteredConsumer( const CERuntimeClassID & whichClass ) const = 0;
+    virtual bool hasRegisteredConsumer( const RuntimeClassID & whichClass ) const = 0;
 
 protected:
     /**
@@ -129,7 +129,7 @@ protected:
      * \return	Returns true if at least one consumer processed event.
      *          Otherwise it returns false.
      **/
-    virtual bool DispatchEvent( CEEvent & eventElem ) = 0;
+    virtual bool dispatchEvent( Event & eventElem ) = 0;
 
     /**
      * \brief   The method is triggered after picking up event from event queue.
@@ -139,7 +139,7 @@ protected:
      * \return  Return true if event should be forwarded for dispatching.
      *          Return false if event should be ignored / dropped.
      **/
-    virtual bool PrepareDispatchEvent( CEEvent * eventElem ) = 0;
+    virtual bool prepareDispatchEvent( Event * eventElem ) = 0;
 
     /**
      * \brief	All events after being processed are forwarded
@@ -149,7 +149,7 @@ protected:
      *                      to be dispatched.
      * \return	
      **/
-    virtual void PostDispatchEvent( CEEvent * eventElem ) = 0;
+    virtual void postDispatchEvent( Event * eventElem ) = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden / Forbidden method calls.

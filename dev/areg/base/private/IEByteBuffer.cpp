@@ -30,26 +30,26 @@ IEByteBuffer::~IEByteBuffer( void )
     ; // do nothing
 }
 
-unsigned int IEByteBuffer::ResizeBuffer(unsigned int size, bool copy)
+unsigned int IEByteBuffer::resize(unsigned int size, bool copy)
 {
     if (size != 0 )
     {
         // If not enough space
-        unsigned int sizeLength = GetLength();
-        if (IsShared() == false)
+        unsigned int sizeLength = getSizeAvailable();
+        if (isShared() == false)
         {
-            unsigned int sizeUsed   = GetUsedSize();
-            unsigned int sizeAlign  = SizeAlignment();
+            unsigned int sizeUsed   = this->getSizeUsed();
+            unsigned int sizeAlign  = this->getAlignedSize();
             size = size > IEByteBuffer::MAX_BUF_LENGTH ? IEByteBuffer::MAX_BUF_LENGTH : size;
             if ( (size > sizeLength) || (size < sizeUsed) )
             {
-                unsigned int sizeBuffer = SizeBufferStruct() + size;
+                unsigned int sizeBuffer = getHeaderSize() + size;
                 sizeBuffer = MACRO_ALIGN_SIZE(sizeBuffer, sizeAlign);
                 unsigned char* buffer = DEBUG_NEW unsigned char[sizeBuffer];
-                int copied = static_cast<int>(InitBuffer(buffer, sizeBuffer, copy));
+                int copied = static_cast<int>(initBuffer(buffer, sizeBuffer, copy));
                 if (static_cast<unsigned int>(copied) != IECursorPosition::INVALID_CURSOR_POSITION)
                 {
-                    RemoveReference();
+                    removeReference();
                     mByteBuffer = reinterpret_cast<NEMemory::sByteBuffer *>(buffer);
                 }
                 else
@@ -66,23 +66,23 @@ unsigned int IEByteBuffer::ResizeBuffer(unsigned int size, bool copy)
     }
     else
     {
-        RemoveReference();
+        removeReference();
     }
 
-    return (IsValid() ? mByteBuffer->bufHeader.biLength - mByteBuffer->bufHeader.biUsed : 0);
+    return (isValid() ? mByteBuffer->bufHeader.biLength - mByteBuffer->bufHeader.biUsed : 0);
 }
 
-unsigned int IEByteBuffer::InitBuffer(unsigned char * newBuffer, unsigned int bufLength, bool makeCopy) const
+unsigned int IEByteBuffer::initBuffer(unsigned char * newBuffer, unsigned int bufLength, bool makeCopy) const
 {
     unsigned int result = IECursorPosition::INVALID_CURSOR_POSITION;
 
     if (newBuffer != NULL)
     {
         result                      = 0;
-        unsigned int dataOffset     = SizeDataOffset();
+        unsigned int dataOffset     = this->getDataOffset();
         unsigned int dataLength     = bufLength - dataOffset;
 
-        NEMemory::sByteBuffer* buffer= NEMemory::ConstructElems<NEMemory::sByteBuffer>(newBuffer, 1);    
+        NEMemory::sByteBuffer* buffer= NEMemory::constructElems<NEMemory::sByteBuffer>(newBuffer, 1);    
         buffer->bufHeader.biBufSize = bufLength;
         buffer->bufHeader.biLength  = dataLength;
         buffer->bufHeader.biOffset  = dataOffset;
@@ -91,14 +91,14 @@ unsigned int IEByteBuffer::InitBuffer(unsigned char * newBuffer, unsigned int bu
 
         if ( makeCopy )
         {
-            unsigned char* data         = NEMemory::GetBufferDataWrite(buffer);
-            const unsigned char* srcBuf = NEMemory::GetBufferDataRead(mByteBuffer);
-            unsigned int srcCount       = GetUsedSize();
+            unsigned char* data         = NEMemory::getBufferDataWrite(buffer);
+            const unsigned char* srcBuf = NEMemory::getBufferDataRead(mByteBuffer);
+            unsigned int srcCount       = getSizeUsed();
             srcCount                    = MACRO_MIN(srcCount, dataLength);
             result                      = srcCount;
 
             buffer->bufHeader.biUsed    = srcCount;
-            NEMemory::MemCopy(data, dataLength, srcBuf, srcCount);
+            NEMemory::memCopy(data, dataLength, srcBuf, srcCount);
         }
         else
         {
@@ -113,7 +113,7 @@ unsigned int IEByteBuffer::InitBuffer(unsigned char * newBuffer, unsigned int bu
     return result;
 }
 
-unsigned int IEByteBuffer::SizeAlignment(void) const
+unsigned int IEByteBuffer::getAlignedSize(void) const
 {
     return NEMemory::BLOCK_SIZE;
 }

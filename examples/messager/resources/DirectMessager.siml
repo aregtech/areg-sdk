@@ -130,7 +130,7 @@
             </ParamList>
         </Method>
         <Method ID="35" MethodType="Broadcast" Name="ParticipantLeft">
-            <Description>Informes that a participant left chat-room.</Description>
+            <Description>Informs that a participant left chat-room.</Description>
             <ParamList>
                 <Parameter DataType="sParticipant" ID="36" Name="participant">
                     <Description>The structure of participant, who left the chat-room.</Description>
@@ -141,7 +141,7 @@
             </ParamList>
         </Method>
         <Method ID="38" MethodType="Broadcast" Name="ChatClosed">
-            <Description>Informes all service connected clients that the chat-room is closed. Message will be impossible.</Description>
+            <Description>Informs all service connected clients that the chat-room is closed. Message will be impossible.</Description>
         </Method>
     </MethodList>
     <ConstantList>

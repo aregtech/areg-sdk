@@ -6,78 +6,61 @@
  * \author      Artak Avetyan (mailto:artak@aregtech.com)
  * \brief       AREG Platform, Synchronization objects
  *              Declared following synchronization objects:
- *              IEBlockingSynchObject  - blocking synchronization object interface
- *              CEMutex                - Mutex synchronization object
- *              CESynchEvent           - Event synchronization object
- *              CESemaphore            - Semaphore synchronization object
- *              CESynchTimer           - Timer synchronization object
- *              CECriticalSection      - Critical Section synchronization object
- *              IEResourceLock         - Base resource locking class
- *              CEResourceLock         - Operating system dependent resource locking object.
- *              CENolockSynchObject    - No Locking synchronization object (makes no locking)
- *              CELock                 - Single synchronization auto locking object.
- *              CEMultiLock            - Multiple synchronization auto locking object.
- *              CEInterlockedValue     - Interlock object for atomic operations.
+ *              IEBlockingSynchObject   - blocking synchronization object interface
+ *              Mutex                   - Mutex synchronization object
+ *              SynchEvent              - Event synchronization object
+ *              Semaphore               - Semaphore synchronization object
+ *              SynchTimer              - Timer synchronization object
+ *              CriticalSection         - Critical Section synchronization object
+ *              IEResourceLock          - Base resource locking class
+ *              ResourceLock            - Operating system dependent resource locking object.
+ *              NolockSynchObject       - No Locking synchronization object (makes no locking)
+ *              Lock                    - Single synchronization auto locking object.
+ *              MultiLock               - Multiple synchronization auto locking object.
+ *              InterlockedValue        - Interlock object for atomic operations.
  *
  ************************************************************************/
 /************************************************************************
  * Include files.
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
+#include "areg/base/NECommon.hpp"
 #include "areg/base/IESynchObject.hpp"
 
+/**
+ * \brief   This file contains synchronization objects used to synchronize data access
+ *          in multi-threading environment. All Synchronization objects are instances of 
+ *          IESynchObject interface. The instance of IEBlockingSynchObject can be 
+ *          used in auto-locking objects to synchronize data access.
+ *
+ *          A special NolockSynchObject is defined to support synchronization functionalities, 
+ *          but the object does not block any thread and must not be used in multi-locking operations. 
+ *          The purpose of this class to support unified IESynchObject interface and use in containers
+ *          that do not require synchronization operations.
+ *
+ *          Lock and MultiLock classes are supporting auto-locking
+ *          functionalities. The locking is called during initialization
+ *          of object and automatically released when object is destroyed.
+ **/
+
 /************************************************************************
- * \brief   Declared classes hierarchy
+ * List of declared classes and hierarchy
  ************************************************************************/
 /* class IESynchObject; */
     class IEBlockingSynchObject;
-        class CEMutex;
-        class CESemaphore;
-        class CECriticalSection;
+        class Mutex;
+        class Semaphore;
+        class CriticalSection;
         class IEResourceLock;
-            class CEResourceLock;
-            class CENolockSynchObject;
-    class CESynchEvent;
-    class CESynchTimer;
+            class ResourceLock;
+            class NolockSynchObject;
+    class SynchEvent;
+    class SynchTimer;
 
-class CELock;
-class CEMultiLock;
-class CEInterlockedValue;
+class Lock;
+class MultiLock;
+class InterlockedValue;
 
-/**
- * \details The synchronization classes are used to synchronize
- *          data access from different threads as well as
- *          to send a trigger to notify a thread about
- *          particular event.
- *
- *          All Synchronization objects are instance of IESynchObject
- *          interface. The instance of IEBlockingSynchObject can be 
- *          used in auto-locking objects to synchronize data access.
- *
- *          A special CENolockSynchObject is defined to support
- *          synchronization functionalities, but the class instance
- *          does not block any thread and must not be used in 
- *          multi-locking operations. The purpose of this class
- *          to support IESynchObject interface to pass to container
- *          classes supporting data access synchronization.
- *
- *          CELock and CEMultiLock classes are supporting auto-locking
- *          functionalities. The locking is called during initialization
- *          of object and automatically released when object is destroyed.
- *
- *          CEInterlockedValue object is used for atomic operations.
- **/
-
-/**
- * \brief   Base class of blocking synchronization objects.
- *          Used to synchronize object data access. 
- *          It is base class of Mutex and Critical section.
- *          For Semaphore, it will always return false. 
- *          The difficulties here is controlling which thread locked 
- *          Semaphore before. It differs from IESynchObject by 
- *          having additional TryLock() function, which attempts 
- *          to get ownership without blocking thread
- **/
 //////////////////////////////////////////////////////////////////////////
 // IEBlockingSynchObject class declaration
 //////////////////////////////////////////////////////////////////////////
@@ -111,7 +94,7 @@ public:
      *          the current thread already owns the synchronization object, the return value is true.
      *          If another thread already owns the synchronization object, the return value is false.
      **/
-    virtual bool TryLock( void );
+    virtual bool tryLock( void );
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden / forbidden function calls
@@ -122,30 +105,25 @@ private:
     const IEBlockingSynchObject & operator = ( const IEBlockingSynchObject & /*src*/ );
 };
 
+//////////////////////////////////////////////////////////////////////////
+// Mutex class declaration
+//////////////////////////////////////////////////////////////////////////
 /**
- * \brief   Mutex synchronization object wrapper class.
- *          A mutex object is a synchronization object whose state is set 
- *          to signaled / locked when it is not owned by any thread, 
- *          and non-signaled / unlocked when it is owned. 
- *          Only one thread at a time can own a mutex object.
- *          It is useful in coordinating mutually exclusive access 
- *          to a shared resource. 
- *          For example, to prevent two threads from writing to 
- *          shared memory at the same time, each thread waits for 
- *          ownership of a mutex object, i.e. locks mutex, before 
- *          executing the code that accesses the memory. After 
- *          writing to the shared memory, the thread 
- *          releases / unlocks the mutex object.
+ * \brief   A mutex is a synchronization object which state is set to signaled / locked 
+ *          when it is not owned by any thread, and non-signaled / unlocked when it is owned. 
+ *          Only one thread at a time can own a mutex object. It is used in mutually exclusive access 
+ *          to a shared resource. For example, to prevent two threads from writing to shared memory 
+ *          at the same time. Then, each thread waits for ownership of a mutex object, i.e. locks mutex, 
+ *          before executing the code to accesses the memory. After writing in the shared memory, 
+ *          the thread releases / unlocks the mutex object to let other thread to access same
+ *          memory for writing or reading.
  **/
-//////////////////////////////////////////////////////////////////////////
-// CEMutex class declaration
-//////////////////////////////////////////////////////////////////////////
-class AREG_API CEMutex   : public IEBlockingSynchObject
+class AREG_API Mutex   : public IEBlockingSynchObject
 {
 //////////////////////////////////////////////////////////////////////////
 // Friend objects
 //////////////////////////////////////////////////////////////////////////
-friend class CEMultiLock;
+friend class MultiLock;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -156,12 +134,12 @@ public:
      * \param	lock	If true, current thread will get ownership
      *                  of mutex on initialization
      **/
-    CEMutex( bool lock = true );
+    Mutex( bool lock = true );
 
     /**
      * \brief	Destructor
      **/
-    virtual ~CEMutex( void );
+    virtual ~Mutex( void );
 
 //////////////////////////////////////////////////////////////////////////
 // Override operations, IESynchObject interface
@@ -177,13 +155,13 @@ public:
      * \param	timeout	Timeout in milliseconds to wait.
      * \return	Returns true if current thread successfully got mutex ownership
      **/
-    virtual bool Lock( unsigned int timeout = IESynchObject::WAIT_INFINITE );
+    virtual bool lock( unsigned int timeout = IESynchObject::WAIT_INFINITE );
 
     /**
      * \brief	Unlocks / Release mutex.
      * \return	Returns true if succeeded.
      **/
-    virtual bool Unlock( void );
+    virtual bool unlock( void );
 
     /**
      * \brief   Attempts to get Mutex object ownership without blocking thread.
@@ -192,7 +170,7 @@ public:
      *          the current thread already owns the Mutex, the return value is true.
      *          If another thread already owns the Mutex, the return value is false.
      **/
-    virtual bool TryLock( void );
+    virtual bool tryLock( void );
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes
@@ -201,19 +179,24 @@ public:
     /**
      * \brief   Return true if Mutex is already locked by any thread.
      **/
-    inline bool IsLocked( void ) const;
+    inline bool isLocked( void ) const;
 
     /**
      * \brief   Returns the ID of Thread, which is currently owning mutex
      **/
-    inline ITEM_ID GetOwningThreadId( void ) const;
+    inline ITEM_ID getOwnerThreadId( void ) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Internal operations
 //////////////////////////////////////////////////////////////////////////
 private:
+    /**
+     * \brief   Called to set mutex ownership.
+     **/
     void _setOwnership( void );
-
+    /**
+     * \brief   Called to release ownership.
+     **/
     void _releaseOwnership( void );
 
 //////////////////////////////////////////////////////////////////////////
@@ -229,43 +212,34 @@ private:
 // Hidden / forbidden function calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    CEMutex( const CEMutex & /*src*/ );
-    const CEMutex & operator = ( const CEMutex & /*src*/ );
+    Mutex( const Mutex & /*src*/ );
+    const Mutex & operator = ( const Mutex & /*src*/ );
 };
 
+//////////////////////////////////////////////////////////////////////////
+// class SynchEvent declaration
+//////////////////////////////////////////////////////////////////////////
 /**
- * \brief   Event synchronization object wrapper class.
- *          An event object is a synchronization object whose 
- *          state can be explicitly set to signaled / non-signaled 
- *          by calling function.
+ * \brief   An event object is a synchronization object which state can be explicitly set 
+ *          to signaled or non-signaled.
  *          Followings are the two types of event object:
- *          1.  Manual-reset event: An event object whose state 
- *              remains signaled until it is explicitly reset to 
- *              non-signaled  by Unlock() function call. While it is 
- *              signaled, any number of waiting threads, or threads 
- *              that subsequently specify the same event object in 
- *              one of the wait functions, can be released. 
- *          2.  Auto-reset event: An event object whose state remains 
- *              signaled until a single waiting thread is released, 
- *              at which time the system automatically sets the state 
- *              to non-signaled. If no threads are waiting, the event 
- *              object's state remains signaled. If more than one 
- *              thread is waiting, a waiting thread is selected. 
- *              Do not assume a first-in, first-out (FIFO) order.
+ *          1.  Manual-reset event: An event object which state remains signaled until it 
+ *              is explicitly reset to non-signaled  by unlock() function call. While it is 
+ *              signaled, any number of waiting threads, or threads that subsequently specify 
+ *              the same event object in one of the wait functions, can be released. 
+ *          2.  Auto-reset event: An event object which state remains signaled until a single 
+ *              waiting thread is released. Then, the system automatically sets the to non-signaled.
+ *              If no threads are waiting, the event object's state remains signaled. If more than one 
+ *              thread are waiting, a one of waiting threads is selected. Do not assume a first-in, 
+ *              first-out (FIFO) order.
  *
- *          The event object is useful in sending a signal to a 
- *          thread indicating that a particular event has occurred.
- *          A single thread can specify different event objects in 
- *          several simultaneous overlapped operations, then use 
- *          Lock() function to wait for the state of event object 
- *          to be signaled. The creating thread specifies the initial 
- *          state of the object in Constructor and whether it is 
- *          a manual-reset or auto-reset event object.
+ *          The event object is useful in sending a signal to a thread indicating that a particular 
+ *          event has occurred. A single thread can specify different event objects in 
+ *          several simultaneous overlapped operations, then use lock() function to wait for the 
+ *          state of event object to be signaled. The creating thread specifies the initial state 
+ *          of the object in Constructor and whether it is a manual-reset or auto-reset event object.
  **/
-//////////////////////////////////////////////////////////////////////////
-// class CESynchEvent declaration
-//////////////////////////////////////////////////////////////////////////
-class AREG_API CESynchEvent  : public IESynchObject
+class AREG_API SynchEvent  : public IESynchObject
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -273,8 +247,7 @@ class AREG_API CESynchEvent  : public IESynchObject
 public:
 
     /**
-     * \brief	Default Constructor. Creates either Manual Reset or
-     *          Auto-reset Event Synchronization object as well as
+     * \brief	Creates either Manual Reset or Auto-reset Event Synchronization object as well as
      *          the initial state of Event -- whether it is signaled or not
      * \param	lock	    If true, the initial state of Event is non-signaled.
      *                      When Event state is non-signaled, any thread trying
@@ -286,12 +259,12 @@ public:
      *                      state to non-signaled.
      *                      By default, creates auto-reset Synchronization Event.
      **/
-    CESynchEvent (bool lock = true, bool autoReset = true );
+    SynchEvent (bool lock = true, bool autoReset = true );
 
     /**
      * \brief   Destructor. Sets Event to signal state first.
      **/
-    virtual ~CESynchEvent( void );
+    virtual ~SynchEvent( void );
 
 //////////////////////////////////////////////////////////////////////////
 // Override operations, IESynchObject interface
@@ -309,13 +282,13 @@ public:
      * \return	Returns true if Event was unlocked / signaled and thread was unblock
      *          with no time out or waiting error.
      **/
-    virtual bool Lock( unsigned int timeout = IESynchObject::WAIT_INFINITE );
+    virtual bool lock( unsigned int timeout = IESynchObject::WAIT_INFINITE );
 
     /**
      * \brief	Unlock Event, i.e. set to signaled state
      * \return	Return true if successfully set event state to signaled.
      **/
-    virtual bool Unlock( void );
+    virtual bool unlock( void );
 
 //////////////////////////////////////////////////////////////////////////
 // Operations / Attributes
@@ -324,23 +297,23 @@ public:
     /**
      * \brief	Manually sets event state to signaled. Same as calling Unlock()
      **/
-    bool SetEvent( void );
+    bool setEvent( void );
 
     /**
      * \brief   Manually resets state of event, i.e. set is non-signaled.
      **/
-    bool ResetEvent( void );
+    bool resetEvent( void );
 
     /**
      * \brief   Pulse event once. It it was not set, it will set once and immediately
      *          reset to non-signaled state.
      **/
-    void PulseEvent( void );
+    void pulseEvent( void );
 
     /**
      * \brief   Returns true if event is auto-reset
      **/
-    inline bool IsAutoReset( void ) const;
+    inline bool isAutoReset( void ) const;
 
 private:
     // int unlockedWaitForEvent(unsigned int timeout);
@@ -358,13 +331,15 @@ private:
 // Hidden / forbidden function calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    CESynchEvent( const CESynchEvent & /*src*/ );
-    const CESynchEvent & operator = ( const CESynchEvent & /*src*/ );
+    SynchEvent( const SynchEvent & /*src*/ );
+    const SynchEvent & operator = ( const SynchEvent & /*src*/ );
 };
 
+//////////////////////////////////////////////////////////////////////////
+// class Semaphore declaration
+//////////////////////////////////////////////////////////////////////////
 /**
- * \brief   Semaphore Synchronization object wrapper class
- *          A semaphore object is a synchronization object that 
+ * \brief   A semaphore object is a synchronization object that 
  *          maintains a count between zero and a specified maximum value. 
  *          The count is decremented each time a thread completes 
  *          a wait / lock for the semaphore object and incremented 
@@ -379,23 +354,19 @@ private:
  *          to a specified maximum number.
  *          Mutex is a Semaphore with limited number of access set to one.
  **/
-//////////////////////////////////////////////////////////////////////////
-// class CESemaphore declaration
-//////////////////////////////////////////////////////////////////////////
-class AREG_API CESemaphore: public IEBlockingSynchObject
+class AREG_API Semaphore: public IEBlockingSynchObject
 {
 //////////////////////////////////////////////////////////////////////////
 // Friend objects
 //////////////////////////////////////////////////////////////////////////
-friend class CEMultiLock;
+friend class MultiLock;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief	Constructor, creates Semaphore synchronization object
-     *          sets the maximum number thread access.
+     * \brief	Creates Semaphore synchronization object sets the maximum number thread access.
      * \param	maxCount	The maximum number of thread access.
      *                      Semaphore remains in signaled / unlocked
      *                      state, until this number is more than zero.
@@ -407,18 +378,18 @@ public:
      *                      The state of a semaphore is signaled when its count 
      *                      is greater than zero and non-signaled when it is zero.
      *                      The count is decreased by one whenever 
-     *                      Lock() function releases a thread that was waiting
+     *                      lock() function releases a thread that was waiting
      *                      for the semaphore. The count is increased by a specified
-     *                      amount by calling the Unlock() function.
+     *                      amount by calling the unlock() function.
      *                      If this parameter is zero, Semaphore is initially in
      *                      non-signaled / locked state
      **/
-    CESemaphore( int maxCount, int initCount = 0 );
+    Semaphore( int maxCount, int initCount = 0 );
 
     /**
      * \brief   Destructor. Unlocks Semaphore and destroy object.
      **/
-    virtual ~CESemaphore( void );
+    virtual ~Semaphore( void );
 
 //////////////////////////////////////////////////////////////////////////
 // Override operations, IESynchObject interface
@@ -433,18 +404,18 @@ public:
      *                      Otherwise the lock count decreased and thread is released.
      * \return	Returns true if thread was released because of signaled state of semaphore.
      **/
-    virtual bool Lock( unsigned int timeout = IESynchObject::WAIT_INFINITE );
+    virtual bool lock( unsigned int timeout = IESynchObject::WAIT_INFINITE );
 
     /**
      * \brief   Unlocks Semaphore, i.e. signals it, and increase lock count number.
      * \return  Returns true if successfully signaled semaphore
      **/
-    virtual bool Unlock( void );
+    virtual bool unlock( void );
 
     /**
      * \brief   Always return false. No implementation for Semaphore.
      **/
-    virtual bool TryLock( void );
+    virtual bool tryLock( void );
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes
@@ -453,12 +424,12 @@ public:
     /**
      * \brief   Returns the maximum lock count of Semaphore object
      **/
-    inline int GetMaxCount( void ) const;
+    inline int getMaxCount( void ) const;
 
     /**
      * \brief   Returns the current lock count of Semaphore object.
      **/
-    inline int GetCurrentCount( void ) const;
+    inline int getCurrentCount( void ) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -477,22 +448,23 @@ private:
 // Hidden / Forbidden method calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    CESemaphore( void );
-    CESemaphore( const CESemaphore & /*src*/ );
-    const CESemaphore & operator = ( const CESemaphore & /*src*/ );
+    Semaphore( void );
+    Semaphore( const Semaphore & /*src*/ );
+    const Semaphore & operator = ( const Semaphore & /*src*/ );
 };
 
-
+//////////////////////////////////////////////////////////////////////////
+// class SynchTimer declaration
+//////////////////////////////////////////////////////////////////////////
 /**
- * \brief   Waitable Timer Synchronization object wrapper class
- *          A waitable timer object is a synchronization object 
+ * \brief   A waitable timer object is a synchronization object 
  *          whose state is set to signaled when the specified 
  *          due time arrives. There are two types of waitable 
  *          timers that can be created: 
  *          manual-reset and synchronization.
  *          A timer of either type can also be a periodic timer.
  *          1.  manual-reset timer: A timer whose state remains 
- *              signaled until Unlock() is called to establish a new due time. 
+ *              signaled until unlock() is called to establish a new due time. 
  *          2.  synchronization timer: A timer whose state remains signaled 
  *              until a thread completes a wait operation on the timer object. 
  *          3.  periodic timer: A timer that is reactivated each time 
@@ -500,17 +472,14 @@ private:
  *              or canceled. A periodic timer is either a periodic manual-reset
  *              timer or a periodic synchronization timer. 
  **/
-//////////////////////////////////////////////////////////////////////////
-// class CESynchTimer declaration
-//////////////////////////////////////////////////////////////////////////
-class AREG_API CESynchTimer    : public IESynchObject
+class AREG_API SynchTimer    : public IESynchObject
 {
 //////////////////////////////////////////////////////////////////////////
 // Internal defined types and constants
 //////////////////////////////////////////////////////////////////////////
 private:
     /**
-     * \brief   CESynchTimer::NANOSECONDS_KOEF_100
+     * \brief   SynchTimer::NANOSECONDS_KOEF_100
      *          Coefficient to calculate due time in 100 nanosecond intervals.
      *          Used to convert milliseconds to due time of waitable timer
      **/
@@ -521,8 +490,7 @@ private:
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief	Constructor. Creates Waitable Timer, either manual-reset,
-     *          synchronization or periodic timer.
+     * \brief	Creates Waitable Timer, either manual-reset synchronization or periodic timer.
      * \param	timeMilliseconds	Time in milliseconds of Waitable Timer
      * \param	periodic	        If true, it is periodic timer
      * \param	autoReset	        If true, it is synchronization timer,
@@ -530,12 +498,12 @@ public:
      * \param	initSignaled        If true, the timer is activated and 
      *                              set	to signaled state.
      **/
-    CESynchTimer( unsigned int timeMilliseconds, bool periodic = false, bool autoReset = true, bool initSignaled = true );
+    SynchTimer( unsigned int timeMilliseconds, bool periodic = false, bool autoReset = true, bool initSignaled = true );
 
     /**
-     * \brief   Destructor. Signals and Destroys waitable timer
+     * \brief   Destructor. Signals and Destroys waitable timer.
      **/
-    virtual ~CESynchTimer( void );
+    virtual ~SynchTimer( void );
 
 //////////////////////////////////////////////////////////////////////////
 // Override operations, IESynchObject interface
@@ -549,7 +517,7 @@ public:
      * \param	timeout     The timeout to wait if timer is in non-signaled state.
      * \return	Returns true if thread was released because of signaled state of timer.
      **/
-    virtual bool Lock( unsigned int timeout = IESynchObject::WAIT_INFINITE );
+    virtual bool lock( unsigned int timeout = IESynchObject::WAIT_INFINITE );
 
     /**
      * \brief   Activates the specified waitable timer. 
@@ -559,17 +527,17 @@ public:
      *          To set due time, timer is using parameters passed in constructor.
      * \return  Return true if timer was successfully activate.
      **/
-    virtual bool Unlock( void );
+    virtual bool unlock( void );
 
 //////////////////////////////////////////////////////////////////////////
 // Operations / Attributes
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Activates timer manually. Same as Unlock() function call.
+     * \brief   Activates timer manually. Same as unlock() function call.
      * \return  Returns true if waitable timer successfully activated
      **/
-    bool SetTimer( void );
+    bool setTimer( void );
 
     /**
      * \brief   Sets the specified waitable timer to the inactive state.
@@ -580,23 +548,23 @@ public:
      *          and its state is set to signaled. If the timer is already in 
      *          the signaled state, it remains in that state.
      **/
-    bool CancelTimer( void );
+    bool cancelTimer( void );
 
     /**
      * \brief   Returns due time in milliseconds of waitable timer
      **/
-    inline unsigned int GetDueTime( void ) const;
+    inline unsigned int dueTime( void ) const;
 
     /**
      * \brief   If true, the waitable timer is periodic
      **/
-    bool IsPeriodic( void ) const;
+    bool isPeriodic( void ) const;
 
     /**
      * \brief   If true, it is auto-reset waitable timer
      *          Otherwise, it is manual reset.
      **/
-    bool IsAutoreset( void ) const;
+    bool isAutoreset( void ) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -619,15 +587,17 @@ private:
 // Hidden / Forbidden methods
 //////////////////////////////////////////////////////////////////////////
 private:
-    CESynchTimer( void );
-    CESynchTimer( const CESynchTimer & /*src*/ );
-    const CESynchTimer & operator = ( const CESynchTimer & /*src*/ );
+    SynchTimer( void );
+    SynchTimer( const SynchTimer & /*src*/ );
+    const SynchTimer & operator = ( const SynchTimer & /*src*/ );
 };
 
+//////////////////////////////////////////////////////////////////////////
+// class CriticalSection declaration
+//////////////////////////////////////////////////////////////////////////
 /**
- * \brief   Critical Section Synchronization object wrapper class
- *          A critical section object provides synchronization 
- *          similar to  that provided by a mutex object, except 
+ * \brief   A critical section object provides synchronization 
+ *          similar to provided by a mutex object, except 
  *          that a critical section can be used only by the threads
  *          of a single process. Event, mutex, and semaphore objects
  *          can also be used in a single-process application, but 
@@ -639,10 +609,7 @@ private:
  *          Unlike a mutex object, there is no way to tell whether a 
  *          critical section has been abandoned.
  **/
-//////////////////////////////////////////////////////////////////////////
-// class CECriticalSection declaration
-//////////////////////////////////////////////////////////////////////////
-class AREG_API CECriticalSection  : public IEBlockingSynchObject
+class AREG_API CriticalSection  : public IEBlockingSynchObject
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -651,12 +618,12 @@ public:
     /**
      * \brief	Constructor. Creates and Initialize critical section object
      **/
-    CECriticalSection( void );
+    CriticalSection( void );
 
     /**
      * \brief   Destructor. Destroys critical section object
      **/
-    virtual ~CECriticalSection( void );
+    virtual ~CriticalSection( void );
 
 //////////////////////////////////////////////////////////////////////////
 // Override operations, IESynchObject interface
@@ -667,28 +634,28 @@ public:
      *          section object is currently owned by another thread, call of
      *          this function cause wait indefinitely for ownership.
      *          In contrast, when a mutex object is used for mutual exclusion,
-     *          the Lock() function accept a specified time-out interval.
+     *          the lock() function accept a specified time-out interval.
      * \return  CriticalSection always return true
      **/
-    inline bool Lock( void );
+    inline bool lock( void );
 
     /**
      * \brief   Waits for ownership of critical section object. If the critical
      *          section object is currently owned by another thread, call of
      *          this function cause wait indefinitely for ownership.
      *          In contrast, when a mutex object is used for mutual exclusion,
-     *          the Lock() function accept a specified time-out interval.
+     *          the lock() function accept a specified time-out interval.
      *
      * \param   timeout     NOT USED in case of critical section object.
      * \return  In case of critical section, always return true
      **/
-    virtual bool Lock( unsigned int /*timeout = IESynchObject::WAIT_INFINITE*/);
+    virtual bool lock( unsigned int /*timeout = IESynchObject::WAIT_INFINITE*/);
 
     /**
      * \brief   Releases ownership of the specified critical section object.
      * \return	In case of critical section, always return true
      **/
-    virtual bool Unlock( void );
+    virtual bool unlock( void );
 
     /**
      * \brief   Attempts to enter a critical section without blocking thread.
@@ -700,25 +667,25 @@ public:
      *          If another thread already owns the critical section,
      *          the return value is false.
      **/
-    virtual bool TryLock( void );
+    virtual bool tryLock( void );
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden / Forbidden method calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    CECriticalSection( const CECriticalSection & /*src*/ );
-    const CECriticalSection & operator = ( const CECriticalSection & /*src*/ );
+    CriticalSection( const CriticalSection & /*src*/ );
+    const CriticalSection & operator = ( const CriticalSection & /*src*/ );
 };
 
+//////////////////////////////////////////////////////////////////////////
+// IEResourceLock class declaration
+//////////////////////////////////////////////////////////////////////////
 /**
  * \brief   This is a base class of synchronization object that locks the resource
  *          access. It contains an operating system dependent synchronization object
  *          such as CriticalSection, Mutex or Spin Lock that locks resource access.
- *          The CENolockSynchObject also derives this interface.
+ *          The NolockSynchObject also derives this interface.
  **/
-//////////////////////////////////////////////////////////////////////////
-// IEResourceLock class declaration
-//////////////////////////////////////////////////////////////////////////
 class AREG_API IEResourceLock   : public IEBlockingSynchObject
 {
 //////////////////////////////////////////////////////////////////////////
@@ -743,16 +710,16 @@ private:
     const IEResourceLock & operator = ( const IEResourceLock & /*src*/ );
 };
 
+//////////////////////////////////////////////////////////////////////////
+// ResourceLock class declaration
+//////////////////////////////////////////////////////////////////////////
 /**
  * \brief   This is a base class of synchronization object that locks the resource
  *          access. It contains an operating system dependent synchronization object
  *          such as CriticalSection, Mutex or Spin Lock that locks resource access.
- *          The CENolockSynchObject also derives this interface.
+ *          The NolockSynchObject also derives this interface.
  **/
-//////////////////////////////////////////////////////////////////////////
-// IEResourceLock class declaration
-//////////////////////////////////////////////////////////////////////////
-class AREG_API CEResourceLock   : public IEResourceLock
+class AREG_API ResourceLock : public IEResourceLock
 {
 
 //////////////////////////////////////////////////////////////////////////
@@ -766,12 +733,12 @@ public:
      *          resource object.
      * \param   initLock    If true, the resource is initially locked.
      **/
-    CEResourceLock( bool initLock = false );
+    ResourceLock( bool initLock = false );
 
     /**
      * \brief   Destructor.
      **/
-    virtual ~CEResourceLock( void );
+    virtual ~ResourceLock( void );
 
 //////////////////////////////////////////////////////////////////////////
 // Override operations, IESynchObject interface
@@ -787,13 +754,13 @@ public:
      *                      resource access is released and it can be locked.
      * \return	Returns true if succeeded.
      **/
-    virtual bool Lock( unsigned int timeout = IESynchObject::WAIT_INFINITE );
+    virtual bool lock( unsigned int timeout = IESynchObject::WAIT_INFINITE );
 
     /**
      * \brief   Releases ownership of resource.
      * \return	Returns true if operation succeeds.
      **/
-    virtual bool Unlock( void );
+    virtual bool unlock( void );
 
     /**
      * \brief   Attempts to lock the resource without blocking thread.
@@ -801,16 +768,19 @@ public:
      *          takes ownership of the resource.
      * \return  Returns true if operation succeeds.
      **/
-    virtual bool TryLock( void );
+    virtual bool tryLock( void );
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden / Forbidden method calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    CEResourceLock( const CEResourceLock & /*src*/ );
-    const CEResourceLock & operator = ( const CEResourceLock & /*src*/ );
+    ResourceLock( const ResourceLock & /*src*/ );
+    const ResourceLock & operator = ( const ResourceLock & /*src*/ );
 };
 
+//////////////////////////////////////////////////////////////////////////
+// NolockSynchObject class declaration
+//////////////////////////////////////////////////////////////////////////
 /**
  * \brief   No Lock Synchronization object is a dummy class
  *          doing no synchronization action, but having implementation
@@ -818,17 +788,14 @@ private:
  *          of data access and some other might not need.
  *          For this reason, the reference to IESynchObject might be
  *          passed as a main synchronization object and by calling
- *          Lock() / Unlock() either data access would be really
+ *          lock() / unlock() either data access would be really
  *          synchronized or synchronization is imitated / ignored.
  *
- * \note    Do not use this class for Multi-locking (see CEMultiLock)
- *          The locking might be imitated only by using CELock object
- *          or calling Lock() / Unlock() directly.
+ * \note    Do not use this class for Multi-locking (see MultiLock)
+ *          The locking might be imitated only by using Lock object
+ *          or calling lock() / unlock() directly.
  **/
-//////////////////////////////////////////////////////////////////////////
-// CENolockSynchObject class declaration
-//////////////////////////////////////////////////////////////////////////
-class AREG_API CENolockSynchObject   : public IEResourceLock
+class AREG_API NolockSynchObject   : public IEResourceLock
 {
 
 //////////////////////////////////////////////////////////////////////////
@@ -836,27 +803,27 @@ class AREG_API CENolockSynchObject   : public IEResourceLock
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Default constructor
+     * \brief   Initializes Critical Section object. Passed parameters do not play role.
      * \param   lock        Does not play any role. 
      *                      Only to make compatible with other locking constructors
      * \param   autoReset   Does not play any role. 
      *                      Only to make compatible with other locking constructors
      **/
-    CENolockSynchObject( bool lock = true, bool autoReset = true );
+    NolockSynchObject( bool lock = true, bool autoReset = true );
 
     /**
-     * \brief   Initialization constructor
+    * \brief   Initializes Critical Section object. Passed parameters do not play role.
      * \param   maxCount    Does not play any role. 
      *                      Only to make compatible with other locking constructors
      * \param   initCount   Does not play any role. 
      *                      Only to make compatible with other locking constructors
      **/
-    CENolockSynchObject( int maxCount, int initCount = 0 );
+    NolockSynchObject( int maxCount, int initCount = 0 );
 
     /**
      * \brief   Destructor
      **/
-    virtual ~CENolockSynchObject( void );
+    virtual ~NolockSynchObject( void );
 
 //////////////////////////////////////////////////////////////////////////
 // Override operations, IESynchObject interface
@@ -869,29 +836,29 @@ public:
      * \param	NOT USED. 
      * \return	Always returns true
      **/
-    virtual bool Lock( unsigned int /*timeout = IESynchObject::WAIT_INFINITE*/ );
+    virtual bool lock( unsigned int /*timeout = IESynchObject::WAIT_INFINITE*/ );
 
     /**
      * \brief   No real unlocking.
      * \return	Always returns true.
      **/
-    virtual bool Unlock( void );
+    virtual bool unlock( void );
 
     /**
      * \brief   Always return true. No real locking.
      **/
-    virtual bool TryLock( void );
+    virtual bool tryLock( void );
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden / Forbidden method calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    CENolockSynchObject( const CENolockSynchObject & /*src*/ );
-    const CENolockSynchObject & operator = ( const CENolockSynchObject & /*src*/ );
+    NolockSynchObject( const NolockSynchObject & /*src*/ );
+    const NolockSynchObject & operator = ( const NolockSynchObject & /*src*/ );
 };
 
 //////////////////////////////////////////////////////////////////////////
-// CELock class declaration
+// Lock class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
  * \brief   Class to use auto-locking for a single locking object.
@@ -899,14 +866,14 @@ private:
  *          The purpose of using this object is to lock synchronization
  *          object in a certain code scope.
  *
- * \example CEMutex use
+ * \example Mutex use
  *
  *          In this example bellow MyClass contains Mutex as a synchronization object
  *          Any time thread is calling foo() or bar() methods ot MyClass, on funtion entry
  *          Single Synchronization Object Locking instance is created,
  *          which gets a reference to the Mutex object.
  *          By default, the auto-locking is enable, and by this current thread will try
- *          to get Mutext ownership and will call Lock() function during initialization.
+ *          to get Mutext ownership and will call lock() function during initialization.
  *          As soon as thread gets ownership, it will continue code execution in foo() and bar()
  *          function. And as soon as thread leaves these function, i.e. gets out of function scope,
  *          the destructor of locking object will automatically release mutex ownership
@@ -921,7 +888,7 @@ private:
  *              void bar( void );
  *
  *          private:
- *              CEMutex mMutex;
+ *              Mutex mMutex;
  *          };
  *
  *          MyClass::MyClass( void )
@@ -930,17 +897,17 @@ private:
  *
  *          void MyClass::foo( void )
  *          {
- *              CELock lock(mMutex);
+ *              Lock lock(mMutex);
  *              // perform actions here
  *          }
  *
  *          void MyClass::bar( void )
  *          {
- *              CELock lock(mMutex);
+ *              Lock lock(mMutex);
  *              // perform actions here
  *          }
  **/
-class AREG_API CELock
+class AREG_API Lock
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -960,14 +927,14 @@ public:
      *                      synchronization will not be automatically
      *                      unlocked in destructor
      **/
-    CELock( IESynchObject &syncObj, bool autoLock = true );
+    Lock( IESynchObject &syncObj, bool autoLock = true );
 
     /**
      * \brief   Destructor. If auto-locking was enabled, it will call
-     *          Unlock() method of synchronization object to release
+     *          unlock() method of synchronization object to release
      *          ownership of object.
      **/
-    ~CELock( void );
+    ~Lock( void );
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -980,13 +947,13 @@ public:
      *                  in all classes of synchronization object.
      * \return	Returns true if synchronization object successfully locked
      **/
-    inline bool Lock( unsigned int timeout = IESynchObject::WAIT_INFINITE );
+    inline bool lock( unsigned int timeout = IESynchObject::WAIT_INFINITE );
 
     /**
      * \brief   Called to unlock synchronization object manually
      * \return  Returns true if synchronization object successfully unlocked.
      **/
-    inline bool Unlock( void );
+    inline bool unlock( void );
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -1008,12 +975,14 @@ private:
 // Hidden / Forbidden method calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    CELock( void );
-    CELock( const CELock & /*src*/ );
-    const CELock & operator = ( const CELock & /*src*/ );
+    Lock( void );
+    Lock( const Lock & /*src*/ );
+    const Lock & operator = ( const Lock & /*src*/ );
 };
 
-
+//////////////////////////////////////////////////////////////////////////
+// MultiLock class declaration
+//////////////////////////////////////////////////////////////////////////
 /**
  * \brief   Class to use auto-locking for multiple locking object.
  *          This class is getting list of synchronization objects
@@ -1023,19 +992,16 @@ private:
  *          The parameter list can contain any type of synchronization
  *          object, except Critical Section.
  *
- * \see     CELock
+ * \see     Lock
  **/
-//////////////////////////////////////////////////////////////////////////
-// CEMultiLock class declaration
-//////////////////////////////////////////////////////////////////////////
-class AREG_API CEMultiLock
+class AREG_API MultiLock
 {
 //////////////////////////////////////////////////////////////////////////
 // Internally defined types and constants
 //////////////////////////////////////////////////////////////////////////
 private:
     /**
-     * \brief   CEMultiLock::eLockedState
+     * \brief   MultiLock::eLockedState
      *          The current locking state of every single synchronization object
      **/
     typedef enum E_LockedState
@@ -1046,59 +1012,54 @@ private:
 
 public:
     /**
-     * \brief   CEMultiLock::MAXIMUM_WAITING_OBJECTS
-     *          The maximum number of synchronization objects that is able to lock. 
-     **/
-    static const int MAXIMUM_WAITING_OBJECTS    = 32;
-
-    /**
-     * \brief   CEMultiLock::LOCK_INDEX_INVALID
+     * \brief   MultiLock::LOCK_INDEX_INVALID
      *          Invalid index of synchronization list
      **/
     static const int LOCK_INDEX_INVALID         = -1;
 
     /**
-     * \brief   CEMultiLock::LOCK_INDEX_COMPLETION
+     * \brief   MultiLock::LOCK_INDEX_COMPLETION
      *          The completion routine index.
      *          Returned if waiting function returns WAIT_IO_COMPLETION
      **/
     static const int LOCK_INDEX_COMPLETION      = -2;
     /**
-     * \brief   CEMultiLock::LOCK_INDEX_TIMEOUT
+     * \brief   MultiLock::LOCK_INDEX_TIMEOUT
      *          The index, indicating waiting timeout.
      **/
     static const int LOCK_INDEX_TIMEOUT         = -3;
     /**
-     * \brief   CEMultiLock::LOCK_INDEX_ALL
+     * \brief   MultiLock::LOCK_INDEX_ALL
      *          All synchronization objects are locked.
      *          Same as MAX_SIZE_OF_ARRAY (64)
      **/
-    static const int LOCK_INDEX_ALL             = MAXIMUM_WAITING_OBJECTS;
+    static const int LOCK_INDEX_ALL             = NECommon::MAXIMUM_WAITING_OBJECTS;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief	Constructor. Initialize Multi-lock object, receives list of
-     *          synchronization objects and flag whether it should initially
-     *          lock or not. If requested to lock, it will wait for all
-     *          objects to be signaled.
-     *          NOTE:   There must be no Critical Section synchronization 
-     *                  object in the list. Otherwise, assertion is raised.
+     * \brief	Initializes Multi-lock object, receives list of synchronization 
+     *          objects and flag whether it should initially lock or not. 
+     *          If requested to lock, it will wait for all objects to be signaled.
+     *
+     * \note    There must be no Critical Section synchronization object in the list. 
+     *          Otherwise, assertion is raised.
+     *
      * \param	pObjects	List of Synchronization objects
      * \param	count	    Number of Synchronization objects in the list
      * \param	autoLock	If true, it will automatically lock all
      *                      synchronization objects and wait for all objects
      *                      to be signaled.
      **/
-    CEMultiLock( IESynchObject* pObjects[], int count, bool autoLock = true );
+    MultiLock( IESynchObject* pObjects[], int count, bool autoLock = true );
 
     /**
      * \brief   Destructor. If auto-lock is enabled, unlocks all synchronization
      *          objects and free resources.
      **/
-    ~CEMultiLock( void );
+    ~MultiLock( void );
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -1126,12 +1087,12 @@ public:
      *          locked / signaled.
      *          Otherwise, it returns valid index of locked object in array.
      **/
-    int Lock( unsigned int timeout = IESynchObject::WAIT_INFINITE, bool waitForAll = false, bool isAlertable = false );
+    int lock( unsigned int timeout = IESynchObject::WAIT_INFINITE, bool waitForAll = false, bool isAlertable = false );
 
     /**
      * \brief   Unlocks every synchronization object, which was locked before
      **/
-    bool Unlock( void );
+    bool unlock( void );
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -1140,11 +1101,11 @@ private:
     /**
      * \brief   Locking state of every object within array.
      **/
-    eLockedState              mLockedStates[MAXIMUM_WAITING_OBJECTS];
+    eLockedState                mLockedStates[NECommon::MAXIMUM_WAITING_OBJECTS];
     /**
      * \brief   List of synchronization objects passed on initialization
      **/
-    IESynchObject * const *   mSyncObjArray;
+    IESynchObject * const *     mSyncObjArray;
     /**
      * \brief   Size of synchronization object. 
      *          Cannot be more than MAX_SIZE_OF_ARRAY (64)
@@ -1159,11 +1120,14 @@ private:
 // Hidden / Forbidden method calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    CEMultiLock( void );
-    CEMultiLock( const CEMultiLock & /*src*/ );
-    const CEMultiLock & operator = ( const CEMultiLock & /*src*/ );
+    MultiLock( void );
+    MultiLock( const MultiLock & /*src*/ );
+    const MultiLock & operator = ( const MultiLock & /*src*/ );
 };
 
+//////////////////////////////////////////////////////////////////////////
+// class InterlockedValue declaration
+//////////////////////////////////////////////////////////////////////////
 /**
  * \brief   Interlocked Variable Access Synchronization object 
  *          wrapper class. Use this class to synchronize access 
@@ -1178,10 +1142,7 @@ private:
  *          perform its read operation before the other performs 
  *          its write operation.
  **/
-//////////////////////////////////////////////////////////////////////////
-// class CEInterlockedValue declaration
-//////////////////////////////////////////////////////////////////////////
-class AREG_API CEInterlockedValue
+class AREG_API InterlockedValue
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
@@ -1199,19 +1160,19 @@ public:
      *          constructor with initialization.
      * \param	varPtr  The pointer to variable to synchronize access
      **/
-    CEInterlockedValue( unsigned int * varPtr = NULL );
+    InterlockedValue( unsigned int * varPtr = NULL );
 
     /**
      * \brief	Constructor. Initialize internal variable by setting initial value
      *          and synchronize interlocked access of internal variable
      * \param	initValue	The initial value of internal variable to set
      **/
-    CEInterlockedValue( unsigned int initValue );
+    InterlockedValue( unsigned int initValue );
 
     /**
      * \brief   Destructor.
      **/
-    ~CEInterlockedValue( void );
+    ~InterlockedValue( void );
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -1222,14 +1183,14 @@ public:
      *          32-bit variable as an atomic operation.
      * \return  The function returns the resulting incremented value.
      **/
-    unsigned int Increment( void );
+    unsigned int increment( void );
 
     /**
      * \brief   Decrements (decreases by one) the value of 
      *          32-bit existing variable as an atomic operation.
      * \return	The function returns the resulting decremented value
      **/
-    unsigned int Decrement( void );
+    unsigned int decrement( void );
 
     /**
      * \brief   Decrements (decreases by one) the value of 
@@ -1237,7 +1198,7 @@ public:
      * \return	The function returns true if resulting decrement
      *          value is greater than zero. Otherwise returns false.
      **/
-    bool TestDecrement( void );
+    bool testDecrement( void );
 
     /**
      * \brief	Decrements (decrease by one) the value of
@@ -1247,67 +1208,67 @@ public:
      *          zero. If 32-bit is already zero or after decrease 
      *          operation value is not equal zero, it returns false.
      **/
-    bool TestDecrementZero( void );
+    bool testDecrementZero( void );
 
     /**
      * \brief	Performs an atomic addition of existing and passed 32-bit values
      * \param	increment   The 32-bit value to add existing value
      * \return	The function returns the initial value of the existing variable.
      **/
-    unsigned int Add( unsigned int increment );
+    unsigned int add( unsigned int increment );
 
     /**
      * \brief	Performs an atomic subtraction of existing and passed 32-bit values
      * \param	increment   The 32-bit value to subtract existing value
      * \return	The function returns the initial value of the existing variable.
      **/
-    unsigned int Subtract( unsigned int decrement );
+    unsigned int subtract( unsigned int decrement );
 
     /**
      * \brief	Gets 32-bit existing variable to the specified value as an atomic operation.
      * \param	out_data    Reference to variable to pass value
      * \return	
      **/
-    void GetData( unsigned int & out_data ) const;
+    void getData( unsigned int & out_data ) const;
 
     /**
      * \brief	Gets 32-bit existing variable to the specified value as an atomic operation.
      * \return	Returns 32-bit value.
      **/
-    unsigned int GetData( void ) const;
+    unsigned int getData( void ) const;
 
     /**
      * \brief	Sets to 32-bit existing variable specified value as an atomic operation.
      * \param	data	Value to set to existing variable.
      * \return	
      **/
-    void SetData( unsigned int data );
+    void setData( unsigned int data );
 
     /**
      * \brief	Sets bits to 32-bit existing variable specified value as an atomic operation.
      * \param	mask	Bit mask to set.
      * \return	The function returns the initial value of the existing variable.
      **/
-    unsigned int SetBits( unsigned int mask );
+    unsigned int setBits( unsigned int mask );
 
     /**
      * \brief	Removes bits from 32-bit existing variable specified value as an atomic operation.
      * \param	mask	Bit mask to remove.
      * \return	The function returns the initial value of the existing variable.
      **/
-    unsigned int RemoveBits( unsigned int mask );
+    unsigned int removeBits( unsigned int mask );
 
     /**
      * \brief	Toggles bits on 32-bit existing variable specified value as an atomic operation.
      * \param	mask	Bit mask to toggle.
      * \return	The function returns the initial value of the existing variable.
      **/
-    unsigned int ToggleBits( unsigned int mask );
+    unsigned int toggleBits( unsigned int mask );
 
 //////////////////////////////////////////////////////////////////////////
 // operators
 //////////////////////////////////////////////////////////////////////////
-public:
+
     /**
      * \brief   Converts class object to unsigned int
      **/
@@ -1315,7 +1276,7 @@ public:
     /**
      * \brief   Assigns new value
      **/
-    inline CEInterlockedValue & operator = ( unsigned int newValue );
+    inline InterlockedValue & operator = ( unsigned int newValue );
 
     /**
      * \brief   Compares equality of existing value with given
@@ -1356,22 +1317,22 @@ public:
     /**
      * \brief   Increase by one
      **/
-    inline CEInterlockedValue & operator ++ ( void );
+    inline InterlockedValue & operator ++ ( void );
     
     /**
      * \brief   Decrease by one
      **/
-    inline CEInterlockedValue & operator -- ( void );
+    inline InterlockedValue & operator -- ( void );
     
     /**
      * \brief   Add value
      **/
-    inline CEInterlockedValue & operator += ( unsigned int addValue );
+    inline InterlockedValue & operator += ( unsigned int addValue );
     
     /**
      * \brief   Subtract value
      **/
-    inline CEInterlockedValue & operator -= ( unsigned int subValue );
+    inline InterlockedValue & operator -= ( unsigned int subValue );
 
 /************************************************************************/
 // Friend global operators to compare values
@@ -1383,7 +1344,7 @@ public:
      * \param   rhs     Right-side object with value
      * \return  Returns true if 2 values are equal.
      **/
-    friend inline bool operator == ( unsigned int lhs, const CEInterlockedValue & rhs );
+    friend inline bool operator == ( unsigned int lhs, const InterlockedValue & rhs );
 
     /**
      * \brief   Global friend method.
@@ -1392,7 +1353,7 @@ public:
      * \param   rhs     Right-side object with value
      * \return  Returns true if 2 values are not equal.
      **/
-    friend inline bool operator != ( unsigned int lhs, const CEInterlockedValue & rhs );
+    friend inline bool operator != ( unsigned int lhs, const InterlockedValue & rhs );
 
     /**
      * \brief   Global friend method.
@@ -1401,7 +1362,7 @@ public:
      * \param   rhs     Right-side object with value
      * \return  Returns true if integer value is greater than value of object.
      **/
-    friend inline bool operator  > ( unsigned int lhs, const CEInterlockedValue & rhs );
+    friend inline bool operator  > ( unsigned int lhs, const InterlockedValue & rhs );
 
     /**
      * \brief   Global friend method.
@@ -1410,7 +1371,7 @@ public:
      * \param   rhs     Right-side object with value
      * \return  Returns true if integer value is smaller than value of object.
      **/
-    friend inline bool operator  < ( unsigned int lhs, const CEInterlockedValue & rhs );
+    friend inline bool operator  < ( unsigned int lhs, const InterlockedValue & rhs );
 
     /**
      * \brief   Global friend method.
@@ -1419,7 +1380,7 @@ public:
      * \param   rhs     Right-side object with value
      * \return  Returns true if integer value is greater or equal than value of object.
      **/
-    friend inline bool operator >= ( unsigned int lhs, const CEInterlockedValue & rhs );
+    friend inline bool operator >= ( unsigned int lhs, const InterlockedValue & rhs );
 
     /**
      * \brief   Global friend method.
@@ -1428,7 +1389,7 @@ public:
      * \param   rhs     Right-side object with value
      * \return  Returns true if integer value is or equal smaller than value of object.
      **/
-    friend inline bool operator <= ( unsigned int lhs, const CEInterlockedValue & rhs );
+    friend inline bool operator <= ( unsigned int lhs, const InterlockedValue & rhs );
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -1452,8 +1413,8 @@ private:
 // Hidden / Forbidden method calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    CEInterlockedValue( const CEInterlockedValue & /*src*/ );
-    const CEInterlockedValue & operator = ( const CEInterlockedValue & /*src*/ );
+    InterlockedValue( const InterlockedValue & /*src*/ );
+    const InterlockedValue & operator = ( const InterlockedValue & /*src*/ );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -1461,115 +1422,177 @@ private:
 //////////////////////////////////////////////////////////////////////////
 
 //////////////////////////////////////////////////////////////////////////
-// CEMutex class inline functions
+// Mutex class inline functions
 //////////////////////////////////////////////////////////////////////////
-inline bool CEMutex::IsLocked( void ) const
-{   return (mOwnerThreadId != 0);       }
+inline bool Mutex::isLocked( void ) const
+{
+    return (mOwnerThreadId != 0);
+}
 
-inline ITEM_ID CEMutex::GetOwningThreadId( void ) const
-{   return mOwnerThreadId;          }
-
-//////////////////////////////////////////////////////////////////////////
-// CESynchEvent class inline functions
-//////////////////////////////////////////////////////////////////////////
-inline bool CESynchEvent::IsAutoReset( void ) const
-{   return mAutoReset;              }
+inline ITEM_ID Mutex::getOwnerThreadId( void ) const
+{
+    return mOwnerThreadId;
+}
 
 //////////////////////////////////////////////////////////////////////////
-// CESemaphore class inline functions
+// SynchEvent class inline functions
 //////////////////////////////////////////////////////////////////////////
-inline int CESemaphore::GetMaxCount( void ) const
-{   return mMaxCount;               }
-
-inline int CESemaphore::GetCurrentCount( void ) const
-{   return mCurrCount;              }
-
-//////////////////////////////////////////////////////////////////////////
-// CESynchTimer class inline functions
-//////////////////////////////////////////////////////////////////////////
-inline unsigned int CESynchTimer::GetDueTime( void ) const
-{   return mTimeMilliseconds;       }
-
-inline bool CESynchTimer::IsPeriodic( void ) const
-{   return mIsPeriodic;             }
-
-inline bool CESynchTimer::IsAutoreset( void ) const
-{   return mIsAutoReset;            }
+inline bool SynchEvent::isAutoReset( void ) const
+{
+    return mAutoReset;
+}
 
 //////////////////////////////////////////////////////////////////////////
-// CECriticalSection class inline functions
+// Semaphore class inline functions
 //////////////////////////////////////////////////////////////////////////
-inline bool CECriticalSection::Lock( void )
-{   return Lock(IESynchObject::WAIT_INFINITE);  }
+inline int Semaphore::getMaxCount( void ) const
+{
+    return mMaxCount;
+}
 
-//////////////////////////////////////////////////////////////////////////
-// CELock class inline functions
-//////////////////////////////////////////////////////////////////////////
-inline bool CELock::Lock(unsigned int timeout /* = IESynchObject::WAIT_INFINITE */)
-{   return mSynchObject.Lock(timeout);          }
-
-inline bool CELock::Unlock( void )
-{   return mSynchObject.Unlock();               }
+inline int Semaphore::getCurrentCount( void ) const
+{
+    return mCurrCount;
+}
 
 //////////////////////////////////////////////////////////////////////////
-// CEInterlockedValue class inline functions
+// SynchTimer class inline functions
+//////////////////////////////////////////////////////////////////////////
+inline unsigned int SynchTimer::dueTime( void ) const
+{
+    return mTimeMilliseconds;       }
+
+
+inline bool SynchTimer::isPeriodic( void ) const
+{
+    return mIsPeriodic;
+}
+
+inline bool SynchTimer::isAutoreset( void ) const
+{
+    return mIsAutoReset;
+}
+
+//////////////////////////////////////////////////////////////////////////
+// CriticalSection class inline functions
+//////////////////////////////////////////////////////////////////////////
+inline bool CriticalSection::lock( void )
+{
+    return lock(IESynchObject::WAIT_INFINITE);
+}
+
+//////////////////////////////////////////////////////////////////////////
+// Lock class inline functions
+//////////////////////////////////////////////////////////////////////////
+inline bool Lock::lock(unsigned int timeout /* = IESynchObject::WAIT_INFINITE */)
+{
+    return mSynchObject.lock(timeout);
+}
+
+inline bool Lock::unlock( void )
+{
+    return mSynchObject.unlock();
+}
+
+//////////////////////////////////////////////////////////////////////////
+// InterlockedValue class inline functions
 //////////////////////////////////////////////////////////////////////////
 
-inline CEInterlockedValue::operator unsigned int ( void ) const
-{   return GetData();                                                                       }
+inline InterlockedValue::operator unsigned int ( void ) const
+{
+    return getData();
+}
 
-inline CEInterlockedValue & CEInterlockedValue::operator = ( unsigned int newValue )
-{   SetData(newValue); return (*this);                                                      }
+inline InterlockedValue & InterlockedValue::operator = ( unsigned int newValue )
+{
+    setData(newValue); return (*this);
+}
 
-inline bool CEInterlockedValue::operator == ( unsigned int rhs ) const
-{   return (GetData() == rhs);                                                              }
+inline bool InterlockedValue::operator == ( unsigned int rhs ) const
+{
+    return (getData() == rhs);
+}
 
-inline bool CEInterlockedValue::operator != ( unsigned int rhs ) const
-{   return (GetData() != rhs);                                                              }
+inline bool InterlockedValue::operator != ( unsigned int rhs ) const
+{
+    return (getData() != rhs);
+}
 
-inline bool CEInterlockedValue::operator > ( unsigned int rhs ) const
-{   return (GetData() > rhs);                                                               }
+inline bool InterlockedValue::operator > ( unsigned int rhs ) const
+{
+    return (getData() > rhs);
+}
 
-inline bool CEInterlockedValue::operator < ( unsigned int rhs ) const
-{   return (GetData() < rhs);                                                               }
+inline bool InterlockedValue::operator < ( unsigned int rhs ) const
+{
+    return (getData() < rhs);
+}
 
-inline bool CEInterlockedValue::operator >= ( unsigned int rhs ) const
-{   return (GetData() >= rhs);                                                              }
+inline bool InterlockedValue::operator >= ( unsigned int rhs ) const
+{
+    return (getData() >= rhs);
+}
 
-inline bool CEInterlockedValue::operator <= ( unsigned int rhs ) const
-{   return (GetData() <= rhs);                                                              }
+inline bool InterlockedValue::operator <= ( unsigned int rhs ) const
+{
+    return (getData() <= rhs);
+}
 
-inline CEInterlockedValue & CEInterlockedValue::operator ++ ( void )
-{   Add(static_cast<unsigned int>(1)); return (*this);                                      }
+inline InterlockedValue & InterlockedValue::operator ++ ( void )
+{
+    add(static_cast<unsigned int>(1));
+    return (*this);
+}
 
-inline CEInterlockedValue & CEInterlockedValue::operator -- ( void )
-{   Subtract(static_cast<unsigned int>(1)); return (*this);                                 }
+inline InterlockedValue & InterlockedValue::operator -- ( void )
+{
+    subtract(static_cast<unsigned int>(1));
+    return (*this);
+}
 
-inline CEInterlockedValue & CEInterlockedValue::operator += ( unsigned int addValue )
-{   Add(addValue); return (*this);                                                          }
+inline InterlockedValue & InterlockedValue::operator += ( unsigned int addValue )
+{
+    add(addValue);
+    return (*this);
+}
 
-inline CEInterlockedValue & CEInterlockedValue::operator -= ( unsigned int subValue )
-{   Subtract(subValue); return (*this);                                                     }
+inline InterlockedValue & InterlockedValue::operator -= ( unsigned int subValue )
+{
+    subtract(subValue);
+    return (*this);
+}
 
 /************************************************************************
  * friend methods
  ************************************************************************/
-inline bool operator == ( unsigned int lhs, const CEInterlockedValue & rhs )
-{   return (lhs == rhs.GetData());                                                          }
+inline bool operator == ( unsigned int lhs, const InterlockedValue & rhs )
+{
+    return (lhs == rhs.getData());
+}
 
-inline bool operator != ( unsigned int lhs, const CEInterlockedValue & rhs )
-{   return (lhs != rhs.GetData());                                                          }
+inline bool operator != ( unsigned int lhs, const InterlockedValue & rhs )
+{
+    return (lhs != rhs.getData());
+}
 
-inline bool operator > ( unsigned int lhs, const CEInterlockedValue & rhs )
-{   return (lhs > rhs.GetData());                                                           }
+inline bool operator > ( unsigned int lhs, const InterlockedValue & rhs )
+{
+    return (lhs > rhs.getData());
+}
 
-inline bool operator < ( unsigned int lhs, const CEInterlockedValue & rhs )
-{   return (lhs < rhs.GetData());                                                           }
+inline bool operator < ( unsigned int lhs, const InterlockedValue & rhs )
+{
+    return (lhs < rhs.getData());
+}
 
-inline bool operator >= ( unsigned int lhs, const CEInterlockedValue & rhs )
-{   return (lhs >= rhs.GetData());                                                          }
+inline bool operator >= ( unsigned int lhs, const InterlockedValue & rhs )
+{
+    return (lhs >= rhs.getData());
+}
 
-inline bool operator <= ( unsigned int lhs, const CEInterlockedValue & rhs )
-{   return (lhs <= rhs.GetData());                                                          }
+inline bool operator <= ( unsigned int lhs, const InterlockedValue & rhs )
+{
+    return (lhs <= rhs.getData());
+}
 
 #endif  // AREG_BASE_ESYNCHOBJECTS_HPP

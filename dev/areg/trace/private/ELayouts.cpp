@@ -6,9 +6,9 @@
  ************************************************************************/
 #include "areg/trace/private/ELayouts.hpp"
 
-#include "areg/base/CEDateTime.hpp"
-#include "areg/base/CEProcess.hpp"
-#include "areg/base/CEThread.hpp"
+#include "areg/base/DateTime.hpp"
+#include "areg/base/Process.hpp"
+#include "areg/base/Thread.hpp"
 #include "areg/base/NEUtilities.hpp"
 
 //////////////////////////////////////////////////////////////////////////
@@ -27,354 +27,354 @@ IELayout::~IELayout(void)
 }
 
 //////////////////////////////////////////////////////////////////////////
-// CETickCountLayout class implementation
+// TickCountLayout class implementation
 //////////////////////////////////////////////////////////////////////////
 
-CETickCountLayout::CETickCountLayout( void )
+TickCountLayout::TickCountLayout( void )
     : IELayout     ( NELogConfig::LayoutTickCount )
 {
     ; // do nothing
 }
 
-CETickCountLayout::CETickCountLayout( const CETickCountLayout & /*src*/ )
+TickCountLayout::TickCountLayout( const TickCountLayout & /*src*/ )
     : IELayout     ( NELogConfig::LayoutTickCount )
 {
     ; // do nothing
 }
 
-CETickCountLayout::~CETickCountLayout(void)
+TickCountLayout::~TickCountLayout(void)
 {
     ; // do nothing
 }
 
-void CETickCountLayout::LogMessage( const NETrace::sLogMessage & /*msgLog*/, IEOutStream & stream ) const
+void TickCountLayout::logMessage( const NETrace::sLogMessage & /*msgLog*/, IEOutStream & stream ) const
 {
     char buffer[65];    
-    CEString::PrintString(buffer, 64, "%llu", static_cast<unsigned int>( CEDateTime::GetProcessTickClocks() ));
-    stream.Write(buffer);
+    String::formatString(buffer, 64, "%llu", static_cast<unsigned int>( DateTime::getProcessTickCount() ));
+    stream.write(buffer);
 }
 
 //////////////////////////////////////////////////////////////////////////
-// CEDayTimeLaytout class declaration
+// DayTimeLaytout class declaration
 //////////////////////////////////////////////////////////////////////////
 
 
-CEDayTimeLaytout::CEDayTimeLaytout( void )
+DayTimeLaytout::DayTimeLaytout( void )
     : IELayout ( NELogConfig::LayoutDayTime )
 {
     ; // do nothing
 }
 
-CEDayTimeLaytout::CEDayTimeLaytout( const CEDayTimeLaytout & /*src*/ )
+DayTimeLaytout::DayTimeLaytout( const DayTimeLaytout & /*src*/ )
     : IELayout ( NELogConfig::LayoutDayTime )
 {
     ; // do nothing
 }
 
-CEDayTimeLaytout::~CEDayTimeLaytout(void)
+DayTimeLaytout::~DayTimeLaytout(void)
 {
     ; // do nothing
 }
 
-void CEDayTimeLaytout::LogMessage( const NETrace::sLogMessage & msgLog, IEOutStream & stream ) const
+void DayTimeLaytout::logMessage( const NETrace::sLogMessage & msgLog, IEOutStream & stream ) const
 {
     if ( msgLog.lmTrace.traceTimestamp != 0 )
     {
-        CEDateTime timestamp( msgLog.lmTrace.traceTimestamp );
-        stream.Write( timestamp.FormatTime( CEDateTime::TIME_FORMAT_ISO8601_OUTPUT) );
+        DateTime timestamp( msgLog.lmTrace.traceTimestamp );
+        stream.write( timestamp.formatTime( DateTime::TIME_FORMAT_ISO8601_OUTPUT) );
     }
 }
 
 //////////////////////////////////////////////////////////////////////////
-// CEModuleIdLayout class declaration
+// ModuleIdLayout class declaration
 //////////////////////////////////////////////////////////////////////////
 
-CEModuleIdLayout::CEModuleIdLayout(void)
+ModuleIdLayout::ModuleIdLayout(void)
     : IELayout ( NELogConfig::LayoutExecutableId )
 {
     ; // do nothing
 }
 
-CEModuleIdLayout::CEModuleIdLayout(const CEModuleIdLayout & /*src*/)
+ModuleIdLayout::ModuleIdLayout(const ModuleIdLayout & /*src*/)
     : IELayout ( NELogConfig::LayoutExecutableId )
 {
     ; // do nothing
 }
 
-CEModuleIdLayout::~CEModuleIdLayout(void)
+ModuleIdLayout::~ModuleIdLayout(void)
 {
     ; // do nothing
 }
 
-void CEModuleIdLayout::LogMessage( const NETrace::sLogMessage & msgLog, IEOutStream & stream ) const
+void ModuleIdLayout::logMessage( const NETrace::sLogMessage & msgLog, IEOutStream & stream ) const
 {
     if ( msgLog.lmHeader.logModuleId != 0 )
     {
         char buffer[16];
-        CEString::PrintString(buffer, 16, "%p", msgLog.lmHeader.logModuleId);
-        stream.Write(buffer);
+        String::formatString(buffer, 16, "%p", msgLog.lmHeader.logModuleId);
+        stream.write(buffer);
     }
 }
 
 //////////////////////////////////////////////////////////////////////////
-// CEMessageLayout class declaration
+// MessageLayout class declaration
 //////////////////////////////////////////////////////////////////////////
 
-CEMessageLayout::CEMessageLayout(void)
+MessageLayout::MessageLayout(void)
     : IELayout ( NELogConfig::LayoutMessage )
 {
     ; // do nothing
 }
 
-CEMessageLayout::CEMessageLayout(const CEMessageLayout & /*src*/)
+MessageLayout::MessageLayout(const MessageLayout & /*src*/)
     : IELayout ( NELogConfig::LayoutMessage )
 {
     ; // do nothing
 }
 
-CEMessageLayout::~CEMessageLayout(void)
+MessageLayout::~MessageLayout(void)
 {
     ; // do nothing
 }
 
-void CEMessageLayout::LogMessage( const NETrace::sLogMessage & msgLog, IEOutStream & stream ) const
+void MessageLayout::logMessage( const NETrace::sLogMessage & msgLog, IEOutStream & stream ) const
 {
     if ( msgLog.lmTrace.traceMessage != NULL )
-        stream.Write(msgLog.lmTrace.traceMessage);
+        stream.write(msgLog.lmTrace.traceMessage);
 }
 
 //////////////////////////////////////////////////////////////////////////
-// CEEndOfLineLayout class declaration
+// EndOfLineLayout class declaration
 //////////////////////////////////////////////////////////////////////////
 
-CEEndOfLineLayout::CEEndOfLineLayout(void)
+EndOfLineLayout::EndOfLineLayout(void)
     : IELayout ( NELogConfig::LayoutEndOfLine )
 {
     ; // do nothing
 }
 
-CEEndOfLineLayout::CEEndOfLineLayout(const CEEndOfLineLayout & /*src*/)
+EndOfLineLayout::EndOfLineLayout(const EndOfLineLayout & /*src*/)
     : IELayout ( NELogConfig::LayoutEndOfLine )
 {
     ; // do nothing
 }
 
-CEEndOfLineLayout::~CEEndOfLineLayout(void)
+EndOfLineLayout::~EndOfLineLayout(void)
 {
     ; // do nothing
 }
 
-void CEEndOfLineLayout::LogMessage( const NETrace::sLogMessage & /*src*/, IEOutStream & stream ) const
+void EndOfLineLayout::logMessage( const NETrace::sLogMessage & /*src*/, IEOutStream & stream ) const
 {
     static const char * const   END_OF_LINE = "\n" ;
-    stream.Write(END_OF_LINE);
+    stream.write(END_OF_LINE);
 }
 
 //////////////////////////////////////////////////////////////////////////
-// CEPriorityLayout class declaration
+// PriorityLayout class declaration
 //////////////////////////////////////////////////////////////////////////
 
-CEPriorityLayout::CEPriorityLayout(void)
+PriorityLayout::PriorityLayout(void)
     : IELayout ( NELogConfig::LayoutPriority )
 {
     ; // do nothing
 }
 
-CEPriorityLayout::CEPriorityLayout(const CEPriorityLayout & /*src*/)
+PriorityLayout::PriorityLayout(const PriorityLayout & /*src*/)
     : IELayout ( NELogConfig::LayoutPriority )
 {
     ; // do nothing
 }
 
-CEPriorityLayout::~CEPriorityLayout(void)
+PriorityLayout::~PriorityLayout(void)
 {
     ; // do nothing
 }
 
-void CEPriorityLayout::LogMessage( const NETrace::sLogMessage & msgLog, IEOutStream & stream ) const
+void PriorityLayout::logMessage( const NETrace::sLogMessage & msgLog, IEOutStream & stream ) const
 {
-    stream.Write( NETrace::ToString( msgLog.lmTrace.traceMessagePrio ) );
+    stream.write( NETrace::convToString( msgLog.lmTrace.traceMessagePrio ) );
 }
 
 //////////////////////////////////////////////////////////////////////////
-// CEScopeIdLayout class declaration
+// ScopeIdLayout class declaration
 //////////////////////////////////////////////////////////////////////////
 
-CEScopeIdLayout::CEScopeIdLayout(void)
+ScopeIdLayout::ScopeIdLayout(void)
     : IELayout ( NELogConfig::LaytoutScopeId )
 {
     ; // do nothing
 }
 
-CEScopeIdLayout::CEScopeIdLayout(const CEScopeIdLayout & /*src*/)
+ScopeIdLayout::ScopeIdLayout(const ScopeIdLayout & /*src*/)
     : IELayout ( NELogConfig::LaytoutScopeId )
 {
     ; // do nothing
 }
 
-CEScopeIdLayout::~CEScopeIdLayout(void)
+ScopeIdLayout::~ScopeIdLayout(void)
 {
     ; // do nothing
 }
 
-void CEScopeIdLayout::LogMessage( const NETrace::sLogMessage & msgLog, IEOutStream & stream ) const
+void ScopeIdLayout::logMessage( const NETrace::sLogMessage & msgLog, IEOutStream & stream ) const
 {
     if ( msgLog.lmTrace.traceScopeId != 0 )
     {
         char buffer[16];
-        CEString::PrintString(buffer, 16, "%u", msgLog.lmTrace.traceScopeId);
-        stream.Write(buffer);
+        String::formatString(buffer, 16, "%u", msgLog.lmTrace.traceScopeId);
+        stream.write(buffer);
     }
 }
 
 //////////////////////////////////////////////////////////////////////////
-// CEThreadIdLayout class declaration
+// ThreadIdLayout class declaration
 //////////////////////////////////////////////////////////////////////////
 
-CEThreadIdLayout::CEThreadIdLayout(void)
+ThreadIdLayout::ThreadIdLayout(void)
     : IELayout ( NELogConfig::LayoutThreadId )
 {
     ; // do nothing
 }
 
-CEThreadIdLayout::CEThreadIdLayout(const CEThreadIdLayout & /*src*/)
+ThreadIdLayout::ThreadIdLayout(const ThreadIdLayout & /*src*/)
     : IELayout ( NELogConfig::LayoutThreadId )
 {
     ; // do nothing
 }
 
-CEThreadIdLayout::~CEThreadIdLayout(void)
+ThreadIdLayout::~ThreadIdLayout(void)
 {
     ; // do nothing
 }
 
-void CEThreadIdLayout::LogMessage( const NETrace::sLogMessage & msgLog, IEOutStream & stream ) const
+void ThreadIdLayout::logMessage( const NETrace::sLogMessage & msgLog, IEOutStream & stream ) const
 {
     if ( msgLog.lmTrace.traceThreadId != 0 )
     {
         char buffer[16];
-        CEString::PrintString(buffer, 16, "%p", msgLog.lmTrace.traceThreadId);
-        stream.Write(buffer);
+        String::formatString(buffer, 16, "%p", msgLog.lmTrace.traceThreadId);
+        stream.write(buffer);
     }
 }
 
 //////////////////////////////////////////////////////////////////////////
-// CEModuleNameLayout class declaration
+// ModuleNameLayout class declaration
 //////////////////////////////////////////////////////////////////////////
 
-CEModuleNameLayout::CEModuleNameLayout(void)
+ModuleNameLayout::ModuleNameLayout(void)
     : IELayout ( NELogConfig::LayoutExecutableName )
 {
     ; // do nothing
 }
 
-CEModuleNameLayout::CEModuleNameLayout(const CEModuleNameLayout & /*src*/)
+ModuleNameLayout::ModuleNameLayout(const ModuleNameLayout & /*src*/)
     : IELayout ( NELogConfig::LayoutExecutableName )
 {
     ; // do nothing
 }
 
-CEModuleNameLayout::~CEModuleNameLayout(void)
+ModuleNameLayout::~ModuleNameLayout(void)
 {
     ; // do nothing
 }
 
-void CEModuleNameLayout::LogMessage( const NETrace::sLogMessage & /*msgLog*/, IEOutStream & stream ) const
+void ModuleNameLayout::logMessage( const NETrace::sLogMessage & /*msgLog*/, IEOutStream & stream ) const
 {
-    stream.Write( CEProcess::GetProcess().GetAppName() );
+    stream.write( Process::getInstance().getAppName() );
 }
 
 //////////////////////////////////////////////////////////////////////////
-// CEThreadNameLayout class declaration
+// ThreadNameLayout class declaration
 //////////////////////////////////////////////////////////////////////////
 
-CEThreadNameLayout::CEThreadNameLayout(void)
+ThreadNameLayout::ThreadNameLayout(void)
     : IELayout ( NELogConfig::LayoutThreadName )
 {
     ; // do nothing
 }
 
-CEThreadNameLayout::CEThreadNameLayout(const CEThreadNameLayout & /*src*/)
+ThreadNameLayout::ThreadNameLayout(const ThreadNameLayout & /*src*/)
     : IELayout ( NELogConfig::LayoutThreadName )
 {
     ; // do nothing
 }
 
-CEThreadNameLayout::~CEThreadNameLayout(void)
+ThreadNameLayout::~ThreadNameLayout(void)
 {
     ; // do nothing
 }
 
-void CEThreadNameLayout::LogMessage( const NETrace::sLogMessage & msgLog, IEOutStream & stream ) const
+void ThreadNameLayout::logMessage( const NETrace::sLogMessage & msgLog, IEOutStream & stream ) const
 {
-    CEThread * thread = CEThread::FindThreadById(msgLog.lmTrace.traceThreadId);
-    stream.Write( thread != NULL ? thread->GetThreadName() : "Unknown Thread" );
+    Thread * thread = Thread::findThreadById(msgLog.lmTrace.traceThreadId);
+    stream.write( thread != NULL ? thread->getName() : "Unknown Thread" );
 }
 
 //////////////////////////////////////////////////////////////////////////
-// CEScopeNameLayout class declaration
+// ScopeNameLayout class declaration
 //////////////////////////////////////////////////////////////////////////
 
-CEScopeNameLayout::CEScopeNameLayout(void)
+ScopeNameLayout::ScopeNameLayout(void)
     : IELayout ( NELogConfig::LaytoutScopeName )
 {
     ; // do nothing
 }
 
-CEScopeNameLayout::CEScopeNameLayout(const CEScopeNameLayout & /*src*/)
+ScopeNameLayout::ScopeNameLayout(const ScopeNameLayout & /*src*/)
     : IELayout ( NELogConfig::LaytoutScopeName )
 {
     ; // do nothing
 }
 
-CEScopeNameLayout::~CEScopeNameLayout(void)
+ScopeNameLayout::~ScopeNameLayout(void)
 {
     ; // do nothing
 }
 
-void CEScopeNameLayout::LogMessage( const NETrace::sLogMessage & msgLog, IEOutStream & stream ) const
+void ScopeNameLayout::logMessage( const NETrace::sLogMessage & msgLog, IEOutStream & stream ) const
 {
-    stream.Write( msgLog.lmTrace.traceMessage );
+    stream.write( msgLog.lmTrace.traceMessage );
 }
 
 //////////////////////////////////////////////////////////////////////////
-// CEScopeNameLayout class declaration
+// ScopeNameLayout class declaration
 //////////////////////////////////////////////////////////////////////////
 
-CEAnyTextLayout::CEAnyTextLayout(void)
+AnyTextLayout::AnyTextLayout(void)
     : IELayout     ( NELogConfig::LayoutAnyText )
     , mTextMessage  ( )
 {
     ; // do nothing
 }
 
-CEAnyTextLayout::CEAnyTextLayout(const CEAnyTextLayout & src)
+AnyTextLayout::AnyTextLayout(const AnyTextLayout & src)
     : IELayout     ( NELogConfig::LayoutAnyText )
     , mTextMessage  ( src.mTextMessage )
 {
     ; // do nothing
 }
 
-CEAnyTextLayout::CEAnyTextLayout(const CEString & anyMessage)
+AnyTextLayout::AnyTextLayout(const String & anyMessage)
     : IELayout     ( NELogConfig::LayoutAnyText )
     , mTextMessage  ( anyMessage )
 {
     ; // do nothing
 }
 
-CEAnyTextLayout::CEAnyTextLayout(const char * anyMessage)
+AnyTextLayout::AnyTextLayout(const char * anyMessage)
     : IELayout     ( NELogConfig::LayoutAnyText )
     , mTextMessage  ( anyMessage != NULL ? anyMessage : "" )
 {
     ; // do nothing
 }
 
-CEAnyTextLayout::~CEAnyTextLayout(void)
+AnyTextLayout::~AnyTextLayout(void)
 {
     ; // do nothing
 }
 
-void CEAnyTextLayout::LogMessage( const NETrace::sLogMessage & /*msgLog*/, IEOutStream & stream ) const
+void AnyTextLayout::logMessage( const NETrace::sLogMessage & /*msgLog*/, IEOutStream & stream ) const
 {
-    stream.Write( mTextMessage.GetBuffer() );
+    stream.write( mTextMessage.getString() );
 }

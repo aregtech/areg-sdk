@@ -19,89 +19,89 @@
 /**
  * \brief   Predefined invalid Service Entry. 
  **/
-AREG_API const NERegistry::CEServiceEntry           NERegistry::INVALID_SERVICE_ENTRY;
+AREG_API const NERegistry::ServiceEntry           NERegistry::INVALID_SERVICE_ENTRY;
 /**
  * \brief   Predefined invalid Service List.
  **/
-AREG_API const NERegistry::CEServiceList            NERegistry::INVALID_SERVICE_LIST;
+AREG_API const NERegistry::ServiceList            NERegistry::INVALID_SERVICE_LIST;
 /**
  * \brief   Predefined invalid Worker Thread Entry.
  **/
-AREG_API const NERegistry::CEWorkerThreadEntry      NERegistry::INVALID_WORKER_THREAD_ENTRY;
+AREG_API const NERegistry::WorkerThreadEntry      NERegistry::INVALID_WORKER_THREAD_ENTRY;
 /**
  * \brief   Predefined invalid Worker Thread List.
  **/
-AREG_API const NERegistry::CEWorkerThreadList       NERegistry::INVALID_WORKER_THREAD_LIST;
+AREG_API const NERegistry::WorkerThreadList       NERegistry::INVALID_WORKER_THREAD_LIST;
 /**
  * \brief   Predefined invalid service dependency entry.
  **/
-AREG_API const NERegistry::CEDependencyEntry        NERegistry::INVALID_DEPENDENCY_ENTRY;
+AREG_API const NERegistry::DependencyEntry        NERegistry::INVALID_DEPENDENCY_ENTRY;
 /**
  * \brief   Predefined invalid service dependency entry.
  **/
-AREG_API const NERegistry::CEDependencyList         NERegistry::INVALID_DEPENDENCY_LIST;
+AREG_API const NERegistry::DependencyList         NERegistry::INVALID_DEPENDENCY_LIST;
 /**
  * \brief   Predefined Invalid Component Entry.
  **/
-AREG_API const NERegistry::CEComponentEntry         NERegistry::INVALID_COMPONENT_ENTRY;
+AREG_API const NERegistry::ComponentEntry         NERegistry::INVALID_COMPONENT_ENTRY;
 /**
  * \brief   Predefined invalid Component List.
  **/
-AREG_API const NERegistry::CEComponentList          NERegistry::INVALID_COMPONENT_LIST;
+AREG_API const NERegistry::ComponentList          NERegistry::INVALID_COMPONENT_LIST;
 /**
  * \brief   Predefined invalid Thread Entry.
  **/
-AREG_API const NERegistry::CEComponentThreadEntry   NERegistry::INVALID_THREAD_ENTRY;
+AREG_API const NERegistry::ComponentThreadEntry   NERegistry::INVALID_THREAD_ENTRY;
 /**
  * \brief   Predefined invalid Thread List.
  **/
-AREG_API const NERegistry::CEComponentThreadList    NERegistry::INVALID_THREAD_LIST;
+AREG_API const NERegistry::ComponentThreadList    NERegistry::INVALID_THREAD_LIST;
 /**
  * \brief   Predefined invalid Model.
  **/
-AREG_API const NERegistry::CEModel                  NERegistry::INVALID_MODEL;
+AREG_API const NERegistry::Model                  NERegistry::INVALID_MODEL;
 
 //////////////////////////////////////////////////////////////////////////
-// class NERegistry::CEServiceEntry implementation
+// class NERegistry::ServiceEntry implementation
 //////////////////////////////////////////////////////////////////////////
-NERegistry::CEServiceEntry::CEServiceEntry( void )
+NERegistry::ServiceEntry::ServiceEntry( void )
     : mName     ( )
     , mVersion  ( 0, 0, 0)
 {
     ; // do nothing
 }
 
-NERegistry::CEServiceEntry::CEServiceEntry( const char* serviceName, unsigned int major, unsigned int minor, unsigned int patch )
+NERegistry::ServiceEntry::ServiceEntry( const char* serviceName, unsigned int major, unsigned int minor, unsigned int patch )
     : mName     ( serviceName )
     , mVersion  ( major, minor, patch )
 {
-    ASSERT( mName.IsEmpty( ) == false );
-    ASSERT( mVersion.IsValid( ) );
+    ASSERT( mName.isEmpty( ) == false );
+    ASSERT( mVersion.isValid( ) );
 }
 
-NERegistry::CEServiceEntry::CEServiceEntry( const char* serviceName, const CEVersion& version )
+NERegistry::ServiceEntry::ServiceEntry( const char* serviceName, const Version& version )
     : mName     (serviceName)
     , mVersion  (version)
 {
-    ASSERT( mName.IsEmpty() == false );
-    ASSERT( mVersion.IsValid() );
+    ASSERT( mName.isEmpty() == false );
+    ASSERT( mVersion.isValid() );
 }
 
-NERegistry::CEServiceEntry::CEServiceEntry( const NERegistry::CEServiceEntry & src )
+NERegistry::ServiceEntry::ServiceEntry( const NERegistry::ServiceEntry & src )
     : mName     (src.mName)
     , mVersion  (src.mVersion)
 {
     ; // do nothing
 }
 
-NERegistry::CEServiceEntry::~CEServiceEntry()
+NERegistry::ServiceEntry::~ServiceEntry()
 {
     ; // do nothing
 }
 
-const NERegistry::CEServiceEntry& NERegistry::CEServiceEntry::operator = ( const NERegistry::CEServiceEntry& src )
+const NERegistry::ServiceEntry& NERegistry::ServiceEntry::operator = ( const NERegistry::ServiceEntry& src )
 {
-    if (static_cast<const CEServiceEntry *>(this) != &src)
+    if (static_cast<const ServiceEntry *>(this) != &src)
     {
         mName   = src.mName;
         mVersion= src.mVersion;
@@ -109,113 +109,113 @@ const NERegistry::CEServiceEntry& NERegistry::CEServiceEntry::operator = ( const
     return (*this);
 }
 
-bool NERegistry::CEServiceEntry::operator == ( const NERegistry::CEServiceEntry& other ) const
+bool NERegistry::ServiceEntry::operator == ( const NERegistry::ServiceEntry& other ) const
 {
     return (this != &other ? mName == other.mName && mVersion == other.mVersion : true);
 }
 
-bool NERegistry::CEServiceEntry::IsValid( void ) const
+bool NERegistry::ServiceEntry::isValid( void ) const
 {
-    return ( (mName.IsEmpty() == false) && mVersion.IsValid() );
+    return ( (mName.isEmpty() == false) && mVersion.isValid() );
 }
 
 //////////////////////////////////////////////////////////////////////////
-// class NERegistry::CEServiceList implementation
+// class NERegistry::ServiceList implementation
 //////////////////////////////////////////////////////////////////////////
-NERegistry::CEServiceList::CEServiceList( void )
-    : TEArrayList<NERegistry::CEServiceEntry, const NERegistry::CEServiceEntry &>( 0 )
+NERegistry::ServiceList::ServiceList( void )
+    : TEArrayList<NERegistry::ServiceEntry, const NERegistry::ServiceEntry &>( 0 )
 {
     ; // do nothing
 }
 
-NERegistry::CEServiceList::CEServiceList( const NERegistry::CEServiceEntry & entry )
-    : TEArrayList<NERegistry::CEServiceEntry, const NERegistry::CEServiceEntry &>( 0 )
+NERegistry::ServiceList::ServiceList( const NERegistry::ServiceEntry & entry )
+    : TEArrayList<NERegistry::ServiceEntry, const NERegistry::ServiceEntry &>( 0 )
 {
-    if ( entry.IsValid() )
-        Add( entry );
+    if ( entry.isValid() )
+        add( entry );
 }
 
-NERegistry::CEServiceList::CEServiceList( const NERegistry::CEServiceList &src )
-    :  TEArrayList<NERegistry::CEServiceEntry, const NERegistry::CEServiceEntry &>(static_cast<const  TEArrayList<NERegistry::CEServiceEntry, const NERegistry::CEServiceEntry &> &>(src))
+NERegistry::ServiceList::ServiceList( const NERegistry::ServiceList &src )
+    :  TEArrayList<NERegistry::ServiceEntry, const NERegistry::ServiceEntry &>(static_cast<const  TEArrayList<NERegistry::ServiceEntry, const NERegistry::ServiceEntry &> &>(src))
 {
     ; // do nothing
 }
 
-NERegistry::CEServiceList::~CEServiceList( void )
+NERegistry::ServiceList::~ServiceList( void )
 {
     ; // do nothing
 }
 
-const NERegistry::CEServiceList & NERegistry::CEServiceList::operator = ( const NERegistry::CEServiceList & src )
+const NERegistry::ServiceList & NERegistry::ServiceList::operator = ( const NERegistry::ServiceList & src )
 {
-    if ( static_cast<const NERegistry::CEServiceList *>(this) != &src )
+    if ( static_cast<const NERegistry::ServiceList *>(this) != &src )
     {
-        RemoveAll();
-        for ( int i = 0; i < src.GetSize(); ++ i )
-            Add( src.GetAt(i) );
+        removeAll();
+        for ( int i = 0; i < src.getSize(); ++ i )
+            add( src.getAt(i) );
     }
-    return static_cast<const NERegistry::CEServiceList &>(*this);
+    return static_cast<const NERegistry::ServiceList &>(*this);
 }
 
-const NERegistry::CEServiceEntry & NERegistry::CEServiceList::GetService( const char* serviceName ) const
+const NERegistry::ServiceEntry & NERegistry::ServiceList::getService( const char* serviceName ) const
 {
-    int i = SearchService(serviceName);
-    return (i == NECommon::InvalidIndex ? NERegistry::INVALID_SERVICE_ENTRY : GetAt(i));
+    int i = findService(serviceName);
+    return (i == NECommon::InvalidIndex ? NERegistry::INVALID_SERVICE_ENTRY : getAt(i));
 }
 
-int NERegistry::CEServiceList::SearchService( const NERegistry::CEServiceEntry & entry ) const
+int NERegistry::ServiceList::findService( const NERegistry::ServiceEntry & entry ) const
 {
-    return SearchService( static_cast<const char *>(entry.mName) );
+    return findService( static_cast<const char *>(entry.mName) );
 }
 
-int NERegistry::CEServiceList::SearchService( const char* serviceName ) const
+int NERegistry::ServiceList::findService( const char* serviceName ) const
 {
     int i = 0;
-    for ( ; i < GetSize(); ++ i )
+    for ( ; i < getSize(); ++ i )
     {
-        if (GetAt(i).mName == serviceName)
+        if (getAt(i).mName == serviceName)
             break;
     }
-    return (i < GetSize() ? i : NECommon::InvalidIndex);
+    return (i < getSize() ? i : NECommon::InvalidIndex);
 }
 
-bool NERegistry::CEServiceList::IsValid( void ) const
+bool NERegistry::ServiceList::isValid( void ) const
 {
-    return (GetSize() != 0 );
+    return (getSize() != 0 );
 }
 
 //////////////////////////////////////////////////////////////////////////
-// class NERegistry::CEWorkerThreadEntry implementation
+// class NERegistry::WorkerThreadEntry implementation
 //////////////////////////////////////////////////////////////////////////
-NERegistry::CEWorkerThreadEntry::CEWorkerThreadEntry( void )
+NERegistry::WorkerThreadEntry::WorkerThreadEntry( void )
     : mThreadName   ( )
     , mConsumerName ( )
 {
     ;   // do nothing
 }
 
-NERegistry::CEWorkerThreadEntry::CEWorkerThreadEntry( const char * masterThreadName, const char* workerThreadName, const char * compRoleName, const char* compConsumerName )
-    : mThreadName   (NEUtilities::CreateComponentItemName(masterThreadName, workerThreadName))
-    , mConsumerName (NEUtilities::CreateComponentItemName(compRoleName, compConsumerName))
+NERegistry::WorkerThreadEntry::WorkerThreadEntry( const char * masterThreadName, const char* workerThreadName, const char * compRoleName, const char* compConsumerName )
+    : mThreadName   (NEUtilities::createComponentItemName(masterThreadName, workerThreadName))
+    , mConsumerName (NEUtilities::createComponentItemName(compRoleName, compConsumerName))
 {
     ;   // do nothing
 }
 
-NERegistry::CEWorkerThreadEntry::CEWorkerThreadEntry( const NERegistry::CEWorkerThreadEntry &src )
+NERegistry::WorkerThreadEntry::WorkerThreadEntry( const NERegistry::WorkerThreadEntry &src )
     : mThreadName   (src.mThreadName)
     , mConsumerName (src.mConsumerName)
 {
     ;   // do nothing
 }
 
-NERegistry::CEWorkerThreadEntry::~CEWorkerThreadEntry( void )
+NERegistry::WorkerThreadEntry::~WorkerThreadEntry( void )
 {
     ;   // do nothing
 }
 
-const NERegistry::CEWorkerThreadEntry & NERegistry::CEWorkerThreadEntry::operator = ( const NERegistry::CEWorkerThreadEntry & src )
+const NERegistry::WorkerThreadEntry & NERegistry::WorkerThreadEntry::operator = ( const NERegistry::WorkerThreadEntry & src )
 {
-    if ( static_cast<const NERegistry::CEWorkerThreadEntry *>(this) != &src )
+    if ( static_cast<const NERegistry::WorkerThreadEntry *>(this) != &src )
     {
         mThreadName     = src.mThreadName; 
         mConsumerName   = src.mConsumerName;
@@ -223,202 +223,202 @@ const NERegistry::CEWorkerThreadEntry & NERegistry::CEWorkerThreadEntry::operato
     return (*this);
 }
 
-bool NERegistry::CEWorkerThreadEntry::operator == ( const NERegistry::CEWorkerThreadEntry & other ) const
+bool NERegistry::WorkerThreadEntry::operator == ( const NERegistry::WorkerThreadEntry & other ) const
 {
     return ( this != &other ? mThreadName == other.mThreadName && mConsumerName == other.mConsumerName : true );
 }
 
-bool NERegistry::CEWorkerThreadEntry::IsValid( void ) const
+bool NERegistry::WorkerThreadEntry::isValid( void ) const
 {
-    return ( (mThreadName.IsEmpty() == false) && (mConsumerName.IsEmpty() == false) );
+    return ( (mThreadName.isEmpty() == false) && (mConsumerName.isEmpty() == false) );
 }
 
 //////////////////////////////////////////////////////////////////////////
-// class NERegistry::CEWorkerThreadList implementation
+// class NERegistry::WorkerThreadList implementation
 //////////////////////////////////////////////////////////////////////////
-NERegistry::CEWorkerThreadList::CEWorkerThreadList( void  )
-    : TEArrayList<NERegistry::CEWorkerThreadEntry, const NERegistry::CEWorkerThreadEntry&>( 0 )
+NERegistry::WorkerThreadList::WorkerThreadList( void  )
+    : TEArrayList<NERegistry::WorkerThreadEntry, const NERegistry::WorkerThreadEntry&>( 0 )
 {
     ; // do nothing
 }
 
-NERegistry::CEWorkerThreadList::CEWorkerThreadList( const NERegistry::CEWorkerThreadEntry & entry )
-    : TEArrayList<NERegistry::CEWorkerThreadEntry, const NERegistry::CEWorkerThreadEntry&>( 0 )
+NERegistry::WorkerThreadList::WorkerThreadList( const NERegistry::WorkerThreadEntry & entry )
+    : TEArrayList<NERegistry::WorkerThreadEntry, const NERegistry::WorkerThreadEntry&>( 0 )
 {
-    if ( entry.IsValid() )
-        Add( entry );
+    if ( entry.isValid() )
+        add( entry );
 }
 
-NERegistry::CEWorkerThreadList::CEWorkerThreadList( const NERegistry::CEWorkerThreadList& src )
-    : TEArrayList<NERegistry::CEWorkerThreadEntry, const NERegistry::CEWorkerThreadEntry&>(static_cast<const TEArrayList<NERegistry::CEWorkerThreadEntry, const NERegistry::CEWorkerThreadEntry&> &>(src))
+NERegistry::WorkerThreadList::WorkerThreadList( const NERegistry::WorkerThreadList& src )
+    : TEArrayList<NERegistry::WorkerThreadEntry, const NERegistry::WorkerThreadEntry&>(static_cast<const TEArrayList<NERegistry::WorkerThreadEntry, const NERegistry::WorkerThreadEntry&> &>(src))
 {
     ; // do nothing
 }
 
-NERegistry::CEWorkerThreadList::~CEWorkerThreadList( void )
+NERegistry::WorkerThreadList::~WorkerThreadList( void )
 {
     ; // do nothing
 }
 
-const NERegistry::CEWorkerThreadList & NERegistry::CEWorkerThreadList::operator = ( const NERegistry::CEWorkerThreadList & src )
+const NERegistry::WorkerThreadList & NERegistry::WorkerThreadList::operator = ( const NERegistry::WorkerThreadList & src )
 {
-    if ( static_cast<const NERegistry::CEWorkerThreadList *>(this) != &src )
+    if ( static_cast<const NERegistry::WorkerThreadList *>(this) != &src )
     {
-        RemoveAll();
-        for ( int i = 0; i < src.GetSize(); ++ i )
-            Add( src.GetAt(i) );
+        removeAll();
+        for ( int i = 0; i < src.getSize(); ++ i )
+            add( src.getAt(i) );
     }
-    return static_cast<const NERegistry::CEWorkerThreadList &>(*this);
+    return static_cast<const NERegistry::WorkerThreadList &>(*this);
 }
 
-const NERegistry::CEWorkerThreadEntry & NERegistry::CEWorkerThreadList::GetWorkerThread( const char* threadName ) const
+const NERegistry::WorkerThreadEntry & NERegistry::WorkerThreadList::getWorkerThread( const char* threadName ) const
 {
-    int index = SearchThread(threadName);
-    return (index == NECommon::InvalidIndex ? NERegistry::INVALID_WORKER_THREAD_ENTRY : GetAt(index));
+    int index = findThread(threadName);
+    return (index == NECommon::InvalidIndex ? NERegistry::INVALID_WORKER_THREAD_ENTRY : getAt(index));
 }
 
-int NERegistry::CEWorkerThreadList::SearchThread( const char* threadName ) const
+int NERegistry::WorkerThreadList::findThread( const char* threadName ) const
 {
     int i = 0;
-    for ( ; i < GetSize(); ++ i )
+    for ( ; i < getSize(); ++ i )
     {
-        if (GetAt(i).mThreadName == threadName)
+        if (getAt(i).mThreadName == threadName)
             break;
     }
-    return (i < GetSize() ? i : NECommon::InvalidIndex);
+    return (i < getSize() ? i : NECommon::InvalidIndex);
 }
 
-int NERegistry::CEWorkerThreadList::SearchThread( const NERegistry::CEWorkerThreadEntry& entry ) const
+int NERegistry::WorkerThreadList::findThread( const NERegistry::WorkerThreadEntry& entry ) const
 {
-    return SearchThread( static_cast<const char *>(entry.mThreadName) );
+    return findThread( static_cast<const char *>(entry.mThreadName) );
 }
 
-bool NERegistry::CEWorkerThreadList::IsValid( void ) const
+bool NERegistry::WorkerThreadList::isValid( void ) const
 {
-    return ( GetSize() != 0  );
+    return ( getSize() != 0  );
 }
 
 //////////////////////////////////////////////////////////////////////////
-// class NERegistry::CEDependencyEntry implementation
+// class NERegistry::DependencyEntry implementation
 //////////////////////////////////////////////////////////////////////////
-NERegistry::CEDependencyEntry::CEDependencyEntry( void )
+NERegistry::DependencyEntry::DependencyEntry( void )
     : mRoleName( )
 {
     ; // do nothing
 }
 
-NERegistry::CEDependencyEntry::CEDependencyEntry( const char* roleName )
+NERegistry::DependencyEntry::DependencyEntry( const char* roleName )
     : mRoleName(roleName)
 {
     ; // do nothing
 }
 
-NERegistry::CEDependencyEntry::CEDependencyEntry( const NERegistry::CEDependencyEntry& src )
+NERegistry::DependencyEntry::DependencyEntry( const NERegistry::DependencyEntry& src )
     : mRoleName(src.mRoleName)
 {
     ; // do nothing
 }
 
-NERegistry::CEDependencyEntry::~CEDependencyEntry( void )
+NERegistry::DependencyEntry::~DependencyEntry( void )
 {
     ; // do nothing
 }
 
-const NERegistry::CEDependencyEntry & NERegistry::CEDependencyEntry::operator = ( const CEDependencyEntry & src )
+const NERegistry::DependencyEntry & NERegistry::DependencyEntry::operator = ( const DependencyEntry & src )
 {
     mRoleName = src.mRoleName;
     return (*this);
 }
 
-bool NERegistry::CEDependencyEntry::operator == ( const NERegistry::CEDependencyEntry & other ) const
+bool NERegistry::DependencyEntry::operator == ( const NERegistry::DependencyEntry & other ) const
 {
     return (mRoleName == other.mRoleName);
 }
 
-bool NERegistry::CEDependencyEntry::IsValid( void ) const
+bool NERegistry::DependencyEntry::isValid( void ) const
 {
-    return (mRoleName.IsEmpty() == false);
+    return (mRoleName.isEmpty() == false);
 }
 
-void NERegistry::CEDependencyEntry::SetDependentService( const char * roleName )
+void NERegistry::DependencyEntry::setDependentService( const char * roleName )
 {
     mRoleName   = roleName;
 }
 
-const CEString & NERegistry::CEDependencyEntry::GetDepdendentService( void ) const
+const String & NERegistry::DependencyEntry::getDepdendentService( void ) const
 {
     return mRoleName;
 }
 
 //////////////////////////////////////////////////////////////////////////
-// class NERegistry::CEDependencyList implementation
+// class NERegistry::DependencyList implementation
 //////////////////////////////////////////////////////////////////////////
-NERegistry::CEDependencyList::CEDependencyList( void  )
-    : TEArrayList<NERegistry::CEDependencyEntry, const NERegistry::CEDependencyEntry&>( 0 )
+NERegistry::DependencyList::DependencyList( void  )
+    : TEArrayList<NERegistry::DependencyEntry, const NERegistry::DependencyEntry&>( 0 )
 {
     ; // do nothing
 }
 
-NERegistry::CEDependencyList::CEDependencyList( const NERegistry::CEDependencyEntry & entry  )
-    : TEArrayList<NERegistry::CEDependencyEntry, const NERegistry::CEDependencyEntry&>( 0 )
+NERegistry::DependencyList::DependencyList( const NERegistry::DependencyEntry & entry  )
+    : TEArrayList<NERegistry::DependencyEntry, const NERegistry::DependencyEntry&>( 0 )
 {
-    if ( entry.IsValid())
-        Add(entry);
+    if ( entry.isValid())
+        add(entry);
 }
 
-NERegistry::CEDependencyList::CEDependencyList( const NERegistry::CEDependencyList& src )
-    : TEArrayList<NERegistry::CEDependencyEntry, const NERegistry::CEDependencyEntry&>(static_cast<const TEArrayList<NERegistry::CEDependencyEntry, const NERegistry::CEDependencyEntry&> &>(src))
+NERegistry::DependencyList::DependencyList( const NERegistry::DependencyList& src )
+    : TEArrayList<NERegistry::DependencyEntry, const NERegistry::DependencyEntry&>(static_cast<const TEArrayList<NERegistry::DependencyEntry, const NERegistry::DependencyEntry&> &>(src))
 {
     ; // do nothing
 }
 
-NERegistry::CEDependencyList::~CEDependencyList( void )
+NERegistry::DependencyList::~DependencyList( void )
 {
     ; // do nothing
 }
 
-const NERegistry::CEDependencyList & NERegistry::CEDependencyList::operator = ( const NERegistry::CEDependencyList & src )
+const NERegistry::DependencyList & NERegistry::DependencyList::operator = ( const NERegistry::DependencyList & src )
 {
-    if ( static_cast<const NERegistry::CEDependencyList *>(this) != &src )
+    if ( static_cast<const NERegistry::DependencyList *>(this) != &src )
     {
-        RemoveAll();
-        for ( int i = 0; i < src.GetSize(); ++ i )
-            Add( src.GetAt(i) );
+        removeAll();
+        for ( int i = 0; i < src.getSize(); ++ i )
+            add( src.getAt(i) );
     }
-    return static_cast<const NERegistry::CEDependencyList &>(*this);
+    return static_cast<const NERegistry::DependencyList &>(*this);
 }
 
-const NERegistry::CEDependencyEntry & NERegistry::CEDependencyList::GetDependency( const char* roleName ) const
+const NERegistry::DependencyEntry & NERegistry::DependencyList::getDependency( const char* roleName ) const
 {
-    int index = SearchDependency(roleName);
-    return (index == NECommon::InvalidIndex ? NERegistry::INVALID_DEPENDENCY_ENTRY : GetAt(index) );
+    int index = findDependency(roleName);
+    return (index == NECommon::InvalidIndex ? NERegistry::INVALID_DEPENDENCY_ENTRY : getAt(index) );
 }
 
-int NERegistry::CEDependencyList::SearchDependency( const NERegistry::CEDependencyEntry & entry ) const
+int NERegistry::DependencyList::findDependency( const NERegistry::DependencyEntry & entry ) const
 {
-    return SearchDependency( static_cast<const char *>(entry.mRoleName) );
+    return findDependency( static_cast<const char *>(entry.mRoleName) );
 }
 
-int NERegistry::CEDependencyList::SearchDependency( const char* roleName ) const
+int NERegistry::DependencyList::findDependency( const char* roleName ) const
 {
     int i = 0;
-    for ( ; i < GetSize(); ++ i )
+    for ( ; i < getSize(); ++ i )
     {
-        if (GetAt(i).mRoleName == roleName)
+        if (getAt(i).mRoleName == roleName)
             break;
     }
-    return (i < GetSize() ? i : NECommon::InvalidIndex);
+    return (i < getSize() ? i : NECommon::InvalidIndex);
 }
 
-bool NERegistry::CEDependencyList::IsValid( void ) const
+bool NERegistry::DependencyList::isValid( void ) const
 {
-    return (GetSize() != 0);
+    return (getSize() != 0);
 }
 
 //////////////////////////////////////////////////////////////////////////
-// class NERegistry::CEComponentEntry implementation
+// class NERegistry::ComponentEntry implementation
 //////////////////////////////////////////////////////////////////////////
-NERegistry::CEComponentEntry::CEComponentEntry( void )
+NERegistry::ComponentEntry::ComponentEntry( void )
     : mRoleName             ( )
 
     , mThreadName           ( )
@@ -434,7 +434,7 @@ NERegistry::CEComponentEntry::CEComponentEntry( void )
     ; // do nothing
 }
 
-NERegistry::CEComponentEntry::CEComponentEntry( const char * masterThreadName, const char* roleName, FuncCreateComponent funcCreate, FuncDeleteComponent funcDelete )
+NERegistry::ComponentEntry::ComponentEntry( const char * masterThreadName, const char* roleName, FuncCreateComponent funcCreate, FuncDeleteComponent funcDelete )
     : mRoleName             (roleName)
 
     , mThreadName           (masterThreadName != NULL ? masterThreadName : "")
@@ -450,13 +450,13 @@ NERegistry::CEComponentEntry::CEComponentEntry( const char * masterThreadName, c
     ; // do nothing
 }
 
-NERegistry::CEComponentEntry::CEComponentEntry( const char * masterThreadName
+NERegistry::ComponentEntry::ComponentEntry( const char * masterThreadName
                                               , const char * roleName
                                               , FuncCreateComponent funcCreate
                                               , FuncDeleteComponent funcDelete
-                                              , const NERegistry::CEServiceList & serviceList
-                                              , const NERegistry::CEDependencyList & dependencyList
-                                              , const NERegistry::CEWorkerThreadList & workerList )
+                                              , const NERegistry::ServiceList & serviceList
+                                              , const NERegistry::DependencyList & dependencyList
+                                              , const NERegistry::WorkerThreadList & workerList )
     : mRoleName             (roleName)
 
     , mThreadName           (masterThreadName != NULL ? masterThreadName : "")
@@ -472,13 +472,13 @@ NERegistry::CEComponentEntry::CEComponentEntry( const char * masterThreadName
     ; // do nothing
 }
 
-NERegistry::CEComponentEntry::CEComponentEntry( const char * masterThreadName
+NERegistry::ComponentEntry::ComponentEntry( const char * masterThreadName
                                               , const char * roleName
                                               , FuncCreateComponent funcCreate
                                               , FuncDeleteComponent funcDelete
-                                              , const NERegistry::CEServiceEntry & service
-                                              , const NERegistry::CEDependencyEntry & dependency
-                                              , const NERegistry::CEWorkerThreadEntry & worker )
+                                              , const NERegistry::ServiceEntry & service
+                                              , const NERegistry::DependencyEntry & dependency
+                                              , const NERegistry::WorkerThreadEntry & worker )
     : mRoleName             (roleName)
 
     , mThreadName           (masterThreadName != NULL ? masterThreadName : "")
@@ -494,7 +494,7 @@ NERegistry::CEComponentEntry::CEComponentEntry( const char * masterThreadName
     ; // do nothing
 }
 
-NERegistry::CEComponentEntry::CEComponentEntry( const NERegistry::CEComponentEntry& src )
+NERegistry::ComponentEntry::ComponentEntry( const NERegistry::ComponentEntry& src )
     : mRoleName             (src.mRoleName)
 
     , mThreadName           (src.mThreadName)
@@ -510,14 +510,14 @@ NERegistry::CEComponentEntry::CEComponentEntry( const NERegistry::CEComponentEnt
     ; // do nothing
 }
 
-NERegistry::CEComponentEntry::~CEComponentEntry( void )
+NERegistry::ComponentEntry::~ComponentEntry( void )
 {
     mComponentData  = NEMemory::InvalidElement;
 }
 
-const NERegistry::CEComponentEntry & NERegistry::CEComponentEntry::operator = ( const NERegistry::CEComponentEntry& src )
+const NERegistry::ComponentEntry & NERegistry::ComponentEntry::operator = ( const NERegistry::ComponentEntry& src )
 {
-    if (static_cast<const NERegistry::CEComponentEntry *>(this) != &src)
+    if (static_cast<const NERegistry::ComponentEntry *>(this) != &src)
     {
         mRoleName           = src.mRoleName;
 
@@ -534,33 +534,33 @@ const NERegistry::CEComponentEntry & NERegistry::CEComponentEntry::operator = ( 
     return (*this);
 }
 
-bool NERegistry::CEComponentEntry::operator == ( const NERegistry::CEComponentEntry& other ) const
+bool NERegistry::ComponentEntry::operator == ( const NERegistry::ComponentEntry& other ) const
 {
     return (this != &other ? mRoleName == other.mRoleName && mThreadName == other.mThreadName && mFuncCreate == other.mFuncCreate && mFuncDelete == other.mFuncDelete : true);
 }
 
-void NERegistry::CEComponentEntry::AddSupportedService( const NERegistry::CEServiceEntry& entry )
+void NERegistry::ComponentEntry::addSupportedService( const NERegistry::ServiceEntry& entry )
 {
-    if (SearchSupportedService(entry) < 0)
-        mSupportedServices.Add(entry);
+    if (findSupportedService(entry) < 0)
+        mSupportedServices.add(entry);
 }
 
-void NERegistry::CEComponentEntry::AddSupportedService( const NERegistry::CEServiceList & serviceList )
+void NERegistry::ComponentEntry::addSupportedService( const NERegistry::ServiceList & serviceList )
 {
-    for ( int i = 0; i < serviceList.GetSize(); ++ i )
-        AddSupportedService(serviceList[i]);
+    for ( int i = 0; i < serviceList.getSize(); ++ i )
+        addSupportedService(serviceList[i]);
 }
 
-bool NERegistry::CEComponentEntry::RemoveSupportedService( const char * serviceName )
+bool NERegistry::ComponentEntry::removeSupportedService( const char * serviceName )
 {
     bool result = false;
     if ( NEString::isEmpty<char>(serviceName) == false )
     {
-        for ( int i = 0; (result == false) && (i < mSupportedServices.GetSize( )); ++i )
+        for ( int i = 0; (result == false) && (i < mSupportedServices.getSize( )); ++i )
         {
-            if ( mSupportedServices.GetAt(i).mName == serviceName )
+            if ( mSupportedServices.getAt(i).mName == serviceName )
             {
-                mSupportedServices.RemoveAt(i, 1);
+                mSupportedServices.removeAt(i, 1);
                 result = true;
             }
         }
@@ -568,48 +568,48 @@ bool NERegistry::CEComponentEntry::RemoveSupportedService( const char * serviceN
     return result;
 }
 
-int NERegistry::CEComponentEntry::SearchSupportedService( const NERegistry::CEServiceEntry& entry ) const
+int NERegistry::ComponentEntry::findSupportedService( const NERegistry::ServiceEntry& entry ) const
 {
-    return mSupportedServices.SearchService(entry);
+    return mSupportedServices.findService(entry);
 }
 
-int NERegistry::CEComponentEntry::SearchSupportedService( const char* serviceName ) const
+int NERegistry::ComponentEntry::findSupportedService( const char* serviceName ) const
 {
-    return mSupportedServices.SearchService(serviceName);
+    return mSupportedServices.findService(serviceName);
 }
 
-void NERegistry::CEComponentEntry::AddWorkerThread( const NERegistry::CEWorkerThreadEntry& entry )
+void NERegistry::ComponentEntry::addWorkerThread( const NERegistry::WorkerThreadEntry& entry )
 {
-    if (SearchWorkerThread(entry) < 0)
-        mWorkerThreads.Add(entry);
+    if (findWorkerThread(entry) < 0)
+        mWorkerThreads.add(entry);
 }
 
-void NERegistry::CEComponentEntry::AddWorkerThread( const NERegistry::CEWorkerThreadList & workerList )
+void NERegistry::ComponentEntry::addWorkerThread( const NERegistry::WorkerThreadList & workerList )
 {
-    for ( int i = 0; i < workerList.GetSize(); ++ i )
-        AddWorkerThread(workerList[i]);
+    for ( int i = 0; i < workerList.getSize(); ++ i )
+        addWorkerThread(workerList[i]);
 }
 
-int NERegistry::CEComponentEntry::SearchWorkerThread( const NERegistry::CEWorkerThreadEntry& entry ) const
+int NERegistry::ComponentEntry::findWorkerThread( const NERegistry::WorkerThreadEntry& entry ) const
 {
-    return mWorkerThreads.SearchThread(entry);
+    return mWorkerThreads.findThread(entry);
 }
 
-int NERegistry::CEComponentEntry::SearchWorkerThread( const char* workerName ) const
+int NERegistry::ComponentEntry::findWorkerThread( const char* workerName ) const
 {
-    return mWorkerThreads.SearchThread(workerName);
+    return mWorkerThreads.findThread(workerName);
 }
 
-bool NERegistry::CEComponentEntry::RemoveWorkerThread( const char * workerName )
+bool NERegistry::ComponentEntry::removeWorkerThread( const char * workerName )
 {
     bool result = false;
     if ( NEString::isEmpty<char>(workerName) == false )
     {
-        for ( int i = 0; (result == false) && (i < mWorkerThreads.GetSize()); ++i )
+        for ( int i = 0; (result == false) && (i < mWorkerThreads.getSize()); ++i )
         {
-            if ( mWorkerThreads.GetAt(i).mThreadName == workerName )
+            if ( mWorkerThreads.getAt(i).mThreadName == workerName )
             {
-                mWorkerThreads.RemoveAt(i);
+                mWorkerThreads.removeAt(i);
                 result = true;
             }
         }
@@ -617,33 +617,33 @@ bool NERegistry::CEComponentEntry::RemoveWorkerThread( const char * workerName )
     return result;
 }
 
-void NERegistry::CEComponentEntry::AddDependencyService( const NERegistry::CEDependencyEntry& entry )
+void NERegistry::ComponentEntry::addDependencyService( const NERegistry::DependencyEntry& entry )
 {
-    if (SearchDependencyService(entry) < 0)
-        mDependencyServices.Add(entry);
+    if (findDependencyService(entry) < 0)
+        mDependencyServices.add(entry);
 }
 
-void NERegistry::CEComponentEntry::AddDependencyService( const NERegistry::CEDependencyList & dependencyList )
+void NERegistry::ComponentEntry::addDependencyService( const NERegistry::DependencyList & dependencyList )
 {
-    for ( int i = 0; i < dependencyList.GetSize(); ++ i )
-        AddDependencyService(dependencyList[i]);
+    for ( int i = 0; i < dependencyList.getSize(); ++ i )
+        addDependencyService(dependencyList[i]);
 }
 
-int NERegistry::CEComponentEntry::SearchDependencyService( const NERegistry::CEDependencyEntry& entry ) const
+int NERegistry::ComponentEntry::findDependencyService( const NERegistry::DependencyEntry& entry ) const
 {
-    return mDependencyServices.SearchDependency(entry);
+    return mDependencyServices.findDependency(entry);
 }
 
-bool NERegistry::CEComponentEntry::RemoveDependencyService( const char * roleName )
+bool NERegistry::ComponentEntry::removeDependencyService( const char * roleName )
 {
     bool result = false;
     if ( NEString::isEmpty<char>(roleName) == false )
     {
-        for (int i = 0; (result == false) && (i < mDependencyServices.GetSize()); ++i )
+        for (int i = 0; (result == false) && (i < mDependencyServices.getSize()); ++i )
         {
-            if ( mDependencyServices.GetAt(i).mRoleName == roleName )
+            if ( mDependencyServices.getAt(i).mRoleName == roleName )
             {
-                mDependencyServices.RemoveAt(i);
+                mDependencyServices.removeAt(i);
                 result = true;
             }
         }
@@ -651,121 +651,121 @@ bool NERegistry::CEComponentEntry::RemoveDependencyService( const char * roleNam
     return result;
 }
 
-int NERegistry::CEComponentEntry::SearchDependencyService( const char* roleName ) const
+int NERegistry::ComponentEntry::findDependencyService( const char* roleName ) const
 {
-    return mDependencyServices.SearchDependency(roleName);
+    return mDependencyServices.findDependency(roleName);
 }
 
-const NERegistry::CEServiceList & NERegistry::CEComponentEntry::GetSupportedServices( void ) const
+const NERegistry::ServiceList & NERegistry::ComponentEntry::getSupportedServices( void ) const
 {
     return mSupportedServices;
 }
 
-const NERegistry::CEWorkerThreadList & NERegistry::CEComponentEntry::GetWorkerThreads( void ) const
+const NERegistry::WorkerThreadList & NERegistry::ComponentEntry::getWorkerThreads( void ) const
 {
     return mWorkerThreads;
 }
 
-const NERegistry::CEDependencyList & NERegistry::CEComponentEntry::GetDependencyServices( void ) const
+const NERegistry::DependencyList & NERegistry::ComponentEntry::getDependencyServices( void ) const
 {
     return mDependencyServices;
 }
 
-void NERegistry::CEComponentEntry::SetInstanceMethods( FuncCreateComponent fnCreate, FuncDeleteComponent fnDelete )
+void NERegistry::ComponentEntry::setInstanceMethods( FuncCreateComponent fnCreate, FuncDeleteComponent fnDelete )
 {
     mFuncCreate = fnCreate;
     mFuncDelete = fnDelete;
 }
 
-bool NERegistry::CEComponentEntry::IsValid( void ) const
+bool NERegistry::ComponentEntry::isValid( void ) const
 {
-    return ( (mRoleName.IsEmpty() == false) && (mFuncCreate != NULL) && (mFuncDelete != NULL) );
+    return ( (mRoleName.isEmpty() == false) && (mFuncCreate != NULL) && (mFuncDelete != NULL) );
 }
 
-void NERegistry::CEComponentEntry::SetComponentData( NEMemory::uAlign compData )
+void NERegistry::ComponentEntry::setComponentData( NEMemory::uAlign compData )
 {
     mComponentData  = compData;
 }
 
-NEMemory::uAlign NERegistry::CEComponentEntry::GetComponentData( void ) const
+NEMemory::uAlign NERegistry::ComponentEntry::getComponentData( void ) const
 {
     return mComponentData;
 }
 
 //////////////////////////////////////////////////////////////////////////
-// class NERegistry::CEComponentList implementation
+// class NERegistry::ComponentList implementation
 //////////////////////////////////////////////////////////////////////////
-NERegistry::CEComponentList::CEComponentList( void )
-    : TEArrayList<NERegistry::CEComponentEntry, const NERegistry::CEComponentEntry&>( 0 )
+NERegistry::ComponentList::ComponentList( void )
+    : TEArrayList<NERegistry::ComponentEntry, const NERegistry::ComponentEntry&>( 0 )
 {
     ; // do nothing
 }
 
-NERegistry::CEComponentList::CEComponentList(  const NERegistry::CEComponentEntry & entry )
-    : TEArrayList<NERegistry::CEComponentEntry, const NERegistry::CEComponentEntry&>( 0 )
+NERegistry::ComponentList::ComponentList(  const NERegistry::ComponentEntry & entry )
+    : TEArrayList<NERegistry::ComponentEntry, const NERegistry::ComponentEntry&>( 0 )
 {
-    if ( entry.IsValid() )
-        Add( entry );
+    if ( entry.isValid() )
+        add( entry );
 }
 
-NERegistry::CEComponentList::CEComponentList( const NERegistry::CEComponentList& src )
-    : TEArrayList<NERegistry::CEComponentEntry, const NERegistry::CEComponentEntry&>(static_cast<const TEArrayList<NERegistry::CEComponentEntry, const NERegistry::CEComponentEntry&> &>(src))
+NERegistry::ComponentList::ComponentList( const NERegistry::ComponentList& src )
+    : TEArrayList<NERegistry::ComponentEntry, const NERegistry::ComponentEntry&>(static_cast<const TEArrayList<NERegistry::ComponentEntry, const NERegistry::ComponentEntry&> &>(src))
 {
     ; // do nothing
 }
 
-NERegistry::CEComponentList::~CEComponentList( void )
+NERegistry::ComponentList::~ComponentList( void )
 {
     ; // do nothing
 }
 
-const NERegistry::CEComponentList & NERegistry::CEComponentList::operator = ( const NERegistry::CEComponentList & src )
+const NERegistry::ComponentList & NERegistry::ComponentList::operator = ( const NERegistry::ComponentList & src )
 {
-    if ( static_cast<const NERegistry::CEComponentList *>(this) != &src )
+    if ( static_cast<const NERegistry::ComponentList *>(this) != &src )
     {
-        RemoveAll();
-        for ( int i = 0; i < src.GetSize(); ++ i )
-            Add( src.GetAt(i) );
+        removeAll();
+        for ( int i = 0; i < src.getSize(); ++ i )
+            add( src.getAt(i) );
     }
-    return static_cast<const NERegistry::CEComponentList &>(*this);
+    return static_cast<const NERegistry::ComponentList &>(*this);
 }
 
-const NERegistry::CEComponentEntry & NERegistry::CEComponentList::GetComponent( const char* roleName ) const
+const NERegistry::ComponentEntry & NERegistry::ComponentList::getComponent( const char* roleName ) const
 {
-    int index = SearchComponent(roleName);
-    return (index != NECommon::InvalidIndex ? GetAt(index) : NERegistry::INVALID_COMPONENT_ENTRY);
+    int index = findComponent(roleName);
+    return (index != NECommon::InvalidIndex ? getAt(index) : NERegistry::INVALID_COMPONENT_ENTRY);
 }
 
-int NERegistry::CEComponentList::SearchComponent(const char* roleName) const
+int NERegistry::ComponentList::findComponent(const char* roleName) const
 {
     int i = 0;
-    for ( ; i < GetSize(); ++ i )
+    for ( ; i < getSize(); ++ i )
     {
-        if (GetAt(i).mRoleName == roleName)
+        if (getAt(i).mRoleName == roleName)
             break;
     }
-    return (i < GetSize() ? i : NECommon::InvalidIndex);
+    return (i < getSize() ? i : NECommon::InvalidIndex);
 }
 
-int NERegistry::CEComponentList::SearchComponent( const NERegistry::CEComponentEntry& entry ) const
+int NERegistry::ComponentList::findComponent( const NERegistry::ComponentEntry& entry ) const
 {
-    return SearchComponent( static_cast<const char *>(entry.mRoleName) );
+    return findComponent( static_cast<const char *>(entry.mRoleName) );
 }
 
-bool NERegistry::CEComponentList::IsValid( void ) const
+bool NERegistry::ComponentList::isValid( void ) const
 {
-    return (GetSize() != 0);
+    return (getSize() != 0);
 }
 
-bool NERegistry::CEComponentList::SetComponentData( const char * roleName, NEMemory::uAlign compData )
+bool NERegistry::ComponentList::setComponentData( const char * roleName, NEMemory::uAlign compData )
 {
     bool result = false;
-    for ( int i = 0; i < GetSize(); ++ i )
+    for ( int i = 0; i < getSize(); ++ i )
     {
-        NERegistry::CEComponentEntry & entry = GetAt(i);
+        NERegistry::ComponentEntry & entry = getAt(i);
         if ( entry.mRoleName == roleName )
         {
-            entry.SetComponentData(compData);
+            entry.setComponentData(compData);
             result = true;
             break;
         }
@@ -774,30 +774,30 @@ bool NERegistry::CEComponentList::SetComponentData( const char * roleName, NEMem
 }
 
 //////////////////////////////////////////////////////////////////////////
-// class NERegistry::CEComponentThreadEntry implementation
+// class NERegistry::ComponentThreadEntry implementation
 //////////////////////////////////////////////////////////////////////////
-NERegistry::CEComponentThreadEntry::CEComponentThreadEntry( void )
+NERegistry::ComponentThreadEntry::ComponentThreadEntry( void )
     : mThreadName   ( )
     , mComponents   ( )
 {
     ; // do nothing
 }
 
-NERegistry::CEComponentThreadEntry::CEComponentThreadEntry( const char* threadName )
+NERegistry::ComponentThreadEntry::ComponentThreadEntry( const char* threadName )
     : mThreadName   (threadName)
     , mComponents   ( )
 {
     ; // do nothing
 }
 
-NERegistry::CEComponentThreadEntry::CEComponentThreadEntry( const char* threadName, const NERegistry::CEComponentList& supCompList )
+NERegistry::ComponentThreadEntry::ComponentThreadEntry( const char* threadName, const NERegistry::ComponentList& supCompList )
     : mThreadName   (threadName)
     , mComponents   (supCompList)
 {
     ; // do nothing
 }
 
-NERegistry::CEComponentThreadEntry::CEComponentThreadEntry( const NERegistry::CEComponentThreadEntry& src )
+NERegistry::ComponentThreadEntry::ComponentThreadEntry( const NERegistry::ComponentThreadEntry& src )
     : mThreadName   (src.mThreadName)
     , mComponents   (src.mComponents)
 {
@@ -805,33 +805,33 @@ NERegistry::CEComponentThreadEntry::CEComponentThreadEntry( const NERegistry::CE
 }
 
 
-NERegistry::CEComponentThreadEntry::~CEComponentThreadEntry( void )
+NERegistry::ComponentThreadEntry::~ComponentThreadEntry( void )
 {
     ; // do nothing
 }
 
-void NERegistry::CEComponentThreadEntry::AddComponent( const NERegistry::CEComponentEntry & entry )
+void NERegistry::ComponentThreadEntry::addComponent( const NERegistry::ComponentEntry & entry )
 {
-    if (SearchComponentEntry(entry) < 0)
-        mComponents.Add(entry);
+    if (findComponentEntry(entry) < 0)
+        mComponents.add(entry);
 }
 
-void NERegistry::CEComponentThreadEntry::AddComponent( const NERegistry::CEComponentList & componentList )
+void NERegistry::ComponentThreadEntry::addComponent( const NERegistry::ComponentList & componentList )
 {
-    for (int i = 0; i < componentList.GetSize(); ++ i )
-        AddComponent(componentList[i]);
+    for (int i = 0; i < componentList.getSize(); ++ i )
+        addComponent(componentList[i]);
 }
 
-bool NERegistry::CEComponentThreadEntry::RemoveComponent( const char * roleName )
+bool NERegistry::ComponentThreadEntry::removeComponent( const char * roleName )
 {
     bool result = false;
     if ( NEString::isEmpty<char>(roleName) == false )
     {
-        for ( int i = 0; (result == false) && (i < mComponents.GetSize()); ++i )
+        for ( int i = 0; (result == false) && (i < mComponents.getSize()); ++i )
         {
-            if ( mComponents.GetAt(i).mRoleName == roleName )
+            if ( mComponents.getAt(i).mRoleName == roleName )
             {
-                mComponents.RemoveAt(i);
+                mComponents.removeAt(i);
                 result = true;
             }
         }
@@ -839,19 +839,19 @@ bool NERegistry::CEComponentThreadEntry::RemoveComponent( const char * roleName 
     return result;
 }
 
-int NERegistry::CEComponentThreadEntry::SearchComponentEntry( const NERegistry::CEComponentEntry & entry ) const
+int NERegistry::ComponentThreadEntry::findComponentEntry( const NERegistry::ComponentEntry & entry ) const
 {
-    return mComponents.SearchComponent(entry);
+    return mComponents.findComponent(entry);
 }
 
-int NERegistry::CEComponentThreadEntry::SearchComponentEntry( const char* roleName ) const
+int NERegistry::ComponentThreadEntry::findComponentEntry( const char* roleName ) const
 {
-    return mComponents.SearchComponent(roleName);
+    return mComponents.findComponent(roleName);
 }
 
-const NERegistry::CEComponentThreadEntry & NERegistry::CEComponentThreadEntry::operator = ( const NERegistry::CEComponentThreadEntry & src )
+const NERegistry::ComponentThreadEntry & NERegistry::ComponentThreadEntry::operator = ( const NERegistry::ComponentThreadEntry & src )
 {
-    if (static_cast<const NERegistry::CEComponentThreadEntry *>(this) != &src)
+    if (static_cast<const NERegistry::ComponentThreadEntry *>(this) != &src)
     {
         mThreadName = src.mThreadName;
         mComponents = src.mComponents;
@@ -859,98 +859,98 @@ const NERegistry::CEComponentThreadEntry & NERegistry::CEComponentThreadEntry::o
     return (*this);
 }
 
-bool NERegistry::CEComponentThreadEntry::operator == ( const NERegistry::CEComponentThreadEntry & other ) const
+bool NERegistry::ComponentThreadEntry::operator == ( const NERegistry::ComponentThreadEntry & other ) const
 {
     return (this != &other ? mThreadName == other.mThreadName : true);
 }
 
-bool NERegistry::CEComponentThreadEntry::IsValid( void ) const
+bool NERegistry::ComponentThreadEntry::isValid( void ) const
 {
-    return ( (mThreadName.IsEmpty() == false) && (mComponents.IsEmpty() == false) );
+    return ( (mThreadName.isEmpty() == false) && (mComponents.isEmpty() == false) );
 }
 
-bool NERegistry::CEComponentThreadEntry::SetComponentData( const char * roleName, NEMemory::uAlign compData )
+bool NERegistry::ComponentThreadEntry::setComponentData( const char * roleName, NEMemory::uAlign compData )
 {
-    return mComponents.SetComponentData(roleName, compData);
+    return mComponents.setComponentData(roleName, compData);
 }
 
 //////////////////////////////////////////////////////////////////////////
-// class NERegistry::CEComponentThreadList implementation
+// class NERegistry::ComponentThreadList implementation
 //////////////////////////////////////////////////////////////////////////
-NERegistry::CEComponentThreadList::CEComponentThreadList( void )
-    : TEArrayList<NERegistry::CEComponentThreadEntry, const NERegistry::CEComponentThreadEntry&>( 0 )
+NERegistry::ComponentThreadList::ComponentThreadList( void )
+    : TEArrayList<NERegistry::ComponentThreadEntry, const NERegistry::ComponentThreadEntry&>( 0 )
 {
     ; // do nothing
 }
 
-NERegistry::CEComponentThreadList::CEComponentThreadList( const NERegistry::CEComponentThreadEntry & entry )
-    : TEArrayList<NERegistry::CEComponentThreadEntry, const NERegistry::CEComponentThreadEntry&>( 0 )
+NERegistry::ComponentThreadList::ComponentThreadList( const NERegistry::ComponentThreadEntry & entry )
+    : TEArrayList<NERegistry::ComponentThreadEntry, const NERegistry::ComponentThreadEntry&>( 0 )
 {
-    if ( entry.IsValid() )
-        Add(entry);
+    if ( entry.isValid() )
+        add(entry);
 }
 
-NERegistry::CEComponentThreadList::CEComponentThreadList( const NERegistry::CEComponentThreadList & src )
-    : TEArrayList<NERegistry::CEComponentThreadEntry, const NERegistry::CEComponentThreadEntry&>(static_cast<const TEArrayList<NERegistry::CEComponentThreadEntry, const NERegistry::CEComponentThreadEntry&> &>(src))
+NERegistry::ComponentThreadList::ComponentThreadList( const NERegistry::ComponentThreadList & src )
+    : TEArrayList<NERegistry::ComponentThreadEntry, const NERegistry::ComponentThreadEntry&>(static_cast<const TEArrayList<NERegistry::ComponentThreadEntry, const NERegistry::ComponentThreadEntry&> &>(src))
 {
     ; // do nothing
 }
 
-NERegistry::CEComponentThreadList::~CEComponentThreadList( void )
+NERegistry::ComponentThreadList::~ComponentThreadList( void )
 {
     ; // do nothing
 }
 
-const NERegistry::CEComponentThreadList & NERegistry::CEComponentThreadList::operator = ( const NERegistry::CEComponentThreadList & src )
+const NERegistry::ComponentThreadList & NERegistry::ComponentThreadList::operator = ( const NERegistry::ComponentThreadList & src )
 {
-    if ( static_cast<const NERegistry::CEComponentThreadList *>(this) != &src )
+    if ( static_cast<const NERegistry::ComponentThreadList *>(this) != &src )
     {
-        RemoveAll();
-        for ( int i = 0; i < src.GetSize(); ++ i )
-            Add( src.GetAt(i) );
+        removeAll();
+        for ( int i = 0; i < src.getSize(); ++ i )
+            add( src.getAt(i) );
     }
-    return static_cast<const NERegistry::CEComponentThreadList &>(*this);
+    return static_cast<const NERegistry::ComponentThreadList &>(*this);
 }
 
-const NERegistry::CEComponentThreadEntry & NERegistry::CEComponentThreadList::GetThread( const char* threadName ) const
+const NERegistry::ComponentThreadEntry & NERegistry::ComponentThreadList::getThread( const char* threadName ) const
 {
-    int index = SearchThread(threadName);
-    return (index != NECommon::InvalidIndex ? GetAt(index) : NERegistry::INVALID_THREAD_ENTRY);
+    int index = findThread(threadName);
+    return (index != NECommon::InvalidIndex ? getAt(index) : NERegistry::INVALID_THREAD_ENTRY);
 }
 
-int NERegistry::CEComponentThreadList::SearchThread( const NERegistry::CEComponentThreadEntry& entry ) const
+int NERegistry::ComponentThreadList::findThread( const NERegistry::ComponentThreadEntry& entry ) const
 {
-    return SearchThread( static_cast<const char *>(entry.mThreadName) );
+    return findThread( static_cast<const char *>(entry.mThreadName) );
     int i = 0;
-    for ( ; i < GetSize(); ++ i )
+    for ( ; i < getSize(); ++ i )
     {
-        if (GetAt(i) == entry)
+        if (getAt(i) == entry)
             break;
     }
-    return (i < GetSize() ? i : NECommon::InvalidIndex);
+    return (i < getSize() ? i : NECommon::InvalidIndex);
 }
 
-int NERegistry::CEComponentThreadList::SearchThread( const char* threadName ) const
+int NERegistry::ComponentThreadList::findThread( const char* threadName ) const
 {
     int i = 0;
-    for ( ; i < GetSize(); ++ i )
+    for ( ; i < getSize(); ++ i )
     {
-        if (GetAt(i).mThreadName == threadName)
+        if (getAt(i).mThreadName == threadName)
             break;
     }
-    return (i < GetSize() ? i : NECommon::InvalidIndex);
+    return (i < getSize() ? i : NECommon::InvalidIndex);
 }
 
-bool NERegistry::CEComponentThreadList::IsValid( void ) const
+bool NERegistry::ComponentThreadList::isValid( void ) const
 {
-    return (GetSize() != 0);
+    return (getSize() != 0);
 }
 
 //////////////////////////////////////////////////////////////////////////
-// class NERegistry::CEModel implementation
+// class NERegistry::Model implementation
 //////////////////////////////////////////////////////////////////////////
 
-NERegistry::CEModel::CEModel( void )
+NERegistry::Model::Model( void )
     : mModelName    ( )
     , mModelThreads ( )
     , mIsLoaded     ( false )
@@ -958,7 +958,7 @@ NERegistry::CEModel::CEModel( void )
     ; // do nothing
 }
 
-NERegistry::CEModel::CEModel( const char* modelName )
+NERegistry::Model::Model( const char* modelName )
     : mModelName    (modelName)
     , mModelThreads ( )
     , mIsLoaded     ( false )
@@ -966,7 +966,7 @@ NERegistry::CEModel::CEModel( const char* modelName )
     ; // do nothing
 }
 
-NERegistry::CEModel::CEModel( const char* modelName, const CEComponentThreadList & threadList  )
+NERegistry::Model::Model( const char* modelName, const ComponentThreadList & threadList  )
     : mModelName    (modelName)
     , mModelThreads (threadList)
     , mIsLoaded     ( false )
@@ -974,7 +974,7 @@ NERegistry::CEModel::CEModel( const char* modelName, const CEComponentThreadList
     ; // do nothing
 }
 
-NERegistry::CEModel::CEModel( const CEModel & src )
+NERegistry::Model::Model( const Model & src )
     : mModelName    ( src.mModelName )
     , mModelThreads ( src.mModelThreads )
     , mIsLoaded     ( src.mIsLoaded )
@@ -982,64 +982,64 @@ NERegistry::CEModel::CEModel( const CEModel & src )
     ; // do nothing
 }
 
-NERegistry::CEModel::~CEModel()
+NERegistry::Model::~Model()
 {
     ; // do nothing
 }
 
-const NERegistry::CEModel & NERegistry::CEModel::operator = ( const NERegistry::CEModel & src )
+const NERegistry::Model & NERegistry::Model::operator = ( const NERegistry::Model & src )
 {
-    if ( static_cast<const NERegistry::CEModel *>(this) != &src )
+    if ( static_cast<const NERegistry::Model *>(this) != &src )
     {
         mModelName      = src.mModelName;
         mModelThreads   = src.mModelThreads;
         mIsLoaded       = src.mIsLoaded;
     }
-    return static_cast<const NERegistry::CEModel &>(*this);
+    return static_cast<const NERegistry::Model &>(*this);
 }
 
-bool NERegistry::CEModel::operator == ( const NERegistry::CEModel & other ) const
+bool NERegistry::Model::operator == ( const NERegistry::Model & other ) const
 {
     return (this != &other ? mModelName == other.mModelName && mModelThreads == other.mModelThreads : true );
 }
 
-bool NERegistry::CEModel::IsValid( void ) const
+bool NERegistry::Model::isValid( void ) const
 {
-    return ( (mModelName.IsEmpty() == false) && mModelThreads.IsValid() );
+    return ( (mModelName.isEmpty() == false) && mModelThreads.isValid() );
 }
 
-int NERegistry::CEModel::SearchThread( const NERegistry::CEComponentThreadEntry& entry ) const
+int NERegistry::Model::findThread( const NERegistry::ComponentThreadEntry& entry ) const
 {
-    return mModelThreads.SearchThread(entry);
+    return mModelThreads.findThread(entry);
 }
 
-int NERegistry::CEModel::SearchThread( const char* threadName ) const
+int NERegistry::Model::findThread( const char* threadName ) const
 {
-    return mModelThreads.SearchThread(threadName);
+    return mModelThreads.findThread(threadName);
 }
 
-void NERegistry::CEModel::AddThread( const NERegistry::CEComponentThreadEntry& entry )
+void NERegistry::Model::addThread( const NERegistry::ComponentThreadEntry& entry )
 {
-    if ( entry.IsValid() && (SearchThread(entry) == NECommon::InvalidIndex) )
-        mModelThreads.Add(entry);
+    if ( entry.isValid() && (findThread(entry) == NECommon::InvalidIndex) )
+        mModelThreads.add(entry);
 }
 
-void NERegistry::CEModel::AddThread( const NERegistry::CEComponentThreadList& threadList )
+void NERegistry::Model::addThread( const NERegistry::ComponentThreadList& threadList )
 {
-    for (int i = 0; i < threadList.GetSize(); ++ i )
-        AddThread(threadList[i]);
+    for (int i = 0; i < threadList.getSize(); ++ i )
+        addThread(threadList[i]);
 }
 
-bool NERegistry::CEModel::RemoveThread( const char * threadName )
+bool NERegistry::Model::removeThread( const char * threadName )
 {
     bool result = false;
     if ( NEString::isEmpty<char>(threadName) == false )
     {
-        for ( int i = 0; (result == false) && (i < mModelThreads.GetSize()); ++i )
+        for ( int i = 0; (result == false) && (i < mModelThreads.getSize()); ++i )
         {
-            if ( mModelThreads.GetAt(i).mThreadName == threadName )
+            if ( mModelThreads.getAt(i).mThreadName == threadName )
             {
-                mModelThreads.RemoveAt(i);
+                mModelThreads.removeAt(i);
                 result = true;
             }
         }
@@ -1047,49 +1047,49 @@ bool NERegistry::CEModel::RemoveThread( const char * threadName )
     return result;
 }
 
-const CEString & NERegistry::CEModel::GetModelName( void ) const
+const String & NERegistry::Model::getModelName( void ) const
 {
     return mModelName;
 }
 
-bool NERegistry::CEModel::HasRegisteredComponent( const NERegistry::CEComponentEntry & entry ) const
+bool NERegistry::Model::hasRegisteredComponent( const NERegistry::ComponentEntry & entry ) const
 {
     int result = NECommon::InvalidIndex;
-    for ( int i = 0; (result == NECommon::InvalidIndex) && (i < mModelThreads.GetSize()); ++ i )
-        result = mModelThreads.GetAt(i).SearchComponentEntry(entry);
+    for ( int i = 0; (result == NECommon::InvalidIndex) && (i < mModelThreads.getSize()); ++ i )
+        result = mModelThreads.getAt(i).findComponentEntry(entry);
     return ( result < 0 ? false : true );
 }
 
-bool NERegistry::CEModel::HasRegisteredComponent( const char * roleName ) const
+bool NERegistry::Model::hasRegisteredComponent( const char * roleName ) const
 {
     int result = NECommon::InvalidIndex;
-    for ( int i = 0; (result == NECommon::InvalidIndex) && (i < mModelThreads.GetSize()); ++ i )
-        result = mModelThreads.GetAt(i).SearchComponentEntry(roleName);
+    for ( int i = 0; (result == NECommon::InvalidIndex) && (i < mModelThreads.getSize()); ++ i )
+        result = mModelThreads.getAt(i).findComponentEntry(roleName);
     return ( result < 0 ? false : true );
 }
 
-bool NERegistry::CEModel::IsModelLoaded( void ) const
+bool NERegistry::Model::isModelLoaded( void ) const
 {
     return mIsLoaded;
 }
 
-void NERegistry::CEModel::SetModelLoaded( bool isLoaded /*= true */ )
+void NERegistry::Model::markModelLoaded( bool isLoaded /*= true */ )
 {
     mIsLoaded = isLoaded;
 }
 
-const NERegistry::CEComponentThreadList & NERegistry::CEModel::GetThreadList( void ) const
+const NERegistry::ComponentThreadList & NERegistry::Model::getThreadList( void ) const
 {
     return mModelThreads;
 }
 
-bool NERegistry::CEModel::SetComponentData( const char * roleName, NEMemory::uAlign compData )
+bool NERegistry::Model::setComponentData( const char * roleName, NEMemory::uAlign compData )
 {
     bool result = false;
-    for ( int i = 0; i < mModelThreads.GetSize(); ++ i )
+    for ( int i = 0; i < mModelThreads.getSize(); ++ i )
     {
-        NERegistry::CEComponentThreadEntry & entry = mModelThreads.GetAt(i);
-        if ( entry.SetComponentData(roleName, compData) )
+        NERegistry::ComponentThreadEntry & entry = mModelThreads.getAt(i);
+        if ( entry.setComponentData(roleName, compData) )
         {
             result = true;
             break;

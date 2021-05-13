@@ -6,8 +6,8 @@
 
 /************************************************************************
  * (c) copyright    2021
- *                  Create by AREGtech code generator tool from source TrafficLight.
- * Generated at     21.04.2021  18:33:59 GMT+02:00 
+ *                  Create by AREG SDK code generator tool from source TrafficLight.
+ * Generated at     12.05.2021  16:41:14 GMT+02:00 
  ************************************************************************/
 
 /************************************************************************
@@ -19,7 +19,7 @@
 /************************************************************************
  * Include files
  ************************************************************************/
-#include "areg/src/base/GEGlobal.h"
+#include "areg/base/GEGlobal.h"
 
 //////////////////////////////////////////////////////////////////////////
 // Dependency includes
@@ -28,9 +28,9 @@
 //////////////////////////////////////////////////////////////////////////
 // Mandatory includes
 //////////////////////////////////////////////////////////////////////////
-#include "areg/src/base/IEIOStream.hpp"
-#include "areg/src/base/CEVersion.hpp"
-#include "areg/src/component/NEService.hpp"
+#include "areg/base/IEIOStream.hpp"
+#include "areg/base/Version.hpp"
+#include "areg/component/NEService.hpp"
 
 /************************************************************************
  * Dependencies
@@ -62,7 +62,7 @@ namespace   NETrafficLight
      * \brief   Implemented Version
      *          NETrafficLight::InterfaceVersion
      **/
-    const CEVersion       InterfaceVersion    = "0.1.0";
+    const Version         InterfaceVersion    = "0.1.0";
 
     /**
      * \brief   Timeout to remain in red -- 5000 ms (5 secs)
@@ -118,7 +118,7 @@ namespace   NETrafficLight
     /**
      * \brief   Returns string value of NETrafficLight::eLight
      **/
-    inline const char * GetString( NETrafficLight::eLight enumValue );
+    inline const char * getString( NETrafficLight::eLight enumValue );
 
 /************************************************************************
  * Service Message IDs
@@ -133,19 +133,19 @@ namespace   NETrafficLight
      * Request IDs
      ************************************************************************/
         /**
-         * \brief   Request ID: MSG_ID_RequestChangeLight
+         * \brief   Request ID: MSG_ID_requestChangeLight
          *          Requested rapidly to change the light.
          **/
-          MSG_ID_RequestChangeLight   = NEService::REQUEST_ID_FIRST     // void RequestChangeLight( const NETrafficLight::eLight & lightColor, const bool & holdon );
+          MSG_ID_requestChangeLight   = NEService::REQUEST_ID_FIRST     // void requestChangeLight( NETrafficLight::eLight lightColor, bool holdon );
      
     /************************************************************************
      * Response IDs
      ************************************************************************/
         /**
-         * \brief   Response ID: MSG_ID_ResponseChangeLight
+         * \brief   Response ID: MSG_ID_responseChangeLight
          *          Resonse to change the light color.
          **/
-        , MSG_ID_ResponseChangeLight  = NEService::RESPONSE_ID_FIRST    // void ResponseChangeLight( const NETrafficLight::eLight & lightColor );     
+        , MSG_ID_responseChangeLight  = NEService::RESPONSE_ID_FIRST    // void responseChangeLight( NETrafficLight::eLight lightColor );     
     /************************************************************************
      * Broadcast IDs
      ************************************************************************/
@@ -175,7 +175,7 @@ namespace   NETrafficLight
     /**
      * \brief   Returns string value of NETrafficLight::eMessageIDs
      **/
-    inline const char * GetString( NETrafficLight::eMessageIDs msgId );
+    inline const char * getString( NETrafficLight::eMessageIDs msgId );
      
 /************************************************************************
  * Service Interface standard functions and variables
@@ -184,24 +184,24 @@ namespace   NETrafficLight
     /**
      * \brief   Creates and returns Service Interface Data
      **/
-    const NEService::SInterfaceData & CreateInterfaceData( void );
+    const NEService::SInterfaceData & createInterfaceData( void );
 
     /**
      * \brief   Returns the mapped Response ID of give Request ID.
      **/
-    NETrafficLight::eMessageIDs GetResponseId( NETrafficLight::eMessageIDs reqId );
+    NETrafficLight::eMessageIDs getResponseId( NETrafficLight::eMessageIDs reqId );
 
     /**
      * \brief   Returns the mapped Response ID of give Request ID.
      **/
-    NETrafficLight::eMessageIDs GetRequestId( NETrafficLight::eMessageIDs respId );
+    NETrafficLight::eMessageIDs getRequestId( NETrafficLight::eMessageIDs respId );
 
     /**
      * \brief   Array of supported Request IDs
      **/
     const eMessageIDs    RequestIds[] = 
     {
-          MSG_ID_RequestChangeLight
+          MSG_ID_requestChangeLight
     };
     /**
      * \brief   Number of supported Request entries
@@ -213,7 +213,7 @@ namespace   NETrafficLight
      **/
     const eMessageIDs    ResponseIds[] = 
     {
-          MSG_ID_ResponseChangeLight
+          MSG_ID_responseChangeLight
 
     };
     /**
@@ -252,7 +252,7 @@ IMPLEMENT_STREAMABLE( NETrafficLight::eLight )
 /**
  * Return string value of NETrafficLight::eLight
  **/
-inline const char * NETrafficLight::GetString( NETrafficLight::eLight enumValue )
+inline const char * NETrafficLight::getString( NETrafficLight::eLight enumValue )
 {
     switch ( enumValue )
     {
@@ -275,14 +275,14 @@ inline const char * NETrafficLight::GetString( NETrafficLight::eLight enumValue 
 /**
  * Returns string value of NETrafficLight::eMessageIDs
  **/
-inline const char * NETrafficLight::GetString( NETrafficLight::eMessageIDs msgId )
+inline const char * NETrafficLight::getString( NETrafficLight::eMessageIDs msgId )
 {
     switch ( msgId )
     {
-    case    NETrafficLight::MSG_ID_RequestChangeLight:
-        return "NETrafficLight::MSG_ID_RequestChangeLight";
-    case    NETrafficLight::MSG_ID_ResponseChangeLight:
-        return "NETrafficLight::MSG_ID_ResponseChangeLight";
+    case    NETrafficLight::MSG_ID_requestChangeLight:
+        return "NETrafficLight::MSG_ID_requestChangeLight";
+    case    NETrafficLight::MSG_ID_responseChangeLight:
+        return "NETrafficLight::MSG_ID_responseChangeLight";
     case    NETrafficLight::MSG_ID_TrafficLight:
         return "NETrafficLight::MSG_ID_TrafficLight";
 

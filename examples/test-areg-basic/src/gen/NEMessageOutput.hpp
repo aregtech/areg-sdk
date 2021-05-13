@@ -6,8 +6,8 @@
 
 /************************************************************************
  * (c) copyright    2021
- *                  Create by AREGtech code generator tool from source MessageOutput.
- * Generated at     21.04.2021  18:33:55 GMT+02:00 
+ *                  Create by AREG SDK code generator tool from source MessageOutput.
+ * Generated at     12.05.2021  16:41:12 GMT+02:00 
  ************************************************************************/
 
 /************************************************************************
@@ -19,20 +19,20 @@
 /************************************************************************
  * Include files
  ************************************************************************/
-#include "areg/src/base/GEGlobal.h"
+#include "areg/base/GEGlobal.h"
 
 //////////////////////////////////////////////////////////////////////////
 // Dependency includes
 //////////////////////////////////////////////////////////////////////////
-#include "areg/src/base/CEString.hpp"
-#include "areg/src/base/CEDateTime.hpp"
+#include "areg/base/String.hpp"
+#include "areg/base/DateTime.hpp"
 
 //////////////////////////////////////////////////////////////////////////
 // Mandatory includes
 //////////////////////////////////////////////////////////////////////////
-#include "areg/src/base/IEIOStream.hpp"
-#include "areg/src/base/CEVersion.hpp"
-#include "areg/src/component/NEService.hpp"
+#include "areg/base/IEIOStream.hpp"
+#include "areg/base/Version.hpp"
+#include "areg/component/NEService.hpp"
 
 /************************************************************************
  * Dependencies
@@ -64,7 +64,7 @@ namespace   NEMessageOutput
      * \brief   Implemented Version
      *          NEMessageOutput::InterfaceVersion
      **/
-    const CEVersion       InterfaceVersion    = "0.1.0";
+    const Version         InterfaceVersion    = "0.1.0";
 
 /************************************************************************/
 // Service Interface data types
@@ -100,7 +100,7 @@ namespace   NEMessageOutput
     /**
      * \brief   Returns string value of NEMessageOutput::eRequestedActons
      **/
-    inline const char * GetString( NEMessageOutput::eRequestedActons enumValue );
+    inline const char * getString( NEMessageOutput::eRequestedActons enumValue );
 
 /************************************************************************
  * Service Message IDs
@@ -115,10 +115,10 @@ namespace   NEMessageOutput
      * Request IDs
      ************************************************************************/
         /**
-         * \brief   Request ID: MSG_ID_RequestOutputMessage
+         * \brief   Request ID: MSG_ID_requestOutputMessage
          *          Sent to service to output message on console.
          **/
-          MSG_ID_RequestOutputMessage     = NEService::REQUEST_ID_FIRST     // void RequestOutputMessage( const CEString & msgOutput, const CEDateTime & dateTime );
+          MSG_ID_requestOutputMessage     = NEService::REQUEST_ID_FIRST     // void requestOutputMessage( const String & msgOutput, const DateTime & dateTime );
      
     /************************************************************************
      * Response IDs
@@ -127,15 +127,15 @@ namespace   NEMessageOutput
      * Broadcast IDs
      ************************************************************************/
         /**
-         * \brief   Broadcast ID: MSG_ID_BroadcastActionRequest
+         * \brief   Broadcast ID: MSG_ID_broadcastActionRequest
          *          Informs the action requested by a user
          **/
-        , MSG_ID_BroadcastActionRequest   = NEService::RESPONSE_ID_FIRST    // void BroadcastActionRequest( const NEMessageOutput::eRequestedActons & userAction );
+        , MSG_ID_broadcastActionRequest   = NEService::RESPONSE_ID_FIRST    // void broadcastActionRequest( NEMessageOutput::eRequestedActons userAction );
         /**
-         * \brief   Broadcast ID: MSG_ID_BroadcastInputMessage
+         * \brief   Broadcast ID: MSG_ID_broadcastInputMessage
          *          The input message from the user.
          **/
-        , MSG_ID_BroadcastInputMessage                                      // void BroadcastInputMessage( const CEString & msgInput );
+        , MSG_ID_broadcastInputMessage                                      // void broadcastInputMessage( const String & msgInput );
      
     /************************************************************************
      * Attributes IDs
@@ -144,7 +144,7 @@ namespace   NEMessageOutput
          * \brief   Attribute ID: MSG_ID_LastMessage
          *          The last message to output on console.
          **/
-        , MSG_ID_LastMessage              = NEService::ATTRIBUTE_ID_FIRST   // CEString mLastMessage;
+        , MSG_ID_LastMessage              = NEService::ATTRIBUTE_ID_FIRST   // String mLastMessage;
      
     /************************************************************************
      * Reserved constant IDs
@@ -162,7 +162,7 @@ namespace   NEMessageOutput
     /**
      * \brief   Returns string value of NEMessageOutput::eMessageIDs
      **/
-    inline const char * GetString( NEMessageOutput::eMessageIDs msgId );
+    inline const char * getString( NEMessageOutput::eMessageIDs msgId );
      
 /************************************************************************
  * Service Interface standard functions and variables
@@ -171,24 +171,24 @@ namespace   NEMessageOutput
     /**
      * \brief   Creates and returns Service Interface Data
      **/
-    const NEService::SInterfaceData & CreateInterfaceData( void );
+    const NEService::SInterfaceData & createInterfaceData( void );
 
     /**
      * \brief   Returns the mapped Response ID of give Request ID.
      **/
-    NEMessageOutput::eMessageIDs GetResponseId( NEMessageOutput::eMessageIDs reqId );
+    NEMessageOutput::eMessageIDs getResponseId( NEMessageOutput::eMessageIDs reqId );
 
     /**
      * \brief   Returns the mapped Response ID of give Request ID.
      **/
-    NEMessageOutput::eMessageIDs GetRequestId( NEMessageOutput::eMessageIDs respId );
+    NEMessageOutput::eMessageIDs getRequestId( NEMessageOutput::eMessageIDs respId );
 
     /**
      * \brief   Array of supported Request IDs
      **/
     const eMessageIDs    RequestIds[] = 
     {
-          MSG_ID_RequestOutputMessage
+          MSG_ID_requestOutputMessage
     };
     /**
      * \brief   Number of supported Request entries
@@ -201,8 +201,8 @@ namespace   NEMessageOutput
     const eMessageIDs    ResponseIds[] = 
     {
 
-          MSG_ID_BroadcastActionRequest
-        , MSG_ID_BroadcastInputMessage
+          MSG_ID_broadcastActionRequest
+        , MSG_ID_broadcastInputMessage
     };
     /**
      * \brief   Number of supported Response entries
@@ -240,7 +240,7 @@ IMPLEMENT_STREAMABLE( NEMessageOutput::eRequestedActons )
 /**
  * Return string value of NEMessageOutput::eRequestedActons
  **/
-inline const char * NEMessageOutput::GetString( NEMessageOutput::eRequestedActons enumValue )
+inline const char * NEMessageOutput::getString( NEMessageOutput::eRequestedActons enumValue )
 {
     switch ( enumValue )
     {
@@ -261,16 +261,16 @@ inline const char * NEMessageOutput::GetString( NEMessageOutput::eRequestedActon
 /**
  * Returns string value of NEMessageOutput::eMessageIDs
  **/
-inline const char * NEMessageOutput::GetString( NEMessageOutput::eMessageIDs msgId )
+inline const char * NEMessageOutput::getString( NEMessageOutput::eMessageIDs msgId )
 {
     switch ( msgId )
     {
-    case    NEMessageOutput::MSG_ID_RequestOutputMessage:
-        return "NEMessageOutput::MSG_ID_RequestOutputMessage";
-    case    NEMessageOutput::MSG_ID_BroadcastActionRequest:
-        return "NEMessageOutput::MSG_ID_BroadcastActionRequest";
-    case    NEMessageOutput::MSG_ID_BroadcastInputMessage:
-        return "NEMessageOutput::MSG_ID_BroadcastInputMessage";
+    case    NEMessageOutput::MSG_ID_requestOutputMessage:
+        return "NEMessageOutput::MSG_ID_requestOutputMessage";
+    case    NEMessageOutput::MSG_ID_broadcastActionRequest:
+        return "NEMessageOutput::MSG_ID_broadcastActionRequest";
+    case    NEMessageOutput::MSG_ID_broadcastInputMessage:
+        return "NEMessageOutput::MSG_ID_broadcastInputMessage";
     case    NEMessageOutput::MSG_ID_LastMessage:
         return "NEMessageOutput::MSG_ID_LastMessage";
 

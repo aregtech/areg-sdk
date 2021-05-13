@@ -15,13 +15,13 @@
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
 
-#include "areg/base/CEString.hpp"
+#include "areg/base/String.hpp"
 
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class CEComponentThread;
-class CEWorkerThread;
+class ComponentThread;
+class WorkerThread;
 
 //////////////////////////////////////////////////////////////////////////
 // IEWorkerThreadConsumer class declaration
@@ -70,7 +70,7 @@ public:
      *          Is required if component contains few worker threads
      *          and needs few consumers for every single worker thread.
      **/
-    inline const char * GetConsumerName( void ) const;
+    inline const char * getConsumerName( void ) const;
 
     /**
      * \brief   Compares passed name with the name of consumer
@@ -78,7 +78,7 @@ public:
      * \param   consumerName    The name to check.
      * \return  Returns true if passed name is the name of consumer.
      **/
-    inline bool IsEqualName( const char* consumerName ) const;
+    inline bool isConsumerName( const char* consumerName ) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Override operations
@@ -95,7 +95,7 @@ public:
      * \param   workThread      The Worker Thread object to notify startup
      * \param   masterThread    The component thread, which owns worker thread.
      **/
-    virtual void RegisterEventConsumers( CEWorkerThread & workThread, CEComponentThread & masterThread ) = 0;
+    virtual void registerEventConsumers( WorkerThread & workThread, ComponentThread & masterThread ) = 0;
 
     /**
      * \brief   Triggered by Worker Thread when stops running.
@@ -103,7 +103,7 @@ public:
      *          method to stop receiving events.
      * \param   workThread  The Worker Thread object to notify stop
      **/
-    virtual void UnregisterEventConsumers( CEWorkerThread & workThread ) = 0;
+    virtual void unregisterEventConsumers( WorkerThread & workThread ) = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -112,7 +112,7 @@ private:
     /**
      * \brief   The name of consumer. Is a fixed name and cannot be changed
      **/
-    const CEString  mConsumerName;
+    const String    mConsumerName;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -126,10 +126,14 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // IEWorkerThreadConsumer class inline function implementation
 //////////////////////////////////////////////////////////////////////////
-inline const char* IEWorkerThreadConsumer::GetConsumerName( void ) const
-{   return static_cast<const char *>(mConsumerName);    }
+inline const char* IEWorkerThreadConsumer::getConsumerName( void ) const
+{
+    return static_cast<const char *>(mConsumerName);
+}
 
-inline bool IEWorkerThreadConsumer::IsEqualName( const char * consumerName ) const
-{   return (consumerName != NULL ? mConsumerName == consumerName : false);  }
+inline bool IEWorkerThreadConsumer::isConsumerName( const char * consumerName ) const
+{
+    return ((consumerName != NULL) && (mConsumerName == consumerName));
+}
 
 #endif  // AREG_COMPONENT_IEWORKERTHREADCONSUMER_HPP

@@ -12,23 +12,23 @@
  * Include files.
  ************************************************************************/
 
-#include "areg/src/base/GEGlobal.h"
-#include "src/gen/CESystemStub.hpp"
-#include "areg/src/component/CEComponent.hpp"
-#include "areg/src/component/CETimer.hpp"
-#include "areg/src/component/CETimerEvent.hpp"
+#include "areg/base/GEGlobal.h"
+#include "src/gen/SystemStub.hpp"
+#include "areg/component/Component.hpp"
+#include "areg/component/Timer.hpp"
+#include "areg/component/TimerEvent.hpp"
 
-class CESystem  : public    CEComponent
-                , protected CESystemStub
+class CESystem  : public    Component
+                , protected SystemStub
                 , protected IETimerConsumer
 {
 //////////////////////////////////////////////////////////////////////////
 // Create and delete component
 //////////////////////////////////////////////////////////////////////////
 public:
-    static CEComponent * CreateComponent( const NERegistry::CEComponentEntry & entry, CEComponentThread & owner );
+    static Component * CreateComponent( const NERegistry::ComponentEntry & entry, ComponentThread & owner );
 
-    static void DeleteComponent( CEComponent & compObject, const NERegistry::CEComponentEntry & entry );
+    static void DeleteComponent( Component & compObject, const NERegistry::ComponentEntry & entry );
 
 //////////////////////////////////////////////////////////////////////////
 // System Interface Requests
@@ -40,28 +40,28 @@ public:
      *          Requested to power off.
      * \note    Has no response
      **/
-    virtual void RequestPowerOff( void );
+    virtual void requestPowerOff( void );
 
     /**
      * \brief   Request call.
      *          requested to power on
      * \note    Has no response
      **/
-    virtual void RequestPowerOn( void );
+    virtual void requestPowerOn( void );
 
     /**
      * \brief   Request call.
      *          requested to shutdown
      * \note    Has no response
      **/
-    virtual void RequestShutdown( void );
+    virtual void requestShutdown( void );
 
     /**
      * \brief   Request call.
      *          requested to start.
      * \note    Has no response
      **/
-    virtual void RequestStart( void );
+    virtual void requestStart( void );
 
 protected:
 /************************************************************************/
@@ -75,7 +75,7 @@ protected:
      * \param   holder  The holder component of service interface of Stub,
      *                  which started up.
      **/
-    virtual void StartupServiceInterface( CEComponent & holder );
+    virtual void startupServiceInterface( Component & holder );
 
     /**
      * \brief   This function is triggered by component thread when it
@@ -83,7 +83,7 @@ protected:
      *          make cleanups in this function call.
      * \param   comThread   The component thread, which triggered shutdown command.
      **/
-    virtual void ShutdownComponent( CEComponentThread & comThread );
+    virtual void shutdownComponent( ComponentThread & comThread );
 
 protected:
 /************************************************************************/
@@ -96,13 +96,13 @@ protected:
      *          Overwrite method to receive messages.
      * \param   timer   The timer object that is expired.
      **/
-    virtual void ProcessTimer( CETimer & timer );
+    virtual void processTimer( Timer & timer );
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    CESystem( CEComponentThread & masterThread, const char * const roleName, NEMemory::uAlign data );
+    CESystem( ComponentThread & masterThread, const char * const roleName, NEMemory::uAlign data );
 
     virtual ~CESystem( void );
 
@@ -110,7 +110,7 @@ private:
 
 
 private:
-    CETimer mTimer;
+    Timer mTimer;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

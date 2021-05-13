@@ -10,7 +10,7 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/component/CENotificationEvent.hpp"
+#include "areg/component/NotificationEvent.hpp"
 
 //////////////////////////////////////////////////////////////////////////
 // IEProxyListener class declaration
@@ -71,7 +71,7 @@ public:
      *          i.e. if passed Proxy address is equal to the Proxy object that client has.
      *          If Proxy objects are not equal, it should return false;
      *
-     * \example ServiceConnected calls
+     * \example serviceConnected calls
      * 
      *          The code implementation of Service Client Base should look like this:
      *
@@ -83,7 +83,7 @@ public:
      *          }
      *          return result;
      **/
-    virtual bool ServiceConnected( bool isConnected, CEProxyBase & proxy ) = 0;
+    virtual bool serviceConnected( bool isConnected, ProxyBase & proxy ) = 0;
 
     /**
      * \brief   Notification event processing function.
@@ -92,7 +92,7 @@ public:
      *          event is going to be processed.
      * \param   eventElem   The notification event object to process.
      **/
-    virtual void ProcessNotificationEvent( CENotificationEvent & eventElem ) = 0;
+    virtual void processNotificationEvent( NotificationEvent & eventElem ) = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

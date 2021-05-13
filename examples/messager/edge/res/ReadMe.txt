@@ -22,14 +22,14 @@ edge.vcxproj.filters
     similar extensions under a specific node (for e.g. ".cpp" files are associated with the
     "Source Files" filter).
 
-CEDistrbutedApp.hpp
+DistrbutedApp.hpp
     This is the main header file for the application.  It includes other
     project specific headers (including Resource.h) and declares the
-    CEDistrbutedApp application class.
+    DistrbutedApp application class.
 
-CEDistributedApp.cpp
+DistributedApp.cpp
     This is the main application source file that contains the application
-    class CEDistrbutedApp.
+    class DistrbutedApp.
 
 edge.rc
     This is a listing of all of the Microsoft Windows resources that the

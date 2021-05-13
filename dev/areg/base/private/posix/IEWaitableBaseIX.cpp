@@ -12,26 +12,26 @@
 #include "areg/base/private/posix/IEWaitableBaseIX.hpp"
 
 #ifdef  _POSIX
-#include "areg/base/private/posix/CESynchLockAndWaitIX.hpp"
+#include "areg/base/private/posix/SynchLockAndWaitIX.hpp"
 
 //////////////////////////////////////////////////////////////////////////
-// CESynchWaitable class implementation
+// SynchWaitable class implementation
 //////////////////////////////////////////////////////////////////////////
 
 IEWaitableBaseIX::IEWaitableBaseIX( NESynchTypesIX::eSynchObject synchType, bool isRecursive, const char* asciiName /* = NULL */ )
-    : CEMutexIX     ( synchType, isRecursive, asciiName )
+    : MutexIX     ( synchType, isRecursive, asciiName )
 {
     ; // do nothing
 }
 
 IEWaitableBaseIX::~IEWaitableBaseIX( void )
 {
-    ASSERT(CESynchLockAndWaitIX::IsResourceRegistered(*this) == false);
+    ASSERT(SynchLockAndWaitIX::isWaitableRegistered(*this) == false);
 }
 
-void IEWaitableBaseIX::FreeResources(void)
+void IEWaitableBaseIX::freeResources(void)
 {
-    CESynchLockAndWaitIX::EventRemove(*this);
+    SynchLockAndWaitIX::eventRemove(*this);
 }
 
 #endif  // _POSIX

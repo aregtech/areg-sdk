@@ -201,10 +201,10 @@ namespace NEMemory
     /**
      * \brief   NEMemory::InvalidElement
      *          Predefined Invalid Element value. Used to defined invalid element.
-     *          For example, it is used in thread local storage object (CEThreadLocalStorage)
+     *          For example, it is used in thread local storage object (ThreadLocalStorage)
      *          in case if there is no element found in local storage by given name.
      *
-     * \see     CEThreadLocalStorage::GetStorageItem()
+     * \see     ThreadLocalStorage::GetStorageItem()
      **/
     extern AREG_API const NEMemory::uAlign InvalidElement;
 
@@ -380,7 +380,7 @@ namespace NEMemory
     /**
      * \brief   Converts the values of type NEMemory::eMessageResult to string, used in logs and output messages.
      **/
-    static const char * GetString( NEMemory::eMessageResult msgResult );
+    static const char * getString( NEMemory::eMessageResult msgResult );
 
     /**
      * \brief   NEMemory::BLOCK_SIZE
@@ -423,7 +423,7 @@ namespace NEMemory
      * \param   byteBuffer  The instance of byte buffer object to check.
      * \return  Returns true if byte-buffer object is valid.
      **/
-    inline bool IsBufferValid( const sByteBuffer * byteBuffer );
+    inline bool isBufferValid( const sByteBuffer * byteBuffer );
 
     /**
      * \brief   Checks whether the pointer to byte buffer object is valid or not.
@@ -432,7 +432,7 @@ namespace NEMemory
      * \param   byteBuffer  The pointer to instance of byte buffer object to check.
      * \return  Returns true if byte-buffer object is valid.
      **/
-    inline bool IsBufferValid( const sByteBuffer & byteBuffer );
+    inline bool isBufferValid( const sByteBuffer & byteBuffer );
 
     /**
      * \brief   Returns the pointer to data buffer for writing. 
@@ -440,7 +440,7 @@ namespace NEMemory
      * \param   byteBuffer  The instance of byte-buffer object.
      * \return  Returns data buffer to write.
      **/
-    inline unsigned char * GetBufferDataWrite( sByteBuffer & byteBuffer );
+    inline unsigned char * getBufferDataWrite( sByteBuffer & byteBuffer );
 
     /**
      * \brief   Returns the pointer to data buffer for writing. 
@@ -449,7 +449,7 @@ namespace NEMemory
      * \param   byteBuffer  The pointer to byte-buffer object.
      * \return  Returns data buffer to write.
      **/
-    inline unsigned char * GetBufferDataWrite( sByteBuffer * byteBuffer );
+    inline unsigned char * getBufferDataWrite( sByteBuffer * byteBuffer );
 
     /**
      * \brief   Returns the pointer to data buffer for reading. 
@@ -457,7 +457,7 @@ namespace NEMemory
      * \param   byteBuffer  The instance of byte-buffer object.
      * \return  Returns data buffer to read.
      **/
-    inline const unsigned char * GetBufferDataRead( const sByteBuffer & byteBuffer );
+    inline const unsigned char * getBufferDataRead( const sByteBuffer & byteBuffer );
 
     /**
      * \brief   Returns the pointer to data buffer for reading. 
@@ -466,7 +466,7 @@ namespace NEMemory
      * \param   byteBuffer  The pointer to byte-buffer object.
      * \return  Returns data buffer to read.
      **/
-    inline const unsigned char * GetBufferDataRead( const sByteBuffer * byteBuffer );
+    inline const unsigned char * getBufferDataRead( const sByteBuffer * byteBuffer );
 
     /**
      * \brief	Constructs elements in allocated buffer, i.e. calls default constructor to initialize element
@@ -479,7 +479,7 @@ namespace NEMemory
      * \note    The type ELEM_TYPE must have public available default constructor.
      **/
     template <typename ELEM_TYPE>
-    inline ELEM_TYPE * ConstructElems(void *begin, int elemCount);
+    inline ELEM_TYPE * constructElems(void *begin, int elemCount);
 
     /**
      * \brief	Constructs elements with argument in allocated buffer,  i.e. calls constructor with argument to initialize elements
@@ -493,7 +493,7 @@ namespace NEMemory
      * \note    The type ELEM_TYPE must have public available appropriate constructor with arguments.
      **/
     template <typename ELEM_TYPE, typename ARGUMENT_TYPE>
-    inline ELEM_TYPE * ConstructElemsWithArgument(void *begin, int elemCount, ARGUMENT_TYPE arg);
+    inline ELEM_TYPE * constructElemsWithArgument(void *begin, int elemCount, ARGUMENT_TYPE arg);
 
     /**
      * \brief	Destroys elements previously constructed / initialized in heap,
@@ -506,7 +506,7 @@ namespace NEMemory
      * \note    The type ELEM_TYPE must have public available destructor.
      **/
     template <typename ELEM_TYPE>
-    inline void DestroyElems(ELEM_TYPE *begin, int elemCount);
+    inline void destroyElems(ELEM_TYPE *begin, int elemCount);
 
     /**
      * \brief	Copies element from source to destination. The allocated buffer of destination should be big enough
@@ -524,7 +524,7 @@ namespace NEMemory
      *              - the ELEM_SRC should support assigning operator ( operator = ).
      **/
     template <typename ELEM_DST, typename ELEM_SRC>
-    inline void CopyElems(ELEM_DST *destination, const ELEM_SRC *source, int elemCount);
+    inline void copyElems(ELEM_DST *destination, const ELEM_SRC *source, int elemCount);
 
     /**
      * \brief	Moves elements starting from source to destination positions. The source and destination must refer
@@ -538,7 +538,7 @@ namespace NEMemory
      * \note    The type ELEM_TYPE must support assigning operator ( operator = ).
      **/
     template <typename ELEM_TYPE>
-    void MoveElems(ELEM_TYPE * destination, const ELEM_TYPE * source, int elemCount);
+    void moveElems(ELEM_TYPE * destination, const ELEM_TYPE * source, int elemCount);
 
     /**
      * \brief	Sets certain element value to the allocated memory. The type of allocated elements and element value
@@ -560,7 +560,7 @@ namespace NEMemory
      *          NEMemory::SetMemory<MyStruct, const MyStruct &>(buffer, zero, 100); // <= sets same value to all entries.
      **/
     template <typename ELEM, typename ELEM_TYPE>
-    inline void SetMemory(ELEM * begin, ELEM_TYPE elemValue, int elemCount);
+    inline void setMemory(ELEM * begin, ELEM_TYPE elemValue, int elemCount);
 
     /**
      * \brief	Compares 2 buffers of same elements. No need that ELEM type has comparing operator.
@@ -572,10 +572,10 @@ namespace NEMemory
      * \tparam  ELEM    The type of elements to compare
      * \note    If element type is structure or class, there is no need to have
      *          defined comparing operators, because the function compares byte-wise.
-     * \see     NEMemory::IsEqualElement
+     * \see     NEMemory::isEqualElement
      **/
     template <typename ELEM>
-    bool IsEqualBuffer(const ELEM * lhs, const ELEM * rhs, int count);
+    bool isEqualBuffer(const ELEM * lhs, const ELEM * rhs, int count);
 
     /**
      * \brief	Compares 2 buffers of same elements. The type ELEM should have comparing
@@ -587,14 +587,14 @@ namespace NEMemory
      * \tparam  ELEM    The type of elements to compare
      * \note    If elements type is structure or class, it should be possible
      *          to compare elements by applying comparing operator '==' ( operator == ).
-     *          If not, use method NEMemory::IsEqualBuffer
-     * \see     NEMemory::IsEqualBuffer
+     *          If not, use method NEMemory::isEqualBuffer
+     * \see     NEMemory::isEqualBuffer
      **/
     template <typename ELEM>
-    bool IsEqualElement(const ELEM * lhs, const ELEM * rhs, int count);
+    bool isEqualElement(const ELEM * lhs, const ELEM * rhs, int count);
 
     /**
-     * \brief	NEMemory::IsEqualElement<ELEM>( )
+     * \brief	NEMemory::isEqualElement<ELEM>( )
      *          Compares 2 buffers of same or different elements.
      *          The types ELEM_LEFT and ELEM_RIGHT should have
      *          appropriate comparing operator. The comparing is
@@ -619,10 +619,10 @@ namespace NEMemory
      * \note    If elements type is structure or class, it should be possible
      *          to convert type of elements ELEM_RIGHT to the type 'const ELEM_LEFT' and
      *          ELEM_LEFT should have valid comparing operator (operator ==).
-     * \see     NEMemory::IsEqualBuffer, NEMemory::IsEqualElement
+     * \see     NEMemory::isEqualBuffer, NEMemory::isEqualElement
      **/
     template <typename ELEM_LEFT, typename ELEM_RIGHT>
-    bool IsEqualElement(const ELEM_LEFT * lhs, const ELEM_RIGHT * rhs, int count);
+    bool isEqualElement(const ELEM_LEFT * lhs, const ELEM_RIGHT * rhs, int count);
 
     /**
      * \brief   Sets zero in a given element. The data is set byte-wise.
@@ -632,7 +632,7 @@ namespace NEMemory
      *                  Normally expecting structure.
      **/
     template<typename ELEM>
-    inline void ZeroData( ELEM & elem );
+    inline void zeroData( ELEM & elem );
 
     /**
      * \brief   Sets zero in given element list. The data is set to each entry.
@@ -643,14 +643,14 @@ namespace NEMemory
      * \tparam  ELEM        The type of element entry. Can be primitive or objects (struct or class).
      **/
     template<typename ELEM>
-    inline void ZeroElements( ELEM * elemList, uint32_t elemCount );
+    inline void zeroElements( ELEM * elemList, uint32_t elemCount );
 
     /**
      * \brief   Sets zero in a buffer.
      * \param   buffer  The buffer where zero should be set.
      * \param   length  The length of buffer in bytes.
      **/
-    inline void ZeroBuffer( void * buffer, unsigned int length );
+    inline void zeroBuffer( void * buffer, unsigned int length );
 
     /**
      * \brief	Moves elements starting from source to destination positions. The source and destination must refer
@@ -660,7 +660,7 @@ namespace NEMemory
      * \param	memSrc	The pointer of source of data to move
      * \param	count   The number of bytes to move.
      **/
-    inline void MemMove(void * memDst, const void * memSrc, unsigned int count);
+    inline void memMove(void * memDst, const void * memSrc, unsigned int count);
 
     /**
      * \brief	Copies data from source to destination. The allocated buffer of destination should be big enough
@@ -671,7 +671,7 @@ namespace NEMemory
      * \param	count       Amount of data in bytes to copy.
      * \return  Returns amount of data actually copied in destination buffer.
      **/
-    inline unsigned int MemCopy( void * memDst, unsigned int dstSpace, const void * memSrc, unsigned int count);
+    inline unsigned int memCopy( void * memDst, unsigned int dstSpace, const void * memSrc, unsigned int count);
 }
 
 /************************************************************************
@@ -692,7 +692,10 @@ namespace NEMemory
  * \return  Reading streaming object
  **/
 inline const IEInStream & operator >> (const IEInStream & stream, NEMemory::uAlign & input)
-{   stream.Read( reinterpret_cast<unsigned char *>(&input), sizeof(NEMemory::uAlign) ); return stream; }
+{
+    stream.read( reinterpret_cast<unsigned char *>(&input), sizeof(NEMemory::uAlign) );
+    return stream;
+}
 
 /**
  * \brief   Support streaming operator for NEMemory::uAlign type.
@@ -702,7 +705,10 @@ inline const IEInStream & operator >> (const IEInStream & stream, NEMemory::uAli
  * \return  Writing streaming object
  **/
 inline IEOutStream & operator << (IEOutStream & stream, const NEMemory::uAlign & output)
-{   stream.Write( reinterpret_cast<const unsigned char *>(&output), sizeof(NEMemory::uAlign) ); return stream; }
+{
+    stream.write( reinterpret_cast<const unsigned char *>(&output), sizeof(NEMemory::uAlign) );
+    return stream;
+}
 
 /************************************************************************
  * \brief   Streaming of NEMemory::uAlign
@@ -713,13 +719,17 @@ inline IEOutStream & operator << (IEOutStream & stream, const NEMemory::uAlign &
  * \brief   compares to NEMemory::uAlign values and returns true if they are equal.
  **/
 inline bool NEMemory::operator == ( const NEMemory::uAlign& lsh, const NEMemory::uAlign& rhs )
-{   return (&lsh != &rhs ? lsh.alignInt64.mElement == rhs.alignInt64.mElement : true);  }
+{
+    return (&lsh != &rhs ? lsh.alignInt64.mElement == rhs.alignInt64.mElement : true);
+}
 
 /**
  * \brief   compares to NEMemory::uAlign values and returns true if they are not equal.
  **/
 inline bool NEMemory::operator != ( const NEMemory::uAlign& lsh, const NEMemory::uAlign& rhs )
-{   return (&lsh != &rhs ? lsh.alignInt64.mElement != rhs.alignInt64.mElement : false); }
+{
+    return (&lsh != &rhs ? lsh.alignInt64.mElement != rhs.alignInt64.mElement : false);
+}
 
 //////////////////////////////////////////////////////////////////////////
 // NEMemory namespace function implementation.
@@ -729,23 +739,23 @@ inline bool NEMemory::operator != ( const NEMemory::uAlign& lsh, const NEMemory:
 // Comparing operators
 /************************************************************************/
 
-inline void NEMemory::ZeroBuffer( void * buffer, unsigned int length )
+inline void NEMemory::zeroBuffer( void * buffer, unsigned int length )
 {
-    NEMemory::SetMemory<unsigned char, unsigned char>( reinterpret_cast<unsigned char *>(buffer), 0x00u, length );
+    NEMemory::setMemory<unsigned char, unsigned char>( reinterpret_cast<unsigned char *>(buffer), 0x00u, length );
 }
 
-inline void NEMemory::MemMove( void * memDst, const void * memSrc, unsigned int count )
+inline void NEMemory::memMove( void * memDst, const void * memSrc, unsigned int count )
 {
-    NEMemory::MoveElems<unsigned char>( reinterpret_cast<unsigned char *>(memDst), reinterpret_cast<const unsigned char *>(memSrc), count);
+    NEMemory::moveElems<unsigned char>( reinterpret_cast<unsigned char *>(memDst), reinterpret_cast<const unsigned char *>(memSrc), count);
 }
 
-inline unsigned int NEMemory::MemCopy( void * memDst, unsigned int dstSpace, const void * memSrc, unsigned int count )
+inline unsigned int NEMemory::memCopy( void * memDst, unsigned int dstSpace, const void * memSrc, unsigned int count )
 {
     unsigned int result = 0;
     if ( (memDst != memSrc) && (memDst != static_cast<const unsigned char *>(NULL)) && (memSrc != static_cast<const unsigned char *>(NULL)) )
     {
         result = MACRO_MIN(dstSpace, count);
-        NEMemory::CopyElems<unsigned char, unsigned char>( reinterpret_cast<unsigned char *>(memDst), reinterpret_cast<const unsigned char *>(memSrc), result );
+        NEMemory::copyElems<unsigned char, unsigned char>( reinterpret_cast<unsigned char *>(memDst), reinterpret_cast<const unsigned char *>(memSrc), result );
     }
 
     return result;
@@ -755,34 +765,34 @@ inline unsigned int NEMemory::MemCopy( void * memDst, unsigned int dstSpace, con
 // Byte buffer functions
 /************************************************************************/
 
-inline bool NEMemory::IsBufferValid(const NEMemory::sByteBuffer * byteBuffer)
+inline bool NEMemory::isBufferValid(const NEMemory::sByteBuffer * byteBuffer)
 {
     return ((byteBuffer != NULL) && (byteBuffer != reinterpret_cast<const NEMemory::sByteBuffer *>(&NEMemory::InvalidBuffer)));
 }
 
-inline bool NEMemory::IsBufferValid(const NEMemory::sByteBuffer & byteBuffer)
+inline bool NEMemory::isBufferValid(const NEMemory::sByteBuffer & byteBuffer)
 {
     return (&byteBuffer != reinterpret_cast<const NEMemory::sByteBuffer *>(&NEMemory::InvalidBuffer));
 }
 
-inline unsigned char * NEMemory::GetBufferDataWrite(NEMemory::sByteBuffer & byteBuffer)
+inline unsigned char * NEMemory::getBufferDataWrite(NEMemory::sByteBuffer & byteBuffer)
 {
-    return (NEMemory::IsBufferValid(byteBuffer) ? reinterpret_cast<unsigned char *>(&byteBuffer) + byteBuffer.bufHeader.biOffset : 0);
+    return (NEMemory::isBufferValid(byteBuffer) ? reinterpret_cast<unsigned char *>(&byteBuffer) + byteBuffer.bufHeader.biOffset : 0);
 }
 
-inline unsigned char * NEMemory::GetBufferDataWrite(NEMemory::sByteBuffer * byteBuffer)
+inline unsigned char * NEMemory::getBufferDataWrite(NEMemory::sByteBuffer * byteBuffer)
 {
-    return (NEMemory::IsBufferValid(byteBuffer) ? reinterpret_cast<unsigned char *>(byteBuffer) + byteBuffer->bufHeader.biOffset : 0);
+    return (NEMemory::isBufferValid(byteBuffer) ? reinterpret_cast<unsigned char *>(byteBuffer) + byteBuffer->bufHeader.biOffset : 0);
 }
 
-inline const unsigned char * NEMemory::GetBufferDataRead(const sByteBuffer & byteBuffer)
+inline const unsigned char * NEMemory::getBufferDataRead(const sByteBuffer & byteBuffer)
 {
-    return (NEMemory::IsBufferValid(byteBuffer) ? reinterpret_cast<const unsigned char *>(&byteBuffer) + byteBuffer.bufHeader.biOffset : 0);
+    return (NEMemory::isBufferValid(byteBuffer) ? reinterpret_cast<const unsigned char *>(&byteBuffer) + byteBuffer.bufHeader.biOffset : 0);
 }
 
-inline const unsigned char * NEMemory::GetBufferDataRead(const sByteBuffer * byteBuffer)
+inline const unsigned char * NEMemory::getBufferDataRead(const sByteBuffer * byteBuffer)
 {
-    return (NEMemory::IsBufferValid(byteBuffer) ? reinterpret_cast<const unsigned char *>(byteBuffer) + byteBuffer->bufHeader.biOffset : 0);
+    return (NEMemory::isBufferValid(byteBuffer) ? reinterpret_cast<const unsigned char *>(byteBuffer) + byteBuffer->bufHeader.biOffset : 0);
 }
 
 /************************************************************************/
@@ -790,7 +800,7 @@ inline const unsigned char * NEMemory::GetBufferDataRead(const sByteBuffer * byt
 /************************************************************************/
 
 template <typename ELEM_TYPE>
-inline ELEM_TYPE * NEMemory::ConstructElems(void *begin, int elemCount)
+inline ELEM_TYPE * NEMemory::constructElems(void *begin, int elemCount)
 {
     if ( static_cast<const void *>(begin) != static_cast<const void *>(NULL) )
     {
@@ -812,7 +822,7 @@ inline ELEM_TYPE * NEMemory::ConstructElems(void *begin, int elemCount)
 }
 
 template <typename ELEM_TYPE, typename ARGUMENT_TYPE>
-inline ELEM_TYPE * NEMemory::ConstructElemsWithArgument(void *begin, int elemCount, ARGUMENT_TYPE arg)
+inline ELEM_TYPE * NEMemory::constructElemsWithArgument(void *begin, int elemCount, ARGUMENT_TYPE arg)
 {
     if ( static_cast<const void *>(begin) != static_cast<const void *>(NULL) )
     {
@@ -834,7 +844,7 @@ inline ELEM_TYPE * NEMemory::ConstructElemsWithArgument(void *begin, int elemCou
 }
 
 template <typename ELEM_TYPE>
-inline void NEMemory::DestroyElems(ELEM_TYPE *begin, int elemCount)
+inline void NEMemory::destroyElems(ELEM_TYPE *begin, int elemCount)
 {
     if ( static_cast<const void *>(begin) != static_cast<const void *>(NULL) )
     {
@@ -845,7 +855,7 @@ inline void NEMemory::DestroyElems(ELEM_TYPE *begin, int elemCount)
 }
 
 template <typename ELEM_DST, typename ELEM_SRC>
-inline void NEMemory::CopyElems(ELEM_DST *destination, const ELEM_SRC *source, int elemCount)
+inline void NEMemory::copyElems(ELEM_DST *destination, const ELEM_SRC *source, int elemCount)
 {
     if ((destination != source) && (destination != static_cast<const ELEM_DST *>(NULL)) && (source != static_cast<const ELEM_SRC *>(NULL)) )
     {
@@ -855,7 +865,7 @@ inline void NEMemory::CopyElems(ELEM_DST *destination, const ELEM_SRC *source, i
 }
 
 template <typename ELEM_TYPE>
-void NEMemory::MoveElems(ELEM_TYPE *destination, const ELEM_TYPE *source, int elemCount)
+void NEMemory::moveElems(ELEM_TYPE *destination, const ELEM_TYPE *source, int elemCount)
 {
     if (destination < source)
     {
@@ -877,7 +887,7 @@ void NEMemory::MoveElems(ELEM_TYPE *destination, const ELEM_TYPE *source, int el
 }
 
 template <typename ELEM, typename ELEM_TYPE>
-inline void NEMemory::SetMemory(ELEM* begin, ELEM_TYPE elemValue, int elemCount)
+inline void NEMemory::setMemory(ELEM* begin, ELEM_TYPE elemValue, int elemCount)
 {
     if (begin != static_cast<const ELEM *>(NULL) && elemCount > 0)
     {
@@ -887,7 +897,7 @@ inline void NEMemory::SetMemory(ELEM* begin, ELEM_TYPE elemValue, int elemCount)
 }
 
 template <typename ELEM>
-inline bool NEMemory::IsEqualBuffer(const ELEM * lhs, const ELEM * rhs, int count)
+inline bool NEMemory::isEqualBuffer(const ELEM * lhs, const ELEM * rhs, int count)
 {
     bool result = false;
     if ((lhs != static_cast<const ELEM *>(NULL)) && (rhs != static_cast<const ELEM *>(NULL)))
@@ -914,7 +924,7 @@ inline bool NEMemory::IsEqualBuffer(const ELEM * lhs, const ELEM * rhs, int coun
 }
 
 template <typename ELEM>
-inline bool NEMemory::IsEqualElement(const ELEM * lhs, const ELEM * rhs, int count)
+inline bool NEMemory::isEqualElement(const ELEM * lhs, const ELEM * rhs, int count)
 {
     bool result = false;
     if ((lhs != static_cast<const ELEM *>(NULL)) && (rhs != static_cast<const ELEM *>(NULL)))
@@ -938,7 +948,7 @@ inline bool NEMemory::IsEqualElement(const ELEM * lhs, const ELEM * rhs, int cou
 
 
 template <typename ELEM_LEFT, typename ELEM_RIGHT>
-inline bool NEMemory::IsEqualElement(const ELEM_LEFT* lhs, const ELEM_RIGHT* rhs, int count)
+inline bool NEMemory::isEqualElement(const ELEM_LEFT* lhs, const ELEM_RIGHT* rhs, int count)
 {
     bool result = false;
     if ((lhs != static_cast<const ELEM_LEFT *>(NULL)) && (rhs != static_cast<const ELEM_RIGHT *>(NULL)))
@@ -961,18 +971,18 @@ inline bool NEMemory::IsEqualElement(const ELEM_LEFT* lhs, const ELEM_RIGHT* rhs
 }
 
 template<typename ELEM>
-inline void NEMemory::ZeroData( ELEM & elem )
+inline void NEMemory::zeroData( ELEM & elem )
 {
-    NEMemory::ZeroBuffer( reinterpret_cast<void *>(&elem), sizeof( ELEM ) );
+    NEMemory::zeroBuffer( reinterpret_cast<void *>(&elem), sizeof( ELEM ) );
 }
 
 template<typename ELEM>
-inline void NEMemory::ZeroElements( ELEM * elemList, uint32_t elemCount )
+inline void NEMemory::zeroElements( ELEM * elemList, uint32_t elemCount )
 {
-    NEMemory::ZeroBuffer( reinterpret_cast<void *>(elemList), elemCount * sizeof( ELEM ) );
+    NEMemory::zeroBuffer( reinterpret_cast<void *>(elemList), elemCount * sizeof( ELEM ) );
 }
 
-inline const char * NEMemory::GetString( NEMemory::eMessageResult msgResult )
+inline const char * NEMemory::getString( NEMemory::eMessageResult msgResult )
 {
     switch ( msgResult )
     {

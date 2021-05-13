@@ -15,10 +15,10 @@
 
 #ifdef _POSIX
 
-#include "areg/base/private/posix/CEMutexIX.hpp"
+#include "areg/base/private/posix/MutexIX.hpp"
 
 //////////////////////////////////////////////////////////////////////////
-// CESynchWaitable class declaration
+// SynchWaitable class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
  * \brief   Base class for all waitable objects.
@@ -28,7 +28,7 @@
  *          signaled. This object cannot be directly instantiated.
  *          Instead, instantiate one of child classes.
  **/
-class IEWaitableBaseIX : public CEMutexIX
+class IEWaitableBaseIX : public MutexIX
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -54,14 +54,14 @@ public:
     /**
      * \brief   Returns true if the object is signaled. Otherwise, returns false.
      **/
-    virtual bool IsSignaled( void ) const = 0;
+    virtual bool checkSignaled( void ) const = 0;
 
     /**
      * \brief   This callback is triggered when a waiting thread is released to continue to run.
      * \param   ownerThread     Indicates the POSIX thread ID that completed to wait.
      * \return  Returns true if waitable successfully has taken thread ownership.
      **/
-    virtual bool RequestsOwnership( pthread_t ownerThread ) = 0;
+    virtual bool notifyRequestOwnership( pthread_t ownerThread ) = 0;
 
     /**
      * \brief   This callback is triggered to when a system needs to know whether waitable
@@ -69,7 +69,7 @@ public:
      *          multiple threads can get waitable signaled state. For example, waitable Mutex 
      *          signals only one thread, when waitable Event can signal multiple threads.
      **/
-    virtual bool CanSignalMultipleThreads( void ) const = 0;
+    virtual bool checkCanSignalMultipleThreads( void ) const = 0;
 
     /**
      * \brief   This callback is called to notify the object the amount of
@@ -78,16 +78,16 @@ public:
      *                      object is in signaled state. 0 means that no thread
      *                      was released by the object.
      **/
-    virtual void ThreadsReleased( int numThreads ) = 0;
+    virtual void notifyReleasedThreads( int numThreads ) = 0;
 
     /**
      * \brief   Call when synchronization object is going to be deleted.
      *          This releases all waiting threads with failure code.
      **/
-    virtual void FreeResources( void );
+    virtual void freeResources( void );
 
 //////////////////////////////////////////////////////////////////////////
-// Hidden / forbidden calls.
+// Forbidden calls.
 //////////////////////////////////////////////////////////////////////////
 private:
     IEWaitableBaseIX( void );

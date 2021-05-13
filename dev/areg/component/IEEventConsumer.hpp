@@ -16,7 +16,7 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class CEEvent;
+class Event;
 
 //////////////////////////////////////////////////////////////////////////
 // IEEventConsumer class declaration
@@ -33,7 +33,6 @@ class CEEvent;
  *              register by specifying certain dispatcher. All event
  *              consumer are instances of IEEventConsumer. And the
  *              event processing method is triggered by dispatcher object.
- *
  **/
 class AREG_API IEEventConsumer
 {
@@ -67,14 +66,14 @@ public:
      *                      processing. As soon as event is finished processing
      *                      it will be destroyed.
      **/
-    virtual void StartEventProcessing( CEEvent & eventElem ) = 0;
+    virtual void startEventProcessing( Event & eventElem ) = 0;
 
     /**
      * \brief   Triggered, when consumer has been registered / unregistered.
      * \param   isRegistered    Flag indicating whether consumer is registered
      *                          or not.
      **/
-    virtual void ConsumerRegistered( bool isRegistered );
+    virtual void consumerRegistered( bool isRegistered );
 
     /**
      * \brief   Method called before Event Started to be processed.
@@ -85,7 +84,7 @@ public:
      *          Returns false if Event processing should be interrupted and 
      *          the Event object should be dropped.
      **/
-    virtual bool PreprocessEvent( CEEvent & eventElem );
+    virtual bool preprocessEvent( Event & eventElem );
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden / Forbidden method calls.

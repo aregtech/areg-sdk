@@ -32,8 +32,8 @@ class IEOutStream;
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class CEString;
-class CEWideString;
+class String;
+class WideString;
 class IEByteBuffer;
 /************************************************************************
  * \brief   Predefined MACRO to support data read / write streaming
@@ -72,11 +72,11 @@ class IEByteBuffer;
 #define IMPLEMENT_STREAMABLE(data_type)                                                                         \
     /* \brief   Read data from stream and initialize input object.                                      */      \
     inline const IEInStream& operator >> (const IEInStream& stream, data_type & input)                          \
-    {   stream.Read( reinterpret_cast<unsigned char *>(&input), sizeof(data_type) ); return stream; }           \
+    {   stream.read( reinterpret_cast<unsigned char *>(&input), sizeof(data_type) ); return stream; }           \
                                                                                                                 \
     /* \brief   Write output data object to stream instance.                                            */      \
     inline IEOutStream& operator << (IEOutStream& stream, const data_type& output)                              \
-    {   stream.Write( reinterpret_cast<const unsigned char *>(&output), sizeof(data_type) ); return stream; }   \
+    {   stream.write( reinterpret_cast<const unsigned char *>(&output), sizeof(data_type) ); return stream; }   \
 
 
 /**
@@ -140,22 +140,22 @@ public:
     /**
      * \brief   Reads and returns 8-bit value from buffer
      **/
-    virtual uint8_t Read8Bits( void ) const;
+    virtual uint8_t read8Bits( void ) const;
 
     /**
      * \brief   Reads and returns 16-bit value from buffer
      **/
-    virtual uint16_t Read16Bits( void ) const;
+    virtual uint16_t read16Bits( void ) const;
 
     /**
      * \brief   Reads and returns 32-bit value from buffer
      **/
-    virtual uint32_t Read32Bits( void ) const;
+    virtual uint32_t read32Bits( void ) const;
 
     /**
      * \brief   Reads and returns 64-bit value from buffer
      **/
-    virtual uint64_t Read64Bits( void ) const;
+    virtual uint64_t read64Bits( void ) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -172,7 +172,7 @@ public:
      * \param	size	The size in bytes of available buffer
      * \return	Returns the size in bytes of copied data
      **/
-    virtual unsigned int Read( unsigned char * buffer, unsigned int size ) const = 0;
+    virtual unsigned int read( unsigned char * buffer, unsigned int size ) const = 0;
 
     /**
      * \brief   Reads data from input stream object, copies into give Byte Buffer object
@@ -182,7 +182,7 @@ public:
      * \param   buffer  The instance of Byte Buffer object to stream data from Input Stream object
      * \return	Returns the size in bytes of copied data
      **/
-    virtual unsigned int Read( IEByteBuffer & buffer ) const = 0;
+    virtual unsigned int read( IEByteBuffer & buffer ) const = 0;
 
     /**
      * \brief   Reads string data from Input Stream object and copies into given ASCII String.
@@ -190,7 +190,7 @@ public:
      * \param   asciiString     The buffer of ASCII String to stream data from Input Stream object.
      * \return  Returns the size in bytes of copied string data.
      **/
-    virtual unsigned int Read( CEString & asciiString ) const = 0;
+    virtual unsigned int read( String & asciiString ) const = 0;
 
     /**
      * \brief   Reads string data from Input Stream object and copies into given Wide String.
@@ -198,13 +198,13 @@ public:
      * \param   wideString      The buffer of Wide String to stream data from Input Stream object.
      * \return  Returns the size in bytes of copied string data.
      **/
-    virtual unsigned int Read( CEWideString & wideString ) const = 0;
+    virtual unsigned int read( WideString & wideString ) const = 0;
 
     /**
      * \brief   Resets cursor pointer and moves to the begin of data.
      *          Implement the function if stream has pointer reset mechanism
      **/
-    virtual void ResetCursor( void ) const = 0;
+    virtual void resetCursor( void ) const = 0;
 
 protected:
     /**
@@ -214,7 +214,7 @@ protected:
      *          For example, if the size of buffer is 'n' and 'x' bytes of data was
      *          already read from stream, the available readable size is 'n - x'.
      **/
-    virtual unsigned int GetReadableSize( void ) const = 0;
+    virtual unsigned int getSizeReadable( void ) const = 0;
 }; 
 
 
@@ -262,28 +262,28 @@ public:
      * \param   value8Bit       The 8-bit value to write into the stream.
      * \return  Returns true if operation succeeded.
      **/
-    virtual bool Write8Bits( uint8_t value8Bit );
+    virtual bool write8Bits( uint8_t value8Bit );
 
     /**
      * \brief   Writes given 16-bit value into the stream and returns true if operation succeeded.
      * \param   value8Bit       The 16-bit value to write into the stream.
      * \return  Returns true if operation succeeded.
      **/
-    virtual bool Write16Bits( uint16_t value16Bit );
+    virtual bool write16Bits( uint16_t value16Bit );
 
     /**
      * \brief   Writes given 32-bit value into the stream and returns true if operation succeeded.
      * \param   value8Bit       The 32-bit value to write into the stream.
      * \return  Returns true if operation succeeded.
      **/
-    virtual bool Write32Bits( uint32_t value32Bit );
+    virtual bool write32Bits( uint32_t value32Bit );
 
     /**
      * \brief   Writes given 64-bit value into the stream and returns true if operation succeeded.
      * \param   value8Bit       The 64-bit value to write into the stream.
      * \return  Returns true if operation succeeded.
      **/
-    virtual bool Write64Bits( uint64_t value64Bit );
+    virtual bool write64Bits( uint64_t value64Bit );
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -301,7 +301,7 @@ public:
      * \param	size	The size in bytes of data buffer
      * \return	Returns the size in bytes of written data
      **/
-    virtual unsigned int Write( const unsigned char * buffer, unsigned int size ) = 0;
+    virtual unsigned int write( const unsigned char * buffer, unsigned int size ) = 0;
 
     /**
      * \brief	Writes Binary data from Byte Buffer object to Output Stream object
@@ -310,7 +310,7 @@ public:
      * \param	buffer	The instance of Byte Buffer object containing data to stream to Output Stream.
      * \return	Returns the size in bytes of written data
      **/
-    virtual unsigned int Write( const IEByteBuffer & buffer ) = 0;
+    virtual unsigned int write( const IEByteBuffer & buffer ) = 0;
 
     /**
      * \brief   Writes string data from given ASCII String object to output stream object.
@@ -318,7 +318,7 @@ public:
      * \param   asciiString     The buffer of String containing data to stream to Output Stream.
      * \return  Returns the size in bytes of copied string data.
      **/
-    virtual unsigned int Write( const CEString & asciiString )  = 0;
+    virtual unsigned int write( const String & asciiString )  = 0;
 
     /**
      * \brief   Writes string data from given wide-char String object to output stream object.
@@ -326,13 +326,13 @@ public:
      * \param   wideString  The buffer of String containing data to stream to Output Stream.
      * \return  Returns the size in bytes of copied string data.
      **/
-    virtual unsigned int Write( const CEWideString & wideString ) = 0;
+    virtual unsigned int write( const WideString & wideString ) = 0;
 
     /**
      * \brief	Flushes cached data to output stream object.
      *          Implement the function if device has caching mechanism
      **/
-    virtual void Flush( void ) = 0;
+    virtual void flush( void ) = 0;
 
 protected:
     /**
@@ -342,7 +342,7 @@ protected:
      *          For example, if the size of buffer is 'n' and 'x' bytes of data was
      *          already written to stream, the available writable size is 'n - x'.
      **/
-    virtual unsigned int GetWritableSize( void ) const = 0;
+    virtual unsigned int getSizeWritable( void ) const = 0;
 };
 
 //////////////////////////////////////////////////////////////////////////

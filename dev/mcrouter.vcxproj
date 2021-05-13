@@ -13,9 +13,6 @@
   <PropertyGroup Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
   </PropertyGroup>
-  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='dbg_vc142|Win32'">
-    <PlatformToolset>v110</PlatformToolset>
-  </PropertyGroup>
   <ImportGroup Label="PropertySheets">
     <Import Project="$(SolutionDir)\config_project.props" Label="LocalAppDataPlatform" />
   </ImportGroup>
@@ -39,13 +36,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="mcrouter\private\CEMulticastRouter.cpp" />
-    <ClCompile Include="mcrouter\private\CEMulticastRouterPosix.cpp" />
-    <ClCompile Include="mcrouter\private\CEMulticastRouterWin32.cpp" />
+    <ClCompile Include="mcrouter\private\MulticastRouter.cpp" />
+    <ClCompile Include="mcrouter\private\MulticastRouterPosix.cpp" />
+    <ClCompile Include="mcrouter\private\MulticastRouterWin32.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="system\GEPlatform.h" />
-    <ClInclude Include="mcrouter\CEMulticastRouter.hpp" />
+    <ClInclude Include="mcrouter\MulticastRouter.hpp" />
     <ClInclude Include="mcrouter\NEMulticastRouterSettings.hpp" />
     <ClInclude Include="mcrouter\resources\resource.hpp" />
     <ClInclude Include="mcrouter\resources\targetver.hpp" />

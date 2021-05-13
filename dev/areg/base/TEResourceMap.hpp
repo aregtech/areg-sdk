@@ -91,6 +91,33 @@ public:
 // Operations
 //////////////////////////////////////////////////////////////////////////
 public:
+
+    /**
+     * \brief	Locks the Resource Map, grants ownership to locking thread
+     *          and blocks any other thread to access resource map data.
+     * \return	
+     **/
+    inline void lock( void ) const;
+
+    /**
+     * \brief	Unlocks previously locked Resource Map that other threads
+     *          can have access to resource map data.
+     * \return	
+     **/
+    inline void unlock( void ) const;
+
+    /**
+     * \brief	Tries to lock Resource Map. If succeeds, calling thread
+     *          gets resource locking ownership and any other threads will
+     *          be blocked that do not access Resource Map data.
+     *          The calling thread will not be blocked.
+     *          Check return value to figure out whether calling thread
+     *          locked resource or not.
+     * \return	Returns true if calling thread locked resource.
+     *          Otherwise returns false, but does not block thread execution.
+     **/
+    inline bool tryLock( void ) const;
+
     /**
      * \brief	Registers Resource in the map and returns true, 
      *          either is such resource already is registered (i.e. exists),
@@ -103,7 +130,7 @@ public:
      *          new resource. If the resource Key is already registered, but 
      *          resource objects are different, returns false.
      **/
-    inline bool RegisterResourceObject( const RESOURCE_KEY & Key, RESOURCE_OBJECT * resource );
+    inline bool registerResourceObject( const RESOURCE_KEY & Key, RESOURCE_OBJECT * resource );
 
     /**
      * \brief	Unregisters Resource from map and if succeeded, returns pointer
@@ -112,7 +139,7 @@ public:
      * \return	If succeeded, returns pointer to unregistered resource.
      *          Otherwise returns NULL
      **/
-    inline RESOURCE_OBJECT * UnregisterResourceObject(const RESOURCE_KEY & Key);
+    inline RESOURCE_OBJECT * unregisterResourceObject(const RESOURCE_KEY & Key);
 
     /**
      * \brief	Search Resource in Resource Map by give Key
@@ -121,33 +148,7 @@ public:
      * \return	If could find Resource in Resource Map by unique Key,
      *          returns pointer to resource. Otherwise returns NULL.
      **/
-    inline RESOURCE_OBJECT * FindResourceObject( const RESOURCE_KEY & Key ) const;
-
-    /**
-     * \brief	Locks the Resource Map, grants ownership to locking thread
-     *          and blocks any other thread to access resource map data.
-     * \return	
-     **/
-    inline void ResourceLock( void ) const;
-
-    /**
-     * \brief	Unlocks previously locked Resource Map that other threads
-     *          can have access to resource map data.
-     * \return	
-     **/
-    inline void ResourceUnlock( void ) const;
-
-    /**
-     * \brief	Tries to lock Resource Map. If succeeds, calling thread
-     *          gets resource locking ownership and any other threads will
-     *          be blocked that do not access Resource Map data.
-     *          The calling thread will not be blocked.
-     *          Check return value to figure out whether calling thread
-     *          locked resource or not.
-     * \return	Returns true if calling thread locked resource.
-     *          Otherwise returns false, but does not block thread execution.
-     **/
-    inline bool ResourceTryLock( void ) const;
+    inline RESOURCE_OBJECT * findResourceObject( const RESOURCE_KEY & Key ) const;
 
     /**
      * \brief	Removes Resource from Resource map.
@@ -157,14 +158,14 @@ public:
      * \return	If found and removed any such resource, returns true.
      *          Otherwise returns false.
      **/
-    inline bool RemoveResourceObject( RESOURCE_OBJECT * resource );
+    inline bool removeResourceObject( RESOURCE_OBJECT * resource );
 
     /**
      * \brief	Removes all registered resources one-by-one.
-     *          For every removed resource calls CleanResourceElement() function
+     *          For every removed resource calls cleanResourceEntry() function
      *          if any additional job should be performed (for example, delete resources)
      **/
-    inline void RemoveAllResources( void );
+    inline void removeAllResources( void );
 
     /**
      * \brief   Removes first element of Resource map and returns true if successfully removed.
@@ -173,7 +174,7 @@ public:
      *                              of first element in resource map.
      * \return  Returns true if successfully removed first element.
      **/
-    inline bool RemoveResourceFirstElement( TEPair<RESOURCE_KEY, RESOURCE_OBJECT *> out_FirstElement );
+    inline bool removeResourceFirstElement( TEPair<RESOURCE_KEY, RESOURCE_OBJECT *> out_FirstElement );
 
     /**
      * \brief   Returns resource object of first element and its Key.
@@ -182,7 +183,7 @@ public:
      *                          value of first element in Resource Map.
      * \return  Returns pointer of stored Resource Object.
      **/
-    inline RESOURCE_OBJECT* GetResourceFirstKey( RESOURCE_KEY & out_FirstKey ) const;
+    inline RESOURCE_OBJECT* resourceFirstKey( RESOURCE_KEY & out_FirstKey ) const;
 
     /**
      * \brief	Returns resource object of next element and its Key.
@@ -198,21 +199,21 @@ public:
      *                          value to access next resource object.
      * \return	Returns pointer to next Resource Object.
      **/
-    inline RESOURCE_OBJECT * GetResourceNextKey( RESOURCE_KEY & in_out_NextKey ) const;
+    inline RESOURCE_OBJECT * resourceNextKey( RESOURCE_KEY & in_out_NextKey ) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes
 //////////////////////////////////////////////////////////////////////////
-public:
+
     /**
      * \brief	Returns the size of Resource Map
      **/
-    inline int GetSize( void ) const;
+    inline int getSize( void ) const;
 
     /**
      * \brief   Returns true if resource map is empty.
      **/
-    inline bool IsEmpty( void ) const;
+    inline bool isEmpty( void ) const;
 
     /**
      * \brief	Checks whether Resource Map contains entry
@@ -221,7 +222,7 @@ public:
      * \return	If Resource with unique Key is registered, returns true.
      *          Otherwise returns false
      **/
-    inline bool ResourceKeyExist( const RESOURCE_KEY & Key ) const;
+    inline bool existResource( const RESOURCE_KEY & Key ) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Override operations
@@ -229,13 +230,13 @@ public:
 protected:
     /**
      * \brief	Called when all resources are removed.
-     *          This function is called from RemoveAllResources() for every single
+     *          This function is called from removeAllResources() for every single
      *          resource being unregistered. Override this function if any additional
      *          work should be performed after unregistering resource.
      * \param	Key	        The Key value of resource
      * \param	resource	Pointer to resource object
      **/
-    inline void CleanResourceElement( RESOURCE_KEY & Key, RESOURCE_OBJECT * resource );
+    inline void cleanResourceEntry( RESOURCE_KEY & Key, RESOURCE_OBJECT * resource );
 
 //////////////////////////////////////////////////////////////////////////
 // Member Variables
@@ -265,7 +266,7 @@ private:
  *              Non-blocking Resource Map. It is not synchronizing
  *              thread access. Use instance of this class template
  *              if there is no need to control thread access. It inherits from 
- *              TEResourceMap and contains instance of CENoLockSynchObject, 
+ *              TEResourceMap and contains instance of NoLockSynchObject, 
  *              which is not synchronizing thread access.
  * \tparam  RESOURCE_KEY    The type of Key to access resource element
  * \tparam  RESOURCE_OBJECT The type of resource objects. Pointer of
@@ -297,7 +298,7 @@ private:
      * \brief   Instance of non-locking synchronization object.
      *          No thread locking will happen.
      **/
-    CENolockSynchObject mNoLock;
+    NolockSynchObject mNoLock;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden / Forbidden methods
@@ -345,7 +346,7 @@ private:
     /**
      * \brief   Instance of Critical Section to synchronize thread access.
      **/
-    CEResourceLock   mLock;
+    ResourceLock   mLock;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden / Forbidden methods
@@ -379,133 +380,154 @@ TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Implement>::~TEResourceMap
 }
 
 template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Implement>
-inline bool TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Implement>::RegisterResourceObject(const RESOURCE_KEY & Key, RESOURCE_OBJECT * resource)
+inline bool TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Implement>::registerResourceObject(const RESOURCE_KEY & Key, RESOURCE_OBJECT * resource)
 {
-    CELock lock(mSynchObj);
+    Lock lock(mSynchObj);
 
     RESOURCE_OBJECT* existing = NULL;
-    return ( HashMap::Find(Key, existing) ? resource == existing : HashMap::SetKey(Key, resource, false) != NULL);
+    return ( HashMap::find(Key, existing) ? resource == existing : HashMap::setAt(Key, resource, false) != NULL);
 }
 
 template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Implement>
-inline RESOURCE_OBJECT * TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Implement>::UnregisterResourceObject(const RESOURCE_KEY & Key)
+inline RESOURCE_OBJECT * TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Implement>::unregisterResourceObject(const RESOURCE_KEY & Key)
 {
-    CELock lock(mSynchObj);
+    Lock lock(mSynchObj);
 
     RESOURCE_OBJECT* result = NULL;
-    HashMap::RemoveKey(Key, result);
+    HashMap::removeAt(Key, result);
     return result;
 }
 
 template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Implement>
-inline RESOURCE_OBJECT* TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Implement>::FindResourceObject(const RESOURCE_KEY & Key) const
+inline RESOURCE_OBJECT* TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Implement>::findResourceObject(const RESOURCE_KEY & Key) const
 {
-    CELock lock(mSynchObj);
+    Lock lock(mSynchObj);
 
     RESOURCE_OBJECT* result = NULL;
-    HashMap::Find(Key, result);
+    HashMap::find(Key, result);
     return result;
 }
 
 template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Implement>
-inline bool TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Implement>::ResourceKeyExist(const RESOURCE_KEY & Key) const
-{   CELock lock(mSynchObj); return (HashMap::Find(Key) != NULL);    }
-
-template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Implement>
-inline void TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Implement>::ResourceLock( void ) const
-{   mSynchObj.Lock(IESynchObject::WAIT_INFINITE);                 }
-
-template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Implement>
-inline void TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Implement>::ResourceUnlock( void ) const
-{   mSynchObj.Unlock( );                                            }
-
-template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Implement>
-inline bool TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Implement>::ResourceTryLock( void ) const
+inline bool TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Implement>::existResource(const RESOURCE_KEY & Key) const
 {
-    return mSynchObj.TryLock( );
+    Lock lock(mSynchObj);
+    return (HashMap::find(Key) != NULL);
 }
 
 template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Implement>
-inline int TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Implement>::GetSize( void ) const
-{   CELock lock(mSynchObj); return HashMap::GetSize();              }
-
-template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Implement>
-inline bool TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Implement>::IsEmpty( void ) const
-{   CELock lock(mSynchObj); return HashMap::IsEmpty();              }
-
-template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Implement>
-inline bool TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Implement>::RemoveResourceObject( RESOURCE_OBJECT * resource )
+inline void TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Implement>::lock( void ) const
 {
-    CELock lock(mSynchObj);
+    mSynchObj.lock(IESynchObject::WAIT_INFINITE);
+}
+
+template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Implement>
+inline void TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Implement>::unlock( void ) const
+{
+    mSynchObj.unlock( );
+}
+
+template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Implement>
+inline bool TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Implement>::tryLock( void ) const
+{
+    return mSynchObj.tryLock( );
+}
+
+template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Implement>
+inline int TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Implement>::getSize( void ) const
+{
+    Lock lock(mSynchObj);
+    return HashMap::getSize();
+}
+
+template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Implement>
+inline bool TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Implement>::isEmpty( void ) const
+{
+    Lock lock(mSynchObj);
+    return HashMap::isEmpty();
+}
+
+template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Implement>
+inline bool TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Implement>::removeResourceObject( RESOURCE_OBJECT * resource )
+{
+    Lock lock(mSynchObj);
 
     bool removed = false;
-    for ( MAPPOS pos = HashMap::GetStartPosition(); pos != NULL; pos = HashMap::GetNextPosition(pos))
+    for ( MAPPOS pos = HashMap::firstPosition(); pos != NULL; pos = HashMap::nextPosition(pos))
     {
-        if ( resource == HashMap::GetValueAt(pos) )
+        if ( resource == HashMap::valueAtPosition(pos) )
         {
-            HashMap::RemoveAt(pos);
+            HashMap::removePosition(pos);
             removed = true;
             break;
         }
     }
+
     return removed;
 }
 
 template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Implement>
-inline void TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Implement>::RemoveAllResources( void )
+inline void TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Implement>::removeAllResources( void )
 {
-    CELock lock(mSynchObj);
+    Lock lock(mSynchObj);
 
-    for ( MAPPOS pos = HashMap::GetStartPosition(); pos != NULL; pos = HashMap::GetNextPosition(pos))
+    for ( MAPPOS pos = HashMap::firstPosition(); pos != NULL; pos = HashMap::nextPosition(pos))
     {
-        typename HashMap::CEBlock * block = HashMap::GetBlockAt(pos);
+        typename HashMap::Block * block = HashMap::blockAt(pos);
         if (block != NULL)
         {
-            CleanResourceElement(block->mKey, block->mValue);
+            cleanResourceEntry(block->mKey, block->mValue);
         }
     }
 
-    HashMap::RemoveAll();
+    HashMap::removeAll();
 }
 
 template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Implement>
-inline bool TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Implement>::RemoveResourceFirstElement( TEPair<RESOURCE_KEY, RESOURCE_OBJECT *> out_FirstElement )
+inline bool TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Implement>::removeResourceFirstElement( TEPair<RESOURCE_KEY, RESOURCE_OBJECT *> out_FirstElement )
 {
-    CELock lock(mSynchObj);
-    MAPPOS pos = HashMap::GetStartPosition();
+    Lock lock(mSynchObj);
+    MAPPOS pos = HashMap::firstPosition();
     if (pos != NULL)
-        HashMap::RemoveAt(pos, out_FirstElement.mKey, out_FirstElement.mValue);
+    {
+        HashMap::removePosition(pos, out_FirstElement.mKey, out_FirstElement.mValue);
+    }
+
     return (pos != NULL);
 }
 
 template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Implement>
-inline RESOURCE_OBJECT* TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Implement>::GetResourceFirstKey( RESOURCE_KEY & out_FirstKey ) const
+inline RESOURCE_OBJECT* TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Implement>::resourceFirstKey( RESOURCE_KEY & out_FirstKey ) const
 {
-    CELock lock(mSynchObj);
+    Lock lock(mSynchObj);
 
     RESOURCE_OBJECT * result = NULL;
-    MAPPOS pos = HashMap::GetStartPosition();
+    MAPPOS pos = HashMap::firstPosition();
     if (pos != NULL)
-        HashMap::GetAt(pos, out_FirstKey, result);
+    {
+        HashMap::getAtPosition(pos, out_FirstKey, result);
+    }
+
     return result;
 }
 
 template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Implement>
-inline RESOURCE_OBJECT* TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Implement>::GetResourceNextKey( RESOURCE_KEY & in_out_NextKey ) const
+inline RESOURCE_OBJECT* TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Implement>::resourceNextKey( RESOURCE_KEY & in_out_NextKey ) const
 {
-    CELock lock(mSynchObj);
+    Lock lock(mSynchObj);
 
     RESOURCE_OBJECT * result = NULL;
-    MAPPOS pos = HashMap::Find(in_out_NextKey);
-    if (pos != NULL && HashMap::GetNextElem(pos, in_out_NextKey, result) == false)
+    MAPPOS pos = HashMap::find(in_out_NextKey);
+    if (pos != NULL && HashMap::nextEntry(pos, in_out_NextKey, result) == false)
         result = NULL;
+
     return result;
 }
 
 template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Implement>
-inline void TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Implement>::CleanResourceElement( RESOURCE_KEY & Key, RESOURCE_OBJECT * Resource )
+inline void TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Implement>::cleanResourceEntry( RESOURCE_KEY & Key, RESOURCE_OBJECT * Resource )
 {
-    Implement::ImplCleanResourceElement(Key, Resource);
+    Implement::implCleanResource(Key, Resource);
 }
 
 //////////////////////////////////////////////////////////////////////////

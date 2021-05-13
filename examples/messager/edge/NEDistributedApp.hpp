@@ -51,9 +51,9 @@ namespace NEDistributedApp
     const char * const  PREFIX_INITIATOR    = "init_";
     const char * const  PREFIX_PARTICIPANT  = "part_";
 
-    CEString getDirectConnectionName( const CEString & nickName, uint32_t cookie, uint64_t session);
+    String getDirectConnectionName( const String & nickName, uint32_t cookie, uint64_t session);
 
-    CEString getConnectionServiceRole( const CEString & nickName, uint32_t cookie );
+    String getConnectionServiceRole( const String & nickName, uint32_t cookie );
 
-    CEString getDirectMessagingRole( const CEString & nickName, uint32_t cookie, uint64_t session, bool isInitiator );
+    String getDirectMessagingRole( const String & nickName, uint32_t cookie, uint64_t session, bool isInitiator );
 }

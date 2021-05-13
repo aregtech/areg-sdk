@@ -17,9 +17,9 @@
  * Includes
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
-#include "areg/component/private/CEThreadEventBase.hpp"
+#include "areg/component/private/ThreadEventBase.hpp"
 
-#include "areg/component/CEWorkerThread.hpp"
+#include "areg/component/WorkerThread.hpp"
 
 /************************************************************************
  * Declared classes
@@ -62,7 +62,7 @@ template <class DATA_CLASS, typename DATA_CLASS_TYPE> class TEEventConsumer;
  *                              By default, it is constant of reference
  **/
 template <class DATA_CLASS, typename DATA_CLASS_TYPE = const DATA_CLASS &>
-class TEEvent  : public CEThreadEventBase
+class TEEvent  : public ThreadEventBase
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor. Protected, not for public assess.
@@ -70,25 +70,25 @@ class TEEvent  : public CEThreadEventBase
 protected:
     /**
      * \brief   Default constructor, can be called only be child class.
-     *          By default, it creates custom external type event (CEEvent::EventCustomExternal)
+     *          By default, it creates custom external type event (Event::EventCustomExternal)
      **/
     TEEvent( void );
     /**
      * \brief   Copies DATA_CLASS object as event data. DATA_CLASS should have available assigning operator.
-     *          By default, it is creating external type event (CEEvent::EventCustomExternal)
+     *          By default, it is creating external type event (Event::EventCustomExternal)
      **/
     TEEvent( DATA_CLASS_TYPE data );
     /**
      * \brief	Creates event of specified type
      * \param	eventType	Event type to set.
      **/
-    TEEvent( CEEvent::eEventType eventType );
+    TEEvent( Event::eEventType eventType );
     /**
      * \brief	Creates event of specified type and sets the event data.
      * \param	eventType	Event type to set.
      * \param   data        The Event Data object to store in event.
      **/
-    TEEvent( CEEvent::eEventType eventType, DATA_CLASS_TYPE data );
+    TEEvent( Event::eEventType eventType, DATA_CLASS_TYPE data );
     /**
      * \brief   Destructor
      **/
@@ -103,15 +103,15 @@ public:
      * \param	newData	    The data to set. Data should have assignment
      *                      operator to set type DATA_CLASS_TYPE of data to DATA_CLASS
      **/
-    void SetData( DATA_CLASS_TYPE newData );
+    void setData( DATA_CLASS_TYPE newData );
     /**
      * \brief	Returns read-only event data.
      **/
-    const DATA_CLASS & GetData( void ) const;
+    const DATA_CLASS & getData( void ) const;
     /**
      * \brief	Returns event data, which can be modified.
      **/
-    DATA_CLASS & GetData( void );
+    DATA_CLASS & getData( void );
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -131,16 +131,16 @@ private:
 //////////////////////////////////////////////////////////////////////////
 /**
  * \brief   Event Consumer template class.
- *          It is pure virtual class and the function ProcessEvent() should be
+ *          It is pure virtual class and the function processEvent() should be
  *          overwritten for every new event declaration.
- *          The function ProcessEvent() is triggered in the thread for which
+ *          The function processEvent() is triggered in the thread for which
  *          the consumer is registered.
  *          To register consumer for certain thread either used appropriate
- *          AddListener() function available in CEEvent class or use
+ *          addListener() function available in Event class or use
  *          INITIALIZE_EVENT_WITH_THREAD() MACRO, declared bellow. If Consumer
  *          is not registered in any thread (or group of worker threads within
  *          one component thread), the event will not be delivered and
- *          no ProcessEvent() function will be triggered.
+ *          no processEvent() function will be triggered.
  *          The consumer should be instantiated after worker thread startup.
  *          Do not declare it as a static variable.
  * 
@@ -148,7 +148,7 @@ private:
  *                      default constructor, copy constructor and assigning operator.
  **/
 template <class DATA_CLASS, typename DATA_CLASS_TYPE = const DATA_CLASS &>
-class TEEventConsumer  : public CEThreadEventConsumerBase
+class TEEventConsumer  : public ThreadEventConsumerBase
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor. Protected. Is called only from child class
@@ -177,7 +177,7 @@ protected:
      *                  default constructor and assigning operator.
      *                  This object is not used for IPC.
      **/
-    virtual void ProcessEvent( DATA_CLASS_TYPE data ) = 0;
+    virtual void processEvent( DATA_CLASS_TYPE data ) = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden function call.
@@ -186,10 +186,10 @@ private:
     /**
      * \brief	This method is derived from IEEventConsumer.
      *          It is hidden. The function is receiving event
-     *          extracts data and triggers ProcessEvent(DATA_CLASS_TYPE)
+     *          extracts data and triggers processEvent(DATA_CLASS_TYPE)
      * \param	eventElem	The Event object to process.
      **/
-    virtual void StartEventProcessing( CEEvent & eventElem );
+    virtual void startEventProcessing( Event & eventElem );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -201,25 +201,25 @@ private:
 //////////////////////////////////////////////////////////////////////////
 template <class DATA_CLASS, typename DATA_CLASS_TYPE /*= const DATA_CLASS &*/>
 TEEvent<DATA_CLASS, DATA_CLASS_TYPE>::TEEvent( void )
-    : CEThreadEventBase (CEEvent::EventCustomExternal)
+    : ThreadEventBase (Event::EventCustomExternal)
     , mData ( )
 {   ;   }
 
 template <class DATA_CLASS, typename DATA_CLASS_TYPE /*= const DATA_CLASS &*/>
 TEEvent<DATA_CLASS, DATA_CLASS_TYPE>::TEEvent( DATA_CLASS_TYPE data )
-    : CEThreadEventBase (CEEvent::EventCustomExternal)
+    : ThreadEventBase (Event::EventCustomExternal)
     , mData (data)
 {   ;   }
 
 template <class DATA_CLASS, typename DATA_CLASS_TYPE /*= const DATA_CLASS &*/>
-TEEvent<DATA_CLASS, DATA_CLASS_TYPE>::TEEvent( CEEvent::eEventType eventType )
-    : CEThreadEventBase (eventType)
+TEEvent<DATA_CLASS, DATA_CLASS_TYPE>::TEEvent( Event::eEventType eventType )
+    : ThreadEventBase (eventType)
     , mData ( )
 {   ;   }
 
 template <class DATA_CLASS, typename DATA_CLASS_TYPE /*= const DATA_CLASS &*/>
-TEEvent<DATA_CLASS, DATA_CLASS_TYPE>::TEEvent( CEEvent::eEventType eventType, DATA_CLASS_TYPE data )
-    : CEThreadEventBase (eventType)
+TEEvent<DATA_CLASS, DATA_CLASS_TYPE>::TEEvent( Event::eEventType eventType, DATA_CLASS_TYPE data )
+    : ThreadEventBase (eventType)
     , mData (data)
 {   ;   }
 
@@ -228,15 +228,15 @@ TEEvent<DATA_CLASS, DATA_CLASS_TYPE>::~TEEvent( void )
 {   ;   }
 
 template <class DATA_CLASS, typename DATA_CLASS_TYPE /*= const DATA_CLASS &*/>
-inline void TEEvent<DATA_CLASS, DATA_CLASS_TYPE>::SetData( DATA_CLASS_TYPE newData )
+inline void TEEvent<DATA_CLASS, DATA_CLASS_TYPE>::setData( DATA_CLASS_TYPE newData )
 {   mData   = newData;  }
 
 template <class DATA_CLASS, typename DATA_CLASS_TYPE /*= const DATA_CLASS &*/>
-inline const DATA_CLASS & TEEvent<DATA_CLASS, DATA_CLASS_TYPE>::GetData( void ) const
+inline const DATA_CLASS & TEEvent<DATA_CLASS, DATA_CLASS_TYPE>::getData( void ) const
 {   return mData;       }
 
 template <class DATA_CLASS, typename DATA_CLASS_TYPE /*= const DATA_CLASS &*/>
-inline DATA_CLASS & TEEvent<DATA_CLASS, DATA_CLASS_TYPE>::GetData( void )
+inline DATA_CLASS & TEEvent<DATA_CLASS, DATA_CLASS_TYPE>::getData( void )
 {   return mData;       }
 
 //////////////////////////////////////////////////////////////////////////
@@ -244,7 +244,7 @@ inline DATA_CLASS & TEEvent<DATA_CLASS, DATA_CLASS_TYPE>::GetData( void )
 //////////////////////////////////////////////////////////////////////////
 template <class DATA_CLASS, typename DATA_CLASS_TYPE /*= const DATA_CLASS &*/>
 TEEventConsumer<DATA_CLASS, DATA_CLASS_TYPE>::TEEventConsumer( void )
-    : CEThreadEventConsumerBase ( )
+    : ThreadEventConsumerBase ( )
 {   ;   }
 
 template <class DATA_CLASS, typename DATA_CLASS_TYPE /*= const DATA_CLASS &*/>
@@ -252,11 +252,13 @@ TEEventConsumer<DATA_CLASS, DATA_CLASS_TYPE>::~TEEventConsumer( void )
 {   ;   }
 
 template <class DATA_CLASS, typename DATA_CLASS_TYPE /*= const DATA_CLASS &*/>
-void TEEventConsumer<DATA_CLASS, DATA_CLASS_TYPE>::StartEventProcessing( CEEvent & eventElem )
+void TEEventConsumer<DATA_CLASS, DATA_CLASS_TYPE>::startEventProcessing( Event & eventElem )
 {
-    TEEvent<DATA_CLASS, DATA_CLASS_TYPE>* threadEvent = static_cast<TEEvent<DATA_CLASS, DATA_CLASS_TYPE> *>( RUNTIME_CAST(&eventElem, CEThreadEventBase) );
+    TEEvent<DATA_CLASS, DATA_CLASS_TYPE>* threadEvent = static_cast<TEEvent<DATA_CLASS, DATA_CLASS_TYPE> *>( RUNTIME_CAST(&eventElem, ThreadEventBase) );
     if (threadEvent != NULL)
-        ProcessEvent(threadEvent->GetData());
+    {
+        processEvent(threadEvent->getData());
+    }
 }
 
 
@@ -295,7 +297,7 @@ void TEEventConsumer<DATA_CLASS, DATA_CLASS_TYPE>::StartEventProcessing( CEEvent
  *  class ClassData2
  *  {
  *   public:
- *      CEString mData2;
+ *      String mData2;
  *  };
  *
  *  // <==  Declare Data1Event and Data1Consumer
@@ -312,15 +314,15 @@ void TEEventConsumer<DATA_CLASS, DATA_CLASS_TYPE>::StartEventProcessing( CEEvent
  *      AllConsumers( void )          {   ; }
  *      virtual ~AllConsumers( void ) {   ; }
  *  protected:
- *      virtual void ProcessEvent(const Data1& data);
- *      virtual void ProcessEvent(const Data2& data);
- *      virtual void ProcessEvent(const Data3& data);
+ *      virtual void processEvent(const Data1& data);
+ *      virtual void processEvent(const Data2& data);
+ *      virtual void processEvent(const Data3& data);
  *  };
  *
- *  void AllConsumers::ProcessEvent( const Data1& data )
+ *  void AllConsumers::processEvent( const Data1& data )
  *  {  ;   }
  *
- *  void AllConsumers::ProcessEvent( const Data2& data )
+ *  void AllConsumers::processEvent( const Data2& data )
  *  {  ;   }
  *
  * \endcode
@@ -370,16 +372,16 @@ protected:                                                                      
     /** \brief  Constructor, gets event type and data object. Declared for special cases in inter-thread communication.     **/                     \
     /**         This constructor is protected and the event type can be directly specified.                                 **/                     \
     /**                                                                                                                     **/                     \
-    __##EventClass(CEEvent::eEventType eventType, const DATA_CLASS & data);                                                                         \
+    __##EventClass(Event::eEventType eventType, const DATA_CLASS & data);                                                                           \
     /**                                                                                                                     **/                     \
     /** \brief  Constructor, gets event type, data object and consumer.                                                     **/                     \
     /**         This constructor is protected and the event type can be directly specified.                                 **/                     \
     /**         The consumer object is set directly in event object.                                                        **/                     \
     /**                                                                                                                     **/                     \
-    __##EventClass(CEEvent::eEventType eventType, const DATA_CLASS & data, __##ConsumerClass<DATA_CLASS> & listener);                               \
+    __##EventClass(Event::eEventType eventType, const DATA_CLASS & data, __##ConsumerClass<DATA_CLASS> & listener);                                 \
     /**                                                                                                                     **/                     \
     /** \brief  Constructor, sets event data. DataClass can be any class, including Dummy / Empty class                     **/                     \
-    /**         This constructor is protected. To send an event, used SendEvent(const DATA_CLASS&) function instead.        **/                     \
+    /**         This constructor is protected. To send an event, used sendEvent(const DATA_CLASS&) function instead.        **/                     \
     /**                                                                                                                     **/                     \
     __##EventClass(const DATA_CLASS & data);                                                                                                        \
     /**                                                                                                                     **/                     \
@@ -395,7 +397,7 @@ public:                                                                         
     /** \param  data    the data object to send as an event.                                                                **/                     \
     /** \return Returns true if event successfully was sent.                                                                **/                     \
     /**                                                                                                                     **/                     \
-    static inline bool SendEvent(const DATA_CLASS & data);                                                                                          \
+    static inline bool sendEvent(const DATA_CLASS & data);                                                                                          \
     /**                                                                                                                     **/                     \
     /** \brief  Sends an Event of specified type. If Internal, make sure that event is send in same thread context.         **/                     \
     /**         Before sending, make sure that consumer is registered in thread.                                            **/                     \
@@ -405,23 +407,23 @@ public:                                                                         
     /** \param  eventType   The type of event to generated and sent.                                                        **/                     \
     /** \return Returns true if event successfully was sent.                                                                **/                     \
     /**                                                                                                                     **/                     \
-    static inline bool SendEvent(const DATA_CLASS & data, CEEvent::eEventType eventType);                                                           \
+    static inline bool sendEvent(const DATA_CLASS & data, Event::eEventType eventType);                                                             \
     /**                                                                                                                     **/                     \
     /** \brief  Sends event to specified consumer within same thread.                                                       **/                     \
     /**         Call this method if sure that event should be processed within same thread scope.                           **/                     \
-    /**         Otherwise register consumer in required thread and use calling SendEvent(data) function.                    **/                     \
+    /**         Otherwise register consumer in required thread and use calling sendEvent(data) function.                    **/                     \
     /**         Returns true if could send event. Sending fails if current thread is not a dispatching thread.              **/                     \
     /**         It creates event object and pushes it into registered consumer thread event queue.                          **/                     \
     /** \param  data        The data object to send as an event.                                                            **/                     \
     /** \param  listener    The consumer, which should process event object.                                                **/                     \
     /** \return Returns true if event successfully was sent.                                                                **/                     \
     /**                                                                                                                     **/                     \
-    static inline bool SendEvent(const DATA_CLASS & data, __##ConsumerClass<DATA_CLASS> & listener);                                                \
+    static inline bool sendEvent(const DATA_CLASS & data, __##ConsumerClass<DATA_CLASS> & listener);                                                \
     /**                                                                                                                     **/                     \
     /** \brief  Sends event of specified type to specified consumer within same thread.                                     **/                     \
     /**         If Event is Internal, make sure that it is sent in the same thread context.                                 **/                     \
     /**         Call this method if sure that event should be processed within same thread scope.                           **/                     \
-    /**         Otherwise register consumer in required thread and use calling SendEvent(data) function.                    **/                     \
+    /**         Otherwise register consumer in required thread and use calling sendEvent(data) function.                    **/                     \
     /**         Returns true if could send event. Sending fails if current thread is not a dispatching thread.              **/                     \
     /**         It creates event object and pushes it into registered consumer thread event queue.                          **/                     \
     /** \param  data        The data object to send as an event.                                                            **/                     \
@@ -429,7 +431,7 @@ public:                                                                         
     /** \param  eventType   The consumer, which should process event object.                                                **/                     \
     /** \return Returns true if event successfully was sent.                                                                **/                     \
     /**                                                                                                                     **/                     \
-    static inline bool SendEvent(const DATA_CLASS & data, __##ConsumerClass<DATA_CLASS> & listener, CEEvent::eEventType eventType);                 \
+    static inline bool sendEvent(const DATA_CLASS & data, __##ConsumerClass<DATA_CLASS> & listener, Event::eEventType eventType);                   \
     /**                                                                                                                     **/                     \
     /** \brief  Sends event to specified consumer within specified thread.                                                  **/                     \
     /**         Call this method if sure that event should be processed within specified thread scope.                      **/                     \
@@ -442,7 +444,7 @@ public:                                                                         
     /**                     that the consumer is registered in specified thread.                                            **/                     \
     /** \return Returns true if event successfully was sent.                                                                **/                     \
     /**                                                                                                                     **/                     \
-    static inline bool SendEvent(const DATA_CLASS & data, __##ConsumerClass<DATA_CLASS> & listener, CEDispatcherThread & dispThread);               \
+    static inline bool sendEvent(const DATA_CLASS & data, __##ConsumerClass<DATA_CLASS> & listener, DispatcherThread & dispThread);                 \
     /**                                                                                                                     **/                     \
     /** \brief  Registers Consumer in the worker / component thread                                                         **/                     \
     /**         Returns true if successfully registered consumer                                                            **/                     \
@@ -454,7 +456,7 @@ public:                                                                         
     /** \return Returns true if consumer registration succeeded.                                                            **/                     \
     /**         Returns false if thread already has consumer registered or registration failed.                             **/                     \
     /**                                                                                                                     **/                     \
-    static inline bool AddListener(__##ConsumerClass<DATA_CLASS> & listener, const char* whichThread = NULL);                                       \
+    static inline bool addListener(__##ConsumerClass<DATA_CLASS> & listener, const char* whichThread = NULL);                                       \
     /**                                                                                                                     **/                     \
     /** \brief  Registers Consumer in the worker / component thread                                                         **/                     \
     /**         Returns true if successfully registered consumer                                                            **/                     \
@@ -465,7 +467,7 @@ public:                                                                         
     /** \return Returns true if consumer registration succeeded.                                                            **/                     \
     /**         Returns false if thread already has consumer registered or registration failed.                             **/                     \
     /**                                                                                                                     **/                     \
-    static inline bool AddListener(__##ConsumerClass<DATA_CLASS>& listener, CEDispatcherThread & dispThread);                                       \
+    static inline bool addListener(__##ConsumerClass<DATA_CLASS>& listener, DispatcherThread & dispThread);                                         \
     /**                                                                                                                     **/                     \
     /** \brief  Unregisters Consumer from worker / component thread                                                         **/                     \
     /**         Returns true if successfully removed registered consumer                                                    **/                     \
@@ -475,7 +477,7 @@ public:                                                                         
     /** \param  whichThread The name of thread to unregister consumer. If null, it will unregister in current thread.       **/                     \
     /** \return Returns true if consumer is unregistered with success.                                                      **/                     \
     /**                                                                                                                     **/                     \
-    static inline bool RemoveListener(__##ConsumerClass<DATA_CLASS> & listener, const char* whichThread = NULL);                                    \
+    static inline bool removeListener(__##ConsumerClass<DATA_CLASS> & listener, const char* whichThread = NULL);                                    \
     /**                                                                                                                     **/                     \
     /** \brief  Unregisters Consumer from worker / component thread                                                         **/                     \
     /**         Returns true if successfully removed registered consumer                                                    **/                     \
@@ -484,10 +486,10 @@ public:                                                                         
     /** \param	dispThread  The dispatcher thread, which dispatches messages                                                **/                     \
     /** \return Returns true if consumer is unregistered with success.                                                      **/                     \
     /**                                                                                                                     **/                     \
-    static inline bool RemoveListener(__##ConsumerClass<DATA_CLASS>& listener, CEDispatcherThread & dispThread);                                    \
+    static inline bool removeListener(__##ConsumerClass<DATA_CLASS>& listener, DispatcherThread & dispThread);                                      \
 private:                                                                                                                                            \
     /** Private functions. Registers event for specified worker thread and sends event                                      **/                     \
-    static bool _send(CEDispatcherThread& dispThread, __##EventClass<DATA_CLASS> *eventElem);                                                       \
+    static bool _send(DispatcherThread& dispThread, __##EventClass<DATA_CLASS> *eventElem);                                                         \
 private:                                                                                                                                            \
     /**                                                                                                                     **/                     \
     /** Forbidden calls. Do not use them.                                                                                   **/                     \
@@ -499,24 +501,24 @@ private:                                                                        
 /**                                                                                                                         **/                     \
 /** Implement Runtime Object overrides and get Runtime Class ID                                                             **/                     \
 /**                                                                                                                         **/                     \
-IMPLEMENT_RUNTIME_TEMPLATE(template <class DATA_CLASS>, __##EventClass<DATA_CLASS>, CEThreadEventBase, EventClass)                                  \
+IMPLEMENT_RUNTIME_TEMPLATE(template <class DATA_CLASS>, __##EventClass<DATA_CLASS>, ThreadEventBase, EventClass)                                    \
 /** Constructor implementation, pass DataClass object and Event Consumer object. The event is internal.                     **/                     \
 template <class DATA_CLASS>                                                                                                                         \
 __##EventClass<DATA_CLASS>::__##EventClass(const DATA_CLASS & data, __##ConsumerClass<DATA_CLASS> & listener)                                       \
     : TEEvent<DATA_CLASS, const DATA_CLASS &> (EventType, data)                                                                                     \
-{   this->SetEventConsumer(static_cast<IEEventConsumer *>(&listener));   }                                                                          \
+{   this->setEventConsumer(static_cast<IEEventConsumer *>(&listener));   }                                                                          \
 /** Constructor implementation, pass DataClass object and event type. By default, the event is external                     **/                     \
 template <class DATA_CLASS>                                                                                                                         \
-__##EventClass<DATA_CLASS>::__##EventClass(CEEvent::eEventType eventType, const DATA_CLASS & data)                                                  \
+__##EventClass<DATA_CLASS>::__##EventClass(Event::eEventType eventType, const DATA_CLASS & data)                                                    \
     : TEEvent<DATA_CLASS, const DATA_CLASS &> (eventType, data)                                                                                     \
 { ; }                                                                                                                                               \
 /** Constructor implementation, pass event type, DataClass and consumer objects.                                            **/                     \
 template <class DATA_CLASS>                                                                                                                         \
-__##EventClass<DATA_CLASS>::__##EventClass( CEEvent::eEventType eventType,                                                                          \
+__##EventClass<DATA_CLASS>::__##EventClass( Event::eEventType eventType,                                                                            \
                                             const DATA_CLASS & data,                                                                                \
                                             __##ConsumerClass<DATA_CLASS> & listener)                                                               \
     : TEEvent<DATA_CLASS, const DATA_CLASS &> (eventType, data)                                                                                     \
-{   this->SetEventConsumer(static_cast<IEEventConsumer *>(&listener));   }                                                                          \
+{   this->setEventConsumer(static_cast<IEEventConsumer *>(&listener));   }                                                                          \
 /** Constructor implementation, pass DataClass object to Event                                                              **/                     \
 template <class DATA_CLASS>                                                                                                                         \
 __##EventClass<DATA_CLASS>::__##EventClass(const DATA_CLASS& data)                                                                                  \
@@ -531,8 +533,8 @@ __##EventClass<DATA_CLASS>::~__##EventClass( void )                             
 /**                                                                                                                         **/                     \
 template <class DATA_CLASS>                                                                                                                         \
 inline                                                                                                                                              \
-bool __##EventClass<DATA_CLASS>::SendEvent(const DATA_CLASS& data)                                                                                  \
-{   return __##EventClass<DATA_CLASS>::SendEvent(data, EventType);                                                                  }               \
+bool __##EventClass<DATA_CLASS>::sendEvent(const DATA_CLASS& data)                                                                                  \
+{   return __##EventClass<DATA_CLASS>::sendEvent(data, EventType);                                                                  }               \
 /**                                                                                                                         **/                     \
 /** Static function, sends event of specified type and pass DataClass object.                                               **/                     \
 /** If the event type is Internal, make sure that event sent in same thread context to execute immediately.                 **/                     \
@@ -540,31 +542,31 @@ bool __##EventClass<DATA_CLASS>::SendEvent(const DATA_CLASS& data)              
 /**                                                                                                                         **/                     \
 template <class DATA_CLASS>                                                                                                                         \
 inline                                                                                                                                              \
-bool __##EventClass<DATA_CLASS>::SendEvent(const DATA_CLASS & data, CEEvent::eEventType eventType)                                                  \
+bool __##EventClass<DATA_CLASS>::sendEvent(const DATA_CLASS & data, Event::eEventType eventType)                                                    \
 {                                                                                                                                                   \
-    CEDispatcherThread* dispThread = CEDispatcherThread::FindEventConsumerThread(_getClassId());                                                    \
+    DispatcherThread* dispThread = DispatcherThread::findEventConsumerThread(_getClassId());                                                        \
     return (dispThread != NULL ? _send(*dispThread, DEBUG_NEW __##EventClass<DATA_CLASS>(eventType, data)) : false);                                \
 }                                                                                                                                                   \
 /**                                                                                                                         **/                     \
 /** Static function. Sends a Event of specified type to specified consumer within same thread.                              **/                     \
 /** Call this method if sure that event should be processed within same thread scope.                                       **/                     \
-/** Otherwise register consumer in required thread and use calling SendEvent(data) function.                                **/                     \
+/** Otherwise register consumer in required thread and use calling sendEvent(data) function.                                **/                     \
 /**                                                                                                                         **/                     \
 template <class DATA_CLASS>                                                                                                                         \
 inline                                                                                                                                              \
-bool __##EventClass<DATA_CLASS>::SendEvent(const DATA_CLASS & data, __##ConsumerClass<DATA_CLASS> & listener)                                       \
-{   return __##EventClass<DATA_CLASS>::SendEvent(data, listener, EventType);                                                        }               \
+bool __##EventClass<DATA_CLASS>::sendEvent(const DATA_CLASS & data, __##ConsumerClass<DATA_CLASS> & listener)                                       \
+{   return __##EventClass<DATA_CLASS>::sendEvent(data, listener, EventType);                                                        }               \
 /**                                                                                                                         **/                     \
 /** Static function. Sends event to specified consumer within same thread.                                                  **/                     \
 /** Call this method if sure that event should be processed within same thread scope.                                       **/                     \
-/** Otherwise register consumer in required thread and use calling SendEvent(data) function.                                **/                     \
+/** Otherwise register consumer in required thread and use calling sendEvent(data) function.                                **/                     \
 /**                                                                                                                         **/                     \
 template <class DATA_CLASS>                                                                                                                         \
 inline                                                                                                                                              \
-bool __##EventClass<DATA_CLASS>::SendEvent(const DATA_CLASS & data, __##ConsumerClass<DATA_CLASS> & listener, CEEvent::eEventType eventType)        \
+bool __##EventClass<DATA_CLASS>::sendEvent(const DATA_CLASS & data, __##ConsumerClass<DATA_CLASS> & listener, Event::eEventType eventType)          \
 {                                                                                                                                                   \
-    CEDispatcherThread& dispThread = CEDispatcherThread::GetCurrentDispatcherThread( );                                                             \
-    return (dispThread.IsValid() ? _send(dispThread, DEBUG_NEW __##EventClass<DATA_CLASS>(eventType, data, listener)) : false);                     \
+    DispatcherThread& dispThread = DispatcherThread::getCurrentDispatcherThread( );                                                                 \
+    return (dispThread.isValid() ? _send(dispThread, DEBUG_NEW __##EventClass<DATA_CLASS>(eventType, data, listener)) : false);                     \
 }                                                                                                                                                   \
 /**                                                                                                                         **/                     \
 /** Static function. Sends event to specified consumer within specified thread.                                             **/                     \
@@ -574,8 +576,8 @@ bool __##EventClass<DATA_CLASS>::SendEvent(const DATA_CLASS & data, __##Consumer
 /**                                                                                                                         **/                     \
 template <class DATA_CLASS>                                                                                                                         \
 inline                                                                                                                                              \
-bool __##EventClass<DATA_CLASS>::SendEvent(const DATA_CLASS& data, __##ConsumerClass<DATA_CLASS>& listener, CEDispatcherThread& dispThread)         \
-{   return (dispThread.IsValid() ? _send(dispThread, DEBUG_NEW __##EventClass<DATA_CLASS>(EventType, data, listener)) : false);     }               \
+bool __##EventClass<DATA_CLASS>::sendEvent(const DATA_CLASS& data, __##ConsumerClass<DATA_CLASS>& listener, DispatcherThread& dispThread)           \
+{   return (dispThread.isValid() ? _send(dispThread, DEBUG_NEW __##EventClass<DATA_CLASS>(EventType, data, listener)) : false);     }               \
 /**                                                                                                                         **/                     \
 /** Adds listener (registers consumer) for specified thread name. The thread should be already running                      **/                     \
 /** Returns true if successfully registered consumer                                                                        **/                     \
@@ -583,8 +585,8 @@ bool __##EventClass<DATA_CLASS>::SendEvent(const DATA_CLASS& data, __##ConsumerC
 /**                                                                                                                         **/                     \
 template <class DATA_CLASS>                                                                                                                         \
 inline                                                                                                                                              \
-bool __##EventClass<DATA_CLASS>::AddListener(__##ConsumerClass<DATA_CLASS>& listener, const char* whichThread)                                      \
-{   return CEEvent::AddListener(__##EventClass<DATA_CLASS>::_getClassId(), listener, whichThread);                                  }               \
+bool __##EventClass<DATA_CLASS>::addListener(__##ConsumerClass<DATA_CLASS>& listener, const char* whichThread)                                      \
+{   return Event::addListener(__##EventClass<DATA_CLASS>::_getClassId(), listener, whichThread);                                    }               \
 /**                                                                                                                         **/                     \
 /** Adds listener (registers consumer) for specified dispatcher thread. The thread should be already running                **/                     \
 /** Returns true if successfully registered consumer                                                                        **/                     \
@@ -592,33 +594,33 @@ bool __##EventClass<DATA_CLASS>::AddListener(__##ConsumerClass<DATA_CLASS>& list
 /**                                                                                                                         **/                     \
 template <class DATA_CLASS>                                                                                                                         \
 inline                                                                                                                                              \
-bool __##EventClass<DATA_CLASS>::AddListener(__##ConsumerClass<DATA_CLASS>& listener, CEDispatcherThread & dispThread)                              \
-{   return CEEvent::AddListener(__##EventClass<DATA_CLASS>::_getClassId(), listener, dispThread);                                   }               \
+bool __##EventClass<DATA_CLASS>::addListener(__##ConsumerClass<DATA_CLASS>& listener, DispatcherThread & dispThread)                                \
+{   return Event::addListener(__##EventClass<DATA_CLASS>::_getClassId(), listener, dispThread);                                     }               \
 /**                                                                                                                         **/                     \
 /** Removes registered consumer. If succeed, returns true. Otherwise returns false.                                         **/                     \
 /**                                                                                                                         **/                     \
 template <class DATA_CLASS>                                                                                                                         \
 inline                                                                                                                                              \
-bool __##EventClass<DATA_CLASS>::RemoveListener(__##ConsumerClass<DATA_CLASS>& listener, const char* whichThread)                                   \
-{   return CEEvent::RemoveListener(__##EventClass<DATA_CLASS>::_getClassId(), listener, whichThread);                               }               \
+bool __##EventClass<DATA_CLASS>::removeListener(__##ConsumerClass<DATA_CLASS>& listener, const char* whichThread)                                   \
+{   return Event::removeListener(__##EventClass<DATA_CLASS>::_getClassId(), listener, whichThread);                                 }               \
 /**                                                                                                                         **/                     \
 /** Removes registered consumer. If succeed, returns true. Otherwise returns false.                                         **/                     \
 /**                                                                                                                         **/                     \
 template <class DATA_CLASS>                                                                                                                         \
 inline                                                                                                                                              \
-bool __##EventClass<DATA_CLASS>::RemoveListener(__##ConsumerClass<DATA_CLASS>& listener, CEDispatcherThread & dispThread)                           \
-{   return CEEvent::RemoveListener(__##EventClass<DATA_CLASS>::_getClassId(), listener, dispThread);                                }               \
+bool __##EventClass<DATA_CLASS>::removeListener(__##ConsumerClass<DATA_CLASS>& listener, DispatcherThread & dispThread)                             \
+{   return Event::removeListener(__##EventClass<DATA_CLASS>::_getClassId(), listener, dispThread);                                  }               \
 /**                                                                                                                         **/                     \
 /** Private static function to forward event. First it will register event for thread (event consumer thread)               **/                     \
 /**                                                                                                                         **/                     \
 template <class DATA_CLASS>                                                                                                                         \
-bool __##EventClass<DATA_CLASS>::_send(CEDispatcherThread& dispThread, __##EventClass<DATA_CLASS> *eventElem)                                       \
+bool __##EventClass<DATA_CLASS>::_send(DispatcherThread& dispThread, __##EventClass<DATA_CLASS> *eventElem)                                         \
 {                                                                                                                                                   \
     bool result = false;                                                                                                                            \
     if (eventElem != NULL)                                                                                                                          \
     {                                                                                                                                               \
-        static_cast<CEEvent *>(eventElem)->RegisterForThread(&dispThread);                                                                          \
-        static_cast<CEEvent *>(eventElem)->SendEvent();                                                                                             \
+        static_cast<Event *>(eventElem)->registerForThread(&dispThread);                                                                            \
+        static_cast<Event *>(eventElem)->sendEvent();                                                                                               \
         result = true;                                                                                                                              \
     }                                                                                                                                               \
     return result;                                                                                                                                  \
@@ -626,7 +628,7 @@ bool __##EventClass<DATA_CLASS>::_send(CEDispatcherThread& dispThread, __##Event
                                                                                                                                                     \
 /**                                                                                                                         **/                     \
 /** Declaration of ConsumerClass, derive from TEEventConsumer template.                                                     **/                     \
-/** Does nothing, needed for Runtime Object information and declare ProcessEvent() function                                 **/                     \
+/** Does nothing, needed for Runtime Object information and declare processEvent() function                                 **/                     \
 /**                                                                                                                         **/                     \
 template <class DATA_CLASS>                                                                                                                         \
 class __##ConsumerClass: public TEEventConsumer<DATA_CLASS, const DATA_CLASS &>                                                                     \
@@ -644,7 +646,7 @@ protected:                                                                      
     /** \brief  Override operation. Implement this function to receive events and make processing                           **/                     \
     /** \param  data    The data, which was passed as an event.                                                             **/                     \
     /**                                                                                                                     **/                     \
-    virtual void ProcessEvent(const DATA_CLASS& data) = 0;                                                                                          \
+    virtual void processEvent(const DATA_CLASS& data) = 0;                                                                                          \
 private:                                                                                                                                            \
     /**                                                                                                                     **/                     \
     /** Forbidden calls.                                                                                                    **/                     \
@@ -670,7 +672,7 @@ __##ConsumerClass<DATA_CLASS>::__##ConsumerClass( void )                        
  * \param   EventClass          The Event class, which will be declared after calling this MACRO.
  * \param   ConsumerClass       The Event Consumer class, which will be declared after calling this MACRO.
  * \param   ConsumerThreadName  The name of thread where Event is dispatched and Consumer is registered.
- * \param   EventType           The type of Event. Should be CEEvent::eEventType type. Either Internal or External.
+ * \param   EventType           The type of Event. Should be Event::eEventType type. Either Internal or External.
  **/
 #define DEFINE_DECLARE_EVENT_EXTENDED(DataClass, EventClass, ConsumerClass, ConsumerThreadName, EventType)                                          \
 /**                                                                                                                         **/                     \
@@ -706,8 +708,8 @@ template <class DATA_CLASS>                                                     
 __##ConsumerClass##Extended<DATA_CLASS>::__##ConsumerClass##Extended( void )                                                                        \
     : __##ConsumerClass<DATA_CLASS> ( )                                                                                                             \
 {                                                                                                                                                   \
-    CEDispatcherThread& dispThread = CEDispatcherThread::GetDispatcherThread(ConsumerThreadName);                                                   \
-    VERIFY( dispThread.RegisterEventConsumer(__##EventClass<DATA_CLASS>::_getClassId(), self()) );                                                  \
+    DispatcherThread& dispThread = DispatcherThread::getDispatcherThread(ConsumerThreadName);                                                   \
+    VERIFY( dispThread.registerEventConsumer(__##EventClass<DATA_CLASS>::_getClassId(), self()) );                                                  \
 }                                                                                                                                                   \
 
 /************************************************************************
@@ -724,7 +726,7 @@ __##ConsumerClass##Extended<DATA_CLASS>::__##ConsumerClass##Extended( void )    
  * \param   DataClass           The Event Data class. Should be declared before MACRO.
  * \param   EventClass          The Event class, which will be declared after calling this MACRO.
  * \param   ConsumerClass       The Event Consumer class, which will be declared after calling this MACRO.
- * \param   EventType           The type of Event. Should be CEEvent::eEventType type. Either Internal or External.
+ * \param   EventType           The type of Event. Should be Event::eEventType type. Either Internal or External.
  **/
 #define DECLARE_EVENT_STANDARD(DataClass, EventClass, ConsumerClass, EventType)                                                                     \
     /**                                                                                             **/                                             \
@@ -734,7 +736,7 @@ __##ConsumerClass##Extended<DATA_CLASS>::__##ConsumerClass##Extended( void )    
     /**                                                                                             **/                                             \
     /** Since event and event consumer classes are templates, define new types                      **/                                             \
     /** Use 'EventClass' to send event and using event function.                                    **/                                             \
-    /** Use 'ConsumerClass' to implement ProcessEvent() function.                                   **/                                             \
+    /** Use 'ConsumerClass' to implement processEvent() function.                                   **/                                             \
     /**                                                                                             **/                                             \
     typedef __##EventClass<DataClass>       EventClass;                                                                                             \
     typedef __##ConsumerClass<DataClass>    ConsumerClass;                                                                                          \
@@ -753,7 +755,7 @@ __##ConsumerClass##Extended<DATA_CLASS>::__##ConsumerClass##Extended( void )    
  * \param   EventClass          The Event class, which will be declared after calling this MACRO.
  * \param   ConsumerClass       The Event Consumer class, which will be declared after calling this MACRO.
  * \param   ConsumerThreadName  The Thread name of Event Consumer.
- * \param   EventType           The type of Event. Should be CEEvent::eEventType type. Either Internal or External.
+ * \param   EventType           The type of Event. Should be Event::eEventType type. Either Internal or External.
  **/
 #define DECLARE_EVENT_EXTENDED(DataClass, EventClass, ConsumerClass, ConsumerThreadName, EventType)                                                 \
     /**                                                                                             **/                                             \
@@ -763,7 +765,7 @@ __##ConsumerClass##Extended<DATA_CLASS>::__##ConsumerClass##Extended( void )    
     /**                                                                                             **/                                             \
     /** Since event and event consumer classes are templates, define new types                      **/                                             \
     /** Use 'EventClass' to send event and using event function.                                    **/                                             \
-    /** Use 'ConsumerClass' to implement ProcessEvent() function.                                   **/                                             \
+    /** Use 'ConsumerClass' to implement processEvent() function.                                   **/                                             \
     /**                                                                                             **/                                             \
     typedef __##EventClass<DataClass>               EventClass;                                                                                     \
     typedef __##ConsumerClass##Extended<DataClass>  ConsumerClass;                                                                                  \
@@ -774,19 +776,19 @@ __##ConsumerClass##Extended<DATA_CLASS>::__##ConsumerClass##Extended( void )    
 /**
  * \brief   This MACRO is used to declare internal standard Event and Event Consumer.
  *          The Event Data class should be declared before using this MACRO.
- *          The Event Type by default will be CEEvent::EventCustomInternal
+ *          The Event Type by default will be Event::EventCustomInternal
  *
  * \param   DataClass           The Event Data class. Should be declared before MACRO.
  * \param   EventClass          The Event class, which will be declared after calling this MACRO.
  * \param   ConsumerClass       The Event Consumer class, which will be declared after calling this MACRO.
  **/
 #define DECLARE_INTERNAL_EVENT(DataClass, EventClass, ConsumerClass)                                                                                \
-    DECLARE_EVENT_STANDARD(DataClass, EventClass, ConsumerClass, CEEvent::EventCustomInternal)
+    DECLARE_EVENT_STANDARD(DataClass, EventClass, ConsumerClass, Event::EventCustomInternal)
 
 /**
  * \brief   This MACRO is used to declare internal extended Event and Event Consumer.
  *          The Event Data class should be declared before using this MACRO.
- *          The Event Type by default will be CEEvent::EventCustomInternal.
+ *          The Event Type by default will be Event::EventCustomInternal.
  *          The Event Consumer will be automatically registered in
  *          specified Thread.
  *
@@ -796,7 +798,7 @@ __##ConsumerClass##Extended<DATA_CLASS>::__##ConsumerClass##Extended( void )    
  * \param   ConsumerThreadName  The Thread name of Event Consumer.
  **/
 #define DECLARE_INTERNAL_EVENT_EXTENDED(DataClass, EventClass, ConsumerClass, ConsumerThreadName)                                                   \
-    DECLARE_EVENT_EXTENDED(DataClass, EventClass, ConsumerClass, ConsumerThreadName, CEEvent::EventCustomInternal)
+    DECLARE_EVENT_EXTENDED(DataClass, EventClass, ConsumerClass, ConsumerThreadName, Event::EventCustomInternal)
 
 //////////////////////////////////////////////////////////////////////////
 // DECLARE_EXTERNAL_EVENT declaration
@@ -804,19 +806,19 @@ __##ConsumerClass##Extended<DATA_CLASS>::__##ConsumerClass##Extended( void )    
 /**
  * \brief   This MACRO is used to declare external standard Event and Event Consumer.
  *          The Event Data class should be declared before using this MACRO.
- *          The Event Type by default will be CEEvent::EventCustomExternal
+ *          The Event Type by default will be Event::EventCustomExternal
  *
  * \param   DataClass           The Event Data class. Should be declared before MACRO.
  * \param   EventClass          The Event class, which will be declared after calling this MACRO.
  * \param   ConsumerClass       The Event Consumer class, which will be declared after calling this MACRO.
  **/
 #define DECLARE_EXTERNAL_EVENT(DataClass, EventClass, ConsumerClass)                                                                                \
-    DECLARE_EVENT_STANDARD(DataClass, EventClass, ConsumerClass, CEEvent::EventCustomExternal)
+    DECLARE_EVENT_STANDARD(DataClass, EventClass, ConsumerClass, Event::EventCustomExternal)
 
 /**
  * \brief   This MACRO is used to declare external extended Event and Event Consumer.
  *          The Event Data class should be declared before using this MACRO.
- *          The Event Type by default will be CEEvent::EventCustomExternal.
+ *          The Event Type by default will be Event::EventCustomExternal.
  *          The Event Consumer will be automatically registered in
  *          specified Thread.
  *
@@ -826,21 +828,21 @@ __##ConsumerClass##Extended<DATA_CLASS>::__##ConsumerClass##Extended( void )    
  * \param   ConsumerThreadName  The Thread name of Event Consumer.
  **/
 #define DECLARE_EXTERNAL_EVENT_EXTENDED(DataClass, EventClass, ConsumerClass, ConsumerThreadName)                                                   \
-    DECLARE_EVENT_EXTENDED(DataClass, EventClass, ConsumerClass, ConsumerThreadName, CEEvent::EventCustomExternal)
+    DECLARE_EVENT_EXTENDED(DataClass, EventClass, ConsumerClass, ConsumerThreadName, Event::EventCustomExternal)
 
 //////////////////////////////////////////////////////////////////////////
 // DECLARE_EVENT declaration
 //////////////////////////////////////////////////////////////////////////
 /**
  * \brief   Declares standard Event and Event Consumer classes.
- *          The Event Type is set to CEEvent::EventCustomExternal.
+ *          The Event Type is set to Event::EventCustomExternal.
  *          The DataClass should be already declared before using this MACRO.
  *          Additionally, it will declare and implement 2 classes:
  *          EventClass and ConsumerClass.
  *          EventClass is and event object to communicate
  *          ConsumerClass should be derived and the pure virtual function
- *          ProcessEvent(const DataClass & data) should be overwritten.
- *          Use EventClass::SendEvent(const DataClass& data) function
+ *          processEvent(const DataClass & data) should be overwritten.
+ *          Use EventClass::sendEvent(const DataClass& data) function
  *          to send events. But before the consumer should be registered
  *          for this event.
  *
@@ -858,7 +860,7 @@ __##ConsumerClass##Extended<DATA_CLASS>::__##ConsumerClass##Extended( void )    
 /**
  * \brief   Declares standard Event and Event Consumer classes, and the
  *          Event Consumer is automatically registered in specified Thread.
- *          The Event Type is set to CEEvent::EventCustomExternal.
+ *          The Event Type is set to Event::EventCustomExternal.
  *          In deference to DECLARE_EVENT, this MACRO is getting Consumer
  *          Thread name. When consumer is instantiated, it will register
  *          automatically in mentioned thread by searching in resource map.

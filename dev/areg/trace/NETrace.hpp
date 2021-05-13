@@ -15,7 +15,7 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class CETraceScope;
+class TraceScope;
 
 //////////////////////////////////////////////////////////////////////////
 // NETrace namespace declaration
@@ -49,7 +49,7 @@ namespace NETrace
      * \brief   NETrace::GetString
      *          Converts NETrace::eLogPriority values to readable string values
      **/
-    const char * GetString( NETrace::eLogPriority prio );
+    const char * getString( NETrace::eLogPriority prio );
 
     /**
      * \brief   NETrace::ToString
@@ -60,7 +60,7 @@ namespace NETrace
      * \return  Returns string priority value
      * \see     NETrace::FromString
      **/
-    AREG_API const char * ToString( NETrace::eLogPriority prio );
+    AREG_API const char * convToString( NETrace::eLogPriority prio );
 
     /**
      * \brief   NETrace::FromString
@@ -71,7 +71,7 @@ namespace NETrace
      *                  The given string is not case sensitive.
      * \return  Returns appropriate logging priority value.
      **/
-    AREG_API NETrace::eLogPriority FromString( const char * strPrio );
+    AREG_API NETrace::eLogPriority convFromString( const char * strPrio );
 
     /**
      * \brief   NETrace::HAS_MESSAGE_PRIORITY
@@ -191,7 +191,7 @@ namespace NETrace
 
         ITEM_ID                 traceThreadId;      //!< The ID of thread, which is logging
         unsigned int            traceScopeId;       //!< The ID of trace scope, which is logging
-        uint64_t                traceTimestamp;     //!< The timestamp of trace message
+        TIME64                  traceTimestamp;     //!< The timestamp of trace message
         NETrace::eLogPriority   traceMessagePrio;   //!< The message priority to output
         char                    traceMessage[LOG_MESSAGE_BUFFER_SIZE + 1];  //!< The message text to output, with maximum NETrace::LOG_MESSAGE_BUFFER_SIZE characters
     } sLogData;
@@ -240,7 +240,7 @@ namespace NETrace
      *                      If empty or null, the system default path will be taken.
      * \return  Returns true if succeeded to open file and configure logging.
      **/
-    AREG_API bool LogingConfigure( const char * fileConfig );
+    AREG_API bool configureLoging( const char * fileConfig );
 
     /**
      * \brief   Start logging. If specified file is not NULL,
@@ -251,19 +251,19 @@ namespace NETrace
      *                      If NULL and logging was configured, the system immediately starts logging.
      * \return  Returns true if logging succeeded to configure or was configured, and succeeded to start logging.
      **/
-    AREG_API bool StartLogging( const char * fileConfig = NULL );
+    AREG_API bool startLogging( const char * fileConfig = NULL );
 
     /**
      * \brief   Forces to start logging by having default configuration.
      *          This is valid only for debug build. In all other builds returns false.
      **/
-    AREG_API bool ForceStartLogging( void );
+    AREG_API bool forceStartLogging( void );
 
     /**
      * \brief   Stops logging. No message will be logged anymore
      *          until it is not started again.
      **/
-    AREG_API void StopLogging( void );
+    AREG_API void stopLogging( void );
 
     /**
      * \brief   Marks specified scope as active, so that message related with scope can be logged.
@@ -279,24 +279,24 @@ namespace NETrace
      *          If configuration file contains information of scope and the priority is not NETrace::PrioNotset,
      *          the system can log messages of appropriate scope.
      **/
-    AREG_API void ActivateScope( CETraceScope & traceScope );
+    AREG_API void activateScope( TraceScope & traceScope );
 
     /**
      * \brief   Returns true if logging has been started.
      **/
-    AREG_API bool IsStarted( void );
+    AREG_API bool isStarted( void );
 
     /**
      * \brief   Returns true if logging has been configured.
      **/
-    AREG_API bool IsConfigured( void );
+    AREG_API bool isConfigured( void );
 
     /**
      * \brief   Returns true if logging is enabled.
      *          If logging is enabled in configuration file, 
      *          the system ignores logging.
      **/
-    AREG_API bool IsEnabled( void );
+    AREG_API bool isEnabled( void );
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -312,7 +312,7 @@ IMPLEMENT_STREAMABLE(NETrace::sLogMessage)
 // NETrace namespace inline functions
 //////////////////////////////////////////////////////////////////////////////
 
-inline const char * NETrace::GetString( NETrace::eLogPriority prio )
+inline const char * NETrace::getString( NETrace::eLogPriority prio )
 {
     switch ( prio )
     {

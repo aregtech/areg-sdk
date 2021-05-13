@@ -4,8 +4,8 @@
 
 /************************************************************************
  * (c) copyright    2021
- *                  Create by AREGtech code generator tool from source CentralMessager.
- * Generated at     25.04.2021  23:50:42 GMT+02:00 
+ *                  Create by AREG SDK code generator tool from source CentralMessager.
+ * Generated at     12.05.2021  16:41:20 GMT+02:00 
  ************************************************************************/
 
 /************************************************************************
@@ -28,30 +28,30 @@ static NEService::SInterfaceData & _getInterfaceData(void)
     /**
      * \brief   CentralMessager Service Interface data
      **/
-    static NEService::SInterfaceData InterfaceData;
+    static NEService::SInterfaceData _InterfaceData;
 
-    if (InterfaceData.idIsInitialized == false)
+    if (_InterfaceData.idIsInitialized == false)
     {
-        InterfaceData.idServiceName     = NECentralMessager::ServiceName;
-        InterfaceData.idVersion         = NECentralMessager::InterfaceVersion;
-        InterfaceData.idServiceType     = NEService::ServiceRemote;
-        InterfaceData.idRequestCount    = NECentralMessager::NumberofRequests;
-        InterfaceData.idResponseCount   = NECentralMessager::NumberofResponses;
-        InterfaceData.idAttributeCount  = NECentralMessager::NumberofAttributes;
+        _InterfaceData.idServiceName    = NECentralMessager::ServiceName;
+        _InterfaceData.idVersion        = NECentralMessager::InterfaceVersion;
+        _InterfaceData.idServiceType    = NEService::ServiceRemote;
+        _InterfaceData.idRequestCount   = NECentralMessager::NumberofRequests;
+        _InterfaceData.idResponseCount  = NECentralMessager::NumberofResponses;
+        _InterfaceData.idAttributeCount = NECentralMessager::NumberofAttributes;
 
         /**
          * \brief   The map of requests and responses
          **/
-        static const unsigned int RequestToResponseMap[] = 
+        static const unsigned int _RequestToResponseMap[] = 
         {
-              static_cast<unsigned int>( NECentralMessager::MSG_ID_NO_PROCEED                 ) // RequestSendMessage( const CEString & nickName, const unsigned int & cookie, const CEString & newMessage, const CEDateTime & dateTime )
-            , static_cast<unsigned int>( NECentralMessager::MSG_ID_NO_PROCEED                 ) // RequestKeyTyping( const CEString & nickName, const unsigned int & cookie, const CEString & newMessage )
+              static_cast<unsigned int>( NECentralMessager::MSG_ID_NO_PROCEED                 ) // requestSendMessage( const String & nickName, unsigned int cookie, const String & newMessage, const DateTime & dateTime )
+            , static_cast<unsigned int>( NECentralMessager::MSG_ID_NO_PROCEED                 ) // requestKeyTyping( const String & nickName, unsigned int cookie, const String & newMessage )
         };
 
         /**
          * \brief   Initialization of map of parameter entry validation map in responses and in broadcasts
          **/
-        static const unsigned int ResponseParamStateMap[] = 
+        static const unsigned int _ResponseParamStateMap[] = 
         {
         /************************************************************************
          * Responses
@@ -60,37 +60,35 @@ static NEService::SInterfaceData & _getInterfaceData(void)
         /************************************************************************
          * Broadcasts
          ************************************************************************/
-            4, // void BroadcastSendMessage( const CEString & nickName, const unsigned int & cookie, const CEString & newMessage, const CEDateTime & dateTime )
-            3, // void BroadcastKeyTyping( const CEString & nickName, const unsigned int & cookie, const CEString & newMessage )
-            2, // void BroadcastBroadcastMessage( const CEString & serverMessage, const CEDateTime & dateTime )
+            4, // void broadcastSendMessage( const String & nickName, unsigned int cookie, const String & newMessage, const DateTime & dateTime )
+            3, // void broadcastKeyTyping( const String & nickName, unsigned int cookie, const String & newMessage )
+            2, // void broadcastBroadcastMessage( const String & serverMessage, const DateTime & dateTime )
 
         };
 
-        InterfaceData.idRequestToResponseMap    = RequestToResponseMap;
-        InterfaceData.idResponseParamCountMap   = ResponseParamStateMap;
-        InterfaceData.idIsInitialized           = true;
+        _InterfaceData.idRequestToResponseMap   = _RequestToResponseMap;
+        _InterfaceData.idResponseParamCountMap  = _ResponseParamStateMap;
+        _InterfaceData.idIsInitialized          = true;
     }
-    return InterfaceData;
+    
+    return _InterfaceData;
 }
 
 //////////////////////////////////////////////////////////////////////////
 // NECentralMessager functions implementation
 //////////////////////////////////////////////////////////////////////////
 
-const NEService::SInterfaceData & NECentralMessager::CreateInterfaceData( void )
+const NEService::SInterfaceData & NECentralMessager::createInterfaceData( void )
 {
     return _getInterfaceData();
 }
 
-NECentralMessager::eMessageIDs NECentralMessager::GetResponseId( NECentralMessager::eMessageIDs reqId )
+NECentralMessager::eMessageIDs NECentralMessager::getResponseId( NECentralMessager::eMessageIDs reqId )
 {
-    const NEService::SInterfaceData & sid = _getInterfaceData();
-
-    int index = GET_REQ_INDEX(reqId);
-    return  ( index >= 0 && index < static_cast<int>(sid.idRequestCount) ? static_cast<NECentralMessager::eMessageIDs>(sid.idRequestToResponseMap[index]) : NECentralMessager::MSG_ID_INVALID );
+    return NECentralMessager::MSG_ID_INVALID;
 }
 
-NECentralMessager::eMessageIDs NECentralMessager::GetRequestId( NECentralMessager::eMessageIDs respId )
+NECentralMessager::eMessageIDs NECentralMessager::getRequestId( NECentralMessager::eMessageIDs respId )
 {
     const NEService::SInterfaceData & sid = _getInterfaceData();
     NECentralMessager::eMessageIDs result = NECentralMessager::MSG_ID_INVALID;

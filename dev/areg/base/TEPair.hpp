@@ -43,7 +43,7 @@
  **/
 template <typename KEY, typename VALUE, typename KEY_TYPE = KEY, typename VALUE_TYPE = VALUE, class Implement = TEPairImpl<KEY_TYPE, VALUE_TYPE>>
 class TEPair    : protected Implement
-                , private   CETemplateConstants
+                , private   TemplateConstants
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -135,7 +135,7 @@ protected:
      * \return  If function returns true, 2 keys are equal.
      *          Otherwise, they are not equal.
      **/
-    inline bool EqualKeys( KEY_TYPE key1, KEY_TYPE key2 ) const;
+    inline bool isEqualKeys( KEY_TYPE key1, KEY_TYPE key2 ) const;
 
     /**
      * \brief   Called when comparing 2 values of element.
@@ -145,7 +145,7 @@ protected:
      * \return  If function returns true, 2 values are equal.
      *          Otherwise, they are not equal.
      **/
-    inline bool EqualValues( VALUE_TYPE value1, VALUE_TYPE value2) const;
+    inline bool equalValues( VALUE_TYPE value1, VALUE_TYPE value2) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -172,7 +172,7 @@ public:
 template <typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename VALUE_TYPE /*= VALUE*/, class Implement /* = TEPairImpl<KEY_TYPE, VALUE_TYPE>*/ >
 TEPair<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::TEPair( void )
     : Implement             ( )
-    , CETemplateConstants   ( )
+    , TemplateConstants   ( )
     
     , mKey  ( )
     , mValue( )
@@ -183,7 +183,7 @@ TEPair<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::TEPair( void )
 template <typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename VALUE_TYPE /*= VALUE*/, class Implement /* = TEPairImpl<KEY_TYPE, VALUE_TYPE>*/ >
 TEPair<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::TEPair( KEY_TYPE Key, VALUE_TYPE Value )
     : Implement             ( )
-    , CETemplateConstants   ( )
+    , TemplateConstants   ( )
 
     , mKey  (Key)
     , mValue(Value)
@@ -194,7 +194,7 @@ TEPair<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::TEPair( KEY_TYPE Key, VALUE
 template <typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename VALUE_TYPE /*= VALUE*/, class Implement /* = TEPairImpl<KEY_TYPE, VALUE_TYPE>*/ >
 TEPair<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::TEPair( const TEPair<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>& src )
     : Implement             ( )
-    , CETemplateConstants   ( )
+    , TemplateConstants   ( )
 
     , mKey  (src.mKey)
     , mValue(src.mValue)
@@ -222,22 +222,22 @@ inline const TEPair<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>& TEPair<KEY, VA
 
 template <typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename VALUE_TYPE /*= VALUE*/, class Implement /* = TEPairImpl<KEY_TYPE, VALUE_TYPE>*/ >
 inline bool TEPair<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::operator == ( const TEPair<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>& other ) const
-{   return (this != &other ? EqualKeys(mKey, other.mKey) && EqualValues(mValue, other.mValue) : true);      }
+{   return (this != &other ? isEqualKeys(mKey, other.mKey) && equalValues(mValue, other.mValue) : true);      }
 
 template <typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename VALUE_TYPE /*= VALUE*/, class Implement /* = TEPairImpl<KEY_TYPE, VALUE_TYPE>*/ >
 inline bool TEPair<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::operator!=( const TEPair<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>& other ) const
-{   return (this != &other ? !EqualKeys(mKey, other.mKey) || !EqualValues(mValue, other.mValue) : false);   }
+{   return (this != &other ? !isEqualKeys(mKey, other.mKey) || !equalValues(mValue, other.mValue) : false);   }
 
 template <typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename VALUE_TYPE /*= VALUE*/, class Implement /* = TEPairImpl<KEY_TYPE, VALUE_TYPE>*/ >
-inline bool TEPair<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::EqualValues(VALUE_TYPE value1, VALUE_TYPE value2) const
+inline bool TEPair<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::equalValues(VALUE_TYPE value1, VALUE_TYPE value2) const
 {
-    return Implement::ImplEqualValues(value1, value2);
+    return Implement::implEqualValues(value1, value2);
 }
 
 template <typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename VALUE_TYPE /*= VALUE*/, class Implement /* = TEPairImpl<KEY_TYPE, VALUE_TYPE>*/ >
-inline bool TEPair<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::EqualKeys(KEY_TYPE key1, KEY_TYPE key2) const
+inline bool TEPair<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::isEqualKeys(KEY_TYPE key1, KEY_TYPE key2) const
 {
-    return Implement::ImplEqualKeys(key1, key2);
+    return Implement::implEqualKeys(key1, key2);
 }
 
 //////////////////////////////////////////////////////////////////////////

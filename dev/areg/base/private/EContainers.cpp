@@ -9,454 +9,454 @@
 #include "areg/base/EContainers.hpp"
 
 //////////////////////////////////////////////////////////////////////////
-// CEIntegerArray class implementation
+// IntegerArray class implementation
 //////////////////////////////////////////////////////////////////////////
-CEIntegerArray::CEIntegerArray( int capacity /*= 0*/, int increase /*= -1*/ )
+IntegerArray::IntegerArray( int capacity /*= 0*/, int increase /*= -1*/ )
     : TEArrayList<unsigned int, unsigned int>  (capacity, increase)
 {
     ; // do nothing
 }
 
-CEIntegerArray::CEIntegerArray( const CEIntegerArray & src )
+IntegerArray::IntegerArray( const IntegerArray & src )
     : TEArrayList<unsigned int, unsigned int>  (static_cast<const TEArrayList<unsigned int, unsigned int> &>(src))
 {
     ; // do nothing
 }
 
-CEIntegerArray::~CEIntegerArray( void )
+IntegerArray::~IntegerArray( void )
 {
     ; // do nothing
 }
 
 //////////////////////////////////////////////////////////////////////////
-// CEStringArray class implementation
+// StringArray class implementation
 //////////////////////////////////////////////////////////////////////////
-CEStringArray::CEStringArray( int capacity /*= 0*/, int increase /*= -1*/ )
-    : TEArrayList<CEString, const CEString &>  (capacity, increase)
+StringArray::StringArray( int capacity /*= 0*/, int increase /*= -1*/ )
+    : TEArrayList<String, const String &>  (capacity, increase)
 {
     ; // do nothing
 }
 
-CEStringArray::CEStringArray( const CEStringArray & src )
-    : TEArrayList<CEString, const CEString &>  (static_cast<const TEArrayList<CEString, const CEString &> &>(src))
+StringArray::StringArray( const StringArray & src )
+    : TEArrayList<String, const String &>  (static_cast<const TEArrayList<String, const String &> &>(src))
 {
     ; // do nothing
 }
 
-CEStringArray::~CEStringArray( void )
-{
-    ; // do nothing
-}
-
-//////////////////////////////////////////////////////////////////////////
-// CEPointerArray class implementation
-//////////////////////////////////////////////////////////////////////////
-CEPointerArray::CEPointerArray( int capacity /*= 0*/, int increase /*= -1*/ )
-    : TEArrayList<void *, void *, ImplPointerArray>  (capacity, increase)
-{
-    ; // do nothing
-}
-
-CEPointerArray::CEPointerArray( const CEPointerArray & src )
-    : TEArrayList<void *, void *, ImplPointerArray>  (static_cast<const TEArrayList<void *, void *, ImplPointerArray> &>(src))
-{
-    ; // do nothing
-}
-
-CEPointerArray::~CEPointerArray( void )
+StringArray::~StringArray( void )
 {
     ; // do nothing
 }
 
 //////////////////////////////////////////////////////////////////////////
-// CEIntegerToIntegerMap class declaration
+// PointerArray class implementation
+//////////////////////////////////////////////////////////////////////////
+PointerArray::PointerArray( int capacity /*= 0*/, int increase /*= -1*/ )
+    : TEArrayList<void *, void *, ImplPointerList>  (capacity, increase)
+{
+    ; // do nothing
+}
+
+PointerArray::PointerArray( const PointerArray & src )
+    : TEArrayList<void *, void *, ImplPointerList>  (static_cast<const TEArrayList<void *, void *, ImplPointerList> &>(src))
+{
+    ; // do nothing
+}
+
+PointerArray::~PointerArray( void )
+{
+    ; // do nothing
+}
+
+//////////////////////////////////////////////////////////////////////////
+// IntegerToIntegerMap class declaration
 //////////////////////////////////////////////////////////////////////////
 
-CEIntegerToIntegerMap::CEIntegerToIntegerMap( void )
+IntegerToIntegerMap::IntegerToIntegerMap( void )
     : TEIntegerHashMap<unsigned int, unsigned int, ImplIntegerToIntegerMap> ( )
 {
     ; // do nothing
 }
 
-CEIntegerToIntegerMap::CEIntegerToIntegerMap( int blockSize, int hashSize )
+IntegerToIntegerMap::IntegerToIntegerMap( int blockSize, int hashSize )
     : TEIntegerHashMap<unsigned int, unsigned int, ImplIntegerToIntegerMap> ( blockSize, hashSize )
 {
     ; // do nothing
 }
 
-CEIntegerToIntegerMap::CEIntegerToIntegerMap( const CEIntegerToIntegerMap & src )
+IntegerToIntegerMap::IntegerToIntegerMap( const IntegerToIntegerMap & src )
     : TEIntegerHashMap<unsigned int, unsigned int, ImplIntegerToIntegerMap> ( static_cast<const TEIntegerHashMap<unsigned int, unsigned int, ImplIntegerToIntegerMap> &>(src) )
 {
     ; // do nothing
 }
 
-CEIntegerToIntegerMap::~CEIntegerToIntegerMap( void )
+IntegerToIntegerMap::~IntegerToIntegerMap( void )
 {
     ; // do nothing
 }
 
 //////////////////////////////////////////////////////////////////////////
-// CEIntegerToStringMap class implementation
+// IntegerToStringMap class implementation
 //////////////////////////////////////////////////////////////////////////
 
-CEIntegerToStringMap::CEIntegerToStringMap( void )
-    : TEIntegerHashMap<CEString, const CEString &, ImplIntegerToStringMap> ( )
+IntegerToStringMap::IntegerToStringMap( void )
+    : TEIntegerHashMap<String, const String &, ImplIntegerToStringMap> ( )
 {
     ; // do nothing
 }
 
-CEIntegerToStringMap::CEIntegerToStringMap( int blockSize, int hashSize )
-    : TEIntegerHashMap<CEString, const CEString &, ImplIntegerToStringMap> ( blockSize, hashSize )
+IntegerToStringMap::IntegerToStringMap( int blockSize, int hashSize )
+    : TEIntegerHashMap<String, const String &, ImplIntegerToStringMap> ( blockSize, hashSize )
 {
     ; // do nothing
 }
 
-CEIntegerToStringMap::CEIntegerToStringMap( const CEIntegerToStringMap & src )
-    : TEIntegerHashMap<CEString, const CEString &, ImplIntegerToStringMap> ( static_cast<const TEIntegerHashMap<CEString, const CEString &, ImplIntegerToStringMap> &>(src) )
+IntegerToStringMap::IntegerToStringMap( const IntegerToStringMap & src )
+    : TEIntegerHashMap<String, const String &, ImplIntegerToStringMap> ( static_cast<const TEIntegerHashMap<String, const String &, ImplIntegerToStringMap> &>(src) )
 {
     ; // do nothing
 }
 
-CEIntegerToStringMap::~CEIntegerToStringMap( void )
+IntegerToStringMap::~IntegerToStringMap( void )
 {
     ; // do nothing
 }
 
 //////////////////////////////////////////////////////////////////////////
-// CEIntegerToPointergMap class implementation
+// IntegerToPointergMap class implementation
 //////////////////////////////////////////////////////////////////////////
 
-CEIntegerToPointergMap::CEIntegerToPointergMap( void )
+IntegerToPointergMap::IntegerToPointergMap( void )
     : TEIntegerHashMap<void *, const void *, ImplIntegerToPointergMap>   ( )
 {
     ; // do nothing
 }
 
-CEIntegerToPointergMap::CEIntegerToPointergMap( int blockSize, int hashSize )
+IntegerToPointergMap::IntegerToPointergMap( int blockSize, int hashSize )
     : TEIntegerHashMap<void *, const void *, ImplIntegerToPointergMap>   ( blockSize, hashSize )
 {
     ; // do nothing
 }
 
-CEIntegerToPointergMap::CEIntegerToPointergMap( const CEIntegerToPointergMap & src )
+IntegerToPointergMap::IntegerToPointergMap( const IntegerToPointergMap & src )
     : TEIntegerHashMap<void *, const void *, ImplIntegerToPointergMap>   ( static_cast<const TEIntegerHashMap<void *, const void *, ImplIntegerToPointergMap> &>(src) )
 {
     ; // do nothing
 }
 
-CEIntegerToPointergMap::~CEIntegerToPointergMap( void )
+IntegerToPointergMap::~IntegerToPointergMap( void )
 {
     ; // do nothing
 }
 
 //////////////////////////////////////////////////////////////////////////
-// CEStringToIntegerMap class implementation
+// StringToIntegerMap class implementation
 //////////////////////////////////////////////////////////////////////////
 
-CEStringToIntegerMap::CEStringToIntegerMap( void )
+StringToIntegerMap::StringToIntegerMap( void )
     : TEStringHashMap<unsigned int, unsigned int, ImplStringToIntegerMap>  ( )
 {
     ; // do nothing
 }
 
-CEStringToIntegerMap::CEStringToIntegerMap( int blockSize, int hashSize )
+StringToIntegerMap::StringToIntegerMap( int blockSize, int hashSize )
     : TEStringHashMap<unsigned int, unsigned int, ImplStringToIntegerMap>  ( blockSize, hashSize )
 {
     ; // do nothing
 }
 
-CEStringToIntegerMap::CEStringToIntegerMap( const CEStringToIntegerMap & src )
+StringToIntegerMap::StringToIntegerMap( const StringToIntegerMap & src )
     : TEStringHashMap<unsigned int, unsigned int, ImplStringToIntegerMap>  ( static_cast<const TEStringHashMap<unsigned int, unsigned int, ImplStringToIntegerMap> &>(src) )
 {
     ; // do nothing
 }
 
-CEStringToIntegerMap::~CEStringToIntegerMap( void )
+StringToIntegerMap::~StringToIntegerMap( void )
 {
     ; // do nothing
 }
 
 //////////////////////////////////////////////////////////////////////////
-// CEStringToStringMap class implementation
+// StringToStringMap class implementation
 //////////////////////////////////////////////////////////////////////////
 
-CEStringToStringMap::CEStringToStringMap( void )
-    : TEStringHashMap<CEString, const CEString &, ImplStringToStringMap>  ( )
+StringToStringMap::StringToStringMap( void )
+    : TEStringHashMap<String, const String &, ImplStringToStringMap>  ( )
 {
     ; // do nothing
 }
 
-CEStringToStringMap::CEStringToStringMap( int blockSize, int hashSize )
-    : TEStringHashMap<CEString, const CEString &, ImplStringToStringMap>  ( blockSize, hashSize )
+StringToStringMap::StringToStringMap( int blockSize, int hashSize )
+    : TEStringHashMap<String, const String &, ImplStringToStringMap>  ( blockSize, hashSize )
 {
     ; // do nothing
 }
 
-CEStringToStringMap::CEStringToStringMap( const CEStringToStringMap & src )
-    : TEStringHashMap<CEString, const CEString &, ImplStringToStringMap>  ( static_cast<const TEStringHashMap<CEString, const CEString &, ImplStringToStringMap> &>(src) )
+StringToStringMap::StringToStringMap( const StringToStringMap & src )
+    : TEStringHashMap<String, const String &, ImplStringToStringMap>  ( static_cast<const TEStringHashMap<String, const String &, ImplStringToStringMap> &>(src) )
 {
     ; // do nothing
 }
 
-CEStringToStringMap::~CEStringToStringMap( void )
+StringToStringMap::~StringToStringMap( void )
 {
     ; // do nothing
 }
 
 //////////////////////////////////////////////////////////////////////////
-// CEStringToPointergMap class implementation
+// StringToPointergMap class implementation
 //////////////////////////////////////////////////////////////////////////
 
-CEStringToPointergMap::CEStringToPointergMap( void )
+StringToPointergMap::StringToPointergMap( void )
     : TEStringHashMap<void *, const void *, ImplStringToPointergMap>    ( )
 {
     ; // do nothing
 }
 
-CEStringToPointergMap::CEStringToPointergMap( int blockSize, int hashSize )
+StringToPointergMap::StringToPointergMap( int blockSize, int hashSize )
     : TEStringHashMap<void *, const void *, ImplStringToPointergMap>    ( blockSize, hashSize )
 {
     ; // do nothing
 }
 
-CEStringToPointergMap::CEStringToPointergMap( const CEStringToPointergMap & src )
+StringToPointergMap::StringToPointergMap( const StringToPointergMap & src )
     : TEStringHashMap<void *, const void *, ImplStringToPointergMap>    ( static_cast<const TEStringHashMap<void *, const void *, ImplStringToPointergMap> &>(src) )
 {
     ; // do nothing
 }
 
-CEStringToPointergMap::~CEStringToPointergMap( void )
+StringToPointergMap::~StringToPointergMap( void )
 {
     ; // do nothing
 }
 
 //////////////////////////////////////////////////////////////////////////
-// CEPointerToIntegerMap class implementation
+// PointerToIntegerMap class implementation
 //////////////////////////////////////////////////////////////////////////
 
-CEPointerToIntegerMap::CEPointerToIntegerMap( void )
+PointerToIntegerMap::PointerToIntegerMap( void )
     : TEPointerHashMap<unsigned int, unsigned int, ImplPointerToIntegerMap> ( )
 {
     ; // do nothing
 }
 
-CEPointerToIntegerMap::CEPointerToIntegerMap( int blockSize, int hashSize )
+PointerToIntegerMap::PointerToIntegerMap( int blockSize, int hashSize )
     : TEPointerHashMap<unsigned int, unsigned int, ImplPointerToIntegerMap> ( blockSize, hashSize )
 {
     ; // do nothing
 }
 
-CEPointerToIntegerMap::CEPointerToIntegerMap( const CEPointerToIntegerMap & src )
+PointerToIntegerMap::PointerToIntegerMap( const PointerToIntegerMap & src )
     : TEPointerHashMap<unsigned int, unsigned int, ImplPointerToIntegerMap> ( static_cast<const TEPointerHashMap<unsigned int, unsigned int, ImplPointerToIntegerMap> &>(src) )
 {
     ; // do nothing
 }
 
-CEPointerToIntegerMap::~CEPointerToIntegerMap( void )
+PointerToIntegerMap::~PointerToIntegerMap( void )
 {
     ; // do nothing
 }
 
 //////////////////////////////////////////////////////////////////////////
-// CEPointerToStringMap class implementation
+// PointerToStringMap class implementation
 //////////////////////////////////////////////////////////////////////////
 
-CEPointerToStringMap::CEPointerToStringMap( void )
-    : TEPointerHashMap<CEString, const CEString &, ImplPointerToStringMap> ( )
+PointerToStringMap::PointerToStringMap( void )
+    : TEPointerHashMap<String, const String &, ImplPointerToStringMap> ( )
 {
     ; // do nothing
 }
 
-CEPointerToStringMap::CEPointerToStringMap( int blockSize, int hashSize )
-    : TEPointerHashMap<CEString, const CEString &, ImplPointerToStringMap> ( blockSize, hashSize )
+PointerToStringMap::PointerToStringMap( int blockSize, int hashSize )
+    : TEPointerHashMap<String, const String &, ImplPointerToStringMap> ( blockSize, hashSize )
 {
     ; // do nothing
 }
 
-CEPointerToStringMap::CEPointerToStringMap( const CEPointerToStringMap & src )
-    : TEPointerHashMap<CEString, const CEString &, ImplPointerToStringMap> ( static_cast<const TEPointerHashMap<CEString, const CEString &, ImplPointerToStringMap> &>(src) )
+PointerToStringMap::PointerToStringMap( const PointerToStringMap & src )
+    : TEPointerHashMap<String, const String &, ImplPointerToStringMap> ( static_cast<const TEPointerHashMap<String, const String &, ImplPointerToStringMap> &>(src) )
 {
     ; // do nothing
 }
 
-CEPointerToStringMap::~CEPointerToStringMap( void )
+PointerToStringMap::~PointerToStringMap( void )
 {
     ; // do nothing
 }
 
 //////////////////////////////////////////////////////////////////////////
-// CEPointerToPointergMap class implementation
+// PointerToPointergMap class implementation
 //////////////////////////////////////////////////////////////////////////
 
-CEPointerToPointergMap::CEPointerToPointergMap( void )
+PointerToPointergMap::PointerToPointergMap( void )
     : TEPointerHashMap<void *, const void *, ImplPointerToPointergMap>   ( )
 {
     ; // do nothing
 }
 
-CEPointerToPointergMap::CEPointerToPointergMap( int blockSize, int hashSize )
+PointerToPointergMap::PointerToPointergMap( int blockSize, int hashSize )
     : TEPointerHashMap<void *, const void *, ImplPointerToPointergMap>   ( blockSize, hashSize )
 {
     ; // do nothing
 }
 
-CEPointerToPointergMap::CEPointerToPointergMap( const CEPointerToPointergMap & src )
+PointerToPointergMap::PointerToPointergMap( const PointerToPointergMap & src )
     : TEPointerHashMap<void *, const void *, ImplPointerToPointergMap>   ( static_cast<const TEPointerHashMap<void *, const void *, ImplPointerToPointergMap> &>(src) )
 {
     ; // do nothing
 }
 
-CEPointerToPointergMap::~CEPointerToPointergMap( void )
+PointerToPointergMap::~PointerToPointergMap( void )
 {
     ; // do nothing
 }
 
 //////////////////////////////////////////////////////////////////////////
-// CEIntegerList class implementation
+// IntegerList class implementation
 //////////////////////////////////////////////////////////////////////////
 
-CEIntegerList::CEIntegerList( void )
+IntegerList::IntegerList( void )
     : TELinkedList<unsigned int, unsigned int, ImplIntegerList> ( )
 {
     ; // do nothing
 }
 
-CEIntegerList::CEIntegerList( const CEIntegerList & src )
+IntegerList::IntegerList( const IntegerList & src )
     : TELinkedList<unsigned int, unsigned int, ImplIntegerList> ( static_cast<const TELinkedList<unsigned int, unsigned int, ImplIntegerList> &>(src) )
 {
     ; // do nothing
 }
 
-CEIntegerList::~CEIntegerList( void )
+IntegerList::~IntegerList( void )
 {
     ; // do nothing
 }
 
 //////////////////////////////////////////////////////////////////////////
-// CEStringList class implementation
+// StringList class implementation
 //////////////////////////////////////////////////////////////////////////
 
-CEStringList::CEStringList( void )
-    : TELinkedList<CEString, const CEString &, ImplStringList> ( )
+StringList::StringList( void )
+    : TELinkedList<String, const String &, ImplStringList> ( )
 {
     ; // do nothing
 }
 
-CEStringList::CEStringList( const CEStringList & src )
-    : TELinkedList<CEString, const CEString &, ImplStringList> ( static_cast<const TELinkedList<CEString, const CEString &, ImplStringList> &>(src) )
+StringList::StringList( const StringList & src )
+    : TELinkedList<String, const String &, ImplStringList> ( static_cast<const TELinkedList<String, const String &, ImplStringList> &>(src) )
 {
     ; // do nothing
 }
 
-CEStringList::~CEStringList( void )
+StringList::~StringList( void )
 {
     ; // do nothing
 }
 
 //////////////////////////////////////////////////////////////////////////
-// CEPointerList class implementation
+// PointerList class implementation
 //////////////////////////////////////////////////////////////////////////
 
-CEPointerList::CEPointerList( void )
+PointerList::PointerList( void )
     : TELinkedList<void *, const void *, ImplPointerList>   ( )
 {
     ; // do nothing
 }
 
-CEPointerList::CEPointerList( const CEPointerList & src )
+PointerList::PointerList( const PointerList & src )
     : TELinkedList<void *, const void *, ImplPointerList>   ( static_cast<const TELinkedList<void *, const void *, ImplPointerList> &>(src) )
 {
     ; // do nothing
 }
 
-CEPointerList::~CEPointerList( void )
+PointerList::~PointerList( void )
 {
     ; // do nothing
 }
 
 //////////////////////////////////////////////////////////////////////////
-// CESortedIntegerList class declaration
+// SortedIntegerList class declaration
 //////////////////////////////////////////////////////////////////////////
 
-CESortedIntegerList::CESortedIntegerList( bool sortAcceding /*= true */ )
+SortedIntegerList::SortedIntegerList( bool sortAcceding /*= true */ )
     : TESortedLinkedList<unsigned int, unsigned int, TESortImpl<unsigned int>>   ( sortAcceding )
 {
     ; // do nothing
 }
 
-CESortedIntegerList::CESortedIntegerList( const CESortedIntegerList & src )
+SortedIntegerList::SortedIntegerList( const SortedIntegerList & src )
     : TESortedLinkedList<unsigned int, unsigned int, TESortImpl<unsigned int>>   ( static_cast<const TESortedLinkedList<unsigned int, unsigned int, TESortImpl<unsigned int>> &>(src) )
 {
     ; // do nothing
 }
 
-CESortedIntegerList::~CESortedIntegerList( void )
+SortedIntegerList::~SortedIntegerList( void )
 {
     ; // do nothing
 }
 
 //////////////////////////////////////////////////////////////////////////
-// CESortedStringList class declaration
+// SortedStringList class declaration
 //////////////////////////////////////////////////////////////////////////
 
-CESortedStringList::CESortedStringList( bool sortAcceding /*= true*/ )
-    : TESortedLinkedList<CEString, const CEString &, CESortedStringListImpl>   ( sortAcceding )
+SortedStringList::SortedStringList( bool sortAcceding /*= true*/ )
+    : TESortedLinkedList<String, const String &, SortedStringListImpl>   ( sortAcceding )
 {
     ; // do nothing
 }
 
-CESortedStringList::CESortedStringList(const CESortedStringList & src)
-    : TESortedLinkedList<CEString, const CEString &, CESortedStringListImpl>   ( static_cast<const TESortedLinkedList<CEString, const CEString &, CESortedStringListImpl> &>(src) )
+SortedStringList::SortedStringList(const SortedStringList & src)
+    : TESortedLinkedList<String, const String &, SortedStringListImpl>   ( static_cast<const TESortedLinkedList<String, const String &, SortedStringListImpl> &>(src) )
 {
     ; // do nothing
 }
 
-CESortedStringList::~CESortedStringList( void )
+SortedStringList::~SortedStringList( void )
 {
     ; // do nothing
 }
 
 
 //////////////////////////////////////////////////////////////////////////
-// CETokenizer class implementation
+// Tokenizer class implementation
 //////////////////////////////////////////////////////////////////////////
 
-CETokenizer::CETokenizer( void )
+Tokenizer::Tokenizer( void )
 {
     // do nothing
 }
 
-CETokenizer::CETokenizer( const CEString & str, const CEString & delimiters, bool keepEmpty/*=true*/)
+Tokenizer::Tokenizer( const String & str, const String & delimiters, bool keepEmpty/*=true*/)
 {
     Tokenize(str, delimiters, keepEmpty);
 }
 
-CETokenizer::CETokenizer( const CETokenizer & src )
-    : CEStringArray(src)
+Tokenizer::Tokenizer( const Tokenizer & src )
+    : StringArray(src)
 {
     // do nothing
 }
 
 
-CETokenizer::~CETokenizer( void )
+Tokenizer::~Tokenizer( void )
 {
     // do nothing
 }
 
 
-void CETokenizer::Tokenize( const CEString & str, const CEString & delimiters, bool keepEmpty/*=true*/)
+void Tokenizer::Tokenize( const String & str, const String & delimiters, bool keepEmpty/*=true*/)
 {
     unsigned int lastPos= 0;
-    unsigned int length = str.GetLength();
+    unsigned int length = str.getLength();
     // empty self
-    RemoveAll();
+    removeAll();
     while (lastPos <= length)
     {
-        unsigned int pos = str.FindOneOf(delimiters, lastPos);
+        unsigned int pos = str.findOneOf(delimiters, lastPos);
         if (pos == NEString::InvalidPos)
            pos = length;
         if (pos != lastPos || keepEmpty)
-            Add(str.Substr(lastPos, pos - lastPos));
+            add(str.substring(lastPos, pos - lastPos));
         lastPos = pos + 1;
     }
 }

@@ -16,9 +16,9 @@
  * Dependencies
  ************************************************************************/
 namespace NESocket{
-    class CEInterlockedValue;
+    class InterlockedValue;
 }
-class CERemoteMessage;
+class RemoteMessage;
 
 //////////////////////////////////////////////////////////////////////////
 // IERemoteServiceHandler interface declaration
@@ -55,20 +55,20 @@ public:
      * \brief   Triggered, when failed to send message.
      * \param   msgFailed   The message, which failed to send.
      **/
-    virtual void FailedSendMessage( const CERemoteMessage & msgFailed ) = 0;
+    virtual void failedSendMessage( const RemoteMessage & msgFailed ) = 0;
 
     /**
      * \brief   Triggered, when failed to receive message.
      * \param   whichSource Indicated the source, which failed.
      **/
-    virtual void FailedReceiveMessage( SOCKETHANDLE whichSource ) = 0;
+    virtual void failedReceiveMessage( SOCKETHANDLE whichSource ) = 0;
 
     /**
      * \brief   Triggered, when failed to process message, i.e. the target for message processing was not found.
      *          In case of request message processing, the source should receive error notification.
      * \param   msgUnprocessed  Unprocessed message data.
      **/
-    virtual void FailedProcessMessage( const CERemoteMessage & msgUnprocessed ) = 0;
+    virtual void failedProcessMessage( const RemoteMessage & msgUnprocessed ) = 0;
 
     /**
      * \brief   Triggered, when need to process received message.
@@ -76,7 +76,7 @@ public:
      * \param   addrHost    The address of remote host, which sent message.
      * \param   whichSource The socket handle, which received message.
      **/
-    virtual void ProcessReceivedMessage( const CERemoteMessage & msgReceived, const NESocket::CEInterlockedValue & addrHost, SOCKETHANDLE whichSource ) = 0;
+    virtual void processReceivedMessage( const RemoteMessage & msgReceived, const NESocket::InterlockedValue & addrHost, SOCKETHANDLE whichSource ) = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

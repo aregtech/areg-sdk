@@ -6,8 +6,8 @@
 
 /************************************************************************
  * (c) copyright    2021
- *                  Create by AREGtech code generator tool from source DirectMessager.
- * Generated at     25.04.2021  23:50:46 GMT+02:00 
+ *                  Create by AREG SDK code generator tool from source DirectMessager.
+ * Generated at     12.05.2021  16:41:24 GMT+02:00 
  ************************************************************************/
 
 /************************************************************************
@@ -25,14 +25,14 @@
 // Dependency includes
 //////////////////////////////////////////////////////////////////////////
 #include "shared/NECommonSettings.hpp"
-#include "areg/base/CEDateTime.hpp"
-#include "areg/base/CEString.hpp"
+#include "areg/base/DateTime.hpp"
+#include "areg/base/String.hpp"
 
 //////////////////////////////////////////////////////////////////////////
 // Mandatory includes
 //////////////////////////////////////////////////////////////////////////
 #include "areg/base/IEIOStream.hpp"
-#include "areg/base/CEVersion.hpp"
+#include "areg/base/Version.hpp"
 #include "areg/component/NEService.hpp"
 
 /************************************************************************
@@ -65,7 +65,7 @@ namespace   NEDirectMessager
      * \brief   Implemented Version
      *          NEDirectMessager::InterfaceVersion
      **/
-    const CEVersion           InterfaceVersion    = "1.0.0";
+    const Version             InterfaceVersion    = "1.0.0";
 
     /**
      * \brief   The maximum length of a message.
@@ -115,62 +115,62 @@ namespace   NEDirectMessager
      * Request IDs
      ************************************************************************/
         /**
-         * \brief   Request ID: MSG_ID_RequestChatJoin
+         * \brief   Request ID: MSG_ID_requestChatJoin
          *          Request to join chat. The participant should be in the list of connections
          **/
-          MSG_ID_RequestChatJoin              = NEService::REQUEST_ID_FIRST     // void RequestChatJoin( const NEDirectMessager::sParticipant & participant, const CEDateTime & timeConnect );
+          MSG_ID_requestChatJoin              = NEService::REQUEST_ID_FIRST     // void requestChatJoin( const NEDirectMessager::sParticipant & participant, const DateTime & timeConnect );
         /**
-         * \brief   Request ID: MSG_ID_RequestMessageSend
+         * \brief   Request ID: MSG_ID_requestMessageSend
          *          Request to send a message, has no response
          **/
-        , MSG_ID_RequestMessageSend                                             // void RequestMessageSend( const NEDirectMessager::sParticipant & sender, const CEString & msgText, const CEDateTime & timeSent );
+        , MSG_ID_requestMessageSend                                             // void requestMessageSend( const NEDirectMessager::sParticipant & sender, const String & msgText, const DateTime & timeSent );
         /**
-         * \brief   Request ID: MSG_ID_RequestMessageType
+         * \brief   Request ID: MSG_ID_requestMessageType
          *          The request to send message while typing a text. Has no response.
          **/
-        , MSG_ID_RequestMessageType                                             // void RequestMessageType( const NEDirectMessager::sParticipant & participant, const CEString & msgText );
+        , MSG_ID_requestMessageType                                             // void requestMessageType( const NEDirectMessager::sParticipant & participant, const String & msgText );
         /**
-         * \brief   Request ID: MSG_ID_RequestChatLeave
+         * \brief   Request ID: MSG_ID_requestChatLeave
          *          The request to leave chat-room. Has no response.
          **/
-        , MSG_ID_RequestChatLeave                                               // void RequestChatLeave( const NEDirectMessager::sParticipant & participant, const CEDateTime & timeLeave );
+        , MSG_ID_requestChatLeave                                               // void requestChatLeave( const NEDirectMessager::sParticipant & participant, const DateTime & timeLeave );
      
     /************************************************************************
      * Response IDs
      ************************************************************************/
         /**
-         * \brief   Response ID: MSG_ID_ResponseChatJoin
+         * \brief   Response ID: MSG_ID_responseChatJoin
          *          Response to join chat
          **/
-        , MSG_ID_ResponseChatJoin             = NEService::RESPONSE_ID_FIRST    // void ResponseChatJoin( const bool & succeed, const NEDirectMessager::ListParticipants & listParticipant, const CEDateTime & timeConnect, const CEDateTime & timeConnected );     
+        , MSG_ID_responseChatJoin             = NEService::RESPONSE_ID_FIRST    // void responseChatJoin( bool succeed, const NEDirectMessager::ListParticipants & listParticipant, const DateTime & timeConnect, const DateTime & timeConnected );     
     /************************************************************************
      * Broadcast IDs
      ************************************************************************/
         /**
-         * \brief   Broadcast ID: MSG_ID_BroadcastMessageSent
+         * \brief   Broadcast ID: MSG_ID_broadcastMessageSent
          *          Informs all connected servicing clients that the message is sent.
          **/
-        , MSG_ID_BroadcastMessageSent                                           // void BroadcastMessageSent( const NEDirectMessager::sParticipant & sender, const CEString & msgText, const CEDateTime & timeSent );
+        , MSG_ID_broadcastMessageSent                                           // void broadcastMessageSent( const NEDirectMessager::sParticipant & sender, const String & msgText, const DateTime & timeSent );
         /**
-         * \brief   Broadcast ID: MSG_ID_BroadcastMessageTyped
+         * \brief   Broadcast ID: MSG_ID_broadcastMessageTyped
          *          Informs all connected servicing client that the text was typed.
          **/
-        , MSG_ID_BroadcastMessageTyped                                          // void BroadcastMessageTyped( const NEDirectMessager::sParticipant & participant, const CEString & msgText );
+        , MSG_ID_broadcastMessageTyped                                          // void broadcastMessageTyped( const NEDirectMessager::sParticipant & participant, const String & msgText );
         /**
-         * \brief   Broadcast ID: MSG_ID_BroadcastParticipantJoined
+         * \brief   Broadcast ID: MSG_ID_broadcastParticipantJoined
          *          Informs new participant joined chat-room
          **/
-        , MSG_ID_BroadcastParticipantJoined                                     // void BroadcastParticipantJoined( const NEDirectMessager::sParticipant & participant, const CEDateTime & timeJoined );
+        , MSG_ID_broadcastParticipantJoined                                     // void broadcastParticipantJoined( const NEDirectMessager::sParticipant & participant, const DateTime & timeJoined );
         /**
-         * \brief   Broadcast ID: MSG_ID_BroadcastParticipantLeft
-         *          Informes that a participant left chat-room.
+         * \brief   Broadcast ID: MSG_ID_broadcastParticipantLeft
+         *          Informs that a participant left chat-room.
          **/
-        , MSG_ID_BroadcastParticipantLeft                                       // void BroadcastParticipantLeft( const NEDirectMessager::sParticipant & participant, const CEDateTime & timeLeft );
+        , MSG_ID_broadcastParticipantLeft                                       // void broadcastParticipantLeft( const NEDirectMessager::sParticipant & participant, const DateTime & timeLeft );
         /**
-         * \brief   Broadcast ID: MSG_ID_BroadcastChatClosed
-         *          Informes all service connected clients that the chat-room is closed. Message will be impossible.
+         * \brief   Broadcast ID: MSG_ID_broadcastChatClosed
+         *          Informs all service connected clients that the chat-room is closed. Message will be impossible.
          **/
-        , MSG_ID_BroadcastChatClosed                                            // void BroadcastChatClosed( void );
+        , MSG_ID_broadcastChatClosed                                            // void broadcastChatClosed( void );
      
     /************************************************************************
      * Attributes IDs
@@ -197,7 +197,7 @@ namespace   NEDirectMessager
     /**
      * \brief   Returns string value of NEDirectMessager::eMessageIDs
      **/
-    inline const char * GetString( NEDirectMessager::eMessageIDs msgId );
+    inline const char * getString( NEDirectMessager::eMessageIDs msgId );
      
 /************************************************************************
  * Service Interface standard functions and variables
@@ -206,27 +206,27 @@ namespace   NEDirectMessager
     /**
      * \brief   Creates and returns Service Interface Data
      **/
-    const NEService::SInterfaceData & CreateInterfaceData( void );
+    const NEService::SInterfaceData & createInterfaceData( void );
 
     /**
      * \brief   Returns the mapped Response ID of give Request ID.
      **/
-    NEDirectMessager::eMessageIDs GetResponseId( NEDirectMessager::eMessageIDs reqId );
+    NEDirectMessager::eMessageIDs getResponseId( NEDirectMessager::eMessageIDs reqId );
 
     /**
      * \brief   Returns the mapped Response ID of give Request ID.
      **/
-    NEDirectMessager::eMessageIDs GetRequestId( NEDirectMessager::eMessageIDs respId );
+    NEDirectMessager::eMessageIDs getRequestId( NEDirectMessager::eMessageIDs respId );
 
     /**
      * \brief   Array of supported Request IDs
      **/
     const eMessageIDs    RequestIds[] = 
     {
-          MSG_ID_RequestChatJoin
-        , MSG_ID_RequestMessageSend
-        , MSG_ID_RequestMessageType
-        , MSG_ID_RequestChatLeave
+          MSG_ID_requestChatJoin
+        , MSG_ID_requestMessageSend
+        , MSG_ID_requestMessageType
+        , MSG_ID_requestChatLeave
     };
     /**
      * \brief   Number of supported Request entries
@@ -238,13 +238,13 @@ namespace   NEDirectMessager
      **/
     const eMessageIDs    ResponseIds[] = 
     {
-          MSG_ID_ResponseChatJoin
+          MSG_ID_responseChatJoin
 
-        , MSG_ID_BroadcastMessageSent
-        , MSG_ID_BroadcastMessageTyped
-        , MSG_ID_BroadcastParticipantJoined
-        , MSG_ID_BroadcastParticipantLeft
-        , MSG_ID_BroadcastChatClosed
+        , MSG_ID_broadcastMessageSent
+        , MSG_ID_broadcastMessageTyped
+        , MSG_ID_broadcastParticipantJoined
+        , MSG_ID_broadcastParticipantLeft
+        , MSG_ID_broadcastChatClosed
     };
     /**
      * \brief   Number of supported Response entries
@@ -277,30 +277,30 @@ IMPLEMENT_STREAMABLE( NEDirectMessager::eMessageIDs );
 /**
  * Returns string value of NEDirectMessager::eMessageIDs
  **/
-inline const char * NEDirectMessager::GetString( NEDirectMessager::eMessageIDs msgId )
+inline const char * NEDirectMessager::getString( NEDirectMessager::eMessageIDs msgId )
 {
     switch ( msgId )
     {
-    case    NEDirectMessager::MSG_ID_RequestChatJoin:
-        return "NEDirectMessager::MSG_ID_RequestChatJoin";
-    case    NEDirectMessager::MSG_ID_RequestMessageSend:
-        return "NEDirectMessager::MSG_ID_RequestMessageSend";
-    case    NEDirectMessager::MSG_ID_RequestMessageType:
-        return "NEDirectMessager::MSG_ID_RequestMessageType";
-    case    NEDirectMessager::MSG_ID_RequestChatLeave:
-        return "NEDirectMessager::MSG_ID_RequestChatLeave";
-    case    NEDirectMessager::MSG_ID_ResponseChatJoin:
-        return "NEDirectMessager::MSG_ID_ResponseChatJoin";
-    case    NEDirectMessager::MSG_ID_BroadcastMessageSent:
-        return "NEDirectMessager::MSG_ID_BroadcastMessageSent";
-    case    NEDirectMessager::MSG_ID_BroadcastMessageTyped:
-        return "NEDirectMessager::MSG_ID_BroadcastMessageTyped";
-    case    NEDirectMessager::MSG_ID_BroadcastParticipantJoined:
-        return "NEDirectMessager::MSG_ID_BroadcastParticipantJoined";
-    case    NEDirectMessager::MSG_ID_BroadcastParticipantLeft:
-        return "NEDirectMessager::MSG_ID_BroadcastParticipantLeft";
-    case    NEDirectMessager::MSG_ID_BroadcastChatClosed:
-        return "NEDirectMessager::MSG_ID_BroadcastChatClosed";
+    case    NEDirectMessager::MSG_ID_requestChatJoin:
+        return "NEDirectMessager::MSG_ID_requestChatJoin";
+    case    NEDirectMessager::MSG_ID_requestMessageSend:
+        return "NEDirectMessager::MSG_ID_requestMessageSend";
+    case    NEDirectMessager::MSG_ID_requestMessageType:
+        return "NEDirectMessager::MSG_ID_requestMessageType";
+    case    NEDirectMessager::MSG_ID_requestChatLeave:
+        return "NEDirectMessager::MSG_ID_requestChatLeave";
+    case    NEDirectMessager::MSG_ID_responseChatJoin:
+        return "NEDirectMessager::MSG_ID_responseChatJoin";
+    case    NEDirectMessager::MSG_ID_broadcastMessageSent:
+        return "NEDirectMessager::MSG_ID_broadcastMessageSent";
+    case    NEDirectMessager::MSG_ID_broadcastMessageTyped:
+        return "NEDirectMessager::MSG_ID_broadcastMessageTyped";
+    case    NEDirectMessager::MSG_ID_broadcastParticipantJoined:
+        return "NEDirectMessager::MSG_ID_broadcastParticipantJoined";
+    case    NEDirectMessager::MSG_ID_broadcastParticipantLeft:
+        return "NEDirectMessager::MSG_ID_broadcastParticipantLeft";
+    case    NEDirectMessager::MSG_ID_broadcastChatClosed:
+        return "NEDirectMessager::MSG_ID_broadcastChatClosed";
     case    NEDirectMessager::MSG_ID_ChatParticipants:
         return "NEDirectMessager::MSG_ID_ChatParticipants";
 

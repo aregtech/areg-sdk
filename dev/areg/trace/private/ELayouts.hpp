@@ -11,7 +11,7 @@
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
 #include "areg/trace/private/NELogConfig.hpp"
-#include "areg/base/CEString.hpp"
+#include "areg/base/String.hpp"
 
 /************************************************************************
  * Dependencies
@@ -30,18 +30,18 @@ class IEOutStream;
  * Declarations and hierarchies.
  ************************************************************************/
 class IELayout;
-    class CETickCountLayout;
-    class CEDayTimeLaytout;
-    class CEModuleIdLayout;
-    class CEMessageLayout;
-    class CEEndOfLineLayout;
-    class CEPriorityLayout;
-    class CEScopeIdLayout;
-    class CEThreadIdLayout;
-    class CEModuleNameLayout;
-    class CEThreadNameLayout;
-    class CEScopeNameLayout;
-    class CEAnyTextLayout;
+    class TickCountLayout;
+    class DayTimeLaytout;
+    class ModuleIdLayout;
+    class MessageLayout;
+    class EndOfLineLayout;
+    class PriorityLayout;
+    class ScopeIdLayout;
+    class ThreadIdLayout;
+    class ModuleNameLayout;
+    class ThreadNameLayout;
+    class ScopeNameLayout;
+    class AnyTextLayout;
 
 //////////////////////////////////////////////////////////////////////////
 // IELayout interface declaration
@@ -80,16 +80,16 @@ public:
      * \param   stream  The streaming object, where the text message should be written.
      * \note    Every layout object should overwrite this message to make layout specific outputs.
      **/
-    virtual void LogMessage( const NETrace::sLogMessage & msgLog, IEOutStream & stream ) const = 0;
+    virtual void logMessage( const NETrace::sLogMessage & msgLog, IEOutStream & stream ) const = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // Attribute
 //////////////////////////////////////////////////////////////////////////
-public:
+
     /**
      * \brief   Returns the layout type
      **/
-    inline NELogConfig::eLayouts GetLayoutType( void ) const;
+    inline NELogConfig::eLayouts getLayoutType( void ) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -110,12 +110,12 @@ private:
 };
 
 //////////////////////////////////////////////////////////////////////////
-// CETickCountLayout class declaration
+// TickCountLayout class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
  * \brief   This layout outputs the tick-count value in milliseconds since process has been started.
  **/
-class CETickCountLayout    : public    IELayout
+class TickCountLayout   : public    IELayout
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
@@ -124,18 +124,18 @@ public:
     /**
      * \brief   Sets layout type value
      **/
-    CETickCountLayout( void );
+    TickCountLayout( void );
 
     /**
      * \brief   Copies data from given source.
      * \param   src     The source of data to copy.
      **/
-    CETickCountLayout( const CETickCountLayout & src );
+    TickCountLayout( const TickCountLayout & src );
 
     /**
      * \brief   Destructor
      **/
-    virtual ~CETickCountLayout( void );
+    virtual ~TickCountLayout( void );
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
@@ -145,12 +145,12 @@ public:
      * \brief   Copies data from given source.
      * \param   src     The source of data to copy.
      **/
-    inline void operator = ( const CETickCountLayout & src );
+    inline void operator = ( const TickCountLayout & src );
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
 //////////////////////////////////////////////////////////////////////////
-public:
+
 /************************************************************************/
 // IELayout interface overrides
 /************************************************************************/
@@ -160,16 +160,16 @@ public:
      * \param   msgLog  The log message structure, which contains required information for message output
      * \param   stream  The streaming object, where the text message should be written.
      **/
-    virtual void LogMessage( const NETrace::sLogMessage & msgLog, IEOutStream & stream ) const;
+    virtual void logMessage( const NETrace::sLogMessage & msgLog, IEOutStream & stream ) const;
 };
 
 //////////////////////////////////////////////////////////////////////////
-// CEDayTimeLaytout class declaration
+// DayTimeLaytout class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
  * \brief   This layout formats and outputs day-time data in streaming object
  **/
-class CEDayTimeLaytout      : public    IELayout
+class DayTimeLaytout    : public    IELayout
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
@@ -178,18 +178,18 @@ public:
     /**
      * \brief   Sets layout type value
      **/
-    CEDayTimeLaytout( void );
+    DayTimeLaytout( void );
 
     /**
      * \brief   Copies data from given source.
      * \param   src     The source of data to copy.
      **/
-    CEDayTimeLaytout( const CEDayTimeLaytout & src );
+    DayTimeLaytout( const DayTimeLaytout & src );
 
     /**
      * \brief   Destructor
      **/
-    virtual ~CEDayTimeLaytout( void );
+    virtual ~DayTimeLaytout( void );
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
@@ -199,12 +199,12 @@ public:
      * \brief   Copies data from given source.
      * \param   src     The source of data to copy.
      **/
-    inline void operator = ( const CEDayTimeLaytout & src );
+    inline void operator = ( const DayTimeLaytout & src );
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
 //////////////////////////////////////////////////////////////////////////
-public:
+
 /************************************************************************/
 // IELayout interface overrides
 /************************************************************************/
@@ -214,16 +214,16 @@ public:
      * \param   msgLog  The log message structure, which contains required information for message output
      * \param   stream  The streaming object, where the text message should be written.
      **/
-    virtual void LogMessage( const NETrace::sLogMessage & msgLog, IEOutStream & stream ) const;
+    virtual void logMessage( const NETrace::sLogMessage & msgLog, IEOutStream & stream ) const;
 };
 
 //////////////////////////////////////////////////////////////////////////
-// CEModuleIdLayout class declaration
+// ModuleIdLayout class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
  * \brief   This layout outputs formated information of running module data.
  **/
-class CEModuleIdLayout      : public    IELayout
+class ModuleIdLayout    : public    IELayout
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
@@ -232,18 +232,18 @@ public:
     /**
      * \brief   Sets layout type value
      **/
-    CEModuleIdLayout( void );
+    ModuleIdLayout( void );
 
     /**
      * \brief   Copies data from given source.
      * \param   src     The source of data to copy.
      **/
-    CEModuleIdLayout( const CEModuleIdLayout & src );
+    ModuleIdLayout( const ModuleIdLayout & src );
 
     /**
      * \brief   Destructor
      **/
-    virtual ~CEModuleIdLayout( void );
+    virtual ~ModuleIdLayout( void );
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
@@ -253,12 +253,12 @@ public:
      * \brief   Copies data from given source.
      * \param   src     The source of data to copy.
      **/
-    inline void operator = ( const CEModuleIdLayout & src );
+    inline void operator = ( const ModuleIdLayout & src );
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
 //////////////////////////////////////////////////////////////////////////
-public:
+
 /************************************************************************/
 // IELayout interface overrides
 /************************************************************************/
@@ -268,16 +268,16 @@ public:
      * \param   msgLog  The log message structure, which contains required information for message output
      * \param   stream  The streaming object, where the text message should be written.
      **/
-    virtual void LogMessage( const NETrace::sLogMessage & msgLog, IEOutStream & stream ) const;
+    virtual void logMessage( const NETrace::sLogMessage & msgLog, IEOutStream & stream ) const;
 };
 
 //////////////////////////////////////////////////////////////////////////
-// CEMessageLayout class declaration
+// MessageLayout class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
  * \brief   This layout outputs message data to the stream.
  **/
-class CEMessageLayout       : public    IELayout
+class MessageLayout       : public    IELayout
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
@@ -286,18 +286,18 @@ public:
     /**
      * \brief   Sets layout type value
      **/
-    CEMessageLayout( void );
+    MessageLayout( void );
 
     /**
      * \brief   Copies data from given source.
      * \param   src     The source of data to copy.
      **/
-    CEMessageLayout( const CEMessageLayout & src );
+    MessageLayout( const MessageLayout & src );
 
     /**
      * \brief   Destructor
      **/
-    virtual ~CEMessageLayout( void );
+    virtual ~MessageLayout( void );
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
@@ -307,12 +307,12 @@ public:
      * \brief   Copies data from given source.
      * \param   src     The source of data to copy.
      **/
-    inline void operator = ( const CEMessageLayout & src );
+    inline void operator = ( const MessageLayout & src );
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
 //////////////////////////////////////////////////////////////////////////
-public:
+
 /************************************************************************/
 // IELayout interface overrides
 /************************************************************************/
@@ -322,16 +322,16 @@ public:
      * \param   msgLog  The log message structure, which contains required information for message output
      * \param   stream  The streaming object, where the text message should be written.
      **/
-    virtual void LogMessage( const NETrace::sLogMessage & msgLog, IEOutStream & stream ) const;
+    virtual void logMessage( const NETrace::sLogMessage & msgLog, IEOutStream & stream ) const;
 };
 
 //////////////////////////////////////////////////////////////////////////
-// CEEndOfLineLayout class declaration
+// EndOfLineLayout class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
  * \brief   This layout prints end-of-line data at the end of message.
  **/
-class CEEndOfLineLayout     : public    IELayout
+class EndOfLineLayout   : public    IELayout
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
@@ -340,18 +340,18 @@ public:
     /**
      * \brief   Sets layout type value
      **/
-    CEEndOfLineLayout( void );
+    EndOfLineLayout( void );
 
     /**
      * \brief   Copies data from given source.
      * \param   src     The source of data to copy.
      **/
-    CEEndOfLineLayout( const CEEndOfLineLayout & src );
+    EndOfLineLayout( const EndOfLineLayout & src );
 
     /**
      * \brief   Destructor
      **/
-    virtual ~CEEndOfLineLayout( void );
+    virtual ~EndOfLineLayout( void );
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
@@ -361,12 +361,12 @@ public:
      * \brief   Copies data from given source.
      * \param   src     The source of data to copy.
      **/
-    inline void operator = ( const CEEndOfLineLayout & src );
+    inline void operator = ( const EndOfLineLayout & src );
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
 //////////////////////////////////////////////////////////////////////////
-public:
+
 /************************************************************************/
 // IELayout interface overrides
 /************************************************************************/
@@ -376,16 +376,16 @@ public:
      * \param   msgLog  The log message structure, which contains required information for message output
      * \param   stream  The streaming object, where the text message should be written.
      **/
-    virtual void LogMessage( const NETrace::sLogMessage & msgLog, IEOutStream & stream ) const;
+    virtual void logMessage( const NETrace::sLogMessage & msgLog, IEOutStream & stream ) const;
 };
 
 //////////////////////////////////////////////////////////////////////////
-// CEPriorityLayout class declaration
+// PriorityLayout class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
  * \brief   This layout prints message priority information in the stream.
  **/
-class CEPriorityLayout      : public    IELayout
+class PriorityLayout    : public    IELayout
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
@@ -394,18 +394,18 @@ public:
     /**
      * \brief   Sets layout type value
      **/
-    CEPriorityLayout( void );
+    PriorityLayout( void );
 
     /**
      * \brief   Copies data from given source.
      * \param   src     The source of data to copy.
      **/
-    CEPriorityLayout( const CEPriorityLayout & src );
+    PriorityLayout( const PriorityLayout & src );
 
     /**
      * \brief   Destructor
      **/
-    virtual ~CEPriorityLayout( void );
+    virtual ~PriorityLayout( void );
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
@@ -415,12 +415,12 @@ public:
      * \brief   Copies data from given source.
      * \param   src     The source of data to copy.
      **/
-    inline void operator = ( const CEPriorityLayout & src );
+    inline void operator = ( const PriorityLayout & src );
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
 //////////////////////////////////////////////////////////////////////////
-public:
+
 /************************************************************************/
 // IELayout interface overrides
 /************************************************************************/
@@ -430,16 +430,16 @@ public:
      * \param   msgLog  The log message structure, which contains required information for message output
      * \param   stream  The streaming object, where the text message should be written.
      **/
-    virtual void LogMessage( const NETrace::sLogMessage & msgLog, IEOutStream & stream ) const;
+    virtual void logMessage( const NETrace::sLogMessage & msgLog, IEOutStream & stream ) const;
 };
 
 //////////////////////////////////////////////////////////////////////////
-// CEScopeIdLayout class declaration
+// ScopeIdLayout class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
  * \brief   This layout outputs the information of scope ID in the message.
  **/
-class CEScopeIdLayout       : public    IELayout
+class ScopeIdLayout : public    IELayout
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
@@ -448,18 +448,18 @@ public:
     /**
      * \brief   Sets layout type value
      **/
-    CEScopeIdLayout( void );
+    ScopeIdLayout( void );
 
     /**
      * \brief   Copies data from given source.
      * \param   src     The source of data to copy.
      **/
-    CEScopeIdLayout( const CEScopeIdLayout & src );
+    ScopeIdLayout( const ScopeIdLayout & src );
 
     /**
      * \brief   Destructor
      **/
-    virtual ~CEScopeIdLayout( void );
+    virtual ~ScopeIdLayout( void );
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
@@ -469,12 +469,12 @@ public:
      * \brief   Copies data from given source.
      * \param   src     The source of data to copy.
      **/
-    inline void operator = ( const CEScopeIdLayout & src );
+    inline void operator = ( const ScopeIdLayout & src );
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
 //////////////////////////////////////////////////////////////////////////
-public:
+
 /************************************************************************/
 // IELayout interface overrides
 /************************************************************************/
@@ -484,16 +484,16 @@ public:
      * \param   msgLog  The log message structure, which contains required information for message output
      * \param   stream  The streaming object, where the text message should be written.
      **/
-    virtual void LogMessage( const NETrace::sLogMessage & msgLog, IEOutStream & stream ) const;
+    virtual void logMessage( const NETrace::sLogMessage & msgLog, IEOutStream & stream ) const;
 };
 
 //////////////////////////////////////////////////////////////////////////
-// CEThreadIdLayout class declaration
+// ThreadIdLayout class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
  * \brief   This layout outputs the information of thread ID, which generated logging message.
  **/
-class CEThreadIdLayout      : public    IELayout
+class ThreadIdLayout      : public    IELayout
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
@@ -502,18 +502,18 @@ public:
     /**
      * \brief   Sets layout type value
      **/
-    CEThreadIdLayout( void );
+    ThreadIdLayout( void );
 
     /**
      * \brief   Copies data from given source.
      * \param   src     The source of data to copy.
      **/
-    CEThreadIdLayout( const CEThreadIdLayout & src );
+    ThreadIdLayout( const ThreadIdLayout & src );
 
     /**
      * \brief   Destructor
      **/
-    virtual ~CEThreadIdLayout( void );
+    virtual ~ThreadIdLayout( void );
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
@@ -523,12 +523,12 @@ public:
      * \brief   Copies data from given source.
      * \param   src     The source of data to copy.
      **/
-    inline void operator = ( const CEThreadIdLayout & src );
+    inline void operator = ( const ThreadIdLayout & src );
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
 //////////////////////////////////////////////////////////////////////////
-public:
+
 /************************************************************************/
 // IELayout interface overrides
 /************************************************************************/
@@ -538,16 +538,16 @@ public:
      * \param   msgLog  The log message structure, which contains required information for message output
      * \param   stream  The streaming object, where the text message should be written.
      **/
-    virtual void LogMessage( const NETrace::sLogMessage & msgLog, IEOutStream & stream ) const;
+    virtual void logMessage( const NETrace::sLogMessage & msgLog, IEOutStream & stream ) const;
 };
 
 //////////////////////////////////////////////////////////////////////////
-// CEModuleNameLayout class declaration
+// ModuleNameLayout class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
  * \brief   This layout outputs the name of running module (process) in the message.
  **/
-class CEModuleNameLayout      : public    IELayout
+class ModuleNameLayout      : public    IELayout
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
@@ -556,18 +556,18 @@ public:
     /**
      * \brief   Sets layout type value
      **/
-    CEModuleNameLayout( void );
+    ModuleNameLayout( void );
 
     /**
      * \brief   Copies data from given source.
      * \param   src     The source of data to copy.
      **/
-    CEModuleNameLayout( const CEModuleNameLayout & src );
+    ModuleNameLayout( const ModuleNameLayout & src );
 
     /**
      * \brief   Destructor
      **/
-    virtual ~CEModuleNameLayout( void );
+    virtual ~ModuleNameLayout( void );
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
@@ -577,12 +577,12 @@ public:
      * \brief   Copies data from given source.
      * \param   src     The source of data to copy.
      **/
-    inline void operator = ( const CEModuleNameLayout & src );
+    inline void operator = ( const ModuleNameLayout & src );
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
 //////////////////////////////////////////////////////////////////////////
-public:
+
 /************************************************************************/
 // IELayout interface overrides
 /************************************************************************/
@@ -592,16 +592,16 @@ public:
      * \param   msgLog  The log message structure, which contains required information for message output
      * \param   stream  The streaming object, where the text message should be written.
      **/
-    virtual void LogMessage( const NETrace::sLogMessage & msgLog, IEOutStream & stream ) const;
+    virtual void logMessage( const NETrace::sLogMessage & msgLog, IEOutStream & stream ) const;
 };
 
 //////////////////////////////////////////////////////////////////////////
-// CEThreadNameLayout class declaration
+// ThreadNameLayout class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
  * \brief   This layout output the name of thread in output logging message.
  **/
-class CEThreadNameLayout    : public    IELayout
+class ThreadNameLayout    : public    IELayout
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
@@ -610,18 +610,18 @@ public:
     /**
      * \brief   Sets layout type value
      **/
-    CEThreadNameLayout( void );
+    ThreadNameLayout( void );
 
     /**
      * \brief   Copies data from given source.
      * \param   src     The source of data to copy.
      **/
-    CEThreadNameLayout( const CEThreadNameLayout & src );
+    ThreadNameLayout( const ThreadNameLayout & src );
 
     /**
      * \brief   Destructor
      **/
-    virtual ~CEThreadNameLayout( void );
+    virtual ~ThreadNameLayout( void );
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
@@ -631,12 +631,12 @@ public:
      * \brief   Copies data from given source.
      * \param   src     The source of data to copy.
      **/
-    inline void operator = ( const CEThreadNameLayout & src );
+    inline void operator = ( const ThreadNameLayout & src );
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
 //////////////////////////////////////////////////////////////////////////
-public:
+
 /************************************************************************/
 // IELayout interface overrides
 /************************************************************************/
@@ -646,16 +646,16 @@ public:
      * \param   msgLog  The log message structure, which contains required information for message output
      * \param   stream  The streaming object, where the text message should be written.
      **/
-    virtual void LogMessage( const NETrace::sLogMessage & msgLog, IEOutStream & stream ) const;
+    virtual void logMessage( const NETrace::sLogMessage & msgLog, IEOutStream & stream ) const;
 };
 
 //////////////////////////////////////////////////////////////////////////
-// CEScopeNameLayout class declaration
+// ScopeNameLayout class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
  * \brief   This layout output information of scope name in the logging message.
  **/
-class CEScopeNameLayout    : public    IELayout
+class ScopeNameLayout    : public    IELayout
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
@@ -664,18 +664,18 @@ public:
     /**
      * \brief   Sets layout type value
      **/
-    CEScopeNameLayout( void );
+    ScopeNameLayout( void );
 
     /**
      * \brief   Copies data from given source.
      * \param   src     The source of data to copy.
      **/
-    CEScopeNameLayout( const CEScopeNameLayout & src );
+    ScopeNameLayout( const ScopeNameLayout & src );
 
     /**
      * \brief   Destructor
      **/
-    virtual ~CEScopeNameLayout( void );
+    virtual ~ScopeNameLayout( void );
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
@@ -685,12 +685,12 @@ public:
      * \brief   Copies data from given source.
      * \param   src     The source of data to copy.
      **/
-    inline void operator = ( const CEScopeNameLayout & src );
+    inline void operator = ( const ScopeNameLayout & src );
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
 //////////////////////////////////////////////////////////////////////////
-public:
+
 /************************************************************************/
 // IELayout interface overrides
 /************************************************************************/
@@ -700,16 +700,16 @@ public:
      * \param   msgLog  The log message structure, which contains required information for message output
      * \param   stream  The streaming object, where the text message should be written.
      **/
-    virtual void LogMessage( const NETrace::sLogMessage & msgLog, IEOutStream & stream ) const;
+    virtual void logMessage( const NETrace::sLogMessage & msgLog, IEOutStream & stream ) const;
 };
 
 //////////////////////////////////////////////////////////////////////////
-// CEAnyTextLayout class declaration
+// AnyTextLayout class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
  * \brief   This layout outputs any text message as it is without formating.
  **/
-class CEAnyTextLayout    : public    IELayout
+class AnyTextLayout    : public    IELayout
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
@@ -718,30 +718,30 @@ public:
     /**
      * \brief   Sets layout type value.
      **/
-    CEAnyTextLayout( void );
+    AnyTextLayout( void );
 
     /**
      * \brief   Sets layout type value and the text to output in the stream.
      * \param   anyMessage  A text to write in stream.
      **/
-    CEAnyTextLayout( const CEString & anyMessage );
+    AnyTextLayout( const String & anyMessage );
 
     /**
      * \brief   Sets layout type value and the text to output in the stream.
      * \param   anyMessage  A text to write in stream.
      **/
-    CEAnyTextLayout( const char * anyMessage );
+    AnyTextLayout( const char * anyMessage );
 
     /**
      * \brief   Copies data from given source.
      * \param   src     The source of data to copy.
      **/
-    CEAnyTextLayout( const CEAnyTextLayout & src );
+    AnyTextLayout( const AnyTextLayout & src );
 
     /**
      * \brief   Destructor
      **/
-    virtual ~CEAnyTextLayout( void );
+    virtual ~AnyTextLayout( void );
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
@@ -751,12 +751,12 @@ public:
      * \brief   Copies data from given source.
      * \param   src     The source of data to copy.
      **/
-    inline void operator = ( const CEAnyTextLayout & src );
+    inline void operator = ( const AnyTextLayout & src );
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
 //////////////////////////////////////////////////////////////////////////
-public:
+
 /************************************************************************/
 // IELayout interface overrides
 /************************************************************************/
@@ -766,7 +766,7 @@ public:
      * \param   msgLog  The log message structure, which contains required information for message output
      * \param   stream  The streaming object, where the text message should be written.
      **/
-    virtual void LogMessage( const NETrace::sLogMessage & msgLog, IEOutStream & stream ) const;
+    virtual void logMessage( const NETrace::sLogMessage & msgLog, IEOutStream & stream ) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variable
@@ -775,7 +775,7 @@ private:
     /**
      * \brief   The text message to log
      **/
-    CEString    mTextMessage;
+    String    mTextMessage;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -786,91 +786,93 @@ private:
 // IELayout interface inline methods
 //////////////////////////////////////////////////////////////////////////
 
-inline NELogConfig::eLayouts IELayout::GetLayoutType( void ) const
-{   return mLayout;                     }
+inline NELogConfig::eLayouts IELayout::getLayoutType( void ) const
+{
+    return mLayout;
+}
 
 //////////////////////////////////////////////////////////////////////////
-// CETickCountLayout class inline methods
+// TickCountLayout class inline methods
 //////////////////////////////////////////////////////////////////////////
 
-inline void CETickCountLayout::operator = ( const CETickCountLayout & /*src*/ )
+inline void TickCountLayout::operator = ( const TickCountLayout & /*src*/ )
 {   ; /* Fixed layout type, do nothing */   }
 
 //////////////////////////////////////////////////////////////////////////
-// CEDayTimeLaytout class inline methods
+// DayTimeLaytout class inline methods
 //////////////////////////////////////////////////////////////////////////
 
-inline void CEDayTimeLaytout::operator = ( const CEDayTimeLaytout & /*src*/ )
+inline void DayTimeLaytout::operator = ( const DayTimeLaytout & /*src*/ )
 {   ; /* Fixed layout type, do nothing */   }
 
 //////////////////////////////////////////////////////////////////////////
-// CEModuleIdLayout class inline methods
+// ModuleIdLayout class inline methods
 //////////////////////////////////////////////////////////////////////////
 
-inline void CEModuleIdLayout::operator = ( const CEModuleIdLayout & /*src*/ )
+inline void ModuleIdLayout::operator = ( const ModuleIdLayout & /*src*/ )
 {   ; /* Fixed layout type, do nothing */   }
 
 //////////////////////////////////////////////////////////////////////////
-// CEMessageLayout class inline methods
+// MessageLayout class inline methods
 //////////////////////////////////////////////////////////////////////////
 
-inline void CEMessageLayout::operator = ( const CEMessageLayout & /*src*/ )
+inline void MessageLayout::operator = ( const MessageLayout & /*src*/ )
 {   ; /* Fixed layout type, do nothing */   }
 
 //////////////////////////////////////////////////////////////////////////
-// CEEndOfLineLayout class inline methods
+// EndOfLineLayout class inline methods
 //////////////////////////////////////////////////////////////////////////
 
-inline void CEEndOfLineLayout::operator = ( const CEEndOfLineLayout & /*src*/ )
+inline void EndOfLineLayout::operator = ( const EndOfLineLayout & /*src*/ )
 {   ; /* Fixed layout type, do nothing */   }
 
 //////////////////////////////////////////////////////////////////////////
-// CEPriorityLayout class inline methods
+// PriorityLayout class inline methods
 //////////////////////////////////////////////////////////////////////////
 
-inline void CEPriorityLayout::operator = ( const CEPriorityLayout & /*src*/ )
+inline void PriorityLayout::operator = ( const PriorityLayout & /*src*/ )
 {   ; /* Fixed layout type, do nothing */   }
 
 //////////////////////////////////////////////////////////////////////////
-// CEScopeIdLayout class inline methods
+// ScopeIdLayout class inline methods
 //////////////////////////////////////////////////////////////////////////
 
-inline void CEScopeIdLayout::operator = ( const CEScopeIdLayout & /*src*/ )
+inline void ScopeIdLayout::operator = ( const ScopeIdLayout & /*src*/ )
 {   ; /* Fixed layout type, do nothing */   }
 
 //////////////////////////////////////////////////////////////////////////
-// CEThreadIdLayout class inline methods
+// ThreadIdLayout class inline methods
 //////////////////////////////////////////////////////////////////////////
 
-inline void CEThreadIdLayout::operator = ( const CEThreadIdLayout & /*src*/ )
+inline void ThreadIdLayout::operator = ( const ThreadIdLayout & /*src*/ )
 {   ; /* Fixed layout type, do nothing */   }
 
 //////////////////////////////////////////////////////////////////////////
-// CEModuleNameLayout class inline methods
+// ModuleNameLayout class inline methods
 //////////////////////////////////////////////////////////////////////////
 
-inline void CEModuleNameLayout::operator = ( const CEModuleNameLayout & /*src*/ )
+inline void ModuleNameLayout::operator = ( const ModuleNameLayout & /*src*/ )
 {   ; /* Fixed layout type, do nothing */   }
 
 //////////////////////////////////////////////////////////////////////////
-// CEThreadNameLayout class inline methods
+// ThreadNameLayout class inline methods
 //////////////////////////////////////////////////////////////////////////
 
-inline void CEThreadNameLayout::operator = ( const CEThreadNameLayout & /*src*/ )
+inline void ThreadNameLayout::operator = ( const ThreadNameLayout & /*src*/ )
 {   ; /* Fixed layout type, do nothing */   }
 
 //////////////////////////////////////////////////////////////////////////
-// CEScopeNameLayout class inline methods
+// ScopeNameLayout class inline methods
 //////////////////////////////////////////////////////////////////////////
 
-inline void CEScopeNameLayout::operator = ( const CEScopeNameLayout & /*src*/ )
+inline void ScopeNameLayout::operator = ( const ScopeNameLayout & /*src*/ )
 {   ; /* Fixed layout type, do nothing */   }
 
 //////////////////////////////////////////////////////////////////////////
-// CEAnyTextLayout class inline methods
+// AnyTextLayout class inline methods
 //////////////////////////////////////////////////////////////////////////
 
-inline void CEAnyTextLayout::operator = ( const CEAnyTextLayout & src )
+inline void AnyTextLayout::operator = ( const AnyTextLayout & src )
 {   mTextMessage = src.mTextMessage;        }
 
 #endif  // AREG_TRACE_PRIVATE_ELAYOUTS_HPP

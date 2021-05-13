@@ -17,7 +17,7 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class CEThread;
+class Thread;
 
 //////////////////////////////////////////////////////////////////////////
 // IEThreadConsumer class declaration
@@ -66,7 +66,7 @@ public:
     /**
      * \brief   Returns string value of eExistingCode types. Used for debugging.
      **/
-    static inline const char * GetString( IEThreadConsumer::eExitCodes code);
+    static inline const char * getString( IEThreadConsumer::eExitCodes code);
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -84,7 +84,7 @@ public:
     virtual ~IEThreadConsumer( void );
 
 //////////////////////////////////////////////////////////////////////////
-// Operations.
+// Callbacks
 //////////////////////////////////////////////////////////////////////////
 public:
 /************************************************************************/
@@ -92,12 +92,13 @@ public:
 /************************************************************************/
 
     /**
-     * \brief   Function is called from Thread object, when it is running and fully operable.
-     *          If thread needs run in loop, the loop should be implemented here.
-     *          When consumer exits this function, the thread will complete work.
-     *          To restart thread running, Create() method should be called again.
+     * \brief   This callback function is called from Thread object, when it is 
+     *          running and fully operable. If thread needs run in loop, the loop 
+     *          should be implemented here. When consumer exits this function, 
+     *          the thread will complete work. To restart thread running, 
+     *          create() method should be called again.
      **/
-    virtual void ThreadRuns( void ) = 0;
+    virtual void onThreadRuns( void ) = 0;
 
     /**
      * \brief	Function triggered with thread object has been created.
@@ -107,20 +108,20 @@ public:
      *                      which contains this consumer.
      * \return	Return true if thread should run. Return false, it it should not run.
      **/
-    virtual bool ThreadRegistered( CEThread * threadObj );
+    virtual bool onThreadRegistered( Thread * threadObj );
     /**
      * \brief   Function is triggered from thread object when it is going to be destroyed.
      *          This method might be called by system when it is going to shut down.
      *          Implement mechanism to exit thread here.
      **/
-    virtual void ThreadUnregistering( void );
+    virtual void onThreadUnregistering( void );
 
     /**
      * \brief   Function is called from Thread object when it is going to exit.
      *          This method is triggered after exiting from Run() function.
      * \return  Return thread exit error code.
      **/
-    virtual int ThreadExit( void );
+    virtual int onThreadExit( void );
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -134,7 +135,7 @@ private:
 // IEThreadConsumer inline methods
 //////////////////////////////////////////////////////////////////////////
 
-inline const char * IEThreadConsumer::GetString(IEThreadConsumer::eExitCodes code)
+inline const char * IEThreadConsumer::getString(IEThreadConsumer::eExitCodes code)
 {
     switch (code)
     {

@@ -20,13 +20,13 @@
 namespace NEBasicShape
 {
     struct S_Point;
-        class CEPoint;
+        class Point;
 
     struct S_Size;
-        class CESize;
+        class Size;
 
     struct S_Rect;
-        class CERect;
+        class Rect;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -90,50 +90,50 @@ namespace NEBasicShape
     } sRect;
 
     //////////////////////////////////////////////////////////////////////////
-    // NEBasicShape::CEPoint class declaration
+    // NEBasicShape::Point class declaration
     //////////////////////////////////////////////////////////////////////////
     /**
      * \brief   Point class object, derived from NEBasicShape::sPoint
      *          Contains simple operations
      **/
-    class AREG_API CEPoint  : public NEBasicShape::sPoint
+    class AREG_API Point  : public NEBasicShape::sPoint
     {
     //////////////////////////////////////////////////////////////////////////
-    // NEBasicShape::CEPoint Constructors / Destructor
+    // NEBasicShape::Point Constructors / Destructor
     //////////////////////////////////////////////////////////////////////////
     public:
         /**
          * \brief   Default constructor.
          **/
-        CEPoint( void );
+        Point( void );
         /**
          * \brief   Initialization constructor. 
          *          Sets passed X and Y values.
          * \param   x   The initial X value of the Point object
          * \param   y   The initial Y value of the Point object
          **/
-        CEPoint( int x, int y );
+        Point( int x, int y );
         /**
          * \brief   Initialization constructor.
          *          Sets X and Y values passed by NEBasicShape::sPoint object
          * \param   src     The source of X and Y values taken from NEBasicShape::sPoint object
          **/
-        CEPoint( const NEBasicShape::sPoint & src );
+        Point( const NEBasicShape::sPoint & src );
         /**
          * \brief   Copy constructor.
          * \param   src     The source to copy data.
          **/
-        CEPoint( const CEPoint & src );
+        Point( const Point & src );
         /**
          * \brief   Initialization constructor.
          *          Initializes X and Y values from streaming object.
          * \param   stream  The read-only streaming object containing X and Y values.
          **/
-        CEPoint( const IEInStream & stream );
+        Point( const IEInStream & stream );
         /**
          * \brief   Destructor
          **/
-        ~CEPoint( void);
+        ~Point( void);
 
     //////////////////////////////////////////////////////////////////////////
     // Operators
@@ -148,7 +148,7 @@ namespace NEBasicShape
          *          and passed as NEBasicShape::sPoint object.
          * \param   src     The source of X and Y value containing in NEBasicShape::sPoint object
          **/
-        const NEBasicShape::CEPoint & operator = ( const NEBasicShape::sPoint & src );
+        const NEBasicShape::Point & operator = ( const NEBasicShape::sPoint & src );
         /**
          * \brief   Compares X and Y values as NEBasicShape::sPoint object
          *          and returns true if they are equal.
@@ -167,12 +167,12 @@ namespace NEBasicShape
     /************************************************************************/
 
         /**
-         * \brief   Converts NEBasicShape::CEPoint object and returns pointer to const sPoint structure object
+         * \brief   Converts NEBasicShape::Point object and returns pointer to const sPoint structure object
          **/
         inline operator const NEBasicShape::sPoint * ( void ) const;
 
         /**
-         * \brief   Converts NEBasicShape::CEPoint object and returns pointer to sPoint structure object
+         * \brief   Converts NEBasicShape::Point object and returns pointer to sPoint structure object
          **/
         inline operator NEBasicShape::sPoint * ( void );
 
@@ -182,53 +182,53 @@ namespace NEBasicShape
     public:
         /**
          * \brief   Converts and returns const NEBasicShape::sPoint type
-         *          of NEBasicShape::CEPoint object
+         *          of NEBasicShape::Point object
          **/
-        const NEBasicShape::sPoint & GetPoint( void ) const;
+        const NEBasicShape::sPoint & getPoint( void ) const;
     };
 
     //////////////////////////////////////////////////////////////////////////
-    // NEBasicShape::CESize declaration
+    // NEBasicShape::Size declaration
     //////////////////////////////////////////////////////////////////////////
     /**
      * \brief   Sizeo class object, derived from NEBasicShape::sSize
      *          Contains simple operations
      **/
-    class AREG_API CESize   : public NEBasicShape::sSize
+    class AREG_API Size   : public NEBasicShape::sSize
     {
     public:
         /**
          * \brief   Default constructor.
          **/
-        CESize( void );
+        Size( void );
         /**
          * \brief   Initialization constructor. 
          *          Sets passed Width and Height values.
          * \param   width   The initial Width value of the Size object
          * \param   height  The initial Height value of the Size object
          **/
-        CESize(int width, int height);
+        Size(int width, int height);
         /**
          * \brief   Initialization constructor.
          *          Sets Width and Height values passed by NEBasicShape::sSize object
          * \param   src     The source of Width and Height values taken from NEBasicShape::sSize object
          **/
-        CESize( const NEBasicShape::sSize & src );
+        Size( const NEBasicShape::sSize & src );
         /**
          * \brief   Copy constructor.
          * \param   src     The source to copy data.
          **/
-        CESize( const CESize & src );
+        Size( const Size & src );
         /**
          * \brief   Initialization constructor.
          *          Initializes Width and Height values from streaming object.
          * \param   stream  The read-only streaming object containing Width and Height values.
          **/
-        CESize( const IEInStream & stream );
+        Size( const IEInStream & stream );
         /**
          * \brief   Destructor
          **/
-        ~CESize( void );
+        ~Size( void );
 
     //////////////////////////////////////////////////////////////////////////
     // Operators
@@ -243,7 +243,7 @@ namespace NEBasicShape
          *          and passed as NEBasicShape::sSize object.
          * \param   src     The source of Width and Height value containing in NEBasicShape::sSize object
          **/
-        const CESize & operator = ( const NEBasicShape::sSize & src );
+        const Size & operator = ( const NEBasicShape::sSize & src );
         /**
          * \brief   Compares Width and Height values as NEBasicShape::sSize object
          *          and returns true if they are equal.
@@ -262,11 +262,11 @@ namespace NEBasicShape
     /************************************************************************/
 
         /**
-         * \brief   Converts NEBasicShape::CESize object and returns pointer to const sSize structure object
+         * \brief   Converts NEBasicShape::Size object and returns pointer to const sSize structure object
          **/
         inline operator const NEBasicShape::sSize * ( void ) const;
         /**
-         * \brief   Converts NEBasicShape::CESize object and returns pointer to const sSize structure object
+         * \brief   Converts NEBasicShape::Size object and returns pointer to const sSize structure object
          **/
         inline operator NEBasicShape::sSize * ( void );
 
@@ -276,25 +276,25 @@ namespace NEBasicShape
     public:
         /**
          * \brief   Converts and returns const NEBasicShape::sSize type
-         *          of NEBasicShape::CESize object
+         *          of NEBasicShape::Size object
          **/
-        const NEBasicShape::sSize & GetSize( void ) const;
+        const NEBasicShape::sSize & getSize( void ) const;
     };
 
     //////////////////////////////////////////////////////////////////////////
-    // NEBasicShape::CERect declaration
+    // NEBasicShape::Rect declaration
     //////////////////////////////////////////////////////////////////////////
     /**
      * \brief   Sizeo class object, derived from NEBasicShape::sRect
      *          Contains simple operations
      **/
-    class AREG_API CERect   : public NEBasicShape::sRect
+    class AREG_API Rect   : public NEBasicShape::sRect
     {
     public:
         /**
          * \brief   Default constructor.
          **/
-        CERect( void );
+        Rect( void );
         /**
          * \brief   Initialization constructor. 
          *          Sets passed top-left X and Y, and Width and Height values.
@@ -303,28 +303,28 @@ namespace NEBasicShape
          * \param   width   The initial Width value of the Rect object
          * \param   height  The initial Height value of the Rect object
          **/
-        CERect( int x, int y, int width, int height );
+        Rect( int x, int y, int width, int height );
         /**
          * \brief   Initialization constructor.
          *          Sets top-left X and Y, and Width and Height values passed by NEBasicShape::sRect object
          * \param   src     The source of top-left X and Y, and Width and Height values taken from NEBasicShape::sRect object
          **/
-        CERect( const NEBasicShape::sRect & src );
+        Rect( const NEBasicShape::sRect & src );
         /**
          * \brief   Copy constructor.
          * \param   src     The source to copy data.
          **/
-        CERect( const CERect & src );
+        Rect( const Rect & src );
         /**
          * \brief   Initialization constructor.
          *          Initializes top-left X and Y, and Width and Height values from streaming object.
          * \param   stream  The read-only streaming object containing top-left X and Y, and Width and Height values.
          **/
-        CERect( const IEInStream & stream );
+        Rect( const IEInStream & stream );
         /**
          * \brief   Destructor
          **/
-        ~CERect( void );
+        ~Rect( void );
 
     //////////////////////////////////////////////////////////////////////////
     // Operators
@@ -339,7 +339,7 @@ namespace NEBasicShape
          *          and passed as NEBasicShape::sRect object.
          * \param   src     The source of top-left X and Y, and Width and Height value containing in NEBasicShape::sRect object
          **/
-        const CERect & operator = ( const NEBasicShape::sRect & src );
+        const Rect & operator = ( const NEBasicShape::sRect & src );
         /**
          * \brief   Compares top-left X and Y, and Width and Height values as NEBasicShape::sRect object
          *          and returns true if they are equal.
@@ -359,11 +359,11 @@ namespace NEBasicShape
     /************************************************************************/
 
         /**
-         * \brief   Converts NEBasicShape::CERect object and returns pointer to const sRect structure object
+         * \brief   Converts NEBasicShape::Rect object and returns pointer to const sRect structure object
          **/
         inline operator const NEBasicShape::sRect * ( void ) const;
         /**
-         * \brief   Converts NEBasicShape::CERect object and returns pointer to sRect structure object
+         * \brief   Converts NEBasicShape::Rect object and returns pointer to sRect structure object
          **/
         inline operator NEBasicShape::sRect * ( void );
 
@@ -373,9 +373,9 @@ namespace NEBasicShape
     public:
         /**
          * \brief   Converts and returns const NEBasicShape::sRect type
-         *          of NEBasicShape::CERect object
+         *          of NEBasicShape::Rect object
          **/
-        const NEBasicShape::sRect & GetRect( void ) const;
+        const NEBasicShape::sRect & getRect( void ) const;
     };
 }
 
@@ -396,58 +396,88 @@ IMPLEMENT_STREAMABLE(NEBasicShape::sSize)
 IMPLEMENT_STREAMABLE(NEBasicShape::sRect)
 
 //////////////////////////////////////////////////////////////////////////
-// NEBasicShape::CEPoint class inline functions implementation
+// NEBasicShape::Point class inline functions implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline bool NEBasicShape::CEPoint::operator == ( const NEBasicShape::sPoint & other ) const
-{   return (static_cast<const NEBasicShape::sPoint *>(this) != &other ? this->x == other.x && this->y == other.y : true);  }
+inline bool NEBasicShape::Point::operator == ( const NEBasicShape::sPoint & other ) const
+{
+    return (static_cast<const NEBasicShape::sPoint *>(this) != &other ? this->x == other.x && this->y == other.y : true);
+}
 
-inline bool NEBasicShape::CEPoint::operator != ( const NEBasicShape::sPoint & other ) const
-{   return (static_cast<const NEBasicShape::sPoint *>(this) != &other ? this->x != other.x || this->y != other.y : false); }
+inline bool NEBasicShape::Point::operator != ( const NEBasicShape::sPoint & other ) const
+{
+    return (static_cast<const NEBasicShape::sPoint *>(this) != &other ? this->x != other.x || this->y != other.y : false);
+}
 
-inline NEBasicShape::CEPoint::operator const NEBasicShape::sPoint * ( void ) const
-{   return static_cast<const NEBasicShape::sPoint *>(this);    }
+inline NEBasicShape::Point::operator const NEBasicShape::sPoint * ( void ) const
+{
+    return static_cast<const NEBasicShape::sPoint *>(this);
+}
 
-inline NEBasicShape::CEPoint::operator NEBasicShape::sPoint * ( void )
-{   return static_cast<NEBasicShape::sPoint *>(this);          }
+inline NEBasicShape::Point::operator NEBasicShape::sPoint * ( void )
+{
+    return static_cast<NEBasicShape::sPoint *>(this);
+}
 
-inline const NEBasicShape::sPoint & NEBasicShape::CEPoint::GetPoint( void ) const
-{   return static_cast<const NEBasicShape::sPoint &>(*this);   }
-
-//////////////////////////////////////////////////////////////////////////
-// NEBasicShape::CESize class inline functions implementation
-//////////////////////////////////////////////////////////////////////////
-inline bool NEBasicShape::CESize::operator == ( const NEBasicShape::sSize& other ) const
-{   return (static_cast<const NEBasicShape::sSize *>(this) != &other ? this->width == other.width && this->height == other.height : true);     }
-
-inline bool NEBasicShape::CESize::operator != ( const NEBasicShape::sSize& other ) const
-{   return (static_cast<const NEBasicShape::sSize *>(this) != &other ? this->width != other.width || this->height != other.height : false);    }
-
-inline NEBasicShape::CESize::operator const NEBasicShape::sSize * ( void ) const
-{   return static_cast<const NEBasicShape::sSize *>(this);     }
-
-inline NEBasicShape::CESize::operator NEBasicShape::sSize * ( void )
-{   return static_cast<NEBasicShape::sSize *>(this);           }
-
-inline const NEBasicShape::sSize & NEBasicShape::CESize::GetSize( void ) const
-{   return static_cast<const NEBasicShape::sSize &>(*this);    }
+inline const NEBasicShape::sPoint & NEBasicShape::Point::getPoint( void ) const
+{
+    return static_cast<const NEBasicShape::sPoint &>(*this);
+}
 
 //////////////////////////////////////////////////////////////////////////
-// NEBasicShape::CERect class inline functions implementation
+// NEBasicShape::Size class inline functions implementation
 //////////////////////////////////////////////////////////////////////////
-inline bool NEBasicShape::CERect::operator == ( const NEBasicShape::sRect & other ) const
-{   return (static_cast<const NEBasicShape::sRect *>(this) != &other ? this->x == other.x && this->y == other.y && this->width == other.width && this->height == other.height : true);     }
+inline bool NEBasicShape::Size::operator == ( const NEBasicShape::sSize& other ) const
+{
+    return (static_cast<const NEBasicShape::sSize *>(this) != &other ? this->width == other.width && this->height == other.height : true);
+}
 
-inline bool NEBasicShape::CERect::operator != ( const NEBasicShape::sRect & other ) const
-{   return (static_cast<const NEBasicShape::sRect *>(this) != &other ? this->x == other.x || this->y == other.y || this->width != other.width || this->height != other.height : false);    }
+inline bool NEBasicShape::Size::operator != ( const NEBasicShape::sSize& other ) const
+{
+    return (static_cast<const NEBasicShape::sSize *>(this) != &other ? this->width != other.width || this->height != other.height : false);
+}
 
-inline NEBasicShape::CERect::operator const NEBasicShape::sRect * ( void ) const
-{   return static_cast<const NEBasicShape::sRect *>(this);     }
+inline NEBasicShape::Size::operator const NEBasicShape::sSize * ( void ) const
+{
+    return static_cast<const NEBasicShape::sSize *>(this);
+}
 
-inline NEBasicShape::CERect::operator NEBasicShape::sRect * ( void )
-{   return static_cast<NEBasicShape::sRect *>(this);           }
+inline NEBasicShape::Size::operator NEBasicShape::sSize * ( void )
+{
+    return static_cast<NEBasicShape::sSize *>(this);
+}
 
-inline const NEBasicShape::sRect & NEBasicShape::CERect::GetRect( void ) const
-{   return static_cast<const NEBasicShape::sRect &>(*this);    }
+inline const NEBasicShape::sSize & NEBasicShape::Size::getSize( void ) const
+{
+    return static_cast<const NEBasicShape::sSize &>(*this);
+}
+
+//////////////////////////////////////////////////////////////////////////
+// NEBasicShape::Rect class inline functions implementation
+//////////////////////////////////////////////////////////////////////////
+inline bool NEBasicShape::Rect::operator == ( const NEBasicShape::sRect & other ) const
+{
+    return (static_cast<const NEBasicShape::sRect *>(this) != &other ? this->x == other.x && this->y == other.y && this->width == other.width && this->height == other.height : true);
+}
+
+inline bool NEBasicShape::Rect::operator != ( const NEBasicShape::sRect & other ) const
+{
+    return (static_cast<const NEBasicShape::sRect *>(this) != &other ? this->x == other.x || this->y == other.y || this->width != other.width || this->height != other.height : false);
+}
+
+inline NEBasicShape::Rect::operator const NEBasicShape::sRect * ( void ) const
+{
+    return static_cast<const NEBasicShape::sRect *>(this);
+}
+
+inline NEBasicShape::Rect::operator NEBasicShape::sRect * ( void )
+{
+    return static_cast<NEBasicShape::sRect *>(this);
+}
+
+inline const NEBasicShape::sRect & NEBasicShape::Rect::getRect( void ) const
+{
+    return static_cast<const NEBasicShape::sRect &>(*this);
+}
 
 #endif  // AREG_BASE_NEBASICSHAPE_HPP

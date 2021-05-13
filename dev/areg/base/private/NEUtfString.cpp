@@ -161,7 +161,7 @@ NEUtfString::sUtfStringHeader * NEUtfString::initString( NEUtfString::eEncoding 
         {
         case  NEUtfString::EncodeAscii:
         {
-            NEUtfString::sAsciiString * strAscii = NEMemory::ConstructElems<NEUtfString::sAsciiString>(temp, 1);
+            NEUtfString::sAsciiString * strAscii = NEMemory::constructElems<NEUtfString::sAsciiString>(temp, 1);
             strAscii->utfBuffer[0] = NEUtfString::EndofStringAscii;
             result = &(strAscii->utfHeader);
         }
@@ -169,7 +169,7 @@ NEUtfString::sUtfStringHeader * NEUtfString::initString( NEUtfString::eEncoding 
 
         case NEUtfString::EncodeUtf8:
         {
-            NEUtfString::sUtf8String * strUtf8 = NEMemory::ConstructElems<NEUtfString::sUtf8String>(temp, 1);
+            NEUtfString::sUtf8String * strUtf8 = NEMemory::constructElems<NEUtfString::sUtf8String>(temp, 1);
             strUtf8->utfBuffer[0]   = NEUtfString::EndofStringUtf8;
             result = &(strUtf8->utfHeader);
         }
@@ -177,7 +177,7 @@ NEUtfString::sUtfStringHeader * NEUtfString::initString( NEUtfString::eEncoding 
 
         case NEUtfString::EncodeUtf16:
         {
-            NEUtfString::sUtf16String * strUtf16 = NEMemory::ConstructElems<NEUtfString::sUtf16String>(temp, 1);
+            NEUtfString::sUtf16String * strUtf16 = NEMemory::constructElems<NEUtfString::sUtf16String>(temp, 1);
             strUtf16->utfBuffer[0]  = NEUtfString::EndofStringUtf16;
             result = &(strUtf16->utfHeader);
         }
@@ -185,7 +185,7 @@ NEUtfString::sUtfStringHeader * NEUtfString::initString( NEUtfString::eEncoding 
 
         case NEUtfString::EncodeUtf32:
         {
-            NEUtfString::sUtf32String * strUtf32 = NEMemory::ConstructElems<NEUtfString::sUtf32String>(temp, 1);
+            NEUtfString::sUtf32String * strUtf32 = NEMemory::constructElems<NEUtfString::sUtf32String>(temp, 1);
             strUtf32->utfBuffer[0]  = NEUtfString::EndofStringUtf32;
             result = &(strUtf32->utfHeader);
         }
@@ -499,7 +499,7 @@ NEUtfString::CharPos NEUtfString::insertAt( NEUtfString::utf32 newChar
                 utf8 * buffer = getString<utf8>( *utfString );
                 unsigned int len = getSequenceSpace( seqLen );
                 ASSERT( buffer != NULL );
-                NEMemory::MoveElems<utf8>( buffer + atPos + len, buffer + atPos, hdr.utfUsed + 1 );
+                NEMemory::moveElems<utf8>( buffer + atPos + len, buffer + atPos, hdr.utfUsed + 1 );
                 hdr.utfCount += 1;
                 hdr.utfUsed  += len;
 
@@ -598,7 +598,7 @@ void NEUtfString::skipChars(  const NEUtfString::sUtf8String & utfString
         static_cast<void>( getNext(utfString, startPos) );
 }
 
-NEUtfString::CharCount NEUtfString::charCount(const NEUtfString::sUtf8String & utfString
+NEUtfString::CharCount NEUtfString::getCharCount(const NEUtfString::sUtf8String & utfString
                                             , NEUtfString::CharPos startPos /*= StartPos*/
                                             , CharPos endPos /*= EndPos*/)
 {
@@ -615,7 +615,7 @@ NEUtfString::CharCount NEUtfString::charCount(const NEUtfString::sUtf8String & u
     return result;
 }
 
-NEUtfString::CharCount NEUtfString::convertUtf16ToUtf8( NEUtfString::sUtf8String *& utf8Destination
+NEUtfString::CharCount NEUtfString::convUtf16ToUtf8( NEUtfString::sUtf8String *& utf8Destination
                                                 , const NEUtfString::sUtf16String & utf16Source
                                                 , NEUtfString::CharPos startPos /*= StartPos*/
                                                 , NEUtfString::CharCount charCount /*= EndPos*/ )
@@ -645,7 +645,7 @@ NEUtfString::CharCount NEUtfString::convertUtf16ToUtf8( NEUtfString::sUtf8String
     return result;
 }
 
-NEUtfString::CharCount NEUtfString::convertUtf8ToUtf16( NEUtfString::sUtf16String *& utf16Destination
+NEUtfString::CharCount NEUtfString::convUtf8ToUtf16( NEUtfString::sUtf16String *& utf16Destination
                                                 , const NEUtfString::sUtf8String & utf8Source
                                                 , NEUtfString::CharPos startPos /*= StartPos*/
                                                 , NEUtfString::CharCount charCount /*= EndPos*/ )
@@ -711,7 +711,7 @@ NEUtfString::CharCount NEUtfString::convertUtf8ToUtf16( NEUtfString::sUtf16Strin
     return result;
 }
 
-NEUtfString::CharCount NEUtfString::convertUtf32ToUtf8( NEUtfString::sUtf8String *& utf8Destination
+NEUtfString::CharCount NEUtfString::convUtf32ToUtf8( NEUtfString::sUtf8String *& utf8Destination
                                                 , const NEUtfString::sUtf32String & utf32Source
                                                 , NEUtfString::CharPos startPos /*= StartPos*/
                                                 , NEUtfString::CharCount charCount /*= EndPos */ )
@@ -735,7 +735,7 @@ NEUtfString::CharCount NEUtfString::convertUtf32ToUtf8( NEUtfString::sUtf8String
     return result;
 }
 
-NEUtfString::CharCount NEUtfString::convertUtf8ToUtf32( NEUtfString::sUtf32String *& utf32Destination
+NEUtfString::CharCount NEUtfString::convUtf8ToUtf32( NEUtfString::sUtf32String *& utf32Destination
                                                 , const NEUtfString::sUtf8String &utf8Source
                                                 , NEUtfString::CharPos startPos /*= StartPos*/
                                                 , NEUtfString::CharCount charCount /*= EndPos */ )

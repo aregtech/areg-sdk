@@ -54,21 +54,21 @@ AREG_API const int                  NESocket::MAXIMUM_LISTEN_QUEUE_SIZE = SOMAXC
 AREG_API const int                  NESocket::DEFAULT_SEGMENT_SIZE      = 16384;
 
 //////////////////////////////////////////////////////////////////////////
-// NESocket::CEInterlockedValue class implementation
+// NESocket::InterlockedValue class implementation
 //////////////////////////////////////////////////////////////////////////
-NESocket::CEInterlockedValue::CEInterlockedValue( void )
+NESocket::InterlockedValue::InterlockedValue( void )
     : mIpAddr   ( "" )
     , mPortNr   ( NESocket::InvalidPort )
 {   ;   }
 
-NESocket::CEInterlockedValue::CEInterlockedValue(const NESocket::CEInterlockedValue & src)
+NESocket::InterlockedValue::InterlockedValue(const NESocket::InterlockedValue & src)
     : mIpAddr   ( src.mIpAddr )
     , mPortNr   ( src.mPortNr )
 {   ;   }
 
-const NESocket::CEInterlockedValue & NESocket::CEInterlockedValue::operator = ( const NESocket::CEInterlockedValue & src )
+const NESocket::InterlockedValue & NESocket::InterlockedValue::operator = ( const NESocket::InterlockedValue & src )
 {
-    if ( static_cast<const NESocket::CEInterlockedValue *>(this) != &src )
+    if ( static_cast<const NESocket::InterlockedValue *>(this) != &src )
     {
         mIpAddr = src.mIpAddr;
         mPortNr = src.mPortNr;
@@ -76,21 +76,21 @@ const NESocket::CEInterlockedValue & NESocket::CEInterlockedValue::operator = ( 
     return (*this);
 }
 
-bool NESocket::CEInterlockedValue::ConvertAddress(struct sockaddr_in & out_sockAddr) const
+bool NESocket::InterlockedValue::getAddress(struct sockaddr_in & out_sockAddr) const
 {
     bool result = false;
     if ( mPortNr != NESocket::InvalidPort )
     {
-        NEMemory::ZeroBuffer(&out_sockAddr, sizeof(out_sockAddr));
+        NEMemory::zeroBuffer(&out_sockAddr, sizeof(out_sockAddr));
         out_sockAddr.sin_family = AF_INET;
         out_sockAddr.sin_port   = htons( mPortNr );
-        if (mIpAddr.IsEmpty() == false)
+        if (mIpAddr.isEmpty() == false)
         {
 
 #if     (_MSC_VER >= 1800)
-            result = RETURNED_OK == inet_pton(AF_INET, mIpAddr.GetBuffer(), &out_sockAddr.sin_addr);
+            result = RETURNED_OK == inet_pton(AF_INET, mIpAddr.getString(), &out_sockAddr.sin_addr);
 #else   // (_MSC_VER >= 1800)
-            out_sockAddr.sin_addr.s_addr = inet_addr(mIpAddr.GetBuffer());
+            out_sockAddr.sin_addr.s_addr = inet_addr(mIpAddr.getString());
             result = true;
 #endif  // (_MSC_VER >= 1800)
 
@@ -102,7 +102,22 @@ bool NESocket::CEInterlockedValue::ConvertAddress(struct sockaddr_in & out_sockA
     return result;
 }
 
-bool NESocket::CEInterlockedValue::ResolveSocket(SOCKETHANDLE hSocket)
+void NESocket::InterlockedValue::setAddress(const struct sockaddr_in & addrHost)
+{
+    mPortNr = ntohs(addrHost.sin_port);
+#if     (_MSC_VER >= 1800)
+    char ipAddr[32] = { 0 };
+    IN_ADDR & inAddr = const_cast<IN_ADDR &>(addrHost.sin_addr);
+    if ( RETURNED_OK == inet_ntop(AF_INET, &inAddr, ipAddr, 32) )
+    {
+        mIpAddr = ipAddr;
+    }
+#else   // (_MSC_VER >= 1800)
+    mIpAddr = inet_ntoa(addrHost.sin_addr);
+#endif  // (_MSC_VER >= 1800)
+}
+
+bool NESocket::InterlockedValue::resolveSocket(SOCKETHANDLE hSocket)
 {
     bool result = false;
     mPortNr     = NESocket::InvalidPort;
@@ -112,7 +127,7 @@ bool NESocket::CEInterlockedValue::ResolveSocket(SOCKETHANDLE hSocket)
     {
         // struct sockaddr sa  = {0};
         struct sockaddr_in sAddr;
-        NEMemory::ZeroBuffer(&sAddr, sizeof(sockaddr));
+        NEMemory::zeroBuffer(&sAddr, sizeof(sockaddr));
 
         int len = sizeof(sockaddr);
         if ( RETURNED_OK == getpeername(hSocket, reinterpret_cast<struct sockaddr *>(&sAddr), &len) )
@@ -153,7 +168,7 @@ bool NESocket::CEInterlockedValue::ResolveSocket(SOCKETHANDLE hSocket)
     return result;
 }
 
-bool NESocket::CEInterlockedValue::ResolveAddress(const char * hostName, unsigned short portNr, bool isServer)
+bool NESocket::InterlockedValue::resolveAddress(const char * hostName, unsigned short portNr, bool isServer)
 {
     bool result = false;
     hostName = hostName == NULL ? NESocket::LocalHost : hostName;
@@ -165,11 +180,11 @@ bool NESocket::CEInterlockedValue::ResolveAddress(const char * hostName, unsigne
     {
         // acquire address info
         char svcName[0x0F];
-        CEString::PrintString(svcName, 0x0F, "%u", portNr);
+        String::formatString(svcName, 0x0F, "%u", portNr);
 
         // struct addrinfo hints = {0};
         struct addrinfo hints;
-        NEMemory::ZeroBuffer(&hints, sizeof(addrinfo));
+        NEMemory::zeroBuffer(&hints, sizeof(addrinfo));
         hints.ai_family     = AF_INET;
         hints.ai_socktype   = SOCK_STREAM;
         hints.ai_flags      = isServer ? AI_PASSIVE : 0;
@@ -224,46 +239,31 @@ bool NESocket::CEInterlockedValue::ResolveAddress(const char * hostName, unsigne
     return result;
 }
 
-bool NESocket::CEInterlockedValue::operator == ( const NESocket::CEInterlockedValue & other ) const
+bool NESocket::InterlockedValue::operator == ( const NESocket::InterlockedValue & other ) const
 {
     return (this != &other ? mIpAddr == other.mIpAddr && mPortNr == other.mPortNr : true);
 }
 
-bool NESocket::CEInterlockedValue::operator != ( const NESocket::CEInterlockedValue & other ) const
+bool NESocket::InterlockedValue::operator != ( const NESocket::InterlockedValue & other ) const
 {
     return (this != &other ? mIpAddr != other.mIpAddr || mPortNr != other.mPortNr : false);
-}
-
-void NESocket::CEInterlockedValue::SetHostAddress(const struct sockaddr_in & addrHost)
-{
-    mPortNr = ntohs(addrHost.sin_port);
-#if     (_MSC_VER >= 1800)
-    char ipAddr[32] = { 0 };
-    IN_ADDR & inAddr = const_cast<IN_ADDR &>(addrHost.sin_addr);
-    if ( RETURNED_OK == inet_ntop(AF_INET, &inAddr, ipAddr, 32) )
-    {
-        mIpAddr = ipAddr;
-    }
-#else   // (_MSC_VER >= 1800)
-    mIpAddr = inet_ntoa(addrHost.sin_addr);
-#endif  // (_MSC_VER >= 1800)
 }
 
 //////////////////////////////////////////////////////////////////////////
 // NESocket namespace functions implementation
 //////////////////////////////////////////////////////////////////////////
 
-AREG_API bool NESocket::IsSocketHandleValid(SOCKETHANDLE hSocket)
+AREG_API bool NESocket::isSocketHandleValid(SOCKETHANDLE hSocket)
 {
     return (hSocket != NESocket::InvalidSocketHandle);
 }
 
-AREG_API SOCKETHANDLE NESocket::SocketCreate( void )
+AREG_API SOCKETHANDLE NESocket::socketCreate( void )
 {
     return static_cast<SOCKETHANDLE>( socket(AF_INET, SOCK_STREAM, IPPROTO_TCP) );
 }
 
-AREG_API int NESocket::GetMaximumSendSize( SOCKETHANDLE hSocket )
+AREG_API int NESocket::getMaxSendSize( SOCKETHANDLE hSocket )
 {
     long maxData= NESocket::DEFAULT_SEGMENT_SIZE;
     int temp    = sizeof(long);
@@ -276,7 +276,7 @@ AREG_API int NESocket::GetMaximumSendSize( SOCKETHANDLE hSocket )
     return static_cast<int>(maxData);
 }
 
-AREG_API int NESocket::GetMaximumReceiveSize( SOCKETHANDLE hSocket )
+AREG_API int NESocket::getMaxReceiveSize( SOCKETHANDLE hSocket )
 {
     long maxData= NESocket::DEFAULT_SEGMENT_SIZE;
     int temp    = sizeof(long);
@@ -289,20 +289,20 @@ AREG_API int NESocket::GetMaximumReceiveSize( SOCKETHANDLE hSocket )
     return static_cast<int>(maxData);
 }
 
-AREG_API SOCKETHANDLE NESocket::ClientSocketConnect(const char * hostName, unsigned short portNr, NESocket::CEInterlockedValue * out_socketAddr /*= NULL*/)
+AREG_API SOCKETHANDLE NESocket::clientSocketConnect(const char * hostName, unsigned short portNr, NESocket::InterlockedValue * out_socketAddr /*= NULL*/)
 {
     hostName = hostName != NULL ? hostName : NESocket::LocalHost;
 
     OUTPUT_DBG("Creating client socket to connect remote host [ %s ] and port number [ %u ]", hostName, static_cast<unsigned int>(portNr));
 
     if ( out_socketAddr != NULL )
-        out_socketAddr->ResetAddress();
+        out_socketAddr->resetAddress();
 
     SOCKETHANDLE result   = NESocket::InvalidSocketHandle;
-    NESocket::CEInterlockedValue sockAddress;
-    if ( sockAddress.ResolveAddress(hostName, portNr, false) )
+    NESocket::InterlockedValue sockAddress;
+    if ( sockAddress.resolveAddress(hostName, portNr, false) )
     {
-        result = NESocket::ClientSocketConnect(sockAddress);
+        result = NESocket::clientSocketConnect(sockAddress);
         if ( result != NESocket::InvalidSocketHandle && out_socketAddr != NULL )
             *out_socketAddr = sockAddress;
     }
@@ -314,25 +314,25 @@ AREG_API SOCKETHANDLE NESocket::ClientSocketConnect(const char * hostName, unsig
     return result;
 }
 
-AREG_API SOCKETHANDLE NESocket::ClientSocketConnect(const CEInterlockedValue & peerAddr)
+AREG_API SOCKETHANDLE NESocket::clientSocketConnect(const InterlockedValue & peerAddr)
 {
     SOCKETHANDLE result   = NESocket::InvalidSocketHandle;
-    if ( peerAddr.IsValid() )
+    if ( peerAddr.isValid() )
     {
         // struct sockaddr_in remoteAddr = {0};
         sockaddr_in remoteAddr;
-        VERIFY( peerAddr.ConvertAddress(remoteAddr) );
-        result = NESocket::SocketCreate();
+        VERIFY( peerAddr.getAddress(remoteAddr) );
+        result = NESocket::socketCreate();
         if ( result != NESocket::InvalidSocketHandle )
         {
             if ( RETURNED_OK != connect(result, reinterpret_cast<sockaddr *>(&remoteAddr), sizeof(sockaddr_in)))
             {
                 OUTPUT_ERR("Client failed to connect to remote host [ %s ] and port number [ %u ]. Closing socket [ %u ]"
-                            , static_cast<const char *>(peerAddr.GetHostAddress())
-                            , static_cast<unsigned int>(peerAddr.GetHostPort())
+                            , static_cast<const char *>(peerAddr.getHostAddress())
+                            , static_cast<unsigned int>(peerAddr.getHostPort())
                             , static_cast<unsigned int>(result));
 
-                NESocket::SocketClose(result);
+                NESocket::socketClose(result);
                 result = NESocket::InvalidSocketHandle;
             }
 #ifdef DEBUG
@@ -340,8 +340,8 @@ AREG_API SOCKETHANDLE NESocket::ClientSocketConnect(const CEInterlockedValue & p
             {
                 OUTPUT_DBG("Client socket [ %u ] succeeded to connect to remote host [ %s ] and port number [ %u ]"
                             , static_cast<unsigned int>(result)
-                            , static_cast<const char *>(peerAddr.GetHostAddress())
-                            , static_cast<unsigned int>(peerAddr.GetHostPort()));
+                            , static_cast<const char *>(peerAddr.getHostAddress())
+                            , static_cast<unsigned int>(peerAddr.getHostPort()));
             }
 #endif  // DEBUG
         }
@@ -352,13 +352,13 @@ AREG_API SOCKETHANDLE NESocket::ClientSocketConnect(const CEInterlockedValue & p
     }
     else
     {
-        OUTPUT_ERR("Address [ %s ] or port number [ %u ] is not valid. No client is created", static_cast<const char *>(peerAddr.GetHostAddress()), peerAddr.GetHostPort());
+        OUTPUT_ERR("Address [ %s ] or port number [ %u ] is not valid. No client is created", static_cast<const char *>(peerAddr.getHostAddress()), peerAddr.getHostPort());
     }
 
     return result;
 }
 
-AREG_API SOCKETHANDLE NESocket::ServerSocketConnect(const char * hostName, unsigned short portNr, CEInterlockedValue * out_socketAddr /*= NULL */)
+AREG_API SOCKETHANDLE NESocket::serverSocketConnect(const char * hostName, unsigned short portNr, InterlockedValue * out_socketAddr /*= NULL */)
 {
     hostName = hostName != NULL ? hostName : NESocket::LocalHost;
 
@@ -366,13 +366,13 @@ AREG_API SOCKETHANDLE NESocket::ServerSocketConnect(const char * hostName, unsig
 
 
     if ( out_socketAddr != NULL )
-        out_socketAddr->ResetAddress();
+        out_socketAddr->resetAddress();
 
     SOCKETHANDLE result   = NESocket::InvalidSocketHandle;
-    NESocket::CEInterlockedValue sockAddress;
-    if ( sockAddress.ResolveAddress(hostName, portNr, true) )
+    NESocket::InterlockedValue sockAddress;
+    if ( sockAddress.resolveAddress(hostName, portNr, true) )
     {
-        result = NESocket::ServerSocketConnect(sockAddress);
+        result = NESocket::serverSocketConnect(sockAddress);
         if ( result != NESocket::InvalidSocketHandle && out_socketAddr != NULL )
             *out_socketAddr = sockAddress;
     }
@@ -384,15 +384,15 @@ AREG_API SOCKETHANDLE NESocket::ServerSocketConnect(const char * hostName, unsig
     return result;
 }
 
-AREG_API SOCKETHANDLE NESocket::ServerSocketConnect(const CEInterlockedValue & peerAddr)
+AREG_API SOCKETHANDLE NESocket::serverSocketConnect(const InterlockedValue & peerAddr)
 {
     SOCKETHANDLE result   = NESocket::InvalidSocketHandle;
-    if ( peerAddr.IsValid() )
+    if ( peerAddr.isValid() )
     {
         // struct sockaddr_in remoteAddr = {0};
         sockaddr_in serverAddr;
-        VERIFY( peerAddr.ConvertAddress(serverAddr) );
-        result = NESocket::SocketCreate();
+        VERIFY( peerAddr.getAddress(serverAddr) );
+        result = NESocket::socketCreate();
         if ( result != NESocket::InvalidSocketHandle )
         {
             int yes = 1;    // avoid the "address already in use" error message
@@ -400,11 +400,11 @@ AREG_API SOCKETHANDLE NESocket::ServerSocketConnect(const CEInterlockedValue & p
             if ( RETURNED_OK != bind(result, reinterpret_cast<sockaddr *>(&serverAddr), sizeof(sockaddr_in)) )
             {
                 OUTPUT_ERR("Server failed to bind on host [ %s ] and port number [ %u ]. Closing socket [ %u ]"
-                            , static_cast<const char *>(peerAddr.GetHostAddress())
-                            , static_cast<unsigned int>(peerAddr.GetHostPort())
+                            , static_cast<const char *>(peerAddr.getHostAddress())
+                            , static_cast<unsigned int>(peerAddr.getHostPort())
                             , static_cast<unsigned int>(result));
 
-                NESocket::SocketClose( result );
+                NESocket::socketClose( result );
                 result = NESocket::InvalidSocketHandle;
             }
 #ifdef  DEBUG
@@ -412,8 +412,8 @@ AREG_API SOCKETHANDLE NESocket::ServerSocketConnect(const CEInterlockedValue & p
             {
                 OUTPUT_DBG("Server socket [ %u ] succeeded to bind on host [ %s ] and port number [ %u ]. Ready to listen."
                           , static_cast<unsigned int>(result)
-                          , static_cast<const char *>(peerAddr.GetHostAddress())
-                          , static_cast<unsigned int>(peerAddr.GetHostPort()));
+                          , static_cast<const char *>(peerAddr.getHostAddress())
+                          , static_cast<unsigned int>(peerAddr.getHostPort()));
 
             }
 #endif  // DEBUG
@@ -425,13 +425,93 @@ AREG_API SOCKETHANDLE NESocket::ServerSocketConnect(const CEInterlockedValue & p
     }
     else
     {
-        OUTPUT_ERR("Address [ %s ] or port number [ %u ] is not valid. No server is created", static_cast<const char *>(peerAddr.GetHostAddress()), peerAddr.GetHostPort());
+        OUTPUT_ERR("Address [ %s ] or port number [ %u ] is not valid. No server is created", static_cast<const char *>(peerAddr.getHostAddress()), peerAddr.getHostPort());
     }
 
     return result;
 }
 
-AREG_API bool NESocket::ServerListenConnection(SOCKETHANDLE serverSocket, int maxQueueSize /*= NESocket::MAXIMUM_LISTEN_QUEUE_SIZE*/)
+AREG_API bool NESocket::serverListenConnection(SOCKETHANDLE serverSocket, int maxQueueSize /*= NESocket::MAXIMUM_LISTEN_QUEUE_SIZE*/)
 {
     return ( (serverSocket != NESocket::InvalidSocketHandle) && (RETURNED_OK == listen(serverSocket, maxQueueSize)) );
 }
+
+AREG_API SOCKETHANDLE NESocket::serverAcceptConnection(SOCKETHANDLE serverSocket, const SOCKETHANDLE * masterList, int entriesCount, NESocket::InterlockedValue * out_socketAddr /*= NULL*/)
+{
+    OUTPUT_DBG("Checking server socket event, server socket handle [ %u ]", static_cast<unsigned int>(serverSocket));
+
+    if (out_socketAddr != NULL )
+        out_socketAddr->resetAddress();
+
+    SOCKETHANDLE result = NESocket::InvalidSocketHandle;
+    if ( serverSocket != NESocket::InvalidSocketHandle )
+    {
+        struct fd_set readList;
+        FD_ZERO(&readList);
+        FD_SET( serverSocket, &readList );
+
+
+        if ( masterList != NULL && entriesCount > 0)
+        {
+            entriesCount= MACRO_MIN(entriesCount, (FD_SETSIZE - 1));
+
+#ifdef  WINDOWS
+
+            for ( int count = 0; count < entriesCount; ++ count)
+                readList.fd_array[count + 1] = masterList[count];
+            readList.fd_count = entriesCount + 1;
+
+#else   // !WINDOWS
+
+            for ( int count = 0; count < entriesCount; ++ count)
+            {
+                FD_SET(masterList[count], &readList);
+            }
+
+#endif  // WINDOWS
+        }
+
+        int selected    = select( static_cast<int>(serverSocket) + 1 /* param is ignored in Win32*/, &readList, NULL, NULL, NULL);
+        if ( selected > 0 )
+        {
+            if ( FD_ISSET(serverSocket, &readList) != 0 )
+            {
+                // have got new client connection. resolve and get socket
+                struct sockaddr_in acceptAddr; // connecting client address information
+                int addrLength = sizeof(sockaddr_in);
+                NEMemory::zeroBuffer(&acceptAddr, sizeof(sockaddr_in));
+
+                result = accept( serverSocket, reinterpret_cast<sockaddr *>(&acceptAddr), &addrLength );
+                OUTPUT_DBG("Server accepted new connection of client socket [ %u ]", static_cast<unsigned int>(result));
+                if ( result != NESocket::InvalidSocketHandle && out_socketAddr != NULL )
+                    out_socketAddr->setAddress(acceptAddr);
+            }
+            else
+            {
+                OUTPUT_DBG("Have got select event of existing connection, going to resolve socket");
+
+                //  check whether have got connection from existing clients. if 'yes', server can read data.
+                for ( int count = 0; result == NESocket::InvalidSocketHandle && count < entriesCount; ++ count )
+                {
+                    if (FD_ISSET( masterList[count], &readList ) != 0)
+                    {
+                        result = masterList[count];
+                        OUTPUT_DBG("Server selected event of existing client socket [ %u ] connection", static_cast<unsigned int>(result));
+                        break;
+                    }
+                }
+            }
+        }
+        else
+        {
+            OUTPUT_ERR("Failed to select connection. The server socket [ %u ] might be closed and not valid anymore, return value [ %d ]", static_cast<unsigned int>(serverSocket), selected);
+        }
+    }
+    else
+    {
+        OUTPUT_ERR("Invalid server socket, ignoring accept connections!");
+    }
+
+    return result;
+}
+

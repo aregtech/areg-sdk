@@ -7,9 +7,9 @@
 
 #include "areg/ipc/private/NEConnection.hpp"
 #include "areg/component/NEService.hpp"
-#include "areg/component/CEStubAddress.hpp"
-#include "areg/component/CEProxyAddress.hpp"
-#include "areg/base/CERemoteMessage.hpp"
+#include "areg/component/StubAddress.hpp"
+#include "areg/component/ProxyAddress.hpp"
+#include "areg/base/RemoteMessage.hpp"
 
 const NEMemory::sRemoteMessage     NEConnection::MessageHelloServer       =
 {
@@ -189,262 +189,262 @@ inline static bool _isValidBrokerCookie( ITEM_ID broker )
     return broker == NEService::COOKIE_ROUTER;
 }
 
-inline static void _createRegisterRequest( CERemoteMessage & out_msgRegister, ITEM_ID source, NEService::eServiceRequestType reqType, const CEStubAddress & addrService )
+inline static void _createRegisterRequest( RemoteMessage & out_msgRegister, ITEM_ID source, NEService::eServiceRequestType reqType, const StubAddress & addrService )
 {
-    if ( out_msgRegister.InitializeMessage( NEConnection::MessageRegisterService.rbHeader ) != NULL )
+    if ( out_msgRegister.initMessage( NEConnection::MessageRegisterService.rbHeader ) != NULL )
     {
-        out_msgRegister.SetSource(source);
-        out_msgRegister.SetSequenceNr( NEService::SEQUENCE_NUMBER_NOTIFY );
+        out_msgRegister.setSource(source);
+        out_msgRegister.setSequenceNr( NEService::SEQUENCE_NUMBER_NOTIFY );
         out_msgRegister << reqType;
         out_msgRegister << addrService;
-        out_msgRegister.BufferCompletionFix();
+        out_msgRegister.bufferCompletionFix();
     }
 }
 
-inline static void _createRegisterRequest( CERemoteMessage & out_msgRegister, ITEM_ID source, NEService::eServiceRequestType reqType, const CEProxyAddress & addrService )
+inline static void _createRegisterRequest( RemoteMessage & out_msgRegister, ITEM_ID source, NEService::eServiceRequestType reqType, const ProxyAddress & addrService )
 {
-    if ( out_msgRegister.InitializeMessage( NEConnection::MessageRegisterService.rbHeader ) != NULL )
+    if ( out_msgRegister.initMessage( NEConnection::MessageRegisterService.rbHeader ) != NULL )
     {
-        out_msgRegister.SetSource(source);
-        out_msgRegister.SetSequenceNr( NEService::SEQUENCE_NUMBER_NOTIFY );
+        out_msgRegister.setSource(source);
+        out_msgRegister.setSequenceNr( NEService::SEQUENCE_NUMBER_NOTIFY );
         out_msgRegister << reqType;
         out_msgRegister << addrService;
-        out_msgRegister.BufferCompletionFix();
+        out_msgRegister.bufferCompletionFix();
     }
 }
 
-inline static void _createRegistereNotify( CERemoteMessage & out_msgNotify, ITEM_ID target, NEService::eServiceRequestType reqType, const CEStubAddress & addrService )
+inline static void _createRegistereNotify( RemoteMessage & out_msgNotify, ITEM_ID target, NEService::eServiceRequestType reqType, const StubAddress & addrService )
 {
-    if ( out_msgNotify.InitializeMessage( NEConnection::MessageRegisterNotify.rbHeader ) != NULL )
+    if ( out_msgNotify.initMessage( NEConnection::MessageRegisterNotify.rbHeader ) != NULL )
     {
-        out_msgNotify.SetTarget(target);
-        out_msgNotify.SetSequenceNr( NEService::SEQUENCE_NUMBER_NOTIFY );
+        out_msgNotify.setTarget(target);
+        out_msgNotify.setSequenceNr( NEService::SEQUENCE_NUMBER_NOTIFY );
         out_msgNotify << reqType;
         out_msgNotify << addrService;
-        out_msgNotify.BufferCompletionFix();
+        out_msgNotify.bufferCompletionFix();
     }
 }
 
-inline static void _createRegistereNotify( CERemoteMessage & out_msgNotify, ITEM_ID target, NEService::eServiceRequestType reqType, const CEProxyAddress & addrService )
+inline static void _createRegistereNotify( RemoteMessage & out_msgNotify, ITEM_ID target, NEService::eServiceRequestType reqType, const ProxyAddress & addrService )
 {
-    if ( out_msgNotify.InitializeMessage( NEConnection::MessageRegisterNotify.rbHeader ) != NULL )
+    if ( out_msgNotify.initMessage( NEConnection::MessageRegisterNotify.rbHeader ) != NULL )
     {
-        out_msgNotify.SetTarget(target);
-        out_msgNotify.SetSequenceNr( NEService::SEQUENCE_NUMBER_NOTIFY );
+        out_msgNotify.setTarget(target);
+        out_msgNotify.setSequenceNr( NEService::SEQUENCE_NUMBER_NOTIFY );
         out_msgNotify << reqType;
         out_msgNotify << addrService;
-        out_msgNotify.BufferCompletionFix();
+        out_msgNotify.bufferCompletionFix();
     }
 }
 
-CERemoteMessage NEConnection::CreateBrokerRegisterService( const CEStubAddress & stub, ITEM_ID source )
+RemoteMessage NEConnection::createBrokerRegisterService( const StubAddress & stub, ITEM_ID source )
 {
-    CERemoteMessage msgResult;
-    if ( stub.IsServiceRemote() && _isValidSource(source) )
+    RemoteMessage msgResult;
+    if ( stub.isServiceRemote() && _isValidSource(source) )
     {
-        CEStubAddress temp( stub );
+        StubAddress temp( stub );
         temp.SetCookie(source);
         _createRegisterRequest(msgResult, source, NEService::SERVICE_REQUEST_REGISTER_STUB, temp);
     }
     return msgResult;
 }
 
-CERemoteMessage NEConnection::CreateBrokerRegisterClient( const CEProxyAddress & proxy, ITEM_ID source )
+RemoteMessage NEConnection::createBrokerRegisterClient( const ProxyAddress & proxy, ITEM_ID source )
 {
-    CERemoteMessage msgResult;
-    if ( proxy.IsServiceRemote() && _isValidSource(source) )
+    RemoteMessage msgResult;
+    if ( proxy.isServiceRemote() && _isValidSource(source) )
     {
-        CEProxyAddress temp( proxy );
-        temp.SetCookie(source);
+        ProxyAddress temp( proxy );
+        temp.setCookie(source);
         _createRegisterRequest(msgResult, source, NEService::SERVICE_REQUEST_REGISTER_CLIENT, temp);
     }
     return msgResult;
 }
 
-CERemoteMessage NEConnection::CreateBrokerUnregisterService( const CEStubAddress & stub, ITEM_ID source )
+RemoteMessage NEConnection::createBrokerUnregisterService( const StubAddress & stub, ITEM_ID source )
 {
-    CERemoteMessage msgResult;
-    if ( stub.IsServiceRemote() && _isValidSource(source) )
+    RemoteMessage msgResult;
+    if ( stub.isServiceRemote() && _isValidSource(source) )
     {
-        CEStubAddress temp( stub );
+        StubAddress temp( stub );
         temp.SetCookie(source);
         _createRegisterRequest(msgResult, source, NEService::SERVICE_REQUEST_UNREGISTER_STUB, temp);
     }
     return msgResult;
 }
 
-CERemoteMessage NEConnection::CreateBrokerUnregisterClient( const CEProxyAddress & proxy, ITEM_ID source )
+RemoteMessage NEConnection::createBrokerUnregisterClient( const ProxyAddress & proxy, ITEM_ID source )
 {
-    CERemoteMessage msgResult;
-    if ( proxy.IsServiceRemote() && _isValidSource(source) )
+    RemoteMessage msgResult;
+    if ( proxy.isServiceRemote() && _isValidSource(source) )
     {
-        CEProxyAddress temp( proxy );
-        temp.SetCookie(source);
+        ProxyAddress temp( proxy );
+        temp.setCookie(source);
         _createRegisterRequest(msgResult, source, NEService::SERVICE_REQUEST_UNREGISTER_CLIENT, temp);
     }
     return msgResult;
 }
 
-bool NEConnection::IsMessageHelloServer(const CERemoteMessage & msgHelloServer)
+bool NEConnection::isMessageHelloServer(const RemoteMessage & msgHelloServer)
 {
     bool result = false;
-    if ( msgHelloServer.IsChecksumValid() )
+    if ( msgHelloServer.isChecksumValid() )
     {
-        result = (msgHelloServer.GetMessageId() == NEService::SI_ROUTER_CONNECT) && (msgHelloServer.GetSource()  == NEService::COOKIE_UNKNOWN);
+        result = (msgHelloServer.getMessageId() == NEService::SI_ROUTER_CONNECT) && (msgHelloServer.getSource()  == NEService::COOKIE_UNKNOWN);
     }
 
     return result;
 }
 
-bool NEConnection::IsMessageByeServer(const CERemoteMessage & msgByeServer)
+bool NEConnection::isMessageByeServer(const RemoteMessage & msgByeServer)
 {
     bool result = false;
-    if ( msgByeServer.IsChecksumValid() )
+    if ( msgByeServer.isChecksumValid() )
     {
-        result = (msgByeServer.GetMessageId() == NEService::SI_ROUTER_DISCONNECT) && (msgByeServer.GetSource()  != NEService::COOKIE_UNKNOWN);
+        result = (msgByeServer.getMessageId() == NEService::SI_ROUTER_DISCONNECT) && (msgByeServer.getSource()  != NEService::COOKIE_UNKNOWN);
     }
     
     return result;
 }
 
-bool NEConnection::IsMessagNotifyClient(const CERemoteMessage & msgNotifyClient)
+bool NEConnection::isMessagNotifyClient(const RemoteMessage & msgNotifyClient)
 {
     bool result = false;
-    if ( msgNotifyClient.IsChecksumValid() )
+    if ( msgNotifyClient.isChecksumValid() )
     {
-        result = (msgNotifyClient.GetMessageId() == NEService::SI_ROUTER_NOTIFY) && (msgNotifyClient.GetSource() == NEService::COOKIE_ROUTER);
+        result = (msgNotifyClient.getMessageId() == NEService::SI_ROUTER_NOTIFY) && (msgNotifyClient.getSource() == NEService::COOKIE_ROUTER);
     }
 
     return result;
 }
 
-bool NEConnection::IsMessageRegisterService(const CERemoteMessage & msgRegisterService)
+bool NEConnection::isMessageRegisterService(const RemoteMessage & msgRegisterService)
 {
     bool result = false;
-    if ( msgRegisterService.IsChecksumValid() )
+    if ( msgRegisterService.isChecksumValid() )
     {
-        result =(msgRegisterService.GetMessageId() == NEService::SI_ROUTER_REGISTER) && 
-                (msgRegisterService.GetSource() != NEService::COOKIE_UNKNOWN)        && 
-                (msgRegisterService.GetTarget() == NEService::COOKIE_ROUTER);
+        result =(msgRegisterService.getMessageId() == NEService::SI_ROUTER_REGISTER) && 
+                (msgRegisterService.getSource() != NEService::COOKIE_UNKNOWN)        && 
+                (msgRegisterService.getTarget() == NEService::COOKIE_ROUTER);
     }
     return result;
 }
 
-CERemoteMessage NEConnection::CreateServiceRegisteredNotification(const CEStubAddress & stub, ITEM_ID target)
+RemoteMessage NEConnection::createServiceRegisteredNotification(const StubAddress & stub, ITEM_ID target)
 {
-    CERemoteMessage msgResult;
-    if ( stub.IsServiceRemote() && _isValidSource(target) )
+    RemoteMessage msgResult;
+    if ( stub.isServiceRemote() && _isValidSource(target) )
     {
-        CEStubAddress temp( stub );
+        StubAddress temp( stub );
         _createRegistereNotify(msgResult, target, NEService::SERVICE_REQUEST_REGISTER_STUB, temp);
     }
     return msgResult;
 }
 
-CERemoteMessage NEConnection::CreateServiceClientRegisteredNotification(const CEProxyAddress & proxy, ITEM_ID target)
+RemoteMessage NEConnection::createServiceClientRegisteredNotification(const ProxyAddress & proxy, ITEM_ID target)
 {
-    CERemoteMessage msgResult;
-    if ( proxy.IsServiceRemote() && _isValidSource(target) )
+    RemoteMessage msgResult;
+    if ( proxy.isServiceRemote() && _isValidSource(target) )
     {
-        CEProxyAddress temp( proxy );
+        ProxyAddress temp( proxy );
         _createRegistereNotify(msgResult, target, NEService::SERVICE_REQUEST_REGISTER_CLIENT, temp);
     }
     return msgResult;
 }
 
-CERemoteMessage NEConnection::CreateServiceUnregisteredNotification(const CEStubAddress & stub, ITEM_ID target)
+RemoteMessage NEConnection::createServiceUnregisteredNotification(const StubAddress & stub, ITEM_ID target)
 {
-    CERemoteMessage msgResult;
-    if ( stub.IsServiceRemote() && _isValidSource(target) )
+    RemoteMessage msgResult;
+    if ( stub.isServiceRemote() && _isValidSource(target) )
     {
-        CEStubAddress temp( stub );
+        StubAddress temp( stub );
         _createRegistereNotify(msgResult, target, NEService::SERVICE_REQUEST_UNREGISTER_STUB, temp);
     }
     return msgResult;
 }
 
-CERemoteMessage NEConnection::CreateServiceClientUnregisteredNotification(const CEProxyAddress & proxy, ITEM_ID target)
+RemoteMessage NEConnection::createServiceClientUnregisteredNotification(const ProxyAddress & proxy, ITEM_ID target)
 {
-    CERemoteMessage msgResult;
-    if ( proxy.IsServiceRemote() && _isValidSource(target) )
+    RemoteMessage msgResult;
+    if ( proxy.isServiceRemote() && _isValidSource(target) )
     {
-        CEProxyAddress temp( proxy );
+        ProxyAddress temp( proxy );
         _createRegistereNotify(msgResult, target, NEService::SERVICE_REQUEST_UNREGISTER_CLIENT, temp);
     }
     return msgResult;
 }
 
-CERemoteMessage NEConnection::CreateConnectRequest(void)
+RemoteMessage NEConnection::createConnectRequest(void)
 {
-    CERemoteMessage msgHelloServer;
-    if ( msgHelloServer.InitializeMessage( NEConnection::MessageHelloServer.rbHeader ) != NULL )
+    RemoteMessage msgHelloServer;
+    if ( msgHelloServer.initMessage( NEConnection::MessageHelloServer.rbHeader ) != NULL )
     {
-        msgHelloServer.SetSource( NEService::SOURCE_UNKNOWN );
-        msgHelloServer.SetSequenceNr( NEService::SEQUENCE_NUMBER_NOTIFY );
+        msgHelloServer.setSource( NEService::SOUR_UNKNOWN );
+        msgHelloServer.setSequenceNr( NEService::SEQUENCE_NUMBER_NOTIFY );
 
-        msgHelloServer.BufferCompletionFix();
+        msgHelloServer.bufferCompletionFix();
     }
     return msgHelloServer;
 }
 
-CERemoteMessage NEConnection::CreateDisconnectRequest(ITEM_ID cookie)
+RemoteMessage NEConnection::createDisconnectRequest(ITEM_ID cookie)
 {
-    CERemoteMessage msgBeyServer;
-    if ( msgBeyServer.InitializeMessage( NEConnection::MessageByeServer.rbHeader ) != NULL )
+    RemoteMessage msgBeyServer;
+    if ( msgBeyServer.initMessage( NEConnection::MessageByeServer.rbHeader ) != NULL )
     {
-        msgBeyServer.SetSource( cookie );
-        msgBeyServer.SetSequenceNr( NEService::SEQUENCE_NUMBER_ANY );
+        msgBeyServer.setSource( cookie );
+        msgBeyServer.setSequenceNr( NEService::SEQUENCE_NUMBER_ANY );
         msgBeyServer << cookie;
 
-        msgBeyServer.BufferCompletionFix();
+        msgBeyServer.bufferCompletionFix();
     }
     return msgBeyServer;
 }
 
-CERemoteMessage NEConnection::CreateConnectNotify( ITEM_ID cookie  )
+RemoteMessage NEConnection::createConnectNotify( ITEM_ID cookie  )
 {
-    CERemoteMessage msgNotifyConnect;
-    if ( msgNotifyConnect.InitializeMessage( NEConnection::MessageAcceptClient.rbHeader ) != NULL )
+    RemoteMessage msgNotifyConnect;
+    if ( msgNotifyConnect.initMessage( NEConnection::MessageAcceptClient.rbHeader ) != NULL )
     {
-        msgNotifyConnect.SetTarget( cookie );
-        msgNotifyConnect.SetSequenceNr( NEService::SEQUENCE_NUMBER_ANY );
+        msgNotifyConnect.setTarget( cookie );
+        msgNotifyConnect.setSequenceNr( NEService::SEQUENCE_NUMBER_ANY );
 
         msgNotifyConnect << NEService::ServiceConnected;
         msgNotifyConnect << cookie;
 
-        msgNotifyConnect.BufferCompletionFix();
+        msgNotifyConnect.bufferCompletionFix();
     }
     return msgNotifyConnect;
 }
 
-CERemoteMessage NEConnection::CreateDisconnectNotify(ITEM_ID cookie)
+RemoteMessage NEConnection::createDisconnectNotify(ITEM_ID cookie)
 {
-    CERemoteMessage msgNotifyDisconnect;
-    if ( msgNotifyDisconnect.InitializeMessage( NEConnection::MessageByeClient.rbHeader ) != NULL )
+    RemoteMessage msgNotifyDisconnect;
+    if ( msgNotifyDisconnect.initMessage( NEConnection::MessageByeClient.rbHeader ) != NULL )
     {
-        msgNotifyDisconnect.SetTarget( cookie );
-        msgNotifyDisconnect.SetSequenceNr( NEService::SEQUENCE_NUMBER_ANY );
+        msgNotifyDisconnect.setTarget( cookie );
+        msgNotifyDisconnect.setSequenceNr( NEService::SEQUENCE_NUMBER_ANY );
 
         msgNotifyDisconnect << NEService::ServiceDisconnected;
         msgNotifyDisconnect << cookie;
 
-        msgNotifyDisconnect.BufferCompletionFix();
+        msgNotifyDisconnect.bufferCompletionFix();
     }
     return msgNotifyDisconnect;
 }
 
-CERemoteMessage NEConnection::CreateRejectNotify(ITEM_ID cookie)
+RemoteMessage NEConnection::createRejectNotify(ITEM_ID cookie)
 {
-    CERemoteMessage msgNotifyReject;
-    if ( msgNotifyReject.InitializeMessage( NEConnection::MessageRejectClient.rbHeader ) != NULL )
+    RemoteMessage msgNotifyReject;
+    if ( msgNotifyReject.initMessage( NEConnection::MessageRejectClient.rbHeader ) != NULL )
     {
-        msgNotifyReject.SetTarget( cookie );
-        msgNotifyReject.SetSequenceNr( NEService::SEQUENCE_NUMBER_ANY );
+        msgNotifyReject.setTarget( cookie );
+        msgNotifyReject.setSequenceNr( NEService::SEQUENCE_NUMBER_ANY );
 
         msgNotifyReject << NEService::ServiceRejected;
         msgNotifyReject << cookie;
 
-        msgNotifyReject.BufferCompletionFix();
+        msgNotifyReject.bufferCompletionFix();
     }
     return msgNotifyReject;
 }

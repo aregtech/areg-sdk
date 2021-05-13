@@ -15,140 +15,150 @@
 
 #ifdef _POSIX
 
+#include "areg/base/NECommon.hpp"
 #include <unistd.h>
 #include <time.h>
 
+//////////////////////////////////////////////////////////////////////////
+// NESynchTypesIX namespace declaration
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   This namespace contains main constants and helper methods
+ *          shared between other synchronization objects.
+ **/
 namespace NESynchTypesIX
 {
+    /**
+     * \brief   NESynchTypesIX::POSIX_SUCSS
+     *          Indicates the success of POSIX function call.
+     **/
+    const int   POSIX_SUCSS                   = 0;
 
-    const int   POSIX_SUCCESS                   = 0;
-
-
+    /**
+     * \brief   NESynchTypesIX::eSynchObjectFired
+     *          The valid indexes when synchronization event is fired in the waiting list
+     *          or error happened.
+     **/
     typedef enum E_SynchObjectFired
     {
+        /**
+         * \brief   Invalid synchronization object.
+         **/
           SynchObjectInvalid    =  -1
-
+        /**
+         * \brief   The index of first synchronization object.
+         **/
         , SynchObject0          =   0
-        , SynchObject1          =   1
-        , SynchObject2          =   2
-        , SynchObject3          =   3
-        , SynchObject4          =   4
-        , SynchObject5          =   5
-        , SynchObject6          =   6
-        , SynchObject7          =   7
-        , SynchObject8          =   8
-        , SynchObject9          =   9
-        , SynchObject10         =  10
-        , SynchObject11         =  11
-        , SynchObject12         =  12
-        , SynchObject13         =  13
-        , SynchObject14         =  14
-        , SynchObject15         =  15
-        , SynchObject16         =  16
-        , SynchObject17         =  17
-        , SynchObject18         =  18
-        , SynchObject19         =  19
-        , SynchObject20         =  20
-        , SynchObject21         =  21
-        , SynchObject22         =  22
-        , SynchObject23         =  23
-        , SynchObject24         =  24
-        , SynchObject25         =  25
-        , SynchObject26         =  26
-        , SynchObject27         =  27
-        , SynchObject28         =  28
-        , SynchObject29         =  29
-        , SynchObject30         =  30
-        , SynchObject31         =  31
-
-        , SynchObjectAll        =  32
-
+        /**
+         * \brief   Indicates that all synchronization events where fired.
+         **/
+        , SynchObjectAll        =  NECommon::MAXIMUM_WAITING_OBJECTS
+        /**
+         * \brief   Indicates start of error range
+         **/
         , SynchObjectError      =  99
+        /**
+         * \brief   There was an error while trying to lock first synchronization object.
+         **/
         , SynchObject0Error     = 100
-        , SynchObject1Error     = 101
-        , SynchObject2Error     = 102
-        , SynchObject3Error     = 103
-        , SynchObject4Error     = 104
-        , SynchObject5Error     = 105
-        , SynchObject6Error     = 106
-        , SynchObject7Error     = 107
-        , SynchObject8Error     = 108
-        , SynchObject9Error     = 109
-        , SynchObject10Error    = 110
-        , SynchObject11Error    = 111
-        , SynchObject12Error    = 112
-        , SynchObject13Error    = 113
-        , SynchObject14Error    = 114
-        , SynchObject15Error    = 115
-        , SynchObject16Error    = 116
-        , SynchObject17Error    = 117
-        , SynchObject18Error    = 118
-        , SynchObject19Error    = 119
-        , SynchObject20Error    = 120
-        , SynchObject21Error    = 121
-        , SynchObject22Error    = 122
-        , SynchObject23Error    = 123
-        , SynchObject24Error    = 124
-        , SynchObject25Error    = 125
-        , SynchObject26Error    = 126
-        , SynchObject27Error    = 127
-        , SynchObject28Error    = 128
-        , SynchObject29Error    = 129
-        , SynchObject30Error    = 130
-        , SynchObject31Error    = 131
-
+        /**
+         * \brief   Asynchronously signaled.
+         **/
         , SynchAsynchSignal     = 200
+        /**
+         * \brief   Lock waiting timeout has been expired.
+         **/
         , SynchObjectTimeout    = 201
+        /**
+         * \brief   The waiting was interrupted by some other event, like timer expired.
+         **/
         , SynchWaitInterrupted  = 202
     } eSynchObjectFired;
 
+    /**
+     * \brief   NESynchTypesIX::eEventResetInfo
+     *          The types of reset for event objects.
+     **/
     typedef enum    E_EventResetInfo
     {
-          EventResetManual
-        , EventResetAutomatic
+          EventResetManual      //!< The event is reset manually.
+        , EventResetAutomatic   //!< The event is reset automatically.
     } eEventResetInfo;
-    inline const char * GetString(NESynchTypesIX::eEventResetInfo val);
+    /**
+     * \brief   Returns string value of NESynchTypesIX::eEventResetInfo
+     **/
+    inline const char * getString(NESynchTypesIX::eEventResetInfo val);
 
+    /**
+     * \brief   NESynchTypesIX::eMatchCondition
+     *          Event matching condition. Either there should be exact match,
+     *          i.e. all events are fired, of any event in the list should be fired.
+     **/
     typedef enum E_MatchCondition
     {
-          MatchConditionExact
-        , MatchConditionAny
+          MatchConditionExact   //!< The should be exact matchin condition, i.e. all event in the list should be fired.
+        , MatchConditionAny     //!< Any event in the list should be fired to unlock the thread.
     } eMatchCondition;
-    inline const char * GetString(NESynchTypesIX::eMatchCondition val);
+    /**
+     * \brief   Returns string value of NESynchTypesIX::eMatchCondition
+     **/
+    inline const char * getString(NESynchTypesIX::eMatchCondition val);
 
+    /**
+     * \brief   NESynchTypesIX::eSynchObject
+     *          Type of synchronization objects.
+     **/
     typedef enum E_SynchObject
     {
-          SoUndefined       = (0 << 0) | 0
-        , SoWaitable        = (1 << 0) | 1
-        , SoMutex           = (1 << 1) | 0
-        , SoSpinLock        = (1 << 2) | 0
-        , SoWaitMutex       = (1 << 1) | 1
-        , SoWaitEvent       = (1 << 2) | 1
-        , SoWaitSemaphore   = (1 << 3) | 1
-        , SoWaitTimer       = (1 << 4) | 1
+          SoUndefined       = (0 << 0) | 0  //!< No type, it is undefined and invalid.
+        , SoWaitable        = (1 << 0) | 1  //!< Waitiable object
+        , SoMutex           = (1 << 1) | 0  //!< Simple POSIX mutex.
+        , SoSpinLock        = (1 << 2) | 0  //!< Simple POSIX spin lock
+        , SoWaitMutex       = (1 << 1) | 1  //!< Waitable mutex, so that it can be used in the waiting list.
+        , SoWaitEvent       = (1 << 2) | 1  //!< Waitable event, so that it can be used in the waiting list.
+        , SoWaitSemaphore   = (1 << 3) | 1  //!< Waitable semaphore, so that it can be used in the waiting list.
+        , SoWaitTimer       = (1 << 4) | 1  //!< Waitable timer, so that it can be used in the waiting list
 
     } eSynchObject;
-    inline const char * GetString(NESynchTypesIX::eSynchObject val);
+    /**
+     * \brief   Returns string value of NESynchTypesIX::eSynchObject
+     **/
+    inline const char * getString(NESynchTypesIX::eSynchObject val);
 
-    inline bool TimeoutFromNow( timespec & out_result, unsigned int msTimeout );
+    /**
+     * \brief   Calculates the timeout value starting from now.
+     * \param   out_result  The object that contains timeout information in nanosecond range.
+     * \param   msTimeout   The timeout to be calculated.
+     * \return  Returns true if succeeded to get time and convert.
+     **/
+    inline bool timeoutFromNow( timespec & out_result, unsigned int msTimeout );
 
-    inline void ConvertTimeout( timespec & out_result, unsigned int msTimeout );
+    /**
+     * \brief   Converts the given timeout value into POSIX time structure.
+     * \param   out_result  The object that contains timeout information in nanosecond range.
+     * \param   msTimeout   The timeout to be calculated.
+     **/
+    inline void convertTimeout( timespec & out_result, unsigned int msTimeout );
 
 } // namespace NESynchTypesIX
 
-inline bool NESynchTypesIX::TimeoutFromNow( timespec & out_result, unsigned int msTimeout )
+//////////////////////////////////////////////////////////////////////////
+// NESynchTypesIX namespace inline function implementation
+//////////////////////////////////////////////////////////////////////////
+
+inline bool NESynchTypesIX::timeoutFromNow( timespec & out_result, unsigned int msTimeout )
 {
     bool result = false;
-    if ( NESynchTypesIX::POSIX_SUCCESS == clock_gettime( CLOCK_REALTIME, &out_result ) )
+    if ( NESynchTypesIX::POSIX_SUCSS == clock_gettime( CLOCK_REALTIME, &out_result ) )
     {
-        ConvertTimeout(out_result, msTimeout);
+        convertTimeout(out_result, msTimeout);
         result = true;
     }
 
     return result;
 }
 
-inline void NESynchTypesIX::ConvertTimeout( timespec & out_result, unsigned int msTimeout )
+inline void NESynchTypesIX::convertTimeout( timespec & out_result, unsigned int msTimeout )
 {
     msTimeout += out_result.tv_nsec / 1000000;
     unsigned int nsec = (out_result.tv_nsec % 1000000);
@@ -157,7 +167,7 @@ inline void NESynchTypesIX::ConvertTimeout( timespec & out_result, unsigned int 
     out_result.tv_nsec   = ((msTimeout % 1000) * 1000000) + nsec;
 }
 
-inline const char * NESynchTypesIX::GetString(NESynchTypesIX::eEventResetInfo val)
+inline const char * NESynchTypesIX::getString(NESynchTypesIX::eEventResetInfo val)
 {
     switch (val)
     {
@@ -170,7 +180,7 @@ inline const char * NESynchTypesIX::GetString(NESynchTypesIX::eEventResetInfo va
     }
 }
 
-inline const char * NESynchTypesIX::GetString(NESynchTypesIX::eMatchCondition val)
+inline const char * NESynchTypesIX::getString(NESynchTypesIX::eMatchCondition val)
 {
     switch (val)
     {
@@ -183,7 +193,7 @@ inline const char * NESynchTypesIX::GetString(NESynchTypesIX::eMatchCondition va
     }
 }
 
-inline const char * NESynchTypesIX::GetString(NESynchTypesIX::eSynchObject val)
+inline const char * NESynchTypesIX::getString(NESynchTypesIX::eSynchObject val)
 {
     switch (val)
     {

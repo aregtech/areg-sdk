@@ -4,8 +4,8 @@
 
 /************************************************************************
  * (c) copyright    2021
- *                  Create by AREGtech code generator tool from source System.
- * Generated at     21.04.2021  18:33:57 GMT+02:00 
+ *                  Create by AREG SDK code generator tool from source System.
+ * Generated at     12.05.2021  16:41:13 GMT+02:00 
  ************************************************************************/
 
 /************************************************************************
@@ -28,58 +28,56 @@ static NEService::SInterfaceData & _getInterfaceData(void)
     /**
      * \brief   System Service Interface data
      **/
-    static NEService::SInterfaceData InterfaceData;
+    static NEService::SInterfaceData _InterfaceData;
 
-    if (InterfaceData.idIsInitialized == false)
+    if (_InterfaceData.idIsInitialized == false)
     {
-        InterfaceData.idServiceName     = NESystem::ServiceName;
-        InterfaceData.idVersion         = NESystem::InterfaceVersion;
-        InterfaceData.idServiceType     = NEService::ServiceLocal;
-        InterfaceData.idRequestCount    = NESystem::NumberofRequests;
-        InterfaceData.idResponseCount   = NESystem::NumberofResponses;
-        InterfaceData.idAttributeCount  = NESystem::NumberofAttributes;
+        _InterfaceData.idServiceName    = NESystem::ServiceName;
+        _InterfaceData.idVersion        = NESystem::InterfaceVersion;
+        _InterfaceData.idServiceType    = NEService::ServiceLocal;
+        _InterfaceData.idRequestCount   = NESystem::NumberofRequests;
+        _InterfaceData.idResponseCount  = NESystem::NumberofResponses;
+        _InterfaceData.idAttributeCount = NESystem::NumberofAttributes;
 
         /**
          * \brief   The map of requests and responses
          **/
-        static const unsigned int RequestToResponseMap[] = 
+        static const unsigned int _RequestToResponseMap[] = 
         {
-              static_cast<unsigned int>( NESystem::MSG_ID_NO_PROCEED       ) // RequestPowerOff( void )
-            , static_cast<unsigned int>( NESystem::MSG_ID_NO_PROCEED       ) // RequestPowerOn( void )
-            , static_cast<unsigned int>( NESystem::MSG_ID_NO_PROCEED       ) // RequestShutdown( void )
-            , static_cast<unsigned int>( NESystem::MSG_ID_NO_PROCEED       ) // RequestStart( void )
+              static_cast<unsigned int>( NESystem::MSG_ID_NO_PROCEED       ) // requestPowerOff( void )
+            , static_cast<unsigned int>( NESystem::MSG_ID_NO_PROCEED       ) // requestPowerOn( void )
+            , static_cast<unsigned int>( NESystem::MSG_ID_NO_PROCEED       ) // requestShutdown( void )
+            , static_cast<unsigned int>( NESystem::MSG_ID_NO_PROCEED       ) // requestStart( void )
         };
 
         /**
          * \brief   Initialization of map of parameter entry validation map in responses and in broadcasts
          **/
-        static const unsigned int * ResponseParamStateMap = static_cast<const unsigned int *>(NULL); // EMPTY RESPONSE AND BROADCAST LIST
+        static const unsigned int * _ResponseParamStateMap = static_cast<const unsigned int *>(NULL); // EMPTY RESPONSE AND BROADCAST LIST
 
-        InterfaceData.idRequestToResponseMap    = RequestToResponseMap;
-        InterfaceData.idResponseParamCountMap   = ResponseParamStateMap;
-        InterfaceData.idIsInitialized           = true;
+        _InterfaceData.idRequestToResponseMap   = _RequestToResponseMap;
+        _InterfaceData.idResponseParamCountMap  = _ResponseParamStateMap;
+        _InterfaceData.idIsInitialized          = true;
     }
-    return InterfaceData;
+    
+    return _InterfaceData;
 }
 
 //////////////////////////////////////////////////////////////////////////
 // NESystem functions implementation
 //////////////////////////////////////////////////////////////////////////
 
-const NEService::SInterfaceData & NESystem::CreateInterfaceData( void )
+const NEService::SInterfaceData & NESystem::createInterfaceData( void )
 {
     return _getInterfaceData();
 }
 
-NESystem::eMessageIDs NESystem::GetResponseId( NESystem::eMessageIDs reqId )
+NESystem::eMessageIDs NESystem::getResponseId( NESystem::eMessageIDs reqId )
 {
-    const NEService::SInterfaceData & sid = _getInterfaceData();
-
-    int index = GET_REQ_INDEX(reqId);
-    return  ( index >= 0 && index < static_cast<int>(sid.idRequestCount) ? static_cast<NESystem::eMessageIDs>(sid.idRequestToResponseMap[index]) : NESystem::MSG_ID_INVALID );
+    return NESystem::MSG_ID_INVALID;
 }
 
-NESystem::eMessageIDs NESystem::GetRequestId( NESystem::eMessageIDs respId )
+NESystem::eMessageIDs NESystem::getRequestId( NESystem::eMessageIDs respId )
 {
     const NEService::SInterfaceData & sid = _getInterfaceData();
     NESystem::eMessageIDs result = NESystem::MSG_ID_INVALID;

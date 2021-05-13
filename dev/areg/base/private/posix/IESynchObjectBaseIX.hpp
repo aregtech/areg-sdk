@@ -19,13 +19,13 @@
 #include "areg/base/IESynchObject.hpp"
 
 //////////////////////////////////////////////////////////////////////////
-// Declared classes and inheritance.
+// Declared classes and hierarchies.
 //////////////////////////////////////////////////////////////////////////
 class IESynchObjectBaseIX;
-    class CEMutexIX;
-        class CEWaitableBaseIX;
-            class CEWaitableEventIX;
-            class CEWaitableMutexIX;
+    class MutexIX;
+        class WaitableBaseIX;
+            class WaitableEventIX;
+            class WaitableMutexIX;
 
 //////////////////////////////////////////////////////////////////////////
 // IESynchObjectBaseIX class declaration
@@ -76,12 +76,12 @@ public:
     /**
      * \brief   Returns the type of synchronization object.
      **/
-    inline NESynchTypesIX::eSynchObject GetSynchType( void ) const;
+    inline NESynchTypesIX::eSynchObject getSynchType( void ) const;
 
     /**
      * \brief   Returns synchronization object name.
      **/
-    inline const char * GetName( void ) const;
+    inline const char * getName( void ) const;
 
 /************************************************************************/
 // IESynchObjectBaseIX overrides.
@@ -90,13 +90,13 @@ public:
     /**
      * \brief   Returns true if synchronization object is valid.
      **/
-    virtual bool IsValid( void ) const = 0;
+    virtual bool isValid( void ) const = 0;
 
     /**
      * \brief   Triggered when synchronization object is going to be deleted.
      *          This should free all resources.
      **/
-    virtual void FreeResources( void ) = 0;
+    virtual void freeResources( void ) = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables.
@@ -126,11 +126,15 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // IESynchObjectBaseIX class inline implementation
 //////////////////////////////////////////////////////////////////////////
-inline NESynchTypesIX::eSynchObject IESynchObjectBaseIX::GetSynchType( void ) const
-{   return mSynchType;          }
+inline NESynchTypesIX::eSynchObject IESynchObjectBaseIX::getSynchType( void ) const
+{
+    return mSynchType;
+}
 
-inline const char * IESynchObjectBaseIX::GetName( void ) const
-{   return mSynchName;          }
+inline const char * IESynchObjectBaseIX::getName( void ) const
+{
+    return mSynchName;
+}
 
 #endif // _POSIX
 #endif // AREG_BASE_PRIVATE_POSIX_IESYNCHOBJECTBASEIX_HPP

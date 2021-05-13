@@ -89,7 +89,7 @@ public:
      *          Check current position validation before accessing data in streaming object.
      * \return	Returns the current position of pointer relative to begin in streaming data.
      **/
-    virtual unsigned int GetPosition( void ) const = 0;
+    virtual unsigned int getPosition( void ) const = 0;
 
     /**
      * \brief	Sets the pointer position and returns current position in streaming data
@@ -104,7 +104,7 @@ public:
      *
      * \return	If succeeds, returns the current position of pointer in bytes or value INVALID_CURSOR_POSITION if fails.
      **/
-    virtual unsigned int SetPosition( int offset, IECursorPosition::eCursorPosition startAt ) const = 0;
+    virtual unsigned int setPosition( int offset, IECursorPosition::eCursorPosition startAt ) const = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -114,20 +114,20 @@ public:
      * \brief   Move cursor position to the begin and returns 'true' if succeeded.
      *          Operation fails if moving position returns INVALID_CURSOR_POSITION
      **/
-    inline bool MoveToBegin( void ) const;
+    inline bool moveToBegin( void ) const;
 
     /**
      * \brief   Move cursor position to the end and returns 'true' if succeeded.
      *          Operation fails if moving position returns INVALID_CURSOR_POSITION
      **/
-    inline bool MoveToEnd( void ) const;
+    inline bool moveToEnd( void ) const;
 
 protected:
     /**
      * \brief	Checks and returns whether current position of pointer is valid or not.
      *          The valid position must not be equal to INVALID_CURSOR_POSITION
      **/
-    inline bool IsCurrentPositionValid( void ) const;
+    inline bool isPositionValid( void ) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden / Disabled methods
@@ -141,13 +141,19 @@ private:
 // IECursorPosition pure virtual class inline function implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline bool IECursorPosition::IsCurrentPositionValid( void ) const
-{   return (GetPosition() != IECursorPosition::INVALID_CURSOR_POSITION); }
+inline bool IECursorPosition::isPositionValid( void ) const
+{
+    return (getPosition() != IECursorPosition::INVALID_CURSOR_POSITION);
+}
 
-inline bool IECursorPosition::MoveToBegin( void ) const
-{   return (SetPosition(0, IECursorPosition::POSITION_BEGIN) != IECursorPosition::INVALID_CURSOR_POSITION); }
+inline bool IECursorPosition::moveToBegin( void ) const
+{
+    return (setPosition(0, IECursorPosition::POSITION_BEGIN) != IECursorPosition::INVALID_CURSOR_POSITION);
+}
 
-inline bool IECursorPosition::MoveToEnd( void ) const
-{   return (SetPosition(0, IECursorPosition::POSITION_END)   != IECursorPosition::INVALID_CURSOR_POSITION); }
+inline bool IECursorPosition::moveToEnd( void ) const
+{
+    return (setPosition(0, IECursorPosition::POSITION_END)   != IECursorPosition::INVALID_CURSOR_POSITION);
+}
 
 #endif  // AREG_BASE_IECURSORPOSITION_HPP

@@ -24,17 +24,17 @@ IEThreadConsumer::~IEThreadConsumer( void )
     ; // do nothing
 }
 
-bool IEThreadConsumer::ThreadRegistered(CEThread * /*threadObj*/)
+bool IEThreadConsumer::onThreadRegistered(Thread * /*threadObj*/)
 {
     return true;
 }
 
-void IEThreadConsumer::ThreadUnregistering(void)
+void IEThreadConsumer::onThreadUnregistering(void)
 {
 
 }
 
-int IEThreadConsumer::ThreadExit(void)
+int IEThreadConsumer::onThreadExit(void)
 {
     return IEThreadConsumer::EXIT_NORMAL;
 }

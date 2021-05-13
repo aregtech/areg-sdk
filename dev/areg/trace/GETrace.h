@@ -12,8 +12,8 @@
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
 #include "areg/trace/NETrace.hpp"
-#include "areg/trace/CETraceScope.hpp"
-#include "areg/trace/CETraceMessage.hpp"
+#include "areg/trace/TraceScope.hpp"
+#include "areg/trace/TraceMessage.hpp"
 
 /**
  * \brief   Use these MACRO instead of direct declaration of scopes
@@ -42,7 +42,7 @@
  *              In this example, the application configures logging from default configuration file
  *              and start logging, to that the messages can be logged on target.
  *                  ...
- *              TRACER_START_LOGGING(NULL);
+ *              TRAR_START_LOGGING(NULL);
  * 
  * \example     Logging:
  *              In this example, the application created scope, which are used to start output messages.
@@ -77,50 +77,50 @@
     /**
      * \brief   Returns true if logging is already configured and started
      **/
-    #define IS_TRACE_STARTED()                          NETrace::IsStarted()
+    #define IS_TRACE_STARTED()                          NETrace::isStarted()
 
     /**
      * \brief   Use this macro to load configuration file and start tracer.
      *          If config file name is NULL, it will load from default folder "./config/log.init"
      **/
-    #define TRACER_START_LOGGING(configFile)            NETrace::StartLogging((configFile))
+    #define TRAR_START_LOGGING(configFile)              NETrace::startLogging((configFile))
     /**
      * \brief   Use this macro to stop logging
      **/
-    #define TRACER_STOP_LOGGING()                       NETrace::StopLogging( )
+    #define TRAR_STOP_LOGGING()                         NETrace::stopLogging( )
 
     /**
      * \brief   Use this macro to define scope in source code. This will create scope variable and set name
      **/
-    #define DEF_TRACE_SCOPE(scope)                      static CETraceScope _##scope( #scope )
+    #define DEF_TRACE_SCOPE(scope)                      static TraceScope _##scope( #scope )
 
     /**
      * \brief   Use this macro to define message object by passing scope in constructor.
      *          This should be used in the same source file where scope was defined.
      *          The scope object should be defined before it is used.
      **/
-    #define TRACE_SCOPE(scope)                          CETraceMessage      _messager( _##scope )
+    #define TRACE_SCOPE(scope)                          TraceMessage      _messager( _##scope )
 
     /**
      * \brief   Use this macro to log Debug priority messages in logging target (file or remote host)
      **/
-    #define TRACE_DBG(...)                              _messager.DebugLog( __VA_ARGS__ )
+    #define TRACE_DBG(...)                              _messager.logDebug( __VA_ARGS__ )
     /**
      * \brief   Use this macro to log Information priority messages in logging target (file or remote host)
      **/
-    #define TRACE_INFO(...)                             _messager.InfoLog( __VA_ARGS__ )
+    #define TRACE_INFO(...)                             _messager.logInfo( __VA_ARGS__ )
     /**
      * \brief   Use this macro to log Warning priority messages in logging target (file or remote host)
      **/
-    #define TRACE_WARN(...)                             _messager.WarningLog( __VA_ARGS__ )
+    #define TRACE_WARN(...)                             _messager.logWarning( __VA_ARGS__ )
     /**
      * \brief   Use this macro to log Error priority messages in logging target (file or remote host)
      **/
-    #define TRACE_ERR(...)                              _messager.ErrorLog( __VA_ARGS__ )
+    #define TRACE_ERR(...)                              _messager.logError( __VA_ARGS__ )
     /**
      * \brief   Use this macro to log Fatal Error priority messages in logging target (file or remote host)
      **/
-    #define TRACE_FATAL(...)                            _messager.FatalLog( __VA_ARGS__ )
+    #define TRACE_FATAL(...)                            _messager.logFatal( __VA_ARGS__ )
 
     /**
      * \brief   Use this macro to define global scope and global message object.
@@ -128,11 +128,11 @@
      *          Call global tracing to use global scope. The global scope is used to make
      *          output generic messages withing single source.
      **/
-    #define GLOBAL_TRACE_SCOPE(scope)                   static CETraceMessage & _getGlobalScope( void ) \
+    #define GLOBAL_TRACE_SCOPE(scope)                   static TraceMessage & _getGlobalScope( void )   \
                                                         {                                               \
-                                                            static CETraceScope     _##scope(#scope);   \
-                                                            static CETraceMessage  _messager(_##scope); \
-                                                            NETrace::ActivateScope( _##scope );         \
+                                                            static TraceScope     _##scope(#scope);     \
+                                                            static TraceMessage  _messager(_##scope);   \
+                                                            NETrace::activateScope( _##scope );         \
                                                             return _messager;                           \
                                                         }
 
@@ -141,31 +141,31 @@
      *          This macro will use global scope for logging. There can be only one global scope
      *          per source file defined.
      **/
-    #define GLOBAL_DBG(...)                             _getGlobalScope().DebugLog( __VA_ARGS__ )
+    #define GLOBAL_DBG(...)                             _getGlobalScope().logDebug( __VA_ARGS__ )
     /**
      * \brief   Use this macro to log Information priority messages in logging target (file or remote host)
      *          This macro will use global scope for logging. There can be only one global scope
      *          per source file defined.
      **/
-    #define GLOBAL_INFO(...)                            _getGlobalScope().InfoLog( __VA_ARGS__ )
+    #define GLOBAL_INFO(...)                            _getGlobalScope().logInfo( __VA_ARGS__ )
     /**
      * \brief   Use this macro to log Warning priority messages in logging target (file or remote host)
      *          This macro will use global scope for logging. There can be only one global scope
      *          per source file defined.
      **/
-    #define GLOBAL_WARN(...)                            _getGlobalScope().WarningLog( __VA_ARGS__ )
+    #define GLOBAL_WARN(...)                            _getGlobalScope().logWarning( __VA_ARGS__ )
     /**
      * \brief   Use this macro to log Error priority messages in logging target (file or remote host)
      *          This macro will use global scope for logging. There can be only one global scope
      *          per source file defined.
      **/
-    #define GLOBAL_ERR(...)                             _getGlobalScope().ErrorLog( __VA_ARGS__ )
+    #define GLOBAL_ERR(...)                             _getGlobalScope().logError( __VA_ARGS__ )
     /**
      * \brief   Use this macro to log Fatal Error priority messages in logging target (file or remote host)
      *          This macro will use global scope for logging. There can be only one global scope
      *          per source file defined.
      **/
-    #define GLOBAL_FATAL(...)                           _getGlobalScope().FatalLog( __VA_ARGS__ )
+    #define GLOBAL_FATAL(...)                           _getGlobalScope().logFatal( __VA_ARGS__ )
     /**
      * \brief   Declare variable to use in the trace
      **/
@@ -185,11 +185,11 @@
     /**
      * \brief   If ENABLED_TRACES, returns true, makes no effect
      **/
-    #define TRACER_START_LOGGING(configFile)            (true)
+    #define TRAR_START_LOGGING(configFile)              (true)
     /**
      * \brief   If ENABLED_TRACES is zero, does nothing
      **/
-    #define TRACER_STOP_LOGGING()                       {}
+    #define TRAR_STOP_LOGGING()                         {}
 
     /**
      * \brief   If ENABLED_TRACES is zero, does nothing, no trace scope is declared.

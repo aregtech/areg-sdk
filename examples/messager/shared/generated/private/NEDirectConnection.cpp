@@ -4,8 +4,8 @@
 
 /************************************************************************
  * (c) copyright    2021
- *                  Create by AREGtech code generator tool from source DirectConnection.
- * Generated at     25.04.2021  23:50:45 GMT+02:00 
+ *                  Create by AREG SDK code generator tool from source DirectConnection.
+ * Generated at     12.05.2021  16:41:23 GMT+02:00 
  ************************************************************************/
 
 /************************************************************************
@@ -28,39 +28,39 @@ static NEService::SInterfaceData & _getInterfaceData(void)
     /**
      * \brief   DirectConnection Service Interface data
      **/
-    static NEService::SInterfaceData InterfaceData;
+    static NEService::SInterfaceData _InterfaceData;
 
-    if (InterfaceData.idIsInitialized == false)
+    if (_InterfaceData.idIsInitialized == false)
     {
-        InterfaceData.idServiceName     = NEDirectConnection::ServiceName;
-        InterfaceData.idVersion         = NEDirectConnection::InterfaceVersion;
-        InterfaceData.idServiceType     = NEService::ServiceRemote;
-        InterfaceData.idRequestCount    = NEDirectConnection::NumberofRequests;
-        InterfaceData.idResponseCount   = NEDirectConnection::NumberofResponses;
-        InterfaceData.idAttributeCount  = NEDirectConnection::NumberofAttributes;
+        _InterfaceData.idServiceName    = NEDirectConnection::ServiceName;
+        _InterfaceData.idVersion        = NEDirectConnection::InterfaceVersion;
+        _InterfaceData.idServiceType    = NEService::ServiceRemote;
+        _InterfaceData.idRequestCount   = NEDirectConnection::NumberofRequests;
+        _InterfaceData.idResponseCount  = NEDirectConnection::NumberofResponses;
+        _InterfaceData.idAttributeCount = NEDirectConnection::NumberofAttributes;
 
         /**
          * \brief   The map of requests and responses
          **/
-        static const unsigned int RequestToResponseMap[] = 
+        static const unsigned int _RequestToResponseMap[] = 
         {
-              static_cast<unsigned int>( NEDirectConnection::MSG_ID_ResponseConnectoinSetup    ) // RequestConnectoinSetup( const NEDirectConnection::sInitiator & initiator, const NEDirectConnection::ListParticipants & listParticipants )
-            , static_cast<unsigned int>( NEDirectConnection::MSG_ID_ResponseAddParticipant     ) // RequestAddParticipant( const NEDirectConnection::sInitiator & initiator, const NEDirectConnection::ListParticipants & listParticipants )
-            , static_cast<unsigned int>( NEDirectConnection::MSG_ID_ResponseRemoveParticipant  ) // RequestRemoveParticipant( const NEDirectConnection::sInitiator & initiator, const NEDirectConnection::ListParticipants & listParticipants )
-            , static_cast<unsigned int>( NEDirectConnection::MSG_ID_NO_PROCEED                 ) // RequestCloseConnection( const NEDirectConnection::sInitiator & initiator )
+              static_cast<unsigned int>( NEDirectConnection::MSG_ID_responseConnectoinSetup    ) // requestConnectoinSetup( const NEDirectConnection::sInitiator & initiator, const NEDirectConnection::ListParticipants & listParticipants )
+            , static_cast<unsigned int>( NEDirectConnection::MSG_ID_responseAddParticipant     ) // requestAddParticipant( const NEDirectConnection::sInitiator & initiator, const NEDirectConnection::ListParticipants & listParticipants )
+            , static_cast<unsigned int>( NEDirectConnection::MSG_ID_responseRemoveParticipant  ) // requestRemoveParticipant( const NEDirectConnection::sInitiator & initiator, const NEDirectConnection::ListParticipants & listParticipants )
+            , static_cast<unsigned int>( NEDirectConnection::MSG_ID_NO_PROCEED                 ) // requestCloseConnection( const NEDirectConnection::sInitiator & initiator )
         };
 
         /**
          * \brief   Initialization of map of parameter entry validation map in responses and in broadcasts
          **/
-        static const unsigned int ResponseParamStateMap[] = 
+        static const unsigned int _ResponseParamStateMap[] = 
         {
         /************************************************************************
          * Responses
          ************************************************************************/
-            4, // void ResponseConnectoinSetup( const bool & succeeded, const NEDirectConnection::sParticipant & target, const NEDirectConnection::sInitiator & initiator, const NEDirectConnection::ListParticipants & listParticipants )
-            2, // void ResponseAddParticipant( const bool & succeeded, const NEDirectConnection::ListParticipants & listParticipants )
-            2, // void ResponseRemoveParticipant( const bool & succeeded, const NEDirectConnection::ListParticipants & listParticipants )
+            4, // void responseConnectoinSetup( bool succeeded, const NEDirectConnection::sParticipant & target, const NEDirectConnection::sInitiator & initiator, const NEDirectConnection::ListParticipants & listParticipants )
+            2, // void responseAddParticipant( bool succeeded, const NEDirectConnection::ListParticipants & listParticipants )
+            2, // void responseRemoveParticipant( bool succeeded, const NEDirectConnection::ListParticipants & listParticipants )
 
         /************************************************************************
          * Broadcasts
@@ -68,23 +68,24 @@ static NEService::SInterfaceData & _getInterfaceData(void)
 
         };
 
-        InterfaceData.idRequestToResponseMap    = RequestToResponseMap;
-        InterfaceData.idResponseParamCountMap   = ResponseParamStateMap;
-        InterfaceData.idIsInitialized           = true;
+        _InterfaceData.idRequestToResponseMap   = _RequestToResponseMap;
+        _InterfaceData.idResponseParamCountMap  = _ResponseParamStateMap;
+        _InterfaceData.idIsInitialized          = true;
     }
-    return InterfaceData;
+    
+    return _InterfaceData;
 }
 
 //////////////////////////////////////////////////////////////////////////
 // NEDirectConnection functions implementation
 //////////////////////////////////////////////////////////////////////////
 
-const NEService::SInterfaceData & NEDirectConnection::CreateInterfaceData( void )
+const NEService::SInterfaceData & NEDirectConnection::createInterfaceData( void )
 {
     return _getInterfaceData();
 }
 
-NEDirectConnection::eMessageIDs NEDirectConnection::GetResponseId( NEDirectConnection::eMessageIDs reqId )
+NEDirectConnection::eMessageIDs NEDirectConnection::getResponseId( NEDirectConnection::eMessageIDs reqId )
 {
     const NEService::SInterfaceData & sid = _getInterfaceData();
 
@@ -92,7 +93,7 @@ NEDirectConnection::eMessageIDs NEDirectConnection::GetResponseId( NEDirectConne
     return  ( index >= 0 && index < static_cast<int>(sid.idRequestCount) ? static_cast<NEDirectConnection::eMessageIDs>(sid.idRequestToResponseMap[index]) : NEDirectConnection::MSG_ID_INVALID );
 }
 
-NEDirectConnection::eMessageIDs NEDirectConnection::GetRequestId( NEDirectConnection::eMessageIDs respId )
+NEDirectConnection::eMessageIDs NEDirectConnection::getRequestId( NEDirectConnection::eMessageIDs respId )
 {
     const NEService::SInterfaceData & sid = _getInterfaceData();
     NEDirectConnection::eMessageIDs result = NEDirectConnection::MSG_ID_INVALID;

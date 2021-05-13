@@ -11,14 +11,14 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
-#include "areg/component/CEStreamableEvent.hpp"
+#include "areg/component/StreamableEvent.hpp"
 
 /************************************************************************
  * Dependencies.
  ************************************************************************/
-class CERemoteRequestEvent;
-class CERemoteNotifyRequestEvent;
-class CERemoteResponseEvent;
+class RemoteRequestEvent;
+class RemoteNotifyRequestEvent;
+class RemoteResponseEvent;
 
 //////////////////////////////////////////////////////////////////////////
 // IERemoteEventConsumer class declaration
@@ -28,7 +28,7 @@ class CERemoteResponseEvent;
  * \brief   The interface of remote event consumer. Derived by Stub object
  *          with type of remote to trigger event processing.
  **/
-class AREG_API IERemoteEventConsumer   : public    CEThreadEventConsumerBase
+class AREG_API IERemoteEventConsumer   : public    ThreadEventConsumerBase
 {
 protected:
     /**
@@ -49,7 +49,7 @@ public:
      * \brief   Triggered when the Stub receives remote request event to process.
      * \param   requestEvent        The remote request event to be processed.
      **/
-    virtual void ProcessRemoteEvent( CERemoteRequestEvent & requestEvent ) = 0;
+    virtual void processRemoteEvent( RemoteRequestEvent & requestEvent ) = 0;
 
     /**
      * \brief   Triggered when the Stub receives remote notification request event to process.
@@ -57,7 +57,7 @@ public:
      *          sending attribute update notifications.
      * \param   requestNotifyEvent  The remote notification request event to be processed.
      **/
-    virtual void ProcessRemoteEvent( CERemoteNotifyRequestEvent & requestNotifyEvent ) = 0;
+    virtual void processRemoteEvent( RemoteNotifyRequestEvent & requestNotifyEvent ) = 0;
 
     /**
      * \brief   Triggered when the Stub receives remote response request event to process.
@@ -65,7 +65,7 @@ public:
      *          to subscribe on information or response sent by Stub.
      * \param   requestNotifyEvent  The remote response request event to be processed.
      **/
-    virtual void ProcessRemoteEvent( CERemoteResponseEvent & responseEvent ) = 0;
+    virtual void processRemoteEvent( RemoteResponseEvent & responseEvent ) = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // Override operations
@@ -83,7 +83,7 @@ private:
      *                      processing. As soon as event is finished processing
      *                      it will be destroyed.
      **/
-    virtual void StartEventProcessing( CEEvent & eventElem ) ;
+    virtual void startEventProcessing( Event & eventElem ) ;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

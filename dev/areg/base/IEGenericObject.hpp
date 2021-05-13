@@ -73,14 +73,14 @@ public:
      *          Implement function in child classes.
      * \return	Pointer to cloned instance.
      **/
-    virtual IEGenericObject* Clone( void ) const = 0;
+    virtual IEGenericObject* clone( void ) const = 0;
 
     /**
      * \brief	Call to destroy instance of class.
      *          If an instance was created by calling Clone()
      *          this function should be called for cleaning up.
      **/
-    virtual void Destroy( void ) = 0;
+    virtual void destroy( void ) = 0;
 
     /**
      * \brief	Compares existing generic object instance with
@@ -90,7 +90,7 @@ public:
      * \param	object	The object to compare
      * \return	Returns true if 2 instances are equal.
      **/
-    virtual bool IsEqual(const IEGenericObject* object) const = 0;
+    virtual bool isEqual(const IEGenericObject* object) const = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -134,7 +134,7 @@ public:
     /**
      * \brief   Destructor.
      **/
-    virtual ~TEObjectFactory( void );
+    ~TEObjectFactory( void );
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -150,7 +150,7 @@ public:
      *                  If NULL, default constructor will be called.
      * \return	Returns pointer to new created generic object.
      **/
-    virtual IEGenericObject * CreateObject( void * objData );
+    IEGenericObject * createObject( void * objData );
 
     /**
      * \brief	Destroys instance of generic object.
@@ -158,7 +158,7 @@ public:
      *          Overwrite method to change behavior.
      * \param	obj	    Should be valid pointer to generic object instance.
      **/
-    virtual void DestroyObject( IEGenericObject * obj );
+    void destroyObject( IEGenericObject * obj );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -178,16 +178,16 @@ TEObjectFactory<ClassName>::~TEObjectFactory()
 }
 
 template <typename ClassName>
-IEGenericObject* TEObjectFactory<ClassName>::CreateObject( void * objData )
+IEGenericObject* TEObjectFactory<ClassName>::createObject( void * objData )
 {
     return static_cast<IEGenericObject *>(objData != static_cast<void *>(NULL) ? DEBUG_NEW ClassName(objData) : DEBUG_NEW ClassName());
 }
 
 template <typename ClassName>
-void TEObjectFactory<ClassName>::DestroyObject( IEGenericObject * obj )
+void TEObjectFactory<ClassName>::destroyObject( IEGenericObject * obj )
 {
     if (obj != static_cast<IEGenericObject *>(NULL))
-        obj->Destroy();
+        obj->destroy();
 }
 
 #endif  // AREG_BASE_IEGENERICOBJECT_HPP

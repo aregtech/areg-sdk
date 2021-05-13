@@ -10,14 +10,6 @@
       <Configuration>dbg_vc100</Configuration>
       <Platform>x64</Platform>
     </ProjectConfiguration>
-    <ProjectConfiguration Include="dbg_vc100|ARM">
-      <Configuration>dbg_vc100</Configuration>
-      <Platform>ARM</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="dbg_vc100|ARM64">
-      <Configuration>dbg_vc100</Configuration>
-      <Platform>ARM64</Platform>
-    </ProjectConfiguration>
     <ProjectConfiguration Include="rls_vc100|Win32">
       <Configuration>rls_vc100</Configuration>
       <Platform>Win32</Platform>
@@ -25,14 +17,6 @@
     <ProjectConfiguration Include="rls_vc100|x64">
       <Configuration>rls_vc100</Configuration>
       <Platform>x64</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="rls_vc100|ARM">
-      <Configuration>rls_vc100</Configuration>
-      <Platform>ARM</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="rls_vc100|ARM64">
-      <Configuration>rls_vc100</Configuration>
-      <Platform>ARM64</Platform>
     </ProjectConfiguration>
     <ProjectConfiguration Include="dbg_vc110|Win32">
       <Configuration>dbg_vc110</Configuration>
@@ -42,14 +26,6 @@
       <Configuration>dbg_vc110</Configuration>
       <Platform>x64</Platform>
     </ProjectConfiguration>
-    <ProjectConfiguration Include="dbg_vc110|ARM">
-      <Configuration>dbg_vc110</Configuration>
-      <Platform>ARM</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="dbg_vc110|ARM64">
-      <Configuration>dbg_vc110</Configuration>
-      <Platform>ARM64</Platform>
-    </ProjectConfiguration>
     <ProjectConfiguration Include="rls_vc110|Win32">
       <Configuration>rls_vc110</Configuration>
       <Platform>Win32</Platform>
@@ -57,14 +33,6 @@
     <ProjectConfiguration Include="rls_vc110|x64">
       <Configuration>rls_vc110</Configuration>
       <Platform>x64</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="rls_vc110|ARM">
-      <Configuration>rls_vc110</Configuration>
-      <Platform>ARM</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="rls_vc110|ARM64">
-      <Configuration>rls_vc110</Configuration>
-      <Platform>ARM64</Platform>
     </ProjectConfiguration>
     <ProjectConfiguration Include="dbg_vc120|Win32">
       <Configuration>dbg_vc120</Configuration>
@@ -74,14 +42,6 @@
       <Configuration>dbg_vc120</Configuration>
       <Platform>x64</Platform>
     </ProjectConfiguration>
-    <ProjectConfiguration Include="dbg_vc120|ARM">
-      <Configuration>dbg_vc120</Configuration>
-      <Platform>ARM</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="dbg_vc120|ARM64">
-      <Configuration>dbg_vc120</Configuration>
-      <Platform>ARM64</Platform>
-    </ProjectConfiguration>
     <ProjectConfiguration Include="rls_vc120|Win32">
       <Configuration>rls_vc120</Configuration>
       <Platform>Win32</Platform>
@@ -89,14 +49,6 @@
     <ProjectConfiguration Include="rls_vc120|x64">
       <Configuration>rls_vc120</Configuration>
       <Platform>x64</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="rls_vc120|ARM">
-      <Configuration>rls_vc120</Configuration>
-      <Platform>ARM</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="rls_vc120|ARM64">
-      <Configuration>rls_vc120</Configuration>
-      <Platform>ARM64</Platform>
     </ProjectConfiguration>
     <ProjectConfiguration Include="dbg_vc140|Win32">
       <Configuration>dbg_vc140</Configuration>
@@ -106,14 +58,6 @@
       <Configuration>dbg_vc140</Configuration>
       <Platform>x64</Platform>
     </ProjectConfiguration>
-    <ProjectConfiguration Include="dbg_vc140|ARM">
-      <Configuration>dbg_vc140</Configuration>
-      <Platform>ARM</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="dbg_vc140|ARM64">
-      <Configuration>dbg_vc140</Configuration>
-      <Platform>ARM64</Platform>
-    </ProjectConfiguration>
     <ProjectConfiguration Include="rls_vc140|Win32">
       <Configuration>rls_vc140</Configuration>
       <Platform>Win32</Platform>
@@ -121,14 +65,6 @@
     <ProjectConfiguration Include="rls_vc140|x64">
       <Configuration>rls_vc140</Configuration>
       <Platform>x64</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="rls_vc140|ARM">
-      <Configuration>rls_vc140</Configuration>
-      <Platform>ARM</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="rls_vc140|ARM64">
-      <Configuration>rls_vc140</Configuration>
-      <Platform>ARM64</Platform>
     </ProjectConfiguration>
     <ProjectConfiguration Include="dbg_vc141|Win32">
       <Configuration>dbg_vc141</Configuration>
@@ -138,14 +74,6 @@
       <Configuration>dbg_vc141</Configuration>
       <Platform>x64</Platform>
     </ProjectConfiguration>
-    <ProjectConfiguration Include="dbg_vc141|ARM">
-      <Configuration>dbg_vc141</Configuration>
-      <Platform>ARM</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="dbg_vc141|ARM64">
-      <Configuration>dbg_vc141</Configuration>
-      <Platform>ARM64</Platform>
-    </ProjectConfiguration>
     <ProjectConfiguration Include="rls_vc141|Win32">
       <Configuration>rls_vc141</Configuration>
       <Platform>Win32</Platform>
@@ -153,14 +81,6 @@
     <ProjectConfiguration Include="rls_vc141|x64">
       <Configuration>rls_vc141</Configuration>
       <Platform>x64</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="rls_vc141|ARM">
-      <Configuration>rls_vc141</Configuration>
-      <Platform>ARM</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="rls_vc141|ARM64">
-      <Configuration>rls_vc141</Configuration>
-      <Platform>ARM64</Platform>
     </ProjectConfiguration>
     <ProjectConfiguration Include="dbg_vc142|Win32">
       <Configuration>dbg_vc142</Configuration>
@@ -170,14 +90,6 @@
       <Configuration>dbg_vc142</Configuration>
       <Platform>x64</Platform>
     </ProjectConfiguration>
-    <ProjectConfiguration Include="dbg_vc142|ARM">
-      <Configuration>dbg_vc142</Configuration>
-      <Platform>ARM</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="dbg_vc142|ARM64">
-      <Configuration>dbg_vc142</Configuration>
-      <Platform>ARM64</Platform>
-    </ProjectConfiguration>
     <ProjectConfiguration Include="rls_vc142|Win32">
       <Configuration>rls_vc142</Configuration>
       <Platform>Win32</Platform>
@@ -185,14 +97,6 @@
     <ProjectConfiguration Include="rls_vc142|x64">
       <Configuration>rls_vc142</Configuration>
       <Platform>x64</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="rls_vc142|ARM">
-      <Configuration>rls_vc142</Configuration>
-      <Platform>ARM</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="rls_vc142|ARM64">
-      <Configuration>rls_vc142</Configuration>
-      <Platform>ARM64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="UserMacros">

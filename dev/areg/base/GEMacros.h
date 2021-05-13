@@ -8,6 +8,30 @@
  *
  ************************************************************************/
 
+#ifndef IN
+    #define IN
+#endif  // IN
+
+#ifndef in
+    #define in
+#endif  // in
+
+#ifndef OUT
+    #define OUT
+#endif  // OUT
+
+#ifndef out
+    #define out
+#endif  // out
+
+#ifndef OPTIONAL
+    #define OPTIONAL
+#endif  // OPTIONAL
+
+#ifndef optional
+    #define optional
+#endif  // optional
+
 /**
  * \brief   An empty MACRO, does nothing
  **/
@@ -199,11 +223,11 @@
 #endif  // MIN_INT_32
 
 #ifndef MAX_UINT_32
-    #define MAX_UINT_32     static_cast<uint32_t>(0xFFFFFFFF)
+    #define MAX_UINT_32     static_cast<uint32_t>(~0)
 #endif  // MAX_UINT_32
 
 #ifndef MIN_UINT_32
-    #define MIN_UINT_32     static_cast<uint32_t>(0x00000000)
+    #define MIN_UINT_32     static_cast<uint32_t>(0)
 #endif  // MIN_UINT_32
 
 #ifndef MAX_INT_64
@@ -215,11 +239,11 @@
 #endif  // MIN_INT_64
 
 #ifndef MAX_UINT_64
-    #define MAX_UINT_64     static_cast<uint64_t>(0xFFFFFFFFFFFFFFFF)
+    #define MAX_UINT_64     static_cast<uint64_t>(~0)
 #endif  // MAX_UINT_64
 
 #ifndef MIN_UINT_64
-    #define MIN_UINT_64     static_cast<uint64_t>(0x0000000000000000)
+    #define MIN_UINT_64     static_cast<uint64_t>(0)
 #endif  // MIN_UINT_64
 
 /************************************************************************
@@ -297,31 +321,30 @@
     #define MACRO_MAKE_NUMBER32(num)	        (uint32_t)MACRO_MAKE_NUMBER64(num)
 #endif // !MACRO_MAKE_NUMBER32
 
-// #ifndef MACRO_MAKE_NUMBER
-//     #if defined(BIT32)
-//         #define MACRO_MAKE_NUMBER(num)          MAKE_NUMBER32(num)
-//     #else // !defined(BIT32)
-//         #define MACRO_MAKE_NUMBER(num)          MACRO_MAKE_NUMBER64(num)
-//     #endif // !defined(BIT32)
-// #endif  // !MACRO_MAKE_NUMBER
-
 #ifndef MACRO_MAKE_NUMBER
     #define MACRO_MAKE_NUMBER(num)              ((size_t)(num))
 #endif  // !MACRO_MAKE_NUMBER
 
 #ifndef MACRO_PTR2NUMBER
-    #define MACRO_PTR2NUMBER(ptr)               static_cast<size_t>( MACRO_MAKE_PTR(ptr) - MACRO_MAKE_PTR(NULL) )
+    #define MACRO_PTR2NUMBER(ptr)               static_cast<size_t>( MACRO_MAKE_CONST_PTR(ptr) - MACRO_MAKE_CONST_PTR(NULL) )
 #endif  // MACRO_PTR2NUMBER
 
-#ifndef MACRO_PTR2COUNT
-    #define MACRO_PTR2COUNT(ptr)                static_cast<uint32_t>( MACRO_MAKE_CONST_PTR(ptr) - MACRO_MAKE_CONST_PTR(NULL) )
-#endif  // MACRO_PTR2COUNT
+#ifndef MACRO_PTR2INT32
+    #define MACRO_PTR2INT32(ptr)                static_cast<uint32_t>( MACRO_PTR2NUMBER(ptr) )
+#endif  // MACRO_PTR2INT32
+
+#ifndef MACRO_COUNT_SIZE
+    #define MACRO_COUNT_SIZE(first, last)       static_cast<int32_t>( MACRO_MAKE_CONST_PTR(last) - MACRO_MAKE_CONST_PTR(first) )
+#endif  // MACRO_COUNT_SIZE
+
+#ifndef MACRO_ELEM_COUNT
+    #define MACRO_ELEM_COUNT(first, last)       static_cast<int32_t>( last - first )
+#endif // !MACRO_ELEM_COUNT
+
 
 #ifndef MACRO_OFFSETOF
     #define MACRO_OFFSETOF(Cls, mem )           static_cast<uint32_t>((size_t)&(((Cls *)0)->mem))
 #endif // !MACRO_OFFSETOF
-
-// MACRO_PTR2COUNT(&((Cls *)NULL)->mem)
 
 /**
  * \brief   Defined assertion macro.
@@ -445,7 +468,7 @@
 
     /**
      * \brief   Fills call-stack dump into the passed vector
-     *          The exception should be raised and the passed vector should be of type LinkedList<CEString>
+     *          The exception should be raised and the passed vector should be of type LinkedList<String>
      **/
     #ifndef CALLSTACK_DUMP
         #define CALLSTACK_DUMP(exept, std_vector)   NEDebug::dumpExceptionCallStack(exept, std_vector)

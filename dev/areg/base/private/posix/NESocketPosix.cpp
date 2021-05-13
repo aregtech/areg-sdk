@@ -31,22 +31,22 @@
  *          Initialize socket in process if counter is changing from 0 to 1.
  *          Release socket in frees resources in process when counter reaches 0.
  **/
-static CEInterlockedValue   _instanceCount( static_cast<unsigned int>(0));
+static InterlockedValue   _instanceCount( static_cast<unsigned int>(0));
 
 //////////////////////////////////////////////////////////////////////////
 // NESocket namespace functions implementation
 //////////////////////////////////////////////////////////////////////////
 
-AREG_API bool NESocket::SocketInitialize(void)
+AREG_API bool NESocket::socketInitialize(void)
 {
     return true;
 }
 
-AREG_API void NESocket::SocketRelease(void)
+AREG_API void NESocket::socketRelease(void)
 {
 }
 
-AREG_API void NESocket::SocketClose(SOCKETHANDLE hSocket)
+AREG_API void NESocket::socketClose(SOCKETHANDLE hSocket)
 {
     if ( hSocket != NESocket::InvalidSocketHandle )
     {
@@ -55,12 +55,12 @@ AREG_API void NESocket::SocketClose(SOCKETHANDLE hSocket)
     }
 }
 
-AREG_API SOCKETHANDLE NESocket::ServerAcceptConnection(SOCKETHANDLE serverSocket, const SOCKETHANDLE * masterList, int entriesCount, NESocket::CEInterlockedValue * out_socketAddr /*= NULL*/)
+AREG_API SOCKETHANDLE del_serverAcceptConnection(SOCKETHANDLE serverSocket, const SOCKETHANDLE * masterList, int entriesCount, NESocket::InterlockedValue * out_socketAddr /*= NULL*/)
 {
     OUTPUT_DBG("Checking server socket event, server socket handle [ %u ]", static_cast<unsigned int>(serverSocket));
 
     if (out_socketAddr != NULL )
-        out_socketAddr->ResetAddress();
+        out_socketAddr->resetAddress();
 
     SOCKETHANDLE result = NESocket::InvalidSocketHandle;
     if ( serverSocket != NESocket::InvalidSocketHandle )
@@ -79,7 +79,7 @@ AREG_API SOCKETHANDLE NESocket::ServerAcceptConnection(SOCKETHANDLE serverSocket
             }
         }
 
-        int selected    = select( static_cast<int>(serverSocket) + 1 /* param is ignored in Win32*/, &readList, NULL, NULL, NULL);
+        int selected    = select( static_cast<int>(serverSocket) + 1, &readList, NULL, NULL, NULL);
         if ( selected > 0 )
         {
             if ( FD_ISSET(serverSocket, &readList) != 0 )
@@ -87,12 +87,12 @@ AREG_API SOCKETHANDLE NESocket::ServerAcceptConnection(SOCKETHANDLE serverSocket
                 // have got new client connection. resolve and get socket
                 struct sockaddr_in acceptAddr; // connecting client address information
                 int addrLength = sizeof(sockaddr_in);
-                NEMemory::ZeroBuffer(&acceptAddr, sizeof(sockaddr_in));
+                NEMemory::zeroBuffer(&acceptAddr, sizeof(sockaddr_in));
 
                 result = accept( serverSocket, reinterpret_cast<sockaddr *>(&acceptAddr), &addrLength );
                 OUTPUT_DBG("Server accepted new connection of client socket [ %u ]", static_cast<unsigned int>(result));
                 if ( result != NESocket::InvalidSocketHandle && out_socketAddr != NULL )
-                    out_socketAddr->SetHostAddress(acceptAddr);
+                    out_socketAddr->setAddress(acceptAddr);
             }
             else
             {
@@ -123,7 +123,7 @@ AREG_API SOCKETHANDLE NESocket::ServerAcceptConnection(SOCKETHANDLE serverSocket
     return result;
 }
 
-AREG_API int NESocket::SendData(SOCKETHANDLE hSocket, const unsigned char * dataBuffer, int dataLength, int blockMaxSize /*= -1*/ )
+AREG_API int NESocket::sendData(SOCKETHANDLE hSocket, const unsigned char * dataBuffer, int dataLength, int blockMaxSize /*= -1*/ )
 {
     int result = -1;
 
@@ -132,7 +132,7 @@ AREG_API int NESocket::SendData(SOCKETHANDLE hSocket, const unsigned char * data
         result = 0;
         if ( dataBuffer != NULL && dataLength > 0 )
         {
-            blockMaxSize    = blockMaxSize > 0 ? blockMaxSize : NESocket::GetMaximumSendSize(hSocket);
+            blockMaxSize    = blockMaxSize > 0 ? blockMaxSize : NESocket::getMaxSendSize(hSocket);
             result          = dataLength;
             while ( dataLength > 0 )
             {
@@ -148,7 +148,7 @@ AREG_API int NESocket::SendData(SOCKETHANDLE hSocket, const unsigned char * data
                     if ( errno == EMSGSIZE )
                     {
                         // try again with other package size
-                        blockMaxSize = NESocket::GetMaximumSendSize(hSocket);
+                        blockMaxSize = NESocket::getMaxSendSize(hSocket);
                     }
                     else
                     {
@@ -172,7 +172,7 @@ AREG_API int NESocket::SendData(SOCKETHANDLE hSocket, const unsigned char * data
     return result;
 }
 
-AREG_API int NESocket::ReceiveData(SOCKETHANDLE hSocket, unsigned char * dataBuffer, int dataLength, int blockMaxSize /*= -1*/ )
+AREG_API int NESocket::receiveData(SOCKETHANDLE hSocket, unsigned char * dataBuffer, int dataLength, int blockMaxSize /*= -1*/ )
 {
     int result = -1;
     if ( hSocket != NESocket::InvalidSocketHandle )
@@ -180,7 +180,7 @@ AREG_API int NESocket::ReceiveData(SOCKETHANDLE hSocket, unsigned char * dataBuf
         result = 0;
         if ( dataBuffer != NULL && dataLength > 0 )
         {
-            blockMaxSize    = blockMaxSize > 0 ? blockMaxSize : NESocket::GetMaximumReceiveSize(hSocket);
+            blockMaxSize    = blockMaxSize > 0 ? blockMaxSize : NESocket::getMaxReceiveSize(hSocket);
             while ( dataLength > 0 )
             {
                 int remain = dataLength > blockMaxSize ? blockMaxSize : dataLength;
@@ -216,17 +216,17 @@ AREG_API int NESocket::ReceiveData(SOCKETHANDLE hSocket, unsigned char * dataBuf
     return result;
 }
 
-AREG_API bool NESocket::DisableSend(SOCKETHANDLE hSocket)
+AREG_API bool NESocket::disableSend(SOCKETHANDLE hSocket)
 {
     return ( hSocket != NESocket::InvalidSocketHandle ? RETURNED_OK == shutdown( hSocket, SHUT_WR) : false );
 }
 
-AREG_API bool NESocket::DisableReceive(SOCKETHANDLE hSocket)
+AREG_API bool NESocket::disableReceive(SOCKETHANDLE hSocket)
 {
     return ( hSocket != NESocket::InvalidSocketHandle ? RETURNED_OK == shutdown(hSocket, SHUT_RD ) : false );
 }
 
-AREG_API unsigned int NESocket::GetRemainingDataRead( SOCKETHANDLE hSocket )
+AREG_API unsigned int NESocket::remainDataRead( SOCKETHANDLE hSocket )
 {
     unsigned int result = 0;
     if ( hSocket != NESocket::InvalidSocketHandle )

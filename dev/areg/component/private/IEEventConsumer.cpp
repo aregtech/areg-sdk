@@ -27,12 +27,12 @@ IEEventConsumer::~IEEventConsumer( void )
 //////////////////////////////////////////////////////////////////////////
 // Methods
 //////////////////////////////////////////////////////////////////////////
-void IEEventConsumer::ConsumerRegistered( bool /* isRegistered */ )
+void IEEventConsumer::consumerRegistered( bool /* isRegistered */ )
 {
     ; // do nothing
 }
 
-bool IEEventConsumer::PreprocessEvent( CEEvent & /* eventElem */ )
+bool IEEventConsumer::preprocessEvent( Event & /* eventElem */ )
 {
     return true;
 }

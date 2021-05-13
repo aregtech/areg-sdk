@@ -1,5 +1,5 @@
-#ifndef AREG_TRACE_PRIVATE_IETRACECONFIGURATION_HPP
-#define AREG_TRACE_PRIVATE_IETRACECONFIGURATION_HPP
+#ifndef AREG_TRACE_PRIVATE_IETRACONFIGURATION_HPP
+#define AREG_TRACE_PRIVATE_IETRACONFIGURATION_HPP
 /************************************************************************
  * \file        areg/trace/private/IETraceConfiguration.hpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
@@ -14,7 +14,7 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class CETraceProperty;
+class TraceProperty;
 
 //////////////////////////////////////////////////////////////////////////
 // IETraceConfiguration class declaration
@@ -51,82 +51,82 @@ public:
     /**
      * \brief   Returns property value of logging version.
      **/
-    virtual const CETraceProperty & PropertyVersion( void ) const = 0;
+    virtual const TraceProperty & propertyVersion( void ) const = 0;
 
     /**
      * \brief   Returns property value of layout format of scope enter.
      **/
-    virtual const CETraceProperty & PropertyLayoutEnter( void ) const = 0;
+    virtual const TraceProperty & propertyLayoutEnter( void ) const = 0;
 
     /**
      * \brief   Returns property value of layout format form message text output.
      **/
-    virtual const CETraceProperty & PropertyLayoutMessage( void ) const = 0;
+    virtual const TraceProperty & propertyLayoutMessage( void ) const = 0;
 
     /**
      * \brief   Returns property value of layout format of scope exit.
      **/
-    virtual const CETraceProperty & PropertyLayoutExit( void ) const = 0;
+    virtual const TraceProperty & propertyLayoutExit( void ) const = 0;
 
     /**
      * \brief   Returns property value of stack size.
      **/
-    virtual const CETraceProperty & PropertyStackSize( void ) const = 0;
+    virtual const TraceProperty & propertyStackSize( void ) const = 0;
 
     /**
      * \brief   Returns property value of debug output settings.
      **/
-    virtual const CETraceProperty & PropertyDebugOutput( void ) const = 0;
+    virtual const TraceProperty & propertyDebugOutput( void ) const = 0;
 
     /**
      * \brief   Returns property value of logging status (enabled / disabled).
      **/
-    virtual const CETraceProperty & PropertyStatus( void ) const = 0;
+    virtual const TraceProperty & propertyStatus( void ) const = 0;
 
     /**
      * \brief   Returns property value of append data status.
      **/
-    virtual const CETraceProperty & PropertyAppendData( void ) const = 0;
+    virtual const TraceProperty & propertyAppendData( void ) const = 0;
 
     /**
      * \brief   Returns property value of file logging settings.
      **/
-    virtual const CETraceProperty & PropertyLogFile( void ) const = 0;
+    virtual const TraceProperty & propertyLogFile( void ) const = 0;
 
     /**
      * \brief   Returns property value of remote host name logging settings.
      **/
-    virtual const CETraceProperty & PropertyRemoteHost( void ) const = 0;
+    virtual const TraceProperty & propertyRemoteHost( void ) const = 0;
 
     /**
      * \brief   Returns property value of remote host port logging settings.
      **/
-    virtual const CETraceProperty & PropertyRemotePort( void ) const = 0;
+    virtual const TraceProperty & propertyRemotePort( void ) const = 0;
 
     /**
      * \brief   Returns property value of database host name logging settings.
      **/
-    virtual const CETraceProperty & PropertyDatabaseHost( void ) const = 0;
+    virtual const TraceProperty & propertyDatabaseHost( void ) const = 0;
 
     /**
      * \brief   Returns property value of database name logging settings.
      **/
-    virtual const CETraceProperty & PropertyDatabaseName( void ) const = 0;
+    virtual const TraceProperty & propertyDatabaseName( void ) const = 0;
 
     /**
      * \brief   Returns property value of database driver name logging settings.
      **/
-    virtual const CETraceProperty & PropertyDatabaseDriver( void ) const = 0;
+    virtual const TraceProperty & propertyDatabaseDriver( void ) const = 0;
 
     /**
      * \brief   Returns property value of database user name logging settings.
      **/
-    virtual const CETraceProperty & PropertyDatabaseUser( void ) const = 0;
+    virtual const TraceProperty & propertyDatabaseUser( void ) const = 0;
 
     /**
      * \brief   Returns property value of database user password logging settings.
      **/
-    virtual const CETraceProperty & PropertyDatabasePassword( void ) const = 0;
+    virtual const TraceProperty & propertyDatabasePassword( void ) const = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden / Forbidden calls
@@ -136,4 +136,4 @@ private:
     const IETraceConfiguration & operator = ( const IETraceConfiguration & );
 };
 
-#endif  // AREG_TRACE_PRIVATE_IETRACECONFIGURATION_HPP
+#endif  // AREG_TRACE_PRIVATE_IETRACONFIGURATION_HPP

@@ -7,8 +7,8 @@
 
 #include "areg/base/GEGlobal.h"
 #include "areg/trace/GETrace.h"
-#include "areg/base/CEDateTime.hpp"
-#include "areg/base/CEString.hpp"
+#include "areg/base/DateTime.hpp"
+#include "areg/base/String.hpp"
 #include "areg/base/TEArrayList.hpp"
 #include "areg/base/TEHashMap.hpp"
 #include <tchar.h>
@@ -28,7 +28,7 @@ namespace NECommonSettings
 
     typedef struct S_ChatParticipant
     {
-        CEString    nickName;
+        String    nickName;
         uint32_t    cookie;
 
     } sChatParticipant;
@@ -76,7 +76,7 @@ namespace NECommonSettings
      * \brief   Invalid Nick-name
      *          NECommonSettings::InvalidNickname
      **/
-    const CEString  InvalidNickname     = "";
+    const String  InvalidNickname     = "";
 
 	/************************************************************************
 	 * \brief   NECommonSettings::sConnection
@@ -96,7 +96,7 @@ namespace NECommonSettings
         /**
          * \brief   Initialize sConnection data by setting parameters.
          **/
-        inline sConnection( const uint32_t & _cookie, const CEString & _nickName, const CEDateTime & _connectTime, const CEDateTime & _connectedTime );
+        inline sConnection( const uint32_t & _cookie, const String & _nickName, const DateTime & _connectTime, const DateTime & _connectedTime );
 	    /**
 	     * \brief   Copies data from given source. Every filed of structure should have copy constructor.
 	     * \param   src     The source of sConnection structure to copy data
@@ -150,17 +150,17 @@ namespace NECommonSettings
 	    /**
 	     * \brief   Connection client nick name, should be unique
 	     **/
-	    CEString    nickName;
+	    String    nickName;
     
 	    /**
 	     * \brief   Connection request date-time
 	     **/
-	    CEDateTime  connectTime;
+	    DateTime  connectTime;
     
 	    /**
 	     * \brief   Connection registered / accepted date-time
 	     **/
-	    CEDateTime  connectedTime;
+	    DateTime  connectedTime;
     
 	};
 
@@ -255,7 +255,7 @@ namespace NECommonSettings
 	    /**
 	     * \brief   DESCRIPTION MISSED
 	     **/
-	    CEString    nickName;
+	    String    nickName;
     
 	};
 
@@ -269,7 +269,7 @@ namespace NECommonSettings
 
 	/**
 	 * \brief	NECommonSettings::MapDirectConnections
-	 *			Internal custom type definition of TEHashMap<CEString, PairConnection, const CEString &, const PairConnection &> 
+	 *			Internal custom type definition of TEHashMap<String, PairConnection, const String &, const PairConnection &> 
 	 **/
 	typedef	TEHashMap<sInitiator, ListParticipants, const sInitiator &, const ListParticipants &>   MapParticipants;
 
@@ -297,7 +297,7 @@ inline NECommonSettings::sConnection::sConnection( void )
 /**
  * \brief   Initialize sConnection data by setting parameters.
  **/
-inline NECommonSettings::sConnection::sConnection( const uint32_t & _cookie, const CEString & _nickName, const CEDateTime & _connectTime, const CEDateTime & _connectedTime )
+inline NECommonSettings::sConnection::sConnection( const uint32_t & _cookie, const String & _nickName, const DateTime & _connectTime, const DateTime & _connectedTime )
     : cookie          ( _cookie )
     , nickName        ( _nickName )
     , connectTime     ( _connectTime )

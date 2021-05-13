@@ -6,15 +6,15 @@
  ************************************************************************/
 #include "areg/trace/private/NELogConfig.hpp"
 
-#include "areg/base/CEFile.hpp"
+#include "areg/base/File.hpp"
 #include "areg/base/NEString.hpp"
 
 /**
  * \brief   Use timestamp in name (file name, database name)
  **/
-const char * const  NELogConfig::LOG_FILENAME_MASK_TIMESTAMP            = CEFile::FILE_MASK_TIMESTAMP;
-const char * const  NELogConfig::LOG_FILE_NAME_MASK_APPDATA             = CEFile::SPEACIAL_MASKS[CEFile::SpecialAppData];
-const char * const  NELogConfig::LOG_FORMAT_TIMESTAMP                   = CEFile::TIMESTAMP_FORMAT;
+const char * const  NELogConfig::LOG_FILENAME_MASK_TIMESTAMP            = File::FILE_MASK_TIMESTAMP;
+const char * const  NELogConfig::LOG_FILE_NAME_MASK_APPDATA             = File::SPEACIAL_MASKS[File::SpecialAppData];
+const char * const  NELogConfig::LOG_FORMAT_TIMESTAMP                   = File::TIMESTAMP_FORMAT;
 const int           NELogConfig::SYNTAX_CMD_EMPTY_LENGTH                = static_cast<int>(NEString::getStringLength<char>(NELogConfig::SYNTAX_CMD_EMPTY));
 const int           NELogConfig::SYNTAX_CMD_LOG_LENGTH                  = static_cast<int>(NEString::getStringLength<char>(NELogConfig::SYNTAX_CMD_LOG));
 const int           NELogConfig::SYNTAX_CMD_LOG_VERSION_LENGTH          = static_cast<int>(NEString::getStringLength<char>(NELogConfig::SYNTAX_CMD_LOG_VERSION));
@@ -60,7 +60,7 @@ const NELogConfig::sConfigSytax    NELogConfig::ValidSytaxList[NELogConfig::Conf
     , {NELogConfig::SYNTAX_CMD_LOG_SCOPE            , NELogConfig::SYNTAX_CMD_LOG_SCOPE_LENGTH          }
 };
 
-NELogConfig::eLogConfig NELogConfig::FromString( const char * cmdSyntax )
+NELogConfig::eLogConfig NELogConfig::convFromString( const char * cmdSyntax )
 {
     NELogConfig::eLogConfig result = NELogConfig::ConfigUnknown;
     if ( NEString::isEmpty<char>(cmdSyntax) == false )
@@ -103,7 +103,7 @@ NELogConfig::eLogConfig NELogConfig::FromString( const char * cmdSyntax )
     return result;
 }
 
-const char * NELogConfig::ToString( NELogConfig::eLogConfig logConfig )
+const char * NELogConfig::convToString( NELogConfig::eLogConfig logConfig )
 {
     switch ( logConfig )
     {

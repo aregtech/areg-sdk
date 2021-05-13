@@ -8,47 +8,10 @@
 
 #include "areg/base/NEUtilities.hpp"
 #include "areg/base/ESynchObjects.hpp"
-#include "areg/base/CEString.hpp"
-#include "areg/base/CEWideString.hpp"
+#include "areg/base/String.hpp"
+#include "areg/base/WideString.hpp"
 
 #include <time.h>
-
-/************************************************************************
- * \brief   Local predefined constants
- ************************************************************************/
-/**
- * \brief   ASCII type of end of string value
- **/
-#define EOS_A           static_cast<char>('\0')
-/**
- * \brief   Unicode type of end of string value
- **/
-#define EOS_W           static_cast<wchar_t>('\0')
-/**
- * \brief   ASCII type of new line / end line value
- **/
-#define EOL_A           static_cast<char>('\n')
-/**
- * \brief   Unicode type of new line / end of line value
- **/
-#define EOL_W           static_cast<wchar_t>('\n')
-/**
- * \brief   ASCII type of carriage return / end line value
- **/
-#define CR_A            static_cast<char>('\r')
-/**
- * \brief   Unicode type of carriage return / end of line value
- **/
-#define CR_W            static_cast<wchar_t>('\r')
-
-/**
- * \brief   Checks whether ASCII character can be considered as end of line value
- **/
-#define IS_EOL_A(ch)    ((ch) == EOS_A || (ch) == EOL_A || (ch) == CR_A)
-/**
- * \brief   Checks whether Unicode character can be considered as end of line value
- **/
-#define IS_EOL_W(ch)    ((ch) == EOS_W || (ch) == EOL_W || (ch) == CR_W)
 
 
 /************************************************************************/
@@ -78,7 +41,7 @@ namespace NEUtilities
 // NEUtilities namespace global functions
 /************************************************************************/
 
-AREG_API NEMath::eCompare NEUtilities::CompareTimes( const uint64_t & lsh, const uint64_t & rhs )
+AREG_API NEMath::eCompare NEUtilities::compareTimes( const uint64_t & lsh, const uint64_t & rhs )
 {
     NEMath::uLargeInteger lshLi, rshLi;
     lshLi.quadPart  = lsh;
@@ -87,7 +50,7 @@ AREG_API NEMath::eCompare NEUtilities::CompareTimes( const uint64_t & lsh, const
     return NEUtilities::compareLargeIntegers(lshLi, rshLi);
 }
 
-AREG_API void NEUtilities::SysTimeToTime(const sSystemTime & sysTime, tm & out_time)
+AREG_API void NEUtilities::convToTm(const sSystemTime & sysTime, tm & out_time)
 {
     if (sysTime.stYear >= 1900)
     {
@@ -106,16 +69,16 @@ AREG_API void NEUtilities::SysTimeToTime(const sSystemTime & sysTime, tm & out_t
 #else   // _WIN32
         struct tm * temp = localtime( &_timer );
         if ( temp != NULL )
-            NEMemory::MemCopy( &out_time, static_cast<unsigned int>(sizeof(tm)), temp, static_cast<unsigned int>(sizeof(tm)) );
+            NEMemory::memCopy( &out_time, static_cast<unsigned int>(sizeof(tm)), temp, static_cast<unsigned int>(sizeof(tm)) );
 #endif  // _WIN32
     }
     else
     {
-        NEMemory::ZeroData<tm>(out_time);
+        NEMemory::zeroData<tm>(out_time);
     }
 }
 
-AREG_API void NEUtilities::TimeToSysTime(const tm & time, sSystemTime & out_sysTime)
+AREG_API void NEUtilities::convToSystemTime(const tm & time, sSystemTime & out_sysTime)
 {
     out_sysTime.stSecond    = static_cast<unsigned short>(time.tm_sec);
     out_sysTime.stMinute    = static_cast<unsigned short>(time.tm_min);
@@ -126,7 +89,7 @@ AREG_API void NEUtilities::TimeToSysTime(const tm & time, sSystemTime & out_sysT
     out_sysTime.stDayOfWeek = static_cast<unsigned short>(time.tm_wday);
 }
 
-AREG_API void NEUtilities::ConvertToFileTime( const uint64_t &  timeValue, NEUtilities::sFileTime & out_fileTime )
+AREG_API void NEUtilities::convToFileTime( const uint64_t &  timeValue, NEUtilities::sFileTime & out_fileTime )
 {
     uint64_t quad = timeValue + WIN_TO_POSIX_EPOCH_BIAS_MICROSECS;
 
@@ -134,16 +97,16 @@ AREG_API void NEUtilities::ConvertToFileTime( const uint64_t &  timeValue, NEUti
     out_fileTime.ftHighDateTime = MACRO_64_HI_BYTE32(quad);
 }
 
-AREG_API NEMath::eCompare NEUtilities::CompareSystemTimes( const NEUtilities::sSystemTime & lsh, const NEUtilities::sSystemTime & rhs )
+AREG_API NEMath::eCompare NEUtilities::compareTimes( const NEUtilities::sSystemTime & lsh, const NEUtilities::sSystemTime & rhs )
 {
     sFileTime lshFile, rshFile;
-    NEUtilities::ConvertSystemTimeToFileTime( lsh, lshFile );
-    NEUtilities::ConvertSystemTimeToFileTime( rhs, rshFile );
+    NEUtilities::convToFileTime( lsh, lshFile );
+    NEUtilities::convToFileTime( rhs, rshFile );
 
-    return NEUtilities::CompareFileTimes(lshFile, rshFile);
+    return NEUtilities::compareTimes(lshFile, rshFile);
 }
 
-AREG_API NEMath::eCompare NEUtilities::CompareFileTimes( const NEUtilities::sFileTime & lsh, const NEUtilities::sFileTime & rhs )
+AREG_API NEMath::eCompare NEUtilities::compareTimes( const NEUtilities::sFileTime & lsh, const NEUtilities::sFileTime & rhs )
 {
     NEMath::uLargeInteger lshLi, rshLi;
     lshLi.u.lowPart = lsh.ftLowDateTime;
@@ -155,7 +118,7 @@ AREG_API NEMath::eCompare NEUtilities::CompareFileTimes( const NEUtilities::sFil
     return NEUtilities::compareLargeIntegers( lshLi, rshLi );
 }
 
-AREG_API uint64_t NEUtilities::ConvertFileTime( const NEUtilities::sFileTime & fileTime )
+AREG_API uint64_t NEUtilities::convToTime( const NEUtilities::sFileTime & fileTime )
 {
     NEMath::uLargeInteger li;
     li.u.lowPart    = fileTime.ftLowDateTime;
@@ -164,16 +127,16 @@ AREG_API uint64_t NEUtilities::ConvertFileTime( const NEUtilities::sFileTime & f
     return static_cast<uint64_t>(li.quadPart);
 }
 
-AREG_API CEString NEUtilities::CreateComponentItemName( const char * componentName, const char* itemName )
+AREG_API String NEUtilities::createComponentItemName( const char * componentName, const char* itemName )
 {
-    CEString result = componentName != NULL ? componentName : "";
-    if ((result.IsEmpty() == false) && (NEString::isEmpty<char>(itemName) == false))
+    String result = componentName != NULL ? componentName : "";
+    if ((result.isEmpty() == false) && (NEString::isEmpty<char>(itemName) == false))
     {
         result += NEUtilities::COMPONENT_ITEM_SEPARATOR;
         result += itemName;
 
-        if (result.GetLength() > NEUtilities::MAX_GENERATED_NAME_BUFFER_SIZE)
-            result = result.Substr(0, NEUtilities::MAX_GENERATED_NAME_BUFFER_SIZE);
+        if (result.getLength() > NEUtilities::MAX_GENERATED_NAME_BUFFER_SIZE)
+            result = result.substring(0, NEUtilities::MAX_GENERATED_NAME_BUFFER_SIZE);
     }
     else
     {
@@ -182,25 +145,25 @@ AREG_API CEString NEUtilities::CreateComponentItemName( const char * componentNa
     return result;
 }
 
-AREG_API CEString NEUtilities::GenerateName( const char* prefix )
+AREG_API String NEUtilities::generateName( const char* prefix )
 {
     char buffer[NEUtilities::MAX_GENERATED_NAME_BUFFER_SIZE];
-    NEUtilities::GenerateName(prefix, buffer, NEUtilities::MAX_GENERATED_NAME_BUFFER_SIZE);
-    return CEString(buffer);
+    NEUtilities::generateName(prefix, buffer, NEUtilities::MAX_GENERATED_NAME_BUFFER_SIZE);
+    return String(buffer);
 }
 
-AREG_API void NEUtilities::GenerateName(const char * prefix, char * out_buffer, int length)
+AREG_API void NEUtilities::generateName(const char * prefix, char * out_buffer, int length)
 {
-    return NEUtilities::GenerateName(prefix, out_buffer, length, NEUtilities::DEFAULT_SPECIAL_CHAR);
+    return NEUtilities::generateName(prefix, out_buffer, length, NEUtilities::DEFAULT_SPECIAL_CHAR);
 }
 
-AREG_API void NEUtilities::GenerateName(const char * prefix, char * out_buffer, int length, const char * specChar)
+AREG_API void NEUtilities::generateName(const char * prefix, char * out_buffer, int length, const char * specChar)
 {
     NEUtilities::_generateName(prefix, out_buffer, length, specChar);
 }
 
-AREG_API unsigned int NEUtilities::GenerateUniqueId( void )
+AREG_API unsigned int NEUtilities::generateUniqueId( void )
 {
-    static CEInterlockedValue _id(static_cast<unsigned int>(0));
-    return _id.Increment();
+    static InterlockedValue _id(static_cast<unsigned int>(0));
+    return _id.increment();
 }

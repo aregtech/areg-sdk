@@ -19,14 +19,14 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class CEEvent;
+class Event;
 
 //////////////////////////////////////////////////////////////////////////
 // IEQueueListener class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
  * \brief   Event Queue Listener interface. The listener should be assigned
- *          in the Event Queue object and the SignalEvent() function is 
+ *          in the Event Queue object and the signalEvent() function is 
  *          triggered every time when new event item is pushed in the queue
  *          or when queue is empty.
  **/
@@ -60,7 +60,7 @@ public:
      *                      If zero, queue is empty, dispatcher can be suspended.
      * \return  
      **/
-    virtual void SignalEvent( int eventCount ) = 0;
+    virtual void signalEvent( int eventCount ) = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden / Forbidden method calls.

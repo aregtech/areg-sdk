@@ -12,21 +12,13 @@
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
 
-/**
- * \details The synchronization classes are used to synchronize
- *          data access from different threads as well as
- *          to send a trigger to notify a thread about
- *          particular event. This is base synchronization object interface.
- **/
-
-/**
- * \brief   Base class of synchronization objects.
- *          Contains locking and unlocking function interface
- *          and has basic attributes for all synchronization objects.
- **/
 //////////////////////////////////////////////////////////////////////////
 // IESynchObject class declaration
 //////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   Base class of synchronization objects. Contains locking and unlocking 
+ *          functions  and has basic attributes for all synchronization objects.
+ **/
 class AREG_API IESynchObject
 {
 //////////////////////////////////////////////////////////////////////////
@@ -84,17 +76,17 @@ public:
 //////////////////////////////////////////////////////////////////////////
 protected:
     /**
-     * \brief	Protected constructor, cannot be called directly
-     *          Only from child classes, which has overwritten
-     *          pure virtual functions
+     * \brief	Protected constructor, initialize synchronization object.
+     *          Cannot be called directly. Only child classes that have 
+     *          overwritten pure virtual functions.
      * \param	synchObjectType	Type of synchronization object
      **/
     IESynchObject( IESynchObject::eSyncObject synchObjectType );
 
 public:
     /**
-     * \brief   Public destructor. If Synchronization object is valid,
-     *          it will close it automatically.
+     * \brief   Public destructor. The system synchronization objects are automatically closed
+     *          and resources are freed when destructor is closed.
      **/
     virtual ~IESynchObject( void );
 
@@ -115,17 +107,17 @@ public:
      * \brief   Returns the synchronization object
      *          Handle value.
      **/
-    void * GetHandle( void ) const;
+    void * getHandle( void ) const;
 
     /**
      * \brief   Returns type of synchronization object
      **/
-    IESynchObject::eSyncObject GetSyncObjectType( void ) const;
+    IESynchObject::eSyncObject getObjectType( void ) const;
 
     /**
      * \brief   Returns true if a synchronization object is valid.
      **/
-    inline bool IsValid( void ) const;
+    inline bool isValid( void ) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -144,13 +136,13 @@ public:
      *                      own synchronization object
      * \return	If thread successfully owns object, returns true. Otherwise returns false.
      **/
-    virtual bool Lock( unsigned int timeout = IESynchObject::WAIT_INFINITE );
+    virtual bool lock( unsigned int timeout = IESynchObject::WAIT_INFINITE );
 
     /**
      * \brief   Unlocks / Release current thread ownership of synchronization object
      * \return  Returns true if thread ownership is successfully released.
      **/
-    virtual bool Unlock( void );
+    virtual bool unlock( void );
 
 //////////////////////////////////////////////////////////////////////////
 // Operations, private
@@ -168,12 +160,12 @@ protected:
     /**
      * \brief   Synchronization object type
      **/
-    const eSyncObject   mSynchObjectType;
+    const IESynchObject::eSyncObject   mSynchObjectType;
 
     /**
      * \brief   Handle to synchronization object
      **/
-    void *              mSynchObject;
+    void *  mSynchObject;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden / forbidden function calls
@@ -191,7 +183,9 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // IESynchObject class inline functions
 //////////////////////////////////////////////////////////////////////////
-inline bool IESynchObject::IsValid( void ) const
-{   return (mSynchObjectType != IESynchObject::SO_NOLOCK ? mSynchObject != static_cast<void *>(NULL) : true);   }
+inline bool IESynchObject::isValid( void ) const
+{
+    return (mSynchObjectType == IESynchObject::SO_NOLOCK) || (mSynchObject != static_cast<void *>(NULL));
+}
 
 #endif  // AREG_BASE_IESYNCHOBJECT_HPP

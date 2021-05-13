@@ -25,8 +25,8 @@ void AREG_API NEDebug::outputConsole( NEDebug::eDegubPrio priority, const char* 
 #ifdef  _DEBUG
         va_start(args, msg);
         char buffer[NEDebug::MAX_DEBUG_BUFFER_SIZE];
-        int lenPref = CEString::PrintString(buffer, NEDebug::MAX_DEBUG_BUFFER_SIZE - 2, "%s", NEDebug::getPrioPrefix(priority));
-        int lenMsg  = CEString::PrintStringList(buffer + lenPref, NEDebug::MAX_DEBUG_BUFFER_SIZE - 2 - lenPref, msg, args);
+        int lenPref = String::formatString(buffer, NEDebug::MAX_DEBUG_BUFFER_SIZE - 2, "%s", NEDebug::getPrioPrefix(priority));
+        int lenMsg  = String::formatStringList(buffer + lenPref, NEDebug::MAX_DEBUG_BUFFER_SIZE - 2 - lenPref, msg, args);
         char last   = buffer[lenPref + lenMsg - 1];
         if ( last != '\n' )
         {
@@ -54,7 +54,7 @@ void AREG_API NEDebug::outputConsole(const char* msg, ...)
         else
         {
             char buffer[NEDebug::MAX_DEBUG_BUFFER_SIZE];
-            CEString::PrintStringList(buffer, NEDebug::MAX_DEBUG_BUFFER_SIZE, msg, args);
+            String::formatStringList(buffer, NEDebug::MAX_DEBUG_BUFFER_SIZE, msg, args);
             NEDebug::outputMessageOS( buffer );
         }
 
@@ -62,4 +62,3 @@ void AREG_API NEDebug::outputConsole(const char* msg, ...)
 #endif  // _DEBUG
     }
 }
-

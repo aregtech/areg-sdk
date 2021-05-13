@@ -32,7 +32,7 @@ void AREG_API NEDebug::outputMessageOS( const char * msg )
 #endif  // _DEBUG
 }
 
-void AREG_API NEDebug::dumpExceptionCallStack( struct _EXCEPTION_POINTERS *ep, CEStringList & out_callStack )
+void AREG_API NEDebug::dumpExceptionCallStack( struct _EXCEPTION_POINTERS *ep, StringList & out_callStack )
 {
 #ifdef  _DEBUG
 
@@ -49,7 +49,7 @@ void AREG_API NEDebug::dumpExceptionCallStack( struct _EXCEPTION_POINTERS *ep, C
     static const unsigned int   _messageNameLength      = _symNameLength + MAX_PATH + 16;
     static const unsigned int   _sizeOfSymInfo          = MACRO_ALIGN_SIZE( sizeof( SYMBOL_INFO ) + _symNameLength * sizeof( char ), sizeof( ULONG64 ) );
 
-    out_callStack.RemoveAll( );
+    out_callStack.removeAll( );
 
     // Walk through the stack frames.
     HANDLE hProcess = GetCurrentProcess( );
@@ -117,7 +117,7 @@ void AREG_API NEDebug::dumpExceptionCallStack( struct _EXCEPTION_POINTERS *ep, C
                 // Get module name
                 bool hasModule = hasFunction ? SymGetModuleInfo64( hProcess, symbolInfo->ModBase, &moduleInfo ) == TRUE : false;
 
-                CEString::PrintString( message
+                String::formatString( message
                                     , _symNameLength + MAX_PATH + 8
                                     , _stackFormat
                                     , hasFile     ? lineInfo.FileName    : _msgFileUnavailable
@@ -125,23 +125,23 @@ void AREG_API NEDebug::dumpExceptionCallStack( struct _EXCEPTION_POINTERS *ep, C
                                     , hasFunction ? symbolInfo->Name     : _msgFunctionUnavailable
                                     , hasModule   ? moduleInfo.ImageName : _msgModuleUnavailable );
 
-                out_callStack.AddTail( message );
+                out_callStack.pushFirst( message );
 
             }
 
             if ( curDepth > _stackMaxDepth )
-                out_callStack.AddHead( _msgIncompleteStack );
+                out_callStack.pushFirst( _msgIncompleteStack );
         }
         else
         {
-            out_callStack.AddTail( _msgUnknownMachine );
+            out_callStack.pushFirst( _msgUnknownMachine );
         }
 
         SymCleanup( hProcess );
     }
     else
     {
-        out_callStack.AddTail( _msgCannotExtractSym );
+        out_callStack.pushFirst( _msgCannotExtractSym );
     }
 #endif  // _DEBUG
 }

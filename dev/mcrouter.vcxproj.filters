@@ -15,9 +15,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="mcrouter\CEMulticastRouter.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="mcrouter\NEMulticastRouterSettings.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -28,6 +25,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="mcrouter\resources\targetver.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="mcrouter\MulticastRouter.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -49,13 +49,13 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="mcrouter\private\CEMulticastRouter.cpp">
+    <ClCompile Include="mcrouter\private\MulticastRouter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="mcrouter\private\CEMulticastRouterPosix.cpp">
+    <ClCompile Include="mcrouter\private\MulticastRouterPosix.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="mcrouter\private\CEMulticastRouterWin32.cpp">
+    <ClCompile Include="mcrouter\private\MulticastRouterWin32.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -78,7 +78,7 @@ template <typename VALUE, typename VALUE_TYPE, class Implement> class TEStack;
  **/
 template <typename VALUE, typename VALUE_TYPE = VALUE, class Implement = TEListImpl<VALUE_TYPE>>
 class TEStack   : protected Implement
-                , private   CETemplateConstants
+                , private   TemplateConstants
 {
 //////////////////////////////////////////////////////////////////////////
 // Internal types and constants.
@@ -89,9 +89,9 @@ protected:
      *          Contains value and link to the next block.
      **/
     //////////////////////////////////////////////////////////////////////////
-    // TEStack<VALUE, VALUE_TYPE, Implement>::CEBlock class declaration
+    // TEStack<VALUE, VALUE_TYPE, Implement>::Block class declaration
     //////////////////////////////////////////////////////////////////////////
-    class CEBlock
+    class Block
     {
     //////////////////////////////////////////////////////////////////////////
     // Constructor / Destructor
@@ -100,15 +100,15 @@ protected:
         /**
          * \brief   Block default constructor.
          **/
-        CEBlock( void );
+        Block( void );
         /**
          * \brief   Block initialization constructor. Sets value
          **/
-        CEBlock( VALUE_TYPE newValue );
+        Block( VALUE_TYPE newValue );
         /**
          * \brief   Destructor.
          **/
-        ~CEBlock( void );
+        ~Block( void );
 
     //////////////////////////////////////////////////////////////////////////
     // Public member variables.
@@ -117,7 +117,7 @@ protected:
         /**
          * \brief   The pointer to block block in the stack
          **/
-        CEBlock *   mNext;
+        Block *   mNext;
         /**
          * \brief   The value saved in the block
          **/
@@ -202,27 +202,27 @@ public:
     /**
      * \brief   Returns number of elements saved in stack.
      **/
-    inline int GetSize( void ) const;
+    inline int getSize( void ) const;
 
     /**
      * \brief   Returns true if Ring Stack is empty
      **/
-    inline bool IsEmpty( void ) const;
+    inline bool isEmpty( void ) const;
 
     /**
      * \brief   Locks stack that methods can be accessed only from locking thread.
-     *          In case if CENolockSynchObject is used, no locking will happen,
+     *          In case if NolockSynchObject is used, no locking will happen,
      *          the function will return immediately and thread will continue to run.
      * \return  Returns true if stack successfully locked
      **/
-    inline bool LockStack( void ) const;
+    inline bool lock( void ) const;
 
     /**
      * \brief   If stack previously was locked by thread, it will unlock stack
-     *          In case if CENolockSynchObject is used, nothing will happen.
+     *          In case if NolockSynchObject is used, nothing will happen.
      * \return  Returns true if stack successfully unlocked
      **/
-    inline bool UnlockStack( void ) const;
+    inline bool unlock( void ) const;
 
     /**
      * \brief   Returns first inserted element in the stack without changing stack.
@@ -230,7 +230,7 @@ public:
      *          otherwise it may cause system crash.
      *          Check the size of stack before calling function.
      **/
-    inline VALUE_TYPE GetFirstElement( void ) const;
+    inline VALUE_TYPE firstEntry( void ) const;
 
     /**
      * \brief   Returns first inserted element in the stack without changing stack.
@@ -238,14 +238,14 @@ public:
      *          otherwise it may cause system crash.
      *          Check the size of stack before calling function.
      **/
-    inline VALUE_TYPE GetLastElement( void ) const;
+    inline VALUE_TYPE lastEntry( void ) const;
 
     /**
      * \brief	Push new element at the end of stack.
      * \param	newElement  New Element to push into stack
      * \return  Returns size of stack.
      **/
-    int PushElement( VALUE_TYPE newElement );
+    int pushLast( VALUE_TYPE newElement );
 
     /**
      * \brief	Push new element in the beginning of stack, that on pop
@@ -253,7 +253,7 @@ public:
      * \param	newElement  New Element to push into stack
      * \return  Returns size of stack.
      **/
-    int PushElementBegin( VALUE_TYPE newElement );
+    int pushFirst( VALUE_TYPE newElement );
 
     /**
      * \brief	Pops element from Stack and returns value of element.
@@ -261,38 +261,58 @@ public:
      *          Otherwise assertion is raised.
      * \return	Returns Element from stack.
      **/
-    VALUE PopElement( void );
+    VALUE popFirst( void );
 
     /**
      * \brief   Removes all elements from stack and makes it empty.
      **/
-    inline void RemoveAll( void );
+    inline void removeAll( void );
 
     /**
      * \brief   Copies all elements from given source and returns the number of copied elements.
      * \param   source  The stack source to copy elements.
      * \return  Returns the number of copied elements.
      **/
-    int CopyElements( const TEStack<VALUE, VALUE_TYPE, Implement> & source );
+    int copy( const TEStack<VALUE, VALUE_TYPE, Implement> & source );
 
     /**
      * \brief   Searches element in the stack starting at given position.
-     *          The given position should be valid or equal to CETemplateConstants::START_POSITION
+     *          The given position should be valid or equal to TemplateConstants::START_POSITION
      *          to search at the beginning of stack.
      * \param   elem        The value to search in the stack.
      * \param   startAt     The starting position to search. It will start to search 
-     *                      from beginning if equal to CETemplateConstants::START_POSITION.
-     * \return  If found element, returns valid position. Otherwise, it returns CETemplateConstants::INVALID_POSITION.
+     *                      from beginning if equal to TemplateConstants::START_POSITION.
+     * \return  If found element, returns valid position. Otherwise, it returns TemplateConstants::INVALID_POSITION.
      **/
-    STACKPOS Find(VALUE_TYPE elem, STACKPOS startAt = CETemplateConstants::START_POSITION) const;
+    STACKPOS find(VALUE_TYPE elem, STACKPOS startAt = TemplateConstants::START_POSITION) const;
 
-    STACKPOS GetFirstPosition( void ) const;
+    /**
+     * \brief   Returns the first (head) position of the stack. Returns NULL if empty.
+     **/
+    STACKPOS firstPosition( void ) const;
 
-    VALUE_TYPE GetAt( const STACKPOS pos ) const;
+    /**
+     * \brief   Return value at given position. The position should be valid.
+     * \param   pos     The position to get the value.
+     * \return  Returns value at given position.
+     **/
+    VALUE_TYPE getAt( const STACKPOS pos ) const;
 
-    VALUE & GetAt( STACKPOS pos );
+    /**
+     * \brief   Return value at given position. The position should be valid.
+     * \param   pos     The position to get the value.
+     * \return  Returns value at given position.
+     **/
+    VALUE & getAt( STACKPOS pos );
 
-    STACKPOS GetNextPosition( const STACKPOS pos ) const;
+    /**
+     * \brief   Returns next valid position after given position value. 
+     *          Returns NULL if given position was last.
+     * \param   pos     The position value to get next.
+     * \return  If given position is not last in the stack, it returns next valid position value.
+     *          Otherwise, it returns NULL.
+     **/
+    STACKPOS nextPosition( const STACKPOS pos ) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Protected methods
@@ -301,13 +321,13 @@ protected:
 
     /**
      * \brief   Compares and returns true if 2 values are equal.
-     *          Specify own ImplEqualValues() method of TEListImpl
+     *          Specify own implEqualValues() method of TEListImpl
      *          class template for custom comparing method.
      * \param   Value1  Left-side value to compare.
      * \param   Value2  Right-side value to compare.
      * \return  Returns true if 2 value are equal.
      **/
-    inline bool EqualValues(VALUE_TYPE Value1, VALUE_TYPE Value2) const;
+    inline bool equalValues(VALUE_TYPE Value1, VALUE_TYPE Value2) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -321,11 +341,11 @@ protected:
     /**
      * \brief   Head of stack. Element will be popped first
      **/
-    CEBlock *       mHead;
+    Block *       mHead;
     /**
      * \brief   Tail of stack. Last element in stack.
      **/
-    CEBlock *       mTail;
+    Block *       mTail;
 
     /**
      * \brief   The number of elements in the stack.
@@ -414,7 +434,7 @@ private:
     /**
      * \brief   Resource lock synchronization object.
      **/
-    CEResourceLock   mLock;
+    ResourceLock   mLock;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -425,7 +445,7 @@ private:
  *              No data access synchronization is performed in this class.
  *
  * \details     This non-blocking class template contains instance of
- *              CENolockSynchObject to imitate access synchronization. 
+ *              NolockSynchObject to imitate access synchronization. 
  *              No thread will be blocked accessing stack elements.
  *              Use this object if there is no need to synchronize
  *              element access.
@@ -474,7 +494,7 @@ private:
     /**
      * \brief   Synchronization object simulation.
      **/
-    CENolockSynchObject mNoLock;
+    NolockSynchObject mNoLock;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -482,24 +502,24 @@ private:
 //////////////////////////////////////////////////////////////////////////
 
 //////////////////////////////////////////////////////////////////////////
-// TEStack<VALUE, VALUE_TYPE, Implement>::CEBlock class template implementation
+// TEStack<VALUE, VALUE_TYPE, Implement>::Block class template implementation
 // TEStack<VALUE, VALUE_TYPE, Implement> internal class
 //////////////////////////////////////////////////////////////////////////
 
 template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /*= TEListImpl<VALUE_TYPE>*/>
-inline TEStack<VALUE, VALUE_TYPE, Implement>::CEBlock::CEBlock( void ) 
+inline TEStack<VALUE, VALUE_TYPE, Implement>::Block::Block( void ) 
     : mNext (NULL   )
     , mValue(       )
 {   ;   }
 
 template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /*= TEListImpl<VALUE_TYPE>*/>
-inline TEStack<VALUE, VALUE_TYPE, Implement>::CEBlock::CEBlock( VALUE_TYPE newValue ) 
+inline TEStack<VALUE, VALUE_TYPE, Implement>::Block::Block( VALUE_TYPE newValue ) 
     : mNext (NULL)
     , mValue((VALUE)newValue)
 {   ;   }
 
 template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /*= TEListImpl<VALUE_TYPE>*/>
-inline TEStack<VALUE, VALUE_TYPE, Implement>::CEBlock::~CEBlock( void )
+inline TEStack<VALUE, VALUE_TYPE, Implement>::Block::~Block( void )
 {   mNext = NULL;   }
 
 //////////////////////////////////////////////////////////////////////////
@@ -508,7 +528,7 @@ inline TEStack<VALUE, VALUE_TYPE, Implement>::CEBlock::~CEBlock( void )
 template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /*= TEListImpl<VALUE_TYPE>*/>
 TEStack<VALUE, VALUE_TYPE, Implement>::TEStack( IEResourceLock & synchObject )
     : Implement             ( )
-    , CETemplateConstants   ( )
+    , TemplateConstants   ( )
     
     , mSynchObject          ( synchObject )
     , mHead                 ( NULL )
@@ -521,7 +541,7 @@ TEStack<VALUE, VALUE_TYPE, Implement>::TEStack( IEResourceLock & synchObject )
 template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /*= TEListImpl<VALUE_TYPE>*/>
 TEStack<VALUE, VALUE_TYPE, Implement>::TEStack( IEResourceLock & synchObject, const TEStack<VALUE, VALUE_TYPE, Implement> & source )
     : Implement             ( )
-    , CETemplateConstants   ( )
+    , TemplateConstants   ( )
 
     , mSynchObject          ( synchObject )
     , mHead                 ( NULL )
@@ -539,40 +559,40 @@ TEStack<VALUE, VALUE_TYPE, Implement>::~TEStack( void )
 
 template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /*= TEListImpl<VALUE_TYPE>*/>
 inline const TEStack<VALUE, VALUE_TYPE, Implement> & TEStack<VALUE, VALUE_TYPE, Implement>::operator = ( const TEStack<VALUE, VALUE_TYPE, Implement> & source )
-{   CopyElements(source); return (*this);                       }
+{   copy(source); return (*this);                       }
 
 template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /*= TEListImpl<VALUE_TYPE>*/>
-inline int TEStack<VALUE, VALUE_TYPE, Implement>::GetSize( void ) const
-{   CELock lock( mSynchObject ); return mElemCount;             }
+inline int TEStack<VALUE, VALUE_TYPE, Implement>::getSize( void ) const
+{   Lock lock( mSynchObject ); return mElemCount;             }
 
 template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /*= TEListImpl<VALUE_TYPE>*/>
-inline bool TEStack<VALUE, VALUE_TYPE, Implement>::IsEmpty( void ) const
-{   CELock lock( mSynchObject ); return (mElemCount == 0);      }
+inline bool TEStack<VALUE, VALUE_TYPE, Implement>::isEmpty( void ) const
+{   Lock lock( mSynchObject ); return (mElemCount == 0);      }
 
 template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /*= TEListImpl<VALUE_TYPE>*/>
-inline bool TEStack<VALUE, VALUE_TYPE, Implement>::LockStack( void ) const
-{   return mSynchObject.Lock(IESynchObject::WAIT_INFINITE);     }
+inline bool TEStack<VALUE, VALUE_TYPE, Implement>::lock( void ) const
+{   return mSynchObject.lock(IESynchObject::WAIT_INFINITE);     }
 
 template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /*= TEListImpl<VALUE_TYPE>*/>
-inline bool TEStack<VALUE, VALUE_TYPE, Implement>::UnlockStack( void ) const
-{   return mSynchObject.Unlock();                               }
+inline bool TEStack<VALUE, VALUE_TYPE, Implement>::unlock( void ) const
+{   return mSynchObject.unlock();                               }
 
 template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /*= TEListImpl<VALUE_TYPE>*/>
-inline VALUE_TYPE TEStack<VALUE, VALUE_TYPE, Implement>::GetFirstElement( void ) const
-{   CELock lock(mSynchObject); ASSERT(mHead != static_cast<CEBlock *>(NULL)); return mHead->mValue;   }
+inline VALUE_TYPE TEStack<VALUE, VALUE_TYPE, Implement>::firstEntry( void ) const
+{   Lock lock(mSynchObject); ASSERT(mHead != static_cast<Block *>(NULL)); return mHead->mValue;   }
 
 template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /*= TEListImpl<VALUE_TYPE>*/>
-inline VALUE_TYPE TEStack<VALUE, VALUE_TYPE, Implement>::GetLastElement( void ) const
-{   CELock lock(mSynchObject); ASSERT(mTail != static_cast<CEBlock *>(NULL)); return mTail->mValue;   }
+inline VALUE_TYPE TEStack<VALUE, VALUE_TYPE, Implement>::lastEntry( void ) const
+{   Lock lock(mSynchObject); ASSERT(mTail != static_cast<Block *>(NULL)); return mTail->mValue;   }
 
 template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /*= TEListImpl<VALUE_TYPE>*/>
-int TEStack<VALUE, VALUE_TYPE, Implement>::CopyElements( const TEStack<VALUE, VALUE_TYPE, Implement> & source )
+int TEStack<VALUE, VALUE_TYPE, Implement>::copy( const TEStack<VALUE, VALUE_TYPE, Implement> & source )
 {
-    CELock lock( mSynchObject );
+    Lock lock( mSynchObject );
     if (static_cast<const TEStack<VALUE, VALUE_TYPE, Implement> *>(this) != &source)
     {
-        CELock lockThis(mSynchObject);
-        CELock lockSource(source.mSynchObject);
+        Lock lockThis(mSynchObject);
+        Lock lockSource(source.mSynchObject);
 
         _cleanStack();
         _copyElements(source);
@@ -582,11 +602,11 @@ int TEStack<VALUE, VALUE_TYPE, Implement>::CopyElements( const TEStack<VALUE, VA
 }
 
 template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /*= TEListImpl<VALUE_TYPE>*/>
-int TEStack<VALUE, VALUE_TYPE, Implement>::PushElement( VALUE_TYPE newElement )
+int TEStack<VALUE, VALUE_TYPE, Implement>::pushLast( VALUE_TYPE newElement )
 {
-    CELock lock(mSynchObject);
+    Lock lock(mSynchObject);
 
-    CEBlock * newBlock = DEBUG_NEW CEBlock(newElement);
+    Block * newBlock = DEBUG_NEW Block(newElement);
     if (newBlock != NULL)
     {
         if ( mHead == NULL )
@@ -610,11 +630,11 @@ int TEStack<VALUE, VALUE_TYPE, Implement>::PushElement( VALUE_TYPE newElement )
 }
 
 template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /*= TEListImpl<VALUE_TYPE>*/>
-int TEStack<VALUE, VALUE_TYPE, Implement>::PushElementBegin( VALUE_TYPE newElement )
+int TEStack<VALUE, VALUE_TYPE, Implement>::pushFirst( VALUE_TYPE newElement )
 {
-    CELock lock(mSynchObject);
+    Lock lock(mSynchObject);
 
-    CEBlock* newBlock = DEBUG_NEW CEBlock(newElement);
+    Block* newBlock = DEBUG_NEW Block(newElement);
     if (newBlock != NULL)
     {
         if ( mHead == NULL )
@@ -638,15 +658,15 @@ int TEStack<VALUE, VALUE_TYPE, Implement>::PushElementBegin( VALUE_TYPE newEleme
 }
 
 template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /*= TEListImpl<VALUE_TYPE>*/>
-VALUE TEStack<VALUE, VALUE_TYPE, Implement>::PopElement( void )
+VALUE TEStack<VALUE, VALUE_TYPE, Implement>::popFirst( void )
 {
-    CELock lock(mSynchObject);
+    Lock lock(mSynchObject);
 
     VALUE result = VALUE();
 
     if (mElemCount != 0 )
     {
-        CEBlock* block = mHead;
+        Block* block = mHead;
         mHead = block->mNext;
         -- mElemCount;
         if ( mHead == NULL )
@@ -663,20 +683,20 @@ VALUE TEStack<VALUE, VALUE_TYPE, Implement>::PopElement( void )
 }
 
 template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /*= TEListImpl<VALUE_TYPE>*/>
-inline void TEStack<VALUE, VALUE_TYPE, Implement>::RemoveAll( void )
-{   CELock lock(mSynchObject); _cleanStack();           }
+inline void TEStack<VALUE, VALUE_TYPE, Implement>::removeAll( void )
+{   Lock lock(mSynchObject); _cleanStack();           }
 
 
 template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /*= TEListImpl<VALUE_TYPE>*/>
-STACKPOS TEStack<VALUE, VALUE_TYPE, Implement>::Find(VALUE_TYPE elem, STACKPOS startAt /*= CETemplateConstants::START_POSITION*/) const
+STACKPOS TEStack<VALUE, VALUE_TYPE, Implement>::find(VALUE_TYPE elem, STACKPOS startAt /*= TemplateConstants::START_POSITION*/) const
 {
-    CELock lock(mSynchObject);
+    Lock lock(mSynchObject);
 
-    STACKPOS result = static_cast<STACKPOS>(CETemplateConstants::INVALID_POSITION);
-    CEBlock * header = startAt == CETemplateConstants::START_POSITION ? mHead : reinterpret_cast<CEBlock *>(startAt)->mNext;
-    while (header != static_cast<CEBlock *>(NULL))
+    STACKPOS result = static_cast<STACKPOS>(TemplateConstants::INVALID_POSITION);
+    Block * header = startAt == TemplateConstants::START_POSITION ? mHead : reinterpret_cast<Block *>(startAt)->mNext;
+    while (header != static_cast<Block *>(NULL))
     {
-        if (EqualValues(elem, header->mValue))
+        if (equalValues(elem, header->mValue))
         {
             result = static_cast<STACKPOS>(header);
             break;
@@ -689,45 +709,45 @@ STACKPOS TEStack<VALUE, VALUE_TYPE, Implement>::Find(VALUE_TYPE elem, STACKPOS s
 }
 
 template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /*= TEListImpl<VALUE_TYPE>*/>
-inline STACKPOS TEStack<VALUE, VALUE_TYPE, Implement>::GetFirstPosition( void ) const
+inline STACKPOS TEStack<VALUE, VALUE_TYPE, Implement>::firstPosition( void ) const
 {
-    CELock lock(mSynchObject);
+    Lock lock(mSynchObject);
     return static_cast<STACKPOS>(mHead);
 }
 
 template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /*= TEListImpl<VALUE_TYPE>*/>
-inline VALUE_TYPE TEStack<VALUE, VALUE_TYPE, Implement>::GetAt( const STACKPOS pos ) const
+inline VALUE_TYPE TEStack<VALUE, VALUE_TYPE, Implement>::getAt( const STACKPOS pos ) const
 {
-    CELock lock(mSynchObject);
+    Lock lock(mSynchObject);
     ASSERT(pos != NULL);
-    return reinterpret_cast<const CEBlock *>(pos)->mValue;
+    return reinterpret_cast<const Block *>(pos)->mValue;
 }
 
 template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /*= TEListImpl<VALUE_TYPE>*/>
-inline VALUE & TEStack<VALUE, VALUE_TYPE, Implement>::GetAt( STACKPOS pos )
+inline VALUE & TEStack<VALUE, VALUE_TYPE, Implement>::getAt( STACKPOS pos )
 {
-    CELock lock(mSynchObject);
+    Lock lock(mSynchObject);
     ASSERT(pos != NULL);
-    return reinterpret_cast<CEBlock *>(pos)->mValue;
+    return reinterpret_cast<Block *>(pos)->mValue;
 }
 
 template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /*= TEListImpl<VALUE_TYPE>*/>
-inline STACKPOS TEStack<VALUE, VALUE_TYPE, Implement>::GetNextPosition( const STACKPOS pos ) const
+inline STACKPOS TEStack<VALUE, VALUE_TYPE, Implement>::nextPosition( const STACKPOS pos ) const
 {
-    CELock lock(mSynchObject);
-    return static_cast<STACKPOS>(pos != NULL ? reinterpret_cast<const CEBlock *>(pos)->mNext : NULL);
+    Lock lock(mSynchObject);
+    return static_cast<STACKPOS>(pos != NULL ? reinterpret_cast<const Block *>(pos)->mNext : NULL);
 }
 
 template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /*= TEListImpl<VALUE_TYPE>*/>
-inline bool TEStack<VALUE, VALUE_TYPE, Implement>::EqualValues(VALUE_TYPE Value1, VALUE_TYPE Value2) const
-{   return Implement::ImplEqualValues(Value1, Value2);      }
+inline bool TEStack<VALUE, VALUE_TYPE, Implement>::equalValues(VALUE_TYPE Value1, VALUE_TYPE Value2) const
+{   return Implement::implEqualValues(Value1, Value2);      }
 
 template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /*= TEListImpl<VALUE_TYPE>*/>
 inline void TEStack<VALUE, VALUE_TYPE, Implement>::_cleanStack( void )
 {
     while (mHead != NULL)
     {
-        CEBlock* block = mHead;
+        Block* block = mHead;
         mHead = block->mNext;
         delete block;
     }
@@ -739,9 +759,9 @@ inline void TEStack<VALUE, VALUE_TYPE, Implement>::_cleanStack( void )
 template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /*= TEListImpl<VALUE_TYPE>*/>
 inline void TEStack<VALUE, VALUE_TYPE, Implement>::_copyElements( const TEStack<VALUE, VALUE_TYPE, Implement> & source )
 {
-    for ( CEBlock * srcBlock = source.mHead; srcBlock != NULL; srcBlock = srcBlock->mNext )
+    for ( Block * srcBlock = source.mHead; srcBlock != NULL; srcBlock = srcBlock->mNext )
     {
-        CEBlock * newBlock = DEBUG_NEW CEBlock( srcBlock->mValue );
+        Block * newBlock = DEBUG_NEW Block( srcBlock->mValue );
         if ( newBlock != NULL )
         {
             if ( mHead == NULL )
@@ -819,7 +839,7 @@ inline const TENolockStack<VALUE, VALUE_TYPE, Implement> & TENolockStack<VALUE, 
 template<typename V, typename VT, class Impl>
 const IEInStream & operator >> ( const IEInStream & stream, TEStack<V, VT, Impl> & input )
 {
-    CELock lock(input.mSynchObject);
+    Lock lock(input.mSynchObject);
 
     input._cleanStack();
     int size = 0;
@@ -828,7 +848,7 @@ const IEInStream & operator >> ( const IEInStream & stream, TEStack<V, VT, Impl>
     {
         V newElement;
         stream >> newElement;
-        static_cast<void>(input.PushElement(newElement));
+        static_cast<void>(input.pushLast(newElement));
     }
 
     return stream;
@@ -837,11 +857,11 @@ const IEInStream & operator >> ( const IEInStream & stream, TEStack<V, VT, Impl>
 template<typename V, typename VT, class Impl>
 IEOutStream & operator << ( IEOutStream & stream, const TEStack<V, VT, Impl> & output )
 {
-    CELock lock(output.mSynchObject);
+    Lock lock(output.mSynchObject);
 
-    int size = output.GetSize();
+    int size = output.getSize();
     stream << size;
-    class TEStack<V, VT, Impl>::CEBlock* block = output.mHead;
+    class TEStack<V, VT, Impl>::Block* block = output.mHead;
     for ( ; block != NULL; block = block->mNext)
         stream << block->mValue;
 

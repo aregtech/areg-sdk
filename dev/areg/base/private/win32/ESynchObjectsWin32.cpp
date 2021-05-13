@@ -9,7 +9,7 @@
 
 #ifdef  _WINDOWS
 #include "areg/base/NEMemory.hpp"
-#include "areg/base/CEThread.hpp"
+#include "areg/base/Thread.hpp"
 #include <windows.h>
 
 //////////////////////////////////////////////////////////////////////////
@@ -29,13 +29,13 @@ void IESynchObject::_destroySynchObject( void )
 }
 
 //////////////////////////////////////////////////////////////////////////
-// CEMutex class implementation
+// Mutex class implementation
 //////////////////////////////////////////////////////////////////////////
 
 //////////////////////////////////////////////////////////////////////////
-// CEMutex class, Constructor / Destructor
+// Mutex class, Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
-CEMutex::CEMutex(bool lock /* = true */)
+Mutex::Mutex(bool lock /* = true */)
     : IEBlockingSynchObject ( IESynchObject::SO_MUTEX )
 
     , mOwnerThreadId        ( 0 )
@@ -47,26 +47,26 @@ CEMutex::CEMutex(bool lock /* = true */)
     }
 }
 
-CEMutex::~CEMutex( void )
+Mutex::~Mutex( void )
 {
-    Unlock();
+    unlock();
 }
 
 //////////////////////////////////////////////////////////////////////////
-// CEMutex class, Methods
+// Mutex class, Methods
 //////////////////////////////////////////////////////////////////////////
 
-void CEMutex::_setOwnership( void )
+void Mutex::_setOwnership( void )
 {
-    InterlockedExchange((long *)&mOwnerThreadId, (long)CEThread::GetCurrentThreadId());
+    InterlockedExchange((long *)&mOwnerThreadId, (long)Thread::getCurrentThreadId());
 }
 
-void CEMutex::_releaseOwnership( void )
+void Mutex::_releaseOwnership( void )
 {
     InterlockedExchange((long *)&mOwnerThreadId, (long)0);
 }
 
-bool CEMutex::Lock(unsigned int timeout /* = IESynchObject::WAIT_INFINITE */)
+bool Mutex::lock(unsigned int timeout /* = IESynchObject::WAIT_INFINITE */)
 {
     ASSERT(mSynchObject != NULL);
     bool result = false;
@@ -80,7 +80,7 @@ bool CEMutex::Lock(unsigned int timeout /* = IESynchObject::WAIT_INFINITE */)
     return result;
 }
 
-bool CEMutex::Unlock( void )
+bool Mutex::unlock( void )
 {
     ASSERT(mSynchObject != NULL);
     bool result = false;
@@ -93,13 +93,13 @@ bool CEMutex::Unlock( void )
 }
 
 //////////////////////////////////////////////////////////////////////////
-// CESynchEvent class implementation
+// SynchEvent class implementation
 //////////////////////////////////////////////////////////////////////////
 
 //////////////////////////////////////////////////////////////////////////
-// CESynchEvent class, Constructor / Destructor
+// SynchEvent class, Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
-CESynchEvent::CESynchEvent(bool lock /* = true */, bool autoReset /* = true */)
+SynchEvent::SynchEvent(bool lock /* = true */, bool autoReset /* = true */)
     : IESynchObject   (IESynchObject::SO_EVENT)
 
     , mAutoReset        (autoReset)
@@ -107,52 +107,52 @@ CESynchEvent::CESynchEvent(bool lock /* = true */, bool autoReset /* = true */)
     mSynchObject= static_cast<void *>(CreateEvent(NULL, autoReset ? FALSE : TRUE, lock ? FALSE : TRUE, NULL));
 }
 
-CESynchEvent::~CESynchEvent( void )
+SynchEvent::~SynchEvent( void )
 {
-    Unlock();
+    unlock();
 }
 
 //////////////////////////////////////////////////////////////////////////
-// CESynchEvent class, Methods
+// SynchEvent class, Methods
 //////////////////////////////////////////////////////////////////////////
-bool CESynchEvent::Lock(unsigned int timeout /* = IESynchObject::WAIT_INFINITE */)
+bool SynchEvent::lock(unsigned int timeout /* = IESynchObject::WAIT_INFINITE */)
 {
     ASSERT(mSynchObject != NULL);
     return ( WaitForSingleObject(static_cast<HANDLE>(mSynchObject), timeout) == WAIT_OBJECT_0 );
 }
 
-bool CESynchEvent::Unlock( void )
+bool SynchEvent::unlock( void )
 {
     ASSERT(mSynchObject != NULL);
     return (::SetEvent(static_cast<HANDLE>(mSynchObject)) != FALSE);
 }
 
-bool CESynchEvent::SetEvent( void )
+bool SynchEvent::setEvent( void )
 {
     ASSERT(mSynchObject != NULL);
     return (::SetEvent(static_cast<HANDLE>(mSynchObject)) != FALSE);
 }
 
-bool CESynchEvent::ResetEvent( void )
+bool SynchEvent::resetEvent( void )
 {
     ASSERT(mSynchObject != NULL);
     return (::ResetEvent(static_cast<HANDLE>(mSynchObject)) != FALSE);
 }
 
-void CESynchEvent::PulseEvent( void )
+void SynchEvent::pulseEvent( void )
 {
     ASSERT(mSynchObject != NULL);
     ::PulseEvent(static_cast<HANDLE>(mSynchObject));
 }
 
 //////////////////////////////////////////////////////////////////////////
-// CESemaphore class implementation
+// Semaphore class implementation
 //////////////////////////////////////////////////////////////////////////
 
 //////////////////////////////////////////////////////////////////////////
-// CESemaphore class, Constructor / Destructor
+// Semaphore class, Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
-CESemaphore::CESemaphore(int maxCount, int initCount /* = 0 */)
+Semaphore::Semaphore(int maxCount, int initCount /* = 0 */)
     : IEBlockingSynchObject(IESynchObject::SO_SEMAPHORE)
 
     , mMaxCount             (maxCount <= 0 ? 1 : maxCount)
@@ -163,15 +163,15 @@ CESemaphore::CESemaphore(int maxCount, int initCount /* = 0 */)
     mCurrCount  = mSynchObject != NULL ? initCount : 0;
 }
 
-CESemaphore::~CESemaphore( void )
+Semaphore::~Semaphore( void )
 {
     ; // do nothing
 }
 
 //////////////////////////////////////////////////////////////////////////
-// CESemaphore class, Methods
+// Semaphore class, Methods
 //////////////////////////////////////////////////////////////////////////
-bool CESemaphore::Lock(unsigned int timeout /* = IESynchObject::WAIT_INFINITE */)
+bool Semaphore::lock(unsigned int timeout /* = IESynchObject::WAIT_INFINITE */)
 {
     ASSERT(mSynchObject != NULL);
     bool result = false;
@@ -183,7 +183,7 @@ bool CESemaphore::Lock(unsigned int timeout /* = IESynchObject::WAIT_INFINITE */
     return result;
 }
 
-bool CESemaphore::Unlock( void )
+bool Semaphore::unlock( void )
 {
     ASSERT(mSynchObject != NULL);
     bool result = false;
@@ -197,13 +197,13 @@ bool CESemaphore::Unlock( void )
 }
 
 //////////////////////////////////////////////////////////////////////////
-// CESynchTimer implementation
+// SynchTimer implementation
 //////////////////////////////////////////////////////////////////////////
 
 //////////////////////////////////////////////////////////////////////////
-// CESynchTimer class, Constructor / Destructor
+// SynchTimer class, Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
-CESynchTimer::CESynchTimer(unsigned int timeMilliseconds, bool periodic /* = false */, bool autoReset /* = true */, bool initSignaled /* = true */)
+SynchTimer::SynchTimer(unsigned int timeMilliseconds, bool periodic /* = false */, bool autoReset /* = true */, bool initSignaled /* = true */)
     : IESynchObject   (IESynchObject::SO_TIMER)
     
     , mTimeMilliseconds (timeMilliseconds)
@@ -213,11 +213,11 @@ CESynchTimer::CESynchTimer(unsigned int timeMilliseconds, bool periodic /* = fal
     mSynchObject= static_cast<HANDLE>(CreateWaitableTimer(NULL, autoReset ? FALSE : TRUE, NULL));
     if (initSignaled == false)
     {
-        SetTimer();
+        setTimer();
     }
 }
 
-CESynchTimer::~CESynchTimer( void )
+SynchTimer::~SynchTimer( void )
 {
     if (mSynchObject != NULL)
     {
@@ -229,50 +229,50 @@ CESynchTimer::~CESynchTimer( void )
 }
 
 //////////////////////////////////////////////////////////////////////////
-// CESynchTimer class, Methods
+// SynchTimer class, Methods
 //////////////////////////////////////////////////////////////////////////
-bool CESynchTimer::Lock(unsigned int timeout /* = IESynchObject::WAIT_INFINITE */)
+bool SynchTimer::lock(unsigned int timeout /* = IESynchObject::WAIT_INFINITE */)
 {
     return (WaitForSingleObject(static_cast<HANDLE>(mSynchObject), timeout) == WAIT_OBJECT_0);
 }
 
-bool CESynchTimer::Unlock( void )
+bool SynchTimer::unlock( void )
 {
     return (CancelWaitableTimer(static_cast<HANDLE>(mSynchObject)) != FALSE);
 }
 
-bool CESynchTimer::SetTimer( void )
+bool SynchTimer::setTimer( void )
 {
     LARGE_INTEGER dueTime;
-    dueTime.QuadPart = static_cast<int64_t>(-1) * static_cast<int64_t>(mTimeMilliseconds) * static_cast<int64_t>(CESynchTimer::NANOSECONDS_KOEF_100);
+    dueTime.QuadPart = static_cast<int64_t>(-1) * static_cast<int64_t>(mTimeMilliseconds) * static_cast<int64_t>(SynchTimer::NANOSECONDS_KOEF_100);
     return (SetWaitableTimer(static_cast<HANDLE>(mSynchObject), &dueTime, mIsPeriodic ? mTimeMilliseconds : 0, NULL, NULL, FALSE) != FALSE);
 }
 
-bool CESynchTimer::CancelTimer( void )
+bool SynchTimer::cancelTimer( void )
 {
     return (CancelWaitableTimer(static_cast<HANDLE>(mSynchObject)) != FALSE);
 }
 
 //////////////////////////////////////////////////////////////////////////
-// CECriticalSection implementation
+// CriticalSection implementation
 //////////////////////////////////////////////////////////////////////////
 
 //////////////////////////////////////////////////////////////////////////
-// CECriticalSection class, Constructor / Destructor
+// CriticalSection class, Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
-CECriticalSection::CECriticalSection( void )
+CriticalSection::CriticalSection( void )
     : IEBlockingSynchObject(IESynchObject::SO_CRITICAL)
 {
     ASSERT(mSynchObject == NULL);
     mSynchObject = static_cast<void *>( DEBUG_NEW unsigned char [sizeof(CRITICAL_SECTION)] );
     if (mSynchObject != NULL)
     {
-        NEMemory::ConstructElems<CRITICAL_SECTION>(mSynchObject, 1);
+        NEMemory::constructElems<CRITICAL_SECTION>(mSynchObject, 1);
         InitializeCriticalSection(reinterpret_cast<LPCRITICAL_SECTION>(mSynchObject));
     }
 }
 
-CECriticalSection::~CECriticalSection( void )
+CriticalSection::~CriticalSection( void )
 {
     if (mSynchObject != NULL)
     {
@@ -283,76 +283,76 @@ CECriticalSection::~CECriticalSection( void )
 }
 
 //////////////////////////////////////////////////////////////////////////
-// CECriticalSection class, Methods
+// CriticalSection class, Methods
 //////////////////////////////////////////////////////////////////////////
-bool CECriticalSection::Lock(unsigned int  /*timeout = IESynchObject::WAIT_INFINITE */)
+bool CriticalSection::lock(unsigned int  /*timeout = IESynchObject::WAIT_INFINITE */)
 {
     if (mSynchObject != NULL)
         EnterCriticalSection(reinterpret_cast<LPCRITICAL_SECTION>(mSynchObject));
     return (mSynchObject != NULL);
 }
 
-bool CECriticalSection::Unlock( void )
+bool CriticalSection::unlock( void )
 {
     if (mSynchObject != NULL)
         LeaveCriticalSection(reinterpret_cast<LPCRITICAL_SECTION>(mSynchObject));
     return (mSynchObject != NULL);
 }
 
-bool CECriticalSection::TryLock( void )
+bool CriticalSection::tryLock( void )
 {
     return (mSynchObject != NULL && TryEnterCriticalSection(reinterpret_cast<LPCRITICAL_SECTION>(mSynchObject)) ? true : false);
 }
 
 //////////////////////////////////////////////////////////////////////////
-// CEResourceLock class implementation
+// ResourceLock class implementation
 //////////////////////////////////////////////////////////////////////////
 
-CEResourceLock::CEResourceLock( bool initLock /*= false*/ )
+ResourceLock::ResourceLock( bool initLock /*= false*/ )
     : IEResourceLock(IESynchObject::SO_RES_LOCK)
 {
-    mSynchObject    = new CEMutex(initLock);
+    mSynchObject    = new Mutex(initLock);
 }
 
-CEResourceLock::~CEResourceLock(void)
+ResourceLock::~ResourceLock(void)
 {
     if (mSynchObject != NULL)
     {
-        reinterpret_cast<IEBlockingSynchObject *>(mSynchObject)->Unlock();
+        reinterpret_cast<IEBlockingSynchObject *>(mSynchObject)->unlock();
         delete reinterpret_cast<IEBlockingSynchObject *>(mSynchObject);
         mSynchObject = NULL;
     }
 }
 
-bool CEResourceLock::Lock(unsigned int timeout /*= IESynchObject::WAIT_INFINITE */)
+bool ResourceLock::lock(unsigned int timeout /*= IESynchObject::WAIT_INFINITE */)
 {
-    return( mSynchObject != NULL ? reinterpret_cast<IEBlockingSynchObject *>(mSynchObject)->Lock(timeout) : true);
+    return( mSynchObject != NULL ? reinterpret_cast<IEBlockingSynchObject *>(mSynchObject)->lock(timeout) : true);
 }
 
-bool CEResourceLock::Unlock(void)
+bool ResourceLock::unlock(void)
 {
-    return ( mSynchObject != NULL ? reinterpret_cast<IEBlockingSynchObject *>(mSynchObject)->Unlock() : true);
+    return ( mSynchObject != NULL ? reinterpret_cast<IEBlockingSynchObject *>(mSynchObject)->unlock() : true);
 }
 
-bool CEResourceLock::TryLock(void)
+bool ResourceLock::tryLock(void)
 {
-    return (mSynchObject != NULL ? reinterpret_cast<IEBlockingSynchObject *>(mSynchObject)->TryLock() : true);
+    return (mSynchObject != NULL ? reinterpret_cast<IEBlockingSynchObject *>(mSynchObject)->tryLock() : true);
 }
 
 //////////////////////////////////////////////////////////////////////////
-// CEMultiLock class implementation
+// MultiLock class implementation
 //////////////////////////////////////////////////////////////////////////
 
 //////////////////////////////////////////////////////////////////////////
-// CEMultiLock class, Methods
+// MultiLock class, Methods
 //////////////////////////////////////////////////////////////////////////
-int CEMultiLock::Lock(unsigned int timeout /* = IESynchObject::WAIT_INFINITE */, bool waitForAll /* = false */, bool isAlertable /*= false*/)
+int MultiLock::lock(unsigned int timeout /* = IESynchObject::WAIT_INFINITE */, bool waitForAll /* = false */, bool isAlertable /*= false*/)
 {
-    void * syncHandles[CEMultiLock::MAXIMUM_WAITING_OBJECTS];
+    void * syncHandles[NECommon::MAXIMUM_WAITING_OBJECTS];
     for ( int i = 0; i < mSizeCount; ++ i)
-        syncHandles[i] = mSyncObjArray[i]->GetHandle();
+        syncHandles[i] = mSyncObjArray[i]->getHandle();
 
-    int index = CEMultiLock::LOCK_INDEX_INVALID;
+    int index = MultiLock::LOCK_INDEX_INVALID;
     unsigned int result = mSizeCount > 0 ? WaitForMultipleObjectsEx(mSizeCount, static_cast<HANDLE *>(syncHandles), waitForAll ? TRUE : FALSE, timeout, isAlertable ? TRUE : FALSE) : WAIT_FAILED;
     if (result >= WAIT_OBJECT_0 && result < (WAIT_OBJECT_0 + mSizeCount))
     {
@@ -360,38 +360,38 @@ int CEMultiLock::Lock(unsigned int timeout /* = IESynchObject::WAIT_INFINITE */,
         {
             index = result - WAIT_OBJECT_0;
             ASSERT(index >= 0 && index < mSizeCount);
-            mLockedStates[index] = CEMultiLock::STATE_LOCKED;
+            mLockedStates[index] = MultiLock::STATE_LOCKED;
         }
         else
         {
             for (int i = 0; i < mSizeCount; ++ i)
             {
-                mLockedStates[i] = CEMultiLock::STATE_LOCKED;
+                mLockedStates[i] = MultiLock::STATE_LOCKED;
             }
 
-            index = CEMultiLock::LOCK_INDEX_ALL;
+            index = MultiLock::LOCK_INDEX_ALL;
         }
     }
     else if (result == WAIT_IO_COMPLETION)
     {
-        index = CEMultiLock::LOCK_INDEX_COMPLETION;
+        index = MultiLock::LOCK_INDEX_COMPLETION;
     }
     else if (result == WAIT_TIMEOUT)
     {
-        index = CEMultiLock::LOCK_INDEX_TIMEOUT;
+        index = MultiLock::LOCK_INDEX_TIMEOUT;
     }
 
     return index;
 }
 
 //////////////////////////////////////////////////////////////////////////
-// CEInterlockedValue class implementation
+// InterlockedValue class implementation
 //////////////////////////////////////////////////////////////////////////
 
 //////////////////////////////////////////////////////////////////////////
-// CEInterlockedValue class, Constructor / Destructor
+// InterlockedValue class, Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
-CEInterlockedValue::CEInterlockedValue( unsigned int *varPtr /*= NULL*/ )
+InterlockedValue::InterlockedValue( unsigned int *varPtr /*= NULL*/ )
     : mValue    (0)
     , mData     (reinterpret_cast<int *>(varPtr == NULL ? &mValue : varPtr))
     , mContext  (static_cast<void *>(NULL))
@@ -399,7 +399,7 @@ CEInterlockedValue::CEInterlockedValue( unsigned int *varPtr /*= NULL*/ )
     ; // do nothing
 }
 
-CEInterlockedValue::CEInterlockedValue( unsigned int initValue )
+InterlockedValue::InterlockedValue( unsigned int initValue )
     : mValue    (initValue)
     , mData     (reinterpret_cast<int *>(&mValue))
     , mContext  (static_cast<void *>(NULL))
@@ -407,64 +407,64 @@ CEInterlockedValue::CEInterlockedValue( unsigned int initValue )
     ; // do nothing
 }
 
-CEInterlockedValue::~CEInterlockedValue( void )
+InterlockedValue::~InterlockedValue( void )
 {
     ; // do nothing
 }
 
 //////////////////////////////////////////////////////////////////////////
-// CEInterlockedValue class, Methods
+// InterlockedValue class, Methods
 //////////////////////////////////////////////////////////////////////////
-unsigned int CEInterlockedValue::Increment( void )
+unsigned int InterlockedValue::increment( void )
 {
     return static_cast<unsigned int>(::InterlockedIncrement(reinterpret_cast<long *>(mData)));
 }
 
-unsigned int CEInterlockedValue::Decrement( void )
+unsigned int InterlockedValue::decrement( void )
 {
     return static_cast<unsigned int>(::InterlockedDecrement(reinterpret_cast<long *>(mData)));
 }
 
-bool CEInterlockedValue::TestDecrement( void )
+bool InterlockedValue::testDecrement( void )
 {
     return (static_cast<unsigned int>(::InterlockedDecrement(reinterpret_cast<long *>(mData))) != 0);
 }
 
-bool CEInterlockedValue::TestDecrementZero(void)
+bool InterlockedValue::testDecrementZero(void)
 {
     unsigned int data = static_cast<unsigned int>(-1);
     static_cast<void>(::InterlockedExchange(reinterpret_cast<long *>(&data), *mData));
     return ( data != 0 ? static_cast<unsigned int>(::InterlockedDecrement(reinterpret_cast<long *>(mData))) == 0 : false );
 }
 
-unsigned int CEInterlockedValue::Add( unsigned int increment )
+unsigned int InterlockedValue::add( unsigned int increment )
 {
     return static_cast<unsigned int>(::InterlockedExchangeAdd(reinterpret_cast<long *>(mData), static_cast<long>(increment)));
 }
 
-unsigned int CEInterlockedValue::Subtract( unsigned int decrement )
+unsigned int InterlockedValue::subtract( unsigned int decrement )
 {
     return static_cast<unsigned int>(::InterlockedExchangeAdd(reinterpret_cast<long *>(mData), static_cast<long>(0 - decrement)));
 }
 
-void CEInterlockedValue::GetData( unsigned int& data ) const
+void InterlockedValue::getData( unsigned int& data ) const
 {
     return static_cast<void>(::InterlockedExchange(reinterpret_cast<long *>(&data), *mData));
 }
 
-unsigned int CEInterlockedValue::GetData( void ) const
+unsigned int InterlockedValue::getData( void ) const
 {
     unsigned int result = 0;
-    GetData(result);
+    getData(result);
     return result;
 }
 
-void CEInterlockedValue::SetData( unsigned int data )
+void InterlockedValue::setData( unsigned int data )
 {
     return static_cast<void>(::InterlockedExchange(reinterpret_cast<long *>(mData), static_cast<long>(data)));
 }
 
-unsigned int CEInterlockedValue::SetBits( unsigned int mask )
+unsigned int InterlockedValue::setBits( unsigned int mask )
 {
     long oldValue = 0;
     long newValue = 0;
@@ -477,7 +477,7 @@ unsigned int CEInterlockedValue::SetBits( unsigned int mask )
     return static_cast<unsigned int>(oldValue); 
 }
 
-unsigned int CEInterlockedValue::RemoveBits( unsigned int mask )
+unsigned int InterlockedValue::removeBits( unsigned int mask )
 {
     long oldValue = 0;
     long newValue = 0;
@@ -490,7 +490,7 @@ unsigned int CEInterlockedValue::RemoveBits( unsigned int mask )
     return static_cast<unsigned int>(oldValue); 
 }
 
-unsigned int CEInterlockedValue::ToggleBits( unsigned int mask )
+unsigned int InterlockedValue::toggleBits( unsigned int mask )
 {
     long oldValue = 0;
     long newValue = 0;

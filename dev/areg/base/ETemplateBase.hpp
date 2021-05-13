@@ -17,8 +17,7 @@
 #include "areg/base/IEIOStream.hpp"
 
 /**
- * \brief   Class template to implement equality of 2 values.
- *          It is used in container objects.
+ * \brief   The class template to implement equality of 2 values used in containers.
  * \tparam  VALUE_TYPE  The type of value to compare.
  **/
 template <typename VALUE_TYPE>
@@ -31,15 +30,14 @@ public:
      * \param   Value2  The left-side value to compare.
      * \return  Returns true if 2 values are equal.
      **/
-    inline bool ImplEqualValues(VALUE_TYPE Value1, VALUE_TYPE Value2) const
+    inline bool implEqualValues(VALUE_TYPE Value1, VALUE_TYPE Value2) const
     {
         return (Value1 == Value2);
     }
 };
 
 /**
- * \brief   Class template to implement equality of 2 keys.
- *          It is used in container objects.
+ * \brief   The class template to implement equality of 2 keys used in containers.
  * \tparam  KEY_TYPE    The type of keys to compare.
  **/
 template <typename KEY_TYPE>
@@ -52,15 +50,14 @@ public:
      * \param   Value2  The key of left-side object to compare.
      * \return  Returns true if 2 keys are equal.
      **/
-    inline bool ImplEqualKeys(KEY_TYPE Key1, KEY_TYPE Key2) const
+    inline bool implEqualKeys(KEY_TYPE Key1, KEY_TYPE Key2) const
     {
         return (Key1 == Key2);
     }
 };
 
 /**
- * \brief   Class template to implement comparing functionality of 2 values.
- *          It is used in sorting algorithms.
+ * \brief   The class template to implement comparing functionality of 2 values used in sorting algorithms.
  * /tparam  VALUE_TYPE  The type of values to compare.
  **/
 template <typename VALUE_TYPE>
@@ -80,7 +77,7 @@ public:
      *              - NEMath::CompEqual     if Value1 and Value2 are equal;
      *              - NEMath::CompGreater   if Value1 is greater than Value2.
      **/
-    inline NEMath::eCompare ImplCompareValues(VALUE_TYPE Value1, VALUE_TYPE Value2) const
+    inline NEMath::eCompare implCompareValues(VALUE_TYPE Value1, VALUE_TYPE Value2) const
     {
         if (Value1 < Value2)
             return NEMath::CompSmaller;
@@ -92,9 +89,8 @@ public:
 };
 
 /**
- * \brief   Class template to calculate 32-bit hash key value.
+ * \brief   The class template to calculate 32-bit hash key value used in hash map.
  *          Make own implementation if need to customize calculation.
- *          Normally used by hash map.
  * \tparam  KEY_TYPE    The type of value to calculate 32-bit hash key.
  **/
 template <typename KEY_TYPE>
@@ -106,7 +102,7 @@ public:
      * \ param  Key     The object to calculate 32-bit hash key.
      * \return  Returns 32-bit hash key value.
      **/
-    unsigned int ImplHashKey(KEY_TYPE Key) const
+    unsigned int implHashKey(KEY_TYPE Key) const
     {
 #if _MSC_VER
     #pragma warning(disable: 4311)
@@ -123,9 +119,8 @@ public:
 };
 
 /**
- * \brief   The base class template for lists such as
- *          linked list, array or fixed array.
- *          Make own implementation if it differs from default.
+ * \brief   The class template for listing containers such as linked list, array or fixed array.
+ *          Make own implementation if it differs from default implementation of value comparison.
  * \tparam  The type of values saved in the lists.
  **/
 template <typename VALUE_TYPE>
@@ -135,7 +130,8 @@ class TEListImpl        : public TEEqualValueImpl<VALUE_TYPE>
 };
 
 /**
- * \brief   Class template used to implement sorting algorithms.
+ * \brief   The class template used in the list containers that keep values sorted.
+ *          Make own implementation if it differs from default implementation.
  * \tparam  VALUE_TYPE  The type of values to compare.
  **/
 template <typename VALUE_TYPE>
@@ -146,9 +142,9 @@ class TESortImpl    : public TEEqualValueImpl<VALUE_TYPE>
 };
 
 /**
- * \brief   The base class template for key-value pair container.
- *          By default it contains methods to check equality of
- *          keys and values of 2 pair containers.
+ * \brief   The class template for key-value pairs.  By default it contains methods 
+ *          to check equality of keys and values.
+ *          Make own implementation if it differs from default implementation.
  * \tparam  KEY_TYPE    The type of key saved in the pair container.
  * \tparam  VALUE_TYPE  The type of value saved in the pair container.
  **/
@@ -160,11 +156,9 @@ class TEPairImpl        : public TEEqualKeyImpl     <KEY_TYPE>
 };
 
 /**
- * \brief   The base class template for hash-map container, which 
- *          data are accessed by hash key.
- *          By default it contains methods to check equality of
- *          keys and values of 2 pair containers, and calculation
- *          of the hash-key.
+ * \brief   The class template for hash-map container to compare keys and values and 
+ *          access data by hash key.
+ *          Make own implementation if it differs from default implementation.
  * \tparam  KEY_TYPE    The type of key saved in the hash-map container.
  * \tparam  VALUE_TYPE  The type of value associated with the key.
  **/
@@ -175,6 +169,13 @@ class TEHashMapImpl     : public TEPairImpl     <KEY_TYPE, VALUE_TYPE>
 
 };
 
+/**
+ * \brief   The class template for resource containers that save objects associated with the key.
+ *          The methods of class are called when clean-up resource element.
+ *          Make own implementation if it differs from default implementation.
+ * \tparam  RESOURCE_KEY    The type of key to access resource object.
+ * \tparam  RESOURCE_OBJECT The type of resource object stored in the map.
+ **/
 template <typename RESOURCE_KEY, typename RESOURCE_OBJECT>
 class TEResourceMapImpl
 {
@@ -184,10 +185,18 @@ public:
      * \param	Key	        The Key value of resource
      * \param	Resource	Pointer to resource object
      **/
-    inline void ImplCleanResourceElement( RESOURCE_KEY & /*Key*/, RESOURCE_OBJECT * /*Resource*/ )
+    inline void implCleanResource( RESOURCE_KEY & /*Key*/, RESOURCE_OBJECT * /*Resource*/ )
     {   }
 };
 
+/**
+ * \brief   The class template for resource containers that save list of resources associated with the key.
+ *          The methods of class are called when add or remove list, or when remove resource from the list to 
+ *          make additional cleanup operation such as free memory.
+ *          Make own implementation if it differs from default implementation.
+ * \tparam  RESOURCE_KEY    The type of key to access the list of resource objects.
+ * \tparam  RESOURCE_OBJECT The type of resource object stored in the resource list.
+ **/
 template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class ResourceList>
 class TEResourceListMapImpl
 {
@@ -199,7 +208,7 @@ public:
      * \param	Key	    The Key value of resource.
      * \param	List    The list of resource objects.
      **/
-    inline void ImplCleanResourceList( RESOURCE_KEY & Key, ResourceList & List )
+    inline void implCleanResourceList( RESOURCE_KEY & Key, ResourceList & List )
     {   }
 
     /**
@@ -207,7 +216,7 @@ public:
      * \param	List        The list of resource objects.
      * \param   Resource    The resource object to add to the list.
      **/
-    inline void ImplAddResourceToList( ResourceList & List, RESOURCE_OBJECT * Resource )
+    inline void implAddResource( ResourceList & List, RESOURCE_OBJECT * Resource )
     {   }
 
     /**
@@ -215,10 +224,20 @@ public:
      * \param	List        The list of resource objects.
      * \param   Resource    The resource object to remove from the list.
      **/
-    inline bool ImplRemoveResourceFromList( ResourceList & List, RESOURCE_OBJECT * Resource )
-    {   return false;   }
+    inline bool implRemoveResource( ResourceList & List, RESOURCE_OBJECT * Resource )
+    {
+        return false;
+    }
 };
 
+/**
+ * \brief   Class template used in string objects to make basic converting and check-up operations
+ *          such as make up- or lower-case, check whether the symbol is a letter or number, etc.
+ *          By default, converting and check-up are done according ASCII table.
+ *          Make own implementation if it differs from default implementation.
+ * \tparam  CharType    The type of character used in the string. Normally, it is either single byte 'char'
+ *                      or 2 byte 'wchar_t'.
+ **/
 template <typename CharType>
 class TEStringImpl
 {
@@ -230,9 +249,9 @@ public:
      * \param   ch      The character to convert to lower case
      * \return  Returns lower case character
      **/
-    inline CharType ImplMakeLower( CharType ch ) const
+    inline CharType implMakeLower( CharType ch ) const
     {
-        return static_cast<CharType>( NEString::toAsciiLower<CharType>( ch ) );
+        return static_cast<CharType>( NEString::makeAsciiLower<CharType>( ch ) );
     }
 
     /**
@@ -242,9 +261,9 @@ public:
      * \param   ch      The character to convert to upper case
      * \return  Returns upper case character
      **/
-    inline CharType ImplMakeUpper( CharType ch ) const
+    inline CharType implMakeUpper( CharType ch ) const
     {
-        return static_cast<CharType>(NEString::toAsciiUpper<CharType>( ch ));
+        return static_cast<CharType>(NEString::makeAsciiUpper<CharType>( ch ));
     }
 
     /**
@@ -252,7 +271,7 @@ public:
      *          By default, the checkup is done based on ISO8859
      * \param   ch      The character to check
      **/
-    inline bool ImplIsLetter( CharType ch ) const
+    inline bool implIsLetter( CharType ch ) const
     {
         return NEString::isLetter<CharType>( ch );
     }
@@ -262,7 +281,7 @@ public:
      *          By default, the checkup is done based on ISO8859
      * \param   ch      The character to check
      **/
-    inline bool ImplIsNumeric( CharType ch ) const
+    inline bool implIsNumeric( CharType ch ) const
     {
         return NEString::isNumeric<CharType>( ch );
     }
@@ -272,7 +291,7 @@ public:
      *          By default, the checkup is done based on ISO8859
      * \param   ch      The character to check
      **/
-    inline bool ImplIsAlphanumeric( CharType ch ) const
+    inline bool implIsAlphanumeric( CharType ch ) const
     {
         return NEString::isAlphanumeric<CharType>( ch );
     }
@@ -282,7 +301,7 @@ public:
      *          By default, the checkup is done based on ISO8859
      * \param   ch      The character to check
      **/
-    inline bool ImplIsSymbol( CharType ch ) const
+    inline bool implIsSymbol( CharType ch ) const
     {
         return NEString::isSymbol<CharType>( ch );
     }
@@ -292,7 +311,7 @@ public:
      *          By default, the checkup is done based on ISO8859
      * \param   ch      The character to check
      **/
-    inline bool ImplIsWhitespace( CharType ch ) const
+    inline bool implIsWhitespace( CharType ch ) const
     {
         return NEString::isWhitespace<CharType>(ch);
     }
@@ -315,7 +334,7 @@ public:
      *              NEMath::CompEqual   if strings have equal
      *              NEMath::CompGreater if string is more than given string
      **/
-    inline NEMath::eCompare ImplCompareString( const CharType * strLeft, const CharType * strRight, NEString::CharCount charCount = NEString::CountAll, bool caseSensitive = true ) const
+    inline NEMath::eCompare implCompareString( const CharType * strLeft, const CharType * strRight, NEString::CharCount charCount = NEString::CountAll, bool caseSensitive = true ) const
     {
         return static_cast<NEMath::eCompare>( NEString::compareStrings<CharType, CharType>(strLeft, strRight, charCount, caseSensitive));
     }
@@ -327,7 +346,7 @@ public:
      * \param   count   The number characters that can be written into the buffer.
      * \return  Returns the number of characters that actually read from the stream.
      **/
-    int ImplReadStream(const IEInStream & stream, CharType * buffer, int count)
+    int implReadStream(const IEInStream & stream, CharType * buffer, int count)
     {
         int result = 0;
 
@@ -356,7 +375,7 @@ public:
      * \param   buffer  The buffer to read data.
      * \return  Returns number of characters that have written to the stream.
      **/
-    int ImplWriteStream(IEOutStream & stream, const CharType * buffer) const
+    int implWriteStream(IEOutStream & stream, const CharType * buffer) const
     {
         int result = 0;
 
@@ -376,7 +395,7 @@ public:
 };
 
 //////////////////////////////////////////////////////////////////////////
-// CETemplateConstants class declaration
+// TemplateConstants class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
  * \brief   Template Constants class has no functions it is defining
@@ -384,78 +403,78 @@ public:
  *          The idea to use class instead of namespace is to be able
  *          to derive class privately.
  **/
-class AREG_API CETemplateConstants
+class AREG_API TemplateConstants
 {
 //////////////////////////////////////////////////////////////////////////
 // Constants defined for template classes
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   CETemplateConstants::MAP_DEFAULT_BLOCK_SIZE
+     * \brief   TemplateConstants::MAP_DEFAULT_BLOCK_SIZE
      *          The number of blocks by default created when increase list in map. For hash map internal use
      **/
     static const int            MAP_DEFAULT_BLOCK_SIZE  /*= static_cast<int>(64)*/;             /*0x00000040*/
     /**
-     * \brief   CETemplateConstants::MAP_MAX_BLOCK_SIZE
+     * \brief   TemplateConstants::MAP_MAX_BLOCK_SIZE
      *          The number of maximum blocks created at once when increase list in map. For hash map internal use
      **/
     static const int            MAP_MAX_BLOCK_SIZE      /*= static_cast<int>(2048)*/;           /*0x000000800*/
     /**
-     * \brief   CETemplateConstants::MAP_DEFAULT_HASH_SIZE
+     * \brief   TemplateConstants::MAP_DEFAULT_HASH_SIZE
      *          The size of hash table by default created in map. For hash map internal use
      **/
     static const int            MAP_DEFAULT_HASH_SIZE   /*= static_cast<int>(64)*/;             /*0x00000040*/
     /**
-     * \brief   CETemplateConstants::MAP_DEFAULT_HASH_SIZE
+     * \brief   TemplateConstants::MAP_DEFAULT_HASH_SIZE
      *          The maximum size of hash table created in map. For hash map internal use
      **/
     static const int            MAP_MAX_TABLE_SIZE      /*= static_cast<int>(2048)*/;           /*0x000000800*/
     /**
-     * \brief   CETemplateConstants::MAP_SHIFT
+     * \brief   TemplateConstants::MAP_SHIFT
      *          Bit-shift used to generate has key number
      **/
     static const int            MAP_SHIFT               /*= static_cast<int>(5)*/;              /*0x00000005*/
     /**
-     * \brief   CETemplateConstants::MAP_INVALID_HASH
+     * \brief   TemplateConstants::MAP_INVALID_HASH
      *          Defines invalid Hash value
      **/
     static const unsigned int   MAP_INVALID_HASH        /*= static_cast<unsigned int>(~0)*/;    /*0xFFFFFFFF*/
     /**
-     * \brief   CETemplateConstants::START_POSITION
+     * \brief   TemplateConstants::START_POSITION
      *          Defines starting position in hash-map
      **/
     static void * const         START_POSITION          /*= static_cast<void *>(~0)*/;          /*0xFFFFFFFF*/
 
     /**
-     * \brief   CETemplateConstants::ARRAY_DEFAULT_MIN_GROW
+     * \brief   TemplateConstants::ARRAY_DEFAULT_MIN_GROW
      *          The minimum new created entries when grow array
      **/
     static const int            ARRAY_DEFAULT_MIN_GROW  /*= static_cast<int>(4)*/;              /*0x00000004*/
     /**
-     * \brief   CETemplateConstants::ARRAY_DEFAULT_MAX_GROW
+     * \brief   TemplateConstants::ARRAY_DEFAULT_MAX_GROW
      *          The maximum new created entries when grow array
      **/
     static const int            ARRAY_DEFAULT_MAX_GROW  /*= static_cast<int>(2048)*/;           /*0x000000800*/
     /**
-     * \brief   CETemplateConstants::ARRAY_DEFAULT_INCREASE
+     * \brief   TemplateConstants::ARRAY_DEFAULT_INCREASE
      *          Defines default increase. When used, default values should be used.
      **/
     static const int            ARRAY_DEFAULT_INCREASE  /*= static_cast<int>(~0)*/;             /*0xFFFFFFFF*/
 
     /**
-     * \brief   CETemplateConstants::INVALID_POSITION
+     * \brief   TemplateConstants::INVALID_POSITION
      *          Defines invalid position.
      **/
     static void * const         INVALID_POSITION        /*= static_cast<void *>(NULL)*/;        /*0x00000000*/
 
     /**
-     * \brief   CETemplateConstants::START_INDEX
+     * \brief   TemplateConstants::START_INDEX
      *          Defines starting index in the lists.
      **/
     static const int            START_INDEX             /*= static_cast<int>(MIN_INT_32)*/;     /*0x80000000*/
 
     /**
-     * \brief   CETemplateConstants::INVALID_INDEX
+     * \brief   TemplateConstants::INVALID_INDEX
      *          Defines invalid index in the lists.
      **/
     static const int            INVALID_INDEX           /*= static_cast<int>(-1)*/;             /*-1*/

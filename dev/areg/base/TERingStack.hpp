@@ -117,7 +117,7 @@ typedef enum E_OnRingOverlap
  **/
 template <typename VALUE, typename VALUE_TYPE = VALUE, class Implement = TEListImpl<VALUE_TYPE>>
 class TERingStack   : protected Implement
-                    , private   CETemplateConstants
+                    , private   TemplateConstants
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -128,7 +128,7 @@ protected:
      *          Receives reference to synchronization object, initial capacity value
      *          and the overlapping flag, used when ring stack is full and pushing 
      *          new element is called. The overlapping flag cannot be changed.
-     *          The capacity is changed when Resize() method is called.
+     *          The capacity is changed when resize() method is called.
      *          It is declared as protected to prevent direct call.
      *          Use TENolockRingStack or TELockRingStack objects instead.
      * \param   synchObject     Reference to synchronization object.
@@ -202,37 +202,37 @@ public:
     /**
      * \brief   Returns number of elements saved in stack.
      **/
-    inline int GetSize( void ) const;
+    inline int getSize( void ) const;
 
     /**
      * \brief   Returns true if Ring Stack is empty
      **/
-    inline bool IsEmpty( void ) const;
+    inline bool isEmpty( void ) const;
 
     /**
      * \brief   Locks stack that methods can be accessed only from locking thread.
-     *          In case if CENolockSynchObject is used, no locking will happen,
+     *          In case if NolockSynchObject is used, no locking will happen,
      *          the function will return immediately and thread will continue to run.
      * \return  Returns true if stack successfully locked
      **/
-    inline bool LockStack( void ) const;
+    inline bool lock( void ) const;
 
     /**
      * \brief   If stack previously was locked by thread, it will unlock stack
-     *          In case if CENolockSynchObject is used, nothing will happen.
+     *          In case if NolockSynchObject is used, nothing will happen.
      * \return  Returns true if stack successfully unlocked
      **/
-    inline bool UnlockStack( void ) const;
+    inline bool unlock( void ) const;
 
     /**
      * \brief   Returns capacity value of ring stack
      **/
-    inline int GetCapacity( void ) const;
+    inline int capacity( void ) const;
 
     /**
      * \brief   Returns true if Ring Stack is full
      **/
-    inline bool IsFull( void ) const;
+    inline bool isFull( void ) const;
 
     /**
      * \brief   Pushes new element at the end of Ring Stack
@@ -247,7 +247,7 @@ public:
      * \param   newElement  New element to set at the end of Ring Stack.
      * \return  Returns size of stack.
      **/
-    int PushElement( VALUE_TYPE newElement );
+    int pushLast( VALUE_TYPE newElement );
 
     /**
      * \brief   Sets element at the head of ring stack that on pop call, the element will be
@@ -261,20 +261,20 @@ public:
      * \param   newElement  New element to set at the head of stack.
      * \return  Returns size of stack.
      **/
-    int PushElementBegin( VALUE_TYPE newElement );
+    int pushFirst( VALUE_TYPE newElement );
 
     /**
      * \brief   Removes element from head and returns value, decreases number of element by one.
      *          The stack should not be empty when method is called.
      * \return  Returns value of remove element.
      **/
-    VALUE PopElement( void );
+    VALUE popFirst( void );
 
     /**
      * \brief   Removes all elements from Ring stack and makes it empty.
      *          The capacity of stack remains unchanged. The change capacity value, resize stack.
      **/
-    inline void RemoveAll( void );
+    inline void removeAll( void );
 
     /**
      * \brief   Copies elements from given source. The elements will be copied at the end of stack.
@@ -293,7 +293,7 @@ public:
      * \return  Returns number of elements copied in to the stack. The number of copied elements and elements in stack
      *          might differ depending on overlapping flag.
      **/
-    int CopyElements( const TERingStack<VALUE, VALUE_TYPE, Implement> & source );
+    int copy( const TERingStack<VALUE, VALUE_TYPE, Implement> & source );
 
     /**
      * \brief   Resizes the capacity of stack. The operation will copy saved elements if 
@@ -305,19 +305,19 @@ public:
      * \param   newCapacity     New capacity to set for Ring Stack.
      * \return  Returns capacity size of resized ring stack.
      **/
-    int Resize( int newCapacity );
+    int resize( int newCapacity );
 
     /**
      * \brief   Searches element in the stack starting at given position (index).
-     *          The given position should be valid or equal to CETemplateConstants::START_INDEX
+     *          The given position should be valid or equal to TemplateConstants::START_INDEX
      *          to search at the beginning of stack.
      * \param   elem        The value to search in the stack.
      * \param   startAt     The starting position to search. It will start to search 
-     *                      from beginning if equal to CETemplateConstants::START_INDEX.
+     *                      from beginning if equal to TemplateConstants::START_INDEX.
      * \return  If found element, returns valid position (index).
-     *          Otherwise, it returns CETemplateConstants::INVALID_INDEX.
+     *          Otherwise, it returns TemplateConstants::INVALID_INDEX.
      **/
-    int Find(VALUE_TYPE elem, int startAt = CETemplateConstants::START_INDEX) const;
+    int find(VALUE_TYPE elem, int startAt = TemplateConstants::START_INDEX) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Protected methods
@@ -326,13 +326,13 @@ protected:
 
     /**
      * \brief   Compares and returns true if 2 values are equal.
-     *          Specify own ImplEqualValues() method of TEListImpl
+     *          Specify own implEqualValues() method of TEListImpl
      *          class template for custom comparing method.
      * \param   Value1  Left-side value to compare.
      * \param   Value2  Right-side value to compare.
      * \return  Returns true if 2 value are equal.
      **/
-    inline bool EqualValues(VALUE_TYPE Value1, VALUE_TYPE Value2) const;
+    inline bool equalValues(VALUE_TYPE Value1, VALUE_TYPE Value2) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -460,7 +460,7 @@ private:
     /**
      * \brief   Instance of Critical Section to synchronize data access
      **/
-    CEResourceLock  mLock;
+    ResourceLock  mLock;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -471,7 +471,7 @@ private:
  *              No data access synchronization is performed in this class.
  *
  * \details     This non-blocking class template contains instance of
- *              CENolockSynchObject to imitate access synchronization. 
+ *              NolockSynchObject to imitate access synchronization. 
  *              No thread will be blocked accessing ring stack elements.
  *              Use this object if there is no need to synchronize
  *              element access.
@@ -526,7 +526,7 @@ private:
     /**
      * \brief   Synchronization object simulation.
      **/
-    CENolockSynchObject mNoLock;
+    NolockSynchObject mNoLock;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -539,7 +539,7 @@ private:
 template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /*= TEListImpl<VALUE_TYPE>*/>
 TERingStack<VALUE, VALUE_TYPE, Implement>::TERingStack( IEResourceLock & synchObject, int initCapacity /*= 0*/, eOnRingOverlap onOverlap /*= StopOnOverlap*/ )
     : Implement             ( )
-    , CETemplateConstants   ( )
+    , TemplateConstants   ( )
     
     , mSynchObject          ( synchObject )
     , mOnOverlap            ( onOverlap )
@@ -573,7 +573,7 @@ TERingStack<VALUE, VALUE_TYPE, Implement>::TERingStack( IEResourceLock & synchOb
 
         if ( mStackList != NULL )
         {
-            NEMemory::ConstructElems<VALUE>(mStackList, source.mElemCount);
+            NEMemory::constructElems<VALUE>(mStackList, source.mElemCount);
             int pos = source.mStartPosition;
             for ( mLastPosition = 0; mLastPosition < source.mElemCount; mLastPosition ++ )
             {
@@ -600,57 +600,75 @@ const TERingStack<VALUE, VALUE_TYPE, Implement> & TERingStack<VALUE, VALUE_TYPE,
 {
     if (static_cast<const TERingStack<VALUE, VALUE_TYPE, Implement> *>(this) != &source)
     {
-        CELock lock(mSynchObject);
+        Lock lock(mSynchObject);
 
         _emptyStack();
-        source.LockStack();
+        source.lock();
 
         if ( mCapacity < source.mElemCount )
-            Resize( source.mElemCount );
+            resize( source.mElemCount );
         int pos = source.mStartPosition;
         for ( int i = 0; i < source.mElemCount; ++ i )
         {
-            static_cast<void>(PushElement( source.mStackList[pos] ));
+            static_cast<void>(pushLast( source.mStackList[pos] ));
             pos = ( pos + 1 ) % source.mCapacity;
         }
 
-        source.UnlockStack();
+        source.unlock();
     }
     return (*this);
 }
 
 template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /*= TEListImpl<VALUE_TYPE>*/>
-inline int TERingStack<VALUE, VALUE_TYPE, Implement>::GetSize( void ) const
-{   CELock lock( mSynchObject ); return mElemCount;                 }
-
-template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /*= TEListImpl<VALUE_TYPE>*/>
-inline bool TERingStack<VALUE, VALUE_TYPE, Implement>::IsEmpty( void ) const
-{   CELock lock( mSynchObject ); return (mElemCount == 0);          }
-
-template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /*= TEListImpl<VALUE_TYPE>*/>
-inline bool TERingStack<VALUE, VALUE_TYPE, Implement>::LockStack( void ) const
-{   return mSynchObject.Lock(IESynchObject::WAIT_INFINITE);         }
-
-template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /*= TEListImpl<VALUE_TYPE>*/>
-inline bool TERingStack<VALUE, VALUE_TYPE, Implement>::UnlockStack( void ) const
-{   return mSynchObject.Unlock();                                   }
-
-template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /*= TEListImpl<VALUE_TYPE>*/>
-inline int TERingStack<VALUE, VALUE_TYPE, Implement>::GetCapacity( void ) const
-{   CELock lock(mSynchObject); return mCapacity;                    }
-
-template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /*= TEListImpl<VALUE_TYPE>*/>
-inline bool TERingStack<VALUE, VALUE_TYPE, Implement>::IsFull( void ) const
-{   CELock lock(mSynchObject); return (mElemCount == mCapacity);    }
-
-template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /*= TEListImpl<VALUE_TYPE>*/>
-void TERingStack<VALUE, VALUE_TYPE, Implement>::RemoveAll( void )
-{   CELock lock(mSynchObject); _emptyStack();                       }
-
-template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /*= TEListImpl<VALUE_TYPE>*/>
-int TERingStack<VALUE, VALUE_TYPE, Implement>::PushElement( VALUE_TYPE newElement )
+inline int TERingStack<VALUE, VALUE_TYPE, Implement>::getSize( void ) const
 {
-    CELock lock(mSynchObject);
+    Lock lock( mSynchObject );
+    return mElemCount;
+}
+
+template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /*= TEListImpl<VALUE_TYPE>*/>
+inline bool TERingStack<VALUE, VALUE_TYPE, Implement>::isEmpty( void ) const
+{
+    Lock lock( mSynchObject );
+    return (mElemCount == 0);
+}
+
+template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /*= TEListImpl<VALUE_TYPE>*/>
+inline bool TERingStack<VALUE, VALUE_TYPE, Implement>::lock( void ) const
+{
+    return mSynchObject.lock(IESynchObject::WAIT_INFINITE);
+}
+
+template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /*= TEListImpl<VALUE_TYPE>*/>
+inline bool TERingStack<VALUE, VALUE_TYPE, Implement>::unlock( void ) const
+{
+    return mSynchObject.unlock();
+}
+
+template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /*= TEListImpl<VALUE_TYPE>*/>
+inline int TERingStack<VALUE, VALUE_TYPE, Implement>::capacity( void ) const
+{
+    Lock lock(mSynchObject); return mCapacity;
+}
+
+template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /*= TEListImpl<VALUE_TYPE>*/>
+inline bool TERingStack<VALUE, VALUE_TYPE, Implement>::isFull( void ) const
+{
+    Lock lock(mSynchObject);
+    return (mElemCount == mCapacity);
+}
+
+template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /*= TEListImpl<VALUE_TYPE>*/>
+void TERingStack<VALUE, VALUE_TYPE, Implement>::removeAll( void )
+{
+    Lock lock(mSynchObject);
+    _emptyStack();
+}
+
+template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /*= TEListImpl<VALUE_TYPE>*/>
+int TERingStack<VALUE, VALUE_TYPE, Implement>::pushLast( VALUE_TYPE newElement )
+{
+    Lock lock(mSynchObject);
 
     if ( mElemCount + 1 <= mCapacity )
     {
@@ -658,7 +676,7 @@ int TERingStack<VALUE, VALUE_TYPE, Implement>::PushElement( VALUE_TYPE newElemen
         ASSERT( mStartPosition != mLastPosition || mElemCount == 0 );
 
         VALUE * block = mStackList + mLastPosition;
-        NEMemory::ConstructElems<VALUE>(block, 1);
+        NEMemory::constructElems<VALUE>(block, 1);
         *block = newElement;
         mLastPosition = (mLastPosition + 1) % mCapacity;
         mElemCount ++;
@@ -672,8 +690,8 @@ int TERingStack<VALUE, VALUE_TYPE, Implement>::PushElement( VALUE_TYPE newElemen
             if ( mCapacity > 0 )
             {
                 VALUE * block = mStackList + mLastPosition;
-                NEMemory::DestroyElems<VALUE>(block, 1);
-                NEMemory::ConstructElems<VALUE>(block, 1);
+                NEMemory::destroyElems<VALUE>(block, 1);
+                NEMemory::constructElems<VALUE>(block, 1);
                 *block = newElement;
                 mLastPosition = (mLastPosition + 1) % mCapacity;
                 mStartPosition = mLastPosition;
@@ -686,11 +704,11 @@ int TERingStack<VALUE, VALUE_TYPE, Implement>::PushElement( VALUE_TYPE newElemen
             break;
 
         case ResizeOnOvelap:
-            if ( Resize( (mCapacity > 0 ? mCapacity : 1) * 2 ) > (mElemCount + 1 ))
+            if ( resize( (mCapacity > 0 ? mCapacity : 1) * 2 ) > (mElemCount + 1 ))
             {
                 ASSERT(mCapacity >= mElemCount + 1);
                 VALUE * block = mStackList + mLastPosition;
-                NEMemory::ConstructElems<VALUE>(block, 1);
+                NEMemory::constructElems<VALUE>(block, 1);
                 *block = newElement;
                 mLastPosition = (mLastPosition + 1) % mCapacity;
                 mElemCount ++;
@@ -712,9 +730,9 @@ int TERingStack<VALUE, VALUE_TYPE, Implement>::PushElement( VALUE_TYPE newElemen
 }
 
 template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /*= TEListImpl<VALUE_TYPE>*/>
-int TERingStack<VALUE, VALUE_TYPE, Implement>::PushElementBegin( VALUE_TYPE newElement )
+int TERingStack<VALUE, VALUE_TYPE, Implement>::pushFirst( VALUE_TYPE newElement )
 {
-    CELock lock(mSynchObject);
+    Lock lock(mSynchObject);
 
     if ( mElemCount + 1 <= mCapacity )
     {
@@ -723,7 +741,7 @@ int TERingStack<VALUE, VALUE_TYPE, Implement>::PushElementBegin( VALUE_TYPE newE
 
         mStartPosition = mStartPosition > 0 ? mStartPosition - 1 : mCapacity - 1;
         VALUE * block = mStackList + mStartPosition;
-        NEMemory::ConstructElems<VALUE>(block, 1);
+        NEMemory::constructElems<VALUE>(block, 1);
         *block = newElement;
         mElemCount ++;
 
@@ -739,8 +757,8 @@ int TERingStack<VALUE, VALUE_TYPE, Implement>::PushElementBegin( VALUE_TYPE newE
             {
                 mStartPosition = mStartPosition > 0 ? mStartPosition - 1 : mCapacity - 1;
                 VALUE * block = mStackList + mStartPosition;
-                NEMemory::DestroyElems<VALUE>(block, 1);
-                NEMemory::ConstructElems<VALUE>(block, 1);
+                NEMemory::destroyElems<VALUE>(block, 1);
+                NEMemory::constructElems<VALUE>(block, 1);
                 *block = newElement;
                 mLastPosition = mStartPosition;
             }
@@ -752,12 +770,12 @@ int TERingStack<VALUE, VALUE_TYPE, Implement>::PushElementBegin( VALUE_TYPE newE
             break;
 
         case ResizeOnOvelap:
-            if ( Resize( (mCapacity > 0 ? mCapacity : 1) * 2 ) > (mElemCount + 1 ))
+            if ( resize( (mCapacity > 0 ? mCapacity : 1) * 2 ) > (mElemCount + 1 ))
             {
                 ASSERT(mCapacity >= mElemCount + 1);
                 mStartPosition = mStartPosition > 0 ? mStartPosition - 1 : mCapacity - 1;
                 VALUE * block = mStackList + mStartPosition;
-                NEMemory::ConstructElems<VALUE>(block, 1);
+                NEMemory::constructElems<VALUE>(block, 1);
                 *block = newElement;
                 mElemCount ++;
             }
@@ -778,10 +796,10 @@ int TERingStack<VALUE, VALUE_TYPE, Implement>::PushElementBegin( VALUE_TYPE newE
 }
 
 template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /*= TEListImpl<VALUE_TYPE>*/>
-VALUE TERingStack<VALUE, VALUE_TYPE, Implement>::PopElement( void )
+VALUE TERingStack<VALUE, VALUE_TYPE, Implement>::popFirst( void )
 {
-    CELock lock(mSynchObject);
-    ASSERT( IsEmpty() == false );
+    Lock lock(mSynchObject);
+    ASSERT( isEmpty() == false );
     VALUE result;
 
     if ( mElemCount > 0 )
@@ -790,7 +808,7 @@ VALUE TERingStack<VALUE, VALUE_TYPE, Implement>::PopElement( void )
         ASSERT( mStartPosition != mLastPosition );
 
         result = mStackList[mStartPosition];
-        NEMemory::DestroyElems<VALUE>( mStackList + mStartPosition, 1 );
+        NEMemory::destroyElems<VALUE>( mStackList + mStartPosition, 1 );
         mStartPosition = (mStartPosition + 1) % mCapacity;
 
         ASSERT( mStartPosition != mLastPosition || mElemCount == 0 );
@@ -803,13 +821,13 @@ VALUE TERingStack<VALUE, VALUE_TYPE, Implement>::PopElement( void )
 }
 
 template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /*= TEListImpl<VALUE_TYPE>*/>
-int TERingStack<VALUE, VALUE_TYPE, Implement>::CopyElements( const TERingStack<VALUE, VALUE_TYPE, Implement> & source )
+int TERingStack<VALUE, VALUE_TYPE, Implement>::copy( const TERingStack<VALUE, VALUE_TYPE, Implement> & source )
 {
-    CELock lock(mSynchObject);
+    Lock lock(mSynchObject);
     int result = 0;
     if ( static_cast<const TERingStack<VALUE, VALUE_TYPE, Implement> *>(this) != &source )
     {
-        CELock lock2(source.mSynchObject);
+        Lock lock2(source.mSynchObject);
 
         int srcStart = source.mStartPosition;
         if ( mCapacity - mElemCount >= source.mElemCount )
@@ -817,7 +835,7 @@ int TERingStack<VALUE, VALUE_TYPE, Implement>::CopyElements( const TERingStack<V
             for ( int i = 0; i < source.mElemCount; i ++, result ++ )
             {
                 VALUE * block = mStackList + mLastPosition;
-                NEMemory::ConstructElems<VALUE>(block, 1);
+                NEMemory::constructElems<VALUE>(block, 1);
                 *block          = source.mStackList[srcStart];
                 mLastPosition   = (mLastPosition + 1) % mCapacity;
                 srcStart        = ( srcStart + 1 ) % source.mCapacity;
@@ -835,8 +853,8 @@ int TERingStack<VALUE, VALUE_TYPE, Implement>::CopyElements( const TERingStack<V
                     for ( int i = 0; i < source.mElemCount; i ++, result ++ )
                     {
                         VALUE * block = mStackList + mLastPosition;
-                        NEMemory::DestroyElems<VALUE>(block, 1);
-                        NEMemory::ConstructElems<VALUE>(block, 1);
+                        NEMemory::destroyElems<VALUE>(block, 1);
+                        NEMemory::constructElems<VALUE>(block, 1);
                         *block          = source.mStackList[srcStart];
                         mLastPosition   = (mLastPosition + 1) % mCapacity;
                         srcStart        = ( srcStart + 1 ) % source.mCapacity;
@@ -851,13 +869,13 @@ int TERingStack<VALUE, VALUE_TYPE, Implement>::CopyElements( const TERingStack<V
                 break;
 
             case ResizeOnOvelap:
-                if ( Resize( (mCapacity > 0 ? mCapacity : 1) * 2 ) > (mElemCount + 1 ))
+                if ( resize( (mCapacity > 0 ? mCapacity : 1) * 2 ) > (mElemCount + 1 ))
                 {
                     ASSERT(mCapacity >= mElemCount + 1);
                     for ( int i = 0; i < source.mElemCount; i ++, result ++ )
                     {
                         VALUE * block = mStackList + mLastPosition;
-                        NEMemory::ConstructElems<VALUE>(block, 1);
+                        NEMemory::constructElems<VALUE>(block, 1);
                         *block = source.mStackList[srcStart];
                         mLastPosition   = (mLastPosition + 1) % mCapacity;
                         srcStart        = ( srcStart + 1 ) % source.mCapacity;
@@ -886,9 +904,9 @@ int TERingStack<VALUE, VALUE_TYPE, Implement>::CopyElements( const TERingStack<V
 }
 
 template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /*= TEListImpl<VALUE_TYPE>*/>
-int TERingStack<VALUE, VALUE_TYPE, Implement>::Resize( int newCapacity )
+int TERingStack<VALUE, VALUE_TYPE, Implement>::resize( int newCapacity )
 {
-    CELock lock(mSynchObject);
+    Lock lock(mSynchObject);
 
     if ( newCapacity != mCapacity )
     {
@@ -899,7 +917,7 @@ int TERingStack<VALUE, VALUE_TYPE, Implement>::Resize( int newCapacity )
 
         if ( newList != NULL )
         {
-            NEMemory::ConstructElems(newList, elemCount);
+            NEMemory::constructElems(newList, elemCount);
             for ( int i = 0; i < elemCount; i ++ )
             {
                 newList[dstLast ++] = mStackList[srcStart];
@@ -922,17 +940,17 @@ int TERingStack<VALUE, VALUE_TYPE, Implement>::Resize( int newCapacity )
 }
 
 template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /*= TEListImpl<VALUE_TYPE>*/>
-int TERingStack<VALUE, VALUE_TYPE, Implement>::Find(VALUE_TYPE elem, int startAt /*= CETemplateConstants::START_INDEX*/) const
+int TERingStack<VALUE, VALUE_TYPE, Implement>::find(VALUE_TYPE elem, int startAt /*= TemplateConstants::START_INDEX*/) const
 {
-    CELock lock(mSynchObject);
+    Lock lock(mSynchObject);
 
-    int result = CETemplateConstants::INVALID_INDEX;
-    int pos = startAt == CETemplateConstants::START_INDEX ? mStartPosition : startAt + 1;
+    int result = TemplateConstants::INVALID_INDEX;
+    int pos = startAt == TemplateConstants::START_INDEX ? mStartPosition : startAt + 1;
     if (pos <= mLastPosition)
     {
         while (pos <= mLastPosition)
         {
-            if (EqualValues(elem, mStackList[pos]))
+            if (equalValues(elem, mStackList[pos]))
             {
                 result = pos;
                 break;
@@ -945,7 +963,7 @@ int TERingStack<VALUE, VALUE_TYPE, Implement>::Find(VALUE_TYPE elem, int startAt
     {
         while (pos < mElemCount)
         {
-            if (EqualValues(elem, mStackList[pos]))
+            if (equalValues(elem, mStackList[pos]))
             {
                 result = pos;
                 break;
@@ -954,12 +972,12 @@ int TERingStack<VALUE, VALUE_TYPE, Implement>::Find(VALUE_TYPE elem, int startAt
             ++ pos;
         }
 
-        if (result == CETemplateConstants::INVALID_INDEX)
+        if (result == TemplateConstants::INVALID_INDEX)
         {
             pos = 0;
             while (pos <= mLastPosition)
             {
-                if (EqualValues(elem, mStackList[pos]))
+                if (equalValues(elem, mStackList[pos]))
                 {
                     result = pos;
                     break;
@@ -974,7 +992,7 @@ int TERingStack<VALUE, VALUE_TYPE, Implement>::Find(VALUE_TYPE elem, int startAt
 }
 
 template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /*= TEListImpl<VALUE_TYPE>*/>
-inline bool TERingStack<VALUE, VALUE_TYPE, Implement>::EqualValues(VALUE_TYPE Value1, VALUE_TYPE Value2) const
+inline bool TERingStack<VALUE, VALUE_TYPE, Implement>::equalValues(VALUE_TYPE Value1, VALUE_TYPE Value2) const
 {
     return Implement::ImplEqualVales(Value1, Value2);
 }
@@ -988,7 +1006,7 @@ void TERingStack<VALUE, VALUE_TYPE, Implement>::_emptyStack( void )
     {
         for ( int i = 0; i < mElemCount; i ++ )
         {
-            NEMemory::DestroyElems<VALUE>( mStackList + mStartPosition, 1 );
+            NEMemory::destroyElems<VALUE>( mStackList + mStartPosition, 1 );
             mStartPosition = ( mStartPosition + 1 ) % mCapacity;
         }
     }
@@ -1051,20 +1069,20 @@ inline const TENolockRingStack<VALUE, VALUE_TYPE, Implement> & TENolockRingStack
 template<typename V, typename VT, class Impl>
 const IEInStream & operator >> ( const IEInStream & stream, TERingStack<V, VT, Impl> & input )
 {
-    CELock lock(input.mSynchObject);
+    Lock lock(input.mSynchObject);
 
     int size = 0;
     stream >> size;
 
     input.Remove();
-    if ( input.GetCapacity() < size )
-        input.Resize(size);
+    if ( input.capacity() < size )
+        input.resize(size);
 
     for (int i = 0; i < size; i ++)
     {
         V newElement;
         stream >> newElement;
-        static_cast<void>(input.PushElement(newElement));
+        static_cast<void>(input.pushLast(newElement));
     }
 
     return stream;
@@ -1073,7 +1091,7 @@ const IEInStream & operator >> ( const IEInStream & stream, TERingStack<V, VT, I
 template<typename V, typename VT, class Impl>
 IEOutStream & operator << ( IEOutStream & stream, const TERingStack<V, VT, Impl> & output )
 {
-    CELock lock(output.mSynchObject);
+    Lock lock(output.mSynchObject);
 
     int size = output.mElemCount;
     stream << size;

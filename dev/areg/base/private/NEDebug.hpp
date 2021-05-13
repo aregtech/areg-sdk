@@ -25,7 +25,7 @@
 /************************************************************************/
 
 
-class CEStringList;
+class StringList;
 struct _EXCEPTION_POINTERS;
 
 //////////////////////////////////////////////////////////////////////////
@@ -112,7 +112,7 @@ namespace NEDebug
      * \param   out_callStack   On output this will contain the message of call stack.
      **/
 
-    void AREG_API dumpExceptionCallStack( struct _EXCEPTION_POINTERS *ep, CEStringList & out_callStack);
+    void AREG_API dumpExceptionCallStack( struct _EXCEPTION_POINTERS *ep, StringList & out_callStack);
 #endif  // _WINDOWS
 
     /**

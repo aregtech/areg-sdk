@@ -71,22 +71,22 @@ IESynchObject::operator void* ()
 //////////////////////////////////////////////////////////////////////////
 // IESynchObject class, Methods
 //////////////////////////////////////////////////////////////////////////
-void* IESynchObject::GetHandle( void ) const
+void* IESynchObject::getHandle( void ) const
 {
     return mSynchObject;
 }
 
-IESynchObject::eSyncObject IESynchObject::GetSyncObjectType( void ) const
+IESynchObject::eSyncObject IESynchObject::getObjectType( void ) const
 {
     return mSynchObjectType;
 }
 
-bool IESynchObject::Lock(unsigned int /*timeout*/ /*= WAIT_INFINITE */)
+bool IESynchObject::lock(unsigned int /*timeout*/ /*= WAIT_INFINITE */)
 {
     return false;
 }
 
-bool IESynchObject::Unlock(void)
+bool IESynchObject::unlock(void)
 {
     return false;
 }

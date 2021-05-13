@@ -4,8 +4,8 @@
 
 /************************************************************************
  * (c) copyright    2021
- *                  Create by AREGtech code generator tool from source DirectMessager.
- * Generated at     25.04.2021  23:50:46 GMT+02:00 
+ *                  Create by AREG SDK code generator tool from source DirectMessager.
+ * Generated at     12.05.2021  16:41:24 GMT+02:00 
  ************************************************************************/
 
 /************************************************************************
@@ -28,66 +28,67 @@ static NEService::SInterfaceData & _getInterfaceData(void)
     /**
      * \brief   DirectMessager Service Interface data
      **/
-    static NEService::SInterfaceData InterfaceData;
+    static NEService::SInterfaceData _InterfaceData;
 
-    if (InterfaceData.idIsInitialized == false)
+    if (_InterfaceData.idIsInitialized == false)
     {
-        InterfaceData.idServiceName     = NEDirectMessager::ServiceName;
-        InterfaceData.idVersion         = NEDirectMessager::InterfaceVersion;
-        InterfaceData.idServiceType     = NEService::ServiceRemote;
-        InterfaceData.idRequestCount    = NEDirectMessager::NumberofRequests;
-        InterfaceData.idResponseCount   = NEDirectMessager::NumberofResponses;
-        InterfaceData.idAttributeCount  = NEDirectMessager::NumberofAttributes;
+        _InterfaceData.idServiceName    = NEDirectMessager::ServiceName;
+        _InterfaceData.idVersion        = NEDirectMessager::InterfaceVersion;
+        _InterfaceData.idServiceType    = NEService::ServiceRemote;
+        _InterfaceData.idRequestCount   = NEDirectMessager::NumberofRequests;
+        _InterfaceData.idResponseCount  = NEDirectMessager::NumberofResponses;
+        _InterfaceData.idAttributeCount = NEDirectMessager::NumberofAttributes;
 
         /**
          * \brief   The map of requests and responses
          **/
-        static const unsigned int RequestToResponseMap[] = 
+        static const unsigned int _RequestToResponseMap[] = 
         {
-              static_cast<unsigned int>( NEDirectMessager::MSG_ID_ResponseChatJoin            ) // RequestChatJoin( const NEDirectMessager::sParticipant & participant, const CEDateTime & timeConnect )
-            , static_cast<unsigned int>( NEDirectMessager::MSG_ID_NO_PROCEED                  ) // RequestMessageSend( const NEDirectMessager::sParticipant & sender, const CEString & msgText, const CEDateTime & timeSent )
-            , static_cast<unsigned int>( NEDirectMessager::MSG_ID_NO_PROCEED                  ) // RequestMessageType( const NEDirectMessager::sParticipant & participant, const CEString & msgText )
-            , static_cast<unsigned int>( NEDirectMessager::MSG_ID_NO_PROCEED                  ) // RequestChatLeave( const NEDirectMessager::sParticipant & participant, const CEDateTime & timeLeave )
+              static_cast<unsigned int>( NEDirectMessager::MSG_ID_responseChatJoin            ) // requestChatJoin( const NEDirectMessager::sParticipant & participant, const DateTime & timeConnect )
+            , static_cast<unsigned int>( NEDirectMessager::MSG_ID_NO_PROCEED                  ) // requestMessageSend( const NEDirectMessager::sParticipant & sender, const String & msgText, const DateTime & timeSent )
+            , static_cast<unsigned int>( NEDirectMessager::MSG_ID_NO_PROCEED                  ) // requestMessageType( const NEDirectMessager::sParticipant & participant, const String & msgText )
+            , static_cast<unsigned int>( NEDirectMessager::MSG_ID_NO_PROCEED                  ) // requestChatLeave( const NEDirectMessager::sParticipant & participant, const DateTime & timeLeave )
         };
 
         /**
          * \brief   Initialization of map of parameter entry validation map in responses and in broadcasts
          **/
-        static const unsigned int ResponseParamStateMap[] = 
+        static const unsigned int _ResponseParamStateMap[] = 
         {
         /************************************************************************
          * Responses
          ************************************************************************/
-            4, // void ResponseChatJoin( const bool & succeed, const NEDirectMessager::ListParticipants & listParticipant, const CEDateTime & timeConnect, const CEDateTime & timeConnected )
+            4, // void responseChatJoin( bool succeed, const NEDirectMessager::ListParticipants & listParticipant, const DateTime & timeConnect, const DateTime & timeConnected )
 
         /************************************************************************
          * Broadcasts
          ************************************************************************/
-            3, // void BroadcastMessageSent( const NEDirectMessager::sParticipant & sender, const CEString & msgText, const CEDateTime & timeSent )
-            2, // void BroadcastMessageTyped( const NEDirectMessager::sParticipant & participant, const CEString & msgText )
-            2, // void BroadcastParticipantJoined( const NEDirectMessager::sParticipant & participant, const CEDateTime & timeJoined )
-            2, // void BroadcastParticipantLeft( const NEDirectMessager::sParticipant & participant, const CEDateTime & timeLeft )
-            0, // void BroadcastChatClosed( void )
+            3, // void broadcastMessageSent( const NEDirectMessager::sParticipant & sender, const String & msgText, const DateTime & timeSent )
+            2, // void broadcastMessageTyped( const NEDirectMessager::sParticipant & participant, const String & msgText )
+            2, // void broadcastParticipantJoined( const NEDirectMessager::sParticipant & participant, const DateTime & timeJoined )
+            2, // void broadcastParticipantLeft( const NEDirectMessager::sParticipant & participant, const DateTime & timeLeft )
+            0, // void broadcastChatClosed( void )
 
         };
 
-        InterfaceData.idRequestToResponseMap    = RequestToResponseMap;
-        InterfaceData.idResponseParamCountMap   = ResponseParamStateMap;
-        InterfaceData.idIsInitialized           = true;
+        _InterfaceData.idRequestToResponseMap   = _RequestToResponseMap;
+        _InterfaceData.idResponseParamCountMap  = _ResponseParamStateMap;
+        _InterfaceData.idIsInitialized          = true;
     }
-    return InterfaceData;
+    
+    return _InterfaceData;
 }
 
 //////////////////////////////////////////////////////////////////////////
 // NEDirectMessager functions implementation
 //////////////////////////////////////////////////////////////////////////
 
-const NEService::SInterfaceData & NEDirectMessager::CreateInterfaceData( void )
+const NEService::SInterfaceData & NEDirectMessager::createInterfaceData( void )
 {
     return _getInterfaceData();
 }
 
-NEDirectMessager::eMessageIDs NEDirectMessager::GetResponseId( NEDirectMessager::eMessageIDs reqId )
+NEDirectMessager::eMessageIDs NEDirectMessager::getResponseId( NEDirectMessager::eMessageIDs reqId )
 {
     const NEService::SInterfaceData & sid = _getInterfaceData();
 
@@ -95,7 +96,7 @@ NEDirectMessager::eMessageIDs NEDirectMessager::GetResponseId( NEDirectMessager:
     return  ( index >= 0 && index < static_cast<int>(sid.idRequestCount) ? static_cast<NEDirectMessager::eMessageIDs>(sid.idRequestToResponseMap[index]) : NEDirectMessager::MSG_ID_INVALID );
 }
 
-NEDirectMessager::eMessageIDs NEDirectMessager::GetRequestId( NEDirectMessager::eMessageIDs respId )
+NEDirectMessager::eMessageIDs NEDirectMessager::getRequestId( NEDirectMessager::eMessageIDs respId )
 {
     const NEService::SInterfaceData & sid = _getInterfaceData();
     NEDirectMessager::eMessageIDs result = NEDirectMessager::MSG_ID_INVALID;

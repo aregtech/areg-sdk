@@ -16,16 +16,20 @@
 #include "areg/base/NEString.hpp"
 #include "areg/base/NEMemory.hpp"
 
+/**
+ * \brief   Namespace to work with strings in various UTF formats.
+ *          NOTE: This namespace is incomplete.
+ **/
 namespace NEUtfString
 {
     /**
      * \brief   NEUtfString::CharPos, Definition of character position type in string
      **/
-    typedef NECommon::CharPos       CharPos;
+    typedef NECommon::ElemPos       CharPos;
     /**
      * \brief   NEUtfString::CharCount, Definition of character counting type in string
      **/
-    typedef NECommon::CharCount     CharCount;
+    typedef NECommon::ElemCount     CharCount;
 
     /**
      * \brief   NEUtfString::Char, ASCII character
@@ -306,6 +310,9 @@ namespace NEUtfString
      **/
     inline eEncoding bom2Encode( eBOM bom );
 
+    /**
+     * \brief   Returns appropriate encoding based on type.
+     **/
     template<typename CharType>
     inline eEncoding getEncoding( void );
     template<>
@@ -719,7 +726,7 @@ namespace NEUtfString
      *          If 'endPos' is NEUtfString::EndPos, it will count number of characters until the end.
      * \return  Returns number symbols starting at 'startPos' until given 'endPos'.
      **/
-    CharCount charCount(const sUtf8String & utfString, CharPos startPos = StartPos, CharPos endPos = EndPos);
+    CharCount getCharCount(const sUtf8String & utfString, CharPos startPos = StartPos, CharPos endPos = EndPos);
 
     /**
      * \brief   Converts given UTF-16 string to UTF-8. The conversion starts at characters from
@@ -736,7 +743,7 @@ namespace NEUtfString
      * \return  The number of characters copied to destination. If the destination UTF-8 string is NULL,
      *          the return value is MNFUtfString::InvalidPos.
      **/
-    CharCount convertUtf16ToUtf8( sUtf8String *& utf8Destination, const sUtf16String &utf16Source, CharPos startPos = StartPos, CharCount charCount = EndPos );
+    CharCount convUtf16ToUtf8( sUtf8String *& utf8Destination, const sUtf16String &utf16Source, CharPos startPos = StartPos, CharCount charCount = EndPos );
 
     /**
      * \brief   Converts given UTF-8 string to UTF-16. The conversion starts at characters from
@@ -753,7 +760,7 @@ namespace NEUtfString
      * \return  The number of characters copied to destination. If the destination UTF-16 string is NULL,
      *          the return value is MNFUtfString::InvalidPos.
      **/
-    CharCount convertUtf8ToUtf16( sUtf16String *& utf16Destination, const sUtf8String &utf8Source, CharPos startPos = StartPos, CharCount charCount = EndPos );
+    CharCount convUtf8ToUtf16( sUtf16String *& utf16Destination, const sUtf8String &utf8Source, CharPos startPos = StartPos, CharCount charCount = EndPos );
 
     /**
      * \brief   Converts given UTF-32 string to UTF-8. The conversion starts at characters from
@@ -770,7 +777,7 @@ namespace NEUtfString
      * \return  The number of characters copied to destination. If the destination UTF-8 string is NULL,
      *          the return value is MNFUtfString::InvalidPos.
      **/
-    CharCount convertUtf32ToUtf8( sUtf8String *& utf8Destination, const sUtf32String &utf32Source, CharPos startPos = StartPos, CharCount charCount = EndPos );
+    CharCount convUtf32ToUtf8( sUtf8String *& utf8Destination, const sUtf32String &utf32Source, CharPos startPos = StartPos, CharCount charCount = EndPos );
 
     /**
      * \brief   Converts given UTF-8 string to UTF-32. The conversion starts at characters from
@@ -787,9 +794,13 @@ namespace NEUtfString
      * \return  The number of characters copied to destination. If the destination UTF-32 string is NULL,
      *          the return value is MNFUtfString::InvalidPos.
      **/
-    CharCount convertUtf8ToUtf32( sUtf32String *& utf32Destination, const sUtf8String &utf8Source, CharPos startPos = StartPos, CharCount charCount = EndPos );
+    CharCount convUtf8ToUtf32( sUtf32String *& utf32Destination, const sUtf8String &utf8Source, CharPos startPos = StartPos, CharCount charCount = EndPos );
 
 }
+
+//////////////////////////////////////////////////////////////////////////
+// NEUtfString namespace function templates or inline methods implementation
+//////////////////////////////////////////////////////////////////////////
 
 template<typename CharType>
 inline NEUtfString::eEncoding NEUtfString::getEncoding( void )
@@ -997,7 +1008,7 @@ NEUtfString::SUtfString<CharType> * NEUtfString::reserveSpace(  const NEUtfStrin
             hdr->utfUsed    = utfString.utfHeader.utfUsed;
             hdr->utfCount   = utfString.utfHeader.utfCount;
             result          = reinterpret_cast<NEUtfString::SUtfString<CharType> *>(hdr);
-            NEMemory::CopyElems<CharType, CharType>( result->utfBuffer, utfString.utfBuffer, utfString.utfHeader.utfUsed );
+            NEMemory::copyElems<CharType, CharType>( result->utfBuffer, utfString.utfBuffer, utfString.utfHeader.utfUsed );
         }
     }
     return result;

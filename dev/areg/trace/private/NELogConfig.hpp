@@ -13,7 +13,7 @@
 #include "areg/base/GEGlobal.h"
 #include "areg/trace/NETrace.hpp"
 #include "areg/appbase/NEApplication.hpp"
-#include "areg/base/CEString.hpp"
+#include "areg/base/String.hpp"
 
  //////////////////////////////////////////////////////////////////////////
  // NELogConfig namespace declaration
@@ -58,7 +58,7 @@ namespace NELogConfig
     /**
      * \brief   Converts and returns the string of NELogConfig::eLogConfig value
      **/
-    inline const char * GetString( NELogConfig::eLogConfig logConfig );
+    inline const char * getString( NELogConfig::eLogConfig logConfig );
 
     /**
      * \brief   Returns the log configuration type parsed from syntax of passed command string.
@@ -67,7 +67,7 @@ namespace NELogConfig
      *          Otherwise, returns ConfigUnknown value.
      * \see     ToString, NELogConfig::eLogConfig
      **/
-    NELogConfig::eLogConfig FromString( const char * cmdSyntax );
+    NELogConfig::eLogConfig convFromString( const char * cmdSyntax );
     
     /**
      * \brief   Converts the log configuration type to command string syntax.
@@ -76,7 +76,7 @@ namespace NELogConfig
      *          if type is undefined
      * \see     FromString, NELogConfig::eLogConfig
      **/
-    const char * ToString( NELogConfig::eLogConfig logConfig );
+    const char * convToString( NELogConfig::eLogConfig logConfig );
 
     /**
      * \brief   NELogConfig::eLogStatus
@@ -111,7 +111,7 @@ namespace NELogConfig
      *          In this example, the 'enter scope' makes output in following sequence and format:
      *          <timestamp / day-time>: [ <tick-count>.<thread-ID> <module-name>.<scope-name>: Enter ---> ] \n
      *          for example like this:
-     *          2019-07-04 14:34:47,969: [ 1587.17524  distrbutedapp.distrbutedapp_CEConnectionServicing_CreateComponent: Enter --> ]
+     *          2019-07-04 14:34:47,969: [ 1587.17524  distrbutedapp.distrbutedapp_ConnectionServicing_CreateComponent: Enter --> ]
      **/
     typedef enum E_Layouts
     {
@@ -183,19 +183,14 @@ namespace NELogConfig
     const char * const      SYNTAX_DELIMITERS                   = " \t";
 
     /**
-     * \brief   List of valid whitespace symbols
-     **/
-    const char * const      SYNTAX_WHITESPACES                  = "\t\r\n";
-
-    /**
      * \brief   Boolean syntax 'true'
      **/
-    const char * const      SYNTAX_TRUE                         = CEString::BOOLEAN_TRUE;
+    const char * const      SYNTAX_TRUE                         = String::BOOLEAN_TRUE;
 
     /**
      * \brief   Boolean syntax 'false'
      **/
-    const char * const      SYNTAX_FALSE                        = CEString::BOOLEAN_FALSE;
+    const char * const      SYNTAX_FALSE                        = String::BOOLEAN_FALSE;
 
     /**
      * \brief   The logical OR operation used setting scope priorities only
@@ -297,17 +292,17 @@ namespace NELogConfig
     /**
      * \brief   Use timestamp in name (file name, database name)
      **/
-    extern const char * const      LOG_FILENAME_MASK_TIMESTAMP  /*= CEFile::FILE_MASK_TIMESTAMP*/;  // %time%
+    extern const char * const      LOG_FILENAME_MASK_TIMESTAMP  /*= File::FILE_MASK_TIMESTAMP*/;  // %time%
 
     /**
      * \brief   Log in special folder for application data
      **/
-    extern const char * const      LOG_FILE_NAME_MASK_APPDATA   /*= CEFile::FILE_MASK_APP_DATA*/;   // %appdata%
+    extern const char * const      LOG_FILE_NAME_MASK_APPDATA   /*= File::FILE_MASK_APP_DATA*/;   // %appdata%
 
     /**
      * \brief   The timestamp format to output when generate name
      **/
-    extern const char * const      LOG_FORMAT_TIMESTAMP         /*= CEFile::TIMESTAMP_FORMAT*/;     // "%04d_%02d_%02d_%02d_%02d_%02d_%03d" ==> yyyy_mm_dd_hh_mm_ss_ms
+    extern const char * const      LOG_FORMAT_TIMESTAMP         /*= File::TIMESTAMP_FORMAT*/;     // "%04d_%02d_%02d_%02d_%02d_%02d_%03d" ==> yyyy_mm_dd_hh_mm_ss_ms
 
     /**
      * \brief   Format of timestamp to display logs
@@ -378,7 +373,7 @@ namespace NELogConfig
     /**
      * \brief   Default value of string, if not set in configuration file
      **/
-    const char * const      DEFAULT_STRING_VALUE                = CEString::EmptyString;
+    const char * const      DEFAULT_STRING_VALUE                = String::EmptyString;
 
     /**
      * \brief   Default delimiter
@@ -443,7 +438,7 @@ namespace NELogConfig
 //////////////////////////////////////////////////////////////////////////
 // NELogConfig namespace inline method implementation
 //////////////////////////////////////////////////////////////////////////
-inline const char * NELogConfig::GetString( NELogConfig::eLogConfig logConfig )
+inline const char * NELogConfig::getString( NELogConfig::eLogConfig logConfig )
 {
     switch ( logConfig )
     {
