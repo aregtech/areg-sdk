@@ -148,16 +148,16 @@ ThreadLocalStorage* Thread::_getThreadLocalStorage( Thread* ownThread /*= Thread
 Thread::Thread(IEThreadConsumer &threadConsumer, const char* threadName /* = NULL */)
     : RuntimeObject   ( )
 
+    , mThreadConsumer   (threadConsumer)
     , mThreadHandle     (Thread::INVALID_THREAD_HANDLE)
     , mThreadId         (Thread::INVALID_THREAD_ID)
     , mThreadAddress    (NEString::isEmpty<char>(threadName) == false ? threadName : NEUtilities::generateName(Thread::DEFAULT_THREAD_PREFIX).getString())
+    , mThreadPriority   (Thread::PriorityUndefined)
     , mIsRunning        (static_cast<unsigned int>(0))
-    , mThreadConsumer   (threadConsumer)
 
     , mSynchObject      ( )
     , mWaitForRun       (false, false)
     , mWaitForExit      (false, false)
-    , mThreadPriority   (Thread::PriorityUndefined)
 {
     mWaitForExit.setEvent();
 }

@@ -517,6 +517,10 @@ protected:
 protected:
 
     /**
+     * \brief   Reference to Thread Consumer interface
+     **/
+    IEThreadConsumer &      mThreadConsumer;
+    /**
      * \brief   Thread handle
      **/
     THREADHANDLE            mThreadHandle;
@@ -529,13 +533,13 @@ protected:
      **/
     const ThreadAddress     mThreadAddress;
     /**
+     * \brief   The thread current priority level.
+     **/
+    Thread::eThreadPriority mThreadPriority;
+    /**
      * \brief   Flag indicating whether thread is running or not.
      **/
     InterlockedValue        mIsRunning;
-    /**
-     * \brief   Reference to Thread Consumer interface
-     **/
-    IEThreadConsumer &      mThreadConsumer;
     /**
      * \brief   Object to synchronize data access
      **/
@@ -548,10 +552,6 @@ protected:
      * \brief   Synchronization Event object, signaled when thread completes running and going to exist
      **/
     SynchEvent              mWaitForExit;
-    /**
-     * \brief   The thread current priority level.
-     **/
-    Thread::eThreadPriority mThreadPriority;
 
 //////////////////////////////////////////////////////////////////////////
 // Private / Hidden types, variables and methods

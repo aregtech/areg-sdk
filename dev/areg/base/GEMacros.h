@@ -12,25 +12,13 @@
     #define IN
 #endif  // IN
 
-#ifndef in
-    #define in
-#endif  // in
-
 #ifndef OUT
     #define OUT
 #endif  // OUT
 
-#ifndef out
-    #define out
-#endif  // out
-
 #ifndef OPTIONAL
     #define OPTIONAL
 #endif  // OPTIONAL
-
-#ifndef optional
-    #define optional
-#endif  // optional
 
 /**
  * \brief   An empty MACRO, does nothing
@@ -415,7 +403,7 @@
      * \brief   Output Debug message, will have "DBG" prefix
      **/
     #ifndef OUTPUT_DBG
-        #if defined(OUTPUT_DEBUG_LEVEL) && (OUTPUT_DEBUG_LEVEL == OUTPUT_DEBUG_LEVEL_DEBUG)
+        #if defined(OUTPUT_DEBUG_LEVEL) && (OUTPUT_DEBUG_LEVEL >= OUTPUT_DEBUG_LEVEL_DEBUG)
             #define OUTPUT_DBG(...)             NEDebug::outputConsole(NEDebug::PRIO_DBG, __VA_ARGS__)
         #else
             #define OUTPUT_DBG(...)             EMPTY_MACRO
