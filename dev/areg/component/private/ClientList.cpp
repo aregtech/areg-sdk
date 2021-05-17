@@ -80,7 +80,7 @@ const ClientInfo & ClientList::registerClient( const ProxyAddress & whichClient,
             break;
     }
     if (pos == NULL)
-        pos = pushFirst( clientInfo );
+        pos = pushLast( clientInfo );
 
     ClientInfo & client = getAt(pos);
     client.setTargetServer( server.getAddress() );
@@ -129,8 +129,9 @@ void ClientList::serverUnavailable( ClientList & out_clientList )
         ClientInfo & client = getAt( pos );
         client.setTargetServer( StubAddress::INVALID_STUB_ADDRESS );
         client.setConnectionStatus( NEService::ServicePending );
-        out_clientList.pushFirst(client);
-#if 1
+        out_clientList.pushLast(client);
+#if 0
+
         if ( client.getAddress().isRemoteAddress() )
         {
             pos = nextPosition(pos);
@@ -142,6 +143,11 @@ void ClientList::serverUnavailable( ClientList & out_clientList )
             pos = nextPosition(pos);
             // RemoveAt(oldPos);
         }
+
+#else
+
+        pos = nextPosition(pos);
+
 #endif
     }
 }

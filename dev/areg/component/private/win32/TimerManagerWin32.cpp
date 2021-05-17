@@ -110,7 +110,7 @@ bool TimerManager::_startSystemTimer( TimerInfo & timerInfo, MapTimerTable & tim
 void TimerManager::_defaultWindowsTimerExpiredRoutine( void * argPtr, unsigned long lowValue, unsigned long highValue )
 {
     ASSERT(argPtr != NULL);
-    TimerManager::getInstance().isTimerExpired(reinterpret_cast<Timer *>(argPtr), highValue, lowValue);
+    TimerManager::getInstance()._timerExpired(reinterpret_cast<Timer *>(argPtr), highValue, lowValue);
 }
 
 #endif // _WINDOWS

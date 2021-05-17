@@ -70,31 +70,14 @@ public:
     static const char * const   TEMP_FILE_PREFIX    /*= "_areg"*/;
 
     /**
-     * \brief   File::TIMESTAMP_FILE_MASK
-     *          Mask used in file name to set timestamp
+     * \brief   Current directory
      **/
-    static const char * const   FILE_MASK_TIMESTAMP /*= "%time%"*/;
+    static const char           DIR_CURRENT[]       /*= '.'*/;
 
     /**
-     * \brief   The length of FILE_MASK_TIMESTAMP string.
+     * \brief   Parent directory
      **/
-    static const int            FILE_MASK_TIMESTAMP_LEN;
-
-    /**
-     * \brief   File::TIMESTAMP_FORMAT
-     *          Default timestamp format, used as yyyy_mm_dd_hh_mm_ss_ms
-     **/
-    static const char * const   TIMESTAMP_FORMAT   /*= "%04d_%02d_%02d_%02d_%02d_%02d_%03d"*/; // yyyy_mm_dd_hh_mm_ss_ms
-
-    /**
-     * \brief   The name of application to add in file name or path
-     **/
-    static const char * const   FILE_MASK_APPNAME   /*= "%appname%"*/;
-
-    /**
-     * \brief   The length of FILE_MASK_APPNAME string.
-     **/
-    static const int            FILE_MASK_APPNAME_LEN;
+    static const char           DIR_PARENT[]        /*= ".."*/;
 
     /**
      * \brief   File::EXTENSION_SEPARATOR
@@ -266,15 +249,6 @@ public:
 /************************************************************************/
 // IEInStream interface overrides
 /************************************************************************/
-    /**
-     * \brief	Read data from input stream object, copies into given buffer and
-     *          returns the size of copied data. In this class it reads data from
-     *          opened file.
-     * \param	buffer	The pointer to buffer to copy data from input object
-     * \param	size	The size in bytes of available buffer
-     * \return	Returns the size in bytes of copied data
-     **/
-    virtual unsigned int read( unsigned char* buffer, unsigned int size ) const;
 
     /**
      * \brief   Reads data from input stream object, copies into give Byte Buffer object
@@ -302,20 +276,18 @@ public:
      **/
     virtual unsigned int read( WideString & wideString ) const;
 
+    /**
+     * \brief	Reads data from input stream object, copies into given buffer and
+     *          returns the size of copied data
+     * \param	buffer	The pointer to buffer to copy data from input object
+     * \param	size	The size in bytes of available buffer
+     * \return	Returns the size in bytes of copied data
+     **/
+    virtual unsigned int read( unsigned char * buffer, unsigned int size ) const;
+
 /************************************************************************/
 // IEOutStream interface overrides
 /************************************************************************/
-    /**
-     * \brief	Write data to output stream object from given buffer
-     *          and returns the size of written data. In this class 
-     *          writes data into opened file.
-     * \param	buffer	The pointer to buffer to read data and 
-     *          copy to output stream object
-     * \param	size	The size in bytes of data buffer
-     * \return	Returns the size in bytes of written data
-     **/
-    virtual unsigned int write( const unsigned char* buffer, unsigned int size );
-
     /**
      * \brief	Writes Binary data from Byte Buffer object to Output Stream object
      *          and returns the size of written data. Overwrite this method if need 
@@ -340,6 +312,17 @@ public:
      * \return  Returns the size in bytes of copied string data.
      **/
     virtual unsigned int write( const WideString & wideString );
+
+    /**
+     * \brief	Write data to output stream object from given buffer
+     *          and returns the size of written data. In this class 
+     *          writes data into opened file.
+     * \param	buffer	The pointer to buffer to read data and 
+     *          copy to output stream object
+     * \param	size	The size in bytes of data buffer
+     * \return	Returns the size in bytes of written data
+     **/
+    virtual unsigned int write( const unsigned char* buffer, unsigned int size );
 
     /**
      * \brief   Clears the buffers for the file and causes all buffered data 

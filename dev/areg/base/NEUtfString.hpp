@@ -496,14 +496,14 @@ namespace NEUtfString
     /**
     * \brief   Initializes empty UTF String structure based on requested Encoding, sets initial parameters and specifies encoding.
     *          New created UTF String is empty.
-    * \param   encode      The encoding of UTF String
     * \param   charCount   The minimum space to reserve to fill initial characters.
+    * \param   encode      The encoding of UTF String
     * \param   blockSize   The size of minimum block to allocate. When allocates string buffer,
     *                      the size is aligned to blockSize value. Bu default, it is NEUtfString::DEFAULT_BLOCK_SIZE
     * \return  Returns valid pointer if space is allocated and UTF string is initialized. Otherwise, it returns NULL.
     *          Note, if function returns valid pointer, the passed 'utfString' should be manually released.
     **/
-    sUtfStringHeader * initString( eEncoding encode, CharCount charCount, unsigned int blockSize = DEFAULT_BLOCK_SIZE);
+    sUtfStringHeader * initString( CharCount charCount, NEUtfString::eEncoding encode, unsigned int blockSize = DEFAULT_BLOCK_SIZE);
 
     /**
      * \brief   Reads UTF-8 character of sequence length 1 starting at given position.
@@ -995,14 +995,14 @@ inline void NEUtfString::releaseString( NEUtfString::SUtfString<CharType> & utfS
 }
 
 template<typename CharType>
-NEUtfString::SUtfString<CharType> * NEUtfString::reserveSpace(  const NEUtfString::SUtfString<CharType> & utfString
-                                                        , NEUtfString::CharCount charCount
-                                                        , unsigned int blockSize /*= DEFAULT_BLOCK_SIZE*/ )
+NEUtfString::SUtfString<CharType> * NEUtfString::reserveSpace( const NEUtfString::SUtfString<CharType> & utfString
+                                                             , NEUtfString::CharCount charCount
+                                                             , unsigned int blockSize /*= DEFAULT_BLOCK_SIZE*/ )
 {
     NEUtfString::SUtfString<CharType> * result = NULL;
     if ( charCount >= utfString.utfHeader.utfSpace )
     {
-        NEUtfString::sUtfStringHeader * hdr = initString( utfString.utfHeader.utfEncode, charCount, blockSize );
+        NEUtfString::sUtfStringHeader * hdr = initString( charCount, utfString.utfHeader.utfEncode, blockSize );
         if ( hdr != NULL )
         {
             hdr->utfUsed    = utfString.utfHeader.utfUsed;

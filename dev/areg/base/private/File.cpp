@@ -24,18 +24,15 @@
 //////////////////////////////////////////////////////////////////////////
 // defined constants
 //////////////////////////////////////////////////////////////////////////
-const char * const  File::SPEACIAL_MASKS[]    = {"%home%", "%personal", "%appdata%", "%temp%"};
-const int           File::LEN_SPECIAL_MASKS   = MACRO_ARRAYLEN(SPEACIAL_MASKS);
-const char * const  File::TEMP_FILE_PREFIX    = "_areg";
-const char * const  File::FILE_MASK_TIMESTAMP = "%time%";
-const char * const  File::TIMESTAMP_FORMAT    = "%04d_%02d_%02d_%02d_%02d_%02d_%03d"; // yyyy_mm_dd_hh_mm_ss_ms
-const char * const  File::FILE_MASK_APPNAME   = "%appname%";
-const char          File::EXTENSION_SEPARATOR = '.';
-const char          File::UNIX_SEPARATOR      = '/';
-const char          File::DOS_SEPARATOR       = '\\';
+const char * const  File::SPEACIAL_MASKS[]      = {"%home%", "%personal", "%appdata%", "%temp%"};
+const int           File::LEN_SPECIAL_MASKS     = MACRO_ARRAYLEN(SPEACIAL_MASKS);
+const char * const  File::TEMP_FILE_PREFIX      = "_areg";
+const char          File::EXTENSION_SEPARATOR   = '.';
+const char          File::UNIX_SEPARATOR        = '/';
+const char          File::DOS_SEPARATOR         = '\\';
+const char          File::DIR_CURRENT[]         = {'.', '\0'};
+const char          File::DIR_PARENT[]          = {'.', '.', '\0'};
 
-const int           File::FILE_MASK_TIMESTAMP_LEN = NEString::getStringLength<char>(File::FILE_MASK_TIMESTAMP);
-const int           File::FILE_MASK_APPNAME_LEN   = NEString::getStringLength<char>(File::FILE_MASK_APPNAME);
 //////////////////////////////////////////////////////////////////////////
 // Constructors / destructor
 //////////////////////////////////////////////////////////////////////////
@@ -83,16 +80,6 @@ bool File::open(const char* fileName, unsigned int mode)
     return result;
 }
 
-unsigned int File::read( String & asciiString ) const
-{
-    return readString(asciiString);
-}
-
-unsigned int File::read( WideString & wideString ) const
-{
-    return readString(wideString);
-}
-
 unsigned int File::getSizeReadable( void ) const
 {
     unsigned int lenRead = 0;
@@ -104,22 +91,6 @@ unsigned int File::getSizeReadable( void ) const
     }
     ASSERT(lenRead <= lenUsed);
     return (lenUsed - lenRead);
-}
-
-unsigned int File::write( const String & asciiString )
-{
-    const char * buffer = asciiString.getString();
-    unsigned int legth  = isTextMode() != 0 ? asciiString.getLength() : asciiString.getUsedSize();
-
-    return write(reinterpret_cast<const unsigned char *>(buffer), legth * sizeof(char));
-}
-
-unsigned int File::write( const WideString & wideString )
-{
-    const wchar_t * buffer  = wideString.getString();
-    unsigned int legth      = isTextMode() != 0 ? wideString.getLength() : wideString.getUsedSize();
-
-    return write(reinterpret_cast<const unsigned char *>(buffer), legth * sizeof(wchar_t));
 }
 
 unsigned int File::getSizeWritable( void ) const
@@ -165,17 +136,30 @@ bool File::isOpened() const
 
 inline bool File::_nameHasCurrentFolder(const char * filePath, bool skipSep)
 {
-    return ( (NEString::isEmpty<char>(filePath) == false) &&
-             (filePath[0] == '.') &&
-             (skipSep || (filePath[1] == '/') || (filePath[1] == '\\')));
+    bool result = false;
+    if (NEString::isEmpty<char>(filePath) == false)
+    {
+        if (filePath[0] == File::DIR_CURRENT[0])
+        {
+            result = (skipSep && filePath[1] == NEString::EndOfString) || (filePath[1] == File::UNIX_SEPARATOR) ||  (filePath[1] == File::DOS_SEPARATOR);
+        }
+    }
+
+    return result;
 }
 
 inline bool File::_nameHasParentFolder(const char * filePath, bool skipSep)
 {
-    return ( (NEString::isEmpty<char>(filePath) == false) &&
-             (filePath[0] == '.') &&
-             (filePath[1] == '.') &&
-             (skipSep || (filePath[2] == '/') || (filePath[2] == '\\')));
+    bool result = false;
+    if (NEString::isEmpty<char>(filePath) == false)
+    {
+        if ((filePath[0] == File::DIR_PARENT[0]) && (filePath[1] == File::DIR_PARENT[1]))
+        {
+            result = (skipSep && filePath[2] == NEString::EndOfString) || (filePath[2] == File::UNIX_SEPARATOR) ||  (filePath[2] == File::DOS_SEPARATOR);
+        }
+    }
+
+    return result;
 }
 
 String File::genTempFileName()
@@ -282,10 +266,10 @@ String File::normalizePath( const char * fileName )
     StringList list;
     if (fileName != NULL)
     {
-        if ( File::_nameHasCurrentFolder(fileName, false) )
+        if ( File::_nameHasCurrentFolder(fileName, false) || _nameHasParentFolder(fileName, false) )
         {
-            String cd = File::getCurrentDir();
-            File::splitPath(cd.getString(), list);
+            String curDir = File::getCurrentDir();
+            File::splitPath(curDir.getString(), list);
 #ifndef WINDOWS
             list.pushFirst(_PSEUDO_ROOT);
 #endif // WINDOWS
@@ -319,13 +303,7 @@ String File::normalizePath( const char * fileName )
     for (LISTPOS pos = list.firstPosition(); pos != NULL; )
     {
         const String & node = list.getAt(pos);
-        if (File::_nameHasCurrentFolder(node, true))
-        {
-            LISTPOS next = list.nextPosition(pos);
-            list.removeAt(pos);
-            pos = next;
-        }
-        else if (File::_nameHasParentFolder(node, true))
+        if (File::_nameHasParentFolder(node, true))
         {
             LISTPOS next = list.nextPosition(pos);
             LISTPOS prev = list.prevPosition(pos);
@@ -342,6 +320,12 @@ String File::normalizePath( const char * fileName )
             
             pos = next;
         }
+        else if (File::_nameHasCurrentFolder(node, true))
+        {
+            LISTPOS next = list.nextPosition(pos);
+            list.removeAt(pos);
+            pos = next;
+        }
         else
         {
             pos = list.nextPosition(pos);
@@ -350,11 +334,6 @@ String File::normalizePath( const char * fileName )
 
     if (isInvalid || list.isEmpty())
         return result;
-
-    char fmt[32];
-    NEUtilities::sSystemTime st;
-    DateTime::getNow(st);
-    String::formatString(fmt, 32, File::TIMESTAMP_FORMAT, st.stYear, st.stMonth, st.stDay, st.stHour, st.stMinute, st.stSecond, st.stMillisecs);
 
     String first = list.removeFirst();
 #ifndef WINDOWS
@@ -373,24 +352,7 @@ String File::normalizePath( const char * fileName )
         result += list.getAt(pos);
     }
 
-    do 
-    {
-        NEString::CharPos index = result.findFirstOf(File::FILE_MASK_TIMESTAMP, 0, false);
-        if (index == NEString::InvalidPos)
-            break;
-
-        result.replace(fmt, index, File::FILE_MASK_TIMESTAMP_LEN );
-    } while (true);
-
-    String appName = Process::getInstance().getAppName();
-    do 
-    {
-        NEString::CharPos index = result.findFirstOf(File::FILE_MASK_APPNAME, 0, false);
-        if (index == NEString::InvalidPos)
-            break;
-
-        result.replace(appName, index, File::FILE_MASK_APPNAME_LEN );
-    } while (true);
+    FileBase::normalizeName(result);
 
     return result;
 }
@@ -444,7 +406,7 @@ String File::getParentDir(const char * filePath)
 
 int File::splitPath(const char * filePath, StringList & in_out_List)
 {
-    int count           = 0;
+    int oldCount        = in_out_List.getSize();
     const char * start  = filePath;
     const char * end    = filePath;
 
@@ -454,10 +416,8 @@ int File::splitPath(const char * filePath, StringList & in_out_List)
         {
             String node(start, MACRO_ELEM_COUNT(start, end));
             if (node.isEmpty() == false)
-            {
-                in_out_List.pushFirst( node );
-                ++ count;
-            }
+                in_out_List.pushLast( node );
+
             start = ++ end;
         }
         else
@@ -470,8 +430,38 @@ int File::splitPath(const char * filePath, StringList & in_out_List)
     {
         String node(start, MACRO_ELEM_COUNT(start, end));
         if (node.isEmpty() == false)
-            in_out_List.pushFirst( node );
+            in_out_List.pushLast( node );
     }
 
-    return count;
+    return (in_out_List.getSize() - oldCount);
+}
+
+unsigned int File::read(IEByteBuffer & buffer) const
+{
+    return FileBase::read(buffer);
+}
+
+unsigned int File::read(String & asciiString) const
+{
+    return FileBase::read(asciiString);
+}
+
+unsigned int File::read(WideString & wideString) const
+{
+    return FileBase::read(wideString);
+}
+
+unsigned int File::write(const IEByteBuffer & buffer)
+{
+    return FileBase::write(buffer);
+}
+
+unsigned int File::write(const String & asciiString)
+{
+    return FileBase::write(asciiString);
+}
+
+unsigned int File::write(const WideString & wideString)
+{
+    return FileBase::write(wideString);
 }

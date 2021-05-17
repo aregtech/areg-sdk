@@ -79,7 +79,7 @@ public:
      **/
     inline void implAddResource( ListLockAndWait & List, SynchLockAndWaitIX * Resource )
     {
-        List.pushFirst(Resource);
+        List.pushLast(Resource);
     }
 
     /**

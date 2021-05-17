@@ -194,7 +194,7 @@ void TimerManager::_defaultPosixTimerExpiredRoutine( union sigval argSig )
     TimerPosix * posixTimer = reinterpret_cast<TimerPosix *>(argSig.sival_ptr);
     if (posixTimer != NULL && posixTimer->isValid())
     {
-        TimerManager::getInstance().isTimerExpired(posixTimer->mContext, posixTimer->mDueTime.tv_sec, posixTimer->mDueTime.tv_nsec);
+        TimerManager::getInstance()._timerExpired(posixTimer->mContext, posixTimer->mDueTime.tv_sec, posixTimer->mDueTime.tv_nsec);
         posixTimer->TimerExpired();
 
         SynchLockAndWaitIX * lockAndWait = SynchLockAndWaitIX::_mapWaitIdResource.findResourceObject(posixTimer->mThreadId);

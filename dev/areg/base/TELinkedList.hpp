@@ -1227,7 +1227,7 @@ const IEInStream & operator >> ( const IEInStream & stream, TELinkedList<V, VT, 
     {
         V newValue;
         stream >> newValue;
-        input.pushFirst(newValue);
+        input.pushLast(newValue);
     }
 
     return stream;

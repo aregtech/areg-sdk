@@ -154,13 +154,13 @@ public:
     /**
      * \brief   Inserts buffer of data at the given position and returns
      *          size of inserted data
-     * \param   buffer      The pointer to data buffer to insert
-     * \param   size        The size of data buffer
-     * \param   insertAt    The position to insert data. If position is
+     * \param   buffer  The pointer to data buffer to insert
+     * \param   size    The size of data buffer
+     * \param   atPos   The position to insert data. If position is
      *                      not valid, it will add at the end
      * \return  Returns size in bytes of written data.
      **/
-    virtual unsigned int insertAt(const unsigned char* buffer, unsigned int size, unsigned int insertAt);
+    virtual unsigned int insertAt(const unsigned char* buffer, unsigned int size, unsigned int atPos);
 
 /************************************************************************/
 // IEByteBuffer overrides

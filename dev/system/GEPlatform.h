@@ -50,9 +50,8 @@
 
 #elif defined(_WINDOWS) || defined(WINDOWS)
 
-
     #include "system/windows/GEWindows.h"
 
-#endif // 
+#endif // defined(_WINDOWS) || defined(WINDOWS)
 
 #endif // AREG_GEPLATFORM_H

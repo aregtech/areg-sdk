@@ -49,6 +49,8 @@
 class AREG_API SharedBuffer : public BufferStreamBase  // This is data streaming object
                             , public BufferPosition    // To control read and write operations
 {
+    friend class FileBuffer;
+
 //////////////////////////////////////////////////////////////////////////
 // Constructors / destructor
 //////////////////////////////////////////////////////////////////////////
@@ -188,10 +190,14 @@ public:
      **/
     const unsigned char* getBufferAtCurrentPosition( void ) const;
 
+    /**
+     * \brief   Returns the size of block set in the constructor.
+     **/
+    inline unsigned int getBlockSize( void ) const;
+
 //////////////////////////////////////////////////////////////////////////
 // Overrides
 //////////////////////////////////////////////////////////////////////////
-public:
 
 /************************************************************************/
 // IEByteBuffer interface overrides, not implemented in BufferStreamBase
@@ -325,6 +331,11 @@ inline bool SharedBuffer::isBeginOfBuffer( void ) const
 inline bool SharedBuffer::isEndOfBuffer( void ) const
 {
     return ( isValid() && (getPosition() == getSizeUsed()) );
+}
+
+inline unsigned int SharedBuffer::getBlockSize(void) const
+{
+    return mBlockSize;
 }
 
 inline SharedBuffer& SharedBuffer::self( void )

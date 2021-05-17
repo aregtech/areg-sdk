@@ -539,7 +539,7 @@ public:
     /**
      * \brief   Returns used size of buffer in bytes, including null-terminated character of string.
      **/
-    inline unsigned int getUsedSize( void ) const;
+    inline unsigned int getUsedSpace( void ) const;
 
     /**
      * \brief   Returns read-only string buffer starting at specified valid position.
@@ -1119,7 +1119,7 @@ template<typename CharType, class Implement /*= TEStringImpl<CharType>*/>
 inline TEString<CharType, Implement>::TEString( NEString::eEncoding encode )
     : Implement ( )
 
-    , mData     ( NEString::initString<CharType>(0, encode) )
+    , mData     ( NEString::initString<CharType>(static_cast<NEString::CharCount>(0), encode) )
     , mEncode   ( encode )
 
 #ifdef DEBUG
@@ -1179,7 +1179,7 @@ template<typename CharType, class Implement /*= TEStringImpl<CharType>*/>
 inline TEString<CharType, Implement>::TEString( const TEString<CharType, Implement> & strSource )
     : Implement ( )
 
-    , mData     ( NEString::initString<CharType, CharType>( strSource.getString(), strSource.getInitEncoding() ) )
+    , mData     ( NEString::initString<CharType, CharType>( strSource.getDataString(), strSource.getInitEncoding() ) )
     , mEncode   ( strSource.mEncode )
 
 #ifdef DEBUG
@@ -1797,9 +1797,9 @@ inline unsigned int TEString<CharType, Implement>::getActualLength( void ) const
 }
 
 template<typename CharType, class Implement /*= TEStringImpl<CharType>*/>
-inline unsigned int TEString<CharType, Implement>::getUsedSize(void) const
+inline unsigned int TEString<CharType, Implement>::getUsedSpace(void) const
 {
-    return ((getLength() + 1) * sizeof(CharType));
+    return (isValid() ? (mData->strUsed + 1) * sizeof(CharType) : 0);
 }
 
 template<typename CharType, class Implement /*= TEStringImpl<CharType>*/>

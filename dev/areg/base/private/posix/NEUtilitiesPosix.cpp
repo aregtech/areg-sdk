@@ -39,7 +39,7 @@ namespace NEUtilities {
             int tick5 = static_cast<int>(now.tm_hour);
             int tick6 = static_cast<int>(now.tm_mday);
             int tick7 = static_cast<int>(now.tm_mon + 1);
-            int tick8 = static_cast<int>(now.tm_year + 1970);
+            int tick8 = static_cast<int>(now.tm_year + 1900);
 
             String::formatString( out_buffer, length, formatStr,
                 prefix != NULL ? prefix : NEUtilities::DEFAULT_GENERATED_NAME,
@@ -132,13 +132,20 @@ AREG_API uint64_t NEUtilities::getTickCount( void )
     return result;
 }
 
-AREG_API void NEUtilities::systemTimeNow( NEUtilities::sSystemTime & out_sysTime )
+AREG_API void NEUtilities::systemTimeNow( NEUtilities::sSystemTime & out_sysTime, bool localTime )
 {
     struct timespec ts;
     struct tm now;
 
     clock_gettime(CLOCK_REALTIME, &ts);
-    now = *gmtime(&ts.tv_sec);
+    if (localTime)
+    {
+        ::localtime_r(&ts.tv_sec, &now);
+    }
+    else
+    {
+        ::gmtime_r(&ts.tv_sec, &now);
+    }
 
     // unsigned short milli = static_cast<unsigned short>(ts.tv_nsec / MILLISEC_TO_NS);
     // unsigned short micro = static_cast<unsigned short>((ts.tv_nsec - (milli * MILLISEC_TO_MICROSECS)) / MICROSEC_TO_NS);
@@ -146,7 +153,7 @@ AREG_API void NEUtilities::systemTimeNow( NEUtilities::sSystemTime & out_sysTime
     unsigned short milli = static_cast<unsigned short>((ts.tv_nsec / MILLISEC_TO_NS));
     unsigned short micro = static_cast<unsigned short>((ts.tv_nsec % MILLISEC_TO_NS) / MICROSEC_TO_NS);
 
-    out_sysTime.stYear      = now.tm_year + 1970;
+    out_sysTime.stYear      = now.tm_year + 1900;
     out_sysTime.stMonth     = now.tm_mon  + 1;
     out_sysTime.stDayOfWeek = now.tm_wday;
     out_sysTime.stDay       = now.tm_mday;
@@ -157,14 +164,26 @@ AREG_API void NEUtilities::systemTimeNow( NEUtilities::sSystemTime & out_sysTime
     out_sysTime.stMicrosecs = micro;
 }
 
-AREG_API void NEUtilities::systemTimeNow( NEUtilities::sFileTime & out_fileTime )
+AREG_API void NEUtilities::systemTimeNow( NEUtilities::sFileTime & out_fileTime, bool localTime )
 {
     struct timespec ts;
     clock_gettime(CLOCK_REALTIME, &ts);
 
-    TIME64 quad = ts.tv_sec * SEC_TO_MICROSECS + ts.tv_nsec / MICROSEC_TO_NS;
-    out_fileTime.ftLowDateTime  = MACRO_64_LO_BYTE32(quad);
-    out_fileTime.ftHighDateTime = MACRO_64_HI_BYTE32(quad);
+    if (localTime)
+    {
+        struct tm now;
+        ::localtime_r(&ts.tv_sec, &now);
+        time_t local = ::mktime(&now);
+        TIME64 quad = static_cast<TIME64>(local * SEC_TO_MICROSECS) + static_cast<TIME64>(ts.tv_nsec / MICROSEC_TO_NS);
+        out_fileTime.ftLowDateTime  = MACRO_64_LO_BYTE32(quad);
+        out_fileTime.ftHighDateTime = MACRO_64_HI_BYTE32(quad);
+    }
+    else
+    {
+        TIME64 quad = static_cast<TIME64>(ts.tv_sec * SEC_TO_MICROSECS) + static_cast<TIME64>(ts.tv_nsec / MICROSEC_TO_NS);
+        out_fileTime.ftLowDateTime  = MACRO_64_LO_BYTE32(quad);
+        out_fileTime.ftHighDateTime = MACRO_64_HI_BYTE32(quad);
+    }
 }
 
 AREG_API TIME64 NEUtilities::systemTimeNow( void )

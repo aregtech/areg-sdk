@@ -51,10 +51,10 @@ class IEByteBuffer;
 #define DECLARE_STREAMABLE(data_type)                                                                           \
     /* \brief   Reading from stream operators. It reads data from stream and                            */      \
     /*          initializes input object.                                                               */      \
-    friend const IEInStream & operator >> (const IEInStream & stream, data_type & input);                       \
+    friend inline const IEInStream & operator >> (const IEInStream & stream, data_type & input);                \
     /* \brief   Writing to stream operator. It reads data from output instance                          */      \
     /*          and writes data to stream object.                                                       */      \
-    friend IEOutStream & operator << (IEOutStream & stream, const data_type & output);                          \
+    friend inline IEOutStream & operator << (IEOutStream & stream, const data_type & output);                   \
 
 #define GLOBAL_DECLARE_STREAMABLE(data_type)                                                                    \
     /* \brief   Reading from stream operators. It reads data from stream and                            */      \
@@ -385,6 +385,16 @@ public:
     DECLARE_STREAMABLE(uint64_t)            //!< Declare primitive type uint64_t as streamable
     DECLARE_STREAMABLE(float)               //!< Declare primitive type float as streamable
     DECLARE_STREAMABLE(double)              //!< Declare primitive type double as streamable
+
+    /**
+     * \brief   Writes an ASCII string to the stream
+     **/
+    friend inline IEOutStream & operator << (IEOutStream & stream, const char * output);
+
+    /**
+     * \brief   Writes an wide string to the stream
+     **/
+    friend inline IEOutStream & operator << (IEOutStream & stream, const wchar_t * output);
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -406,5 +416,35 @@ IMPLEMENT_STREAMABLE(int64_t)
 IMPLEMENT_STREAMABLE(uint64_t)
 IMPLEMENT_STREAMABLE(float)
 IMPLEMENT_STREAMABLE(double)
+
+inline IEOutStream & operator << (IEOutStream & stream, const char * output)
+{
+    if (output != static_cast<const char *>(NULL))
+    {
+        int length = 0;
+        const char * src = output;
+        while (*src ++ != '\0')
+            ++ length;
+        
+        stream.write(reinterpret_cast<const unsigned char *>(output), (length + 1) * sizeof(char));
+    }
+
+    return stream;
+}
+
+inline IEOutStream & operator << (IEOutStream & stream, const wchar_t * output)
+{
+    if (output != static_cast<const wchar_t *>(NULL))
+    {
+        int length = 0;
+        const wchar_t * src = output;
+        while (*src ++ != L'\0')
+            ++ length;
+
+        stream.write(reinterpret_cast<const unsigned char *>(output), (length + 1) * sizeof(wchar_t));
+    }
+
+    return stream;
+}
 
 #endif  // AREG_BASE_IEIOSTREAM_HPP

@@ -155,10 +155,11 @@ DateTime DateTime::getNow( void )
     return DateTime( NEUtilities::systemTimeNow() );
 }
 
-void DateTime::getNow( NEUtilities::sSystemTime & outSysTime )
+void DateTime::getNow( NEUtilities::sSystemTime & OUT timeData, bool localTime )
 {
-    TIME64 quad = NEUtilities::systemTimeNow();
-    NEUtilities::convToLocalTime(quad, outSysTime);
+    NEUtilities::systemTimeNow(timeData, localTime);
+//     TIME64 quad = NEUtilities::systemTimeNow();
+//     NEUtilities::convToLocalTime(quad, outSysTime);
 }
 
 

@@ -21,6 +21,7 @@
 
 class String;
 class WideString;
+class IEByteBuffer;
 
 //////////////////////////////////////////////////////////////////////////
 // FileBase class declaration.
@@ -136,6 +137,33 @@ public:
 // defined constants
 //////////////////////////////////////////////////////////////////////////
 
+    /**
+     * \brief   File::TIMESTAMP_FILE_MASK
+     *          Mask used in file name to set timestamp
+     **/
+    static const char * const   FILE_MASK_TIMESTAMP /*= "%time%"*/;
+
+    /**
+     * \brief   The length of FILE_MASK_TIMESTAMP string.
+     **/
+    static const int            FILE_MASK_TIMESTAMP_LEN;
+
+    /**
+     * \brief   File::TIMESTAMP_FORMAT
+     *          Default timestamp format, used as yyyy_mm_dd_hh_mm_ss_ms
+     **/
+    static const char * const   TIMESTAMP_FORMAT   /*= "%04d_%02d_%02d_%02d_%02d_%02d_%03d"*/; // yyyy_mm_dd_hh_mm_ss_ms
+
+    /**
+     * \brief   The name of application to add in file name or path
+     **/
+    static const char * const   FILE_MASK_APPNAME   /*= "%appname%"*/;
+
+    /**
+     * \brief   The length of FILE_MASK_APPNAME string.
+     **/
+    static const int            FILE_MASK_APPNAME_LEN;
+
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
@@ -150,7 +178,6 @@ public:
      * \brief   Destructor.
      **/
     virtual ~FileBase( void );
-
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations
@@ -181,6 +208,11 @@ public:
 /************************************************************************/
 // State functions
 /************************************************************************/
+    /**
+     * \brief   Returns true, if file is valid. The file is valid if it is opened for read and/or write.
+     */
+    inline bool isValid( void ) const;
+
     /**
      * \brief	Returns true if file is opened in mode to force to delete.
      *          File object must be opened before calling, otherwise will fail with assertion.
@@ -501,9 +533,102 @@ public:
     bool writeLine(const char* inValue);
     bool writeLine(const wchar_t* inValue);
 
+    /**
+     * \brief   Writes string into the file.
+     **/
+    bool write(const char * asciiString);
+    bool write(const wchar_t * wideString);
+
 //////////////////////////////////////////////////////////////////////////
 // Override methods
 //////////////////////////////////////////////////////////////////////////
+/************************************************************************/
+// IEInStream interface overrides
+/************************************************************************/
+
+    /**
+     * \brief   Reads data from input stream object, copies into give Byte Buffer object
+     *          and returns the size of copied data. Overwrite this method if copy behavior
+     *          changed for certain buffer. For other buffers it should have simple behavior
+     *          as copying to raw buffer
+     * \param   buffer  The instance of Byte Buffer object to stream data from Input Stream object
+     * \return	Returns the size in bytes of copied data
+     **/
+    virtual unsigned int read( IEByteBuffer & buffer ) const;
+
+    /**
+     * \brief   Reads string data from Input Stream object and copies into given ASCII String.
+     *          Overwrite method if need to change behavior of streaming string.
+     * \param   asciiString     The buffer of ASCII String to stream data from Input Stream object.
+     * \return  Returns the size in bytes of copied string data.
+     **/
+    virtual unsigned int read( String & asciiString ) const;
+
+    /**
+     * \brief   Reads string data from Input Stream object and copies into given Wide String.
+     *          Overwrite method if need to change behavior of streaming string.
+     * \param   wideString      The buffer of Wide String to stream data from Input Stream object.
+     * \return  Returns the size in bytes of copied string data.
+     **/
+    virtual unsigned int read( WideString & wideString ) const;
+
+/************************************************************************/
+// IEOutStream interface overrides
+/************************************************************************/
+    /**
+     * \brief	Writes Binary data from Byte Buffer object to Output Stream object
+     *          and returns the size of written data. Overwrite this method if need 
+     *          to change behavior of streaming buffer.
+     * \param	buffer	The instance of Byte Buffer object containing data to stream to Output Stream.
+     * \return	Returns the size in bytes of written data
+     **/
+    virtual unsigned int write( const IEByteBuffer & buffer );
+
+    /**
+     * \brief   Writes string data from given ASCII String object to output stream object.
+     *          Overwrite method if need to change behavior of streaming string.
+     * \param   asciiString     The buffer of String containing data to stream to Output Stream.
+     * \return  Returns the size in bytes of copied string data.
+     **/
+    virtual unsigned int write( const String & asciiString );
+
+    /**
+     * \brief   Writes string data from given wide-char String object to output stream object.
+     *          Overwrite method if need to change behavior of streaming string.
+     * \param   wideString  The buffer of String containing data to stream to Output Stream.
+     * \return  Returns the size in bytes of copied string data.
+     **/
+    virtual unsigned int write( const WideString & wideString );
+
+    /**
+     * \brief   Clears the buffers for the file and causes all buffered data 
+     *          to be written to the file.
+     **/
+    virtual void flush( void );
+
+/************************************************************************/
+// IEIOStream pure virtual
+/************************************************************************/
+
+    /**
+     * \brief	Reads data from input stream object, copies into given buffer and
+     *          returns the size of copied data
+     * \param	buffer	The pointer to buffer to copy data from input object
+     * \param	size	The size in bytes of available buffer
+     * \return	Returns the size in bytes of copied data
+     **/
+    virtual unsigned int read( unsigned char * buffer, unsigned int size ) const = 0;
+
+    /**
+     * \brief	Write data to output stream object from given buffer
+     *          and returns the size of written data. In this class 
+     *          writes data into opened file.
+     * \param	buffer	The pointer to buffer to read data and 
+     *          copy to output stream object
+     * \param	size	The size in bytes of data buffer
+     * \return	Returns the size in bytes of written data
+     **/
+    virtual unsigned int write( const unsigned char* buffer, unsigned int size ) = 0;
 
 /************************************************************************/
 // FileBase class overrides
@@ -608,14 +733,10 @@ protected:
      **/
     virtual void resetCursor( void ) const;
 
-/************************************************************************/
-// IEOutStream class overrides
-/************************************************************************/
     /**
-     * \brief	Flushes cached data to output stream object.
-     *          Implement the function if device has caching mechanism
+     * \brief   Normalizes the name, replace special masks such as timestamp or process name in the give name.
      **/
-    virtual void flush( void );
+    static void normalizeName( String & name );
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -750,6 +871,11 @@ inline const char* FileBase::getName( void ) const
 inline unsigned int FileBase::getMode( void ) const
 {
     return mFileMode;
+}
+
+inline bool FileBase::isValid( void ) const
+{
+    return isOpened();
 }
 
 inline bool FileBase::isForceDelete( void ) const

@@ -85,13 +85,16 @@ unsigned int BufferStreamBase::read( String & asciiString ) const
 {
     unsigned int result = 0;
     asciiString.clear();
+
+    const unsigned int curPos = mReadPosition.getPosition();
     const unsigned char* data = getBufferToRead();
     if ( data != NULL )
     {
         asciiString = reinterpret_cast<const char *>(data);
-        result      = asciiString.getUsedSize();
-        mReadPosition.setPosition(result, IECursorPosition::POSITION_CURRENT);
+        result      = asciiString.getUsedSpace();
+        mReadPosition.setPosition(curPos + result, IECursorPosition::POSITION_BEGIN);
     }
+
     return result;
 }
 
@@ -102,12 +105,14 @@ unsigned int BufferStreamBase::read( WideString & wideString ) const
 {
     unsigned int result = 0;
     wideString.clear();
+
+    const unsigned int curPos = mReadPosition.getPosition();
     const unsigned char* data = getBufferToRead();
     if ( data != NULL )
     {
         wideString  = reinterpret_cast<const wchar_t *>(data);
-        result      = (wideString.getLength() + 1) * sizeof(wchar_t);
-        mReadPosition.setPosition(result, IECursorPosition::POSITION_CURRENT);
+        result      = wideString.getUsedSpace();
+        mReadPosition.setPosition(curPos + result, IECursorPosition::POSITION_BEGIN);
     }
     return result;
 }
@@ -159,7 +164,7 @@ unsigned int BufferStreamBase::write( const String & asciiString )
 {
     const char * buffer = asciiString.getString();
     ASSERT(buffer != NULL_STRING);
-    return write( reinterpret_cast<const unsigned char *>(buffer), asciiString.getUsedSize() );
+    return write( reinterpret_cast<const unsigned char *>(buffer), asciiString.getUsedSpace() );
 }
 
 /**
@@ -169,7 +174,7 @@ unsigned int BufferStreamBase::write( const WideString & wideString )
 {
     const wchar_t * buffer = wideString.getString();
     ASSERT(buffer != static_cast<const wchar_t *>(NULL));
-    return write( reinterpret_cast<const unsigned char *>(buffer), wideString.getUsedSize() );
+    return write( reinterpret_cast<const unsigned char *>(buffer), wideString.getUsedSpace() );
 }
 
 /**
@@ -213,13 +218,13 @@ bool BufferStreamBase::isEqual( const BufferStreamBase &other ) const
 /**
  * \brief   Inserts buffer of data at the given position.
  **/
-unsigned int BufferStreamBase::insertAt( const unsigned char* buffer, unsigned int size, unsigned int insertAt )
+unsigned int BufferStreamBase::insertAt( const unsigned char* buffer, unsigned int size, unsigned int atPos )
 {
     unsigned int result     = 0;
     if (size > 0 && buffer != NULL)
     {
         unsigned int writePos   = mWritePosition.getPosition();
-        if (isValid() == false || insertAt >= writePos)
+        if (isValid() == false || atPos >= writePos)
         {
             result = write(buffer, size);
         }
@@ -229,8 +234,8 @@ unsigned int BufferStreamBase::insertAt( const unsigned char* buffer, unsigned i
             if (remain >= size)
             {
                 ASSERT(isValid());
-                unsigned char *dst      = getBuffer() + insertAt;
-                unsigned int moveSize   = writePos - insertAt;
+                unsigned char *dst      = getBuffer() + atPos;
+                unsigned int moveSize   = writePos - atPos;
 
                 NEMemory::memMove(dst + size, dst, moveSize);
                 result = NEMemory::memCopy(dst, size, buffer, size);

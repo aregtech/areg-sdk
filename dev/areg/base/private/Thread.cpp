@@ -94,7 +94,7 @@ unsigned long Thread::_defaultThreadFunction(void* data)
         OUTPUT_DBG("Thread [ %s ] completed job with code [ %s ]", static_cast<const char *>(threadObj->getName()), IEThreadConsumer::getString(result));
 
         threadObj->mWaitForExit.setEvent();
-        Thread::switchThread();
+        // Thread::switchThread();
     }
 #ifdef  _DEBUG
     else

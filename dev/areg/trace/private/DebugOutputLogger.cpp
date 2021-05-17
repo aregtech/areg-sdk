@@ -152,15 +152,15 @@ unsigned int DebugOutputLogger::write( const String & asciiString )
 #ifdef _DEBUG
     mOutputMessageA += asciiString;
 #endif  // WIN32
-    return asciiString.getUsedSize();
+    return asciiString.getUsedSpace();
 }
 
 unsigned int DebugOutputLogger::write( const WideString & wideString )
 {
-// #ifdef  _DEBUG
-//     mOutputMessageW += wideString;
-// #endif  // _DEBUG
-    return wideString.getUsedSize();
+#ifdef _DEBUG
+    mOutputMessageA += wideString;
+#endif  // WIN32
+    return wideString.getUsedSpace();
 }
 
 void DebugOutputLogger::flush(void)

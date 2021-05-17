@@ -239,69 +239,6 @@ unsigned int File::read(unsigned char* buffer, unsigned int size) const
     return result;
 }
 
-unsigned int File::read( IEByteBuffer & buffer ) const
-{
-    unsigned int result = 0;
-    buffer.invalidate();
-
-    if ( isOpened() && canRead() )
-    {
-        unsigned long sizeRead = 0;
-        unsigned int  sizeReserve = 0;
-        if (::ReadFile(static_cast<HANDLE>(mFileHandle), reinterpret_cast<LPVOID>(&sizeReserve), sizeof(unsigned int), &sizeRead, NULL))
-        {
-            sizeRead = buffer.resize(sizeReserve, false);
-            unsigned char * data = sizeRead != 0 ? buffer.getBuffer() : NULL;
-            if ((data != NULL) && ReadFile(static_cast<HANDLE>(mFileHandle), reinterpret_cast<LPVOID>(data), sizeRead, &sizeRead, NULL))
-            {
-                result = static_cast<unsigned int>(sizeRead);
-            }
-            else
-            {
-                OUTPUT_ERR("Either was not able to reserve [ %d ] bytes of space, or failed read file [ %s ], error code [ %p ].", sizeReserve, mFileName.getString(), GetLastError());
-            }
-        }
-        else
-        {
-            OUTPUT_WARN("Either failed to read file size or the length is zero, ignoring copying data.");
-        }
-    }
-    else
-    {
-        OUTPUT_ERR("Either file [ %s ] is not opened [ %s ], or reading mode is not set (mode = [ %d ]).", mFileName.getString(), isOpened() ? "true" : "false", mFileMode);
-    }
-
-    return result;
-}
-
-unsigned int File::write( const IEByteBuffer & buffer )
-{
-    unsigned int result = 0;
-
-    if ( isOpened() && canWrite() )
-    {
-        const unsigned char * data  = buffer.getBuffer();
-        unsigned int sizeUsed       = buffer.getSizeUsed();
-        unsigned long sizeWrite     = 0;
-
-        if ( ::WriteFile( static_cast<HANDLE>(mFileHandle), &sizeUsed, sizeof(unsigned int), &sizeWrite, NULL ) &&
-             ::WriteFile( static_cast<HANDLE>(mFileHandle), data, sizeUsed, &sizeWrite, NULL ) )
-        {
-            result = sizeUsed + sizeof(unsigned int);
-        }
-        else
-        {
-            OUTPUT_ERR("Failed to write [ %d ] bytes of data in file [ %s ], error code [ %p ]", sizeUsed + sizeof(unsigned int), mFileName.getString(), GetLastError());
-        }
-    }
-    else
-    {
-        OUTPUT_ERR("Either files [ %s ] is not opened or it is not opened to write file, error code [ %p ]", mFileName.getString(), GetLastError());
-    }
-
-    return result;
-}
-
 unsigned int File::write(const unsigned char* buffer, unsigned int size)
 {
     unsigned int result = 0;

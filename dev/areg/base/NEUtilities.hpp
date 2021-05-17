@@ -153,14 +153,16 @@ namespace   NEUtilities
     /**
      * \brief   Returns current time. On output 'out_sysTime' system time contains the date-time data.
      * \param   out_sysTime     On output the system time parameter contains date-time of current time.
+     * \param   localTime       If true, in output the out_sysTime contains local time values.
      **/
-    AREG_API void systemTimeNow( sSystemTime & out_sysTime );
+    AREG_API void systemTimeNow( sSystemTime & OUT out_sysTime, bool localTime );
 
     /**
      * \brief   Returns current time. On output 'out_fileTime' time contains the date-time data.
      * \param   out_fileTime    On output the file-time parameter contains date-time of current time.
+     * \param   localTime       If true, in output the out_fileTime contains local time values.
      **/
-    AREG_API void systemTimeNow( sFileTime & out_fileTime );
+    AREG_API void systemTimeNow( sFileTime & OUT out_fileTime, bool localTime );
 
     /**
      * \brief   Returns current system time data as a 64-bit integer value. The returned value is

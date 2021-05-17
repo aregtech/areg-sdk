@@ -1633,9 +1633,9 @@ NEString::SString<CharType> * NEString::initString(   NEString::CharCount charCo
 }
 
 template <typename CharDst, typename CharSrc>
-inline NEString::SString<CharDst> * NEString::initString( const NEString::SString<CharSrc> & strSource
-                                                        , NEString::eEncoding encode    /*= EncodeAscii         */
-                                                        , NEString::CharCount blockSize /*= DEFAULT_BLOCK_SIZE  */)
+inline NEString::SString<CharDst> * NEString::initString(  const NEString::SString<CharSrc> & strSource
+                                                         , NEString::eEncoding encode    /*= EncodeAscii         */
+                                                         , NEString::CharCount blockSize /*= DEFAULT_BLOCK_SIZE  */)
 {
     NEString::SString<CharDst> * result = getInvalidString<CharDst>( );
     if ( isValid<CharSrc>(strSource) )

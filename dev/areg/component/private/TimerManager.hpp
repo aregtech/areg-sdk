@@ -268,20 +268,13 @@ private:
     bool _unregisterTimer( Timer & timer );
 
     /**
-     * \brief   Returns true if timer is already exists in the timer map.
-     * \param   timer   The timer object that should be checked.
-     * \return  Returns true if timer exists, otherwise returns false
-     **/
-    inline bool existTimer( const Timer & timer ) const;
-
-    /**
      * \brief   This method called for every single expired timer.
      *          The function is triggered from timer expired callback function.
      * \param   whichTimer  The pointer to timer object that has expired.
      * \param   highValue   The expired time high value
      * \param   lowValue    The expired time low value
      **/
-    void isTimerExpired( Timer * whichTimer, unsigned int highValue, unsigned int lowValue );
+    void _timerExpired( Timer * whichTimer, unsigned int highValue, unsigned int lowValue );
 
     /**
      * \brief   Called when timer managing event is fired and the
@@ -377,12 +370,6 @@ private:
 inline TimerManager& TimerManager::self( void )
 {
     return (*this);
-}
-
-inline bool TimerManager::existTimer( const Timer &timer ) const
-{
-    Lock lock(mLock);
-    return (mTimerTable.find(static_cast<const Timer *>(&timer)) != NULL);
 }
 
 #endif  // AREG_COMPONENT_PRIVATE_TIMERMANAGER_HPP

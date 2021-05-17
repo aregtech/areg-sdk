@@ -113,40 +113,46 @@ ITEM_ID Thread::getCurrentThreadId( void )
 
 Thread::eCompletionStatus Thread::destroyThread(unsigned int waitForStopMs /* = Thread::DO_NOT_WAIT */)
 {
-    mSynchObject.lock(IESynchObject::WAIT_INFINITE);
-
+    // Initially, the thread is not valid and not running, nothing to destroy
     Thread::eCompletionStatus result = Thread::ThreadInvalid;
+    pthread_t threadId  = reinterpret_cast<pthread_t>(Thread::INVALID_THREAD_ID);
 
-    THREADHANDLE handle = mThreadHandle;
-    if (handle != Thread::INVALID_THREAD_HANDLE)
+    do
     {
+        Lock lock(mSynchObject);
+        if (mThreadHandle == Thread::INVALID_THREAD_HANDLE)
+        {
+            return Thread::ThreadInvalid;
+        }
+
+        threadId = reinterpret_cast<pthread_t>(mThreadId);
         _unregisterThread();
-        mSynchObject.unlock();  // unlock, to let thread complete exit task.
 
-        if (waitForStopMs != Thread::DO_NOT_WAIT && mWaitForExit.lock(waitForStopMs) == false)
-        {
-            // here we assume that it was requested to wait for thread exit, but it is still running
-            // force to terminate thread and close handles due to waiting timeout expire
-            result = Thread::ThreadTerminated;
-            pthread_cancel( reinterpret_cast<pthread_t>(mThreadId) );
-        }
-        else
-        {
-            // The thread completed job normally
-            result = Thread::ThreadCompleted;
-            ASSERT (waitForStopMs != Thread::WAIT_INFINITE || isRunning() == false);
-        }
+    } while(false);
 
-        mSynchObject.lock(IESynchObject::WAIT_INFINITE);
-        _cleanResources();
+    if ((waitForStopMs != Thread::DO_NOT_WAIT) && (mWaitForExit.lock(waitForStopMs) == false))
+    {
+        // here we assume that it was requested to wait for thread exit, but it is still running
+        // force to terminate thread and close handles due to waiting timeout expire
+        OUTPUT_DBG("The thread [ %s ] should be terminated", mThreadAddress.getThreadName().getString());
+        result = Thread::ThreadTerminated;
+        pthread_cancel(threadId);
     }
     else
     {
-        // The thread is not valid and not running, nothing to destroy
-        result = Thread::ThreadInvalid;
+        // The thread completed job normally
+        OUTPUT_DBG("The thread [ %s ] completed job", mThreadAddress.getThreadName().getString());
+        result = Thread::ThreadCompleted;
+        ASSERT (waitForStopMs != Thread::WAIT_INFINITE || isRunning() == false);
     }
 
-    mSynchObject.unlock(); // nothing to do, the thread is already destroyed
+    pthread_join(threadId, NULL);
+
+    do
+    {
+        Lock lock(mSynchObject);
+        _cleanResources();
+    } while(false);
 
     return result;
 }

@@ -255,7 +255,7 @@ void TimerManager::_processExpiredTimers( void )
     }
 }
 
-void TimerManager::isTimerExpired( Timer* whichTimer, unsigned int highValue, unsigned int lowValue )
+void TimerManager::_timerExpired( Timer* whichTimer, unsigned int highValue, unsigned int lowValue )
 {
     mExpiredTimers.pushLast( ExpiredTimerInfo(whichTimer, highValue, lowValue) );
 }

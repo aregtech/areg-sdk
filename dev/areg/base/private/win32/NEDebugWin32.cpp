@@ -125,7 +125,7 @@ void AREG_API NEDebug::dumpExceptionCallStack( struct _EXCEPTION_POINTERS *ep, S
                                     , hasFunction ? symbolInfo->Name     : _msgFunctionUnavailable
                                     , hasModule   ? moduleInfo.ImageName : _msgModuleUnavailable );
 
-                out_callStack.pushFirst( message );
+                out_callStack.pushLast( message );
 
             }
 
@@ -134,14 +134,14 @@ void AREG_API NEDebug::dumpExceptionCallStack( struct _EXCEPTION_POINTERS *ep, S
         }
         else
         {
-            out_callStack.pushFirst( _msgUnknownMachine );
+            out_callStack.pushLast( _msgUnknownMachine );
         }
 
         SymCleanup( hProcess );
     }
     else
     {
-        out_callStack.pushFirst( _msgCannotExtractSym );
+        out_callStack.pushLast( _msgCannotExtractSym );
     }
 #endif  // _DEBUG
 }

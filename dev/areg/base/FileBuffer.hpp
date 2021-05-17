@@ -18,11 +18,9 @@
 #include "areg/base/NEMemory.hpp"
 
 /**
- * \brief       Memory Shared Buffer File object. All read and write
- *              operations are performed on the buffer located in memory.
- * 
- * \details     As a base class it is using Shared buffer to minimize
- *              data copy operations be increasing reference count
+ * \brief   Memory Buffer File object. All read and write  operations are performed
+ *          on the buffer located in memory. The class contains Shared Buffer object
+ *          to minimize data copy operations when passesbe increasing reference count
  *              of byte buffer structure. The class supports all main
  *              operations for file access, using access modes. 
  *              For more details about file access modes, see description
@@ -38,8 +36,6 @@
 // FileBuffer class declaration
 //////////////////////////////////////////////////////////////////////////
 class AREG_API FileBuffer   : public    FileBase      // derive all basic functionalities of file operations
-                            , protected SharedBuffer  // protected derive shared buffer object to support
-                                                        // data streaming operations.
 {
 //////////////////////////////////////////////////////////////////////////
 // defined constants
@@ -100,6 +96,9 @@ public:
      **/
     virtual ~FileBuffer( void );
 
+//////////////////////////////////////////////////////////////////////////
+// Operators
+//////////////////////////////////////////////////////////////////////////
 public:
 /************************************************************************/
 // Friend global operators to stream Shared Buffer
@@ -123,18 +122,43 @@ public:
     friend inline IEOutStream & operator << ( IEOutStream & stream, const FileBuffer & output );
 
 //////////////////////////////////////////////////////////////////////////
-// Attributes
+// Attributes and operations
 //////////////////////////////////////////////////////////////////////////
-public:
+
     /**
      * \brief   Returns true if buffer is either empty or is invalid.
      **/
-    bool isEmpty( void ) const;
+    inline bool isEmpty( void ) const;
+
+    /**
+     * \brief   Returns true if file is valid.
+     **/
+    inline bool isValid( void ) const;
+
+    /**
+     * \brief	If file object was opened and the the size is not zero (i.e. data was written / read) 
+     *          it returns the pointer of buffer. Otherwise it will return NULL.
+     **/
+    inline const unsigned char* getDataBuffer( void ) const;
+
+    /**
+     * \brief   Returns reference to shared buffer object (for read only purpose)
+     **/
+    inline const SharedBuffer& getSharedBuffer( void ) const;
+
+    /**
+     * \brief	Inserts data to file buffer and returns the size of written data.
+     *          All data within file buffer will be shifted.
+     * \param	buffer	The pointer to data buffer
+     * \param	size	The size in bytes of data buffer
+     * \param   atPos   The position to insert data.
+     * \return	Returns the size in bytes of written data.
+     **/
+    unsigned int insertAt( const unsigned char* buffer, unsigned int size, unsigned int atPos );
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
 //////////////////////////////////////////////////////////////////////////
-public:
 /************************************************************************/
 // FileBase class virtual function overrides
 /************************************************************************/
@@ -196,7 +220,7 @@ public:
     /**
      * \brief   Returns the current open status of file object. If file is opened, returns true
      **/
-    virtual bool isOpened() const;
+    virtual bool isOpened( void ) const;
 
     /**
      * \brief	Call to set new size of file object and returns the current position of pointer.
@@ -217,43 +241,8 @@ public:
     virtual bool truncate( void );
 
 /************************************************************************/
-// BufferStreamBase overrides, including IEInStream and IEOutStream
+// IEInStream interface overrides
 /************************************************************************/
-    /**
-     * \brief	Write data to file buffer and returns the size of written data
-     * \param	buffer	The pointer to data buffer
-     * \param	size	The size in bytes of data buffer
-     * \return	Returns the size in bytes of written data
-     **/
-    virtual unsigned int write( const unsigned char* buffer, unsigned int size );
-
-    /**
-     * \brief	Read data from file buffer, copies into given buffer and
-     *          returns the size of copied data
-     * \param	buffer	The pointer to buffer to copy data
-     * \param	size	The size in bytes of available buffer
-     * \return	Returns the size in bytes of copied data
-     **/
-    virtual unsigned int read( unsigned char* buffer, unsigned int size ) const;
-
-    /**
-     * \brief	Inserts data to file buffer and returns the size of written data.
-     *          All data within file buffer will be shifted.
-     * \param	buffer	    The pointer to data buffer
-     * \param	size	    The size in bytes of data buffer
-     * \param   insertAt    The position to insert data.
-     * \return	Returns the size in bytes of written data.
-     **/
-    virtual unsigned int insertAt( const unsigned char* buffer, unsigned int size, unsigned int insertAt );
-
-    /**
-     * \brief	Writes Binary data from Byte Buffer object to Output Stream object
-     *          and returns the size of written data. Overwrite this method if need 
-     *          to change behavior of streaming buffer.
-     * \param	buffer	The instance of Byte Buffer object containing data to stream to Output Stream.
-     * \return	Returns the size in bytes of written data
-     **/
-    virtual unsigned int write( const IEByteBuffer & buffer );
 
     /**
      * \brief   Reads data from input stream object, copies into give Byte Buffer object
@@ -264,6 +253,43 @@ public:
      * \return	Returns the size in bytes of copied data
      **/
     virtual unsigned int read( IEByteBuffer & buffer ) const;
+
+    /**
+     * \brief   Reads string data from Input Stream object and copies into given ASCII String.
+     *          Overwrite method if need to change behavior of streaming string.
+     * \param   asciiString     The buffer of ASCII String to stream data from Input Stream object.
+     * \return  Returns the size in bytes of copied string data.
+     **/
+    virtual unsigned int read( String & asciiString ) const;
+
+    /**
+     * \brief   Reads string data from Input Stream object and copies into given Wide String.
+     *          Overwrite method if need to change behavior of streaming string.
+     * \param   wideString      The buffer of Wide String to stream data from Input Stream object.
+     * \return  Returns the size in bytes of copied string data.
+     **/
+    virtual unsigned int read( WideString & wideString ) const;
+
+    /**
+     * \brief	Reads data from input stream object, copies into given buffer and
+     *          returns the size of copied data
+     * \param	buffer	The pointer to buffer to copy data from input object
+     * \param	size	The size in bytes of available buffer
+     * \return	Returns the size in bytes of copied data
+     **/
+    virtual unsigned int read( unsigned char * buffer, unsigned int size ) const;
+
+/************************************************************************/
+// IEOutStream interface overrides
+/************************************************************************/
+    /**
+     * \brief	Writes Binary data from Byte Buffer object to Output Stream object
+     *          and returns the size of written data. Overwrite this method if need 
+     *          to change behavior of streaming buffer.
+     * \param	buffer	The instance of Byte Buffer object containing data to stream to Output Stream.
+     * \return	Returns the size in bytes of written data
+     **/
+    virtual unsigned int write( const IEByteBuffer & buffer );
 
     /**
      * \brief   Writes string data from given ASCII String object to output stream object.
@@ -282,22 +308,15 @@ public:
     virtual unsigned int write( const WideString & wideString );
 
     /**
-     * \brief   Reads string data from Input Stream object and copies into given ASCII String.
-     *          Overwrite method if need to change behavior of streaming string.
-     * \param   asciiString     The buffer of ASCII String to stream data from Input Stream object.
-     * \return  Returns the size in bytes of copied string data.
+     * \brief	Write data to output stream object from given buffer
+     *          and returns the size of written data. In this class 
+     *          writes data into opened file.
+     * \param	buffer	The pointer to buffer to read data and 
+     *          copy to output stream object
+     * \param	size	The size in bytes of data buffer
+     * \return	Returns the size in bytes of written data
      **/
-    virtual unsigned int read( String & asciiString ) const;
-
-    /**
-     * \brief   Reads string data from Input Stream object and copies into given Wide String.
-     *          Overwrite method if need to change behavior of streaming string.
-     * \param   wideString      The buffer of Wide String to stream data from Input Stream object.
-     * \return  Returns the size in bytes of copied string data.
-     **/
-    virtual unsigned int read( WideString & wideString ) const;
-
-public:
+    virtual unsigned int write( const unsigned char* buffer, unsigned int size );
 
 /************************************************************************/
 // IECursorPosition interface overrides
@@ -360,21 +379,6 @@ protected:
     virtual unsigned int normalizeMode(unsigned int mode) const;
 
 //////////////////////////////////////////////////////////////////////////
-// Operations
-//////////////////////////////////////////////////////////////////////////
-public:
-    /**
-     * \brief	If file object was opened and the the size is not zero (i.e. data was written / read) 
-     *          it returns the pointer of buffer. Otherwise it will return NULL.
-     **/
-    inline const unsigned char* getDataBuffer( void ) const;
-
-    /**
-     * \brief   Returns reference to shared buffer object (for read only purpose)
-     **/
-    inline const SharedBuffer& getSharedBuffer( void ) const;
-
-//////////////////////////////////////////////////////////////////////////
 // Private functions
 //////////////////////////////////////////////////////////////////////////
 private:
@@ -387,6 +391,10 @@ private:
 // Member variables
 //////////////////////////////////////////////////////////////////////////
 private:
+    /**
+     * \brief   Shared Buffer object
+     **/
+    SharedBuffer    mSharedBuffer;
     /**
      * \brief   If true, file object was opened.
      **/
@@ -405,15 +413,33 @@ private:
 //////////////////////////////////////////////////////////////////////////
 
 inline const unsigned char* FileBuffer::getDataBuffer( void ) const
-{   return (isOpened() ? SharedBuffer::getBuffer() : NULL);       }
+{
+    return (isOpened() ? mSharedBuffer.getBuffer() : NULL);
+}
 
 inline const SharedBuffer& FileBuffer::getSharedBuffer( void ) const
-{   return static_cast<const SharedBuffer &>(*this);              }
+{
+    return mSharedBuffer;
+}
+
+inline bool FileBuffer::isValid( void ) const
+{
+    return mSharedBuffer.isValid();
+}
+
+inline bool FileBuffer::isEmpty( void ) const
+{
+    return ((isOpened() == false) || mSharedBuffer.isEmpty());
+}
 
 inline const IEInStream & operator >> ( const IEInStream & stream, FileBuffer & input )
-{   return (stream >> static_cast<SharedBuffer &>(input));        }
+{
+    return (stream >> static_cast<SharedBuffer &>(input.mSharedBuffer));
+}
 
 inline IEOutStream & operator << ( IEOutStream & stream, const FileBuffer & output )
-{   return (stream << static_cast<const SharedBuffer &>(output)); }
+{
+    return (stream << static_cast<const SharedBuffer &>(output.mSharedBuffer));
+}
 
 #endif  // AREG_BASE_FILEBUFFER_HPP

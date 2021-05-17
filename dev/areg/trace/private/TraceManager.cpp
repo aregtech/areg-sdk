@@ -390,6 +390,7 @@ bool TraceManager::loadConfiguration( const FileBase & configFile )
                     mPropertyList.setAt(pos, newProperty);
                 else
                     mPropertyList.pushLast(newProperty);
+
                 newProperty.clearProperty();
             }
         }

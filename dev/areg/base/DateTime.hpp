@@ -193,9 +193,11 @@ public:
 
     /**
      * \brief   Retrieves and returns current local time.
+     * \param   timeData    On output, it will contain the time values.
+     * \param   localTime   If true, timeData is converted to local time.
      * \return  Returns current date and time value.
      **/
-    static void getNow( NEUtilities::sSystemTime & outSysTime );
+    static void getNow( NEUtilities::sSystemTime & OUT timeData, bool localTime );
 
     /**
      * \brief   Retrieves the number of milliseconds that have elapsed since the system was started.

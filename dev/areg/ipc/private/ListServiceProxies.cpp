@@ -48,6 +48,7 @@ ServiceProxy & ListServiceProxies::registerService( const ProxyAddress & addrPro
     LISTPOS pos = _findProxy(addrProxy);
     if ( pos == NULL )
         pos = pushLast( ServiceProxy(addrProxy) );
+
     return static_cast<ServiceProxy &>(getAt(pos));
 }
 

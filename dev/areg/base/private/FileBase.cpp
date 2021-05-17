@@ -9,6 +9,15 @@
 #include "areg/base/FileBase.hpp"
 #include "areg/base/NEUtilities.hpp"
 #include "areg/base/WideString.hpp"
+#include "areg/base/IEByteBuffer.hpp"
+#include "areg/base/DateTime.hpp"
+#include "areg/base/Process.hpp"
+
+const char * const  FileBase::FILE_MASK_TIMESTAMP       = "%time%";
+const char * const  FileBase::TIMESTAMP_FORMAT          = "%04d_%02d_%02d_%02d_%02d_%02d_%03d"; // yyyy_mm_dd_hh_mm_ss_ms
+const char * const  FileBase::FILE_MASK_APPNAME         = "%appname%";
+const int           FileBase::FILE_MASK_TIMESTAMP_LEN   = NEString::getStringLength<char>(FileBase::FILE_MASK_TIMESTAMP);
+const int           FileBase::FILE_MASK_APPNAME_LEN     = NEString::getStringLength<char>(FileBase::FILE_MASK_APPNAME);
 
 //////////////////////////////////////////////////////////////////////////
 // Local methods.
@@ -445,7 +454,136 @@ void FileBase::resetCursor(void) const
     setPosition(0, IECursorPosition::POSITION_BEGIN);
 }
 
+unsigned int FileBase::read(IEByteBuffer & buffer) const
+{
+    unsigned int result = 0;
+    buffer.invalidate();
+
+    if ( isOpened() && canRead() )
+    {
+        int sizeReserve = 0;
+        int sizeRead    = 0;
+
+        if (readInt(sizeReserve) && (sizeReserve > 0))
+        {
+            sizeRead = buffer.resize(sizeReserve, false);
+            unsigned char * data = sizeRead != 0 ? buffer.getBuffer() : NULL;
+            if ( (data != NULL) && (read(data, static_cast<unsigned int>(sizeRead)) == static_cast<unsigned int>(sizeRead)) )
+            {
+                result = sizeRead + sizeof(int);
+            }
+            else
+            {
+                OUTPUT_ERR("Either was not able to reserve [ %d ] bytes of space, or failed read file [ %s ].", sizeReserve, mFileName.getString());
+            }
+        }
+        else
+        {
+            OUTPUT_ERR("Unable to read the size of byte-buffer, the file [ %s ]", mFileName.getString());
+        }
+    }
+    else
+    {
+        OUTPUT_ERR("Either file [ %s ] is not opened [ %s ], or reading mode is not set (mode = [ %d ]).", mFileName.getString(), isOpened() ? "true" : "false", mFileMode);
+    }
+
+    return result;
+}
+
+unsigned int FileBase::read(String & asciiString) const
+{
+    return readString(asciiString);
+}
+
+unsigned int FileBase::read(WideString & wideString) const
+{
+    return readString(wideString);
+}
+
+unsigned int FileBase::write(const IEByteBuffer & buffer)
+{
+    unsigned int result = 0;
+
+    if ( isOpened() && canWrite() )
+    {
+        const unsigned char * data  = buffer.getBuffer();
+        int sizeUsed                = static_cast<int>(buffer.getSizeUsed());
+
+        if (writeInt(sizeUsed) && (write(data, static_cast<unsigned int>(sizeUsed)) == static_cast<unsigned int>(sizeUsed)))
+        {
+            result = sizeUsed + sizeof(int);
+        }
+        else
+        {
+            OUTPUT_ERR("Failed to write [ %d ] bytes of data in file [ %s ]", sizeUsed + sizeof(int), mFileName.getString());
+        }
+    }
+    else
+    {
+        OUTPUT_ERR("Either files [ %s ] is not opened or it is not opened to write file", mFileName.getString());
+    }
+
+    return result;
+}
+
+unsigned int FileBase::write(const String & asciiString)
+{
+    const char * buffer = asciiString.getString();
+    unsigned int space  = isTextMode() != 0 ? asciiString.getLength() * sizeof(char) : asciiString.getUsedSpace();
+
+    return write(reinterpret_cast<const unsigned char *>(buffer), space);
+}
+
+unsigned int FileBase::write(const WideString & wideString)
+{
+    const wchar_t * buffer  = wideString.getString();
+    unsigned int space      = isTextMode() != 0 ? wideString.getLength() * sizeof(wchar_t) : wideString.getUsedSpace();
+
+    return write(reinterpret_cast<const unsigned char *>(buffer), space);
+}
+
+bool FileBase::write(const char * asciiString)
+{
+    return this->writeString(asciiString);
+}
+
+bool FileBase::write(const wchar_t * wideString)
+{
+    return this->writeString(wideString);
+}
+
 void FileBase::flush(void)
 {
     ; // do nothing
+}
+
+void FileBase::normalizeName(String & name)
+{
+    // replace all "%time%"
+    char fmt[32];
+    NEUtilities::sSystemTime st;
+    DateTime::getNow(st, true);
+    String::formatString(fmt, 32, FileBase::TIMESTAMP_FORMAT, st.stYear, st.stMonth, st.stDay, st.stHour, st.stMinute, st.stSecond, st.stMillisecs);
+
+    do 
+    {
+        NEString::CharPos index = name.findFirstOf(FileBase::FILE_MASK_TIMESTAMP, 0, false);
+        if (index == NEString::InvalidPos)
+            break;
+
+        name.replace(fmt, index, FileBase::FILE_MASK_TIMESTAMP_LEN );
+    } while (true);
+
+
+    // replace all "%appname%"
+    String appName = Process::getInstance().getAppName();
+    do 
+    {
+        NEString::CharPos index = name.findFirstOf(FileBase::FILE_MASK_APPNAME, 0, false);
+        if (index == NEString::InvalidPos)
+            break;
+
+        name.replace(appName, index, FileBase::FILE_MASK_APPNAME_LEN );
+    } while (true);
+
 }

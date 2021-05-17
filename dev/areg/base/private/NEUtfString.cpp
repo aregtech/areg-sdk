@@ -143,9 +143,9 @@ NEUtfString::UtfChar NEUtfString::getEndOfString( void )
     return _endUtfChar;
 }
 
-NEUtfString::sUtfStringHeader * NEUtfString::initString( NEUtfString::eEncoding encode
-                                                    , NEUtfString::CharCount charCount
-                                                    , unsigned int blockSize /*= DEFAULT_BLOCK_SIZE*/ )
+NEUtfString::sUtfStringHeader * NEUtfString::initString(  NEUtfString::CharCount charCount
+                                                        , NEUtfString::eEncoding encode
+                                                        , unsigned int blockSize /*= DEFAULT_BLOCK_SIZE*/ )
 {
     NEUtfString::sUtfStringHeader * result = NULL;
     charCount += 1;

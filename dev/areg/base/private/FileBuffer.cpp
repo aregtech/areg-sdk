@@ -23,9 +23,9 @@ const unsigned int FileBuffer::BLOCK_SIZE  = (4 * NEMemory::BLOCK_SIZE);
 FileBuffer::FileBuffer( int         mode       /*= (FileBase::FO_MODE_WRITE | FileBase::FO_MODE_BINARY)*/
                       , const char* name       /*= NULL*/
                       , int         blockSize  /*= BLOCK_SIZE*/)
-    : FileBase    ( )
-    , SharedBuffer(blockSize)
+    : FileBase      ( )
 
+    , mSharedBuffer (blockSize)
     , mIsOpened     (false)
 {
     mFileMode = mode & (~FileBase::FOB_ATTACH);  // FOB_MODE_ATTACH
@@ -33,30 +33,30 @@ FileBuffer::FileBuffer( int         mode       /*= (FileBase::FO_MODE_WRITE | Fi
 }
 
 FileBuffer::FileBuffer(NEMemory::sByteBuffer & buffer, const char* name /*= NULL*/)
-    : FileBase        ( )
-    , SharedBuffer    (buffer)
+    : FileBase      ( )
 
-    , mIsOpened         (false)
+    , mSharedBuffer (buffer)
+    , mIsOpened     (false)
 {
     mFileMode  = (&buffer != &NEMemory::InvalidBuffer) ? FileBase::FO_MODE_ATTACH : FileBase::FO_MODE_INVALID;
     mFileName  = name;
 }
 
 FileBuffer::FileBuffer(SharedBuffer & sharedBuffer, const char* name /*= NULL*/)
-    : FileBase        ( )
-    , SharedBuffer    (sharedBuffer.getByteBuffer())
+    : FileBase      ( )
 
-    , mIsOpened         (false)
+    , mSharedBuffer (sharedBuffer.getByteBuffer())
+    , mIsOpened     (false)
 {
     mFileMode = sharedBuffer.isValid() ? FileBase::FO_MODE_ATTACH : FileBase::FO_MODE_INVALID;
     mFileName = name;
 }
 
 FileBuffer::FileBuffer(const SharedBuffer & sharedBuffer, const char* name /*= NULL*/)
-    : FileBase        ( )
-    , SharedBuffer    (sharedBuffer)
+    : FileBase      ( )
 
-    , mIsOpened         ( sharedBuffer.isValid() )
+    , mSharedBuffer (sharedBuffer)
+    , mIsOpened     ( sharedBuffer.isValid() )
 {
     mFileMode = FileBase::FO_MODE_ATTACH | FileBase::FO_MODE_READ;
     mFileName = name;
@@ -75,6 +75,7 @@ FileBuffer::~FileBuffer( void )
 inline void FileBuffer::_setName(const char* name)
 {
     mFileName = name;
+    FileBase::normalizeName(mFileName);
 }
 
 bool FileBuffer::open( void )
@@ -84,7 +85,7 @@ bool FileBuffer::open( void )
         mFileMode = normalizeMode(mFileMode);
         if (isAttachMode() == false)
         {
-            resize(mBlockSize, false);
+            mSharedBuffer.resize(mSharedBuffer.getBlockSize(), false);
         }
         else
         {
@@ -127,20 +128,19 @@ void FileBuffer::close( void )
     if (isValid())
     {
         if (isForceDelete() || isTemporary() )
-            removeReference();
+            mSharedBuffer.removeReference();
         else if ((isAttachMode() == false) && (isDetachMode() == false))
-            removeReference();
-        else if (getSizeUsed() == 0)
-            removeReference();
+            mSharedBuffer.removeReference();
+        else if (mSharedBuffer.getSizeUsed() == 0)
+            mSharedBuffer.removeReference();
         // else, do nothing, either buffer is attached or detach mode is set.
     }
 
     // keep file name and mode that it can be again reopened.
     // remove 'attached' flag, since the buffer is not valid any mode
     mIsOpened   = false;
-    mByteBuffer = &NEMemory::InvalidBuffer;
     mFileMode  &= ~FileBase::FOB_ATTACH;
-    BufferPosition::invalidate();
+    mSharedBuffer.invalidate();
 }
 
 unsigned int FileBuffer::read(unsigned char* buffer, unsigned int size) const
@@ -148,67 +148,19 @@ unsigned int FileBuffer::read(unsigned char* buffer, unsigned int size) const
     unsigned int result = 0;
     if (isOpened() && canRead())
     {
-        result = SharedBuffer::read(buffer, size);
+        result = mSharedBuffer.read(buffer, size);
     }
     else
     {
         OUTPUT_ERR("Either file is not opened [ %s ] or cannot read data [ %s ], check open mode.", isOpened() ? "true" : "false", canRead() ? "true" : "false");
     }
     
-    return result;
-}
-
-unsigned int FileBuffer::read( IEByteBuffer & buffer ) const
-{
-    unsigned int result = 0;
-    
-    if (isOpened() && canRead())
-    {
-        result = SharedBuffer::read(buffer);
-    }
-    else
-    {
-        OUTPUT_ERR("Either file is not opened [ %s ] or cannot read data [ %s ], check open mode.", isOpened() ? "true" : "false", canRead() ? "true" : "false");
-    }
-
-    return result;
-}
-
-unsigned int FileBuffer::read( String & asciiString ) const
-{
-    unsigned int result = 0;
-
-    if (isOpened() && canRead())
-    {
-        result = SharedBuffer::read(asciiString);
-    }
-    else
-    {
-        OUTPUT_ERR("Either file is not opened [ %s ] or cannot read data [ %s ], check open mode.", isOpened() ? "true" : "false", canRead() ? "true" : "false");
-    }
-
-    return result;
-}
-
-unsigned int FileBuffer::read( WideString & wideString ) const
-{
-    unsigned int result = 0;
-
-    if (isOpened() && canRead())
-    {
-        result = SharedBuffer::read(wideString);
-    }
-    else
-    {
-        OUTPUT_ERR("Either file is not opened [ %s ] or cannot read data [ %s ], check open mode.", isOpened() ? "true" : "false", canRead() ? "true" : "false");
-    }
-
     return result;
 }
 
 unsigned int FileBuffer::getSizeReadable( void ) const
 {
-    return (isOpened() ? SharedBuffer::getSizeReadable() : 0);
+    return (isOpened() ? mSharedBuffer.getSizeReadable() : 0);
 }
 
 unsigned int FileBuffer::write(const unsigned char* buffer, unsigned int size)
@@ -217,55 +169,7 @@ unsigned int FileBuffer::write(const unsigned char* buffer, unsigned int size)
 
     if (isOpened() && canWrite())
     {
-        result = SharedBuffer::write(buffer, size);
-    }
-    else
-    {
-        OUTPUT_ERR("Either file is not opened [ %s ] or cannot write data [ %s ], check open mode.", isOpened() ? "true" : "false", canWrite() ? "true" : "false");
-    }
-
-    return result;
-}
-
-unsigned int FileBuffer::write( const IEByteBuffer & buffer )
-{
-    unsigned int result = 0;
-
-    if (isOpened() && canWrite())
-    {
-        result = SharedBuffer::write(buffer);
-    }
-    else
-    {
-        OUTPUT_ERR("Either file is not opened [ %s ] or cannot write data [ %s ], check open mode.", isOpened() ? "true" : "false", canWrite() ? "true" : "false");
-    }
-
-    return result;
-}
-
-unsigned int FileBuffer::write( const String & asciiString )
-{
-    unsigned int result = 0;
-
-    if (isOpened() && canWrite())
-    {
-        result = SharedBuffer::write(asciiString);
-    }
-    else
-    {
-        OUTPUT_ERR("Either file is not opened [ %s ] or cannot write data [ %s ], check open mode.", isOpened() ? "true" : "false", canWrite() ? "true" : "false");
-    }
-
-    return result;
-}
-
-unsigned int FileBuffer::write( const WideString & wideString )
-{
-    unsigned int result = 0;
-
-    if (isOpened() && canWrite())
-    {
-        result = SharedBuffer::write(wideString);
+        result = mSharedBuffer.write(buffer, size);
     }
     else
     {
@@ -277,12 +181,12 @@ unsigned int FileBuffer::write( const WideString & wideString )
 
 unsigned int FileBuffer::getSizeWritable( void ) const
 {
-    return (isOpened() ? SharedBuffer::getSizeWritable() : 0);
+    return (isOpened() ? mSharedBuffer.getSizeWritable() : 0);
 }
 
 bool FileBuffer::remove( void )
 {
-    removeReference();
+    mSharedBuffer.removeReference();
 
     mFileName   = String::EmptyString;
     mFileMode   = FileBase::FO_MODE_INVALID;
@@ -293,7 +197,7 @@ bool FileBuffer::remove( void )
 
 unsigned int FileBuffer::getLength( void ) const
 {
-    return (isOpened() ? SharedBuffer::getSizeUsed() : NEMemory::INVALID_SIZE);
+    return (isOpened() ? mSharedBuffer.getSizeUsed() : NEMemory::INVALID_SIZE);
 }
 
 bool FileBuffer::isOpened() const
@@ -303,7 +207,7 @@ bool FileBuffer::isOpened() const
 
 unsigned int FileBuffer::reserve(int newSize)
 {
-    return (isOpened() ? SharedBuffer::resize(newSize, false) : NEMemory::INVALID_SIZE);
+    return (isOpened() ? mSharedBuffer.resize(newSize, false) : NEMemory::INVALID_SIZE);
 }
 
 bool FileBuffer::truncate( void )
@@ -313,7 +217,7 @@ bool FileBuffer::truncate( void )
     {
         if (isAttachMode() == false)
         {
-            removeReference();
+            mSharedBuffer.removeReference();
             result = true;
         }
     }
@@ -326,29 +230,55 @@ bool FileBuffer::truncate( void )
 
 unsigned int FileBuffer::setPosition( int offset, IECursorPosition::eCursorPosition startAt ) const
 {
-    return (isOpened() ? SharedBuffer::setPosition(offset, startAt) : IECursorPosition::INVALID_CURSOR_POSITION);
+    return (isOpened() ? mSharedBuffer.setPosition(offset, startAt) : IECursorPosition::INVALID_CURSOR_POSITION);
 }
 
 unsigned int FileBuffer::getPosition( void ) const
 {
-    return (isOpened() ? SharedBuffer::getPosition() : IECursorPosition::INVALID_CURSOR_POSITION);
+    return (isOpened() ? mSharedBuffer.getPosition() : IECursorPosition::INVALID_CURSOR_POSITION);
 }
 
 unsigned int FileBuffer::normalizeMode( unsigned int mode ) const
 {
-    if (SharedBuffer::isShared())
+    if (mSharedBuffer.isShared())
         mode |= FileBase::FO_MODE_ATTACH;
     else
         mode &= ~FileBase::FOB_ATTACH;
+
     return FileBase::normalizeMode(mode);
 }
 
-unsigned int FileBuffer::insertAt( const unsigned char* buffer, unsigned int size, unsigned int insertAt )
+unsigned int FileBuffer::insertAt( const unsigned char* buffer, unsigned int size, unsigned int atPos )
 {
-    return (isOpened() && canWrite() ? SharedBuffer::insertAt(buffer, size, insertAt) : 0);
+    return (isOpened() && canWrite() ? mSharedBuffer.insertAt(buffer, size, atPos) : 0);
 }
 
-bool FileBuffer::isEmpty( void ) const
+unsigned int FileBuffer::read(IEByteBuffer & buffer) const
 {
-    return (isOpened() ? SharedBuffer::isEmpty() : true);
+    return FileBase::read(buffer);
+}
+
+unsigned int FileBuffer::read(String & asciiString) const
+{
+    return FileBase::read(asciiString);
+}
+
+unsigned int FileBuffer::read(WideString & wideString) const
+{
+    return FileBase::read(wideString);
+}
+
+unsigned int FileBuffer::write(const IEByteBuffer & buffer)
+{
+    return FileBase::write(buffer);
+}
+
+unsigned int FileBuffer::write(const String & asciiString)
+{
+    return FileBase::write(asciiString);
+}
+
+unsigned int FileBuffer::write(const WideString & wideString)
+{
+    return FileBase::write(wideString);
 }
