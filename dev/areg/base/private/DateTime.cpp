@@ -169,16 +169,13 @@ String DateTime::formatTime( const char * formatName /*= DateTime::TIME_FORMAT_I
     
     if ( mDateTime != 0 )
     {
-        time_t secs = static_cast<time_t>(mDateTime / NEUtilities::SEC_TO_MICROSECS);
-        time_t rest = mDateTime - (secs * NEUtilities::SEC_TO_MICROSECS);
-        unsigned short milli = static_cast<unsigned short>(rest / NEUtilities::MILLISEC_TO_MICROSECS);
-
+        NEUtilities::sSystemTime sysTime;
         struct tm conv;
-#ifdef WINDOWS
-        localtime_s(&conv, &secs);
-#else
-        localtime_r(&secs, &conv);
-#endif // WINDOWS
+
+        NEUtilities::convToLocalTime( mDateTime, sysTime);
+        NEUtilities::convToTm(sysTime, conv);
+
+        unsigned short milli = sysTime.stMillisecs;
 
         String str = NEString::isEmpty( formatName ) == false ? formatName : DateTime::TIME_FORMAT_ISO8601_OUTPUT;
         NEString::CharPos ms = str.findFirstOf( DateTime::FORMAT_MILLISECOND );

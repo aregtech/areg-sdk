@@ -43,17 +43,17 @@ TraceManager::TraceScopeMap::~TraceScopeMap(void)
 /**
  * \brief   Tracing thread name
  **/
-const char * const  TraceManager::TRACER_THREAD_NAME          = "_AREG_TRACER_THREAD_";
-const char * const  TraceManager::DEFAULT_LOG_VERSION         = "log.version          = 1.0.0";
-const char * const  TraceManager::DEFAULT_LOG_ENABLE          = "log.enable           = true";
-const char * const  TraceManager::DEFAULT_LOG_FILE            = "log.file             = ./logs/trace_%time%.log";
-const char * const  TraceManager::DEFAULT_LOG_APPEND          = "log.append           = false";
-const char * const  TraceManager::DEFAULT_LOG_LAYOUT_ENTER    = "log.layout.enter     = %d: [ %t  %x.%z: Enter --> ]%n";
-const char * const  TraceManager::DEFAULT_LOG_LAYOUT_MESSAGE  = "log.layout.message   = %d: [ %t  %p >>> ] %m%n";
-const char * const  TraceManager::DEFAULT_LOG_LAYOUT_EXIT     = "log.layout.exit      = %d: [ %t  %x.%z: Exit <-- ]%n";
-const char * const  TraceManager::DEFAULT_LOG_LAYOUT_DEBUG    = "log.debug            = true";
-const char * const  TraceManager::DEFAULT_SCOPES_ENABLED      = "scope.*              = DEBUG | SCOPE";
-
+const char * const  TraceManager::TRACER_THREAD_NAME            = "_AREG_TRACER_THREAD_";
+const char * const  TraceManager::DEFAULT_LOG_VERSION           = "log.version          = 1.0.0";
+const char * const  TraceManager::DEFAULT_LOG_ENABLE            = "log.enable           = true";
+const char * const  TraceManager::DEFAULT_LOG_FILE              = "log.file             = ./logs/trace_%time%.log";
+const char * const  TraceManager::DEFAULT_LOG_APPEND            = "log.append           = false";
+const char * const  TraceManager::DEFAULT_LOG_LAYOUT_ENTER      = "log.layout.enter     = %d: [ %t  %x.%z: Enter --> ]%n";
+const char * const  TraceManager::DEFAULT_LOG_LAYOUT_MESSAGE    = "log.layout.message   = %d: [ %t  %p >>> ] %m%n";
+const char * const  TraceManager::DEFAULT_LOG_LAYOUT_EXIT       = "log.layout.exit      = %d: [ %t  %x.%z: Exit <-- ]%n";
+const char * const  TraceManager::DEFAULT_LOG_LAYOUT_DEBUG      = "log.debug            = true";
+const char * const  TraceManager::DEFAULT_SCOPES_ENABLED        = "scope.*              = DEBUG | SCOPE";
+const unsigned int  TraceManager::LOG_START_WAITING_TIME        = IESynchObject::WAIT_1_SEC * 20;
 
 //////////////////////////////////////////////////////////////////////////
 // TraceManager class static methods
@@ -161,7 +161,6 @@ bool TraceManager::forceActivateLogging(void)
 
     if ( (traceManager.isLoggingConfigured() == false) && (traceManager.isLoggingStarted() == false) )
     {
-        Lock lock(traceManager.mLock);
         result = traceManager.activateTracingDefaults();
     }
 
@@ -430,25 +429,31 @@ void TraceManager::clearConfigData( void )
 
 bool TraceManager::activateTracingDefaults( void )
 {
-    mLogVersion.parseProperty( DEFAULT_LOG_VERSION );
-    mLogLayoutEnter.parseProperty( DEFAULT_LOG_LAYOUT_ENTER );
-    mLogLayoutMessage.parseProperty( DEFAULT_LOG_LAYOUT_MESSAGE );
-    mLogLayoutExit.parseProperty( DEFAULT_LOG_LAYOUT_EXIT );
-    mLogDebugOutput.parseProperty( DEFAULT_LOG_LAYOUT_DEBUG );
-    mLogStatus.parseProperty( DEFAULT_LOG_ENABLE );
-    mLogAppendData.parseProperty( DEFAULT_LOG_APPEND );
-    mLogFile.parseProperty( DEFAULT_LOG_FILE );
+    do 
+    {
+        Lock lock(mLock);
 
-    mLogStackSize.clearProperty();
-    mLogRemoteHost.clearProperty();
-    mLogRemotePort.clearProperty();
-    mLogDbHost.clearProperty();
-    mLogDbName.clearProperty();
-    mLogDbDriver.clearProperty();
-    mLogDbUser.clearProperty();
-    mLogDbPassword.clearProperty();
+        mLogVersion.parseProperty( DEFAULT_LOG_VERSION );
+        mLogLayoutEnter.parseProperty( DEFAULT_LOG_LAYOUT_ENTER );
+        mLogLayoutMessage.parseProperty( DEFAULT_LOG_LAYOUT_MESSAGE );
+        mLogLayoutExit.parseProperty( DEFAULT_LOG_LAYOUT_EXIT );
+        mLogDebugOutput.parseProperty( DEFAULT_LOG_LAYOUT_DEBUG );
+        mLogStatus.parseProperty( DEFAULT_LOG_ENABLE );
+        mLogAppendData.parseProperty( DEFAULT_LOG_APPEND );
+        mLogFile.parseProperty( DEFAULT_LOG_FILE );
 
-    mConfigScopeGroup.setAt( NELogConfig::MODULE_SCOPE, static_cast<unsigned int>(NETrace::PrioDebug) | static_cast<unsigned int>(NETrace::PrioScope));
+        mLogStackSize.clearProperty();
+        mLogRemoteHost.clearProperty();
+        mLogRemotePort.clearProperty();
+        mLogDbHost.clearProperty();
+        mLogDbName.clearProperty();
+        mLogDbDriver.clearProperty();
+        mLogDbUser.clearProperty();
+        mLogDbPassword.clearProperty();
+
+        mConfigScopeGroup.setAt( NELogConfig::MODULE_SCOPE, static_cast<unsigned int>(NETrace::PrioDebug) | static_cast<unsigned int>(NETrace::PrioScope));
+
+    } while (false);
 
     return startLoggingThread();
 }
@@ -624,7 +629,8 @@ bool TraceManager::startLoggingThread(void)
 
             _sendLogEvent( TraceEventData(TraceEventData::TraceStartLogs) );
 
-            result = mLogStarted.lock(IESynchObject::WAIT_1_SEC * 10);  // <= wait max 10 secs.
+            // result = mLogStarted.lock(TraceManager::LOG_START_WAITING_TIME);  // <= wait max 10 secs.
+            result = mLogStarted.lock(IESynchObject::WAIT_INFINITE);
         }
     }
     else
@@ -851,14 +857,28 @@ void TraceManager::activateScope( TraceScope & traceScope, unsigned int defaultP
     }
     else
     {
+
         char groupName[NETrace::LOG_MESSAGE_BUFFER_SIZE];
-        NEString::copyString<char>(groupName, NETrace::LOG_MESSAGE_BUFFER_SIZE, scopeName);
-        NEString::CharPos pos = NEString::findLastOf<char>(NELogConfig::SYNTAX_SCOPE_SEPARATOR, groupName, NEString::EndPos);
-        char * separator = pos != NEString::InvalidPos ? groupName + pos : NULL;
-        while ( separator != NULL )
+        NEString::CharCount end = NEString::copyString<char>(groupName, NETrace::LOG_MESSAGE_BUFFER_SIZE, scopeName);
+
+        char * separator = groupName + end;
+        do 
         {
-            separator[1] = NELogConfig::SYNTAX_SCOPE_GROUP; // replace group syntax
-            separator[2] = '\0';                             // set end of string
+            *separator= '\0';
+            NEString::CharPos pos = NEString::findLastOf<char>(NELogConfig::SYNTAX_SCOPE_SEPARATOR, groupName, NEString::EndPos);
+            if (pos != NEString::InvalidPos)
+            {
+                separator = groupName + pos;
+                separator[1] = NELogConfig::SYNTAX_SCOPE_GROUP; // replace group syntax
+                separator[2] = NEString::EndOfString;           // set end of string
+            }
+            else
+            {
+                // Check whether the entire module scopes are enabled
+                groupName[0] = NELogConfig::SYNTAX_SCOPE_GROUP; // set in the first position
+                groupName[1] = NEString::EndOfString;           // set end of string
+                separator    = NULL;                            // set NULL to escape loop if needed.
+            }
 
             if ( mConfigScopeGroup.find(groupName, scopePrio) )
             {
@@ -866,14 +886,9 @@ void TraceManager::activateScope( TraceScope & traceScope, unsigned int defaultP
                 traceScope.setPriority( scopePrio );
                 separator = NULL;
             }
-            else
-            {
-                // continue searching
-                *separator= '\0';
-                pos = NEString::findLastOf<char>( NELogConfig::SYNTAX_SCOPE_SEPARATOR, groupName, NEString::EndPos );
-                separator = pos != NEString::InvalidPos ? groupName + pos : NULL;
-            }
-        }
+
+        } while (separator != NULL);
+
     }
 }
 

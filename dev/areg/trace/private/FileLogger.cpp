@@ -107,7 +107,7 @@ bool FileLogger::logMessage( const NETrace::sLogMessage & logMessage )
     bool result = false;
     if ( mLogFile.isOpened() )
     {
-        mLogFile.moveToBegin();
+        // mLogFile.moveToBegin();
 
         switch (logMessage.lmHeader.logType)
         {

@@ -62,20 +62,23 @@ AREG_API void NEUtilities::convToTm(const sSystemTime & sysTime, tm & out_time)
         out_time.tm_year    = static_cast<int>( sysTime.stYear - 1900); // tm_year is 1900 based
         out_time.tm_wday    = static_cast<int>( sysTime.stDayOfWeek);
         out_time.tm_isdst   = -1;
-
-        time_t _timer = mktime( &out_time );
-#ifdef  _WIN32
-        localtime_s( &out_time, &_timer );
-#else   // _WIN32
-        struct tm * temp = localtime( &_timer );
-        if ( temp != NULL )
-            NEMemory::memCopy( &out_time, static_cast<unsigned int>(sizeof(tm)), temp, static_cast<unsigned int>(sizeof(tm)) );
-#endif  // _WIN32
     }
     else
     {
         NEMemory::zeroData<tm>(out_time);
     }
+}
+
+AREG_API void NEUtilities::makeTmLocal( struct tm & IN OUT utcTime )
+{
+    time_t _timer = mktime( &utcTime );
+#ifdef  _WIN32
+    localtime_s( &utcTime, &_timer );
+#else   // _WIN32
+    struct tm * temp = localtime( &_timer );
+    if ( temp != NULL )
+        NEMemory::memCopy( &utcTime, static_cast<unsigned int>(sizeof(tm)), temp, static_cast<unsigned int>(sizeof(tm)) );
+#endif  // _WIN32
 }
 
 AREG_API void NEUtilities::convToSystemTime(const tm & time, sSystemTime & out_sysTime)

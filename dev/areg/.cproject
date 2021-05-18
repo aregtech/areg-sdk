@@ -34,13 +34,13 @@
 								<option id="gnu.cpp.compiler.cygwin.so.debug.option.optimization.level.802844889" name="Optimization Level" superClass="gnu.cpp.compiler.cygwin.so.debug.option.optimization.level" useByScannerDiscovery="false" value="gnu.cpp.compiler.optimization.level.none" valueType="enumerated"/>
 								<option defaultValue="gnu.cpp.compiler.debugging.level.max" id="gnu.cpp.compiler.cygwin.so.debug.option.debugging.level.1497653882" name="Debug Level" superClass="gnu.cpp.compiler.cygwin.so.debug.option.debugging.level" useByScannerDiscovery="false" valueType="enumerated"/>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.cpp.compiler.option.include.paths.195128389" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc}\areg-sdk\dev&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc}\dev&quot;"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.cpp.compiler.option.preprocessor.def.1275911369" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" useByScannerDiscovery="false" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="_POSIX"/>
 									<listOptionValue builtIn="false" value="_OUTPUT_DEBUG_LEVEL=5"/>
 									<listOptionValue builtIn="false" value="_DEBUG"/>
-									<listOptionValue builtIn="false" value="_ENABLED_TRACES"/>
+									<listOptionValue builtIn="false" value="_ENABLE_TRACES"/>
 									<listOptionValue builtIn="false" value="_EXP_AREG_LIB"/>
 								</option>
 								<option id="gnu.cpp.compiler.option.other.other.409902117" name="Other flags" superClass="gnu.cpp.compiler.option.other.other" useByScannerDiscovery="false" value="-c -fmessage-length=0 -Wnon-virtual-dtor " valueType="string"/>
@@ -70,9 +70,6 @@
 							</tool>
 						</toolChain>
 					</folderInfo>
-					<sourceEntries>
-						<entry excluding="src|src/imp|src/inc" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
-					</sourceEntries>
 				</configuration>
 			</storageModule>
 			<storageModule moduleId="org.eclipse.cdt.core.externalSettings"/>
@@ -111,11 +108,11 @@
 									<listOptionValue builtIn="false" value="_NDEBUG"/>
 									<listOptionValue builtIn="false" value="_OUTPUT_DEBUG_LEVEL=0"/>
 									<listOptionValue builtIn="false" value="_POSIX"/>
-									<listOptionValue builtIn="false" value="_ENABLED_TRACES"/>
+									<listOptionValue builtIn="false" value="_ENABLE_TRACES"/>
 									<listOptionValue builtIn="false" value="_EXP_AREG_LIB"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.cpp.compiler.option.include.paths.519576391" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc}\areg-sdk\dev&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc}\dev&quot;"/>
 								</option>
 								<option id="gnu.cpp.compiler.option.warnings.pedantic.error.1678646467" name="Pedantic warnings as errors (-pedantic-errors)" superClass="gnu.cpp.compiler.option.warnings.pedantic.error" useByScannerDiscovery="false" value="false" valueType="boolean"/>
 								<option id="gnu.cpp.compiler.option.warnings.pedantic.1067160183" name="Pedantic (-pedantic)" superClass="gnu.cpp.compiler.option.warnings.pedantic" useByScannerDiscovery="false" value="true" valueType="boolean"/>

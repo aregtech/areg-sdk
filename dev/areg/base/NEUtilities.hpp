@@ -254,7 +254,7 @@ namespace   NEUtilities
      * \param   sysTime     The system-time data structure to convert.
      * \param   out_time    On output the parameter contains date-time of converted system time without information of milliseconds.
      **/
-    AREG_API void convToTm( const sSystemTime & sysTime, tm & out_time );
+    AREG_API void convToTm( const sSystemTime & sysTime, struct tm & OUT out_time );
 
     /**
      * \brief   Converts standard 'tm' type to system-time data structure. In conversion, a milliseconds part of data will not exist.
@@ -262,6 +262,13 @@ namespace   NEUtilities
      * \param   out_sysTime     On output, the parameter contains date-time information in system-time data structure format without millisecond information.
      **/
     AREG_API void convToSystemTime( const tm & time, sSystemTime & out_sysTime );
+
+    /**
+     * \brief   Localizes the UTC time data value. On output the passed structure contains values in UTC timezone.
+     * \param   utcTime     The time structure in UTC time to convert.
+     *                      On output the values of structure will be in local time zone.
+     **/
+    AREG_API void makeTmLocal( struct tm & IN OUT utcTime );
 
     /**
      * \brief   Returns the tick counts information in milliseconds since process has started.

@@ -45,8 +45,8 @@
         <!-- COMPILE_ENABLED_TRACES : set 1 (default value) to enable compilation with logging; set 0, if no logging required.                                              -->
         <!-- COMPILE_ENABLED_LEAK_DETECT : set 1 to enable memory leak detector; set 0 (default value) if no memory leak detect is required.                                -->
         <!-- The COMPILE_ENABLED_LEAK_DETECT is available ONLY for Debug. In Release this preprocessor define is ignored, even if it is set, and plays no role.             -->
-        <UserPreprocessorDefines Condition="'$(ConfigShortName)'=='Debug'">ENABLED_TRACES;COMPILE_ENABLED_LEAK_DETECT=0;</UserPreprocessorDefines>
-        <UserPreprocessorDefines Condition="'$(ConfigShortName)'=='Release'">ENABLED_TRACES;</UserPreprocessorDefines>
+        <UserPreprocessorDefines Condition="'$(ConfigShortName)'=='Debug'">ENABLE_TRACES;COMPILE_ENABLED_LEAK_DETECT=0;</UserPreprocessorDefines>
+        <UserPreprocessorDefines Condition="'$(ConfigShortName)'=='Release'">ENABLE_TRACES;</UserPreprocessorDefines>
 
         <!-- ************************************************************************************************************************************************************** -->
         <!-- Add user special include folders. If Visual Leak Detector is installed as a separate project, add include folder here.                                         -->

@@ -21,7 +21,7 @@
  *          either with logging, or only with output on Debug output window,
  *          or ignore any logging activity.
  *
- *          ENABLED_TRACES is a global preprocessor definition
+ *          ENABLE_TRACES is a global preprocessor definition
  *          indicating whether the applications should be compiled with
  *          logging or not. If this is not defined or zero,
  *          logging functionalities will be ignored, unless developer 
@@ -36,13 +36,13 @@
  *          If both preprocessor definitions are not defined or are zero,
  *          the application(s) will be compiled with no logging.
  *          To compile application(s) without logging, it is enough to
- *          set ENABLED_TRACES zero and not define TRACE_DEBUG_OUTPUT
+ *          set ENABLE_TRACES zero and not define TRACE_DEBUG_OUTPUT
  * 
  * \example     Start Logging:
  *              In this example, the application configures logging from default configuration file
  *              and start logging, to that the messages can be logged on target.
  *                  ...
- *              TRAR_START_LOGGING(NULL);
+ *              TRACER_START_LOGGING(NULL);
  * 
  * \example     Logging:
  *              In this example, the application created scope, which are used to start output messages.
@@ -68,10 +68,10 @@
  *              }
  **/
 
-#if defined(ENABLED_TRACES) || defined(_ENABLED_TRACES)
+#if defined(ENABLE_TRACES) || defined(_ENABLE_TRACES)
 
 //////////////////////////////////////////////////////////////////////////
-// if ENABLED_TRACES is defined and not zero
+// if ENABLE_TRACES is defined and not zero
 //////////////////////////////////////////////////////////////////////////
 
     /**
@@ -83,11 +83,17 @@
      * \brief   Use this macro to load configuration file and start tracer.
      *          If config file name is NULL, it will load from default folder "./config/log.init"
      **/
-    #define TRAR_START_LOGGING(configFile)              NETrace::startLogging((configFile))
+    #define TRACER_START_LOGGING(configFile)            NETrace::startLogging((configFile))
+
+    /**
+     * \brief   Call to force to start logging.
+     **/
+    #define TRACER_FORCE_LOGGING()                      NETrace::forceStartLogging()
+
     /**
      * \brief   Use this macro to stop logging
      **/
-    #define TRAR_STOP_LOGGING()                         NETrace::stopLogging( )
+    #define TRACER_STOP_LOGGING()                       NETrace::stopLogging( )
 
     /**
      * \brief   Use this macro to define scope in source code. This will create scope variable and set name
@@ -171,80 +177,84 @@
      **/
     #define DECLARE_TRACE_VARIABLE(VarType, VarName, VarInit)   VarType VarName   = VarInit
 
-#else   // defined(ENABLED_TRACES) || defined(_ENABLED_TRACES)
+#else   // !defined(ENABLE_TRACES) && !defined(_ENABLE_TRACES)
 
 //////////////////////////////////////////////////////////////////////////
 // if TRACE_DEBUG_OUTPUT and TRACE_DEBUG_OUTPUT are not defined or both are zero
 //////////////////////////////////////////////////////////////////////////
 
     /**
-     * \brief   If ENABLED_TRACES, returns true, makes no effect
+     * \brief   If ENABLE_TRACES, returns true, makes no effect
      **/
     #define IS_TRACE_STARTED()                          (true)
 
     /**
-     * \brief   If ENABLED_TRACES, returns true, makes no effect
+     * \brief   If ENABLE_TRACES, returns true, makes no effect
      **/
-    #define TRAR_START_LOGGING(configFile)              (true)
+    #define TRACER_START_LOGGING(configFile)            (true)
     /**
-     * \brief   If ENABLED_TRACES is zero, does nothing
+     * \brief   If ENABLE_TRACES, returns true, makes no effect
      **/
-    #define TRAR_STOP_LOGGING()                         {}
+    #define TRACER_FORCE_LOGGING()                      (true)
+    /**
+     * \brief   If ENABLE_TRACES is zero, does nothing
+     **/
+    #define TRACER_STOP_LOGGING()                       {}
 
     /**
-     * \brief   If ENABLED_TRACES is zero, does nothing, no trace scope is declared.
+     * \brief   If ENABLE_TRACES is zero, does nothing, no trace scope is declared.
      **/
     #define DEF_TRACE_SCOPE(scope)
 
     /**
-     * \brief   If ENABLED_TRACES is zero, does nothing, no logging message is created.
+     * \brief   If ENABLE_TRACES is zero, does nothing, no logging message is created.
      **/
     #define TRACE_SCOPE(scope)
 
     /**
-     * \brief   If ENABLED_TRACES, does nothing, all parameters are ignored.
+     * \brief   If ENABLE_TRACES, does nothing, all parameters are ignored.
      **/
     #define TRACE_DBG(...)
     /**
-     * \brief   If ENABLED_TRACES, does nothing, all parameters are ignored.
+     * \brief   If ENABLE_TRACES, does nothing, all parameters are ignored.
      **/
     #define TRACE_INFO(...)
     /**
-     * \brief   If ENABLED_TRACES, does nothing, all parameters are ignored.
+     * \brief   If ENABLE_TRACES, does nothing, all parameters are ignored.
      **/
     #define TRACE_WARN(...)
     /**
-     * \brief   If ENABLED_TRACES, does nothing, all parameters are ignored.
+     * \brief   If ENABLE_TRACES, does nothing, all parameters are ignored.
      **/
     #define TRACE_ERR(...)
     /**
-     * \brief   If ENABLED_TRACES, does nothing, all parameters are ignored.
+     * \brief   If ENABLE_TRACES, does nothing, all parameters are ignored.
      **/
     #define TRACE_FATAL(...)
 
     /**
-     * \brief   If ENABLED_TRACES, does nothing, no global scope is initialized.
+     * \brief   If ENABLE_TRACES, does nothing, no global scope is initialized.
      **/
     #define GLOBAL_TRACE_SCOPE(scope)
 
     /**
-     * \brief   If ENABLED_TRACES, does nothing, all parameters are ignored.
+     * \brief   If ENABLE_TRACES, does nothing, all parameters are ignored.
      **/
     #define GLOBAL_DBG(...)
     /**
-     * \brief   If ENABLED_TRACES, does nothing, all parameters are ignored.
+     * \brief   If ENABLE_TRACES, does nothing, all parameters are ignored.
      **/
     #define GLOBAL_INFO(...)
     /**
-     * \brief   If ENABLED_TRACES, does nothing, all parameters are ignored.
+     * \brief   If ENABLE_TRACES, does nothing, all parameters are ignored.
      **/
     #define GLOBAL_WARN(...)
     /**
-     * \brief   If ENABLED_TRACES, does nothing, all parameters are ignored.
+     * \brief   If ENABLE_TRACES, does nothing, all parameters are ignored.
      **/
     #define GLOBAL_ERR(...)
     /**
-     * \brief   If ENABLED_TRACES, does nothing, all parameters are ignored.
+     * \brief   If ENABLE_TRACES, does nothing, all parameters are ignored.
      **/
     #define GLOBAL_FATAL(...)
     /**
@@ -252,6 +262,6 @@
      **/
     #define DECLARE_TRACE_VARIABLE(VarType, VarName, VarInit)
 
-#endif  // (defined(ENABLED_TRACES) && defined(_ENABLED_TRACES))
+#endif  // (defined(ENABLE_TRACES) && defined(_ENABLE_TRACES))
 
 #endif  // AREG_TRACE_GETRACE_H
