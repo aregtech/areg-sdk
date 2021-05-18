@@ -6,6 +6,8 @@
 .vs/*
 *.o
 *.obj
+*.log
+*.stackdump
 
 /product/
 /tools/*.zip
@@ -22,7 +24,7 @@
 
 /examples/test-areg-basic/Debug/
 /examples/test-areg-basic/Release/
-/examples/test-areg-basic/.settings/*
+/examples/test-areg-basic/.settings/
 
 /examplea/01_hello/debug/
 /examplea/01_hello/release/
@@ -39,3 +41,9 @@
 /examplea/04_trace/debug/
 /examplea/04_trace/release/
 /examplea/04_trace/.settings/
+/examplea/04_trace/logs/
+
+/examplea/05_timer/debug/
+/examplea/05_timer/release/
+/examplea/05_timer/.settings/
+/examplea/05_timer/logs/

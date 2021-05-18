@@ -10,15 +10,23 @@
 
 #ifndef IN
     #define IN
-#endif  // IN
+#endif  // !IN
 
 #ifndef OUT
     #define OUT
-#endif  // OUT
+#endif  // !OUT
 
 #ifndef OPTIONAL
     #define OPTIONAL
-#endif  // OPTIONAL
+#endif  // !OPTIONAL
+
+#ifndef NULL
+    #define NULL
+#endif // !NULL
+
+#ifndef IGNORE_PARAM
+    #define IGNORE_PARAM    NULL
+#endif // !IGNORE_PARAM
 
 /**
  * \brief   An empty MACRO, does nothing

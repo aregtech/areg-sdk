@@ -26,6 +26,9 @@ typedef void (*FuncPosixTimerRoutine)( union sigval );
 //////////////////////////////////////////////////////////////////////////
 // TimerPosix class declaration.
 //////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   POSIX specific timer object used by timer manager.
+ **/
 class TimerPosix
 {
 //////////////////////////////////////////////////////////////////////////
@@ -64,29 +67,29 @@ public:
     /**
      * \brief   Returns POSIX timer ID.
      **/
-    inline timer_t GetTimerId( void ) const;
+    inline timer_t getTimerId( void ) const;
 
     /**
      * \brief   Returns POSIX timer context.
      **/
-    inline Timer * GetContext( void ) const;
+    inline Timer * getContext( void ) const;
 
     /**
      * \brief   Returns timeout due date and time when timer expired or should expire next.
      **/
-    inline const timespec & GetDueTime( void ) const;
+    inline const timespec & getDueTime( void ) const;
 
     /**
      * \brief   Returns period. If zero, the timer is nnot run. If TimerPosix::TIMER_PERIOD_ENDLESS 
      *          the timer is endless until it is not stopped. Any other value specifies the remaining
      *          period to run timer.
      **/
-    inline unsigned int GetRemainPeriod( void ) const;
+    inline unsigned int getRemainPeriod( void ) const;
 
     /**
      * \brief   Returns true if timer is started.
      **/
-    inline bool IsStarted( void ) const;
+    inline bool isStarted( void ) const;
 
     /**
      * \brief   Returns true if timer is valid, i.e. the context, timer routine and ID are valid.
@@ -96,7 +99,7 @@ public:
     /**
      * \brief   Creates, but do not start timer. Returns true if timer ID is valid.
      **/
-    bool CreateTimer( FuncPosixTimerRoutine funcTimerRoutine );
+    bool createTimer( FuncPosixTimerRoutine funcTimerRoutine );
 
     /**
      * \brief   Starts timer by specified timeout and period count values. If timer was not created, 
@@ -113,28 +116,28 @@ public:
      *          is set zero, the timer is initialized, but do not start and the return value is zero.
      **/
 
-    bool StartTimer( Timer & context, FuncPosixTimerRoutine funcTimerRoutine );
+    bool startTimer( Timer & context, FuncPosixTimerRoutine funcTimerRoutine );
 
     /**
      * \brief   Starts timer having default values. If timer was not created, it will create first then start,
      *          if neither timeout, not period values are zero.
      **/
-    bool StartTimer( void );
+    bool startTimer( void );
 
     /**
      * \brief   Stops timer, resets timeout and period values.
      **/
-    bool StopTimer( void );
+    bool stopTimer( void );
 
     /**
      * \brief   Pause timer. So that, when it is restarted it will use same timeout and remaining period count.
      **/
-    bool PauseTimer( void );
+    bool pauseTimer( void );
 
     /**
      * \brief   Destroys and invalidates the timer.
      **/
-    void DestroyTimer( void );
+    void destroyTimer( void );
 
 //////////////////////////////////////////////////////////////////////////
 // Protected methods.
@@ -149,7 +152,7 @@ protected:
      * \param   Returns true if timer can continue running. Returns false if timer 
      *          should be stopped.
      **/
-    void TimerExpired( void );
+    void timerExpired( void );
 
 //////////////////////////////////////////////////////////////////////////
 // Internal private methods.
@@ -159,22 +162,22 @@ private:
     /**
      * \brief   Creates the timer.
      **/
-    inline bool createTimer( FuncPosixTimerRoutine funcTimerRoutine );
+    inline bool _createTimer( FuncPosixTimerRoutine funcTimerRoutine );
 
     /**
      * \brief   Starts the timer.
      **/
-    inline bool startTimer( unsigned int msTimeout, unsigned int eventCount );
+    inline bool _startTimer( unsigned int msTimeout, unsigned int eventCount );
 
     /**
      * \brief   Stops the timer.
      **/
-    inline void stopTimer( void );
+    inline void _stopTimer( void );
 
     /**
      * \brief   Destroys the timer.
      **/
-    inline void destroyTimer( void );
+    inline void _destroyTimer( void );
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden member variables.
@@ -204,19 +207,19 @@ private:
 // TimerPosix class inline methods
 //////////////////////////////////////////////////////////////////////////
 
-inline timer_t TimerPosix::GetTimerId(void) const
+inline timer_t TimerPosix::getTimerId(void) const
 {   SpinLockIX lock(mLock); return mTimerId;                                              }
 
-inline Timer * TimerPosix::GetContext(void) const
+inline Timer * TimerPosix::getContext(void) const
 {   SpinLockIX lock(mLock); return mContext;                                              }
 
-inline const timespec & TimerPosix::GetDueTime(void) const
+inline const timespec & TimerPosix::getDueTime(void) const
 {   SpinLockIX lock(mLock); return mDueTime;                                              }
 
-inline unsigned int TimerPosix::GetRemainPeriod(void) const
+inline unsigned int TimerPosix::getRemainPeriod(void) const
 {   SpinLockIX lock(mLock); return mContext->getEventCount();                             }
 
-inline bool TimerPosix::IsStarted(void) const
+inline bool TimerPosix::isStarted(void) const
 {   SpinLockIX lock(mLock); return ((mDueTime.tv_sec != 0) || (mDueTime.tv_nsec != 0));   }
 
 inline bool TimerPosix::isValid(void) const

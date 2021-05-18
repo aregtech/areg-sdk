@@ -19,7 +19,7 @@ namespace NEUtilities {
 
     void _generateName( const char * prefix, char * out_buffer, int length, const char * specChar )
     {
-        static const char * formatStr = "%s{%03d%s%03d%s%03d%s%03d%s%03d%s%03d%s%03d%s%03d}";
+        static const char * formatStr = "%s%03d%s%03d%s%03d%s%03d%s%03d%s%03d%s%03d%s%03d";
         if ( out_buffer != NULL )
         {
             *out_buffer = '\0';
@@ -31,6 +31,7 @@ namespace NEUtilities {
             int tick2 = static_cast<int>((now.dwHighDateTime >>  8) & 0xFF);
             int tick3 = static_cast<int>((now.dwHighDateTime >> 16) & 0xFF);
             int tick4 = static_cast<int>((now.dwHighDateTime >> 24) & 0xFF);
+
             int tick5 = static_cast<int>((now.dwLowDateTime  >>  0) & 0xFF);
             int tick6 = static_cast<int>((now.dwLowDateTime  >>  8) & 0xFF);
             int tick7 = static_cast<int>((now.dwLowDateTime  >> 16) & 0xFF);

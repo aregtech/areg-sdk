@@ -1290,7 +1290,7 @@ IEOutStream & operator << ( IEOutStream & stream, const TEHashMap<K, V, KT, VT, 
     stream << size;
     if ( size != 0 )
     {
-        const class TEHashMap<K, V, KT, VT, Impl>::Block * block = output.firstValidBlock();
+        const typename TEHashMap<K, V, KT, VT, Impl>::Block * block = output.firstValidBlock();
         for ( ; block != NULL; block = output.nextValidBlock(block))
             stream << static_cast<const TEPair<K, V, KT, VT, Impl> &>(*block);
     }

@@ -222,7 +222,7 @@ public:
     /**
      * \brief   Returns the timeout value of the timer. If timer is stopped, this value is zero.
      **/
-    inline unsigned int getTimeoutValue( void ) const;
+    inline unsigned int getTimeout( void ) const;
 
     /**
      * \brief   Returns true if timer is active.
@@ -291,7 +291,7 @@ protected:
     /**
      * \brief   Timer consumer object
      **/
-    IETimerConsumer &  mConsumer;
+    IETimerConsumer &   mConsumer;
     /**
      * \brief   Timer name. If not empty, it is unique name
      **/
@@ -409,7 +409,7 @@ inline unsigned int Timer::getFireTime( void ) const
     return mTimeoutInMs;
 }
 
-inline unsigned int Timer::getTimeoutValue( void ) const
+inline unsigned int Timer::getTimeout( void ) const
 {
     return mTimeoutInMs;
 }

@@ -7,7 +7,7 @@
  ************************************************************************/
 #include "areg/component/private/TimerEventData.hpp"
 #include "areg/component/Timer.hpp"
-#include "areg/component/TimerEvent.hpp"
+#include "areg/component/IETimerConsumer.hpp"
 
 //////////////////////////////////////////////////////////////////////////
 // TimerEventData class implementation

@@ -146,7 +146,7 @@ Thread::eCompletionStatus Thread::destroyThread(unsigned int waitForStopMs /* = 
         ASSERT (waitForStopMs != Thread::WAIT_INFINITE || isRunning() == false);
     }
 
-    pthread_join(threadId, NULL);
+    // pthread_join(threadId, NULL);
 
     do
     {

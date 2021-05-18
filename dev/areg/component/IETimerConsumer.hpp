@@ -1,7 +1,7 @@
-#ifndef AREG_COMPONENT_TIMEREVENT_HPP
-#define AREG_COMPONENT_TIMEREVENT_HPP
+#ifndef AREG_COMPONENT_IETIMERCONSUMER_HPP
+#define AREG_COMPONENT_IETIMERCONSUMER_HPP
 /************************************************************************
- * \file        areg/component/TimerEvent.hpp
+ * \file        areg/component/IETimerConsumer.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
  * \author      Artak Avetyan (mailto:artak@aregtech.com)
  * \brief       AREG Platform, Timer Event Consumer.
@@ -23,7 +23,6 @@ class IETimerConsumer;
  * Dependencies
  ************************************************************************/
 class Timer;
-class TimerEvent;
 class TimerEventData;
 class DispatcherThread;
 
@@ -111,4 +110,4 @@ private:
     const IETimerConsumer& operator = (const IETimerConsumer & /*src*/ );
 };
 
-#endif  // AREG_COMPONENT_TIMEREVENT_HPP
+#endif  // AREG_COMPONENT_IETIMERCONSUMER_HPP

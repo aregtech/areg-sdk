@@ -301,6 +301,11 @@ bool Application::startTimerManager( void )
     return result;
 }
 
+void Application::stopTimerManager(void)
+{
+    TimerManager::stopTimerManager();
+}
+
 bool Application::startMessageRouting(const char * configFile /*= NULL_STRING*/ )
 {
     bool result = false;

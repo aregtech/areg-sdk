@@ -107,6 +107,9 @@ DEF_TRACE_SCOPE(main_main);
 int main()
 {
     // Force to start logging. See outputs log files in appropriate "logs" subfolder.
+    // To change the configuration and use dynamic logging, use macro TRACER_START_LOGGING
+    // and specify the logging configuration file, where you can change logging format,
+    // filter logging priority and scopes.
     TRACER_FORCE_LOGGING();
 
     do

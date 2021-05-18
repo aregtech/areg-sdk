@@ -332,7 +332,7 @@ private:
     /**
      * \brief   The config file name of Tracer
      **/
-    String        mConfigTracer;
+    String          mConfigTracer;
     /**
      * \brief   Requested to start service manager.
      **/
@@ -348,7 +348,7 @@ private:
     /**
      * \brief   The config file name of Router Service
      **/
-    String        mConfigService;
+    String          mConfigService;
     /**
      * \brief   The application named storage.
      **/

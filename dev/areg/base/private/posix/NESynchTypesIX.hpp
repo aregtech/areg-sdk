@@ -138,7 +138,7 @@ namespace NESynchTypesIX
      * \param   out_result  The object that contains timeout information in nanosecond range.
      * \param   msTimeout   The timeout to be calculated.
      **/
-    inline void convertTimeout( timespec & out_result, unsigned int msTimeout );
+    inline void convTimeout( timespec & out_result, unsigned int msTimeout );
 
 } // namespace NESynchTypesIX
 
@@ -151,14 +151,14 @@ inline bool NESynchTypesIX::timeoutFromNow( timespec & out_result, unsigned int 
     bool result = false;
     if ( NESynchTypesIX::POSIX_SUCSS == clock_gettime( CLOCK_REALTIME, &out_result ) )
     {
-        convertTimeout(out_result, msTimeout);
+        convTimeout(out_result, msTimeout);
         result = true;
     }
 
     return result;
 }
 
-inline void NESynchTypesIX::convertTimeout( timespec & out_result, unsigned int msTimeout )
+inline void NESynchTypesIX::convTimeout( timespec & out_result, unsigned int msTimeout )
 {
     msTimeout += out_result.tv_nsec / 1000000;
     unsigned int nsec = (out_result.tv_nsec % 1000000);

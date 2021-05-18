@@ -57,7 +57,7 @@ void TimerManager::_stopSystemTimer( TIMERHANDLE timerHandle )
 {
     TimerPosix * posixTimer = reinterpret_cast<TimerPosix *>(timerHandle);
     if ( posixTimer != NULL )
-        posixTimer->StopTimer();
+        posixTimer->stopTimer();
 
     /******************************
     ASSERT( timerHandle != static_cast<TIMERHANDLE>(NULL) );
@@ -75,7 +75,7 @@ void TimerManager::_destroyWaitableTimer( TIMERHANDLE timerHandle, bool /* cance
 {
     TimerPosix * posixTimer = reinterpret_cast<TimerPosix *>(timerHandle);
     if ( posixTimer != NULL )
-        posixTimer->DestroyTimer();
+        posixTimer->destroyTimer();
 
     /******************************
     ASSERT( timerHandle != static_cast<TIMERHANDLE>(NULL) );
@@ -102,7 +102,7 @@ bool TimerManager::_startSystemTimer( TimerInfo & timerInfo, MapTimerTable & tim
     Timer * whichTimer        = timerInfo.getTimer();
     if ((posixTimer != NULL) && (whichTimer != NULL))
     {
-        if (posixTimer->CreateTimer(&TimerManager::_defaultPosixTimerExpiredRoutine))
+        if (posixTimer->createTimer(&TimerManager::_defaultPosixTimerExpiredRoutine))
         {
             struct timespec ts;
             clock_gettime(CLOCK_REALTIME, &ts);
@@ -110,7 +110,7 @@ bool TimerManager::_startSystemTimer( TimerInfo & timerInfo, MapTimerTable & tim
             timerTable.setAt( whichTimer, timerInfo, true );
 
             result = true;
-            if (posixTimer->StartTimer(*whichTimer, NULL) == false)
+            if (posixTimer->startTimer(*whichTimer, NULL) == false)
             {
                 OUTPUT_ERR( "System Failed to start timer in period [ %d ] ms, timer name [ %s ]. System Error [ %p ]"
                             , whichTimer->getFireTime( )
@@ -195,7 +195,7 @@ void TimerManager::_defaultPosixTimerExpiredRoutine( union sigval argSig )
     if (posixTimer != NULL && posixTimer->isValid())
     {
         TimerManager::getInstance()._timerExpired(posixTimer->mContext, posixTimer->mDueTime.tv_sec, posixTimer->mDueTime.tv_nsec);
-        posixTimer->TimerExpired();
+        posixTimer->timerExpired();
 
         SynchLockAndWaitIX * lockAndWait = SynchLockAndWaitIX::_mapWaitIdResource.findResourceObject(posixTimer->mThreadId);
         if ( lockAndWait != NULL )

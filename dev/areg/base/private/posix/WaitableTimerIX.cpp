@@ -70,7 +70,7 @@ bool WaitableTimerIX::setTimer(unsigned int msTimeout, bool isPeriodic)
         {
             struct itimerspec interval;
             NEMemory::zeroBuffer(static_cast<void *>(&interval), sizeof(struct itimerspec));
-            NESynchTypesIX::convertTimeout(interval.it_value, msTimeout);
+            NESynchTypesIX::convTimeout(interval.it_value, msTimeout);
             if ( isPeriodic )
             {
                 interval.it_interval.tv_sec = interval.it_value.tv_sec;
@@ -209,7 +209,7 @@ inline void WaitableTimerIX::_timerExpired(void)
         if ( mTimerId != static_cast<timer_t>(0) )
         {
             ++ mFiredCount;
-            NESynchTypesIX::convertTimeout(mDueTime, mTimeout);
+            NESynchTypesIX::convTimeout(mDueTime, mTimeout);
             
             mIsSignaled = true;
             sendSignal  = true;

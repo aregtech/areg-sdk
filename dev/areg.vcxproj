@@ -162,7 +162,7 @@
     <ClCompile Include="areg\component\private\Channel.cpp" />
     <ClCompile Include="areg\component\private\ThreadEventBase.cpp" />
     <ClCompile Include="areg\component\private\Timer.cpp" />
-    <ClCompile Include="areg\component\private\TimerEvent.cpp" />
+    <ClCompile Include="areg\component\private\IETimerConsumer.cpp" />
     <ClCompile Include="areg\component\private\TimerEventData.cpp" />
     <ClCompile Include="areg\component\private\TimerInfo.cpp" />
     <ClCompile Include="areg\component\private\TimerManager.cpp" />
@@ -308,7 +308,7 @@
     <ClInclude Include="areg\component\private\ThreadEventBase.hpp" />
     <ClInclude Include="areg\base\ThreadLocalStorage.hpp" />
     <ClInclude Include="areg\component\Timer.hpp" />
-    <ClInclude Include="areg\component\TimerEvent.hpp" />
+    <ClInclude Include="areg\component\IETimerConsumer.hpp" />
     <ClInclude Include="areg\component\private\TimerEventData.hpp" />
     <ClInclude Include="areg\component\private\TimerInfo.hpp" />
     <ClInclude Include="areg\component\private\TimerManager.hpp" />

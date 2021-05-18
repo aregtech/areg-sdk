@@ -155,16 +155,11 @@ bool TraceManager::isLoggingEnabled(void)
 bool TraceManager::forceActivateLogging(void)
 {
     bool result = false;
-
-#ifdef DEBUG
     TraceManager & traceManager = TraceManager::getInstance();
-
     if ( (traceManager.isLoggingConfigured() == false) && (traceManager.isLoggingStarted() == false) )
     {
         result = traceManager.activateTracingDefaults();
     }
-
-#endif // DEBUG
 
     return result;
 }

@@ -20,7 +20,7 @@ namespace NEUtilities {
 
     void _generateName( const char * prefix, char * out_buffer, int length, const char * specChar )
     {
-        static const char * formatStr = "%s{%03d%s%03d%s%03d%s%03d%s%03d%s%03d%s%03d%s%03d}";
+        static const char * formatStr = "%s%03d%s%03d%s%03d%s%03d%s%03d%s%03d%s%03d%s%03d";
         if ( out_buffer != NULL )
         {
             const char * spec = specChar != NULL ? specChar : NEUtilities::DEFAULT_SPECIAL_CHAR;

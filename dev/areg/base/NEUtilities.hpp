@@ -70,7 +70,7 @@ namespace   NEUtilities
      * \brief   NEUtilities::DEFAULT_SPECIAL_CHAR
      *          Constant. Defines default special character used in generated names.
      **/
-    const char* const           DEFAULT_SPECIAL_CHAR        = "-";
+    const char* const           DEFAULT_SPECIAL_CHAR        = "_";
     /**
      * \brief   NEUtilities::ITEM_NAMES_MAX_LENGTH
      *          The maximum length of item names such as thread name, component or service names

@@ -1238,7 +1238,7 @@ IEOutStream & operator << ( IEOutStream & stream, const TELinkedList<V, VT, Impl
 {
     int size = output.getSize();
     stream << size;
-    const class TELinkedList<V, VT, Impl>::Block * block = output.mHead;
+    const typename TELinkedList<V, VT, Impl>::Block * block = output.mHead;
     for ( ; block != NULL; block = block->mNext)
         stream << block->mValue;
 

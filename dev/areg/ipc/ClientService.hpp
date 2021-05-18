@@ -16,7 +16,7 @@
 #include "areg/component/DispatcherThread.hpp"
 #include "areg/ipc/private/IERemoteServiceHandler.hpp"
 #include "areg/component/IERemoteEventConsumer.hpp"
-#include "areg/component/TimerEvent.hpp"
+#include "areg/component/IETimerConsumer.hpp"
 
 #include "areg/ipc/private/ClientReceiveThread.hpp"
 #include "areg/ipc/private/ClientServiceEvent.hpp"

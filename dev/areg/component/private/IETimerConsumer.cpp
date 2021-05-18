@@ -1,11 +1,11 @@
 /************************************************************************
- * \file        areg/component/TimerEvent.cpp
+ * \file        areg/component/private/IETimerConsumer.cpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
  * \author      Artak Avetyan (mailto:artak@aregtech.com)
  * \brief       AREG Platform, Timer Event Consumer.
  *
  ************************************************************************/
-#include "areg/component/TimerEvent.hpp"
+#include "areg/component/IETimerConsumer.hpp"
 #include "areg/component/DispatcherThread.hpp"
 
 //////////////////////////////////////////////////////////////////////////

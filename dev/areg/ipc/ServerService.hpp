@@ -13,7 +13,7 @@
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
 #include "areg/ipc/IERemoteService.hpp"
-#include "areg/component/TimerEvent.hpp"
+#include "areg/component/IETimerConsumer.hpp"
 #include "areg/component/DispatcherThread.hpp"
 #include "areg/ipc/IERemoteServiceConsumer.hpp"
 #include "areg/ipc/private/ServerServiceEvent.hpp"

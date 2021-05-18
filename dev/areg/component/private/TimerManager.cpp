@@ -8,7 +8,7 @@
  ************************************************************************/
 #include "areg/component/private/TimerManager.hpp"
 
-#include "areg/component/TimerEvent.hpp"
+#include "areg/component/IETimerConsumer.hpp"
 #include "areg/component/private/TimerEventData.hpp"
 #include "areg/component/private/ExitEvent.hpp"
 
@@ -257,6 +257,7 @@ void TimerManager::_processExpiredTimers( void )
 
 void TimerManager::_timerExpired( Timer* whichTimer, unsigned int highValue, unsigned int lowValue )
 {
+    Lock lock(mLock);
     mExpiredTimers.pushLast( ExpiredTimerInfo(whichTimer, highValue, lowValue) );
 }
 
@@ -309,12 +310,15 @@ bool TimerManager::postEvent( Event& eventElem )
 {
     bool result = false;
     if ( RUNTIME_CAST(&eventElem, TimerManagingEvent) != NULL)
+    {
         result = EventDispatcher::postEvent(eventElem);
+    }
     else
     {
         OUTPUT_ERR("Not a TimerManagingEvent type event, cannot Post. Destroying event type [ %s ]", eventElem.getRuntimeClassName());
         eventElem.destroy();
     }
+
     return result;
 }
 
@@ -408,4 +412,3 @@ void TimerManager::_stopTimerManagerThread( void )
 {
     destroyThread(Thread::WAIT_INFINITE);
 }
-
