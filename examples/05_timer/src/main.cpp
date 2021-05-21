@@ -1,5 +1,5 @@
 //============================================================================
-// Name        : 05_timer.cpp
+// Name        : main.cpp
 // Author      : Artak Avetyan
 // Version     :
 // Copyright   : Aregtech © 2021
@@ -208,9 +208,9 @@ void TimerDispatcher::stopTimers(void)
     TRACE_INFO("Stopping timers.....");
 
     // Stop all timers
-    mOneTime.stopTimer();       //<! If one-time timer is expired (not active), nothing happens.
-    mPeriodic.stopTimer();      //<! If periodic timer is still active, it is stopped.
-    mContinuous.stopTimer();    //<! Continuous timer runs until it is stopped.
+    mOneTime.stopTimer();       //!< If one-time timer is expired (not active), nothing happens.
+    mPeriodic.stopTimer();      //!< If periodic timer is still active, it is stopped.
+    mContinuous.stopTimer();    //!< Continuous timer runs until it is stopped.
 }
 
 //////////////////////////////////////////////////////////////////////////

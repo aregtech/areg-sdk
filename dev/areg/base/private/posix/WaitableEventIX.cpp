@@ -117,7 +117,7 @@ void WaitableEventIX::pulseEvent(void)
     } while (false);
 }
 
-bool WaitableEventIX::checkSignaled(void) const
+bool WaitableEventIX::checkSignaled(pthread_t /*contextThread*/) const
 {
     ObjectLockIX lock(*this);
     return mIsSignaled;

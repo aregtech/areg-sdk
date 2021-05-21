@@ -11,10 +11,10 @@
 #include "areg/component/private/ExitEvent.hpp"
 #include "areg/trace/GETrace.h"
 
-DEF_TRACE_SCOPE( areg_component_private_DispatcherThread_DestroyThread);
-DEF_TRACE_SCOPE( areg_component_private_DispatcherThread_ShutdownThread);
-DEF_TRACE_SCOPE( areg_component_private_DispatcherThread_RunDispatcher);
-DEF_TRACE_SCOPE( areg_component_private_DispatcherThread_SetExitEvent);
+DEF_TRACE_SCOPE( areg_component_private_DispatcherThread_destroyThread);
+DEF_TRACE_SCOPE( areg_component_private_DispatcherThread_shutdownThread);
+DEF_TRACE_SCOPE( areg_component_private_DispatcherThread_runDispatcher);
+DEF_TRACE_SCOPE( areg_component_private_DispatcherThread_triggerExitEvent);
 
 //////////////////////////////////////////////////////////////////////////
 // class NullDispatcherThread declarations
@@ -210,7 +210,7 @@ bool DispatcherThread::postEvent( Event& eventElem )
 
 Thread::eCompletionStatus DispatcherThread::destroyThread( unsigned int waitForStopMs /*= Thread::DO_NOT_WAIT*/ )
 {
-    TRACE_SCOPE( areg_component_private_DispatcherThread_DestroyThread);
+    TRACE_SCOPE( areg_component_private_DispatcherThread_destroyThread);
     TRACE_DBG("Destroying the thread the thread [ %s ] with ID [ %p ]. The current state is [ %s ]"
                 , getName().getString( )
                 , getId( )
@@ -229,7 +229,7 @@ DispatcherThread* DispatcherThread::getEventConsumerThread( const RuntimeClassID
 
 void DispatcherThread::shutdownThread( void )
 {
-    TRACE_SCOPE( areg_component_private_DispatcherThread_ShutdownThread);
+    TRACE_SCOPE( areg_component_private_DispatcherThread_shutdownThread);
     TRACE_DBG("Shutting down the thread [ %s ] with ID [ %p ]."
                 , getName().getString( )
                 , getId( ));
@@ -239,7 +239,7 @@ void DispatcherThread::shutdownThread( void )
 
 bool DispatcherThread::runDispatcher( void )
 {
-    TRACE_SCOPE( areg_component_private_DispatcherThread_RunDispatcher);
+    TRACE_SCOPE( areg_component_private_DispatcherThread_runDispatcher);
 
     mEventStarted.setEvent();
     bool result = EventDispatcher::runDispatcher();
@@ -257,7 +257,7 @@ bool DispatcherThread::waitForDispatcherStart( unsigned int waitTimeout /*= IESy
 
 void DispatcherThread::triggerExitEvent( void )
 {
-    TRACE_SCOPE( areg_component_private_DispatcherThread_SetExitEvent);
+    TRACE_SCOPE( areg_component_private_DispatcherThread_triggerExitEvent);
     TRACE_DBG("Requesting to exit thread [ %s ] with ID [ %p ] and status [ %s ]."
                 , getName().getString( )
                 , getId( )

@@ -10,19 +10,19 @@
 #include "areg/ipc/ConnectionConfiguration.hpp"
 #include "areg/trace/GETrace.h"
 
-DEF_TRACE_SCOPE(areg_ipc_private_ServerService_StartRemotingService);
-DEF_TRACE_SCOPE(areg_ipc_private_ServerService_StopRemotingService);
-DEF_TRACE_SCOPE(areg_ipc_private_ServerService_RegisterService);
-DEF_TRACE_SCOPE(areg_ipc_private_ServerService_UnregisterService);
-DEF_TRACE_SCOPE(areg_ipc_private_ServerService_RegisterServiceClient);
-DEF_TRACE_SCOPE(areg_ipc_private_ServerService_UnregisterServiceClient);
-DEF_TRACE_SCOPE(areg_ipc_private_ServerService_ConnectionLost);
-DEF_TRACE_SCOPE(areg_ipc_private_ServerService_ProcessEvent);
-DEF_TRACE_SCOPE(areg_ipc_private_ServerService_RegisterRemoteStub);
-DEF_TRACE_SCOPE(areg_ipc_private_ServerService_RegisterRemoteProxy);
-DEF_TRACE_SCOPE(areg_ipc_private_ServerService_UnregisterRemoteStub);
-DEF_TRACE_SCOPE(areg_ipc_private_ServerService_UnregisterRemoteProxy);
-DEF_TRACE_SCOPE(areg_ipc_private_ServerService_ProcessReceivedMessage);
+DEF_TRACE_SCOPE(areg_ipc_private_ServerService_startRemoteServicing);
+DEF_TRACE_SCOPE(areg_ipc_private_ServerService_stopRemoteServicing);
+DEF_TRACE_SCOPE(areg_ipc_private_ServerService_registerService);
+DEF_TRACE_SCOPE(areg_ipc_private_ServerService_unregisterService);
+DEF_TRACE_SCOPE(areg_ipc_private_ServerService_registerServiceClient);
+DEF_TRACE_SCOPE(areg_ipc_private_ServerService_unregisterServiceClient);
+DEF_TRACE_SCOPE(areg_ipc_private_ServerService_connectionLost);
+DEF_TRACE_SCOPE(areg_ipc_private_ServerService_processEvent);
+DEF_TRACE_SCOPE(areg_ipc_private_ServerService_registerRemoteStub);
+DEF_TRACE_SCOPE(areg_ipc_private_ServerService_registerRemoteProxy);
+DEF_TRACE_SCOPE(areg_ipc_private_ServerService_unregisterRemoteStub);
+DEF_TRACE_SCOPE(areg_ipc_private_ServerService_unregisterRemoteProxy);
+DEF_TRACE_SCOPE(areg_ipc_private_ServerService_processReceivedMessage);
 
 DEF_TRACE_SCOPE(areg_ipc_private_ServerService_startConnection);
 DEF_TRACE_SCOPE(areg_ipc_private_ServerService_stopConnection);
@@ -82,7 +82,7 @@ void ServerService::setRemoteServiceAddress(const char * hostName, unsigned shor
 
 bool ServerService::startRemoteServicing(void)
 {
-    TRACE_SCOPE(areg_ipc_private_ServerService_StartRemotingService);
+    TRACE_SCOPE(areg_ipc_private_ServerService_startRemoteServicing);
 
     Lock lock(mLock);
     bool result = true;
@@ -103,7 +103,7 @@ bool ServerService::startRemoteServicing(void)
 
 void ServerService::stopRemoteServicing(void)
 {
-    TRACE_SCOPE(areg_ipc_private_ServerService_StopRemotingService);
+    TRACE_SCOPE(areg_ipc_private_ServerService_stopRemoteServicing);
     if ( isRunning() )
     {
         ServerServiceEvent::sendEvent( ServerServiceEventData(ServerServiceEventData::CMD_StopService), static_cast<IEServerServiceEventConsumer &>(self()), static_cast<DispatcherThread &>(self()) );
@@ -143,27 +143,27 @@ void ServerService::enableRemoteServicing( bool enable )
 
 bool ServerService::registerService(const StubAddress & /* stubService */)
 {
-    TRACE_SCOPE(areg_ipc_private_ServerService_RegisterService);
+    TRACE_SCOPE(areg_ipc_private_ServerService_registerService);
     TRACE_ERR("Method is not implemented, this should be called");
     return false;
 }
 
 void ServerService::unregisterService(const StubAddress & /* stubService */)
 {
-    TRACE_SCOPE(areg_ipc_private_ServerService_UnregisterService);
+    TRACE_SCOPE(areg_ipc_private_ServerService_unregisterService);
     TRACE_ERR("Method is not implemented, this should be called");
 }
 
 bool ServerService::registerServiceClient(const ProxyAddress & /* proxyService */)
 {
-    TRACE_SCOPE(areg_ipc_private_ServerService_RegisterServiceClient);
+    TRACE_SCOPE(areg_ipc_private_ServerService_registerServiceClient);
     TRACE_ERR("Method is not implemented, this should be called");
     return false;
 }
 
 void ServerService::unregisterServiceClient(const ProxyAddress & /* proxyService */)
 {
-    TRACE_SCOPE(areg_ipc_private_ServerService_UnregisterServiceClient);
+    TRACE_SCOPE(areg_ipc_private_ServerService_unregisterServiceClient);
     TRACE_ERR("Method is not implemented, this should be called");
 }
 
@@ -174,7 +174,7 @@ bool ServerService::canAcceptConnection(const SocketAccepted & clientSocket)
 
 void ServerService::connectionLost( SocketAccepted & clientSocket )
 {
-    TRACE_SCOPE(areg_ipc_private_ServerService_ConnectionLost);
+    TRACE_SCOPE(areg_ipc_private_ServerService_connectionLost);
     ITEM_ID cookie = mServerConnection.getCookie(clientSocket);
 
     TRACE_WARN("Client lost connection: cookie [ %p ], socket [ %d ], host [ %s : %d ], closing connection"
@@ -202,7 +202,7 @@ void ServerService::processTimer(Timer & timer)
 
 void ServerService::processEvent(const ServerServiceEventData & data)
 {
-    TRACE_SCOPE(areg_ipc_private_ServerService_ProcessEvent);
+    TRACE_SCOPE(areg_ipc_private_ServerService_processEvent);
     TRACE_DBG("Going to process event [ %s ]", ServerServiceEventData::getString(data.getCommand()));
 
     switch ( data.getCommand() )
@@ -459,7 +459,7 @@ void ServerService::getServiceList(ITEM_ID cookie, TEArrayList<ProxyAddress, con
 
 void ServerService::registerRemoteStub(const StubAddress & stub)
 {
-    TRACE_SCOPE(areg_ipc_private_ServerService_RegisterRemoteStub);
+    TRACE_SCOPE(areg_ipc_private_ServerService_registerRemoteStub);
     ASSERT(stub.isServiceRemote());
 
     TRACE_DBG("Going to register remote stub [ %s ]", StubAddress::convAddressToPath(stub).getString());
@@ -540,7 +540,7 @@ void ServerService::registerRemoteStub(const StubAddress & stub)
 
 void ServerService::registerRemoteProxy(const ProxyAddress & proxy)
 {
-    TRACE_SCOPE(areg_ipc_private_ServerService_RegisterRemoteProxy);
+    TRACE_SCOPE(areg_ipc_private_ServerService_registerRemoteProxy);
     if ( mServiceRegistry.getServiceStatus(proxy) != NEService::ServiceConnected )
     {
         ServiceProxy proxyService;
@@ -594,7 +594,7 @@ void ServerService::registerRemoteProxy(const ProxyAddress & proxy)
 
 void ServerService::unregisterRemoteStub(const StubAddress & stub)
 {
-    TRACE_SCOPE(areg_ipc_private_ServerService_UnregisterRemoteStub);
+    TRACE_SCOPE(areg_ipc_private_ServerService_unregisterRemoteStub);
     if ( mServiceRegistry.getServiceStatus(stub) == NEService::ServiceConnected )
     {
         ListServiceProxies listProxies;
@@ -661,7 +661,7 @@ void ServerService::unregisterRemoteStub(const StubAddress & stub)
 
 void ServerService::unregisterRemoteProxy(const ProxyAddress & proxy)
 {
-    TRACE_SCOPE(areg_ipc_private_ServerService_UnregisterRemoteProxy);
+    TRACE_SCOPE(areg_ipc_private_ServerService_unregisterRemoteProxy);
     ServiceProxy proxyService;
     const ServiceStub & stubService   = mServiceRegistry.unregisterServiceProxy(proxy, proxyService);
     const StubAddress & addrStub      = stubService.getServiceAddress();
@@ -721,7 +721,7 @@ void ServerService::failedProcessMessage(const RemoteMessage & /* msgUnprocessed
 
 void ServerService::processReceivedMessage(const RemoteMessage & msgReceived, const NESocket::InterlockedValue & addrHost, SOCKETHANDLE whichSource)
 {
-    TRACE_SCOPE(areg_ipc_private_ServerService_ProcessReceivedMessage);
+    TRACE_SCOPE(areg_ipc_private_ServerService_processReceivedMessage);
     if ( msgReceived.isValid() )
     {
         ITEM_ID cookie = mServerConnection.getCookie(whichSource);

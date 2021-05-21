@@ -196,10 +196,10 @@ namespace NEService
      **/
     typedef enum E_ServiceType
     {
-          ServiceInvalid    = 0x00  //<! Invalid Service      Bit set: 0000 0000
-        , ServiceLocal      = 0x40  //<! Local Service.       Bit set: 0100 0000
-        , ServiceRemote     = 0x80  //<! External Service.    Bit set: 1000 0000
-        , ServiceAny        = 0xC0  //<! Any service.         Bit set: 1100 0000
+          ServiceInvalid    = 0x00  //!< Invalid Service      Bit set: 0000 0000
+        , ServiceLocal      = 0x40  //!< Local Service.       Bit set: 0100 0000
+        , ServiceRemote     = 0x80  //!< External Service.    Bit set: 1000 0000
+        , ServiceAny        = 0xC0  //!< Any service.         Bit set: 1100 0000
     } eServiceType;
 
     /**

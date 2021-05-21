@@ -11,7 +11,7 @@
 #include "areg/ipc/private/IERemoteServiceHandler.hpp"
 
 #include "areg/trace/GETrace.h"
-DEF_TRACE_SCOPE(areg_ipc_private_ClientReceiveThread_RunDispatcher);
+DEF_TRACE_SCOPE(areg_ipc_private_ClientReceiveThread_runDispatcher);
 
 ClientReceiveThread::ClientReceiveThread( IERemoteServiceHandler & remoteService, ClientConnection & connection )
     : DispatcherThread( NEConnection::CLIENT_RECEIVE_MESSAGE_THREAD )
@@ -29,7 +29,7 @@ ClientReceiveThread::~ClientReceiveThread( void )
 
 bool ClientReceiveThread::runDispatcher(void)
 {
-    TRACE_SCOPE(areg_ipc_private_ClientReceiveThread_RunDispatcher);
+    TRACE_SCOPE(areg_ipc_private_ClientReceiveThread_runDispatcher);
     TRACE_DBG("Starting client service dispatcher thread [ %s ]", getName().getString());
     mEventStarted.setEvent();
 

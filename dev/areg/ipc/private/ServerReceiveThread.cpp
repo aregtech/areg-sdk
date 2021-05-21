@@ -14,7 +14,7 @@
 #include "areg/base/SocketAccepted.hpp"
 
 #include "areg/trace/GETrace.h"
-DEF_TRACE_SCOPE(areg_ipc_private_ServerReceiveThread_RunDispatcher);
+DEF_TRACE_SCOPE(areg_ipc_private_ServerReceiveThread_runDispatcher);
 
 ServerReceiveThread::ServerReceiveThread( IEServerConnectionHandler & connectHandler, IERemoteServiceHandler & remoteService, ServerConnection & connection )
     : DispatcherThread    ( NEConnection::SERVER_RECEIVE_MESSAGE_THREAD )
@@ -32,7 +32,7 @@ ServerReceiveThread::~ServerReceiveThread(void)
 
 bool ServerReceiveThread::runDispatcher(void)
 {
-    TRACE_SCOPE(areg_ipc_private_ServerReceiveThread_RunDispatcher);
+    TRACE_SCOPE(areg_ipc_private_ServerReceiveThread_runDispatcher);
     TRACE_DBG("Starting dispatcher [ %s ]", getName().getString());
 
     mEventStarted.setEvent();

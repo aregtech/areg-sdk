@@ -1094,6 +1094,13 @@ public:
      **/
     bool unlock( void );
 
+    /**
+     * \brief   Unlocks certain entry in the synchronization objects list.
+     * \param   index   The entry of previously locked object to unlock
+     * \brief   Returns true if operation succeeded.
+     **/
+    bool unlock(int index);
+
 //////////////////////////////////////////////////////////////////////////
 // Member variables
 //////////////////////////////////////////////////////////////////////////

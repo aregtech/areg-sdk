@@ -60,11 +60,11 @@ namespace NEUtfString
      **/
     typedef enum E_SeqLength
     {
-          SeqInvalid    = 0     //<! Invalid Sequence length
-        , SeqOne        = 1     //<! Sequence length 1 symbol
-        , SeqTwo        = 2     //<! Sequence length 2 symbols
-        , SeqThree      = 3     //<! Sequence length 3 symbols 
-        , SeqFour       = 4     //<! Sequence length 4 symbols
+          SeqInvalid    = 0     //!< Invalid Sequence length
+        , SeqOne        = 1     //!< Sequence length 1 symbol
+        , SeqTwo        = 2     //!< Sequence length 2 symbols
+        , SeqThree      = 3     //!< Sequence length 3 symbols 
+        , SeqFour       = 4     //!< Sequence length 4 symbols
     } eSeqLength;
 
     /**
@@ -73,11 +73,11 @@ namespace NEUtfString
      **/
     typedef enum E_Encode
     {
-          EncodeInvalid = -1    //<! Invalid encoding
-        , EncodeAscii           //<! No encoding, ASCII string
-        , EncodeUtf8            //<! Encoding UTF-8  string
-        , EncodeUtf16           //<! Encoding UTF-16 string
-        , EncodeUtf32           //<! Encoding UTF-32 string
+          EncodeInvalid = -1    //!< Invalid encoding
+        , EncodeAscii           //!< No encoding, ASCII string
+        , EncodeUtf8            //!< Encoding UTF-8  string
+        , EncodeUtf16           //!< Encoding UTF-16 string
+        , EncodeUtf32           //!< Encoding UTF-32 string
     } eEncoding;
 
     /**
@@ -124,10 +124,10 @@ namespace NEUtfString
      **/
     typedef union U_UtfChar
     {
-        Char    u7Bits;     //<! 7-bit character, used in ASCII string
-        utf8    u8Bits;     //<! 8-bit character, used in UTF-8 string
-        utf16   u16Bits;    //<! 16-bit character, used in URF-16 string
-        utf32   u32Bits;    //<! 32-bit character, used in UTF-32 string
+        Char    u7Bits;     //!< 7-bit character, used in ASCII string
+        utf8    u8Bits;     //!< 8-bit character, used in UTF-8 string
+        utf16   u16Bits;    //!< 16-bit character, used in URF-16 string
+        utf32   u32Bits;    //!< 32-bit character, used in UTF-32 string
     } uUtfChar;
 
     /**
@@ -142,11 +142,11 @@ namespace NEUtfString
      **/
     typedef struct S_UtfStringHeader
     {
-        unsigned int    utfHdrSize;     //<! The size of header to escape to start of string data
-        unsigned int    utfSpace;       //<! The space reserved in chars
-        unsigned int    utfUsed;        //<! The space used in chars
-        unsigned int    utfCount;       //<! The number of characters
-        eEncoding       utfEncode;      //<! The encoding
+        unsigned int    utfHdrSize;     //!< The size of header to escape to start of string data
+        unsigned int    utfSpace;       //!< The space reserved in chars
+        unsigned int    utfUsed;        //!< The space used in chars
+        unsigned int    utfCount;       //!< The number of characters
+        eEncoding       utfEncode;      //!< The encoding
     } sUtfStringHeader;
 
     /**
@@ -156,8 +156,8 @@ namespace NEUtfString
     template<typename CharType>
     struct SUtfString
     {
-        sUtfStringHeader    utfHeader;      //<! UTF string header
-        CharType            utfBuffer[1];   //<! Begin of UTF string buffer
+        sUtfStringHeader    utfHeader;      //!< UTF string header
+        CharType            utfBuffer[1];   //!< Begin of UTF string buffer
     };
 
 

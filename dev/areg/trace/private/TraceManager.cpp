@@ -53,6 +53,7 @@ const char * const  TraceManager::DEFAULT_LOG_LAYOUT_MESSAGE    = "log.layout.me
 const char * const  TraceManager::DEFAULT_LOG_LAYOUT_EXIT       = "log.layout.exit      = %d: [ %t  %x.%z: Exit <-- ]%n";
 const char * const  TraceManager::DEFAULT_LOG_LAYOUT_DEBUG      = "log.debug            = true";
 const char * const  TraceManager::DEFAULT_SCOPES_ENABLED        = "scope.*              = DEBUG | SCOPE";
+const char * const  TraceManager::DEFAULT_SCOPES_SELF           = "areg_*";
 const unsigned int  TraceManager::LOG_START_WAITING_TIME        = IESynchObject::WAIT_1_SEC * 20;
 
 //////////////////////////////////////////////////////////////////////////
@@ -446,7 +447,8 @@ bool TraceManager::activateTracingDefaults( void )
         mLogDbUser.clearProperty();
         mLogDbPassword.clearProperty();
 
-        mConfigScopeGroup.setAt( NELogConfig::MODULE_SCOPE, static_cast<unsigned int>(NETrace::PrioDebug) | static_cast<unsigned int>(NETrace::PrioScope));
+        mConfigScopeGroup.setAt( NELogConfig::MODULE_SCOPE          , static_cast<unsigned int>(NETrace::PrioDebug ) | static_cast<unsigned int>(NETrace::PrioScope));
+        mConfigScopeGroup.setAt( TraceManager::DEFAULT_SCOPES_SELF  , static_cast<unsigned int>(NETrace::PrioNotset) );
 
     } while (false);
 

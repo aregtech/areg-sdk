@@ -26,20 +26,20 @@ void IERemoteEventConsumer::startEventProcessing(Event & eventElem)
         RemoteRequestEvent * requestEvent = RUNTIME_CAST(&eventElem, RemoteRequestEvent);
         if ( requestEvent != NULL )
         {
-            processRemoteEvent(*requestEvent);
+            processRemoteRequestEvent(*requestEvent);
         }
         else
         {
             RemoteResponseEvent * responseEvent = RUNTIME_CAST(&eventElem, RemoteResponseEvent);
             if ( responseEvent != NULL )
             {
-                processRemoteEvent(*responseEvent);
+                processRemoteResponseEvent(*responseEvent);
             }
             else
             {
                 RemoteNotifyRequestEvent * requestNotifyEvent = RUNTIME_CAST(&eventElem, RemoteNotifyRequestEvent);
                 if ( requestNotifyEvent != NULL )
-                    processRemoteEvent(*requestNotifyEvent);
+                    processRemoteNotifyRequestEvent(*requestNotifyEvent);
             }
         }
     }

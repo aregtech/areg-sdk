@@ -168,6 +168,18 @@ bool MultiLock::unlock( void )
     return true;
 }
 
+bool MultiLock::unlock( int index )
+{
+    bool result = false;
+    if ( (index >= 0) && (index < mSizeCount) )
+    {
+        if (mLockedStates[index] == static_cast<int>(MultiLock::STATE_LOCKED))
+            result = mSyncObjArray[index]->unlock();
+    }
+
+    return result;
+}
+
 //////////////////////////////////////////////////////////////////////////
 // IEResourceLock class implementation
 //////////////////////////////////////////////////////////////////////////

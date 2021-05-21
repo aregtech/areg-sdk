@@ -54,7 +54,7 @@ bool WaitableSemaphoreIX::releaseSemaphore(void)
     return sendSignal;
 }
 
-bool WaitableSemaphoreIX::checkSignaled(void) const
+bool WaitableSemaphoreIX::checkSignaled(pthread_t /*contextThread*/) const
 {
     ObjectLockIX lock(*this);
     return (mCurCount > 0);

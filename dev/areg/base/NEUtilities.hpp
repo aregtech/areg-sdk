@@ -137,7 +137,7 @@ namespace   NEUtilities
         unsigned short  stMinute;       //!< The minute in the time, which starts from 0
         unsigned short  stSecond;       //!< The second in the time, which starts from 0
         unsigned short  stMillisecs;    //!< The millisecond in the time, which starts from 0
-        unsigned short  stMicrosecs;    //<! The microseconds in the time, which starts from 0
+        unsigned short  stMicrosecs;    //!< The microseconds in the time, which starts from 0
     } sSystemTime;
 
     /**

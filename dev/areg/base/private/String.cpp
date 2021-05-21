@@ -31,7 +31,7 @@
 #define _MIN_BUF_SIZE        128
 #define _BUF_SIZE            256
 #define _MAX_BUF_SIZE        512
-#define _EXTRACE_BUF_SIZE     1024
+#define _EXTRA_BUF_SIZE     1024
 
 static const char _FormatRadixBinary[] = { '0', '1', '\0' };
 
@@ -608,7 +608,7 @@ const String & String::formatList(const char * format, va_list argptr)
             {
                 if ( _formatStringList<_MAX_BUF_SIZE>( self( ), format, argptr ) < 0 )
                 {
-                    _formatStringList<_EXTRACE_BUF_SIZE>( self( ), format, argptr );
+                    _formatStringList<_EXTRA_BUF_SIZE>( self( ), format, argptr );
                 }
             }
         }

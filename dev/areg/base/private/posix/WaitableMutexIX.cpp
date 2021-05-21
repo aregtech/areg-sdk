@@ -81,10 +81,10 @@ bool WaitableMutexIX::releaseMutex(void)
 }
 
 
-bool WaitableMutexIX::checkSignaled(void) const
+bool WaitableMutexIX::checkSignaled(pthread_t contextThread) const
 {
     ObjectLockIX lock(*this);
-    return (mOwnerThread == static_cast<pthread_t>(NULL));
+    return (mOwnerThread == static_cast<pthread_t>(NULL)) || (mOwnerThread == contextThread);
 }
 
 bool WaitableMutexIX::notifyRequestOwnership(pthread_t ownerThread)

@@ -127,6 +127,8 @@ private:
 
     static const char * const   DEFAULT_SCOPES_ENABLED      /*= "scope.* = DEBUG | SCOPE"*/;
 
+    static const char * const   DEFAULT_SCOPES_SELF         /*= "areg_*"*/;
+
     static const unsigned int   LOG_START_WAITING_TIME      /*= 10 secs*/;
 
 public:

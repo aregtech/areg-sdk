@@ -138,7 +138,7 @@ bool WaitableTimerIX::cancelTimer(void)
     return true;
 }
 
-bool WaitableTimerIX::checkSignaled(void) const
+bool WaitableTimerIX::checkSignaled(pthread_t /*contextThread*/) const
 {
     ObjectLockIX lock(*this);
     return mIsSignaled;

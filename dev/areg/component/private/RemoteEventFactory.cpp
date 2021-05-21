@@ -17,9 +17,9 @@
 #include "areg/component/Channel.hpp"
 
 #include "areg/trace/GETrace.h"
-DEF_TRACE_SCOPE(areg_component_RemoteEventFactory_CreateEventFromStream);
-DEF_TRACE_SCOPE(areg_component_RemoteEventFactory_CreateStreamFromEvent);
-DEF_TRACE_SCOPE(areg_component_RemoteEventFactory_CreateRequestFailedEvent);
+DEF_TRACE_SCOPE(areg_component_RemoteEventFactory_createEventFromStream);
+DEF_TRACE_SCOPE(areg_component_RemoteEventFactory_createStreamFromEvent);
+DEF_TRACE_SCOPE(areg_component_RemoteEventFactory_createRequestFailedEvent);
 
 RemoteEventFactory::RemoteEventFactory(void)
 {
@@ -33,7 +33,7 @@ RemoteEventFactory::~RemoteEventFactory(void)
 
 StreamableEvent * RemoteEventFactory::createEventFromStream( const RemoteMessage & stream, const Channel & comChannel )
 {
-    TRACE_SCOPE(areg_component_RemoteEventFactory_CreateEventFromStream);
+    TRACE_SCOPE(areg_component_RemoteEventFactory_createEventFromStream);
 
     StreamableEvent * result = NULL;
     Event::eEventType eventType;
@@ -146,7 +146,7 @@ StreamableEvent * RemoteEventFactory::createEventFromStream( const RemoteMessage
 
 bool RemoteEventFactory::createStreamFromEvent( RemoteMessage & stream, const StreamableEvent & eventStreamable, const Channel & comChannel )
 {
-    TRACE_SCOPE(areg_component_RemoteEventFactory_CreateStreamFromEvent);
+    TRACE_SCOPE(areg_component_RemoteEventFactory_createStreamFromEvent);
 
     bool result = false;
     stream.invalidate();
@@ -262,7 +262,7 @@ bool RemoteEventFactory::createStreamFromEvent( RemoteMessage & stream, const St
 StreamableEvent * RemoteEventFactory::createRequestFailedEvent( const RemoteMessage & stream
                                                                   , const Channel & /* comChannel */ )
 {
-    TRACE_SCOPE(areg_component_RemoteEventFactory_CreateRequestFailedEvent);
+    TRACE_SCOPE(areg_component_RemoteEventFactory_createRequestFailedEvent);
 
     StreamableEvent * result = NULL;
     Event::eEventType eventType;

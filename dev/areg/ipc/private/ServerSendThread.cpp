@@ -12,7 +12,7 @@
 #include "areg/component/NEService.hpp"
 
 #include "areg/trace/GETrace.h"
-DEF_TRACE_SCOPE(areg_ipc_private_ServerSendThread_ProcessEvent);
+DEF_TRACE_SCOPE(areg_ipc_private_ServerSendThread_processEvent);
 
 ServerSendThread::ServerSendThread(IERemoteServiceHandler & remoteService, ServerConnection & connection)
     : DispatcherThread            ( NEConnection::SERVER_SEND_MESSAGE_THREAD )
@@ -40,7 +40,7 @@ bool ServerSendThread::runDispatcher( void )
 
 void ServerSendThread::processEvent( const SendMessageEventData & data )
 {
-    TRACE_SCOPE(areg_ipc_private_ServerSendThread_ProcessEvent);
+    TRACE_SCOPE(areg_ipc_private_ServerSendThread_processEvent);
     const RemoteMessage & msgSend = data.getRemoteMessage();
     if ( msgSend.isValid() )
     {

@@ -49,7 +49,7 @@ public:
      * \brief   Triggered when the Stub receives remote request event to process.
      * \param   requestEvent        The remote request event to be processed.
      **/
-    virtual void processRemoteEvent( RemoteRequestEvent & requestEvent ) = 0;
+    virtual void processRemoteRequestEvent( RemoteRequestEvent & requestEvent ) = 0;
 
     /**
      * \brief   Triggered when the Stub receives remote notification request event to process.
@@ -57,7 +57,7 @@ public:
      *          sending attribute update notifications.
      * \param   requestNotifyEvent  The remote notification request event to be processed.
      **/
-    virtual void processRemoteEvent( RemoteNotifyRequestEvent & requestNotifyEvent ) = 0;
+    virtual void processRemoteNotifyRequestEvent( RemoteNotifyRequestEvent & requestNotifyEvent ) = 0;
 
     /**
      * \brief   Triggered when the Stub receives remote response request event to process.
@@ -65,7 +65,7 @@ public:
      *          to subscribe on information or response sent by Stub.
      * \param   requestNotifyEvent  The remote response request event to be processed.
      **/
-    virtual void processRemoteEvent( RemoteResponseEvent & responseEvent ) = 0;
+    virtual void processRemoteResponseEvent( RemoteResponseEvent & responseEvent ) = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // Override operations

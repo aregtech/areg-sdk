@@ -16,13 +16,14 @@
 #include "areg/base/Process.hpp"
 
 #include "areg/trace/GETrace.h"
-DEF_TRACE_SCOPE(areg_component_private_ServiceManager_ProcessEvent);
-DEF_TRACE_SCOPE(areg_component_private_ServiceManager_RegisterServer);
-DEF_TRACE_SCOPE(areg_component_private_ServiceManager_UnregisterServer);
-DEF_TRACE_SCOPE(areg_component_private_ServiceManager_RegisterClient);
-DEF_TRACE_SCOPE(areg_component_private_ServiceManager_UnregisterClient);
-DEF_TRACE_SCOPE(areg_component_private_ServiceManager_SendClientConnectedEvent);
-DEF_TRACE_SCOPE(areg_component_private_ServiceManager_SendClientDisconnectedEvent);
+
+DEF_TRACE_SCOPE(areg_component_private_ServiceManager_processEvent);
+DEF_TRACE_SCOPE(areg_component_private_ServiceManager__registerServer);
+DEF_TRACE_SCOPE(areg_component_private_ServiceManager__unregisterServer);
+DEF_TRACE_SCOPE(areg_component_private_ServiceManager__registerClient);
+DEF_TRACE_SCOPE(areg_component_private_ServiceManager__unregisterClient);
+DEF_TRACE_SCOPE(areg_component_private_ServiceManager__sendClientConnectedEvent);
+DEF_TRACE_SCOPE(areg_component_private_ServiceManager__sendClientDisconnectedEvent);
 
 //////////////////////////////////////////////////////////////////////////
 // ServiceManager class Implementation
@@ -199,7 +200,7 @@ ServiceManager::~ServiceManager( void )
 //////////////////////////////////////////////////////////////////////////
 void ServiceManager::_registerServer( const StubAddress & whichServer )
 {
-    TRACE_SCOPE(areg_component_private_ServiceManager_RegisterServer);
+    TRACE_SCOPE(areg_component_private_ServiceManager__registerServer);
 
     if ( whichServer.isLocalAddress() && whichServer.isServiceRemote() )
         mConnectService.registerService(whichServer);
@@ -218,7 +219,7 @@ void ServiceManager::_registerServer( const StubAddress & whichServer )
 
 void ServiceManager::_unregisterServer( const StubAddress & whichServer )
 {
-    TRACE_SCOPE(areg_component_private_ServiceManager_UnregisterServer);
+    TRACE_SCOPE(areg_component_private_ServiceManager__unregisterServer);
 
     if ( whichServer.isLocalAddress() && whichServer.isServiceRemote() )
         mConnectService.unregisterService(whichServer);
@@ -237,7 +238,7 @@ void ServiceManager::_unregisterServer( const StubAddress & whichServer )
 
 void ServiceManager::_registerClient( const ProxyAddress & whichClient )
 {
-    TRACE_SCOPE(areg_component_private_ServiceManager_RegisterClient);
+    TRACE_SCOPE(areg_component_private_ServiceManager__registerClient);
 
     if ( whichClient.isLocalAddress() && whichClient.isServiceRemote() )
         mConnectService.registerServiceClient(whichClient);
@@ -255,7 +256,7 @@ void ServiceManager::_registerClient( const ProxyAddress & whichClient )
 
 void ServiceManager::_unregisterClient( const ProxyAddress & whichClient )
 {
-    TRACE_SCOPE(areg_component_private_ServiceManager_UnregisterClient);
+    TRACE_SCOPE(areg_component_private_ServiceManager__unregisterClient);
 
     if ( whichClient.isLocalAddress() && whichClient.isServiceRemote() )
         mConnectService.unregisterServiceClient(whichClient);
@@ -274,7 +275,7 @@ void ServiceManager::_unregisterClient( const ProxyAddress & whichClient )
 
 void ServiceManager::_sendClientConnectedEvent( const ClientInfo & client, const StubAddress & addrStub ) const
 {
-    TRACE_SCOPE(areg_component_private_ServiceManager_SendClientConnectedEvent);
+    TRACE_SCOPE(areg_component_private_ServiceManager__sendClientConnectedEvent);
 
     if ( client.isConnected() )
     {
@@ -305,7 +306,7 @@ void ServiceManager::_sendClientConnectedEvent( const ClientInfo & client, const
 
 void ServiceManager::_sendClientDisconnectedEvent( const ClientInfo & client, const StubAddress & addrStub ) const
 {
-    TRACE_SCOPE(areg_component_private_ServiceManager_SendClientDisconnectedEvent);
+    TRACE_SCOPE(areg_component_private_ServiceManager__sendClientDisconnectedEvent);
 
     if ( client.isWaitingConnection() )
     {
@@ -336,7 +337,7 @@ void ServiceManager::_sendClientDisconnectedEvent( const ClientInfo & client, co
 
 void ServiceManager::processEvent( const ServiceManagerEventData & data )
 {
-    TRACE_SCOPE(areg_component_private_ServiceManager_ProcessEvent);
+    TRACE_SCOPE(areg_component_private_ServiceManager_processEvent);
     ServiceManagerEventData::eServiceManagerCommands cmdService = data.getCommand();
     const IEInStream & stream = data.getReadStream();
 

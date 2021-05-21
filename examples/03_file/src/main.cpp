@@ -1,5 +1,5 @@
 //============================================================================
-// Name        : 03-file.cpp
+// Name        : main.cpp
 // Author      : Artak Avetyan
 // Version     :
 // Copyright   : Aregtech © 2021

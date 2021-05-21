@@ -103,7 +103,7 @@ namespace NEString
     {
           RadixAutomatic    =  0    //!< Detect automatically
         , RadixBinary       =  2    //!< Binary conversion, conversion base is 2
-        , RadixOctal        =  8    //<! Octal conversion, conversion base is 8
+        , RadixOctal        =  8    //!< Octal conversion, conversion base is 8
         , RadixDecimal      = 10    //!< Decimal conversion, conversion base is 10
         , RadixHexadecimal  = 16    //!< Hexadecimal conversion, conversion base is 16
     } eRadix;

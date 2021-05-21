@@ -116,10 +116,12 @@ public:
 /************************************************************************/
 
     /**
-     * \brief   This callback is called to check the signales state of waitable object.
+     * \brief   This callback is called to check the signals state of waitable object.
+     * \param   contextThread   The thread ID where the lock and wait happend.
+     *                          This parameter not used for waitable event.
      * \return  Returns true if the object is signaled. Otherwise, returns false.
      **/
-    virtual bool checkSignaled( void ) const;
+    virtual bool checkSignaled( pthread_t contextThread ) const;
 
     /**
      * \brief   This callback is triggered when a waiting thread is released to continue to run.

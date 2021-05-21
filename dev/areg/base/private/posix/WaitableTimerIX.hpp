@@ -97,8 +97,9 @@ protected:
 
     /**
      * \brief   Returns true if the object is signaled. Otherwise, returns false.
+     * param    contextThread   The thread ID where lock and check happened.
      **/
-    virtual bool checkSignaled( void ) const;
+    virtual bool checkSignaled( pthread_t contextThread ) const;
 
     /**
      * \brief   This callback is triggered when a waiting thread is released to continue to run.

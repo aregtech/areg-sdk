@@ -20,19 +20,19 @@
 #include "areg/base/File.hpp"
 #include "areg/trace/GETrace.h"
 
-DEF_TRACE_SCOPE(areg_ipc_private_ClientService_StartRemotingService);
-DEF_TRACE_SCOPE(areg_ipc_private_ClientService_StopRemotingService);
-DEF_TRACE_SCOPE(areg_ipc_private_ClientService_ProcessEvent);
+DEF_TRACE_SCOPE(areg_ipc_private_ClientService_startRemotingService);
+DEF_TRACE_SCOPE(areg_ipc_private_ClientService_stopRemotingService);
+DEF_TRACE_SCOPE(areg_ipc_private_ClientService_processEvent);
 DEF_TRACE_SCOPE(areg_ipc_private_ClientService_startConnection);
 DEF_TRACE_SCOPE(areg_ipc_private_ClientService_stopConnection);
-DEF_TRACE_SCOPE(areg_ipc_private_ClientService_FailedSendMessage);
-DEF_TRACE_SCOPE(areg_ipc_private_ClientService_FailedReceiveMessage);
-DEF_TRACE_SCOPE(areg_ipc_private_ClientService_FailedProcessMessage);
-DEF_TRACE_SCOPE(areg_ipc_private_ClientService_ProcessReceivedMessage);
-DEF_TRACE_SCOPE(areg_ipc_private_ClientService_ProcessRemoteRequestEvent);
-DEF_TRACE_SCOPE(areg_ipc_private_ClientService_ProcessRemoteNotifyRequestEvent);
-DEF_TRACE_SCOPE(areg_ipc_private_ClientService_ProcessRemoteResponseEvent);
-DEF_TRACE_SCOPE(areg_ipc_private_ClientService_RunDispatcher);
+DEF_TRACE_SCOPE(areg_ipc_private_ClientService_failedSendMessage);
+DEF_TRACE_SCOPE(areg_ipc_private_ClientService_failedReceiveMessage);
+DEF_TRACE_SCOPE(areg_ipc_private_ClientService_failedProcessMessage);
+DEF_TRACE_SCOPE(areg_ipc_private_ClientService_processReceivedMessage);
+DEF_TRACE_SCOPE(areg_ipc_private_ClientService_processRemoteRequestEvent);
+DEF_TRACE_SCOPE(areg_ipc_private_ClientService_processRemoteResponseEvent);
+DEF_TRACE_SCOPE(areg_ipc_private_ClientService_processRemoteNotifyRequestEvent);
+DEF_TRACE_SCOPE(areg_ipc_private_ClientService_runDispatcher);
 
 const NERemoteService::eServiceConnection   ClientService::CONNECT_TYPE   = NERemoteService::ConnectionTcpip;
 
@@ -90,7 +90,7 @@ void ClientService::setRemoteServiceAddress( const char * hostName, unsigned sho
 
 bool ClientService::startRemoteServicing(void)
 {
-    TRACE_SCOPE(areg_ipc_private_ClientService_StartRemotingService);
+    TRACE_SCOPE(areg_ipc_private_ClientService_startRemotingService);
     Lock lock( mLock );
     bool result = true;
     if ( mClientConnection.isValid() == false && isRunning() == false )
@@ -123,7 +123,7 @@ bool ClientService::startRemoteServicing(void)
 
 void ClientService::stopRemoteServicing(void)
 {
-    TRACE_SCOPE(areg_ipc_private_ClientService_StopRemotingService);
+    TRACE_SCOPE(areg_ipc_private_ClientService_stopRemotingService);
     TRACE_DBG( "Stopping remote servicing client connection, current state is [ %s ]", isRunning() ? "RUNNING" : "NOT RUNNING" );
     if ( isRunning() )
     {
@@ -219,7 +219,7 @@ void ClientService::processTimer(Timer & timer)
 
 void ClientService::processEvent( const ClientServiceEventData & data )
 {
-    TRACE_SCOPE(areg_ipc_private_ClientService_ProcessEvent);
+    TRACE_SCOPE(areg_ipc_private_ClientService_processEvent);
     
     ClientServiceEventData::eClientServiceCommands cmdService = data.getCommand();
     TRACE_DBG("Client service is executing command [ %s ]", ClientServiceEventData::getString(cmdService));
@@ -382,7 +382,7 @@ inline void ClientService::stopConnection(void)
 
 void ClientService::failedSendMessage(const RemoteMessage & msgFailed)
 {
-    TRACE_SCOPE(areg_ipc_private_ClientService_FailedSendMessage);
+    TRACE_SCOPE(areg_ipc_private_ClientService_failedSendMessage);
     TRACE_WARN("Failed to send message [ %p ] to target [ %p ], source is [ %p ]", msgFailed.getMessageId(), msgFailed.getTarget(), msgFailed.getSource());
 
     StreamableEvent * eventError = RemoteEventFactory::createRequestFailedEvent(msgFailed, mChannel);
@@ -392,7 +392,7 @@ void ClientService::failedSendMessage(const RemoteMessage & msgFailed)
 
 void ClientService::failedReceiveMessage(SOCKETHANDLE whichSource)
 {
-    TRACE_SCOPE(areg_ipc_private_ClientService_FailedReceiveMessage);
+    TRACE_SCOPE(areg_ipc_private_ClientService_failedReceiveMessage);
     TRACE_WARN("Failed to receive message from socket [ %u ], current client socket is [ %u ]. Going to stop service",  whichSource, mClientConnection.getSocketHandle());
     if ( whichSource == mClientConnection.getSocketHandle() )
     {
@@ -403,7 +403,7 @@ void ClientService::failedReceiveMessage(SOCKETHANDLE whichSource)
 
 void ClientService::failedProcessMessage( const RemoteMessage & msgUnprocessed )
 {
-    TRACE_SCOPE(areg_ipc_private_ClientService_FailedProcessMessage);
+    TRACE_SCOPE(areg_ipc_private_ClientService_failedProcessMessage);
     TRACE_DBG("The message [ %p ] for target [ %p ] and from source [ %p ] is unprocessed, going to create failed event", msgUnprocessed.getMessageId(), msgUnprocessed.getTarget(), msgUnprocessed.getSource());
     StreamableEvent * eventError = RemoteEventFactory::createRequestFailedEvent(msgUnprocessed, mChannel);
     if ( eventError != NULL )
@@ -416,7 +416,7 @@ void ClientService::failedProcessMessage( const RemoteMessage & msgUnprocessed )
 
 void ClientService::processReceivedMessage( const RemoteMessage & msgReceived, const NESocket::InterlockedValue & addrHost, SOCKETHANDLE whichSource )
 {
-    TRACE_SCOPE(areg_ipc_private_ClientService_ProcessReceivedMessage);
+    TRACE_SCOPE(areg_ipc_private_ClientService_processReceivedMessage);
     if ( msgReceived.isValid() && whichSource != NESocket::InvalidSocketHandle )
     {
         NEService::eFuncIdRange msgId = static_cast<NEService::eFuncIdRange>( msgReceived.getMessageId());
@@ -529,9 +529,9 @@ void ClientService::processReceivedMessage( const RemoteMessage & msgReceived, c
     }
 }
 
-void ClientService::processRemoteEvent( RemoteRequestEvent & requestEvent)
+void ClientService::processRemoteRequestEvent( RemoteRequestEvent & requestEvent)
 {
-    TRACE_SCOPE(areg_ipc_private_ClientService_ProcessRemoteRequestEvent);
+    TRACE_SCOPE(areg_ipc_private_ClientService_processRemoteRequestEvent);
     TRACE_DBG("Processing request event [ %s ] with message ID [ %p ] of runtime object [ %s ], target stub [ %s ], source proxy [ %s ], request type [ %s ]"
                 , Event::getString( requestEvent.getEventType() )
                 , requestEvent.getRequestId()
@@ -564,9 +564,9 @@ void ClientService::processRemoteEvent( RemoteRequestEvent & requestEvent)
     }
 }
 
-void ClientService::processRemoteEvent( RemoteNotifyRequestEvent & requestNotifyEvent )
+void ClientService::processRemoteNotifyRequestEvent( RemoteNotifyRequestEvent & requestNotifyEvent )
 {
-    TRACE_SCOPE(areg_ipc_private_ClientService_ProcessRemoteNotifyRequestEvent);
+    TRACE_SCOPE(areg_ipc_private_ClientService_processRemoteNotifyRequestEvent);
     TRACE_DBG("Processing notify request event [ %s ] with message ID [ %p ] of runtime object [ %s ], target stub [ %s ], source proxy [ %s ], request type [ %s ]"
                 , Event::getString( requestNotifyEvent.getEventType() )
                 , requestNotifyEvent.getRequestId()
@@ -601,9 +601,9 @@ void ClientService::processRemoteEvent( RemoteNotifyRequestEvent & requestNotify
 }
 
 
-void ClientService::processRemoteEvent(RemoteResponseEvent & responseEvent)
+void ClientService::processRemoteResponseEvent(RemoteResponseEvent & responseEvent)
 {
-    TRACE_SCOPE(areg_ipc_private_ClientService_ProcessRemoteResponseEvent);
+    TRACE_SCOPE(areg_ipc_private_ClientService_processRemoteResponseEvent);
     TRACE_DBG("Processing response event [ %s ] with message ID [ %p ] of runtime object [ %s ], target proxy [ %s ], data type [ %s ]"
                 , Event::getString( responseEvent.getEventType() )
                 , responseEvent.getResponseId()
@@ -637,7 +637,7 @@ void ClientService::processRemoteEvent(RemoteResponseEvent & responseEvent)
 
 bool ClientService::runDispatcher(void)
 {
-    TRACE_SCOPE(areg_ipc_private_ClientService_RunDispatcher);
+    TRACE_SCOPE(areg_ipc_private_ClientService_runDispatcher);
     ClientServiceEvent::addListener( static_cast<IEClientServiceEventConsumer &>(self()), static_cast<DispatcherThread &>(self()) );
     ClientServiceEvent::sendEvent( ClientServiceEventData(ClientServiceEventData::CMD_StartService), static_cast<IEClientServiceEventConsumer &>(self()), static_cast<DispatcherThread &>(self()) );
 

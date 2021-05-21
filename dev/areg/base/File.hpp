@@ -44,10 +44,10 @@ public:
      **/
     typedef enum E_SpecialFolder
     {
-          SpecialUserHome       //<! Current user home folder path.
-        , SpecialPersonal       //<! The user's document folder path.
-        , SpecialAppData        //<! Application data folder path.
-        , SpecialTemp           //<! USER or System temp folder path.
+          SpecialUserHome       //!< Current user home folder path.
+        , SpecialPersonal       //!< The user's document folder path.
+        , SpecialAppData        //!< Application data folder path.
+        , SpecialTemp           //!< USER or System temp folder path.
 
     } eSpecialFolder;
 

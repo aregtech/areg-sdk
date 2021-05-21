@@ -96,7 +96,7 @@ public:
      *          running and fully operable. If thread needs run in loop, the loop 
      *          should be implemented here. When consumer exits this function, 
      *          the thread will complete work. To restart thread running, 
-     *          create() method should be called again.
+     *          createThread() method should be called again.
      **/
     virtual void onThreadRuns( void ) = 0;
 

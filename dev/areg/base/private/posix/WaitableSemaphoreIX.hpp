@@ -83,8 +83,9 @@ public:
 
     /**
      * \brief   Returns true if the object is signaled. Otherwise, returns false.
+     * \param   contextThread   The thread ID where the lock and wait is checked.
      **/
-    virtual bool checkSignaled( void ) const;
+    virtual bool checkSignaled( pthread_t contextThread ) const;
 
     /**
      * \brief   This call is triggered by the system when a thread completed waiting and released by semaphore.

@@ -285,7 +285,7 @@ private:
      * \brief   Triggered when the Stub receives remote request event to process.
      * \param   requestEvent        The remote request event to be processed.
      **/
-    virtual void processRemoteEvent( RemoteRequestEvent & requestEvent );
+    virtual void processRemoteRequestEvent( RemoteRequestEvent & requestEvent );
 
     /**
      * \brief   Triggered when the Stub receives remote notification request event to process.
@@ -293,7 +293,7 @@ private:
      *          sending attribute update notifications.
      * \param   requestNotifyEvent  The remote notification request event to be processed.
      **/
-    virtual void processRemoteEvent( RemoteNotifyRequestEvent & requestNotifyEvent );
+    virtual void processRemoteNotifyRequestEvent( RemoteNotifyRequestEvent & requestNotifyEvent );
 
     /**
      * \brief   Triggered when the Stub receives remote response request event to process.
@@ -301,7 +301,7 @@ private:
      *          to subscribe on information or response sent by Stub.
      * \param   requestNotifyEvent  The remote response request event to be processed.
      **/
-    virtual void processRemoteEvent( RemoteResponseEvent & responseEvent );
+    virtual void processRemoteResponseEvent( RemoteResponseEvent & responseEvent );
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden operations and attributes

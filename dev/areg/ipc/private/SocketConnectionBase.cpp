@@ -11,8 +11,8 @@
 #include "areg/base/NEMemory.hpp"
 
 #include "areg/trace/GETrace.h"
-DEF_TRACE_SCOPE(areg_ipc_private_SocketConnectionBase_SendMessage);
-DEF_TRACE_SCOPE(areg_ipc_private_SocketConnectionBase_ReceiveMessage);
+DEF_TRACE_SCOPE(areg_ipc_private_SocketConnectionBase_sendMessage);
+DEF_TRACE_SCOPE(areg_ipc_private_SocketConnectionBase_receiveMessage);
 
 SocketConnectionBase::SocketConnectionBase( void )
 {
@@ -26,7 +26,7 @@ SocketConnectionBase::~SocketConnectionBase( void )
 
 int SocketConnectionBase::sendMessage(const RemoteMessage & in_message, const Socket & clientSocket) const
 {
-    TRACE_SCOPE(areg_ipc_private_SocketConnectionBase_SendMessage);
+    TRACE_SCOPE(areg_ipc_private_SocketConnectionBase_sendMessage);
 
     int result = -1;
     const NEMemory::sRemoteMessageHeader & buffer = reinterpret_cast<const NEMemory::sRemoteMessageHeader &>( in_message.getByteBuffer() );
@@ -59,7 +59,7 @@ int SocketConnectionBase::sendMessage(const RemoteMessage & in_message, const So
 
 int SocketConnectionBase::receiveMessage(RemoteMessage & out_message, const Socket & clientSocket) const
 {
-    TRACE_SCOPE(areg_ipc_private_SocketConnectionBase_ReceiveMessage);
+    TRACE_SCOPE(areg_ipc_private_SocketConnectionBase_receiveMessage);
 
     int result = -1;
     if ( clientSocket.isValid() )

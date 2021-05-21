@@ -41,7 +41,7 @@ typedef struct S_PosixFile
         : fd (POSIX_INVALID_FD)
     {    }
 
-    int     fd;     //<! The POSIX file description. Invalid or not used if -1 (POSIX_INVALID_FD)
+    int     fd;     //!< The POSIX file description. Invalid or not used if -1 (POSIX_INVALID_FD)
 } sPosixFile;
 
 //////////////////////////////////////////////////////////////////////////

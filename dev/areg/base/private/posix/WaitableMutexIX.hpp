@@ -86,8 +86,11 @@ public:
 
     /**
      * \brief   Returns true if the object is signaled. Otherwise, returns false.
+     * \param   contextThread   The ID of thread where locking happened.
+     *                          The mutex is signaled if owner thread is NULL or the thread context
+     *                          and owner threads are same.
      **/
-    virtual bool checkSignaled( void ) const;
+    virtual bool checkSignaled( pthread_t contextThread ) const;
 
     /**
      * \brief   This callback is triggered when a waiting thread is released to continue to run.
