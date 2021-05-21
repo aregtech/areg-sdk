@@ -215,7 +215,7 @@ void HelloThread::onThreadRuns( void )
         // If all events are signaled, exit thread.
         // If timeout is expired, make some job and wait again.
         waitResult = multiLock.lock(waitTimeout, true, false);
-        if (waitResult == count)
+        if (waitResult == MultiLock::LOCK_INDEX_ALL)
         {
             TRACE_DBG("All waiting objects of thread [ %s ] are signaled, exit the job.", THREAD_NAME);
         }

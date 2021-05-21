@@ -5,8 +5,8 @@
   </ImportGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{CEFC6857-FA75-4334-AB78-F3AC6CB54942}</ProjectGuid>
-    <ProjectName>07_threads</ProjectName>
-    <RootNamespace>07_threads</RootNamespace>
+    <ProjectName>06_threads</ProjectName>
+    <RootNamespace>06_threads</RootNamespace>
     <Keyword>Win32Proj</Keyword>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />

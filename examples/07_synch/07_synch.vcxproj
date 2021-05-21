@@ -5,8 +5,8 @@
   </ImportGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{0450B090-2EAA-4454-944E-ABD6CFFD26F9}</ProjectGuid>
-    <ProjectName>06_synch</ProjectName>
-    <RootNamespace>06_synch</RootNamespace>
+    <ProjectName>07_synch</ProjectName>
+    <RootNamespace>07_synch</RootNamespace>
     <Keyword>Win32Proj</Keyword>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />

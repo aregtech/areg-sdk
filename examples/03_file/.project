@@ -3,6 +3,7 @@
 	<name>03_file</name>
 	<comment></comment>
 	<projects>
+		<project>areg</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

@@ -26,24 +26,34 @@
 /examples/test-areg-basic/Release/
 /examples/test-areg-basic/.settings/
 
-/examplea/01_hello/debug/
-/examplea/01_hello/release/
-/examplea/01_hello/.settings/
+/examples/01_hello/debug/
+/examples/01_hello/release/
+/examples/01_hello/.settings/
 
-/examplea/02_buffer/debug/
-/examplea/02_buffer/release/
-/examplea/02_buffer/.settings/
+/examples/02_buffer/debug/
+/examples/02_buffer/release/
+/examples/02_buffer/.settings/
 
-/examplea/03_file/debug/
-/examplea/03_file/release/
-/examplea/03_file/.settings/
+/examples/03_file/debug/
+/examples/03_file/release/
+/examples/03_file/.settings/
 
-/examplea/04_trace/debug/
-/examplea/04_trace/release/
-/examplea/04_trace/.settings/
-/examplea/04_trace/logs/
+/examples/04_trace/debug/
+/examples/04_trace/release/
+/examples/04_trace/.settings/
+/examples/04_trace/logs/
 
-/examplea/05_timer/debug/
-/examplea/05_timer/release/
-/examplea/05_timer/.settings/
-/examplea/05_timer/logs/
+/examples/05_timer/debug/
+/examples/05_timer/release/
+/examples/05_timer/.settings/
+/examples/05_timer/logs/
+
+/examples/06_threads/debug/
+/examples/06_threads/release/
+/examples/06_threads/.settings/
+/examples/06_threads/logs/
+
+/examples/07_synch/debug/
+/examples/07_synch/release/
+/examples/07_synch/.settings/
+/examples/07_synch/logs/

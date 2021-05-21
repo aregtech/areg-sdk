@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>06_synch</name>
+	<name>06_threads</name>
 	<comment></comment>
 	<projects>
+		<project>areg</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

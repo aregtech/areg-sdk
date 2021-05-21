@@ -3,6 +3,7 @@
 	<name>04_trace</name>
 	<comment></comment>
 	<projects>
+		<project>areg</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
