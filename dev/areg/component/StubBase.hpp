@@ -340,11 +340,6 @@ public:
 /************************************************************************/
 
     /**
-     * \brief   Returns implemented version of service interface.
-     **/
-    virtual const Version & getImplVersion( void ) const = 0;
-
-    /**
      * \brief   Sends update notification message to all clients. 
      *          This method can be called manually to send update 
      *          notification message after updating attribute value.
@@ -372,50 +367,6 @@ public:
     virtual void errorRequest( unsigned int msgId, bool msgCancel ) = 0;
 
 protected:
-/************************************************************************/
-// StubBase overrides. Protected pure virtual methods 
-/************************************************************************/
-    /**
-     * \brief   Returns number of requests of Service Interface
-     *
-     * \remark  Overwrite to implement method
-     **/
-    virtual unsigned int getNumberOfRequests( void ) const;
-
-    /**
-     * \brief   Returns number of responses of Service Interface
-     *
-     * \remark  Overwrite to implement method
-     **/
-    virtual unsigned int getNumberOfResponses( void ) const;
-
-    /**
-     * \brief   Returns number of attributes of Service Interface
-     *
-     * \remark  Overwrite to implement method
-     **/
-    virtual unsigned int getNumberOfAttributes( void ) const;
-
-    /**
-     * \brief   Returns pointer of array of requests IDs of Service Interface
-     *
-     * \remark  Overwrite to implement method
-     **/
-    virtual const unsigned int * getRequestIds( void ) const;
-
-    /**
-     * \brief   Returns pointer of array of response IDs of Service Interface
-     *
-     * \remark  Overwrite to implement method
-     **/
-    virtual const unsigned int * getResponseIds( void ) const;
-
-    /**
-     * \brief   Returns pointer of array of attribute IDs of Service Interface
-     *
-     * \remark  Overwrite to implement method
-     **/
-    virtual const unsigned int * getAttributeIds( void ) const;
 
     /**
      * \brief   Overwrite method to create Response event object to pass of client.
@@ -453,6 +404,22 @@ protected:
 /************************************************************************/
 
     /**
+     * \brief   Triggered to process service request event.
+     *          Overwrite method to process every service request event.
+     * \param   eventElem   Service Request Event object, contains request
+     *                      call ID and parameters.
+     **/
+    virtual void processRequestEvent( ServiceRequestEvent & eventElem ) = 0;
+    
+    /**
+     * \brief   Triggered to process attribute update notification event.
+     *          Override method to process request to get attribute value and
+     *          process notification request of attribute update.
+     * \param   eventElem   Service Request Event object, contains attribute ID.
+     **/
+    virtual void processAttributeEvent( ServiceRequestEvent & eventElem ) = 0;
+
+    /**
      * \brief   Triggered by system when stub is registered in service. The connection status indicated
      *          registration status. If succeeded, the value is NEService::ServiceConnected
      * \param   stubTarget          The address of registered Stub
@@ -478,25 +445,56 @@ protected:
      **/
     virtual void processGenericEvent(Event & eventElem);
 
-    /**
-     * \brief   Triggered to process service request event.
-     *          Overwrite method to process every service request event.
-     * \param   eventElem   Service Request Event object, contains request
-     *                      call ID and parameters.
-     **/
-    virtual void processRequestEvent( ServiceRequestEvent & eventElem ) = 0;
-    
-    /**
-     * \brief   Triggered to process attribute update notification event.
-     *          Override method to process request to get attribute value and
-     *          process notification request of attribute update.
-     * \param   eventElem   Service Request Event object, contains attribute ID.
-     **/
-    virtual void processAttributeEvent( ServiceRequestEvent & eventElem ) = 0;
-
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations. Protected.
 //////////////////////////////////////////////////////////////////////////
+
+    /**
+     * \brief   Returns implemented version of service interface.
+     **/
+    const Version & getImplVersion( void ) const;
+
+    /**
+     * \brief   Returns number of requests of Service Interface
+     *
+     * \remark  Overwrite to implement method
+     **/
+    unsigned int getNumberOfRequests( void ) const;
+
+    /**
+     * \brief   Returns number of responses of Service Interface
+     *
+     * \remark  Overwrite to implement method
+     **/
+    unsigned int getNumberOfResponses( void ) const;
+
+    /**
+     * \brief   Returns number of attributes of Service Interface
+     *
+     * \remark  Overwrite to implement method
+     **/
+    unsigned int getNumberOfAttributes( void ) const;
+
+    /**
+     * \brief   Returns pointer of array of requests IDs of Service Interface
+     *
+     * \remark  Overwrite to implement method
+     **/
+    const unsigned int * getRequestIds( void ) const;
+
+    /**
+     * \brief   Returns pointer of array of response IDs of Service Interface
+     *
+     * \remark  Overwrite to implement method
+     **/
+    const unsigned int * getResponseIds( void ) const;
+
+    /**
+     * \brief   Returns pointer of array of attribute IDs of Service Interface
+     *
+     * \remark  Overwrite to implement method
+     **/
+    const unsigned int * getAttributeIds( void ) const;
 
     /**
      * \brief   Returns true if specified request is in pending list,
@@ -668,33 +666,38 @@ protected:
     /**
      * \brief   Holder component object reference.
      **/
-    Component &                     mComponent;
+    Component &                         mComponent;
+
+    /**
+     * \brief   Instance of Servicing interface data.
+     **/
+    const NEService::SInterfaceData &   mInterface;
 
     /**
      * \brief   The address object of stub
      **/
-    StubAddress                     mAddress;
+    StubAddress                         mAddress;
 
     /**
      * \brief   The service connection status
      **/
-    NEService::eServiceConnection   mConnectionStatus;
+    NEService::eServiceConnection       mConnectionStatus;
 
     /**
      * \brief   The list of listeners
      **/
-    StubBase::StubListenerList      mListListener;
+    StubBase::StubListenerList          mListListener;
 
 private:
     /**
      * \brief   The position of current listener, which is processing. When canceled, it sets NULL.
      **/
-    LISTPOS                         mCurrListener;
+    LISTPOS                             mCurrListener;
 
     /**
      * \brief   Used to generate unique session ID. The uniqueness is provided within single stub object scope
      **/
-    unsigned int                    mSessionId;
+    unsigned int                        mSessionId;
 
 private:
 #if _MSC_VER
@@ -703,12 +706,12 @@ private:
     /**
      * \brief   Session map object, contains list of unblock requests
      **/
-    StubBase::MapStubSession        mMapSessions;
+    StubBase::MapStubSession            mMapSessions;
 
     /**
      * \brief   Stub object resource map.
      **/
-    static MapStubResource          _mapRegisteredStubs;
+    static MapStubResource              _mapRegisteredStubs;
 #if _MSC_VER
     #pragma warning(default: 4251)
 #endif  // _MSC_VER

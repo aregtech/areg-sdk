@@ -6,7 +6,7 @@
 /************************************************************************
  * (c) copyright    2021
  *                  Create by AREG SDK code generator tool from source DirectConnection.
- * Generated at     12.05.2021  16:41:23 GMT+02:00 
+ * Generated at     23.05.2021  00:18:58 GMT+02:00 
  ************************************************************************/
 
 /************************************************************************
@@ -434,10 +434,6 @@ private:
      * \return  Pointer to instantiated proxy object.
      **/
     static ProxyBase * _createProxy( const char * roleName, DispatcherThread * ownerThread = static_cast<DispatcherThread *>(NULL) );
-    /**
-     * \brief   Creates and returns service interface data object.
-     **/
-    static const NEService::SInterfaceData & _createInterfaceData( void );
 };
 
 //////////////////////////////////////////////////////////////////////////

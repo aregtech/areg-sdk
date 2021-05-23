@@ -5,7 +5,7 @@
 /************************************************************************
  * (c) copyright    2021
  *                  Create by AREG SDK code generator tool from source DirectConnection.
- * Generated at     12.05.2021  16:41:23 GMT+02:00 
+ * Generated at     23.05.2021  00:18:58 GMT+02:00 
  ************************************************************************/
 
 /************************************************************************
@@ -47,10 +47,6 @@ DirectConnectionProxy::DirectConnectionServiceAvailableEvent::~DirectConnectionS
 //////////////////////////////////////////////////////////////////////////
 // static function implementation
 //////////////////////////////////////////////////////////////////////////
-const NEService::SInterfaceData & DirectConnectionProxy::_createInterfaceData( void )
-{
-    return NEDirectConnection::createInterfaceData( );
-}
 
 ProxyBase * DirectConnectionProxy::_createProxy( const char * roleName, DispatcherThread * ownerThread /*= static_cast<DispatcherThread *>(NULL)*/ )
 {
@@ -60,7 +56,7 @@ ProxyBase * DirectConnectionProxy::_createProxy( const char * roleName, Dispatch
 DirectConnectionProxy * DirectConnectionProxy::createProxy( const char * roleName, IEProxyListener & connectListener, DispatcherThread & ownerThread )
 {
     return static_cast<DirectConnectionProxy *>(ProxyBase::findOrCreateProxy( roleName
-                                                                      , NEDirectConnection::createInterfaceData()
+                                                                      , NEDirectConnection::getInterfaceData()
                                                                       , connectListener
                                                                       , &DirectConnectionProxy::_createProxy
                                                                       , ownerThread) );
@@ -69,7 +65,7 @@ DirectConnectionProxy * DirectConnectionProxy::createProxy( const char * roleNam
 DirectConnectionProxy * DirectConnectionProxy::createProxy( const char * roleName, IEProxyListener & connectListener, const char * ownerThread /*= static_cast<const char *>(NULL)*/ )
 {
     return static_cast<DirectConnectionProxy *>(ProxyBase::findOrCreateProxy( roleName
-                                                                      , NEDirectConnection::createInterfaceData()
+                                                                      , NEDirectConnection::getInterfaceData()
                                                                       , connectListener
                                                                       , &DirectConnectionProxy::_createProxy
                                                                       , ownerThread) );
@@ -79,7 +75,7 @@ DirectConnectionProxy * DirectConnectionProxy::createProxy( const char * roleNam
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 DirectConnectionProxy::DirectConnectionProxy( const char * roleName, DispatcherThread * ownerThread /*= static_cast<DispatcherThread *>(NULL)*/ )
-    : ProxyBase(roleName, DirectConnectionProxy::_createInterfaceData(), ownerThread)
+    : ProxyBase(roleName, NEDirectConnection::getInterfaceData(), ownerThread)
 
 /************************************************************************
  * Attributes

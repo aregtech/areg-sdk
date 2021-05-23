@@ -57,3 +57,13 @@
 /examples/07_synch/release/
 /examples/07_synch/.settings/
 /examples/07_synch/logs/
+
+/examples/08_service/debug/
+/examples/08_service/release/
+/examples/08_service/.settings/
+/examples/08_service/logs/
+
+/examples/09_duplicate/debug/
+/examples/09_duplicate/release/
+/examples/09_duplicate/.settings/
+/examples/09_duplicate/logs/

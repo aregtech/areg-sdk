@@ -7,7 +7,7 @@
 /************************************************************************
  * (c) copyright    2021
  *                  Create by AREG SDK code generator tool from source CentralMessager.
- * Generated at     12.05.2021  16:41:20 GMT+02:00 
+ * Generated at     23.05.2021  00:18:55 GMT+02:00 
  ************************************************************************/
 
 /************************************************************************
@@ -155,7 +155,7 @@ namespace   NECentralMessager
     /**
      * \brief   Creates and returns Service Interface Data
      **/
-    const NEService::SInterfaceData & createInterfaceData( void );
+    const NEService::SInterfaceData & getInterfaceData( void );
 
     /**
      * \brief   Returns the mapped Response ID of give Request ID.
@@ -166,48 +166,8 @@ namespace   NECentralMessager
      * \brief   Returns the mapped Response ID of give Request ID.
      **/
     NECentralMessager::eMessageIDs getRequestId( NECentralMessager::eMessageIDs respId );
-
-    /**
-     * \brief   Array of supported Request IDs
-     **/
-    const eMessageIDs    RequestIds[] = 
-    {
-          MSG_ID_requestSendMessage
-        , MSG_ID_requestKeyTyping
-    };
-    /**
-     * \brief   Number of supported Request entries
-     **/
-    const unsigned int NumberofRequests     = MACRO_ARRAYLEN(RequestIds);
-
-    /**
-     * \brief   Array of supported Response IDs
-     **/
-    const eMessageIDs    ResponseIds[] = 
-    {
-
-          MSG_ID_broadcastSendMessage
-        , MSG_ID_broadcastKeyTyping
-        , MSG_ID_broadcastBroadcastMessage
-    };
-    /**
-     * \brief   Number of supported Response entries
-     **/
-    const unsigned int  NumberofResponses   = MACRO_ARRAYLEN(ResponseIds);
-
-    /**
-     * \brief   Array of supported Attribute IDs
-     **/
-    const eMessageIDs    AttributeIds[] =
-    {
-        MSG_ID_INVALID  /* There are no attributes. Set Invalid message ID */
-    };
-    /**
-     * \brief   Number of supported Attribute entries
-     **/
-    const unsigned int NumberofAttributes   = MACRO_ARRAYLEN(AttributeIds);
-
 }
+
 //////////////////////////////////////////////////////////////////////////
 // NECentralMessager inline functions implementation
 //////////////////////////////////////////////////////////////////////////

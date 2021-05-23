@@ -5,7 +5,7 @@
 /************************************************************************
  * (c) copyright    2021
  *                  Create by AREG SDK code generator tool from source DirectMessager.
- * Generated at     12.05.2021  16:41:24 GMT+02:00 
+ * Generated at     23.05.2021  00:18:59 GMT+02:00 
  ************************************************************************/
 
 /************************************************************************
@@ -47,10 +47,6 @@ DirectMessagerProxy::DirectMessagerServiceAvailableEvent::~DirectMessagerService
 //////////////////////////////////////////////////////////////////////////
 // static function implementation
 //////////////////////////////////////////////////////////////////////////
-const NEService::SInterfaceData & DirectMessagerProxy::_createInterfaceData( void )
-{
-    return NEDirectMessager::createInterfaceData( );
-}
 
 ProxyBase * DirectMessagerProxy::_createProxy( const char * roleName, DispatcherThread * ownerThread /*= static_cast<DispatcherThread *>(NULL)*/ )
 {
@@ -60,7 +56,7 @@ ProxyBase * DirectMessagerProxy::_createProxy( const char * roleName, Dispatcher
 DirectMessagerProxy * DirectMessagerProxy::createProxy( const char * roleName, IEProxyListener & connectListener, DispatcherThread & ownerThread )
 {
     return static_cast<DirectMessagerProxy *>(ProxyBase::findOrCreateProxy( roleName
-                                                                      , NEDirectMessager::createInterfaceData()
+                                                                      , NEDirectMessager::getInterfaceData()
                                                                       , connectListener
                                                                       , &DirectMessagerProxy::_createProxy
                                                                       , ownerThread) );
@@ -69,7 +65,7 @@ DirectMessagerProxy * DirectMessagerProxy::createProxy( const char * roleName, I
 DirectMessagerProxy * DirectMessagerProxy::createProxy( const char * roleName, IEProxyListener & connectListener, const char * ownerThread /*= static_cast<const char *>(NULL)*/ )
 {
     return static_cast<DirectMessagerProxy *>(ProxyBase::findOrCreateProxy( roleName
-                                                                      , NEDirectMessager::createInterfaceData()
+                                                                      , NEDirectMessager::getInterfaceData()
                                                                       , connectListener
                                                                       , &DirectMessagerProxy::_createProxy
                                                                       , ownerThread) );
@@ -79,7 +75,7 @@ DirectMessagerProxy * DirectMessagerProxy::createProxy( const char * roleName, I
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 DirectMessagerProxy::DirectMessagerProxy( const char * roleName, DispatcherThread * ownerThread /*= static_cast<DispatcherThread *>(NULL)*/ )
-    : ProxyBase(roleName, DirectMessagerProxy::_createInterfaceData(), ownerThread)
+    : ProxyBase(roleName, NEDirectMessager::getInterfaceData(), ownerThread)
 
 /************************************************************************
  * Attributes

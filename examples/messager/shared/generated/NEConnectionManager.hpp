@@ -7,7 +7,7 @@
 /************************************************************************
  * (c) copyright    2021
  *                  Create by AREG SDK code generator tool from source ConnectionManager.
- * Generated at     12.05.2021  16:41:22 GMT+02:00 
+ * Generated at     23.05.2021  00:18:56 GMT+02:00 
  ************************************************************************/
 
 /************************************************************************
@@ -228,7 +228,7 @@ namespace   NEConnectionManager
     /**
      * \brief   Creates and returns Service Interface Data
      **/
-    const NEService::SInterfaceData & createInterfaceData( void );
+    const NEService::SInterfaceData & getInterfaceData( void );
 
     /**
      * \brief   Returns the mapped Response ID of give Request ID.
@@ -239,51 +239,8 @@ namespace   NEConnectionManager
      * \brief   Returns the mapped Response ID of give Request ID.
      **/
     NEConnectionManager::eMessageIDs getRequestId( NEConnectionManager::eMessageIDs respId );
-
-    /**
-     * \brief   Array of supported Request IDs
-     **/
-    const eMessageIDs    RequestIds[] = 
-    {
-          MSG_ID_requestConnet
-        , MSG_ID_requestRegisterConnection
-        , MSG_ID_requestDiconnect
-    };
-    /**
-     * \brief   Number of supported Request entries
-     **/
-    const unsigned int NumberofRequests     = MACRO_ARRAYLEN(RequestIds);
-
-    /**
-     * \brief   Array of supported Response IDs
-     **/
-    const eMessageIDs    ResponseIds[] = 
-    {
-          MSG_ID_responseConnect
-        , MSG_ID_responseRegisterConnection
-
-        , MSG_ID_broadcastConnectionUpdated
-        , MSG_ID_broadcastClientConnected
-        , MSG_ID_broadcastClientDisconnected
-    };
-    /**
-     * \brief   Number of supported Response entries
-     **/
-    const unsigned int  NumberofResponses   = MACRO_ARRAYLEN(ResponseIds);
-
-    /**
-     * \brief   Array of supported Attribute IDs
-     **/
-    const eMessageIDs    AttributeIds[] =
-    {
-          MSG_ID_ConnectionList
-    };
-    /**
-     * \brief   Number of supported Attribute entries
-     **/
-    const unsigned int NumberofAttributes   = MACRO_ARRAYLEN(AttributeIds);
-
 }
+
 //////////////////////////////////////////////////////////////////////////
 // NEConnectionManager inline functions implementation
 //////////////////////////////////////////////////////////////////////////

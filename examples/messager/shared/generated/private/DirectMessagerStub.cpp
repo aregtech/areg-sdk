@@ -4,7 +4,7 @@
 /************************************************************************
  * (c) copyright    2021
  *                  Create by AREG SDK code generator tool from source DirectMessager.
- * Generated at     12.05.2021  16:41:24 GMT+02:00 
+ * Generated at     23.05.2021  00:18:59 GMT+02:00 
  ************************************************************************/
 
 /************************************************************************
@@ -31,7 +31,7 @@
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 DirectMessagerStub::DirectMessagerStub( Component & masterComp )
-    : StubBase    ( masterComp, NEDirectMessager::createInterfaceData() )
+    : StubBase    ( masterComp, NEDirectMessager::getInterfaceData() )
     
     , mChatParticipants       (  )
     , mChatParticipantsState  ( NEService::DATA_UNAVAILABLE )
@@ -81,36 +81,6 @@ void DirectMessagerStub::shutdownServiceIntrface( Component & holder )
     StubBase::shutdownServiceIntrface( holder );
 }
 
-unsigned int DirectMessagerStub::getNumberOfRequests( void ) const
-{
-    return NEDirectMessager::NumberofRequests;
-}
-
-unsigned int DirectMessagerStub::getNumberOfResponses( void ) const
-{
-    return NEDirectMessager::NumberofResponses;
-}
-
-unsigned int DirectMessagerStub::getNumberOfAttributes( void ) const
-{
-    return NEDirectMessager::NumberofAttributes;
-}
-
-const unsigned int * DirectMessagerStub::getRequestIds( void ) const
-{
-    return reinterpret_cast<const unsigned int *>(NEDirectMessager::RequestIds);
-}
-
-const unsigned int * DirectMessagerStub::getResponseIds( void ) const
-{
-    return reinterpret_cast<const unsigned int *>(NEDirectMessager::ResponseIds);
-}
-
-const unsigned int * DirectMessagerStub::getAttributeIds( void ) const
-{
-    return reinterpret_cast<const unsigned int *>(NEDirectMessager::AttributeIds);
-}
-
 ResponseEvent * DirectMessagerStub::createResponseEvent( const ProxyAddress & proxy, unsigned int msgId, NEService::eResultType result, const EventDataStream & data ) const
 {
     return (data.isEmpty() == false ? DEBUG_NEW DirectMessagerResponseEvent(data, proxy, result, msgId) : DEBUG_NEW DirectMessagerResponseEvent(proxy, result, msgId));
@@ -124,11 +94,6 @@ RemoteRequestEvent * DirectMessagerStub::createRemoteRequestEvent( const IEInStr
 RemoteNotifyRequestEvent * DirectMessagerStub::createRemoteNotifyRequestEvent( const IEInStream & stream ) const
 {
     return static_cast<RemoteNotifyRequestEvent *>( DEBUG_NEW DirectMessagerNotifyRequestEvent(stream) );
-}
-
-const Version & DirectMessagerStub::getImplVersion( void ) const
-{
-    return NEDirectMessager::InterfaceVersion;
 }
 
 DEF_TRACE_SCOPE(shared_generated_DirectMessagerStub_sendNotification);

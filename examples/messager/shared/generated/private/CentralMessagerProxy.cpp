@@ -5,7 +5,7 @@
 /************************************************************************
  * (c) copyright    2021
  *                  Create by AREG SDK code generator tool from source CentralMessager.
- * Generated at     12.05.2021  16:41:20 GMT+02:00 
+ * Generated at     23.05.2021  00:18:55 GMT+02:00 
  ************************************************************************/
 
 /************************************************************************
@@ -47,10 +47,6 @@ CentralMessagerProxy::CentralMessagerServiceAvailableEvent::~CentralMessagerServ
 //////////////////////////////////////////////////////////////////////////
 // static function implementation
 //////////////////////////////////////////////////////////////////////////
-const NEService::SInterfaceData & CentralMessagerProxy::_createInterfaceData( void )
-{
-    return NECentralMessager::createInterfaceData( );
-}
 
 ProxyBase * CentralMessagerProxy::_createProxy( const char * roleName, DispatcherThread * ownerThread /*= static_cast<DispatcherThread *>(NULL)*/ )
 {
@@ -60,7 +56,7 @@ ProxyBase * CentralMessagerProxy::_createProxy( const char * roleName, Dispatche
 CentralMessagerProxy * CentralMessagerProxy::createProxy( const char * roleName, IEProxyListener & connectListener, DispatcherThread & ownerThread )
 {
     return static_cast<CentralMessagerProxy *>(ProxyBase::findOrCreateProxy( roleName
-                                                                      , NECentralMessager::createInterfaceData()
+                                                                      , NECentralMessager::getInterfaceData()
                                                                       , connectListener
                                                                       , &CentralMessagerProxy::_createProxy
                                                                       , ownerThread) );
@@ -69,7 +65,7 @@ CentralMessagerProxy * CentralMessagerProxy::createProxy( const char * roleName,
 CentralMessagerProxy * CentralMessagerProxy::createProxy( const char * roleName, IEProxyListener & connectListener, const char * ownerThread /*= static_cast<const char *>(NULL)*/ )
 {
     return static_cast<CentralMessagerProxy *>(ProxyBase::findOrCreateProxy( roleName
-                                                                      , NECentralMessager::createInterfaceData()
+                                                                      , NECentralMessager::getInterfaceData()
                                                                       , connectListener
                                                                       , &CentralMessagerProxy::_createProxy
                                                                       , ownerThread) );
@@ -79,7 +75,7 @@ CentralMessagerProxy * CentralMessagerProxy::createProxy( const char * roleName,
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 CentralMessagerProxy::CentralMessagerProxy( const char * roleName, DispatcherThread * ownerThread /*= static_cast<DispatcherThread *>(NULL)*/ )
-    : ProxyBase(roleName, CentralMessagerProxy::_createInterfaceData(), ownerThread)
+    : ProxyBase(roleName, NECentralMessager::getInterfaceData(), ownerThread)
 
 /************************************************************************
  * Attributes

@@ -4,7 +4,7 @@
 /************************************************************************
  * (c) copyright    2021
  *                  Create by AREG SDK code generator tool from source CentralMessager.
- * Generated at     12.05.2021  16:41:20 GMT+02:00 
+ * Generated at     23.05.2021  00:18:55 GMT+02:00 
  ************************************************************************/
 
 /************************************************************************
@@ -31,7 +31,7 @@
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 CentralMessagerStub::CentralMessagerStub( Component & masterComp )
-    : StubBase    ( masterComp, NECentralMessager::createInterfaceData() )
+    : StubBase    ( masterComp, NECentralMessager::getInterfaceData() )
     
 {
     ; // do nothing
@@ -78,36 +78,6 @@ void CentralMessagerStub::shutdownServiceIntrface( Component & holder )
     StubBase::shutdownServiceIntrface( holder );
 }
 
-unsigned int CentralMessagerStub::getNumberOfRequests( void ) const
-{
-    return NECentralMessager::NumberofRequests;
-}
-
-unsigned int CentralMessagerStub::getNumberOfResponses( void ) const
-{
-    return NECentralMessager::NumberofResponses;
-}
-
-unsigned int CentralMessagerStub::getNumberOfAttributes( void ) const
-{
-    return NECentralMessager::NumberofAttributes;
-}
-
-const unsigned int * CentralMessagerStub::getRequestIds( void ) const
-{
-    return reinterpret_cast<const unsigned int *>(NECentralMessager::RequestIds);
-}
-
-const unsigned int * CentralMessagerStub::getResponseIds( void ) const
-{
-    return reinterpret_cast<const unsigned int *>(NECentralMessager::ResponseIds);
-}
-
-const unsigned int * CentralMessagerStub::getAttributeIds( void ) const
-{
-    return reinterpret_cast<const unsigned int *>(NECentralMessager::AttributeIds);
-}
-
 ResponseEvent * CentralMessagerStub::createResponseEvent( const ProxyAddress & proxy, unsigned int msgId, NEService::eResultType result, const EventDataStream & data ) const
 {
     return (data.isEmpty() == false ? DEBUG_NEW CentralMessagerResponseEvent(data, proxy, result, msgId) : DEBUG_NEW CentralMessagerResponseEvent(proxy, result, msgId));
@@ -121,11 +91,6 @@ RemoteRequestEvent * CentralMessagerStub::createRemoteRequestEvent( const IEInSt
 RemoteNotifyRequestEvent * CentralMessagerStub::createRemoteNotifyRequestEvent( const IEInStream & stream ) const
 {
     return static_cast<RemoteNotifyRequestEvent *>( DEBUG_NEW CentralMessagerNotifyRequestEvent(stream) );
-}
-
-const Version & CentralMessagerStub::getImplVersion( void ) const
-{
-    return NECentralMessager::InterfaceVersion;
 }
 
 DEF_TRACE_SCOPE(shared_generated_CentralMessagerStub_sendNotification);

@@ -18,6 +18,7 @@
 
 namespace NEUtilities {
 
+#if 0
     void _generateName( const char * prefix, char * out_buffer, int length, const char * specChar )
     {
         static const char * formatStr = "%s%03d%s%03d%s%03d%s%03d%s%03d%s%03d%s%03d%s%03d";
@@ -46,6 +47,23 @@ namespace NEUtilities {
                 tick8, spec, tick7, spec, tick6, spec, tick5, spec, tick4, spec, tick3, spec, tick2, spec, tick1 );
         }
     }
+
+#else
+
+    void _generateName( const char * prefix, char * out_buffer, int length, const char * specChar )
+    {
+        static const char * strFormat = "%s%s%08x%s%08x";
+        if ( out_buffer != NULL )
+        {
+            const char * spec = specChar != NULL ? specChar : NEUtilities::DEFAULT_SPECIAL_CHAR;
+            *out_buffer = '\0';
+            struct timespec now;
+            clock_gettime(CLOCK_REALTIME, &now);
+            String::formatString( out_buffer, length, strFormat, prefix != NULL ? prefix : NEUtilities::DEFAULT_GENERATED_NAME, spec, now.tv_sec, spec, now.tv_nsec);
+        }
+    }
+
+#endif
 
     static inline void _convertMicrosecs(const TIME64 & quad, time_t & outSecs, unsigned short &outMilli, unsigned short &outMicro)
     {

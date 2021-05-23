@@ -7,7 +7,7 @@
 /************************************************************************
  * (c) copyright    2021
  *                  Create by AREG SDK code generator tool from source DirectMessager.
- * Generated at     12.05.2021  16:41:24 GMT+02:00 
+ * Generated at     23.05.2021  00:18:59 GMT+02:00 
  ************************************************************************/
 
 /************************************************************************
@@ -206,7 +206,7 @@ namespace   NEDirectMessager
     /**
      * \brief   Creates and returns Service Interface Data
      **/
-    const NEService::SInterfaceData & createInterfaceData( void );
+    const NEService::SInterfaceData & getInterfaceData( void );
 
     /**
      * \brief   Returns the mapped Response ID of give Request ID.
@@ -217,53 +217,8 @@ namespace   NEDirectMessager
      * \brief   Returns the mapped Response ID of give Request ID.
      **/
     NEDirectMessager::eMessageIDs getRequestId( NEDirectMessager::eMessageIDs respId );
-
-    /**
-     * \brief   Array of supported Request IDs
-     **/
-    const eMessageIDs    RequestIds[] = 
-    {
-          MSG_ID_requestChatJoin
-        , MSG_ID_requestMessageSend
-        , MSG_ID_requestMessageType
-        , MSG_ID_requestChatLeave
-    };
-    /**
-     * \brief   Number of supported Request entries
-     **/
-    const unsigned int NumberofRequests     = MACRO_ARRAYLEN(RequestIds);
-
-    /**
-     * \brief   Array of supported Response IDs
-     **/
-    const eMessageIDs    ResponseIds[] = 
-    {
-          MSG_ID_responseChatJoin
-
-        , MSG_ID_broadcastMessageSent
-        , MSG_ID_broadcastMessageTyped
-        , MSG_ID_broadcastParticipantJoined
-        , MSG_ID_broadcastParticipantLeft
-        , MSG_ID_broadcastChatClosed
-    };
-    /**
-     * \brief   Number of supported Response entries
-     **/
-    const unsigned int  NumberofResponses   = MACRO_ARRAYLEN(ResponseIds);
-
-    /**
-     * \brief   Array of supported Attribute IDs
-     **/
-    const eMessageIDs    AttributeIds[] =
-    {
-          MSG_ID_ChatParticipants
-    };
-    /**
-     * \brief   Number of supported Attribute entries
-     **/
-    const unsigned int NumberofAttributes   = MACRO_ARRAYLEN(AttributeIds);
-
 }
+
 //////////////////////////////////////////////////////////////////////////
 // NEDirectMessager inline functions implementation
 //////////////////////////////////////////////////////////////////////////

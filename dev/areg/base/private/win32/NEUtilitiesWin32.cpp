@@ -17,6 +17,7 @@
 
 namespace NEUtilities {
 
+#if 0
     void _generateName( const char * prefix, char * out_buffer, int length, const char * specChar )
     {
         static const char * formatStr = "%s%03d%s%03d%s%03d%s%03d%s%03d%s%03d%s%03d%s%03d";
@@ -42,6 +43,24 @@ namespace NEUtilities {
                 tick8, spec, tick7, spec, tick6, spec, tick5, spec, tick4, spec, tick3, spec, tick2, spec, tick1 );
         }
     }
+
+#else
+
+    void _generateName( const char * prefix, char * out_buffer, int length, const char * specChar )
+    {
+        static const char * strFormat = "%s%s%08x%s%08x";
+        if ( out_buffer != NULL )
+        {
+            *out_buffer = '\0';
+            const char * spec = specChar != NULL ? specChar : NEUtilities::DEFAULT_SPECIAL_CHAR;
+            FILETIME now = { 0, 0 };
+            ::GetSystemTimeAsFileTime( &now );
+
+            String::formatString( out_buffer, length, strFormat, prefix != NULL ? prefix : NEUtilities::DEFAULT_GENERATED_NAME, spec, now.dwHighDateTime, spec, now.dwLowDateTime);
+        }
+    }
+
+#endif
 
     inline void _convWinSysTime2AregSysTime( const SYSTEMTIME & winTime, NEUtilities::sSystemTime & aregTime )
     {

@@ -5,7 +5,7 @@
 /************************************************************************
  * (c) copyright    2021
  *                  Create by AREG SDK code generator tool from source ConnectionManager.
- * Generated at     12.05.2021  16:41:22 GMT+02:00 
+ * Generated at     23.05.2021  00:18:56 GMT+02:00 
  ************************************************************************/
 
 /************************************************************************
@@ -47,10 +47,6 @@ ConnectionManagerProxy::ConnectionManagerServiceAvailableEvent::~ConnectionManag
 //////////////////////////////////////////////////////////////////////////
 // static function implementation
 //////////////////////////////////////////////////////////////////////////
-const NEService::SInterfaceData & ConnectionManagerProxy::_createInterfaceData( void )
-{
-    return NEConnectionManager::createInterfaceData( );
-}
 
 ProxyBase * ConnectionManagerProxy::_createProxy( const char * roleName, DispatcherThread * ownerThread /*= static_cast<DispatcherThread *>(NULL)*/ )
 {
@@ -60,7 +56,7 @@ ProxyBase * ConnectionManagerProxy::_createProxy( const char * roleName, Dispatc
 ConnectionManagerProxy * ConnectionManagerProxy::createProxy( const char * roleName, IEProxyListener & connectListener, DispatcherThread & ownerThread )
 {
     return static_cast<ConnectionManagerProxy *>(ProxyBase::findOrCreateProxy( roleName
-                                                                      , NEConnectionManager::createInterfaceData()
+                                                                      , NEConnectionManager::getInterfaceData()
                                                                       , connectListener
                                                                       , &ConnectionManagerProxy::_createProxy
                                                                       , ownerThread) );
@@ -69,7 +65,7 @@ ConnectionManagerProxy * ConnectionManagerProxy::createProxy( const char * roleN
 ConnectionManagerProxy * ConnectionManagerProxy::createProxy( const char * roleName, IEProxyListener & connectListener, const char * ownerThread /*= static_cast<const char *>(NULL)*/ )
 {
     return static_cast<ConnectionManagerProxy *>(ProxyBase::findOrCreateProxy( roleName
-                                                                      , NEConnectionManager::createInterfaceData()
+                                                                      , NEConnectionManager::getInterfaceData()
                                                                       , connectListener
                                                                       , &ConnectionManagerProxy::_createProxy
                                                                       , ownerThread) );
@@ -79,7 +75,7 @@ ConnectionManagerProxy * ConnectionManagerProxy::createProxy( const char * roleN
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 ConnectionManagerProxy::ConnectionManagerProxy( const char * roleName, DispatcherThread * ownerThread /*= static_cast<DispatcherThread *>(NULL)*/ )
-    : ProxyBase(roleName, ConnectionManagerProxy::_createInterfaceData(), ownerThread)
+    : ProxyBase(roleName, NEConnectionManager::getInterfaceData(), ownerThread)
 
 /************************************************************************
  * Attributes

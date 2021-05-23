@@ -4,7 +4,7 @@
 /************************************************************************
  * (c) copyright    2021
  *                  Create by AREG SDK code generator tool from source ConnectionManager.
- * Generated at     12.05.2021  16:41:22 GMT+02:00 
+ * Generated at     23.05.2021  00:18:56 GMT+02:00 
  ************************************************************************/
 
 /************************************************************************
@@ -31,7 +31,7 @@
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 ConnectionManagerStub::ConnectionManagerStub( Component & masterComp )
-    : StubBase    ( masterComp, NEConnectionManager::createInterfaceData() )
+    : StubBase    ( masterComp, NEConnectionManager::getInterfaceData() )
     
     , mConnectionList         (  )
     , mConnectionListState    ( NEService::DATA_UNAVAILABLE )
@@ -81,36 +81,6 @@ void ConnectionManagerStub::shutdownServiceIntrface( Component & holder )
     StubBase::shutdownServiceIntrface( holder );
 }
 
-unsigned int ConnectionManagerStub::getNumberOfRequests( void ) const
-{
-    return NEConnectionManager::NumberofRequests;
-}
-
-unsigned int ConnectionManagerStub::getNumberOfResponses( void ) const
-{
-    return NEConnectionManager::NumberofResponses;
-}
-
-unsigned int ConnectionManagerStub::getNumberOfAttributes( void ) const
-{
-    return NEConnectionManager::NumberofAttributes;
-}
-
-const unsigned int * ConnectionManagerStub::getRequestIds( void ) const
-{
-    return reinterpret_cast<const unsigned int *>(NEConnectionManager::RequestIds);
-}
-
-const unsigned int * ConnectionManagerStub::getResponseIds( void ) const
-{
-    return reinterpret_cast<const unsigned int *>(NEConnectionManager::ResponseIds);
-}
-
-const unsigned int * ConnectionManagerStub::getAttributeIds( void ) const
-{
-    return reinterpret_cast<const unsigned int *>(NEConnectionManager::AttributeIds);
-}
-
 ResponseEvent * ConnectionManagerStub::createResponseEvent( const ProxyAddress & proxy, unsigned int msgId, NEService::eResultType result, const EventDataStream & data ) const
 {
     return (data.isEmpty() == false ? DEBUG_NEW ConnectionManagerResponseEvent(data, proxy, result, msgId) : DEBUG_NEW ConnectionManagerResponseEvent(proxy, result, msgId));
@@ -124,11 +94,6 @@ RemoteRequestEvent * ConnectionManagerStub::createRemoteRequestEvent( const IEIn
 RemoteNotifyRequestEvent * ConnectionManagerStub::createRemoteNotifyRequestEvent( const IEInStream & stream ) const
 {
     return static_cast<RemoteNotifyRequestEvent *>( DEBUG_NEW ConnectionManagerNotifyRequestEvent(stream) );
-}
-
-const Version & ConnectionManagerStub::getImplVersion( void ) const
-{
-    return NEConnectionManager::InterfaceVersion;
 }
 
 DEF_TRACE_SCOPE(shared_generated_ConnectionManagerStub_sendNotification);

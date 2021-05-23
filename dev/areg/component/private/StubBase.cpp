@@ -84,6 +84,7 @@ StubBase::StubBase( Component & masterComp, const NEService::SInterfaceData & si
     : IEStubEventConsumer  ( mAddress )
 
     , mComponent            (masterComp)
+    , mInterface            (siData)
     , mAddress              (siData, masterComp.getAddress().getRoleName(), masterComp.getAddress().getThreadAddress().getThreadName())
     , mConnectionStatus     ( NEService::ServiceDisconnected )
     , mListListener         ( )
@@ -110,7 +111,10 @@ bool StubBase::isBusy( unsigned int requestId ) const
     bool result = false;
     LISTPOS pos = mListListener.find(StubBase::Listener(requestId, NEService::SEQUENCE_NUMBER_ANY), NULL);
     for ( ; result == false && pos != NULL; pos = mListListener.nextPosition(pos))
+    {
         result = mListListener[pos].mSequenceNr != 0;
+    }
+
     return result;
 }
 
@@ -457,7 +461,9 @@ void StubBase::processStubRegisteredEvent(const StubAddress & stubTarget, NEServ
         ASSERT( stubTarget.isValid() );
         _mapRegisteredStubs.lock();
         _mapRegisteredStubs.unregisterResourceObject(mAddress);
+
         mAddress = stubTarget;
+        
         _mapRegisteredStubs.registerResourceObject(mAddress, this);
         _mapRegisteredStubs.unlock();
     }
@@ -465,34 +471,39 @@ void StubBase::processStubRegisteredEvent(const StubAddress & stubTarget, NEServ
     mConnectionStatus = connectionStatus;
 }
 
+const Version & StubBase::getImplVersion( void ) const
+{
+    return mInterface.idVersion;
+}
+
 unsigned int StubBase::getNumberOfRequests( void ) const
 {
-    return 0;
+    return mInterface.idRequestCount;
 }
 
 unsigned int StubBase::getNumberOfResponses( void ) const
 {
-    return 0;
+    return mInterface.idResponseCount;
 }
 
 unsigned int StubBase::getNumberOfAttributes( void ) const
 {
-    return 0;
+    return mInterface.idAttributeCount;
 }
 
 const unsigned int * StubBase::getRequestIds( void ) const
 {
-    return &StubBase::INVALID_MESSAGE_ID;
+    return mInterface.idRequestList;
 }
 
 const unsigned int * StubBase::getResponseIds( void ) const
 {
-    return &StubBase::INVALID_MESSAGE_ID;
+    return mInterface.idResponseList;
 }
 
 const unsigned int * StubBase::getAttributeIds( void ) const
 {
-    return &StubBase::INVALID_MESSAGE_ID;
+    return mInterface.idAttributeList;
 }
 
 ResponseEvent * StubBase::createResponseEvent( const ProxyAddress &     /* proxy */

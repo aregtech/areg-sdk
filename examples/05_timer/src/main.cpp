@@ -107,9 +107,9 @@ TimerDispatcher::TimerDispatcher( const char * threadName )
     : DispatcherThread  (threadName)
     , IETimerConsumer   ( )
 
-    , mOneTime          (self(), String(getName() + "_one_time_").getString())
-    , mPeriodic         (self(), String(getName() + "_periodic_").getString())
-    , mContinuous       (self(), String(getName() + "_continuous_").getString())
+    , mOneTime          (self(), String(getName() + "_one_time"  ).getString())
+    , mPeriodic         (self(), String(getName() + "_periodic"  ).getString())
+    , mContinuous       (self(), String(getName() + "_continuous").getString())
 {
     TRACE_SCOPE(main_TimerDispatcher_TimerDispatcher);
     TRACE_DBG("Instantiated timer dispatcher");
@@ -285,9 +285,8 @@ int main()
         TRACE_DBG("Initializing timer dispatching threads");
 
         TimerDispatcher aThread1("TimerThread_1");
-        startTimerThread(aThread1);
-
         TimerDispatcher aThread2("TimerThread_2");
+        startTimerThread(aThread1);
         startTimerThread(aThread2);
 
         TRACE_INFO("Main thread sleeping to let timers run..");

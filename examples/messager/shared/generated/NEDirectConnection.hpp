@@ -7,7 +7,7 @@
 /************************************************************************
  * (c) copyright    2021
  *                  Create by AREG SDK code generator tool from source DirectConnection.
- * Generated at     12.05.2021  16:41:23 GMT+02:00 
+ * Generated at     23.05.2021  00:18:58 GMT+02:00 
  ************************************************************************/
 
 /************************************************************************
@@ -211,7 +211,7 @@ namespace   NEDirectConnection
     /**
      * \brief   Creates and returns Service Interface Data
      **/
-    const NEService::SInterfaceData & createInterfaceData( void );
+    const NEService::SInterfaceData & getInterfaceData( void );
 
     /**
      * \brief   Returns the mapped Response ID of give Request ID.
@@ -222,50 +222,8 @@ namespace   NEDirectConnection
      * \brief   Returns the mapped Response ID of give Request ID.
      **/
     NEDirectConnection::eMessageIDs getRequestId( NEDirectConnection::eMessageIDs respId );
-
-    /**
-     * \brief   Array of supported Request IDs
-     **/
-    const eMessageIDs    RequestIds[] = 
-    {
-          MSG_ID_requestConnectoinSetup
-        , MSG_ID_requestAddParticipant
-        , MSG_ID_requestRemoveParticipant
-        , MSG_ID_requestCloseConnection
-    };
-    /**
-     * \brief   Number of supported Request entries
-     **/
-    const unsigned int NumberofRequests     = MACRO_ARRAYLEN(RequestIds);
-
-    /**
-     * \brief   Array of supported Response IDs
-     **/
-    const eMessageIDs    ResponseIds[] = 
-    {
-          MSG_ID_responseConnectoinSetup
-        , MSG_ID_responseAddParticipant
-        , MSG_ID_responseRemoveParticipant
-
-    };
-    /**
-     * \brief   Number of supported Response entries
-     **/
-    const unsigned int  NumberofResponses   = MACRO_ARRAYLEN(ResponseIds);
-
-    /**
-     * \brief   Array of supported Attribute IDs
-     **/
-    const eMessageIDs    AttributeIds[] =
-    {
-          MSG_ID_InitiatedConnections
-    };
-    /**
-     * \brief   Number of supported Attribute entries
-     **/
-    const unsigned int NumberofAttributes   = MACRO_ARRAYLEN(AttributeIds);
-
 }
+
 //////////////////////////////////////////////////////////////////////////
 // NEDirectConnection inline functions implementation
 //////////////////////////////////////////////////////////////////////////

@@ -507,17 +507,6 @@ namespace NEService
     typedef struct AREG_API S_InterfaceData
     {
         /**
-         * \brief   Default constructor.
-         **/
-        S_InterfaceData( void );
-
-        /**
-         * \brief   Initialization flag. Should be true when interface data
-         *          is initialized and can be used.
-         **/
-        bool                idIsInitialized;            // initialization flag
-
-        /**
          * \brief   The name of service (interface)
          **/
         const char*         idServiceName;              // service (interface) name
@@ -548,6 +537,21 @@ namespace NEService
         unsigned int        idAttributeCount;           // number of attributes
 
         /**
+         * \brief   The list of requests. It is NULL if the list is empty.
+         **/
+        const unsigned int* idRequestList;
+
+        /**
+         * \brief   The list of responses. It is NULL if the list is empty.
+         **/
+        const unsigned int* idResponseList;
+
+        /**
+         * \brief   The list of attributes. It is NULL if the list is empty.
+         **/
+        const unsigned int* idAttributeList;
+
+        /**
          * \brief   Request to Response map. All requests are accessed by index 
          *          and every request indexed is calculated by calculating 
          *          ('request ID' - NEService::REQUEST_ID_FIRST)
@@ -562,7 +566,24 @@ namespace NEService
          *          The size of this map should be equal to idResponseCount
          **/
         const unsigned int* idResponseParamCountMap;    // map of parameter count in every response. Must have same size as idResponseCount
+
     } SInterfaceData;
+
+    //////////////////////////////////////////////////////////////////////////
+    // Empty service interface
+    //////////////////////////////////////////////////////////////////////////
+    /**
+     * \brief   The name of empty service
+     **/
+    const char * const  EmptyServiceName    = "AREG_EmptyService_";
+    /**
+     * \brief   Empty service version
+     **/
+    extern AREG_API const Version EmptyServiceVersion /*(1, 0, 0)*/;
+    /**
+     * \brief   Returns the instance of empty local service interface.
+     **/
+    AREG_API NEService::SInterfaceData & getEmptyInterface( void );
 
     //////////////////////////////////////////////////////////////////////////
     // ParameterArray class declaration

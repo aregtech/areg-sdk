@@ -4,7 +4,7 @@
 /************************************************************************
  * (c) copyright    2021
  *                  Create by AREG SDK code generator tool from source DirectConnection.
- * Generated at     12.05.2021  16:41:23 GMT+02:00 
+ * Generated at     23.05.2021  00:18:58 GMT+02:00 
  ************************************************************************/
 
 /************************************************************************
@@ -31,7 +31,7 @@
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 DirectConnectionStub::DirectConnectionStub( Component & masterComp )
-    : StubBase    ( masterComp, NEDirectConnection::createInterfaceData() )
+    : StubBase    ( masterComp, NEDirectConnection::getInterfaceData() )
     
     , mInitiatedConnections       (  )
     , mInitiatedConnectionsState  ( NEService::DATA_UNAVAILABLE )
@@ -81,36 +81,6 @@ void DirectConnectionStub::shutdownServiceIntrface( Component & holder )
     StubBase::shutdownServiceIntrface( holder );
 }
 
-unsigned int DirectConnectionStub::getNumberOfRequests( void ) const
-{
-    return NEDirectConnection::NumberofRequests;
-}
-
-unsigned int DirectConnectionStub::getNumberOfResponses( void ) const
-{
-    return NEDirectConnection::NumberofResponses;
-}
-
-unsigned int DirectConnectionStub::getNumberOfAttributes( void ) const
-{
-    return NEDirectConnection::NumberofAttributes;
-}
-
-const unsigned int * DirectConnectionStub::getRequestIds( void ) const
-{
-    return reinterpret_cast<const unsigned int *>(NEDirectConnection::RequestIds);
-}
-
-const unsigned int * DirectConnectionStub::getResponseIds( void ) const
-{
-    return reinterpret_cast<const unsigned int *>(NEDirectConnection::ResponseIds);
-}
-
-const unsigned int * DirectConnectionStub::getAttributeIds( void ) const
-{
-    return reinterpret_cast<const unsigned int *>(NEDirectConnection::AttributeIds);
-}
-
 ResponseEvent * DirectConnectionStub::createResponseEvent( const ProxyAddress & proxy, unsigned int msgId, NEService::eResultType result, const EventDataStream & data ) const
 {
     return (data.isEmpty() == false ? DEBUG_NEW DirectConnectionResponseEvent(data, proxy, result, msgId) : DEBUG_NEW DirectConnectionResponseEvent(proxy, result, msgId));
@@ -124,11 +94,6 @@ RemoteRequestEvent * DirectConnectionStub::createRemoteRequestEvent( const IEInS
 RemoteNotifyRequestEvent * DirectConnectionStub::createRemoteNotifyRequestEvent( const IEInStream & stream ) const
 {
     return static_cast<RemoteNotifyRequestEvent *>( DEBUG_NEW DirectConnectionNotifyRequestEvent(stream) );
-}
-
-const Version & DirectConnectionStub::getImplVersion( void ) const
-{
-    return NEDirectConnection::InterfaceVersion;
 }
 
 DEF_TRACE_SCOPE(shared_generated_DirectConnectionStub_sendNotification);

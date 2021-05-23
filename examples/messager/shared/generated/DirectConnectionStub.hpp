@@ -6,7 +6,7 @@
 /************************************************************************
  * (c) copyright    2021
  *                  Create by AREG SDK code generator tool from source DirectConnection.
- * Generated at     12.05.2021  16:41:23 GMT+02:00 
+ * Generated at     23.05.2021  00:18:58 GMT+02:00 
  ************************************************************************/
 
 /************************************************************************
@@ -200,11 +200,6 @@ public:
 /************************************************************************/
 
     /**
-     * \brief   Returns implemented version of service interface.
-     **/
-    virtual const Version & getImplVersion( void ) const;
-
-    /**
      * \brief   Sends update notification message to all clients. 
      *          This method can be called manually to send update 
      *          notification message after updating attribute value.
@@ -252,36 +247,6 @@ protected:
 /************************************************************************/
 // StubBase overrides. Protected methods 
 /************************************************************************/
-
-    /**
-     * \brief   Returns number of requests of Service Interface
-     **/
-    virtual unsigned int getNumberOfRequests(void) const;
-
-    /**
-     * \brief   Returns number of responses of Service Interface
-     **/
-    virtual unsigned int getNumberOfResponses( void ) const;
-
-    /**
-     * \brief   Returns number of attributes of Service Interface
-     **/
-    virtual unsigned int getNumberOfAttributes( void ) const;
-
-    /**
-     * \brief   Returns pointer of array of requests IDs of Service Interface
-     **/
-    virtual const unsigned int * getRequestIds(void) const;
-
-    /**
-     * \brief   Returns pointer of array of response IDs of Service Interface
-     **/
-    virtual const unsigned int * getResponseIds(void) const;
-
-    /**
-     * \brief   Returns pointer of array of attribute IDs of Service Interface
-     **/
-    virtual const unsigned int * getAttributeIds(void) const;
 
     /**
      * \brief   Creates Response event object to pass of client.

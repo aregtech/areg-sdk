@@ -205,15 +205,27 @@ unsigned int NEService::ProxyData::getResponseId( unsigned int requestId ) const
             );
 }
 
-NEService::S_InterfaceData::S_InterfaceData( void )
-    : idIsInitialized           ( false )
-    , idServiceName             ( NULL  )
-    , idVersion                 ( 0, 0,0)
-    , idServiceType             ( NEService::ServiceInvalid )
-    , idRequestCount            ( 0     )
-    , idResponseCount           ( 0     )
-    , idAttributeCount          ( 0     )
-    , idRequestToResponseMap    ( NULL  )
-    , idResponseParamCountMap   ( NULL  )
+AREG_API const Version NEService::EmptyServiceVersion (1, 0, 0);
+
+AREG_API NEService::SInterfaceData & NEService::getEmptyInterface(void)
 {
+    /**
+     * \brief   System Service Interface data
+     **/
+    static NEService::SInterfaceData _InterfaceData = 
+    {
+          NEService::EmptyServiceName
+        , NEService::EmptyServiceVersion
+        , NEService::ServiceLocal
+        , 0
+        , 0
+        , 0
+        , static_cast<const unsigned int *>(NULL)
+        , static_cast<const unsigned int *>(NULL)
+        , static_cast<const unsigned int *>(NULL)
+        , static_cast<const unsigned int *>(NULL)
+        , static_cast<const unsigned int *>(NULL)
+    };
+
+    return _InterfaceData;
 }
