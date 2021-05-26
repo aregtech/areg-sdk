@@ -45,9 +45,15 @@ MAPPOS ServerList::findServer( const StubAddress & whichServer ) const
 
     for ( ; *block != NULL; block = &(*block)->mNext)
     {
-        if ( hash == (*block)->mHash && (*block)->mKey == whichServer)
-            break;
+        if ( hash == (*block)->mHash )
+        {
+            if ( static_cast<const ServiceAddress &>(whichServer) == static_cast<const ServiceAddress &>((*block)->mKey.getAddress()) )
+            {
+                break;
+            }
+        }
     }
+
     return (*block);
 }
 
@@ -60,8 +66,13 @@ MAPPOS ServerList::findServer( const ProxyAddress & whichClient ) const
 
     for ( ; *block != NULL; block = &(*block)->mNext)
     {
-        if ( hash == (*block)->mHash && (*block)->mKey == whichClient)
-            break;
+        if ( hash == (*block)->mHash )
+        {
+            if ( static_cast<const ServiceAddress &>(whichClient) == static_cast<const ServiceAddress &>((*block)->mKey.getAddress()) )
+            {
+                break;
+            }
+        }
     }
     
     return (*block);

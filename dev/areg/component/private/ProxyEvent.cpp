@@ -96,7 +96,7 @@ IEProxyEventConsumer::~IEProxyEventConsumer( void )
 //////////////////////////////////////////////////////////////////////////
 // IEProxyEventConsumer class, methods
 //////////////////////////////////////////////////////////////////////////
-inline void IEProxyEventConsumer::processResponseEvent(ResponseEvent & eventResponse)
+inline void IEProxyEventConsumer::localProcessResponseEvent(ResponseEvent & eventResponse)
 {
     switch (eventResponse.getDataType() )
     {
@@ -114,7 +114,7 @@ inline void IEProxyEventConsumer::processResponseEvent(ResponseEvent & eventResp
     }
 }
 
-inline void IEProxyEventConsumer::processConnectEvent( ProxyConnectEvent & eventConnect )
+inline void IEProxyEventConsumer::localProcessConnectEvent( ProxyConnectEvent & eventConnect )
 {
     if ( eventConnect.getResponseId() == NEService::SI_SERVICE_CONNECTION_NOTIFY )
     {
@@ -137,14 +137,14 @@ void IEProxyEventConsumer::startEventProcessing( Event & eventElem )
             ProxyConnectEvent * eventConnect  = RUNTIME_CAST(&eventElem, ProxyConnectEvent);
             if ( eventConnect != NULL )
             {
-                processConnectEvent(*eventConnect);
+                localProcessConnectEvent(*eventConnect);
             }
             else if ( addrProxy.getChannel() == mProxyAddress.getChannel() )
             {
                 ResponseEvent * eventResponse = RUNTIME_CAST(&eventElem, ResponseEvent);
                 if ( eventResponse != NULL )
                 {
-                    processResponseEvent(*eventResponse);
+                    localProcessResponseEvent(*eventResponse);
                 }
                 else
                 {
@@ -166,7 +166,7 @@ void IEProxyEventConsumer::startEventProcessing( Event & eventElem )
         }
         else
         {
-            ; // ignore, not relevant event
+            // ignore, not relevant for target proxy event
         }
     }
     else

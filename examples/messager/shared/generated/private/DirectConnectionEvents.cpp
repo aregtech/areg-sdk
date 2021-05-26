@@ -135,7 +135,7 @@ DirectConnectionResponseEvent::~DirectConnectionResponseEvent( void )
 // DirectConnectionResponseEvent class, Methods
 //////////////////////////////////////////////////////////////////////////
 
-ServiceResponseEvent* DirectConnectionResponseEvent::cloneEventForTarget( const ProxyAddress & target ) const
+ServiceResponseEvent* DirectConnectionResponseEvent::cloneForTarget( const ProxyAddress & target ) const
 {
     return static_cast<ServiceResponseEvent *>( DEBUG_NEW DirectConnectionResponseEvent(target, static_cast<const RemoteResponseEvent &>(*this)) );
 }

@@ -302,6 +302,10 @@ void ServiceManager::_sendClientConnectedEvent( const ClientInfo & client, const
                 addrProxy.deliverServiceEvent(*proxyConnect);
         }
     }
+    else
+    {
+        TRACE_INFO("The client Proxy [ %s ] has NO CONNECTION yet. Notingto send", ProxyAddress::convAddressToPath(client.getAddress()).getString());
+    }
 }
 
 void ServiceManager::_sendClientDisconnectedEvent( const ClientInfo & client, const StubAddress & addrStub ) const

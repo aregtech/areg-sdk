@@ -135,7 +135,7 @@ CentralMessagerResponseEvent::~CentralMessagerResponseEvent( void )
 // CentralMessagerResponseEvent class, Methods
 //////////////////////////////////////////////////////////////////////////
 
-ServiceResponseEvent* CentralMessagerResponseEvent::cloneEventForTarget( const ProxyAddress & target ) const
+ServiceResponseEvent* CentralMessagerResponseEvent::cloneForTarget( const ProxyAddress & target ) const
 {
     return static_cast<ServiceResponseEvent *>( DEBUG_NEW CentralMessagerResponseEvent(target, static_cast<const RemoteResponseEvent &>(*this)) );
 }

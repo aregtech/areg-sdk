@@ -57,4 +57,21 @@
 #include "areg/base/GESwitches.h"
 #include "areg/base/GEMacros.h"
 
+#ifdef _DEBUG
+    #if ((defined(OUTPUT_DEBUG) && (OUTPUT_DEBUG != 0)) || (defined(_OUTPUT_DEBUG) && (_OUTPUT_DEBUG != 0)))
+        
+        #define OUTPUT_DEBUG
+        #define _OUTPUT_DEBUG
+
+    #else // !((defined(OUTPUT_DEBUG) && (OUTPUT_DEBUG != 0)) || (defined(_OUTPUT_DEBUG) && (_OUTPUT_DEBUG != 0)))
+
+        #undef  OUTPUT_DEBUG
+        #undef _OUTPUT_DEBUG
+    
+    #endif  // !((defined(OUTPUT_DEBUG) && (OUTPUT_DEBUG != 0)) || (defined(_OUTPUT_DEBUG) && (_OUTPUT_DEBUG != 0)))
+#else   // _NDEBUG
+        #undef  OUTPUT_DEBUG
+        #undef _OUTPUT_DEBUG
+#endif  // _DEBUG
+
 #endif  // AREG_BASE_GEGLOBAL_H

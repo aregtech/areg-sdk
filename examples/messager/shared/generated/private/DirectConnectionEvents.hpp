@@ -216,7 +216,7 @@ public:
      * \return  Cloned service response event object, which contains specified
      *          target proxy address.
      **/
-    virtual ServiceResponseEvent * cloneEventForTarget( const ProxyAddress & target ) const;
+    virtual ServiceResponseEvent * cloneForTarget( const ProxyAddress & target ) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

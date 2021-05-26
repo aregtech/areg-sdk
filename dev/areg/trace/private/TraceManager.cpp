@@ -728,7 +728,9 @@ void TraceManager::traceStartLogs( void )
     {
         setScopesActivity( true );
         mLoggerFile.openLogger();
+#if defined(_OUTPUT_DEBUG)
         mLoggerDebug.openLogger();
+#endif // !defined(_OUTPUT_DEBUG)
 
         mIsStarted = true;
     }
@@ -821,8 +823,8 @@ void TraceManager::onUpdateScopes(SortedStringList & scopeList)
 
 void TraceManager::traceMessage( const LogMessage & logMessage )
 {
-    mLoggerDebug.logMessage( static_cast<const NETrace::sLogMessage &>(logMessage) );
     mLoggerFile.logMessage( static_cast<const NETrace::sLogMessage &>(logMessage) );
+    mLoggerDebug.logMessage( static_cast<const NETrace::sLogMessage &>(logMessage) );
 
     if ( hasMoreEvents() == false )
     {

@@ -36,14 +36,15 @@ Application & Application::_getApplicationInstance( void )
 }
 
 Application::Application(void)
-    : mStartTracer          ( false )
-    , mConfigTracer         ( )
-    , mStartService         ( false )
-    , mStartTimer           ( false )
-    , mStartRouting         ( false )
-    , mConfigService        ( )
-    , mStorage              ( )
-    , mLock                 ( )
+    : mStartTracer  ( false )
+    , mConfigTracer ( )
+    , mStartService ( false )
+    , mStartTimer   ( false )
+    , mStartRouting ( false )
+    , mConfigService( )
+    , mAppQuit      (false, false)
+    , mLock         ( )
+    , mStorage      ( )
 {
     ; // do nothing
 }
@@ -95,6 +96,8 @@ void Application::initApplication(  bool startTracing   /*= true */
     {
         Application::configMessageRouting(fileRouterConfig);
     }
+
+    Application::_getApplicationInstance().mAppQuit.resetEvent();
 }
 
 void Application::releaseApplication(void)
@@ -459,4 +462,16 @@ NEMemory::uAlign Application::getStoredElement( const String & elemName )
 
     MAPPOS pos = theApp.mStorage.find( elemName );
     return (pos != NULL ? theApp.mStorage.valueAtPosition( pos ) : NEMemory::InvalidElement);
+}
+
+bool Application::waitAppQuit(unsigned int waitTimeout /*= IESynchObject::WAIT_INFINITE*/)
+{
+    Application & theApp = Application::_getApplicationInstance( );
+    return theApp.mAppQuit.lock(waitTimeout);
+}
+
+void Application::signalAppQuit(void)
+{
+    Application & theApp = Application::_getApplicationInstance( );
+    theApp.mAppQuit.setEvent();
 }

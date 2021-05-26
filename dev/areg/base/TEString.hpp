@@ -942,10 +942,10 @@ inline CharType TEString<CharType, Implement>::makeUpper( CharType ch ) const
 }
 
 template<typename CharType, class Implement /*= TEStringImpl<CharType>*/>
-inline NEMath::eCompare TEString<CharType, Implement>::compareString(  NEString::CharPos startPos
-                                                          , const CharType * strOther
-                                                          , NEString::CharCount charCount/*= NEString::CountAll  */
-                                                          , bool caseSensitive           /*= true                */ ) const
+inline NEMath::eCompare TEString<CharType, Implement>::compareString(   NEString::CharPos startPos
+                                                                      , const CharType * strOther
+                                                                      , NEString::CharCount charCount/*= NEString::CountAll  */
+                                                                      , bool caseSensitive           /*= true                */ ) const
 {
     const CharType * leftSide = getChars(startPos);
     const CharType * rightSide= strOther;

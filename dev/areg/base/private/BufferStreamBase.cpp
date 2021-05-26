@@ -91,7 +91,7 @@ unsigned int BufferStreamBase::read( String & asciiString ) const
     if ( data != NULL )
     {
         asciiString = reinterpret_cast<const char *>(data);
-        result      = asciiString.getUsedSpace();
+        result      = (asciiString.getLength() + 1) * sizeof(char);
         mReadPosition.setPosition(curPos + result, IECursorPosition::POSITION_BEGIN);
     }
 
@@ -111,7 +111,7 @@ unsigned int BufferStreamBase::read( WideString & wideString ) const
     if ( data != NULL )
     {
         wideString  = reinterpret_cast<const wchar_t *>(data);
-        result      = wideString.getUsedSpace();
+        result      = (wideString.getLength() + 1) * sizeof(wchar_t);
         mReadPosition.setPosition(curPos + result, IECursorPosition::POSITION_BEGIN);
     }
     return result;
@@ -163,8 +163,10 @@ unsigned int BufferStreamBase::write( const IEByteBuffer & buffer )
 unsigned int BufferStreamBase::write( const String & asciiString )
 {
     const char * buffer = asciiString.getString();
-    ASSERT(buffer != NULL_STRING);
-    return write( reinterpret_cast<const unsigned char *>(buffer), asciiString.getUsedSpace() );
+    buffer = buffer != NULL_STRING ? buffer : String::EmptyString;
+    unsigned int len = asciiString.getLength() + 1;
+
+    return write( reinterpret_cast<const unsigned char *>(buffer), len * sizeof(char) );
 }
 
 /**
@@ -173,8 +175,10 @@ unsigned int BufferStreamBase::write( const String & asciiString )
 unsigned int BufferStreamBase::write( const WideString & wideString )
 {
     const wchar_t * buffer = wideString.getString();
-    ASSERT(buffer != static_cast<const wchar_t *>(NULL));
-    return write( reinterpret_cast<const unsigned char *>(buffer), wideString.getUsedSpace() );
+    buffer = buffer != NULL_STRING_W ? buffer : WideString::EmptyString;
+    unsigned int len = wideString.getLength() + 1;
+
+    return write( reinterpret_cast<const unsigned char *>(buffer), len * sizeof(wchar_t) );
 }
 
 /**

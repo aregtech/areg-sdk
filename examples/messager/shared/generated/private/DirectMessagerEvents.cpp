@@ -135,7 +135,7 @@ DirectMessagerResponseEvent::~DirectMessagerResponseEvent( void )
 // DirectMessagerResponseEvent class, Methods
 //////////////////////////////////////////////////////////////////////////
 
-ServiceResponseEvent* DirectMessagerResponseEvent::cloneEventForTarget( const ProxyAddress & target ) const
+ServiceResponseEvent* DirectMessagerResponseEvent::cloneForTarget( const ProxyAddress & target ) const
 {
     return static_cast<ServiceResponseEvent *>( DEBUG_NEW DirectMessagerResponseEvent(target, static_cast<const RemoteResponseEvent &>(*this)) );
 }

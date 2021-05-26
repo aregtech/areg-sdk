@@ -27,7 +27,6 @@
  **/
 
 static const char * gModelName = "Test_SimpleService";  //!< The name of model
-SynchEvent gExit(true, false);                          //!< The global event to quit application.
 
 //////////////////////////////////////////////////////////////////////////
 //
@@ -101,7 +100,7 @@ int main()
         TRACE_DBG("Servicing model is loaded");
         
         // wait until 'gExit' event is signaled
-        gExit.lock(IESynchObject::WAIT_INFINITE);
+        Application::waitAppQuit(IESynchObject::WAIT_INFINITE);
 
         // stop and unload components
         Application::unloadModel(gModelName);

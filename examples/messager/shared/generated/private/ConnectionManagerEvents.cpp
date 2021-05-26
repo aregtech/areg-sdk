@@ -135,7 +135,7 @@ ConnectionManagerResponseEvent::~ConnectionManagerResponseEvent( void )
 // ConnectionManagerResponseEvent class, Methods
 //////////////////////////////////////////////////////////////////////////
 
-ServiceResponseEvent* ConnectionManagerResponseEvent::cloneEventForTarget( const ProxyAddress & target ) const
+ServiceResponseEvent* ConnectionManagerResponseEvent::cloneForTarget( const ProxyAddress & target ) const
 {
     return static_cast<ServiceResponseEvent *>( DEBUG_NEW ConnectionManagerResponseEvent(target, static_cast<const RemoteResponseEvent &>(*this)) );
 }

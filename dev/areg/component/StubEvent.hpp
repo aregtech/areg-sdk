@@ -287,20 +287,20 @@ private:
      * \brief   Processes request event
      * \param   requestEvent    The request event to process
      **/
-    void processRequestEvent( RequestEvent & requestEvent );
+    void localProcessRequestEvent( RequestEvent & requestEvent );
 
     /**
      * \brief   Processes notification request event.
      * \param   notifyRequest   The notification request event to process
      **/
-    void processNotifyRequestEvent( NotifyRequestEvent & notifyRequest );
+    void localProcessNotifyRequestEvent( NotifyRequestEvent & notifyRequest );
 
     /**
      * \brief   Processes connection update notification.
      *          Processes when service registered and when client connection changed.
      * \param   notifyConnect   The connection notification event.
      **/
-    void processConnectEvent( StubConnectEvent & notifyConnect );
+    void localProcessConnectEvent( StubConnectEvent & notifyConnect );
 
 private:
     /**

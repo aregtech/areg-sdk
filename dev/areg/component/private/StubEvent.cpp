@@ -95,7 +95,7 @@ IEStubEventConsumer::~IEStubEventConsumer( void )
     ; // do nothing
 }
 
-inline void IEStubEventConsumer::processRequestEvent( RequestEvent & requestEvent )
+inline void IEStubEventConsumer::localProcessRequestEvent( RequestEvent & requestEvent )
 {
     Component *curComponent   = Component::findComponentByName(requestEvent.getTargetStub().getRoleName());
     ComponentThread::setCurrentComponent(curComponent);
@@ -108,7 +108,7 @@ inline void IEStubEventConsumer::processRequestEvent( RequestEvent & requestEven
     ComponentThread::setCurrentComponent(NULL);
 }
 
-inline void IEStubEventConsumer::processNotifyRequestEvent( NotifyRequestEvent & notifyRequest )
+inline void IEStubEventConsumer::localProcessNotifyRequestEvent( NotifyRequestEvent & notifyRequest )
 {
     Component *curComponent   = Component::findComponentByName(notifyRequest.getTargetStub().getRoleName());
     ComponentThread::setCurrentComponent(curComponent);
@@ -126,7 +126,7 @@ inline void IEStubEventConsumer::processNotifyRequestEvent( NotifyRequestEvent &
     ComponentThread::setCurrentComponent(NULL);
 }
 
-inline void IEStubEventConsumer::processConnectEvent( StubConnectEvent & notifyConnect )
+inline void IEStubEventConsumer::localProcessConnectEvent( StubConnectEvent & notifyConnect )
 {
     if ( notifyConnect.getRequestId() == static_cast<unsigned int>(NEService::SI_SERVICE_CONNECTION_NOTIFY) )
     {
@@ -154,20 +154,20 @@ void IEStubEventConsumer::startEventProcessing( Event & eventElem )
             RequestEvent* reqEvent = RUNTIME_CAST(stubEvent, RequestEvent);
             if (reqEvent != NULL)
             {
-                processRequestEvent(*reqEvent);
+                localProcessRequestEvent(*reqEvent);
             }
             else
             {
                 NotifyRequestEvent * notifyRequest = RUNTIME_CAST(stubEvent, NotifyRequestEvent);
                 if ( notifyRequest != NULL )
                 {
-                    processNotifyRequestEvent(*notifyRequest);
+                    localProcessNotifyRequestEvent(*notifyRequest);
                 }
                 else
                 {
                     StubConnectEvent * stubConnectEvent = RUNTIME_CAST(stubEvent, StubConnectEvent);
                     if ( stubConnectEvent != NULL )
-                        processConnectEvent(*stubConnectEvent);
+                        localProcessConnectEvent(*stubConnectEvent);
                     else
                         processStubEvent(*stubEvent);
                 }

@@ -169,20 +169,20 @@ IENotificationEventConsumer & ProxyBase::ServiceAvailableEvent::getConsumer( voi
 //////////////////////////////////////////////////////////////////////////
 // ProxyBase class, static methods
 //////////////////////////////////////////////////////////////////////////
-ProxyBase * ProxyBase::findOrCreateProxy(  const char * roleName
-                                             , const NEService::SInterfaceData & serviceIfData
-                                             , IEProxyListener & connect
-                                             , FuncCreateProxy funcCreate
-                                             , const char * ownerThread /*= static_cast<const char *>(NULL)*/)
+ProxyBase * ProxyBase::findOrCreateProxy( const char * roleName
+                                        , const NEService::SInterfaceData & serviceIfData
+                                        , IEProxyListener & connect
+                                        , FuncCreateProxy funcCreate
+                                        , const char * ownerThread /*= static_cast<const char *>(NULL)*/)
 {
     return ProxyBase::findOrCreateProxy(roleName, serviceIfData, connect, funcCreate, DispatcherThread::getDispatcherThread(ownerThread) );
 }
 
-ProxyBase * ProxyBase::findOrCreateProxy(  const char * roleName
-                                             , const NEService::SInterfaceData & serviceIfData
-                                             , IEProxyListener & connect
-                                             , FuncCreateProxy funcCreate
-                                             , DispatcherThread & ownerThread )
+ProxyBase * ProxyBase::findOrCreateProxy( const char * roleName
+                                        , const NEService::SInterfaceData & serviceIfData
+                                        , IEProxyListener & connect
+                                        , FuncCreateProxy funcCreate
+                                        , DispatcherThread & ownerThread )
 {
     ProxyBase*   proxy = NULL;
     ProxyAddress Key(serviceIfData, roleName, ownerThread.isValid() ? ownerThread.getName().getString() : static_cast<const char *>(NULL) );
@@ -293,13 +293,13 @@ void ProxyBase::serviceConnectionUpdated( const StubAddress & Server, const Chan
         mProxyAddress.setChannel(Channel);
         if ( Status == NEService::ServiceConnected )
         {
-            mIsConnected        = true;
-            mStubAddress    = Server;
+            mIsConnected = true;
+            mStubAddress = Server;
         }
         else
         {
-            mIsConnected        = false;
-            mStubAddress    = StubAddress::INVALID_STUB_ADDRESS;
+            mIsConnected = false;
+            mStubAddress = StubAddress::INVALID_STUB_ADDRESS;
             mProxyData.resetStates();
         }
 

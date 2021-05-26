@@ -234,8 +234,7 @@ void Component::waitComponentCompletion( unsigned int waitTimeout )
     }
 }
 
-IEWorkerThreadConsumer* Component::workerThreadConsumer( const char* /* consumerName       */
-                                                            , const char* /* workerThreadName   */)
+IEWorkerThreadConsumer* Component::workerThreadConsumer( const char* /* consumerName */, const char* /* workerThreadName */)
 {
     return NULL;
 }

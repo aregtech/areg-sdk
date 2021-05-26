@@ -13,8 +13,7 @@
 #include "ServicingComponent.hpp"
 #include "areg/trace/GETrace.h"
 #include "areg/component/ComponentThread.hpp"
-
-extern SynchEvent gExit; //!< The global event to quit application.
+#include "areg/appbase/Application.hpp"
 
 Component * ServicingComponent::CreateComponent(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
 {
@@ -122,6 +121,6 @@ void ServicingComponent::processTimer(Timer & timer)
         ASSERT(mCount == TIMER_EVENTS);
 
         TRACE_INFO("The timer is not actuve anymore, signaling quit event");
-        gExit.setEvent();
+        Application::signalAppQuit();
     }
 }

@@ -12,7 +12,6 @@
 /product/
 /tools/*.zip
 /.metadata/
-/.metadata/
 
 /dev/areg/Debug/*
 /dev/areg/Release/*
@@ -67,3 +66,13 @@
 /examples/09_duplicate/release/
 /examples/09_duplicate/.settings/
 /examples/09_duplicate/logs/
+
+/examples/10_svchello/debug/
+/examples/10_svchello/release/
+/examples/10_svchello/.settings/
+/examples/10_svchello/logs/
+
+/examples/11_svcmix/debug/
+/examples/11_svcmix/release/
+/examples/11_svcmix/.settings/
+/examples/11_svcmix/logs/

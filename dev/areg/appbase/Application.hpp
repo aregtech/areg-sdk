@@ -321,6 +321,20 @@ public:
      **/
     static NEMemory::uAlign getStoredElement( const String & elemName );
 
+    /**
+     * \brief   Locks the calling thread until either application quit signal is set, or waiting timeout is expired.
+     * \param   waitTimeout The waiting timeout for application quit signal.
+     *                      If IESynchObject::WAIT_INFINITE, waits until signal is set.
+     * \return  Returns true, if application quit event signal is set. If timeout expired, returns false.
+     **/
+    static bool waitAppQuit( unsigned int waitTimeout = IESynchObject::WAIT_INFINITE);
+
+    /**
+     * \brief   Sets application quit signal event. So that, the waiting signal thread can be released
+     *          to make further clean-ups and exit application.
+     **/
+    static void signalAppQuit( void );
+
 //////////////////////////////////////////////////////////////////////////
 // Hidden members
 //////////////////////////////////////////////////////////////////////////
@@ -350,19 +364,24 @@ private:
      **/
     String          mConfigService;
     /**
-     * \brief   The application named storage.
+     * \brief   Exit application event.
      **/
+    SynchEvent      mAppQuit;
+    /**
+     * \brief   Synchronization object
+     **/
+    CriticalSection mLock;
 #if _MSC_VER
     #pragma warning(disable: 4251)
 #endif  // _MSC_VER
+    /**
+     * \brief   The application named storage.
+     **/
     MapAppStorage   mStorage;
 #if _MSC_VER
     #pragma warning(default: 4251)
 #endif  // _MSC_VER
-        /**
-     * \brief   Synchronization object
-     **/
-    CriticalSection   mLock;
+
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor

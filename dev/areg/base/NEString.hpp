@@ -1640,7 +1640,7 @@ inline NEString::SString<CharDst> * NEString::initString(  const NEString::SStri
     NEString::SString<CharDst> * result = getInvalidString<CharDst>( );
     if ( isValid<CharSrc>(strSource) )
     {
-        result          = NEString::initString<CharDst>(strSource.strUsed, encode, blockSize);
+        result          = NEString::initString<CharDst>(strSource.strUsed == 0 ? 1 : strSource.strUsed, encode, blockSize);
         result->strUsed = copyString<CharDst, CharSrc>( result->strBuffer, result->strSpace, strSource.strBuffer, strSource.strUsed );
     }
     return result;
@@ -1653,7 +1653,8 @@ inline NEString::SString<CharDst> * NEString::initString( const CharSrc * strSou
                                                         , NEString::CharCount blockSize /*= DEFAULT_BLOCK_SIZE  */ )
 {
     charCount = charCount == NEString::CountAll ? NEString::getStringLength<CharSrc>( strSource ) : charCount;
-    NEString::SString<CharDst> * result = initString<CharDst>( charCount, encode, blockSize );
+    unsigned int space = charCount == 0 && strSource != NULL ? 1 : charCount;
+    NEString::SString<CharDst> * result = initString<CharDst>( space, encode, blockSize );
     if ( isValid<CharDst>( result ) )
     {
         result->strUsed = copyString<CharDst, CharSrc>( result->strBuffer, result->strSpace, strSource, charCount );
@@ -1672,8 +1673,9 @@ NEString::SString<CharDst> * NEString::reallocSpace(  const NEString::SString<Ch
     CharCount newLength = getStringLength<CharSrc>(strSource) + addCount;
     if ( oldLength <= newLength )
     {
-        result = initString<CharDst>(newLength, strSource.strEncoding != NEString::EncodeInvalid ? strSource.strEncoding : encode, blockSize);
-        if (isValid<CharSrc>(strSource) && isValid<CharDst>(result))
+        newLength   = newLength == 0 && isValid<CharSrc>(strSource) ? 1 : newLength;
+        result      = initString<CharDst>(newLength, strSource.strEncoding != NEString::EncodeInvalid ? strSource.strEncoding : encode, blockSize);
+        if (isValid<CharDst>(result))
         {
             result->strUsed = copyString<CharDst, CharSrc>(result->strBuffer, result->strSpace, strSource.strBuffer, strSource.strUsed);
         }

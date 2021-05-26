@@ -19,8 +19,8 @@
 #include "areg/base/private/NEDebug.hpp"
 
 DebugOutputLogger::DebugOutputLogger( IETraceConfiguration & tracerConfig )
-    : LoggerBase     ( tracerConfig )
-    , IEOutStream      ( )
+    : LoggerBase        ( tracerConfig )
+    , IEOutStream       ( )
 
     , mIsOpened         ( false )
     , mOutputMessageA   ( )
@@ -35,6 +35,7 @@ DebugOutputLogger::~DebugOutputLogger(void)
 
 bool DebugOutputLogger::openLogger(void)
 {
+#if defined(_OUTPUT_DEBUG)
     if ( mIsOpened == false )
     {
         const IETraceConfiguration & traceConfig = getTraceConfiguration();
@@ -43,7 +44,6 @@ bool DebugOutputLogger::openLogger(void)
         const TraceProperty & prop = traceConfig.propertyDebugOutput();
         if ( prop.isValid() && static_cast<bool>(prop.getValue()) )
         {
-#ifdef  _DEBUG
 
             mIsOpened = createLayouts( );
 
@@ -65,22 +65,22 @@ bool DebugOutputLogger::openLogger(void)
 
                 logMessage(logMsgHello);
             }
-#endif  // _DEBUG
         }
         else
         {
             ; // no property was set
         }
     }
+#endif  // !defined(_OUTPUT_DEBUG)
 
     return mIsOpened;
 }
 
 void DebugOutputLogger::closeLogger(void)
 {
+#if defined(_OUTPUT_DEBUG)
     if ( mIsOpened )
     {
-#ifdef  _DEBUG
         Process & curProcess = Process::getInstance();
         NETrace::sLogMessage logMsgHello;
         NEMemory::zeroData<NETrace::sLogMessage>(logMsgHello);
@@ -96,16 +96,18 @@ void DebugOutputLogger::closeLogger(void)
         String::formatString(logMsgHello.lmTrace.traceMessage, NETrace::LOG_MESSAGE_BUFFER_SIZE, LoggerBase::FORMAT_MESSAGE_BYE, curProcess.getFullPath(), curProcess.getId());
 
         logMessage(logMsgHello);
-#endif  // _DEBUG
     }
+#endif  // !defined(_OUTPUT_DEBUG)
 
     releaseLayouts();
     mIsOpened = false;
 }
 
+#if defined(_OUTPUT_DEBUG)
 bool DebugOutputLogger::logMessage(const NETrace::sLogMessage & logMessage)
 {
     bool result = false;
+
     if ( mIsOpened )
     {
         switch (logMessage.lmHeader.logType)
@@ -132,6 +134,16 @@ bool DebugOutputLogger::logMessage(const NETrace::sLogMessage & logMessage)
     return result;
 }
 
+#else // !defined(_OUTPUT_DEBUG)
+
+bool DebugOutputLogger::logMessage(const NETrace::sLogMessage & /*logMessage*/)
+{
+    return false;
+}
+
+#endif // !defined(_OUTPUT_DEBUG)
+
+
 bool DebugOutputLogger::isLoggerOpened(void) const
 {
     return mIsOpened;
@@ -149,23 +161,26 @@ unsigned int DebugOutputLogger::write(const IEByteBuffer & buffer)
 
 unsigned int DebugOutputLogger::write( const String & asciiString )
 {
-#ifdef _DEBUG
+#if defined(_OUTPUT_DEBUG)
     mOutputMessageA += asciiString;
-#endif  // WIN32
+#endif  // defined(_OUTPUT_DEBUG)
     return asciiString.getUsedSpace();
 }
 
 unsigned int DebugOutputLogger::write( const WideString & wideString )
 {
-#ifdef _DEBUG
+#if defined(_OUTPUT_DEBUG)
     mOutputMessageA += wideString;
-#endif  // WIN32
+#endif  // !defined(_OUTPUT_DEBUG)
     return wideString.getUsedSpace();
 }
 
 void DebugOutputLogger::flush(void)
 {
+#if defined(_OUTPUT_DEBUG)
     NEDebug::outputMessageOS(mOutputMessageA.getString());
+#endif // !defined(_OUTPUT_DEBUG)
+
     mOutputMessageA.clear();
 }
 

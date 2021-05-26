@@ -117,8 +117,11 @@ bool Event::registerForThread( const char* whichThread )
 
 bool Event::registerForThread( DispatcherThread * dispatchThread )
 {
-    ASSERT((dispatchThread == NULL) || dispatchThread->isValid());
-    mTargetThread = (dispatchThread != NULL) && dispatchThread->isReady() ? dispatchThread : NULL;
+    if ((dispatchThread != NULL) && dispatchThread->isValid())
+    {
+        mTargetThread = dispatchThread->isReady() ? dispatchThread : NULL;
+    }
+
     return (mTargetThread != NULL);
 }
 
