@@ -77,7 +77,7 @@ void ServiceClient::onConnectedClientsUpdate(const NEHelloWorld::ConnectionList 
 {
     TRACE_SCOPE(examples_11_svcmix_ServiceClient_onConnectedClientsUpdate);
     TRACE_DBG("Active client list of [ %s ] service is updated, active clients [ %d ], data is [ %s ]"
-                    , getServiceRoleName().getString()
+                    , getServiceRole().getString()
                     , ConnectedClients.getSize()
                     , NEService::getString(state));
 }
@@ -85,13 +85,13 @@ void ServiceClient::onConnectedClientsUpdate(const NEHelloWorld::ConnectionList 
 void ServiceClient::onRemainOutputUpdate(short RemainOutput, NEService::eDataStateType state)
 {
     TRACE_SCOPE(examples_11_svcmix_ServiceClient_onRemainOutputUpdate);
-    TRACE_DBG("Service [ %s ]: Remain greeting outputs [ %d ], data is [ %s ]", getServiceRoleName().getString(), RemainOutput, NEService::getString(state));
+    TRACE_DBG("Service [ %s ]: Remain greeting outputs [ %d ], data is [ %s ]", getServiceRole().getString(), RemainOutput, NEService::getString(state));
 }
 
 void ServiceClient::responseHelloWorld(const NEHelloWorld::sConnectedClient & clientInfo)
 {
     TRACE_SCOPE(examples_11_svcmix_ServiceClient_responseHelloWorld);
-    TRACE_DBG("Service [ %s ]: Made output of [ %s ], client ID [ %d ]", getServiceRoleName().getString(), clientInfo.ccName.getString(), clientInfo.ccID);
+    TRACE_DBG("Service [ %s ]: Made output of [ %s ], client ID [ %d ]", getServiceRole().getString(), clientInfo.ccName.getString(), clientInfo.ccID);
     ASSERT(clientInfo.ccName == mTimer.getName());
     mID = clientInfo.ccID;
 
@@ -142,14 +142,9 @@ inline String ServiceClient::timerName( Component & owner ) const
     String result = "";
     result += owner.getRoleName();
     result += NEUtilities::DEFAULT_SPECIAL_CHAR;
-    result += getTargetRoleName();
+    result += getServiceRole();
     result += NEUtilities::DEFAULT_SPECIAL_CHAR;
     result += getServiceName();
     
     return result;
-}
-
-inline const String & ServiceClient::getTargetRoleName(void) const
-{
-    return getProxy()->getProxyAddress().getRoleName();
 }

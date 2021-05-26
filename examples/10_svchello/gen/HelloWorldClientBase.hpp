@@ -6,7 +6,7 @@
 /************************************************************************
  * (c) copyright    2021
  *                  Create by AREG SDK code generator tool from source HelloWorld.
- * Generated at     25.05.2021  23:09:10 GMT+02:00 
+ * Generated at     26.05.2021  15:50:40 GMT+02:00 
  ************************************************************************/
 
 /************************************************************************
@@ -371,7 +371,7 @@ protected:
     /**
      * \brief Returns target service component role name.
      **/
-    inline const String & getServiceRoleName( void ) const;
+    inline const String & getServiceRole( void ) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -572,10 +572,10 @@ inline const HelloWorldProxy * HelloWorldClientBase::getProxy( void ) const
     return mProxy;
 }
 
-inline const String & HelloWorldClientBase::getServiceRoleName( void ) const
+inline const String & HelloWorldClientBase::getServiceRole( void ) const
 {
     ASSERT(mProxy != NULL);
-    return mProxy->getStubAddress().getRoleName();
+    return mProxy->getProxyAddress().getRoleName();
 }
 
 #endif   // GEN_HELLOWORLDCLIENTBASE_HPP
