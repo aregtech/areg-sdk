@@ -11,7 +11,7 @@
 #include "areg/component/ProxyAddress.hpp"
 #include "areg/base/RemoteMessage.hpp"
 
-const NEMemory::sRemoteMessage     NEConnection::MessageHelloServer       =
+AREG_API const NEMemory::sRemoteMessage     NEConnection::MessageHelloServer       =
 {
     {
         {   /*rbhBufHeader*/
@@ -29,7 +29,7 @@ const NEMemory::sRemoteMessage     NEConnection::MessageHelloServer       =
         , NEMemory::ResultSucceed                       // rbhResult
         , NEService::SEQUENCE_NUMBER_NOTIFY             // rbhSequenceNr
     }
-    , {static_cast<char>(0)}
+    , {static_cast<char>(0)}                            // rbData
 };
 
 const NEMemory::sRemoteMessage     NEConnection::MessageByeServer         =
@@ -184,9 +184,9 @@ inline static bool _isValidSource( ITEM_ID client )
     return ((client != NEService::COOKIE_UNKNOWN) && client != (NEService::COOKIE_LOCAL));
 }
 
-inline static bool _isValidBrokerCookie( ITEM_ID broker )
+inline static bool _isValidRouterCookie( ITEM_ID router )
 {
-    return broker == NEService::COOKIE_ROUTER;
+    return (router == NEService::COOKIE_ROUTER);
 }
 
 inline static void _createRegisterRequest( RemoteMessage & out_msgRegister, ITEM_ID source, NEService::eServiceRequestType reqType, const StubAddress & addrService )
@@ -199,6 +199,7 @@ inline static void _createRegisterRequest( RemoteMessage & out_msgRegister, ITEM
         out_msgRegister << addrService;
         out_msgRegister.bufferCompletionFix();
     }
+
 }
 
 inline static void _createRegisterRequest( RemoteMessage & out_msgRegister, ITEM_ID source, NEService::eServiceRequestType reqType, const ProxyAddress & addrService )
@@ -237,7 +238,7 @@ inline static void _createRegistereNotify( RemoteMessage & out_msgNotify, ITEM_I
     }
 }
 
-RemoteMessage NEConnection::createBrokerRegisterService( const StubAddress & stub, ITEM_ID source )
+RemoteMessage NEConnection::createRouterRegisterService( const StubAddress & stub, ITEM_ID source )
 {
     RemoteMessage msgResult;
     if ( stub.isServiceRemote() && _isValidSource(source) )
@@ -249,7 +250,7 @@ RemoteMessage NEConnection::createBrokerRegisterService( const StubAddress & stu
     return msgResult;
 }
 
-RemoteMessage NEConnection::createBrokerRegisterClient( const ProxyAddress & proxy, ITEM_ID source )
+RemoteMessage NEConnection::createRouterRegisterClient( const ProxyAddress & proxy, ITEM_ID source )
 {
     RemoteMessage msgResult;
     if ( proxy.isServiceRemote() && _isValidSource(source) )
@@ -261,7 +262,7 @@ RemoteMessage NEConnection::createBrokerRegisterClient( const ProxyAddress & pro
     return msgResult;
 }
 
-RemoteMessage NEConnection::createBrokerUnregisterService( const StubAddress & stub, ITEM_ID source )
+RemoteMessage NEConnection::createRouterUnregisterService( const StubAddress & stub, ITEM_ID source )
 {
     RemoteMessage msgResult;
     if ( stub.isServiceRemote() && _isValidSource(source) )
@@ -273,7 +274,7 @@ RemoteMessage NEConnection::createBrokerUnregisterService( const StubAddress & s
     return msgResult;
 }
 
-RemoteMessage NEConnection::createBrokerUnregisterClient( const ProxyAddress & proxy, ITEM_ID source )
+RemoteMessage NEConnection::createRouterUnregisterClient( const ProxyAddress & proxy, ITEM_ID source )
 {
     RemoteMessage msgResult;
     if ( proxy.isServiceRemote() && _isValidSource(source) )

@@ -111,7 +111,7 @@ void ModuleIdLayout::logMessage( const NETrace::sLogMessage & msgLog, IEOutStrea
     if ( msgLog.lmHeader.logModuleId != 0 )
     {
         char buffer[16];
-        String::formatString(buffer, 16, "%p", msgLog.lmHeader.logModuleId);
+        String::formatString(buffer, 16, "%p", static_cast<id_type>(msgLog.lmHeader.logModuleId));
         stream.write(buffer);
     }
 }
@@ -252,8 +252,8 @@ void ThreadIdLayout::logMessage( const NETrace::sLogMessage & msgLog, IEOutStrea
 {
     if ( msgLog.lmTrace.traceThreadId != 0 )
     {
-        char buffer[16];
-        String::formatString(buffer, 16, "%p", msgLog.lmTrace.traceThreadId);
+        char buffer[32];
+        String::formatString(buffer, 32, "%p", static_cast<id_type>(msgLog.lmTrace.traceThreadId));
         stream.write(buffer);
     }
 }

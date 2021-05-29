@@ -6,7 +6,7 @@
 /************************************************************************
  * (c) copyright    2021
  *                  Create by AREG SDK code generator tool from source HelloWorld.
- * Generated at     26.05.2021  15:50:46 GMT+02:00 
+ * Generated at     27.05.2021  03:25:20 GMT+02:00 
  ************************************************************************/
 
 /************************************************************************
@@ -40,7 +40,7 @@ class DispatcherThread;
  *              Client base object. This object should be inherited
  *              and overrides should be implemented.
  *
- *              DESCRIPTION MISSED
+ *              Simple Service Interface to demonstrate working features of AREG SDK.
  **/
 class HelloWorldClientBase  : public    IEProxyListener, private ClientBase
 {

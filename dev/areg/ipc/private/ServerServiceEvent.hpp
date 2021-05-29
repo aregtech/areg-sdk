@@ -19,8 +19,8 @@
 // ServerServiceEventData class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   The broker side service event data. Used for message broker and
- *          connection service communication
+ * \brief   The routing service event data. Used for communication with
+ *          message router.
  **/
 class ServerServiceEventData
 {
@@ -33,8 +33,8 @@ public:
      **/
     typedef enum E_ServerServiceCommands
     {
-          CMD_StartService          //!< Sent to start message broker server connection service
-        , CMD_StopService           //!< Sent to stop message broker server connection service
+          CMD_StartService          //!< Sent to start message router connection service
+        , CMD_StopService           //!< Sent to stop message router connection service
         , CMD_ServiceSendMsg        //!< Sent to notify to sent messages to connected client
         , CMD_ServiceReceivedMsg    //!< Sent to notify received message from connected client
     } eServerServiceCommands;

@@ -181,28 +181,30 @@ private:
     static void _stopServiceManager( void );
 
 /************************************************************************/
-// Broker client start / stop functions
+// Message router client start / stop functions
 /************************************************************************/
 
     /**
-     * \brief   Call to configure broker client. If passed NULL, it will use
-     *          default broker configuration file. This call will not start client
-     *          automatically. To start broker client, call BrokerClientStart()
+     * \brief   Call to configure router client. If passed NULL, it will use
+     *          default router configuration file. This call will not start client
+     *          automatically. To start router client, call _routingServiceStart()
      *          manually.
-     * \param   configFile  The configuration file of broker client.
+     * \param   configFile  The configuration file of router client.
      *                      If NULL, it will load default configuration file.
      * \return  Returns true if succeeded to load configuration file.
      *          Otherwise, it returns false.
+     * \see     _routingServiceStart
      **/
     static bool _routingServiceConfigure( const char * configFile = NULL );
 
     /**
      * \brief   Call to start the client part of remove Routing Service.
-     * \param   configFile  If not NULL, the broker will be first configured.
-     *                      If NULL and broker was not configured, it will use
+     * \param   configFile  If not NULL, the router will be first configured.
+     *                      If NULL and router was not configured, it will use
      *                      default configuration file.
-     *                      If NULL and broker was configured, it will ignore configuration.
-     * \return  Returns true if succeeded to start broker client.
+     *                      If NULL and router was configured, it will ignore configuration.
+     * \return  Returns true if succeeded to start router client.
+     * \see     _routingServiceConfigure, _routingServiceStop
      **/
     static bool _routingServiceStart( const char * configFile = NULL );
 
@@ -212,12 +214,14 @@ private:
      *          port number set via configuration file.
      * \param   ipAddress   Should be valid IP-Address of remote Routing Service.
      * \param   portNr      Should be valid Port Number of remote Routing Service.
-     * \return  Returns true if Broker successfully started.
+     * \return  Returns true if router client successfully started.
+     * \see     _routingServiceConfigure, _routingServiceStop
      **/
     static bool _routingServiceStart( const char * ipAddress, unsigned short portNr );
 
     /**
-     * \brief   Call to stop broker client.
+     * \brief   Call to stop router client.
+     * \see     _routingServiceStart
      **/
     static void _routingServiceStop( void );
 
@@ -249,7 +253,7 @@ private:
 //////////////////////////////////////////////////////////////////////////
 
 /************************************************************************/
-// IEBrokerServerEventConsumer overrides
+// IEServiceManagerEventConsumer overrides
 /************************************************************************/
 
     /**
@@ -288,7 +292,7 @@ private:
 
     /**
      * \brief   Call to receive list of registered remote stub server services, created in current module. 
-     *          Called when establishing connection with broker and the system needs 
+     *          Called when establishing connection with router and the system needs 
      *          to send registration messages. On output out_listStubs
      *          contains list of remote stub server services in module.
      * \param   out_listStubs       On output, this contains list of remote stubs, created in current module.
@@ -298,7 +302,7 @@ private:
 
     /**
      * \brief   Call to receive list of registered remote proxy services, created in current module. 
-     *          Called when establishing connection with broker and the system needs 
+     *          Called when establishing connection with router and the system needs 
      *          to send registration messages. On output out_lisProxies
      *          contains list of remote proxy client services in module.
      * \param   out_lisProxies      On output, this contains list of remote proxies, created in current module.

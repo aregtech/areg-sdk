@@ -25,7 +25,7 @@ class ClientConnection;
 // ClientSendThread class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   The message sender thread. All messages to be sent to remote Service Broker
+ * \brief   The message sender thread. All messages to be sent to remote routing service
  *          are queued in message sender thread. 
  **/
 class AREG_API ClientSendThread : public    DispatcherThread
@@ -97,7 +97,7 @@ private:
      **/
     IERemoteServiceHandler &    mRemoteService;
     /**
-     * \brief   The instance of connection to send messages from remote Service Broker.
+     * \brief   The instance of connection to send messages from remote routing service.
      **/
     ClientConnection &        mConnection;
 

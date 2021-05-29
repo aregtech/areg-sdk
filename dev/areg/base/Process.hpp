@@ -45,6 +45,21 @@ public:
      **/
     static const ITEM_ID    UNKNOWN_PROCESS     /*= -1*/;
 
+    /**
+     * \brief   Process environment. Currently support only 32- or 64-bit processes.
+     **/
+    typedef enum E_ProcEnv
+    {
+          ProcEnvUnknown    = 0
+        , ProcEnv32Bits     = sizeof(uint32_t)
+        , ProcEnv64Bits     = sizeof(uint64_t)
+    } eProcEnv;
+
+    /**
+     * \brief   Converts and returns the string value of Process::eProcEnv;
+     **/
+    static inline const char * getString( Process::eProcEnv  val );
+
 //////////////////////////////////////////////////////////////////////////
 // Static members
 //////////////////////////////////////////////////////////////////////////
@@ -110,6 +125,11 @@ public:
     inline ITEM_ID getId( void ) const;
 
     /**
+     * \brief   Returns process environment. It is either 32- or 64-bits.
+     **/
+    inline Process::eProcEnv getEnvironment( void ) const;
+
+    /**
      * \brief   returns the value of the environment variable var, 
      *          or an empty string if
      *            - either no such environment variable exists (or is empty)
@@ -131,6 +151,10 @@ private:
 // Member variables
 //////////////////////////////////////////////////////////////////////////
 private:
+    /**
+     * \brief   The process environment
+     **/
+    const eProcEnv  mProcEnv;
     /**
      * \brief   The ID of process
      **/
@@ -200,6 +224,26 @@ inline const char * Process::getFullPath(void) const
 inline ITEM_ID Process::getId(void) const
 {
     return mProcessId;
+}
+
+inline Process::eProcEnv Process::getEnvironment( void ) const
+{
+    return mProcEnv;
+}
+
+inline const char * Process::getString( Process::eProcEnv  val )
+{
+    switch (val)
+    {
+    case Process::ProcEnv32Bits:
+        return "32-bits";
+    case Process::ProcEnv64Bits:
+        return "64-bits";
+    case Process::ProcEnvUnknown:
+        return "unknown bits";
+    default:
+        return "ERR: Unexpected Process::eProcEnv value";
+    }
 }
 
 #endif  // AREG_BASE_PROCESS_HPP

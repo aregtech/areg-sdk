@@ -53,11 +53,7 @@ const Channel & Channel::operator = ( const Channel & source )
 String Channel::convToString( void ) const
 {
     String result;
-#if defined(_BIT64)
     return result.formatString("%llu.%llu.%llu", mSource, mTarget, mCookie);
-#else
-    return result.formatString("%u.%u.%u", mSource, mTarget, mCookie);
-#endif
 }
 
 const Channel & Channel::convFromString(const char * channel)
@@ -72,15 +68,9 @@ const Channel & Channel::convFromString(const char * channel)
     pos = temp.substring( target, _CHANNEL_SEPARATOR, pos );
     pos = temp.substring( cookie, _CHANNEL_SEPARATOR, pos );
 
-#if defined(_BIT64)
     mSource = static_cast<ITEM_ID>( source.convToUInt64() );
     mTarget = static_cast<ITEM_ID>( target.convToUInt64() );
     mCookie = static_cast<ITEM_ID>( cookie.convToUInt64() );
-#else
-    mSource = static_cast<ITEM_ID>( source.convToUInt32() );
-    mTarget = static_cast<ITEM_ID>( target.convToUInt32() );
-    mCookie = static_cast<ITEM_ID>( cookie.convToUInt32() );
-#endif
 
     return (*this);
 }

@@ -33,8 +33,8 @@ class ServicingComponent    : public    Component
 // Constants
 //////////////////////////////////////////////////////////////////////////
 private:
-    static const unsigned int  TIMER_TIMEOUT   = 137;   //!< Timer timeout in millisecongs
-    static const unsigned int  TIMER_EVENTS    = 27;    //!< Fired timer count.
+    static const unsigned int   TIMER_TIMEOUT   = 137;   //!< Timer timeout in millisecongs
+    static const int            TIMER_EVENTS    = 27;    //!< Fired timer count.
 
 //////////////////////////////////////////////////////////////////////////
 // Static methods

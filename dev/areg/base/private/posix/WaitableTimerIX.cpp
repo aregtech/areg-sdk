@@ -24,7 +24,7 @@ void WaitableTimerIX::_posixTimerRoutine(union sigval si)
 {
     WaitableTimerIX *timer = reinterpret_cast<WaitableTimerIX *>(si.sival_ptr);
 
-    OUTPUT_DBG("Fired waitable timer [ %p ], processing in thread [ %p ]", timer, pthread_self());
+    OUTPUT_DBG("Fired waitable timer [ %p ], processing in thread [ %p ]", timer, reinterpret_cast<id_type>(pthread_self()));
     if ( timer != NULL )
     {
         timer->_timerExpired();
@@ -219,7 +219,7 @@ inline void WaitableTimerIX::_timerExpired(void)
 #ifdef DEBUG
         else
         {
-            OUTPUT_WARN("The waitaible timer was previousely canceled, ignoring processing");
+            OUTPUT_WARN("The waitable timer was previously canceled, ignoring processing");
         }
 #endif // DEBUG
 

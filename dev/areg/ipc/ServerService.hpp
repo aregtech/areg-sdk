@@ -39,8 +39,8 @@ class IERemoteServiceConsumer;
 // ServerService class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   The server side connection service. Used by message broker to
- *          accept application connections.
+ * \brief   The server side connection service. Used by message router to
+ *          accept service connections.
  **/
 class AREG_API ServerService    : public    IERemoteService
                                 , private   DispatcherThread
@@ -135,11 +135,11 @@ public:
     virtual bool configureRemoteServicing( const char * configFile );
 
     /**
-     * \brief   Call manually to set service broker host name and port number.
+     * \brief   Call manually to set routing service host name and port number.
      *          Note, if remote service is already started, this call will change
      *          data, but will not restart service.
-     * \param   hostName    IP-address or name of service broker host.
-     * \param   portNr      Port number of service broker service.
+     * \param   hostName    IP-address or host name of routing service to connect.
+     * \param   portNr      Port number of routing service to connect.
      **/
     virtual void setRemoteServiceAddress( const char * hostName, unsigned short portNr );
 
@@ -261,23 +261,23 @@ protected:
 
     /**
      * \brief   Call to receive list of registered remote stub server services, created in current module. 
-     *          Called when establishing connection with broker and the system needs 
-     *          to send registration messages. On output out_listStubs
-     *          contains list of remote stub server services in module.
-     * \param   out_listStubs       On output, this contains list of remote stubs, created in current module.
+     *          Called when establishing connection with router and when the system needs  to send 
+     *          registration messages. On output out_listStubs parameter  contains list of remote stub 
+     *          services in module.
+     * \param   out_listStubs   On output, this contains list of remote stubs, created in current module.
      * \return  Returns size of remote stub server services in the list.
      **/
-    virtual void getRemoteServiceList( TEArrayList<StubAddress, const StubAddress &> & out_listStubs) const;
+    virtual void getRemoteServiceList( TEArrayList<StubAddress, const StubAddress &> & OUT out_listStubs) const;
 
     /**
      * \brief   Call to receive list of registered remote proxy services, created in current module. 
-     *          Called when establishing connection with broker and the system needs 
-     *          to send registration messages. On output out_lisProxies
-     *          contains list of remote proxy client services in module.
+     *          Called when establishing connection with routing service and when the system needs 
+     *          to send registration messages. On output out_lisProxies  contains list of remote proxy 
+     *          of services in module.
      * \param   out_lisProxies      On output, this contains list of remote proxies, created in current module.
      * \return  Returns size of remote client proxy services in the list.
      **/
-    virtual void getRemoteServiceList( TEArrayList<ProxyAddress, const ProxyAddress &> & out_lisProxies) const;
+    virtual void getRemoteServiceList( TEArrayList<ProxyAddress, const ProxyAddress &> & OUT out_lisProxies) const;
 
     /**
      * \brief   Call to receive list of registered remote stub service, which connection cookie is equal to 
@@ -286,7 +286,7 @@ protected:
      * \param   out_listStubs   On output this will contain list of remote stub addresses, which cookie is
      *                          equal to specified cookie value.
      **/
-    virtual void getServiceList( ITEM_ID cookie, TEArrayList<StubAddress, const StubAddress &> out_listStubs ) const;
+    virtual void getServiceList( ITEM_ID cookie, TEArrayList<StubAddress, const StubAddress &> OUT out_listStubs ) const;
 
     /**
      * \brief   Call to receive list of registered remote proxy service, which connection cookie is equal to 
@@ -295,7 +295,7 @@ protected:
      * \param   out_lisProxies  On output this will contain list of remote proxy addresses, which cookie is
      *                          equal to specified cookie value.
      **/
-    virtual void getServiceList( ITEM_ID cookie, TEArrayList<ProxyAddress, const ProxyAddress &> out_lisProxies ) const;
+    virtual void getServiceList( ITEM_ID cookie, TEArrayList<ProxyAddress, const ProxyAddress &> OUT out_lisProxies ) const;
 
     /**
      * \brief   Registers remote stub in the current process.
@@ -324,21 +324,21 @@ protected:
     /**
      * \brief   Triggered when remote service has been started and there is a
      *          connection established with service.
-     * \param   channel     The connection channel of remote service broker.
+     * \param   channel     The connection channel of remote routing service.
      **/
     virtual void remoteServiceStarted( const Channel & channel );
 
     /**
      * \brief   Triggered when connection with remote service has been stopped.
-     * \param   channel     The connection channel of remote service broker.
+     * \param   channel     The connection channel of remote routing service.
      **/
     virtual void remoteServiceStopped( const Channel & channel );
 
     /**
-     * \brief   Triggered when connection with remote service broker is lost.
+     * \brief   Triggered when connection with remote routing service is lost.
      *          The connection is considered lost if it not possible to read or
      *          receive data, and there was not stop connection triggered.
-     * \param   channel     The connection channel of remote service broker.
+     * \param   channel     The connection channel of remote routing service.
      **/
     virtual void removeServiceLostConnection( const Channel & channel );
 

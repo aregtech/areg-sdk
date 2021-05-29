@@ -213,7 +213,7 @@ Thread::eCompletionStatus DispatcherThread::destroyThread( unsigned int waitForS
     TRACE_SCOPE( areg_component_private_DispatcherThread_destroyThread);
     TRACE_DBG("Destroying the thread the thread [ %s ] with ID [ %p ]. The current state is [ %s ]"
                 , getName().getString( )
-                , getId( )
+                , static_cast<id_type>(getId( ))
                 , isRunning() ? "RUNNING" : "NOT RUNNING" );
 
     stopDispatcher( );
@@ -232,7 +232,7 @@ void DispatcherThread::shutdownThread( void )
     TRACE_SCOPE( areg_component_private_DispatcherThread_shutdownThread);
     TRACE_DBG("Shutting down the thread [ %s ] with ID [ %p ]."
                 , getName().getString( )
-                , getId( ));
+                , static_cast<id_type>(getId( )));
 
     shutdownDispatcher();
 }
@@ -245,7 +245,7 @@ bool DispatcherThread::runDispatcher( void )
     bool result = EventDispatcher::runDispatcher();
     mEventStarted.resetEvent();
 
-    TRACE_DBG("The dispatcher [ %s ] with ID [ %p ] is stopping.", getName().getString( ), getId( ));
+    TRACE_DBG("The dispatcher [ %s ] with ID [ %p ] is stopping.", getName().getString( ), static_cast<id_type>(getId( )));
 
     return result;
 }
@@ -260,7 +260,7 @@ void DispatcherThread::triggerExitEvent( void )
     TRACE_SCOPE( areg_component_private_DispatcherThread_triggerExitEvent);
     TRACE_DBG("Requesting to exit thread [ %s ] with ID [ %p ] and status [ %s ]."
                 , getName().getString( )
-                , getId( )
+                , static_cast<id_type>(getId( ))
                 , mHasStarted ? "STARTED" : "NOT STARTED");
 
     if ( mHasStarted )

@@ -140,4 +140,4 @@ inline ServicingComponent & ServicingComponent::self( void )
 {   return (*this);     }
 
 
-#endif // AREG_EXAMPLES_09_DUPLICATE_SERVICINGCOMPONENT_HPP
+#endif // AREG_EXAMPLES_10_SVCHELLO_SERVICINGCOMPONENT_HPP

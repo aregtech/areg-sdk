@@ -7,9 +7,9 @@
 #include "areg/trace/private/LoggerBase.hpp"
 #include "areg/trace/private/TraceManager.hpp"
 
-const char * const  LoggerBase::FOMAT_MESSAGE_HELLO   = "Starting logging of process [ %s ] with ID [ %d ]\n";
+const char * const  LoggerBase::FOMAT_MESSAGE_HELLO   = "Starting logging of [ %s ] process [ %s ] with ID [ %d ]\n";
 
-const char * const  LoggerBase::FORMAT_MESSAGE_BYE    = "Completed logging of process [ %s ] with ID [ %d ]\n";
+const char * const  LoggerBase::FORMAT_MESSAGE_BYE    = "Completed logging of [ %s ] process [ %s ] with ID [ %d ]\n";
 
 LoggerBase::LoggerBase( IETraceConfiguration & tracerConfig )
     : mTracerConfiguration  ( tracerConfig )

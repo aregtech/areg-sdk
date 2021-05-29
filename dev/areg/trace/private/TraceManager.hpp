@@ -104,32 +104,52 @@ private:
      **/
     typedef TELinkedList<TraceProperty, const TraceProperty &>  ListProperties;
 
-    /**
-     * \brief   The thread name of tracer
-     **/
+    //!< The thread name of tracer
     static const char * const   TRACER_THREAD_NAME          /*= "_AREG_TRACER_THREAD_"*/;
 
+    //!< The default logging version
     static const char * const   DEFAULT_LOG_VERSION         /*= "log.version = 1.0.0"*/;
 
+    //!< The default logging enabled flag.
     static const char * const   DEFAULT_LOG_ENABLE          /*= "log.enable = true"*/;
 
+    //!< The default file name of loggs.
     static const char * const   DEFAULT_LOG_FILE            /*= "log.file = ./logs/trace_%time%.log"*/;
-
+    
+    //!< The default flag, indicating whether logs are enabled.
     static const char * const   DEFAULT_LOG_APPEND          /*= "log.append = false"*/;
 
+    //!< Logging default layout format of logging scope activation.
     static const char * const   DEFAULT_LOG_LAYOUT_ENTER    /*= "log.layout.enter = %d: [ %c.%t  %x.%z: Enter --> ]%n"*/;
 
+    //!< Logging default layout format for logging messages.
     static const char * const   DEFAULT_LOG_LAYOUT_MESSAGE  /*= "log.layout.message = %d: [ %c.%t  %p >>> ] %m%n"*/;
 
+    //!< Logging default layout format of logging scope deactivation.
     static const char * const   DEFAULT_LOG_LAYOUT_EXIT     /*= "log.layout.exit = %d: [ %c.%t  %x.%z: Exit <-- ]%n"*/;
 
+    //!< Default flag enabling output in debugging window or console.
     static const char * const   DEFAULT_LOG_LAYOUT_DEBUG    /*= "log.debug = true"*/;
 
-    static const char * const   DEFAULT_SCOPES_ENABLED      /*= "scope.* = DEBUG | SCOPE"*/;
+    //!< All scopes.
+    static const char * const   LOG_SCOPES_ALL              /*= "*"*/;
 
-    static const char * const   DEFAULT_SCOPES_SELF         /*= "areg_*"*/;
+    //!< Scope indicating AREG SDK internal logs.
+    static const char * const   LOG_SCOPES_SELF             /*= "areg_*"*/;
 
+    //!< Logging activation waiting maximum timeout
     static const unsigned int   LOG_START_WAITING_TIME      /*= 10 secs*/;
+
+    //!< Structure of default enabled scopes and priorities.
+    typedef struct S_LogEnabling
+    {
+        const char* logScope;   //!< Name of the scope or scope group
+        const int   logPrio;    //!< The logging priority for that scope or scope group
+    } sLogEnabling;
+
+    //!< The list scopes or group of scopes and enabled logging priority.
+    //!< The last entry in the list must have NULL instead of name.
+    static const sLogEnabling   DEFAULT_LOG_ENABLED_SCOPES[];
 
 public:
     /**

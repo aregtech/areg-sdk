@@ -261,7 +261,7 @@ void ProxyBase::freeProxy( IEProxyListener & connect )
     {
         OUTPUT_WARN("The proxy [ %s ] instance count is zero, going to delete object at address [ %p]"
                         , ProxyAddress::convAddressToPath(getProxyAddress()).getString()
-                        , (void *)this);
+                        , this);
 
         -- mProxyInstCount;
         stopAllServiceNotifications( );

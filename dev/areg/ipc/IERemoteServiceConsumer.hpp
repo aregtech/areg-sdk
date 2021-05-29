@@ -54,7 +54,7 @@ public:
 
     /**
      * \brief   Call to receive list of registered remote stub server services, created in current module. 
-     *          Called when establishing connection with broker and the system needs 
+     *          Called when establishing connection with router and the system needs 
      *          to send registration messages. On output out_listStubs
      *          contains list of remote stub server services in module.
      * \param   out_listStubs       On output, this contains list of remote stubs, created in current module.
@@ -64,7 +64,7 @@ public:
 
     /**
      * \brief   Call to receive list of registered remote proxy services, created in current module. 
-     *          Called when establishing connection with broker and the system needs 
+     *          Called when establishing connection with router and the system needs 
      *          to send registration messages. On output out_lisProxies
      *          contains list of remote proxy client services in module.
      * \param   out_lisProxies      On output, this contains list of remote proxies, created in current module.
@@ -117,21 +117,21 @@ public:
     /**
      * \brief   Triggered when remote service has been started and there is a
      *          connection established with service.
-     * \param   channel     The connection channel of remote service broker.
+     * \param   channel     The connection channel of remote routing service.
      **/
     virtual void remoteServiceStarted( const Channel & channel ) = 0;
 
     /**
      * \brief   Triggered when connection with remote service has been stopped.
-     * \param   channel     The connection channel of remote service broker.
+     * \param   channel     The connection channel of remote routing service.
      **/
     virtual void remoteServiceStopped( const Channel & channel ) = 0;
 
     /**
-     * \brief   Triggered when connection with remote service broker is lost.
+     * \brief   Triggered when connection with remote routing service is lost.
      *          The connection is considered lost if it not possible to read or
      *          receive data, and there was not stop connection triggered.
-     * \param   channel     The connection channel of remote service broker.
+     * \param   channel     The connection channel of remote routing service.
      **/
     virtual void removeServiceLostConnection( const Channel & channel ) = 0;
 

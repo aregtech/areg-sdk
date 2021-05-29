@@ -18,38 +18,6 @@
 
 namespace NEUtilities {
 
-#if 0
-    void _generateName( const char * prefix, char * out_buffer, int length, const char * specChar )
-    {
-        static const char * formatStr = "%s%03d%s%03d%s%03d%s%03d%s%03d%s%03d%s%03d%s%03d";
-        if ( out_buffer != NULL )
-        {
-            const char * spec = specChar != NULL ? specChar : NEUtilities::DEFAULT_SPECIAL_CHAR;
-            *out_buffer = '\0';
-            struct timespec ts;
-            clock_gettime(CLOCK_REALTIME, &ts);
-            struct tm now = *localtime(&ts.tv_sec);
-
-            int milli =  ts.tv_nsec / 1000000;
-            int micro = (ts.tv_nsec / 1000) - (milli * 1000);
-
-            int tick1 = static_cast<int>(micro);
-            int tick2 = static_cast<int>(milli);
-            int tick3 = static_cast<int>(now.tm_sec);
-            int tick4 = static_cast<int>(now.tm_min);
-            int tick5 = static_cast<int>(now.tm_hour);
-            int tick6 = static_cast<int>(now.tm_mday);
-            int tick7 = static_cast<int>(now.tm_mon + 1);
-            int tick8 = static_cast<int>(now.tm_year + 1900);
-
-            String::formatString( out_buffer, length, formatStr,
-                prefix != NULL ? prefix : NEUtilities::DEFAULT_GENERATED_NAME,
-                tick8, spec, tick7, spec, tick6, spec, tick5, spec, tick4, spec, tick3, spec, tick2, spec, tick1 );
-        }
-    }
-
-#else
-
     void _generateName( const char * prefix, char * out_buffer, int length, const char * specChar )
     {
         static const char * strFormat = "%s%s%08x%s%08x";
@@ -62,8 +30,6 @@ namespace NEUtilities {
             String::formatString( out_buffer, length, strFormat, prefix != NULL ? prefix : NEUtilities::DEFAULT_GENERATED_NAME, spec, now.tv_sec, spec, now.tv_nsec);
         }
     }
-
-#endif
 
     static inline void _convertMicrosecs(const TIME64 & quad, time_t & outSecs, unsigned short &outMilli, unsigned short &outMicro)
     {

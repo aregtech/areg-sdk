@@ -71,8 +71,8 @@ public:
      * \brief   Call manually to set router service host name and port number.
      *          Note, if remote service is already started, this call will change
      *          data, but will not restart service.
-     * \param   hostName    IP-address or name of service broker host.
-     * \param   portNr      Port number of service broker service.
+     * \param   hostName    IP-address or host name of routing service to connect.
+     * \param   portNr      Port number of routing service to connect.
      **/
     virtual void setRemoteServiceAddress( const char * hostName, unsigned short portNr ) = 0;
 

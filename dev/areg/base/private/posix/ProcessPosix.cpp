@@ -23,7 +23,8 @@
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 Process::Process( void )
-    : mProcessId        ( getpid() )
+    : mProcEnv          ( static_cast<Process::eProcEnv>(sizeof(id_type)) )
+    , mProcessId        ( getpid() )
     , mProcessHandle    ( static_cast<void *>(&mProcessId) )
     , mAppName          ( )
     , mProcessName      ( )

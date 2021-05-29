@@ -8,6 +8,7 @@
 
 #include "areg/base/GEMacros.h"
 #include "areg/base/NEMemory.hpp"
+#include "areg/trace/GETrace.h"
 
 #ifdef   _WINDOWS
     #ifndef WIN32_LEAN_AND_MEAN
@@ -23,6 +24,10 @@
     #include <arpa/inet.h>
     #include <ctype.h>      // IEEE Std 1003.1-2001
 #endif
+
+DEF_TRACE_SCOPE(areg_base_NESocket_clientSocketConnect);
+DEF_TRACE_SCOPE(areg_base_NESocket_serverSocketConnect);
+DEF_TRACE_SCOPE(areg_base_NESocket_serverAcceptConnection);
 
 //////////////////////////////////////////////////////////////////////////
 // NESocket namespace members
@@ -291,9 +296,11 @@ AREG_API int NESocket::getMaxReceiveSize( SOCKETHANDLE hSocket )
 
 AREG_API SOCKETHANDLE NESocket::clientSocketConnect(const char * hostName, unsigned short portNr, NESocket::InterlockedValue * out_socketAddr /*= NULL*/)
 {
+    TRACE_SCOPE(areg_base_NESocket_clientSocketConnect);
+
     hostName = hostName != NULL ? hostName : NESocket::LocalHost;
 
-    OUTPUT_DBG("Creating client socket to connect remote host [ %s ] and port number [ %u ]", hostName, static_cast<unsigned int>(portNr));
+    TRACE_DBG("Creating client socket to connect remote host [ %s ] and port number [ %u ]", hostName, static_cast<unsigned int>(portNr));
 
     if ( out_socketAddr != NULL )
         out_socketAddr->resetAddress();
@@ -308,7 +315,7 @@ AREG_API SOCKETHANDLE NESocket::clientSocketConnect(const char * hostName, unsig
     }
     else
     {
-        OUTPUT_ERR("Failed to resolve IP address for remote host name [ %s ] and port [ %u ], cannot create client socket", hostName, static_cast<unsigned int>(portNr));
+        TRACE_ERR("FAILED to resolve IP address for remote host name [ %s ] and port [ %u ], cannot create client socket", hostName, static_cast<unsigned int>(portNr));
     }
 
     return result;
@@ -316,6 +323,8 @@ AREG_API SOCKETHANDLE NESocket::clientSocketConnect(const char * hostName, unsig
 
 AREG_API SOCKETHANDLE NESocket::clientSocketConnect(const InterlockedValue & peerAddr)
 {
+    TRACE_SCOPE(areg_base_NESocket_clientSocketConnect);
+
     SOCKETHANDLE result   = NESocket::InvalidSocketHandle;
     if ( peerAddr.isValid() )
     {
@@ -327,7 +336,7 @@ AREG_API SOCKETHANDLE NESocket::clientSocketConnect(const InterlockedValue & pee
         {
             if ( RETURNED_OK != connect(result, reinterpret_cast<sockaddr *>(&remoteAddr), sizeof(sockaddr_in)))
             {
-                OUTPUT_ERR("Client failed to connect to remote host [ %s ] and port number [ %u ]. Closing socket [ %u ]"
+                TRACE_ERR("Client failed to connect to remote host [ %s ] and port number [ %u ]. Closing socket [ %u ]"
                             , static_cast<const char *>(peerAddr.getHostAddress())
                             , static_cast<unsigned int>(peerAddr.getHostPort())
                             , static_cast<unsigned int>(result));
@@ -338,7 +347,7 @@ AREG_API SOCKETHANDLE NESocket::clientSocketConnect(const InterlockedValue & pee
 #ifdef DEBUG
             else
             {
-                OUTPUT_DBG("Client socket [ %u ] succeeded to connect to remote host [ %s ] and port number [ %u ]"
+                TRACE_DBG("Client socket [ %u ] succeeded to connect to remote host [ %s ] and port number [ %u ]"
                             , static_cast<unsigned int>(result)
                             , static_cast<const char *>(peerAddr.getHostAddress())
                             , static_cast<unsigned int>(peerAddr.getHostPort()));
@@ -347,12 +356,12 @@ AREG_API SOCKETHANDLE NESocket::clientSocketConnect(const InterlockedValue & pee
         }
         else
         {
-            OUTPUT_ERR("Failed to create socket, cannot create client!");
+            TRACE_ERR("Failed to create socket, cannot create client!");
         }
     }
     else
     {
-        OUTPUT_ERR("Address [ %s ] or port number [ %u ] is not valid. No client is created", static_cast<const char *>(peerAddr.getHostAddress()), peerAddr.getHostPort());
+        TRACE_ERR("Address [ %s ] or port number [ %u ] is not valid. No client is created", static_cast<const char *>(peerAddr.getHostAddress()), peerAddr.getHostPort());
     }
 
     return result;
@@ -360,9 +369,11 @@ AREG_API SOCKETHANDLE NESocket::clientSocketConnect(const InterlockedValue & pee
 
 AREG_API SOCKETHANDLE NESocket::serverSocketConnect(const char * hostName, unsigned short portNr, InterlockedValue * out_socketAddr /*= NULL */)
 {
+    TRACE_SCOPE(areg_base_NESocket_serverSocketConnect);
+
     hostName = hostName != NULL ? hostName : NESocket::LocalHost;
 
-    OUTPUT_DBG("Creating server socket on host [ %s ] and port number [ %u ]", hostName, static_cast<unsigned int>(portNr));
+    TRACE_DBG("Creating server socket on host [ %s ] and port number [ %u ]", hostName, static_cast<unsigned int>(portNr));
 
 
     if ( out_socketAddr != NULL )
@@ -378,7 +389,7 @@ AREG_API SOCKETHANDLE NESocket::serverSocketConnect(const char * hostName, unsig
     }
     else
     {
-        OUTPUT_ERR("Failed to resolve IP address for host name [ %s ] and port [ %u ], cannot create server socket", hostName, static_cast<unsigned int>(portNr));
+        TRACE_ERR("FAILED to resolve IP address for host name [ %s ] and port [ %u ], cannot create server socket", hostName, static_cast<unsigned int>(portNr));
     }
 
     return result;
@@ -386,6 +397,8 @@ AREG_API SOCKETHANDLE NESocket::serverSocketConnect(const char * hostName, unsig
 
 AREG_API SOCKETHANDLE NESocket::serverSocketConnect(const InterlockedValue & peerAddr)
 {
+    TRACE_SCOPE(areg_base_NESocket_serverSocketConnect);
+
     SOCKETHANDLE result   = NESocket::InvalidSocketHandle;
     if ( peerAddr.isValid() )
     {
@@ -399,7 +412,7 @@ AREG_API SOCKETHANDLE NESocket::serverSocketConnect(const InterlockedValue & pee
             setsockopt( result, SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<const char *>(&yes), sizeof(int) );
             if ( RETURNED_OK != bind(result, reinterpret_cast<sockaddr *>(&serverAddr), sizeof(sockaddr_in)) )
             {
-                OUTPUT_ERR("Server failed to bind on host [ %s ] and port number [ %u ]. Closing socket [ %u ]"
+                TRACE_ERR("Server failed to bind on host [ %s ] and port number [ %u ]. Closing socket [ %u ]"
                             , static_cast<const char *>(peerAddr.getHostAddress())
                             , static_cast<unsigned int>(peerAddr.getHostPort())
                             , static_cast<unsigned int>(result));
@@ -410,7 +423,7 @@ AREG_API SOCKETHANDLE NESocket::serverSocketConnect(const InterlockedValue & pee
 #ifdef  DEBUG
             else
             {
-                OUTPUT_DBG("Server socket [ %u ] succeeded to bind on host [ %s ] and port number [ %u ]. Ready to listen."
+                TRACE_DBG("Server socket [ %u ] succeeded to bind on host [ %s ] and port number [ %u ]. Ready to listen."
                           , static_cast<unsigned int>(result)
                           , static_cast<const char *>(peerAddr.getHostAddress())
                           , static_cast<unsigned int>(peerAddr.getHostPort()));
@@ -420,12 +433,12 @@ AREG_API SOCKETHANDLE NESocket::serverSocketConnect(const InterlockedValue & pee
         }
         else
         {
-            OUTPUT_ERR("Failed to create socket, cannot create server!");
+            TRACE_ERR("Failed to create socket, cannot create server!");
         }
     }
     else
     {
-        OUTPUT_ERR("Address [ %s ] or port number [ %u ] is not valid. No server is created", static_cast<const char *>(peerAddr.getHostAddress()), peerAddr.getHostPort());
+        TRACE_ERR("Address [ %s ] or port number [ %u ] is not valid. No server is created", static_cast<const char *>(peerAddr.getHostAddress()), peerAddr.getHostPort());
     }
 
     return result;
@@ -438,7 +451,9 @@ AREG_API bool NESocket::serverListenConnection(SOCKETHANDLE serverSocket, int ma
 
 AREG_API SOCKETHANDLE NESocket::serverAcceptConnection(SOCKETHANDLE serverSocket, const SOCKETHANDLE * masterList, int entriesCount, NESocket::InterlockedValue * out_socketAddr /*= NULL*/)
 {
-    OUTPUT_DBG("Checking server socket event, server socket handle [ %u ]", static_cast<unsigned int>(serverSocket));
+    TRACE_SCOPE(areg_base_NESocket_serverAcceptConnection);
+
+    TRACE_DBG("Checking server socket event, server socket handle [ %u ]", static_cast<unsigned int>(serverSocket));
 
     if (out_socketAddr != NULL )
         out_socketAddr->resetAddress();
@@ -449,7 +464,7 @@ AREG_API SOCKETHANDLE NESocket::serverAcceptConnection(SOCKETHANDLE serverSocket
         struct fd_set readList;
         FD_ZERO(&readList);
         FD_SET( serverSocket, &readList );
-
+        SOCKETHANDLE maxSocket = serverSocket;
 
         if ( masterList != NULL && entriesCount > 0)
         {
@@ -463,15 +478,20 @@ AREG_API SOCKETHANDLE NESocket::serverAcceptConnection(SOCKETHANDLE serverSocket
 
 #else   // !WINDOWS
 
+            TRACE_DBG("There are [ %d ] scket entries in the master list, setting by FD_SET()", entriesCount);
             for ( int count = 0; count < entriesCount; ++ count)
             {
+                SOCKETHANDLE sh = masterList[count];
                 FD_SET(masterList[count], &readList);
+                maxSocket = MACRO_MAX(maxSocket, sh);
             }
 
 #endif  // WINDOWS
         }
 
-        int selected    = select( static_cast<int>(serverSocket) + 1 /* param is ignored in Win32*/, &readList, NULL, NULL, NULL);
+        TRACE_DBG("Call select to wait socket connection, max socket value is [ %d ]", static_cast<int>(maxSocket));
+        int selected    = select( static_cast<int>(maxSocket) + 1 /* param is ignored in Win32*/, &readList, NULL, NULL, NULL);
+        // int selected    = select( FD_SETSIZE /* param is ignored in Win32*/, &readList, NULL, NULL, NULL);
         if ( selected > 0 )
         {
             if ( FD_ISSET(serverSocket, &readList) != 0 )
@@ -481,14 +501,15 @@ AREG_API SOCKETHANDLE NESocket::serverAcceptConnection(SOCKETHANDLE serverSocket
                 int addrLength = sizeof(sockaddr_in);
                 NEMemory::zeroBuffer(&acceptAddr, sizeof(sockaddr_in));
 
+                TRACE_DBG("... server waiting for new connection event ...");
                 result = accept( serverSocket, reinterpret_cast<sockaddr *>(&acceptAddr), &addrLength );
-                OUTPUT_DBG("Server accepted new connection of client socket [ %u ]", static_cast<unsigned int>(result));
+                TRACE_DBG("Server accepted new connection of client socket [ %u ]", static_cast<unsigned int>(result));
                 if ( result != NESocket::InvalidSocketHandle && out_socketAddr != NULL )
                     out_socketAddr->setAddress(acceptAddr);
             }
             else
             {
-                OUTPUT_DBG("Have got select event of existing connection, going to resolve socket");
+                TRACE_DBG("Have got select event of existing connection, going to resolve socket");
 
                 //  check whether have got connection from existing clients. if 'yes', server can read data.
                 for ( int count = 0; result == NESocket::InvalidSocketHandle && count < entriesCount; ++ count )
@@ -496,7 +517,7 @@ AREG_API SOCKETHANDLE NESocket::serverAcceptConnection(SOCKETHANDLE serverSocket
                     if (FD_ISSET( masterList[count], &readList ) != 0)
                     {
                         result = masterList[count];
-                        OUTPUT_DBG("Server selected event of existing client socket [ %u ] connection", static_cast<unsigned int>(result));
+                        TRACE_DBG("Server selected event of existing client socket [ %u ] connection", static_cast<unsigned int>(result));
                         break;
                     }
                 }
@@ -504,14 +525,13 @@ AREG_API SOCKETHANDLE NESocket::serverAcceptConnection(SOCKETHANDLE serverSocket
         }
         else
         {
-            OUTPUT_ERR("Failed to select connection. The server socket [ %u ] might be closed and not valid anymore, return value [ %d ]", static_cast<unsigned int>(serverSocket), selected);
+            TRACE_ERR("Failed to select connection. The server socket [ %u ] might be closed and not valid anymore, return value [ %d ]", static_cast<unsigned int>(serverSocket), selected);
         }
     }
     else
     {
-        OUTPUT_ERR("Invalid server socket, ignoring accept connections!");
+        TRACE_ERR("Invalid server socket, ignoring accept connections!");
     }
 
     return result;
 }
-

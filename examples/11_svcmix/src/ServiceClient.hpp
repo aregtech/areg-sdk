@@ -1,5 +1,5 @@
-#ifndef AREG_EXAMPLES_10_SVCHELLO_SERVICECLIENT_HPP
-#define AREG_EXAMPLES_10_SVCHELLO_SERVICECLIENT_HPP
+#ifndef AREG_EXAMPLES_11_SVCMIX_SERVICECLIENT_HPP
+#define AREG_EXAMPLES_11_SVCMIX_SERVICECLIENT_HPP
 /************************************************************************
  * \file        ServiceClient.hpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework examples
@@ -174,4 +174,4 @@ inline ServiceClient & ServiceClient::self( void )
     return (*this);
 }
 
-#endif // AREG_EXAMPLES_10_SVCHELLO_SERVICECLIENT_HPP
+#endif // AREG_EXAMPLES_11_SVCMIX_SERVICECLIENT_HPP

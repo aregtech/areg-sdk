@@ -5,7 +5,7 @@
 /************************************************************************
  * (c) copyright    2021
  *                  Create by AREG SDK code generator tool from source HelloWorld.
- * Generated at     26.05.2021  15:50:40 GMT+02:00 
+ * Generated at     27.05.2021  03:25:12 GMT+02:00 
  ************************************************************************/
 
 /************************************************************************
@@ -188,7 +188,7 @@ void HelloWorldProxy::processAttributeEvent( ServiceResponseEvent & eventElem )
  * Internal helper functions.
  ************************************************************************/
 
-DEF_TRACE_SCOPE(gen_private_HelloWorldProxy_UpdateData);
+DEF_TRACE_SCOPE(gen_private_HelloWorldProxy_updateData);
 void HelloWorldProxy::updateData( HelloWorldResponseEvent & eventElem, NEHelloWorld::eMessageIDs respId )
 {
     const IEInStream & stream = static_cast<const HelloWorldResponseEvent &>(eventElem).getData().getReadStream();
@@ -225,7 +225,7 @@ void HelloWorldProxy::updateData( HelloWorldResponseEvent & eventElem, NEHelloWo
 
     default:
         {
-            TRACE_SCOPE(gen_private_HelloWorldProxy_UpdateData);
+            TRACE_SCOPE(gen_private_HelloWorldProxy_updateData);
             TRACE_ERR("Unexpected response message ID [ %d ] received in proxy [ %s ]!"
                         , static_cast<int>(respId)
                         , ProxyAddress::convAddressToPath(getProxyAddress()).getString());

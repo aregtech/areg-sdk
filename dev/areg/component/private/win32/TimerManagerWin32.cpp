@@ -89,7 +89,7 @@ bool TimerManager::_startSystemTimer( TimerInfo & timerInfo, MapTimerTable & tim
         OUTPUT_ERR( "System Failed to start timer in period [ %d ] ms, timer name [ %s ]. System Error [ %p ]"
                         , whichTimer->getFireTime( )
                         , whichTimer->getName( ).getString()
-                        , static_cast<unsigned long>(GetLastError( )) );
+                        , static_cast<id_type>(GetLastError( )) );
 
         timerInfo.mTimerState = TimerInfo::TimerIdle;
         timerTable.setAt( whichTimer, timerInfo, true );

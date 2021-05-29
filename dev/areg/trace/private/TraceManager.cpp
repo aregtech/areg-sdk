@@ -52,9 +52,17 @@ const char * const  TraceManager::DEFAULT_LOG_LAYOUT_ENTER      = "log.layout.en
 const char * const  TraceManager::DEFAULT_LOG_LAYOUT_MESSAGE    = "log.layout.message   = %d: [ %t  %p >>> ] %m%n";
 const char * const  TraceManager::DEFAULT_LOG_LAYOUT_EXIT       = "log.layout.exit      = %d: [ %t  %x.%z: Exit <-- ]%n";
 const char * const  TraceManager::DEFAULT_LOG_LAYOUT_DEBUG      = "log.debug            = true";
-const char * const  TraceManager::DEFAULT_SCOPES_ENABLED        = "scope.*              = DEBUG | SCOPE";
-const char * const  TraceManager::DEFAULT_SCOPES_SELF           = "areg_*";
 const unsigned int  TraceManager::LOG_START_WAITING_TIME        = IESynchObject::WAIT_1_SEC * 20;
+
+const char * const  TraceManager::LOG_SCOPES_ALL                = "*";
+const char * const  TraceManager::LOG_SCOPES_SELF               = "areg_*";
+
+const TraceManager::sLogEnabling    TraceManager::DEFAULT_LOG_ENABLED_SCOPES[]   = 
+{
+      { TraceManager::LOG_SCOPES_ALL    , static_cast<unsigned int>(NETrace::PrioDebug ) | static_cast<unsigned int>(NETrace::PrioScope)}
+    , { TraceManager::LOG_SCOPES_SELF   , static_cast<unsigned int>(NETrace::PrioNotset)                                                }
+    , { NULL /* must end with NULL */   , static_cast<unsigned int>(NETrace::PrioNotset)                                                }
+};
 
 //////////////////////////////////////////////////////////////////////////
 // TraceManager class static methods
@@ -447,8 +455,15 @@ bool TraceManager::activateTracingDefaults( void )
         mLogDbUser.clearProperty();
         mLogDbPassword.clearProperty();
 
-        mConfigScopeGroup.setAt( NELogConfig::MODULE_SCOPE          , static_cast<unsigned int>(NETrace::PrioDebug ) | static_cast<unsigned int>(NETrace::PrioScope));
-        mConfigScopeGroup.setAt( TraceManager::DEFAULT_SCOPES_SELF  , static_cast<unsigned int>(NETrace::PrioNotset) );
+        int i = 0;
+        do 
+        {
+            const sLogEnabling & scopes = TraceManager::DEFAULT_LOG_ENABLED_SCOPES[i ++];
+            if ( scopes.logScope == NULL)
+                break;
+
+            mConfigScopeGroup.setAt(scopes.logScope, scopes.logPrio);
+        } while (true);
 
     } while (false);
 

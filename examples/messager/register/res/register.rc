@@ -100,9 +100,9 @@ BEGIN
     EDITTEXT        IDC_BROKER_PORT,76,37,100,15,ES_AUTOHSCROLL | ES_NUMBER
     DEFPUSHBUTTON   "Co&nnect",IDC_BROKER_CONNECT,244,10,71,14
     PUSHBUTTON      "&Disconnect",IDC_BROKER_DISCONNECT,244,39,71,14
-    LTEXT           "Broker IP-Address:",IDC_STATIC,11,10,63,15,SS_CENTERIMAGE
-    LTEXT           "Broker Port:",IDC_STATIC,11,37,63,15,SS_CENTERIMAGE
-    CTEXT           "Please set IP-Address and port number of Message Broker.",IDC_STATIC,10,90,304,28
+    LTEXT           "Router IP-Address:",IDC_STATIC,11,10,63,15,SS_CENTERIMAGE
+    LTEXT           "Router Port:",IDC_STATIC,11,37,63,15,SS_CENTERIMAGE
+    CTEXT           "Please set IP-Address and port number of Message Router.",IDC_STATIC,10,90,304,28
 END
 
 IDD_PAGE_CONNECTIONS DIALOGEX 0, 0, 325, 203

@@ -123,6 +123,11 @@ public:
 public:
     
     /**
+     * \brief   Returns remote message structure data
+     **/
+    inline const NEMemory::sRemoteMessage & getRemoteMessage( void ) const;
+
+    /**
      * \brief   Returns checksum value of Remote Buffer.
      *          The checksum value cannot be set. It is calculated by call ChecksumMark().
      **/
@@ -131,24 +136,24 @@ public:
     /**
      * \brief   Returns the ID of remote source set in Remote Buffer header.
      **/
-    inline ITEM_ID getSource( void ) const;
+    inline uint64_t getSource( void ) const;
     
     /**
      * \brief   Sets the ID of source in Remote Buffer.
      * \param   idSource    The ID of source to set in Remote Buffer
      **/
-    inline void setSource( ITEM_ID idSource );
+    inline void setSource( uint64_t idSource );
 
     /**
      * \brief   Returns the ID of remote target set in Remote Buffer header.
      **/
-    inline ITEM_ID getTarget( void ) const;
+    inline uint64_t getTarget( void ) const;
     
     /**
      * \brief   Sets the ID of target in Remote Buffer.
      * \param   idTarget    The ID of target to set in Remote Buffer
      **/
-    inline void setTarget( ITEM_ID idTarget );
+    inline void setTarget( uint64_t idTarget );
 
     /**
      * \brief   Returns the message ID value set in remote buffer
@@ -284,28 +289,33 @@ inline NEMemory::sRemoteMessage & RemoteMessage::_getRemoteMessage( void )
     return reinterpret_cast<NEMemory::sRemoteMessage &>(getByteBuffer());
 }
 
+inline const NEMemory::sRemoteMessage & RemoteMessage::getRemoteMessage( void ) const
+{
+    return reinterpret_cast<const NEMemory::sRemoteMessage &>(getByteBuffer());
+}
+
 inline unsigned int RemoteMessage::getChecksum( void ) const
 {
     return _getHeader().rbhChecksum;
 }
 
-inline ITEM_ID RemoteMessage::getSource( void ) const
+inline uint64_t RemoteMessage::getSource( void ) const
 {
     return _getHeader().rbhSource;
 }
 
-inline void RemoteMessage::setSource( ITEM_ID idSource )
+inline void RemoteMessage::setSource( uint64_t idSource )
 {
     if ( isValid() )
         _getHeader().rbhSource = idSource;
 }
 
-inline ITEM_ID RemoteMessage::getTarget( void ) const
+inline uint64_t RemoteMessage::getTarget( void ) const
 {
     return _getHeader().rbhTarget;
 }
 
-inline void RemoteMessage::setTarget( ITEM_ID idTarget )
+inline void RemoteMessage::setTarget( uint64_t idTarget )
 {
     if ( isValid() )
         _getHeader().rbhTarget = idTarget;

@@ -6,7 +6,7 @@
 /************************************************************************
  * (c) copyright    2021
  *                  Create by AREG SDK code generator tool from source HelloWorld.
- * Generated at     26.05.2021  15:50:40 GMT+02:00 
+ * Generated at     27.05.2021  03:25:12 GMT+02:00 
  ************************************************************************/
 
 /************************************************************************
@@ -36,7 +36,7 @@ class HelloWorldResponseEvent;
  *              Used to communicate with stub object and sending notifications
  *              to each client running in the thread instance.
  *
- *              DESCRIPTION MISSED
+ *              Simple Service Interface to demonstrate working features of AREG SDK.
  **/
 class HelloWorldProxy   : public ProxyBase
 {

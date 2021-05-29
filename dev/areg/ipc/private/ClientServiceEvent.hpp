@@ -18,8 +18,8 @@
 // ClientServiceEventData class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   The client service event data. Used for service broker and
- *          connection service communication
+ * \brief   The client service event data. Used for communication with 
+ *          remote routing service.
  **/
 class ClientServiceEventData
 {

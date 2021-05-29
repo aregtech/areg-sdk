@@ -28,7 +28,7 @@ class String;
 //////////////////////////////////////////////////////////////////////////
 
 /**
- * \brief   Service Manager event data object, which contains broker
+ * \brief   Service Manager event data object, which contains routing connection
  *          commands to execute and appropriate data for command
  **/
 class ServiceManagerEventData
@@ -59,16 +59,16 @@ public:
 
     /**
      * \brief   Converts event command to string
-     * \param   cmdBroker   The command to convert
+     * \param   val     The command to convert to string
      **/
-    static const char * getString( ServiceManagerEventData::eServiceManagerCommands cmdBroker );
+    static const char * getString( ServiceManagerEventData::eServiceManagerCommands val );
 
 //////////////////////////////////////////////////////////////////////////
 // Static members
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Creates and returns Service Manager event data with command to stop Broker client connection
+     * \brief   Creates and returns Service Manager event data with command to stop router client connection.
      **/
     static ServiceManagerEventData stopMessageRouterClient( void );
 
@@ -98,12 +98,12 @@ public:
     static ServiceManagerEventData configureConnection( const String & configFile );
 
     /**
-     * \brief   Creates and returns Service Manager event data with command to start Broker client connection
+     * \brief   Creates and returns Service Manager event data with command to start router client connection
      **/
     static ServiceManagerEventData startConnection( const String & configFile );
 
     /**
-     * \brief   Creates and returns Service Manager event data with command to start Broker client connection.
+     * \brief   Creates and returns Service Manager event data with command to start router client connection.
      * \param   ipAddress   The IP-Address of remote Routing Service.
      * \param   portNr      The port number to connect.
      **/
@@ -245,9 +245,9 @@ inline ServiceManagerEventData::eServiceManagerCommands ServiceManagerEventData:
     return mCommand;
 }
 
-inline const char * ServiceManagerEventData::getString( ServiceManagerEventData::eServiceManagerCommands cmdBroker )
+inline const char * ServiceManagerEventData::getString( ServiceManagerEventData::eServiceManagerCommands val )
 {
-    switch ( cmdBroker )
+    switch ( val )
     {
     case ServiceManagerEventData::CMD_StopRoutingClient:
         return "ServiceManagerEventData::CMD_StopRoutingClient";

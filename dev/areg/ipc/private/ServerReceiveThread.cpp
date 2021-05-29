@@ -91,8 +91,8 @@ bool ServerReceiveThread::runDispatcher(void)
                     if ( mConnection.receiveMessage(msgReceived, clientSocket) > 0 )
                     {
                         TRACE_DBG("Received message [ %p ] from source [ %p ], client [ %s : %d ]"
-                                    , msgReceived.getMessageId()
-                                    , msgReceived.getSource()
+                                    , static_cast<id_type>(msgReceived.getMessageId())
+                                    , static_cast<id_type>(msgReceived.getSource())
                                     , addSocket.getHostAddress().getString()
                                     , addSocket.getHostPort());
 
@@ -109,11 +109,10 @@ bool ServerReceiveThread::runDispatcher(void)
                     }
 
                     msgReceived.invalidate();
-
                 }
                 else
                 {
-                    OUTPUT_ERR("Failed to accept socket. Make cleanups to clean master list on next loop or server socket is closed!");
+                    OUTPUT_WARN("Client connection lost. Clean master list on next loop or close server socket!");
                 }
             }
             else
@@ -121,6 +120,7 @@ bool ServerReceiveThread::runDispatcher(void)
                 Event * eventElem = whichEvent == static_cast<int>(EVENT_QUEUE) ? pickEvent() : NULL;
                 whichEvent = isExitEvent(eventElem) || (whichEvent == static_cast<int>(EVENT_EXIT)) ? static_cast<int>(EVENT_EXIT) : whichEvent;
             }
+
         } while (whichEvent == static_cast<int>(EVENT_QUEUE));
     }
     mHasStarted = false;

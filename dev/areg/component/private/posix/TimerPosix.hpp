@@ -185,7 +185,7 @@ private:
 private:
     timer_t                 mTimerId;
 
-    Timer *               mContext;
+    Timer *                 mContext;
 
     unsigned int            mEventCount;
 
@@ -208,22 +208,40 @@ private:
 //////////////////////////////////////////////////////////////////////////
 
 inline timer_t TimerPosix::getTimerId(void) const
-{   SpinLockIX lock(mLock); return mTimerId;                                              }
+{
+    SpinLockIX lock(mLock);
+    return mTimerId;
+}
 
 inline Timer * TimerPosix::getContext(void) const
-{   SpinLockIX lock(mLock); return mContext;                                              }
+{
+    SpinLockIX lock(mLock);
+    return mContext;
+}
 
 inline const timespec & TimerPosix::getDueTime(void) const
-{   SpinLockIX lock(mLock); return mDueTime;                                              }
+{
+    SpinLockIX lock(mLock);
+    return mDueTime;
+}
 
 inline unsigned int TimerPosix::getRemainPeriod(void) const
-{   SpinLockIX lock(mLock); return mContext->getEventCount();                             }
+{
+    SpinLockIX lock(mLock);
+    return mContext->getEventCount();
+}
 
 inline bool TimerPosix::isStarted(void) const
-{   SpinLockIX lock(mLock); return ((mDueTime.tv_sec != 0) || (mDueTime.tv_nsec != 0));   }
+{
+    SpinLockIX lock(mLock);
+    return ((mDueTime.tv_sec != 0) || (mDueTime.tv_nsec != 0));
+}
 
 inline bool TimerPosix::isValid(void) const
-{   SpinLockIX lock(mLock); return ((mContext != NULL) && (mTimerId != 0));               }
+{
+    SpinLockIX lock(mLock);
+    return ((mContext != NULL) && (mTimerId != 0));
+}
 
 #endif  // _POSIX
 #endif  // AREG_COMPONENT_PRIVATE_TIMERPOSIX_HPP

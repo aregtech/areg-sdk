@@ -223,7 +223,7 @@ unsigned int File::read(unsigned char* buffer, unsigned int size) const
             }
             else
             {
-                OUTPUT_ERR("Failed to read file [ %s ], error code [ %p ].", mFileName.getString(), GetLastError());
+                OUTPUT_ERR("Failed to read file [ %s ], error code [ %p ].", mFileName.getString(), static_cast<id_type>(GetLastError()));
             }
         }
         else
@@ -253,7 +253,7 @@ unsigned int File::write(const unsigned char* buffer, unsigned int size)
             }
             else
             {
-                OUTPUT_ERR("Failed to write [ %d ] bytes of data to file [ %s ]. Error code [ %p ].", size, mFileName.getString(), GetLastError());
+                OUTPUT_ERR("Failed to write [ %d ] bytes of data to file [ %s ]. Error code [ %p ].", size, mFileName.getString(), static_cast<id_type>(GetLastError()));
             }
         }
         else

@@ -25,7 +25,7 @@ class ClientConnection;
 // ClientConnection class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   The message receiver thread from remote Service Broker.
+ * \brief   The message receiver thread from remote routing service.
  *          All received messages are passed to receiver thread for further dispatching
  *          and distribution between components and services.
  **/
@@ -70,9 +70,9 @@ private:
      **/
     IERemoteServiceHandler &    mRemoteService;
     /**
-     * \brief   The instance of connection to receive messages from remote Service Broker.
+     * \brief   The instance of connection to receive messages from remote routing service.
      **/
-    ClientConnection &        mConnection;
+    ClientConnection &          mConnection;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

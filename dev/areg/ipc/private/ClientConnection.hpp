@@ -199,15 +199,15 @@ public:
     bool disableReceive( void );
 
     /**
-     * \brief   Called by connection service to start connection with remote Service Broker.
-     * \return  Returns true if succeeded to connect to remote Service Broker.
+     * \brief   Called by connection service to start connection with routing service.
+     * \return  Returns true if succeeded to connect to routing service.
      **/
     bool requestConnectServer( void );
 
     /**
-     * \brief   Called by connection service to disconnect from remote Service Broker.
+     * \brief   Called by connection service to disconnect from routing service.
      *          Once disconnected, all services receive disconnect notification and stop communication
-     *          via disconnected Service Broker.
+     *          via routing service.
      * \return  Returns true if there was an active connection and the system succeeded to disconnect.
      *          Returns false, if there was no active connection.
      **/

@@ -3,6 +3,7 @@
 	<name>test-areg-basic</name>
 	<comment></comment>
 	<projects>
+		<project>areg</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

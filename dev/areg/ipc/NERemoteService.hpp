@@ -33,19 +33,19 @@ namespace NERemoteService
 
     /**
      * \brief   NERemoteService::DEFAULT_CONFIG_FILE
-     *          Default name of broker configuration file.
+     *          Default name of routing service connection configuration file.
      **/
     const char * const      DEFAULT_CONFIG_FILE         = NEApplication::DEFAULT_ROUTER_CONFIG_FILE;
     /**
-     * \brief   NERemoteService::DEFAULT_BROKER_HOST
-     *          Default IP-Address of broker
+     * \brief   NERemoteService::DEFAULT_ROUTER_HOST
+     *          Default IP-Address of routing service.
      **/
-    const char * const      DEFAULT_BROKER_HOST         = "127.0.0.1";
+    const char * const      DEFAULT_ROUTER_HOST         = "127.0.0.1";
     /**
-     * \brief   NERemoteService::DEFAULT_BROKER_PORT
-     *          Default connection port number.
+     * \brief   NERemoteService::DEFAULT_ROUTER_PORT
+     *          Default connection port number of routing service.
      **/
-    const unsigned short    DEFAULT_BROKER_PORT         = 8181;
+    const unsigned short    DEFAULT_ROUTER_PORT         = 8181;
     /**
      * \brief   NERemoteService::IP_SEPARATOR
      *          The property separator
@@ -64,12 +64,12 @@ namespace NERemoteService
     const int               MAXLEN_PROPERTY_NAME        = 256;
     /**
      * \brief   NERemoteService::MAXLEN_PROPERTY_HOST
-     *          Maximum length of broker connection host name in configuration file
+     *          Maximum length of message router host name in configuration file
      **/
     const int               MAXLEN_PROPERTY_HOST        = 256;
     /**
      * \brief   NERemoteService::MAXLEN_PROPERTY_PORT
-     *          Maximum length of broker connection port number in configuration file
+     *          Maximum length of message router connection port number in configuration file
      **/
     const int               MAXLEN_PROPERTY_PORT        = 8;
 

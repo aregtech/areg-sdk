@@ -234,6 +234,10 @@ namespace NEMemory
         , BufferInternal    =  0    //!< Buffer type for internal communication
         , BufferRemote      =  2    //!< Buffer type for remote communication
     } eBufferType;
+    /**
+     * \brief   Returns string value of NEMemory::eBufferType
+     **/
+    inline const char * getString(NEMemory::eBufferType val );
 
     //////////////////////////////////////////////////////////////////////////
     // NEMemory::sBuferHeader structure declaration
@@ -295,7 +299,7 @@ namespace NEMemory
          * \brief   An ID of target object, receiving message.
          *          In remote messaging, this is Cookie of target
          **/
-        ITEM_ID         rbhTarget;
+        uint64_t       rbhTarget;
         /**
          * \brief   Data checksum value for validation check-up.
          *          Should be ignored if value is NEMemory::IGNORE_CHECKSUM
@@ -305,7 +309,7 @@ namespace NEMemory
          * \brief   An ID of source object, sending message.
          *          In remote messaging, this is Cookie of source
          **/
-        ITEM_ID         rbhSource;
+        uint64_t       rbhSource;
         /**
          * \brief   The Remote message ID registered in the system
          **/
@@ -1000,6 +1004,21 @@ inline const char * NEMemory::getString( NEMemory::eMessageResult msgResult )
         return "NEMemory::ResultTargetUnavailable";
     default:
         return "ERR: Invalid NEMemory::eMessageResult value!!!";
+    }
+}
+
+inline const char * NEMemory::getString(NEMemory::eBufferType val )
+{
+    switch (val)
+    {
+    case NEMemory::BufferUnknown:
+        return "NEMemory::BufferUnknown";
+    case NEMemory::BufferInternal:
+        return "NEMemory::BufferInternal";
+    case NEMemory::BufferRemote:
+        return "NEMemory::BufferRemote";
+    default:
+        return "ERR: Invalid NEMemory::eBufferType value!!!";
     }
 }
 

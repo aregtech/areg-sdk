@@ -1,5 +1,5 @@
-#ifndef AREG_EXAMPLES_10_SVCHELLO_SERVICINGCOMPONENT_HPP
-#define AREG_EXAMPLES_10_SVCHELLO_SERVICINGCOMPONENT_HPP
+#ifndef AREG_EXAMPLES_11_SVCMIX_SERVICINGCOMPONENT_HPP
+#define AREG_EXAMPLES_11_SVCMIX_SERVICINGCOMPONENT_HPP
 /************************************************************************
  * \file        ServicingComponent.hpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework examples
@@ -135,4 +135,4 @@ inline ServicingComponent & ServicingComponent::self( void )
 {   return (*this);     }
 
 
-#endif // AREG_EXAMPLES_09_DUPLICATE_SERVICINGCOMPONENT_HPP
+#endif // AREG_EXAMPLES_11_SVCMIX_SERVICINGCOMPONENT_HPP

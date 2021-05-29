@@ -387,7 +387,7 @@ protected:                                                                      
     /**                                                                                                                     **/                     \
     /** \brief  Protected destructor. Should not be called directly, call Destroy() instead.                                **/                     \
     /**                                                                                                                     **/                     \
-    ~__##EventClass( void );                                                                                                                        \
+    virtual ~__##EventClass( void );                                                                                                                \
 public:                                                                                                                                             \
     /**                                                                                                                     **/                     \
     /** \brief  Static function. By default, sends an Event specified in MACRO.                                             **/                     \

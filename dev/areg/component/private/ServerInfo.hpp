@@ -24,7 +24,7 @@ class ClientInfo;
 // ServerInfo class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   The Server Info is a helper class used by Server Broker,
+ * \brief   The Server Info is a helper class used by Routing Service,
  *          which contains information of Stub address,
  *          target Stub address, server state and Service Info objects.
  *          Every instantiated Stub is registered in Router Service,

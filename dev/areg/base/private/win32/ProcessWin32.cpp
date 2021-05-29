@@ -26,7 +26,8 @@
 //////////////////////////////////////////////////////////////////////////
 
 Process::Process( void )
-    : mProcessHandle    ( static_cast<void *>(::GetCurrentProcess()) )
+    : mProcEnv          ( static_cast<Process::eProcEnv>(sizeof(id_type)) )
+    , mProcessHandle    ( static_cast<void *>(::GetCurrentProcess()) )
     , mProcessId        ( ::GetCurrentProcessId() )
     , mAppName          ( )
     , mProcessName      ( )

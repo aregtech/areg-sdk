@@ -71,7 +71,7 @@
 /**
  * \brief   The type defines an item ID.
  **/
-typedef id_type         ITEM_ID;
+typedef uint64_t    ITEM_ID;
 
 /**
  * \brief   Type, defining position of element in Lists.

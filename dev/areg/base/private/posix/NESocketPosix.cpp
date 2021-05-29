@@ -11,6 +11,7 @@
 #include "areg/base/ESynchObjects.hpp"
 #include "areg/base/GEMacros.h"
 #include "areg/base/NEMemory.hpp"
+#include "areg/trace/GETrace.h"
 
 #include <unistd.h>
 #include <sys/socket.h>
@@ -32,6 +33,10 @@
  *          Release socket in frees resources in process when counter reaches 0.
  **/
 static InterlockedValue   _instanceCount( static_cast<unsigned int>(0));
+
+DEF_TRACE_SCOPE(areg_base_NESocketPosix_sendData);
+DEF_TRACE_SCOPE(areg_base_NESocketPosix_receiveData);
+DEF_TRACE_SCOPE(areg_base_NESocketPosix_remainDataRead);
 
 //////////////////////////////////////////////////////////////////////////
 // NESocket namespace functions implementation
@@ -55,76 +60,10 @@ AREG_API void NESocket::socketClose(SOCKETHANDLE hSocket)
     }
 }
 
-AREG_API SOCKETHANDLE del_serverAcceptConnection(SOCKETHANDLE serverSocket, const SOCKETHANDLE * masterList, int entriesCount, NESocket::InterlockedValue * out_socketAddr /*= NULL*/)
-{
-    OUTPUT_DBG("Checking server socket event, server socket handle [ %u ]", static_cast<unsigned int>(serverSocket));
-
-    if (out_socketAddr != NULL )
-        out_socketAddr->resetAddress();
-
-    SOCKETHANDLE result = NESocket::InvalidSocketHandle;
-    if ( serverSocket != NESocket::InvalidSocketHandle )
-    {
-        struct fd_set readList;
-        FD_ZERO(&readList);
-        FD_SET( serverSocket, &readList );
-
-
-        if ( masterList != NULL && entriesCount > 0)
-        {
-            entriesCount= MACRO_MIN(entriesCount, (FD_SETSIZE - 1));
-            for ( int count = 0; count < entriesCount; ++ count)
-            {
-                FD_SET(masterList[count], &readList);
-            }
-        }
-
-        int selected    = select( static_cast<int>(serverSocket) + 1, &readList, NULL, NULL, NULL);
-        if ( selected > 0 )
-        {
-            if ( FD_ISSET(serverSocket, &readList) != 0 )
-            {
-                // have got new client connection. resolve and get socket
-                struct sockaddr_in acceptAddr; // connecting client address information
-                int addrLength = sizeof(sockaddr_in);
-                NEMemory::zeroBuffer(&acceptAddr, sizeof(sockaddr_in));
-
-                result = accept( serverSocket, reinterpret_cast<sockaddr *>(&acceptAddr), &addrLength );
-                OUTPUT_DBG("Server accepted new connection of client socket [ %u ]", static_cast<unsigned int>(result));
-                if ( result != NESocket::InvalidSocketHandle && out_socketAddr != NULL )
-                    out_socketAddr->setAddress(acceptAddr);
-            }
-            else
-            {
-                OUTPUT_DBG("Have got select event of existing connection, going to resolve socket");
-
-                //  check whether have got connection from existing clients. if 'yes', server can read data.
-                for ( int count = 0; result == NESocket::InvalidSocketHandle && count < entriesCount; ++ count )
-                {
-                    if (FD_ISSET( masterList[count], &readList ) != 0)
-                    {
-                        result = masterList[count];
-                        OUTPUT_DBG("Server selected event of existing client socket [ %u ] connection", static_cast<unsigned int>(result));
-                        break;
-                    }
-                }
-            }
-        }
-        else
-        {
-            OUTPUT_ERR("Failed to select connection. The server socket [ %u ] might be closed and not valid anymore, return value [ %d ]", static_cast<unsigned int>(serverSocket), selected);
-        }
-    }
-    else
-    {
-        OUTPUT_ERR("Invalid server socket, ignoring accept connections!");
-    }
-
-    return result;
-}
-
 AREG_API int NESocket::sendData(SOCKETHANDLE hSocket, const unsigned char * dataBuffer, int dataLength, int blockMaxSize /*= -1*/ )
 {
+    TRACE_SCOPE(areg_base_NESocketPosix_sendData);
+
     int result = -1;
 
     if ( hSocket != NESocket::InvalidSocketHandle )
@@ -134,14 +73,18 @@ AREG_API int NESocket::sendData(SOCKETHANDLE hSocket, const unsigned char * data
         {
             blockMaxSize    = blockMaxSize > 0 ? blockMaxSize : NESocket::getMaxSendSize(hSocket);
             result          = dataLength;
+
+            TRACE_DBG("Going to send data, length = [ %d ], blockMaxSize [ %d ], socket is VALID", dataLength, blockMaxSize);
             while ( dataLength > 0 )
             {
                 int remain = dataLength > blockMaxSize ? blockMaxSize : dataLength;
-                int written= send(hSocket, reinterpret_cast<const char *>(dataBuffer), remain, 0);
+                TRACE_DBG("Sending [ %d ] bytes of data", remain);
+                int written= send(hSocket, reinterpret_cast<const char *>(dataBuffer), remain, remain);
                 if ( written > 0 )
                 {
                     dataLength -= written;
                     dataBuffer += written;
+                    TRACE_DBG("Has sent [ %d ] bytes of data, there is still [ %d ] bytes left", written, dataLength);
                 }
                 else
                 {
@@ -149,9 +92,11 @@ AREG_API int NESocket::sendData(SOCKETHANDLE hSocket, const unsigned char * data
                     {
                         // try again with other package size
                         blockMaxSize = NESocket::getMaxSendSize(hSocket);
+                        TRACE_WARN("No data has sent, trying to change the maximum block size to [ %d ] bytes and try again, there are still [ %d ] bytes to sent", blockMaxSize, dataLength);
                     }
                     else
                     {
+                        TRACE_ERR("FAILED to sent [ %d ] bytes of data, error code is [ %p ], terminating sending", dataLength, static_cast<id_type>(errno));
                         // in all other cases
                         dataLength  = 0;    // break loop
                         result      = -1;   // notify failure
@@ -161,12 +106,12 @@ AREG_API int NESocket::sendData(SOCKETHANDLE hSocket, const unsigned char * data
         }
         else
         {
-            ; // no data to sent
+            TRACE_ERR("Either buffer is null [ %s ] or wrong data length to sent [ %d ]", dataBuffer == NULL ? "YES" : "NO", dataLength);
         }
     }
     else
     {
-        ; // invalid socket
+        TRACE_ERR("INVALID socket, will not be able to sent [ %d ] bytes of data", dataLength);
     }
 
     return result;
@@ -174,6 +119,8 @@ AREG_API int NESocket::sendData(SOCKETHANDLE hSocket, const unsigned char * data
 
 AREG_API int NESocket::receiveData(SOCKETHANDLE hSocket, unsigned char * dataBuffer, int dataLength, int blockMaxSize /*= -1*/ )
 {
+    TRACE_SCOPE(areg_base_NESocketPosix_receiveData);
+
     int result = -1;
     if ( hSocket != NESocket::InvalidSocketHandle )
     {
@@ -181,22 +128,28 @@ AREG_API int NESocket::receiveData(SOCKETHANDLE hSocket, unsigned char * dataBuf
         if ( dataBuffer != NULL && dataLength > 0 )
         {
             blockMaxSize    = blockMaxSize > 0 ? blockMaxSize : NESocket::getMaxReceiveSize(hSocket);
+            TRACE_DBG("Going to receive data, available space [ %d ] bytes, blockMaxSize [ %d ] bytes", dataLength, blockMaxSize);
+
             while ( dataLength > 0 )
             {
                 int remain = dataLength > blockMaxSize ? blockMaxSize : dataLength;
-                int read   = recv(hSocket, reinterpret_cast<char *>(dataBuffer) + result, remain, 0);
+                TRACE_DBG("Receiving [ %d ] bytes of data", remain);
+                int read   = recv(hSocket, dataBuffer + result, remain, 0);
                 if ( read > 0 )
                 {
                     dataLength -= read;
                     result     += read;
+                    TRACE_DBG("Has read [ %d ] bytes of data, there is still [ %d ] bytes of data to wait, totally received [ %d ] bytes", read, dataLength, result);
                 }
                 else if ( read == 0 )
                 {
+                    TRACE_INFO("No data to read. There are still [ %d ] bytes to wait, breaking loop", dataLength);
                     dataLength  = 0;    // break loop. the other side disconnected
                     result      = 0;    // no data could read. specified socket is closed
                 }
                 else
                 {
+                    TRACE_ERR("FAILED to receive [ %d ] bytes of data, error code is [ %p ], terminating receiving", dataLength, static_cast<id_type>(errno));
                     // in all other cases
                     dataLength  = 0;    // break loop
                     result      = -1;   // notify failure
@@ -205,12 +158,12 @@ AREG_API int NESocket::receiveData(SOCKETHANDLE hSocket, unsigned char * dataBuf
         }
         else
         {
-            ; // no data to receive
+            TRACE_ERR("Either buffer is null [ %s ] or wrong data length to receive [ %d ]", dataBuffer == NULL ? "YES" : "NO", dataLength);
         }
     }
     else
     {
-        ; // invalid socket
+        TRACE_ERR("INVALID socket, will not be able to receive [ %d ] bytes of data", dataLength);
     }
 
     return result;
@@ -228,6 +181,8 @@ AREG_API bool NESocket::disableReceive(SOCKETHANDLE hSocket)
 
 AREG_API unsigned int NESocket::remainDataRead( SOCKETHANDLE hSocket )
 {
+    TRACE_SCOPE(areg_base_NESocketPosix_remainDataRead);
+
     unsigned int result = 0;
     if ( hSocket != NESocket::InvalidSocketHandle )
     {
@@ -236,7 +191,13 @@ AREG_API unsigned int NESocket::remainDataRead( SOCKETHANDLE hSocket )
         {
             result = static_cast<unsigned int>(arg);
         }
+        else
+        {
+            TRACE_WARN("FAILED to check the remaining data to read, error code [ %p ]", static_cast<id_type>(errno));
+        }
     }
+
+    TRACE_INFO("Remain [ %d ] bytes of data to read", result);
 
     return result;
 }

@@ -40,17 +40,6 @@ typedef struct S_PosixTimer
 TIMERHANDLE TimerManager::_createWaitableTimer( const char * /* timerName */ )
 {
     return static_cast<TIMERHANDLE>(DEBUG_NEW TimerPosix());
-    /******************************
-    sPosixTimer *posixTimer = new sPosixTimer;
-    if ( posixTimer != NULL )
-    {
-        NEMemory::ZeroBuffer(static_cast<void *>(posixTimer), sizeof(sPosixTimer));
-    }
-
-    // return reinterpret_cast<TIMERHANDLE>( DEBUG_NEW WaitableTimerIX(true, false, timerName) );
-
-    return reinterpret_cast<TIMERHANDLE>(posixTimer);
-    ******************************/
 }
 
 void TimerManager::_stopSystemTimer( TIMERHANDLE timerHandle )
@@ -58,17 +47,6 @@ void TimerManager::_stopSystemTimer( TIMERHANDLE timerHandle )
     TimerPosix * posixTimer = reinterpret_cast<TimerPosix *>(timerHandle);
     if ( posixTimer != NULL )
         posixTimer->stopTimer();
-
-    /******************************
-    ASSERT( timerHandle != static_cast<TIMERHANDLE>(NULL) );
-    sPosixTimer * posixTimer = reinterpret_cast<sPosixTimer *>(timerHandle);
-    if (posixTimer->timerId != static_cast<timer_t>(NULL))
-    {
-        itimerspec cancelSpec;
-        NEMemory::ZeroBuffer(static_cast<void *>(&cancelSpec), sizeof(itimerspec));
-        timer_settime(posixTimer->timerId, 0, &cancelSpec, NULL);
-    }
-    ******************************/
 }
 
 void TimerManager::_destroyWaitableTimer( TIMERHANDLE timerHandle, bool /* cancelTimer */ )
@@ -76,23 +54,6 @@ void TimerManager::_destroyWaitableTimer( TIMERHANDLE timerHandle, bool /* cance
     TimerPosix * posixTimer = reinterpret_cast<TimerPosix *>(timerHandle);
     if ( posixTimer != NULL )
         posixTimer->destroyTimer();
-
-    /******************************
-    ASSERT( timerHandle != static_cast<TIMERHANDLE>(NULL) );
-    sPosixTimer * posixTimer = reinterpret_cast<sPosixTimer *>(timerHandle);
-    if (posixTimer->timerId != static_cast<timer_t>(NULL))
-    {
-        if (cancelTimer)
-        {
-            _stopSystemTimer(timerHandle);
-        }
-
-        timer_delete(posixTimer->timerId);
-        posixTimer->timerId = static_cast<timer_t>(NULL);
-    }
-
-    delete posixTimer;
-    ******************************/
 }
 
 bool TimerManager::_startSystemTimer( TimerInfo & timerInfo, MapTimerTable & timerTable )
@@ -115,7 +76,7 @@ bool TimerManager::_startSystemTimer( TimerInfo & timerInfo, MapTimerTable & tim
                 OUTPUT_ERR( "System Failed to start timer in period [ %d ] ms, timer name [ %s ]. System Error [ %p ]"
                             , whichTimer->getFireTime( )
                             , whichTimer->getName( )
-                            , errno );
+                            , static_cast<id_type>(errno) );
 
                 result = false;
                 timerInfo.mTimerState   = TimerInfo::TimerIdle;
@@ -125,68 +86,6 @@ bool TimerManager::_startSystemTimer( TimerInfo & timerInfo, MapTimerTable & tim
     }
 
     return result;
-
-    /******************************
-    sPosixTimer * posixTimer= reinterpret_cast<sPosixTimer *>(timerInfo.getHandle());
-    if (posixTimer != NULL)
-    {
-        ASSERT(posixTimer->timerId == static_cast<timer_t>(NULL));
-
-        struct timespec ts;
-        clock_gettime(CLOCK_REALTIME, &ts);
-        timerInfo.TimerIsStarting(ts.tv_nsec, ts.tv_sec);
-
-        struct sigevent sigEvent;
-        NEMemory::ZeroBuffer(static_cast<void *>(&sigEvent), sizeof(struct sigevent));
-        sigEvent.sigev_notify           = SIGEV_THREAD;
-        sigEvent.sigev_value.sival_ptr  = static_cast<void *>(posixTimer);
-        sigEvent.sigev_notify_function  = &TimerManager::_defaultPosixTimerExpiredRoutine;
-        sigEvent.sigev_notify_attributes= NULL;
-
-        if (RETURNED_OK == timer_create(CLOCK_REALTIME, &sigEvent, &posixTimer->timerId))
-        {
-            Timer * whichTimer    = timerInfo.getTimer();
-            ASSERT( whichTimer != static_cast<Timer *>(NULL) );
-
-            // the period of time. If should be fired several times, set the period value. Otherwise set zero to fire once.
-            unsigned int countPeriod= whichTimer->GetEventCount( ) > 1 ? whichTimer->getFireTime( ) : 0;
-            unsigned int msTimeout  = whichTimer->getFireTime();    // timer from now
-
-            struct itimerspec interval;
-            NEMemory::ZeroBuffer(static_cast<void *>(&interval), sizeof(struct itimerspec));
-            NESynchTypesIX::ConvertTimeout(interval.it_value, msTimeout);
-            if (countPeriod > 0)
-            {
-                interval.it_interval.tv_sec = interval.it_value.tv_sec;
-                interval.it_interval.tv_nsec= interval.it_value.tv_nsec;
-            }
-
-            posixTimer->timerOwner  = whichTimer;
-            posixTimer->timerPeriod = countPeriod;
-            posixTimer->timerTimeout= msTimeout;    // timer from now
-            posixTimer->timerDueSecs= interval.it_value.tv_sec;
-            posixTimer->timerDueNs  = interval.it_value.tv_nsec;
-
-            timerTable.SetKey( whichTimer, timerInfo, true );
-            if ( RETURNED_OK != timer_settime(posixTimer->timerId, 0, &interval, NULL) )
-            {
-                OUTPUT_ERR( "System Failed to start timer in period [ %d ] ms, timer name [ %s ]. System Error [ %p ]"
-                            , whichTimer->getFireTime( )
-                            , whichTimer->getTimerName( )
-                            , errno );
-
-                timerInfo.mTimerState   = TimerInfo::TimerIdle;
-                timerTable.SetKey( whichTimer, timerInfo, true );
-            }
-            else
-            {
-                result = true;
-            }
-        }
-    }
-
-    return result;
-    ******************************/
 }
 
 void TimerManager::_defaultPosixTimerExpiredRoutine( union sigval argSig )
@@ -203,29 +102,6 @@ void TimerManager::_defaultPosixTimerExpiredRoutine( union sigval argSig )
             lockAndWait->_notifyAsynchSignal( );
         }
     }
-
-    /******************************
-    sPosixTimer *posixTimer = reinterpret_cast<sPosixTimer *>(argSig.sival_ptr);
-    if (posixTimer != NULL)
-    {
-        if (posixTimer->timerId != static_cast<timer_t>(NULL))
-        {
-            if ((posixTimer->timerPeriod > 0) && (-- posixTimer->timerPeriod == 0))
-            {
-                TimerManager::_stopSystemTimer(static_cast<TIMERHANDLE>(posixTimer));
-            }
-
-            TimerManager::getInstance().isTimerExpired(posixTimer->timerOwner, posixTimer->timerDueNs, posixTimer->timerDueNs);
-
-            timespec ts;
-            ts.tv_sec   = posixTimer->timerDueSecs;
-            ts.tv_nsec  = posixTimer->timerDueNs;
-            NESynchTypesIX::ConvertTimeout(ts, posixTimer->timerTimeout);
-            posixTimer->timerDueSecs= ts.tv_sec;
-            posixTimer->timerDueNs  = ts.tv_nsec;
-        }
-    }
-    ******************************/
 }
 
 #endif // _POSIX

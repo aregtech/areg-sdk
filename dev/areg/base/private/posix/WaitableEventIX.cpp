@@ -142,12 +142,6 @@ void WaitableEventIX::notifyReleasedThreads(int numThreads)
         OUTPUT_DBG("There were [ %d ] released threads, automatically reseting waitable event [ %p ].", numThreads, this);
         mIsSignaled = false;
     }
-#ifdef DEBUG
-    else
-    {
-        // OUTPUT_INFO("The waitable event [ %s / %p ] cannot be reset. Type = [ %s ], threads released [ %d ]", getName(), this, NESynchTypesIX::getString(mEventReset), numThreads);
-    }
-#endif // DEBUG
 }
 
 #endif  // _POSIX

@@ -57,15 +57,19 @@ StreamableEvent * RemoteEventFactory::createEventFromStream( const RemoteMessage
                 if ( eventRequest != NULL )
                 {
                     Channel chTarget( stub->getAddress().getChannel() );
-                    Channel chSource( comChannel.getSource(), chTarget.getSource(), stream.getSource() );
+                    Channel chSource( static_cast<ITEM_ID>(comChannel.getSource()), static_cast<ITEM_ID>(chTarget.getSource()), static_cast<ITEM_ID>(stream.getSource()) );
                     eventRequest->setTargetChannel(chTarget);
                     eventRequest->setSourceChannel(chSource);
 
                     TRACE_DBG("Created event Event::EventRemoteServiceRequest for target stub [ %s ] from source proxy [ %s ]. Target: [ ch = %p, src = %p, trg = %p ], Source [ ch = %p, src = %p, trg = %p ]"
                                 , StubAddress::convAddressToPath(eventRequest->getTargetStub()).getString()
                                 , ProxyAddress::convAddressToPath(eventRequest->getEventSource()).getString()
-                                , chTarget.getCookie(), chTarget.getSource(), chTarget.getTarget()
-                                , chSource.getCookie(), chSource.getSource(), chSource.getTarget() );
+                                , static_cast<id_type>(chTarget.getCookie())
+                                , static_cast<id_type>(chTarget.getSource())
+                                , static_cast<id_type>(chTarget.getTarget())
+                                , static_cast<id_type>(chSource.getCookie())
+                                , static_cast<id_type>(chSource.getSource())
+                                , static_cast<id_type>(chSource.getTarget()) );
                 }
 
                 result = static_cast<StreamableEvent *>(eventRequest);
@@ -87,15 +91,19 @@ StreamableEvent * RemoteEventFactory::createEventFromStream( const RemoteMessage
                 if ( eventNotify != NULL )
                 {
                     Channel chTarget( stub->getAddress().getChannel() );
-                    Channel chSource( comChannel.getSource(), chTarget.getSource(), stream.getSource() );
+                    Channel chSource( static_cast<ITEM_ID>(comChannel.getSource()), static_cast<ITEM_ID>(chTarget.getSource()), static_cast<ITEM_ID>(stream.getSource()) );
                     eventNotify->setTargetChannel(chTarget);
                     eventNotify->setSourceChannel(chSource);
 
                     TRACE_DBG("Created event Event::EventRemoteNotifyRequest for target stub [ %s ] from source proxy [ %s ]. Target: [ ch = %p, src = %p, trg = %p ], Source [ ch = %p, src = %p, trg = %p ]"
                                 , StubAddress::convAddressToPath(eventNotify->getTargetStub()).getString()
                                 , ProxyAddress::convAddressToPath(eventNotify->getEventSource()).getString()
-                                , chTarget.getCookie(), chTarget.getSource(), chTarget.getTarget()
-                                , chSource.getCookie(), chSource.getSource(), chSource.getTarget() );
+                                , static_cast<id_type>(chTarget.getCookie())
+                                , static_cast<id_type>(chTarget.getSource())
+                                , static_cast<id_type>(chTarget.getTarget())
+                                , static_cast<id_type>(chSource.getCookie())
+                                , static_cast<id_type>(chSource.getSource())
+                                , static_cast<id_type>(chSource.getTarget()) );
                 }
                 result = static_cast<StreamableEvent *>(eventNotify);
             }
@@ -120,7 +128,9 @@ StreamableEvent * RemoteEventFactory::createEventFromStream( const RemoteMessage
 
                     TRACE_DBG("Created event Event::EventRemoteServiceResponse for target proxy [ %s ]. Target: [ ch = %p, src = %p, trg = %p ]"
                                 , ProxyAddress::convAddressToPath(eventResponse->getTargetProxy()).getString()
-                                , chTarget.getCookie(), chTarget.getSource(), chTarget.getTarget() );
+                                , static_cast<id_type>(chTarget.getCookie())
+                                , static_cast<id_type>(chTarget.getSource())
+                                , static_cast<id_type>(chTarget.getTarget()) );
                 }
                 result = static_cast<StreamableEvent *>(eventResponse);
             }
@@ -172,9 +182,9 @@ bool RemoteEventFactory::createStreamFromEvent( RemoteMessage & stream, const St
                     stream.bufferCompletionFix();
 
                     TRACE_DBG("Created message [ %p ] from event Event::EventRemoteServiceRequest. Target [ %p ], Source [ %p ]"
-                                , stream.getMessageId()
-                                , stream.getTarget()
-                                , stream.getSource());
+                                , static_cast<id_type>(stream.getMessageId())
+                                , static_cast<id_type>(stream.getTarget())
+                                , static_cast<id_type>(stream.getSource()));
                 }
             }
             else
@@ -200,10 +210,10 @@ bool RemoteEventFactory::createStreamFromEvent( RemoteMessage & stream, const St
                     stream.setSequenceNr( stubEvent->getSequenceNumber() );
                     stream.bufferCompletionFix();
 
-                    TRACE_DBG("Created message [ 0x%08X ] from event Event::EventRemoteNotifyRequest. Target [ %p ], Source [ %p ]"
-                                , stream.getMessageId()
-                                , stream.getTarget()
-                                , stream.getSource());
+                    TRACE_DBG("Created message [ %p ] from event Event::EventRemoteNotifyRequest. Target [ %p ], Source [ %p ]"
+                                , static_cast<id_type>(stream.getMessageId())
+                                , static_cast<id_type>(stream.getTarget())
+                                , static_cast<id_type>(stream.getSource()));
                 }
             }
             else
@@ -230,9 +240,9 @@ bool RemoteEventFactory::createStreamFromEvent( RemoteMessage & stream, const St
                     stream.bufferCompletionFix();
 
                     TRACE_DBG("Created message [ %p ] from event Event::EventRemoteServiceResponse Target [ %p ], Source [ %p ]"
-                                , stream.getMessageId()
-                                , stream.getTarget()
-                                , stream.getSource());
+                                , static_cast<id_type>(stream.getMessageId())
+                                , static_cast<id_type>(stream.getTarget())
+                                , static_cast<id_type>(stream.getSource()));
                 }
             }
             else

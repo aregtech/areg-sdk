@@ -44,35 +44,35 @@ void ServerSendThread::processEvent( const SendMessageEventData & data )
     const RemoteMessage & msgSend = data.getRemoteMessage();
     if ( msgSend.isValid() )
     {
-        ITEM_ID target = msgSend.getTarget();
+        ITEM_ID target = static_cast<ITEM_ID>(msgSend.getTarget());
         SocketAccepted client = mConnection.getClientByCookie(target);
         
         TRACE_DBG("Processing to send message [ %s ] ( ID = %p ) to client [ %s : %d ] of socket [ %u ]. The message sent from source [ %p ] to target [ %p ]"
                     , NEService::getString( static_cast<NEService::eFuncIdRange>(msgSend.getMessageId()) )
-                    , msgSend.getMessageId()
+                    , static_cast<id_type>(msgSend.getMessageId())
                     , client.getAddress().getHostAddress().getString()
                     , client.getAddress().getHostPort()
-                    , client.getHandle()
-                    , msgSend.getSource()
-                    , msgSend.getTarget());
+                    , ((unsigned int)(client.getHandle()))
+                    , static_cast<id_type>(msgSend.getSource())
+                    , static_cast<id_type>(msgSend.getTarget()));
 
         if ( mConnection.sendMessage( msgSend, client ) < 0 )
         {
-            TRACE_WARN("Failed to send message [ %u ] to target [ %p ]", msgSend.getMessageId(), msgSend.getTarget());
+            TRACE_WARN("Failed to send message [ %u ] to target [ %p ]", msgSend.getMessageId(), static_cast<id_type>(msgSend.getTarget()));
             mRemoteService.failedSendMessage( msgSend );
         }
         else
         {
-            TRACE_DBG("Succeeded to send message [ %u ] to target [ %p ]", msgSend.getMessageId(), msgSend.getTarget());
+            TRACE_DBG("Succeeded to send message [ %u ] to target [ %p ]", msgSend.getMessageId(), static_cast<id_type>(msgSend.getTarget()));
         }
     }
     else
     {
         TRACE_DBG("Message [ %s ] ( ID = %p ) from source [ %p ] to target [ %p ], ignoring to send message"
                         , NEService::getString( static_cast<NEService::eFuncIdRange>(msgSend.getMessageId()) )
-                        , msgSend.getMessageId()
-                        , msgSend.getSource()
-                        , msgSend.getTarget());
+                        , static_cast<id_type>(msgSend.getMessageId())
+                        , static_cast<id_type>(msgSend.getSource())
+                        , static_cast<id_type>(msgSend.getTarget()));
     }
 }
 

@@ -4,7 +4,7 @@
 /************************************************************************
  * (c) copyright    2021
  *                  Create by AREG SDK code generator tool from source HelloWorld.
- * Generated at     26.05.2021  15:50:40 GMT+02:00 
+ * Generated at     27.05.2021  03:25:12 GMT+02:00 
  ************************************************************************/
 
 /************************************************************************
@@ -127,10 +127,10 @@ DispatcherThread * HelloWorldClientBase::getDispatcherThread( void )
     return ( mProxy != static_cast<HelloWorldProxy *>(NULL) ? &(mProxy->getProxyDispatcherThread()) : static_cast<DispatcherThread *>(NULL) );
 }
 
-DEF_TRACE_SCOPE(gen_HelloWorldClientBase_ServiceConnected);
+DEF_TRACE_SCOPE(gen_HelloWorldClientBase_serviceConnected);
 bool HelloWorldClientBase::serviceConnected( bool isConnected, ProxyBase & proxy )
 {
-    TRACE_SCOPE(gen_HelloWorldClientBase_ServiceConnected);
+    TRACE_SCOPE(gen_HelloWorldClientBase_serviceConnected);
     
     bool result = false;
     if(mProxy == &proxy)

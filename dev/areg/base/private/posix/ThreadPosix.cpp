@@ -24,10 +24,11 @@
 #include <sys/unistd.h>
 #include <sys/types.h>
 
+//!< POSIX thread structure
 typedef struct S_PosixThread
 {
-    pthread_t       pthreadId;
-    pthread_attr_t  pthreadAttr;
+    pthread_t       pthreadId;      //!< The POSIX thread ID
+    pthread_attr_t  pthreadAttr;    //!< The POSIX thread attribute
 } sPosixThread;
 
   /************************************************************************/
@@ -146,8 +147,6 @@ Thread::eCompletionStatus Thread::destroyThread(unsigned int waitForStopMs /* = 
         ASSERT (waitForStopMs != Thread::WAIT_INFINITE || isRunning() == false);
     }
 
-    // pthread_join(threadId, NULL);
-
     do
     {
         Lock lock(mSynchObject);
@@ -251,7 +250,7 @@ Thread::eThreadPriority Thread::setPriority( eThreadPriority newPriority )
             OUTPUT_ERR("Cannot set thread priority [ %s ] (POSIX priority %d ) for thread [ %p ] , failed with error code [ %x ]."
                 , Thread::getString(newPriority)
                 , schedParam.sched_priority
-                , mThreadId
+                , static_cast<id_type>(mThreadId)
                 , errno);
         }
 #endif // DEBUG

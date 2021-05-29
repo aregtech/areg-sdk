@@ -19,12 +19,13 @@
 // MulticastRouter class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   The message broker is a separate process, which routs messages
+ * \brief   The message routing service is a separate process, which routs messages
  *          to components. Applications, developed based on AREG SDK,
- *          should connect to message broker to send and receive IPC messages.
- *          The business logic of message broker to know logical relationship
+ *          should connect to message routing service to send and receive IPC messages.
+ *          The business logic of message router to know logical relationship
  *          of running components and know where to redirect messages.
- *          Normally, for every connection channel type there should one message broker.
+ *          Normally, for every connection channel type there should one instance of 
+ *          message routing service also called as Multi-casting router (MCR).
  **/
 class MulticastRouter
 {
@@ -33,7 +34,7 @@ class MulticastRouter
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Message broker Servicing commands
+     * \brief   Message routing service commands
      **/
     typedef enum E_ServiceCommand
     {
@@ -54,7 +55,7 @@ public:
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Returns singleton instance of message broker.
+     * \brief   Returns singleton instance of multi-cast router (MCR).
      **/
     static MulticastRouter & getInstance( void );
 
@@ -158,9 +159,18 @@ private:
      **/
     bool _createService( void );
     /**
+     * \brief   OS specific implementation of deleting service.
+     **/
+    void _deleteService( void );
+    /**
      * \brief   OS specific validity check of message router service.
      **/
     bool _isValid( void ) const;
+    /**
+     * \brief   Registers service and returns true if handle is valid.
+     *          The method is valid for Windows OS.
+     **/
+    bool _registerService( void );
     /**
      * \brief   Returns instance of message router service.
      **/
@@ -178,10 +188,6 @@ private:
      * \brief   The current command to execute by message router service.
      **/
     MulticastRouter::eServiceCommand       mServiceCmd;
-    /**
-     * \brief   The special event to stop and quit message router service.
-     **/
-    SynchEvent      mQuitEvent;
     /**
      * \brief   The instance of message router service server to accept connections from applications.
      **/

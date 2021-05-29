@@ -76,3 +76,16 @@
 /examples/11_svcmix/release/
 /examples/11_svcmix/.settings/
 /examples/11_svcmix/logs/
+
+/examples/12_ipchello/shripchello/debug/
+/examples/12_ipchello/shripchello/release/
+/examples/12_ipchello/shripchello/.settings/
+/examples/12_ipchello/shripchello/logs/
+/examples/12_ipchello/svcipchello/debug/
+/examples/12_ipchello/svcipchello/release/
+/examples/12_ipchello/svcipchello/.settings/
+/examples/12_ipchello/svcipchello/logs/
+/examples/12_ipchello/usripchello/debug/
+/examples/12_ipchello/usripchello/release/
+/examples/12_ipchello/usripchello/.settings/
+/examples/12_ipchello/usripchello/logs/

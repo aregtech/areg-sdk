@@ -6,105 +6,161 @@
 // Description : Hello World in C++, Ansi-style
 //============================================================================
 
-#include <iostream>
-using namespace std;
-
-#include "areg/appbase/Application.hpp"
-#include "areg/component/NERegistry.hpp"
-#include "areg/component/ComponentLoader.hpp"
-#include "areg/base/Thread.hpp"
-#include "areg/base/File.hpp"
-#include "areg/base/SharedBuffer.hpp"
+#include "areg/base/RemoteMessage.hpp"
 #include "areg/base/NEMemory.hpp"
-#include "src/services/CESystem.hpp"
+#include "areg/component/NEService.hpp"
+#include "areg/ipc/private/NEConnection.hpp"
+#include "areg/component/StubAddress.hpp"
 
-BEGIN_MODEL("test_areg_basic")
+#include <iostream>
 
-    BEGIN_REGISTER_THREAD( "ThreadSystem" )
-        BEGIN_REGISTER_COMPONENT( "CompSystem", CESystem )
-            REGISTER_IMPLEMENT_SERVICE( NESystem::ServiceName, 1, 0, 0 )
-        END_REGISTER_COMPONENT( "CompSystem" )
-    END_REGISTER_THREAD( "ThreadSystem" )
+#ifdef WINDOWS
+    #pragma comment(lib, "areg.lib")
+#endif // WINDOWS
 
-END_MODEL("test_areg_basic")
-
+static void printBufferData(const NEMemory::sRemoteMessage & msg, const char * info);
 
 int main()
 {
-	cout << "!!!Hello World!!!" << endl; // prints !!!Hello World!!!
-#if 1
-	File file("./debug/temp/test.txt", FileBase::FO_MODE_CREATE | FileBase::FO_MODE_WRITE | FileBase::FO_MODE_SHARE_READ | FileBase::FO_MODE_SHARE_WRITE);
-	if ( file.open() )
-	{
-	    OUTPUT_DBG("Create File [ %s ]", file.getName());
-	}
+	std::cout << "!!!Hello World!!!" << std::endl; // prints !!!Hello World!!!
 
-	const char * nextPos = NULL;
-	const char * lastPos = NULL;
-	char fileName[File::MAXIMUM_PATH + 1];
-	NEString::copyString<char>(fileName, File::MAXIMUM_PATH + 1, file.getName(), NEString::CountAll );
-
-	OUTPUT_DBG("List of parents for path [ %s ]", fileName);
-	for ( int i = 1; File::findParent(fileName, &nextPos, lastPos); ++ i)
-	{
-	    fileName[nextPos - fileName] = NEString::EndOfString;
-	    lastPos = nextPos;
-	    OUTPUT_DBG("    >>  %d. %s", i, fileName);
-	}
-
-	file.reserve(12);
-
-	file.close();
-
-	File::copyFile(file.getName(), "./temp/data/test1.txt", true);
-
-	String fullPath = File::getFileFullPath("./test.txt");
-	OUTPUT_DBG("Full path [ % s]", fullPath.getBuffer());
-
-	NEMemory::sByteBuffer b;
-	OUTPUT_DBG("sByteBuffer address [ %u ], size header [ %u ], addr data ptr [ %u ], addr data elem [ %u ], addr with offset [ %u ]"
-	            , reinterpret_cast<unsigned char *>(&b)
-	            , sizeof(NEMemory::sBuferHeader)
-	            , reinterpret_cast<unsigned char *>(&b.bufData)
-	            , reinterpret_cast<unsigned char *>(&b.bufData[0])
-                , reinterpret_cast<unsigned char *>(&b) + sizeof(NEMemory::sBuferHeader));
-
-	SharedBuffer dummy;
-	char temp[16];
-	for (int i = 1; i <= 30; ++ i)
-	{
-	    sprintf(temp, "count %d", i);
-	    String str(temp);
-	    dummy << str;
-	}
-
-	dummy.moveToBegin();
-
-	for (int i = 0; i < 30; ++ i)
-	{
-	    String str;
-	    dummy >> str;
-	    printf("%s\n", str.getString());
-	}
-#endif
-
-	Application::initApplication(true, true, true, true, NULL, NULL);
-
-	Application::loadModel( "test_areg_basic" );
-
-	// Thread::Sleep(3000);
-
-    char ch = getchar();
-    if ( ch == '\0' )
+    if (sizeof(void *) == 4)
     {
-        OUTPUT_DBG("main >>> getchar() Received null-terminated symbol.");
+        OUTPUT_DBG("32-bit system......");
     }
-    else
+    else if (sizeof(void *) == 8)
     {
-        OUTPUT_DBG("main >>> getchar() received [ %c ] symbol.", ch);
+        OUTPUT_DBG("64-bit system......");
     }
+    OUTPUT_DBG("sizeof(NEMemory::sBuferHeader) = %d;", sizeof(NEMemory::sBuferHeader));
 
-	Application::releaseApplication();
+    printBufferData(NEConnection::MessageHelloServer, "NEConnection::MessageHelloServer");
+
 
 	return 0;
+}
+
+static void printBufferData(const NEMemory::sRemoteMessage & msg, const char * info)
+{
+    NEService::eServiceRequestType reqType = NEService::SERVICE_REQUEST_REGISTER_STUB;
+    StubAddress stub("TestServiceName", Version(1, 1, 1), NEService::ServiceRemote, "TestRoleName", "TestThreadName");
+
+    OUTPUT_DBG("Print ORIGIN of %s = {", info);
+    OUTPUT_DBG("    {");
+    OUTPUT_DBG("        {");
+    OUTPUT_DBG("            , msg.rbHeader.rbhBufHeader.biBufSize = %d", msg.rbHeader.rbhBufHeader.biBufSize);
+    OUTPUT_DBG("            , msg.rbHeader.rbhBufHeader.biLength  = %d", msg.rbHeader.rbhBufHeader.biLength);
+    OUTPUT_DBG("            , msg.rbHeader.rbhBufHeader.biOffset  = %d", msg.rbHeader.rbhBufHeader.biOffset);
+    OUTPUT_DBG("            , msg.rbHeader.rbhBufHeader.biBufType = %s", NEMemory::getString(static_cast<NEMemory::eBufferType>(msg.rbHeader.rbhBufHeader.biBufType)));
+    OUTPUT_DBG("            , msg.rbHeader.rbhBufHeader.biUsed    = %d", msg.rbHeader.rbhBufHeader.biUsed);
+    OUTPUT_DBG("            , msg.rbHeader.rbhBufHeader.biRefCount= %d", msg.rbHeader.rbhBufHeader.biRefCount);
+    OUTPUT_DBG("        }");
+    OUTPUT_DBG("        , msg.rbHeader.rbhTarget      = %d", msg.rbHeader.rbhTarget);
+    OUTPUT_DBG("        , msg.rbHeader.rbhChecksum    = %d", msg.rbHeader.rbhChecksum);
+    OUTPUT_DBG("        , - msg.rbHeader.rbhSource    = %d", msg.rbHeader.rbhSource);
+    OUTPUT_DBG("        , msg.rbHeader.rbhMessageId   = %d", msg.rbHeader.rbhMessageId);
+    OUTPUT_DBG("        , msg.rbHeader.rbhResult      = %s", NEMemory::getString( static_cast<NEMemory::eMessageResult>(msg.rbHeader.rbhResult)));
+    OUTPUT_DBG("        , - msg.rbHeader.rbhSequenceNr= %d", msg.rbHeader.rbhSequenceNr);
+    OUTPUT_DBG("    }");
+    OUTPUT_DBG("    , msg.rbData[0]   = %d", static_cast<int>(msg.rbData[0]));
+    OUTPUT_DBG("};");
+    OUTPUT_DBG("ServiceRequestType  = %s;", NEService::getString(reqType));
+    OUTPUT_DBG("StubAddress         = %s;", StubAddress::convAddressToPath(stub).getString());
+
+    RemoteMessage remote;
+    remote.initMessage(msg.rbHeader);
+    remote.setSource( NEService::SOUR_UNKNOWN );
+    remote.setSequenceNr( NEService::SEQUENCE_NUMBER_NOTIFY );    
+    remote << reqType;
+    remote << stub;
+    
+    remote.bufferCompletionFix();
+    remote.moveToBegin();
+
+    const NEMemory::sRemoteMessage & rmt = remote.getRemoteMessage();
+    NEService::eServiceRequestType cpyReqType;
+    StubAddress cpyStub;
+    remote >> cpyReqType;
+    remote >> cpyStub;
+
+    const unsigned int offset   = MACRO_OFFSETOF(NEMemory::sRemoteMessageHeader, rbhSource);
+    const unsigned char * data  = reinterpret_cast<const unsigned char *>(&rmt.rbHeader.rbhSource);
+    const unsigned int remain   = rmt.rbHeader.rbhBufHeader.biOffset - offset;
+    const unsigned int used     = rmt.rbHeader.rbhBufHeader.biUsed;
+    const unsigned int correct  = MACRO_MAX(used, sizeof(NEMemory::BufferData));
+    const unsigned int length   = used + remain;
+
+    OUTPUT_DBG("-------------------------------------------------------");
+    OUTPUT_DBG("Print COPY of %s = {", info);
+    OUTPUT_DBG("    {");
+    OUTPUT_DBG("        {");
+    OUTPUT_DBG("            , rmt.rbHeader.rbhBufHeader.biBufSize = %d", rmt.rbHeader.rbhBufHeader.biBufSize);
+    OUTPUT_DBG("            , rmt.rbHeader.rbhBufHeader.biLength  = %d", rmt.rbHeader.rbhBufHeader.biLength);
+    OUTPUT_DBG("            , rmt.rbHeader.rbhBufHeader.biOffset  = %d", rmt.rbHeader.rbhBufHeader.biOffset);
+    OUTPUT_DBG("            , rmt.rbHeader.rbhBufHeader.biBufType = %s", NEMemory::getString(static_cast<NEMemory::eBufferType>(rmt.rbHeader.rbhBufHeader.biBufType)));
+    OUTPUT_DBG("            , rmt.rbHeader.rbhBufHeader.biUsed    = %d", rmt.rbHeader.rbhBufHeader.biUsed);
+    OUTPUT_DBG("            , rmt.rbHeader.rbhBufHeader.biRefCount= %d", rmt.rbHeader.rbhBufHeader.biRefCount);
+    OUTPUT_DBG("        }");
+    OUTPUT_DBG("        , rmt.rbHeader.rbhTarget      = %d", rmt.rbHeader.rbhTarget);
+    OUTPUT_DBG("        , rmt.rbHeader.rbhChecksum    = %d", rmt.rbHeader.rbhChecksum);
+    OUTPUT_DBG("        , + rmt.rbHeader.rbhSource    = %d", rmt.rbHeader.rbhSource);
+    OUTPUT_DBG("        , rmt.rbHeader.rbhMessageId   = %d", rmt.rbHeader.rbhMessageId);
+    OUTPUT_DBG("        , rmt.rbHeader.rbhResult      = %s", NEMemory::getString( static_cast<NEMemory::eMessageResult>(rmt.rbHeader.rbhResult)));
+    OUTPUT_DBG("        , + rmt.rbHeader.rbhSequenceNr= %d", rmt.rbHeader.rbhSequenceNr);
+    OUTPUT_DBG("    }");
+    OUTPUT_DBG("    , rmt.rbData[0]   = %d", static_cast<int>(rmt.rbData[0]));
+    OUTPUT_DBG("};");
+    OUTPUT_DBG("ServiceRequestType  = %s;", NEService::getString(cpyReqType));
+    OUTPUT_DBG("StubAddress         = %s;", StubAddress::convAddressToPath(cpyStub).getString());
+    OUTPUT_DBG("-------------------------------------------------------");
+    OUTPUT_DBG("CHECKSUM data:");
+    OUTPUT_DBG("checksum offset = %d;", offset);
+    //OUTPUT_DBG("checksum data   = %p;", data);
+    OUTPUT_DBG("checksum remain = %d;", remain);
+    OUTPUT_DBG("checksum used   = %d;", used);
+    OUTPUT_DBG("checksum correct= %d;", correct);
+    OUTPUT_DBG("checksum length = %d;", length);
+    OUTPUT_MSG("checksum data       = {");
+    String comma = "";
+    unsigned int i = 0;
+    for (i = 0; i < length; ++ i)
+    {
+        OUTPUT_MSG("%s0x%02x", comma.getString(), static_cast<unsigned int>(data[i]));
+        comma = ", ";
+    }
+    OUTPUT_MSG("};\n");
+
+    OUTPUT_DBG("-------------------------------------------------------");
+    const unsigned char * buffer = remote.getBuffer();
+    unsigned int len = remote.getSizeUsed();
+
+    const unsigned char * rbhSource     = reinterpret_cast<const unsigned char *>(&rmt.rbHeader.rbhSource);
+    const unsigned char * rbhMessageId  = reinterpret_cast<const unsigned char *>(&rmt.rbHeader.rbhMessageId);
+    const unsigned char * rbhResult     = reinterpret_cast<const unsigned char *>(&rmt.rbHeader.rbhResult);
+    const unsigned char * rbhSequenceNr = reinterpret_cast<const unsigned char *>(&rmt.rbHeader.rbhSequenceNr);
+
+    OUTPUT_MSG("        rbhSource   = {0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x};\n", rbhSource[0], rbhSource[1], rbhSource[2], rbhSource[3], rbhSource[4], rbhSource[5], rbhSource[6], rbhSource[7]);
+    OUTPUT_MSG("        rbhMessageId= {                                                0x%02x, 0x%02x, 0x%02x, 0x%02x};\n", rbhMessageId[0], rbhMessageId[1], rbhMessageId[2], rbhMessageId[3]);
+    OUTPUT_MSG("        rbhResult   = {                                                                        0x%02x, 0x%02x, 0x%02x, 0x%02x};\n", rbhResult[0], rbhResult[1], rbhResult[2], rbhResult[3]);
+    OUTPUT_MSG("        rbhSequence = {                                                                                                0x%02x, 0x%02x, 0x%02x, 0x%02x};\n", rbhSequenceNr[0], rbhSequenceNr[1], rbhSequenceNr[2], rbhSequenceNr[3]);
+    OUTPUT_MSG("         buffer     = {");
+    
+    comma = "";
+    for (i = 0; i < remain; ++ i)
+    {
+        OUTPUT_MSG("%s    ", comma.getString());
+        comma = "  ";
+    }
+
+    comma = "  ";
+    for (unsigned int i = 0; i < len; ++ i)
+    {
+        OUTPUT_MSG("%s0x%02x", comma.getString(), static_cast<unsigned int>(buffer[i]));
+        comma = ", ";
+    }
+    OUTPUT_MSG("};\n");
+
+    OUTPUT_DBG("-------------------------------------------------------");
+    OUTPUT_DBG("*******************************************************");
+
 }

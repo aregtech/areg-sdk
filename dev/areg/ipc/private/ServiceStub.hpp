@@ -22,7 +22,7 @@ class ProxyAddress;
 // ServiceStub class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   The Stub service object to register at broker.
+ * \brief   The Stub service object to register at message router.
  **/
 class AREG_API ServiceStub
 {

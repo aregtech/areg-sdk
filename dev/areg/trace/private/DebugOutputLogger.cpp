@@ -61,7 +61,12 @@ bool DebugOutputLogger::openLogger(void)
                 logMsgHello.lmTrace.traceScopeId    = 0;
                 logMsgHello.lmTrace.traceTimestamp  = DateTime::getNow();
                 logMsgHello.lmTrace.traceMessagePrio= NETrace::PrioIgnoreLayout;
-                String::formatString(logMsgHello.lmTrace.traceMessage, NETrace::LOG_MESSAGE_BUFFER_SIZE, LoggerBase::FOMAT_MESSAGE_HELLO, curProcess.getFullPath(), curProcess.getId());
+                String::formatString( logMsgHello.lmTrace.traceMessage
+                                    , NETrace::LOG_MESSAGE_BUFFER_SIZE
+                                    , LoggerBase::FOMAT_MESSAGE_HELLO
+                                    , Process::getString(curProcess.getEnvironment())
+                                    , curProcess.getFullPath()
+                                    , curProcess.getId());
 
                 logMessage(logMsgHello);
             }
@@ -93,7 +98,12 @@ void DebugOutputLogger::closeLogger(void)
         logMsgHello.lmTrace.traceScopeId    = 0;
         logMsgHello.lmTrace.traceTimestamp  = DateTime::getNow();
         logMsgHello.lmTrace.traceMessagePrio= NETrace::PrioIgnoreLayout;
-        String::formatString(logMsgHello.lmTrace.traceMessage, NETrace::LOG_MESSAGE_BUFFER_SIZE, LoggerBase::FORMAT_MESSAGE_BYE, curProcess.getFullPath(), curProcess.getId());
+        String::formatString( logMsgHello.lmTrace.traceMessage
+                            , NETrace::LOG_MESSAGE_BUFFER_SIZE
+                            , LoggerBase::FORMAT_MESSAGE_BYE
+                            , Process::getString(curProcess.getEnvironment())
+                            , curProcess.getFullPath()
+                            , curProcess.getId());
 
         logMessage(logMsgHello);
     }

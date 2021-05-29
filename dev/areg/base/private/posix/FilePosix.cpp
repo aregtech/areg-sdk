@@ -150,7 +150,7 @@ bool File::open( void )
             }
             else
             {
-                OUTPUT_ERR("Failed to open file [ %s ], errno = [ %p ]", mFileName.getString(), errno);
+                OUTPUT_ERR("Failed to open file [ %s ], errno = [ %p ]", mFileName.getString(), static_cast<id_type>(errno));
                 delete file;
                 file = NULL;
             }
@@ -188,11 +188,17 @@ unsigned int File::read(unsigned char* buffer, unsigned int size) const
             {
                 result = sizeRead;
             }
-            else
+#ifdef  _DEBUG
+            else if (sizeRead < 0)
             {
-                OUTPUT_ERR("Failed read file [ %s ], error code [ %p ].", mFileName, errno);
+                OUTPUT_ERR("Failed read file [ %s ], error code [ %p ].", mFileName.getString(), static_cast<id_type>(errno));
 
             }
+            else
+            {
+                OUTPUT_DBG("Finished to read file [ %s ]", mFileName.getString());
+            }
+#endif  // !_DEBUG
         }
         else
         {
@@ -218,7 +224,7 @@ unsigned int File::write(const unsigned char* buffer, unsigned int size)
         {
             if ( (result = ::write(file->fd, buffer, size)) != static_cast<int>(size) )
             {
-                OUTPUT_ERR("Failed to write [ %d ] bytes of data to file [ %s ]. Error code [ %p ].", size, mFileName.getString(), errno);
+                OUTPUT_ERR("Failed to write [ %d ] bytes of data to file [ %s ]. Error code [ %p ].", size, mFileName.getString(), static_cast<id_type>(errno));
                 result = 0;
             }
         }
@@ -454,7 +460,7 @@ bool File::copyFile( const char* originPath, const char* newPath, bool copyForce
                 {
                     if (::write(fdWrite, buffer, readSize) < 0)
                     {
-                        OUTPUT_ERR("Failed to copy [ %s ] into [ %s ], error code [ %p ]", originPath, newPath, errno);
+                        OUTPUT_ERR("Failed to copy [ %s ] into [ %s ], error code [ %p ]", originPath, newPath, static_cast<id_type>(errno));
                         result = false;
                         break;
                     }
@@ -462,7 +468,7 @@ bool File::copyFile( const char* originPath, const char* newPath, bool copyForce
             }
             else
             {
-                OUTPUT_ERR("Error during copying file. Allocated buffer address [ %p ], read fd [ %d ], write fd [ %d ], error [ %p ]", buffer, fdRead, fdWrite, errno);
+                OUTPUT_ERR("Error during copying file. Allocated buffer address [ %p ], read fd [ %d ], write fd [ %d ], error [ %p ]", buffer, fdRead, fdWrite, static_cast<id_type>(errno));
             }
 
             if (buffer != NULL)
@@ -544,7 +550,7 @@ String File::getFileFullPath( const char* filePath )
             }
             else
             {
-                OUTPUT_ERR("Could not retrieve the full path of file [ %s ], error code [ %p ]", filePath, errno);
+                OUTPUT_ERR("Could not retrieve the full path of file [ %s ], error code [ %p ]", filePath, static_cast<id_type>(errno));
             }
 
             delete [] buffer;

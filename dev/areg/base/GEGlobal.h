@@ -60,6 +60,8 @@
 #ifdef _DEBUG
     #if ((defined(OUTPUT_DEBUG) && (OUTPUT_DEBUG != 0)) || (defined(_OUTPUT_DEBUG) && (_OUTPUT_DEBUG != 0)))
         
+        #undef  OUTPUT_DEBUG
+        #undef _OUTPUT_DEBUG
         #define OUTPUT_DEBUG
         #define _OUTPUT_DEBUG
 

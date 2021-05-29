@@ -254,7 +254,7 @@ private:
  ************************************************************************/
 /**
  * \brief   Generic Remote Request Event object used to trigger request on Stub
- *          side within different processes via broker component. 
+ *          side within different processes via service routing module. 
  *          It is used for remote service interface communication.
  **/
 class AREG_API RemoteRequestEvent : public    RequestEvent

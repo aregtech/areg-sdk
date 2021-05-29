@@ -16,10 +16,10 @@
 #include "areg/base/NEMath.hpp"
 #include "areg/trace/GETrace.h"
 
-DEF_TRACE_SCOPE(areg_base_RemoteMessage_checksumCalculate);
+// DEF_TRACE_SCOPE(areg_base_RemoteMessage_checksumCalculate);
 inline unsigned int RemoteMessage::_checksumCalculate( const NEMemory::sRemoteMessage & remoteMessage )
 {
-    TRACE_SCOPE(areg_base_RemoteMessage_checksumCalculate);
+    // TRACE_SCOPE(areg_base_RemoteMessage_checksumCalculate);
 
     unsigned int result = NEMemory::INVALID_VALUE;
     if ( &remoteMessage != &NEMemory::InvalidRemoteMessage )
@@ -28,16 +28,15 @@ inline unsigned int RemoteMessage::_checksumCalculate( const NEMemory::sRemoteMe
         const unsigned char * data  = reinterpret_cast<const unsigned char *>(&remoteMessage.rbHeader.rbhSource);
         const unsigned int remain   = remoteMessage.rbHeader.rbhBufHeader.biOffset - offset;
         const unsigned int used     = remoteMessage.rbHeader.rbhBufHeader.biUsed;
-        const unsigned int correct  = MACRO_MAX(used, sizeof(NEMemory::BufferData));
+        // const unsigned int correct  = MACRO_MAX(used, sizeof(NEMemory::BufferData));
         const unsigned int length   = used + remain;
-        // const unsigned char * data      = NEMemory::GetBufferDataRead(reinterpret_cast<const NEMemory::sByteBuffer &>(remoteMessage.rbHeader.rbhBufHeader));
-        // const unsigned int dataLength   = remoteMessage.rbHeader.rbhBufHeader.biUsed + (remoteMessage.rbHeader.rbhBufHeader.biOffset - offset);
 
         result = NEMath::crc32Calculate(data, length);
 
-        TRACE_INFO("offset = [ %u ], data = [ %p ], remote data = [ %p ], remain = [ %u ], used = [ %u ], correct = [ %u ], length = [ %u ], checksum = [ %u ]"
-                    , offset, data, reinterpret_cast<const unsigned char *>(&remoteMessage), remain, used, correct, length, result);
+//         TRACE_INFO("offset = [ %u ], data = [ %p ], remote data = [ %p ], remain = [ %u ], used = [ %u ], correct = [ %u ], length = [ %u ], checksum = [ %u ]"
+//                     , offset, data, reinterpret_cast<const unsigned char *>(&remoteMessage), remain, used, correct, length, result);
     }
+
     return result;
 }
 
@@ -93,6 +92,7 @@ unsigned int RemoteMessage::initBuffer(unsigned char *newBuffer, unsigned int bu
         unsigned int dataOffset = this->getDataOffset();
         unsigned int dataLength = bufLength - dataOffset;
 
+        NEMemory::zeroBuffer(newBuffer, sizeof(NEMemory::sRemoteMessage));
         NEMemory::sRemoteMessageHeader & header = NEMemory::constructElems<NEMemory::sRemoteMessage>(newBuffer, 1)->rbHeader;
         header.rbhBufHeader.biBufSize   = bufLength;
         header.rbhBufHeader.biLength    = dataLength;
@@ -152,18 +152,26 @@ void RemoteMessage::bufferCompletionFix(void)
         NEMemory::sRemoteMessage & msg = _getRemoteMessage();
         NEMemory::sRemoteMessageHeader & header = msg.rbHeader;
 
-#ifdef  DEBUG
+#if 0
         unsigned int bufLength = MACRO_ALIGN_SIZE(header.rbhBufHeader.biUsed, NEMemory::BLOCK_SIZE);
         ASSERT( header.rbhBufHeader.biLength >= bufLength);
 #endif  // DEBUG
 
-        unsigned int bufSize    = header.rbhBufHeader.biUsed + header.rbhBufHeader.biOffset;
+        unsigned int checksum   = RemoteMessage::_checksumCalculate( msg );
         unsigned int dataUsed   = header.rbhBufHeader.biUsed;
         unsigned int dataLen    = header.rbhBufHeader.biUsed;
-        unsigned int checksum   = RemoteMessage::_checksumCalculate( msg );
+        unsigned int bufSize    = header.rbhBufHeader.biOffset + dataUsed;
 
-        header.rbhBufHeader.biBufSize   = MACRO_MAX(bufSize, sizeof(NEMemory::sRemoteMessage));
-        header.rbhBufHeader.biLength    = MACRO_MAX(dataUsed, sizeof(NEMemory::BufferData));
+        dataLen = MACRO_MAX(dataLen, sizeof(NEMemory::BufferData));
+        dataLen = MACRO_ALIGN_SIZE(dataLen, sizeof(int));
+
+        bufSize = MACRO_MAX(bufSize, sizeof(NEMemory::sRemoteMessage));
+        bufSize = MACRO_ALIGN_SIZE(bufSize, sizeof(int));
+
+        ASSERT(dataLen <= header.rbhBufHeader.biLength);
+
+        header.rbhBufHeader.biBufSize   = bufSize;
+        header.rbhBufHeader.biLength    = dataLen;
         header.rbhChecksum              = checksum;
 
         TRACE_INFO("Remote message completion: bufSize [ %u ], msg.biBufSize = [ %u ]; dataLen [ %u ], msg.biLength = [ %u ], dataUsed [ %u ], checksum [ %u ]"
@@ -183,6 +191,7 @@ unsigned char * RemoteMessage::initMessage(const NEMemory::sRemoteMessageHeader 
     unsigned char * result  = DEBUG_NEW unsigned char[sizeBuffer];
     if ( result != NULL )
     {
+        NEMemory::zeroBuffer(result, sizeof(NEMemory::sRemoteMessage));
         NEMemory::sRemoteMessage * msg      = NEMemory::constructElems<NEMemory::sRemoteMessage>(result, 1);
         NEMemory::sRemoteMessageHeader & dst= msg->rbHeader;
         dst.rbhBufHeader.biBufSize  = sizeBuffer;

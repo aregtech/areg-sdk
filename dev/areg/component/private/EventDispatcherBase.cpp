@@ -158,7 +158,10 @@ bool EventDispatcherBase::unregisterEventConsumer( const RuntimeClassID & whichC
     mConsumerMap.lock();
 
     bool result = false;
-    OUTPUT_DBG("[ %s ] dispatcher: Going to unregister consumer [ %p ] for event class [ %s ]", mDispatcherName.getString(), (void *)&whichConsumer, whichClass.getName());
+    OUTPUT_DBG("[ %s ] dispatcher: Going to unregister consumer [ %p ] for event class [ %s ]"
+                , mDispatcherName.getString()
+                , static_cast<void *>(&whichConsumer)
+                , whichClass.getName());
 
     EventConsumerList* listConsumers = mConsumerMap.findResourceObject(whichClass);
     if (listConsumers != NULL)
@@ -192,7 +195,7 @@ int EventDispatcherBase::removeConsumer( IEEventConsumer & whichConsumer )
 {
     mConsumerMap.lock();
 
-    OUTPUT_DBG("[ %s ] dispatcher: Removing Consumer [ %p ] from Consumer Map", mDispatcherName.getString(), (void *)&whichConsumer);
+    OUTPUT_DBG("[ %s ] dispatcher: Removing Consumer [ %p ] from Consumer Map", mDispatcherName.getString(), static_cast<void *>(&whichConsumer));
 
     int result = 0;
     TELinkedList<RuntimeClassID, const RuntimeClassID &> removedList;
@@ -202,7 +205,7 @@ int EventDispatcherBase::removeConsumer( IEEventConsumer & whichConsumer )
     Value = mConsumerMap.resourceFirstKey(Key);
     while (Value != NULL)
     {
-        OUTPUT_DBG("[ %s ] dispatcher: Found registered event entry [ %s ] for consumer [ %p ]", mDispatcherName.getString(), Key.getName(), (void *)&whichConsumer);
+        OUTPUT_DBG("[ %s ] dispatcher: Found registered event entry [ %s ] for consumer [ %p ]", mDispatcherName.getString(), Key.getName(), static_cast<void *>(&whichConsumer));
         ASSERT(Value->isEmpty() == false);
 
         result += Value->removeConsumer(whichConsumer) ? 1 : 0;

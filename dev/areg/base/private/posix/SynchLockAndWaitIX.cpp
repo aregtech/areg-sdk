@@ -152,13 +152,6 @@ int SynchLockAndWaitIX::eventSignaled( IEWaitableBaseIX & synchWaitable )
         OUTPUT_DBG("Waitable [ %s ] ID [ %p ] released [ %d ] threads.", synchWaitable.getName(), &synchWaitable, result);
         synchWaitable.notifyReleasedThreads(result);
     }
-#ifdef DEBUG
-    else
-    {
-        // OUTPUT_INFO("The waitable [ %s ] ID [ %p ] does not have any waiting thread.", synchWaitable.getName(), &synchWaitable);
-    }
-#endif // DEBUG
-
 
     mapResource.unlock( );
     return result;
@@ -280,7 +273,7 @@ SynchLockAndWaitIX::SynchLockAndWaitIX(   IEWaitableBaseIX ** listWaitables
                                     , synchWaitable->getName()
                                     , synchWaitable
                                     , NESynchTypesIX::getString(synchWaitable->getSynchType())
-                                    , mContext);
+                                    , reinterpret_cast<id_type>(mContext));
 
                         mFiredEntry = static_cast<NESynchTypesIX::eSynchObjectFired>(i);
                         synchWaitable->notifyReleasedThreads(1);
@@ -325,7 +318,7 @@ SynchLockAndWaitIX::SynchLockAndWaitIX(   IEWaitableBaseIX ** listWaitables
 
             if (eventFired && _requestOwnership(NESynchTypesIX::SynchObjectAll))
             {
-                OUTPUT_DBG("Releasing thread [ %p ], all events are fired.", mContext);
+                OUTPUT_DBG("Releasing thread [ %p ], all events are fired.", reinterpret_cast<id_type>(mContext));
 
                 mFiredEntry = NESynchTypesIX::SynchObjectAll;
                 for (int i = 0; i < mWaitingList.getSize(); ++ i)
@@ -537,7 +530,7 @@ bool SynchLockAndWaitIX::_requestOwnership( const NESynchTypesIX::eSynchObjectFi
 #endif // DEBUG
 
         OUTPUT_DBG("Thread [ %p ] requests ownership of waitable [ %s ], thread waits no more waitables."
-                    , mContext
+                    , reinterpret_cast<id_type>(mContext)
                     , NESynchTypesIX::getString(waitable->getSynchType()));
 
         result = waitable->notifyRequestOwnership(mContext);
@@ -545,7 +538,7 @@ bool SynchLockAndWaitIX::_requestOwnership( const NESynchTypesIX::eSynchObjectFi
     else
     {
         ASSERT(mWaitingList.getSize() <= static_cast<int>(firedEvent));
-        OUTPUT_DBG("Thread [ %p ] requests ownership of [ %d ] waitables.", mContext, mWaitingList.getSize());
+        OUTPUT_DBG("Thread [ %p ] requests ownership of [ %d ] waitables.", reinterpret_cast<id_type>(mContext), mWaitingList.getSize());
 
         result = true;
         for (int i = 0; (i < mWaitingList.getSize()) && result; ++ i)
@@ -555,7 +548,7 @@ bool SynchLockAndWaitIX::_requestOwnership( const NESynchTypesIX::eSynchObjectFi
             result = waitable->notifyRequestOwnership(mContext);
 
             OUTPUT_DBG("Thread [ %p ] requested ownership of waitable [ %s ] listed [ %d of %d ], the ownership is [ %s ], the current state of waitable [ %s ]"
-                        , mContext
+                        , reinterpret_cast<id_type>(mContext)
                         , NESynchTypesIX::getString(waitable->getSynchType())
                         , i + 1
                         , mWaitingList.getSize()

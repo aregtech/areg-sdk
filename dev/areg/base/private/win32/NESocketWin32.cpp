@@ -42,7 +42,7 @@ AREG_API bool NESocket::socketInitialize(void)
         ::memset(&wsaData, 0, sizeof(WSADATA));
         if ( ::WSAStartup(MAKEWORD( 2, 2 ), &wsaData) != 0 )
         {
-            OUTPUT_ERR("Failed to initialize Windows Socket of version 2.2, error code [ %p ]", :: WSAGetLastError());
+            OUTPUT_ERR("Failed to initialize Windows Socket of version 2.2, error code [ %p ]", static_cast<id_type>(::WSAGetLastError()));
 
             result = false;
             _instanceCount.decrement();
@@ -68,71 +68,6 @@ AREG_API void NESocket::socketClose(SOCKETHANDLE hSocket)
         shutdown(hSocket, SD_BOTH);
         closesocket( hSocket );
     }
-}
-
-AREG_API SOCKETHANDLE del_serverAcceptConnection(SOCKETHANDLE serverSocket, const SOCKETHANDLE * masterList, int entriesCount, NESocket::InterlockedValue * out_socketAddr /*= NULL*/)
-{
-    OUTPUT_DBG("Checking server socket event, server socket handle [ %u ]", static_cast<unsigned int>(serverSocket));
-
-    if (out_socketAddr != NULL )
-        out_socketAddr->resetAddress();
-
-    SOCKETHANDLE result = NESocket::InvalidSocketHandle;
-    if ( serverSocket != NESocket::InvalidSocketHandle )
-    {
-        struct fd_set readList;
-        FD_ZERO(&readList);
-        FD_SET( serverSocket, &readList );
-
-        if ( masterList != NULL && entriesCount > 0)
-        {
-            entriesCount= MACRO_MIN(entriesCount, (FD_SETSIZE - 1));
-            for ( int count = 0; count < entriesCount; ++ count)
-                readList.fd_array[count + 1] = masterList[count];
-            readList.fd_count = entriesCount + 1;
-        }
-
-        int selected    = select( static_cast<int>(serverSocket) + 1 /* param is ignored in Win32*/, &readList, NULL, NULL, NULL);
-        if ( selected > 0 )
-        {
-            if ( FD_ISSET(serverSocket, &readList) != 0 )
-            {
-                // have got new client connection. resolve and get socket
-                struct sockaddr_in acceptAddr; // connecting client address information
-                int addrLength = sizeof(sockaddr_in);
-                NEMemory::zeroBuffer(&acceptAddr, sizeof(sockaddr_in));
-
-                result = accept( serverSocket, reinterpret_cast<sockaddr *>(&acceptAddr), &addrLength );
-                OUTPUT_DBG("Server accepted new connection of client socket [ %u ]", static_cast<unsigned int>(result));
-                if ( result != NESocket::InvalidSocketHandle && out_socketAddr != NULL )
-                    out_socketAddr->setAddress(acceptAddr);
-            }
-            else
-            {
-                OUTPUT_DBG("Have got select event of existing connection, going to resolve socket");
-
-                //  check whether have got connection from existing clients. if 'yes', server can read data.
-                for ( int count = 0; result == NESocket::InvalidSocketHandle && count < entriesCount; ++ count )
-                {
-                    if (FD_ISSET( masterList[count], &readList ) != 0)
-                    {
-                        result = masterList[count];
-                        OUTPUT_DBG("Server selected event of existing client socket [ %u ] connection", static_cast<unsigned int>(result));
-                        break;
-                    }
-                }
-            }
-        }
-        else
-        {
-            OUTPUT_ERR("Failed to select connection. The server socket [ %u ] might be closed and not valid anymore, return value [ %d ]", static_cast<unsigned int>(serverSocket), selected);
-        }
-    }
-    else
-    {
-        OUTPUT_ERR("Invalid server socket, ignoring accept connections!");
-    }
-    return result;
 }
 
 AREG_API int NESocket::sendData(SOCKETHANDLE hSocket, const unsigned char * dataBuffer, int dataLength, int blockMaxSize /*= NECommon::DefaultSize*/ )

@@ -152,7 +152,7 @@ MAPPOS TimerManager::_registerTimer(Timer &timer, ITEM_ID whichThreadId)
 #ifdef DEBUG
     else
     {
-        OUTPUT_ERR("The Timer Manager cannot find thread by id [ %p ], cancelling timer [ %s ]", whichThreadId, timer.getName().getString());
+        OUTPUT_ERR("The Timer Manager cannot find thread by id [ %p ], cancelling timer [ %s ]", static_cast<id_type>(whichThreadId), timer.getName().getString());
     }
 #endif // DEBUG
 

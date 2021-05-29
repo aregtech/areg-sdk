@@ -1238,17 +1238,17 @@ inline const char * NEService::getString( NEService::eFuncIdRange funcId )
     case NEService::SI_SERVICE_CONNECTION_NOTIFY:
         return "NEService::SI_SERVICE_CONNECTION_NOTIFY";
     case NEService::SI_ROUTER_CONNECT:
-        return "NEService::SI_BROKER_CONNECT";
+        return "NEService::SI_ROUTER_CONNECT";
     case NEService::SI_ROUTER_DISCONNECT:
-        return "NEService::SI_BROKER_DISCONNECT";
+        return "NEService::SI_ROUTER_DISCONNECT";
     case NEService::SI_ROUTER_NOTIFY:
-        return "NEService::SI_BROKER_NOTIFY";
+        return "NEService::SI_ROUTER_NOTIFY";
     case NEService::SI_ROUTER_REGISTER:
-        return "NEService::SI_BROKER_REGISTER";
+        return "NEService::SI_ROUTER_REGISTER";
     case NEService::SI_ROUTER_QUERY:
-        return "NEService::SI_BROKER_QUERY";
+        return "NEService::SI_ROUTER_QUERY";
     case NEService::SI_ROUTER_REGISTER_NOTIFY:
-        return "NEService::SI_BROKER_REGISTER_NOTIFY";
+        return "NEService::SI_ROUTER_REGISTER_NOTIFY";
     default:
         if ( funcId >= NEService::REQUEST_ID_FIRST && funcId <= NEService::REQUEST_ID_LAST )
             return "Request ID range";

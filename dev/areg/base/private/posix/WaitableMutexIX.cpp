@@ -59,7 +59,7 @@ bool WaitableMutexIX::releaseMutex(void)
                 ASSERT(mOwnerThread != static_cast<pthread_t>(NULL));
                 OUTPUT_INFO("Waitable Mutex remains locked, the lock count is still [ %d ], the owner thead [ %p ]"
                             , mLockCount - 1
-                            , mOwnerThread);
+                            , reinterpret_cast<id_type>(mOwnerThread));
 
                 -- mLockCount;
             }
@@ -67,7 +67,7 @@ bool WaitableMutexIX::releaseMutex(void)
             else
             {
                 ASSERT(mOwnerThread == static_cast<pthread_t>(NULL));
-                OUTPUT_DBG("Ignoring to unlock the waitable mutex. The lock count is 0, nothing to release, owner thread [ %p ].", mOwnerThread);
+                OUTPUT_DBG("Ignoring to unlock the waitable mutex. The lock count is 0, nothing to release, owner thread [ %p ].", reinterpret_cast<id_type>(mOwnerThread));
             }
 #endif // DEBUG
         }
@@ -101,7 +101,7 @@ bool WaitableMutexIX::notifyRequestOwnership(pthread_t ownerThread)
             mLockCount  = 1;
             mOwnerThread= ownerThread;
 
-            OUTPUT_DBG("Waitable Mutex [ %s ] gave ownership to thread [ %p ]. It is not signaled anymore", getName(), ownerThread);
+            OUTPUT_DBG("Waitable Mutex [ %s ] gave ownership to thread [ %p ]. It is not signaled anymore", getName(), reinterpret_cast<id_type>(ownerThread));
         }
         else if ( mOwnerThread == ownerThread )
         {
