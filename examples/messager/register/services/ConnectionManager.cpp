@@ -27,8 +27,8 @@ BEGIN_MODEL(NECommonSettings::MODEL_NAME_CENTRAL_SERVER)
 
     BEGIN_REGISTER_THREAD( NECentralApp::THREAD_CENTRAL )
         BEGIN_REGISTER_COMPONENT( NECommonSettings::COMP_NAME_CENTRAL_SERVER, ConnectionManager )
-            REGISTER_IMPLEMENT_SERVICE( NEConnectionManager::ServiceName, 1, 0, 0 )
-            REGISTER_IMPLEMENT_SERVICE( NECentralMessager::ServiceName, 1, 0, 0 )
+            REGISTER_IMPLEMENT_SERVICE( NEConnectionManager::ServiceName, NEConnectionManager::InterfaceVersion )
+            REGISTER_IMPLEMENT_SERVICE( NECentralMessager::ServiceName, NECentralMessager::InterfaceVersion )
         END_REGISTER_COMPONENT( NECommonSettings::COMP_NAME_CENTRAL_SERVER )
     END_REGISTER_THREAD( NECentralApp::THREAD_CENTRAL )
 

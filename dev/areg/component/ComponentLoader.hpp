@@ -139,12 +139,9 @@
  * \param   minor           Minor version number of implemented service interface
  * \param   patch           Patch version number of implemented service interface
  **/
-#define REGISTER_IMPLEMENT_SERVICE(service_name, major, minor, patch)                                           \
+#define REGISTER_IMPLEMENT_SERVICE(service_name, implemented_version)                                           \
                 /*  Register implemented service in component                       */                          \
-                comEntry.addSupportedService(     NERegistry::ServiceEntry((service_name)                       \
-                                                , (major)                                                       \
-                                                , (minor)                                                       \
-                                                , (patch))  );
+                comEntry.addSupportedService( NERegistry::ServiceEntry((service_name), (implemented_version)) );
 
 /**
  * \brief   Register worker thread if needed by component. Optional.
@@ -228,13 +225,13 @@
  *      BEGIN_REGISTER_THREAD("test_thread")
  *
  *          BEGIN_REGISTER_COMPONENT_EX("test_component", TestCompLoad, TestCompUnload)
- *              REGISTER_IMPLEMENT_SERVICE("test_service_1", 1, 0, 0)
+ *              REGISTER_IMPLEMENT_SERVICE("test_service_1", Version(1, 0, 0))
  *              REGISTER_DEPENDENCY("secondary_component")
  *          END_REGISTER_COMPONENT("test_component")
  *
  *          BEGIN_REGISTER_COMPONENT_EX("another_component", AnotherCompLoad, AnotherCompUnload)
- *              REGISTER_IMPLEMENT_SERVICE("another_service_1", 1, 0, 0)
- *              REGISTER_IMPLEMENT_SERVICE("another_service_2", 1, 0, 0)
+ *              REGISTER_IMPLEMENT_SERVICE("another_service_1", Version(1, 0, 0))
+ *              REGISTER_IMPLEMENT_SERVICE("another_service_2", Version(1, 0, 0))
  *              REGISTER_WORKER_THREAD("another_worker_thread", "consumer_name")
  *              REGISTER_DEPENDENCY("secondary_component")
  *          END_REGISTER_COMPONENT("another_component")
@@ -244,8 +241,8 @@
  *      BEGIN_REGISTER_THREAD("secondary_thread")
  *
  *          BEGIN_REGISTER_COMPONENT_EX("secondary_component", SecondaryCompLoad, SecondaryCompUnload)
- *              REGISTER_IMPLEMENT_SERVICE("secondary_service_1", 1, 0, 0)
- *              REGISTER_IMPLEMENT_SERVICE("secondary_service_2", 1, 0, 0)
+ *              REGISTER_IMPLEMENT_SERVICE("secondary_service_1", Version(1, 0, 0))
+ *              REGISTER_IMPLEMENT_SERVICE("secondary_service_2", Version(1, 0, 0))
  *          END_REGISTER_COMPONENT("secondary_component")
  *
  *      END_REGISTER_THREAD("secondary_thread")

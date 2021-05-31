@@ -36,7 +36,7 @@ BEGIN_MODEL(gModelName)
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
         BEGIN_REGISTER_COMPONENT( "TestServicingComponent", ServicingComponent )
             // register dummy 'empty service'. In this example we demonstrate simple initialization
-            REGISTER_IMPLEMENT_SERVICE( NEService::EmptyServiceName, NEService::EmptyServiceVersion.getMajor(), NEService::EmptyServiceVersion.getMinor(), NEService::EmptyServiceVersion.getPatch() )
+            REGISTER_IMPLEMENT_SERVICE( NEService::EmptyServiceName, NEService::EmptyServiceVersion )
         // end of component description
         END_REGISTER_COMPONENT( "TestServicingComponent" )
     // end of thread description

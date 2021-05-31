@@ -47,7 +47,7 @@ BEGIN_MODEL(gModelName)
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
         BEGIN_REGISTER_COMPONENT( gMainComponent, ServicingComponent )
             // register dummy 'empty service'. In this example we demonstrate simple initialization
-            REGISTER_IMPLEMENT_SERVICE( NEHelloWorld::ServiceName, 1, 0, 0 )
+            REGISTER_IMPLEMENT_SERVICE( NEHelloWorld::ServiceName, NEHelloWorld::InterfaceVersion )
         // end of component description
         END_REGISTER_COMPONENT( gMainComponent )
     // end of thread description

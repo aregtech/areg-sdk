@@ -117,7 +117,7 @@ void ServicingComponent::requestHelloWorld(const String & roleName, const String
     }
 
     printf("Client [ %s ] says \"!!!Hello World!!!\". Remain [ %d ].\n", roleName.getString(), outputs - 1);
-    if (addMessage.isEmpty())
+    if (addMessage.isEmpty() == false)
     {
         printf("\t>>> The additional message: %s.\n", addMessage.getString());
     }

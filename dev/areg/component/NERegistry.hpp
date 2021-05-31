@@ -103,13 +103,13 @@ namespace NERegistry
  * \tparam  Class   The class name of component to create
  */
 template <class Class>
-Class * DefaultComponentCreate( const NERegistry::ComponentEntry & entry, ComponentThread & owner );
+inline Class * DefaultComponentCreate( const NERegistry::ComponentEntry & entry, ComponentThread & owner );
 
 /**
  * \brief   The default method to create component
  */
 template <class Class>
-void DefaultComponentRelease( Component & compObject, const NERegistry::ComponentEntry & entry );
+inline void DefaultComponentRelease( Component & compObject, const NERegistry::ComponentEntry & entry );
 
 //////////////////////////////////////////////////////////////////////////
 // NERegistry::ServiceEntry class declaration
@@ -1615,13 +1615,13 @@ void DefaultComponentRelease( Component & compObject, const NERegistry::Componen
 // Component Default create / release function templates
 //////////////////////////////////////////////////////////////////////////
 template <class Class>
-Class * NERegistry::DefaultComponentCreate( const NERegistry::ComponentEntry & entry, ComponentThread & owner )
+inline Class * NERegistry::DefaultComponentCreate( const NERegistry::ComponentEntry & entry, ComponentThread & owner )
 {
-    return DEBUG_NEW Class(owner, entry.mRoleName.getString(), entry.getComponentData());
+    return DEBUG_NEW Class(entry, owner);
 }
 
 template <class Class>
-void NERegistry::DefaultComponentRelease( Component & compObject, const NERegistry::ComponentEntry & /* entry */ )
+inline void NERegistry::DefaultComponentRelease( Component & compObject, const NERegistry::ComponentEntry & /* entry */ )
 {
     delete (&compObject);
 }
