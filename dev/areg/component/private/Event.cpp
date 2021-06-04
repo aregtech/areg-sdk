@@ -93,7 +93,7 @@ EventDispatcher& Event::getDispatcher( void ) const
 
 void Event::sendEvent( void )
 {
-    if (mTargetThread != NULL)
+    if ((mTargetThread != NULL) && mTargetThread->isRunning())
     {
         mTargetThread->getEventDispatcher().postEvent(*this);
     }

@@ -203,7 +203,10 @@ const String & String::operator = (const String & strSource)
     if (this != &strSource)
     {
         release();
-        mData = NEString::initString<char, char>(strSource.getString(), strSource.getLength(), NEString::EncodeAscii);
+        if ( strSource.isEmpty() == false)
+        {
+            mData = NEString::initString<char, char>(strSource.getString(), strSource.getLength(), NEString::EncodeAscii);
+        }
 
 #ifdef DEBUG
         mString = mData->strBuffer;

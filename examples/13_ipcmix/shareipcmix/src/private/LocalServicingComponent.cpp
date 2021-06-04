@@ -92,9 +92,9 @@ void LocalServicingComponent::requestHelloWorld(const String & roleName, const S
         responseHelloWorld(cl);
     }
 
-    short outputs = getRemainOutput() - 1;
-    setRemainOutput(outputs);
-    TRACE_DBG("Remain  to output message [ %d ] in local servicing component [ %d ]", outputs );
+    int outputs = getRemainOutput() - 1;
+    setRemainOutput(static_cast<short>(outputs));
+    TRACE_DBG("Remain  to output message [ %d ] in local servicing component [ %s ]", outputs, getRoleName().getString() );
 
     printf(">> LOCAL service [ %s ] client [ %s ]>: \"Hi there!\". Remain [ %d ].\n", roleName.getString(), getRoleName().getString(), outputs);
 }

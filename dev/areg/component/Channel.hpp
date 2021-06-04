@@ -28,8 +28,19 @@ class AREG_API Channel
 //////////////////////////////////////////////////////////////////////////
 // Local types and constants
 //////////////////////////////////////////////////////////////////////////
+public:
+    /**
+     * \brief   Channel::INVALID_CHANNEL
+     *          Defines invalid channel object.
+     **/
+    static const Channel    INVALID_CHANNEL;                //!< Invalid channel
+
 private:
-    static const char   _CHANNEL_SEPARATOR  /*= '.'*/;  //!< Channel data separator symbol
+    /**
+     * \brief   Channel::_CHANNEL_SEPARATOR
+     *          Channel separator character. Used to create string out of channel data.
+     **/
+    static const char       _CHANNEL_SEPARATOR  /*= '.'*/;  //!< Channel data separator symbol
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
@@ -241,7 +252,7 @@ inline bool Channel::isValid( void ) const
 
 inline void Channel::invalidate( void )
 {
-    mSource = NEService::SOUR_UNKNOWN;
+    mSource = NEService::SOURCE_UNKNOWN;
     mTarget = NEService::TARGET_UNKNOWN;
     mCookie = NEService::COOKIE_UNKNOWN;
 }

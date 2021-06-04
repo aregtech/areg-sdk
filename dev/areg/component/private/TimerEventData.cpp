@@ -38,19 +38,19 @@ TimerEvent::TimerEvent( const TimerEventData & data )
     : TEEvent<TimerEventData, const TimerEventData &>  (Event::EventCustomExternal, data)
 {
     if (getData().mTimer != NULL)
-        getData().mTimer->isTimerQueued();
+        getData().mTimer->queueTimer();
 }
 
 TimerEvent::TimerEvent( Timer &timer )
     : TEEvent<TimerEventData, const TimerEventData &>  (Event::EventCustomExternal, TimerEventData(timer))
 {
-    timer.isTimerQueued();
+    timer.queueTimer();
 }
 
 TimerEvent::~TimerEvent( void )
 {
     if (getData().mTimer != NULL)
-        getData().mTimer->isTimerUnqueued();
+        getData().mTimer->unqueueTimer();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -61,7 +61,7 @@ bool TimerEvent::sendEvent( Timer & timer, ITEM_ID dispatchThreadId )
     bool result = false;
 
     DispatcherThread& dispatchThread = DispatcherThread::getDispatcherThread(dispatchThreadId);
-    if ( dispatchThread.isValid() )
+    if ( dispatchThread.isRunning() )
     {
         TimerEvent* timerEvent = DEBUG_NEW TimerEvent(timer);
         if (timerEvent != NULL)

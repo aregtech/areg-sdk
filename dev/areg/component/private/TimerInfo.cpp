@@ -52,7 +52,6 @@ TimerInfo::TimerInfo( const TimerInfo & src )
 
 TimerInfo::~TimerInfo( void )
 {
-    // AAvetyan:    The destructor directly called in Hash Map where timer info is saved.
     mTimer      = NULL;
     mHandle     = NULL;
     mOwnThreadId= Thread::INVALID_THREAD_ID;
@@ -137,6 +136,7 @@ const ExpiredTimerInfo& ExpiredTimerInfo::operator = ( const ExpiredTimerInfo & 
 //////////////////////////////////////////////////////////////////////////
 ExpiredTimers::ExpiredTimers( void )
     : TELinkedList<ExpiredTimerInfo, const ExpiredTimerInfo &> ( )
+    , mLock( )
 {
     ; // do nothing
 }
@@ -144,4 +144,143 @@ ExpiredTimers::ExpiredTimers( void )
 ExpiredTimers::~ExpiredTimers( void )
 {
     ; // do nothing
+}
+
+LISTPOS ExpiredTimers::findTimer(Timer * whichTimer, LISTPOS searchAfter /*= NULL*/)
+{
+    Lock lock(mLock);
+
+    TELinkedList<ExpiredTimerInfo, const ExpiredTimerInfo &>::Block * block = mHead;
+    if ( (searchAfter != NULL) && (mCount != 0) )
+    {
+        block = reinterpret_cast<TELinkedList<ExpiredTimerInfo, const ExpiredTimerInfo &>::Block *>(searchAfter)->mNext;
+    }
+
+    for ( ; block != NULL; block = block->mNext )
+    {
+        if ( block->mValue.mTimer == whichTimer )
+            break;
+    }
+
+    return reinterpret_cast<LISTPOS>(block);
+}
+
+int ExpiredTimers::removeAllTimers( Timer * whichTimer )
+{
+    Lock lock(mLock);
+
+    int result = 0;
+
+    if (whichTimer != NULL)
+    {
+        TELinkedList<ExpiredTimerInfo, const ExpiredTimerInfo &>::Block * block = mHead;
+
+        while (block != NULL)
+        {
+            TELinkedList<ExpiredTimerInfo, const ExpiredTimerInfo &>::Block * next = block->mNext;
+            if ( block->mValue.mTimer == whichTimer )
+            {
+                TELinkedList<ExpiredTimerInfo, const ExpiredTimerInfo &>::removeAt( reinterpret_cast<LISTPOS>(block) );
+                ++ result;
+            }
+
+            block = next;
+        }
+    }
+
+    return result;
+}
+
+//////////////////////////////////////////////////////////////////////////
+// MapTimerTable
+//////////////////////////////////////////////////////////////////////////
+MapTimerTable::MapTimerTable(void)
+    : TEHashMap<Timer *, TimerInfo, const Timer *, const TimerInfo &, TimerTableImpl>( )
+{
+
+}
+
+MapTimerTable::~MapTimerTable(void)
+{
+
+}
+
+void MapTimerTable::registerObject(const Timer * key, const TimerInfo & object)
+{
+    ASSERT(mHashTable != static_cast<Block**>(NULL));
+
+    unsigned int hash = TemplateConstants::MAP_INVALID_HASH;
+    TEHashMap<Timer *, TimerInfo, const Timer *, const TimerInfo &, TimerTableImpl>::Block* block = TEHashMap<Timer *, TimerInfo, const Timer *, const TimerInfo &, TimerTableImpl>::blockAt(key, hash);
+    if (block == static_cast<Block *>(NULL))
+    {
+        ASSERT(hash != TemplateConstants::MAP_INVALID_HASH);
+
+        // it doesn't exist, add a new Block
+        int idx     = static_cast<int>(hash % mHashTableSize);
+        block       = initNewBlock();
+        block->mHash= hash;
+        block->mKey	= const_cast<Timer *>(key);
+        block->mNext= mHashTable[idx];
+        mHashTable[idx]= block;
+    }
+
+    block->mValue= object;
+}
+
+bool MapTimerTable::updateObject(const Timer * key, const TimerInfo & object)
+{
+    bool result = false;
+    ASSERT( mHashTable != static_cast<Block **>(NULL) );
+
+    unsigned int hash = TemplateConstants::MAP_INVALID_HASH;
+    TEHashMap<Timer *, TimerInfo, const Timer *, const TimerInfo &, TimerTableImpl>::Block* block = TEHashMap<Timer *, TimerInfo, const Timer *, const TimerInfo &, TimerTableImpl>::blockAt(key, hash);
+    if (block != static_cast<Block *>(NULL))
+    {
+        block->mValue= object;
+        result = false;
+    }
+
+    return result;
+}
+
+bool MapTimerTable::unregisterObject(const Timer * key)
+{
+    bool result = false;
+    TEHashMap<Timer *, TimerInfo, const Timer *, const TimerInfo &, TimerTableImpl>::Block** block = blockAt(key);
+    if ((block != NULL) && (*block != NULL))
+    {
+        removeBlock(block);
+        result = true;
+    }
+
+    return result;
+}
+
+bool MapTimerTable::unregisterObject(const Timer * key, TimerInfo & OUT object)
+{
+    bool result = false;
+    TEHashMap<Timer *, TimerInfo, const Timer *, const TimerInfo &, TimerTableImpl>::Block** block = blockAt(key);
+    if ((block != NULL) && (*block != NULL))
+    {
+        object = (*block)->mValue;
+        removeBlock(block);
+        result = true;
+    }
+
+    return result;
+}
+
+bool MapTimerTable::unregisterFirstObject(Timer * & OUT key, TimerInfo & OUT object)
+{
+    bool result = false;
+    TEHashMap<Timer *, TimerInfo, const Timer *, const TimerInfo &, TimerTableImpl>::Block* block = firstValidBlock();
+    if (block != NULL)
+    {
+        key     = block->mKey;
+        object  = block->mValue;
+        removeBlock(blockReference(*block));
+        result = true;
+    }
+
+    return result;
 }

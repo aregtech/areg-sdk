@@ -131,7 +131,7 @@ public:
      * \return	If succeeded, returns pointer to unregistered resource.
      *          Otherwise returns NULL
      **/
-    inline bool unregisterResourceObject(const RESOURCE_KEY & Key, RESOURCE_OBJECT * Resource, bool remEmptyList );
+    inline bool unregisterResourceObject(const RESOURCE_KEY & Key, RESOURCE_OBJECT * Resource, bool remEmptyList = true );
 
     /**
      * \brief   Registers resource in the map by given key. If the resources exists,
@@ -158,7 +158,8 @@ public:
      * \return	If could find Resource in Resource Map by unique Key,
      *          returns pointer to resource. Otherwise returns NULL.
      **/
-    inline ResourceList * findResource( const RESOURCE_KEY & Key ) const;
+    inline ResourceList * findResource( const RESOURCE_KEY & Key );
+    inline const ResourceList * findResource( const RESOURCE_KEY & Key ) const;
 
     /**
      * \brief   Returns pointer to the resource list in the map.
@@ -167,7 +168,8 @@ public:
      *          it returns valid pointer to the resource object list.
      *          Otherwise, returns NULL.
      **/
-    inline ResourceList * getResource( const RESOURCE_KEY & Key ) const;
+    inline ResourceList * getResource( const RESOURCE_KEY & Key );
+    inline const ResourceList * getResource( const RESOURCE_KEY & Key ) const;
 
     /**
      * \brief	Removes Resource from Resource map.
@@ -420,7 +422,7 @@ inline bool TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, ResourceLi
 }
 
 template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class ResourceList, class Implement>
-inline bool TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, ResourceList, Implement>::unregisterResourceObject( const RESOURCE_KEY & Key, RESOURCE_OBJECT * Resource, bool remEmptyList )
+inline bool TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, ResourceList, Implement>::unregisterResourceObject( const RESOURCE_KEY & Key, RESOURCE_OBJECT * Resource, bool remEmptyList /*= true*/ )
 {
     Lock lock( mSynchObj );
 
@@ -428,7 +430,7 @@ inline bool TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, ResourceLi
     MAPPOS pos = HashMap::find(Key);
     if ( pos != NULL )
     {
-        ResourceList & resList = HashMap::getAt(pos);
+        ResourceList & resList = HashMap::getPosition(pos);
         result = removeResourceObject( resList, Resource );
         if ( remEmptyList && resList.isEmpty())
         {
@@ -458,21 +460,39 @@ inline ResourceList TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Re
 }
 
 template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class ResourceList, class Implement>
-inline ResourceList * TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, ResourceList, Implement>::findResource( const RESOURCE_KEY & Key ) const
+inline ResourceList * TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, ResourceList, Implement>::findResource( const RESOURCE_KEY & Key )
 {
     Lock lock( mSynchObj );
 
     MAPPOS pos = HashMap::find( Key );
-    return (pos != NULL ? &HashMap::valueAtPosition(pos) : NULL);
+    return (pos != NULL ? &HashMap::getPosition(pos) : NULL);
 }
 
 template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class ResourceList, class Implement>
-inline ResourceList * TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, ResourceList, Implement>::getResource( const RESOURCE_KEY & Key ) const
+inline const ResourceList * TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, ResourceList, Implement>::findResource( const RESOURCE_KEY & Key ) const
 {
     Lock lock( mSynchObj );
 
     MAPPOS pos = HashMap::find( Key );
-    return (pos != NULL ? &HashMap::valueAtPosition(pos) : NULL);
+    return (pos != NULL ? &HashMap::getPosition(pos) : NULL);
+}
+
+template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class ResourceList, class Implement>
+inline ResourceList * TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, ResourceList, Implement>::getResource( const RESOURCE_KEY & Key )
+{
+    Lock lock( mSynchObj );
+
+    MAPPOS pos = HashMap::find( Key );
+    return (pos != NULL ? &HashMap::getPosition(pos) : NULL);
+}
+
+template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class ResourceList, class Implement>
+inline const ResourceList * TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, ResourceList, Implement>::getResource( const RESOURCE_KEY & Key ) const
+{
+    Lock lock( mSynchObj );
+
+    MAPPOS pos = HashMap::find( Key );
+    return (pos != NULL ? &HashMap::getPosition(pos) : NULL);
 }
 
 template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class ResourceList, class Implement>
@@ -483,7 +503,7 @@ inline bool TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, ResourceLi
     bool removed = false;
     for ( MAPPOS pos = HashMap::firstPosition( ); pos != NULL; )
     {
-        ResourceList & list = HashMap::valueAtPosition( pos );
+        ResourceList & list = HashMap::getPosition( pos );
         if ( removeResourceObject(list, Resource) )
         {
             removed = true;

@@ -311,7 +311,113 @@ public:
  *          no longer active (i.e. no more needed to be fired).
  *          The Continuous timers are remaining active until they are not stopped.
  **/
-typedef TEHashMap<Timer *, TimerInfo, const Timer *, const TimerInfo &, TimerTableImpl>   MapTimerTable;
+class MapTimerTable    : private TEHashMap<Timer *, TimerInfo, const Timer *, const TimerInfo &, TimerTableImpl>
+{
+//////////////////////////////////////////////////////////////////////////
+// Constructor / Destructor
+//////////////////////////////////////////////////////////////////////////
+public:
+    /**
+     * \brief   Constructor
+     **/
+    MapTimerTable( void );
+
+    /**
+     * \brief   Destructor.
+     **/
+    ~MapTimerTable( void );
+
+//////////////////////////////////////////////////////////////////////////
+// Attributes and operations.
+//////////////////////////////////////////////////////////////////////////
+public:
+
+    /**
+     * \brief   Returns true if the map is empty.
+     **/
+    inline bool isEmpty( void ) const;
+
+    /**
+     * \brief   Returns number of entries in the map.
+     **/
+    inline int getSize( void ) const;
+
+    /**
+     * \brief   Checks whether specified timer exists in the hash map.
+     * \param   key     The pointer to timer object to check.
+     * \return  Returns true if specified timer exists in the map.
+     **/
+    inline bool keyExists( const Timer * key ) const;
+
+    /**
+     * \brief   Searches specified timer pointer as a key. If the entry in hash map exists
+     *          the parameter 'object' on output contains valid TimerInfo data.
+     * \param   key     The pointer to timer object to search.
+     * \param   object  On output, it contains data that is stored in the hash map.
+     * \return  Returns true if specified timer exists in the hash map and the 
+     *          'object' parameter contains valid stored data.
+     **/
+    inline bool findObject( const Timer * key, TimerInfo & OUT object ) const;
+
+    /**
+     * \brief   Removes all timer entries from hash map.
+     **/
+    inline void removeAll( void );
+
+    /**
+     * \brief   Registers specified TimerInfor data in the hash map, where the key
+     *          is specified pointer to Timer object and the value is TimerInfo object.
+     **/
+    void registerObject(const Timer * key, const TimerInfo & object);
+
+    /**
+     * \brief   Updates existing entry in the hash map. If specified pointer to Timer
+     *          is not registered in the system, no data is updated and the return 
+     *          value is false.
+     * \param   key     The pointer to valid timer to update. If the entry does not exist
+     *                  in the hash map, nothing is modified.
+     * \param   object  The timer information object to update.
+     * \return  Returns true if specified timer is registered in the map and the
+     *          value is updated.
+     **/
+    bool updateObject( const Timer * key, const TimerInfo & object );
+
+    /**
+     * \brief   Unregisters previously registered key as a pointer to Timer object.
+     * \param   key     The pointer to valid timer to unregister.
+     * \return  Returns true if a specified pointer to timer is in the system
+     *          and it could unregister.
+     **/
+    bool unregisterObject( const Timer * key );
+
+    /**
+     * \brief   Unregisters previously registered key as a pointer to Timer object.
+     *          On output the 'object' parameter contains unregistered object data.
+     * \param   key     The pointer to valid timer to unregister.
+     * \param   object  On output this contains unregistered data.
+     * \return  Returns true if a specified pointer to timer is in the system
+     *          and it could unregister.
+     **/
+    bool unregisterObject( const Timer * key, TimerInfo & OUT object );
+
+    /**
+     * \brief   Unregisters the first entry in the hash-map.
+     *          On output, the specified parameters contain unregistered pointer
+     *          to Timer and unregistered TimerInfor objects.
+     * \param   key     On output this contains the pointer to unregistered Timer.
+     * \param   object  On output this contains the unregistered Timer information saved in the map.
+     * \return  Returns true if succeeded to unregister first entry. Returns NULL, if there are
+     *          no more entries in the list.
+     **/
+    bool unregisterFirstObject( Timer * & OUT key, TimerInfo & OUT object );
+
+//////////////////////////////////////////////////////////////////////////
+// Hidden / Forbidden methods
+//////////////////////////////////////////////////////////////////////////
+private:
+    MapTimerTable( const MapTimerTable & /*src*/ );
+    const MapTimerTable & operator = ( MapTimerTable & /*src*/ );
+};
 
 //////////////////////////////////////////////////////////////////////////
 // ExpiredTimers class declaration
@@ -321,7 +427,7 @@ typedef TEHashMap<Timer *, TimerInfo, const Timer *, const TimerInfo &, TimerTab
  *          If timer is valid, it will be processed and the event will be
  *          sent to appropriate owning thread.
  **/
-class AREG_API ExpiredTimers  : public TELinkedList<ExpiredTimerInfo, const ExpiredTimerInfo &>
+class ExpiredTimers  : private TELinkedList<ExpiredTimerInfo, const ExpiredTimerInfo &>
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -335,11 +441,159 @@ public:
      * \brief   Destructor
      **/
     ~ExpiredTimers( void );
+
+//////////////////////////////////////////////////////////////////////////
+// Operations
+//////////////////////////////////////////////////////////////////////////
+public:
+
+    /**
+     * \brief   Returns true if the list is empty.
+     **/
+    inline bool isEmpty( void ) const;
+
+    /**
+     * \brief   Push expired timer information to the list.
+     **/
+    inline void pushTimer( ExpiredTimerInfo & timerInfo );
+
+    /**
+     * \brief   Pops expired timer information from the list, reduces size by one.
+     **/
+    inline ExpiredTimerInfo popTimer( void );
+
+    /**
+     * \brief   Removes of all entries from the list, makes it empty.
+     **/
+    inline void removeAll( void );
+
+    /**
+     * \brief   Locks the expired timer list.
+     **/
+    inline bool lockResource( void ) const;
+
+    /**
+     * \brief   Unlocks the expired timer list.
+     **/
+    inline bool unlockResource( void ) const;
+
+    /**
+     * \brief   Searches specified timer in the list of expired timers and returns
+     *          valid position if found. The starts starts either from beginning
+     *          of the list from specified position.
+     * \param   whichTimer      The pointer to timer object to search in the list.
+     * \param   searchAfter     If NULL, searches from beginning of the list.
+     *                          Otherwise, searches from specified valid position.
+     * \return  Returns valid position if found an entry. Otherwise, returns NULL.
+     **/
+    LISTPOS findTimer(Timer * whichTimer, LISTPOS searchAfter = NULL);
+
+    /**
+     * \brief   Removes all matches of specified timer in the list. The expired timer list
+     *          may have several entries that have same timer. For example, if the timeout is very small,
+     *          it might be more than one entry in the list.
+     * \param   whichTimer      The pointer to valid timer object to remove from the list.
+     * \return  Returns the number of entries that were removed.
+     **/
+    int removeAllTimers( Timer * whichTimer );
+
+//////////////////////////////////////////////////////////////////////////
+// Member variables
+//////////////////////////////////////////////////////////////////////////
+private:
+    /**
+     * \brief   Synchronization object.
+     **/
+    mutable ResourceLock    mLock;
+
+//////////////////////////////////////////////////////////////////////////
+// Forbidden calls.
+//////////////////////////////////////////////////////////////////////////
+private:
+    ExpiredTimers( const ExpiredTimers & /*src*/ );
+    const ExpiredTimers & operator = ( const ExpiredTimers & /*src*/ );
 };
 
 /************************************************************************
  * Inline function implementation
  ************************************************************************/
+
+//////////////////////////////////////////////////////////////////////////
+// MapTimerTable class inline functions implementation
+//////////////////////////////////////////////////////////////////////////
+
+inline bool MapTimerTable::isEmpty(void) const
+{
+    return TEHashMap<Timer *, TimerInfo, const Timer *, const TimerInfo &, TimerTableImpl>::isEmpty();
+}
+
+inline int MapTimerTable::getSize(void) const
+{
+    return TEHashMap<Timer *, TimerInfo, const Timer *, const TimerInfo &, TimerTableImpl>::getSize();
+}
+
+inline bool MapTimerTable::keyExists(const Timer * key) const
+{
+    TEHashMap<Timer *, TimerInfo, const Timer *, const TimerInfo &, TimerTableImpl>::Block** block = blockAt(key);
+    return (block != NULL) && (*block != NULL);
+}
+
+inline bool MapTimerTable::findObject(const Timer * key, TimerInfo & OUT object) const
+{
+    bool result = false;
+
+    TEHashMap<Timer *, TimerInfo, const Timer *, const TimerInfo &, TimerTableImpl>::Block** block = blockAt(key);
+    if ( (block != NULL) && (*block != NULL) )
+    {
+        object = (*block)->mValue;
+        result = true;
+    }
+
+    return result;
+}
+
+inline void MapTimerTable::removeAll(void)
+{
+    TEHashMap<Timer *, TimerInfo, const Timer *, const TimerInfo &, TimerTableImpl>::removeAll();
+}
+
+//////////////////////////////////////////////////////////////////////////
+// ExpiredTimers class inline functions implementation
+//////////////////////////////////////////////////////////////////////////
+
+inline bool ExpiredTimers::isEmpty(void) const
+{
+    Lock lock(mLock);
+    return TELinkedList<ExpiredTimerInfo, const ExpiredTimerInfo &>::isEmpty();
+}
+
+inline void ExpiredTimers::pushTimer(ExpiredTimerInfo & timerInfo)
+{
+    Lock lock(mLock);
+    TELinkedList<ExpiredTimerInfo, const ExpiredTimerInfo &>::pushLast( timerInfo );
+}
+
+inline ExpiredTimerInfo ExpiredTimers::popTimer(void)
+{
+    Lock lock(mLock);
+    return TELinkedList<ExpiredTimerInfo, const ExpiredTimerInfo &>::removeFirst();
+}
+
+inline void ExpiredTimers::removeAll(void)
+{
+    Lock lock(mLock);
+    return TELinkedList<ExpiredTimerInfo, const ExpiredTimerInfo &>::removeAll();
+}
+
+inline bool ExpiredTimers::lockResource(void) const
+{
+    return mLock.lock(IESynchObject::WAIT_INFINITE);
+}
+
+inline bool ExpiredTimers::unlockResource(void) const
+{
+    return mLock.unlock();
+}
 
 //////////////////////////////////////////////////////////////////////////
 // TimerInfo class inline functions implementation
@@ -421,7 +675,11 @@ inline ExpiredTimerInfo::ExpiredTimerInfo( const ExpiredTimerInfo & src )
 {   ;   }
 
 inline ExpiredTimerInfo::~ExpiredTimerInfo( void )
-{   ;   }
+{
+    mTimer      = NULL;
+    mLowValue   = 0;
+    mHighValue  = 0;
+}
 
 inline bool ExpiredTimerInfo::operator == ( const ExpiredTimerInfo & other ) const
 {

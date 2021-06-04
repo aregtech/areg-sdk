@@ -73,7 +73,7 @@
  **/
 template<typename VALUE, typename VALUE_TYPE = VALUE, class Implement = TEListImpl<VALUE_TYPE>>
 class TEFixedArray  : protected Implement
-                    , private   TemplateConstants
+                    , protected TemplateConstants
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
@@ -239,7 +239,7 @@ protected:
      * \return  If function returns true, 2 values are equal.
      *          Otherwise, they are not equal.
      **/
-    inline bool equalValues( VALUE_TYPE value1, VALUE_TYPE value2) const;
+    inline bool isEqualValues( VALUE_TYPE value1, VALUE_TYPE value2) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Protected member variables
@@ -322,7 +322,7 @@ bool TEFixedArray<VALUE, VALUE_TYPE, Implement>::operator == ( const TEFixedArra
         {
             result = true;
             for (int i = 0; result && (i < mElemCount); ++ i)
-                result = equalValues(mValueList[i], other.mValueList[i]);
+                result = isEqualValues(mValueList[i], other.mValueList[i]);
         }
     }
 
@@ -341,7 +341,7 @@ bool TEFixedArray<VALUE, VALUE_TYPE, Implement>::operator != (const TEFixedArray
         {
             result = false;
             for ( int i = 0; (result == false) && (i < mElemCount); ++ i )
-                result = equalValues( mValueList[i], other.mValueList[i] ) == false;
+                result = isEqualValues( mValueList[i], other.mValueList[i] ) == false;
         }
     }
     
@@ -412,7 +412,7 @@ inline bool TEFixedArray<VALUE, VALUE_TYPE, Implement>::isValidIndex( int whichI
 }
 
 template<typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /* = TEListImpl<VALUE_TYPE> */>
-inline bool TEFixedArray<VALUE, VALUE_TYPE, Implement>::equalValues(VALUE_TYPE value1, VALUE_TYPE value2) const
+inline bool TEFixedArray<VALUE, VALUE_TYPE, Implement>::isEqualValues(VALUE_TYPE value1, VALUE_TYPE value2) const
 {
     return Implement::implEqualValues(value1, value2);
 }

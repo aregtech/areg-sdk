@@ -83,6 +83,7 @@ const NERegistry::ComponentList& ComponentLoader::getComponentList( const char* 
             }
         }
     }
+
     return (result != NULL ? *result : NERegistry::INVALID_COMPONENT_LIST);
 }
 
@@ -409,7 +410,9 @@ void ComponentLoader::unloadModel( const char * modelName /*= NULL*/ )
         for ( int i = 0; i < mModelList.getSize(); ++ i )
         {
             NERegistry::Model & model = mModelList[i];
+            lock.unlock();
             unloadModel(model);
+            lock.lock();
             ASSERT( model.isModelLoaded() == false );
         }
     }
@@ -422,7 +425,9 @@ void ComponentLoader::unloadModel( const char * modelName /*= NULL*/ )
             if ( model.getModelName() == modelName )
             {
                 index = i;
+                lock.unlock();
                 unloadModel(model);
+                lock.lock();
             }
         }
     }
@@ -437,7 +442,9 @@ void ComponentLoader::unloadModel( NERegistry::Model & whichModel )
     {
         const NERegistry::ComponentThreadList & threadList = whichModel.getThreadList();
         shutdownThreads( threadList );
+        lock.unlock();
         waitThreadsCompletion( threadList );
+        lock.lock();
         destroyThreads( threadList );
 
         whichModel.markModelLoaded( false );
@@ -446,10 +453,6 @@ void ComponentLoader::unloadModel( NERegistry::Model & whichModel )
     {
         OUTPUT_WARN("The model [ %s ] marked as unloaded. Ignoring request to unload model.", static_cast<const char *>(whichModel.getModelName().getString()));
     }
-
-    bool hasLoadedModel = false;
-    for (int i = 0; hasLoadedModel == false && i < mModelList.getSize(); ++ i )
-        hasLoadedModel = mModelList.getAt(i).isModelLoaded();
 }
 
 void ComponentLoader::shutdownThreads( const NERegistry::ComponentThreadList & whichThreads )

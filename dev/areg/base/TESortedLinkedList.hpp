@@ -461,7 +461,7 @@ protected:
      * \return  If function returns true, 2 values are equal.
      *          Otherwise, they are not equal.
      **/
-    inline bool equalValues( VALUE_TYPE value1, VALUE_TYPE value2) const;
+    inline bool isEqualValues( VALUE_TYPE value1, VALUE_TYPE value2) const;
 
     /**
      * \brief   Called when comparing 2 values of element.
@@ -623,7 +623,7 @@ bool TESortedLinkedList<VALUE, VALUE_TYPE, Implement>::operator == ( const TESor
             const TESortedLinkedList<VALUE, VALUE_TYPE, Implement>::Block * otherBlock  = otherList.mHead;
             for (int i = 0; i < mCount; ++ i)
             {
-                if ( equalValues(thisBlock->mValue, otherBlock->mValue) )
+                if ( isEqualValues(thisBlock->mValue, otherBlock->mValue) )
                 {
                     thisBlock = thisBlock->mNext;
                     otherBlock = otherBlock->mNext;
@@ -974,7 +974,7 @@ bool TESortedLinkedList<VALUE, VALUE_TYPE, Implement>::removeEntry(VALUE_TYPE re
 
     for ( ; block != NULL; block = block->mNext)
     {
-        if ( equalValues(removeElement, block->mValue) )
+        if ( isEqualValues(removeElement, block->mValue) )
             break;
     }
 
@@ -996,7 +996,7 @@ LISTPOS TESortedLinkedList<VALUE, VALUE_TYPE, Implement>::find(VALUE_TYPE search
     
     for ( ; block != NULL; block = block->mNext)
     {
-        if ( equalValues(block->mValue, searchValue) )
+        if ( isEqualValues(block->mValue, searchValue) )
             break;
     }
 
@@ -1186,7 +1186,7 @@ LISTPOS TESortedLinkedList<VALUE, VALUE_TYPE, Implement>::_add( Block * newBlock
 }
 
 template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /*= TESortImpl<VALUE_TYPE>*/>
-inline bool TESortedLinkedList<VALUE, VALUE_TYPE, Implement>::equalValues(VALUE_TYPE value1, VALUE_TYPE value2) const
+inline bool TESortedLinkedList<VALUE, VALUE_TYPE, Implement>::isEqualValues(VALUE_TYPE value1, VALUE_TYPE value2) const
 {
     return Implement::implEqualValues(value1, value2);
 }

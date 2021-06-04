@@ -73,8 +73,8 @@
  *                      if default methods needs to be changed.
  **/
 template < typename KEY, typename VALUE, typename KEY_TYPE = KEY, typename VALUE_TYPE = VALUE, class Implement = TEHashMapImpl<KEY_TYPE, VALUE_TYPE> >
-class TEHashMap     : private   TemplateConstants
-                    , protected Implement
+class TEHashMap     : protected Implement
+                    , protected TemplateConstants
 {
 //////////////////////////////////////////////////////////////////////////
 // Internal objects and types declaration
@@ -479,7 +479,7 @@ protected:
      * \return  If function returns true, 2 values are equal.
      *          Otherwise, they are not equal.
      **/
-    inline bool equalValues( VALUE_TYPE value1, VALUE_TYPE value2) const;
+    inline bool isEqualValues( VALUE_TYPE value1, VALUE_TYPE value2) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Protected / internal operations
@@ -515,7 +515,7 @@ protected:
      * \param	out_Hash    The Hash value of entry within Hash Table
      * \return	If found Key, returns pointer to Block element, otherwise returns NULL.
      **/
-    Block * blockAt( KEY_TYPE Key, unsigned int & out_Hash ) const
+    Block * blockAt( KEY_TYPE Key, unsigned int & OUT out_Hash ) const
     {
         Block * result = NULL;
         out_Hash = getHashKey(Key);
@@ -833,7 +833,7 @@ bool TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::operator == (const 
             for ( MAPPOS otherPos = other.firstPosition( ); result && (otherPos != TemplateConstants::INVALID_POSITION); )
             {
                 otherPos = other.nextPosition( otherPos, otherKey, otherValue );
-                result = find( otherKey, thisValue ) ? equalValues( otherValue, thisValue ) : false;
+                result = find( otherKey, thisValue ) ? isEqualValues( otherValue, thisValue ) : false;
             }
         }
     }
@@ -856,7 +856,7 @@ bool TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::operator != ( const
             for ( MAPPOS otherPos = other.firstPosition(); (result == false) && (otherPos != TemplateConstants::INVALID_POSITION); )
             {
                 otherPos = other.nextPosition(otherPos, otherKey, otherValue);
-                result = find(otherKey, thisValue) ? equalValues( otherValue, thisValue ) == false : true;
+                result = find(otherKey, thisValue) ? isEqualValues( otherValue, thisValue ) == false : true;
             }
         }
     }
@@ -918,8 +918,17 @@ MAPPOS TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::setAt(KEY_TYPE Ke
     ASSERT(mHashTable != (Block**)NULL);
 
     unsigned int hash = TemplateConstants::MAP_INVALID_HASH;
-    Block* block    = searchBeforeInsert ? blockAt(Key, hash) : NULL;
-    hash = (hash == TemplateConstants::MAP_INVALID_HASH) ? getHashKey(Key) : hash;
+    Block* block = NULL; 
+    
+    if ( searchBeforeInsert )
+    {
+        block = blockAt(Key, hash);
+    }
+    else
+    {
+        hash = getHashKey(Key);
+    }
+
     if (block == static_cast<Block *>(NULL))
     {
         // it doesn't exist, add a new Block
@@ -1260,7 +1269,7 @@ inline bool TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::isEqualKeys(
 }
 
 template < typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename VALUE_TYPE /*= VALUE */, class Implement /* = HashMapBase */>
-inline bool TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::equalValues(VALUE_TYPE value1, VALUE_TYPE value2) const
+inline bool TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::isEqualValues(VALUE_TYPE value1, VALUE_TYPE value2) const
 {
     return Implement::implEqualValues(value1, value2);
 }

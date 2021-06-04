@@ -72,7 +72,8 @@ int SocketConnectionBase::receiveMessage(RemoteMessage & out_message, const Sock
         DBG_ZERO_MEM(&msgHeader, sizeof(NEMemory::sRemoteMessageHeader));
 
         out_message.invalidate();
-        if ( clientSocket.receiveData(reinterpret_cast<unsigned char *>(&msgHeader), sizeof(NEMemory::sRemoteMessageHeader)) == sizeof(NEMemory::sRemoteMessageHeader) )
+        result = clientSocket.receiveData(reinterpret_cast<unsigned char *>(&msgHeader), sizeof(NEMemory::sRemoteMessageHeader));
+        if ( result == sizeof(NEMemory::sRemoteMessageHeader) )
         {
             TRACE_DBG("Going to receive remote message data of ID [ %p ] from target [ %p ] for source [ %p ], buffer length [ %u ], used data length [ %u ], checksum [ %u ]"
                                 , static_cast<id_type>(msgHeader.rbhMessageId)
@@ -108,8 +109,10 @@ int SocketConnectionBase::receiveMessage(RemoteMessage & out_message, const Sock
         }
         else
         {
-            TRACE_WARN("Failed to receive remote message data. Probably the connection is closed");
+            TRACE_WARN("Failed to receive remote message data. Probably the connection is closed, received [ %d ] bytes.", result);
+            result = (result > 0) && (result != sizeof(NEMemory::sRemoteMessageHeader)) ? 0 : result;
         }
     }
+
     return result;
 }

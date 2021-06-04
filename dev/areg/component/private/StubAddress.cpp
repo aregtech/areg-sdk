@@ -239,7 +239,7 @@ AREG_API const IEInStream & operator >> ( const IEInStream & stream, StubAddress
     stream >> static_cast<ServiceAddress &>(input);
     stream >> input.mThreadName;
     stream >> cookie;
-    input.SetCookie(cookie);
+    input.setCookie(cookie);
     return stream;
 }
 

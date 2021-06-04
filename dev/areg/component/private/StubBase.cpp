@@ -122,8 +122,9 @@ SessionID StubBase::unblockCurrentRequest( void )
 {
     SessionID result = StubBase::INVALID_SESSION_ID;
     StubBase::Listener listener;
-    if ( (mCurrListener != NULL) && mListListener.removeAt(mCurrListener, listener) )
+    if ( mCurrListener != NULL )
     {
+        mListListener.removeAt(mCurrListener, listener);
         result = ++ mSessionId;
         mMapSessions.setAt(result, listener);
         mCurrListener   = NULL;

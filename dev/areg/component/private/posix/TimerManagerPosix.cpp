@@ -68,7 +68,7 @@ bool TimerManager::_startSystemTimer( TimerInfo & timerInfo, MapTimerTable & tim
             struct timespec ts;
             clock_gettime(CLOCK_REALTIME, &ts);
             timerInfo.isTimerStarting(ts.tv_sec, ts.tv_nsec);
-            timerTable.setAt( whichTimer, timerInfo, true );
+            timerTable.registerObject( whichTimer, timerInfo );
 
             result = true;
             if (posixTimer->startTimer(*whichTimer, NULL) == false)
@@ -80,7 +80,7 @@ bool TimerManager::_startSystemTimer( TimerInfo & timerInfo, MapTimerTable & tim
 
                 result = false;
                 timerInfo.mTimerState   = TimerInfo::TimerIdle;
-                timerTable.setAt( whichTimer, timerInfo, true );
+                timerTable.updateObject( whichTimer, timerInfo );
             }
         }
     }

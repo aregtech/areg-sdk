@@ -30,7 +30,12 @@
 /**
  * \brief   Resource of registered Proxies in the system.
  **/
-ProxyBase::MapProxyResource ProxyBase::_mapRegisteredProxies;
+ProxyBase::MapProxyResource     ProxyBase::_mapRegisteredProxies;
+
+/**
+ * \brief   List of created proxies per thread.
+ **/
+ProxyBase::MapThreadProxyList   ProxyBase::_mapThreadProxies;
 
 //////////////////////////////////////////////////////////////////////////
 // ProxyBase::Listener class implementation
@@ -108,7 +113,6 @@ bool ProxyBase::Listener::operator == ( const ProxyBase::Listener& other ) const
     return result;
 }
 
-
 //////////////////////////////////////////////////////////////////////////
 // ProxyBase::ProxyListenerList class implementation
 //////////////////////////////////////////////////////////////////////////
@@ -125,6 +129,54 @@ ProxyBase::ProxyListenerList::ProxyListenerList( int capacity /*= 0*/ )
 ProxyBase::ProxyListenerList::~ProxyListenerList( void )
 {
     ; // do nothing
+}
+
+//////////////////////////////////////////////////////////////////////////
+// ProxyBase::ProxyConnectList class implementation
+//////////////////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////////////////
+// ProxyBase::ProxyConnectList class, constructor / destructor
+//////////////////////////////////////////////////////////////////////////
+
+ProxyBase::ProxyConnectList::ProxyConnectList(void)
+    : TEArrayList<IEProxyListener *, IEProxyListener *>( )
+{
+
+}
+
+ProxyBase::ProxyConnectList::~ProxyConnectList(void)
+{
+
+}
+
+//////////////////////////////////////////////////////////////////////////
+// ProxyBase::ThreadProxyList class implementation
+//////////////////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////////////////
+// ProxyBase::ThreadProxyList class, constructor / destructor
+//////////////////////////////////////////////////////////////////////////
+
+ProxyBase::ThreadProxyList::ThreadProxyList( void )
+    : TEArrayList<ProxyBase *, ProxyBase *>( )
+{
+}
+
+ProxyBase::ThreadProxyList::ThreadProxyList( const ProxyBase::ThreadProxyList & src )
+    : TEArrayList<ProxyBase *, ProxyBase *>( static_cast<const TEArrayList<ProxyBase *, ProxyBase *> &>(src) )
+{
+}
+
+ProxyBase::ThreadProxyList::~ThreadProxyList( void )
+{
+}
+
+const ProxyBase::ThreadProxyList & ProxyBase::ThreadProxyList::operator = ( const ProxyBase::ThreadProxyList & src )
+{
+    TEArrayList<ProxyBase *, ProxyBase *>::operator = (static_cast<const TEArrayList<ProxyBase *, ProxyBase *> &>(src));
+
+    return (*this);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -196,6 +248,9 @@ ProxyBase * ProxyBase::findOrCreateProxy( const char * roleName
     {
         static_cast<void>(proxy->addListener( static_cast<unsigned int>(NEService::SI_SERVICE_CONNECTION_NOTIFY), NEService::SEQUENCE_NUMBER_NOTIFY, static_cast<IENotificationEventConsumer *>(&connect) ));
         ++ proxy->mProxyInstCount;
+        proxy->mIsStopped = false;
+        proxy->mListConnect.add(&connect);
+
         if ( proxy->mProxyInstCount == 1 )
         {
             proxy->registerServiceListeners( );
@@ -209,6 +264,20 @@ ProxyBase * ProxyBase::findOrCreateProxy( const char * roleName
     return proxy;
 }
 
+
+int ProxyBase::findThreadProxies(DispatcherThread & ownerThread, TEArrayList<ProxyBase *, ProxyBase *> & OUT threadProxyList )
+{
+    ThreadProxyList * proxyList = ProxyBase::_mapThreadProxies.findResource(ownerThread.getName());
+    int result = proxyList != NULL ? proxyList->getSize() : 0;
+    if ( result > 0 )
+    {
+        threadProxyList = static_cast<const TEArrayList<ProxyBase *, ProxyBase *> &>(*proxyList);
+    }
+
+    return result;
+}
+
+
 //////////////////////////////////////////////////////////////////////////
 // ProxyBase class, constructor / destructor
 //////////////////////////////////////////////////////////////////////////
@@ -220,7 +289,9 @@ ProxyBase::ProxyBase(const char* roleName, const NEService::SInterfaceData & ser
     , mStubAddress      ( StubAddress::INVALID_STUB_ADDRESS )
     , mSequenceCount    ( 0 )
     , mListenerList     ( serviceIfData.idAttributeCount + serviceIfData.idResponseCount )
+    , mListConnect      (   )
     , mIsConnected      ( false )
+    , mIsStopped        ( false )
 
     , mProxyData        ( serviceIfData )
 
@@ -230,11 +301,13 @@ ProxyBase::ProxyBase(const char* roleName, const NEService::SInterfaceData & ser
 {
     ASSERT(mDispatcherThread.isValid());
     _mapRegisteredProxies.registerResourceObject(mProxyAddress, this);
+    _mapThreadProxies.registerResourceObject(mDispatcherThread.getName(), this);
 }
 
 ProxyBase::~ProxyBase( void )
 {
     _mapRegisteredProxies.unregisterResourceObject(mProxyAddress);
+    _mapThreadProxies.unregisterResourceObject(mDispatcherThread.getName(), this, true);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -254,47 +327,59 @@ void ProxyBase::unregisterServiceListeners( void )
 
 void ProxyBase::freeProxy( IEProxyListener & connect )
 {
-    connect.serviceConnected(false, self());
-
+    int exists = mListConnect.find(&connect, 0);
+    if ( exists >= 0 )
+    {
+        mListConnect.removeAt(exists);
+        connect.serviceConnected(false, self());
+    }
+    
     removeListener(NEService::SI_SERVICE_CONNECTION_NOTIFY, NEService::SEQUENCE_NUMBER_NOTIFY, static_cast<IENotificationEventConsumer *>(&connect));
+
     if (mProxyInstCount == 1)
     {
         OUTPUT_WARN("The proxy [ %s ] instance count is zero, going to delete object at address [ %p]"
                         , ProxyAddress::convAddressToPath(getProxyAddress()).getString()
                         , this);
 
+        if ( false == mIsStopped )
+        {
+            stopAllServiceNotifications( );
+            unregisterServiceListeners( );
+            mListenerList.removeAll();
+
+            ServiceManager::requestUnregisterClient( getProxyAddress( ) );
+            mDispatcherThread.removeConsumer( *this );
+        }
+
+        mIsConnected = false;
+        mIsStopped   = true;
+
         -- mProxyInstCount;
-        stopAllServiceNotifications( );
-        unregisterServiceListeners( );
-        mListenerList.removeAll();
-
-        ServiceManager::requestUnregisterClient( getProxyAddress( ) );
-        mDispatcherThread.removeConsumer( *this );
-
         delete this;
     }
-    else if ( mProxyInstCount != 0 )
+    else if ( mProxyInstCount > 0 )
     {
         -- mProxyInstCount;
     }
 }
 
-void ProxyBase::serviceConnectionUpdated( const StubAddress & Server, const Channel & Channel, NEService::eServiceConnection Status )
+void ProxyBase::serviceConnectionUpdated( const StubAddress & server, const Channel & channel, NEService::eServiceConnection status )
 {
-    ASSERT(Server.isValid());
-    if ( Server.isProxyCompatible( getProxyAddress() ) )
+    ASSERT(server.isValid());
+    if ( server.isProxyCompatible( getProxyAddress() ) )
     {
         OUTPUT_DBG("The proxy [ %s ] have got [ %s ] status update notification event from stub [ %s ]"
                     , ProxyAddress::convAddressToPath(getProxyAddress()).getString()
-                    , NEService::getString(Status)
-                    , StubAddress::convAddressToPath(Server).getString());
+                    , NEService::getString(status)
+                    , StubAddress::convAddressToPath(server).getString());
 
-        ASSERT(Channel.getTarget() == Server.getSource() || Status != NEService::ServiceConnected);
-        mProxyAddress.setChannel(Channel);
-        if ( Status == NEService::ServiceConnected )
+        ASSERT(channel.getTarget() == server.getSource() || status != NEService::ServiceConnected);
+        mProxyAddress.setChannel(channel);
+        if ( status == NEService::ServiceConnected )
         {
             mIsConnected = true;
-            mStubAddress = Server;
+            mStubAddress = server;
         }
         else
         {
@@ -319,7 +404,19 @@ void ProxyBase::serviceConnectionUpdated( const StubAddress & Server, const Chan
         }
 
         for (index = 0 ; index < conListeners.getSize(); ++ index)
-            static_cast<IEProxyListener *>(conListeners[index].mListener)->serviceConnected(mIsConnected, *this);
+        {
+            IEProxyListener * listener = static_cast<IEProxyListener *>(conListeners[index].mListener);
+            if (mIsConnected)
+            {
+                mListConnect.addUnique(listener);
+            }
+            else
+            {
+                mListConnect.remove(listener, 0);
+            }
+
+            listener->serviceConnected(mIsConnected, *this);
+        }
     }
 }
 
@@ -551,3 +648,34 @@ RemoteResponseEvent * ProxyBase::createRemoteRequestFailedEvent(  const ProxyAdd
 {
     return static_cast<RemoteResponseEvent *>(NULL);
 }
+
+void ProxyBase::stopProxy(void)
+{
+    if ( false == mIsStopped )
+    {
+        OUTPUT_WARN("Going to stop proxy [ %s ]", ProxyAddress::convAddressToPath(mProxyAddress).getString());
+
+        for (int i = 0 ; i < mListConnect.getSize(); ++ i)
+        {
+            IEProxyListener * listener = mListConnect.getAt(i);
+            ASSERT(listener != NULL);
+            listener->serviceConnected(false, *this);
+        }
+
+        mListConnect.removeAll();
+
+        mIsConnected = false;
+        mIsStopped   = true;
+
+        stopAllServiceNotifications( );
+        unregisterServiceListeners( );
+        mListenerList.removeAll();
+        ServiceManager::requestUnregisterClient( getProxyAddress( ) );
+        mDispatcherThread.removeConsumer( *this );
+
+        mStubAddress = StubAddress::INVALID_STUB_ADDRESS;
+        mProxyData.resetStates();
+        mProxyAddress.setChannel(Channel::INVALID_CHANNEL);
+    }
+}
+

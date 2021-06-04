@@ -1083,7 +1083,7 @@ inline void TEString<CharType, Implement>::reallocate( NEString::CharCount chars
     NEString::SString<CharType> * tmp = NEString::reallocSpace<CharType, CharType>( *mData, charsAdd, isValid( ) ? mData->strEncoding : encode );
     if ( NEString::isValid<CharType>(tmp))
     {
-        releaseSpace( mData );
+        NEString::releaseSpace<CharType>( mData );
         mData   = tmp;
 
 #ifdef DEBUG
@@ -1190,11 +1190,15 @@ inline TEString<CharType, Implement>::TEString( const TEString<CharType, Impleme
 template<typename CharType, class Implement /*= TEStringImpl<CharType>*/>
 TEString<CharType, Implement>::~TEString( void )
 {
+    // release();
+#if 1
     NEString::releaseSpace<CharType>(mData);
+    mData = NEString::getInvalidString<CharType>();
 
 #ifdef DEBUG
     mString = mData->strBuffer;
 #endif // DEBUG
+#endif
 }
 
 template<typename CharType, class Implement /*= TEStringImpl<CharType>*/>
@@ -1472,7 +1476,7 @@ inline void TEString<CharType, Implement>::truncate( NEString::CharCount maxChar
         NEString::SString<CharType> * tmp = NEString::initString<CharType>(getString(), maxChars, mEncode);
         if (tmp != static_cast<NEString::SString<CharType> *>(NULL))
         {
-            releaseSpace(mData);
+            NEString::releaseSpace<CharType>(mData);
             mData   = tmp;
 
 #ifdef DEBUG
@@ -1507,7 +1511,7 @@ inline void TEString<CharType, Implement>::compact( void )
             NEString::SString<CharType> * tmp = NEString::initString<CharType>( getString( ), len, mEncode );
             if ( tmp != static_cast<NEString::SString<CharType> *>(NULL) )
             {
-                releaseSpace( mData );
+                NEString::releaseSpace<CharType>( mData );
                 mData   = tmp;
 
 #ifdef DEBUG

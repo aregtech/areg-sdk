@@ -8,10 +8,11 @@
  ************************************************************************/
 #include "areg/component/Channel.hpp"
 
-const char  Channel::_CHANNEL_SEPARATOR   = '.';
+const Channel   Channel::INVALID_CHANNEL(NEService::SOURCE_UNKNOWN, NEService::TARGET_UNKNOWN, NEService::COOKIE_UNKNOWN);
+const char      Channel::_CHANNEL_SEPARATOR   = '.';
 
 Channel::Channel( void )
-    : mSource( NEService::SOUR_UNKNOWN )
+    : mSource( NEService::SOURCE_UNKNOWN )
     , mTarget( NEService::TARGET_UNKNOWN )
     , mCookie( NEService::COOKIE_UNKNOWN ) 
 {
@@ -58,7 +59,7 @@ String Channel::convToString( void ) const
 
 const Channel & Channel::convFromString(const char * channel)
 {
-    mSource = NEService::SOUR_UNKNOWN;
+    mSource = NEService::SOURCE_UNKNOWN;
     mTarget = NEService::TARGET_UNKNOWN;
     mCookie = NEService::COOKIE_UNKNOWN;
 

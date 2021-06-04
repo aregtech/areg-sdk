@@ -69,7 +69,7 @@ static void printBufferData(const NEMemory::sRemoteMessage & msg, const char * i
 
     RemoteMessage remote;
     remote.initMessage(msg.rbHeader);
-    remote.setSource( NEService::SOUR_UNKNOWN );
+    remote.setSource( NEService::SOURCE_UNKNOWN );
     remote.setSequenceNr( NEService::SEQUENCE_NUMBER_NOTIFY );    
     remote << reqType;
     remote << stub;

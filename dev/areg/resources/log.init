@@ -174,5 +174,7 @@ connection.port.LastTest[trace]     = 8080
 # #######################################
 
 scope.mcrouter.*    = DEBUG | SCOPE ;
+scope.*				= DEBUG | SCOPE ;
+
 # scope.register.*    = DEBUG | SCOPE ;
 # scope.edge.*        = DEBUG | SCOPE ;

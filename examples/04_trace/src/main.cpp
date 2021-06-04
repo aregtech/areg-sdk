@@ -110,7 +110,7 @@ int main()
     // To change the configuration and use dynamic logging, use macro TRACER_START_LOGGING
     // and specify the logging configuration file, where you can change logging format,
     // filter logging priority and scopes.
-    TRACER_FORCE_LOGGING();
+    TRACER_CONFIGURE_AND_START(NULL);
 
     do
     {

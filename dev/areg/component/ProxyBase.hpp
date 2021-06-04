@@ -17,7 +17,9 @@
 #include "areg/base/GEGlobal.h"
 #include "areg/base/TEHashMap.hpp"
 #include "areg/base/TEArrayList.hpp"
+#include "areg/base/TELinkedList.hpp"
 #include "areg/base/TEResourceMap.hpp"
+#include "areg/base/TEResourceListMap.hpp"
 #include "areg/component/ProxyEvent.hpp"
 #include "areg/component/ProxyAddress.hpp"
 
@@ -177,7 +179,7 @@ private:
         /**
          * \brief   Pointer to notification event listener object, which should be instance of Proxy client.
          **/
-        IENotificationEventConsumer *  mListener;
+        IENotificationEventConsumer *   mListener;
     };
 
     //////////////////////////////////////////////////////////////////////////
@@ -201,7 +203,30 @@ private:
         /**
          * \brief   Destructor.
          **/
-        virtual ~ProxyListenerList( void );
+        ~ProxyListenerList( void );
+    };
+
+    //////////////////////////////////////////////////////////////////////////
+    // ProxyBase::ProxyConnectList class declaration
+    //////////////////////////////////////////////////////////////////////////
+    /************************************************************************
+     * \brief   Proxy Connected client List class to handle connect and 
+     *          disconnect service.
+     ************************************************************************/
+    class AREG_API ProxyConnectList : public TEArrayList<IEProxyListener *, IEProxyListener *>
+    {
+    //////////////////////////////////////////////////////////////////////////
+    // ProxyBase::ProxyConnectList class, Constructor / Destructor
+    //////////////////////////////////////////////////////////////////////////
+    public:
+        /**
+         * \brief   Constructor.
+         **/
+        ProxyConnectList( void );
+        /**
+         * \brief   Destructor.
+         **/
+        ~ProxyConnectList( void );
     };
 
     //////////////////////////////////////////////////////////////////////////
@@ -246,7 +271,7 @@ private:
      **/
     typedef TEHashMap<ProxyAddress, ProxyBase*, const ProxyAddress&, const ProxyBase*, ProxyMapImpl>    MapProxy;
     /**
-     * \brief   Proxy resource map hlpers.
+     * \brief   Proxy resource map helper.
      **/
     typedef TEResourceMapImpl<ProxyAddress, ProxyBase>                                                  ImplProxyResource;
 
@@ -258,6 +283,83 @@ private:
      * \tparam  ProxyMap      The type of Hash Mapping object used as container
      **/
     typedef TELockResourceMap<ProxyAddress, ProxyBase, MapProxy, ImplProxyResource>                     MapProxyResource;
+
+    //////////////////////////////////////////////////////////////////////////
+    // ProxyBase::ThreadProxyList internal class declaration
+    //////////////////////////////////////////////////////////////////////////
+    /**
+     * \brief   The list of proxies. Used to save in Map List.
+     **/
+    class AREG_API ThreadProxyList  : public TEArrayList<ProxyBase *, ProxyBase *>
+    {
+    //////////////////////////////////////////////////////////////////////////
+    // Constructors / Destructor / operators.
+    //////////////////////////////////////////////////////////////////////////
+    public:
+        /**
+         * \brief   Constructor.
+         **/
+        ThreadProxyList( void );
+        /**
+         * \brief   Copies entries from given source.
+         **/
+        ThreadProxyList( const ThreadProxyList & src);
+
+        /**
+         * \brief   Destructor.
+         **/
+        ~ThreadProxyList( void );
+
+        /**
+         * \brief   Copies entries from given source.
+         **/
+        const ThreadProxyList & operator = ( const ThreadProxyList & src );
+    };
+
+    //////////////////////////////////////////////////////////////////////////
+    // ProxyBase::ThreadProxyMapImpl internal class declaration
+    //////////////////////////////////////////////////////////////////////////
+    /**
+     * \brief   The helper class used in the map of lists..
+     **/
+    class ThreadProxyMapImpl    : public TEResourceListMapImpl<String, ProxyBase, ThreadProxyList>
+    {
+    public:
+        /**
+         * \brief	Called when all resources are removed.
+         *          This function is called from RemoveAllResources() for every single
+         *          resource being unregistered.
+         * \param	Key	    The String as a Key of resource.
+         * \param	List    The list of proxy objects.
+         **/
+        inline void implCleanResourceList( const String & Key, ThreadProxyList & List );
+
+        /**
+         * \brief	Called when need to add resource object to the list.
+         * \param	List        The list of proxy objects.
+         * \param   Resource    The proxy object to add to the list.
+         **/
+        inline void implAddResource( ThreadProxyList & List, ProxyBase * Resource );
+        
+        /**
+         * \brief	Called when need to remove resource object from the list.
+         * \param	List        The list of proxy objects.
+         * \param   Resource    The proxy object to remove from the list.
+         **/
+        inline bool implRemoveResource( ThreadProxyList & List, ProxyBase * Resource );
+    };
+
+    /**
+     * \brief   ProxyBase::MapThreadProxy
+     *          The string hash map which values are list of proxies.
+     **/
+    typedef TEStringHashMap<ThreadProxyList, const ThreadProxyList>                                         MapThreadProxy;
+
+    /**
+     * \brief   ProxyBase::MapThreadProxyList
+     *          The Map of the lits, where the key is a string and values are list of proxies.
+     **/
+    typedef TELockResourceListMap<String, ProxyBase, MapThreadProxy, ThreadProxyList, ThreadProxyMapImpl>   MapThreadProxyList;
 
 protected:
     //////////////////////////////////////////////////////////////////////////
@@ -376,6 +478,16 @@ public:
      **/
     static ProxyBase * findProxyByAddress( const ProxyAddress & proxyAddress );
 
+    /**
+     * \brief   Searches all created proxies in the specified thread. On output, the 
+     *          parameter 'threadProxyList' contains list of proxies created in the
+     *          thread 'ownerThread'.
+     * \param   ownerThread     The thread, which proxies should be returned.
+     * \param   threadProxyList On output, which contains list of proxies created in specified thread.
+     * \return  Returns number of proxies added to the list.
+     **/
+    static int findThreadProxies( DispatcherThread & ownerThread, TEArrayList<ProxyBase *, ProxyBase *> & OUT threadProxyList );
+
 //////////////////////////////////////////////////////////////////////////
 // ProxyBase class, Constructor / Destructor.
 //////////////////////////////////////////////////////////////////////////
@@ -412,6 +524,13 @@ public:
      * \param   connect The object to notify when Proxy is disconnected.
      **/
     void freeProxy( IEProxyListener & connect );
+
+    /**
+     * \brief   Function is called when thread completes job and makes cleanups.
+     *          This call notifies all related to proxy clients that it has disconnected
+     *          from service, as well as removes all listeners and frees the resources.
+     **/
+    void stopProxy( void );
 
 //////////////////////////////////////////////////////////////////////////
 // Pure virtual methods to implement
@@ -532,13 +651,13 @@ protected:
 
     /**
      * \brief   Triggered, when received server connection status changed.
-     * \param   Server      The address of connected service stub server.
-     * \param   Channel     Communication channel object to deliver events.
-     * \param   Status      The service connection status. 
+     * \param   server      The address of connected service stub server.
+     * \param   channel     Communication channel object to deliver events.
+     * \param   status      The service connection status. 
      *                      The connection status should be NEService::ServiceConnected
      *                      To be able to send message to service target from Proxy client.
      **/
-    virtual void serviceConnectionUpdated( const StubAddress & Server, const Channel & Channel, NEService::eServiceConnection Status );
+    virtual void serviceConnectionUpdated( const StubAddress & server, const Channel & channel, NEService::eServiceConnection status );
 
     /**
      * \brief   Triggered when service available event is processed.
@@ -836,11 +955,23 @@ protected:
     ProxyListenerList       mListenerList;
 
     /**
+     * \brief   The list of connected clients of the proxy.
+     **/
+    ProxyConnectList        mListConnect;
+
+    /**
      * \brief   Flag, indicating whether Proxy is connected to server
      *          component or not. If it is not connected, no event
      *          message will be sent to Stub.
      **/
     bool                    mIsConnected;
+
+    /**
+     * \brief   Flag, indicating whether the proxy is stopper or not.
+     *          Stopped proxy is inactive and cannot neither receive, nor respond on message.
+     *          The stopped proxy should be recreated again. This flag for internal use.
+     **/
+    bool                    mIsStopped;
 
     /**
      * \brief   Proxy data, containing service interface information
@@ -866,10 +997,16 @@ private:
 #if _MSC_VER
     #pragma warning(disable: 4251)
 #endif  // _MSC_VER
+
     /**
      * \brief   Resource of registered Proxies in the system.
      **/
-    static MapProxyResource _mapRegisteredProxies;
+    static MapProxyResource     _mapRegisteredProxies;
+    /**
+     * \brief   The list of proxies per thread.
+     **/
+    static MapThreadProxyList   _mapThreadProxies;
+
 #if _MSC_VER
     #pragma warning(default: 4251)
 #endif  // _MSC_VER
@@ -888,6 +1025,27 @@ private:
     ProxyBase( const ProxyBase & /*src*/ );
     const ProxyBase & operator = ( const ProxyBase & /*src*/ );
 };
+
+//////////////////////////////////////////////////////////////////////////
+// ProxyBase::ThreadProxyMapImpl class template inline function implementation
+//////////////////////////////////////////////////////////////////////////
+
+inline void ProxyBase::ThreadProxyMapImpl::implCleanResourceList(const String & /*Key*/, ThreadProxyList & /*List*/)
+{
+}
+
+inline void ProxyBase::ThreadProxyMapImpl::implAddResource(ThreadProxyList & List, ProxyBase * Resource)
+{
+    if (Resource != NULL)
+    {
+        List.addUnique(Resource);
+    }
+}
+
+inline bool ProxyBase::ThreadProxyMapImpl::implRemoveResource(ThreadProxyList & List, ProxyBase * Resource)
+{
+    return (Resource != NULL ? List.remove(Resource, 0) : false);
+}
 
 //////////////////////////////////////////////////////////////////////////
 // ProxyBase class inline function implementation

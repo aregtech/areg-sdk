@@ -83,7 +83,7 @@ void LocalServiceClient::onConnectedClientsUpdate(const NELocalHelloWorld::Conne
 void LocalServiceClient::onRemainOutputUpdate(short RemainOutput, NEService::eDataStateType state)
 {
     TRACE_SCOPE(examples_13_ipcmix_shareipcmix_LocalServiceClient_onRemainOutputUpdate);
-    TRACE_DBG("Service [ %s ]: Remain greeting outputs [ %d ], data is [ %s ]", getServiceRole().getString(), RemainOutput, NEService::getString(state));
+    TRACE_DBG("Service [ %s ]: Remain greeting outputs [ %d ], data is [ %s ]", getServiceRole().getString(), static_cast<int>(RemainOutput), NEService::getString(state));
 }
 
 void LocalServiceClient::responseHelloWorld(const NELocalHelloWorld::sConnectedClient & clientInfo)

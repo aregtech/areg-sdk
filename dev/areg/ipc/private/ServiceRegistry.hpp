@@ -170,35 +170,19 @@ public:
     const ServiceStub & unregisterServiceStub( const StubAddress & addrStub, ListServiceProxies & out_listProxies );
 
     /**
-     * \brief   Extracts the list of remote servicing Stub entries matching to generated cookie.
-     * \param   cookie              The generated cookie value to filter.
-     * \param   out_stubServiceList On output, contains list of remote servicing Stub objects filtered by given cookie value.
-     * \param   Returns number of elements in the entry. Or zero if there is no entry.
-     **/
-    int getServiceList( ITEM_ID cookie , TEArrayList<StubAddress, const StubAddress &> out_stubServiceList ) const;
-
-    /**
-     * \brief   Extracts the list of remote servicing proxy entries matching to generated cookie.
+     * \brief   Extracts the list of remote servicing Stub and Proxy entries matching to specified cookie.
      * \param   cookie                  The generated cookie value to filter.
+     * \param   out_stubServiceList     On output, contains list of remote servicing Stub objects filtered by given cookie value.
      * \param   out_proxyServiceList    On output, contains list of remote servicing proxy objects filtered by given cookie value.
-     * \param   Returns number of elements in the entry. Or zero if there is no entry.
      **/
-    int getServiceList( ITEM_ID cookie , TEArrayList<ProxyAddress, const ProxyAddress &> out_proxyServiceList ) const;
+    void getServiceList( ITEM_ID cookie , TEArrayList<StubAddress, const StubAddress &> & OUT out_stubServiceList, TEArrayList<ProxyAddress, const ProxyAddress &> & OUT out_proxyServiceList ) const;
 
     /**
-     * \brief   Extracts the list of all remote servicing Stub entries.
+     * \brief   Extracts the list of all remote servicing Stub and Proxy entries.
      * \param   out_stubServiceList On output, contains list of remote servicing Stub objects.
-     * \param   Returns number of elements in the entry. Or zero if there is no entry.
-     **/
-    int getRemoteServiceList( TEArrayList<StubAddress, const StubAddress &> & out_stubServiceList ) const;
-
-    /**
-     * \brief   Extracts the list of remote servicing proxy entries.
-     * \param   addrStub                The address of remote servicing Stub to register.
      * \param   out_proxyServiceList    On output, contains list of remote servicing proxy objects.
-     * \param   Returns number of elements in the entry. Or zero if there is no entry.
      **/
-    int getRemoteServiceList( TEArrayList<ProxyAddress, const ProxyAddress &> & out_proxyServiceList ) const;
+    void getRemoteServiceList( TEArrayList<StubAddress, const StubAddress &> & out_stubServiceList, TEArrayList<ProxyAddress, const ProxyAddress &> & out_proxyServiceList ) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden calls

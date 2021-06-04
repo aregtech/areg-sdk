@@ -53,7 +53,7 @@
  **/
 template<typename VALUE, typename VALUE_TYPE = VALUE, class Implement = TEListImpl<VALUE_TYPE>>
 class TEArrayList   : protected Implement
-                    , private   TemplateConstants
+                    , protected TemplateConstants
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -215,8 +215,20 @@ public:
 
     /**
      * \brief   Adds new element at the end of array and returns index value of new inserted element
+     * \param   newElement  New element to add at the end of array.
+     * \return  Returns the index of new element in the array.
      **/
     inline int add( VALUE_TYPE newElement );
+
+    /**
+     * \brief   Adds new element at the end of the array only if the element does not exist.
+     *          The function searches given parameter in the list starting from beginning, 
+     *          if does not find any entry, it adds given parameter to the end and returns true.
+     * \param   newElement  New element to add at the end of array.
+     * \return  Returns true if succeeded to add element at the end of array. If specified element
+     *          exists in array, it ignores operation and returns false.
+     **/
+    inline bool addUnique(VALUE_TYPE newElement);
 
     /**
      * \brief	Appends entries taken from source at the end of array.
@@ -343,7 +355,7 @@ protected:
      * \return  If function returns true, 2 values are equal.
      *          Otherwise, they are not equal.
      **/
-    inline bool equalValues( VALUE_TYPE value1, VALUE_TYPE value2) const;
+    inline bool isEqualValues( VALUE_TYPE value1, VALUE_TYPE value2) const;
 
     /**
      * \brief	Constructs element entries in the given list
@@ -427,11 +439,15 @@ TEArrayList<VALUE, VALUE_TYPE, Implement>::~TEArrayList( void )
 
 template<typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /* = TEListImpl<VALUE_TYPE> */>
 inline bool TEArrayList<VALUE, VALUE_TYPE, Implement>::isEmpty( void ) const
-{   return (mElemCount == 0);   }
+{
+    return (mElemCount == 0);
+}
 
 template<typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /* = TEListImpl<VALUE_TYPE> */>
 inline int TEArrayList<VALUE, VALUE_TYPE, Implement>::getSize( void ) const
-{   return mElemCount;          }
+{
+    return mElemCount;
+}
 
 template<typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /* = TEListImpl<VALUE_TYPE> */>
 void TEArrayList<VALUE, VALUE_TYPE, Implement>::freeExtra( void )
@@ -454,19 +470,29 @@ void TEArrayList<VALUE, VALUE_TYPE, Implement>::freeExtra( void )
 
 template<typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /* = TEListImpl<VALUE_TYPE> */>
 inline bool TEArrayList<VALUE, VALUE_TYPE, Implement>::isValidIndex( int index ) const
-{   return ( (index >= 0) && (index < mElemCount) );                                                }
+{
+    return ( (index >= 0) && (index < mElemCount) );
+}
 
 template<typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /* = TEListImpl<VALUE_TYPE> */>
 inline void TEArrayList<VALUE, VALUE_TYPE, Implement>::removeAll( void )
-{   setSize(0, -1);                                                                                 }
+{
+    setSize(0, -1);
+}
 
 template<typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /* = TEListImpl<VALUE_TYPE> */>
 inline VALUE_TYPE TEArrayList<VALUE, VALUE_TYPE, Implement>::getAt(int index) const
-{   ASSERT(isValidIndex(index)); return static_cast<VALUE_TYPE>(mValueList[index]); }
+{
+    ASSERT(isValidIndex(index));
+    return static_cast<VALUE_TYPE>(mValueList[index]);
+}
 
 template<typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /* = TEListImpl<VALUE_TYPE> */>
 inline VALUE& TEArrayList<VALUE, VALUE_TYPE, Implement>::getAt(int index)
-{   ASSERT(isValidIndex(index)); return mValueList[index];                          }
+{
+    ASSERT(isValidIndex(index));
+    return mValueList[index];
+}
 
 template<typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /* = TEListImpl<VALUE_TYPE> */>
 inline void TEArrayList<VALUE, VALUE_TYPE, Implement>::setAt(int index, VALUE_TYPE newElement)
@@ -487,23 +513,50 @@ inline bool TEArrayList<VALUE, VALUE_TYPE, Implement>::validateIndex(int index)
     ASSERT(index >= 0);
     if (index >= mElemCount)
         mElemCount = setSize(index + 1);
+
     return (index >= 0 && mElemCount >= index + 1);
 }
 
 template<typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /* = TEListImpl<VALUE_TYPE> */>
 inline int TEArrayList<VALUE, VALUE_TYPE, Implement>::resize( int newSize, int increaseBy /*= TemplateConstants::ARRAY_DEFAULT_INCREASE */ )
-{   mElemCount = setSize(newSize, increaseBy); return mElemCount;   }
+{
+    mElemCount = setSize(newSize, increaseBy);
+    return mElemCount;
+}
 
 template<typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /* = TEListImpl<VALUE_TYPE> */>
 inline const VALUE* TEArrayList<VALUE, VALUE_TYPE, Implement>::getValues( void ) const
-{   return mValueList;                                              }
+{
+    return mValueList;
+}
 
 template<typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /* = TEListImpl<VALUE_TYPE> */>
 inline int TEArrayList<VALUE, VALUE_TYPE, Implement>::add(VALUE_TYPE newElement)
 {
     setSize(mElemCount + 1, -1);
-    mValueList[mElemCount] = newElement;
-    return mElemCount ++;
+    mValueList[mElemCount ++] = newElement;
+    return mElemCount;
+}
+
+template<typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /* = TEListImpl<VALUE_TYPE> */>
+inline bool TEArrayList<VALUE, VALUE_TYPE, Implement>::addUnique(VALUE_TYPE newElement)
+{
+    bool result = false;
+    int i = 0;
+    for ( ; i < mElemCount; ++ i)
+    {
+        if ( isEqualValues(mValueList[i], newElement) )
+            break;
+    }
+
+    if ( i == mElemCount )
+    {
+        result = true;
+        setSize(mElemCount + 1, -1);
+        mValueList[mElemCount ++] = newElement;
+    }
+
+    return result;
 }
 
 template<typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /* = TEListImpl<VALUE_TYPE> */>
@@ -537,11 +590,15 @@ int TEArrayList<VALUE, VALUE_TYPE, Implement>::copy(const TEArrayList<VALUE, VAL
 
 template<typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /* = TEListImpl<VALUE_TYPE> */>
 inline VALUE& TEArrayList<VALUE, VALUE_TYPE, Implement>::operator [] (int index)
-{   return getAt(index);    }
+{
+    return getAt(index);
+}
 
 template<typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /* = TEListImpl<VALUE_TYPE> */>
 inline VALUE_TYPE TEArrayList<VALUE, VALUE_TYPE, Implement>::operator [] (int index) const
-{   return getAt(index);    }
+{
+    return getAt(index);
+}
 
 template<typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /* = TEListImpl<VALUE_TYPE> */>
 TEArrayList<VALUE, VALUE_TYPE, Implement>& TEArrayList<VALUE, VALUE_TYPE, Implement>::operator = ( const TEArrayList<VALUE, VALUE_TYPE, Implement>& src )
@@ -566,7 +623,7 @@ bool TEArrayList<VALUE, VALUE_TYPE, Implement>::operator == ( const TEArrayList<
         {
             result = true;
             for (int i = 0; result && (i < mElemCount); ++ i)
-                result = equalValues( mValueList[i], other.mValueList[i] );
+                result = isEqualValues( mValueList[i], other.mValueList[i] );
         }
     }
     return result;
@@ -583,7 +640,7 @@ bool TEArrayList<VALUE, VALUE_TYPE, Implement>::operator != (const TEArrayList<V
         {
             result = false;
             for ( int i = 0; (result == false) && (i < mElemCount); ++ i )
-                result = equalValues( mValueList[i], other.mValueList[i] ) == false;
+                result = isEqualValues( mValueList[i], other.mValueList[i] ) == false;
         }
     }
     return result;
@@ -597,7 +654,10 @@ inline TEArrayList<VALUE, VALUE_TYPE, Implement>::operator const VALUE * ( void 
 
 template<typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /* = TEListImpl<VALUE_TYPE> */>
 inline void TEArrayList<VALUE, VALUE_TYPE, Implement>::insertAt(int index, VALUE_TYPE newElement, int elemCount /*= 1*/)
-{   shift(index, elemCount); NEMemory::setMemory<VALUE, VALUE_TYPE>(mValueList + index, newElement, elemCount);    }
+{
+    shift(index, elemCount);
+    NEMemory::setMemory<VALUE, VALUE_TYPE>(mValueList + index, newElement, elemCount);
+}
 
 template<typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /* = TEListImpl<VALUE_TYPE> */>
 inline void TEArrayList<VALUE, VALUE_TYPE, Implement>::removeAt(int index, int elemCount /*= 1*/)
@@ -630,7 +690,7 @@ inline int TEArrayList<VALUE, VALUE_TYPE, Implement>::find( VALUE_TYPE elemSearc
     int result = startAt <= 0 ? 0 : MACRO_MIN(startAt, mElemCount);
     for ( ; result < mElemCount; ++ result)
     {
-        if ( equalValues(mValueList[result], elemSearch) )
+        if ( isEqualValues(mValueList[result], elemSearch) )
             break;
     }
     return (result < mElemCount ? result : -1);
@@ -638,7 +698,9 @@ inline int TEArrayList<VALUE, VALUE_TYPE, Implement>::find( VALUE_TYPE elemSearc
 
 template<typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /* = TEListImpl<VALUE_TYPE> */>
 inline bool TEArrayList<VALUE, VALUE_TYPE, Implement>::exist( VALUE_TYPE elemSearch, int startAt /*= 0*/ ) const
-{   return (find(elemSearch, startAt) >= 0);  }
+{
+    return (find(elemSearch, startAt) >= 0);
+}
 
 template<typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /* = TEListImpl<VALUE_TYPE> */>
 inline bool TEArrayList<VALUE, VALUE_TYPE, Implement>::remove( VALUE_TYPE elemRemove, int searchAt /*= 0*/ )
@@ -733,14 +795,18 @@ int TEArrayList<VALUE, VALUE_TYPE, Implement>::setSize(int elemCount, int increa
 
 template<typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /* = TEListImpl<VALUE_TYPE> */>
 inline void TEArrayList<VALUE, VALUE_TYPE, Implement>::construct(VALUE *valueList, int elemCount)
-{   NEMemory::constructElems<VALUE>(static_cast<void *>(valueList), elemCount); }
+{
+    NEMemory::constructElems<VALUE>(static_cast<void *>(valueList), elemCount);
+}
 
 template<typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /* = TEListImpl<VALUE_TYPE> */>
 inline void TEArrayList<VALUE, VALUE_TYPE, Implement>::destruct(VALUE *valueList, int elemCount)
-{   NEMemory::destroyElems<VALUE>(valueList, elemCount);                        }
+{
+    NEMemory::destroyElems<VALUE>(valueList, elemCount);
+}
 
 template<typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /* = TEListImpl<VALUE_TYPE> */>
-inline bool TEArrayList<VALUE, VALUE_TYPE, Implement>::equalValues(VALUE_TYPE value1, VALUE_TYPE value2) const
+inline bool TEArrayList<VALUE, VALUE_TYPE, Implement>::isEqualValues(VALUE_TYPE value1, VALUE_TYPE value2) const
 {
     return Implement::implEqualValues(value1, value2);
 }

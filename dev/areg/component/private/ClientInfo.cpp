@@ -92,7 +92,7 @@ bool ClientInfo::operator == (const StubAddress & server) const
 //////////////////////////////////////////////////////////////////////////
 void ClientInfo::setConnectionStatus( NEService::eServiceConnection newConnection )
 {
-    if ( mClientAddress.getSource() != NEService::SOUR_UNKNOWN )
+    if ( mClientAddress.getSource() != NEService::SOURCE_UNKNOWN )
     {
         mClientState = mClientAddress.getTarget() != NEService::TARGET_UNKNOWN ? newConnection : NEService::ServicePending;
     }
@@ -109,7 +109,7 @@ ClientInfo::operator unsigned int(void) const
 
 void ClientInfo::setTargetServer(const StubAddress & addrStub)
 {
-    if ( mClientAddress.getSource() != NEService::SOUR_UNKNOWN )
+    if ( mClientAddress.getSource() != NEService::SOURCE_UNKNOWN )
     {
         mClientAddress.setTarget( addrStub.getSource() );
     }

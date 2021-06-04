@@ -1559,7 +1559,11 @@ inline bool NEString::isValid(const NEString::SString<CharType> & strString )
 template<typename CharType>
 inline bool NEString::isValid(const NEString::SString<CharType> * strString )
 {
-    return (strString != static_cast<const NEString::SString<CharType> *>(NULL) ? NEString::isValid<CharType>(*strString) : false);
+    return (
+            (strString != static_cast<const NEString::SString<CharType> *>(NULL)) && 
+            (strString != getInvalidString<CharType>()                          ) &&
+            (strString->strSpace != 0                                           ) 
+            );
 }
 
 template<typename CharType>
@@ -1688,8 +1692,8 @@ inline void NEString::releaseSpace(NEString::SString<CharType> * strString)
 {
     if ( isValid<CharType>(strString) )
     {
-        strString->~SString();
         uint8_t * buffer = reinterpret_cast<uint8_t *>(strString);
+        strString->~SString();
         delete [] buffer;
     }
 }

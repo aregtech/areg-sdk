@@ -311,7 +311,20 @@ bool CriticalSection::tryLock( void )
 ResourceLock::ResourceLock( bool initLock /*= false*/ )
     : IEResourceLock(IESynchObject::SO_RES_LOCK)
 {
+
+#if 0
     mSynchObject    = new Mutex(initLock);
+
+#else
+
+    mSynchObject    = new CriticalSection();
+    if ( initLock && (mSynchObject != NULL) )
+    {
+        reinterpret_cast<IEBlockingSynchObject *>(mSynchObject)->lock(IESynchObject::WAIT_INFINITE);
+    }
+
+#endif
+
 }
 
 ResourceLock::~ResourceLock(void)

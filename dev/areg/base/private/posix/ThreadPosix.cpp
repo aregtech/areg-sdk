@@ -94,7 +94,7 @@ void Thread::_closeHandle(  THREADHANDLE handle )
 
 void Thread::sleep(unsigned int ms)
 {
-    // since _POSIX_C_SOUR >= 199309L use nanosleep
+    // since _POSIX_C_SOURCE >= 199309L use nanosleep
     // otherwise, can use:
     //      unsigned int sec    = ms / 1000;
     //      unsigned int micro  = (ms % 1000) * 1000;

@@ -56,7 +56,7 @@ DEF_TRACE_SCOPE(main_main);
 int main()
 {
     // force to start logging with default settings
-    TRACER_FORCE_LOGGING();
+    TRACER_CONFIGURE_AND_START(NULL);
     // Initialize application, enable logging, servicing and the timer.
     Application::initApplication(true, true, false, true, NULL, NULL);
 

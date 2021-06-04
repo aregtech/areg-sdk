@@ -170,9 +170,9 @@ bool ClientService::registerService( const StubAddress & stubService )
     bool result = false;
     if ( isStarted() )
     {
-        result = SendMessageEvent::sendEvent(  SendMessageEventData(NEConnection::createRouterRegisterService(stubService, mClientConnection.getCookie()))
-                                               , static_cast<IESendMessageEventConsumer &>(mThreadSend)
-                                               , static_cast<DispatcherThread &>(mThreadSend) );
+        result = SendMessageEvent::sendEvent( SendMessageEventData(NEConnection::createRouterRegisterService(stubService, mClientConnection.getCookie()))
+                                            , static_cast<IESendMessageEventConsumer &>(mThreadSend)
+                                            , static_cast<DispatcherThread &>(mThreadSend) );
     }
     return result;
 }
@@ -183,8 +183,8 @@ void ClientService::unregisterService(const StubAddress & stubService)
     if ( isStarted() )
     {
         SendMessageEvent::sendEvent(  SendMessageEventData(NEConnection::createRouterUnregisterService(stubService, mClientConnection.getCookie()))
-                                        , static_cast<IESendMessageEventConsumer &>(mThreadSend)
-                                        , static_cast<DispatcherThread &>(mThreadSend) );
+                                    , static_cast<IESendMessageEventConsumer &>(mThreadSend)
+                                    , static_cast<DispatcherThread &>(mThreadSend) );
     }
 }
 
@@ -195,8 +195,8 @@ bool ClientService::registerServiceClient(const ProxyAddress & proxyService)
     if ( isStarted() )
     {
         result = SendMessageEvent::sendEvent( SendMessageEventData(NEConnection::createRouterRegisterClient(proxyService, mClientConnection.getCookie()))
-                                                , static_cast<IESendMessageEventConsumer &>(mThreadSend)
-                                                , static_cast<DispatcherThread &>(mThreadSend) );
+                                            , static_cast<IESendMessageEventConsumer &>(mThreadSend)
+                                            , static_cast<DispatcherThread &>(mThreadSend) );
     }
     return result;
 }
@@ -231,7 +231,7 @@ void ClientService::processEvent( const ClientServiceEventData & data )
         {
             TRACE_DBG("Starting remove servicing");;
             mChannel.setCookie( NEService::COOKIE_LOCAL );
-            mChannel.setSource( NEService::SOUR_UNKNOWN );
+            mChannel.setSource( NEService::SOURCE_UNKNOWN );
             mChannel.setTarget( NEService::TARGET_UNKNOWN );
             startConnection();
         }
@@ -243,7 +243,7 @@ void ClientService::processEvent( const ClientServiceEventData & data )
             setConnectionState(ClientService::ConnectionStopping);
             Channel channel = mChannel;
             mChannel.setCookie( NEService::COOKIE_UNKNOWN );
-            mChannel.setSource( NEService::SOUR_UNKNOWN );
+            mChannel.setSource( NEService::SOURCE_UNKNOWN );
             mChannel.setTarget( NEService::TARGET_UNKNOWN );
             stopConnection();
             mThreadReceive.completionWait( Thread::WAIT_INFINITE );
@@ -276,7 +276,7 @@ void ClientService::processEvent( const ClientServiceEventData & data )
             setConnectionState(ClientService::ConnectionStopping);
             Channel channel = mChannel;
             mChannel.setCookie( NEService::COOKIE_UNKNOWN );
-            mChannel.setSource( NEService::SOUR_UNKNOWN );
+            mChannel.setSource( NEService::SOURCE_UNKNOWN );
             mChannel.setTarget( NEService::TARGET_UNKNOWN );
             stopConnection();
 
@@ -291,7 +291,7 @@ void ClientService::processEvent( const ClientServiceEventData & data )
         TRACE_WARN("Client service is lost connection. Resetting cookie and trying to restart");
         Channel channel = mChannel;
         mChannel.setCookie( NEService::COOKIE_UNKNOWN );
-        mChannel.setSource( NEService::SOUR_UNKNOWN );
+        mChannel.setSource( NEService::SOURCE_UNKNOWN );
         mChannel.setTarget( NEService::TARGET_UNKNOWN );
         stopConnection();
 
@@ -352,6 +352,7 @@ inline bool ClientService::startConnection( void )
             result = mClientConnection.requestConnectServer();
         }
     }
+
     if ( result == false )
     {
         TRACE_WARN("Client service failed to start connection, going to repeat connection in [ %u ] ms", NEConnection::DEFAULT_RETRY_CONNECT_TIMEOUT);
@@ -394,6 +395,9 @@ void ClientService::failedSendMessage(const RemoteMessage & msgFailed)
     {
         eventError->sendEvent();
     }
+
+
+    ClientServiceEvent::sendEvent( ClientServiceEventData(ClientServiceEventData::CMD_ServiceLost), static_cast<IEClientServiceEventConsumer &>(self()), static_cast<DispatcherThread &>(self()) );
 }
 
 void ClientService::failedReceiveMessage(SOCKETHANDLE whichSource)

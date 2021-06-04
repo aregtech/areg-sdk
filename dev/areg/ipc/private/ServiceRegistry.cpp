@@ -144,70 +144,48 @@ MAPPOS ServiceRegistry::findService( const ServiceAddress & addrService ) const
     return static_cast<MAPPOS>(*result);
 }
 
-int ServiceRegistry::getServiceList( ITEM_ID cookie, TEArrayList<StubAddress, const StubAddress &> out_stubServiceList ) const
+void ServiceRegistry::getServiceList( ITEM_ID cookie , TEArrayList<StubAddress, const StubAddress &> & OUT out_stubServiceList, TEArrayList<ProxyAddress, const ProxyAddress &> & OUT out_proxyServiceList ) const
 {
-    int result = 0;
-    for ( MAPPOS pos = firstPosition(); pos != NULL; pos = nextPosition(pos) )
-    {
-        const ServiceStub & stubService = keyAtPosition(pos);
-        if ( stubService.getServiceAddress().getCookie() == cookie && stubService.isValid() )
-        {
-            out_stubServiceList.add(stubService.getServiceAddress());
-            result += 1;
-        }
-    }
-    return result;
-}
-
-int ServiceRegistry::getServiceList( ITEM_ID cookie, TEArrayList<ProxyAddress, const ProxyAddress &> out_proxyServiceList ) const
-{
-    int result = 0;
     for ( MAPPOS posMap = firstPosition(); posMap != NULL; posMap = nextPosition(posMap) )
     {
+        const ServiceStub & stubService = keyAtPosition(posMap);
         const ListServiceProxies & listProxies = valueAtPosition(posMap);
+
+        if ( stubService.getServiceAddress().getCookie() == cookie )
+        {
+            out_stubServiceList.add(stubService.getServiceAddress());
+        }
+
         for ( LISTPOS posList = listProxies.firstPosition(); posList != NULL; posList = listProxies.nextPosition(posList) )
         {
             const ServiceProxy & proxyService = listProxies.getAt(posList);
-            if ( proxyService.getServiceAddress().getCookie() == cookie && proxyService.isValid() )
+            if ( proxyService.getServiceAddress().getCookie() == cookie )
             {
                 out_proxyServiceList.add(proxyService.getServiceAddress());
-                result += 1;
             }
         }
     }
-    return result;
 }
 
-int ServiceRegistry::getRemoteServiceList( TEArrayList<StubAddress, const StubAddress &> & out_stubServiceList ) const
+void ServiceRegistry::getRemoteServiceList( TEArrayList<StubAddress, const StubAddress &> & out_stubServiceList, TEArrayList<ProxyAddress, const ProxyAddress &> & out_proxyServiceList ) const
 {
-    int result = 0;
-    for ( MAPPOS pos = firstPosition(); pos != NULL; pos = nextPosition(pos) )
+    for ( MAPPOS posMap = firstPosition(); posMap != NULL; posMap = nextPosition(posMap) )
     {
-        const ServiceStub & stubService = keyAtPosition(pos);
+        const ServiceStub & stubService = keyAtPosition(posMap);
+        const ListServiceProxies & listProxies = valueAtPosition(posMap);
+
         if ( stubService.getServiceAddress().isServiceRemote() && stubService.isValid() )
         {
             out_stubServiceList.add(stubService.getServiceAddress());
-            result += 1;
         }
-    }
-    return result;
-}
 
-int ServiceRegistry::getRemoteServiceList( TEArrayList<ProxyAddress, const ProxyAddress &> & out_proxyServiceList ) const
-{
-    int result = 0;
-    for ( MAPPOS posMap = firstPosition(); posMap != NULL; posMap = nextPosition(posMap) )
-    {
-        const ListServiceProxies & listProxies = valueAtPosition(posMap);
         for ( LISTPOS posList = listProxies.firstPosition(); posList != NULL; posList = listProxies.nextPosition(posList) )
         {
             const ServiceProxy & proxyService = listProxies.getAt(posList);
             if ( proxyService.getServiceAddress().isServiceRemote() && proxyService.isValid() )
             {
                 out_proxyServiceList.add(proxyService.getServiceAddress());
-                result += 1;
             }
         }
     }
-    return result;
 }

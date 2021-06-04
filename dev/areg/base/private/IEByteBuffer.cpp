@@ -27,7 +27,7 @@ IEByteBuffer::IEByteBuffer( NEMemory::sByteBuffer & byteBuffer )
 
 IEByteBuffer::~IEByteBuffer( void )
 {
-    ; // do nothing
+    mByteBuffer = &NEMemory::InvalidBuffer;
 }
 
 unsigned int IEByteBuffer::resize(unsigned int size, bool copy)

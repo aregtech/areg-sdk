@@ -16,8 +16,6 @@
 
 #include <windows.h>
 
-#define _MILLISECOND    10000
-
 
 //////////////////////////////////////////////////////////////////////////
 //  Windows OS specific methods
@@ -76,14 +74,14 @@ bool TimerManager::_startSystemTimer( TimerInfo & timerInfo, MapTimerTable & tim
 
     // the period of time. If should be fired several times, set the period value. Otherwise set zero to fire once.
     unsigned long period = whichTimer->getEventCount( ) > 1 ? whichTimer->getFireTime( ) : 0;
-    int64_t dueTime = whichTimer->getFireTime( ) * _MILLISECOND;  // timer from now
+    int64_t dueTime = whichTimer->getFireTime( ) * NEUtilities::MILLISEC_TO_100NS;  // timer from now
     dueTime *= -1;
     LARGE_INTEGER timeTrigger;
 
     timeTrigger.LowPart = static_cast<unsigned long>(MACRO_64_LO_BYTE32( dueTime ));
-    timeTrigger.HighPart = static_cast<signed long>(MACRO_64_HI_BYTE32( dueTime ));
+    timeTrigger.HighPart= static_cast<  signed long>(MACRO_64_HI_BYTE32( dueTime ));
 
-    timerTable.setAt( whichTimer, timerInfo, true );
+    timerTable.registerObject( whichTimer, timerInfo );
     if ( ::SetWaitableTimer( timerInfo.mHandle, &timeTrigger, period, reinterpret_cast<PTIMERAPCROUTINE>(&TimerManager::_defaultWindowsTimerExpiredRoutine), static_cast<void *>(whichTimer), FALSE ) == FALSE )
     {
         OUTPUT_ERR( "System Failed to start timer in period [ %d ] ms, timer name [ %s ]. System Error [ %p ]"
@@ -92,12 +90,13 @@ bool TimerManager::_startSystemTimer( TimerInfo & timerInfo, MapTimerTable & tim
                         , static_cast<id_type>(GetLastError( )) );
 
         timerInfo.mTimerState = TimerInfo::TimerIdle;
-        timerTable.setAt( whichTimer, timerInfo, true );
+        timerTable.updateObject( whichTimer, timerInfo );
     }
     else
     {
         result = true; // succeeded
     }
+
     return result;
 }
 

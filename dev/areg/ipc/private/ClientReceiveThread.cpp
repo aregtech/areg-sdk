@@ -44,7 +44,7 @@ bool ClientReceiveThread::runDispatcher(void)
         if ( whichEvent == MultiLock::LOCK_INDEX_TIMEOUT )
         {
             whichEvent = static_cast<int>(EVENT_QUEUE); // escape quit
-            if ( mConnection.receiveMessage(msgReceived) < 0 )
+            if ( mConnection.receiveMessage(msgReceived) <= 0 )
             {
                 msgReceived.invalidate();
                 mRemoteService.failedReceiveMessage( mConnection.getSocketHandle() );

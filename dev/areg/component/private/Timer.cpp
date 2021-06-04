@@ -19,14 +19,17 @@
 //////////////////////////////////////////////////////////////////////////
 // Predefined constants
 //////////////////////////////////////////////////////////////////////////
+
+const unsigned int  Timer::INVALID_TIMEOUT          = static_cast<unsigned int>(0);
+
 /**
  * \brief   This value is used to set continues Timer, which will not stop, until it is not requested to be stopped manually.
  **/
-const unsigned int  Timer::CONTINUOUSLY            = static_cast<unsigned int>(-1);   /*0xFFFFFFFF*/
+const unsigned int  Timer::CONTINUOUSLY             = static_cast<unsigned int>(-1);   /*0xFFFFFFFF*/
 /**
  * \brief   Default number of maximum queued number of timer events in dispatcher thread.
  **/
-const int           Timer::DEFAULT_MAXIMUM_QUEUE   = static_cast<int>(5);             /*0x00000005*/
+const int           Timer::DEFAULT_MAXIMUM_QUEUE    = static_cast<int>(5);             /*0x00000005*/
 /**
  * \brief   Defined to ignore number of maximum queued timer events in dispatcher thread.
  **/
@@ -54,7 +57,7 @@ unsigned int Timer::getTickCount( void )
 Timer::Timer(IETimerConsumer& timerConsumer, const char* timerName /*= NULL*/, int maxQueued /*= Timer::DEFAULT_MAXIMUM_QUEUE*/)
     : mConsumer         (timerConsumer)
     , mName             (NEUtilities::generateName(timerName))
-    , mTimeoutInMs      (0)
+    , mTimeoutInMs      (Timer::INVALID_TIMEOUT)
     , mEventsCount      (0)
     , mNextFire         (0)
     , mLastFired        (0)
@@ -80,8 +83,10 @@ bool Timer::startTimer( unsigned int timeoutInMs, unsigned int eventCount /*= Ti
 {
     Lock lock(mLock);
 
-    if (mTimeoutInMs != 0)
+    if (isValid())
+    {
         TimerManager::stopTimer(self());
+    }
 
     mTimeoutInMs    = timeoutInMs;
     mEventsCount    = eventCount;
@@ -99,8 +104,10 @@ bool Timer::startTimer(unsigned int timeoutInMs, DispatcherThread & whichThread,
 {
     Lock lock(mLock);
 
-    if (mTimeoutInMs != 0)
+    if (isValid())
+    {
         TimerManager::stopTimer(self());
+    }
 
     mTimeoutInMs    = timeoutInMs;
     mEventsCount    = eventCount;
@@ -123,7 +130,7 @@ void Timer::stopTimer( void )
     mStarted        = false;
     mDispatchThread = NULL;
     mCurrentQueued  = 0;
-    mTimeoutInMs    = 0;
+    mTimeoutInMs    = Timer::INVALID_TIMEOUT;
     mEventsCount    = 0;
     mNextFire       = Timer::getTickCount();
     mLastFired      = 0;
@@ -132,7 +139,7 @@ void Timer::stopTimer( void )
 bool Timer::timerIsStarting( void )
 {
     bool result = false;
-    if (mTimeoutInMs != 0 && mEventsCount != 0)
+    if (isValid() && mEventsCount != 0)
     {
         // mEventsCount-= (mEventsCount != CONTINUOUSLY ? 1 : 0);
         mNextFire   = Timer::getTickCount() + mTimeoutInMs;
@@ -149,7 +156,7 @@ bool Timer::timerIsExpired( unsigned int highValue, unsigned int lowValue )
     return (mEventsCount != 0 ? true : false);
 }
 
-void Timer::isTimerQueued( void )
+void Timer::queueTimer( void )
 {
     Lock lock(mLock);
 
@@ -167,7 +174,7 @@ void Timer::isTimerQueued( void )
     }
 }
 
-void Timer::isTimerUnqueued( void )
+void Timer::unqueueTimer( void )
 {
     Lock lock(mLock);
 

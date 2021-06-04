@@ -238,7 +238,7 @@ public:
     /**
      * \brief   Sets stub cookie value
      **/
-    inline void SetCookie( ITEM_ID cookie );
+    inline void setCookie( ITEM_ID cookie );
 
     /**
      * \brief   Returns the ID of source set in communication channel
@@ -339,7 +339,7 @@ inline ITEM_ID StubAddress::getCookie( void ) const
     return mChannel.getCookie();
 }
 
-inline void StubAddress::SetCookie( ITEM_ID cookie )
+inline void StubAddress::setCookie( ITEM_ID cookie )
 {
     mChannel.setCookie(cookie);
 }

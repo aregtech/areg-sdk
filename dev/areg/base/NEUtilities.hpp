@@ -84,16 +84,34 @@ namespace   NEUtilities
     const uint64_t              WIN_TO_POSIX_EPOCH_BIAS_MICROSECS   = 11644473600000000LL;
 
     /**
+     * \brief   NEUtilities::SEC_TO_MILLISECS
+     *          Milliseconds in 1 second.
+     **/
+    const uint64_t              SEC_TO_MILLISECS                    = 1000LL;
+
+    /**
      * \brief   NEUtilities::SEC_TO_MICROSECS
      *          Microseconds in 1 second.
      **/
     const uint64_t              SEC_TO_MICROSECS                    = 1000000LL;
 
     /**
-     * \brief   NEUtilities::SEC_TO_MILLISECS
-     *          Milliseconds in 1 second.
+     * \brief   NEUtilities::MILLISEC_TO_MICROSECS
+     *          Microseconds in 1 millisecond.
      **/
-    const uint64_t              SEC_TO_MILLISECS                    = 1000LL;
+    const uint64_t              MILLISEC_TO_MICROSECS               = 1000LL;
+
+    /**
+     * \brief   NEUtilities::MILLISEC_TO_100NS
+     *          100 nanoseconds in 1 millisecond.
+     **/
+    const uint64_t              MILLISEC_TO_100NS                   = 10000LL;
+
+    /**
+     * \brief   NEUtilities::MILLISEC_TO_NS
+     *          Nanoseconds in 1 millisecond.
+     **/
+    const uint64_t              MILLISEC_TO_NS                      = 1000000LL;
 
     /**
      * \brief   NEUtilities::MICROSEC_TO_100NS
@@ -106,18 +124,6 @@ namespace   NEUtilities
      *          Nanoseconds in 1 microsecond.
      **/
     const uint64_t              MICROSEC_TO_NS                      = 1000LL;
-
-    /**
-     * \brief   NEUtilities::MILLISEC_TO_NS
-     *          Nanoseconds in 1 millisecond.
-     **/
-    const uint64_t              MILLISEC_TO_NS                      = 1000000LL;
-
-    /**
-     * \brief   NEUtilities::MILLISEC_TO_MICROSECS
-     *          Microseconds in 1 millisecond.
-     **/
-    const uint64_t              MILLISEC_TO_MICROSECS               = 1000LL;
 
 /************************************************************************/
 // NEUtilities namespace utility types

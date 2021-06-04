@@ -51,7 +51,7 @@
  **/
 template <typename VALUE, typename VALUE_TYPE = VALUE, class Implement = TEListImpl<VALUE_TYPE>> 
 class TELinkedList  : protected Implement
-                    , private   TemplateConstants
+                    , protected TemplateConstants
 {
 //////////////////////////////////////////////////////////////////////////
 // Internal objects and types declaration
@@ -429,7 +429,7 @@ public:
      * \param   out_Value   On output, it contains value of removed element
      * \return	Returns true if element was removed.
      **/
-    bool removeAt( LISTPOS atPosition, VALUE & out_Value );
+    void removeAt( LISTPOS atPosition, VALUE & out_Value );
 
     /**
      * \brief   Removes all element in Linked List. After call, Linked List is empty.
@@ -495,7 +495,7 @@ protected:
      * \return  If function returns true, 2 values are equal.
      *          Otherwise, they are not equal.
      **/
-    inline bool equalValues( VALUE_TYPE value1, VALUE_TYPE value2) const;
+    inline bool isEqualValues( VALUE_TYPE value1, VALUE_TYPE value2) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Member Variables
@@ -609,7 +609,7 @@ bool TELinkedList<VALUE, VALUE_TYPE, Implement>::operator == (const TELinkedList
             const TELinkedList<VALUE, VALUE_TYPE, Implement>::Block * otherBlock  = other.mHead;
             for (int i = 0; i < mCount; ++ i)
             {
-                if ( equalValues(thisBlock->mValue, otherBlock->mValue) )
+                if ( isEqualValues(thisBlock->mValue, otherBlock->mValue) )
                 {
                     thisBlock  = thisBlock->mNext;
                     otherBlock = otherBlock->mNext;
@@ -638,7 +638,7 @@ bool TELinkedList<VALUE, VALUE_TYPE, Implement>::operator != (const TELinkedList
             const TELinkedList<VALUE, VALUE_TYPE, Implement>::Block * otherBlock = other.mHead;
             for ( int i = 0; i < mCount; ++ i )
             {
-                if ( equalValues( thisBlock->mValue, otherBlock->mValue ) )
+                if ( isEqualValues( thisBlock->mValue, otherBlock->mValue ) )
                 {
                     thisBlock  = thisBlock->mNext;
                     otherBlock = otherBlock->mNext;
@@ -831,8 +831,8 @@ VALUE TELinkedList<VALUE, VALUE_TYPE, Implement>::removeFirst( void )
     else if (mCount == 1) 
     {
         ASSERT(block == mTail);
-        mTail->mPrev = NULL;
         mHead        = mTail;
+        mHead->mPrev = NULL;
     }
     else
     {
@@ -862,8 +862,8 @@ VALUE TELinkedList<VALUE, VALUE_TYPE, Implement>::removeLast( void )
     else if (mCount == 1)
     {
         ASSERT(block == mHead);
-        mHead->mNext = NULL;
         mTail        = mHead;
+        mTail->mNext = NULL;
     }
     else
     {
@@ -1021,13 +1021,13 @@ inline VALUE TELinkedList<VALUE, VALUE_TYPE, Implement>::setAt(LISTPOS atPositio
 template <typename VALUE, typename VALUE_TYPE /* = VALUE */, class Implement /* = TEListImpl<VALUE_TYPE> */>
 void TELinkedList<VALUE, VALUE_TYPE, Implement>::removeAll( void )
 {
-    TELinkedList<VALUE, VALUE_TYPE, Implement>::Block * block = mHead;
-    while (block != NULL)
+    while (mHead != NULL)
     {
-        block = block->mNext;
+        TELinkedList<VALUE, VALUE_TYPE, Implement>::Block * block = mHead->mNext;
         delete mHead;
         mHead = block;
     }
+
     mHead = mTail = static_cast<TELinkedList<VALUE, VALUE_TYPE, Implement>::Block *>(NULL);
     mCount = 0;
 }
@@ -1036,69 +1036,25 @@ template <typename VALUE, typename VALUE_TYPE /* = VALUE */, class Implement /* 
 VALUE TELinkedList<VALUE, VALUE_TYPE, Implement>::removeAt(LISTPOS atPosition)
 {
     ASSERT(atPosition != TemplateConstants::INVALID_POSITION && mCount != 0);
-
-    TELinkedList<VALUE, VALUE_TYPE, Implement>::Block * block   = reinterpret_cast<TELinkedList<VALUE, VALUE_TYPE, Implement>::Block *>(atPosition);
-
-    if (mCount == 1)
-    {
-        ASSERT(mHead == block && mTail == block);
-        mTail = mHead = NULL;
-    }
-    else if (mCount == 2)
-    {
-        ASSERT(mHead == block || mTail == block);
-        mHead = mTail = (block->mPrev != NULL ? block->mPrev : block->mNext);
-
-        ASSERT(mHead != NULL);
-        mHead->mPrev = mHead->mNext = mTail->mPrev = mTail->mNext = NULL;
-    }
-    else
-    {
-        if (block == mTail)
-        {
-            block->mPrev->mNext = NULL;
-            mTail               = block->mPrev;
-        }
-        else if (mHead == block)
-        {
-            block->mNext->mPrev = NULL;
-            mHead               = block->mNext;
-        }
-        else
-        {
-            ASSERT(block->mNext != NULL && block->mPrev != NULL);
-            block->mPrev->mNext = block->mNext;
-            block->mNext->mPrev = block->mPrev;
-        }
-    }
-    VALUE oldValue  = block->mValue;
-    delete	block;
-    mCount --;
-    
+    VALUE oldValue;
+    removeAt(atPosition, oldValue);
     return oldValue;
 }
 
 template <typename VALUE, typename VALUE_TYPE /* = VALUE */, class Implement /* = TEListImpl<VALUE_TYPE> */>
-bool TELinkedList<VALUE, VALUE_TYPE, Implement>::removeAt(LISTPOS atPosition, VALUE &out_value)
+void TELinkedList<VALUE, VALUE_TYPE, Implement>::removeAt(LISTPOS atPosition, VALUE &out_value)
 {
     ASSERT(atPosition != TemplateConstants::INVALID_POSITION && mCount != 0);
 
     TELinkedList<VALUE, VALUE_TYPE, Implement>::Block * block = reinterpret_cast<TELinkedList<VALUE, VALUE_TYPE, Implement>::Block *>(atPosition);
-    bool result = false;
-    if (block != NULL)
-    {
-        out_value   = block->mValue;
-        result      = true;
-    }
-
     if (mCount == 1)
     {
-        ASSERT(mHead == block && mTail == block);
+        ASSERT((mHead == block) && (mTail == block));
         mTail = mHead = NULL;
     }
     else if (mCount == 2)
     {
-        ASSERT(mHead == block || mTail == block);
+        ASSERT((mHead == block) || (mTail == block));
         mHead = mTail = (block->mPrev != NULL ? block->mPrev : block->mNext);
 
         ASSERT(mHead != NULL);
@@ -1123,9 +1079,10 @@ bool TELinkedList<VALUE, VALUE_TYPE, Implement>::removeAt(LISTPOS atPosition, VA
             block->mNext->mPrev = block->mPrev;
         }
     }
+
+    out_value   = block->mValue;
     delete	block;
     -- mCount;
-    return result;
 }
 
 template <typename VALUE, typename VALUE_TYPE /* = VALUE */, class Implement /* = TEListImpl<VALUE_TYPE> */>
@@ -1138,7 +1095,7 @@ bool TELinkedList<VALUE, VALUE_TYPE, Implement>::removeEntry(VALUE_TYPE removeEl
 
     for ( ; block != NULL; block = block->mNext)
     {
-        if ( equalValues(removeElement, block->mValue) )
+        if ( isEqualValues(removeElement, block->mValue) )
             break;
     }
 
@@ -1155,12 +1112,14 @@ template <typename VALUE, typename VALUE_TYPE /* = VALUE */, class Implement /* 
 LISTPOS TELinkedList<VALUE, VALUE_TYPE, Implement>::find(VALUE_TYPE searchValue, LISTPOS searchAfter /*= NULL*/) const
 {	
     TELinkedList<VALUE, VALUE_TYPE, Implement>::Block * block   = mHead;
-    if (searchAfter != TemplateConstants::INVALID_POSITION && mCount != 0)
+    if ((searchAfter != TemplateConstants::INVALID_POSITION) && (mCount != 0))
+    {
         block = static_cast<TELinkedList<VALUE, VALUE_TYPE, Implement>::Block *>(searchAfter)->mNext;
-    
+    }
+
     for ( ; block != NULL; block = block->mNext)
     {
-        if ( equalValues(block->mValue, searchValue) )
+        if ( isEqualValues(block->mValue, searchValue) )
             break;
     }
     
@@ -1207,7 +1166,7 @@ inline int TELinkedList<VALUE, VALUE_TYPE, Implement>::makeIndex(VALUE_TYPE sear
 }
 
 template <typename VALUE, typename VALUE_TYPE /* = VALUE */, class Implement /* = TEListImpl<VALUE_TYPE> */>
-inline bool TELinkedList<VALUE, VALUE_TYPE, Implement>::equalValues(VALUE_TYPE value1, VALUE_TYPE value2) const
+inline bool TELinkedList<VALUE, VALUE_TYPE, Implement>::isEqualValues(VALUE_TYPE value1, VALUE_TYPE value2) const
 {
     return Implement::implEqualValues(value1, value2);
 }

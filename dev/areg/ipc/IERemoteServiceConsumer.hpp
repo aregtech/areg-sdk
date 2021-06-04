@@ -53,42 +53,22 @@ public:
 /************************************************************************/
 
     /**
-     * \brief   Call to receive list of registered remote stub server services, created in current module. 
-     *          Called when establishing connection with router and the system needs 
-     *          to send registration messages. On output out_listStubs
-     *          contains list of remote stub server services in module.
-     * \param   out_listStubs       On output, this contains list of remote stubs, created in current module.
-     * \return  Returns size of remote stub server services in the list.
+     * \brief   Call to receive list of registered remote stub and proxy services created in current module. 
+     *          Called when establishing connection with router and the system needs to send registration messages.
+     *          On output out_listStubs and out_lisProxies contains list of remote stub server services in module.
+     * \param   out_listStubs   On output, this contains list of remote stubs, created in current module.
+     * \param   out_lisProxies  On output, this contains list of remote proxies, created in current module.
      **/
-    virtual void getRemoteServiceList( TEArrayList<StubAddress, const StubAddress &> & out_listStubs) const = 0;
+    virtual void getRemoteServiceList( TEArrayList<StubAddress, const StubAddress &> & OUT out_listStubs, TEArrayList<ProxyAddress, const ProxyAddress &> & OUT out_lisProxies) const = 0;
 
     /**
-     * \brief   Call to receive list of registered remote proxy services, created in current module. 
-     *          Called when establishing connection with router and the system needs 
-     *          to send registration messages. On output out_lisProxies
-     *          contains list of remote proxy client services in module.
-     * \param   out_lisProxies      On output, this contains list of remote proxies, created in current module.
-     * \return  Returns size of remote client proxy services in the list.
-     **/
-    virtual void getRemoteServiceList( TEArrayList<ProxyAddress, const ProxyAddress &> & out_lisProxies) const = 0;
-
-    /**
-     * \brief   Call to receive list of registered remote stub service, which connection cookie is equal to 
-     *          specified cookie value. In output out_listStubs will contain list of remote stub addresses.
+     * \brief   Call to receive list of registered remote stub and proxy services, which connection cookie is equal to 
+     *          specified value. In output out_listStubs and out_lisProxies contain list of remote stub and proxy addresses.
      * \param   cookie          The cookie value to check
-     * \param   out_listStubs   On output this will contain list of remote stub addresses, which cookie is
-     *                          equal to specified cookie value.
+     * \param   out_listStubs   On output this will contain list of remote stub addresses connected with specified cookie value.
+     * \param   out_lisProxies  On output this will contain list of remote proxy addresses connected with specified cookie value.
      **/
-    virtual void getServiceList( ITEM_ID cookie, TEArrayList<StubAddress, const StubAddress &> out_listStubs ) const = 0;
-
-    /**
-     * \brief   Call to receive list of registered remote proxy service, which connection cookie is equal to 
-     *          specified cookie value. In output out_lisProxies will contain list of remote proxy addresses.
-     * \param   cookie          The cookie value to check
-     * \param   out_lisProxies  On output this will contain list of remote proxy addresses, which cookie is
-     *                          equal to specified cookie value.
-     **/
-    virtual void getServiceList( ITEM_ID cookie, TEArrayList<ProxyAddress, const ProxyAddress &> out_lisProxies ) const = 0;
+    virtual void getServiceList( ITEM_ID cookie, TEArrayList<StubAddress, const StubAddress &> & OUT out_listStubs, TEArrayList<ProxyAddress, const ProxyAddress &> & OUT out_lisProxies ) const = 0;
 
     /**
      * \brief   Registers remote stub in the current process.
@@ -133,7 +113,7 @@ public:
      *          receive data, and there was not stop connection triggered.
      * \param   channel     The connection channel of remote routing service.
      **/
-    virtual void removeServiceLostConnection( const Channel & channel ) = 0;
+    virtual void remoteServiceConnectionLost( const Channel & channel ) = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

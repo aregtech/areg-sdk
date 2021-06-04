@@ -243,21 +243,33 @@ namespace NETrace
     AREG_API bool configureLoging( const char * fileConfig );
 
     /**
-     * \brief   Start logging. If specified file is not NULL,
-     *          it configures logging first, then starts logging.
+     * \brief   Start logging. If specified file is not NULL, it configures logging first, then starts logging.
      * \param   fileConfig  The relative or absolute path to logging configuration file.
      *                      If not NULL, the system configures logging then starts logging.
      *                      If NULL and logging was not configured, the system configures logging using default configuration path.
      *                      If NULL and logging was configured, the system immediately starts logging.
-     * \return  Returns true if logging succeeded to configure or was configured, and succeeded to start logging.
+     * \return  Returns true if succeeded to configure and start logging.
      **/
     AREG_API bool startLogging( const char * fileConfig = NULL );
 
     /**
-     * \brief   Forces to start logging by having default configuration.
-     *          This is valid only for debug build. In all other builds returns false.
+     * \brief   Sets default configuration values and forces to start logging.
+     * \return  Returns true if succeeded to start logging.
      **/
     AREG_API bool forceStartLogging( void );
+
+    /**
+     * \brief   Loads configuration values from specified configuration file and force to start logging, i.e. enables logging.
+     *          If configuration file does not exit, it sets default configuration values for logging.
+     *          If configuration file is NULL or empty, it tries to load configuration values from default configuration file.
+     * \param   fileConfig  If not NULL and file exist, loads configuration data from file, enables and starts logging.
+     *                      If NULL or empty, and default configuration file exist, loads configuration data from default file,
+     *                      enables and starts logging.
+     *                      If neither specified, nor default configuration file exist, it sets logging default values and start logging.
+     * \param   configFile
+     * \return  Returns true if succeeded to start logging.
+     **/
+    AREG_API bool configAndStart( const char * fileConfig = NULL );
 
     /**
      * \brief   Stops logging. No message will be logged anymore

@@ -244,6 +244,11 @@ public:
      **/
     static bool forceActivateLogging( void );
 
+    /**
+     * \brief   Forces to enable logging.
+     **/
+    static void forceEnableLogging( void );
+
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor. Protected
 //////////////////////////////////////////////////////////////////////////

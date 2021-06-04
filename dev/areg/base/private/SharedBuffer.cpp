@@ -82,7 +82,7 @@ SharedBuffer::SharedBuffer( const SharedBuffer & src )
 
 SharedBuffer::~SharedBuffer( void )
 {
-    removeReference();
+    decreaseLock();
 }
 
 //////////////////////////////////////////////////////////////////////////

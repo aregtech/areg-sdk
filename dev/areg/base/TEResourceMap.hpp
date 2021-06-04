@@ -295,8 +295,7 @@ public:
 //////////////////////////////////////////////////////////////////////////
 private:
     /**
-     * \brief   Instance of non-locking synchronization object.
-     *          No thread locking will happen.
+     * \brief   Instance of non-locking synchronization object. No thread locking will happen.
      **/
     NolockSynchObject mNoLock;
 

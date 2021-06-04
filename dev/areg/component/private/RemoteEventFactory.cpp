@@ -48,7 +48,10 @@ StreamableEvent * RemoteEventFactory::createEventFromStream( const RemoteMessage
             StubAddress addrStub;
             stream >> addrStub;
             if ( comChannel.getCookie() == addrStub.getCookie() )
-                addrStub.SetCookie( NEService::COOKIE_LOCAL );
+            {
+                addrStub.setCookie( NEService::COOKIE_LOCAL );
+            }
+
             const StubBase * stub = StubBase::findStubByAddress(addrStub);
             if ( stub != NULL )
             {
@@ -82,7 +85,10 @@ StreamableEvent * RemoteEventFactory::createEventFromStream( const RemoteMessage
             StubAddress addrStub;
             stream >> addrStub;
             if ( comChannel.getCookie() == addrStub.getCookie() )
-                addrStub.SetCookie( NEService::COOKIE_LOCAL );
+            {
+                addrStub.setCookie( NEService::COOKIE_LOCAL );
+            }
+
             const StubBase * stub = StubBase::findStubByAddress(addrStub);
             if ( stub != NULL )
             {

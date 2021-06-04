@@ -66,6 +66,7 @@ FileBuffer::~FileBuffer( void )
 {
     mIsOpened   = false;
     mFileMode   = FileBase::FO_MODE_INVALID;
+    mSharedBuffer.invalidate();
 }
 
 //////////////////////////////////////////////////////////////////////////

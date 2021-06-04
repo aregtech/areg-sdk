@@ -44,8 +44,10 @@ void ClientSendThread::processEvent( const SendMessageEventData & data )
     const RemoteMessage & msg = data.getRemoteMessage();
     if ( msg.isValid() )
     {
-        if ( mConnection.sendMessage( msg ) < 0 )
+        if ( mConnection.sendMessage( msg ) <= 0 )
+        {
             mRemoteService.failedSendMessage( msg );
+        }
     }
 }
 

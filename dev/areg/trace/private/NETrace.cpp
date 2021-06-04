@@ -173,7 +173,7 @@ void NETrace::S_LogMessage::operator = (const S_LogMessage & src)
     }
 }
 
-AREG_API bool NETrace::startLogging(const char * fileConfig /*= NULL */)
+AREG_API bool NETrace::startLogging(const char * fileConfig /*= NULL */ )
 {
     return TraceManager::startLogging(fileConfig);
 }
@@ -211,4 +211,17 @@ AREG_API bool NETrace::isEnabled(void)
 AREG_API bool NETrace::forceStartLogging(void)
 {
     return TraceManager::forceActivateLogging();
+}
+
+AREG_API bool NETrace::configAndStart(const char * fileConfig /*= NULL */)
+{
+    if (TraceManager::configureLogging(fileConfig))
+    {
+        TraceManager::forceEnableLogging();
+        return TraceManager::startLogging(NULL);
+    }
+    else
+    {
+        return TraceManager::forceActivateLogging();
+    }
 }

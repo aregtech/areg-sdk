@@ -52,7 +52,7 @@ bool ClientList::existClient( const ProxyAddress & client ) const
     LISTPOS pos = firstPosition();
     for ( ; pos != NULL; pos = nextPosition(pos))
     {
-        if ( equalValues(getAt(pos), clientInfo) )
+        if ( isEqualValues(getAt(pos), clientInfo) )
             break;
     }
     return (pos != NULL ? true : false);
@@ -64,7 +64,7 @@ const ClientInfo & ClientList::getClient( const ProxyAddress & whichClient ) con
     LISTPOS pos = firstPosition();
     for ( ; pos != NULL; pos = nextPosition(pos))
     {
-        if ( equalValues(getAt(pos), clientInfo) )
+        if ( isEqualValues(getAt(pos), clientInfo) )
             break;
     }
     return (pos != NULL ? getAt(pos) : ClientInfo::INVALID_CLIENT_INFO);
@@ -76,7 +76,7 @@ const ClientInfo & ClientList::registerClient( const ProxyAddress & whichClient,
     LISTPOS pos = firstPosition();
     for ( ; pos != NULL; pos = nextPosition(pos))
     {
-        if ( equalValues(getAt(pos), clientInfo) )
+        if ( isEqualValues(getAt(pos), clientInfo) )
             break;
     }
     if (pos == NULL)
@@ -95,7 +95,7 @@ bool ClientList::unregisterClient( const ProxyAddress & whichClient, ClientInfo 
     for ( LISTPOS pos = firstPosition(); pos != NULL; pos = nextPosition(pos) )
     {
         ClientInfo & client = getAt(pos);
-        if ( equalValues(client, clientInfo) )
+        if ( isEqualValues(client, clientInfo) )
         {
             exist       = true;
             client.setTargetServer( StubAddress::INVALID_STUB_ADDRESS );

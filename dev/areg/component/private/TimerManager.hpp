@@ -233,9 +233,9 @@ private:
      *          When timer event is fired, it will be dispatched in the
      *          current thread where it was registered.
      * \param   timer       The timer object that should be registered
-     * \return  Returns the position of timer in the map.
+     * \return  Returns true if succeded to register timer in the map.
      **/
-    MAPPOS _registerTimer( Timer & timer );
+    bool _registerTimer( Timer & timer );
 
     /**
      * \brief   Registers timer in the timer resource map.
@@ -244,9 +244,9 @@ private:
      *          The timers should be unique in the timer map.
      * \param   timer       The timer object that should be registered
      * \param   whichThread The dispatcher thread, where the timer event should be dispatched.
-     * \return  Returns the position of timer in the map.
+     * \return  Returns true if succeeded to register timer in the map.
      **/
-    MAPPOS _registerTimer( Timer & timer, const DispatcherThread & whichThread );
+    bool _registerTimer( Timer & timer, const DispatcherThread & whichThread );
 
     /**
      * \brief   Registers timer in the timer resource map.
@@ -255,9 +255,9 @@ private:
      *          The timers should be unique in the timer map.
      * \param   timer           The timer object that should be registered
      * \param   whichThreadId   The dispatcher thread, where the timer event should be dispatched.
-     * \return  Returns the position of timer in the map.
+     * \return  Returns true if succeeded to register timer in the map.
      **/
-    MAPPOS _registerTimer( Timer & timer, ITEM_ID whichThreadId );
+    bool _registerTimer( Timer & timer, ITEM_ID whichThreadId );
 
     /**
      * \brief   Unregisters timer manager in the timer resource map.

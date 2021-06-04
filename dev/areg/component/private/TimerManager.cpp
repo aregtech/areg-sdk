@@ -16,8 +16,6 @@
 #include "areg/base/Thread.hpp"
 #include "areg/base/NEUtilities.hpp"
 
-#define _MILLISECOND    10000
-
 //////////////////////////////////////////////////////////////////////////
 // TimerManager class implementation
 //////////////////////////////////////////////////////////////////////////
@@ -57,35 +55,35 @@ void TimerManager::stopTimerManager( void )
 
 bool TimerManager::isTimerManagerStarted( void )
 {
-    bool result = false;
-    TimerManager & timerManager = getInstance();
-
-    do 
-    {
-        Lock lock( timerManager.mLock );
-        result = timerManager.isReady();
-    } while (false);
-
-    return result;
-    
+    return getInstance().isReady();
 }
 
 bool TimerManager::startTimer( Timer &timer )
 {
     TimerManager & timerManager = getInstance();
 
-    MAPPOS atPosition = timerManager._registerTimer(timer);
-    TimerManagingEventData data(timer, TimerManagingEventData::TimerStart);
-    return (atPosition != NULL ? TimerManagingEvent::sendEvent(data, static_cast<IETimerManagingEventConsumer &>(timerManager), static_cast<DispatcherThread &>(timerManager)) : false);
+    bool result = false;
+    if (timerManager._registerTimer(timer) )
+    {
+        TimerManagingEventData data(timer, TimerManagingEventData::TimerStart);
+        result = TimerManagingEvent::sendEvent(data, static_cast<IETimerManagingEventConsumer &>(timerManager), static_cast<DispatcherThread &>(timerManager));
+    }
+
+    return result;
 }
 
 bool TimerManager::startTimer(Timer &timer, const DispatcherThread & whichThread)
 {
     TimerManager & timerManager = getInstance();
 
-    MAPPOS atPosition = timerManager._registerTimer(timer, whichThread);
-    TimerManagingEventData data(timer, TimerManagingEventData::TimerStart);
-    return (atPosition != NULL ? TimerManagingEvent::sendEvent(data, static_cast<IETimerManagingEventConsumer &>(timerManager), static_cast<DispatcherThread &>(timerManager)) : false);
+    bool result = false;
+    if ( timerManager._registerTimer(timer, whichThread) )
+    {
+        TimerManagingEventData data(timer, TimerManagingEventData::TimerStart);
+        result = TimerManagingEvent::sendEvent(data, static_cast<IETimerManagingEventConsumer &>(timerManager), static_cast<DispatcherThread &>(timerManager));
+    }
+
+    return result;
 }
 
 bool TimerManager::stopTimer( Timer &timer )
@@ -116,85 +114,76 @@ TimerManager::~TimerManager( void )
 //////////////////////////////////////////////////////////////////////////
 // Methods
 //////////////////////////////////////////////////////////////////////////
-MAPPOS TimerManager::_registerTimer( Timer &timer )
+bool TimerManager::_registerTimer( Timer &timer )
 {
     return _registerTimer(timer, DispatcherThread::getCurrentDispatcherThread());
 }
 
-MAPPOS TimerManager::_registerTimer(Timer &timer, const DispatcherThread & whichThread)
+bool TimerManager::_registerTimer(Timer &timer, const DispatcherThread & whichThread)
 {
-    return ( whichThread.isValid() ? _registerTimer(timer, whichThread.getId()) : NULL );
-}
-
-MAPPOS TimerManager::_registerTimer(Timer &timer, ITEM_ID whichThreadId)
-{
-    MAPPOS result = NULL;
-
-    if (Thread::findThreadById(whichThreadId) != NULL)
+    bool result = false;
+    if (timer.isValid() && whichThread.isValid() && whichThread.isRunning() )
     {
-        _unregisterTimer(timer);
         TIMERHANDLE timerHandle = TimerManager::_createWaitableTimer(timer.hasName() ? timer.getName().getString() : NULL_STRING);
         if (timerHandle != static_cast<TIMERHANDLE>(NULL))
         {
             Lock lock(mLock);
-            result = mTimerTable.setAt(&timer, TimerInfo(timer, timerHandle, whichThreadId) );
-            if (result == NULL)
-            {
-                OUTPUT_ERR("Failed inserting new Timer object in the timer table. Ignoring starting timer [ %s ]", timer.getName().getString());
-                TimerManager::_destroyWaitableTimer(timerHandle, false);
-            }
-            else
-            {
-                OUTPUT_DBG("Successfully registered timer [ %s ]", timer.getName().getString());
-            }
+
+            result = true;
+            mTimerTable.registerObject(&timer, TimerInfo(timer, timerHandle, whichThread.getId()) );
+            OUTPUT_DBG("Registered timer [ %s ]", timer.getName().getString());
         }
     }
 #ifdef DEBUG
     else
     {
-        OUTPUT_ERR("The Timer Manager cannot find thread by id [ %p ], cancelling timer [ %s ]", static_cast<id_type>(whichThreadId), timer.getName().getString());
+        OUTPUT_ERR("Either times [ %s ] is not valid or thread [ %s ] is not running, cancel timer.", timer.getName().getString(), whichThread.getName().getString());
     }
 #endif // DEBUG
 
     return result;
 }
 
+bool TimerManager::_registerTimer(Timer &timer, ITEM_ID whichThreadId)
+{
+    Thread * thread = Thread::findThreadById(whichThreadId);
+    return (thread != NULL ? _registerTimer(timer, *thread) : false);
+}
+
 bool TimerManager::_unregisterTimer( Timer &timer )
 {
     Lock lock(mLock);
 
-    MAPPOS pos = mTimerTable.find(static_cast<const Timer *>(&timer));
-    if (pos != NULL)
+    TimerInfo timerInfo;
+    bool result = false;
+    mExpiredTimers.removeAllTimers(&timer);
+    if ( mTimerTable.unregisterObject(&timer, timerInfo) )
     {
-        TimerInfo timerInfo = mTimerTable.removePosition(pos);
-        
-        ASSERT(mTimerTable.find(static_cast<const Timer *>(&timer)) == NULL);
         ASSERT(timerInfo.getHandle() != NULL);
         TimerManager::_destroyWaitableTimer( timerInfo.getHandle(), true );
+        result = true;
 
         OUTPUT_DBG("Successfully unregistered timer [ %s ].", timer.getName().getString());
     }
-    return (pos != NULL);
+
+    return result;
 }
 
 void TimerManager::_removeAllTimers( void )
 {
-    Lock  lock(mLock);
+    Lock lock(mLock);
 
-    mExpiredTimers.removeAll();
-
-    MAPPOS pos = mTimerTable.firstPosition();
-    Timer*    mapKey  = NULL;
+    Timer*    timer  = NULL;
     TimerInfo timerInfo;
-
-    while ( pos != NULL )
+    while ( mTimerTable.isEmpty() == false )
     {
-        pos = mTimerTable.nextPosition(pos, mapKey, timerInfo);
-        ASSERT(mapKey != NULL && timerInfo.getHandle() != NULL);
+        VERIFY(mTimerTable.unregisterFirstObject(timer, timerInfo));
+        ASSERT((timer != NULL) && (timerInfo.getHandle() != NULL));
         TimerManager::_destroyWaitableTimer( timerInfo.getHandle( ), true );
     }
 
     mTimerTable.removeAll();
+    mExpiredTimers.removeAll();
 }
 
 void TimerManager::processEvent( const TimerManagingEventData & data )
@@ -212,64 +201,66 @@ void TimerManager::processEvent( const TimerManagingEventData & data )
 
 void TimerManager::_processExpiredTimers( void )
 {
+    mExpiredTimers.lockResource();
     while (mExpiredTimers.isEmpty() == false)
     {
-        Lock lock(mLock);
+        ExpiredTimerInfo expiredTime = mExpiredTimers.popTimer();
+        mExpiredTimers.unlockResource();
 
-        ExpiredTimerInfo expiredTime = mExpiredTimers.removeFirst();
-        TimerInfo timerInfo;
-        if (expiredTime.mTimer != NULL && mTimerTable.find(expiredTime.mTimer, timerInfo))
+        if (expiredTime.mTimer != NULL )
         {
-            Timer* currTimer = timerInfo.mTimer;
-            if (timerInfo.isTimerExpired(expiredTime.mHighValue, expiredTime.mLowValue))
+            Lock lock(mLock);
+            TimerInfo timerInfo;
+            if (mTimerTable.findObject(expiredTime.mTimer, timerInfo))
             {
-                if (timerInfo.isTimerActive())
+                Timer* currTimer = timerInfo.mTimer;
+                if (currTimer->isValid() && timerInfo.isTimerExpired(expiredTime.mHighValue, expiredTime.mLowValue))
                 {
-                    timerInfo.mTimerState = TimerInfo::TimerPending;
-                    mTimerTable.updateAt(currTimer, timerInfo);
+                    if (timerInfo.isTimerActive())
+                    {
+                        timerInfo.mTimerState = TimerInfo::TimerPending;
+                        mTimerTable.updateObject(currTimer, timerInfo);
+                    }
+                    else
+                    {
+                        OUTPUT_WARN("The Timer [ %s ] is not active anymore. Going to unregister", currTimer->getName().getString());
+                        _unregisterTimer(*currTimer);
+                    }
+
+                    TimerEvent::sendEvent( *currTimer, timerInfo.mOwnThreadId );
                 }
                 else
                 {
-                    OUTPUT_WARN("The Timer [ %s ] is not active anymore. Going to unregister", currTimer->getName().getString());
-                    _unregisterTimer(*currTimer);
+                    OUTPUT_ERR("The timer [ %p ] has expired, but it was ignored, becuase it is invalid. Ignoring sending event.", currTimer);
                 }
-
-                do 
-                {
-                    // Send timer event. Unlock and lock mutex
-                    lock.unlock();
-                    TimerEvent::sendEvent(*timerInfo.mTimer, timerInfo.mOwnThreadId);
-                    lock.lock();
-
-                } while (false);
             }
             else
             {
-                OUTPUT_ERR("The timer [ %s ] has expired, but it was ignored. The current state of timer is [ %s ]. Ignoring sending event.", currTimer->getName().getString(), TimerInfo::getString(timerInfo.getTimerState()));
+                OUTPUT_ERR("The timer [ %p ] did not find in the table or not active anymore.", expiredTime.mTimer);
             }
         }
-        else
-        {
-            OUTPUT_ERR("The timer [ %s ] did not find in the table.", expiredTime.mTimer->getName().getString());
-        }
+
+        mExpiredTimers.lockResource();
     }
+
+    mExpiredTimers.unlockResource();
 }
 
 void TimerManager::_timerExpired( Timer* whichTimer, unsigned int highValue, unsigned int lowValue )
 {
-    Lock lock(mLock);
-    mExpiredTimers.pushLast( ExpiredTimerInfo(whichTimer, highValue, lowValue) );
+    ExpiredTimerInfo expiredTimer(whichTimer, highValue, lowValue);
+    mExpiredTimers.pushTimer( expiredTimer );
 }
 
 void TimerManager::_startSystemTimer( Timer* whichTimer )
 {
-    Lock lock(mLock);
-
     if (whichTimer != NULL)
     {
+        Lock lock(mLock);
+
         TimerInfo timerInfo;
 
-        if (mTimerTable.find(whichTimer, timerInfo))
+        if (mTimerTable.findObject(whichTimer, timerInfo))
         {
             ASSERT(timerInfo.mTimer == whichTimer);
             ASSERT(timerInfo.mHandle != NULL);
@@ -288,7 +279,6 @@ void TimerManager::_startSystemTimer( Timer* whichTimer )
         OUTPUT_ERR("Invalid NULL pointer ot Timer object. Ignoring starting timer.");
     }
 }
-
 
 bool TimerManager::_startSystemTimer( TimerInfo &timerInfo )
 {
@@ -388,8 +378,6 @@ void TimerManager::_timerThreadExits( void )
 bool TimerManager::_startTimerManagerThread( void )
 {
     bool result = false;
-    Lock lock( mLock );
-
     if ( isReady() == false )
     {
         ASSERT(isRunning() == false);
@@ -405,6 +393,7 @@ bool TimerManager::_startTimerManagerThread( void )
     {
         result = true;
     }
+
     return result;
 }
 

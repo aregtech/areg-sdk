@@ -46,6 +46,7 @@ Component* Component::loadComponent(const NERegistry::ComponentEntry &entry, Com
                 component->createWorkerThread(wtEntry.mThreadName.getString(), *consumer, componentThread);
         }
     }
+
     return component;
 }
 

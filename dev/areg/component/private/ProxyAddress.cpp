@@ -79,17 +79,17 @@ ProxyAddress ProxyAddress::convPathToAddress( const char* pathProxy, const char*
 //////////////////////////////////////////////////////////////////////////
 
 ProxyAddress::ProxyAddress( void )
-    : ServiceAddress  ( ServiceItem(), ProxyAddress::INVALID_PROXY_NAME )
-    , mThreadName       ( ThreadAddress::INVALID_THREAD_ADDRESS.getThreadName() )
-    , mChannel          ( )
+    : ServiceAddress( ServiceItem(), ProxyAddress::INVALID_PROXY_NAME )
+    , mThreadName   ( ThreadAddress::INVALID_THREAD_ADDRESS.getThreadName() )
+    , mChannel      ( )
 {
     ; // do nothing
 }
 
 ProxyAddress::ProxyAddress( const char * serviceName, const Version & serviceVersion, NEService::eServiceType serviceType, const char * roleName, const char * threadName /*= NULL*/ )
-    : ServiceAddress  ( serviceName, serviceVersion, serviceType, roleName )
-    , mThreadName       ( threadName )
-    , mChannel          ( )
+    : ServiceAddress( serviceName, serviceVersion, serviceType, roleName )
+    , mThreadName   ( threadName )
+    , mChannel      ( )
 {
     setThread( threadName );
     if ( ServiceAddress::isValid() )
@@ -97,9 +97,9 @@ ProxyAddress::ProxyAddress( const char * serviceName, const Version & serviceVer
 }
 
 ProxyAddress::ProxyAddress( const ServiceItem & service, const char * roleName, const char * threadName /*= NULL*/ )
-    : ServiceAddress  ( service, roleName )
-    , mThreadName       ( "" )
-    , mChannel          ( )
+    : ServiceAddress( service, roleName )
+    , mThreadName   ( "" )
+    , mChannel      ( )
 {
     setThread( threadName );
     if ( ServiceAddress::isValid() )
@@ -107,9 +107,9 @@ ProxyAddress::ProxyAddress( const ServiceItem & service, const char * roleName, 
 }
 
 ProxyAddress::ProxyAddress(const NEService::SInterfaceData & siData, const char * roleName, const char * threadName /*= NULL */)
-    : ServiceAddress  ( siData.idServiceName, siData.idVersion, siData.idServiceType, roleName )
-    , mThreadName       ( "" )
-    , mChannel          ( )
+    : ServiceAddress( siData.idServiceName, siData.idVersion, siData.idServiceType, roleName )
+    , mThreadName   ( "" )
+    , mChannel      ( )
 {
     setThread(threadName);
     if ( ServiceAddress::isValid() )
@@ -117,17 +117,17 @@ ProxyAddress::ProxyAddress(const NEService::SInterfaceData & siData, const char 
 }
 
 ProxyAddress::ProxyAddress( const ProxyAddress & source )
-    : ServiceAddress  ( static_cast<const ServiceAddress &>(source) )
-    , mThreadName       ( source.mThreadName )
-    , mChannel          ( source.mChannel )
+    : ServiceAddress( static_cast<const ServiceAddress &>(source) )
+    , mThreadName   ( source.mThreadName )
+    , mChannel      ( source.mChannel )
 {
     ; // do nothing
 }
 
 ProxyAddress::ProxyAddress( const IEInStream & stream )
-    : ServiceAddress  ( stream )
-    , mThreadName       ( stream )
-    , mChannel          ( )
+    : ServiceAddress( stream )
+    , mThreadName   ( stream )
+    , mChannel      ( )
 {
     ITEM_ID cookie = NEService::COOKIE_LOCAL;
     stream >> cookie;

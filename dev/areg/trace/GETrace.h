@@ -91,6 +91,11 @@
     #define TRACER_FORCE_LOGGING()                      NETrace::forceStartLogging()
 
     /**
+     * \brief   Either configures logging values from file or sets default values, enables and starts logging
+     **/
+    #define TRACER_CONFIGURE_AND_START(configFile)      NETrace::configAndStart((configFile))
+
+    /**
      * \brief   Use this macro to stop logging
      **/
     #define TRACER_STOP_LOGGING()                       NETrace::stopLogging( )
@@ -196,6 +201,10 @@
      * \brief   If ENABLE_TRACES, returns true, makes no effect
      **/
     #define TRACER_FORCE_LOGGING()                      (true)
+    /**
+     * \brief   If ENABLE_TRACES, returns true, makes no effect
+     **/
+    #define TRACER_CONFIGURE_AND_START(configFile)      (true)
     /**
      * \brief   If ENABLE_TRACES is zero, does nothing
      **/

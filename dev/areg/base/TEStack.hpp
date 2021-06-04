@@ -327,7 +327,7 @@ protected:
      * \param   Value2  Right-side value to compare.
      * \return  Returns true if 2 value are equal.
      **/
-    inline bool equalValues(VALUE_TYPE Value1, VALUE_TYPE Value2) const;
+    inline bool isEqualValues(VALUE_TYPE Value1, VALUE_TYPE Value2) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -696,7 +696,7 @@ STACKPOS TEStack<VALUE, VALUE_TYPE, Implement>::find(VALUE_TYPE elem, STACKPOS s
     Block * header = startAt == TemplateConstants::START_POSITION ? mHead : reinterpret_cast<Block *>(startAt)->mNext;
     while (header != static_cast<Block *>(NULL))
     {
-        if (equalValues(elem, header->mValue))
+        if (isEqualValues(elem, header->mValue))
         {
             result = static_cast<STACKPOS>(header);
             break;
@@ -739,7 +739,7 @@ inline STACKPOS TEStack<VALUE, VALUE_TYPE, Implement>::nextPosition( const STACK
 }
 
 template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /*= TEListImpl<VALUE_TYPE>*/>
-inline bool TEStack<VALUE, VALUE_TYPE, Implement>::equalValues(VALUE_TYPE Value1, VALUE_TYPE Value2) const
+inline bool TEStack<VALUE, VALUE_TYPE, Implement>::isEqualValues(VALUE_TYPE Value1, VALUE_TYPE Value2) const
 {   return Implement::implEqualValues(Value1, Value2);      }
 
 template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /*= TEListImpl<VALUE_TYPE>*/>

@@ -94,7 +94,7 @@ ServerInfo::operator unsigned int ( void ) const
 
 void ServerInfo::setConnectionStatus(NEService::eServiceConnection newConnection)
 {
-    if ( mServerAddress.getSource() != NEService::SOUR_UNKNOWN )
+    if ( mServerAddress.getSource() != NEService::SOURCE_UNKNOWN )
         mServerState = newConnection;
     else if ( static_cast<const ServiceItem &>(mServerAddress).isValid() )
         mServerState = NEService::ServicePending;

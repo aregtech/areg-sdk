@@ -105,7 +105,7 @@ ServerInfo ServerList::unregisterClient( const ProxyAddress & whichClient, Clien
         if ( block->mValue.getSize() == 0 )
         {
             const StubAddress & addrStub = block->mKey.getAddress();
-            if ( addrStub.getSource() == NEService::SOUR_UNKNOWN || addrStub.isRemoteAddress() )
+            if ( addrStub.getSource() == NEService::SOURCE_UNKNOWN || addrStub.isRemoteAddress() )
                 removePosition( pos );
         }
     }
@@ -123,7 +123,7 @@ const ServerInfo & ServerList::registerServer( const StubAddress & addrStub, Cli
     ASSERT(pos != NULL);
     ServiceBlock* block = static_cast<ServiceBlock *>(pos);
     block->mKey = server;
-    block->mKey.setConnectionStatus( addrStub.getSource() != NEService::SOUR_UNKNOWN ? NEService::ServiceConnected : NEService::ServicePending );
+    block->mKey.setConnectionStatus( addrStub.getSource() != NEService::SOURCE_UNKNOWN ? NEService::ServiceConnected : NEService::ServicePending );
     block->mValue.serverAvailable(block->mKey, out_clinetList);
     return block->mKey;
 }
@@ -132,17 +132,25 @@ ServerInfo ServerList::unregisterServer( const StubAddress & whichServer, Client
 {
     ServerInfo result(whichServer);
 
-    MAPPOS pos = find(result);
-    ServiceBlock* block = static_cast<ServiceBlock *>(pos);
-    if (block != NULL)
+    if (isEmpty() == false )
     {
-        result = block->mKey;
-        block->mValue.serverUnavailable(out_clinetList);
-        if ( block->mValue.isEmpty())
-            removePosition(pos);
-        else
-            block->mKey = static_cast<const ServiceAddress &>(whichServer);
+        MAPPOS pos = find(result);
+        ServiceBlock* block = static_cast<ServiceBlock *>(pos);
+        if (block != NULL)
+        {
+            result = block->mKey;
+            block->mValue.serverUnavailable(out_clinetList);
+            if ( block->mValue.isEmpty())
+            {
+                removePosition(pos);
+            }
+            else
+            {
+                block->mKey = static_cast<const ServiceAddress &>(whichServer);
+            }
+        }
     }
+
     return result;
 }
 

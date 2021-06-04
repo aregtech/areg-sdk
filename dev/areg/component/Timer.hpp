@@ -54,6 +54,12 @@ class AREG_API Timer
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
+     * \brief   Timer::INVALID_TIMEOUT
+     *          A value, indicating invalid timeout. The timers with invalid timeouts are invalid
+     **/
+    static const unsigned int   INVALID_TIMEOUT     /*= static_cast<unsigned int>(~0)*/;
+
+    /**
      * \brief   Timer::CONTINUOUSLY
      *          This value is used to set continues Timer, which will not
      *          stop, until it is not requested to be stopped manually.
@@ -256,6 +262,11 @@ public:
      **/
     inline const uint64_t & getFiredTime( void ) const;
 
+    /**
+     * \brief   Returns true if timer is valid. The valid timer has timeout not equal to Timer::INVALID_TIMEOUT;
+     **/
+    inline bool isValid( void ) const;
+
 //////////////////////////////////////////////////////////////////////////
 // Operations. Used by Timer Manager.
 //////////////////////////////////////////////////////////////////////////
@@ -355,7 +366,7 @@ private:
      *          The function will be ignored if maximum queue count in zero and/or is less
      *          than the event count.
      **/
-    void isTimerQueued( void );
+    void queueTimer( void );
 
     /**
      * \brief   Triggered in Timer Event object destructor, indicating that timer is removed from queue.
@@ -364,7 +375,7 @@ private:
      *          The function will be ignored if timer was stopped manually or it is completed to be fired.
      *          The function will be ignored if the maximum queue count is zero.
      **/
-    void isTimerUnqueued( void );
+    void unqueueTimer( void );
 
     /**
      * \brief   Returns reference to Timer object.
@@ -387,6 +398,11 @@ private:
 inline Timer & Timer::self( void )
 {
     return (*this);
+}
+
+inline bool Timer::isValid( void ) const
+{
+    return (mTimeoutInMs != Timer::INVALID_TIMEOUT);
 }
 
 inline const uint64_t& Timer::getFiredTime( void ) const
@@ -426,7 +442,7 @@ inline bool Timer::isActive( void ) const
 
 inline bool Timer::isStopped( void ) const
 {
-    return (mTimeoutInMs == 0);
+    return (mTimeoutInMs == Timer::INVALID_TIMEOUT);
 }
 
 inline int Timer::getTimePending( void ) const

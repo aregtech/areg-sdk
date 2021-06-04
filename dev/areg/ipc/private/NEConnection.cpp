@@ -244,9 +244,10 @@ RemoteMessage NEConnection::createRouterRegisterService( const StubAddress & stu
     if ( stub.isServiceRemote() && _isValidSource(source) )
     {
         StubAddress temp( stub );
-        temp.SetCookie(source);
+        temp.setCookie(source);
         _createRegisterRequest(msgResult, source, NEService::SERVICE_REQUEST_REGISTER_STUB, temp);
     }
+
     return msgResult;
 }
 
@@ -268,7 +269,7 @@ RemoteMessage NEConnection::createRouterUnregisterService( const StubAddress & s
     if ( stub.isServiceRemote() && _isValidSource(source) )
     {
         StubAddress temp( stub );
-        temp.SetCookie(source);
+        temp.setCookie(source);
         _createRegisterRequest(msgResult, source, NEService::SERVICE_REQUEST_UNREGISTER_STUB, temp);
     }
     return msgResult;
@@ -380,7 +381,7 @@ RemoteMessage NEConnection::createConnectRequest(void)
     RemoteMessage msgHelloServer;
     if ( msgHelloServer.initMessage( NEConnection::MessageHelloServer.rbHeader ) != NULL )
     {
-        msgHelloServer.setSource( NEService::SOUR_UNKNOWN );
+        msgHelloServer.setSource( NEService::SOURCE_UNKNOWN );
         msgHelloServer.setSequenceNr( NEService::SEQUENCE_NUMBER_NOTIFY );
 
         msgHelloServer.bufferCompletionFix();

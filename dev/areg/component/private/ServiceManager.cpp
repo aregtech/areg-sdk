@@ -280,7 +280,7 @@ void ServiceManager::_sendClientConnectedEvent( const ClientInfo & client, const
     if ( client.isConnected() )
     {
         const ProxyAddress & addrProxy = client.getAddress();
-        if ( addrStub.isLocalAddress() && addrStub.getSource() != NEService::SOUR_UNKNOWN)
+        if ( addrStub.isLocalAddress() && addrStub.getSource() != NEService::SOURCE_UNKNOWN)
         {
             TRACE_DBG("Sending to Stub [ %s ] notification of connected client [ %s ]"
                             , StubAddress::convAddressToPath(addrStub).getString()
@@ -291,7 +291,7 @@ void ServiceManager::_sendClientConnectedEvent( const ClientInfo & client, const
                 addrStub.deliverServiceEvent(*clientConnect);
         }
 
-        if ( addrProxy.isLocalAddress() && addrProxy.getSource() != NEService::SOUR_UNKNOWN )
+        if ( addrProxy.isLocalAddress() && addrProxy.getSource() != NEService::SOURCE_UNKNOWN )
         {
             TRACE_DBG("Sending to Proxy [ %s ] notification of connection to server [ %s ]"
                             , ProxyAddress::convAddressToPath(addrProxy).getString()
@@ -315,7 +315,7 @@ void ServiceManager::_sendClientDisconnectedEvent( const ClientInfo & client, co
     if ( client.isWaitingConnection() )
     {
         const ProxyAddress & addrProxy = client.getAddress();
-        if ( addrStub.isLocalAddress() && addrStub.getSource() != NEService::SOUR_UNKNOWN)
+        if ( addrStub.isLocalAddress() && addrStub.getSource() != NEService::SOURCE_UNKNOWN)
         {
             TRACE_DBG("Sending to Stub [ %s ] notification of disconnected client [ %s ]"
                             , StubAddress::convAddressToPath(addrStub).getString()
@@ -544,12 +544,10 @@ bool ServiceManager::postEvent(Event & eventElem)
 bool ServiceManager::runDispatcher( void )
 {
     ServiceManagerEvent::addListener(static_cast<IEServiceManagerEventConsumer &>(self()), static_cast<DispatcherThread &>(self()));
-    // ManageServerEvent::addListener(static_cast<IEManageServerEventConsumer &>(self()), static_cast<DispatcherThread &>(self()));
 
     bool result = DispatcherThread::runDispatcher();
 
     ServiceManagerEvent::removeListener(static_cast<IEServiceManagerEventConsumer &>(self()), static_cast<DispatcherThread &>(self()));
-    // ManageServerEvent::removeListener(static_cast<IEManageServerEventConsumer &>(self()), static_cast<DispatcherThread &>(self()));
 
     return result;
 }
@@ -583,40 +581,34 @@ void ServiceManager::_stopServiceManagerThread( void )
     completionWait( Thread::WAIT_INFINITE );
 }
 
-void ServiceManager::getRemoteServiceList( TEArrayList<StubAddress, const StubAddress &> & /*out_listStubs*/ ) const
+void ServiceManager::getRemoteServiceList( TEArrayList<StubAddress, const StubAddress &> & OUT /*out_listStubs*/, TEArrayList<ProxyAddress, const ProxyAddress &> & OUT /*out_lisProxies*/) const
 {
 }
 
-void ServiceManager::getRemoteServiceList( TEArrayList<ProxyAddress, const ProxyAddress &> & /*out_lisProxies*/ ) const
-{
-}
-
-void ServiceManager::getServiceList(ITEM_ID cookie, TEArrayList<StubAddress, const StubAddress &> out_listStubs) const
+void ServiceManager::getServiceList( ITEM_ID cookie, TEArrayList<StubAddress, const StubAddress &> & OUT out_listStubs, TEArrayList<ProxyAddress, const ProxyAddress &> & OUT out_lisProxies ) const
 {
     Lock lock( mLock );
+
     out_listStubs.removeAll();
-
-    for ( MAPPOS pos = mServerList.firstPosition(); pos != NULL; pos = mServerList.nextPosition(pos) )
-    {
-        const StubAddress & server = mServerList.keyAtPosition(pos).getAddress();
-        if ( server.getCookie() == cookie && server.isValid() )
-            out_listStubs.add(server);
-    }
-}
-
-void ServiceManager::getServiceList(ITEM_ID cookie, TEArrayList<ProxyAddress, const ProxyAddress &> out_lisProxies) const
-{
-    Lock lock( mLock );
     out_lisProxies.removeAll();
 
     for ( MAPPOS posMap = mServerList.firstPosition(); posMap != NULL; posMap = mServerList.nextPosition(posMap) )
     {
-        const ClientList & listClients = mServerList.valueAtPosition(posMap);
+        const StubAddress & server      = mServerList.keyAtPosition(posMap).getAddress();
+        const ClientList & listClients  = mServerList.valueAtPosition(posMap);
+
+        if ( (server.getCookie() == cookie) && server.isValid() )
+        {
+            out_listStubs.add(server);
+        }
+
         for ( LISTPOS posList = listClients.firstPosition(); posList != NULL; posList = listClients.nextPosition(posList) )
         {
             const ProxyAddress & proxy = listClients.getAt(posList).getAddress();
-            if ( proxy.getCookie() == cookie && proxy.isValid() )
+            if ( (proxy.getCookie() == cookie) && proxy.isValid() )
+            {
                 out_lisProxies.add(proxy);
+            }
         }
     }
 }
@@ -651,7 +643,7 @@ void ServiceManager::remoteServiceStopped(const Channel & channel)
     ServiceManagerEvent::sendEvent( ServiceManagerEventData::unregisterConnection(channel), static_cast<IEServiceManagerEventConsumer &>(self()), static_cast<DispatcherThread &>(self()));
 }
 
-void ServiceManager::removeServiceLostConnection(const Channel & channel)
+void ServiceManager::remoteServiceConnectionLost(const Channel & channel)
 {
     ServiceManagerEvent::sendEvent( ServiceManagerEventData::lostConnection(channel), static_cast<IEServiceManagerEventConsumer &>(self()), static_cast<DispatcherThread &>(self()));
 }

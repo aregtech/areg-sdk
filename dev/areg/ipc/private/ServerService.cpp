@@ -27,6 +27,9 @@ DEF_TRACE_SCOPE(areg_ipc_private_ServerService_processReceivedMessage);
 DEF_TRACE_SCOPE(areg_ipc_private_ServerService_startConnection);
 DEF_TRACE_SCOPE(areg_ipc_private_ServerService_stopConnection);
 
+DEF_TRACE_SCOPE(areg_ipc_private_ServerService_failedSendMessage);
+DEF_TRACE_SCOPE(areg_ipc_private_ServerService_failedReceiveMessage);
+
 const NERemoteService::eServiceConnection   ServerService::CONNECT_TYPE   = NERemoteService::ConnectionTcpip;
 
 ServerService::ServerService( void )
@@ -297,10 +300,8 @@ void ServerService::processEvent(const ServerServiceEventData & data)
 
                     TEArrayList<StubAddress, const StubAddress &>   listStubs;
                     TEArrayList<ProxyAddress, const ProxyAddress &> listProxies;
+                    mServiceRegistry.getServiceList(cookie, listStubs, listProxies);
 
-                    getServiceList(cookie, listStubs);
-                    getServiceList(cookie, listProxies);
-                    
                     TRACE_DBG("Routing service received disconnect message from cookie [ %p ], [ %d ] stubs and [ %d ] proxies are going to be disconnected"
                                 , static_cast<id_type>(cookie)
                                 , listStubs.getSize()
@@ -434,12 +435,11 @@ void ServerService::stopConnection(void)
     mThreadReceive.destroyThread( Thread::DO_NOT_WAIT );
 
     TEArrayList<StubAddress, const StubAddress &> stubList;
-    getRemoteServiceList(stubList);
+    TEArrayList<ProxyAddress, const ProxyAddress &> proxyList;
+    getRemoteServiceList(stubList, proxyList);
+
     for ( int i = 0; i < stubList.getSize(); ++ i )
         unregisterRemoteStub(stubList[i]);
-
-    TEArrayList<ProxyAddress, const ProxyAddress &> proxyList;
-    getRemoteServiceList(proxyList);
     for ( int i = 0; i < proxyList.getSize(); ++ i )
         unregisterRemoteProxy( proxyList[i] );
 
@@ -449,24 +449,14 @@ void ServerService::stopConnection(void)
     mServerConnection.closeSocket();
 }
 
-void ServerService::getRemoteServiceList(TEArrayList<StubAddress, const StubAddress &> & out_listStubs) const
+void ServerService::getRemoteServiceList( TEArrayList<StubAddress, const StubAddress &> & OUT out_listStubs, TEArrayList<ProxyAddress, const ProxyAddress &> & OUT out_lisProxies) const
 {
-    mServiceRegistry.getRemoteServiceList(out_listStubs);
+    mServiceRegistry.getRemoteServiceList(out_listStubs, out_lisProxies);
 }
 
-void ServerService::getRemoteServiceList(TEArrayList<ProxyAddress, const ProxyAddress &> & out_lisProxies) const
+void ServerService::getServiceList(ITEM_ID cookie, TEArrayList<StubAddress, const StubAddress &> & out_listStubs, TEArrayList<ProxyAddress, const ProxyAddress &> & out_lisProxies) const
 {
-    mServiceRegistry.getRemoteServiceList(out_lisProxies);
-}
-
-void ServerService::getServiceList(ITEM_ID cookie, TEArrayList<StubAddress, const StubAddress &> out_listStubs) const
-{
-    mServiceRegistry.getServiceList(cookie, out_listStubs);
-}
-
-void ServerService::getServiceList(ITEM_ID cookie, TEArrayList<ProxyAddress, const ProxyAddress &> out_lisProxies) const
-{
-    mServiceRegistry.getServiceList(cookie, out_lisProxies);
+    mServiceRegistry.getServiceList(cookie, out_listStubs, out_lisProxies);
 }
 
 void ServerService::registerRemoteStub(const StubAddress & stub)
@@ -712,18 +702,27 @@ void ServerService::remoteServiceStopped(const Channel & /* channel */)
 
 }
 
-void ServerService::removeServiceLostConnection(const Channel & /* channel */)
+void ServerService::remoteServiceConnectionLost(const Channel & /* channel */)
 {
 }
 
-void ServerService::failedSendMessage(const RemoteMessage & /* msgFailed */)
+void ServerService::failedSendMessage(const RemoteMessage & msgFailed)
 {
-
+    TRACE_SCOPE(areg_ipc_private_ServerService_failedSendMessage);
+    
+    ITEM_ID cookie = msgFailed.getTarget();
+    SocketAccepted client = mServerConnection.getClientByCookie( cookie );
+    TRACE_WARN("Failed to send message to client [ %p ], probably the connection is lost, closing connection", client.getHandle());
+    connectionLost(client);
 }
 
-void ServerService::failedReceiveMessage(SOCKETHANDLE /* whichSource */)
+void ServerService::failedReceiveMessage(SOCKETHANDLE whichSource)
 {
+    TRACE_SCOPE(areg_ipc_private_ServerService_failedReceiveMessage);
 
+    SocketAccepted client = mServerConnection.getClientByHandle(whichSource);
+    TRACE_WARN("Failed to receive message from client [ %p ], probably the connection is lost, closing connection", client.getHandle());
+    connectionLost(client);
 }
 
 void ServerService::failedProcessMessage(const RemoteMessage & /* msgUnprocessed */)
@@ -763,7 +762,7 @@ void ServerService::processReceivedMessage(const RemoteMessage & msgReceived, co
             TRACE_DBG("Going to process received message [ %p ]", static_cast<id_type>(msgId));
             ServerServiceEvent::sendEvent( ServerServiceEventData(ServerServiceEventData::CMD_ServiceReceivedMsg, msgReceived), static_cast<IEServerServiceEventConsumer &>(self()), static_cast<DispatcherThread &>(self()) );
         }
-        else if ( (source == NEService::SOUR_UNKNOWN) && (msgId == NEService::SI_ROUTER_CONNECT) )
+        else if ( (source == NEService::SOURCE_UNKNOWN) && (msgId == NEService::SI_ROUTER_CONNECT) )
         {
             RemoteMessage msgConnect = NEConnection::createConnectNotify(cookie);
             TRACE_DBG("Received request connect message, sending response [ %s ] ( ID = %p ), to new target [ %p ], connection socket [ %p ], checksum [ %u ]"

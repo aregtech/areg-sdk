@@ -256,15 +256,15 @@ namespace NEService
      **/
     const ITEM_ID   TARGET_LOCAL        = NEService::CookieLocal;
     /**
-     * \brief   NEService::SOUR_UNKNOWN
+     * \brief   NEService::SOURCE_UNKNOWN
      *          The unknown source ID
      **/
-    const ITEM_ID   SOUR_UNKNOWN      = NEService::CookieInvalid;
+    const ITEM_ID   SOURCE_UNKNOWN      = NEService::CookieInvalid;
     /**
-     * \brief   NEService::SOUR_UNKNOWN
+     * \brief   NEService::SOURCE_UNKNOWN
      *          The unknown source ID
      **/
-    const ITEM_ID   SOUR_LOCAL        = NEService::CookieLocal;
+    const ITEM_ID   SOURCE_LOCAL        = NEService::CookieLocal;
 
     /**
      * \brief   NEService::eServiceCalls

@@ -99,13 +99,9 @@ bool TraceManager::startLogging( const char * configFile /*= NULL*/ )
     do
     {
         Lock lock(traceManager.mLock);
-        if ( NEString::isEmpty<char>(configFile) == false )
+        if (TraceManager::isLoggingConfigured()== false)
         {
             canStart = traceManager.isReady() == false ? traceManager.loadConfiguration( configFile) : false;
-        }
-        else if ( TraceManager::isLoggingConfigured()== false )
-        {
-            canStart = traceManager.isReady() == false ? traceManager.loadConfiguration( NULL ) : false;
         }
         else
         {
@@ -171,6 +167,12 @@ bool TraceManager::forceActivateLogging(void)
     }
 
     return result;
+}
+
+void TraceManager::forceEnableLogging(void)
+{
+    TraceManager & traceManager = TraceManager::getInstance();
+    traceManager.mLogStatus.parseProperty( DEFAULT_LOG_ENABLE );
 }
 
 //////////////////////////////////////////////////////////////////////////

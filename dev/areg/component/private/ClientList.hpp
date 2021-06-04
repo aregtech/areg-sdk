@@ -34,7 +34,7 @@ public:
      **/
     inline bool implEqualValues( const ClientInfo & value1, const ClientInfo & value2) const
     {
-        return ( (value1.getAddress() == value2.getAddress()) && (value1.getAddress().getCookie() == value2.getAddress().getCookie()) );
+        return ( value1.getAddress() == value2.getAddress() );
     }
 };
 /**

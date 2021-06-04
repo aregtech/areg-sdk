@@ -87,6 +87,7 @@ bool ServerReceiveThread::runDispatcher(void)
                             continue;
                         }
                     }
+
                     const NESocket::InterlockedValue & addSocket = clientSocket.getAddress();
                     if ( mConnection.receiveMessage(msgReceived, clientSocket) > 0 )
                     {
@@ -105,6 +106,7 @@ bool ServerReceiveThread::runDispatcher(void)
                                         , addSocket.getHostPort()
                                         , clientSocket.getHandle());
 
+                        mRemoteService.failedReceiveMessage(clientSocket.getHandle());
                         mConnectHandler.connectionLost(clientSocket);
                     }
 

@@ -7,6 +7,7 @@
  ************************************************************************/
 #include "areg/component/ComponentThread.hpp"
 #include "areg/component/Component.hpp"
+#include "areg/component/ProxyBase.hpp"
 #include "areg/component/ComponentLoader.hpp"
 #include "areg/component/NERegistry.hpp"
 
@@ -71,7 +72,6 @@ bool ComponentThread::runDispatcher( void )
         result = DispatcherThread::runDispatcher();
     }
 
-    shutdownComponents();
     return result;
 }
 
@@ -115,9 +115,13 @@ void ComponentThread::destroyComponents( void )
             OUTPUT_DBG("Destroying component [ %s ] in thread [ %s ]...", comObj->getRoleName().getString(), getName().getString());
             const NERegistry::ComponentEntry& entry = ComponentLoader::findComponentEntry(comObj->getRoleName(), getName());
             if (entry.isValid() && entry.mFuncDelete != NULL)
+            {
                 Component::unloadComponent(*comObj, entry);
+            }
             else
+            {
                 delete comObj;
+            }
         }
     }
 }
@@ -138,6 +142,16 @@ void ComponentThread::startComponents( void )
 void ComponentThread::shutdownComponents( void )
 {
     OUTPUT_DBG("Going to shutdown components in thread [ %s ].", getName().getString());
+
+    TEArrayList<ProxyBase *, ProxyBase *> proxyList;
+    ProxyBase::findThreadProxies( self(), proxyList );
+    for ( int i = 0; i < proxyList.getSize(); ++ i)
+    {
+        ProxyBase * proxy = proxyList.getAt(i);
+        ASSERT(proxy != NULL);
+        proxy->stopProxy();
+    }
+
     LISTPOS pos = mListComponent.firstPosition();
     while (pos != NULL)
     {
@@ -161,13 +175,6 @@ DispatcherThread* ComponentThread::getEventConsumerThread( const RuntimeClassID&
             result = comObj->findEventConsumer(whichClass);
         }
     }
-    return result;
-}
-
-Thread::eCompletionStatus ComponentThread::destroyThread( unsigned int waitForStopMs /*= Thread::DO_NOT_WAIT*/ )
-{
-    Thread::eCompletionStatus result = DispatcherThread::destroyThread(waitForStopMs);
-    destroyComponents();
     return result;
 }
 
@@ -195,4 +202,14 @@ bool ComponentThread::completionWait( unsigned int waitForCompleteMs /*= Thread:
     }
 
     return DispatcherThread::completionWait(waitForCompleteMs);
+}
+
+int ComponentThread::onThreadExit(void)
+{
+    int result = DispatcherThread::onThreadExit();
+
+    shutdownComponents();
+    destroyComponents();
+
+    return result;
 }

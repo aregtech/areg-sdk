@@ -332,7 +332,7 @@ protected:
      * \param   Value2  Right-side value to compare.
      * \return  Returns true if 2 value are equal.
      **/
-    inline bool equalValues(VALUE_TYPE Value1, VALUE_TYPE Value2) const;
+    inline bool isEqualValues(VALUE_TYPE Value1, VALUE_TYPE Value2) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -950,7 +950,7 @@ int TERingStack<VALUE, VALUE_TYPE, Implement>::find(VALUE_TYPE elem, int startAt
     {
         while (pos <= mLastPosition)
         {
-            if (equalValues(elem, mStackList[pos]))
+            if (isEqualValues(elem, mStackList[pos]))
             {
                 result = pos;
                 break;
@@ -963,7 +963,7 @@ int TERingStack<VALUE, VALUE_TYPE, Implement>::find(VALUE_TYPE elem, int startAt
     {
         while (pos < mElemCount)
         {
-            if (equalValues(elem, mStackList[pos]))
+            if (isEqualValues(elem, mStackList[pos]))
             {
                 result = pos;
                 break;
@@ -977,7 +977,7 @@ int TERingStack<VALUE, VALUE_TYPE, Implement>::find(VALUE_TYPE elem, int startAt
             pos = 0;
             while (pos <= mLastPosition)
             {
-                if (equalValues(elem, mStackList[pos]))
+                if (isEqualValues(elem, mStackList[pos]))
                 {
                     result = pos;
                     break;
@@ -992,7 +992,7 @@ int TERingStack<VALUE, VALUE_TYPE, Implement>::find(VALUE_TYPE elem, int startAt
 }
 
 template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /*= TEListImpl<VALUE_TYPE>*/>
-inline bool TERingStack<VALUE, VALUE_TYPE, Implement>::equalValues(VALUE_TYPE Value1, VALUE_TYPE Value2) const
+inline bool TERingStack<VALUE, VALUE_TYPE, Implement>::isEqualValues(VALUE_TYPE Value1, VALUE_TYPE Value2) const
 {
     return Implement::ImplEqualVales(Value1, Value2);
 }

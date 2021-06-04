@@ -56,7 +56,7 @@ void ServerSendThread::processEvent( const SendMessageEventData & data )
                     , static_cast<id_type>(msgSend.getSource())
                     , static_cast<id_type>(msgSend.getTarget()));
 
-        if ( mConnection.sendMessage( msgSend, client ) < 0 )
+        if ( mConnection.sendMessage( msgSend, client ) <= 0 )
         {
             TRACE_WARN("Failed to send message [ %u ] to target [ %p ]", msgSend.getMessageId(), static_cast<id_type>(msgSend.getTarget()));
             mRemoteService.failedSendMessage( msgSend );

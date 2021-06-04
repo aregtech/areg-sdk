@@ -150,7 +150,7 @@ private:
     /**
      * \brief   The address of remote Stub
      **/
-    StubAddress                   mStubAddress;
+    StubAddress                     mStubAddress;
     /**
      * \brief   The connection status of service.
      **/

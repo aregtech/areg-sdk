@@ -83,7 +83,7 @@ ServiceStub::operator unsigned int ( void ) const
 
 bool ServiceStub::isValid( void ) const
 {
-    return mStubAddress.isValid() && (mStubAddress.getSource() != NEService::SOUR_UNKNOWN) && (mStubAddress.getCookie() != NEService::COOKIE_UNKNOWN);
+    return mStubAddress.isValid() && (mStubAddress.getSource() != NEService::SOURCE_UNKNOWN) && (mStubAddress.getCookie() != NEService::COOKIE_UNKNOWN);
 }
 
 void ServiceStub::setService( const StubAddress & addrStub, NEService::eServiceConnection connectStatus /*= NEService::ServiceConnected */ )
@@ -99,8 +99,8 @@ void ServiceStub::setServiceStatus( NEService::eServiceConnection newStatus )
     {
         mConnectStatus = newStatus;
         if ( newStatus == NEService::ServiceConnected )
-            mConnectStatus = mStubAddress.getSource() != NEService::SOUR_UNKNOWN ? NEService::ServiceConnected : NEService::ServicePending;
+            mConnectStatus = mStubAddress.getSource() != NEService::SOURCE_UNKNOWN ? NEService::ServiceConnected : NEService::ServicePending;
         else
-            mStubAddress.setSource( NEService::SOUR_UNKNOWN );
+            mStubAddress.setSource( NEService::SOURCE_UNKNOWN );
     }
 }
