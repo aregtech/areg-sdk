@@ -21,6 +21,22 @@
 /dev/mcrouter/Release/*
 /dev/mcrouter/.settings/
 
+/examples/04_trace/.gitignore
+/examples/05_timer/.gitignore
+/examples/06_threads/.gitignore
+/examples/07_synch/.gitignore
+/examples/08_service/.gitignore
+/examples/12_ipchello/usripchello/.gitignore
+/examples/12_ipchello/svcipchello/.gitignore
+/examples/12_ipchello/shripchello/.gitignore
+/examples/11_svcmix/.gitignore
+/examples/10_svchello/.gitignore
+/examples/09_duplicate/.gitignore
+/examples/13_ipcmix/mainipcmix/.gitignore
+/examples/13_ipcmix/clientipcmix/.gitignore
+/examples/13_ipcmix/secondipcmix/.gitignore
+/examples/13_ipcmix/shareipcmix/.gitignore
+
 /examples/test-areg-basic/Debug/
 /examples/test-areg-basic/Release/
 /examples/test-areg-basic/.settings/

@@ -30,9 +30,9 @@ class RemoteServiceComponent  : public RemoteServicingComponent
 //////////////////////////////////////////////////////////////////////////
 // Statics and constants
 //////////////////////////////////////////////////////////////////////////
-    static const unsigned int   MAIN_MESSAGE_TIMEOUT    /*= 347*/;  //!< The timeout to send message to remote main servicing component
-    static const unsigned int   REMOTE_MESSAGE_TIMEOUT  /*= 328*/;  //!< The timeout to send request to some other remote servicing component instantiated in the same thread.
-    static const unsigned int   LOCAL_MESSAGE_TIMEOUT   /*=  25*/;  //!< The timeout to communicate with local servicing objects.
+    static const unsigned int   MAIN_MESSAGE_TIMEOUT    /*= 400*/;  //!< The timeout to send message to remote main servicing component
+    static const unsigned int   REMOTE_MESSAGE_TIMEOUT  /*= 300*/;  //!< The timeout to send request to some other remote servicing component instantiated in the same thread.
+    static const unsigned int   LOCAL_MESSAGE_TIMEOUT   /*=  50*/;  //!< The timeout to communicate with local servicing objects.
 
 public:
 

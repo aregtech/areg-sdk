@@ -539,7 +539,7 @@ protected:
     /**
      * \brief   Flag indicating whether thread is running or not.
      **/
-    InterlockedValue        mIsRunning;
+    bool                    mIsRunning;
     /**
      * \brief   Object to synchronize data access
      **/
@@ -739,7 +739,7 @@ inline bool Thread::_isValidNoLock( void ) const
 inline bool Thread::isRunning( void ) const
 {
     Lock lock(mSynchObject);
-    return (mIsRunning != static_cast<unsigned int>(0));
+    return mIsRunning;
 }
 
 inline bool Thread::isValid( void ) const
@@ -796,7 +796,7 @@ inline const ThreadAddress& Thread::findThreadAddressByName(const char* threadNa
 inline void Thread::_setRunning( bool isRunning )
 {
     Lock lock(mSynchObject);
-    mIsRunning  = isRunning ? 1 : 0;
+    mIsRunning  = isRunning;
 }
 
 inline Thread * Thread::getCurrentThread( void )

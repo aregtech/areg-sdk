@@ -115,23 +115,23 @@
     /**
      * \brief   Use this macro to log Debug priority messages in logging target (file or remote host)
      **/
-    #define TRACE_DBG(...)                              _messager.logDebug( __VA_ARGS__ )
+    #define TRACE_DBG(...)                              if (_messager.isDbgEnabled())   _messager.logMessage( NETrace::PrioDebug    , __VA_ARGS__ )
     /**
      * \brief   Use this macro to log Information priority messages in logging target (file or remote host)
      **/
-    #define TRACE_INFO(...)                             _messager.logInfo( __VA_ARGS__ )
+    #define TRACE_INFO(...)                             if (_messager.isInfoEnabled())  _messager.logMessage( NETrace::PrioInfo     , __VA_ARGS__ )
     /**
      * \brief   Use this macro to log Warning priority messages in logging target (file or remote host)
      **/
-    #define TRACE_WARN(...)                             _messager.logWarning( __VA_ARGS__ )
+    #define TRACE_WARN(...)                             if (_messager.isWarnEnabled())  _messager.logMessage( NETrace::PrioWarning  , __VA_ARGS__ )
     /**
      * \brief   Use this macro to log Error priority messages in logging target (file or remote host)
      **/
-    #define TRACE_ERR(...)                              _messager.logError( __VA_ARGS__ )
+    #define TRACE_ERR(...)                              if (_messager.isErrEnabled())   _messager.logMessage( NETrace::PrioError    , __VA_ARGS__ )
     /**
      * \brief   Use this macro to log Fatal Error priority messages in logging target (file or remote host)
      **/
-    #define TRACE_FATAL(...)                            _messager.logFatal( __VA_ARGS__ )
+    #define TRACE_FATAL(...)                            if (_messager.isFatalEnabled()  _messager.logMessage( NETrace::PrioFatal    , __VA_ARGS__ )
 
     /**
      * \brief   Use this macro to define global scope and global message object.

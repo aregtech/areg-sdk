@@ -14,20 +14,12 @@
 
 #include <stdarg.h>
 
-#define IS_ENABLED_SCOPE(scopePrio)     (scopePrio &  static_cast<unsigned int>(NETrace::PrioScope))
-#define IS_ENABLED_DEBUG(scopePrio)     (scopePrio >= static_cast<unsigned int>(NETrace::PrioDebug))
-#define IS_ENABLED_INFO(scopePrio)      (scopePrio >= static_cast<unsigned int>(NETrace::PrioInfo))
-#define IS_ENABLED_WARNING(scopePrio)   (scopePrio >= static_cast<unsigned int>(NETrace::PrioWarning))
-#define IS_ENABLED_ERROR(scopePrio)     (scopePrio >= static_cast<unsigned int>(NETrace::PrioError))
-#define IS_ENABLED_FATAL(scopePrio)     (scopePrio >= static_cast<unsigned int>(NETrace::PrioFatal))
-#define IS_ENABLED_LOG(scopePrio)       (scopePrio != static_cast<unsigned int>(NETrace::PrioNotset))
-
 TraceMessage::TraceMessage( const TraceScope & traceScope )
     : mScopeName    ( traceScope.getScopeName() )
     , mScopeId      ( traceScope.mScopeId )
     , mScopePrio    ( traceScope.mScopePrio )
 {
-    if ( IS_ENABLED_SCOPE(mScopePrio) )
+    if ( isScopeEnabled() )
     {
         LogMessage msg(NETrace::LogScopeEnter, mScopeId, NETrace::PrioScope, mScopeName);
         TraceManager::sendLogMessage(msg);
@@ -37,7 +29,7 @@ TraceMessage::TraceMessage( const TraceScope & traceScope )
 
 TraceMessage::~TraceMessage( void )
 {
-    if ( IS_ENABLED_SCOPE(mScopePrio) )
+    if ( isScopeEnabled() )
     {
         LogMessage msg(NETrace::LogScopeExit, mScopeId, NETrace::PrioScope, mScopeName);
         TraceManager::sendLogMessage(msg);
@@ -46,7 +38,7 @@ TraceMessage::~TraceMessage( void )
 
 void TraceMessage::logDebug( const char * format, ... ) const
 {
-    if ( IS_ENABLED_DEBUG(mScopePrio) )
+    if ( isDbgEnabled() )
     {
         va_list args;
         va_start(args, format);
@@ -57,7 +49,7 @@ void TraceMessage::logDebug( const char * format, ... ) const
 
 void TraceMessage::logInfo( const char * format, ... ) const
 {
-    if ( IS_ENABLED_INFO(mScopePrio) )
+    if ( isInfoEnabled() )
     {
         va_list args;
         va_start(args, format);
@@ -68,7 +60,7 @@ void TraceMessage::logInfo( const char * format, ... ) const
 
 void TraceMessage::logWarning(const char * format, ...) const
 {
-    if ( IS_ENABLED_WARNING(mScopePrio) )
+    if ( isWarnEnabled() )
     {
         va_list args;
         va_start(args, format);
@@ -79,7 +71,7 @@ void TraceMessage::logWarning(const char * format, ...) const
 
 void TraceMessage::logError( const char * format, ... ) const
 {
-    if ( IS_ENABLED_ERROR(mScopePrio) )
+    if ( isErrEnabled() )
     {
         va_list args;
         va_start(args, format);
@@ -90,13 +82,21 @@ void TraceMessage::logError( const char * format, ... ) const
 
 void TraceMessage::logFatal( const char * format, ... ) const
 {
-    if ( IS_ENABLED_FATAL(mScopePrio) )
+    if ( isFatalEnabled() )
     {
         va_list args;
         va_start(args, format);
         TraceMessage::_sendLog(mScopeId, NETrace::PrioFatal, format, args);
         va_end(args);
     }
+}
+
+void TraceMessage::logMessage(NETrace::eLogPriority logPrio, const char * format, ...)
+{
+    va_list args;
+    va_start(args, format);
+    TraceMessage::_sendLog(mScopeId, logPrio, format, args);
+    va_end(args);
 }
 
 void TraceMessage::logTrace( NETrace::eLogPriority logPrio, const char * format, ... ) 

@@ -136,7 +136,8 @@ int main()
     do 
     {
         TRACE_SCOPE(example_12_ipchello_svcipchello_main_main);
-        TRACE_DBG("The application has been initialized, loading model [ %s ]", IPCMixCommon::ModelName);
+        String modelName(IPCMixCommon::ModelName);
+        TRACE_DBG("The application has been initialized, loading model [ %s ]", modelName.getString());
 
         // load model to initialize components
         Application::loadModel(IPCMixCommon::ModelName);

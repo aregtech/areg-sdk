@@ -153,7 +153,7 @@ Thread::Thread(IEThreadConsumer &threadConsumer, const char* threadName /* = NUL
     , mThreadId         (Thread::INVALID_THREAD_ID)
     , mThreadAddress    (NEString::isEmpty<char>(threadName) == false ? threadName : NEUtilities::generateName(Thread::DEFAULT_THREAD_PREFIX).getString())
     , mThreadPriority   (Thread::PriorityUndefined)
-    , mIsRunning        (static_cast<unsigned int>(0))
+    , mIsRunning        ( false )
 
     , mSynchObject      ( )
     , mWaitForRun       (false, false)
@@ -292,7 +292,7 @@ void Thread::_cleanResources( void )
 
     mThreadHandle   = INVALID_THREAD_HANDLE;
     mThreadId       = INVALID_THREAD_ID;
-    mIsRunning      = static_cast<unsigned int>(0);
+    mIsRunning      = false;
     mThreadPriority = Thread::PriorityUndefined;
 
     Thread::_closeHandle(handle);

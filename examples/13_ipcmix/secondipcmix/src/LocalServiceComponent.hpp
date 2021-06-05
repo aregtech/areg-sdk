@@ -29,8 +29,8 @@ class LocalServiceComponent  : public LocalServicingComponent
 //////////////////////////////////////////////////////////////////////////
 // Statics and constants
 //////////////////////////////////////////////////////////////////////////
-    static const unsigned int   REMOTE_TIMEOUT      /*= 456*/;  //!< The timeout to send request to remote service
-    static const unsigned int   LOCAL_TIMEOUT       /*= 789*/;  //!< The timeout to send request to local service
+    static const unsigned int   REMOTE_TIMEOUT      /*= 450*/;  //!< The timeout to send request to remote service
+    static const unsigned int   LOCAL_TIMEOUT       /*= 800*/;  //!< The timeout to send request to local service
 
 public:
 

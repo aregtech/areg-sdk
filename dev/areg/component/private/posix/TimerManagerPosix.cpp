@@ -25,7 +25,7 @@
 typedef struct S_PosixTimer
 {
     timer_t     timerId;
-    Timer*    timerOwner;
+    Timer*      timerOwner;
     uint32_t    timerTimeout;
     uint32_t    timerPeriod;
     time_t      timerDueSecs;

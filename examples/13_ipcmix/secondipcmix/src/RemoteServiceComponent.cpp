@@ -12,9 +12,9 @@
 
 #include "RemoteServiceComponent.hpp"
 
-const unsigned int  RemoteServiceComponent::MAIN_MESSAGE_TIMEOUT     = 347;
-const unsigned int  RemoteServiceComponent::REMOTE_MESSAGE_TIMEOUT   = 328;
-const unsigned int  RemoteServiceComponent::LOCAL_MESSAGE_TIMEOUT    =  25;
+const unsigned int  RemoteServiceComponent::MAIN_MESSAGE_TIMEOUT     = 400;
+const unsigned int  RemoteServiceComponent::REMOTE_MESSAGE_TIMEOUT   = 300;
+const unsigned int  RemoteServiceComponent::LOCAL_MESSAGE_TIMEOUT    =  50;
 
 Component * RemoteServiceComponent::CreateComponent(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
 {

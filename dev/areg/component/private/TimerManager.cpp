@@ -210,24 +210,24 @@ void TimerManager::_processExpiredTimers( void )
         if (expiredTime.mTimer != NULL )
         {
             Lock lock(mLock);
-            TimerInfo timerInfo;
-            if (mTimerTable.findObject(expiredTime.mTimer, timerInfo))
+            TimerInfo * timerInfo = mTimerTable.findObject(expiredTime.mTimer);
+            if ( timerInfo != NULL )
             {
-                Timer* currTimer = timerInfo.mTimer;
-                if (currTimer->isValid() && timerInfo.isTimerExpired(expiredTime.mHighValue, expiredTime.mLowValue))
+                Timer* currTimer = timerInfo->mTimer;
+                if (currTimer->isValid() && timerInfo->isTimerExpired(expiredTime.mHighValue, expiredTime.mLowValue))
                 {
-                    if (timerInfo.isTimerActive())
+                    bool hasSent = TimerEvent::sendEvent( *currTimer, timerInfo->mOwnThreadId );
+
+                    if (hasSent && timerInfo->isTimerActive())
                     {
-                        timerInfo.mTimerState = TimerInfo::TimerPending;
-                        mTimerTable.updateObject(currTimer, timerInfo);
+                        timerInfo->mTimerState = TimerInfo::TimerPending;
+                        // mTimerTable.updateObject(currTimer, timerInfo);
                     }
                     else
                     {
-                        OUTPUT_WARN("The Timer [ %s ] is not active anymore. Going to unregister", currTimer->getName().getString());
+                        OUTPUT_WARN("Either the Timer [ %s ] is not active or cannot send anymore. Going to unregister", currTimer->getName().getString());
                         _unregisterTimer(*currTimer);
                     }
-
-                    TimerEvent::sendEvent( *currTimer, timerInfo.mOwnThreadId );
                 }
                 else
                 {
@@ -258,13 +258,12 @@ void TimerManager::_startSystemTimer( Timer* whichTimer )
     {
         Lock lock(mLock);
 
-        TimerInfo timerInfo;
-
-        if (mTimerTable.findObject(whichTimer, timerInfo))
+        TimerInfo * timerInfo = mTimerTable.findObject(whichTimer);
+        if ( timerInfo != NULL )
         {
-            ASSERT(timerInfo.mTimer == whichTimer);
-            ASSERT(timerInfo.mHandle != NULL);
-            if (_startSystemTimer(timerInfo) == false)
+            ASSERT(timerInfo->mTimer == whichTimer);
+            ASSERT(timerInfo->mHandle != NULL);
+            if (_startSystemTimer(*timerInfo) == false)
             {
                 OUTPUT_ERR("Failed starting timer [ %s ]", whichTimer->getName().getString());
             }

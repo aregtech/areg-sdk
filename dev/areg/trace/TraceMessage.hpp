@@ -116,6 +116,56 @@ public:
      **/
     void logFatal( const char * format, ... ) const;
 
+    /**
+     * \brief   Formats and logs message of given priority without checking 
+     *          whether the priority is enabled or not.
+     * \param   logPrio     The logging priority of the message.
+     * \param   format      The format of message, followed by arguments.
+     **/
+    void logMessage( NETrace::eLogPriority logPrio, const char * format, ...);
+
+    /**
+     * \brief   Returns true if for message tracer object logging the message scope is enabled.
+     **/
+    inline bool isScopeEnabled( void ) const;
+
+    /**
+     * \brief   Returns true if for message tracer object logging message of debug priority is enabled.
+     **/
+    inline bool isDbgEnabled( void ) const;
+
+    /**
+     * \brief   Returns true if for message tracer object logging message of information priority is enabled.
+     **/
+    inline bool isInfoEnabled( void ) const;
+
+    /**
+     * \brief   Returns true if for message tracer object logging message of warning priority is enabled.
+     **/
+    inline bool isWarnEnabled( void ) const;
+
+    /**
+     * \brief   Returns true if for message tracer object logging message of error priority is enabled.
+     **/
+    inline bool isErrEnabled( void ) const;
+
+    /**
+     * \brief   Returns true if for message tracer object logging message of fatal priority is enabled.
+     **/
+    inline bool isFatalEnabled( void ) const;
+
+    /**
+     * \brief   Returns true if for message tracer object the logging is enabled.
+     **/
+    inline bool isLogEnabled( void ) const;
+
+    /**
+     * \brief   Checks whether the given priority is enabled for for message tracer object.
+     * \param   msgPrio     The priority of message to check.
+     * \return  Returns true if given priority is enabled. Otherwise, returns false.
+     **/
+    inline bool isPrioEnabled( NETrace::eLogPriority msgPrio );
+
 //////////////////////////////////////////////////////////////////////////////
 // Hidden methods
 //////////////////////////////////////////////////////////////////////////////
@@ -145,5 +195,49 @@ private:
     TraceMessage( const TraceMessage & /* src */ );
     const TraceMessage & operator = ( const TraceMessage & /* src */ );
 };
+
+//////////////////////////////////////////////////////////////////////////////
+// TraceMessage class inline methods
+//////////////////////////////////////////////////////////////////////////////
+
+inline bool TraceMessage::isScopeEnabled(void) const
+{
+    return (mScopePrio &  static_cast<unsigned int>(NETrace::PrioScope));
+}
+
+inline bool TraceMessage::isDbgEnabled(void) const
+{
+    return (mScopePrio >= static_cast<unsigned int>(NETrace::PrioDebug));
+}
+
+inline bool TraceMessage::isInfoEnabled(void) const
+{
+    return (mScopePrio >= static_cast<unsigned int>(NETrace::PrioInfo));
+}
+
+inline bool TraceMessage::isWarnEnabled(void) const
+{
+    return (mScopePrio >= static_cast<unsigned int>(NETrace::PrioWarning));
+}
+
+inline bool TraceMessage::isErrEnabled(void) const
+{
+    return (mScopePrio >= static_cast<unsigned int>(NETrace::PrioError));
+}
+
+inline bool TraceMessage::isFatalEnabled(void) const
+{
+    return (mScopePrio >= static_cast<unsigned int>(NETrace::PrioFatal));
+}
+
+inline bool TraceMessage::isLogEnabled(void) const
+{
+    return (mScopePrio != static_cast<unsigned int>(NETrace::PrioNotset));
+}
+
+inline bool TraceMessage::isPrioEnabled(NETrace::eLogPriority msgPrio)
+{
+    return (msgPrio == NETrace::PrioScope ? mScopePrio &  static_cast<unsigned int>(NETrace::PrioScope) : mScopePrio >= static_cast<unsigned int>(msgPrio)) ;
+}
 
 #endif  // AREG_TRACE_TRACEMESSAGE_HPP

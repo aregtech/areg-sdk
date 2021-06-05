@@ -11,8 +11,8 @@
  ************************************************************************/
 #include "LocalServiceComponent.hpp"
 
-const unsigned int   LocalServiceComponent::REMOTE_TIMEOUT      = 456;
-const unsigned int   LocalServiceComponent::LOCAL_TIMEOUT       = 789;
+const unsigned int   LocalServiceComponent::REMOTE_TIMEOUT      = 450;
+const unsigned int   LocalServiceComponent::LOCAL_TIMEOUT       = 800;
 
 LocalServiceComponent::LocalServiceComponent(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
     : LocalServicingComponent   ( entry, owner )

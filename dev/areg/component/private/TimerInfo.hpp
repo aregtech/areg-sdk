@@ -360,6 +360,15 @@ public:
     inline bool findObject( const Timer * key, TimerInfo & OUT object ) const;
 
     /**
+     * \brief   Searches specified timer pointer as a key. If the entry in hash map exists
+     *          returns valid TimerInfo pointer. Otherwise, returns NULL.
+     * \param   key     The pointer to timer object to search.
+     * \return  Returns valid pointer to TimerInfor if specified Timer key exists in the map.
+     *          Otherwise, returns NULL.
+     **/
+    inline TimerInfo * findObject( const Timer * key );
+
+    /**
      * \brief   Removes all timer entries from hash map.
      **/
     inline void removeAll( void );
@@ -547,6 +556,18 @@ inline bool MapTimerTable::findObject(const Timer * key, TimerInfo & OUT object)
     {
         object = (*block)->mValue;
         result = true;
+    }
+
+    return result;
+}
+
+inline TimerInfo * MapTimerTable::findObject(const Timer * key)
+{
+    TimerInfo * result = NULL;
+    TEHashMap<Timer *, TimerInfo, const Timer *, const TimerInfo &, TimerTableImpl>::Block** block = blockAt(key);
+    if ( (block != NULL) && (*block != NULL) )
+    {
+        result = &((*block)->mValue);
     }
 
     return result;

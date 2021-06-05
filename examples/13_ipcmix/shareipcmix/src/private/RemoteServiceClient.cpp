@@ -34,12 +34,13 @@ RemoteServiceClient::RemoteServiceClient(const String & roleName, Component & ow
     , mID                       ( 0                                                             )
 {
     TRACE_SCOPE(examples_13_ipcmix_shareipcmix_RemoteServiceClient_RemoteServiceClient);
-    TRACE_DBG("Client: roleName [ %s ] of service [ %s ] owner [ %s ] in thread [ %s ] has timer [ %s ]"
+    TRACE_DBG("Client: roleName [ %s ] of service [ %s ] owner [ %s ] in thread [ %s ] has timer [ %s ] with timeout [ %d ] ms"
                     , roleName.getString()
                     , getServiceName().getString()
                     , owner.getRoleName().getString()
                     , owner.getMasterThread().getName().getString()
-                    , mTimer.getName().getString());
+                    , mTimer.getName().getString()
+                    , timeout);
     TRACE_DBG("Proxy: [ %s ]", ProxyAddress::convAddressToPath(getProxy()->getProxyAddress()).getString());
 }
 
