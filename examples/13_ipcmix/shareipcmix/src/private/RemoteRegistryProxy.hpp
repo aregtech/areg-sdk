@@ -1,53 +1,53 @@
 //////////////////////////////////////////////////////////////////////////
-// Begin generate shareipcmix/src/private/RemoteHelloWorldProxy.hpp file
+// Begin generate shareipcmix/src/private/RemoteRegistryProxy.hpp file
 //////////////////////////////////////////////////////////////////////////
-#ifndef  SHAREIPCMIX_SRC_PRIVATE_REMOTEHELLOWORLDPROXY_HPP
-#define  SHAREIPCMIX_SRC_PRIVATE_REMOTEHELLOWORLDPROXY_HPP
+#ifndef  SHAREIPCMIX_SRC_PRIVATE_REMOTEREGISTRYPROXY_HPP
+#define  SHAREIPCMIX_SRC_PRIVATE_REMOTEREGISTRYPROXY_HPP
 /************************************************************************
  * (c) copyright    2021
- *                  Create by AREG SDK code generator tool from source RemoteHelloWorld.
- * Generated at     29.05.2021  12:43:00 GMT+02:00 
+ *                  Create by AREG SDK code generator tool from source RemoteRegistry.
+ * Generated at     11.06.2021  21:11:05 GMT+02:00 
  ************************************************************************/
 
 /************************************************************************
- * \file            shareipcmix/src/private/RemoteHelloWorldProxy.hpp
- * \ingroup         RemoteHelloWorld Service Interface
- * \brief           This is an automatic generated code of RemoteHelloWorld Service Interface Proxy class declaration.
+ * \file            shareipcmix/src/private/RemoteRegistryProxy.hpp
+ * \ingroup         RemoteRegistry Service Interface
+ * \brief           This is an automatic generated code of RemoteRegistry Service Interface Proxy class declaration.
  ************************************************************************/
 
 /************************************************************************
  * Include files
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
-#include "shareipcmix/src/NERemoteHelloWorld.hpp"
+#include "shareipcmix/src/NERemoteRegistry.hpp"
 #include "areg/component/ProxyBase.hpp"
  
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class RemoteHelloWorldResponseEvent;
+class RemoteRegistryResponseEvent;
  
 //////////////////////////////////////////////////////////////////////////
-// RemoteHelloWorldProxy class declaration Begin
+// RemoteRegistryProxy class declaration Begin
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief       RemoteHelloWorld Service Interface proxy class.
+ * \brief       RemoteRegistry Service Interface proxy class.
  *              Automatically instantiated per thread at client startup.
  *              Used to communicate with stub object and sending notifications
  *              to each client running in the thread instance.
  *
- *              
- *              		Simple Service Interface to demonstrate working features of AREG SDK.
- *              		This is remote servicing interface can be used by local or remote components. 
- *              		Each instance of component should be unique in the network.
- *              		
+ *              Simple Service Interface to demonstrate working features of AREG SDK.
+ *              This interface demonstrates how to use multiple remote services in the system.
+ *              Each service is unique in the network.
+ *              This service is used by each remote servicing component to register clients.
+ *              Before using services, the clients should be registered.
  **/
-class RemoteHelloWorldProxy   : public ProxyBase
+class RemoteRegistryProxy   : public ProxyBase
 {
 
 private:
     //////////////////////////////////////////////////////////////////////////
-    // RemoteHelloWorldProxy::RemoteHelloWorldServiceAvailableEvent class declaration
+    // RemoteRegistryProxy::RemoteRegistryServiceAvailableEvent class declaration
     //////////////////////////////////////////////////////////////////////////
     /**
      * \brief       The event is used to immediately notify new client
@@ -55,12 +55,12 @@ private:
      *              notification for other, already connected clients.
      *  
      **/
-    class RemoteHelloWorldServiceAvailableEvent : public ProxyBase::ServiceAvailableEvent
+    class RemoteRegistryServiceAvailableEvent : public ProxyBase::ServiceAvailableEvent
     {
     //////////////////////////////////////////////////////////////////////////
     // Runtime internals
     //////////////////////////////////////////////////////////////////////////
-        DECLARE_RUNTIME_EVENT(RemoteHelloWorldProxy::RemoteHelloWorldServiceAvailableEvent)
+        DECLARE_RUNTIME_EVENT(RemoteRegistryProxy::RemoteRegistryServiceAvailableEvent)
 
     //////////////////////////////////////////////////////////////////////////
     // Constructor/ Destructor
@@ -69,21 +69,21 @@ private:
         /**
          * \brief   Sets event consumer object to deliver notification.
          **/
-        RemoteHelloWorldServiceAvailableEvent( IENotificationEventConsumer & consumer );
+        RemoteRegistryServiceAvailableEvent( IENotificationEventConsumer & consumer );
         /**
          * \brief   Destructor
          **/
-        virtual ~RemoteHelloWorldServiceAvailableEvent( void );
+        virtual ~RemoteRegistryServiceAvailableEvent( void );
     //////////////////////////////////////////////////////////////////////////
     // Forbidden calls
     //////////////////////////////////////////////////////////////////////////
     private:
-        RemoteHelloWorldServiceAvailableEvent( void );
-        RemoteHelloWorldServiceAvailableEvent( const RemoteHelloWorldServiceAvailableEvent & /*src*/ );
-        const RemoteHelloWorldServiceAvailableEvent & operator = ( const RemoteHelloWorldServiceAvailableEvent & /*src*/ );
+        RemoteRegistryServiceAvailableEvent( void );
+        RemoteRegistryServiceAvailableEvent( const RemoteRegistryServiceAvailableEvent & /*src*/ );
+        const RemoteRegistryServiceAvailableEvent & operator = ( const RemoteRegistryServiceAvailableEvent & /*src*/ );
     };
 //////////////////////////////////////////////////////////////////////////
-// RemoteHelloWorldProxy predefined constants and static members.
+// RemoteRegistryProxy predefined constants and static members.
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
@@ -94,7 +94,7 @@ public:
      * \param   ownerThread     The instance of thread to dispatch messages.
      * \return  Returns pointer to instantiated proxy object.
      **/
-    static RemoteHelloWorldProxy * createProxy( const char * roleName, IEProxyListener & connectListener, DispatcherThread & ownerThread );
+    static RemoteRegistryProxy * createProxy( const char * roleName, IEProxyListener & connectListener, DispatcherThread & ownerThread );
 
     /**
      * \brief   Returns existing or creates new proxy object if it is not existing
@@ -105,7 +105,7 @@ public:
      *                          If NULL, current dispatching thread is used to dispatch messages.
      * \return  Returns pointer to instantiated proxy object.
      **/
-    static RemoteHelloWorldProxy * createProxy( const char * roleName, IEProxyListener & connectListener, const char * ownerThread = static_cast<const char *>(NULL) );
+    static RemoteRegistryProxy * createProxy( const char * roleName, IEProxyListener & connectListener, const char * ownerThread = static_cast<const char *>(NULL) );
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor. Protected
@@ -118,11 +118,11 @@ protected:
      * \param   ownerThread The instance of thread to dispatch messages.
      *                      If NULL, current dispatching thread is used to dispatch messages.
      **/
-    RemoteHelloWorldProxy( const char * roleName, DispatcherThread * ownerThread = static_cast<DispatcherThread *>(NULL) );
+    RemoteRegistryProxy( const char * roleName, DispatcherThread * ownerThread = static_cast<DispatcherThread *>(NULL) );
     /**
      * \brief   Destructor
      **/
-    virtual ~RemoteHelloWorldProxy( void );
+    virtual ~RemoteRegistryProxy( void );
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations.
@@ -132,78 +132,89 @@ public:
  * Attributes
  ************************************************************************/
     /**
-     * \brief   Returns true if value of ConnectedClients attribute is valid.
+     * \brief   Returns true if value of RegistryList attribute is valid.
      *          If Update Notification is disabled, this method will return false.
      **/
-    inline bool isConnectedClientsValid( void ) const;
+    inline bool isRegistryListValid( void ) const;
     /**
-     * \brief   Returns the value of ConnectedClients attribute.
+     * \brief   Returns the value of RegistryList attribute.
      *          To get valid value, the Update Notification should be enabled. 
-     *          Attribute ConnectedClients description: 
-     *          The list of connected clients. Updated each time when new client requests to output Hello World message.
+     *          Attribute RegistryList description: 
+     *          List of registered clients.
      * \param   state   On returns, contains the validation flag of attribute data. 
      *                  Check validation flag before use attribute value.
      **/
-    inline const NERemoteHelloWorld::ConnectionList & getConnectedClients( NEService::eDataStateType & state ) const;
+    inline const NERemoteRegistry::ListRegistry & getRegistryList( NEService::eDataStateType & state ) const;
 
     /**
-     * \brief   Returns true if value of RemainOutput attribute is valid.
+     * \brief   Returns true if value of RemainOutputs attribute is valid.
      *          If Update Notification is disabled, this method will return false.
      **/
-    inline bool isRemainOutputValid( void ) const;
+    inline bool isRemainOutputsValid( void ) const;
     /**
-     * \brief   Returns the value of RemainOutput attribute.
+     * \brief   Returns the value of RemainOutputs attribute.
      *          To get valid value, the Update Notification should be enabled. 
-     *          Attribute RemainOutput description: 
-     *          Remaining number of outputs to print Hello World.
+     *          Attribute RemainOutputs description: 
+     *          Remaining outputs before reaching maximum.
      * \param   state   On returns, contains the validation flag of attribute data. 
      *                  Check validation flag before use attribute value.
      **/
-    inline short getRemainOutput( NEService::eDataStateType & state ) const;
+    inline unsigned int getRemainOutputs( NEService::eDataStateType & state ) const;
 
 /************************************************************************
  * Parameters
  ************************************************************************/
     /**
-     * \brief   Returns value of clientInfo of response call function.
+     * \brief   Returns value of client of response call function.
      *          The parameter is validated and set when Proxy is getting response call.
-     *          Parameter clientInfo description: 
-     *          The client information set by servicing component. If empty or invalid ID, the message output failed.
+     *          Parameter client description: 
+     *          The client registration object that contains unique ID.
      **/
-    inline const NERemoteHelloWorld::sConnectedClient & getParamclientInfo( void ) const;
+    inline const NERemoteRegistry::sClientRegister & getParamclient( void ) const;
 
     /**
-     * \brief   Returns value of clientList of response call function.
+     * \brief   Returns value of clientID of response call function.
      *          The parameter is validated and set when Proxy is getting response call.
-     *          Parameter clientList description: 
-     *          List of currently active clients.
+     *          Parameter clientID description: 
+     *          Indicates the ID client that made message output
      **/
-    inline const NERemoteHelloWorld::ConnectionList & getParamclientList( void ) const;
+    inline unsigned int getParamclientID( void ) const;
 
 /************************************************************************
  * Requests
  ************************************************************************/
     /**
      * \brief   Request call.
-     *          Request to print hello world
-     * \param   caller      The reference of caller object to get response.
-     * \param   roleName    The role name of client component that requested to print hello world
-     * \param   addMessage  Additional message to output. Can be empty.
-     *          Has default value: ""
+     *          Call to register client. Each client should be registered before starting communication.
+     * \param   caller  The reference of caller object to get response.
+     * \param   name    The name of the client.
+     * \param   service The service address of the client.
+     * \param   thread  The thread name where client is running. Required to provide uniqueness.
+     * \param   process The name of process. Optional parameter, used to make output in logs.
      * \return  The sequence count number of call
-     * \see     responseHelloWorld
+     * \see     responseRegister
      **/
-    unsigned int requestHelloWorld( IENotificationEventConsumer & caller, const String & roleName, const String & addMessage = "" );
+    unsigned int requestRegister( IENotificationEventConsumer & caller, const String & name, const ServiceAddress & service, const String & thread, const String & process );
     
     /**
      * \brief   Request call.
-     *          Sent by client to notify the shutdown. This removes client from the list. This request has no response.
-     * \param   clientID    The ID of client that requests to shutdown. The ID is given by service when first time client requests to output message.
-     * \param   roleName    Service client component role name
+     *          Sent to unregister connected client.
+     * \param   client  The client registration object indicating the unregistered client.
      * \see     Has no Response.
      **/
-    void requestClientShutdown( unsigned int clientID, const String & roleName );
+    void requestUnregister( const NERemoteRegistry::sClientRegister & client );
 
+    /**
+     * \brief   Request call.
+     *          Outputs message on console. If additional message is not empty, outputs the additional message as well.
+     * \param   caller      The reference of caller object to get response.
+     * \param   clientID    The ID of registered client to make message output
+     * \param   addMessage  The additional message to output. Ignored if empty.
+     * \return  The sequence count number of call
+     * \see     responseHelloWorld
+     **/
+    unsigned int requestHelloWorld( IENotificationEventConsumer & caller, unsigned int clientID, const String & addMessage );
+    
 //////////////////////////////////////////////////////////////////////////
 // Operations.
 //////////////////////////////////////////////////////////////////////////
@@ -221,14 +232,14 @@ public:
      *                          should be send to client immediately if the notification
      *                          already exists. By default it is false. 
      **/
-    inline void setNotification( NERemoteHelloWorld::eMessageIDs notifyId, IENotificationEventConsumer & listener, bool notifyAlways = false );
+    inline void setNotification( NERemoteRegistry::eMessageIDs notifyId, IENotificationEventConsumer & listener, bool notifyAlways = false );
     /**
      * \brief   Clears listener entries of specified Notification Event consumer
      * \param   msgId       The Notification Message ID
      * \param   consumer    The pointer of Notification Event Consumer.
      * \return  
      **/
-    inline void clearNotification( NERemoteHelloWorld::eMessageIDs notifyId, IENotificationEventConsumer & listener );
+    inline void clearNotification( NERemoteRegistry::eMessageIDs notifyId, IENotificationEventConsumer & listener );
     /**
      * \brief   Clears all notification for specified listener and unregisters it
      * \param   listener    The notification consumer object, which should be unregistered.
@@ -340,31 +351,31 @@ private:
  * Attribute members
  ************************************************************************/
     /**
-     * \brief   ConnectedClients attribute value.
-     *          The list of connected clients. Updated each time when new client requests to output Hello World message.
+     * \brief   RegistryList attribute value.
+     *          List of registered clients.
      **/
-    NERemoteHelloWorld::ConnectionList      mConnectedClients;
+    NERemoteRegistry::ListRegistry      mRegistryList;
 
     /**
-     * \brief   RemainOutput attribute value.
-     *          Remaining number of outputs to print Hello World.
+     * \brief   RemainOutputs attribute value.
+     *          Remaining outputs before reaching maximum.
      **/
-    short                                   mRemainOutput;
+    unsigned int                        mRemainOutputs;
 
 /************************************************************************
  * Parameter members
  ************************************************************************/
     /**
-     * \brief   clientInfo parameter value.
-     *          The client information set by servicing component. If empty or invalid ID, the message output failed.
+     * \brief   client parameter value.
+     *          The client registration object that contains unique ID.
      **/
-    NERemoteHelloWorld::sConnectedClient    mParamclientInfo;
+    NERemoteRegistry::sClientRegister   mParamclient;
 
     /**
-     * \brief   clientList parameter value.
-     *          List of currently active clients.
+     * \brief   clientID parameter value.
+     *          Indicates the ID client that made message output
      **/
-    NERemoteHelloWorld::ConnectionList      mParamclientList;
+    unsigned int                        mParamclientID;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
@@ -379,7 +390,7 @@ private:
      * \param   respId      The response message ID, which received. 
      *                      It is either attribute or response message ID
      **/
-    void updateData( RemoteHelloWorldResponseEvent & eventElem, NERemoteHelloWorld::eMessageIDs respId );
+    void updateData( RemoteRegistryResponseEvent & eventElem, NERemoteRegistry::eMessageIDs respId );
     /**
      * \brief   Starts processing response message. The received event contains
      *          ID of appropriate message to update and contains result flag.
@@ -389,12 +400,12 @@ private:
      *          It will also update parameters and states.
      * \param   evenElem    The response object containing message ID, result and data.
      **/
-    void processResponse( RemoteHelloWorldResponseEvent & evenElem );
+    void processResponse( RemoteRegistryResponseEvent & evenElem );
 
     /**
-     * \brief   returns reference RemoteHelloWorldProxy object
+     * \brief   returns reference RemoteRegistryProxy object
      **/
-    inline RemoteHelloWorldProxy & self( void );
+    inline RemoteRegistryProxy & self( void );
 
 /************************************************************************
  * Hidden static operations
@@ -411,33 +422,33 @@ private:
 };
 
 //////////////////////////////////////////////////////////////////////////
-// RemoteHelloWorldProxy class declaration End
+// RemoteRegistryProxy class declaration End
 //////////////////////////////////////////////////////////////////////////
 
 //////////////////////////////////////////////////////////////////////////
-// RemoteHelloWorldProxy class inline functions implementation
+// RemoteRegistryProxy class inline functions implementation
 //////////////////////////////////////////////////////////////////////////
 
 /************************************************************************
  * Inline operations
  ************************************************************************/
 
-inline void RemoteHelloWorldProxy::setNotification( NERemoteHelloWorld::eMessageIDs notifyId, IENotificationEventConsumer & listener, bool notifyAlways /* = false */ )
+inline void RemoteRegistryProxy::setNotification( NERemoteRegistry::eMessageIDs notifyId, IENotificationEventConsumer & listener, bool notifyAlways /* = false */ )
 {
     ProxyBase::setNotification(static_cast<unsigned int>(notifyId), &listener, notifyAlways);
 }
 
-inline void RemoteHelloWorldProxy::clearNotification( NERemoteHelloWorld::eMessageIDs notifyId, IENotificationEventConsumer & listener )
+inline void RemoteRegistryProxy::clearNotification( NERemoteRegistry::eMessageIDs notifyId, IENotificationEventConsumer & listener )
 {
     ProxyBase::clearNotification(static_cast<unsigned int>(notifyId), &listener);
 }
 
-inline void RemoteHelloWorldProxy::clearAllNotifications( IENotificationEventConsumer & listener )
+inline void RemoteRegistryProxy::clearAllNotifications( IENotificationEventConsumer & listener )
 {
     ProxyBase::unregisterListener( &listener );
 }
 
-inline RemoteHelloWorldProxy & RemoteHelloWorldProxy::self( void )
+inline RemoteRegistryProxy & RemoteRegistryProxy::self( void )
 {
     return (*this);
 }
@@ -446,44 +457,44 @@ inline RemoteHelloWorldProxy & RemoteHelloWorldProxy::self( void )
  * Inline attributes
  ************************************************************************/
 
-inline bool RemoteHelloWorldProxy::isConnectedClientsValid( void ) const
+inline bool RemoteRegistryProxy::isRegistryListValid( void ) const
 {
-    return (getProxyData().getAttributeState(NERemoteHelloWorld::MSG_ID_ConnectedClients) == NEService::DATA_OK);
+    return (getProxyData().getAttributeState(NERemoteRegistry::MSG_ID_RegistryList) == NEService::DATA_OK);
 }
 
-inline const NERemoteHelloWorld::ConnectionList & RemoteHelloWorldProxy::getConnectedClients( NEService::eDataStateType & state ) const
+inline const NERemoteRegistry::ListRegistry & RemoteRegistryProxy::getRegistryList( NEService::eDataStateType & state ) const
 {
-    state = getProxyData().getAttributeState(NERemoteHelloWorld::MSG_ID_ConnectedClients);
-    return mConnectedClients;
+    state = getProxyData().getAttributeState(NERemoteRegistry::MSG_ID_RegistryList);
+    return mRegistryList;
 }
 
-inline bool RemoteHelloWorldProxy::isRemainOutputValid( void ) const
+inline bool RemoteRegistryProxy::isRemainOutputsValid( void ) const
 {
-    return (getProxyData().getAttributeState(NERemoteHelloWorld::MSG_ID_RemainOutput) == NEService::DATA_OK);
+    return (getProxyData().getAttributeState(NERemoteRegistry::MSG_ID_RemainOutputs) == NEService::DATA_OK);
 }
 
-inline short RemoteHelloWorldProxy::getRemainOutput( NEService::eDataStateType & state ) const
+inline unsigned int RemoteRegistryProxy::getRemainOutputs( NEService::eDataStateType & state ) const
 {
-    state = getProxyData().getAttributeState(NERemoteHelloWorld::MSG_ID_RemainOutput);
-    return mRemainOutput;
+    state = getProxyData().getAttributeState(NERemoteRegistry::MSG_ID_RemainOutputs);
+    return mRemainOutputs;
 }
 
 /************************************************************************
  * Inline parameters
  ************************************************************************/
 
-inline const NERemoteHelloWorld::sConnectedClient & RemoteHelloWorldProxy::getParamclientInfo( void ) const
+inline const NERemoteRegistry::sClientRegister & RemoteRegistryProxy::getParamclient( void ) const
 {
-    return mParamclientInfo;
+    return mParamclient;
 }
 
-inline const NERemoteHelloWorld::ConnectionList & RemoteHelloWorldProxy::getParamclientList( void ) const
+inline unsigned int RemoteRegistryProxy::getParamclientID( void ) const
 {
-    return mParamclientList;
+    return mParamclientID;
 }
 
-#endif   // SHAREIPCMIX_SRC_PRIVATE_REMOTEHELLOWORLDPROXY_HPP
+#endif   // SHAREIPCMIX_SRC_PRIVATE_REMOTEREGISTRYPROXY_HPP
 
 //////////////////////////////////////////////////////////////////////////
-// End generate shareipcmix/src/private/RemoteHelloWorldProxy.hpp file
+// End generate shareipcmix/src/private/RemoteRegistryProxy.hpp file
 //////////////////////////////////////////////////////////////////////////

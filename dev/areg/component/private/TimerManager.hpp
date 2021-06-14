@@ -262,10 +262,10 @@ private:
     /**
      * \brief   Unregisters timer manager in the timer resource map.
      *          Before unregistering timer, it stops and closes system timer.
-     * \param   timer   The timer object that should be unregistered.
+     * \param   timer   The pointer to timer object that should be unregistered.
      * \return  Returns true if timer object successfully is unregistered
      **/
-    bool _unregisterTimer( Timer & timer );
+    bool _unregisterTimer( Timer * timer );
 
     /**
      * \brief   This method called for every single expired timer.
@@ -345,15 +345,15 @@ private:
     /**
      * \brief   The timer table object.
      **/
-    MapTimerTable           mTimerTable;
+    MapTimerTable   mTimerTable;
     /**
      * \brief   List of expired timers.
      **/
-    ExpiredTimers           mExpiredTimers;
+    ExpiredTimers   mExpiredTimers;
     /**
      * \brief   Synchronization object.
      **/
-    mutable ResourceLock    mLock;
+    mutable Mutex   mLock;
 
 //////////////////////////////////////////////////////////////////////////
 //  Forbidden calls

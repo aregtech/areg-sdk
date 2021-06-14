@@ -20,7 +20,6 @@
 DEF_TRACE_SCOPE(examples_13_shareipcmix_LocalServicingComponent_startupServiceInterface);
 DEF_TRACE_SCOPE(examples_13_shareipcmix_LocalServicingComponent_shutdownServiceIntrface);
 DEF_TRACE_SCOPE(examples_13_shareipcmix_LocalServicingComponent_requestHelloWorld);
-DEF_TRACE_SCOPE(examples_13_shareipcmix_LocalServicingComponent_requestClientShutdown);
 
 LocalServicingComponent::LocalServicingComponent(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
     : Component             ( owner, entry.mRoleName)
@@ -84,7 +83,6 @@ void LocalServicingComponent::requestHelloWorld(const String & roleName, const S
         list.pushLast(cl);
 
         responseHelloWorld(cl);
-        broadcastHelloClients(list);
         notifyConnectedClientsUpdated();
     }
     else
@@ -97,28 +95,4 @@ void LocalServicingComponent::requestHelloWorld(const String & roleName, const S
     TRACE_DBG("Remain  to output message [ %d ] in local servicing component [ %s ]", outputs, getRoleName().getString() );
 
     printf(">> LOCAL service [ %s ] client [ %s ]>: \"Hi there!\". Remain [ %d ].\n", roleName.getString(), getRoleName().getString(), outputs);
-}
-
-void LocalServicingComponent::requestClientShutdown(unsigned int clientID, const String & roleName)
-{
-    TRACE_SCOPE(examples_13_shareipcmix_LocalServicingComponent_requestClientShutdown);
-
-    TRACE_DBG("A client [ %s ] with ID [ %u ] notified shutdown.", roleName.getString(), clientID);
-    NELocalHelloWorld::ConnectionList & list = getConnectedClients();
-    LISTPOS pos = list.firstPosition();
-
-    for ( ; pos != NULL; pos = list.nextPosition(pos))
-    {
-        const NELocalHelloWorld::sConnectedClient & client = list.getAt(pos);
-        if (client.ccID == clientID)
-        {
-            TRACE_DBG("Client [ %s ] with ID [ %d ] in component [ %s ] is removed", roleName.getString(), clientID, getRoleName().getString());
-            ASSERT(client.ccName == roleName);
-            list.removeAt(pos);
-            notifyConnectedClientsUpdated();
-            break;
-        }
-    }
-
-    ASSERT(pos != NULL);
 }

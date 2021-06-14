@@ -63,15 +63,6 @@ protected:
      **/
     virtual void requestHelloWorld( const String & roleName, const String & addMessage = "" );
 
-    /**
-     * \brief   Request call.
-     *          Sent by client to notify the shutdown. This removes client from the list. This request has no response.
-     * \param   clientID    The ID of client that requests to shutdown. The ID is given by service when first time client requests to output message.
-     * \param   roleName    Service client component role name
-     * \note    Has no response
-     **/
-    virtual void requestClientShutdown( unsigned int clientID, const String & roleName );
-
 /************************************************************************/
 // StubBase overrides. Triggered by Component on startup.
 /************************************************************************/

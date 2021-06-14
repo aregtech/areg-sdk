@@ -99,7 +99,7 @@ private:
     /**
      * \brief   The instance of connection to send messages from remote routing service.
      **/
-    ClientConnection &        mConnection;
+    ClientConnection &          mConnection;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

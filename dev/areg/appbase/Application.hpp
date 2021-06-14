@@ -47,6 +47,23 @@ class AREG_API Application
 public:
 
     /**
+     * \brief   Application::eAppState
+     *          Describes the application states.
+     *          -   Initially, the application is in undefined state.
+     *          -   The application is in initialization state, when Service Manager did not started yet and it
+     *              initializes any module like tracing, timer, etc.
+     *          -   Application is in ready state only when Service Manager is started.
+     *          -   Application is in release state when it is going to stop Service Manager.
+     **/
+    typedef enum E_AppState
+    {
+          AppStateStopped       //!< Application state is undefined
+        , AppStateInitializing  //!< Application is initializing
+        , AppStateReady         //!< Application is ready. The application is ready only when Service Manager runs.
+        , AppStateReleasing     //!< Application is releasing.
+    } eAppState;
+
+    /**
      * \brief   Call to initialize application and start application main services such as
      *          Tracing, Service Manager, Communication Manager and Timer Manager. If necessary, 
      *          point the the service configuration file path. The system ignores requests to start
@@ -335,6 +352,11 @@ public:
      **/
     static void signalAppQuit( void );
 
+    /**
+     * \brief   Returns true if the Service Manager of application runs.
+     **/
+    static bool isServicingReady( void );
+
 //////////////////////////////////////////////////////////////////////////
 // Hidden members
 //////////////////////////////////////////////////////////////////////////
@@ -363,6 +385,10 @@ private:
      * \brief   The config file name of Router Service
      **/
     String          mConfigService;
+    /**
+     * \brief   The state of application.
+     **/
+    eAppState       mAppState;
     /**
      * \brief   Exit application event.
      **/
@@ -406,6 +432,14 @@ private:
      * \return  Returns true if succeeded to start service.
      **/
     static bool _startRouterService( void );
+
+    /**
+     * \brief   Sets new state of application. The state can be changed in following sequence:
+     *          AppStateUndefined => AppStateInitializing => AppStateReady => AppStateReleasing => AppStateUndefined
+     * \param   newState    The new sate of application to set.
+     * \return  Returns true if succeeded to change the application state.
+     **/
+    static bool _setAppState( eAppState newState );
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden methods.

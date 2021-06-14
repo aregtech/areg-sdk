@@ -13,14 +13,14 @@
 IMPLEMENT_RUNTIME_EVENT(StubConnectEvent, ServiceRequestEvent)
 
 StubConnectEvent::StubConnectEvent(const StubAddress & stubTarget, NEService::eServiceConnection connectStatus)
-    : ServiceRequestEvent ( ProxyAddress::INVALID_PROXY_ADDRESS, stubTarget, NEService::SI_SERVICE_CONNECTION_NOTIFY, NEService::REQUEST_CONNECTION, Event::EventStubConnect)
+    : ServiceRequestEvent ( ProxyAddress::INVALID_PROXY_ADDRESS, stubTarget, NEService::SI_SERVICE_CONNECTION_NOTIFY, NEService::REQUEST_CONNECTION, Event::EventLocalStubConnect)
     , mConnectionStatus     ( connectStatus )
 {
     ; // do nothing
 }
 
 StubConnectEvent::StubConnectEvent(const ProxyAddress & proxyClient, const StubAddress & stubTarget, NEService::eServiceConnection connectStatus)
-    : ServiceRequestEvent ( proxyClient, stubTarget, NEService::SI_SERVICE_CONNECTION_NOTIFY, NEService::REQUEST_CLIENT_CONNECTION, Event::EventStubConnect)
+    : ServiceRequestEvent ( proxyClient, stubTarget, NEService::SI_SERVICE_CONNECTION_NOTIFY, NEService::REQUEST_CLIENT_CONNECTION, Event::EventLocalStubConnect)
     , mConnectionStatus     ( connectStatus )
 {
     ; // do nothing

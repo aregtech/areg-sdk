@@ -561,6 +561,9 @@
     <ClCompile Include="areg\component\private\posix\TimerPosix.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="areg\component\private\IETimerConsumer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(SrcRes)\areg\resource.hpp">
@@ -1125,6 +1128,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\component\private\posix\TimerPosix.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="areg\component\IETimerConsumer.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

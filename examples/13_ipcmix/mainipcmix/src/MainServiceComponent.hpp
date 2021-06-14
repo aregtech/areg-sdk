@@ -13,7 +13,7 @@
  ************************************************************************/
 
 #include "areg/base/GEGlobal.h"
-#include "shareipcmix/src/RemoteServicingComponent.hpp"
+#include "shareipcmix/src/MainServicingComponent.hpp"
 #include "shareipcmix/src/LocalServiceClient.hpp"
 
 //////////////////////////////////////////////////////////////////////////
@@ -24,7 +24,7 @@
  *          servicing components that can trigger system shutdown when
  *          the maximum number of output messages reached.
  **/
-class MainServiceComponent  : public RemoteServicingComponent
+class MainServiceComponent  : public MainServicingComponent
 {
 //////////////////////////////////////////////////////////////////////////
 // Statics and constants.

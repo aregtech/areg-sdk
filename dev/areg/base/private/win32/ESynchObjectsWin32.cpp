@@ -56,39 +56,28 @@ Mutex::~Mutex( void )
 // Mutex class, Methods
 //////////////////////////////////////////////////////////////////////////
 
-void Mutex::_setOwnership( void )
+bool Mutex::_lockMutex( void * mutexHandle, unsigned int timeout );
 {
-    InterlockedExchange((long *)&mOwnerThreadId, (long)Thread::getCurrentThreadId());
-}
-
-void Mutex::_releaseOwnership( void )
-{
-    InterlockedExchange((long *)&mOwnerThreadId, (long)0);
-}
-
-bool Mutex::lock(unsigned int timeout /* = IESynchObject::WAIT_INFINITE */)
-{
-    ASSERT(mSynchObject != NULL);
     bool result = false;
 
-    if (WaitForSingleObject(static_cast<HANDLE>(mSynchObject), timeout) == WAIT_OBJECT_0)
+    if ((mutexHandle != NULL) && (WaitForSingleObject(static_cast<HANDLE>(mutexHandle), timeout) == WAIT_OBJECT_0))
     {
-        _setOwnership();
+        InterlockedExchange((long *)&mOwnerThreadId, (long)Thread::getCurrentThreadId());
         result = true;
     }
 
     return result;
 }
 
-bool Mutex::unlock( void )
+bool Mutex::_unlockMutex( void * mutexHandle )
 {
-    ASSERT(mSynchObject != NULL);
     bool result = false;
-    if (ReleaseMutex(static_cast<HANDLE>(mSynchObject)))
+    if ((mutexHandle != NULL) && ReleaseMutex(static_cast<HANDLE>(mutexHandle)))
     {
-        _releaseOwnership();
+        InterlockedExchange((long *)&mOwnerThreadId, (long)0);
         result = true;
     }
+
     return result;
 }
 
@@ -109,22 +98,22 @@ SynchEvent::SynchEvent(bool lock /* = true */, bool autoReset /* = true */)
 
 SynchEvent::~SynchEvent( void )
 {
-    unlock();
+    _unlockEvent(mSynchObject);
 }
 
 //////////////////////////////////////////////////////////////////////////
 // SynchEvent class, Methods
 //////////////////////////////////////////////////////////////////////////
+
+bool SynchEvent::_unlockEvent( void * eventHandle )
+{
+    return (mSynchObject != NULL ? ::SetEvent(static_cast<HANDLE>(mSynchObject)) != FALSE : false);
+}
+
 bool SynchEvent::lock(unsigned int timeout /* = IESynchObject::WAIT_INFINITE */)
 {
     ASSERT(mSynchObject != NULL);
     return ( WaitForSingleObject(static_cast<HANDLE>(mSynchObject), timeout) == WAIT_OBJECT_0 );
-}
-
-bool SynchEvent::unlock( void )
-{
-    ASSERT(mSynchObject != NULL);
-    return (::SetEvent(static_cast<HANDLE>(mSynchObject)) != FALSE);
 }
 
 bool SynchEvent::setEvent( void )

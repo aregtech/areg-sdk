@@ -16,11 +16,15 @@
 #include "areg/base/private/posix/CriticalSectionIX.hpp"
 #include "areg/component/Timer.hpp"
 #include <time.h>
+#include <signal.h>
 
 //////////////////////////////////////////////////////////////////////////
 // Dependency.
 //////////////////////////////////////////////////////////////////////////
 
+/**
+ * \brief   The POSIX timer routing method triggered in a separate thread.
+ */
 typedef void (*FuncPosixTimerRoutine)( union sigval );
 
 //////////////////////////////////////////////////////////////////////////
@@ -32,7 +36,7 @@ typedef void (*FuncPosixTimerRoutine)( union sigval );
 class TimerPosix
 {
 //////////////////////////////////////////////////////////////////////////
-// Friend class that can acss protected members.
+// Friend class that can access protected members.
 //////////////////////////////////////////////////////////////////////////
     friend class TimerManager;
 
@@ -92,35 +96,42 @@ public:
     inline bool isStarted( void ) const;
 
     /**
-     * \brief   Returns true if timer is valid, i.e. the context, timer routine and ID are valid.
+     * \brief   Returns true if timer is valid, i.e. the timer ID and context are valid.
      **/
     inline bool isValid( void ) const;
 
     /**
-     * \brief   Creates, but do not start timer. Returns true if timer ID is valid.
+     * \brief   Creates, but do not start timer.
+     *          This call will create a time to handle in a separate thread.
+     * \param   funcTimer   Pointer to the function triggered when timer is expired.
+     * \return  Returns true if succeeded to created timer.
      **/
-    bool createTimer( FuncPosixTimerRoutine funcTimerRoutine );
+    bool createTimer( FuncPosixTimerRoutine funcTimer );
 
     /**
-     * \brief   Starts timer by specified timeout and period count values. If timer was not created, 
-     *          it will create first then start if timeout or period values are not zero.
-     * \param   msTimeout   The timeout of timer in milliseconds. If timeout is zero, the timer is stopped.
-     * \param   period      The period count of timer before it is stopped.
-     *                          -   If 0, the timer is initialized, but not started. Returns value is true.
-     *                          -   If TimerPosix::TIMER_PERIOD_ENDLESS the timer starts and does not stop
-     *                              until it is not manually stopped.
-     *                          -   Any other value between 0 and TimerPosix::TIMER_PERIOD_ENDLESS specify
-     *                              the period count before timer is stopped, i.e. the timer will run so long,
-     *                              until the period count reaches 0 or it is not manually stopped.
-     * \return  Returns true if timer was initialized and started with sucss. If period count value
-     *          is set zero, the timer is initialized, but do not start and the return value is zero.
+     * \brief   Creates and starts timer with timeout and period count values specified in
+     *          the give Timer object. If the specified timeout or period values in
+     *          the Timer object are zero, the timer is created, but not not started.
+     *          This function creates a timer to handle in a separate thread.
+     * \param   context     The timer object that contains timeout and period information.
+     * \param   funcTimer   Pointer to the timer handling function triggered when timer expires.
+     * \return  Returns true if timer is created and started with success.
      **/
-
-    bool startTimer( Timer & context, FuncPosixTimerRoutine funcTimerRoutine );
+    bool startTimer( Timer & context, FuncPosixTimerRoutine funcTimer );
 
     /**
-     * \brief   Starts timer having default values. If timer was not created, it will create first then start,
-     *          if neither timeout, not period values are zero.
+     * \brief   Starts initialized timer if the timeout and the period values are not zero.
+     *          The timer should be initialized before calling this method.
+     * \param   context     The timer object that contains timeout and period information.
+     * \return  Returns true if timer is started with success.
+     */
+    bool startTimer( Timer & context );
+
+    /**
+     * \brief   Starts the timer that was initialized. This function ignores starting timer
+     *          if either it was not initialized, or timeout is zero, or the period is zero.
+     *          The timer, timeout and periodic values should be set before starting timer.
+     * \return  Returns true if timer is initialized and started with success.
      **/
     bool startTimer( void );
 
@@ -160,12 +171,19 @@ protected:
 private:
 
     /**
-     * \brief   Creates the timer.
+     * \brief   Creates and initializes the timer that is handled in a separate thread.
+     * \param   funcTimer   The pointer to timer handling function triggered
+     *                      by system when timer is expired. This method is
+     *                      triggered in a separate thread.
+     * \return  Returns true if succeeded to create timer.
      **/
-    inline bool _createTimer( FuncPosixTimerRoutine funcTimerRoutine );
+    inline bool _createTimer( FuncPosixTimerRoutine funcTimer );
 
     /**
-     * \brief   Starts the timer.
+     * \brief   Starts the initialized timer.
+     * \param   msTimeout   The timeout of timer is milliseconds.
+     * \param   eventCount  The number of periods to trigger.
+     * \return  Returns true if succeeded to start timer.
      **/
     inline bool _startTimer( unsigned int msTimeout, unsigned int eventCount );
 
@@ -183,16 +201,34 @@ private:
 // Hidden member variables.
 //////////////////////////////////////////////////////////////////////////
 private:
+    /**
+     * \brief   The timer ID, set when creates timer.
+     */
     timer_t                 mTimerId;
 
+    /**
+     * \brief   The valid pointer to Timer object that contains timeout and period information.
+     */
     Timer *                 mContext;
 
+    /**
+     * \brief   The number of events to trigger timer. Should be more than zero.
+     */
     unsigned int            mEventCount;
 
+    /**
+     * \brief   The timer timeout information.
+     */
     struct timespec         mDueTime;
 
+    /**
+     * \brief   The ID of thread where timer is started.
+     */
     ITEM_ID                 mThreadId;
 
+    /**
+     * \brief   Synchronization object.
+     */
     mutable CriticalSectionIX mLock;
 
 //////////////////////////////////////////////////////////////////////////

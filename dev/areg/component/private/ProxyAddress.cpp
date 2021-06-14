@@ -150,15 +150,16 @@ const ProxyAddress & ProxyAddress::operator = ( const ProxyAddress & source )
 
 bool ProxyAddress::operator == ( const ProxyAddress & other ) const
 {
-    return ( static_cast<const ServiceAddress &>(*this) == static_cast<const ServiceAddress &>(other) && 
-             mThreadName== other.mThreadName &&  mChannel.getCookie() == other.mChannel.getCookie() );
+    return ( (static_cast<const ServiceAddress &>(*this)== static_cast<const ServiceAddress &>(other)) && 
+             (mThreadName                               == other.mThreadName                         ) &&  
+             (mChannel.getCookie()                      == other.mChannel.getCookie()                ) );
 }
 
 bool ProxyAddress::operator != ( const ProxyAddress & other ) const
 {
-    return ( (static_cast<const ServiceAddress &>(*this) != static_cast<const ServiceAddress &>(other)) || 
-             (mThreadName != mThreadName) || 
-             (mChannel.getCookie() != other.mChannel.getCookie()) );
+    return ( (static_cast<const ServiceAddress &>(*this)!= static_cast<const ServiceAddress &>(other)) || 
+             (mThreadName                               != other.mThreadName                         ) || 
+             (mChannel.getCookie()                      != other.mChannel.getCookie()                ) );
 }
 
 

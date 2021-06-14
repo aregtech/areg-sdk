@@ -41,8 +41,11 @@ CriticalSectionIX::CriticalSectionIX( bool initLock /*= false*/ )
 
 CriticalSectionIX::~CriticalSectionIX(void)
 {
-    pthread_spin_destroy(&mSpin);
-    mSpin = static_cast<pthread_spinlock_t>(NULL);
+    if (mSpin != static_cast<pthread_spinlock_t>(NULL))
+    {
+        pthread_spin_destroy(&mSpin);
+        mSpin = static_cast<pthread_spinlock_t>(NULL);
+    }
 }
 
 bool CriticalSectionIX::isValid(void) const
@@ -52,8 +55,13 @@ bool CriticalSectionIX::isValid(void) const
 
 void CriticalSectionIX::freeResources(void)
 {
-    pthread_spin_destroy(&mSpin);
-    mSpin = static_cast<pthread_spinlock_t>(NULL);
+    unlock();
+
+    if (mSpin != static_cast<pthread_spinlock_t>(NULL))
+    {
+        pthread_spin_destroy(&mSpin);
+        mSpin = static_cast<pthread_spinlock_t>(NULL);
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////

@@ -171,7 +171,7 @@ void TimerDispatcher::startTimers(void)
     TRACE_DBG("Starting timers...");
 
     // Start one-time timer
-    if (mOneTime.startTimer(Timer::TIMEOUT_1_SEC * 20, self(), 1))
+    if (mOneTime.startTimer(Timer::TIMEOUT_100_MS * 3, self(), 1))
     {
         TRACE_DBG("Successfully started timer [ %s ] with timeout [ %u ].", mOneTime.getName().getString(), mOneTime.getTimeout());
     }
@@ -181,7 +181,7 @@ void TimerDispatcher::startTimers(void)
     }
 
     // start periodic timer
-    if (mPeriodic.startTimer(Timer::TIMEOUT_1_SEC, self(), 10))
+    if (mPeriodic.startTimer(Timer::TIMEOUT_100_MS * 2, self(), 1))
     {
         TRACE_DBG("Successfully started timer [ %s ] with timeout [ %u ].", mPeriodic.getName().getString(), mPeriodic.getTimeout());
     }
@@ -191,7 +191,7 @@ void TimerDispatcher::startTimers(void)
     }
 
     // start periodic timer (continuous). This timer runs until it is stopped.
-    if (mContinuous.startTimer(Timer::TIMEOUT_500_MS, self(), Timer::CONTINUOUSLY))
+    if (mContinuous.startTimer(Timer::TIMEOUT_100_MS * 1, self(), 1))
     {
         // continuous timer
         TRACE_DBG("Successfully started timer [ %s ] with timeout [ %u ].", mContinuous.getName().getString(), mContinuous.getTimeout());

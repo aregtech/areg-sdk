@@ -25,8 +25,8 @@ void MainServiceComponent::DeleteComponent(Component & compObject, const NERegis
 }
 
 MainServiceComponent::MainServiceComponent(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
-    : RemoteServicingComponent  ( entry, owner )
-    , mLocal                    ( entry.mDependencyServices[0].mRoleName, static_cast<Component &>(self()), LOCAL_TIMEOUT )
+    : MainServicingComponent( entry, owner )
+    , mLocal                ( entry.mDependencyServices[0].mRoleName, static_cast<Component &>(self()), LOCAL_TIMEOUT )
 {
 }
 

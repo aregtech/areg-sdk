@@ -16,18 +16,26 @@
 #include "areg/appbase/Application.hpp"
 #include "areg/appbase/NEApplication.hpp"
 #include "areg/trace/GETrace.h"
+#include <signal.h>
 
-DEF_TRACE_SCOPE(areg_mcrouter_WinMain);
-DEF_TRACE_SCOPE(areg_mcrouter_MulticastRouter_setState);
+DEF_TRACE_SCOPE(areg_mcrouter_MulticastRouterPosix_handleSignalBrokenPipe);
+DEF_TRACE_SCOPE(areg_mcrouter_MulticastRouterPosix_setState);
 
 //////////////////////////////////////////////////////////////////////////
 // Global functions, Begin
 //////////////////////////////////////////////////////////////////////////
+
 void GServiceMain( int argc, char ** argv );
 
 inline static bool _isEqual( const char * strLeft, const char * strRight )
 {
     return (NEString::compareStrings<char, char>(strLeft, strRight, NEString::CountAll, false) == 0);
+}
+
+static void handleSignalBrokenPipe(int s)
+{
+    TRACE_SCOPE(areg_mcrouter_MulticastRouterPosix_handleSignalBrokenPipe);
+    TRACE_WARN("Caught SIGPIPE signal.");
 }
 
 int main(int argc, char* argv[], char* envp[])
@@ -49,6 +57,8 @@ int main(int argc, char* argv[], char* envp[])
         else if ( _isEqual(cmd, NEMulticastRouterSettings::ServiceCommandService) )
             router.setCurrentCommand(MulticastRouter::CMD_Service);
     }
+
+    signal(SIGPIPE, &handleSignalBrokenPipe);
 
     switch ( MulticastRouter::getInstance().getCurrentCommand() )
     {
@@ -125,7 +135,7 @@ void MulticastRouter::_deleteService( void )
 
 bool MulticastRouter::setState( NEMulticastRouterSettings::eRouterState newState )
 {
-    TRACE_SCOPE(areg_mcrouter_MulticastRouter_setState);
+    TRACE_SCOPE(areg_mcrouter_MulticastRouterPosix_setState);
     TRACE_DBG("Changing Service Router state. Old state [ %s ], new state [ %s ]"
                 , NEMulticastRouterSettings::GetString(mRouterState)
                 , NEMulticastRouterSettings::GetString(newState));

@@ -190,14 +190,16 @@ public:
 // Internal operations
 //////////////////////////////////////////////////////////////////////////
 private:
+
     /**
-     * \brief   Called to set mutex ownership.
+     * \brief   Locks the mutex, takes the ownership.
      **/
-    void _setOwnership( void );
+    bool _lockMutex( void * mutexHandle, unsigned int timeout );
+
     /**
-     * \brief   Called to release ownership.
+     * \brief   Unlocks the mutex, release the ownership.
      **/
-    void _releaseOwnership( void );
+    bool _unlockMutex( void * mutexHandle );
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -316,7 +318,8 @@ public:
     inline bool isAutoReset( void ) const;
 
 private:
-    // int unlockedWaitForEvent(unsigned int timeout);
+    
+    bool _unlockEvent( void * eventHandle );
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -803,22 +806,9 @@ class AREG_API NolockSynchObject   : public IEResourceLock
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Initializes Critical Section object. Passed parameters do not play role.
-     * \param   lock        Does not play any role. 
-     *                      Only to make compatible with other locking constructors
-     * \param   autoReset   Does not play any role. 
-     *                      Only to make compatible with other locking constructors
+     * \brief   Constructor.
      **/
-    NolockSynchObject( bool lock = true, bool autoReset = true );
-
-    /**
-    * \brief   Initializes Critical Section object. Passed parameters do not play role.
-     * \param   maxCount    Does not play any role. 
-     *                      Only to make compatible with other locking constructors
-     * \param   initCount   Does not play any role. 
-     *                      Only to make compatible with other locking constructors
-     **/
-    NolockSynchObject( int maxCount, int initCount = 0 );
+    NolockSynchObject( void );
 
     /**
      * \brief   Destructor

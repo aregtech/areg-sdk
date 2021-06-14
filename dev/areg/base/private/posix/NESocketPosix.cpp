@@ -34,6 +34,7 @@
  **/
 static InterlockedValue   _instanceCount( static_cast<unsigned int>(0));
 
+DEF_TRACE_SCOPE(areg_base_NESocketPosix_socketClose);
 DEF_TRACE_SCOPE(areg_base_NESocketPosix_sendData);
 DEF_TRACE_SCOPE(areg_base_NESocketPosix_receiveData);
 DEF_TRACE_SCOPE(areg_base_NESocketPosix_remainDataRead);
@@ -53,10 +54,18 @@ AREG_API void NESocket::socketRelease(void)
 
 AREG_API void NESocket::socketClose(SOCKETHANDLE hSocket)
 {
+    TRACE_SCOPE(areg_base_NESocketPosix_socketClose);
+
     if ( hSocket != NESocket::InvalidSocketHandle )
     {
+        TRACE_WARN("Closing socket [ %p ]", hSocket);
+
         shutdown(hSocket, SHUT_RDWR);
         close( hSocket );
+    }
+    else
+    {
+        TRACE_DBG("Socket is invalid, ignore closing socket");
     }
 }
 
@@ -79,7 +88,7 @@ AREG_API int NESocket::sendData(SOCKETHANDLE hSocket, const unsigned char * data
             {
                 int remain = dataLength > blockMaxSize ? blockMaxSize : dataLength;
                 TRACE_DBG("Sending [ %d ] bytes of data", remain);
-                int written= send(hSocket, reinterpret_cast<const char *>(dataBuffer), remain, remain);
+                int written= send(hSocket, reinterpret_cast<const char *>(dataBuffer), remain, 0);
                 if ( written > 0 )
                 {
                     dataLength -= written;

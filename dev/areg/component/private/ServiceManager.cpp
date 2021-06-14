@@ -66,15 +66,7 @@ void ServiceManager::_stopServiceManager( void )
 
 bool ServiceManager::isServiceManagerStarted( void )
 {
-    bool result = false;
-    ServiceManager & serviceManager = _getServiceManager();
-    do 
-    {
-        Lock lock(serviceManager.mLock);
-        result = serviceManager.isReady();
-    } while (false);
-
-    return result;
+    return ServiceManager::_getServiceManager().isReady();
 }
 
 void ServiceManager::requestRegisterServer( const StubAddress & whichServer )
@@ -179,9 +171,9 @@ bool ServiceManager::_isRoutingServiceEnabled(void)
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 ServiceManager::ServiceManager( void )
-    : DispatcherThread            ( ServiceManager::SERVICE_MANAGER_THREAD_NAME )
+    : DispatcherThread              ( ServiceManager::SERVICE_MANAGER_THREAD_NAME )
     , IEServiceManagerEventConsumer ( )
-    , IERemoteServiceConsumer      ( )
+    , IERemoteServiceConsumer       ( )
 
     , mServerList       ( )
     , mConnectService   ( static_cast<IERemoteServiceConsumer &>(self()) )
@@ -349,6 +341,16 @@ void ServiceManager::processEvent( const ServiceManagerEventData & data )
 
     switch ( cmdService )
     {
+    case ServiceManagerEventData::CMD_ShutdownService:
+        {
+            removeAllEvents();
+            mServerList.removeAll();
+            mConnectService.stopRemoteServicing();
+            DispatcherThread::removeEvents(false);
+            DispatcherThread::triggerExitEvent();
+        }
+        break;
+
     case ServiceManagerEventData::CMD_StopRoutingClient:
         {
             for ( MAPPOS pos = mServerList.firstPosition(); pos != NULL; pos = mServerList.nextPosition(pos) )
@@ -577,7 +579,8 @@ bool ServiceManager::_startServiceManagerThread( void )
 
 void ServiceManager::_stopServiceManagerThread( void )
 {
-    ServiceManagerEvent::sendEvent(ServiceManagerEventData::stopMessageRouterClient(), static_cast<IEServiceManagerEventConsumer &>(self()), static_cast<DispatcherThread &>(self()));
+    // ServiceManagerEvent::sendEvent(ServiceManagerEventData::stopMessageRouterClient(), static_cast<IEServiceManagerEventConsumer &>(self()), static_cast<DispatcherThread &>(self()));
+    ServiceManagerEvent::sendEvent(ServiceManagerEventData::shutdownServiceManager(), static_cast<IEServiceManagerEventConsumer &>(self()), static_cast<DispatcherThread &>(self()));
     completionWait( Thread::WAIT_INFINITE );
 }
 

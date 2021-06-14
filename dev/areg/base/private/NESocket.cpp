@@ -478,7 +478,7 @@ AREG_API SOCKETHANDLE NESocket::serverAcceptConnection(SOCKETHANDLE serverSocket
 
 #else   // !WINDOWS
 
-            TRACE_DBG("There are [ %d ] scket entries in the master list, setting by FD_SET()", entriesCount);
+            TRACE_DBG("There are [ %d ] socket entries in the master list, setting FD_SET", entriesCount);
             for ( int count = 0; count < entriesCount; ++ count)
             {
                 SOCKETHANDLE sh = masterList[count];

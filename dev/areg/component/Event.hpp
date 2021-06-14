@@ -161,8 +161,11 @@ public:
         , EventLocalServiceResponse = 1042  /*0x0412*/  //!< Local Service Response.  Bit set: 0000 0100 0001 0010
         , EventRemoteServiceResponse= 1058  /*0x0422*/  //!< Remote Service Response. Bit set: 0000 0100 0010 0010
 
-        , EventStubConnect          = 2834  /*0x0B12*/  //!< Local Stub Connection.   Bit set: 0000 1011 0001 0010
-        , EventProxyConnect         = 3346  /*0x0D12*/  //!< Local Proxy Connection.  Bit set: 0000 1101 0001 0010
+        , EventLocalStubConnect     = 2834  /*0x0B12*/  //!< Local Stub Connection.   Bit set: 0000 1011 0001 0010
+        , EventRemoteStubConnect    = 2850  /*0x0B22*/  //!< Remote Stub Connection.  Bit set: 0000 1011 0010 0010
+
+        , EventLocalProxyConnect    = 3346  /*0x0D12*/  //!< Local Proxy Connection.  Bit set: 0000 1101 0001 0010
+        , EventRemoteProxyConnect   = 3362  /*0x0D22*/  //!< Remote Proxy Connection. Bit set: 0000 1101 0010 0010
 
         , EventCustom               =32784  /*0x8010*/  //!< Custom event.            Bit set: 1000 0000 0001 0000
         , EventCustomInternal       =32785  /*0x8011*/  //!< Custom Notification.     Bit set: 1000 0000 0001 0001
@@ -540,10 +543,15 @@ inline const char* Event::getString(Event::eEventType eventType)
     case Event::EventRemoteServiceResponse:
         return "Event::EventRemoteServiceResponse";
 
-    case Event::EventStubConnect:
-        return "Event::EventStubConnect";
-    case Event::EventProxyConnect:
-        return "Event::EventProxyConnect";
+    case Event::EventLocalStubConnect:
+        return "Event::EventLocalStubConnect";
+    case Event::EventRemoteStubConnect:
+        return "Event::EventRemoteStubConnect";
+
+    case Event::EventLocalProxyConnect:
+        return "Event::EventLocalProxyConnect";
+    case Event::EventRemoteProxyConnect:
+        return "Event::EventRemoteProxyConnect";
 
     case Event::EventCustom:
         return "Event::EventCustom";
@@ -553,7 +561,6 @@ inline const char* Event::getString(Event::eEventType eventType)
         return "Event::EventCustomExternal";
 
     default:
-        ASSERT(false);
         return "ERR: Undefined Event::eEventType value!";    
     }
 }

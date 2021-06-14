@@ -10,12 +10,14 @@
 #include "areg/ipc/IERemoteServiceConsumer.hpp"
 #include "areg/ipc/private/NEConnection.hpp"
 #include "areg/ipc/private/RemoteServiceEvent.hpp"
+#include "areg/component/private/ServiceManager.hpp"
+#include "areg/component/RemoteEventFactory.hpp"
 #include "areg/component/DispatcherThread.hpp"
 #include "areg/component/StreamableEvent.hpp"
-#include "areg/component/RemoteEventFactory.hpp"
-#include "areg/component/RequestEvents.hpp"
 #include "areg/component/ResponseEvents.hpp"
+#include "areg/component/RequestEvents.hpp"
 #include "areg/component/NEService.hpp"
+#include "areg/appbase/Application.hpp"
 #include "areg/base/Process.hpp"
 #include "areg/base/File.hpp"
 #include "areg/trace/GETrace.h"
@@ -25,6 +27,7 @@ DEF_TRACE_SCOPE(areg_ipc_private_ClientService_stopRemotingService);
 DEF_TRACE_SCOPE(areg_ipc_private_ClientService_processEvent);
 DEF_TRACE_SCOPE(areg_ipc_private_ClientService_startConnection);
 DEF_TRACE_SCOPE(areg_ipc_private_ClientService_stopConnection);
+DEF_TRACE_SCOPE(areg_ipc_private_ClientService_cancelConnection);
 DEF_TRACE_SCOPE(areg_ipc_private_ClientService_failedSendMessage);
 DEF_TRACE_SCOPE(areg_ipc_private_ClientService_failedReceiveMessage);
 DEF_TRACE_SCOPE(areg_ipc_private_ClientService_failedProcessMessage);
@@ -170,9 +173,7 @@ bool ClientService::registerService( const StubAddress & stubService )
     bool result = false;
     if ( isStarted() )
     {
-        result = SendMessageEvent::sendEvent( SendMessageEventData(NEConnection::createRouterRegisterService(stubService, mClientConnection.getCookie()))
-                                            , static_cast<IESendMessageEventConsumer &>(mThreadSend)
-                                            , static_cast<DispatcherThread &>(mThreadSend) );
+        result = queueSendMessage( NEConnection::createRouterRegisterService(stubService, mClientConnection.getCookie()) );
     }
     return result;
 }
@@ -182,9 +183,7 @@ void ClientService::unregisterService(const StubAddress & stubService)
     Lock lock( mLock );
     if ( isStarted() )
     {
-        SendMessageEvent::sendEvent(  SendMessageEventData(NEConnection::createRouterUnregisterService(stubService, mClientConnection.getCookie()))
-                                    , static_cast<IESendMessageEventConsumer &>(mThreadSend)
-                                    , static_cast<DispatcherThread &>(mThreadSend) );
+        queueSendMessage( NEConnection::createRouterUnregisterService(stubService, mClientConnection.getCookie()) );
     }
 }
 
@@ -194,10 +193,9 @@ bool ClientService::registerServiceClient(const ProxyAddress & proxyService)
     bool result = false;
     if ( isStarted() )
     {
-        result = SendMessageEvent::sendEvent( SendMessageEventData(NEConnection::createRouterRegisterClient(proxyService, mClientConnection.getCookie()))
-                                            , static_cast<IESendMessageEventConsumer &>(mThreadSend)
-                                            , static_cast<DispatcherThread &>(mThreadSend) );
+        result = queueSendMessage( NEConnection::createRouterRegisterClient(proxyService, mClientConnection.getCookie()) );
     }
+
     return result;
 }
 
@@ -206,9 +204,7 @@ void ClientService::unregisterServiceClient(const ProxyAddress & proxyService)
     Lock lock( mLock );
     if ( isStarted() )
     {
-        SendMessageEvent::sendEvent(  SendMessageEventData(NEConnection::createRouterUnregisterClient(proxyService, mClientConnection.getCookie()))
-                                        , static_cast<IESendMessageEventConsumer &>(mThreadSend)
-                                        , static_cast<DispatcherThread &>(mThreadSend) );
+        queueSendMessage( NEConnection::createRouterUnregisterClient(proxyService, mClientConnection.getCookie()) );
     }
 }
 
@@ -245,9 +241,13 @@ void ClientService::processEvent( const ClientServiceEventData & data )
             mChannel.setCookie( NEService::COOKIE_UNKNOWN );
             mChannel.setSource( NEService::SOURCE_UNKNOWN );
             mChannel.setTarget( NEService::TARGET_UNKNOWN );
+
             stopConnection();
+
             mThreadReceive.completionWait( Thread::WAIT_INFINITE );
             mThreadSend.completionWait( Thread::WAIT_INFINITE );
+
+            mClientConnection.closeSocket();
             mServiceConsumer.remoteServiceStopped( channel );
 
             mThreadReceive.destroyThread( Thread::DO_NOT_WAIT );
@@ -278,7 +278,8 @@ void ClientService::processEvent( const ClientServiceEventData & data )
             mChannel.setCookie( NEService::COOKIE_UNKNOWN );
             mChannel.setSource( NEService::SOURCE_UNKNOWN );
             mChannel.setTarget( NEService::TARGET_UNKNOWN );
-            stopConnection();
+            // stopConnection();
+            cancelConnection();
 
             mThreadReceive.completionWait( Thread::WAIT_INFINITE );
             mThreadSend.completionWait( Thread::WAIT_INFINITE );
@@ -288,22 +289,26 @@ void ClientService::processEvent( const ClientServiceEventData & data )
 
     case ClientServiceEventData::CMD_ServiceLost:
     {
-        TRACE_WARN("Client service is lost connection. Resetting cookie and trying to restart");
+        TRACE_WARN("Client service is lost connection. Resetting cookie and trying to restart, current connection state [ %s ]", ClientService::getString(getConnectionState()));
         Channel channel = mChannel;
         mChannel.setCookie( NEService::COOKIE_UNKNOWN );
         mChannel.setSource( NEService::SOURCE_UNKNOWN );
         mChannel.setTarget( NEService::TARGET_UNKNOWN );
-        stopConnection();
+        cancelConnection();
 
         mThreadReceive.completionWait( Thread::WAIT_INFINITE );
         mThreadSend.completionWait( Thread::WAIT_INFINITE );
         mServiceConsumer.remoteServiceStopped( channel );
 
-        if (getConnectionState() == ClientService::ConnectionStarted)
+        if (Application::isServicingReady() && (getConnectionState() == ClientService::ConnectionStarted))
         {
             TRACE_DBG("Restarting lost connection with remote service");
             setConnectionState(ClientService::ConnectionStarting);
             startConnection();
+        }
+        else
+        {
+            TRACE_WARN("Ignoring lost connection event, either servising state is not allowed, or application is closing.");
         }
     }
     break;
@@ -371,8 +376,28 @@ inline void ClientService::stopConnection(void)
     TRACE_WARN("Stopping client service connection");
     mTimerConnect.stopTimer();
 
-    mClientConnection.requestDisconnectServer();
+    mThreadReceive.removeAllEvents();
+    mThreadReceive.triggerExitEvent();
     mClientConnection.disableReceive();
+
+    mThreadSend.removeAllEvents();
+    RemoteMessage msgDisconnect = mClientConnection.getDisconnectMessage();
+    if ( msgDisconnect.isValid() )
+    {
+        queueSendMessage(msgDisconnect);
+    }
+
+    mClientConnection.setCookie( NEService::COOKIE_UNKNOWN );
+    mThreadSend.triggerExitEvent();
+}
+
+inline void ClientService::cancelConnection(void)
+{
+    TRACE_SCOPE(areg_ipc_private_ClientService_cancelConnection);
+    TRACE_WARN("Canceling client service connection");
+    mTimerConnect.stopTimer();
+
+    mClientConnection.closeSocket();
     mClientConnection.setCookie( NEService::COOKIE_UNKNOWN );
 
     mThreadReceive.triggerExitEvent();
@@ -390,24 +415,45 @@ void ClientService::failedSendMessage(const RemoteMessage & msgFailed)
                     , static_cast<id_type>(msgFailed.getTarget())
                     , static_cast<id_type>(msgFailed.getSource()));
 
-    StreamableEvent * eventError = RemoteEventFactory::createRequestFailedEvent(msgFailed, mChannel);
-    if ( eventError != NULL )
+    if (Application::isServicingReady())
     {
-        eventError->sendEvent();
+        unsigned int msgId = msgFailed.getMessageId();
+        if ( NEService::isExecutableId(msgId) || NEService::isConnectNotifyId(msgId) )
+        {
+            TRACE_DBG("Failed message [ %u ] is executable or connection notification", msgId);
+            StreamableEvent * eventError = RemoteEventFactory::createRequestFailedEvent(msgFailed, mChannel);
+            if ( eventError != NULL )
+            {
+                eventError->sendEvent();
+            }
+
+            ClientServiceEvent::sendEvent( ClientServiceEventData(ClientServiceEventData::CMD_ServiceLost), static_cast<IEClientServiceEventConsumer &>(self()), static_cast<DispatcherThread &>(self()) );
+        }
+        else
+        {
+            TRACE_WARN("The failed message is neither executable, nor connection notification. Ignoring to generate request failed event.");
+        }
     }
-
-
-    ClientServiceEvent::sendEvent( ClientServiceEventData(ClientServiceEventData::CMD_ServiceLost), static_cast<IEClientServiceEventConsumer &>(self()), static_cast<DispatcherThread &>(self()) );
+    else
+    {
+        TRACE_WARN("Ignore send message failure, the application is closing");
+    }
 }
 
 void ClientService::failedReceiveMessage(SOCKETHANDLE whichSource)
 {
     TRACE_SCOPE(areg_ipc_private_ClientService_failedReceiveMessage);
     TRACE_WARN("Failed to receive message from socket [ %u ], current client socket is [ %u ]. Going to stop service",  whichSource, mClientConnection.getSocketHandle());
-    if ( whichSource == mClientConnection.getSocketHandle() )
+    if (Application::isServicingReady())
     {
-        ClientServiceEvent::sendEvent( ClientServiceEventData(ClientServiceEventData::CMD_ServiceLost), static_cast<IEClientServiceEventConsumer &>(self()), static_cast<DispatcherThread &>(self()) );
-        // DispatcherThread::triggerExitEvent();
+        if ( (whichSource == mClientConnection.getSocketHandle()))
+        {
+            ClientServiceEvent::sendEvent( ClientServiceEventData(ClientServiceEventData::CMD_ServiceLost), static_cast<IEClientServiceEventConsumer &>(self()), static_cast<DispatcherThread &>(self()) );
+        }
+    }
+    else
+    {
+        TRACE_WARN("Ignore receive message failure, the application is closing");
     }
 }
 
@@ -419,14 +465,29 @@ void ClientService::failedProcessMessage( const RemoteMessage & msgUnprocessed )
                     , static_cast<id_type>(msgUnprocessed.getTarget())
                     , static_cast<id_type>(msgUnprocessed.getSource()));
 
-    StreamableEvent * eventError = RemoteEventFactory::createRequestFailedEvent(msgUnprocessed, mChannel);
-    if ( eventError != NULL )
+    if (Application::isServicingReady())
     {
-        RemoteMessage data;
-        if ( RemoteEventFactory::createStreamFromEvent( data, *eventError, mChannel) )
+        unsigned int msgId = msgUnprocessed.getMessageId();
+        if ( NEService::isExecutableId(msgId) )
         {
-            SendMessageEvent::sendEvent( SendMessageEventData(data), static_cast<IESendMessageEventConsumer &>(mThreadSend), static_cast<DispatcherThread &>(mThreadSend) );
+            StreamableEvent * eventError = RemoteEventFactory::createRequestFailedEvent(msgUnprocessed, mChannel);
+            if ( eventError != NULL )
+            {
+                RemoteMessage data;
+                if ( RemoteEventFactory::createStreamFromEvent( data, *eventError, mChannel) )
+                {
+                    queueSendMessage(data);
+                }
+            }
         }
+        else
+        {
+            TRACE_WARN("The unprocessed message is neither executable, nor connection notification. Ignoring to generate request failed event.");
+        }
+    }
+    else
+    {
+        TRACE_WARN("Ignore processing failure message, te application is closing");
     }
 }
 
@@ -531,9 +592,13 @@ void ClientService::processReceivedMessage( const RemoteMessage & msgReceived, c
                     TRACE_DBG("Processing executable remote message with ID [ %p ]", static_cast<id_type>(msgId));
                     StreamableEvent * eventRemote = RemoteEventFactory::createEventFromStream(msgReceived, mChannel);
                     if ( eventRemote != NULL )
+                    {
                         eventRemote->sendEvent();
+                    }
                     else
+                    {
                         failedProcessMessage(msgReceived);
+                    }
                 }
                 else
                 {
@@ -571,7 +636,7 @@ void ClientService::processRemoteRequestEvent( RemoteRequestEvent & requestEvent
                             , data.getSource()
                             , data.getTarget());
 
-            SendMessageEvent::sendEvent( SendMessageEventData(data), static_cast<IESendMessageEventConsumer &>(mThreadSend), static_cast<DispatcherThread &>(mThreadSend) );
+            queueSendMessage(data);
         }
         else
         {
@@ -607,7 +672,7 @@ void ClientService::processRemoteNotifyRequestEvent( RemoteNotifyRequestEvent & 
                             , static_cast<id_type>(data.getSource())
                             , static_cast<id_type>(data.getTarget()));
 
-            SendMessageEvent::sendEvent( SendMessageEventData(data), static_cast<IESendMessageEventConsumer &>(mThreadSend), static_cast<DispatcherThread &>(mThreadSend) );
+            queueSendMessage(data);
         }
         else
         {
@@ -642,7 +707,7 @@ void ClientService::processRemoteResponseEvent(RemoteResponseEvent & responseEve
                             , static_cast<id_type>(data.getSource())
                             , static_cast<id_type>(data.getTarget()));
 
-            SendMessageEvent::sendEvent( SendMessageEventData(data), static_cast<IESendMessageEventConsumer &>(mThreadSend), static_cast<DispatcherThread &>(mThreadSend) );
+            queueSendMessage(data);
         }
         else
         {
@@ -675,4 +740,9 @@ bool ClientService::postEvent(Event & eventElem)
     if ( eventElem.isRemote() )
         eventElem.setEventConsumer( static_cast<IERemoteEventConsumer *>(this) );
     return EventDispatcher::postEvent(eventElem);
+}
+
+inline bool ClientService::queueSendMessage(const RemoteMessage & data)
+{
+    return SendMessageEvent::sendEvent( SendMessageEventData(data), static_cast<IESendMessageEventConsumer &>(mThreadSend), static_cast<DispatcherThread &>(mThreadSend) );
 }

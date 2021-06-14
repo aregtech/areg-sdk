@@ -51,9 +51,31 @@ bool IEBlockingSynchObject::tryLock(void)
 // Mutex class, Methods
 //////////////////////////////////////////////////////////////////////////
 
+bool Mutex::lock(unsigned int timeout /* = IESynchObject::WAIT_INFINITE */)
+{
+    ASSERT(mSynchObject != NULL);
+    return _lockMutex(mSynchObject, timeout);
+}
+
 bool Mutex::tryLock( void )
 {
     return lock(IESynchObject::DO_NOT_WAIT);
+}
+
+bool Mutex::unlock( void )
+{
+    ASSERT(mSynchObject != NULL);
+    return _unlockMutex(mSynchObject);
+}
+
+//////////////////////////////////////////////////////////////////////////
+// SynchEvent class, Methods
+//////////////////////////////////////////////////////////////////////////
+
+bool SynchEvent::unlock( void )
+{
+    ASSERT(mSynchObject != NULL);
+    return _unlockEvent(mSynchObject);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -72,13 +94,7 @@ bool Semaphore::tryLock( void )
 //////////////////////////////////////////////////////////////////////////
 // NolockSynchObject class, Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
-NolockSynchObject::NolockSynchObject( bool /*lock = true*/, bool /*autoReset = true*/ )
-    : IEResourceLock(IESynchObject::SO_NOLOCK)
-{
-    ; // do nothing
-}
-
-NolockSynchObject::NolockSynchObject( int /*maxCount*/, int /*initCount = 0*/ )
+NolockSynchObject::NolockSynchObject( void )
     : IEResourceLock(IESynchObject::SO_NOLOCK)
 {
     ; // do nothing

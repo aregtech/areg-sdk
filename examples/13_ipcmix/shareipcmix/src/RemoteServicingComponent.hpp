@@ -1,12 +1,12 @@
-#ifndef AREG_EXAMPLES_13_IPCMIX_SHAREIPCMIX_SERVICINGCOMPONENT_HPP
-#define AREG_EXAMPLES_13_IPCMIX_SHAREIPCMIX_SERVICINGCOMPONENT_HPP
+#ifndef AREG_EXAMPLES_13_IPCMIX_SHAREIPCMIX_REMOTESERVICINGCOMPONENT_HPP
+#define AREG_EXAMPLES_13_IPCMIX_SHAREIPCMIX_REMOTESERVICINGCOMPONENT_HPP
 /************************************************************************
  * \file        shareipcmix/src/RemoteServicingComponent.hpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework examples
  * \author      Artak Avetyan (mailto:artak@aregtech.com)
  * \brief       Collection of AREG SDK examples.
- *              This file contains simple implementation of servicing component
- *              to output message and shutdown.
+ *              This file contains simple implementation of remote servicing 
+ *              component to output messages.
  ************************************************************************/
 /************************************************************************
  * Include files.
@@ -14,7 +14,7 @@
 
 #include "areg/base/GEGlobal.h"
 #include "areg/component/Component.hpp"
-#include "shareipcmix/src/RemoteHelloWorldStub.hpp"
+#include "shareipcmix/src/RemoteRegistryStub.hpp"
 
 //////////////////////////////////////////////////////////////////////////
 // RemoteServicingComponent class declaration
@@ -29,7 +29,7 @@
  *              d. Attribute with automatic and manual update notification
  **/
 class RemoteServicingComponent  : public    Component
-                                , protected RemoteHelloWorldStub
+                                , protected RemoteRegistryStub
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / destructor
@@ -55,22 +55,31 @@ protected:
 
     /**
      * \brief   Request call.
-     *          Request to print hello world
-     * \param   roleName    The role name of client component that requested to print hello world
-     * \param   addMessage  Additional message to output. Can be empty.
-     *          Has default value: ""
-     * \see     responseHelloWorld
+     *          Call to register client. Each client should be registered before starting communication.
+     * \param   name    The name of the client.
+     * \param   service The service address of the client.
+     * \param   thread  The thread name where client is running. Required to provide uniqueness.
+     * \param   process The name of process. Optional parameter, used to make output in logs.
+     * \see     responseRegister
      **/
-    virtual void requestHelloWorld( const String & roleName, const String & addMessage = "" );
+    virtual void requestRegister( const String & name, const ServiceAddress & service, const String & thread, const String & process );
 
     /**
      * \brief   Request call.
-     *          Sent by client to notify the shutdown. This removes client from the list. This request has no response.
-     * \param   clientID    The ID of client that requests to shutdown. The ID is given by service when first time client requests to output message.
-     * \param   roleName    Service client component role name
+     *          Sent to unregister connected client.
+     * \param   client  The client registration object indicating the unregistered client.
      * \note    Has no response
      **/
-    virtual void requestClientShutdown( unsigned int clientID, const String & roleName );
+    virtual void requestUnregister( const NERemoteRegistry::sClientRegister & client );
+
+    /**
+     * \brief   Request call.
+     *          Outputs message on console. If additional message is not empty, outputs the additional message as well.
+     * \param   clientID    The ID of registered client to make message output
+     * \param   addMessage  The additional message to output. Ignored if empty.
+     * \see     responseHelloWorld
+     **/
+    virtual void requestHelloWorld( unsigned int clientID, const String & addMessage );
 
 /************************************************************************/
 // StubBase overrides. Triggered by Component on startup.
@@ -85,21 +94,11 @@ protected:
      **/
     virtual void startupServiceInterface( Component & holder );
 
-    /**
-     * \brief   This function is triggered by Component when shuts down.
-     *          Overwrite this method to remove listeners and stub cleanup
-     * \param   holder  The holder component of service interface of Stub,
-     *                  which shuts down.
-     **/
-    virtual void shutdownServiceIntrface ( Component & holder );
-
 //////////////////////////////////////////////////////////////////////////
 // Member variables
 //////////////////////////////////////////////////////////////////////////
 private:
     unsigned int    mGnerateID; //!< The client ID generator
-
-    const bool      mIsMain;    //!< Flag, indicating whether it is a main component to shutdown applications.
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden calls
@@ -119,6 +118,8 @@ private:
 // RemoteServicingComponent inline methods
 //////////////////////////////////////////////////////////////////////////
 inline RemoteServicingComponent & RemoteServicingComponent::self( void )
-{   return (*this);     }
+{
+    return (*this);
+}
 
-#endif // AREG_EXAMPLES_13_IPCMIX_SHAREIPCMIX_SERVICINGCOMPONENT_HPP
+#endif // AREG_EXAMPLES_13_IPCMIX_SHAREIPCMIX_REMOTESERVICINGCOMPONENT_HPP

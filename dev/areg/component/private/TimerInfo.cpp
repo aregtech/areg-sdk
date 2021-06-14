@@ -91,13 +91,19 @@ bool TimerInfo::isTimerExpired( unsigned int highValue, unsigned int lowValue )
     if (mTimerState == TimerInfo::TimerPending)
     {
         uint64_t expiredAt = MACRO_MAKE_64( highValue, lowValue );
-        if (mStartedAt <= expiredAt && mExpiredAt <= expiredAt)
+        if ((mStartedAt <= expiredAt) && (mExpiredAt <= expiredAt))
         {
             mExpiredAt = expiredAt;
             mTimer->timerIsExpired( highValue, lowValue);
             mTimerState= mTimer->isActive() ? TimerInfo::TimerExpired : TimerInfo::TimerIdle;
             result = true;
         }
+#ifdef _DEBUG
+        else
+        {
+            OUTPUT_ERR("Missing timer expired value. mStartedAt = [ %u ], mExpiredAt = [ %u ], expiredAt = [ %u ]", mStartedAt, mExpiredAt, expiredAt);
+        }
+#endif // !_DEBUG
     }
     return result;
 }
@@ -136,7 +142,6 @@ const ExpiredTimerInfo& ExpiredTimerInfo::operator = ( const ExpiredTimerInfo & 
 //////////////////////////////////////////////////////////////////////////
 ExpiredTimers::ExpiredTimers( void )
     : TELinkedList<ExpiredTimerInfo, const ExpiredTimerInfo &> ( )
-    , mLock( )
 {
     ; // do nothing
 }
@@ -148,8 +153,6 @@ ExpiredTimers::~ExpiredTimers( void )
 
 LISTPOS ExpiredTimers::findTimer(Timer * whichTimer, LISTPOS searchAfter /*= NULL*/)
 {
-    Lock lock(mLock);
-
     TELinkedList<ExpiredTimerInfo, const ExpiredTimerInfo &>::Block * block = mHead;
     if ( (searchAfter != NULL) && (mCount != 0) )
     {
@@ -167,8 +170,6 @@ LISTPOS ExpiredTimers::findTimer(Timer * whichTimer, LISTPOS searchAfter /*= NUL
 
 int ExpiredTimers::removeAllTimers( Timer * whichTimer )
 {
-    Lock lock(mLock);
-
     int result = 0;
 
     if (whichTimer != NULL)
@@ -280,6 +281,19 @@ bool MapTimerTable::unregisterFirstObject(Timer * & OUT key, TimerInfo & OUT obj
         object  = block->mValue;
         removeBlock(blockReference(*block));
         result = true;
+    }
+
+    return result;
+}
+
+bool MapTimerTable::resetActiveTimerState(const Timer * key)
+{
+    bool result = false;
+    TEHashMap<Timer *, TimerInfo, const Timer *, const TimerInfo &, TimerTableImpl>::Block** block = blockAt(key);
+    if ((block != NULL) && (*block != NULL))
+    {
+        TimerInfo & timerInfo = (*block)->mValue;
+        result = (*block)->mValue.resetActiveTimer();
     }
 
     return result;

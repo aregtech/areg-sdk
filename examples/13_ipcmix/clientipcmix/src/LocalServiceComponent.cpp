@@ -11,10 +11,10 @@
  ************************************************************************/
 #include "LocalServiceComponent.hpp"
 
-const unsigned int  LocalServiceComponent::MAIN_TIMEOUT     = 700;
-const unsigned int  LocalServiceComponent::SECOND_TIMEOUT   = 500;
-const unsigned int  LocalServiceComponent::THIRD_TIMEOUT    = 300;
-const unsigned int  LocalServiceComponent::LOCAL_TIMEOUT    = 100;
+const unsigned int  LocalServiceComponent::MAIN_TIMEOUT     = 1000;
+const unsigned int  LocalServiceComponent::SECOND_TIMEOUT   = 2000;
+const unsigned int  LocalServiceComponent::THIRD_TIMEOUT    = 3000;
+const unsigned int  LocalServiceComponent::LOCAL_TIMEOUT    = 4000;
 
 LocalServiceComponent::LocalServiceComponent(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
     : LocalServicingComponent   ( entry, owner )

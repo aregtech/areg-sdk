@@ -16,6 +16,7 @@
 #ifdef _POSIX
 
 #include "areg/base/NECommon.hpp"
+#include "areg/base/NEUtilities.hpp"
 #include <unistd.h>
 #include <time.h>
 
@@ -29,10 +30,10 @@
 namespace NESynchTypesIX
 {
     /**
-     * \brief   NESynchTypesIX::POSIX_SUCSS
+     * \brief   NESynchTypesIX::POSIX_SUCCESS
      *          Indicates the success of POSIX function call.
      **/
-    const int   POSIX_SUCSS                   = 0;
+    const int   POSIX_SUCCESS                   = 0;
 
     /**
      * \brief   NESynchTypesIX::eSynchObjectFired
@@ -149,7 +150,7 @@ namespace NESynchTypesIX
 inline bool NESynchTypesIX::timeoutFromNow( timespec & out_result, unsigned int msTimeout )
 {
     bool result = false;
-    if ( NESynchTypesIX::POSIX_SUCSS == clock_gettime( CLOCK_REALTIME, &out_result ) )
+    if ( NESynchTypesIX::POSIX_SUCCESS == clock_gettime( CLOCK_REALTIME, &out_result ) )
     {
         convTimeout(out_result, msTimeout);
         result = true;
@@ -160,11 +161,13 @@ inline bool NESynchTypesIX::timeoutFromNow( timespec & out_result, unsigned int 
 
 inline void NESynchTypesIX::convTimeout( timespec & out_result, unsigned int msTimeout )
 {
-    msTimeout += out_result.tv_nsec / 1000000;
-    unsigned int nsec = (out_result.tv_nsec % 1000000);
+    msTimeout += out_result.tv_nsec / NEUtilities::MILLISEC_TO_NS;
+    unsigned int nsec = out_result.tv_nsec % NEUtilities::MILLISEC_TO_NS;
+    unsigned int secs = msTimeout  / NEUtilities::SEC_TO_MILLISECS;
+    unsigned int msec = msTimeout  % NEUtilities::SEC_TO_MILLISECS;
 
-    out_result.tv_sec   +=  msTimeout / 1000;
-    out_result.tv_nsec   = ((msTimeout % 1000) * 1000000) + nsec;
+    out_result.tv_sec   +=  secs;
+    out_result.tv_nsec   = (msec * NEUtilities::MILLISEC_TO_NS) + nsec;
 }
 
 inline const char * NESynchTypesIX::getString(NESynchTypesIX::eEventResetInfo val)

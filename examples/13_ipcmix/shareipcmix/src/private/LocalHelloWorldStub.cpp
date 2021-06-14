@@ -4,7 +4,7 @@
 /************************************************************************
  * (c) copyright    2021
  *                  Create by AREG SDK code generator tool from source LocalHelloWorld.
- * Generated at     29.05.2021  12:42:58 GMT+02:00 
+ * Generated at     11.06.2021  21:11:04 GMT+02:00 
  ************************************************************************/
 
 /************************************************************************
@@ -147,8 +147,6 @@ void LocalHelloWorldStub::errorRequest( unsigned int msgId, bool msgCancel )
 /************************************************************************
  * Broadcast errors
  ************************************************************************/
-    case NELocalHelloWorld::MSG_ID_broadcastHelloClients:
-    case NELocalHelloWorld::MSG_ID_broadcastServiceUnavailable:
         result = NEService::RESULT_INVALID;
         break;
 
@@ -156,7 +154,6 @@ void LocalHelloWorldStub::errorRequest( unsigned int msgId, bool msgCancel )
  * Request errors
  ************************************************************************/
     case NELocalHelloWorld::MSG_ID_requestHelloWorld:
-    case NELocalHelloWorld::MSG_ID_requestClientShutdown:
         listenerId = NELocalHelloWorld::getResponseId(static_cast< NELocalHelloWorld::eMessageIDs>(msgId));
         result = msgCancel ? NEService::RESULT_REQUEST_CANCELED : NEService::RESULT_REQUEST_ERROR;
         break;
@@ -221,21 +218,6 @@ void LocalHelloWorldStub::responseHelloWorld( const NELocalHelloWorld::sConnecte
  * Send Broadcast
  ************************************************************************/
 
-void LocalHelloWorldStub::broadcastHelloClients( const NELocalHelloWorld::ConnectionList & clientList )
-{
-    static const NELocalHelloWorld::eMessageIDs msgId = NELocalHelloWorld::MSG_ID_broadcastHelloClients;
-    EventDataStream args(EventDataStream::EventDataInternal);
-    IEOutStream & stream = args.getStreamForWrite();
-    stream << clientList;
-    sendResponseEvent( msgId, args );
-}
-
-void LocalHelloWorldStub::broadcastServiceUnavailable( void )
-{
-    static const NELocalHelloWorld::eMessageIDs msgId = NELocalHelloWorld::MSG_ID_broadcastServiceUnavailable;
-    sendResponseEvent( msgId, EventDataStream::EmptyData );
-}
-
 /************************************************************************
  * Process messages
  ************************************************************************/
@@ -263,17 +245,6 @@ void LocalHelloWorldStub::processRequestEvent( ServiceRequestEvent & eventElem )
                 stream >> roleName;                
                 stream >> addMessage;                
                 requestHelloWorld( roleName, addMessage );
-            }
-            break;
-            
-        case NELocalHelloWorld::MSG_ID_requestClientShutdown:
-            if ( true )
-            {
-                unsigned int    clientID;
-                String          roleName;
-                stream >> clientID;                
-                stream >> roleName;                
-                requestClientShutdown( clientID, roleName );
             }
             break;
             

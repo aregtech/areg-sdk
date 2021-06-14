@@ -14,6 +14,8 @@
 
 #include "areg/base/GEGlobal.h"
 #include "shareipcmix/src/LocalServicingComponent.hpp"
+
+#include "shareipcmix/src/MainRemoteServiceClient.hpp"
 #include "shareipcmix/src/RemoteServiceClient.hpp"
 #include "shareipcmix/src/LocalServiceClient.hpp"
 
@@ -28,10 +30,10 @@ class LocalServiceComponent  : public LocalServicingComponent
 //////////////////////////////////////////////////////////////////////////
 // Statics and constants
 //////////////////////////////////////////////////////////////////////////
-    static const unsigned int   MAIN_TIMEOUT        /*= 700*/;  //!< Timeout to send request to main remote service
-    static const unsigned int   SECOND_TIMEOUT      /*= 500*/;  //!< Timeout to send request to secondary remote service
-    static const unsigned int   THIRD_TIMEOUT       /*= 300*/;  //!< Timeout to send request to third remote service
-    static const unsigned int   LOCAL_TIMEOUT       /*= 100*/;  //!< Timeout to send request to a local service.
+    static const unsigned int   MAIN_TIMEOUT        /*= 1000*/;  //!< Timeout to send request to main remote service
+    static const unsigned int   SECOND_TIMEOUT      /*= 2000*/;  //!< Timeout to send request to secondary remote service
+    static const unsigned int   THIRD_TIMEOUT       /*= 3000*/;  //!< Timeout to send request to third remote service
+    static const unsigned int   LOCAL_TIMEOUT       /*= 4000*/;  //!< Timeout to send request to a local service.
 
 public:
 
@@ -72,7 +74,7 @@ private:
 // Member variables
 //////////////////////////////////////////////////////////////////////////
 
-    RemoteServiceClient     mMain;      //!< The client of remote main service
+    MainRemoteServiceClient mMain;      //!< The client of remote main service
     RemoteServiceClient     mSecond;    //!< The client of remote secnodary service
     RemoteServiceClient     mThird;     //!< The client of third remote service
     LocalServiceClient      mLocal;     //!< The client of local service

@@ -170,6 +170,11 @@ public:
     inline bool isTimerActive( void ) const;
 
     /**
+     * \brief   Resets the state of active timer to pending state and returns true if operation succeeded.
+     **/
+    inline bool resetActiveTimer( void );
+
+    /**
      * \brief   Called when timer is expired. Returns true if successfully
      *          changed timer state and updated values. If timer state is not
      *          TimerInfo::TimerPending, it will ignore updating values.
@@ -302,6 +307,17 @@ public:
     {
         return MACRO_PTR2INT32( Key );
     }
+
+    /**
+     * \brief   Compares 2 keys, returns true if they are equal.
+     * \param   Value1  The key of right-side object to compare.
+     * \param   Value2  The key of left-side object to compare.
+     * \return  Returns true if 2 keys are equal.
+     **/
+    inline bool implEqualKeys(const Timer * Key1, const Timer * Key2) const
+    {
+        return (Key1 == Key2);
+    }
 };
 
 /**
@@ -420,6 +436,13 @@ public:
      **/
     bool unregisterFirstObject( Timer * & OUT key, TimerInfo & OUT object );
 
+    /**
+     * \brief   Resets the active timer state to pending
+     * \param   key         The timer to search in the table.
+     * \return  Returns true if the specified timer is registered in table and is active.
+     **/
+    bool resetActiveTimerState(const Timer * key);
+
 //////////////////////////////////////////////////////////////////////////
 // Hidden / Forbidden methods
 //////////////////////////////////////////////////////////////////////////
@@ -462,6 +485,11 @@ public:
     inline bool isEmpty( void ) const;
 
     /**
+     * \brief   Returns number of entries in the list.
+     **/
+    inline int getSize( void ) const;
+
+    /**
      * \brief   Push expired timer information to the list.
      **/
     inline void pushTimer( ExpiredTimerInfo & timerInfo );
@@ -475,16 +503,6 @@ public:
      * \brief   Removes of all entries from the list, makes it empty.
      **/
     inline void removeAll( void );
-
-    /**
-     * \brief   Locks the expired timer list.
-     **/
-    inline bool lockResource( void ) const;
-
-    /**
-     * \brief   Unlocks the expired timer list.
-     **/
-    inline bool unlockResource( void ) const;
 
     /**
      * \brief   Searches specified timer in the list of expired timers and returns
@@ -505,15 +523,6 @@ public:
      * \return  Returns the number of entries that were removed.
      **/
     int removeAllTimers( Timer * whichTimer );
-
-//////////////////////////////////////////////////////////////////////////
-// Member variables
-//////////////////////////////////////////////////////////////////////////
-private:
-    /**
-     * \brief   Synchronization object.
-     **/
-    mutable ResourceLock    mLock;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls.
@@ -584,36 +593,27 @@ inline void MapTimerTable::removeAll(void)
 
 inline bool ExpiredTimers::isEmpty(void) const
 {
-    Lock lock(mLock);
     return TELinkedList<ExpiredTimerInfo, const ExpiredTimerInfo &>::isEmpty();
+}
+
+inline int ExpiredTimers::getSize( void ) const
+{
+    return TELinkedList<ExpiredTimerInfo, const ExpiredTimerInfo &>::getSize( );
 }
 
 inline void ExpiredTimers::pushTimer(ExpiredTimerInfo & timerInfo)
 {
-    Lock lock(mLock);
     TELinkedList<ExpiredTimerInfo, const ExpiredTimerInfo &>::pushLast( timerInfo );
 }
 
 inline ExpiredTimerInfo ExpiredTimers::popTimer(void)
 {
-    Lock lock(mLock);
     return TELinkedList<ExpiredTimerInfo, const ExpiredTimerInfo &>::removeFirst();
 }
 
 inline void ExpiredTimers::removeAll(void)
 {
-    Lock lock(mLock);
     return TELinkedList<ExpiredTimerInfo, const ExpiredTimerInfo &>::removeAll();
-}
-
-inline bool ExpiredTimers::lockResource(void) const
-{
-    return mLock.lock(IESynchObject::WAIT_INFINITE);
-}
-
-inline bool ExpiredTimers::unlockResource(void) const
-{
-    return mLock.unlock();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -652,13 +652,25 @@ inline TimerInfo::eTimerState TimerInfo::getTimerState( void ) const
 
 inline bool TimerInfo::isTimerActive( void ) const
 {
-    return ((mTimerState != TimerIdle) && mTimer->isActive());
+    return ((mTimerState != TimerInfo::TimerIdle) && mTimer->isActive());
 }
 
 inline bool TimerInfo::canStartTimer( void )
 {
     ASSERT(mTimer != NULL);
     return ((mTimerState == TimerInfo::TimerIdle) && mTimer->timerIsStarting());
+}
+
+inline bool TimerInfo::resetActiveTimer( void )
+{
+    bool result = false;
+    if (isTimerActive())
+    {
+        mTimerState = TimerInfo::TimerPending;
+        result      = true;
+    }
+
+    return result;
 }
 
 inline const char* TimerInfo::getString( TimerInfo::eTimerState timerState )

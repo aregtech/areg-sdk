@@ -928,10 +928,10 @@ inline bool NEService::isConnectNotifyId( unsigned int msgId )
 
 inline bool NEService::isExecutableId(unsigned int msgId)
 {
-    return ( (msgId & static_cast<unsigned int>(NEService::ServiceCallRequest))    != 0 ||
-             (msgId & static_cast<unsigned int>(NEService::ServiceCallResponse))   != 0 ||
-             (msgId & static_cast<unsigned int>(NEService::ServiceCallAttribute))  != 0 ||
-             (msgId == static_cast<unsigned int>(NEService::ServiceCallNoFunction))    );
+    return ( (msgId  & static_cast<unsigned int>(NEService::ServiceCallRequest)     ) != 0 ||
+             (msgId  & static_cast<unsigned int>(NEService::ServiceCallResponse)    ) != 0 ||
+             (msgId  & static_cast<unsigned int>(NEService::ServiceCallAttribute)   ) != 0 ||
+             (msgId == static_cast<unsigned int>(NEService::ServiceCallNoFunction)  ) );
 }
 
 

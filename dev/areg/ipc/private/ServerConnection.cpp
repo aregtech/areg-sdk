@@ -99,6 +99,8 @@ bool ServerConnection::acceptConnection(SocketAccepted & clientConnection)
         if ( clientConnection.isValid() )
         {
             const SOCKETHANDLE hSocket = clientConnection.getHandle();
+            ASSERT(hSocket != NESocket::InvalidSocketHandle);
+
             if ( mMasterList.find(hSocket) == -1)
             {
                 ASSERT(mAcceptedConnections.find( hSocket ) == NULL);

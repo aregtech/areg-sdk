@@ -6,7 +6,7 @@
 /************************************************************************
  * (c) copyright    2021
  *                  Create by AREG SDK code generator tool from source LocalHelloWorld.
- * Generated at     29.05.2021  12:42:58 GMT+02:00 
+ * Generated at     11.06.2021  21:11:04 GMT+02:00 
  ************************************************************************/
 
 /************************************************************************
@@ -40,9 +40,8 @@ class DispatcherThread;
  *              Client base object. This object should be inherited
  *              and overrides should be implemented.
  *
- *              
- *              		Simple Service Interface to demonstrate working features of AREG SDK.
- *              		This interface serves only local components and can be duplicated in other processes.
+ *              Simple Service Interface to demonstrate working features of AREG SDK.
+ *              This interface serves only local components and can be duplicated in other processes.
  *              		
  **/
 class LocalHelloWorldClientBase  : public    IEProxyListener, private ClientBase
@@ -226,23 +225,6 @@ public:
     virtual void requestHelloWorldFailed( NEService::eResultType FailureReason );
     
 /************************************************************************
- * Request ClientShutdown
- ************************************************************************/
-    /**
-     * \brief   Request call.
-     *          Sent by client to notify the shutdown. This removes client from the list. This request has no response.
-     * \param   clientID    The ID of client that requests to shutdown. The ID is given by service when first time client requests to output message.
-     * \param   roleName    Service client component role name
-     * \see     Has no response
-     **/
-    inline void requestClientShutdown( unsigned int clientID, const String & roleName );
-    /**
-     * \brief   Overwrite to handle error of ClientShutdown request call.
-     * \param   FailureReason   The failure reason value of request call.
-     **/
-    virtual void requestClientShutdownFailed( NEService::eResultType FailureReason );
-    
-/************************************************************************
  * Response HelloWorld
  ************************************************************************/
     /**
@@ -261,43 +243,6 @@ public:
      * \param   notify  If true, notification will be enable. If false, notification is disabled
      **/
     inline void notifyOnResponseHelloWorld( bool notify = true );
-
-/************************************************************************
- * Broadcast HelloClients
- ************************************************************************/
-    /**
-     * \brief   Server broadcast.
-     *          Broadcast to notify all clients about connection
-     *          Overwrite, if need to handle Broadcast call of server object. 
-     *          This call will be automatically triggered, on every appropriate request call
-     * \param   clientList  List of currently active clients.
-     **/
-    virtual void broadcastHelloClients( const NELocalHelloWorld::ConnectionList & clientList );
-    /**
-     * \brief   Call to enable or disable receiving notifications on HelloClients broadcast call.
-     *          This function is triggered, when client object is interested only on response result
-     *          without triggering request call.
-     * \param   notify  If true, notification will be enable. If false, notification is disabled
-     **/
-    inline void notifyOnBroadcastHelloClients( bool notify = true );
-
-/************************************************************************
- * Broadcast ServiceUnavailable
- ************************************************************************/
-    /**
-     * \brief   Server broadcast.
-     *          DESCRIPTION MISSED
-     *          Overwrite, if need to handle Broadcast call of server object. 
-     *          This call will be automatically triggered, on every appropriate request call
-     **/
-    virtual void broadcastServiceUnavailable( void );
-    /**
-     * \brief   Call to enable or disable receiving notifications on ServiceUnavailable broadcast call.
-     *          This function is triggered, when client object is interested only on response result
-     *          without triggering request call.
-     * \param   notify  If true, notification will be enable. If false, notification is disabled
-     **/
-    inline void notifyOnBroadcastServiceUnavailable( bool notify = true );
 
 //////////////////////////////////////////////////////////////////////////
 // End Service Interface operations / attributes and overrides declaration
@@ -541,12 +486,6 @@ inline unsigned int LocalHelloWorldClientBase::requestHelloWorld( const String &
     return mProxy->requestHelloWorld( static_cast<IENotificationEventConsumer &>(self()), roleName, addMessage );
 }
 
-inline void LocalHelloWorldClientBase::requestClientShutdown( unsigned int clientID, const String & roleName )
-{
-    ASSERT(mProxy != NULL);
-    mProxy->requestClientShutdown( clientID, roleName );
-}
-
 /************************************************************************
  * Response notifications
  ************************************************************************/
@@ -554,20 +493,6 @@ inline void LocalHelloWorldClientBase::requestClientShutdown( unsigned int clien
 inline void LocalHelloWorldClientBase::notifyOnResponseHelloWorld( bool notify /* = true */ )
 {
     notifyOn(NELocalHelloWorld::MSG_ID_responseHelloWorld, notify, false);
-}
-
-/************************************************************************
- * Broadcast notifications
- ************************************************************************/
-
-inline void LocalHelloWorldClientBase::notifyOnBroadcastHelloClients( bool notify /* = true */ )
-{
-    notifyOn(NELocalHelloWorld::MSG_ID_broadcastHelloClients, notify, false);
-}
-
-inline void LocalHelloWorldClientBase::notifyOnBroadcastServiceUnavailable( bool notify /* = true */ )
-{
-    notifyOn(NELocalHelloWorld::MSG_ID_broadcastServiceUnavailable, notify, false);
 }
 
 inline const LocalHelloWorldProxy * LocalHelloWorldClientBase::getProxy( void ) const

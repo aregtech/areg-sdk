@@ -339,7 +339,7 @@ bool ComponentLoader::loadModel( const char * modelName /*= NULL*/ )
         }
     }
 
-    OUTPUT_DBG("Model [ %s ] loaded with [ %s ].", NEString::isEmpty<char>(modelName) ? "ALL" : modelName, result ? "SUCSS" : "ERROR");
+    OUTPUT_DBG("Model [ %s ] loaded with [ %s ].", NEString::isEmpty<char>(modelName) ? "ALL" : modelName, result ? "SUCCESS" : "ERROR");
     
     return result;
 }

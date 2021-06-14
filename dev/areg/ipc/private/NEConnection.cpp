@@ -325,9 +325,9 @@ bool NEConnection::isMessageRegisterService(const RemoteMessage & msgRegisterSer
     bool result = false;
     if ( msgRegisterService.isChecksumValid() )
     {
-        result =(msgRegisterService.getMessageId() == NEService::SI_ROUTER_REGISTER) && 
-                (msgRegisterService.getSource() != NEService::COOKIE_UNKNOWN)        && 
-                (msgRegisterService.getTarget() == NEService::COOKIE_ROUTER);
+        result =(msgRegisterService.getMessageId() == NEService::SI_ROUTER_REGISTER ) && 
+                (msgRegisterService.getSource()    != NEService::COOKIE_UNKNOWN     ) && 
+                (msgRegisterService.getTarget()    == NEService::COOKIE_ROUTER      );
     }
     return result;
 }

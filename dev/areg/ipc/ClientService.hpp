@@ -70,6 +70,11 @@ private:
         , ConnectionStopping    //!< The connection is stopping, because of manual request.
     } eConnectionState;
 
+    /**
+     * \brief   Returns the string value of ClientService::eConnectionState type
+     **/
+    static inline const char * getString(ClientService::eConnectionState val);
+
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
@@ -317,6 +322,10 @@ private:
      **/
     inline void stopConnection( void );
     /**
+     * \brief   Called when connection is lost and should be immediately canceled.
+     **/
+    inline void cancelConnection( void );
+    /**
      * \brief   Returns true if client socket connection is started.
      **/
     inline bool isStarted( void ) const;
@@ -330,6 +339,10 @@ private:
      **/
     inline ClientService::eConnectionState getConnectionState( void ) const;
     /**
+     * \brief   Queues the message for sending
+     **/
+    inline bool queueSendMessage(const RemoteMessage & data);
+    /**
      * \brief   Returns instance of client servicing object.
      **/
     inline ClientService & self( void );
@@ -341,7 +354,7 @@ private:
     /**
      * \brief   Client connection object
      **/
-    ClientConnection          mClientConnection;
+    ClientConnection            mClientConnection;
     /**
      * \brief   Instance of remote servicing consumer to handle message.
      **/
@@ -349,15 +362,15 @@ private:
     /**
      * \brief   Connection retry timer object.
      **/
-    Timer                     mTimerConnect;
+    Timer                       mTimerConnect;
     /**
      * \brief   Message receiver thread
      **/
-    ClientReceiveThread       mThreadReceive;
+    ClientReceiveThread         mThreadReceive;
     /**
      * \brief   Message sender thread
      **/
-    ClientSendThread          mThreadSend;
+    ClientSendThread            mThreadSend;
     /**
      * \brief   Flag, indicates whether the remote servicing is enabled or not.
      **/
@@ -365,11 +378,11 @@ private:
     /**
      * \brief   The path of configuration file name.
      **/
-    String                    mConfigFile;
+    String                      mConfigFile;
     /**
      * \brief   The connection channel.
      **/
-    Channel                   mChannel;
+    Channel                     mChannel;
     /**
      * \brief   The sate of connection
      **/
@@ -377,7 +390,7 @@ private:
     /**
      * \brief   Data access synchronization object
      **/
-    mutable CriticalSection   mLock;
+    mutable CriticalSection     mLock;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -393,9 +406,31 @@ private:
 //////////////////////////////////////////////////////////////////////////
 
 inline ClientService & ClientService::self( void )
-{   return (*this);                         }
+{
+    return (*this);
+}
 
 inline ITEM_ID ClientService::getConnectionCookie( void ) const
-{   return mClientConnection.getCookie();   }
+{
+    return mClientConnection.getCookie();
+}
+
+
+inline const char * ClientService::getString(ClientService::eConnectionState val)
+{
+    switch (val)
+    {
+    case ClientService::ConnectionStopped:
+        return "ClientService::ConnectionStopped";
+    case ClientService::ConnectionStarting:
+        return "ClientService::ConnectionStarting";
+    case ClientService::ConnectionStarted:
+        return "ClientService::ConnectionStarted";
+    case ClientService::ConnectionStopping:
+        return "ClientService::ConnectionStopping";
+    default:
+        return "ERR: Invalid value of ClientService::eConnectionState type";
+    }
+}
 
 #endif  // AREG_IPC_CLIENTSERVICE_HPP

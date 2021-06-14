@@ -14,7 +14,7 @@
 DEF_TRACE_SCOPE(areg_ipc_private_ClientSendThread_runDispatcher);
 
 ClientSendThread::ClientSendThread( IERemoteServiceHandler & remoteService, ClientConnection & connection )
-    : DispatcherThread( NEConnection::CLIENT_SEND_MESSAGE_THREAD )
+    : DispatcherThread  ( NEConnection::CLIENT_SEND_MESSAGE_THREAD )
     , mRemoteService    ( remoteService )
     , mConnection       ( connection )
 {
@@ -35,14 +35,14 @@ bool ClientSendThread::runDispatcher(void)
     bool result = DispatcherThread::runDispatcher();
 
     SendMessageEvent::removeListener( static_cast<IESendMessageEventConsumer &>(*this), static_cast<DispatcherThread &>(*this));
-    TRACE_DBG("Exiting client service dispatcher thread [ %s ] with result [ %s ]", getName().getString(), result ? "SUCSS" : "FAILURE");
+    TRACE_DBG("Exiting client service dispatcher thread [ %s ] with result [ %s ]", getName().getString(), result ? "SUCCESS" : "FAILURE");
     return result;
 }
 
 void ClientSendThread::processEvent( const SendMessageEventData & data )
 {
     const RemoteMessage & msg = data.getRemoteMessage();
-    if ( msg.isValid() )
+    if ( msg.isValid())
     {
         if ( mConnection.sendMessage( msg ) <= 0 )
         {

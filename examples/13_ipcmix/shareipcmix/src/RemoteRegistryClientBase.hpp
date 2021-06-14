@@ -1,30 +1,30 @@
 //////////////////////////////////////////////////////////////////////////
-// Begin generate shareipcmix/src/RemoteHelloWorldClientBase.hpp file
+// Begin generate shareipcmix/src/RemoteRegistryClientBase.hpp file
 //////////////////////////////////////////////////////////////////////////
-#ifndef  SHAREIPCMIX_SRC_REMOTEHELLOWORLDCLIENTBASE_HPP
-#define  SHAREIPCMIX_SRC_REMOTEHELLOWORLDCLIENTBASE_HPP
+#ifndef  SHAREIPCMIX_SRC_REMOTEREGISTRYCLIENTBASE_HPP
+#define  SHAREIPCMIX_SRC_REMOTEREGISTRYCLIENTBASE_HPP
 /************************************************************************
  * (c) copyright    2021
- *                  Create by AREG SDK code generator tool from source RemoteHelloWorld.
- * Generated at     29.05.2021  12:43:00 GMT+02:00 
+ *                  Create by AREG SDK code generator tool from source RemoteRegistry.
+ * Generated at     11.06.2021  21:11:05 GMT+02:00 
  ************************************************************************/
 
 /************************************************************************
- * \file            shareipcmix/src/RemoteHelloWorldClientBase.hpp
- * \ingroup         RemoteHelloWorld Service Interface
- * \brief           This is an automatic generated code of RemoteHelloWorld Service Interface Client base class declaration.
+ * \file            shareipcmix/src/RemoteRegistryClientBase.hpp
+ * \ingroup         RemoteRegistry Service Interface
+ * \brief           This is an automatic generated code of RemoteRegistry Service Interface Client base class declaration.
  ************************************************************************/
 
 /************************************************************************
  * Include files
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
-#include "shareipcmix/src/NERemoteHelloWorld.hpp"
+#include "shareipcmix/src/NERemoteRegistry.hpp"
 #include "areg/component/ClientBase.hpp"
 #include "areg/component/IEProxyListener.hpp"
 #include "areg/component/NotificationEvent.hpp"
 
-#include "shareipcmix/src/private/RemoteHelloWorldProxy.hpp"
+#include "shareipcmix/src/private/RemoteRegistryProxy.hpp"
 
 /************************************************************************
  * Dependencies
@@ -33,56 +33,56 @@ class Component;
 class DispatcherThread;
 
 //////////////////////////////////////////////////////////////////////////
-// RemoteHelloWorldClientBase class declaration.
+// RemoteRegistryClientBase class declaration.
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief       The interface of RemoteHelloWorld Service Interface
+ * \brief       The interface of RemoteRegistry Service Interface
  *              Client base object. This object should be inherited
  *              and overrides should be implemented.
  *
- *              
- *              		Simple Service Interface to demonstrate working features of AREG SDK.
- *              		This is remote servicing interface can be used by local or remote components. 
- *              		Each instance of component should be unique in the network.
- *              		
+ *              Simple Service Interface to demonstrate working features of AREG SDK.
+ *              This interface demonstrates how to use multiple remote services in the system.
+ *              Each service is unique in the network.
+ *              This service is used by each remote servicing component to register clients.
+ *              Before using services, the clients should be registered.
  **/
-class RemoteHelloWorldClientBase  : public    IEProxyListener, private ClientBase
+class RemoteRegistryClientBase  : public    IEProxyListener, private ClientBase
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor. Protected
 //////////////////////////////////////////////////////////////////////////
 protected:
     /**
-     * \brief   Initialize RemoteHelloWorld Service Interface client object. 
+     * \brief   Initialize RemoteRegistry Service Interface client object. 
      *          Specifies used service and owner thread.
-     * \param   roleName    The role name assigned to RemoteHelloWorld servicing component object.
+     * \param   roleName    The role name assigned to RemoteRegistry servicing component object.
      * \param   ownerThread The name of component owner thread to dispatch messages.
      *                      If NULL, all messages are dispatched in current component thread.
      **/
-    RemoteHelloWorldClientBase( const char* roleName, const char * ownerThread = static_cast<const char *>(NULL) );
+    RemoteRegistryClientBase( const char* roleName, const char * ownerThread = static_cast<const char *>(NULL) );
 
     /**
-     * \brief   Initialize RemoteHelloWorld Service Interface client object.
+     * \brief   Initialize RemoteRegistry Service Interface client object.
      *          Specifies used service and owner thread.
-     * \param   roleName    The role name assigned to RemoteHelloWorld servicing component object.
+     * \param   roleName    The role name assigned to RemoteRegistry servicing component object.
      * \param   ownerThread The instance of component owner thread to dispatch messages.
      **/
-    RemoteHelloWorldClientBase( const char* roleName, DispatcherThread & ownerThread );
+    RemoteRegistryClientBase( const char* roleName, DispatcherThread & ownerThread );
 
     /**
-     * \brief   Initialize RemoteHelloWorld Service Interface client object.
+     * \brief   Initialize RemoteRegistry Service Interface client object.
      *          Specifies used service and owner component.
-     * \param   roleName    The role name assigned to RemoteHelloWorld servicing component object.
+     * \param   roleName    The role name assigned to RemoteRegistry servicing component object.
      * \param   owner       The instance of client owner component. The component object should be already initialized.
      * \note    When this constructor is used, it is important that the Component object is already initialized.
      *          and the component thread is set.
      **/
-    RemoteHelloWorldClientBase( const char* roleName, Component & owner );
+    RemoteRegistryClientBase( const char* roleName, Component & owner );
 
     /**
      * \brief   Destructor.
      **/
-    virtual ~RemoteHelloWorldClientBase( void );
+    virtual ~RemoteRegistryClientBase( void );
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -98,7 +98,7 @@ public:
      *          Otherwise returns false.
      * \param   msgId   The ID of message to check.
      **/
-    inline bool isNotificationAssigned( NERemoteHelloWorld::eMessageIDs msgId ) const;
+    inline bool isNotificationAssigned( NERemoteRegistry::eMessageIDs msgId ) const;
 
     /**
      * \brief   Returns true if client object has got connection with servicing component
@@ -120,106 +120,141 @@ public:
 //////////////////////////////////////////////////////////////////////////
 
 //////////////////////////////////////////////////////////////////////////
-// RemoteHelloWorld Interface Attributes
+// RemoteRegistry Interface Attributes
 //////////////////////////////////////////////////////////////////////////
 public:
 /************************************************************************
- * Attribute ConnectedClients functions
+ * Attribute RegistryList functions
  ************************************************************************/
     /**
-     * \brief   Returns true if value of ConnectedClients attribute is valid.
+     * \brief   Returns true if value of RegistryList attribute is valid.
      *          If Update Notification is disabled, this method will return false.
      **/
-    inline bool isConnectedClientsValid( void ) const;
+    inline bool isRegistryListValid( void ) const;
     /**
-     * \brief   Returns the value of ConnectedClients attribute.
+     * \brief   Returns the value of RegistryList attribute.
      *          To get valid value, the Update Notification should be enabled. 
-     *          Attribute ConnectedClients description: 
-     *          The list of connected clients. Updated each time when new client requests to output Hello World message.
+     *          Attribute RegistryList description: 
+     *          List of registered clients.
      * \param   state   On returns, contains the validation flag of attribute data. 
      *                  Check validation flag before use attribute value.
-     * \see     isConnectedClientsValid, notifyConnectedClientsUpdate, onConnectedClientsUpdate
+     * \see     isRegistryListValid, notifyRegistryListUpdate, onRegistryListUpdate
      **/
-    inline const NERemoteHelloWorld::ConnectionList & getConnectedClients( NEService::eDataStateType & state ) const;
+    inline const NERemoteRegistry::ListRegistry & getRegistryList( NEService::eDataStateType & state ) const;
     /**
-     * \brief   Call to enable or disable receiving notifications on ConnectedClients attribute update.
+     * \brief   Call to enable or disable receiving notifications on RegistryList attribute update.
      *          Once notification is enabled and the data is updated, 
-     *          the getConnectedClients method will return valid data 
-     *          Attribute ConnectedClients description:
-     *          The list of connected clients. Updated each time when new client requests to output Hello World message.
+     *          the getRegistryList method will return valid data 
+     *          Attribute RegistryList description:
+     *          List of registered clients.
      * \param   notify  If true, notification will be enable. If false, notification is disabled
-     * \see     isConnectedClientsValid, getConnectedClients, onConnectedClientsUpdate
+     * \see     isRegistryListValid, getRegistryList, onRegistryListUpdate
      **/
-    inline void notifyOnConnectedClientsUpdate( bool notify = true );
+    inline void notifyOnRegistryListUpdate( bool notify = true );
     /**
-     * \brief   Triggered, when ConnectedClients attribute is updated. The function contains
+     * \brief   Triggered, when RegistryList attribute is updated. The function contains
      *          attribute value and validation flag. When notification is enabled,
      *          the method should be overwritten in derived class.
-     *          Attributes ConnectedClients description: 
-     *          The list of connected clients. Updated each time when new client requests to output Hello World message.
-     * \param   ConnectedClients    The value of ConnectedClients attribute.
-     * \param   state               The data validation flag.
-     **/
-    virtual void onConnectedClientsUpdate( const NERemoteHelloWorld::ConnectionList & ConnectedClients, NEService::eDataStateType state );
-
-/************************************************************************
- * Attribute RemainOutput functions
- ************************************************************************/
-    /**
-     * \brief   Returns true if value of RemainOutput attribute is valid.
-     *          If Update Notification is disabled, this method will return false.
-     **/
-    inline bool isRemainOutputValid( void ) const;
-    /**
-     * \brief   Returns the value of RemainOutput attribute.
-     *          To get valid value, the Update Notification should be enabled. 
-     *          Attribute RemainOutput description: 
-     *          Remaining number of outputs to print Hello World.
-     * \param   state   On returns, contains the validation flag of attribute data. 
-     *                  Check validation flag before use attribute value.
-     * \see     isRemainOutputValid, notifyRemainOutputUpdate, onRemainOutputUpdate
-     **/
-    inline short getRemainOutput( NEService::eDataStateType & state ) const;
-    /**
-     * \brief   Call to enable or disable receiving notifications on RemainOutput attribute update.
-     *          Once notification is enabled and the data is updated, 
-     *          the getRemainOutput method will return valid data 
-     *          Attribute RemainOutput description:
-     *          Remaining number of outputs to print Hello World.
-     * \param   notify  If true, notification will be enable. If false, notification is disabled
-     * \see     isRemainOutputValid, getRemainOutput, onRemainOutputUpdate
-     **/
-    inline void notifyOnRemainOutputUpdate( bool notify = true );
-    /**
-     * \brief   Triggered, when RemainOutput attribute is updated. The function contains
-     *          attribute value and validation flag. When notification is enabled,
-     *          the method should be overwritten in derived class.
-     *          Attributes RemainOutput description: 
-     *          Remaining number of outputs to print Hello World.
-     * \param   RemainOutput    The value of RemainOutput attribute.
+     *          Attributes RegistryList description: 
+     *          List of registered clients.
+     * \param   RegistryList    The value of RegistryList attribute.
      * \param   state           The data validation flag.
      **/
-    virtual void onRemainOutputUpdate( short RemainOutput, NEService::eDataStateType state );
+    virtual void onRegistryListUpdate( const NERemoteRegistry::ListRegistry & RegistryList, NEService::eDataStateType state );
+
+/************************************************************************
+ * Attribute RemainOutputs functions
+ ************************************************************************/
+    /**
+     * \brief   Returns true if value of RemainOutputs attribute is valid.
+     *          If Update Notification is disabled, this method will return false.
+     **/
+    inline bool isRemainOutputsValid( void ) const;
+    /**
+     * \brief   Returns the value of RemainOutputs attribute.
+     *          To get valid value, the Update Notification should be enabled. 
+     *          Attribute RemainOutputs description: 
+     *          Remaining outputs before reaching maximum.
+     * \param   state   On returns, contains the validation flag of attribute data. 
+     *                  Check validation flag before use attribute value.
+     * \see     isRemainOutputsValid, notifyRemainOutputsUpdate, onRemainOutputsUpdate
+     **/
+    inline unsigned int getRemainOutputs( NEService::eDataStateType & state ) const;
+    /**
+     * \brief   Call to enable or disable receiving notifications on RemainOutputs attribute update.
+     *          Once notification is enabled and the data is updated, 
+     *          the getRemainOutputs method will return valid data 
+     *          Attribute RemainOutputs description:
+     *          Remaining outputs before reaching maximum.
+     * \param   notify  If true, notification will be enable. If false, notification is disabled
+     * \see     isRemainOutputsValid, getRemainOutputs, onRemainOutputsUpdate
+     **/
+    inline void notifyOnRemainOutputsUpdate( bool notify = true );
+    /**
+     * \brief   Triggered, when RemainOutputs attribute is updated. The function contains
+     *          attribute value and validation flag. When notification is enabled,
+     *          the method should be overwritten in derived class.
+     *          Attributes RemainOutputs description: 
+     *          Remaining outputs before reaching maximum.
+     * \param   RemainOutputs   The value of RemainOutputs attribute.
+     * \param   state           The data validation flag.
+     **/
+    virtual void onRemainOutputsUpdate( unsigned int RemainOutputs, NEService::eDataStateType state );
 
 
 //////////////////////////////////////////////////////////////////////////
-// RemoteHelloWorld Interface Requests / Responses / Broadcasts
+// RemoteRegistry Interface Requests / Responses / Broadcasts
 //////////////////////////////////////////////////////////////////////////
 public:
 
+/************************************************************************
+ * Request Register
+ ************************************************************************/
+    /**
+     * \brief   Request call.
+     *          Call to register client. Each client should be registered before starting communication.
+     * \param   name    The name of the client.
+     * \param   service The service address of the client.
+     * \param   thread  The thread name where client is running. Required to provide uniqueness.
+     * \param   process The name of process. Optional parameter, used to make output in logs.
+     * \return  The sequence count number of call
+     * \see     responseRegister
+     **/
+    inline unsigned int requestRegister( const String & name, const ServiceAddress & service, const String & thread, const String & process );
+    /**
+     * \brief   Overwrite to handle error of Register request call.
+     * \param   FailureReason   The failure reason value of request call.
+     **/
+    virtual void requestRegisterFailed( NEService::eResultType FailureReason );
+    
+/************************************************************************
+ * Request Unregister
+ ************************************************************************/
+    /**
+     * \brief   Request call.
+     *          Sent to unregister connected client.
+     * \param   client  The client registration object indicating the unregistered client.
+     * \see     Has no response
+     **/
+    inline void requestUnregister( const NERemoteRegistry::sClientRegister & client );
+    /**
+     * \brief   Overwrite to handle error of Unregister request call.
+     * \param   FailureReason   The failure reason value of request call.
+     **/
+    virtual void requestUnregisterFailed( NEService::eResultType FailureReason );
+    
 /************************************************************************
  * Request HelloWorld
  ************************************************************************/
     /**
      * \brief   Request call.
-     *          Request to print hello world
-     * \param   roleName    The role name of client component that requested to print hello world
-     * \param   addMessage  Additional message to output. Can be empty.
-     *          Has default value: ""
+     *          Outputs message on console. If additional message is not empty, outputs the additional message as well.
+     * \param   clientID    The ID of registered client to make message output
+     * \param   addMessage  The additional message to output. Ignored if empty.
      * \return  The sequence count number of call
      * \see     responseHelloWorld
      **/
-    inline unsigned int requestHelloWorld( const String & roleName, const String & addMessage = "" );
+    inline unsigned int requestHelloWorld( unsigned int clientID, const String & addMessage );
     /**
      * \brief   Overwrite to handle error of HelloWorld request call.
      * \param   FailureReason   The failure reason value of request call.
@@ -227,34 +262,37 @@ public:
     virtual void requestHelloWorldFailed( NEService::eResultType FailureReason );
     
 /************************************************************************
- * Request ClientShutdown
+ * Response Register
  ************************************************************************/
     /**
-     * \brief   Request call.
-     *          Sent by client to notify the shutdown. This removes client from the list. This request has no response.
-     * \param   clientID    The ID of client that requests to shutdown. The ID is given by service when first time client requests to output message.
-     * \param   roleName    Service client component role name
-     * \see     Has no response
+     * \brief   Response callback.
+     *          Sent when the client is registered. Each registered client has unique ID.
+     *          Overwrite, if need to handle Response call of server object. 
+     *          This call will be automatically triggered, on every appropriate request call
+     * \param   client  The client registration object that contains unique ID.
+     * \see     requestRegister
      **/
-    inline void requestClientShutdown( unsigned int clientID, const String & roleName );
+    virtual void responseRegister( const NERemoteRegistry::sClientRegister & client );
     /**
-     * \brief   Overwrite to handle error of ClientShutdown request call.
-     * \param   FailureReason   The failure reason value of request call.
+     * \brief   Call to enable or disable receiving notifications on Register response call.
+     *          This function is triggered, when client object is interested only on response result
+     *          without triggering request call.
+     * \param   notify  If true, notification will be enable. If false, notification is disabled
      **/
-    virtual void requestClientShutdownFailed( NEService::eResultType FailureReason );
-    
+    inline void notifyOnResponseRegister( bool notify = true );
+
 /************************************************************************
  * Response HelloWorld
  ************************************************************************/
     /**
      * \brief   Response callback.
-     *          The response to hello world request.
+     *          Called as reply to the request to output message.
      *          Overwrite, if need to handle Response call of server object. 
      *          This call will be automatically triggered, on every appropriate request call
-     * \param   clientInfo  The client information set by servicing component. If empty or invalid ID, the message output failed.
+     * \param   clientID    Indicates the ID client that made message output
      * \see     requestHelloWorld
      **/
-    virtual void responseHelloWorld( const NERemoteHelloWorld::sConnectedClient & clientInfo );
+    virtual void responseHelloWorld( unsigned int clientID );
     /**
      * \brief   Call to enable or disable receiving notifications on HelloWorld response call.
      *          This function is triggered, when client object is interested only on response result
@@ -262,43 +300,6 @@ public:
      * \param   notify  If true, notification will be enable. If false, notification is disabled
      **/
     inline void notifyOnResponseHelloWorld( bool notify = true );
-
-/************************************************************************
- * Broadcast HelloClients
- ************************************************************************/
-    /**
-     * \brief   Server broadcast.
-     *          Broadcast to notify all clients about connection
-     *          Overwrite, if need to handle Broadcast call of server object. 
-     *          This call will be automatically triggered, on every appropriate request call
-     * \param   clientList  List of currently active clients.
-     **/
-    virtual void broadcastHelloClients( const NERemoteHelloWorld::ConnectionList & clientList );
-    /**
-     * \brief   Call to enable or disable receiving notifications on HelloClients broadcast call.
-     *          This function is triggered, when client object is interested only on response result
-     *          without triggering request call.
-     * \param   notify  If true, notification will be enable. If false, notification is disabled
-     **/
-    inline void notifyOnBroadcastHelloClients( bool notify = true );
-
-/************************************************************************
- * Broadcast ServiceUnavailable
- ************************************************************************/
-    /**
-     * \brief   Server broadcast.
-     *          DESCRIPTION MISSED
-     *          Overwrite, if need to handle Broadcast call of server object. 
-     *          This call will be automatically triggered, on every appropriate request call
-     **/
-    virtual void broadcastServiceUnavailable( void );
-    /**
-     * \brief   Call to enable or disable receiving notifications on ServiceUnavailable broadcast call.
-     *          This function is triggered, when client object is interested only on response result
-     *          without triggering request call.
-     * \param   notify  If true, notification will be enable. If false, notification is disabled
-     **/
-    inline void notifyOnBroadcastServiceUnavailable( bool notify = true );
 
 //////////////////////////////////////////////////////////////////////////
 // End Service Interface operations / attributes and overrides declaration
@@ -332,14 +333,14 @@ protected:
     virtual bool serviceConnected( bool isConnected, ProxyBase & proxy );
 
 /************************************************************************/
-// RemoteHelloWorldClientBase Error Handling overrides
+// RemoteRegistryClientBase Error Handling overrides
 /************************************************************************/
 
     /**
      * \brief   Overwrite this method if need to make error handling on invalid request
      * \param   InvalidReqId    The ID of invalid request
      **/
-    virtual void invalidRequest( NERemoteHelloWorld::eMessageIDs InvalidReqId );
+    virtual void invalidRequest( NERemoteRegistry::eMessageIDs InvalidReqId );
     
 //////////////////////////////////////////////////////////////////////////
 // Attributes
@@ -370,7 +371,7 @@ protected:
     /**
      * \brief  Returns instance of proxy object.
      */
-    inline const RemoteHelloWorldProxy * getProxy( void ) const;
+    inline const RemoteRegistryProxy * getProxy( void ) const;
       
     /**
      * \brief Returns target service component role name.
@@ -392,7 +393,7 @@ private:
     /**
      * \brief   Pointer of Proxy object providing communication
      **/
-    RemoteHelloWorldProxy *   mProxy;
+    RemoteRegistryProxy *   mProxy;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
@@ -409,7 +410,7 @@ private:
     virtual void processNotificationEvent( NotificationEvent & eventElem );
     
 /************************************************************************/
-// RemoteHelloWorldClientBase hidden methods
+// RemoteRegistryClientBase hidden methods
 /************************************************************************/
 
     /**
@@ -422,12 +423,12 @@ private:
      *                  assigned, then if parameter 'always' is true, it will trigger
      *                  notification immediately after call. 
      **/
-    void notifyOn( NERemoteHelloWorld::eMessageIDs msgId, bool notify, bool always = false );
+    void notifyOn( NERemoteRegistry::eMessageIDs msgId, bool notify, bool always = false );
     /**
      * \brief   Overwrite this method if need to make error handling on invalid response
      * \param   InvalidRespId   The ID of invalid response
      **/
-     void invalidResponse( NERemoteHelloWorld::eMessageIDs InvalidRespId );
+     void invalidResponse( NERemoteRegistry::eMessageIDs InvalidRespId );
 
     /**
      * \brief   By default, the function calls appropriate request failure function.
@@ -435,62 +436,62 @@ private:
      * \param   msgId           The ID of either response of request message, which failed. Normally ID of request.
      * \param   FailureReason   The failure reason value of request call.
      **/
-    void requestFailed( NERemoteHelloWorld::eMessageIDs FailureMsgId, NEService::eResultType FailureReason );
+    void requestFailed( NERemoteRegistry::eMessageIDs FailureMsgId, NEService::eResultType FailureReason );
 
     /**
-     * \brief   Returns reference of RemoteHelloWorldClientBase object
+     * \brief   Returns reference of RemoteRegistryClientBase object
      **/
 
-    RemoteHelloWorldClientBase & self( void );
+    RemoteRegistryClientBase & self( void );
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    RemoteHelloWorldClientBase( void );
-    RemoteHelloWorldClientBase( const RemoteHelloWorldClientBase & /* src */ );
-    const RemoteHelloWorldClientBase & operator = ( const RemoteHelloWorldClientBase & /* src */ );
+    RemoteRegistryClientBase( void );
+    RemoteRegistryClientBase( const RemoteRegistryClientBase & /* src */ );
+    const RemoteRegistryClientBase & operator = ( const RemoteRegistryClientBase & /* src */ );
 };
 
 //////////////////////////////////////////////////////////////////////////
-// RemoteHelloWorldClientBase class inline functions implementation
+// RemoteRegistryClientBase class inline functions implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline RemoteHelloWorldClientBase & RemoteHelloWorldClientBase::self( void )
+inline RemoteRegistryClientBase & RemoteRegistryClientBase::self( void )
 {
     return (*this);
 }
 
-inline unsigned int RemoteHelloWorldClientBase::getCurrentSequenceNr( void ) const
+inline unsigned int RemoteRegistryClientBase::getCurrentSequenceNr( void ) const
 {
     return mCurrSequenceNr;
 }
 
-inline void RemoteHelloWorldClientBase::clearAllNotifications( void )
+inline void RemoteRegistryClientBase::clearAllNotifications( void )
 {
     ASSERT(mProxy != NULL);
     mProxy->clearAllNotifications(static_cast<IENotificationEventConsumer &>(self()));
 }
 
-inline bool RemoteHelloWorldClientBase::isConnected( void ) const
+inline bool RemoteRegistryClientBase::isConnected( void ) const
 {
     ASSERT(mProxy != NULL);
     return mIsConnected;
 }
 
-inline bool RemoteHelloWorldClientBase::isNotificationAssigned( NERemoteHelloWorld::eMessageIDs msgId ) const
+inline bool RemoteRegistryClientBase::isNotificationAssigned( NERemoteRegistry::eMessageIDs msgId ) const
 {
     ASSERT(mProxy != NULL);
     return mProxy->hasNotificationListener(static_cast<unsigned int>(msgId));
 }
 
-inline const String & RemoteHelloWorldClientBase::getServiceName( void ) const
+inline const String & RemoteRegistryClientBase::getServiceName( void ) const
 {
     ASSERT(mProxy != NULL);
     return mProxy->getProxyAddress().getServiceName();
 }
     
-inline const Version & RemoteHelloWorldClientBase::getServiceVersion( void ) const
+inline const Version & RemoteRegistryClientBase::getServiceVersion( void ) const
 {
     ASSERT(mProxy != NULL);
     return mProxy->getProxyAddress().getServiceVersion();
@@ -500,90 +501,87 @@ inline const Version & RemoteHelloWorldClientBase::getServiceVersion( void ) con
  * Attribute inline functions
  ************************************************************************/
 
-inline bool RemoteHelloWorldClientBase::isConnectedClientsValid( void ) const
+inline bool RemoteRegistryClientBase::isRegistryListValid( void ) const
 {
     ASSERT(mProxy != NULL);
-   return mProxy->isConnectedClientsValid( );
+   return mProxy->isRegistryListValid( );
 }
-inline const NERemoteHelloWorld::ConnectionList & RemoteHelloWorldClientBase::getConnectedClients( NEService::eDataStateType & state ) const
+inline const NERemoteRegistry::ListRegistry & RemoteRegistryClientBase::getRegistryList( NEService::eDataStateType & state ) const
 {
     ASSERT(mProxy != NULL);
-    return mProxy->getConnectedClients( state );
+    return mProxy->getRegistryList( state );
 }
 
-inline void RemoteHelloWorldClientBase::notifyOnConnectedClientsUpdate( bool notify /* = true */ )
+inline void RemoteRegistryClientBase::notifyOnRegistryListUpdate( bool notify /* = true */ )
 {
-    notifyOn( NERemoteHelloWorld::MSG_ID_ConnectedClients, notify, false );
+    notifyOn( NERemoteRegistry::MSG_ID_RegistryList, notify, false );
 }
 
-inline bool RemoteHelloWorldClientBase::isRemainOutputValid( void ) const
+inline bool RemoteRegistryClientBase::isRemainOutputsValid( void ) const
 {
     ASSERT(mProxy != NULL);
-   return mProxy->isRemainOutputValid( );
+   return mProxy->isRemainOutputsValid( );
 }
-inline short RemoteHelloWorldClientBase::getRemainOutput( NEService::eDataStateType & state ) const
+inline unsigned int RemoteRegistryClientBase::getRemainOutputs( NEService::eDataStateType & state ) const
 {
     ASSERT(mProxy != NULL);
-    return mProxy->getRemainOutput( state );
+    return mProxy->getRemainOutputs( state );
 }
 
-inline void RemoteHelloWorldClientBase::notifyOnRemainOutputUpdate( bool notify /* = true */ )
+inline void RemoteRegistryClientBase::notifyOnRemainOutputsUpdate( bool notify /* = true */ )
 {
-    notifyOn( NERemoteHelloWorld::MSG_ID_RemainOutput, notify, false );
+    notifyOn( NERemoteRegistry::MSG_ID_RemainOutputs, notify, false );
 }
 
 /************************************************************************
  * Request calls
  ************************************************************************/
 
-inline unsigned int RemoteHelloWorldClientBase::requestHelloWorld( const String & roleName, const String & addMessage/* = "" */ )
+inline unsigned int RemoteRegistryClientBase::requestRegister( const String & name, const ServiceAddress & service, const String & thread, const String & process )
 {
     ASSERT(mProxy != NULL);
-    return mProxy->requestHelloWorld( static_cast<IENotificationEventConsumer &>(self()), roleName, addMessage );
+    return mProxy->requestRegister( static_cast<IENotificationEventConsumer &>(self()), name, service, thread, process );
 }
 
-inline void RemoteHelloWorldClientBase::requestClientShutdown( unsigned int clientID, const String & roleName )
+inline void RemoteRegistryClientBase::requestUnregister( const NERemoteRegistry::sClientRegister & client )
 {
     ASSERT(mProxy != NULL);
-    mProxy->requestClientShutdown( clientID, roleName );
+    mProxy->requestUnregister( client );
+}
+
+inline unsigned int RemoteRegistryClientBase::requestHelloWorld( unsigned int clientID, const String & addMessage )
+{
+    ASSERT(mProxy != NULL);
+    return mProxy->requestHelloWorld( static_cast<IENotificationEventConsumer &>(self()), clientID, addMessage );
 }
 
 /************************************************************************
  * Response notifications
  ************************************************************************/
 
-inline void RemoteHelloWorldClientBase::notifyOnResponseHelloWorld( bool notify /* = true */ )
+inline void RemoteRegistryClientBase::notifyOnResponseRegister( bool notify /* = true */ )
 {
-    notifyOn(NERemoteHelloWorld::MSG_ID_responseHelloWorld, notify, false);
+    notifyOn(NERemoteRegistry::MSG_ID_responseRegister, notify, false);
 }
 
-/************************************************************************
- * Broadcast notifications
- ************************************************************************/
-
-inline void RemoteHelloWorldClientBase::notifyOnBroadcastHelloClients( bool notify /* = true */ )
+inline void RemoteRegistryClientBase::notifyOnResponseHelloWorld( bool notify /* = true */ )
 {
-    notifyOn(NERemoteHelloWorld::MSG_ID_broadcastHelloClients, notify, false);
+    notifyOn(NERemoteRegistry::MSG_ID_responseHelloWorld, notify, false);
 }
 
-inline void RemoteHelloWorldClientBase::notifyOnBroadcastServiceUnavailable( bool notify /* = true */ )
-{
-    notifyOn(NERemoteHelloWorld::MSG_ID_broadcastServiceUnavailable, notify, false);
-}
-
-inline const RemoteHelloWorldProxy * RemoteHelloWorldClientBase::getProxy( void ) const
+inline const RemoteRegistryProxy * RemoteRegistryClientBase::getProxy( void ) const
 {
     return mProxy;
 }
 
-inline const String & RemoteHelloWorldClientBase::getServiceRole( void ) const
+inline const String & RemoteRegistryClientBase::getServiceRole( void ) const
 {
     ASSERT(mProxy != NULL);
     return mProxy->getProxyAddress().getRoleName();
 }
 
-#endif   // SHAREIPCMIX_SRC_REMOTEHELLOWORLDCLIENTBASE_HPP
+#endif   // SHAREIPCMIX_SRC_REMOTEREGISTRYCLIENTBASE_HPP
 
 //////////////////////////////////////////////////////////////////////////
-// End generate shareipcmix/src/RemoteHelloWorldClientBase.hpp file
+// End generate shareipcmix/src/RemoteRegistryClientBase.hpp file
 //////////////////////////////////////////////////////////////////////////

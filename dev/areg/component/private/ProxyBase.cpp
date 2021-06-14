@@ -277,6 +277,28 @@ int ProxyBase::findThreadProxies(DispatcherThread & ownerThread, TEArrayList<Pro
     return result;
 }
 
+#include "areg/trace/GETrace.h"
+DEF_TRACE_SCOPE(areg_component_ProxyBase_createRequestFailureEvent);
+
+RemoteResponseEvent * ProxyBase::createRequestFailureEvent(const ProxyAddress & target, unsigned int msgId, NEService::eResultType errCode, unsigned int seqNr)
+{
+    TRACE_SCOPE(areg_component_ProxyBase_createRequestFailureEvent);
+
+    RemoteResponseEvent * result = NULL;
+
+    ProxyBase::_mapRegisteredProxies.lock();
+    
+    ProxyBase * proxy = ProxyBase::findProxyByAddress(target);
+    if (proxy != NULL)
+    {
+        result = proxy->createRemoteRequestFailedEvent(target, msgId, errCode, seqNr);
+    }
+
+    ProxyBase::_mapRegisteredProxies.unlock();
+
+    return result;
+}
+
 
 //////////////////////////////////////////////////////////////////////////
 // ProxyBase class, constructor / destructor

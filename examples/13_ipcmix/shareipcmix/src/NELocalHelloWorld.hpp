@@ -7,7 +7,7 @@
 /************************************************************************
  * (c) copyright    2021
  *                  Create by AREG SDK code generator tool from source LocalHelloWorld.
- * Generated at     29.05.2021  12:42:58 GMT+02:00 
+ * Generated at     11.06.2021  21:11:04 GMT+02:00 
  ************************************************************************/
 
 /************************************************************************
@@ -46,9 +46,8 @@
  * \brief   LocalHelloWorld Service Interface defined constants, 
  *          types and structures message IDs, global static methods.
  *
- *          
- *          		Simple Service Interface to demonstrate working features of AREG SDK.
- *          		This interface serves only local components and can be duplicated in other processes.
+ *          Simple Service Interface to demonstrate working features of AREG SDK.
+ *          This interface serves only local components and can be duplicated in other processes.
  *          		
  *
  **/
@@ -67,7 +66,7 @@ namespace   NELocalHelloWorld
      * \brief   Implemented Version
      *          NELocalHelloWorld::InterfaceVersion
      **/
-    const Version         InterfaceVersion    = "1.0.0";
+    const Version         InterfaceVersion    = "2.0.0";
 
     /**
      * \brief   The maximum number of messages to output.
@@ -179,12 +178,7 @@ namespace   NELocalHelloWorld
          * \brief   Request ID: MSG_ID_requestHelloWorld
          *          Request to print hello world
          **/
-          MSG_ID_requestHelloWorld            = NEService::REQUEST_ID_FIRST     // void requestHelloWorld( const String & roleName, const String & addMessage = "" );
-        /**
-         * \brief   Request ID: MSG_ID_requestClientShutdown
-         *          Sent by client to notify the shutdown. This removes client from the list. This request has no response.
-         **/
-        , MSG_ID_requestClientShutdown                                          // void requestClientShutdown( unsigned int clientID, const String & roleName );
+          MSG_ID_requestHelloWorld    = NEService::REQUEST_ID_FIRST     // void requestHelloWorld( const String & roleName, const String & addMessage = "" );
      
     /************************************************************************
      * Response IDs
@@ -193,20 +187,10 @@ namespace   NELocalHelloWorld
          * \brief   Response ID: MSG_ID_responseHelloWorld
          *          The response to hello world request.
          **/
-        , MSG_ID_responseHelloWorld           = NEService::RESPONSE_ID_FIRST    // void responseHelloWorld( const NELocalHelloWorld::sConnectedClient & clientInfo );     
+        , MSG_ID_responseHelloWorld   = NEService::RESPONSE_ID_FIRST    // void responseHelloWorld( const NELocalHelloWorld::sConnectedClient & clientInfo );     
     /************************************************************************
      * Broadcast IDs
      ************************************************************************/
-        /**
-         * \brief   Broadcast ID: MSG_ID_broadcastHelloClients
-         *          Broadcast to notify all clients about connection
-         **/
-        , MSG_ID_broadcastHelloClients                                          // void broadcastHelloClients( const NELocalHelloWorld::ConnectionList & clientList );
-        /**
-         * \brief   Broadcast ID: MSG_ID_broadcastServiceUnavailable
-         *          DESCRIPTION MISSED
-         **/
-        , MSG_ID_broadcastServiceUnavailable                                    // void broadcastServiceUnavailable( void );
      
     /************************************************************************
      * Attributes IDs
@@ -215,12 +199,12 @@ namespace   NELocalHelloWorld
          * \brief   Attribute ID: MSG_ID_ConnectedClients
          *          The list of connected clients. Updated each time when new client requests to output Hello World message.
          **/
-        , MSG_ID_ConnectedClients             = NEService::ATTRIBUTE_ID_FIRST   // NELocalHelloWorld::ConnectionList mConnectedClients;
+        , MSG_ID_ConnectedClients     = NEService::ATTRIBUTE_ID_FIRST   // NELocalHelloWorld::ConnectionList mConnectedClients;
         /**
          * \brief   Attribute ID: MSG_ID_RemainOutput
          *          Remaining number of outputs to print Hello World.
          **/
-        , MSG_ID_RemainOutput                                                   // short mRemainOutput;
+        , MSG_ID_RemainOutput                                           // short mRemainOutput;
      
     /************************************************************************
      * Reserved constant IDs
@@ -228,11 +212,11 @@ namespace   NELocalHelloWorld
         /**
          * \brief   ID of empty function
          **/
-        , MSG_ID_NO_PROCEED                   = NEService::RESPONSE_ID_NONE    
+        , MSG_ID_NO_PROCEED           = NEService::RESPONSE_ID_NONE    
         /**
          * \brief   ID of invalid call
          **/
-        , MSG_ID_INVALID                      = NEService::INVALID_MESSAGE_ID  
+        , MSG_ID_INVALID              = NEService::INVALID_MESSAGE_ID  
      
     } eMessageIDs;
     /**
@@ -368,14 +352,8 @@ inline const char * NELocalHelloWorld::getString( NELocalHelloWorld::eMessageIDs
     {
     case    NELocalHelloWorld::MSG_ID_requestHelloWorld:
         return "NELocalHelloWorld::MSG_ID_requestHelloWorld";
-    case    NELocalHelloWorld::MSG_ID_requestClientShutdown:
-        return "NELocalHelloWorld::MSG_ID_requestClientShutdown";
     case    NELocalHelloWorld::MSG_ID_responseHelloWorld:
         return "NELocalHelloWorld::MSG_ID_responseHelloWorld";
-    case    NELocalHelloWorld::MSG_ID_broadcastHelloClients:
-        return "NELocalHelloWorld::MSG_ID_broadcastHelloClients";
-    case    NELocalHelloWorld::MSG_ID_broadcastServiceUnavailable:
-        return "NELocalHelloWorld::MSG_ID_broadcastServiceUnavailable";
     case    NELocalHelloWorld::MSG_ID_ConnectedClients:
         return "NELocalHelloWorld::MSG_ID_ConnectedClients";
     case    NELocalHelloWorld::MSG_ID_RemainOutput:

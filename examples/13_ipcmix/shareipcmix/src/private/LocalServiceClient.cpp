@@ -13,20 +13,18 @@
 #include "areg/trace/GETrace.h"
 #include "areg/component/Component.hpp"
 #include "areg/component/ComponentThread.hpp"
+#include "shareipcmix/src/IPCMixCommon.hpp"
 
 DEF_TRACE_SCOPE(examples_13_ipcmix_shareipcmix_LocalServiceClient_serviceConnected);
-DEF_TRACE_SCOPE(examples_13_ipcmix_shareipcmix_LocalServiceClient_onConnectedClientsUpdate);
-DEF_TRACE_SCOPE(examples_13_ipcmix_shareipcmix_LocalServiceClient_onRemainOutputUpdate);
-DEF_TRACE_SCOPE(examples_13_ipcmix_shareipcmix_LocalServiceClient_broadcastHelloClients);
-DEF_TRACE_SCOPE(examples_13_ipcmix_shareipcmix_LocalServiceClient_broadcastServiceUnavailable);
 DEF_TRACE_SCOPE(examples_13_ipcmix_shareipcmix_LocalServiceClient_responseHelloWorld);
 DEF_TRACE_SCOPE(examples_13_ipcmix_shareipcmix_LocalServiceClient_requestHelloWorldFailed);
-DEF_TRACE_SCOPE(examples_13_ipcmix_shareipcmix_LocalServiceClient_requestClientShutdownFailed);
 DEF_TRACE_SCOPE(examples_13_ipcmix_shareipcmix_LocalServiceClient_processTimer);
 DEF_TRACE_SCOPE(examples_13_ipcmix_shareipcmix_LocalServiceClient_LocalServiceClient);
+DEF_TRACE_SCOPE(examples_13_ipcmix_shareipcmix_LocalServiceClient_broadcastServiceUnavailable);
 
 LocalServiceClient::LocalServiceClient(const String & roleName, Component & owner, unsigned int timeout)
     : LocalHelloWorldClientBase ( roleName, owner                                               )
+    , SystemShutdownClientBase  ( IPCMixCommon::MainService, owner                              )
     , IETimerConsumer           (                                                               )
 
     , mMsTimeout                ( timeout                                                       )
@@ -36,12 +34,12 @@ LocalServiceClient::LocalServiceClient(const String & roleName, Component & owne
     TRACE_SCOPE(examples_13_ipcmix_shareipcmix_LocalServiceClient_LocalServiceClient);
     TRACE_DBG("Client: roleName [ %s ] of service [ %s ] owner [ %s ] in thread [ %s ] has timer [ %s ] with timeout [ %d ] ms"
                     , roleName.getString()
-                    , getServiceName().getString()
+                    , LocalHelloWorldClientBase::getServiceName().getString()
                     , owner.getRoleName().getString()
                     , owner.getMasterThread().getName().getString()
                     , mTimer.getName().getString()
                     , timeout);
-    TRACE_DBG("Proxy: [ %s ]", ProxyAddress::convAddressToPath(getProxy()->getProxyAddress()).getString());
+    TRACE_DBG("Proxy: [ %s ]", ProxyAddress::convAddressToPath(LocalHelloWorldClientBase::getProxy()->getProxyAddress()).getString());
 }
 
 LocalServiceClient::~LocalServiceClient(void)
@@ -51,68 +49,42 @@ LocalServiceClient::~LocalServiceClient(void)
 bool LocalServiceClient::serviceConnected(bool isConnected, ProxyBase & proxy)
 {
     TRACE_SCOPE(examples_13_ipcmix_shareipcmix_LocalServiceClient_serviceConnected);
-    bool result = LocalHelloWorldClientBase::serviceConnected(isConnected, proxy);
+    TRACE_DBG("Proxy [ %s ] is [ %s ]", ProxyAddress::convAddressToPath(proxy.getProxyAddress()).getString(), isConnected ? "CONNECTED" : "DISCONNECTED");
 
-    TRACE_DBG("Proxy [ %s ] is [ %s ]"
-                , ProxyAddress::convAddressToPath(proxy.getProxyAddress()).getString()
-                , isConnected ? "connected" : "disconnected");
-
-    if (isConnected)
+    if (LocalHelloWorldClientBase::serviceConnected(isConnected, proxy) )
     {
-        notifyOnRemainOutputUpdate(true);
-        notifyOnBroadcastServiceUnavailable(true);
-        mTimer.startTimer(mMsTimeout);
+        if (isConnected)
+        {
+            TRACE_DBG("Starting timer with timeout [ %d ] ms", mMsTimeout);
+            mTimer.startTimer(mMsTimeout, LocalHelloWorldClientBase::getProxy()->getProxyDispatcherThread());
+        }
+        else
+        {
+            mTimer.stopTimer();
+            LocalHelloWorldClientBase::clearAllNotifications();
+        }
+
+        return true;
+    }
+    else if (SystemShutdownClientBase::serviceConnected(isConnected, proxy))
+    {
+        TRACE_DBG("Proxy [ %s ] is [ %s ]", ProxyAddress::convAddressToPath(proxy.getProxyAddress()).getString(), isConnected ? "CONNECTED" : "DISCONNECTED");
+        notifyOnBroadcastServiceUnavailable(isConnected);
+        return true;
     }
     else
     {
-        mTimer.stopTimer();
-        clearAllNotifications();
+        return false;
     }
-
-    return result;
-}
-
-void LocalServiceClient::onConnectedClientsUpdate(const NELocalHelloWorld::ConnectionList & ConnectedClients, NEService::eDataStateType state)
-{
-    TRACE_SCOPE(examples_13_ipcmix_shareipcmix_LocalServiceClient_onConnectedClientsUpdate);
-    TRACE_DBG("Active client list of [ %s ] service is updated, active clients [ %d ], data is [ %s ]"
-                    , getServiceRole().getString()
-                    , ConnectedClients.getSize()
-                    , NEService::getString(state));
-}
-
-void LocalServiceClient::onRemainOutputUpdate(short RemainOutput, NEService::eDataStateType state)
-{
-    TRACE_SCOPE(examples_13_ipcmix_shareipcmix_LocalServiceClient_onRemainOutputUpdate);
-    TRACE_DBG("Service [ %s ]: Remain greeting outputs [ %d ], data is [ %s ]", getServiceRole().getString(), static_cast<int>(RemainOutput), NEService::getString(state));
 }
 
 void LocalServiceClient::responseHelloWorld(const NELocalHelloWorld::sConnectedClient & clientInfo)
 {
     TRACE_SCOPE(examples_13_ipcmix_shareipcmix_LocalServiceClient_responseHelloWorld);
-    TRACE_DBG("Service [ %s ]: Made output of [ %s ], client ID [ %d ]", getServiceRole().getString(), clientInfo.ccName.getString(), clientInfo.ccID);
+    TRACE_DBG("Service [ %s ]: Made output of [ %s ], client ID [ %d ]", LocalHelloWorldClientBase::getServiceRole().getString(), clientInfo.ccName.getString(), clientInfo.ccID);
+    
     ASSERT(clientInfo.ccName == mTimer.getName());
     mID = clientInfo.ccID;
-
-    if (isNotificationAssigned(NELocalHelloWorld::MSG_ID_broadcastHelloClients) == false)
-    {
-        notifyOnBroadcastHelloClients(true);
-        notifyOnConnectedClientsUpdate(true);
-    }
-}
-
-void LocalServiceClient::broadcastHelloClients(const NELocalHelloWorld::ConnectionList & clientList)
-{
-    TRACE_SCOPE(examples_13_ipcmix_shareipcmix_LocalServiceClient_broadcastHelloClients);
-
-    TRACE_DBG("[ %d ] clients use service [ %s ]", clientList.getSize(), getServiceName().getString());
-}
-
-void LocalServiceClient::broadcastServiceUnavailable(void)
-{
-    TRACE_SCOPE(examples_13_ipcmix_shareipcmix_LocalServiceClient_broadcastServiceUnavailable);
-    TRACE_WARN("Service notify reached message output maximum, starting shutdown procedure");
-    requestClientShutdown(mID, mTimer.getName());
 }
 
 void LocalServiceClient::requestHelloWorldFailed(NEService::eResultType FailureReason)
@@ -121,11 +93,6 @@ void LocalServiceClient::requestHelloWorldFailed(NEService::eResultType FailureR
     TRACE_ERR("Request to output greetings failed with reason [ %s ]", NEService::getString(FailureReason));
 }
 
-void LocalServiceClient::requestClientShutdownFailed(NEService::eResultType FailureReason)
-{
-    TRACE_SCOPE(examples_13_ipcmix_shareipcmix_LocalServiceClient_requestClientShutdownFailed);
-    TRACE_ERR("Request to notify client shutdown failed with reason [ %s ]", NEService::getString(FailureReason));
-}
 
 void LocalServiceClient::processTimer(Timer & timer)
 {
@@ -133,7 +100,16 @@ void LocalServiceClient::processTimer(Timer & timer)
     ASSERT(&timer == &mTimer);
 
     TRACE_DBG("Timer [ %s ] expired, send request to output message.", timer.getName().getString());
-    requestHelloWorld(timer.getName(), "");
+    if (timer.isActive())
+    {
+        requestHelloWorld(timer.getName(), "");
+    }
+}
+
+void LocalServiceClient::broadcastServiceUnavailable(void)
+{
+    TRACE_SCOPE(examples_13_ipcmix_shareipcmix_LocalServiceClient_broadcastServiceUnavailable);
+    mTimer.stopTimer();
 }
 
 inline String LocalServiceClient::timerName( Component & owner ) const
@@ -141,9 +117,9 @@ inline String LocalServiceClient::timerName( Component & owner ) const
     String result = "";
     result += owner.getRoleName();
     result += NEUtilities::DEFAULT_SPECIAL_CHAR;
-    result += getServiceRole();
+    result += LocalHelloWorldClientBase::getServiceRole();
     result += NEUtilities::DEFAULT_SPECIAL_CHAR;
-    result += getServiceName();
+    result += LocalHelloWorldClientBase::getServiceName();
     
     return result;
 }

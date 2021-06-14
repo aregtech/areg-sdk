@@ -55,6 +55,7 @@ public:
         , CMD_RegisterConnection        //!< Requested to register connection
         , CMD_UnregisterConnection      //!< Requested to unregister connection
         , CMD_LostConnection            //!< Requested to send notifications to components that connection is lost.
+        , CMD_ShutdownService           //!< Request to shutdown service.
     } eServiceManagerCommands;
 
     /**
@@ -71,6 +72,11 @@ public:
      * \brief   Creates and returns Service Manager event data with command to stop router client connection.
      **/
     static ServiceManagerEventData stopMessageRouterClient( void );
+
+    /**
+     * \brief   creates and returns service manager event with command to stop routing connection and stop service manager.
+     **/
+    static ServiceManagerEventData shutdownServiceManager( void );
 
     /**
      * \brief   Creates and returns Service Manager event data with command to register Proxy
@@ -275,6 +281,8 @@ inline const char * ServiceManagerEventData::getString( ServiceManagerEventData:
         return "ServiceManagerEventData::CMD_UnregisterConnection";
     case ServiceManagerEventData::CMD_LostConnection:
         return "ServiceManagerEventData::CMD_LostConnection";
+    case ServiceManagerEventData::CMD_ShutdownService:
+        return "ServiceManagerEventData::CMD_ShutdownService";
     default:
         return "ERR: undefined ServiceManagerEventData::eServiceManagerCommands value!!!";
     }

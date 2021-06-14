@@ -129,6 +129,7 @@
     <ClCompile Include="areg\appbase\private\Application.cpp" />
     <ClCompile Include="areg\base\private\SocketTemp.cpp" />
     <ClCompile Include="areg\component\private\EventData.cpp" />
+    <ClCompile Include="areg\component\private\IETimerConsumer.cpp" />
     <ClCompile Include="areg\component\private\RemoteEventFactory.cpp" />
     <ClCompile Include="areg\component\private\RequestEvents.cpp" />
     <ClCompile Include="areg\component\private\ResponseEvents.cpp" />
@@ -295,6 +296,7 @@
     <ClInclude Include="areg\base\TERingStack.hpp" />
     <ClInclude Include="areg\base\TEString.hpp" />
     <ClInclude Include="areg\component\ClientBase.hpp" />
+    <ClInclude Include="areg\component\IETimerConsumer.hpp" />
     <ClInclude Include="areg\component\private\ClientInfo.hpp" />
     <ClInclude Include="areg\component\private\ClientList.hpp" />
     <ClInclude Include="areg\component\Component.hpp" />

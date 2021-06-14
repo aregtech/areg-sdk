@@ -19,8 +19,8 @@
 // EventDispatcherBase class, Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 EventDispatcherBase::EventDispatcherBase(const char* name )
-    : IEQueueListener  ( )
-    , IEEventDispatcher( )
+    : IEEventDispatcher( )
+    , IEQueueListener  ( )
 
     , mDispatcherName   ( name != NULL ? name : "" )
     , mExternaEvents    ( static_cast<IEQueueListener &>(self()) )
@@ -96,27 +96,6 @@ bool EventDispatcherBase::queueEvent( Event& eventElem )
             result = false;
     }
     return result;
-}
-
-void EventDispatcherBase::removeEvents(bool keepSpecials)
-{
-    mExternaEvents.lockQueue();
-    mInternalEvents.removeEvents( false );
-    mExternaEvents.removeEvents( keepSpecials );
-    mExternaEvents.unlockQueue();
-}
-
-void EventDispatcherBase::removeAllEvents(void)
-{
-    mExternaEvents.lockQueue();
-    mInternalEvents.removeAllEvents( );
-    mExternaEvents.removeAllEvents( );
-    mExternaEvents.unlockQueue();
-}
-
-int EventDispatcherBase::removeExternalEventType( const RuntimeClassID & eventClassId )
-{
-    return mExternaEvents.removeEvents(eventClassId);
 }
 
 bool EventDispatcherBase::registerEventConsumer( const RuntimeClassID& whichClass, IEEventConsumer& whichConsumer )
@@ -348,11 +327,6 @@ bool EventDispatcherBase::dispatchEvent( Event& eventElem )
 bool EventDispatcherBase::hasRegisteredConsumer( const RuntimeClassID& whichClass ) const
 {
     return mConsumerMap.existResource(whichClass);
-}
-
-bool EventDispatcherBase::isReady( void ) const
-{
-    return mHasStarted;
 }
 
 void EventDispatcherBase::_clean()

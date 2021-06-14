@@ -213,6 +213,11 @@ public:
      **/
     bool requestDisconnectServer( void );
 
+    /**
+     * \brief   Generates client disconnected message to broadcast.
+     **/
+    RemoteMessage getDisconnectMessage( void ) const;
+
 //////////////////////////////////////////////////////////////////////////
 // Member variables.
 //////////////////////////////////////////////////////////////////////////

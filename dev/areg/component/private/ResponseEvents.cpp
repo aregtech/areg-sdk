@@ -21,10 +21,10 @@ IMPLEMENT_RUNTIME_EVENT(ResponseEvent, ServiceResponseEvent)
 // ResponseEvent class Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
 ResponseEvent::ResponseEvent( const ProxyAddress & proxyTarget
-                                , NEService::eResultType result
-                                , unsigned int respId
-                                , Event::eEventType eventType
-                                , unsigned int seqNr  /*= NEService::SEQUENCE_NUMBER_NOTIFY*/ )
+                            , NEService::eResultType result
+                            , unsigned int respId
+                            , Event::eEventType eventType
+                            , unsigned int seqNr  /*= NEService::SEQUENCE_NUMBER_NOTIFY*/ )
     : ServiceResponseEvent(proxyTarget, result, respId, eventType, seqNr)
     , mData                 (respId, (eventType & Event::EventExternal) != 0 ? EventDataStream::EventDataExternal : EventDataStream::EventDataInternal)
 {
@@ -32,12 +32,12 @@ ResponseEvent::ResponseEvent( const ProxyAddress & proxyTarget
 }
 
 ResponseEvent::ResponseEvent( const EventDataStream & args
-                                , const ProxyAddress & proxyTarget
-                                , NEService::eResultType result
-                                , unsigned int respId
-                                , Event::eEventType eventType
-                                , unsigned int seqNr  /*= NEService::SEQUENCE_NUMBER_NOTIFY*/
-                                , const char* name    /*= NULL*/ )
+                            , const ProxyAddress & proxyTarget
+                            , NEService::eResultType result
+                            , unsigned int respId
+                            , Event::eEventType eventType
+                            , unsigned int seqNr  /*= NEService::SEQUENCE_NUMBER_NOTIFY*/
+                            , const char* name    /*= NULL*/ )
     : ServiceResponseEvent(proxyTarget, result, respId, eventType, seqNr)
     , mData                 (respId, args, name)
 {

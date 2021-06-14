@@ -544,7 +544,7 @@ protected:
         if ( mHashTable != NULL )
         {
             unsigned int hash = getHashKey(Key);
-            for ( result = &mHashTable[hash % mHashTableSize]; *result != NULL; result = &(*result)->mNext)
+            for ( result = &(mHashTable[hash % mHashTableSize]); (*result) != NULL; result = &((*result)->mNext))
             {
                 if ( hash == (*result)->mHash && isEqualKeys((*result)->mKey, Key) )
                     break;

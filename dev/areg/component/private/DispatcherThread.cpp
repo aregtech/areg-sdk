@@ -119,11 +119,11 @@ inline NullDispatcherThread::NullDispatcherThread( void )
 // NullDispatcherThread class. Disable basic functionalities.
 //////////////////////////////////////////////////////////////////////////
 bool NullDispatcherThread::registerEventConsumer( const RuntimeClassID &    /* whichClass   */
-                                                  , IEEventConsumer &           /* whichConsumer*/ )
+                                                , IEEventConsumer &         /* whichConsumer*/ )
 {   return false;    }
 
 bool NullDispatcherThread::unregisterEventConsumer( const RuntimeClassID &  /* whichClass   */
-                                                    , IEEventConsumer &         /* whichConsumer*/ )
+                                                  , IEEventConsumer &       /* whichConsumer*/ )
 {   return false;    }
 
 int NullDispatcherThread::removeConsumer( IEEventConsumer & /* whichConsumer*/ )

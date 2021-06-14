@@ -11,7 +11,8 @@
 #include "areg/component/ComponentLoader.hpp"
 #include "areg/trace/GETrace.h"
 
-#include "shareipcmix/src/NERemoteHelloWorld.hpp"
+#include "shareipcmix/src/NERemoteRegistry.hpp"
+#include "shareipcmix/src/NESystemShutdown.hpp"
 #include "shareipcmix/src/NELocalHelloWorld.hpp"
 #include "shareipcmix/src/IPCMixCommon.hpp"
 
@@ -58,7 +59,7 @@ BEGIN_MODEL(IPCMixCommon::ModelName)
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
         BEGIN_REGISTER_COMPONENT( IPCMixCommon::RemoteSecondaryService, RemoteServiceComponent )
             // register dummy 'empty service'. In this example we demonstrate simple initialization
-            REGISTER_IMPLEMENT_SERVICE( NERemoteHelloWorld::ServiceName, NERemoteHelloWorld::InterfaceVersion )
+            REGISTER_IMPLEMENT_SERVICE( NERemoteRegistry::ServiceName, NERemoteRegistry::InterfaceVersion )
             REGISTER_DEPENDENCY(IPCMixCommon::MainService)
             REGISTER_DEPENDENCY(IPCMixCommon::RemoteThirdService)
             REGISTER_DEPENDENCY(IPCMixCommon::LocalService)
@@ -71,7 +72,7 @@ BEGIN_MODEL(IPCMixCommon::ModelName)
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
         BEGIN_REGISTER_COMPONENT( IPCMixCommon::LocalService, LocalServiceComponent )
             // register dummy 'empty service'. In this example we demonstrate simple initialization
-            REGISTER_IMPLEMENT_SERVICE( NELocalHelloWorld::ServiceName, NELocalHelloWorld::InterfaceVersion )
+            REGISTER_IMPLEMENT_SERVICE( NERemoteRegistry::ServiceName, NERemoteRegistry::InterfaceVersion )
             REGISTER_DEPENDENCY(IPCMixCommon::RemoteThirdService)
             REGISTER_DEPENDENCY(AnotherLocalService)
         // end of component description
@@ -90,7 +91,7 @@ BEGIN_MODEL(IPCMixCommon::ModelName)
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
         BEGIN_REGISTER_COMPONENT( IPCMixCommon::RemoteThirdService, RemoteServiceComponent )
             // register dummy 'empty service'. In this example we demonstrate simple initialization
-            REGISTER_IMPLEMENT_SERVICE( NERemoteHelloWorld::ServiceName, NERemoteHelloWorld::InterfaceVersion )
+            REGISTER_IMPLEMENT_SERVICE( NERemoteRegistry::ServiceName, NERemoteRegistry::InterfaceVersion )
             REGISTER_DEPENDENCY(IPCMixCommon::RemoteSecondaryService)
             REGISTER_DEPENDENCY(IPCMixCommon::RemoteThirdService)
             REGISTER_DEPENDENCY(IPCMixCommon::LocalService)

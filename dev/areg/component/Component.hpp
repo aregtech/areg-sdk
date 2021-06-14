@@ -344,17 +344,17 @@ private:
 // Component class inline function implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline ComponentThread& Component::getMasterThread( void )
+inline ComponentThread & Component::getMasterThread( void )
 {
     return mComponentInfo.getMasterThread();
 }
 
-inline DispatcherThread* Component::findEventConsumer( const RuntimeClassID& whichClass ) const
+inline DispatcherThread * Component::findEventConsumer( const RuntimeClassID& whichClass ) const
 {
     return mComponentInfo.findEventConsumer(whichClass);
 }
 
-inline const String& Component::getRoleName( void ) const
+inline const String & Component::getRoleName( void ) const
 {
     return mComponentInfo.getRoleName();
 }

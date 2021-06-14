@@ -69,6 +69,6 @@ bool ClientReceiveThread::runDispatcher(void)
 
     mEventStarted.resetEvent();
 
-    TRACE_DBG("Exiting client service dispatcher thread [ %s ] with result [ %s ]", getName().getString(), whichEvent == static_cast<int>(EVENT_EXIT) ? "SUCSS" : "FAILURE");
+    TRACE_DBG("Exiting client service dispatcher thread [ %s ] with result [ %s ]", getName().getString(), whichEvent == static_cast<int>(EVENT_EXIT) ? "SUCCESS" : "FAILURE");
     return (whichEvent == static_cast<int>(EVENT_EXIT));
 }

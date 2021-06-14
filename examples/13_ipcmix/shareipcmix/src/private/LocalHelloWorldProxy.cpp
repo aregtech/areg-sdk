@@ -5,7 +5,7 @@
 /************************************************************************
  * (c) copyright    2021
  *                  Create by AREG SDK code generator tool from source LocalHelloWorld.
- * Generated at     29.05.2021  12:42:58 GMT+02:00 
+ * Generated at     11.06.2021  21:11:04 GMT+02:00 
  ************************************************************************/
 
 /************************************************************************
@@ -87,7 +87,6 @@ LocalHelloWorldProxy::LocalHelloWorldProxy( const char * roleName, DispatcherThr
  * Parameters
  ************************************************************************/
     , mParamclientInfo    (  )
-    , mParamclientList    (  )
 {
     ; // do nothing
 }
@@ -149,15 +148,6 @@ unsigned int LocalHelloWorldProxy::requestHelloWorld( IENotificationEventConsume
     return mSequenceCount;
 }
     
-void LocalHelloWorldProxy::requestClientShutdown( unsigned int clientID, const String & roleName )
-{
-    static const NELocalHelloWorld::eMessageIDs msgId = NELocalHelloWorld::MSG_ID_requestClientShutdown;
-    EventDataStream args(EventDataStream::EventDataInternal);
-    IEOutStream & stream = args.getStreamForWrite();
-    stream << clientID;
-    stream << roleName;
-    sendRequestEvent( static_cast<unsigned int>(msgId), args, NULL );
-}
 /************************************************************************
  * Event processing.
  ************************************************************************/
@@ -205,13 +195,6 @@ void LocalHelloWorldProxy::updateData( LocalHelloWorldResponseEvent & eventElem,
     /************************************************************************
      * Update Broadcast parameters
      ************************************************************************/
-    case NELocalHelloWorld::MSG_ID_broadcastHelloClients:
-        stream >> mParamclientList;
-        break;
-
-    case NELocalHelloWorld::MSG_ID_broadcastServiceUnavailable:
-        break;
-
     /************************************************************************
      * Update Attribute values
      ************************************************************************/

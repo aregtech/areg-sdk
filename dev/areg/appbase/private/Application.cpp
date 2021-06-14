@@ -42,6 +42,7 @@ Application::Application(void)
     , mStartTimer   ( false )
     , mStartRouting ( false )
     , mConfigService( )
+    , mAppState     ( Application::AppStateStopped )
     , mAppQuit      (false, false)
     , mLock         ( )
     , mStorage      ( )
@@ -62,6 +63,7 @@ void Application::initApplication(  bool startTracing   /*= true */
                                   , const char * fileRouterConfig/*= NEApplication::DEFAULT_ROUTER_CONFIG_FILE */)
 {
     OUTPUT_DBG("Going to initialize application");
+    Application::_setAppState(Application::AppStateInitializing);
 
     Application::setWorkingDirectory( NULL_STRING );
     startTimer = startTimer == false ? startServicing : startTimer;
@@ -102,6 +104,8 @@ void Application::initApplication(  bool startTracing   /*= true */
 
 void Application::releaseApplication(void)
 {
+    Application::_setAppState(Application::AppStateReleasing);
+
     Application & theApp  = Application::_getApplicationInstance();
 
     TimerManager::stopTimerManager();
@@ -115,6 +119,8 @@ void Application::releaseApplication(void)
     theApp.mStartRouting    = false;
     theApp.mConfigTracer    = String::EmptyString;
     theApp.mConfigService   = String::EmptyString;
+
+    Application::_setAppState(Application::AppStateStopped);
 }
 
 bool Application::loadModel(const char * modelName /*= NULL */)
@@ -245,12 +251,20 @@ bool Application::isTracerConfigured(void)
 
 void Application::stopServiceManager( void )
 {
+    Application::_setAppState(Application::AppStateReleasing);
+    
     if ( ServiceManager::isServiceManagerStarted() )
+    {
         ServiceManager::_stopServiceManager();
+    }
+    
+    Application::_setAppState(Application::AppStateStopped);
 }
 
 bool Application::startServiceManager( void )
 {
+    Application::_setAppState(Application::AppStateInitializing);
+
     bool result = false;
     Application & theApp  = Application::_getApplicationInstance( );
     if ( ServiceManager::isServiceManagerStarted( ) == false )
@@ -260,6 +274,7 @@ bool Application::startServiceManager( void )
             Application::startTimerManager();
             result = true;
             theApp.mStartService = true;
+            Application::_setAppState(Application::AppStateReady);
         }
         else
         {
@@ -269,6 +284,8 @@ bool Application::startServiceManager( void )
     else
     {
         result = true;
+        Application::_setAppState(Application::AppStateReady);
+
         OUTPUT_INFO("The service manager has been started, ignoring to start service manager");
         ASSERT( theApp.mStartService );
         ASSERT( theApp.mStartTimer );
@@ -474,4 +491,56 @@ void Application::signalAppQuit(void)
 {
     Application & theApp = Application::_getApplicationInstance( );
     theApp.mAppQuit.setEvent();
+}
+
+bool Application::isServicingReady(void)
+{
+    Application & theApp = Application::_getApplicationInstance();
+    return (theApp.mAppState == Application::AppStateReady);
+}
+
+bool Application::_setAppState(eAppState newState)
+{
+    bool result = false;
+    Application & theApp = Application::_getApplicationInstance();
+    switch (theApp.mAppState)
+    {
+    case Application::AppStateStopped:
+        if (newState == Application::AppStateInitializing)
+        {
+            theApp.mAppState = Application::AppStateInitializing;
+            result = true;
+        }
+        break;
+
+    case Application::AppStateInitializing:
+        if (newState == Application::AppStateReady)
+        {
+            theApp.mAppState = Application::AppStateReady;
+            result = true;
+        }
+        break;
+
+    case Application::AppStateReady:
+        if (newState == Application::AppStateReleasing)
+        {
+            theApp.mAppState = Application::AppStateReleasing;
+            result = true;
+        }
+        break;
+
+    case Application::AppStateReleasing:
+        if (newState == Application::AppStateStopped)
+        {
+            theApp.mAppState = Application::AppStateStopped;
+            result = true;
+        }
+        break;
+
+    default:
+        ASSERT(false);
+        break;
+    }
+
+    return result;
 }

@@ -1,25 +1,25 @@
 //////////////////////////////////////////////////////////////////////////
-// Begin generate shareipcmix/src/RemoteHelloWorldStub.hpp file
+// Begin generate shareipcmix/src/RemoteRegistryStub.hpp file
 //////////////////////////////////////////////////////////////////////////
-#ifndef  SHAREIPCMIX_SRC_REMOTEHELLOWORLDSTUB_HPP
-#define  SHAREIPCMIX_SRC_REMOTEHELLOWORLDSTUB_HPP
+#ifndef  SHAREIPCMIX_SRC_REMOTEREGISTRYSTUB_HPP
+#define  SHAREIPCMIX_SRC_REMOTEREGISTRYSTUB_HPP
 /************************************************************************
  * (c) copyright    2021
- *                  Create by AREG SDK code generator tool from source RemoteHelloWorld.
- * Generated at     29.05.2021  12:43:00 GMT+02:00 
+ *                  Create by AREG SDK code generator tool from source RemoteRegistry.
+ * Generated at     11.06.2021  21:11:05 GMT+02:00 
  ************************************************************************/
 
 /************************************************************************
- * \file            shareipcmix/src/RemoteHelloWorldStub.hpp
- * \ingroup         RemoteHelloWorld Service Interface
- * \brief           This is an automatic generated code of RemoteHelloWorld Service Interface Stub class declaration.
+ * \file            shareipcmix/src/RemoteRegistryStub.hpp
+ * \ingroup         RemoteRegistry Service Interface
+ * \brief           This is an automatic generated code of RemoteRegistry Service Interface Stub class declaration.
  ************************************************************************/
 
 /************************************************************************
  * Include files
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
-#include "shareipcmix/src/NERemoteHelloWorld.hpp"
+#include "shareipcmix/src/NERemoteRegistry.hpp"
 #include "areg/component/StubBase.hpp"
 
 /************************************************************************
@@ -27,20 +27,20 @@
  ************************************************************************/
 
 //////////////////////////////////////////////////////////////////////////
-// RemoteHelloWorldStub class declaration
+// RemoteRegistryStub class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief       RemoteHelloWorld Service Interface Stub object.
+ * \brief       RemoteRegistry Service Interface Stub object.
  *              Instantiated per every server component, which differ by
  *              role name of component.
  *
- *              
- *              		Simple Service Interface to demonstrate working features of AREG SDK.
- *              		This is remote servicing interface can be used by local or remote components. 
- *              		Each instance of component should be unique in the network.
- *              		
+ *              Simple Service Interface to demonstrate working features of AREG SDK.
+ *              This interface demonstrates how to use multiple remote services in the system.
+ *              Each service is unique in the network.
+ *              This service is used by each remote servicing component to register clients.
+ *              Before using services, the clients should be registered.
  **/
-class RemoteHelloWorldStub   : protected  StubBase
+class RemoteRegistryStub   : protected  StubBase
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor. Protected
@@ -51,11 +51,11 @@ protected:
      * \param   masterComp  The master component object, which is initializing service Stub.
      * \note    Before constructor is called, the instance of Component must be already initialized.
      **/
-    RemoteHelloWorldStub( Component & masterComp );
+    RemoteRegistryStub( Component & masterComp );
     /**
      * \brief   Destructor.
      **/
-    virtual ~RemoteHelloWorldStub( void );
+    virtual ~RemoteRegistryStub( void );
     
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -72,131 +72,135 @@ public:
 //////////////////////////////////////////////////////////////////////////
 
 //////////////////////////////////////////////////////////////////////////
-// RemoteHelloWorld Interface Attributes
+// RemoteRegistry Interface Attributes
 //////////////////////////////////////////////////////////////////////////
  public:
 /************************************************************************
- * Attribute ConnectedClients functions
+ * Attribute RegistryList functions
  ************************************************************************/
 
     /**
-     * \brief   Returns true if ConnectedClients attribute is valid
+     * \brief   Returns true if RegistryList attribute is valid
      **/
-    inline bool isConnectedClientsValid( void ) const;
+    inline bool isRegistryListValid( void ) const;
     /**
-     * \brief   Invalidates ConnectedClients attribute and
+     * \brief   Invalidates RegistryList attribute and
      *          sends error update notification message to clients.
      **/
-    inline void invalidateConnectedClients( void );
+    inline void invalidateRegistryList( void );
     /**
-     * \brief   Force to send ConnectedClients attribute notification message to all clients.
+     * \brief   Force to send RegistryList attribute notification message to all clients.
      *          The method can be called when the attribute is updated not via set-method.
      **/
-     inline void notifyConnectedClientsUpdated( void );
+     inline void notifyRegistryListUpdated( void );
     /**
-     * \brief   Set ConnectedClients attribute value and send notification event to all clients.
+     * \brief   Set RegistryList attribute value and send notification event to all clients.
      *          The notification is sent only when value is updated or validated.
-     * \param   newValue    New value of ConnectedClients attribute to set.
-     *                      The ConnectedClients attribute description:
-     *                      The list of connected clients. Updated each time when new client requests to output Hello World message.
+     * \param   newValue    New value of RegistryList attribute to set.
+     *                      The RegistryList attribute description:
+     *                      List of registered clients.
      **/
-    virtual void setConnectedClients( const NERemoteHelloWorld::ConnectionList & newValue );
+    virtual void setRegistryList( const NERemoteRegistry::ListRegistry & newValue );
     /**
-     * \brief   Returns the value of ConnectedClients attribute.
-     *          The ConnectedClients attribute description:
-     *          The list of connected clients. Updated each time when new client requests to output Hello World message.
+     * \brief   Returns the value of RegistryList attribute.
+     *          The RegistryList attribute description:
+     *          List of registered clients.
      **/
-    inline const NERemoteHelloWorld::ConnectionList & getConnectedClients( void ) const;
-    inline NERemoteHelloWorld::ConnectionList & getConnectedClients( void );
+    inline const NERemoteRegistry::ListRegistry & getRegistryList( void ) const;
+    inline NERemoteRegistry::ListRegistry & getRegistryList( void );
 
 /************************************************************************
- * Attribute RemainOutput functions
+ * Attribute RemainOutputs functions
  ************************************************************************/
 
     /**
-     * \brief   Returns true if RemainOutput attribute is valid
+     * \brief   Returns true if RemainOutputs attribute is valid
      **/
-    inline bool isRemainOutputValid( void ) const;
+    inline bool isRemainOutputsValid( void ) const;
     /**
-     * \brief   Invalidates RemainOutput attribute and
+     * \brief   Invalidates RemainOutputs attribute and
      *          sends error update notification message to clients.
      **/
-    inline void invalidateRemainOutput( void );
+    inline void invalidateRemainOutputs( void );
     /**
-     * \brief   Force to send RemainOutput attribute notification message to all clients.
+     * \brief   Force to send RemainOutputs attribute notification message to all clients.
      *          The method can be called when the attribute is updated not via set-method.
      **/
-     inline void notifyRemainOutputUpdated( void );
+     inline void notifyRemainOutputsUpdated( void );
     /**
-     * \brief   Set RemainOutput attribute value and send notification event to all clients.
+     * \brief   Set RemainOutputs attribute value and send notification event to all clients.
      *          The notification is sent only when value is updated or validated.
-     * \param   newValue    New value of RemainOutput attribute to set.
-     *                      The RemainOutput attribute description:
-     *                      Remaining number of outputs to print Hello World.
+     * \param   newValue    New value of RemainOutputs attribute to set.
+     *                      The RemainOutputs attribute description:
+     *                      Remaining outputs before reaching maximum.
      **/
-    virtual void setRemainOutput( const short & newValue );
+    virtual void setRemainOutputs( const unsigned int & newValue );
     /**
-     * \brief   Returns the value of RemainOutput attribute.
-     *          The RemainOutput attribute description:
-     *          Remaining number of outputs to print Hello World.
+     * \brief   Returns the value of RemainOutputs attribute.
+     *          The RemainOutputs attribute description:
+     *          Remaining outputs before reaching maximum.
      **/
-    inline const short & getRemainOutput( void ) const;
-    inline short & getRemainOutput( void );
+    inline const unsigned int & getRemainOutputs( void ) const;
+    inline unsigned int & getRemainOutputs( void );
 
 //////////////////////////////////////////////////////////////////////////
-// RemoteHelloWorld Interface Requests
+// RemoteRegistry Interface Requests
 //////////////////////////////////////////////////////////////////////////
 public:
 
     /**
      * \brief   Request call.
-     *          Request to print hello world
-     * \param   roleName    The role name of client component that requested to print hello world
-     * \param   addMessage  Additional message to output. Can be empty.
-     *          Has default value: ""
-     * \see     responseHelloWorld
+     *          Call to register client. Each client should be registered before starting communication.
+     * \param   name    The name of the client.
+     * \param   service The service address of the client.
+     * \param   thread  The thread name where client is running. Required to provide uniqueness.
+     * \param   process The name of process. Optional parameter, used to make output in logs.
+     * \see     responseRegister
      **/
-    virtual void requestHelloWorld( const String & roleName, const String & addMessage = "" ) = 0;
+    virtual void requestRegister( const String & name, const ServiceAddress & service, const String & thread, const String & process ) = 0;
 
     /**
      * \brief   Request call.
-     *          Sent by client to notify the shutdown. This removes client from the list. This request has no response.
-     * \param   clientID    The ID of client that requests to shutdown. The ID is given by service when first time client requests to output message.
-     * \param   roleName    Service client component role name
+     *          Sent to unregister connected client.
+     * \param   client  The client registration object indicating the unregistered client.
      * \note    Has no response
      **/
-    virtual void requestClientShutdown( unsigned int clientID, const String & roleName ) = 0;
+    virtual void requestUnregister( const NERemoteRegistry::sClientRegister & client ) = 0;
+
+    /**
+     * \brief   Request call.
+     *          Outputs message on console. If additional message is not empty, outputs the additional message as well.
+     * \param   clientID    The ID of registered client to make message output
+     * \param   addMessage  The additional message to output. Ignored if empty.
+     * \see     responseHelloWorld
+     **/
+    virtual void requestHelloWorld( unsigned int clientID, const String & addMessage ) = 0;
 
 //////////////////////////////////////////////////////////////////////////
-// RemoteHelloWorld Interface Responses
+// RemoteRegistry Interface Responses
 //////////////////////////////////////////////////////////////////////////
 public:
 
     /**
      * \brief   Response call.
-     *          The response to hello world request.
-     * \param   clientInfo  The client information set by servicing component. If empty or invalid ID, the message output failed.
+     *          Sent when the client is registered. Each registered client has unique ID.
+     * \param   client  The client registration object that contains unique ID.
+     * \see     requestRegister
+     **/
+    virtual void responseRegister( const NERemoteRegistry::sClientRegister & client );
+
+    /**
+     * \brief   Response call.
+     *          Called as reply to the request to output message.
+     * \param   clientID    Indicates the ID client that made message output
      * \see     requestHelloWorld
      **/
-    virtual void responseHelloWorld( const NERemoteHelloWorld::sConnectedClient & clientInfo );
+    virtual void responseHelloWorld( unsigned int clientID );
 
 //////////////////////////////////////////////////////////////////////////
-// RemoteHelloWorld Interface Broadcasts
+// RemoteRegistry Interface Broadcasts
 //////////////////////////////////////////////////////////////////////////
 public:
-
-    /**
-     * \brief   Broadcast call.
-     *          Broadcast to notify all clients about connection
-     * \param   clientList  List of currently active clients.
-     **/
-    virtual void broadcastHelloClients( const NERemoteHelloWorld::ConnectionList & clientList );
-
-    /**
-     * \brief   Broadcast call.
-     *          DESCRIPTION MISSED
-     **/
-    virtual void broadcastServiceUnavailable( void );
 
 //////////////////////////////////////////////////////////////////////////
 // End Service Interface operations / attributes and overrides declaration
@@ -313,9 +317,9 @@ private:
 //////////////////////////////////////////////////////////////////////////
 private:
     /**
-     * \brief   Returns reference to RemoteHelloWorldStub object
+     * \brief   Returns reference to RemoteRegistryStub object
      **/
-    inline RemoteHelloWorldStub & self( void );
+    inline RemoteRegistryStub & self( void );
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -326,107 +330,107 @@ private:
  ************************************************************************/
 
     /**
-     * \brief   Attribute ConnectedClients
-     *          The list of connected clients. Updated each time when new client requests to output Hello World message.
+     * \brief   Attribute RegistryList
+     *          List of registered clients.
      **/
-    NERemoteHelloWorld::ConnectionList  mConnectedClients;
+    NERemoteRegistry::ListRegistry  mRegistryList;
     /**
-     * \brief   Attribute ConnectedClients data validation state.
+     * \brief   Attribute RegistryList data validation state.
      **/
-    NEService::eDataStateType           mConnectedClientsState;
+    NEService::eDataStateType       mRegistryListState;
 
     /**
-     * \brief   Attribute RemainOutput
-     *          Remaining number of outputs to print Hello World.
+     * \brief   Attribute RemainOutputs
+     *          Remaining outputs before reaching maximum.
      **/
-    short                               mRemainOutput;
+    unsigned int                    mRemainOutputs;
     /**
-     * \brief   Attribute RemainOutput data validation state.
+     * \brief   Attribute RemainOutputs data validation state.
      **/
-    NEService::eDataStateType           mRemainOutputState;
+    NEService::eDataStateType       mRemainOutputsState;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    RemoteHelloWorldStub( void );
-    RemoteHelloWorldStub( const RemoteHelloWorldStub & /* src */ );
-    const RemoteHelloWorldStub & operator = ( const RemoteHelloWorldStub & /* src */ );
+    RemoteRegistryStub( void );
+    RemoteRegistryStub( const RemoteRegistryStub & /* src */ );
+    const RemoteRegistryStub & operator = ( const RemoteRegistryStub & /* src */ );
 };
 
 //////////////////////////////////////////////////////////////////////////
-// RemoteHelloWorldStub class inline functions implementation
+// RemoteRegistryStub class inline functions implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline RemoteHelloWorldStub & RemoteHelloWorldStub::self( void )
+inline RemoteRegistryStub & RemoteRegistryStub::self( void )
 {
     return (*this);
 }
 
 /************************************************************************
- * \brief   ConnectedClients attribute functions
+ * \brief   RegistryList attribute functions
  ************************************************************************/
  
-inline bool RemoteHelloWorldStub::isConnectedClientsValid( void ) const
+inline bool RemoteRegistryStub::isRegistryListValid( void ) const
 {
-    return (mConnectedClientsState  == NEService::DATA_OK);
+    return (mRegistryListState  == NEService::DATA_OK);
 }
 
-inline void RemoteHelloWorldStub::invalidateConnectedClients( void )
+inline void RemoteRegistryStub::invalidateRegistryList( void )
 {
-    errorRequest( static_cast<unsigned int>(NERemoteHelloWorld::MSG_ID_ConnectedClients), false );
+    errorRequest( static_cast<unsigned int>(NERemoteRegistry::MSG_ID_RegistryList), false );
 }
 
-inline void RemoteHelloWorldStub::notifyConnectedClientsUpdated( void )
+inline void RemoteRegistryStub::notifyRegistryListUpdated( void )
 {
-    sendNotification( NERemoteHelloWorld::MSG_ID_ConnectedClients );
+    sendNotification( NERemoteRegistry::MSG_ID_RegistryList );
 }
 
-inline const NERemoteHelloWorld::ConnectionList & RemoteHelloWorldStub::getConnectedClients( void ) const
+inline const NERemoteRegistry::ListRegistry & RemoteRegistryStub::getRegistryList( void ) const
 {
-    return mConnectedClients;
+    return mRegistryList;
 }
 
-inline NERemoteHelloWorld::ConnectionList & RemoteHelloWorldStub::getConnectedClients( void )
+inline NERemoteRegistry::ListRegistry & RemoteRegistryStub::getRegistryList( void )
 {
-    return mConnectedClients;
+    return mRegistryList;
 }
 
 /************************************************************************
- * \brief   RemainOutput attribute functions
+ * \brief   RemainOutputs attribute functions
  ************************************************************************/
  
-inline bool RemoteHelloWorldStub::isRemainOutputValid( void ) const
+inline bool RemoteRegistryStub::isRemainOutputsValid( void ) const
 {
-    return (mRemainOutputState  == NEService::DATA_OK);
+    return (mRemainOutputsState  == NEService::DATA_OK);
 }
 
-inline void RemoteHelloWorldStub::invalidateRemainOutput( void )
+inline void RemoteRegistryStub::invalidateRemainOutputs( void )
 {
-    errorRequest( static_cast<unsigned int>(NERemoteHelloWorld::MSG_ID_RemainOutput), false );
+    errorRequest( static_cast<unsigned int>(NERemoteRegistry::MSG_ID_RemainOutputs), false );
 }
 
-inline void RemoteHelloWorldStub::notifyRemainOutputUpdated( void )
+inline void RemoteRegistryStub::notifyRemainOutputsUpdated( void )
 {
-    sendNotification( NERemoteHelloWorld::MSG_ID_RemainOutput );
+    sendNotification( NERemoteRegistry::MSG_ID_RemainOutputs );
 }
 
-inline const short & RemoteHelloWorldStub::getRemainOutput( void ) const
+inline const unsigned int & RemoteRegistryStub::getRemainOutputs( void ) const
 {
-    return mRemainOutput;
+    return mRemainOutputs;
 }
 
-inline short & RemoteHelloWorldStub::getRemainOutput( void )
+inline unsigned int & RemoteRegistryStub::getRemainOutputs( void )
 {
-    return mRemainOutput;
+    return mRemainOutputs;
 }
 
 //////////////////////////////////////////////////////////////////////////
-// RemoteHelloWorldStub class declaration End
+// RemoteRegistryStub class declaration End
 //////////////////////////////////////////////////////////////////////////
 
-#endif   // SHAREIPCMIX_SRC_REMOTEHELLOWORLDSTUB_HPP
+#endif   // SHAREIPCMIX_SRC_REMOTEREGISTRYSTUB_HPP
 
 //////////////////////////////////////////////////////////////////////////
-// End generate shareipcmix/src/RemoteHelloWorldStub.hpp file
+// End generate shareipcmix/src/RemoteRegistryStub.hpp file
 //////////////////////////////////////////////////////////////////////////

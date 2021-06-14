@@ -143,8 +143,12 @@ StreamableEvent * RemoteEventFactory::createEventFromStream( const RemoteMessage
         }
         break;
 
-    case Event::EventStubConnect:
-    case Event::EventProxyConnect:
+    case Event::EventRemoteStubConnect:
+    case Event::EventRemoteProxyConnect:
+        break;
+
+    case Event::EventLocalStubConnect:
+    case Event::EventLocalProxyConnect:
     case Event::EventLocalServiceRequest:
     case Event::EventLocalNotifyRequest:
     case Event::EventLocalServiceResponse:
@@ -258,8 +262,12 @@ bool RemoteEventFactory::createStreamFromEvent( RemoteMessage & stream, const St
         }
         break;
 
-    case Event::EventStubConnect:
-    case Event::EventProxyConnect:
+    case Event::EventRemoteStubConnect:
+    case Event::EventRemoteProxyConnect:
+        break;
+
+    case Event::EventLocalStubConnect:
+    case Event::EventLocalProxyConnect:
         break;
 
     case Event::EventLocalServiceRequest:
@@ -272,11 +280,12 @@ bool RemoteEventFactory::createStreamFromEvent( RemoteMessage & stream, const St
         ASSERT(false);  // unsupported remote streaming events
         break;
     }
+
     return result;
 }
 
 StreamableEvent * RemoteEventFactory::createRequestFailedEvent( const RemoteMessage & stream
-                                                                  , const Channel & /* comChannel */ )
+                                                              , const Channel & /* comChannel */ )
 {
     TRACE_SCOPE(areg_component_RemoteEventFactory_createRequestFailedEvent);
 
@@ -284,7 +293,7 @@ StreamableEvent * RemoteEventFactory::createRequestFailedEvent( const RemoteMess
     Event::eEventType eventType;
     stream >> eventType;
 
-    TRACE_DBG("Creating request failed event of type from remote message stream", Event::getString(eventType));
+    TRACE_DBG("Creating request failed event of type [ %s ] (value = [ %d ]) from remote message stream", Event::getString(eventType));
 
     switch ( eventType )
     {
@@ -293,12 +302,7 @@ StreamableEvent * RemoteEventFactory::createRequestFailedEvent( const RemoteMess
             stream.moveToBegin();
             RemoteRequestEvent eventRequest(stream);
             const ProxyAddress & addrProxy = eventRequest.getEventSource();
-            ProxyBase * proxy = ProxyBase::findProxyByAddress(addrProxy);
-            if ( proxy != NULL )
-            {
-                TRACE_DBG("Found Proxy by address [ %s ], creating request failed event", ProxyAddress::convAddressToPath(addrProxy).getString());
-                result = static_cast<StreamableEvent *>( proxy->createRemoteRequestFailedEvent(addrProxy, eventRequest.getRequestId(), NEService::RESULT_MESSAGE_UNDELIVERED, eventRequest.getSequenceNumber()) );
-            }
+            result = static_cast<StreamableEvent *>( ProxyBase::createRequestFailureEvent(addrProxy, eventRequest.getRequestId(), NEService::RESULT_MESSAGE_UNDELIVERED, eventRequest.getSequenceNumber()) );
         }        
         break;
 
@@ -307,31 +311,29 @@ StreamableEvent * RemoteEventFactory::createRequestFailedEvent( const RemoteMess
             stream.moveToBegin();
             RemoteNotifyRequestEvent eventNotify(stream);
             const ProxyAddress & addrProxy = eventNotify.getEventSource();
-            ProxyBase * proxy = ProxyBase::findProxyByAddress(addrProxy);
-            if ( proxy != NULL )
-            {
-                TRACE_DBG("Found Proxy by address [ %s ], creating notification request failed event", ProxyAddress::convAddressToPath(addrProxy).getString());
-                result = static_cast<StreamableEvent *>( proxy->createRemoteRequestFailedEvent(addrProxy, eventNotify.getRequestId(), NEService::RESULT_MESSAGE_UNDELIVERED, eventNotify.getSequenceNumber()) );
-            }
+            result = static_cast<StreamableEvent *>( ProxyBase::createRequestFailureEvent(addrProxy, eventNotify.getRequestId(), NEService::RESULT_MESSAGE_UNDELIVERED, eventNotify.getSequenceNumber()) );
         }
         break;
 
     case Event::EventRemoteServiceResponse:
         break;  // not required
 
+    case Event::EventRemoteStubConnect:
+    case Event::EventRemoteProxyConnect:
+        break;
+
     case Event::EventLocalServiceRequest:
     case Event::EventLocalNotifyRequest:
     case Event::EventLocalServiceResponse:
-    case Event::EventStubConnect:
-    case Event::EventProxyConnect:
-        ASSERT(false);  // unexpected streaming for remote events
+    case Event::EventLocalStubConnect:
+    case Event::EventLocalProxyConnect:
+        // ASSERT(false);  // unexpected streaming for remote events
         break;
 
     default:
-        ASSERT(false);  // unsupported remote streaming events
+        // ASSERT(false);  // unsupported remote streaming events
         break;
     }
 
-    ASSERT(result == NULL || result->getEventType() == eventType);
     return result;
 }

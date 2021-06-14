@@ -4,7 +4,7 @@
 /************************************************************************
  * (c) copyright    2021
  *                  Create by AREG SDK code generator tool from source LocalHelloWorld.
- * Generated at     29.05.2021  12:42:58 GMT+02:00 
+ * Generated at     11.06.2021  21:11:04 GMT+02:00 
  ************************************************************************/
 
 /************************************************************************
@@ -32,8 +32,7 @@ namespace NELocalHelloWorld
     typedef void (LocalHelloWorldClientBase::* FuncRequestFailure) ( NEService::eResultType );
     static FuncRequestFailure failureFunctions[] = 
     {
-          &LocalHelloWorldClientBase::requestHelloWorldFailed
-        , &LocalHelloWorldClientBase::requestClientShutdownFailed
+        &LocalHelloWorldClientBase::requestHelloWorldFailed
     };
 }
 
@@ -242,19 +241,6 @@ void LocalHelloWorldClientBase::processNotificationEvent( NotificationEvent & ev
         /************************************************************************
          * Trigger broadcast processing
          ************************************************************************/
-            case NELocalHelloWorld::MSG_ID_broadcastHelloClients:
-                {
-                    const NELocalHelloWorld::ConnectionList & clientList = mProxy->getParamclientList();
-                    broadcastHelloClients( clientList );
-                }
-                break;
-
-            case NELocalHelloWorld::MSG_ID_broadcastServiceUnavailable:
-                {
-                    broadcastServiceUnavailable(  );
-                }
-                break;
-
             default:
                 {
                     TRACE_SCOPE(shareipcmix_src_LocalHelloWorldClientBase_processNotificationEvent);
@@ -353,24 +339,9 @@ void LocalHelloWorldClientBase::requestHelloWorldFailed( NEService::eResultType 
     ClientBase::requestFailedNotImplemented( "LocalHelloWorldClientBase", static_cast<unsigned int>(NELocalHelloWorld::MSG_ID_requestHelloWorld) );
 }
 
-void LocalHelloWorldClientBase::requestClientShutdownFailed( NEService::eResultType /* FailureReason */ )
-{
-    ClientBase::requestFailedNotImplemented( "LocalHelloWorldClientBase", static_cast<unsigned int>(NELocalHelloWorld::MSG_ID_requestClientShutdown) );
-}
-
 void LocalHelloWorldClientBase::responseHelloWorld( const NELocalHelloWorld::sConnectedClient & /* clientInfo */ )
 {
     ClientBase::responseNotImplemented( "LocalHelloWorldClientBase", static_cast<unsigned int>(NELocalHelloWorld::MSG_ID_responseHelloWorld) );
-}
-
-void LocalHelloWorldClientBase::broadcastHelloClients( const NELocalHelloWorld::ConnectionList & /* clientList */ )
-{
-    ClientBase::broadcastNotImplemented( "LocalHelloWorldClientBase", static_cast<unsigned int>(NELocalHelloWorld::MSG_ID_broadcastHelloClients) );
-}
-
-void LocalHelloWorldClientBase::broadcastServiceUnavailable( void )
-{
-    ClientBase::broadcastNotImplemented( "LocalHelloWorldClientBase", static_cast<unsigned int>(NELocalHelloWorld::MSG_ID_broadcastServiceUnavailable) );
 }
 
 //////////////////////////////////////////////////////////////////////////

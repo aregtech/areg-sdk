@@ -12,23 +12,19 @@
 
 #include "shareipcmix/src/RemoteServicingComponent.hpp"
 #include "areg/trace/GETrace.h"
-#include "areg/component/ComponentThread.hpp"
-#include "areg/appbase/Application.hpp"
 #include <stdlib.h>
 
 
 DEF_TRACE_SCOPE(examples_13_ipcmix_shareipcmix_RemoteServicingComponent_startupServiceInterface);
-DEF_TRACE_SCOPE(examples_13_ipcmix_shareipcmix_RemoteServicingComponent_shutdownServiceIntrface);
+DEF_TRACE_SCOPE(examples_13_ipcmix_shareipcmix_RemoteServicingComponent_requestRegister);
+DEF_TRACE_SCOPE(examples_13_ipcmix_shareipcmix_RemoteServicingComponent_requestUnregister);
 DEF_TRACE_SCOPE(examples_13_ipcmix_shareipcmix_RemoteServicingComponent_requestHelloWorld);
-DEF_TRACE_SCOPE(examples_13_ipcmix_shareipcmix_RemoteServicingComponent_requestClientShutdown);
 
 RemoteServicingComponent::RemoteServicingComponent(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
-    : Component         ( owner, entry.mRoleName                        )
-    , RemoteHelloWorldStub    ( static_cast<Component &>(self())              )
-    , mGnerateID        ( 0                                             )
-    , mIsMain           ( entry.getComponentData().alignBool.mElement   )
+    : Component             ( owner, entry.mRoleName                        )
+    , RemoteRegistryStub    ( static_cast<Component &>(self())              )
+    , mGnerateID            ( 0                                             )
 {
-
 }
 
 RemoteServicingComponent::~RemoteServicingComponent(void)
@@ -38,123 +34,113 @@ RemoteServicingComponent::~RemoteServicingComponent(void)
 void RemoteServicingComponent::startupServiceInterface( Component & holder )
 {
     TRACE_SCOPE(examples_13_ipcmix_shareipcmix_RemoteServicingComponent_startupServiceInterface);
+    TRACE_DBG("Component [ %s ] set maximum allowed output messages [ %d ]", getRoleName().getString(), NERemoteRegistry::MaximumOutputs);
 
-    RemoteHelloWorldStub::startupServiceInterface(holder);
+    RemoteRegistryStub::startupServiceInterface(holder);
 
-    invalidateConnectedClients();
-
-    TRACE_DBG("Component [ %s ] set maximum allowed output messages [ %d ]", getRoleName().getString(), NERemoteHelloWorld::MaxMessages);
-    setRemainOutput(NERemoteHelloWorld::MaxMessages);
+    setRegistryList(NERemoteRegistry::ListRegistry());
+    setRemainOutputs(NERemoteRegistry::MaximumOutputs);
 }
 
-void RemoteServicingComponent::shutdownServiceIntrface ( Component & holder )
+void RemoteServicingComponent::requestRegister( const String & name, const ServiceAddress & service, const String & thread, const String & process )
 {
-    TRACE_SCOPE(examples_13_ipcmix_shareipcmix_RemoteServicingComponent_shutdownServiceIntrface);
-    TRACE_WARN("Component [ %s ] shuts down service.", getRoleName().getString());
+    TRACE_SCOPE(examples_13_ipcmix_shareipcmix_RemoteServicingComponent_requestRegister);
+    TRACE_DBG("Received request to register client [ %s ] with service address [ %s ] and owner thread [ %s ] of process [ %s ]"
+                    , name.getString()
+                    , ServiceAddress::convAddressToPath(service).getString()
+                    , thread.getString()
+                    , process.getString());
 
-    RemoteHelloWorldStub::shutdownServiceIntrface(holder);
-}
+    NERemoteRegistry::sClientRegister newClient;
 
-void RemoteServicingComponent::requestHelloWorld(const String & roleName, const String & addMessage /*= "" */)
-{
-    TRACE_SCOPE(examples_13_ipcmix_shareipcmix_RemoteServicingComponent_requestHelloWorld);
-
-    NERemoteHelloWorld::ConnectionList & list = getConnectedClients();
+    NERemoteRegistry::ListRegistry & list = getRegistryList();
     LISTPOS pos = list.firstPosition();
-    NERemoteHelloWorld::sConnectedClient cl;
-
-    for ( ; pos != NULL; pos = list.nextPosition(pos))
+    for ( ; pos != NULL; pos = list.nextPosition(pos) )
     {
-        const NERemoteHelloWorld::sConnectedClient & client = list.getAt(pos);
-        if (roleName == client.ccName)
+        const NERemoteRegistry::sClientRegister & client = list.getAt(pos);
+        if ( (client.crName == name) && (client.crService == service) && (client.crThread == thread))
         {
-            TRACE_DBG("Component [ %s ] found client [ %s ] with ID [ %u ] in the list.", getRoleName().getString(), client.ccName.getString(), client.ccID);
-
-            cl.ccName   = client.ccName;
-            cl.ccID     = client.ccID;
+            TRACE_DBG("Found registered client [ %s ], ignoring new registration", name.getString());
+            newClient = client;
             break;
         }
     }
 
     if (pos == NULL)
     {
-        cl.ccID     = ++ mGnerateID;
-        cl.ccName   = roleName;
-        
-        TRACE_INFO("Component [ %s ] got new client [ %s ] with ID [ %u ]", getRoleName().getString(), cl.ccName.getString(), cl.ccID);
+        newClient.crID      = ++ mGnerateID;
+        newClient.crName    = name;
+        newClient.crService = service;
+        newClient.crThread  = thread;
+        newClient.crProcess = process;
 
-        list.pushLast(cl);
+        TRACE_DBG("Registered [ %u ] new client [ %s ] of service [ %s ] in thread [ %s ] of process [ %s ]"
+                        , newClient.crID
+                        , newClient.crName.getString()
+                        , ServiceAddress::convAddressToPath(newClient.crService).getString()
+                        , newClient.crThread.getString()
+                        , newClient.crProcess.getString());
 
-        responseHelloWorld(cl);
-        broadcastHelloClients(list);
-        notifyConnectedClientsUpdated();
-    }
-    else
-    {
-        responseHelloWorld(cl);
-    }
-
-    short outputs = getRemainOutput();
-    if (outputs == 1)
-    {
-        outputs -= 1;
-        TRACE_INFO(">> Remote %s component [ %s ] reached maximum messages.", mIsMain ? "main" : "", getRoleName().getString());
-    }
-    else if (outputs > 1)
-    {
-        outputs -= 1;
-        TRACE_DBG("Remain  to output message [ %d ]", outputs);
-    }
-    else if (mIsMain == false)
-    {
-        outputs -= 1;
-        TRACE_DBG("Remote component [ %s ] continues to make output.", getRoleName().getString());
-    }
-    else
-    {
-        TRACE_INFO("Remote main component ignores to reduce available output value.");
+        list.pushLast(newClient);
+        notifyRegistryListUpdated();
     }
 
-    printf(">>> REMOTE %s client [ %s ] says \"!Hello World!\". Remain [ %d ].\n", mIsMain ? "MAIN " : "", roleName.getString(), outputs);
-    if (addMessage.isEmpty() == false)
-    {
-        printf("\t>>> The additional message: %s.\n", addMessage.getString());
-    }
+    responseRegister(newClient);
+}
 
-    setRemainOutput(outputs);
-    if (mIsMain && (outputs == 0))
+void RemoteServicingComponent::requestUnregister( const NERemoteRegistry::sClientRegister & client )
+{
+    TRACE_SCOPE(examples_13_ipcmix_shareipcmix_RemoteServicingComponent_requestUnregister);
+    TRACE_DBG("The client [ %s ] with registered ID [ %u ] requested unregister.", client.crName.getString(), client.crID);
+
+    NERemoteRegistry::ListRegistry & list = getRegistryList();
+    for (LISTPOS pos = list.firstPosition(); pos != NULL; pos = list.nextPosition(pos))
     {
-        TRACE_INFO("Main component triggers shutdown procedure");
-        broadcastServiceUnavailable();
+        const NERemoteRegistry::sClientRegister & entry = list.getAt(pos);
+        if (entry == client)
+        {
+            list.removeAt(pos);
+            notifyRegistryListUpdated();
+
+            TRACE_DBG("Removed entry, there are still [ %d ] registered clients", list.getSize());
+            break;
+        }
     }
 }
 
-void RemoteServicingComponent::requestClientShutdown(unsigned int clientID, const String & roleName)
+void RemoteServicingComponent::requestHelloWorld( unsigned int clientID, const String & addMessage )
 {
-    TRACE_SCOPE(examples_13_ipcmix_shareipcmix_RemoteServicingComponent_requestClientShutdown);
+    TRACE_SCOPE(examples_13_ipcmix_shareipcmix_RemoteServicingComponent_requestHelloWorld);
 
-    TRACE_DBG("A client [ %s ] with ID [ %u ] notified shutdown.", roleName.getString(), clientID);
-    NERemoteHelloWorld::ConnectionList & list = getConnectedClients();
+    bool succeeded = false;
+
+    const NERemoteRegistry::ListRegistry & list = getRegistryList();
     LISTPOS pos = list.firstPosition();
-
     for ( ; pos != NULL; pos = list.nextPosition(pos))
     {
-        const NERemoteHelloWorld::sConnectedClient & client = list.getAt(pos);
-        if (client.ccID == clientID)
+        const NERemoteRegistry::sClientRegister & entry = list.getAt(pos);
+        if (entry.crID == clientID)
         {
-            TRACE_DBG("Client [ %s ] with ID [ %d ] in component [ %s ] is removed", roleName.getString(), clientID, getRoleName().getString());
-            ASSERT(client.ccName == roleName);
-            list.removeAt(pos);
-            notifyConnectedClientsUpdated();
             break;
         }
     }
 
-    ASSERT(pos != NULL);
-
-    if (mIsMain && list.isEmpty() && getRemainOutput() == 0)
+    if ( pos != NULL )
     {
-        TRACE_INFO("All clients are set message to shutdown, all [ %d ] messages are output, going to shutdown application", NERemoteHelloWorld::MaxMessages);
-        Application::signalAppQuit();
+        unsigned int outputs   = getRemainOutputs();
+        printf(">>> REMOTE client [ %s ] says \"!Hello World!\". Remain [ %d ].\n", list.getAt(pos).crName.getString(), outputs);
+        if (addMessage.isEmpty() == false)
+        {
+            printf("\t>>> The additional message: %s.\n", addMessage.getString());
+        }
+
+        setRemainOutputs(-- outputs);
+
+        responseHelloWorld(clientID);
+    }
+    else
+    {
+        printf("ERROR... ignoring output message!");
+        responseHelloWorld(0);
     }
 }

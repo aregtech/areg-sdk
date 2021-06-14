@@ -481,17 +481,15 @@ private:
     /**
      * \brief   The Map of Server Info object as a Key and Client Info List as Values
      **/
-    ServerList        mServerList;
-
+    ServerList              mServerList;
     /**
-     * \brief           The connection service.
+     * \brief   The connection service.
      **/
-    ClientService     mConnectService;
-
+    ClientService           mConnectService;
     /**
      * \brief   Synchronization object, for multi-threading access.
      **/
-    mutable ResourceLock   mLock;
+    mutable ResourceLock    mLock;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden method calls

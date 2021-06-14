@@ -93,7 +93,7 @@ bool ServerService::startRemoteServicing(void)
     if ( mServerConnection.isValid() == false && isRunning() == false )
     {
         result = createThread( Thread::WAIT_INFINITE ) && waitForDispatcherStart(IESynchObject::WAIT_INFINITE);
-        TRACE_DBG("Created remote servicing thread with [ %s ]", result ? "SUCSS" : "FAIL");
+        TRACE_DBG("Created remote servicing thread with [ %s ]", result ? "SUCCESS" : "FAIL");
     }
 #ifdef DEBUG
     else
@@ -635,7 +635,7 @@ void ServerService::unregisterRemoteStub(const StubAddress & stub)
                     {
                         // ignore, it already has unregistered stub
                         TRACE_DBG("ignoring sending stub unregistered message, proxy [ %s ] on target [ %p ] was already notified"
-                                        , ProxyAddress::convAddressToPath(addrProxy)
+                                        , ProxyAddress::convAddressToPath(addrProxy).getString()
                                         , static_cast<id_type>(addrProxy.getSource()));
                     }
                 }
@@ -712,8 +712,13 @@ void ServerService::failedSendMessage(const RemoteMessage & msgFailed)
     
     ITEM_ID cookie = msgFailed.getTarget();
     SocketAccepted client = mServerConnection.getClientByCookie( cookie );
-    TRACE_WARN("Failed to send message to client [ %p ], probably the connection is lost, closing connection", client.getHandle());
-    connectionLost(client);
+    TRACE_WARN("Failed to send message to [ %s ] client [ %p ], probably the connection is lost, closing connection"
+                    , client.isValid() ? "VALID" : "INVALID"
+                    , client.getHandle());
+    if (client.isValid())
+    {
+        connectionLost(client);
+    }
 }
 
 void ServerService::failedReceiveMessage(SOCKETHANDLE whichSource)
@@ -721,8 +726,15 @@ void ServerService::failedReceiveMessage(SOCKETHANDLE whichSource)
     TRACE_SCOPE(areg_ipc_private_ServerService_failedReceiveMessage);
 
     SocketAccepted client = mServerConnection.getClientByHandle(whichSource);
-    TRACE_WARN("Failed to receive message from client [ %p ], probably the connection is lost, closing connection", client.getHandle());
-    connectionLost(client);
+    TRACE_WARN("Failed to receive message from [ %s ] client [ %p ], probably the connection with socket [ %p ] is lost, closing connection"
+                        , client.isValid() ? "VALID" : "INVALID"
+                        , client.getHandle()
+                        , whichSource);
+
+    if (client.isValid())
+    {
+        connectionLost(client);
+    }
 }
 
 void ServerService::failedProcessMessage(const RemoteMessage & /* msgUnprocessed */)

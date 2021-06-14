@@ -18,8 +18,9 @@
 // EventDispatcher class, constructor / destructor
 //////////////////////////////////////////////////////////////////////////
 EventDispatcher::EventDispatcher( const char* name )
-    : IEThreadConsumer     ( )
-    , EventDispatcherBase ( name )
+    : EventDispatcherBase   ( name )
+    , IEThreadConsumer      (  )
+    , IEEventRouter         (  )
 
     , mDispatcherThread     ( NULL )
 {
@@ -71,44 +72,4 @@ bool EventDispatcher::postEvent( Event& eventElem )
         eventElem.destroy();
     }
     return result;
-}
-
-bool EventDispatcher::registerEventConsumer( const RuntimeClassID& whichClass, IEEventConsumer& whichConsumer )
-{
-    return EventDispatcherBase::registerEventConsumer(whichClass, whichConsumer);
-}
-
-bool EventDispatcher::unregisterEventConsumer( const RuntimeClassID& whichClass, IEEventConsumer& whichConsumer )
-{
-    return EventDispatcherBase::unregisterEventConsumer(whichClass, whichConsumer);
-}
-
-int EventDispatcher::removeConsumer( IEEventConsumer& whichConsumer )
-{
-    return EventDispatcherBase::removeConsumer(whichConsumer);
-}
-
-bool EventDispatcher::hasRegisteredConsumer( const RuntimeClassID& whichClass ) const
-{
-    return EventDispatcherBase::hasRegisteredConsumer(whichClass);
-}
-
-bool EventDispatcher::isReady( void ) const
-{
-    return EventDispatcherBase::isReady();
-}
-
-void EventDispatcher::removeEvents( bool keepSpecials )
-{
-    EventDispatcherBase::removeEvents(keepSpecials);
-}
-
-int EventDispatcher::removeExternalEventType( const RuntimeClassID & eventClassId )
-{
-    return EventDispatcherBase::removeExternalEventType(eventClassId);
-}
-
-void EventDispatcher::removeAllEvents(void)
-{
-    EventDispatcherBase::removeAllEvents( );
 }

@@ -815,23 +815,29 @@ template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /*= T
 TENolockStack<VALUE, VALUE_TYPE, Implement>::TENolockStack( void )
     : TEStack<VALUE, VALUE_TYPE, Implement>(mNoLock)
 
-    , mNoLock   ( false )
-{   ;   }
+    , mNoLock   ( )
+{
+}
 
 template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /*= TEListImpl<VALUE_TYPE>*/>
 TENolockStack<VALUE, VALUE_TYPE, Implement>::TENolockStack( const TEStack<VALUE, VALUE_TYPE, Implement> & source )
     : TEStack<VALUE, VALUE_TYPE, Implement>( mNoLock, source )
     
-    , mNoLock   ( false )
-{   ;   }
+    , mNoLock   ( )
+{
+}
 
 template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /*= TEListImpl<VALUE_TYPE>*/>
 TENolockStack<VALUE, VALUE_TYPE, Implement>::~TENolockStack( void )
-{   ;   }
+{
+}
 
 template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /*= TEListImpl<VALUE_TYPE>*/>
 inline const TENolockStack<VALUE, VALUE_TYPE, Implement> & TENolockStack<VALUE, VALUE_TYPE, Implement>::operator = ( const TEStack<VALUE, VALUE_TYPE, Implement> & source )
-{   static_cast<TEStack<VALUE, VALUE_TYPE, Implement> &>(*this) = source; return (*this);     }
+{
+    static_cast<TEStack<VALUE, VALUE_TYPE, Implement> &>(*this) = source;
+    return (*this);
+}
 
 //////////////////////////////////////////////////////////////////////////
 // TEStack<VALUE, VALUE_TYPE, Implement> friend operators implementation

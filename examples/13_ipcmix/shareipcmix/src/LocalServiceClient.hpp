@@ -13,9 +13,9 @@
  ************************************************************************/
 
 #include "areg/base/GEGlobal.h"
-#include "areg/component/Component.hpp"
-#include "areg/component/IETimerConsumer.hpp"
 #include "shareipcmix/src/LocalHelloWorldClientBase.hpp"
+#include "areg/component/IETimerConsumer.hpp"
+#include "shareipcmix/src/SystemShutdownClientBase.hpp"
 
 #include "areg/component/Timer.hpp"
 
@@ -23,6 +23,7 @@
 // ServicingComponent class declaration
 //////////////////////////////////////////////////////////////////////////
 class LocalServiceClient    : protected LocalHelloWorldClientBase
+                            , private   SystemShutdownClientBase
                             , private   IETimerConsumer
 {
 //////////////////////////////////////////////////////////////////////////
@@ -46,28 +47,6 @@ public:
 protected:
 
     /**
-     * \brief   Triggered, when ConnectedClients attribute is updated. The function contains
-     *          attribute value and validation flag. When notification is enabled,
-     *          the method should be overwritten in derived class.
-     *          Attributes ConnectedClients description: 
-     *          The list of connected clients. Updated each time when new client requests to output Hello World message.
-     * \param   ConnectedClients    The value of ConnectedClients attribute.
-     * \param   state               The data validation flag.
-     **/
-    virtual void onConnectedClientsUpdate( const NELocalHelloWorld::ConnectionList & ConnectedClients, NEService::eDataStateType state );
-
-        /**
-     * \brief   Triggered, when RemainOutput attribute is updated. The function contains
-     *          attribute value and validation flag. When notification is enabled,
-     *          the method should be overwritten in derived class.
-     *          Attributes RemainOutput description: 
-     *          Remaining number of outputs to print Hello World.
-     * \param   RemainOutput    The value of RemainOutput attribute.
-     * \param   state           The data validation flag.
-     **/
-    virtual void onRemainOutputUpdate( short RemainOutput, NEService::eDataStateType state );
-
-    /**
      * \brief   Response callback.
      *          The response to hello world request.
      *          Overwrite, if need to handle Response call of server object. 
@@ -78,34 +57,19 @@ protected:
     virtual void responseHelloWorld( const NELocalHelloWorld::sConnectedClient & clientInfo );
 
     /**
-     * \brief   Server broadcast.
-     *          Broadcast to notify all clients about connection
-     *          Overwrite, if need to handle Broadcast call of server object. 
-     *          This call will be automatically triggered, on every appropriate request call
-     * \param   clientList  DESCRIPTION MISSED
-     **/
-    virtual void broadcastHelloClients( const NELocalHelloWorld::ConnectionList & clientList );
-
-    /**
-     * \brief   Server broadcast.
-     *          DESCRIPTION MISSED
-     *          Overwrite, if need to handle Broadcast call of server object. 
-     *          This call will be automatically triggered, on every appropriate request call
-     **/
-    virtual void broadcastServiceUnavailable( void );
-
-    /**
      * \brief   Overwrite to handle error of HelloWorld request call.
      * \param   FailureReason   The failure reason value of request call.
      **/
     virtual void requestHelloWorldFailed( NEService::eResultType FailureReason );
 
     /**
-     * \brief   Overwrite to handle error of ClientShutdown request call.
-     * \param   FailureReason   The failure reason value of request call.
+     * \brief   Server broadcast.
+     *          Sent to notify the service unavailable state. All clients should be unregistered to start the shutdown procedure.
+     *          Overwrite, if need to handle Broadcast call of server object. 
+     *          This call will be automatically triggered, on every appropriate request call
      **/
-    virtual void requestClientShutdownFailed( NEService::eResultType FailureReason );
-    
+    virtual void broadcastServiceUnavailable( void );
+
 /************************************************************************/
 // IEProxyListener Overrides
 /************************************************************************/
@@ -147,6 +111,7 @@ protected:
 private:
     inline LocalServiceClient & self( void );
 
+    //!< Generated unique timer name.
     inline String timerName( Component & owner ) const;
 
 //////////////////////////////////////////////////////////////////////////

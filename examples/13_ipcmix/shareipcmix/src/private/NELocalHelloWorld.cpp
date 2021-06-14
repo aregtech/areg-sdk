@@ -5,7 +5,7 @@
 /************************************************************************
  * (c) copyright    2021
  *                  Create by AREG SDK code generator tool from source LocalHelloWorld.
- * Generated at     29.05.2021  12:42:58 GMT+02:00 
+ * Generated at     11.06.2021  21:11:04 GMT+02:00 
  ************************************************************************/
 
 /************************************************************************
@@ -31,8 +31,7 @@ const NEService::SInterfaceData & NELocalHelloWorld::getInterfaceData( void )
      ************************************************************************/
     static const unsigned int _RequestList[] = 
     {
-          static_cast<unsigned int>( NELocalHelloWorld::MSG_ID_requestHelloWorld            ) // requestHelloWorld( const String & roleName, const String & addMessage = "" )
-        , static_cast<unsigned int>( NELocalHelloWorld::MSG_ID_requestClientShutdown        ) // requestClientShutdown( unsigned int clientID, const String & roleName )
+          static_cast<unsigned int>( NELocalHelloWorld::MSG_ID_requestHelloWorld   ) // requestHelloWorld( const String & roleName, const String & addMessage = "" )
     };
 
     /************************************************************************
@@ -40,9 +39,7 @@ const NEService::SInterfaceData & NELocalHelloWorld::getInterfaceData( void )
      ************************************************************************/
     static const unsigned int _ResponseList[] = 
     {
-          static_cast<unsigned int>( NELocalHelloWorld::MSG_ID_responseHelloWorld           ) // responseHelloWorld( const NELocalHelloWorld::sConnectedClient & clientInfo )
-        , static_cast<unsigned int>( NELocalHelloWorld::MSG_ID_broadcastHelloClients        ) // broadcastHelloClients( const NELocalHelloWorld::ConnectionList & clientList )
-        , static_cast<unsigned int>( NELocalHelloWorld::MSG_ID_broadcastServiceUnavailable  ) // broadcastServiceUnavailable( void )
+          static_cast<unsigned int>( NELocalHelloWorld::MSG_ID_responseHelloWorld  ) // responseHelloWorld( const NELocalHelloWorld::sConnectedClient & clientInfo )
     };
 
     /************************************************************************
@@ -50,8 +47,8 @@ const NEService::SInterfaceData & NELocalHelloWorld::getInterfaceData( void )
      ************************************************************************/
     static const unsigned int _AttributeList[] = 
     {
-          static_cast<unsigned int>( NELocalHelloWorld::MSG_ID_ConnectedClients             ) // NELocalHelloWorld::ConnectionList mConnectedClients;
-        , static_cast<unsigned int>( NELocalHelloWorld::MSG_ID_RemainOutput                 ) // short mRemainOutput;
+          static_cast<unsigned int>( NELocalHelloWorld::MSG_ID_ConnectedClients    ) // NELocalHelloWorld::ConnectionList mConnectedClients;
+        , static_cast<unsigned int>( NELocalHelloWorld::MSG_ID_RemainOutput        ) // short mRemainOutput;
     };
 
     /************************************************************************
@@ -59,8 +56,7 @@ const NEService::SInterfaceData & NELocalHelloWorld::getInterfaceData( void )
      ************************************************************************/
     static const unsigned int _RequestToResponseMap[] = 
     {
-          static_cast<unsigned int>( NELocalHelloWorld::MSG_ID_responseHelloWorld           ) // requestHelloWorld( const String & roleName, const String & addMessage = "" )
-        , static_cast<unsigned int>( NELocalHelloWorld::MSG_ID_NO_PROCEED                   ) // requestClientShutdown( unsigned int clientID, const String & roleName )
+          static_cast<unsigned int>( NELocalHelloWorld::MSG_ID_responseHelloWorld  ) // requestHelloWorld( const String & roleName, const String & addMessage = "" )
     };
 
     /************************************************************************
@@ -76,8 +72,6 @@ const NEService::SInterfaceData & NELocalHelloWorld::getInterfaceData( void )
     /************************************************************************
      * Broadcasts
      ************************************************************************/
-        1, // void broadcastHelloClients( const NELocalHelloWorld::ConnectionList & clientList )
-        0, // void broadcastServiceUnavailable( void )
 
     };
     
@@ -89,8 +83,8 @@ const NEService::SInterfaceData & NELocalHelloWorld::getInterfaceData( void )
           NELocalHelloWorld::ServiceName
         , NELocalHelloWorld::InterfaceVersion
         , NEService::ServiceLocal
-        , 2
-        , 3
+        , 1
+        , 1
         , 2
         , _RequestList
         , _ResponseList

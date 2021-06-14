@@ -48,8 +48,8 @@ class DispatcherThread;
  *          Event Consumers to trigger Event Processing.
  *          
  **/
-class AREG_API EventDispatcherBase  : public IEQueueListener
-                                    , public IEEventDispatcher
+class AREG_API EventDispatcherBase  : public    IEEventDispatcher
+                                    , protected IEQueueListener
 {
 //////////////////////////////////////////////////////////////////////////
 // Internal defines and constants.
@@ -93,7 +93,7 @@ public:
      *          Otherwise return false.
      *          Override method if logic should be changed.
      **/
-    virtual bool isReady( void ) const;
+    inline bool isReady( void ) const;
 
     /**
      * \brief   Removes all internal events, removes all external events,
@@ -104,12 +104,12 @@ public:
      *                          like version, connect / disconnect and exit events.
      *                          If false, removes all events, except exit event.
      **/
-    virtual void removeEvents( bool keepSpecials );
+    inline void removeEvents( bool keepSpecials );
 
     /**
      * \brief   Removes all events. Makes event queue empty
      **/
-    virtual void removeAllEvents( void );
+    inline void removeAllEvents( void );
 
     /**
      * \brief   Removes specified event type from external event queue
@@ -121,20 +121,7 @@ public:
      *                          will be removed.
      * \return  Returns amount of removed events.
      **/
-    virtual int removeExternalEventType(const RuntimeClassID & eventClassId);
-
-/************************************************************************/
-// IEQueueListener overrides
-/************************************************************************/
-
-    /**
-     * \brief	Triggered from Event Queue object every time when new event
-     *          element is pushed into queue or when queue is empty.
-     *          It notifies dispatcher about update in event queue.
-     * \param	eventCount	The number of event elements currently in the queue.
-     *                      If zero, queue is empty, dispatcher can be suspended.
-     **/
-    virtual void signalEvent(int eventCount);
+    inline int removeExternalEventType(const RuntimeClassID & eventClassId);
 
 /************************************************************************/
 // IEEventDispatcher overrides
@@ -208,6 +195,19 @@ public:
 // Protected overrides
 //////////////////////////////////////////////////////////////////////////
 protected:
+/************************************************************************/
+// IEQueueListener overrides
+/************************************************************************/
+
+    /**
+     * \brief	Triggered from Event Queue object every time when new event
+     *          element is pushed into queue or when queue is empty.
+     *          It notifies dispatcher about update in event queue.
+     * \param	eventCount	The number of event elements currently in the queue.
+     *                      If zero, queue is empty, dispatcher can be suspended.
+     **/
+    virtual void signalEvent(int eventCount);
+
 /************************************************************************/
 // IEEventDispatcher overrides
 /************************************************************************/
@@ -339,6 +339,32 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // EventDispatcherBase class inline implementation
 //////////////////////////////////////////////////////////////////////////
+
+inline bool EventDispatcherBase::isReady( void ) const
+{
+    return mHasStarted;
+}
+
+inline void EventDispatcherBase::removeEvents(bool keepSpecials)
+{
+    mExternaEvents.lockQueue();
+    mInternalEvents.removeEvents( false );
+    mExternaEvents.removeEvents( keepSpecials );
+    mExternaEvents.unlockQueue();
+}
+
+inline void EventDispatcherBase::removeAllEvents(void)
+{
+    mExternaEvents.lockQueue();
+    mInternalEvents.removeAllEvents( );
+    mExternaEvents.removeAllEvents( );
+    mExternaEvents.unlockQueue();
+}
+
+inline int EventDispatcherBase::removeExternalEventType( const RuntimeClassID & eventClassId )
+{
+    return mExternaEvents.removeEvents(eventClassId);
+}
 
 inline EventDispatcherBase& EventDispatcherBase::self( void )
 {

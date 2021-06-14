@@ -153,7 +153,7 @@ bool Timer::timerIsExpired( unsigned int highValue, unsigned int lowValue )
     mNextFire  = Timer::getTickCount() + mTimeoutInMs;
     mLastFired = MACRO_MAKE_64(highValue, lowValue);
     mEventsCount -= (mEventsCount != 0 && mEventsCount != Timer::CONTINUOUSLY ? 1 : 0);
-    return (mEventsCount != 0 ? true : false);
+    return (mEventsCount != 0);
 }
 
 void Timer::queueTimer( void )

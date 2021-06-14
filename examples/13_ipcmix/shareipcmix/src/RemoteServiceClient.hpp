@@ -13,16 +13,17 @@
  ************************************************************************/
 
 #include "areg/base/GEGlobal.h"
-#include "areg/component/Component.hpp"
+#include "shareipcmix/src/RemoteRegistryClientBase.hpp"
+#include "shareipcmix/src/SystemShutdownClientBase.hpp"
 #include "areg/component/IETimerConsumer.hpp"
-#include "shareipcmix/src/RemoteHelloWorldClientBase.hpp"
 
 #include "areg/component/Timer.hpp"
 
 //////////////////////////////////////////////////////////////////////////
 // ServicingComponent class declaration
 //////////////////////////////////////////////////////////////////////////
-class RemoteServiceClient   : protected RemoteHelloWorldClientBase
+class RemoteServiceClient   : protected RemoteRegistryClientBase
+                            , protected SystemShutdownClientBase
                             , private   IETimerConsumer
 {
 //////////////////////////////////////////////////////////////////////////
@@ -46,66 +47,44 @@ public:
 protected:
 
     /**
-     * \brief   Triggered, when ConnectedClients attribute is updated. The function contains
-     *          attribute value and validation flag. When notification is enabled,
-     *          the method should be overwritten in derived class.
-     *          Attributes ConnectedClients description: 
-     *          The list of connected clients. Updated each time when new client requests to output Hello World message.
-     * \param   ConnectedClients    The value of ConnectedClients attribute.
-     * \param   state               The data validation flag.
+     * \brief   Response callback.
+     *          Sent when the client is registered. Each registered client has unique ID.
+     *          Overwrite, if need to handle Response call of server object. 
+     *          This call will be automatically triggered, on every appropriate request call
+     * \param   client  The client registration object that contains unique ID.
+     * \see     requestRegister
      **/
-    virtual void onConnectedClientsUpdate( const NERemoteHelloWorld::ConnectionList & ConnectedClients, NEService::eDataStateType state );
-
-        /**
-     * \brief   Triggered, when RemainOutput attribute is updated. The function contains
-     *          attribute value and validation flag. When notification is enabled,
-     *          the method should be overwritten in derived class.
-     *          Attributes RemainOutput description: 
-     *          Remaining number of outputs to print Hello World.
-     * \param   RemainOutput    The value of RemainOutput attribute.
-     * \param   state           The data validation flag.
-     **/
-    virtual void onRemainOutputUpdate( short RemainOutput, NEService::eDataStateType state );
+    virtual void responseRegister( const NERemoteRegistry::sClientRegister & client );
 
     /**
      * \brief   Response callback.
-     *          The response to hello world request.
+     *          Called as reply to the request to output message.
      *          Overwrite, if need to handle Response call of server object. 
      *          This call will be automatically triggered, on every appropriate request call
-     * \param   clientInfo  The client information set by servicing component. If empty or invalid ID, the message output failed.
+     * \param   clientID    Indicates the ID client that made message output
      * \see     requestHelloWorld
      **/
-    virtual void responseHelloWorld( const NERemoteHelloWorld::sConnectedClient & clientInfo );
+    virtual void responseHelloWorld( unsigned int clientID );
 
     /**
      * \brief   Server broadcast.
-     *          Broadcast to notify all clients about connection
-     *          Overwrite, if need to handle Broadcast call of server object. 
-     *          This call will be automatically triggered, on every appropriate request call
-     * \param   clientList  DESCRIPTION MISSED
-     **/
-    virtual void broadcastHelloClients( const NERemoteHelloWorld::ConnectionList & clientList );
-
-    /**
-     * \brief   Server broadcast.
-     *          DESCRIPTION MISSED
+     *          Sent to notify the service unavailable state. All clients should be unregistered to start the shutdown procedure.
      *          Overwrite, if need to handle Broadcast call of server object. 
      *          This call will be automatically triggered, on every appropriate request call
      **/
     virtual void broadcastServiceUnavailable( void );
 
     /**
-     * \brief   Overwrite to handle error of HelloWorld request call.
-     * \param   FailureReason   The failure reason value of request call.
+     * \brief   Triggered, when ServiceState attribute is updated. The function contains
+     *          attribute value and validation flag. When notification is enabled,
+     *          the method should be overwritten in derived class.
+     *          Attributes ServiceState description: 
+     *          Describes the current state of service.
+     * \param   ServiceState    The value of ServiceState attribute.
+     * \param   state           The data validation flag.
      **/
-    virtual void requestHelloWorldFailed( NEService::eResultType FailureReason );
+    virtual void onServiceStateUpdate( NESystemShutdown::eServiceState ServiceState, NEService::eDataStateType state );
 
-    /**
-     * \brief   Overwrite to handle error of ClientShutdown request call.
-     * \param   FailureReason   The failure reason value of request call.
-     **/
-    virtual void requestClientShutdownFailed( NEService::eResultType FailureReason );
-    
 /************************************************************************/
 // IEProxyListener Overrides
 /************************************************************************/
@@ -152,9 +131,10 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // member variables
 //////////////////////////////////////////////////////////////////////////
+protected:
     const unsigned int  mMsTimeout; //!< The timeout for timer to trigger message output of remote service
     Timer               mTimer;     //!< The timer to trigger to send request to output message
-    unsigned int        mID;        //!< The ID given by service.
+    NERemoteRegistry::sClientRegister   mClient;    //!< The ID given by service.
 
 //////////////////////////////////////////////////////////////////////////
 // forbidden calls

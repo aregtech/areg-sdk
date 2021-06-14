@@ -6,7 +6,7 @@
 /************************************************************************
  * (c) copyright    2021
  *                  Create by AREG SDK code generator tool from source LocalHelloWorld.
- * Generated at     29.05.2021  12:42:58 GMT+02:00 
+ * Generated at     11.06.2021  21:11:04 GMT+02:00 
  ************************************************************************/
 
 /************************************************************************
@@ -36,9 +36,8 @@ class LocalHelloWorldResponseEvent;
  *              Used to communicate with stub object and sending notifications
  *              to each client running in the thread instance.
  *
- *              
- *              		Simple Service Interface to demonstrate working features of AREG SDK.
- *              		This interface serves only local components and can be duplicated in other processes.
+ *              Simple Service Interface to demonstrate working features of AREG SDK.
+ *              This interface serves only local components and can be duplicated in other processes.
  *              		
  **/
 class LocalHelloWorldProxy   : public ProxyBase
@@ -171,14 +170,6 @@ public:
      **/
     inline const NELocalHelloWorld::sConnectedClient & getParamclientInfo( void ) const;
 
-    /**
-     * \brief   Returns value of clientList of response call function.
-     *          The parameter is validated and set when Proxy is getting response call.
-     *          Parameter clientList description: 
-     *          List of currently active clients.
-     **/
-    inline const NELocalHelloWorld::ConnectionList & getParamclientList( void ) const;
-
 /************************************************************************
  * Requests
  ************************************************************************/
@@ -194,15 +185,6 @@ public:
      **/
     unsigned int requestHelloWorld( IENotificationEventConsumer & caller, const String & roleName, const String & addMessage = "" );
     
-    /**
-     * \brief   Request call.
-     *          Sent by client to notify the shutdown. This removes client from the list. This request has no response.
-     * \param   clientID    The ID of client that requests to shutdown. The ID is given by service when first time client requests to output message.
-     * \param   roleName    Service client component role name
-     * \see     Has no Response.
-     **/
-    void requestClientShutdown( unsigned int clientID, const String & roleName );
-
 //////////////////////////////////////////////////////////////////////////
 // Operations.
 //////////////////////////////////////////////////////////////////////////
@@ -340,12 +322,6 @@ private:
      **/
     NELocalHelloWorld::sConnectedClient mParamclientInfo;
 
-    /**
-     * \brief   clientList parameter value.
-     *          List of currently active clients.
-     **/
-    NELocalHelloWorld::ConnectionList   mParamclientList;
-
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
 //////////////////////////////////////////////////////////////////////////
@@ -455,11 +431,6 @@ inline short LocalHelloWorldProxy::getRemainOutput( NEService::eDataStateType & 
 inline const NELocalHelloWorld::sConnectedClient & LocalHelloWorldProxy::getParamclientInfo( void ) const
 {
     return mParamclientInfo;
-}
-
-inline const NELocalHelloWorld::ConnectionList & LocalHelloWorldProxy::getParamclientList( void ) const
-{
-    return mParamclientList;
 }
 
 #endif   // SHAREIPCMIX_SRC_PRIVATE_LOCALHELLOWORLDPROXY_HPP

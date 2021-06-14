@@ -11,7 +11,8 @@
 #include "areg/component/ComponentLoader.hpp"
 #include "areg/trace/GETrace.h"
 
-#include "shareipcmix/src/NERemoteHelloWorld.hpp"
+#include "shareipcmix/src/NERemoteRegistry.hpp"
+#include "shareipcmix/src/NESystemShutdown.hpp"
 #include "shareipcmix/src/NELocalHelloWorld.hpp"
 #include "shareipcmix/src/IPCMixCommon.hpp"
 

@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<ServiceInterface FormatVesion="1.0.0">
+    <Overview ID="1" Name="SystemShutdown" Version="1.0.0" isRemote="true">
+        <Description>Simple Service Interface to demonstrate working features of AREG SDK.
+This service demonstrates the usage in combination with other services.
+It also can be used by any other object that has interest in system shutdown state.
+System run and shutdown service.</Description>
+    </Overview>
+    <DataTypeList>
+        <DataType ID="4" Name="eServiceState" Type="Enumerate" Values="default">
+            <Description>Describes the service availability states</Description>
+            <FieldList>
+                <EnumEntry ID="10" Name="ServiceInvalid">
+                    <Value/>
+                    <Description>The service is invalid, not ready to receive messages.</Description>
+                </EnumEntry>
+                <EnumEntry ID="6" Name="ServiceReady">
+                    <Value/>
+                    <Description>Service is active, ready to communicate</Description>
+                </EnumEntry>
+                <EnumEntry ID="5" Name="ServiceUnavailable">
+                    <Value/>
+                    <Description>Service is unavailable</Description>
+                </EnumEntry>
+                <EnumEntry ID="7" Name="ServiceShutdown">
+                    <Value/>
+                    <Description>Service shutting down.</Description>
+                </EnumEntry>
+            </FieldList>
+        </DataType>
+    </DataTypeList>
+    <AttributeList>
+        <Attribute DataType="eServiceState" ID="9" Name="ServiceState" Notify="OnChange">
+            <Description>Describes the current state of service.</Description>
+        </Attribute>
+    </AttributeList>
+    <MethodList>
+        <Method ID="2" MethodType="broadcast" Name="ServiceUnavailable">
+            <Description>Sent to notify the service unavailable state. All clients should be unregistered to start the shutdown procedure.</Description>
+        </Method>
+        <Method ID="3" MethodType="broadcast" Name="ServiceShutdown">
+            <Description>Notifies the system is shutting down so that application should disconnect and close.</Description>
+        </Method>
+    </MethodList>
+    <ConstantList>
+        <Constant DataType="uint32" ID="8" Name="ShutdownWaitTimeout">
+            <Value>100</Value>
+            <Description>The waiting timeout in milliseconds before shutting down application.</Description>
+        </Constant>
+    </ConstantList>
+</ServiceInterface>

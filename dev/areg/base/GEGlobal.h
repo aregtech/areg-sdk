@@ -44,8 +44,6 @@
 #endif // DEBUG
 
 
-
-
 /**
  * \brief   Basic types
  **/

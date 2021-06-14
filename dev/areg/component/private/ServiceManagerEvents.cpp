@@ -21,6 +21,11 @@ ServiceManagerEventData ServiceManagerEventData::stopMessageRouterClient(void)
     return ServiceManagerEventData( ServiceManagerEventData::CMD_StopRoutingClient );
 }
 
+ServiceManagerEventData ServiceManagerEventData::shutdownServiceManager(void)
+{
+    return ServiceManagerEventData( ServiceManagerEventData::CMD_ShutdownService );
+}
+
 ServiceManagerEventData ServiceManagerEventData::registerProxy(const ProxyAddress & addrProxy)
 {
     ServiceManagerEventData data( ServiceManagerEventData::CMD_RegisterProxy );

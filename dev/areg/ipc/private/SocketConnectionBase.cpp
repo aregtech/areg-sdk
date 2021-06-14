@@ -45,14 +45,17 @@ int SocketConnectionBase::sendMessage(const RemoteMessage & in_message, const So
 
     if ( clientSocket.isValid() )
     {
-        // result = clientSocket.SendData( reinterpret_cast<const unsigned char *>(&buffer), buffer.rbhBufHeader.biBufSize );
+        TRACE_DBG("Sending message [ %p ] of [ %d ] bytes of header data, follow data is [ ] bytes."
+                            , in_message.getMessageId()
+                            , sizeof(NEMemory::sRemoteMessageHeader)
+                            , buffer.rbhBufHeader.biUsed);
         result = clientSocket.sendData( reinterpret_cast<const unsigned char *>(&buffer), sizeof(NEMemory::sRemoteMessageHeader) );
-        if (buffer.rbhBufHeader.biUsed != 0)
+        if ((result == sizeof(NEMemory::sRemoteMessageHeader)) && (buffer.rbhBufHeader.biUsed != 0))
         {
             ASSERT(buffer.rbhBufHeader.biLength >= buffer.rbhBufHeader.biUsed);
-            TRACE_DBG("Sending [ %d ] bytes of aligned data, used size [ %d ]", buffer.rbhBufHeader.biLength, buffer.rbhBufHeader.biUsed);
             // send the aligned length.
             result += clientSocket.sendData(in_message.getBuffer(), buffer.rbhBufHeader.biLength);
+            TRACE_DBG("Sent [ %d ] bytes of aligned data, used size [ %d ]", buffer.rbhBufHeader.biLength, buffer.rbhBufHeader.biUsed);
         }
 
         TRACE_DBG("Sent [ %d ] bytes of data. The remote buffer size is [ %u ], checksum [ %u ]", result, buffer.rbhBufHeader.biBufSize, buffer.rbhChecksum);
@@ -72,6 +75,7 @@ int SocketConnectionBase::receiveMessage(RemoteMessage & out_message, const Sock
         DBG_ZERO_MEM(&msgHeader, sizeof(NEMemory::sRemoteMessageHeader));
 
         out_message.invalidate();
+        TRACE_DBG("Going to receive [ %d ] bytes of message header data.", sizeof(NEMemory::sRemoteMessageHeader));
         result = clientSocket.receiveData(reinterpret_cast<unsigned char *>(&msgHeader), sizeof(NEMemory::sRemoteMessageHeader));
         if ( result == sizeof(NEMemory::sRemoteMessageHeader) )
         {
@@ -90,9 +94,9 @@ int SocketConnectionBase::receiveMessage(RemoteMessage & out_message, const Sock
                 ASSERT(msgHeader.rbhBufHeader.biLength <= out_message.getSizeAvailable());
                 ASSERT(msgHeader.rbhBufHeader.biLength >= msgHeader.rbhBufHeader.biUsed);
 
-                TRACE_DBG("Receiving [ %d ] bytes of aligned data, used size [ %d ]", msgHeader.rbhBufHeader.biLength, msgHeader.rbhBufHeader.biUsed);
                 // receive aligned length of data.
                 result += clientSocket.receiveData(buffer, msgHeader.rbhBufHeader.biLength);
+                TRACE_DBG("Received [ %d ] bytes of aligned data, used size [ %d ]", msgHeader.rbhBufHeader.biLength, msgHeader.rbhBufHeader.biUsed);
             }
 
             out_message.moveToBegin();

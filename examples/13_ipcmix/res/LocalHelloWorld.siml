@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <ServiceInterface FormatVesion="1.0.0">
-    <Overview ID="1" Name="LocalHelloWorld" Version="1.0.0" isRemote="false">
-        <Description>
-		Simple Service Interface to demonstrate working features of AREG SDK.
-		This interface serves only local components and can be duplicated in other processes.
+    <Overview ID="1" Name="LocalHelloWorld" Version="2.0.0">
+        <Description>Simple Service Interface to demonstrate working features of AREG SDK.
+This interface serves only local components and can be duplicated in other processes.
 		</Description>
     </Overview>
     <DataTypeList>
@@ -54,28 +53,6 @@
                     <Description>The client information set by servicing component. If empty or invalid ID, the message output failed.</Description>
                 </Parameter>
             </ParamList>
-        </Method>
-        <Method ID="14" MethodType="request" Name="ClientShutdown">
-            <Description>Sent by client to notify the shutdown. This removes client from the list. This request has no response.</Description>
-            <ParamList>
-                <Parameter DataType="uint32" ID="16" Name="clientID">
-                    <Description>The ID of client that requests to shutdown. The ID is given by service when first time client requests to output message.</Description>
-                </Parameter>
-                <Parameter DataType="String" ID="17" Name="roleName">
-                    <Description>Service client component role name</Description>
-                </Parameter>
-            </ParamList>
-        </Method>
-        <Method ID="12" MethodType="broadcast" Name="HelloClients">
-            <Description>Broadcast to notify all clients about connection</Description>
-            <ParamList>
-                <Parameter DataType="ConnectionList" ID="13" Name="clientList">
-                    <Description>List of currently active clients.</Description>
-                </Parameter>
-            </ParamList>
-        </Method>
-        <Method ID="15" MethodType="broadcast" Name="ServiceUnavailable">
-            <Description/>
         </Method>
     </MethodList>
     <ConstantList>

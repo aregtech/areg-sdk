@@ -6,7 +6,7 @@
 /************************************************************************
  * (c) copyright    2021
  *                  Create by AREG SDK code generator tool from source LocalHelloWorld.
- * Generated at     29.05.2021  12:42:58 GMT+02:00 
+ * Generated at     11.06.2021  21:11:04 GMT+02:00 
  ************************************************************************/
 
 /************************************************************************
@@ -34,9 +34,8 @@
  *              Instantiated per every server component, which differ by
  *              role name of component.
  *
- *              
- *              		Simple Service Interface to demonstrate working features of AREG SDK.
- *              		This interface serves only local components and can be duplicated in other processes.
+ *              Simple Service Interface to demonstrate working features of AREG SDK.
+ *              This interface serves only local components and can be duplicated in other processes.
  *              		
  **/
 class LocalHelloWorldStub   : protected  StubBase
@@ -157,15 +156,6 @@ public:
      **/
     virtual void requestHelloWorld( const String & roleName, const String & addMessage = "" ) = 0;
 
-    /**
-     * \brief   Request call.
-     *          Sent by client to notify the shutdown. This removes client from the list. This request has no response.
-     * \param   clientID    The ID of client that requests to shutdown. The ID is given by service when first time client requests to output message.
-     * \param   roleName    Service client component role name
-     * \note    Has no response
-     **/
-    virtual void requestClientShutdown( unsigned int clientID, const String & roleName ) = 0;
-
 //////////////////////////////////////////////////////////////////////////
 // LocalHelloWorld Interface Responses
 //////////////////////////////////////////////////////////////////////////
@@ -183,19 +173,6 @@ public:
 // LocalHelloWorld Interface Broadcasts
 //////////////////////////////////////////////////////////////////////////
 public:
-
-    /**
-     * \brief   Broadcast call.
-     *          Broadcast to notify all clients about connection
-     * \param   clientList  List of currently active clients.
-     **/
-    virtual void broadcastHelloClients( const NELocalHelloWorld::ConnectionList & clientList );
-
-    /**
-     * \brief   Broadcast call.
-     *          DESCRIPTION MISSED
-     **/
-    virtual void broadcastServiceUnavailable( void );
 
 //////////////////////////////////////////////////////////////////////////
 // End Service Interface operations / attributes and overrides declaration

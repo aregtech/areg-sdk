@@ -101,13 +101,12 @@ bool ServerReceiveThread::runDispatcher(void)
                     }
                     else
                     {
-                        TRACE_DBG("Failed to receive message from client [ %s : %d ], socket. Going to close connection"
+                        TRACE_DBG("Failed to receive message from client socket [ %s : %d ], socket [ %u ]. Going to close connection"
                                         , addSocket.getHostAddress().getString()
                                         , addSocket.getHostPort()
                                         , clientSocket.getHandle());
 
                         mRemoteService.failedReceiveMessage(clientSocket.getHandle());
-                        mConnectHandler.connectionLost(clientSocket);
                     }
 
                     msgReceived.invalidate();

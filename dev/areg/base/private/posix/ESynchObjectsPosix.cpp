@@ -39,6 +39,7 @@ void IESynchObject::_destroySynchObject( void )
     {
         IESynchObjectBaseIX * synchObject = reinterpret_cast<IESynchObjectBaseIX *>(mSynchObject);
         mSynchObject = NULL;
+
         synchObject->freeResources();
         delete synchObject;
     }
@@ -61,56 +62,35 @@ Mutex::Mutex(bool lock /* = true */)
 
 Mutex::~Mutex( void )
 {
-    unlock();
+    _unlockMutex(mSynchObject);
 }
 
 //////////////////////////////////////////////////////////////////////////
 // Mutex class, Methods
 //////////////////////////////////////////////////////////////////////////
-void Mutex::_setOwnership( void )
+
+bool Mutex::_lockMutex( void * mutexHandle, unsigned int timeout )
 {
-    WaitableMutexIX * synchMutex = static_cast<WaitableMutexIX *>(mSynchObject);
-    ASSERT(synchMutex != NULL);
-
-    synchMutex->lock();
-    mOwnerThreadId = reinterpret_cast<ITEM_ID>(synchMutex->getOwningThreadId());
-    synchMutex->unlock();
-}
-
-void Mutex::_releaseOwnership( void )
-{
-    WaitableMutexIX * synchMutex = static_cast<WaitableMutexIX *>(mSynchObject);
-    ASSERT(synchMutex != NULL);
-
-    synchMutex->lock();
-    mOwnerThreadId = reinterpret_cast<ITEM_ID>(synchMutex->getOwningThreadId());
-    synchMutex->unlock();
-}
-
-bool Mutex::lock(unsigned int timeout /* = IESynchObject::WAIT_INFINITE */)
-{
-    ASSERT(mSynchObject != NULL);
     bool result = false;
 
-    WaitableMutexIX * synchMutex = static_cast<WaitableMutexIX *>(mSynchObject);
+    WaitableMutexIX * synchMutex = static_cast<WaitableMutexIX *>(mutexHandle);
     if ( (synchMutex != NULL) && (NESynchTypesIX::SynchObject0 == SynchLockAndWaitIX::waitForSingleObject(*synchMutex, timeout)) )
     {
-        _setOwnership();
+        mOwnerThreadId = reinterpret_cast<ITEM_ID>(synchMutex->getOwningThreadId());
         result = true;
     }
 
     return result;
 }
 
-bool Mutex::unlock( void )
+bool Mutex::_unlockMutex( void * mutexHandle )
 {
-    ASSERT(mSynchObject != NULL);
     bool result = false;
-
-    WaitableMutexIX * synchMutex = static_cast<WaitableMutexIX *>(mSynchObject);
+    WaitableMutexIX * synchMutex = reinterpret_cast<WaitableMutexIX *>(mutexHandle);
     if ( (synchMutex != NULL) && synchMutex->releaseMutex() )
     {
-        _releaseOwnership();
+        mOwnerThreadId = static_cast<ITEM_ID>(0);
+        result = true;
     }
 
     return result;
@@ -132,24 +112,24 @@ SynchEvent::SynchEvent(bool lock /* = true */, bool autoReset /* = true */)
 
 SynchEvent::~SynchEvent( void )
 {
-    unlock();
+    _unlockEvent(mSynchObject);
 }
 
 //////////////////////////////////////////////////////////////////////////
 // SynchEvent class, Methods
 //////////////////////////////////////////////////////////////////////////
+
+bool SynchEvent::_unlockEvent( void * eventHandle )
+{
+    WaitableEventIX * synchEvent = reinterpret_cast<WaitableEventIX *>(eventHandle);
+    return synchEvent->setEvent();
+}
+
 bool SynchEvent::lock(unsigned int timeout /* = IESynchObject::WAIT_INFINITE */)
 {
     ASSERT(mSynchObject != NULL);
     WaitableEventIX * synchEvent = reinterpret_cast<WaitableEventIX *>(mSynchObject);
     return (NESynchTypesIX::SynchObject0 == SynchLockAndWaitIX::waitForSingleObject(*synchEvent, timeout));
-}
-
-bool SynchEvent::unlock( void )
-{
-    ASSERT(mSynchObject != NULL);
-    WaitableEventIX * synchEvent = reinterpret_cast<WaitableEventIX *>(mSynchObject);
-    return synchEvent->setEvent();
 }
 
 bool SynchEvent::setEvent( void )
@@ -191,7 +171,10 @@ Semaphore::Semaphore(int maxCount, int initCount /* = 0 */)
 
 Semaphore::~Semaphore( void )
 {
-    ; // do nothing
+    if ( mSynchObject != NULL )
+    {
+        static_cast<WaitableSemaphoreIX *>(mSynchObject)->releaseSemaphore();
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -275,12 +258,7 @@ CriticalSection::CriticalSection( void )
 
 CriticalSection::~CriticalSection( void )
 {
-    if (mSynchObject != NULL)
-    {
-        delete reinterpret_cast<CriticalSectionIX *>(mSynchObject);
-    }
-
-    mSynchObject = NULL;
+    // do not unlock, it will automatically unlock in CriticalSectionIX::freeResource()
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -289,7 +267,7 @@ CriticalSection::~CriticalSection( void )
 
 bool CriticalSection::lock(unsigned int  /*timeout = IESynchObject::WAIT_INFINITE */)
 {
-    return (mSynchObject != NULL ? reinterpret_cast<CriticalSectionIX *>(mSynchObject)->lock() : false);
+    return (mSynchObject != NULL) && reinterpret_cast<CriticalSectionIX *>(mSynchObject)->lock();
 }
 
 bool CriticalSection::unlock( void )
@@ -302,7 +280,7 @@ bool CriticalSection::unlock( void )
 
 bool CriticalSection::tryLock( void )
 {
-    return (mSynchObject != NULL ? reinterpret_cast<CriticalSectionIX *>(mSynchObject)->tryLock() : false);
+    return (mSynchObject != NULL) && reinterpret_cast<CriticalSectionIX *>(mSynchObject)->tryLock();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -317,12 +295,7 @@ ResourceLock::ResourceLock( bool initLock /*= false*/ )
 
 ResourceLock::~ResourceLock(void)
 {
-    if (mSynchObject != NULL)
-    {
-        reinterpret_cast<MutexIX *>(mSynchObject)->unlock();
-        delete reinterpret_cast<MutexIX *>(mSynchObject);
-        mSynchObject = NULL;
-    }
+    // do not unlock, it will automatically unlock in MutexIX::freeResource()
 }
 
 bool ResourceLock::lock(unsigned int timeout /*= IESynchObject::WAIT_INFINITE */)
