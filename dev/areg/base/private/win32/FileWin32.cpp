@@ -491,49 +491,4 @@ bool File::_createFolder( const char * dirPath )
     return (::CreateDirectoryA(dirPath, NULL) == TRUE);
 }
 
-#if 0
-String File::NormalizeFileName( const char * fileName, bool forceTime/*=false*/ )
-{
-    String result;
-
-    SYSTEMTIME st;
-    char fmt[32];
-    memset(&st, 0, sizeof(SYSTEMTIME));
-    memset(fmt, 0, 32);
-
-    GetLocalTime(&st);
-    String::PrintString(fmt, 32, File::TIMESTAMP_FORMAT, st.wYear, st.wMonth, st.wDay, st.wHour, st.wMinute, st.wSecond, st.wMilliseconds);
-
-    if ( NEString::isEmpty<char>(fileName) == false )
-    {
-        result = fileName;
-        NEString::CharPos index = result.FindFirstOf(File::FILE_MASK_TIMESTAMP);
-        if ( index != NEString::InvalidPos )
-        {
-            result.Replace(fmt, index, NEString::getStringLength<char>(File::FILE_MASK_TIMESTAMP) );
-        }
-        else if (forceTime)
-        {
-            index = result.FindLastOf('.');
-            if (index != NEString::InvalidPos)
-                result.Insert(fmt, index);
-            else
-                result += fmt;
-        }
-
-        index = result.FindFirstOf( File::FILE_MASK_APP_DATA );
-        if ( index != NEString::InvalidPos )
-        {
-            String appFolder = File::GetSpecialFolder(File::SpecialAppData);
-            result.Replace(appFolder, index, NEString::getStringLength<char>(File::FILE_MASK_APP_DATA) );
-        }
-    }
-    else if (forceTime)
-    {
-        result = fmt;
-    }
-    return File::NormalizeFilePath(result);
-}
-#endif // 0
-
 #endif // _WINDOWS

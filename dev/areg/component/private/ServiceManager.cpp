@@ -626,12 +626,12 @@ void ServiceManager::registerRemoteProxy(const ProxyAddress & proxy)
     ServiceManager::requestRegisterClient(proxy);
 }
 
-void ServiceManager::unregisterRemoteStub(const StubAddress & stub)
+void ServiceManager::unregisterRemoteStub(const StubAddress & stub, ITEM_ID /*cookie*/ /*= NEService::COOKIE_ANY*/ )
 {
     ServiceManager::requestUnregisterServer(stub);
 }
 
-void ServiceManager::unregisterRemoteProxy(const ProxyAddress & proxy)
+void ServiceManager::unregisterRemoteProxy(const ProxyAddress & proxy, ITEM_ID /* cookie */ /*= NEService::COOKIE_ANY*/ )
 {
     ServiceManager::requestUnregisterClient(proxy);
 }

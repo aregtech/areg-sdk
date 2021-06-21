@@ -232,6 +232,31 @@ bool SynchLockAndWaitIX::isWaitableRegistered( IEWaitableBaseIX & synchWaitable 
     return result;
 }
 
+bool SynchLockAndWaitIX::notifyAsynchSignal( ITEM_ID threadId )
+{
+    bool result = false;
+
+    SynchResourceMapIX & mapResource = SynchResourceMapIX::getInstance( );
+    mapResource.lock( );
+    do 
+    {
+        SynchLockAndWaitIX::_mapWaitIdResource.lock();
+        SynchLockAndWaitIX * lockAndWait = SynchLockAndWaitIX::_mapWaitIdResource.findResourceObject(threadId);
+        if (lockAndWait != NULL)
+        {
+            lockAndWait->mFiredEntry = NESynchTypesIX::SynchAsynchSignal;
+            result = lockAndWait->_notifyEvent();
+        }
+
+        SynchLockAndWaitIX::_mapWaitIdResource.unlock();
+
+    } while (false);
+
+    mapResource.unlock();
+
+    return result;
+}
+
 SynchLockAndWaitIX::SynchLockAndWaitIX(   IEWaitableBaseIX ** listWaitables
                                             , int count
                                             , NESynchTypesIX::eMatchCondition matchCondition

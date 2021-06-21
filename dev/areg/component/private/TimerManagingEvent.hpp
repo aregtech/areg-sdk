@@ -67,6 +67,7 @@ public:
         , TimerStart        //!< Start specified timer
         , TimerStop         //!< Stop specified timer
         , TimerCancel       //!< Cancel specified timer
+        , TimerExpired      //!< Timer is expired
 
     } eTimerAction;
 
@@ -90,10 +91,10 @@ public:
      * \brief   Initialization constructor.
      *          Creates data object, sets timer object and defines action.
      *          The action should not be TimerManagingEventData::TimerIgnore
-     * \param   timer           The Timer object to set in Event Data.
-     * \param   actionPerfom    One of defined actions to perform. It should not be TimerManagingEventData::TimerIgnore
+     * \param   action  One of defined actions to perform. It should not be TimerManagingEventData::TimerIgnore
+     * \param   timer   The Timer object to set in Event Data.
      **/
-    inline TimerManagingEventData( Timer & timer, TimerManagingEventData::eTimerAction actionPerfom );
+    inline TimerManagingEventData( TimerManagingEventData::eTimerAction action, Timer * timer );
 
     /**
      * \brief   Copy constructor.
@@ -122,27 +123,27 @@ public:
 public:
 
     /**
-     * \brief   Returns the Timer object.
-     **/
-    inline Timer * getTimer( void ) const;
-
-    /**
      * \brief   Returns the action value to perform.
      **/
     inline TimerManagingEventData::eTimerAction getAction( void ) const;
+
+    /**
+     * \brief   Returns the Timer object.
+     **/
+    inline Timer * getTimer( void ) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
 //////////////////////////////////////////////////////////////////////////
 private:
     /**
-     * \brief   The Timer object of Event Data
-     **/
-    Timer *         mTimer;
-    /**
      * \brief   The Action value to perform.
      **/
     eTimerAction    mAction;
+    /**
+     * \brief   The Timer object of Event Data
+     **/
+    Timer *         mTimer;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -162,19 +163,27 @@ DECLARE_EVENT(TimerManagingEventData, TimerManagingEvent, IETimerManagingEventCo
 // TimerManagingEventData class inline functions declaration
 //////////////////////////////////////////////////////////////////////////
 inline TimerManagingEventData::TimerManagingEventData( void )
-    : mTimer(NULL) , mAction(TimerManagingEventData::TimerIgnore)
-{   ;   }
+    : mAction   (TimerManagingEventData::TimerIgnore)
+    , mTimer    (NULL)
+{
+}
 
-inline TimerManagingEventData::TimerManagingEventData( Timer &timer, eTimerAction actionPerfom )
-    : mTimer(&timer), mAction(actionPerfom)
-{   ASSERT(actionPerfom != TimerManagingEventData::TimerIgnore);  }
+inline TimerManagingEventData::TimerManagingEventData( TimerManagingEventData::eTimerAction action, Timer * timer )
+    : mAction   (action)
+    , mTimer    (timer)
+{
+    ASSERT(action != TimerManagingEventData::TimerIgnore);
+}
 
 inline TimerManagingEventData::TimerManagingEventData( const TimerManagingEventData &src )
-    : mTimer(src.mTimer), mAction(src.mAction)
-{   ;   }
+    : mAction   (src.mAction)
+    , mTimer    (src.mTimer)
+{
+}
 
 inline TimerManagingEventData::~TimerManagingEventData( void )
-{   ;   }
+{
+}
 
 inline Timer* TimerManagingEventData::getTimer( void ) const
 {
@@ -194,6 +203,7 @@ inline const char * TimerManagingEventData::getString( TimerManagingEventData::e
     CASE_MAKE_STRING(TimerManagingEventData::TimerStart);
     CASE_MAKE_STRING(TimerManagingEventData::TimerStop);
     CASE_MAKE_STRING(TimerManagingEventData::TimerCancel);
+    CASE_MAKE_STRING(TimerManagingEventData::TimerExpired);
     CASE_DEFAULT("ERR: Undefined TimerManagingEventData::eTimerAction value!");
     }
 }

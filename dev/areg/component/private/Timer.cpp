@@ -11,6 +11,10 @@
 
 #include "areg/component/DispatcherThread.hpp"
 #include "areg/base/DateTime.hpp"
+#include "areg/trace/GETrace.h"
+
+DEF_TRACE_SCOPE(areg_component_Timer_startTimer);
+
 
 //////////////////////////////////////////////////////////////////////////
 // Timer class implementation
@@ -81,33 +85,22 @@ Timer::~Timer( void )
 //////////////////////////////////////////////////////////////////////////
 bool Timer::startTimer( unsigned int timeoutInMs, unsigned int eventCount /*= Timer::CONTINUOUSLY*/ )
 {
-    Lock lock(mLock);
-
-    if (isValid())
-    {
-        TimerManager::stopTimer(self());
-    }
-
-    mTimeoutInMs    = timeoutInMs;
-    mEventsCount    = eventCount;
-    mNextFire       = Timer::getTickCount() + timeoutInMs;
-    mLastFired      = 0;
-    mCurrentQueued  = 0;
-
-    mStarted        = TimerManager::startTimer(self());
-    mDispatchThread = mStarted ? RUNTIME_CAST(Thread::getCurrentThread(), DispatcherThread) : NULL;
-
-    return (mDispatchThread != NULL);
+    return startTimer(timeoutInMs, DispatcherThread::getCurrentDispatcherThread(), eventCount);
 }
 
 bool Timer::startTimer(unsigned int timeoutInMs, DispatcherThread & whichThread, unsigned int eventCount /*= Timer::CONTINUOUSLY*/)
 {
+    TRACE_SCOPE(areg_component_Timer_startTimer);
+
     Lock lock(mLock);
 
-    if (isValid())
+    if (isActive())
     {
+        TRACE_WARN("The timer [ %s ] is still active, going to stop first. Current timeout [ %u ] ms and event count [ %d]", getName(), mTimeoutInMs, mEventsCount);
         TimerManager::stopTimer(self());
     }
+
+    TRACE_DBG("Starting [ %s ] with timeout [ %u ] ms and event count [ %d ]", getName().getString(), timeoutInMs, eventCount);
 
     mTimeoutInMs    = timeoutInMs;
     mEventsCount    = eventCount;
@@ -116,7 +109,7 @@ bool Timer::startTimer(unsigned int timeoutInMs, DispatcherThread & whichThread,
     mCurrentQueued  = 0;
 
     mStarted        = TimerManager::startTimer(self(), whichThread);
-    mDispatchThread = mStarted ? &whichThread : NULL;
+    mDispatchThread = mStarted && whichThread.isValid() ? &whichThread : NULL;
 
     return (mDispatchThread != NULL);
 }

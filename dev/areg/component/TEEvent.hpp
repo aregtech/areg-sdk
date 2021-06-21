@@ -662,8 +662,6 @@ __##ConsumerClass<DATA_CLASS>::__##ConsumerClass( void )                        
     : TEEventConsumer<DATA_CLASS, const DATA_CLASS &> ( )                                                                                           \
 { ; }                                                                                                                                               \
 
-
-
 /**
  * \brief   Declares Event and Consumer classes. Extended version, with registering Consumer in the thread.
  *          Do not call. Use DECLARE_EVENT or DECLARE_EVENT_EX instead.

@@ -112,8 +112,6 @@ void RemoteServicingComponent::requestHelloWorld( unsigned int clientID, const S
 {
     TRACE_SCOPE(examples_13_ipcmix_shareipcmix_RemoteServicingComponent_requestHelloWorld);
 
-    bool succeeded = false;
-
     const NERemoteRegistry::ListRegistry & list = getRegistryList();
     LISTPOS pos = list.firstPosition();
     for ( ; pos != NULL; pos = list.nextPosition(pos))

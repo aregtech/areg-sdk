@@ -152,11 +152,6 @@ void RemoteMessage::bufferCompletionFix(void)
         NEMemory::sRemoteMessage & msg = _getRemoteMessage();
         NEMemory::sRemoteMessageHeader & header = msg.rbHeader;
 
-#if 0
-        unsigned int bufLength = MACRO_ALIGN_SIZE(header.rbhBufHeader.biUsed, NEMemory::BLOCK_SIZE);
-        ASSERT( header.rbhBufHeader.biLength >= bufLength);
-#endif  // DEBUG
-
         unsigned int checksum   = RemoteMessage::_checksumCalculate( msg );
         unsigned int dataUsed   = header.rbhBufHeader.biUsed;
         unsigned int dataLen    = header.rbhBufHeader.biUsed;

@@ -228,12 +228,7 @@ inline void WaitableTimerIX::_timerExpired(void)
     if (sendSignal)
     {
         SynchLockAndWaitIX::eventSignaled(*this);
-
-        SynchLockAndWaitIX * lockAndWait = SynchLockAndWaitIX::_mapWaitIdResource.findResourceObject(mThreadId);
-        if ( lockAndWait != NULL )
-        {
-            lockAndWait->_notifyAsynchSignal( );
-        }
+        SynchLockAndWaitIX::notifyAsynchSignal(mThreadId);
     }
 }
 

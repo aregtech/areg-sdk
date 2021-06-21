@@ -43,24 +43,19 @@ Mutex::Mutex(bool lock /* = true */)
     mSynchObject    = static_cast<void *>(CreateMutex(NULL, lock ? TRUE : FALSE, NULL));
     if (lock && (mSynchObject != NULL))
     {
-        _setOwnership();
+        _lockMutex(IESynchObject::WAIT_INFINITE);
     }
-}
-
-Mutex::~Mutex( void )
-{
-    unlock();
 }
 
 //////////////////////////////////////////////////////////////////////////
 // Mutex class, Methods
 //////////////////////////////////////////////////////////////////////////
 
-bool Mutex::_lockMutex( void * mutexHandle, unsigned int timeout );
+bool Mutex::_lockMutex( unsigned int timeout )
 {
     bool result = false;
 
-    if ((mutexHandle != NULL) && (WaitForSingleObject(static_cast<HANDLE>(mutexHandle), timeout) == WAIT_OBJECT_0))
+    if ((mSynchObject != NULL) && (WaitForSingleObject(static_cast<HANDLE>(mSynchObject), timeout) == WAIT_OBJECT_0))
     {
         InterlockedExchange((long *)&mOwnerThreadId, (long)Thread::getCurrentThreadId());
         result = true;
@@ -69,10 +64,10 @@ bool Mutex::_lockMutex( void * mutexHandle, unsigned int timeout );
     return result;
 }
 
-bool Mutex::_unlockMutex( void * mutexHandle )
+bool Mutex::_unlockMutex( void )
 {
     bool result = false;
-    if ((mutexHandle != NULL) && ReleaseMutex(static_cast<HANDLE>(mutexHandle)))
+    if ((mSynchObject != NULL) && ReleaseMutex(static_cast<HANDLE>(mSynchObject)))
     {
         InterlockedExchange((long *)&mOwnerThreadId, (long)0);
         result = true;

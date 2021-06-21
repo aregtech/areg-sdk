@@ -53,7 +53,9 @@ bool TimerPosix::startTimer( Timer & context, FuncPosixTimerRoutine funcTimer )
     if (funcTimer != NULL)
     {
         if (mTimerId != 0)
+        {
             _destroyTimer();
+        }
 
         _createTimer(funcTimer);
     }
@@ -65,8 +67,6 @@ bool TimerPosix::startTimer( Timer & context )
 {
     SpinLockIX lock(mLock);
     mContext    = &context;
-    mEventCount = context.getEventCount();
-
     return startTimer();
 }
 
@@ -78,13 +78,15 @@ bool TimerPosix::startTimer( void )
     bool result = false;
     if ((mTimerId != 0) && (mContext != NULL))
     {
-        if ((mDueTime.tv_sec != 0) || (mDueTime.tv_nsec != 0))
+        if (_isStarted())
+        {
             _stopTimer();
+        }
 
         unsigned int msTimeout = mContext->getFireTime();
         unsigned int eventCount= mContext->getEventCount();
 
-        if ((msTimeout != 0) && (eventCount != 0) && (mEventCount != 0))
+        if ((msTimeout != 0) && (eventCount != 0))
         {
             result = _startTimer(msTimeout, eventCount);
         }
@@ -97,8 +99,10 @@ bool TimerPosix::pauseTimer(void)
 {
     SpinLockIX lock(mLock);
     
-    if ( (mDueTime.tv_sec != 0) || (mDueTime.tv_nsec != 0) )
+    if ( _isStarted() )
+    {
         _stopTimer();
+    }
 
     return (mTimerId != 0);
 }
@@ -107,8 +111,10 @@ bool TimerPosix::stopTimer(void)
 {
     SpinLockIX lock(mLock);
 
-    if ( (mDueTime.tv_sec != 0) || (mDueTime.tv_nsec != 0) )
+    if ( _isStarted() )
+    {
         _stopTimer();
+    }
 
     return (mTimerId != 0);
 }
@@ -131,6 +137,7 @@ void TimerPosix::timerExpired(void)
     {
         if ((mEventCount != Timer::CONTINUOUSLY) && (-- mEventCount == 0) )
         {
+            ASSERT(_isStarted());
             _stopTimer();
         }
         else
@@ -169,10 +176,13 @@ bool TimerPosix::_startTimer(unsigned int msTimeout, unsigned int eventCount)
     clock_gettime(CLOCK_REALTIME, &mDueTime);
     NESynchTypesIX::convTimeout(mDueTime, msTimeout);
 
+    mEventCount = eventCount;
     mThreadId   = Thread::getCurrentThreadId();
     if (RETURNED_OK != timer_settime(mTimerId, 0, &interval, NULL))
     {
         result          = false;
+        mThreadId       = 0;
+        mEventCount     = 0;
         mDueTime.tv_sec = 0;
         mDueTime.tv_nsec= 0;
     }
@@ -182,24 +192,30 @@ bool TimerPosix::_startTimer(unsigned int msTimeout, unsigned int eventCount)
 
 void TimerPosix::_stopTimer(void)
 {
+    ASSERT(mTimerId != 0);
+
     struct itimerspec interval;
     NEMemory::zeroBuffer(static_cast<void *>(&interval), sizeof(struct itimerspec));
+
     mDueTime.tv_sec = 0;
     mDueTime.tv_nsec= 0;
-
     mEventCount     = 0;
+
     timer_settime(mTimerId, 0, &interval, NULL);
 }
 
 void TimerPosix::_destroyTimer(void)
 {
-    if ((mDueTime.tv_sec != 0) || (mDueTime.tv_nsec != 0))
+    if (_isStarted())
+    {
         _stopTimer();
+    }
 
     if (mTimerId != 0)
+    {
         timer_delete(mTimerId);
-
-    mTimerId    = 0;
+        mTimerId    = 0;
+    }
 }
 
 #endif // _POSIX

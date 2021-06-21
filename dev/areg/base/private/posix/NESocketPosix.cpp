@@ -80,6 +80,7 @@ AREG_API int NESocket::sendData(SOCKETHANDLE hSocket, const unsigned char * data
         result = 0;
         if ( dataBuffer != NULL && dataLength > 0 )
         {
+            bool checkSize  = false;
             blockMaxSize    = blockMaxSize > 0 ? blockMaxSize : NESocket::getMaxSendSize(hSocket);
             result          = dataLength;
 
@@ -97,10 +98,11 @@ AREG_API int NESocket::sendData(SOCKETHANDLE hSocket, const unsigned char * data
                 }
                 else
                 {
-                    if ( errno == EMSGSIZE )
+                    if ( (checkSize == false) && (errno == EMSGSIZE) )
                     {
                         // try again with other package size
-                        blockMaxSize = NESocket::getMaxSendSize(hSocket);
+                        checkSize   = true;
+                        blockMaxSize= NESocket::getMaxSendSize(hSocket);
                         TRACE_WARN("No data has sent, trying to change the maximum block size to [ %d ] bytes and try again, there are still [ %d ] bytes to sent", blockMaxSize, dataLength);
                     }
                     else

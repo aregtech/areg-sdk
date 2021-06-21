@@ -213,3 +213,22 @@ void ServerConnection::closeConnection(SocketAccepted & clientConnection)
 
     clientConnection.closeSocket();
 }
+
+void ServerConnection::closeConnection( ITEM_ID cookie )
+{
+    Lock lock(mLock);
+
+    MAPPOS posCookie = mCookieToSocket.find( cookie );
+    if (posCookie != NULL)
+    {
+        SOCKETHANDLE hSocket= mCookieToSocket.removePosition( posCookie );
+        MAPPOS posClient    = mAcceptedConnections.find( hSocket );
+        mSocketToCookie.removeAt( hSocket );
+        mMasterList.remove( hSocket, 0 );
+        if (posClient != NULL)
+        {
+            SocketAccepted client(mAcceptedConnections.removePosition(posClient));
+            client.closeSocket( );
+        }
+    }
+}

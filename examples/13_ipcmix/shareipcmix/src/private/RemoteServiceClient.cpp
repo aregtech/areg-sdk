@@ -91,7 +91,7 @@ void RemoteServiceClient::responseRegister( const NERemoteRegistry::sClientRegis
     {
         ASSERT(client.crName == mTimer.getName());
 
-        TRACE_INFO("The client [ %s ] is registered and got ID [ %d ], can use services", mClient.crName.getString(), client.crID);
+        TRACE_INFO("The client [ %s ] is registered and got ID [ %d ], can use services", client.crName.getString(), client.crID);
         mClient = client;
         mTimer.startTimer(mMsTimeout, RemoteRegistryClientBase::getProxy()->getProxyDispatcherThread());
     }
@@ -160,7 +160,7 @@ void RemoteServiceClient::processTimer(Timer & timer)
     TRACE_SCOPE(examples_13_ipcmix_shareipcmix_RemoteServiceClient_processTimer);
     ASSERT(&timer == &mTimer);
 
-    TRACE_DBG("Timer [ %s ] expired, send request to output message.", timer.getName().getString());
+    TRACE_DBG("Timer [ %s ] of client ID [ %d ] has expired, send request to output message.", timer.getName().getString(), mClient.crID);
 
     NEService::eDataStateType dataState = NEService::DATA_INVALID;
     if ( (getServiceState(dataState) == NESystemShutdown::ServiceReady) && (dataState == NEService::DATA_OK))

@@ -91,11 +91,6 @@ public:
     inline unsigned int getRemainPeriod( void ) const;
 
     /**
-     * \brief   Returns true if timer is started.
-     **/
-    inline bool isStarted( void ) const;
-
-    /**
      * \brief   Returns true if timer is valid, i.e. the timer ID and context are valid.
      **/
     inline bool isValid( void ) const;
@@ -197,6 +192,12 @@ private:
      **/
     inline void _destroyTimer( void );
 
+    /**
+     * \brief   Returns true if timer is started. The timer considered started if
+     *          due time is not zero.
+     **/
+    inline bool _isStarted( void ) const;
+
 //////////////////////////////////////////////////////////////////////////
 // Hidden member variables.
 //////////////////////////////////////////////////////////////////////////
@@ -267,16 +268,15 @@ inline unsigned int TimerPosix::getRemainPeriod(void) const
     return mContext->getEventCount();
 }
 
-inline bool TimerPosix::isStarted(void) const
-{
-    SpinLockIX lock(mLock);
-    return ((mDueTime.tv_sec != 0) || (mDueTime.tv_nsec != 0));
-}
-
 inline bool TimerPosix::isValid(void) const
 {
     SpinLockIX lock(mLock);
     return ((mContext != NULL) && (mTimerId != 0));
+}
+
+inline bool TimerPosix::_isStarted(void) const
+{
+    return ((mDueTime.tv_sec != 0) || (mDueTime.tv_nsec != 0));
 }
 
 #endif  // _POSIX

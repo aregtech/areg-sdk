@@ -292,7 +292,6 @@ bool MapTimerTable::resetActiveTimerState(const Timer * key)
     TEHashMap<Timer *, TimerInfo, const Timer *, const TimerInfo &, TimerTableImpl>::Block** block = blockAt(key);
     if ((block != NULL) && (*block != NULL))
     {
-        TimerInfo & timerInfo = (*block)->mValue;
         result = (*block)->mValue.resetActiveTimer();
     }
 

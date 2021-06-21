@@ -547,7 +547,7 @@ void ClientService::processReceivedMessage( const RemoteMessage & msgReceived, c
                         if ( result == NEMemory::ResultSucceed )
                             mServiceConsumer.registerRemoteProxy(proxy);
                         else
-                            mServiceConsumer.unregisterRemoteProxy(proxy);
+                            mServiceConsumer.unregisterRemoteProxy(proxy, NEService::COOKIE_ANY);
                     }
                     break;
 
@@ -558,7 +558,7 @@ void ClientService::processReceivedMessage( const RemoteMessage & msgReceived, c
                         if ( result == NEMemory::ResultSucceed )
                             mServiceConsumer.registerRemoteStub(stub);
                         else
-                            mServiceConsumer.unregisterRemoteStub(stub);
+                            mServiceConsumer.unregisterRemoteStub(stub, NEService::COOKIE_ANY);
                     }
                     break;
 
@@ -566,7 +566,7 @@ void ClientService::processReceivedMessage( const RemoteMessage & msgReceived, c
                     {
                         ProxyAddress proxy(msgReceived);
                         proxy.setSource( mChannel.getSource() );
-                        mServiceConsumer.unregisterRemoteProxy(proxy);
+                        mServiceConsumer.unregisterRemoteProxy(proxy, NEService::COOKIE_ANY);
                     }
                     break;
 
@@ -574,7 +574,7 @@ void ClientService::processReceivedMessage( const RemoteMessage & msgReceived, c
                     {
                         StubAddress stub(msgReceived);
                         stub.setSource( mChannel.getSource() );
-                        mServiceConsumer.unregisterRemoteStub(stub);
+                        mServiceConsumer.unregisterRemoteStub(stub, NEService::COOKIE_ANY);
                     }
                     break;
 

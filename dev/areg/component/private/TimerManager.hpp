@@ -230,18 +230,6 @@ private:
      *          Before registering timer, it creates system timer.
      *          if successfully created, stores in the resource map.
      *          The timers should be unique in the timer map.
-     *          When timer event is fired, it will be dispatched in the
-     *          current thread where it was registered.
-     * \param   timer       The timer object that should be registered
-     * \return  Returns true if succeded to register timer in the map.
-     **/
-    bool _registerTimer( Timer & timer );
-
-    /**
-     * \brief   Registers timer in the timer resource map.
-     *          Before registering timer, it creates system timer.
-     *          if successfully created, stores in the resource map.
-     *          The timers should be unique in the timer map.
      * \param   timer       The timer object that should be registered
      * \param   whichThread The dispatcher thread, where the timer event should be dispatched.
      * \return  Returns true if succeeded to register timer in the map.

@@ -60,20 +60,15 @@ Mutex::Mutex(bool lock /* = true */)
     mSynchObject    = DEBUG_NEW WaitableMutexIX(lock, "POSIX_Mutex");
 }
 
-Mutex::~Mutex( void )
-{
-    _unlockMutex(mSynchObject);
-}
-
 //////////////////////////////////////////////////////////////////////////
 // Mutex class, Methods
 //////////////////////////////////////////////////////////////////////////
 
-bool Mutex::_lockMutex( void * mutexHandle, unsigned int timeout )
+bool Mutex::_lockMutex( unsigned int timeout )
 {
     bool result = false;
 
-    WaitableMutexIX * synchMutex = static_cast<WaitableMutexIX *>(mutexHandle);
+    WaitableMutexIX * synchMutex = reinterpret_cast<WaitableMutexIX *>(mSynchObject);
     if ( (synchMutex != NULL) && (NESynchTypesIX::SynchObject0 == SynchLockAndWaitIX::waitForSingleObject(*synchMutex, timeout)) )
     {
         mOwnerThreadId = reinterpret_cast<ITEM_ID>(synchMutex->getOwningThreadId());
@@ -83,10 +78,10 @@ bool Mutex::_lockMutex( void * mutexHandle, unsigned int timeout )
     return result;
 }
 
-bool Mutex::_unlockMutex( void * mutexHandle )
+bool Mutex::_unlockMutex( void )
 {
     bool result = false;
-    WaitableMutexIX * synchMutex = reinterpret_cast<WaitableMutexIX *>(mutexHandle);
+    WaitableMutexIX * synchMutex = reinterpret_cast<WaitableMutexIX *>(mSynchObject);
     if ( (synchMutex != NULL) && synchMutex->releaseMutex() )
     {
         mOwnerThreadId = static_cast<ITEM_ID>(0);

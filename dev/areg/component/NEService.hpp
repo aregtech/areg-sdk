@@ -227,6 +227,7 @@ namespace NEService
           CookieInvalid     = 0     //!< Invalid cookie value
         , CookieLocal               //!< Valid cookie value of local services
         , CookieRouter              //!< Valid cookie value of Routing Service
+        , CookieAny         = 255   //!< Any valid cookie
         , CookieFirstValid  = 256   //!< First valid cookie of any other remote service
     } eCookies;
 
@@ -245,6 +246,11 @@ namespace NEService
      *          Indicates Router cookie
      **/
     const ITEM_ID   COOKIE_ROUTER       = NEService::CookieRouter;
+    /**
+     * \brief   NEService::COOKIE_ANY
+     *          Indicates any valid cookie
+     **/
+    const ITEM_ID   COOKIE_ANY          = NEService::CookieAny;
     /**
      * \brief   NEService::TARGET_UNKNOWN
      *          The unknown target ID

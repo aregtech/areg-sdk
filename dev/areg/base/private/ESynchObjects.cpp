@@ -51,10 +51,15 @@ bool IEBlockingSynchObject::tryLock(void)
 // Mutex class, Methods
 //////////////////////////////////////////////////////////////////////////
 
+Mutex::~Mutex( void )
+{
+    _unlockMutex( );
+}
+
 bool Mutex::lock(unsigned int timeout /* = IESynchObject::WAIT_INFINITE */)
 {
     ASSERT(mSynchObject != NULL);
-    return _lockMutex(mSynchObject, timeout);
+    return _lockMutex(timeout);
 }
 
 bool Mutex::tryLock( void )
@@ -65,7 +70,7 @@ bool Mutex::tryLock( void )
 bool Mutex::unlock( void )
 {
     ASSERT(mSynchObject != NULL);
-    return _unlockMutex(mSynchObject);
+    return _unlockMutex( );
 }
 
 //////////////////////////////////////////////////////////////////////////

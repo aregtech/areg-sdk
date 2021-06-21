@@ -17,35 +17,6 @@
 
 namespace NEUtilities {
 
-#if 0
-    void _generateName( const char * prefix, char * out_buffer, int length, const char * specChar )
-    {
-        static const char * formatStr = "%s%03d%s%03d%s%03d%s%03d%s%03d%s%03d%s%03d%s%03d";
-        if ( out_buffer != NULL )
-        {
-            *out_buffer = '\0';
-            const char * spec = specChar != NULL ? specChar : NEUtilities::DEFAULT_SPECIAL_CHAR;
-            FILETIME now = { 0, 0 };
-            ::GetSystemTimeAsFileTime( &now );
-
-            int tick1 = static_cast<int>((now.dwHighDateTime >>  0) & 0xFF);
-            int tick2 = static_cast<int>((now.dwHighDateTime >>  8) & 0xFF);
-            int tick3 = static_cast<int>((now.dwHighDateTime >> 16) & 0xFF);
-            int tick4 = static_cast<int>((now.dwHighDateTime >> 24) & 0xFF);
-
-            int tick5 = static_cast<int>((now.dwLowDateTime  >>  0) & 0xFF);
-            int tick6 = static_cast<int>((now.dwLowDateTime  >>  8) & 0xFF);
-            int tick7 = static_cast<int>((now.dwLowDateTime  >> 16) & 0xFF);
-            int tick8 = static_cast<int>((now.dwLowDateTime  >> 24) & 0xFF);
-
-            String::formatString( out_buffer, length, formatStr,
-                prefix != NULL ? prefix : NEUtilities::DEFAULT_GENERATED_NAME,
-                tick8, spec, tick7, spec, tick6, spec, tick5, spec, tick4, spec, tick3, spec, tick2, spec, tick1 );
-        }
-    }
-
-#else
-
     void _generateName( const char * prefix, char * out_buffer, int length, const char * specChar )
     {
         static const char * strFormat = "%s%s%08x%s%08x";

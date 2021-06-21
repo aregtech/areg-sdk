@@ -91,12 +91,14 @@ bool TimerManager::_startSystemTimer( TimerInfo & timerInfo, MapTimerTable & tim
             }
             else
             {
-                TRACE_DBG("Started timer [ %s ], start time: [ %u ] sec, [ %u ] ns, expire time [ %u ] sec, [ %u ] ns"
+                TRACE_DBG("Started timer [ %s ], starting time at [ %u ]:[ %u ], expire time at [ %u ]:[ %u ], difference: [ %u ] sec and [ %u ] ns "
                             , whichTimer->getName().getString()
                             , ts.tv_sec
                             , ts.tv_nsec
                             , posixTimer->getDueTime().tv_sec
-                            , posixTimer->getDueTime().tv_nsec);
+                            , posixTimer->getDueTime().tv_nsec
+                            , posixTimer->getDueTime().tv_sec - ts.tv_sec
+                            , posixTimer->getDueTime().tv_nsec- ts.tv_nsec);
             }
         }
     }
@@ -117,20 +119,10 @@ void TimerManager::_defaultPosixTimerExpiredRoutine( union sigval argSig )
                         , posixTimer->getDueTime().tv_nsec
                         , static_cast<unsigned int>(posixTimer->mThreadId));
 
-        TimerManager::getInstance()._timerExpired(posixTimer->mContext, posixTimer->mDueTime.tv_sec, posixTimer->mDueTime.tv_nsec);
+        unsigned int highValue  = posixTimer->mDueTime.tv_sec;
+        unsigned int lowValue   = posixTimer->mDueTime.tv_nsec;
         posixTimer->timerExpired();
-
-        TRACE_DBG("Notify lock and wait");
-
-        SynchLockAndWaitIX * lockAndWait = SynchLockAndWaitIX::_mapWaitIdResource.findResourceObject(posixTimer->mThreadId);
-        if ( lockAndWait != NULL )
-        {
-            lockAndWait->_notifyAsynchSignal( );
-        }
-        else
-        {
-            TRACE_WARN("Lock and Wait object of thread [ %u ] not foind, ignore timer expire event.", static_cast<unsigned int>(posixTimer->mThreadId));
-        }
+        TimerManager::getInstance()._timerExpired(posixTimer->mContext, highValue, lowValue);
     }
 }
 

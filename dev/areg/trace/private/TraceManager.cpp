@@ -171,8 +171,7 @@ bool TraceManager::forceActivateLogging(void)
 
 void TraceManager::forceEnableLogging(void)
 {
-    TraceManager & traceManager = TraceManager::getInstance();
-    traceManager.mLogStatus.parseProperty( DEFAULT_LOG_ENABLE );
+    TraceManager::getInstance().mLogStatus.parseProperty( DEFAULT_LOG_ENABLE );
 }
 
 //////////////////////////////////////////////////////////////////////////

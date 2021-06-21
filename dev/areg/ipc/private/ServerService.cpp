@@ -271,7 +271,7 @@ void ServerService::processEvent(const ServerServiceEventData & data)
                         {
                             StubAddress stubService(msgReceived);
                             stubService.setSource(source);
-                            unregisterRemoteStub(stubService);
+                            unregisterRemoteStub(stubService, stubService.getCookie());
                         }
                         break;
 
@@ -279,7 +279,7 @@ void ServerService::processEvent(const ServerServiceEventData & data)
                         {
                             ProxyAddress proxyService(msgReceived);
                             proxyService.setSource(source);
-                            unregisterRemoteProxy(proxyService);
+                            unregisterRemoteProxy(proxyService, proxyService.getCookie());
                         }
                         break;
 
@@ -294,9 +294,7 @@ void ServerService::processEvent(const ServerServiceEventData & data)
                 {
                     ITEM_ID cookie = NEService::COOKIE_UNKNOWN;
                     msgReceived >> cookie;
-                    SocketAccepted client = mServerConnection.getClientByCookie(cookie);
-                    if ( client.isValid() )
-                        mServerConnection.closeConnection(client);
+                    mServerConnection.closeConnection(cookie);
 
                     TEArrayList<StubAddress, const StubAddress &>   listStubs;
                     TEArrayList<ProxyAddress, const ProxyAddress &> listProxies;
@@ -309,9 +307,9 @@ void ServerService::processEvent(const ServerServiceEventData & data)
 
                     int index = 0;
                     for ( index = 0; index < listProxies.getSize(); ++ index )
-                        unregisterRemoteProxy( listProxies[index] );
+                        unregisterRemoteProxy( listProxies[index], cookie );
                     for ( index = 0; index < listStubs.getSize(); ++ index )
-                        unregisterRemoteStub( listStubs[index] );
+                        unregisterRemoteStub( listStubs[index], cookie );
                 }
                 break;
 
@@ -439,9 +437,9 @@ void ServerService::stopConnection(void)
     getRemoteServiceList(stubList, proxyList);
 
     for ( int i = 0; i < stubList.getSize(); ++ i )
-        unregisterRemoteStub(stubList[i]);
+        unregisterRemoteStub(stubList[i], NEService::COOKIE_ANY);
     for ( int i = 0; i < proxyList.getSize(); ++ i )
-        unregisterRemoteProxy( proxyList[i] );
+        unregisterRemoteProxy( proxyList[i], NEService::COOKIE_ANY );
 
     mThreadSend.triggerExitEvent();
     mThreadSend.destroyThread( Thread::WAIT_INFINITE );
@@ -594,7 +592,7 @@ void ServerService::registerRemoteProxy(const ProxyAddress & proxy)
     }
 }
 
-void ServerService::unregisterRemoteStub(const StubAddress & stub)
+void ServerService::unregisterRemoteStub(const StubAddress & stub, ITEM_ID cookie /*= NEService::COOKIE_ANY*/ )
 {
     TRACE_SCOPE(areg_ipc_private_ServerService_unregisterRemoteStub);
     if ( mServiceRegistry.getServiceStatus(stub) == NEService::ServiceConnected )
@@ -613,6 +611,15 @@ void ServerService::unregisterRemoteStub(const StubAddress & stub)
             {
                 const ServiceProxy & proxyService = listProxies.getAt(pos);
                 const ProxyAddress & addrProxy    = proxyService.getServiceAddress();
+                
+                if ((cookie != NEService::COOKIE_ANY) && (addrProxy.getCookie() == cookie))
+                {
+                    TRACE_INFO("Ignoring handling unregister message of the client [ %s ] with cookie [ %u ]"
+                                    , ProxyAddress::convAddressToPath(addrProxy).getString()
+                                    , cookie);
+                    continue; // ignore
+                }
+
                 if ( (proxyService.getServiceStatus() != NEService::ServiceConnected) && (addrProxy.getCookie() != stub.getCookie()) )
                 {
                     // no need to send message to unregistered stub, only to proxy side
@@ -661,17 +668,24 @@ void ServerService::unregisterRemoteStub(const StubAddress & stub)
     }
 }
 
-void ServerService::unregisterRemoteProxy(const ProxyAddress & proxy)
+void ServerService::unregisterRemoteProxy(const ProxyAddress & proxy, ITEM_ID cookie /*= NEService::COOKIE_ANY*/ )
 {
     TRACE_SCOPE(areg_ipc_private_ServerService_unregisterRemoteProxy);
     ServiceProxy proxyService;
     const ServiceStub & stubService   = mServiceRegistry.unregisterServiceProxy(proxy, proxyService);
     const StubAddress & addrStub      = stubService.getServiceAddress();
 
+    if ((cookie != NEService::COOKIE_ANY) && (proxy.getCookie() == cookie))
+    {
+        TRACE_INFO("Ignoring unregister proxy [ %s ] of the diconnected cookie [ %u ]"
+                        , ProxyAddress::convAddressToPath(proxy).getString()
+                        , cookie);
+        return;
+    }
+
     if ( (proxyService.getServiceStatus() == NEService::ServiceConnected) && (proxy.getCookie() != addrStub.getCookie()) )
     {
         // no need to send message to proxy side, it is already unregistered
-        // RemoteMessage msgRegisterProxy = NEConnection::CreateServiceClientRegisteredNotification(proxy, addrStub.GetSource());
         RemoteMessage msgRegisterProxy = NEConnection::createServiceClientUnregisteredNotification(proxy, addrStub.getSource());
         TRACE_DBG("Sending [ %s ] proxy unregistered notification, stub [ %s ] on target [ %p ] is connected. Created message [ %s ] ( ID = %p ) from source [ %p ]"
                     , ProxyAddress::convAddressToPath(proxy).getString()

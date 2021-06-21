@@ -193,13 +193,14 @@ private:
 
     /**
      * \brief   Locks the mutex, takes the ownership.
+     * \param   timeout     The timeout in milliseconds to wait for mutext to lock.
      **/
-    bool _lockMutex( void * mutexHandle, unsigned int timeout );
+    bool _lockMutex( unsigned int timeout );
 
     /**
      * \brief   Unlocks the mutex, release the ownership.
      **/
-    bool _unlockMutex( void * mutexHandle );
+    bool _unlockMutex( void );
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables

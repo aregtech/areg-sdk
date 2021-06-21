@@ -81,10 +81,10 @@ static inline int32_t _formatDigit( String & result, const char * format, DigitT
     return count;
 }
 
-static inline int32_t _formatStringList( char * buffer, int32_t count, const char * format, va_list argptr )
+static inline int _formatStringList( char * buffer, int count, const char * format, va_list argptr )
 {
 
-    int32_t result = -1;
+    int result = -1;
     if ( buffer != NULL_STRING )
     {
         *buffer = static_cast<char>(NEString::EndOfString);

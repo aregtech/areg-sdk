@@ -262,8 +262,15 @@ public:
 
     /**
      * \brief   Call to close client connection.
+     * \param   clientConnection    The client to close connection.
      **/
     void closeConnection( SocketAccepted & clientConnection );
+
+    /**
+     * \brief   Call to close connection by cookie.
+     * \param   cookie      The cookie of client set by routing service.
+     **/
+    void closeConnection(ITEM_ID cookie);
 
     /**
      * \brief   Call to close all existing accepted connections

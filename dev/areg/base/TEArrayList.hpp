@@ -541,17 +541,19 @@ inline int TEArrayList<VALUE, VALUE_TYPE, Implement>::add(VALUE_TYPE newElement)
 template<typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /* = TEListImpl<VALUE_TYPE> */>
 inline bool TEArrayList<VALUE, VALUE_TYPE, Implement>::addUnique(VALUE_TYPE newElement)
 {
-    bool result = false;
     int i = 0;
-    for ( ; i < mElemCount; ++ i)
+    while ( i < mElemCount )
     {
         if ( isEqualValues(mValueList[i], newElement) )
             break;
+
+        ++ i;
     }
 
-    if ( i == mElemCount )
+    bool result = i == mElemCount;
+
+    if ( result )
     {
-        result = true;
         setSize(mElemCount + 1, -1);
         mValueList[mElemCount ++] = newElement;
     }
@@ -705,13 +707,20 @@ inline bool TEArrayList<VALUE, VALUE_TYPE, Implement>::exist( VALUE_TYPE elemSea
 template<typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /* = TEListImpl<VALUE_TYPE> */>
 inline bool TEArrayList<VALUE, VALUE_TYPE, Implement>::remove( VALUE_TYPE elemRemove, int searchAt /*= 0*/ )
 {
-    int pos = find(elemRemove, searchAt);
-    if (pos >= 0)
+    bool result = false;
+    searchAt = searchAt < 0 ? 0 : searchAt;
+
+    for (int i = searchAt; i < mElemCount; ++ i)
     {
-        removeAt(pos, 1);
+        if (isEqualValues(mValueList[i], elemRemove))
+        {
+            result = true;
+            removeAt(i, 1);
+            break;
+        }
     }
 
-    return (pos >= 0);
+    return result;
 }
 
 template<typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /* = TEListImpl<VALUE_TYPE> */>

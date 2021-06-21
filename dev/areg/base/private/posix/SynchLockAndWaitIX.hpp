@@ -284,6 +284,14 @@ public:
      **/
     static bool isWaitableRegistered( IEWaitableBaseIX & synchWaitable );
 
+    /**
+     * \brief   Notifies the asynchronous execution within a locked thread. This call breaks waiting process of thread
+     *          that can be locked again when finished processing asynchronous execution.
+     * \param   threadId    The ID of the thread that is going to break waiting.
+     * \return  Returns true if operation succeeded. The operation can fail if thread is not locked.
+     **/
+    static bool notifyAsynchSignal( ITEM_ID threadId );
+
 //////////////////////////////////////////////////////////////////////////
 // Hidden constructor / destructor
 //////////////////////////////////////////////////////////////////////////

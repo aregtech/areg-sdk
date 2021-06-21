@@ -70,17 +70,17 @@ void MulticastRouter::serviceMain( int argc, char ** argv )
         if ( mServiceCmd == MulticastRouter::CMD_Console )
         {
             printf("Type \'quit\' or \'q\' to quit message router ...: ");
-            const char quit= 'q';
-            char cmd = '\0';
+            const char quit = static_cast<int>('q' );
+            char cmd[8]     = {0};
 
             do 
             {
 #ifdef _WINDOWS
-                scanf_s("%c", &cmd);
+                scanf_s("%4s", cmd, 8);
 #else   // !_WINDOWS
-                scanf("%c", &cmd);
+                scanf("%4s", cmd);
 #endif  // !_WINDOWS
-            } while (NEString::makeAsciiLower<char>(cmd) != quit);
+            } while (NEString::makeAsciiLower<char>(*cmd) != quit);
 
             Application::signalAppQuit();
         }

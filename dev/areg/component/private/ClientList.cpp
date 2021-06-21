@@ -130,24 +130,6 @@ void ClientList::serverUnavailable( ClientList & out_clientList )
         client.setTargetServer( StubAddress::INVALID_STUB_ADDRESS );
         client.setConnectionStatus( NEService::ServicePending );
         out_clientList.pushLast(client);
-#if 0
-
-        if ( client.getAddress().isRemoteAddress() )
-        {
-            pos = nextPosition(pos);
-        }
-        else
-        {
-            // remote client, remote it.
-            // LISTPOS oldPos = pos;
-            pos = nextPosition(pos);
-            // RemoveAt(oldPos);
-        }
-
-#else
-
         pos = nextPosition(pos);
-
-#endif
     }
 }
