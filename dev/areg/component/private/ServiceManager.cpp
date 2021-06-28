@@ -24,6 +24,11 @@ DEF_TRACE_SCOPE(areg_component_private_ServiceManager__registerClient);
 DEF_TRACE_SCOPE(areg_component_private_ServiceManager__unregisterClient);
 DEF_TRACE_SCOPE(areg_component_private_ServiceManager__sendClientConnectedEvent);
 DEF_TRACE_SCOPE(areg_component_private_ServiceManager__sendClientDisconnectedEvent);
+DEF_TRACE_SCOPE(areg_component_private_ServiceManager_requestRegisterServer);
+DEF_TRACE_SCOPE(areg_component_private_ServiceManager_requestUnregisterServer);
+DEF_TRACE_SCOPE(areg_component_private_ServiceManager_requestRegisterClient);
+DEF_TRACE_SCOPE(areg_component_private_ServiceManager_requestUnregisterClient);
+DEF_TRACE_SCOPE(areg_component_private_ServiceManager_getServiceList);
 
 //////////////////////////////////////////////////////////////////////////
 // ServiceManager class Implementation
@@ -71,7 +76,8 @@ bool ServiceManager::isServiceManagerStarted( void )
 
 void ServiceManager::requestRegisterServer( const StubAddress & whichServer )
 {
-    OUTPUT_DBG("Request to register server [ %s ] of interface [ %s ]"
+    TRACE_SCOPE(areg_component_private_ServiceManager_requestRegisterServer);
+    TRACE_DBG("Request to register server [ %s ] of interface [ %s ]"
                     , whichServer.getRoleName().getString()
                     , whichServer.getServiceName().getString());
     
@@ -83,7 +89,9 @@ void ServiceManager::requestRegisterServer( const StubAddress & whichServer )
 
 void ServiceManager::requestUnregisterServer( const StubAddress & whichServer )
 {
-    OUTPUT_DBG( "Request to unregister server [ %s ] of interface [ %s ]"
+    TRACE_SCOPE(areg_component_private_ServiceManager_requestUnregisterServer);
+
+    TRACE_DBG( "Request to unregister server [ %s ] of interface [ %s ]"
                     , whichServer.getRoleName( ).getString( )
                     , whichServer.getServiceName( ).getString( ) );
     
@@ -95,7 +103,9 @@ void ServiceManager::requestUnregisterServer( const StubAddress & whichServer )
 
 void ServiceManager::requestRegisterClient( const ProxyAddress & whichClient )
 {
-    OUTPUT_DBG( "Request to register proxy [ %s ] of interface [ %s ]"
+    TRACE_SCOPE(areg_component_private_ServiceManager_requestRegisterClient);
+
+    TRACE_DBG( "Request to register proxy [ %s ] of interface [ %s ]"
                     , whichClient.getRoleName( ).getString( )
                     , whichClient.getServiceName( ).getString( ) );
     
@@ -107,7 +117,8 @@ void ServiceManager::requestRegisterClient( const ProxyAddress & whichClient )
 
 void ServiceManager::requestUnregisterClient( const ProxyAddress & whichClient )
 {
-    OUTPUT_DBG( "Request to register proxy [ %s ] of interface [ %s ]"
+    TRACE_SCOPE(areg_component_private_ServiceManager_requestUnregisterClient);
+    TRACE_DBG( "Request to register proxy [ %s ] of interface [ %s ]"
                     , whichClient.getRoleName( ).getString( )
                     , whichClient.getServiceName( ).getString( ) );
     
@@ -525,6 +536,7 @@ void ServiceManager::processEvent( const ServiceManagerEventData & data )
 
     default:
         ASSERT(false);
+        break;
     }
 }
 
@@ -584,12 +596,9 @@ void ServiceManager::_stopServiceManagerThread( void )
     completionWait( Thread::WAIT_INFINITE );
 }
 
-void ServiceManager::getRemoteServiceList( TEArrayList<StubAddress, const StubAddress &> & OUT /*out_listStubs*/, TEArrayList<ProxyAddress, const ProxyAddress &> & OUT /*out_lisProxies*/) const
-{
-}
-
 void ServiceManager::getServiceList( ITEM_ID cookie, TEArrayList<StubAddress, const StubAddress &> & OUT out_listStubs, TEArrayList<ProxyAddress, const ProxyAddress &> & OUT out_lisProxies ) const
 {
+    TRACE_SCOPE(areg_component_private_ServiceManager_getServiceList);
     Lock lock( mLock );
 
     out_listStubs.removeAll();
@@ -600,20 +609,24 @@ void ServiceManager::getServiceList( ITEM_ID cookie, TEArrayList<StubAddress, co
         const StubAddress & server      = mServerList.keyAtPosition(posMap).getAddress();
         const ClientList & listClients  = mServerList.valueAtPosition(posMap);
 
-        if ( (server.getCookie() == cookie) && server.isValid() )
+        if ( server.isValid() && ((cookie == NEService::COOKIE_ANY) || (server.getCookie() == cookie)) )
         {
+            TRACE_DBG("Found stub [ %s ] of cookie [ %u ]", StubAddress::convAddressToPath(server).getString(), cookie);
             out_listStubs.add(server);
         }
 
         for ( LISTPOS posList = listClients.firstPosition(); posList != NULL; posList = listClients.nextPosition(posList) )
         {
             const ProxyAddress & proxy = listClients.getAt(posList).getAddress();
-            if ( (proxy.getCookie() == cookie) && proxy.isValid() )
+            if ( proxy.isValid() && ((cookie == NEService::COOKIE_ANY) || (proxy.getCookie() == cookie)) )
             {
+                TRACE_DBG("Found proxy [ %s ] of cookie [ %u ]", ProxyAddress::convAddressToPath(proxy).getString(), cookie);
                 out_lisProxies.add(proxy);
             }
         }
     }
+
+    TRACE_DBG("Found [ %d ] servers and [ %d ] proxies of cookie [ %u ]", out_listStubs.getSize(), out_lisProxies.getSize(), cookie);
 }
 
 void ServiceManager::registerRemoteStub( const StubAddress & stub )

@@ -71,9 +71,13 @@ void StubEvent::sendEvent( void )
     }
 
     if ( mTargetThread != NULL )
+    {
         StreamableEvent::sendEvent();
+    }
     else
+    {
         this->destroy();
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////

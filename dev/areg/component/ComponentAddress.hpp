@@ -155,7 +155,7 @@ public:
     /**
      * \brief   Converting operator.
      **/
-    operator unsigned int ( void ) const;
+    inline operator unsigned int ( void ) const;
 
     /**
      * \brief   Assigning operator. Copies address data from given source.
@@ -204,7 +204,23 @@ public:
      * \brief   Return true if component address if valid.
      *          Address is valid if it is not equal to INVALID_COMPONENT_ADDRESS
      **/
-    inline bool isValid( void) const;
+    bool isValid( void) const;
+
+    /**
+     * \brief	Creates component address to string.
+     *          Every part of component address has a special path separator.
+     * \return  Returns converted path of Component as a string.
+     **/
+    String convToString( void ) const;
+
+    /**
+     * \brief	Parses component path string and retrieves component address data from path.
+     * \param	pathComponent   The component path as a string.
+     * \param	out_nextPart	If not a NULL, on output this will contain remaining
+     *                          part after getting component path. On output usually
+     *                          should be NULL.
+     **/
+    void convFromString(const char * pathComponent, const char** out_nextPart = NULL);
 
 private:
 /************************************************************************/
@@ -213,11 +229,15 @@ private:
     /**
      * \brief   Component name. Or Role Name of component
      **/
-    String        mRoleName;
+    String          mRoleName;
     /**
      * \brief   Thread address object.
      **/
-    ThreadAddress mThreadAddress;
+    ThreadAddress   mThreadAddress;
+    /**
+     * \brief   The numeric value of Component Address object
+     **/
+    unsigned int    mMagicNum;
 
 //////////////////////////////////////////////////////////////////////////
 // Private / Hidden members
@@ -230,6 +250,10 @@ private:
      * \brief   Default constructor. Cannot be accessed. For internal use only.
      **/
     ComponentAddress( void );
+    /**
+     * \brief   Returns the calculated numeric value of specified component address object.
+     **/
+    static unsigned int _magicNumber( const ComponentAddress & addrComp );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -240,17 +264,24 @@ inline const ComponentAddress& ComponentAddress::operator = ( const ComponentAdd
 {
     mThreadAddress  = src.mThreadAddress;
     mRoleName       = src.mRoleName;
+    mMagicNum       = src.mMagicNum;
+
     return (*this);
 }
 
 inline bool ComponentAddress::operator == ( const ComponentAddress& other ) const
 {
-    return (this != &other ? (mThreadAddress == other.mThreadAddress) && (mRoleName == other.mRoleName) : true);
+    return (mThreadAddress == other.mThreadAddress) && (mRoleName == other.mRoleName);
 }
 
 inline bool ComponentAddress::operator != ( const ComponentAddress& other ) const
 {
-    return (this != &other ? (mThreadAddress != other.mThreadAddress) || (mRoleName != other.mRoleName) : false);
+    return (mThreadAddress != other.mThreadAddress) || (mRoleName != other.mRoleName);
+}
+
+ComponentAddress::operator unsigned int ( void ) const
+{
+    return mMagicNum;
 }
 
 inline const ThreadAddress& ComponentAddress::getThreadAddress( void ) const
@@ -261,11 +292,6 @@ inline const ThreadAddress& ComponentAddress::getThreadAddress( void ) const
 inline const String& ComponentAddress::getRoleName( void ) const
 {
     return mRoleName;
-}
-
-inline bool ComponentAddress::isValid( void ) const
-{
-    return (mThreadAddress.isValid() && (mRoleName != INVALID_COMPONENT_NAME));
 }
 
 //////////////////////////////////////////////////////////////////////////

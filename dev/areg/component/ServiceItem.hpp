@@ -104,24 +104,24 @@ public:
      * \brief   Copies data from given source.
      * \param   source      The source of data to copy
      **/
-    const ServiceItem & operator = ( const ServiceItem & source );
+    inline const ServiceItem & operator = ( const ServiceItem & source );
 
     /**
      * \brief   Checks equality of 2 service item and returns true if they are equal.
      * \param   other       The service item to check
      **/
-    bool operator == ( const ServiceItem & other ) const;
+    inline bool operator == ( const ServiceItem & other ) const;
 
     /**
      * \brief   Checks inequality of 2 service item and returns true if they are not equal.
      * \param   other       The service item to check
      **/
-    bool operator != (const ServiceItem & other ) const;
+    inline bool operator != (const ServiceItem & other ) const;
 
     /**
      * \brief   Converts service item to 32-bit unsigned integer value.
      **/
-    operator unsigned int( void ) const;
+    inline operator unsigned int ( void ) const;
 
 /************************************************************************/
 // Friend global operators for streaming
@@ -189,7 +189,33 @@ public:
     /**
      * \brief   Checks whether given service item is compatible.
      **/
-    bool isServiceCompatible( const ServiceItem & other ) const;
+    inline bool isServiceCompatible( const ServiceItem & other ) const;
+
+    /**
+     * \brief   Creates Service Item path as a string.
+     * /return  Returns service item as a string.
+     **/
+    String convToString( void ) const;
+
+    /**
+     * \brief   Converts given service item path as a string to service item object.
+     * \param   pathService     The path of service item as a string.
+     * \param   out_nextPart    If not NULL, on output this parameter points to next part of part after service item.
+     **/
+    void convFromString(  const char* pathService, const char** out_nextPart = NULL );
+
+protected:
+    /**
+     * \brief   Returns true if service item has valid data.
+     **/
+    inline bool isValidated( void ) const;
+   
+private:
+
+    /**
+     * \brief   Returns the calculated hash-key value of specified service item.
+     **/
+    static unsigned int _magicNumber( const ServiceItem svcItem );
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables.
@@ -207,6 +233,15 @@ protected:
      * \brief   Service type
      **/
     NEService::eServiceType mServiceType;
+
+//////////////////////////////////////////////////////////////////////////
+// Hidden members
+//////////////////////////////////////////////////////////////////////////
+private:
+    /**
+     * \brief   The calculated number of service item
+     **/
+    unsigned int            mMagicNum;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -222,6 +257,7 @@ inline void ServiceItem::setServiceName( const char * serviceName )
 {
     mServiceName = serviceName;
     mServiceName.truncate(NEUtilities::ITEM_NAMES_MAX_LENGTH);
+    mMagicNum    = ServiceItem::_magicNumber(*this);
 }
 
 inline const Version & ServiceItem::getServiceVersion( void ) const
@@ -242,6 +278,7 @@ inline NEService::eServiceType ServiceItem::getServiceType( void ) const
 inline void ServiceItem::setServiceType( NEService::eServiceType serviceType )
 {
     mServiceType = serviceType;
+    mMagicNum    = serviceType != NEService::ServiceInvalid ? ServiceItem::_magicNumber(*this) : NEMath::CHECKSUM_IGNORE;
 }
 
 inline bool ServiceItem::isServiceRemote(void) const
@@ -251,7 +288,48 @@ inline bool ServiceItem::isServiceRemote(void) const
 
 inline bool ServiceItem::isValid( void ) const
 {
-    return ( (mServiceName != ServiceItem::INVALID_SERVICE) && mServiceVersion.isValid() );
+    return ( mMagicNum != NEMath::CHECKSUM_IGNORE );
+}
+
+inline bool ServiceItem::isValidated(void) const
+{
+    return (mServiceName.isEmpty()  == false                        ) && 
+           (mServiceName            != ServiceItem::INVALID_SERVICE ) && 
+           (mServiceVersion         != Version::INVALID_VERSION     ) && 
+           (mServiceType            != NEService::ServiceInvalid    );
+}
+
+inline const ServiceItem & ServiceItem::operator = ( const ServiceItem & source )
+{
+    if ( static_cast<const ServiceItem *>(this) != &source )
+    {
+        mServiceName    = source.mServiceName;
+        mServiceVersion = source.mServiceVersion;
+        mServiceType    = source.mServiceType;
+        mMagicNum       = source.mMagicNum;
+    }
+
+    return (*this);
+}
+
+inline bool ServiceItem::operator == ( const ServiceItem & other ) const
+{
+    return (mMagicNum == other.mMagicNum);
+}
+
+inline bool ServiceItem::operator != (const ServiceItem & other ) const
+{
+    return (mMagicNum != other.mMagicNum);
+}
+
+inline ServiceItem::operator unsigned int ( void ) const
+{
+    return mMagicNum;
+}
+
+inline bool ServiceItem::isServiceCompatible( const ServiceItem & other ) const
+{
+    return ((mMagicNum == other.mMagicNum) && mServiceVersion.isCompatible(other.mServiceVersion));
 }
 
 #endif  // AREG_COMPONENT_SERVICEITEM_HPP

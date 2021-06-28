@@ -215,35 +215,25 @@ void TimerManager::_processExpiredTimers( void )
     {
         TRACE_SCOPE(areg_component_private_TimerManager__processExpiredTimers);
         Thread::switchThread();
+        Lock lock(mLock);
 
-        mLock.lock();
-        
         TRACE_DBG("There are [ %d ] expired timers in the list to process", mExpiredTimers.getSize());
 
         if (mExpiredTimers.isEmpty())
         {
-            mLock.unlock();
-
             TRACE_INFO("No more expired timer, finishing the job.");
             break; // exit loop!!!
         }
 
         ExpiredTimerInfo expiredTime = mExpiredTimers.popTimer();
-        TimerInfo * timerInfo = mTimerTable.findObject(expiredTime.mTimer);
+        Timer * currTimer     = expiredTime.mTimer;
+        TimerInfo * timerInfo = currTimer != NULL ? mTimerTable.findObject(currTimer) : NULL;
 
-        ASSERT(timerInfo != NULL);
-        ASSERT(timerInfo->mTimer  != NULL);
-        ASSERT(expiredTime.mTimer != NULL);
-        ASSERT(timerInfo->mTimer->isValid());
-        if (timerInfo->isTimerExpired(expiredTime.mHighValue, expiredTime.mLowValue))
+        if (timerInfo != NULL)
         {
-            Timer* currTimer= timerInfo->mTimer;
-
-            mLock.unlock();
-            bool hasSent    = TimerEvent::sendEvent( *currTimer, timerInfo->mOwnThreadId );
-            mLock.lock();
-
-            if ( hasSent && mTimerTable.resetActiveTimerState(currTimer))
+            ASSERT(currTimer != NULL);
+            ITEM_ID threadId = timerInfo->mOwnThreadId;
+            if ( mTimerTable.resetActiveTimerState(currTimer))
             {
                 TRACE_DBG("Send timer [ %s ] event to target [ %u ], continuing timer", currTimer->getName().getString(), static_cast<unsigned int>(timerInfo->mOwnThreadId));
             }
@@ -252,10 +242,17 @@ void TimerManager::_processExpiredTimers( void )
                 TRACE_WARN("Either the Timer [ %s ] is not active or cannot send anymore. Going to unregister", currTimer->getName().getString());
                 _unregisterTimer(currTimer);
             }
+
+            TimerEvent::sendEvent( *currTimer, threadId );
         }
-
-        mLock.unlock();
-
+        else
+        {
+            TRACE_WARN("Invalid timer in the list of [%d ] expired timers. Cannot get timer [ %p ] information from map of size [ %d ] entries"
+                            , mExpiredTimers.getSize()
+                            , currTimer
+                            , mTimerTable.getSize());
+            break;
+        }
     } while (true);
 }
 

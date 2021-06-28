@@ -54,7 +54,7 @@ RemoteServiceClient::~RemoteServiceClient(void)
 bool RemoteServiceClient::serviceConnected(bool isConnected, ProxyBase & proxy)
 {
     TRACE_SCOPE(examples_13_ipcmix_shareipcmix_RemoteServiceClient_serviceConnected);
-    TRACE_DBG("Proxy [ %s ] is [ %s ]", ProxyAddress::convAddressToPath(proxy.getProxyAddress()).getString(), isConnected ? "CONNECTED" : "DISCONNECTED");
+    TRACE_DBG("Client [ %p ] - [ %s ] is [ %s ]", this, ProxyAddress::convAddressToPath(proxy.getProxyAddress()).getString(), isConnected ? "CONNECTED" : "DISCONNECTED");
 
     if ( RemoteRegistryClientBase::serviceConnected(isConnected, proxy) )
     {
@@ -64,7 +64,7 @@ bool RemoteServiceClient::serviceConnected(bool isConnected, ProxyBase & proxy)
         mClient.crID = 0;
         if (isConnected )
         {
-            TRACE_DBG("Client [ %s ] requests to be registered", mTimer.getName().getString());
+            TRACE_DBG("Client [ %p ]-[ %s ] requests to be registered", this, mTimer.getName().getString());
             requestRegister(mTimer.getName(), proxy.getProxyAddress(), proxy.getProxyDispatcherThread().getName(), Process::getInstance().getAppName());
         }
 
@@ -72,6 +72,7 @@ bool RemoteServiceClient::serviceConnected(bool isConnected, ProxyBase & proxy)
     }
     else if (SystemShutdownClientBase::serviceConnected(isConnected, proxy))
     {
+        TRACE_DBG("Client [ %p ]-[ %s ]subscribes on service unavailable and service state update messages", this, mTimer.getName().getString());
         notifyOnBroadcastServiceUnavailable(isConnected);
         notifyOnServiceStateUpdate(isConnected);
 

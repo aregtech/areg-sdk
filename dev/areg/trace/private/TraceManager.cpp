@@ -492,82 +492,127 @@ bool TraceManager::initializeConfig(void)
                 break;
 
             case NELogConfig::ConfigLogFile:
-                if ( mLogFile.getKey().isLocalKey() == false || mLogFile.getKey().getModule() == Key.getModule() )
+                if ( (mLogFile.getKey().isLocalKey() == false) || (mLogFile.getKey().getModule() == Key.getModule()) )
                 {
                     mLogFile    = prop;
                     if ( mLogFile.getValue().isValid() == false )
+                    {
                         mLogFile.getValue() = NELogConfig::DEFAULT_LOG_FILE_NAME;
+                    }
                 }
+
                 break;
 
             case NELogConfig::ConfigLogRemoteHost:
-                if ( mLogRemoteHost.getKey().isLocalKey() == false || mLogRemoteHost.getKey().getModule() == Key.getModule() )
+                if ( (mLogRemoteHost.getKey().isLocalKey() == false) || (mLogRemoteHost.getKey().getModule() == Key.getModule()) )
+                {
                     mLogRemoteHost  = prop;
+                }
+
                 break;
 
             case NELogConfig::ConfigLogRemotePort:
-                if ( mLogRemotePort.getKey().isLocalKey() == false || mLogRemotePort.getKey().getModule() == Key.getModule() )
+                if ( (mLogRemotePort.getKey().isLocalKey() == false) || (mLogRemotePort.getKey().getModule() == Key.getModule()) )
+                {
                     mLogRemotePort  = prop;
+                }
+
                 break;
 
             case NELogConfig::ConfigLogDatabaseDriver:
-                if ( mLogDbDriver.getKey().isLocalKey() == false || mLogDbDriver.getKey().getModule() == Key.getModule() )
+                if ( (mLogDbDriver.getKey().isLocalKey() == false) || (mLogDbDriver.getKey().getModule() == Key.getModule()) )
+                {
                     mLogDbDriver = prop;
+                }
+
                 break;
 
             case NELogConfig::ConfigLogDatabaseHost:
-                if ( mLogDbHost.getKey().isLocalKey() == false || mLogDbHost.getKey().getModule() == Key.getModule() )
+                if ( (mLogDbHost.getKey().isLocalKey() == false) || (mLogDbHost.getKey().getModule() == Key.getModule()) )
+                {
                     mLogDbHost = prop;
+                }
+
                 break;
 
             case NELogConfig::ConfigLogDatabaseUser:
-                if ( mLogDbUser.getKey().isLocalKey() == false || mLogDbUser.getKey().getModule() == Key.getModule() )
+                if ( (mLogDbUser.getKey().isLocalKey() == false) || (mLogDbUser.getKey().getModule() == Key.getModule()) )
+                {
                     mLogDbUser = prop;
+                }
+
                 break;
 
             case NELogConfig::ConfigLogDatabasePwd:
-                if ( mLogDbPassword.getKey().isLocalKey() == false || mLogDbPassword.getKey().getModule() == Key.getModule() )
+                if ( (mLogDbPassword.getKey().isLocalKey() == false) || (mLogDbPassword.getKey().getModule() == Key.getModule()) )
+                {
                     mLogDbPassword = prop;
+                }
+
                 break;
 
             case NELogConfig::ConfigLogDatabaseName:
-                if ( mLogDbName.getKey().isLocalKey() == false || mLogDbName.getKey().getModule() == Key.getModule() )
+                if ( (mLogDbName.getKey().isLocalKey() == false) || (mLogDbName.getKey().getModule() == Key.getModule()) )
+                {
                     mLogDbName = prop;
+                }
+
                 break;
 
             case NELogConfig::ConfigLogDebug:
-                if ( mLogDebugOutput.getKey().isLocalKey() == false || mLogDebugOutput.getKey().getModule() == Key.getModule() )
+                if ( (mLogDebugOutput.getKey().isLocalKey() == false) || (mLogDebugOutput.getKey().getModule() == Key.getModule()) )
+                {
                     mLogDebugOutput = prop;
+                }
+                
                 break;
 
             case NELogConfig::ConfigLogAppend:
-                if ( mLogAppendData.getKey().isLocalKey() == false || mLogAppendData.getKey().getModule() == Key.getModule() )
+                if ( (mLogAppendData.getKey().isLocalKey() == false) || (mLogAppendData.getKey().getModule() == Key.getModule()) )
+                {
                     mLogAppendData = prop;
+                }
+                
                 break;
 
             case NELogConfig::ConfigLogStack:
-                if ( mLogStackSize.getKey().isLocalKey() == false || mLogStackSize.getKey().getModule() == Key.getModule() )
+                if ( (mLogStackSize.getKey().isLocalKey() == false) || (mLogStackSize.getKey().getModule() == Key.getModule()) )
+                {
                     mLogStackSize = prop;
+                }
+
                 break;
 
             case NELogConfig::ConfigLogEnable:
-                if ( mLogStatus.getKey().isLocalKey() == false || mLogStatus.getKey().getModule() == Key.getModule() )
+                if ( (mLogStatus.getKey().isLocalKey() == false) || (mLogStatus.getKey().getModule() == Key.getModule()) )
+                {
                     mLogStatus = prop;
+                }
+
                 break;
 
             case NELogConfig::ConfigLogLayoutEnter:
-                if ( mLogLayoutEnter.getKey().isLocalKey() == false || mLogLayoutEnter.getKey().getModule() == Key.getModule() )
+                if ( (mLogLayoutEnter.getKey().isLocalKey() == false) || (mLogLayoutEnter.getKey().getModule() == Key.getModule()) )
+                {
                     mLogLayoutEnter = prop;
+                }
+
                 break;
 
             case NELogConfig::ConfigLogLayoutMessage:
-                if ( mLogLayoutMessage.getKey().isLocalKey() == false || mLogLayoutMessage.getKey().getModule() == Key.getModule() )
+                if ( (mLogLayoutMessage.getKey().isLocalKey() == false) || (mLogLayoutMessage.getKey().getModule() == Key.getModule()) )
+                {
                     mLogLayoutMessage = prop;
+                }
+
                 break;
 
             case NELogConfig::ConfigLogLayoutExit:
-                if ( mLogLayoutExit.getKey().isLocalKey() == false || mLogLayoutExit.getKey().getModule() == Key.getModule() )
+                if ( (mLogLayoutExit.getKey().isLocalKey() == false) || (mLogLayoutExit.getKey().getModule() == Key.getModule()) )
+                {
                     mLogLayoutExit = prop;
+                }
+
                 break;
 
             case NELogConfig::ConfigScope:
@@ -588,6 +633,7 @@ bool TraceManager::initializeConfig(void)
                         mConfigScopeList.setAt( Key.getModuleData( ), prio);
                     }
                 }
+
                 break;
 
             default:

@@ -49,7 +49,10 @@ LocalServiceClient::~LocalServiceClient(void)
 bool LocalServiceClient::serviceConnected(bool isConnected, ProxyBase & proxy)
 {
     TRACE_SCOPE(examples_13_ipcmix_shareipcmix_LocalServiceClient_serviceConnected);
-    TRACE_DBG("Proxy [ %s ] is [ %s ]", ProxyAddress::convAddressToPath(proxy.getProxyAddress()).getString(), isConnected ? "CONNECTED" : "DISCONNECTED");
+    TRACE_DBG("Client [ %p ]: Proxy [ %s ] is [ %s ]"
+                , this
+                , ProxyAddress::convAddressToPath(proxy.getProxyAddress()).getString()
+                , isConnected ? "CONNECTED" : "DISCONNECTED");
 
     if (LocalHelloWorldClientBase::serviceConnected(isConnected, proxy) )
     {

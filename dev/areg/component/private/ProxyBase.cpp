@@ -20,9 +20,18 @@
 #include "areg/component/private/ComponentInfo.hpp"
 #include "areg/component/private/ServiceManager.hpp"
 
+#include "areg/trace/GETrace.h"
+
 //////////////////////////////////////////////////////////////////////////
 // Predefined constants / statics
 //////////////////////////////////////////////////////////////////////////
+
+DEF_TRACE_SCOPE(areg_component_ProxyBase_findOrCreateProxy);
+DEF_TRACE_SCOPE(areg_component_ProxyBase_createRequestFailureEvent);
+DEF_TRACE_SCOPE(areg_component_ProxyBase_serviceConnectionUpdated);
+DEF_TRACE_SCOPE(areg_component_ProxyBase_unregisterListener);
+DEF_TRACE_SCOPE(areg_component_ProxyBase_prepareListeners);
+DEF_TRACE_SCOPE(areg_component_ProxyBase_stopProxy);
 
 //////////////////////////////////////////////////////////////////////////
 // ProxyBase class statics
@@ -236,31 +245,43 @@ ProxyBase * ProxyBase::findOrCreateProxy( const char * roleName
                                         , FuncCreateProxy funcCreate
                                         , DispatcherThread & ownerThread )
 {
+    TRACE_SCOPE(areg_component_ProxyBase_findOrCreateProxy);
+
     ProxyBase*   proxy = NULL;
     ProxyAddress Key(serviceIfData, roleName, ownerThread.isValid() ? ownerThread.getName().getString() : static_cast<const char *>(NULL) );
     proxy = _mapRegisteredProxies.findResourceObject(Key);
     if (proxy == NULL)
     {
+        TRACE_DBG("No proxy [ %s ] found, creating one in thread [ %u ]", ProxyAddress::convAddressToPath(Key).getString(), ownerThread.getId());
         proxy = funcCreate(roleName, &ownerThread);
     }
 
     if (proxy != NULL)
     {
-        static_cast<void>(proxy->addListener( static_cast<unsigned int>(NEService::SI_SERVICE_CONNECTION_NOTIFY), NEService::SEQUENCE_NUMBER_NOTIFY, static_cast<IENotificationEventConsumer *>(&connect) ));
-        ++ proxy->mProxyInstCount;
-        proxy->mIsStopped = false;
-        proxy->mListConnect.add(&connect);
+        if (proxy->mListConnect.addUnique(&connect))
+        {
+            TRACE_DBG("Add Service Connect notification for client [ %p ]", &connect);
 
-        if ( proxy->mProxyInstCount == 1 )
-        {
-            proxy->registerServiceListeners( );
-            ServiceManager::requestRegisterClient( proxy->getProxyAddress( ) );
+            static_cast<void>(proxy->addListener( static_cast<unsigned int>(NEService::SI_SERVICE_CONNECTION_NOTIFY), NEService::SEQUENCE_NUMBER_NOTIFY, static_cast<IENotificationEventConsumer *>(&connect) ));
+            ++ proxy->mProxyInstCount;
+            proxy->mIsStopped = false;
+
+            if ( proxy->mProxyInstCount == 1 )
+            {
+                proxy->registerServiceListeners( );
+                ServiceManager::requestRegisterClient( proxy->getProxyAddress( ) );
+            }
+            else if ( proxy->mIsConnected )
+            {
+                proxy->sendServiceAvailableEvent( proxy->createServiceAvailableEvent(connect) );
+            }
         }
-        else if ( proxy->mIsConnected )
+        else
         {
-            proxy->sendServiceAvailableEvent( proxy->createServiceAvailableEvent(connect) );
+            TRACE_WARN("The client [ %p ] is already registeref foro service connection notification", &connect);
         }
     }
+
     return proxy;
 }
 
@@ -276,9 +297,6 @@ int ProxyBase::findThreadProxies(DispatcherThread & ownerThread, TEArrayList<Pro
 
     return result;
 }
-
-#include "areg/trace/GETrace.h"
-DEF_TRACE_SCOPE(areg_component_ProxyBase_createRequestFailureEvent);
 
 RemoteResponseEvent * ProxyBase::createRequestFailureEvent(const ProxyAddress & target, unsigned int msgId, NEService::eResultType errCode, unsigned int seqNr)
 {
@@ -388,10 +406,12 @@ void ProxyBase::freeProxy( IEProxyListener & connect )
 
 void ProxyBase::serviceConnectionUpdated( const StubAddress & server, const Channel & channel, NEService::eServiceConnection status )
 {
+    TRACE_SCOPE(areg_component_ProxyBase_serviceConnectionUpdated);
+
     ASSERT(server.isValid());
     if ( server.isProxyCompatible( getProxyAddress() ) )
     {
-        OUTPUT_DBG("The proxy [ %s ] have got [ %s ] status update notification event from stub [ %s ]"
+        TRACE_DBG("The proxy [ %s ] have got [ %s ] status update notification event from stub [ %s ]"
                     , ProxyAddress::convAddressToPath(getProxyAddress()).getString()
                     , NEService::getString(status)
                     , StubAddress::convAddressToPath(server).getString());
@@ -425,6 +445,8 @@ void ProxyBase::serviceConnectionUpdated( const StubAddress & server, const Chan
             }
         }
 
+        TRACE_DBG("Notifying [ %d ] clients the service connection", conListeners.getSize());
+
         for (index = 0 ; index < conListeners.getSize(); ++ index)
         {
             IEProxyListener * listener = static_cast<IEProxyListener *>(conListeners[index].mListener);
@@ -445,13 +467,7 @@ void ProxyBase::serviceConnectionUpdated( const StubAddress & server, const Chan
 bool ProxyBase::addListener(unsigned int msgId, unsigned int seqNr, IENotificationEventConsumer* caller)
 {
     ProxyBase::Listener listener(msgId, seqNr, caller);
-    bool result = false;
-    if (mListenerList.exist(listener, 0) == false)
-    {
-        static_cast<void>(mListenerList.add(listener));
-        result = true;
-    }
-    return result;
+    return mListenerList.addUnique(listener);
 }
 
 void ProxyBase::setNotification( unsigned int msgId, IENotificationEventConsumer* caller, bool alwaysNotify /*= false*/ )
@@ -502,6 +518,9 @@ void ProxyBase::setState( unsigned int msgId, NEService::eDataStateType newState
 
 void ProxyBase::unregisterListener( IENotificationEventConsumer *consumer )
 {
+    TRACE_SCOPE(areg_component_ProxyBase_unregisterListener);
+    TRACE_DBG("Unregisteres proxy client [ %p ]", consumer);
+
     int index = 0;
     while (index < mListenerList.getSize())
     {
@@ -510,6 +529,8 @@ void ProxyBase::unregisterListener( IENotificationEventConsumer *consumer )
         {
             unsigned int msgId = elem.mMessageId;
             mListenerList.removeAt(index);
+            TRACE_DBG("Removes proxy client listener of message [ %u ] at index [ %d ]", msgId, index);
+
             if (hasNotificationListener(msgId) == false)
             {
                 stopNotification(msgId);
@@ -525,6 +546,7 @@ void ProxyBase::unregisterListener( IENotificationEventConsumer *consumer )
 
 int ProxyBase::prepareListeners( ProxyBase::ProxyListenerList& out_listenerList, unsigned int msgId, unsigned int seqNrToSearch )
 {
+    TRACE_SCOPE(areg_component_ProxyBase_prepareListeners);
     ProxyBase::Listener searchListener(msgId, NEService::SEQUENCE_NUMBER_ANY);
     for ( int i = 0; i < mListenerList.getSize(); ++ i )
     {
@@ -542,6 +564,9 @@ int ProxyBase::prepareListeners( ProxyBase::ProxyListenerList& out_listenerList,
             }
         }
     }
+
+    TRACE_DBG("Prepared [ %d ] proxy clients for message [ %u ] and sequence numbe [ %u ]",out_listenerList.getSize(), msgId, seqNrToSearch);
+
     return out_listenerList.getSize();
 }
 
@@ -673,9 +698,11 @@ RemoteResponseEvent * ProxyBase::createRemoteRequestFailedEvent(  const ProxyAdd
 
 void ProxyBase::stopProxy(void)
 {
+    TRACE_SCOPE(areg_component_ProxyBase_stopProxy);
+
     if ( false == mIsStopped )
     {
-        OUTPUT_WARN("Going to stop proxy [ %s ]", ProxyAddress::convAddressToPath(mProxyAddress).getString());
+        TRACE_WARN("Going to stop proxy [ %s ]", ProxyAddress::convAddressToPath(mProxyAddress).getString());
 
         for (int i = 0 ; i < mListConnect.getSize(); ++ i)
         {
@@ -700,4 +727,3 @@ void ProxyBase::stopProxy(void)
         mProxyAddress.setChannel(Channel::INVALID_CHANNEL);
     }
 }
-

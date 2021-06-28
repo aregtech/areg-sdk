@@ -11,7 +11,7 @@
 #include <math.h>
 
 /**
- * \brief   32-bit CRC (Cyclic Redundancy Check) lookup table (polynomial = 0x04C11DB7).
+ * \brief   32-bit CRC (Cyclic Redundancy Check) lookup table (polynomial = 0x04C11DB7) with size 1024 bytes (256 x 4).
  *          CRC polynomial: X^32+X^26+X^23+X^22+X^16+X^12+X^11+X^10+X^8+X^7+X^5+X^4+X^2+X+1
  **/
 static const unsigned char _crc32LookupTable[] = {
@@ -173,7 +173,7 @@ unsigned int AREG_API NEMath::getLowBits( const sLargeInteger &num )
 
 AREG_API unsigned int NEMath::crc32Calculate( const unsigned char* data, int size )
 {
-    unsigned int result = static_cast<unsigned int>(-1);   // initialize
+    unsigned int result = static_cast<unsigned int>(~0);   // initialize
     const unsigned int* crc32Tab = reinterpret_cast<const unsigned int *>(::_crc32LookupTable);   // get converted lookup table
     for ( int count = size ; count != 0; -- count, ++ data )
         result = (result >> 8) ^ crc32Tab[*data ^ static_cast<unsigned char>(result & 0x000000FF)];  // calculate
@@ -182,7 +182,7 @@ AREG_API unsigned int NEMath::crc32Calculate( const unsigned char* data, int siz
 
 AREG_API unsigned int NEMath::crc32Calculate( const char * strData )
 {
-    unsigned int result = static_cast<unsigned int>(-1);   // initialize
+    unsigned int result = static_cast<unsigned int>(~0);   // initialize
     if ( strData != NULL )
     {
         const unsigned int* crc32Tab = reinterpret_cast<const unsigned int *>(::_crc32LookupTable);   // get converted lookup table
@@ -194,7 +194,7 @@ AREG_API unsigned int NEMath::crc32Calculate( const char * strData )
 
 AREG_API unsigned int NEMath::crc32Calculate( const wchar_t * strData )
 {
-    unsigned int result = static_cast<unsigned int>(-1);   // initialize
+    unsigned int result = static_cast<unsigned int>(~0);   // initialize
     if ( strData != NULL )
     {
         const unsigned int* crc32Tab = reinterpret_cast<const unsigned int *>(::_crc32LookupTable);   // get converted lookup table
@@ -218,12 +218,12 @@ AREG_API unsigned int NEMath::crc32Calculate( const wchar_t * strData )
 
 AREG_API unsigned int NEMath::crc32Init( void )
 {
-    return static_cast<unsigned int>(-1);
+    return static_cast<unsigned int>(~0);
 }
 
-AREG_API unsigned int NEMath::crc32Start( unsigned int crc32Init, const unsigned char* data, int size )
+AREG_API unsigned int NEMath::crc32Start( unsigned int crcInit, const unsigned char* data, int size )
 {
-    unsigned int result = crc32Init;
+    unsigned int result = crcInit;
     if ( data != NULL && size > 0)
     {
         const unsigned int* crc32Table = reinterpret_cast<const unsigned int *>(::_crc32LookupTable);  // get converted lookup table
@@ -254,9 +254,9 @@ AREG_API unsigned int NEMath::crc32Start( unsigned int crc32Init, const unsigned
     return result;
 }
 
-AREG_API unsigned int NEMath::crc32Start(unsigned int crc32Init, const char * data)
+AREG_API unsigned int NEMath::crc32Start(unsigned int crcInit, const char * data)
 {
-    unsigned int result = crc32Init;
+    unsigned int result = crcInit;
     if ( data != NULL && *data != '\0')
     {
         const unsigned int* crc32Table = reinterpret_cast<const unsigned int *>(::_crc32LookupTable);  // get converted lookup table
@@ -266,9 +266,17 @@ AREG_API unsigned int NEMath::crc32Start(unsigned int crc32Init, const char * da
     return result;
 }
 
-AREG_API unsigned int NEMath::crc32Finish( unsigned int crc32 )
+AREG_API unsigned int NEMath::crc32Start(unsigned int crcInit, unsigned char uch)
 {
-    return (~crc32);
+    unsigned int result = crcInit;
+    const unsigned int* crc32Table = reinterpret_cast<const unsigned int *>(::_crc32LookupTable);  // get converted lookup table
+    result  = (result >> 8) ^ crc32Table[ uch ^ static_cast<unsigned char>(result & 0x000000FF)];
+    return result;
+}
+
+AREG_API unsigned int NEMath::crc32Finish( unsigned int crc )
+{
+    return (~crc);
 }
 
 AREG_API double NEMath::round(double val)

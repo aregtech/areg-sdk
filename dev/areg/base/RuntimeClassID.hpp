@@ -97,22 +97,36 @@ public:
 /************************************************************************/
 
     /**
-     * \brief   Friend global comparing operator.
-     *          Compare null-terminated string with Runtime Class ID name.
-     * \param   lhs     Left-Hand Operand, source of string to compare.
-     * \param   rhs     Right-Hand Operand, source of Runtime Class ID containing name to compare.
-     * \return  Returns true if string value is equal to Runtime Class ID.
+     * \brief   Compares null-terminated string with Runtime Class ID name.
+     * \param   lhs     Left-Hand Operand, string to compare.
+     * \param   rhs     Right-Hand Operand, Runtime Class ID to compare the name.
+     * \return  Returns true if string is equal to Runtime Class ID.
      **/
     friend inline bool operator == ( const char * lhs, const RuntimeClassID & rhs );
 
     /**
-     * \brief   Friend global comparing operator.
-     *          Compare null-terminated string with Runtime Class ID name.
-     * \param   lhs     Left-Hand Operand, source of string to compare.
-     * \param   rhs     Right-Hand Operand, source of Runtime Class ID containing name to compare.
-     * \return  Returns true if string value is not equal to Runtime Class ID.
+     * \brief   Compare null-terminated string with Runtime Class ID name.
+     * \param   lhs     Left-Hand Operand, string to compare.
+     * \param   rhs     Right-Hand Operand, Runtime Class to compare the name.
+     * \return  Returns true if string is not equal to Runtime Class ID.
      **/
     friend inline bool operator != ( const char * lhs, const RuntimeClassID & rhs );
+
+    /**
+     * \brief   Compares number with Runtime Class ID calculated number.
+     * \param   lhs     Left-Hand Operand, number to compare.
+     * \param   rhs     Right-Hand Operand, Runtime Class ID to compare the calculated number.
+     * \return  Returns true if number is equal to Runtime Class ID.
+     **/
+    friend inline bool operator == ( unsigned int lhs, const RuntimeClassID & rhs );
+
+    /**
+     * \brief   Compares number with Runtime Class ID calculated number.
+     * \param   lhs     Left-Hand Operand, number to compare.
+     * \param   rhs     Right-Hand Operand, Runtime Class ID to compare the calculated number.
+     * \return  Returns true if number is not equal to Runtime Class ID.
+     **/
+    friend inline bool operator != ( unsigned int lhs, const RuntimeClassID & rhs );
 
 /************************************************************************/
 // class members operators
@@ -168,7 +182,7 @@ public:
      * \brief   Operator to convert the value or Runtime Class ID to unsigned integer value.
      *          Used to calculate hash value in hash map
      **/
-    operator unsigned int ( void ) const;
+    inline operator unsigned int ( void ) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes
@@ -189,9 +203,9 @@ public:
     void setName( const char * className );
 
     /**
-     * \brief   Returns true if Runtime Class name is empty.
+     * \brief   Returns calculated number of runtime class.
      **/
-    inline bool isEmpty( void ) const;
+    inline unsigned getMagic( void ) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Private members
@@ -210,7 +224,11 @@ private:
     /**
      * \brief   Runtime Class ID value.
      **/
-    String    mClassName;
+    String          mClassName;
+    /**
+     * \brief   The calculated number of runtime class.
+     **/
+    unsigned int    mMagicNum;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -225,7 +243,10 @@ inline RuntimeClassID RuntimeClassID::createEmptyClassID( void )
 inline const RuntimeClassID & RuntimeClassID::operator = ( const RuntimeClassID & src )
 {
     if (static_cast<const RuntimeClassID *>(this) != &src)
-        this->mClassName = src.mClassName;
+    {
+        this->mClassName= src.mClassName;
+        this->mMagicNum = src.mMagicNum;
+    }
     return (*this);
 }
 
@@ -243,7 +264,7 @@ inline const RuntimeClassID & RuntimeClassID::operator = ( const String & src )
 
 inline bool RuntimeClassID::operator == ( const RuntimeClassID & other ) const
 {
-    return (this != &other ? this->mClassName == other.mClassName : true);
+    return (mMagicNum == other.mMagicNum);
 }
 
 inline bool RuntimeClassID::operator == ( const char * other ) const
@@ -253,7 +274,7 @@ inline bool RuntimeClassID::operator == ( const char * other ) const
 
 inline bool RuntimeClassID::operator != ( const RuntimeClassID  & other ) const
 {
-    return (this != &other ? this->mClassName != other.mClassName : false);
+    return (mMagicNum != other.mMagicNum);
 }
 
 inline bool RuntimeClassID::operator != ( const char* other ) const
@@ -261,9 +282,14 @@ inline bool RuntimeClassID::operator != ( const char* other ) const
     return mClassName != other;
 }
 
+inline RuntimeClassID::operator unsigned int ( void ) const
+{
+    return mMagicNum;
+}
+
 inline bool RuntimeClassID::isValid( void ) const
 {
-    return ((mClassName.isEmpty() == false) && (mClassName != BAD_CLASS_ID));
+    return (mMagicNum != NEMath::CHECKSUM_IGNORE);
 }
 
 inline const char* RuntimeClassID::getName( void ) const
@@ -271,9 +297,9 @@ inline const char* RuntimeClassID::getName( void ) const
     return mClassName.getString();
 }
 
-inline bool RuntimeClassID::isEmpty( void ) const
+inline unsigned RuntimeClassID::getMagic(void) const
 {
-    return mClassName.isEmpty();
+    return mMagicNum;
 }
 
 inline bool operator == ( const char * lhs, const RuntimeClassID & rhs )
@@ -284,6 +310,16 @@ inline bool operator == ( const char * lhs, const RuntimeClassID & rhs )
 inline bool operator != ( const char* lhs, const RuntimeClassID & rhs )
 {
     return rhs.mClassName != lhs;
+}
+
+inline bool operator == ( unsigned int lhs, const RuntimeClassID & rhs )
+{
+    return rhs.mMagicNum  == lhs;
+}
+
+inline bool operator != ( unsigned int lhs, const RuntimeClassID & rhs )
+{
+    return rhs.mMagicNum != lhs;
 }
 
 #endif  // AREG_BASE_RUNTIMECLASSID_HPP

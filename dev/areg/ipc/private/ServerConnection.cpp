@@ -152,6 +152,7 @@ void ServerConnection::closeAllConnections(void)
         msgBeyClient.setTarget( getCookie(clientConnection) );
         sendMessage(msgBeyClient, clientConnection);
     }
+
     mMasterList.removeAll();
     mCookieToSocket.removeAll();
     mSocketToCookie.removeAll();

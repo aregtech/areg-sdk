@@ -115,24 +115,24 @@ public:
      * \brief   Copies service address from given source.
      * \param   source      The source of service address to copy data.
      **/
-    const ServiceAddress & operator = ( const ServiceAddress & source );
+    inline const ServiceAddress & operator = ( const ServiceAddress & source );
 
     /**
      * \brief   Checks equality of 2 service addresses and returns true if they are equal.
      * \param   other       The service address to check
      **/
-    bool operator == (const ServiceAddress & other ) const;
+    inline bool operator == (const ServiceAddress & other ) const;
 
     /**
      * \brief   Checks inequality of 2 service addresses and returns true if they are not equal.
      * \param   other       The service address to check
      **/
-    bool operator != (const ServiceAddress & other ) const;
+    inline bool operator != (const ServiceAddress & other ) const;
 
     /**
      * \brief   Converts service address to 32-bit unsigned integer value.
      **/
-    operator unsigned int ( void ) const;
+    inline operator unsigned int ( void ) const;
 
 /************************************************************************/
 // Friend global operators for streaming
@@ -173,6 +173,34 @@ public:
      **/
     inline const ServiceItem & getService( void ) const;
 
+    /**
+     * \brief   Creates Service address path as a string.
+     * /return  Returns service address as a string.
+     **/
+    String convToString( void ) const;
+
+    /**
+     * \brief   Converts given service address path as a string to service address object.
+     * \param   pathService     The path of service address as a string.
+     * \param   out_nextPart    If not NULL, on output this parameter points to next part of part after service address.
+     **/
+    void convFromString( const char * pathService, const char** out_nextPart = NULL );
+
+protected:
+    /**
+     * \brief   Returns true if service address has validated data.
+     **/
+    inline bool isValidated( void ) const;
+
+//////////////////////////////////////////////////////////////////////////
+// Hidden methods
+//////////////////////////////////////////////////////////////////////////
+private:
+    /**
+     * \brief   Calculates the number of specified service address object.
+     **/
+    static unsigned int _magicNumber( const ServiceAddress addrService );
+
 //////////////////////////////////////////////////////////////////////////
 // Protected members
 //////////////////////////////////////////////////////////////////////////
@@ -180,12 +208,48 @@ protected:
     /**
      * \brief   The role name of service address.
      **/
-    String        mRoleName;
+    String          mRoleName;
+
+//////////////////////////////////////////////////////////////////////////
+// Hidden members
+//////////////////////////////////////////////////////////////////////////
+private:
+    /**
+     * \brief   The calculated number of service address
+     **/
+    unsigned int    mMagicNum;
 };
 
 //////////////////////////////////////////////////////////////////////////
 // ServiceAddress class inline methods
 //////////////////////////////////////////////////////////////////////////
+
+inline const ServiceAddress & ServiceAddress::operator = ( const ServiceAddress & source )
+{
+    if ( static_cast<const ServiceAddress *>(this) != &source )
+    {
+        static_cast<ServiceItem &>(*this) = static_cast<const ServiceItem &>(source);
+        mRoleName   = source.mRoleName;
+        mMagicNum   = source.mMagicNum;
+    }
+
+    return (*this);
+}
+
+inline bool ServiceAddress::operator == ( const ServiceAddress & other ) const
+{
+    return (mMagicNum == other.mMagicNum);
+}
+
+inline bool ServiceAddress::operator != (const ServiceAddress & other) const
+{
+    return (mMagicNum != other.mMagicNum);
+}
+
+inline ServiceAddress::operator unsigned int ( void ) const
+{
+    return mMagicNum;
+}
 
 inline const String & ServiceAddress::getRoleName(void) const
 {
@@ -196,6 +260,7 @@ inline void ServiceAddress::setRoleName(const char * roleName)
 {
     mRoleName = roleName;
     mRoleName.truncate(NEUtilities::ITEM_NAMES_MAX_LENGTH);
+    mMagicNum = ServiceAddress::_magicNumber(*this);
 }
 
 inline const ServiceItem & ServiceAddress::getService( void ) const
@@ -203,10 +268,21 @@ inline const ServiceItem & ServiceAddress::getService( void ) const
     return static_cast<const ServiceItem &>(*this);
 }
 
+inline bool ServiceAddress::isValidated(void) const
+{
+    return ServiceItem::isValidated() && (mRoleName.isEmpty() == false);
+}
+
+//////////////////////////////////////////////////////////////////////////
+// Global serialization operators
+//////////////////////////////////////////////////////////////////////////
+
 inline const IEInStream & operator >> ( const IEInStream & stream, ServiceAddress & input )
 {
     stream >> static_cast<ServiceItem &>(input); 
     stream >> input.mRoleName; 
+    input.mMagicNum = ServiceAddress::_magicNumber(input);
+
     return stream;
 }
 

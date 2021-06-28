@@ -61,7 +61,7 @@ bool Property::operator!=(const Property & other) const
     return (this != &other ? mProperty != other.mProperty : false);
 }
 
-Property::operator unsigned int( void ) const
+Property::operator unsigned int ( void ) const
 {
     return static_cast<unsigned int>(mProperty.mKey);
 }

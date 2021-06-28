@@ -68,6 +68,7 @@ bool Socket::setAddress(const char * hostName, unsigned short portNr, bool isSer
 {
     if ( isValid() && (mAddress.getHostAddress() != hostName || mAddress.getHostPort() != portNr) )
         decreaseLock( );
+
     return mAddress.resolveAddress(hostName, portNr, isServer);
 }
 

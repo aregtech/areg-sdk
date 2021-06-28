@@ -16,7 +16,7 @@
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 IETimerConsumer::IETimerConsumer( void )
-    : TEEventConsumer<TimerEventData, const TimerEventData &>    ( )
+    : IETimerEventConsumerBase  ( )
 {
     ; // do nothing
 }

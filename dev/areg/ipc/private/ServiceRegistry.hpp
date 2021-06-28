@@ -170,19 +170,30 @@ public:
     const ServiceStub & unregisterServiceStub( const StubAddress & addrStub, ListServiceProxies & out_listProxies );
 
     /**
-     * \brief   Extracts the list of remote servicing Stub and Proxy entries matching to specified cookie.
-     * \param   cookie                  The generated cookie value to filter.
-     * \param   out_stubServiceList     On output, contains list of remote servicing Stub objects filtered by given cookie value.
-     * \param   out_proxyServiceList    On output, contains list of remote servicing proxy objects filtered by given cookie value.
+     * \brief   Call to receive list of registered remote stub and proxy services, which connection cookie is equal to 
+     *          specified value. In output out_listStubs and out_lisProxies contain list of remote stub and proxy addresses.
+     * \param   cookie          The cookie to filter. Pass NEService::COOKIE_ANY to ignore filtering
+     * \param   out_listStubs   On output this will contain list of remote stub addresses connected with specified cookie value.
+     * \param   out_lisProxies  On output this will contain list of remote proxy addresses connected with specified cookie value.
      **/
-    void getServiceList( ITEM_ID cookie , TEArrayList<StubAddress, const StubAddress &> & OUT out_stubServiceList, TEArrayList<ProxyAddress, const ProxyAddress &> & OUT out_proxyServiceList ) const;
+    void getServiceList( ITEM_ID cookie, TEArrayList<StubAddress, const StubAddress &> & OUT out_listStubs, TEArrayList<ProxyAddress, const ProxyAddress &> & OUT out_lisProxies ) const;
 
     /**
-     * \brief   Extracts the list of all remote servicing Stub and Proxy entries.
-     * \param   out_stubServiceList On output, contains list of remote servicing Stub objects.
-     * \param   out_proxyServiceList    On output, contains list of remote servicing proxy objects.
+     * \brief   Call to get list of registered remote stub and proxy services of specified cookie source.
+     *          In output out_listStubs and out_lisProxies contain list of remote stub and proxy addresses.
+     * \param   cookie          The cookie to filter. Pass NEService::COOKIE_ANY to ignore filtering
+     * \param   stubSource      On output the list contains stub address objects that have sources of specified cookie.
+     * \param   proxySources    On output the list contains proxy address objects that have sources of specified cookie.
      **/
-    void getRemoteServiceList( TEArrayList<StubAddress, const StubAddress &> & out_stubServiceList, TEArrayList<ProxyAddress, const ProxyAddress &> & out_proxyServiceList ) const;
+    void getServiceSources( ITEM_ID cookie, TEArrayList<StubAddress, const StubAddress &> & OUT stubSource, TEArrayList<ProxyAddress, const ProxyAddress &> & OUT proxySources);
+
+    /**
+     * \brief   Call to disconnect proxy service specified by proxy address.
+     *          It sets the connection state to pending and resets channel data.
+     * \param   addrProxy   The address of proxy to disconnect.
+     * \return  Returns instance of valid stub service. Otherwise, the service stub is invalid.
+     **/
+    const ServiceStub & disconnectProxy( const ProxyAddress & IN addrProxy );
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden calls
@@ -196,12 +207,6 @@ private:
      *          Otherwise, returns NULL.
      **/
     MAPPOS findService( const ServiceAddress & addrService ) const;
-    /**
-     * \brief   Called to generate hash-key value from given service address.
-     * \param   addrService     The address of remote service.
-     * \return  Returns generated hash-key value of remote servicing object
-     **/
-    unsigned int hashKey( const ServiceAddress & addrService ) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

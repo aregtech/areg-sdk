@@ -78,6 +78,12 @@ public:
      *          is not registered, returns invalid entry, which proxy address is invalid.
      **/
     const ServiceProxy & getService( const ProxyAddress & addrProxy ) const;
+    
+    /**
+     * \brief   Returns existing service proxy entry. Returns NULL, if specified proxy address
+     *          is not registered.
+     **/
+    ServiceProxy * getService( const ProxyAddress & addrProxy );
 
     /**
      * \brief   Registers existing proxy service entry or creates new if

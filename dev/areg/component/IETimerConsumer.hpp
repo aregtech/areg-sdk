@@ -56,7 +56,7 @@ class DispatcherThread;
  *          message when timer is expired. Inherit and override
  *          pure virtual function to process Timer.
  **/
-class AREG_API IETimerConsumer : public TEEventConsumer<TimerEventData, const TimerEventData &>
+class AREG_API IETimerConsumer : public  IETimerEventConsumerBase
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor. Protected

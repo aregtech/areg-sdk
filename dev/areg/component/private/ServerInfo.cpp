@@ -89,7 +89,8 @@ bool ServerInfo::operator == ( const ProxyAddress & proxy ) const
 
 ServerInfo::operator unsigned int ( void ) const
 {
-    return static_cast<unsigned int>( mServerAddress );
+    const ServiceAddress & addrService = static_cast<const ServiceAddress &>(mServerAddress);
+    return static_cast<unsigned int>( addrService );
 }
 
 void ServerInfo::setConnectionStatus(NEService::eServiceConnection newConnection)

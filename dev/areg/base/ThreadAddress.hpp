@@ -79,7 +79,7 @@ public:
     /**
      * \brief   This operator converts thread address data to unsigned int value
      **/
-    operator unsigned int ( void ) const;
+    inline operator unsigned int ( void ) const;
     /**
      * \brief   This operator assigns data from source. 
      *          The process ID cannot be changed. Only Thread ID is copied.
@@ -89,12 +89,12 @@ public:
      * \brief   Compares 2 thread address objects and if they are
      *          identical, returns true
      **/
-    bool operator == (const ThreadAddress & other) const;
+    inline bool operator == (const ThreadAddress & other) const;
     /**
      * \brief   Compares 2 thread address objects and if they are not
      *          identical, returns true
      **/
-    bool operator != (const ThreadAddress & other) const;
+    inline bool operator != (const ThreadAddress & other) const;
 
 /************************************************************************/
 // Friend global operators to make thread address streamable
@@ -154,7 +154,33 @@ public:
      *                          If parameter is NULL, it will be ignored.
      * \return	Return created from path thread address object.
      **/
-    static ThreadAddress convPathToAddress( const char* const threadPath, const char** out_nextPart = NULL );
+    static ThreadAddress convPathToAddress( const char* const threadPath, const char** OUT out_nextPart = NULL );
+
+    /**
+     * \brief	Converts Thread Address object to the thread path string value.
+     *          the thread path has following format: "<process ID>::<thread name>::",
+     *          where <process ID> is an integer value of process and
+     *          <string name> is the name of string.
+     * \return  Returns converted path of thread as string.
+     **/
+    String convToString( void ) const;
+
+    /**
+     * \brief	Parse string and retrieves thread address data from path.
+     * \param	pathProxy	    The thread path as a string.
+     * \param	out_nextPart	If not a NULL, on output this will contain remaining
+     *                          part after getting thread path.
+     **/
+    void convFromString(const char * threadPath, const char** OUT out_nextPart = NULL);
+
+//////////////////////////////////////////////////////////////////////////
+// Hidden methods
+//////////////////////////////////////////////////////////////////////////
+private:
+    /**
+     * \brief   Returns the calculated hash-key value of specified thread address object.
+     **/
+    static unsigned int _magicNumber( const ThreadAddress & addrThread );
 
 //////////////////////////////////////////////////////////////////////////
 // ThreadAddress member variables
@@ -163,7 +189,11 @@ private:
     /**
      * \brief   The thread name.
      **/
-    String        mThreadName;
+    String          mThreadName;
+    /**
+     * \brief   The calculated number of thread address.
+     **/
+    unsigned int    mMagicNum;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -172,11 +202,35 @@ private:
 inline const ThreadAddress & ThreadAddress::operator = ( const ThreadAddress & src )
 {
     if (static_cast<const ThreadAddress *>(this) != &src)
-    { this->mThreadName = src.mThreadName;}
+    {
+        mThreadName = src.mThreadName;
+        mMagicNum   = src.mMagicNum;
+    }
+    
     return (*this);
 }
 
 inline const String & ThreadAddress::getThreadName( void ) const
+{
+    return mThreadName;
+}
+
+inline bool ThreadAddress::operator == ( const ThreadAddress & other ) const
+{
+    return (mMagicNum == other.mMagicNum);
+}
+
+inline bool ThreadAddress::operator != ( const ThreadAddress & other ) const
+{
+    return (mMagicNum != other.mMagicNum);
+}
+
+inline ThreadAddress::operator unsigned int( void ) const
+{
+    return mMagicNum;
+}
+
+inline String ThreadAddress::convToString(void) const
 {
     return mThreadName;
 }

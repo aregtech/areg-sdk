@@ -87,7 +87,7 @@ bool PropertyKey::operator != ( const PropertyKey & other ) const
     return result;
 }
 
-PropertyKey::operator unsigned int(void) const
+PropertyKey::operator unsigned int (void) const
 {
     return (mSection.isEmpty() == false ? NEMath::crc32Calculate( mSection.getString()) : NEMath::CHECKSUM_IGNORE);
 }

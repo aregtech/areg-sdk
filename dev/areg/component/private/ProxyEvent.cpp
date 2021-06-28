@@ -25,14 +25,14 @@ IMPLEMENT_RUNTIME_EVENT(ProxyEvent, StreamableEvent)
 // ProxyEvent class, Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 ProxyEvent::ProxyEvent( const ProxyAddress & targetProxy, Event::eEventType eventType )
-    : StreamableEvent     (eventType)
+    : StreamableEvent       (eventType)
     , mTargetProxyAddress   (targetProxy)
 {
     ; // do nothing
 }
 
 ProxyEvent::ProxyEvent( const IEInStream & stream )
-    : StreamableEvent     ( stream )
+    : StreamableEvent       ( stream )
     , mTargetProxyAddress   ( stream )
 {
     ; // do nothing
@@ -48,16 +48,20 @@ ProxyEvent::~ProxyEvent( void )
 //////////////////////////////////////////////////////////////////////////
 void ProxyEvent::sendEvent( void )
 {
-    ASSERT(mTargetProxyAddress.isValid());
     if ( mTargetThread == NULL )
     {
         Thread * thread = Thread::findThreadByName(mTargetProxyAddress.getThread());
         registerForThread( thread != NULL ? RUNTIME_CAST(thread, DispatcherThread) : NULL );
     }
+
     if ( mTargetThread != NULL )
+    {
         StreamableEvent::sendEvent();
+    }
     else
+    {
         this->destroy();
+    }
 }
 
 const IEInStream & ProxyEvent::readStream( const IEInStream & stream )
@@ -82,7 +86,7 @@ IEOutStream & ProxyEvent::writeStream( IEOutStream & stream ) const
 // IEProxyEventConsumer class, constructor / destructor
 //////////////////////////////////////////////////////////////////////////
 IEProxyEventConsumer::IEProxyEventConsumer( const ProxyAddress & proxy )
-    : ThreadEventConsumerBase ( )
+    : ThreadEventConsumerBase   ( )
     , mProxyAddress             ( proxy )
 {
     ; // do nothing

@@ -18,6 +18,7 @@
     #include <ws2tcpip.h>
 #else
     #include <sys/socket.h>
+    #include <sys/ioctl.h>
     #include <sys/select.h>
     #include <netinet/in.h>
     #include <netdb.h>
@@ -482,56 +483,102 @@ AREG_API SOCKETHANDLE NESocket::serverAcceptConnection(SOCKETHANDLE serverSocket
             for ( int count = 0; count < entriesCount; ++ count)
             {
                 SOCKETHANDLE sh = masterList[count];
-                FD_SET(masterList[count], &readList);
-                maxSocket = MACRO_MAX(maxSocket, sh);
+                if ( NESocket::isSocketAlive(sh))
+                {
+                    FD_SET(masterList[count], &readList);
+                    maxSocket = MACRO_MAX(maxSocket, sh);
+                }
+                else
+                {
+                    TRACE_WARN("Found socket [ %u ] that is not alive anymore, break accepting connection to handle error.", ((unsigned int)sh));
+                    result = sh;
+                    break;
+                }
             }
 
 #endif  // WINDOWS
         }
 
-        TRACE_DBG("Call select to wait socket connection, max socket value is [ %d ]", static_cast<int>(maxSocket));
-        int selected    = select( static_cast<int>(maxSocket) + 1 /* param is ignored in Win32*/, &readList, NULL, NULL, NULL);
-        // int selected    = select( FD_SETSIZE /* param is ignored in Win32*/, &readList, NULL, NULL, NULL);
-        if ( selected > 0 )
+        if (result == NESocket::InvalidSocketHandle)
         {
-            if ( FD_ISSET(serverSocket, &readList) != 0 )
+            TRACE_DBG("Call select to wait socket connection, max socket value is [ %d ]", static_cast<int>(maxSocket));
+            int selected    = select( static_cast<int>(maxSocket) + 1 /* param is ignored in Win32*/, &readList, NULL, NULL, NULL);
+            // int selected    = select( FD_SETSIZE /* param is ignored in Win32*/, &readList, NULL, NULL, NULL);
+            if ( selected > 0 )
             {
-                // have got new client connection. resolve and get socket
-                struct sockaddr_in acceptAddr; // connecting client address information
-                int addrLength = sizeof(sockaddr_in);
-                NEMemory::zeroBuffer(&acceptAddr, sizeof(sockaddr_in));
+                if ( FD_ISSET(serverSocket, &readList) != 0 )
+                {
+                    // have got new client connection. resolve and get socket
+                    struct sockaddr_in acceptAddr; // connecting client address information
+                    int addrLength = sizeof(sockaddr_in);
+                    NEMemory::zeroBuffer(&acceptAddr, sizeof(sockaddr_in));
 
-                TRACE_DBG("... server waiting for new connection event ...");
-                result = accept( serverSocket, reinterpret_cast<sockaddr *>(&acceptAddr), &addrLength );
-                TRACE_DBG("Server accepted new connection of client socket [ %u ]", static_cast<unsigned int>(result));
-                if ( result != NESocket::InvalidSocketHandle && out_socketAddr != NULL )
-                    out_socketAddr->setAddress(acceptAddr);
+                    TRACE_DBG("... server waiting for new connection event ...");
+                    result = accept( serverSocket, reinterpret_cast<sockaddr *>(&acceptAddr), &addrLength );
+                    TRACE_DBG("Server accepted new connection of client socket [ %u ]", static_cast<unsigned int>(result));
+                    if ( result != NESocket::InvalidSocketHandle && out_socketAddr != NULL )
+                        out_socketAddr->setAddress(acceptAddr);
+                }
+                else
+                {
+                    TRACE_DBG("Have got select event of existing connection, going to resolve socket");
+
+                    //  check whether have got connection from existing clients. if 'yes', server can read data.
+                    for ( int count = 0; result == NESocket::InvalidSocketHandle && count < entriesCount; ++ count )
+                    {
+                        if (FD_ISSET( masterList[count], &readList ) != 0)
+                        {
+                            result = masterList[count];
+                            TRACE_DBG("Server selected event of existing client socket [ %u ] connection", static_cast<unsigned int>(result));
+                            break;
+                        }
+                    }
+                }
             }
             else
             {
-                TRACE_DBG("Have got select event of existing connection, going to resolve socket");
-
-                //  check whether have got connection from existing clients. if 'yes', server can read data.
-                for ( int count = 0; result == NESocket::InvalidSocketHandle && count < entriesCount; ++ count )
-                {
-                    if (FD_ISSET( masterList[count], &readList ) != 0)
-                    {
-                        result = masterList[count];
-                        TRACE_DBG("Server selected event of existing client socket [ %u ] connection", static_cast<unsigned int>(result));
-                        break;
-                    }
-                }
+                TRACE_ERR("Failed to select connection. The server socket [ %u ] might be closed and not valid anymore, return value [ %d ]", static_cast<unsigned int>(serverSocket), selected);
             }
         }
         else
         {
-            TRACE_ERR("Failed to select connection. The server socket [ %u ] might be closed and not valid anymore, return value [ %d ]", static_cast<unsigned int>(serverSocket), selected);
+            TRACE_ERR("Invalid server socket, ignoring accept connections!");
         }
     }
     else
     {
-        TRACE_ERR("Invalid server socket, ignoring accept connections!");
+        TRACE_WARN("Found broken connection of socket [ %u ]", ((unsigned int)result));
+        return result;
     }
+
+    return result;
+}
+
+AREG_API bool NESocket::isSocketAlive(SOCKETHANDLE hSocket)
+{
+    bool result = false;
+
+    int error = 0;
+    socklen_t len = sizeof (error);
+
+#ifdef _WINDOWS
+    result = (getsockopt(static_cast<SOCKET>(hSocket), SOL_SOCKET, SO_ERROR, reinterpret_cast<char *>(&error), &len) == 0) && (error == 0);
+#else
+    result = (getsockopt(static_cast<int>(hSocket), SOL_SOCKET, SO_ERROR, reinterpret_cast<char *>(&error), &len) == 0) && (error == 0);
+#endif
+
+    return result;
+}
+
+AREG_API int NESocket::pendingRead(SOCKETHANDLE hSocket)
+{
+#ifdef _WINDOWS
+    unsigned long result = 0;
+    return (ioctlsocket(static_cast<SOCKET>(hSocket), FIONREAD, &result) == 0 ? static_cast<int>(result) : -1);
+#else   // _WINDOWS
+    int result = 0;
+    return (ioctl(static_cast<int>(hSocket), FIONREAD, &result) == 0 ? result : -1);
+#endif  // _WINDOWS
 
     return result;
 }

@@ -392,7 +392,23 @@ namespace NESocket
      * \return  Returns the remaining amount of data in bytes to receive in single call.
      **/
     AREG_API unsigned int remainDataRead( SOCKETHANDLE hSocket );
-}
+
+    /**
+     * \brief   Checks and returns socket alive state.
+     * \param   hSocket     The socked handle to check.
+     * \return  Returns true if specified socket is alive and is not closed.
+     **/
+    AREG_API bool isSocketAlive( SOCKETHANDLE hSocket );
+
+    /**
+     * \brief   Checks and returns number of bytes remain to read from socket buffer.
+     *          Returns negative value if socket is invalid.
+     * \param   hSocket     The socket handle to check.
+     * \return  Returns number of bytes available to read from specified socket buffer.
+     **/
+    AREG_API int pendingRead( SOCKETHANDLE hSocket );
+
+}   // namespace NESocket end
 
 //////////////////////////////////////////////////////////////////////////
 // NESocket::InterlockedValue class inline function

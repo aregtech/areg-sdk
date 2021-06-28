@@ -31,8 +31,6 @@ namespace NEUtilities {
         }
     }
 
-#endif
-
     inline void _convWinSysTime2AregSysTime( const SYSTEMTIME & winTime, NEUtilities::sSystemTime & aregTime )
     {
         aregTime.stYear         = winTime.wYear;

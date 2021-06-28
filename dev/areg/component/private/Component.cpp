@@ -64,19 +64,27 @@ void Component::unloadComponent( Component& comItem, const NERegistry::Component
 Component* Component::findComponentByName( const char* roleName )
 {
     ASSERT(NEString::isEmpty<char>(roleName) == false);
-    return _mapComponentResource.findResourceObject(roleName);
+    
+    return _mapComponentResource.findResourceObject(NEMath::crc32Calculate(roleName));
+}
+
+Component * Component::findComponentByNumber(unsigned int magicNum)
+{
+    ASSERT(magicNum != NEMath::CHECKSUM_IGNORE);
+
+    return _mapComponentResource.findResourceObject(magicNum);
 }
 
 Component* Component::findComponentByAddress( const ComponentAddress& comAddress )
 {
-    Component* result = Component::findComponentByName(comAddress.getRoleName().getString());
+    Component* result = _mapComponentResource.findResourceObject( static_cast<unsigned int>(comAddress.getRoleName()) );
     return (result != NULL && result->getAddress() == comAddress ? result : NULL);
 }
 
 bool Component::existComponent( const char* roleName )
 {
     ASSERT(NEString::isEmpty<char>(roleName) == false);
-    return _mapComponentResource.existResource(roleName);
+    return _mapComponentResource.existResource(NEMath::crc32Calculate(roleName));
 }
 
 ComponentThread& Component::_getCurrentComponentThread( void )
@@ -93,24 +101,26 @@ Component::Component( ComponentThread & masterThread, const char* roleName)
     : RuntimeObject           ( )
 
     , mComponentInfo    (masterThread, roleName)
+    , mMagicNum         ( Component::_magicNumber(self()) )
     , mServerList       ( )
 {
-    _mapComponentResource.registerResourceObject(mComponentInfo.getRoleName(), this);
+    _mapComponentResource.registerResourceObject(mMagicNum, this);
 }
 
 Component::Component( const char* roleName )
     : RuntimeObject           ( )
 
     , mComponentInfo    (_getCurrentComponentThread(), roleName)
+    , mMagicNum         ( Component::_magicNumber(self()) )
     , mServerList       ( )
 {
-    _mapComponentResource.registerResourceObject(mComponentInfo.getRoleName(), this);
+    _mapComponentResource.registerResourceObject(mMagicNum, this);
 }
 
 
 Component::~Component( void )
 {
-    _mapComponentResource.unregisterResourceObject(mComponentInfo.getRoleName());
+    _mapComponentResource.unregisterResourceObject(mMagicNum);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -238,4 +248,15 @@ void Component::waitComponentCompletion( unsigned int waitTimeout )
 IEWorkerThreadConsumer* Component::workerThreadConsumer( const char* /* consumerName */, const char* /* workerThreadName */)
 {
     return NULL;
+}
+
+unsigned int Component::_magicNumber(Component & comp)
+{
+    unsigned int result = NEMath::CHECKSUM_IGNORE;
+    if ( comp.getAddress().isValid() )
+    {
+        result = NEMath::crc32Calculate(comp.getRoleName().getString());
+    }
+
+    return result;
 }

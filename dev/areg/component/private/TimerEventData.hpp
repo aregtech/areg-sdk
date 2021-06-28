@@ -69,7 +69,7 @@ public:
      * \brief   Assigning operator. Copies data from given source
      * \param   src     The source of Timer Event Data
      **/
-    const TimerEventData & operator = ( const TimerEventData & src );
+    inline void operator = ( const TimerEventData & src );
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes
@@ -89,6 +89,8 @@ private:
     Timer *   mTimer;
 };
 
+DECLARE_EVENT(TimerEventData, TimerEventBase, IETimerEventConsumerBase)
+
 //////////////////////////////////////////////////////////////////////////
 // TimerEvent class declaration
 //////////////////////////////////////////////////////////////////////////
@@ -96,7 +98,7 @@ private:
  * \brief   TimerEvent class contains timer data and create by
  *          Timer Manager when the timer is expired.
  **/
-class AREG_API TimerEvent : public TEEvent<TimerEventData, const TimerEventData &>
+class AREG_API TimerEvent : public TimerEventBase
 {
 //////////////////////////////////////////////////////////////////////////
 // Declare Runtime
@@ -131,16 +133,26 @@ public:
 //////////////////////////////////////////////////////////////////////////
 private:
     /**
-     * \brief   Constructor. Initialize Timer Event object and data
+     * \brief   Initialize Timer Event object and data.
      * \param   data    The data, which is contained in the event object.
      **/
     TimerEvent( const TimerEventData & data );
      /**
-      * \brief   Constructor. Initialize Timer Event object and data.
+      * \brief   Initialize Timer Event object and data.
       *          The Event Data is initialized by passed Timer object.
       * \param   timer    The Timer object to include in event data.
       **/
    TimerEvent( Timer & timer );
+   /**
+    * \brief    Initializes Timer Event object and data, sets timer consumer
+    *           and registers for specified target thread. The target thread
+    *           should be valid. It does not make additional checkup whether
+    *           the target thread is valid or not. After calling this method,
+    *           the event is ready to be sent and processed.
+    * \param    timer   The Timer object to set in event data.
+    * \param    target  The target dispatching thread to process event.
+    **/
+   TimerEvent( Timer & timer, DispatcherThread & target );
    /**
     * \brief   Destructor
     **/
@@ -177,6 +189,11 @@ inline TimerEventData::~TimerEventData( void )
 inline Timer* TimerEventData::getTimer( void ) const
 {
     return mTimer;
+}
+
+void TimerEventData::operator = ( const TimerEventData & src )
+{
+    mTimer = src.mTimer;
 }
 
 #endif  // AREG_COMPONENT_PRIVATE_TIMEREVENTDATA_HPP

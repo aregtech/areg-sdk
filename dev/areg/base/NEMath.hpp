@@ -68,7 +68,7 @@ namespace NEMath
      * \brief   NEMath::CHECKSUM_IGNORE
      *          No checksum is set, ignore.
      **/
-    const unsigned int  CHECKSUM_IGNORE     = static_cast<unsigned int>(~0);
+    const unsigned int  CHECKSUM_IGNORE     = static_cast<unsigned int>(0);
 
 /************************************************************************/
 // NEMath namespace structures
@@ -343,46 +343,63 @@ namespace NEMath
     /**
      * \brief	Starts 32-bit Cyclic Redundancy Check (CRC) calculation.
      *          The function can be called cyclic on continues data.
-     *          On first step 'crc32Init' value should be initialized value,
-     *          i.e. the value returned by Crc32Init() function.
-     *          On next steps the value of 'crc32Init' should be same value
+     *          On first step 'crcInit' value should be initialized value,
+     *          i.e. the value returned by crc32Init() function.
+     *          On next steps the value of 'crcInit' should be same value
      *          returned by this function.
-     * \param	crc32Init	On first step this should be initialized value,
-     *                      i.e. the value returned by Crc32Init() function.
+     * \param	crcInit     On first step this should be initialized value,
+     *                      i.e. the value returned by crc32Init() function.
      *                      If unction is called cyclic, on next steps this
      *                      should be same value returned by this function.
      * \param	data	    Pointer to binary data to calculate 32-bit CRC
      * \param	size	    Size of given buffer
      * \return	32-bit value.
      **/
-    AREG_API unsigned int crc32Start( unsigned int crc32Init, const unsigned char * data, int size );
+    AREG_API unsigned int crc32Start( unsigned int crcInit, const unsigned char * data, int size );
 
     /**
      * \brief   NEMath::Crc32Start
      * \brief	Starts 32-bit Cyclic Redundancy Check (CRC) calculation for string.
      *          The calculation continues until end of string is not matched
      *          The function can be called cyclic on continues data.
-     *          On first step 'crc32Init' value should be initialized value,
-     *          i.e. the value returned by Crc32Init() function.
-     *          On next steps the value of 'crc32Init' should be same value
+     *          On first step 'crcInit' value should be initialized value,
+     *          i.e. the value returned by crc32Init() function.
+     *          On next steps the value of 'crcInit' should be same value
      *          returned by this function.
-     * \param	crc32Init	On first step this should be initialized value,
-     *                      i.e. the value returned by Crc32Init() function.
+     * \param	crcInit	    On first step this should be initialized value,
+     *                      i.e. the value returned by crc32Init() function.
      *                      If unction is called cyclic, on next steps this
      *                      should be same value returned by this function.
      * \param	data	    Pointer to binary data to calculate 32-bit CRC
      * \param	size	    Size of given buffer
      * \return	32-bit value.
      **/
-    AREG_API unsigned int crc32Start( unsigned int crc32Init, const char * data );
+    AREG_API unsigned int crc32Start( unsigned int crcInit, const char * data );
+    /**
+     * \brief   NEMath::Crc32Start
+     * \brief	Starts 32-bit Cyclic Redundancy Check (CRC) calculation of a single byte  value.
+     *          The function can be called cyclic on continues data.
+     *          On first step 'crcInit' value should be initialized value,
+     *          i.e. the value returned by crc32Init() function.
+     *          On next steps the value of 'crcInit' should be same value
+     *          returned by this function.
+     * \param	crcInit	    On first step this should be initialized value,
+     *                      i.e. the value returned by crc32Init() function.
+     *                      If unction is called cyclic, on next steps this
+     *                      should be same value returned by this function.
+     * \param	data	    Pointer to binary data to calculate 32-bit CRC
+     * \param	size	    Size of given buffer
+     * \return	32-bit value.
+     **/
+    AREG_API unsigned int crc32Start( unsigned int crcInit, unsigned char uch );
     /**
      * \brief	Returns 32-bit value of Cyclic Redundancy Check (CRC)
      *          as an end of calculation. This function is expected to be called
-     *          after Crc32Start() function as a final CRC value.
-     * \param	crc32	The value returned by Crc32Start()
+     *          after crc32Start() function as a final CRC value.
+     * \param	crc	        The value returned by crc32Start()
      * \return	32-bit CRC value
      **/
-    AREG_API unsigned int crc32Finish( unsigned int crc32 );
+    AREG_API unsigned int crc32Finish( unsigned int crc );
 
     /**
      * \brief   Rounds passed double value to nearest integer

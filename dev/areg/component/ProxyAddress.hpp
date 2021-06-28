@@ -161,13 +161,13 @@ public:
      * \brief   Copies proxy address from given source.
      * \param   source  The source of Proxy address to copy
      **/
-    const ProxyAddress & operator = ( const ProxyAddress & source );
+    inline const ProxyAddress & operator = ( const ProxyAddress & source );
 
     /**
      * \brief   Checks equality of 2 proxy address objects. Returns true if 2 proxy addresses are equal.
      * \param   other   The Proxy address object to compare
      **/
-    bool operator == ( const ProxyAddress & other ) const;
+    inline bool operator == ( const ProxyAddress & other ) const;
 
     /**
      * \brief   Returns true if passed stub address is compatible with existing proxy address
@@ -179,7 +179,12 @@ public:
      * \brief   Checks inequality of 2 proxy addresses. Returns true if 2 proxy addresses are not equal.
      * \param   other   The Proxy address object to compare
      **/
-    bool operator != ( const ProxyAddress & other ) const;
+    inline bool operator != ( const ProxyAddress & other ) const;
+
+    /**
+     * \brief   Converts ProxyAddress object to 32-bit unsigned int value.
+     **/
+    inline operator unsigned int ( void ) const;
 
 /************************************************************************/
 // Friend global operators for streaming
@@ -289,6 +294,31 @@ public:
      **/
     bool deliverServiceEvent( ServiceResponseEvent & proxyEvent ) const;
 
+    /**
+     * \brief	Creates proxy address path as a string.
+     *          Every part of proxy address has a special path separator
+     *          and path contains information of process ID, thread name,
+     *          connected component role name and supported service name,
+     *          and special extension identifying proxy.
+     * \return  Returns converted path of Proxy as string, containing Proxy address information
+     **/
+    String convToString( void ) const;
+
+    /**
+     * \brief	Parses proxy path string and retrieves proxy address data from path.
+     * \param	pathProxy	    The proxy path as a string.
+     * \param	out_nextPart	If not a NULL, on output this will contain remaining
+     *                          part after getting proxy path. On output usually
+     *                          should be NULL.
+     **/
+    void convFromString(const char * pathProxy, const char** out_nextPart = NULL);
+
+protected:
+    /**
+     * \brief   Returns true if proxy address data is valid.
+     **/
+    bool isValidated( void ) const;
+
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
 //////////////////////////////////////////////////////////////////////////
@@ -300,6 +330,10 @@ private:
      **/
     static bool _deliverEvent( Event & serviceEvent, ITEM_ID idTarget );
 
+    /**
+     * \brief   Returns the calculated hash-key value of specified proxy address object.
+     **/
+    static unsigned int _magicNumber( const ProxyAddress & proxy );
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables.
@@ -308,11 +342,20 @@ private:
     /**
      * \brief   Thread name of Proxy
      **/
-    String    mThreadName;
+    String          mThreadName;
     /**
      * \brief   Communication channel of Proxy.
      **/
-    Channel   mChannel;
+    Channel         mChannel;
+
+//////////////////////////////////////////////////////////////////////////
+// Hidden members
+//////////////////////////////////////////////////////////////////////////
+private:
+    /**
+     * \brief   The calculated number of proxy address
+     **/
+    unsigned int    mMagicNum;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -322,6 +365,34 @@ private:
 inline bool ProxyAddress::operator == ( const StubAddress & addrStub ) const
 {
     return isStubCompatible(addrStub);
+}
+
+inline const ProxyAddress & ProxyAddress::operator = ( const ProxyAddress & source )
+{
+    if (this != &source)
+    {
+        static_cast<ServiceAddress &>(*this) = static_cast<const ServiceAddress &>(source);
+        mThreadName = source.mThreadName;
+        mChannel    = source.mChannel;
+        mMagicNum   = source.mMagicNum;
+    }
+
+    return (*this);
+}
+
+inline bool ProxyAddress::operator == ( const ProxyAddress & other ) const
+{
+    return (mMagicNum == other.mMagicNum) && (mChannel.getCookie() == other.mChannel.getCookie());
+}
+
+inline bool ProxyAddress::operator != ( const ProxyAddress & other ) const
+{
+    return (mMagicNum != other.mMagicNum) || (mChannel.getCookie() != other.mChannel.getCookie());
+}
+
+inline ProxyAddress::operator unsigned int(void) const
+{
+    return mMagicNum;
 }
 
 inline bool ProxyAddress::isLocalAddress(void) const

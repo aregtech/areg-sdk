@@ -251,7 +251,7 @@ private:
          **/
         inline unsigned int implHashKey( const ProxyAddress & Key ) const
         {
-            return static_cast<unsigned int>( Key );
+            return static_cast<unsigned int>(Key);
         }
 
         /**

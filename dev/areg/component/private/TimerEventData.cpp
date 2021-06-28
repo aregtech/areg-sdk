@@ -10,47 +10,45 @@
 #include "areg/component/IETimerConsumer.hpp"
 
 //////////////////////////////////////////////////////////////////////////
-// TimerEventData class implementation
-//////////////////////////////////////////////////////////////////////////
-
-//////////////////////////////////////////////////////////////////////////
-// TimerEventData class, operators
-//////////////////////////////////////////////////////////////////////////
-const TimerEventData & TimerEventData::operator = ( const TimerEventData & src )
-{
-    mTimer = src.mTimer;
-    return (*this);
-}
-
-//////////////////////////////////////////////////////////////////////////
 // TimerEvent class implementation
 //////////////////////////////////////////////////////////////////////////
 
 //////////////////////////////////////////////////////////////////////////
 // TimerEvent class, implement Runtime
 //////////////////////////////////////////////////////////////////////////
-IMPLEMENT_RUNTIME(TimerEvent, ThreadEventBase)
+IMPLEMENT_RUNTIME(TimerEvent, TimerEventBase)
 
 //////////////////////////////////////////////////////////////////////////
 // TimerEvent class, constructor / destructor
 //////////////////////////////////////////////////////////////////////////
 TimerEvent::TimerEvent( const TimerEventData & data )
-    : TEEvent<TimerEventData, const TimerEventData &>  (Event::EventCustomExternal, data)
+    : TimerEventBase(Event::EventCustomExternal, data)
 {
-    if (getData().mTimer != NULL)
-        getData().mTimer->queueTimer();
+    if (mData.mTimer != NULL)
+        mData.mTimer->queueTimer();
 }
 
 TimerEvent::TimerEvent( Timer &timer )
-    : TEEvent<TimerEventData, const TimerEventData &>  (Event::EventCustomExternal, TimerEventData(timer))
+    : TimerEventBase(Event::EventCustomExternal, TimerEventData(timer))
 {
+    timer.queueTimer();
+}
+
+TimerEvent::TimerEvent(Timer & timer, DispatcherThread & target)
+    : TimerEventBase(Event::EventCustomExternal, TimerEventData(timer))
+{
+    ASSERT(target.isRunning());
+
+    setEventConsumer(static_cast<IEEventConsumer *>(&timer.getConsumer()));
+    registerForThread(&target);
     timer.queueTimer();
 }
 
 TimerEvent::~TimerEvent( void )
 {
-    if (getData().mTimer != NULL)
-        getData().mTimer->unqueueTimer();
+    if (mData.mTimer != NULL)
+        mData.mTimer->unqueueTimer();
+    mData.mTimer = NULL;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -58,16 +56,17 @@ TimerEvent::~TimerEvent( void )
 //////////////////////////////////////////////////////////////////////////
 bool TimerEvent::sendEvent( Timer & timer, ITEM_ID dispatchThreadId )
 {
-    bool result = false;
+    return TimerEvent::sendEvent(timer, DispatcherThread::getDispatcherThread(dispatchThreadId));
+}
 
-    DispatcherThread& dispatchThread = DispatcherThread::getDispatcherThread(dispatchThreadId);
+bool TimerEvent::sendEvent(Timer & timer, DispatcherThread & dispatchThread)
+{
+    bool result = false;
     if ( dispatchThread.isRunning() )
     {
-        TimerEvent* timerEvent = DEBUG_NEW TimerEvent(timer);
+        TimerEvent* timerEvent = DEBUG_NEW TimerEvent(timer, dispatchThread);
         if (timerEvent != NULL)
         {
-            static_cast<Event *>(timerEvent)->setEventConsumer(static_cast<IEEventConsumer *>(&timer.getConsumer()));
-            static_cast<Event *>(timerEvent)->registerForThread(&dispatchThread);
             static_cast<Event *>(timerEvent)->sendEvent();
             result = true;
         }

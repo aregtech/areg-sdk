@@ -49,7 +49,7 @@ bool MainRemoteServiceClient::serviceConnected(bool isConnected, ProxyBase & pro
     {
         if (&proxy == SystemShutdownClientBase::getProxy())
         {
-            TRACE_DBG("Subscribe on service shutdown message");
+            TRACE_DBG("Client [ %p ]: Subscribe on service shutdown message", this);
             notifyOnBroadcastServiceShutdown(isConnected);
         }
 

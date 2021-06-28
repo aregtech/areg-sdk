@@ -47,18 +47,22 @@ void ServerSendThread::processEvent( const SendMessageEventData & data )
         ITEM_ID target = static_cast<ITEM_ID>(msgSend.getTarget());
         SocketAccepted client = mConnection.getClientByCookie(target);
         
-        TRACE_DBG("Processing to send message [ %s ] ( ID = %p ) to client [ %s : %d ] of socket [ %u ]. The message sent from source [ %p ] to target [ %p ]"
+        TRACE_DBG("Sending message [ %s ] (ID = [ %u ]) to client [ %s : %d ] of socket [ %u ]. The message sent from source [ %u ] to target [ %u ]"
                     , NEService::getString( static_cast<NEService::eFuncIdRange>(msgSend.getMessageId()) )
-                    , static_cast<id_type>(msgSend.getMessageId())
+                    , static_cast<unsigned int>(msgSend.getMessageId())
                     , client.getAddress().getHostAddress().getString()
                     , client.getAddress().getHostPort()
                     , ((unsigned int)(client.getHandle()))
-                    , static_cast<id_type>(msgSend.getSource())
-                    , static_cast<id_type>(msgSend.getTarget()));
+                    , static_cast<unsigned int>(msgSend.getSource())
+                    , static_cast<unsigned int>(msgSend.getTarget()));
 
-        if ( mConnection.sendMessage( msgSend, client ) <= 0 )
+        if ( (client.isAlive() == false) || (mConnection.sendMessage( msgSend, client ) <= 0) )
         {
-            TRACE_WARN("Failed to send message [ %u ] to target [ %p ]", msgSend.getMessageId(), static_cast<id_type>(msgSend.getTarget()));
+            TRACE_WARN("Failed to send message [ %u ] to target [ %u ], client is [ %s ]"
+                            , msgSend.getMessageId()
+                            , static_cast<unsigned int>(msgSend.getTarget())
+                            , client.isAlive() ? "IS ALIVE" : "IS NOT ALIVE");
+
             mRemoteService.failedSendMessage( msgSend );
         }
         else

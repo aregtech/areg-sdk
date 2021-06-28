@@ -60,17 +60,26 @@ class AREG_API Component   : public    RuntimeObject
 //////////////////////////////////////////////////////////////////////////
 // Predefined types. Fol local use
 //////////////////////////////////////////////////////////////////////////
+    //!< The basic operations of hash-map.
+    typedef TEIntegerHashMapImpl<Component *>                                                       IntegerHashMapImpl;
+    //!< The basic operations of resource-map.
+    typedef TEResourceMapImpl<unsigned int, Component>                                              ImplComponentResource;
+    /**
+     * \brief   The integer hash-map to store components where the keys are the calculated number of the component.
+     * \tparam  Component           The saved values are Component objects
+     * \tparam  IntegerHashMapImpl  The implementation of hash-map basic operations.
+     **/
+    typedef TEIntegerHashMap<Component *, Component *, IntegerHashMapImpl>                          MaComponentContainer;
     /**
      * \brief   Component::MapComponentResource
      *          The Resource Map of instantiated components.
-     * \tparam  String        String, used for Role Name of component
-     * \tparam  Component     The type of container values, it contains Components
+     * \tparam  unsigned int            The calculated number of component as a key.
+     * \tparam  Component               The type of container values, it contains Components
+     * \tparam  MaComponentContainer    The hash-map object to store containers.
+     * \tparam  MapComponentResource    The implementation of basic resource+map operations.
      * \tparam  TEStringHashMap<Component *, Component *>  The type of Hash Map, it is string-to-pointer hash map
      **/
-    typedef TEStringHashMapImpl<Component *>                                                    StringHashMapImpl;
-    typedef TEStringHashMap<Component *, Component *, StringHashMapImpl>                        MaComponentContainer;
-    typedef TEResourceMapImpl<String, Component>                                                ImplComponentResource;
-    typedef TELockResourceMap<String, Component, MaComponentContainer, ImplComponentResource>   MapComponentResource;
+    typedef TELockResourceMap<unsigned int, Component, MaComponentContainer, ImplComponentResource> MapComponentResource;
     /**
      * \brief   Component::ListServers
      *          The list of addresses of Servers.
@@ -121,6 +130,13 @@ public:
      *          Otherwise returns NULL.
      **/
     static Component * findComponentByName(const char * roleName);
+
+    /**
+     * \brief	Find and return component by specified component number
+     * \param	magicNum	The calculated component number to search
+     * \return	If found, returns pointer to component object. Otherwise, returns NULL.
+     **/
+    static Component * findComponentByNumber(unsigned int magicNum);
 
     /**
      * \brief	Checks whether component exists in component registries or not.
@@ -303,6 +319,11 @@ protected:
      **/
     ComponentInfo         mComponentInfo;
 
+private:
+    /**
+     * \brief   The calculated number of component.
+     **/
+    unsigned int        mMagicNum;
 //////////////////////////////////////////////////////////////////////////
 // Private Hidden members
 //////////////////////////////////////////////////////////////////////////
@@ -319,6 +340,11 @@ private:
      * \brief   Static method. Returns the component thread of current component.
      **/
     static ComponentThread & _getCurrentComponentThread( void );
+
+    /**
+     * \brief   Calculates the number of specified component object.
+     **/
+    static unsigned int _magicNumber( Component & comp );
 
 private:
 /************************************************************************/

@@ -15,7 +15,7 @@
 //////////////////////////////////////////////////////////////////////////
 // Hidden static calls.
 //////////////////////////////////////////////////////////////////////////
-const RuntimeClassID & RuntimeBase::_getClassId( void )
+inline const RuntimeClassID & RuntimeBase::_getClassId( void )
 {
     static const RuntimeClassID _classId("RuntimeBase");
     return _classId;
@@ -57,15 +57,25 @@ const RuntimeClassID & RuntimeBase::getRuntimeClassId( void ) const
 
 const char * RuntimeBase::getRuntimeClassName( void ) const
 {
-    return _getClassId().getName();
+    return RuntimeBase::_getClassId().getName();
 }
 
 bool RuntimeBase::isInstanceOfRuntimeClass( const char * className ) const
 {
-    return (_getClassId() == className);
+    return (RuntimeBase::_getClassId() == className);
 }
 
 bool RuntimeBase::isInstanceOfRuntimeClass( const RuntimeClassID & classId ) const
 {
-    return (_getClassId() == classId);
+    return (RuntimeBase::_getClassId() == classId);
+}
+
+bool RuntimeBase::isInstanceOfRuntimeClass(unsigned int classMagic) const
+{
+    return (RuntimeBase::_getClassId().getMagic() == classMagic);
+}
+
+unsigned int RuntimeBase::getRuntimeClassNumber(void) const
+{
+    return RuntimeBase::_getClassId().getMagic();
 }

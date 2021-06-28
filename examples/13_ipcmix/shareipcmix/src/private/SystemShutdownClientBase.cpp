@@ -133,7 +133,8 @@ bool SystemShutdownClientBase::serviceConnected( bool isConnected, ProxyBase & p
     bool result = false;
     if(mProxy == &proxy)
     {
-        TRACE_DBG("The Service [ %s ] with Role Name [ %s ] is [ %s ]"
+        TRACE_DBG("Client [ %p ]: The Service [ %s ] with Role Name [ %s ] is [ %s ]"
+                 , this
                  , proxy.getProxyAddress().getServiceName().getString()
                  , proxy.getProxyAddress().getRoleName().getString()
                  , isConnected ? "CONNECTED" : "DISCONNECTED");

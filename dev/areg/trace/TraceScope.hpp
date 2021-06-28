@@ -181,7 +181,7 @@ inline TraceScope & TraceScope::self( void )
     return (*this);
 }
 
-inline TraceScope::operator unsigned int( void ) const
+inline TraceScope::operator unsigned int ( void ) const
 {
     return mScopeId;
 }

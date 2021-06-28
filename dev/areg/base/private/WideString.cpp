@@ -346,7 +346,7 @@ wchar_t WideString::operator [ ] (int atPos) const
 
 WideString::operator unsigned int(void) const
 {
-    return (isValid() ? NEMath::crc32Calculate(getString()) : 0);
+    return (isValid() ? NEMath::crc32Calculate(getString()) : NEMath::CHECKSUM_IGNORE);
 }
 
 int32_t WideString::makeInt32( const wchar_t * strDigit, NEString::eRadix radix /*= NEString::RadixDecimal*/, const wchar_t ** end /*= static_cast<const wchar_t **>(NULL)*/ )

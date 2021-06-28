@@ -43,6 +43,13 @@ const ServiceProxy & ListServiceProxies::getService( const ProxyAddress & addrPr
     return ( pos != NULL ? static_cast<const ServiceProxy &>(getAt(pos)) : ListServiceProxies::InvalidProxyService );
 }
 
+ServiceProxy * ListServiceProxies::getService( const ProxyAddress & addrProxy )
+{
+    LISTPOS pos = _findProxy(addrProxy);
+    ListServiceProxies::Block * block = reinterpret_cast<ListServiceProxies::Block *>(pos);
+    return ( block != NULL ? static_cast<ServiceProxy *>(&(block->mValue)) : NULL );
+}
+
 ServiceProxy & ListServiceProxies::registerService( const ProxyAddress & addrProxy )
 {
     LISTPOS pos = _findProxy(addrProxy);

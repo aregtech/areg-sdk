@@ -69,7 +69,7 @@ int SocketConnectionBase::receiveMessage(RemoteMessage & out_message, const Sock
     TRACE_SCOPE(areg_ipc_private_SocketConnectionBase_receiveMessage);
 
     int result = -1;
-    if ( clientSocket.isValid() )
+    if ( clientSocket.isValid() && clientSocket.isAlive() )
     {
         NEMemory::sRemoteMessageHeader msgHeader;
         DBG_ZERO_MEM(&msgHeader, sizeof(NEMemory::sRemoteMessageHeader));

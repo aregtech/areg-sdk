@@ -1190,15 +1190,11 @@ inline TEString<CharType, Implement>::TEString( const TEString<CharType, Impleme
 template<typename CharType, class Implement /*= TEStringImpl<CharType>*/>
 TEString<CharType, Implement>::~TEString( void )
 {
-    // release();
-#if 1
     NEString::releaseSpace<CharType>(mData);
     mData = NEString::getInvalidString<CharType>();
-
 #ifdef DEBUG
     mString = mData->strBuffer;
 #endif // DEBUG
-#endif
 }
 
 template<typename CharType, class Implement /*= TEStringImpl<CharType>*/>

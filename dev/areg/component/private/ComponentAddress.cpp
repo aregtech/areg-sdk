@@ -89,18 +89,45 @@ ComponentAddress::~ComponentAddress( void )
     ; // do nothing
 }
 
-//////////////////////////////////////////////////////////////////////////
-// operators
-//////////////////////////////////////////////////////////////////////////
+bool ComponentAddress::isValid( void ) const
+{
+    return (mMagicNum != NEMath::CHECKSUM_IGNORE) && mThreadAddress.isValid();
+}
 
-ComponentAddress::operator unsigned int ( void ) const
+String ComponentAddress::convToString(void) const
+{
+    String result = "";
+
+    result += mRoleName;
+    result += NEUtilities::COMPONENT_PATH_SEPARATOR;
+    result += ThreadAddress::convAddressToPath(mThreadAddress);
+
+    return result;
+}
+
+void ComponentAddress::convFromString(const char * pathComponent, const char** out_nextPart /*= NULL*/)
+{
+    const char* strSource = pathComponent;
+
+    mRoleName       = String::getSubstring(strSource, NEUtilities::COMPONENT_PATH_SEPARATOR, &strSource);
+    mThreadAddress  = ThreadAddress::convPathToAddress(strSource, &strSource);
+    mMagicNum       = ComponentAddress::_magicNumber(*this);
+
+    if (out_nextPart != NULL)
+        *out_nextPart = strSource;
+}
+
+unsigned int ComponentAddress::_magicNumber(const ComponentAddress & addrComp)
 {
     unsigned int result = NEMath::CHECKSUM_IGNORE;
-    if ( isValid() )
+    if (addrComp.mThreadAddress.isValid() && (addrComp.mRoleName.isEmpty() == false) && (addrComp.mRoleName != ComponentAddress::INVALID_COMPONENT_NAME))
     {
-        result = NEMath::crc32Start( ~static_cast<unsigned int>(mThreadAddress), mRoleName.getString() );
+        result = NEMath::crc32Init();
+        result = NEMath::crc32Start(result, addrComp.mThreadAddress.getThreadName().getString());
+        result = NEMath::crc32Start(result, addrComp.mRoleName.getString());
         result = NEMath::crc32Finish(result);
     }
+
     return result;
 }
 
@@ -109,30 +136,12 @@ ComponentAddress::operator unsigned int ( void ) const
 //////////////////////////////////////////////////////////////////////////
 String ComponentAddress::convAddressToPath( const ComponentAddress& componentAddress )
 {
-    String result = "";
-    
-    result += componentAddress.mRoleName;
-    result += NEUtilities::COMPONENT_PATH_SEPARATOR;
-    result += ThreadAddress::convAddressToPath(componentAddress.mThreadAddress);
-
-    return result;
+    return componentAddress.convToString();
 }
 
 ComponentAddress ComponentAddress::convPathToAddress( const char* componentPath, const char** out_nextPart /*= NULL*/ )
 {
     ComponentAddress result;
-    const char* strSource = componentPath;
-    if (out_nextPart != NULL)
-        *out_nextPart = componentPath;
-
-    result.mRoleName     = String::getSubstring(strSource, NEUtilities::COMPONENT_PATH_SEPARATOR, &strSource);
-    result.mThreadAddress= ThreadAddress::convPathToAddress(strSource, &strSource);
-
-    if (result.isValid())
-    {
-        if (out_nextPart != NULL)
-            *out_nextPart = strSource;
-    }
-
+    result.convFromString(componentPath, out_nextPart);
     return result;
 }

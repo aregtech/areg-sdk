@@ -37,6 +37,11 @@ DEF_TRACE_SCOPE(areg_ipc_private_ClientService_processRemoteResponseEvent);
 DEF_TRACE_SCOPE(areg_ipc_private_ClientService_processRemoteNotifyRequestEvent);
 DEF_TRACE_SCOPE(areg_ipc_private_ClientService_runDispatcher);
 
+DEF_TRACE_SCOPE(areg_ipc_private_ClientService_registerService);
+DEF_TRACE_SCOPE(areg_ipc_private_ClientService_unregisterService);
+DEF_TRACE_SCOPE(areg_ipc_private_ClientService_registerServiceClient);
+DEF_TRACE_SCOPE(areg_ipc_private_ClientService_unregisterServiceClient);
+
 const NERemoteService::eServiceConnection   ClientService::CONNECT_TYPE   = NERemoteService::ConnectionTcpip;
 
 ClientService::ClientService( IERemoteServiceConsumer & serviceConsumer )
@@ -169,10 +174,12 @@ void ClientService::enableRemoteServicing( bool enable )
 
 bool ClientService::registerService( const StubAddress & stubService )
 {
+    TRACE_SCOPE(areg_ipc_private_ClientService_registerService);
     Lock lock( mLock );
     bool result = false;
     if ( isStarted() )
     {
+        TRACE_DBG("Queueing to send register [ %s ] service message by connection [ %d ]", StubAddress::convAddressToPath(stubService).getString(), mClientConnection.getCookie());
         result = queueSendMessage( NEConnection::createRouterRegisterService(stubService, mClientConnection.getCookie()) );
     }
     return result;
@@ -180,19 +187,24 @@ bool ClientService::registerService( const StubAddress & stubService )
 
 void ClientService::unregisterService(const StubAddress & stubService)
 {
+    TRACE_SCOPE(areg_ipc_private_ClientService_unregisterService);
+    
     Lock lock( mLock );
     if ( isStarted() )
     {
+        TRACE_DBG("Queueing to send unregister [ %s ] service message by connection [ %d ]", StubAddress::convAddressToPath(stubService).getString(), mClientConnection.getCookie());
         queueSendMessage( NEConnection::createRouterUnregisterService(stubService, mClientConnection.getCookie()) );
     }
 }
 
 bool ClientService::registerServiceClient(const ProxyAddress & proxyService)
 {
+    TRACE_SCOPE(areg_ipc_private_ClientService_registerServiceClient);
     Lock lock( mLock );
     bool result = false;
     if ( isStarted() )
     {
+        TRACE_DBG("Queueing to send register [ %s ] service client message by connection [ %d ]", ProxyAddress::convAddressToPath(proxyService).getString(), mClientConnection.getCookie());
         result = queueSendMessage( NEConnection::createRouterRegisterClient(proxyService, mClientConnection.getCookie()) );
     }
 
@@ -201,9 +213,12 @@ bool ClientService::registerServiceClient(const ProxyAddress & proxyService)
 
 void ClientService::unregisterServiceClient(const ProxyAddress & proxyService)
 {
+    TRACE_SCOPE(areg_ipc_private_ClientService_unregisterServiceClient);
+
     Lock lock( mLock );
     if ( isStarted() )
     {
+        TRACE_DBG("Queueing to send unregister [ %s ] service client message by connection [ %d ]", ProxyAddress::convAddressToPath(proxyService).getString(), mClientConnection.getCookie());
         queueSendMessage( NEConnection::createRouterUnregisterClient(proxyService, mClientConnection.getCookie()) );
     }
 }

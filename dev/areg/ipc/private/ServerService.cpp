@@ -298,16 +298,17 @@ void ServerService::processEvent(const ServerServiceEventData & data)
 
                     TEArrayList<StubAddress, const StubAddress &>   listStubs;
                     TEArrayList<ProxyAddress, const ProxyAddress &> listProxies;
-                    mServiceRegistry.getServiceList(cookie, listStubs, listProxies);
+                    mServiceRegistry.getServiceSources(cookie, listStubs, listProxies);
 
-                    TRACE_DBG("Routing service received disconnect message from cookie [ %p ], [ %d ] stubs and [ %d ] proxies are going to be disconnected"
-                                , static_cast<id_type>(cookie)
+                    TRACE_DBG("Routing service received disconnect message from cookie [ %u ], [ %d ] stubs and [ %d ] proxies are going to be disconnected"
+                                , static_cast<unsigned int>(cookie)
                                 , listStubs.getSize()
                                 , listProxies.getSize());
 
                     int index = 0;
                     for ( index = 0; index < listProxies.getSize(); ++ index )
                         unregisterRemoteProxy( listProxies[index], cookie );
+
                     for ( index = 0; index < listStubs.getSize(); ++ index )
                         unregisterRemoteStub( listStubs[index], cookie );
                 }
@@ -434,10 +435,11 @@ void ServerService::stopConnection(void)
 
     TEArrayList<StubAddress, const StubAddress &> stubList;
     TEArrayList<ProxyAddress, const ProxyAddress &> proxyList;
-    getRemoteServiceList(stubList, proxyList);
+    getServiceList(NEService::COOKIE_ANY, stubList, proxyList);
 
     for ( int i = 0; i < stubList.getSize(); ++ i )
         unregisterRemoteStub(stubList[i], NEService::COOKIE_ANY);
+
     for ( int i = 0; i < proxyList.getSize(); ++ i )
         unregisterRemoteProxy( proxyList[i], NEService::COOKIE_ANY );
 
@@ -445,11 +447,6 @@ void ServerService::stopConnection(void)
     mThreadSend.destroyThread( Thread::WAIT_INFINITE );
 
     mServerConnection.closeSocket();
-}
-
-void ServerService::getRemoteServiceList( TEArrayList<StubAddress, const StubAddress &> & OUT out_listStubs, TEArrayList<ProxyAddress, const ProxyAddress &> & OUT out_lisProxies) const
-{
-    mServiceRegistry.getRemoteServiceList(out_listStubs, out_lisProxies);
 }
 
 void ServerService::getServiceList(ITEM_ID cookie, TEArrayList<StubAddress, const StubAddress &> & out_listStubs, TEArrayList<ProxyAddress, const ProxyAddress &> & out_lisProxies) const
@@ -479,34 +476,29 @@ void ServerService::registerRemoteStub(const StubAddress & stub)
             {
                 const ServiceProxy & proxyService = listProxies.getAt(pos);
                 const ProxyAddress & addrProxy    = proxyService.getServiceAddress();
-                if ( (proxyService.getServiceStatus() == NEService::ServiceConnected) && (addrProxy.getCookie() != stub.getCookie()) )
+                if ( (proxyService.getServiceStatus() == NEService::ServiceConnected) && (addrProxy.getSource() != stub.getSource()) )
                 {
                     RemoteMessage msgRegisterProxy = NEConnection::createServiceClientRegisteredNotification(addrProxy, stub.getSource());
-
-                    TRACE_DBG("Sending [ %s ] proxy registration notification, stub [ %s ] on target [ %p ] is connected. Created message [ %s ] ( ID = %p ) from source [ %p ]"
-                                    , ProxyAddress::convAddressToPath(addrProxy).getString()
-                                    , StubAddress::convAddressToPath(stub).getString()
-                                    , static_cast<id_type>(msgRegisterProxy.getTarget())
-                                    , NEService::getString( static_cast<NEService::eFuncIdRange>(msgRegisterProxy.getMessageId()))
-                                    , static_cast<id_type>(msgRegisterProxy.getMessageId())
-                                    , static_cast<id_type>(msgRegisterProxy.getSource()));
-
                     SendMessageEvent::sendEvent( SendMessageEventData(msgRegisterProxy), static_cast<IESendMessageEventConsumer &>(mThreadSend), static_cast<DispatcherThread &>(mThreadSend));
+                    TRACE_DBG("Send to stub [ %s ] the proxy [ %s ] registration notification. Send message [ %s ] (ID = [ %u ] ) from source [ %u ] to target [ %u ]"
+                                , stub.convToString().getString()
+                                , addrProxy.convToString().getString()
+                                , NEService::getString( static_cast<NEService::eFuncIdRange>(msgRegisterProxy.getMessageId()))
+                                , static_cast<unsigned int>(msgRegisterProxy.getMessageId())
+                                , static_cast<unsigned int>(msgRegisterProxy.getSource())
+                                , static_cast<unsigned int>(msgRegisterProxy.getTarget()));
 
-                    if (sendList.find(addrProxy.getSource()) < 0 )
+                    if ( sendList.addUnique(addrProxy.getSource()) )
                     {
-                        sendList.add(addrProxy.getSource());
                         RemoteMessage msgRegisterStub  = NEConnection::createServiceRegisteredNotification(stub, addrProxy.getSource());
-
-                        TRACE_DBG("Sending [ %s ] stub registration notification, proxy [ %s ] on target [ %p ] is waiting. Created message [ %s ] ( ID = %p ) from source [ %p ]"
-                                        , StubAddress::convAddressToPath(stub).getString()
-                                        , ProxyAddress::convAddressToPath(addrProxy).getString()
-                                        , static_cast<id_type>(msgRegisterStub.getTarget())
-                                        , NEService::getString( static_cast<NEService::eFuncIdRange>(msgRegisterStub.getMessageId()))
-                                        , static_cast<id_type>(msgRegisterStub.getMessageId())
-                                        , static_cast<id_type>(msgRegisterStub.getSource()));
-
                         SendMessageEvent::sendEvent( SendMessageEventData(msgRegisterStub), static_cast<IESendMessageEventConsumer &>(mThreadSend), static_cast<DispatcherThread &>(mThreadSend));
+                        TRACE_DBG("Send to proxy [ %s ] the stub [ %s ] registration notification. Send message [ %s ] (ID = [ %u ] ) from source [ %u ] to target [ %u ]"
+                                    , addrProxy.convToString().getString()
+                                    , stub.convToString().getString()
+                                    , NEService::getString( static_cast<NEService::eFuncIdRange>(msgRegisterStub.getMessageId()))
+                                    , static_cast<unsigned int>(msgRegisterStub.getMessageId())
+                                    , static_cast<unsigned int>(msgRegisterStub.getSource())
+                                    , static_cast<unsigned int>(msgRegisterStub.getTarget()));
                     }
                     else
                     {
@@ -552,31 +544,27 @@ void ServerService::registerRemoteProxy(const ProxyAddress & proxy)
                     , StubAddress::convAddressToPath(addrStub).getString()
                     , NEService::getString( proxyService.getServiceStatus()));
 
-        if ( (proxyService.getServiceStatus() == NEService::ServiceConnected) && (proxy.getCookie() != addrStub.getCookie()) )
+        if ( (proxyService.getServiceStatus() == NEService::ServiceConnected) && (proxy.getSource() != addrStub.getSource()) )
         {
             RemoteMessage msgRegisterProxy = NEConnection::createServiceClientRegisteredNotification(proxy, addrStub.getSource());
-
-            TRACE_DBG("Sending [ %s ] proxy registration notification, stub [ %s ] on target [ %p ] is connected. Created message [ %s ] ( ID = %p ) from source [ %p ]"
-                        , ProxyAddress::convAddressToPath(proxy).getString()
-                        , StubAddress::convAddressToPath(addrStub).getString()
-                        , static_cast<id_type>(msgRegisterProxy.getTarget())
-                        , NEService::getString( static_cast<NEService::eFuncIdRange>(msgRegisterProxy.getMessageId()))
-                        , static_cast<id_type>(msgRegisterProxy.getMessageId())
-                        , static_cast<id_type>(msgRegisterProxy.getSource()));
-
             SendMessageEvent::sendEvent( SendMessageEventData(msgRegisterProxy), static_cast<IESendMessageEventConsumer &>(mThreadSend), static_cast<DispatcherThread &>(mThreadSend));
+            TRACE_DBG("Send to stub [ %s ] the proxy [ %s ] registration notification. Send message [ %s ] (ID = [ %u ] ) from source [ %u ] to target [ %u ]"
+                        , addrStub.convToString().getString()
+                        , proxy.convToString().getString()
+                        , NEService::getString( static_cast<NEService::eFuncIdRange>(msgRegisterProxy.getMessageId()))
+                        , static_cast<unsigned int>(msgRegisterProxy.getMessageId())
+                        , static_cast<unsigned int>(msgRegisterProxy.getSource())
+                        , static_cast<unsigned int>(msgRegisterProxy.getTarget()));
 
             RemoteMessage msgRegisterStub  = NEConnection::createServiceRegisteredNotification(addrStub, proxy.getSource());
-
-            TRACE_DBG("Sending [ %s ] stub registration notification, proxy [ %s ] on target [ %p ] is waiting. Created message [ %s ] ( ID = %p ) from source [ %p ]"
-                        , StubAddress::convAddressToPath(addrStub).getString()
-                        , ProxyAddress::convAddressToPath(proxy).getString()
-                        , static_cast<id_type>(msgRegisterStub.getTarget())
-                        , NEService::getString( static_cast<NEService::eFuncIdRange>(msgRegisterStub.getMessageId()))
-                        , static_cast<id_type>(msgRegisterStub.getMessageId())
-                        , static_cast<id_type>(msgRegisterStub.getSource()));
-
             SendMessageEvent::sendEvent( SendMessageEventData(msgRegisterStub), static_cast<IESendMessageEventConsumer &>(mThreadSend), static_cast<DispatcherThread &>(mThreadSend));
+            TRACE_DBG("Send to proxy [ %s ] the stub [ %s ] registration notification. Send message [ %s ] (ID = [ %u ] ) from source [ %u ] to target [ %u ]"
+                        , proxy.convToString().getString()
+                        , addrStub.convToString().getString()
+                        , NEService::getString( static_cast<NEService::eFuncIdRange>(msgRegisterStub.getMessageId()))
+                        , static_cast<unsigned int>(msgRegisterStub.getMessageId())
+                        , static_cast<unsigned int>(msgRegisterStub.getSource())
+                        , static_cast<unsigned int>(msgRegisterStub.getTarget()));
         }
         else
         {
@@ -598,111 +586,88 @@ void ServerService::unregisterRemoteStub(const StubAddress & stub, ITEM_ID cooki
     if ( mServiceRegistry.getServiceStatus(stub) == NEService::ServiceConnected )
     {
         ListServiceProxies listProxies;
-        const ServiceStub & stubService = mServiceRegistry.unregisterServiceStub(stub, listProxies);
+        mServiceRegistry.unregisterServiceStub(stub, listProxies);
         TRACE_DBG("Unregistered stub [ %s ], [ %d ] proxies are going to be notified"
-                        , StubAddress::convAddressToPath(stub).getString()
+                        , stub.convToString().getString()
                         , listProxies.getSize());
 
-        if ( stubService.getServiceStatus() != NEService::ServiceConnected && listProxies.isEmpty() == false )
+        TRACE_DBG("Filter sources [ %u ] of proxy list", static_cast<unsigned int>(cookie));
+
+        TEArrayList<ITEM_ID> sendList;
+        for ( LISTPOS pos = listProxies.firstPosition(); pos != NULL; pos = listProxies.nextPosition(pos) )
         {
-            TEArrayList<ITEM_ID> sendList;
+            const ServiceProxy & proxyService = listProxies.getAt(pos);
+            const ProxyAddress & addrProxy    = proxyService.getServiceAddress();
 
-            for ( LISTPOS pos = listProxies.firstPosition(); pos != NULL; pos = listProxies.nextPosition(pos) )
+            if ( (cookie == NEService::COOKIE_ANY) || (addrProxy.getSource() != cookie) )
             {
-                const ServiceProxy & proxyService = listProxies.getAt(pos);
-                const ProxyAddress & addrProxy    = proxyService.getServiceAddress();
-                
-                if ((cookie != NEService::COOKIE_ANY) && (addrProxy.getCookie() == cookie))
+                // no need to send message to unregistered stub, only to proxy side
+                if (sendList.addUnique(addrProxy.getSource()) )
                 {
-                    TRACE_INFO("Ignoring handling unregister message of the client [ %s ] with cookie [ %u ]"
-                                    , ProxyAddress::convAddressToPath(addrProxy).getString()
-                                    , cookie);
-                    continue; // ignore
-                }
-
-                if ( (proxyService.getServiceStatus() != NEService::ServiceConnected) && (addrProxy.getCookie() != stub.getCookie()) )
-                {
-                    // no need to send message to unregistered stub, only to proxy side
-                    if (sendList.find(addrProxy.getSource()) < 0 )
-                    {
-                        sendList.add(addrProxy.getSource());
-
-                        RemoteMessage msgRegisterStub = NEConnection::createServiceUnregisteredNotification( stub, addrProxy.getSource( ) );
-                        TRACE_DBG("Sending [ %s ] stub unregistered notification, proxy [ %s ] on target [ %p ] was connected. Created message [ %s ] ( ID = %p ) from source [ %p ]"
-                                    , StubAddress::convAddressToPath(stub).getString()
-                                    , ProxyAddress::convAddressToPath(addrProxy).getString()
-                                    , static_cast<id_type>(msgRegisterStub.getTarget())
-                                    , NEService::getString( static_cast<NEService::eFuncIdRange>(msgRegisterStub.getMessageId()))
-                                    , static_cast<id_type>(msgRegisterStub.getMessageId())
-                                    , static_cast<id_type>(msgRegisterStub.getSource()));
-
-                        SendMessageEvent::sendEvent( SendMessageEventData(msgRegisterStub), static_cast<IESendMessageEventConsumer &>(mThreadSend), static_cast<DispatcherThread &>(mThreadSend));
-                    }
-                    else
-                    {
-                        // ignore, it already has unregistered stub
-                        TRACE_DBG("ignoring sending stub unregistered message, proxy [ %s ] on target [ %p ] was already notified"
-                                        , ProxyAddress::convAddressToPath(addrProxy).getString()
-                                        , static_cast<id_type>(addrProxy.getSource()));
-                    }
+                    RemoteMessage msgRegisterStub = NEConnection::createServiceUnregisteredNotification( stub, addrProxy.getSource( ) );
+                    SendMessageEvent::sendEvent( SendMessageEventData(msgRegisterStub), static_cast<IESendMessageEventConsumer &>(mThreadSend), static_cast<DispatcherThread &>(mThreadSend));
+                    TRACE_INFO("Send stub [ %s ] disconnect message to proxy [ %s ]"
+                                    , stub.convToString().getString()
+                                    , addrProxy.convToString().getString());
                 }
                 else
                 {
-                    // ignore, it already has unregistered stub locally or proxy status did not changed
-                    TRACE_DBG("Ignore sending stub unregistered notification message, stub [ %s ] and proxy [ %s ] have same origin"
-                                    , StubAddress::convAddressToPath(stub)
-                                    , ProxyAddress::convAddressToPath(addrProxy));
+                    // ignore, it already has unregistered stub
+                    TRACE_DBG("Ignore unregistered stub message for proxy [ %s ], it was already notified", addrProxy.convToString().getString());
                 }
             }
-        }
-        else
-        {
-            // ignore, stub is status did not change or list is empty
-            TRACE_DBG("Ignore sending stub unregistered message, the proxy list is empty");
+            else
+            {
+                // ignore, it already has unregistered stub locally or proxy status did not changed
+                ServiceProxy dummy;
+                mServiceRegistry.unregisterServiceProxy(addrProxy, dummy);
+                TRACE_DBG("Proxy [ %s ] is marked as ignored by source [ %u ], remove and skip", addrProxy.convToString().getString(), static_cast<unsigned int>(cookie));
+            }
         }
     }
     else
     {
         // ignore, stub is already disconnected
-        TRACE_DBG("Ignore unregistering stub [ %s ], it is already unregistered", StubAddress::convAddressToPath(stub));
+        TRACE_DBG("Ignore unregistering stub [ %s ], it is already unregistered", stub.convToString().getString());
     }
 }
 
 void ServerService::unregisterRemoteProxy(const ProxyAddress & proxy, ITEM_ID cookie /*= NEService::COOKIE_ANY*/ )
 {
     TRACE_SCOPE(areg_ipc_private_ServerService_unregisterRemoteProxy);
-    ServiceProxy proxyService;
-    const ServiceStub & stubService   = mServiceRegistry.unregisterServiceProxy(proxy, proxyService);
-    const StubAddress & addrStub      = stubService.getServiceAddress();
-
-    if ((cookie != NEService::COOKIE_ANY) && (proxy.getCookie() == cookie))
-    {
-        TRACE_INFO("Ignoring unregister proxy [ %s ] of the diconnected cookie [ %u ]"
-                        , ProxyAddress::convAddressToPath(proxy).getString()
-                        , cookie);
-        return;
-    }
-
-    if ( (proxyService.getServiceStatus() == NEService::ServiceConnected) && (proxy.getCookie() != addrStub.getCookie()) )
-    {
-        // no need to send message to proxy side, it is already unregistered
-        RemoteMessage msgRegisterProxy = NEConnection::createServiceClientUnregisteredNotification(proxy, addrStub.getSource());
-        TRACE_DBG("Sending [ %s ] proxy unregistered notification, stub [ %s ] on target [ %p ] is connected. Created message [ %s ] ( ID = %p ) from source [ %p ]"
+    TRACE_DBG("Unregistering services of proxy [ %s ] related to cookie [ %u ]"
                     , ProxyAddress::convAddressToPath(proxy).getString()
-                    , StubAddress::convAddressToPath(addrStub).getString()
-                    , static_cast<id_type>(msgRegisterProxy.getTarget())
-                    , NEService::getString( static_cast<NEService::eFuncIdRange>(msgRegisterProxy.getMessageId()))
-                    , static_cast<id_type>(msgRegisterProxy.getMessageId())
-                    , static_cast<id_type>(msgRegisterProxy.getSource()));
+                    , static_cast<unsigned int>(cookie));
 
-        SendMessageEvent::sendEvent( SendMessageEventData(msgRegisterProxy), static_cast<IESendMessageEventConsumer &>(mThreadSend), static_cast<DispatcherThread &>(mThreadSend));
+    RemoteMessage msgRegisterProxy;
+    ServiceProxy svcProxy;
+    const ServiceStub * svcStub     = NULL;
+    
+    if (proxy.getSource() == cookie)
+    {
+        svcStub = &mServiceRegistry.unregisterServiceProxy(proxy, svcProxy);
     }
     else
     {
-        // ignore, it is done locally
-        TRACE_DBG("Ignore sending proxy unregistered notification message, stub [ %s ] and proxy [ %s ] have same origin"
-                    , StubAddress::convAddressToPath(addrStub).getString()
-                    , ProxyAddress::convAddressToPath(proxy).getString());
+        svcStub = &mServiceRegistry.disconnectProxy(proxy);
+    }
+
+    ASSERT(svcStub != NULL);
+    const StubAddress & addrStub    = svcStub->getServiceAddress();
+
+    if ((svcStub->getServiceStatus() == NEService::ServiceConnected) && (proxy.getSource() != addrStub.getSource()))
+    {
+        msgRegisterProxy = NEConnection::createServiceClientUnregisteredNotification(proxy, addrStub.getSource());
+        SendMessageEvent::sendEvent( SendMessageEventData(msgRegisterProxy), static_cast<IESendMessageEventConsumer &>(mThreadSend), static_cast<DispatcherThread &>(mThreadSend));
+        TRACE_INFO("Send proxy [ %s ] disconnect message to stub [ %s ]"
+                        , proxy.convToString().getString()
+                        , addrStub.convToString().getString());
+    }
+    else
+    {
+        TRACE_DBG("Ignore notifying stub [ %s ] proxy [ %s ] disconnect"
+                        , addrStub.convToString().getString()
+                        , proxy.convToString().getString());
     }
 }
 

@@ -347,9 +347,9 @@ char String::operator [ ] (int atPos) const
     return mData->strBuffer[atPos];
 }
 
-String::operator unsigned int(void) const
+String::operator unsigned int (void) const
 {
-    return (isValid() ? NEMath::crc32Calculate(getString()) : 0);
+    return (isValid() ? NEMath::crc32Calculate(getString()) : NEMath::CHECKSUM_IGNORE);
 }
 
 int32_t String::makeInt32( const char * strDigit, NEString::eRadix radix /*= NEString::RadixDecimal*/, const char ** end /*= static_cast<const char **>(NULL)*/ )

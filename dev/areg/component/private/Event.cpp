@@ -145,9 +145,9 @@ void Event::dispatchSelf( IEEventConsumer* consumer )
     consumer = consumer != NULL ? consumer : this->mConsumer;
     if (consumer != NULL)
     {
-        if ( consumer->preprocessEvent(self()) )
+        if ( consumer->preprocessEvent(*this) )
         {
-            consumer->startEventProcessing(self());
+            consumer->startEventProcessing(*this);
         }
         else
         {

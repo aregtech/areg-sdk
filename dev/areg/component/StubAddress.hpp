@@ -287,6 +287,37 @@ public:
      **/
     bool deliverServiceEvent( ServiceRequestEvent & serviceEvent ) const;
 
+    /**
+     * \brief   Converts Stub address to string as a Address Path, containing
+     *          path separator.
+     * \param   addrStub    The Stub address containing information to crate path
+     * \return  Returns converted path of Stub as string, containing Stub address information
+     **/
+    String convToString( void ) const;
+
+    /**
+     * \brief   Instantiate Stub Address from given address path.
+     *          If out_nextPart is not NULL, on output this will contain remaining part
+     *          from Stub path.
+     * \param   pathStub        The path of Stub object, containing information for address.
+     * \param   out_nextPart    If not NULL, on output this will contain remaining part of Stub path
+     * \return  Returns initialized StubAddress object, containing information taken from path
+     **/
+    void convFromString(const char* pathStub, const char** out_nextPart = NULL);
+
+protected:
+    /**
+     * \brief   Returns true if stub address data is valid.
+     **/
+    bool isValidated( void ) const;
+
+private:
+
+    /**
+     * \brief   Returns the calculated hash-key value of specified stub address object.
+     **/
+    static unsigned int _magicNumber( const StubAddress & addrStub );
+
 //////////////////////////////////////////////////////////////////////////
 // Member variables
 //////////////////////////////////////////////////////////////////////////
@@ -294,16 +325,63 @@ private:
     /**
      * \brief   The name of owner thread.
      **/
-    String    mThreadName;
+    String          mThreadName;
     /**
      * \brief   The communication channel.
      **/
-    Channel   mChannel;
+    Channel         mChannel;
+
+private:
+    /**
+     * \brief   The calculated number of stub address.
+     **/
+    unsigned int    mMagicNum;
 };
 
 //////////////////////////////////////////////////////////////////////////
 // StubAddress class inline functions implementation
 //////////////////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////////////////
+// Operators
+//////////////////////////////////////////////////////////////////////////
+
+inline const StubAddress & StubAddress::operator = ( const StubAddress & source )
+{
+    if (this != &source)
+    {
+        static_cast<ServiceAddress &>(*this) = static_cast<const ServiceAddress &>(source);
+        mThreadName = source.mThreadName;
+        mChannel    = source.mChannel;
+        mMagicNum   = source.mMagicNum;
+    }
+
+    return (*this);
+}
+
+inline const StubAddress & StubAddress::operator = (const ServiceAddress & addrService)
+{
+    if ( static_cast<const ServiceAddress *>(this) != &addrService)
+    {
+        static_cast<ServiceAddress &>(*this) = static_cast<const ServiceAddress &>(addrService);
+        mThreadName = "";
+        mChannel    = Channel();
+        mMagicNum   = StubAddress::_magicNumber(*this);
+    }
+
+    return (*this);
+}
+
+inline bool StubAddress::operator == ( const StubAddress & other ) const
+{
+    return (mMagicNum == other.mMagicNum) && (mChannel.getCookie() == other.mChannel.getCookie());
+}
+
+inline bool StubAddress::operator != ( const StubAddress& other ) const
+{
+    return (mMagicNum != other.mMagicNum) || (mChannel.getCookie() != other.mChannel.getCookie());
+}
+
 inline bool StubAddress::operator == ( const ProxyAddress & addrProxy ) const
 {
     return isProxyCompatible(addrProxy);

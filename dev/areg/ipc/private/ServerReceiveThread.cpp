@@ -124,6 +124,7 @@ bool ServerReceiveThread::runDispatcher(void)
 
         } while (whichEvent == static_cast<int>(EVENT_QUEUE));
     }
+
     mHasStarted = false;
     removeEvents(false);
 

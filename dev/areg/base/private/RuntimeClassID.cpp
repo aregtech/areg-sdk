@@ -25,19 +25,26 @@ const char* const RuntimeClassID::BAD_CLASS_ID = "_BAD_RUNTIME_CLASS_ID_";
 // Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
 RuntimeClassID::RuntimeClassID( void )
-    : mClassName    (BAD_CLASS_ID)
+    : mClassName(BAD_CLASS_ID)
+    , mMagicNum (NEMath::CHECKSUM_IGNORE)
 {
     ; // do nothing
 }
 
 RuntimeClassID::RuntimeClassID( const char * className )
-    : mClassName    (NEString::isEmpty<char>(className) == false ? className : BAD_CLASS_ID)
+    : mClassName(BAD_CLASS_ID)
+    , mMagicNum (NEMath::CHECKSUM_IGNORE)
 {
-    ; // do nothing
+    if (NEString::isEmpty<char>(className) == false)
+    {
+        mClassName  = className;
+        mMagicNum   = NEMath::crc32Calculate(className);
+    }
 }
 
 RuntimeClassID::RuntimeClassID( const RuntimeClassID & src )
-    : mClassName    (src.mClassName)
+    : mClassName(src.mClassName)
+    , mMagicNum (src.mMagicNum)
 {
     ASSERT(src.mClassName.isEmpty() == false);
 }
@@ -51,13 +58,16 @@ RuntimeClassID::~RuntimeClassID( void )
 // Methods
 //////////////////////////////////////////////////////////////////////////
 
-RuntimeClassID::operator unsigned int( void ) const
-{
-    ASSERT(mClassName.isEmpty() == false);
-    return static_cast<unsigned int>( NEMath::crc32Calculate( static_cast<const char *>(mClassName.getString())) );
-}
-
 void RuntimeClassID::setName( const char* className )
 {
-    mClassName = (NEString::isEmpty<char>(className) == false ? className : BAD_CLASS_ID);
+    if (NEString::isEmpty<char>(className))
+    {
+        mClassName  = RuntimeClassID::BAD_CLASS_ID;
+        mMagicNum      = NEMath::CHECKSUM_IGNORE;
+    }
+    else
+    {
+        mClassName  = className;
+        mMagicNum   = NEMath::crc32Calculate(className);
+    }
 }

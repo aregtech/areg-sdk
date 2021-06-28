@@ -9,6 +9,7 @@
 //============================================================================
 
 #include "areg/base/GEGlobal.h"
+#include "areg/base/DateTime.hpp"
 #include "areg/component/DispatcherThread.hpp"
 #include "areg/component/IETimerConsumer.hpp"
 
@@ -19,6 +20,8 @@
 #ifdef WINDOWS
     #pragma comment(lib, "areg.lib")
 #endif // WINDOWS
+
+const unsigned int TIMEOUT_APPLICATION  = Timer::TIMEOUT_1_SEC * 30;
 
 //////////////////////////////////////////////////////////////////////////
 // TimerDispatcher class declaration
@@ -34,6 +37,10 @@
 class TimerDispatcher   : public    DispatcherThread
                         , private   IETimerConsumer
 {
+    static const unsigned int TIMEOUT_ONE_TIME;
+    static const unsigned int TIMEOUT_PERIODIC_TIME;
+    static const unsigned int TIMEOUT_CONTINUOUS_TIME;
+
 public:
 
 /************************************************************************/
@@ -94,6 +101,9 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // TimerDispatcher class implementation
 //////////////////////////////////////////////////////////////////////////
+const unsigned int TimerDispatcher::TIMEOUT_ONE_TIME        = Timer::TIMEOUT_1_MS * 500;
+const unsigned int TimerDispatcher::TIMEOUT_PERIODIC_TIME   = Timer::TIMEOUT_1_MS * 80;
+const unsigned int TimerDispatcher::TIMEOUT_CONTINUOUS_TIME = Timer::TIMEOUT_1_MS * 50;
 
 // Define TimerDispatcher trace scopes to make logging
 // Trace scopes must be defined before they are used.
@@ -129,6 +139,8 @@ void TimerDispatcher::processTimer( Timer & timer )
     TRACE_SCOPE(main_TimerDispatcher_processTimer);
     TRACE_DBG("The timer [ %s ] has expired", timer.getName().getString());
     TRACE_DBG("... Timeout [ %u ] ms, Event Count [ %u ], processing in Thread [ %s ]", timer.getTimeout(), timer.getEventCount(), getName().getString());
+
+    printf("[ %s ] : Timer [ %s ] expired...\n", DateTime::getNow().formatTime().getString(), timer.getName().getString());
 
     if (&timer == &mOneTime)
     {
@@ -171,7 +183,7 @@ void TimerDispatcher::startTimers(void)
     TRACE_DBG("Starting timers...");
 
     // Start one-time timer
-    if (mOneTime.startTimer(Timer::TIMEOUT_100_MS * 3, self(), 1))
+    if (mOneTime.startTimer(TIMEOUT_ONE_TIME, self(), 1))
     {
         TRACE_DBG("Successfully started timer [ %s ] with timeout [ %u ].", mOneTime.getName().getString(), mOneTime.getTimeout());
     }
@@ -181,7 +193,7 @@ void TimerDispatcher::startTimers(void)
     }
 
     // start periodic timer
-    if (mPeriodic.startTimer(Timer::TIMEOUT_100_MS * 2, self(), 1))
+    if (mPeriodic.startTimer(TIMEOUT_PERIODIC_TIME, self(), (TIMEOUT_APPLICATION / 2) / TIMEOUT_PERIODIC_TIME))
     {
         TRACE_DBG("Successfully started timer [ %s ] with timeout [ %u ].", mPeriodic.getName().getString(), mPeriodic.getTimeout());
     }
@@ -191,7 +203,7 @@ void TimerDispatcher::startTimers(void)
     }
 
     // start periodic timer (continuous). This timer runs until it is stopped.
-    if (mContinuous.startTimer(Timer::TIMEOUT_100_MS * 1, self(), 1))
+    if (mContinuous.startTimer(TIMEOUT_CONTINUOUS_TIME, self(), Timer::CONTINUOUSLY))
     {
         // continuous timer
         TRACE_DBG("Successfully started timer [ %s ] with timeout [ %u ].", mContinuous.getName().getString(), mContinuous.getTimeout());

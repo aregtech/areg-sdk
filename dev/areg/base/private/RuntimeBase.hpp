@@ -86,10 +86,21 @@ public:
     virtual const char * getRuntimeClassName( void ) const;
 
     /**
+     * \brief   Returns the calculated number of runtime class.
+     **/
+    virtual unsigned int getRuntimeClassNumber( void ) const;
+
+    /**
      * \brief   Checks class instance by name.
      * \param   className   The name of class to check.
      **/
     virtual bool isInstanceOfRuntimeClass( const char* className ) const;
+
+    /**
+     * \brief   Checks class instance by name.
+     * \param   className   The name of class to check.
+     **/
+    virtual bool isInstanceOfRuntimeClass( unsigned int classMagic ) const;
 
     /**
      * \brief   Checks class instance by Class Identifier.

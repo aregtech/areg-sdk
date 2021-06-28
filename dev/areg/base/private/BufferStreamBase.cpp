@@ -228,7 +228,7 @@ unsigned int BufferStreamBase::insertAt( const unsigned char* buffer, unsigned i
     if (size > 0 && buffer != NULL)
     {
         unsigned int writePos   = mWritePosition.getPosition();
-        if (isValid() == false || atPos >= writePos)
+        if ((isValid() == false) || (atPos >= writePos))
         {
             result = write(buffer, size);
         }

@@ -162,6 +162,19 @@ public:
     inline bool isValid( void ) const;
 
     /**
+     * \brief   Checks and returns socket alive state.
+     * \return  Returns true if socket is alive and is not closed.
+     **/
+    inline bool isAlive( void ) const;
+
+    /**
+     * \brief   Checks and returns number of bytes remain to read from socket buffer.
+     *          Returns negative value if socket is invalid.
+     * \return  Returns number of bytes available to read from socket buffer.
+     **/
+    inline int pendindRead( void ) const;
+
+    /**
      * \brief   Sets socket in read-only more, i.e. no send message is possible anymore.
      * \return  Returns true if operation succeeds.
      **/
@@ -277,6 +290,16 @@ inline void Socket::setAddress( const NESocket::InterlockedValue & newAddress )
 inline bool Socket::isValid( void ) const
 {
     return (mSocket != NESocket::InvalidSocketHandle);
+}
+
+inline bool Socket::isAlive(void) const
+{
+    return NESocket::isSocketAlive(mSocket);
+}
+
+inline int Socket::pendindRead(void) const
+{
+    return NESocket::pendingRead(mSocket);
 }
 
 inline bool Socket::disableSend( void ) const

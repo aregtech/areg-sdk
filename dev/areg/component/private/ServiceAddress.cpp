@@ -15,75 +15,73 @@
 
 String ServiceAddress::convAddressToPath( const ServiceAddress & addService )
 {
-    String result = ServiceItem::convAddressToPath( static_cast<const ServiceItem &>(addService) );
-    result += NEUtilities::COMPONENT_PATH_SEPARATOR;
-    result += addService.mRoleName;
-
-    return result;
+    return addService.convToString();
 }
 
 ServiceAddress ServiceAddress::convPathToAddress( const char * pathService, const char ** out_nextPart /*= NULL */ )
 {
     ServiceAddress result;
-    const char* strSource   = pathService;
-    
-    static_cast<ServiceItem &>(result) = ServiceItem::convPathToAddress( pathService, out_nextPart);
-    result.mRoleName    = String::getSubstring(strSource, NEUtilities::COMPONENT_PATH_SEPARATOR, &strSource);
-
-    if (out_nextPart != NULL)
-        *out_nextPart = strSource;
-
+    result.convFromString(pathService, out_nextPart);
     return result;
 }
 
 ServiceAddress::ServiceAddress( void )
     : ServiceItem   ( )
     , mRoleName     ( String::EmptyString )
+    , mMagicNum     ( NEMath::CHECKSUM_IGNORE )
 {
     ; // do nothing
 }
 
 ServiceAddress::ServiceAddress( const char * serviceName
-                                  , const Version & serviceVersion
-                                  , NEService::eServiceType serviceType
-                                  , const char * roleName )
+                              , const Version & serviceVersion
+                              , NEService::eServiceType serviceType
+                              , const char * roleName )
     : ServiceItem   ( serviceName, serviceVersion, serviceType )
     , mRoleName     ( roleName )
+    , mMagicNum     ( NEMath::CHECKSUM_IGNORE )
 {
     mRoleName.truncate( NEUtilities::ITEM_NAMES_MAX_LENGTH );
+    mMagicNum = ServiceAddress::_magicNumber(*this);
 }
 
 ServiceAddress::ServiceAddress( const ServiceItem & serviceItem, const char * roleName )
     : ServiceItem   ( serviceItem )
     , mRoleName     ( roleName )
+    , mMagicNum     ( NEMath::CHECKSUM_IGNORE )
 {
     mRoleName.truncate( NEUtilities::ITEM_NAMES_MAX_LENGTH );
+    mMagicNum = ServiceAddress::_magicNumber(*this);
 }
 
 ServiceAddress::ServiceAddress( const StubAddress & addrStub )
     : ServiceItem   ( static_cast<const ServiceItem &>(addrStub) )
     , mRoleName     ( addrStub.getRoleName() )
+    , mMagicNum     ( NEMath::CHECKSUM_IGNORE )
 {
-    ; // do nothing
+    mMagicNum = ServiceAddress::_magicNumber(*this);
 }
 
 ServiceAddress::ServiceAddress( const ProxyAddress & addrProxy )
     : ServiceItem   ( static_cast<const ServiceItem &>(addrProxy) )
     , mRoleName     ( addrProxy.getRoleName() )
+    , mMagicNum     ( NEMath::CHECKSUM_IGNORE )
 {
-    ; // do nothing
+    mMagicNum = ServiceAddress::_magicNumber(*this);
 }
 
 ServiceAddress::ServiceAddress( const IEInStream & stream )
     : ServiceItem   ( stream )
     , mRoleName     ( stream )
+    , mMagicNum     ( NEMath::CHECKSUM_IGNORE )
 {
-    ; // do nothing
+    mMagicNum = ServiceAddress::_magicNumber(*this);
 }
 
 ServiceAddress::ServiceAddress( const ServiceAddress & source )
-    : ServiceItem   ( static_cast<const ServiceItem &>(source) )
+    : ServiceItem   ( static_cast<const ServiceItem >(source) )
     , mRoleName     ( source.mRoleName )
+    , mMagicNum      ( source.mMagicNum )
 {
     ; // do nothing
 }
@@ -93,36 +91,37 @@ ServiceAddress::~ServiceAddress(void)
     ; // do nothing
 }
 
-const ServiceAddress & ServiceAddress::operator = ( const ServiceAddress & source )
+String ServiceAddress::convToString(void) const
 {
-    if ( static_cast<const ServiceAddress *>(this) != &source )
-    {
-        static_cast<ServiceItem &>(*this) = static_cast<const ServiceItem &>(source);
-        mRoleName   = source.mRoleName;
-    }
+    String result = ServiceItem::convToString();
+    result += NEUtilities::COMPONENT_PATH_SEPARATOR;
+    result += mRoleName;
 
-    return (*this);
+    return result;
 }
 
-bool ServiceAddress::operator == ( const ServiceAddress & other ) const
+void ServiceAddress::convFromString(const char * pathService, const char** out_nextPart /*= NULL */)
 {
-    return (this != &other ? static_cast<const ServiceItem &>(*this) == static_cast<const ServiceItem &>(other) && mRoleName == other.mRoleName : true);
+    const char* strSource   = pathService;
+    ServiceItem::convFromString(pathService, &strSource);
+    mRoleName   = String::getSubstring(strSource, NEUtilities::COMPONENT_PATH_SEPARATOR, &strSource);
+    mMagicNum   = ServiceAddress::_magicNumber(*this);
+
+    if (out_nextPart != NULL)
+        *out_nextPart = strSource;
 }
 
-bool ServiceAddress::operator != (const ServiceAddress & other) const
-{
-    return (this != &other ? static_cast<const ServiceItem &>(*this) != static_cast<const ServiceItem &>(other) || mRoleName != other.mRoleName : false);
-}
-
-ServiceAddress::operator unsigned int( void ) const
+unsigned int ServiceAddress::_magicNumber(const ServiceAddress addrService)
 {
     unsigned int result = NEMath::CHECKSUM_IGNORE;
-    if ( isValid() )
+    if ( addrService.isValidated() )
     {
         result = NEMath::crc32Init();
-        result = NEMath::crc32Start( result, static_cast<const char *>(mRoleName) );
-        result = NEMath::crc32Start(result, static_cast<const char *>(mServiceName));
+        result = NEMath::crc32Start( result, addrService.mServiceName.getString() );
+        result = NEMath::crc32Start( result, static_cast<unsigned char>(addrService.mServiceType));
+        result = NEMath::crc32Start( result, addrService.mRoleName.getString() );
         result = NEMath::crc32Finish(result);
     }
+
     return result;
 }

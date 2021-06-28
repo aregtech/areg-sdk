@@ -130,7 +130,7 @@ public:
      *                          fired once or less than maxQueued timer, this parameter will be ignored
      *                          and play no role.
      **/
-    Timer( IETimerConsumer & timerConsumer, const char* timerName = NULL, int maxQueued = Timer::DEFAULT_MAXIMUM_QUEUE );
+    Timer( IETimerConsumer & timerConsumer, const char* timerName = NULL, int maxQueued = Timer::IGNORE_TIMER_QUEUE );
     /**
      * \brief   Destructor
      **/

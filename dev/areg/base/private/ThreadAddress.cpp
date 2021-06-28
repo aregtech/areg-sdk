@@ -60,7 +60,7 @@ ThreadAddress::~ThreadAddress( void )
 
 bool ThreadAddress::isValid( void ) const
 {
-    return (mThreadName != ThreadAddress::INVALID_THREAD_NAME);
+    return (mMagicNum != NEMath::CHECKSUM_IGNORE);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -68,21 +68,13 @@ bool ThreadAddress::isValid( void ) const
 //////////////////////////////////////////////////////////////////////////
 String ThreadAddress::convAddressToPath( const ThreadAddress& threadAddress )
 {
-    return threadAddress.mThreadName;
+    return threadAddress.convToString();
 }
 
 ThreadAddress ThreadAddress::convPathToAddress( const char* threadPath, const char** out_nextPart /*= NULL*/ )
 {
     ThreadAddress result;
-    const char* strSource   = threadPath;
-    if (out_nextPart != NULL)
-        *out_nextPart = threadPath;
-
-    result.mThreadName  = String::getSubstring(strSource, NEUtilities::COMPONENT_PATH_SEPARATOR, &strSource);
-
-    if (out_nextPart != NULL)
-        *out_nextPart = strSource;
-
+    result.convFromString(threadPath, out_nextPart);
     return result;
 }
 
@@ -90,17 +82,26 @@ ThreadAddress ThreadAddress::convPathToAddress( const char* threadPath, const ch
 // Operators
 //////////////////////////////////////////////////////////////////////////
 
-bool ThreadAddress::operator == ( const ThreadAddress & other ) const
+void ThreadAddress::convFromString(const char * threadPath, const char** OUT out_nextPart /*= NULL*/)
 {
-    return mThreadName == other.mThreadName;
+    const char* strSource   = threadPath;
+    if (out_nextPart != NULL)
+        *out_nextPart = threadPath;
+
+    mThreadName  = String::getSubstring(strSource, NEUtilities::COMPONENT_PATH_SEPARATOR, &strSource);
+    mMagicNum    = ThreadAddress::_magicNumber(*this);
+
+    if (out_nextPart != NULL)
+        *out_nextPart = strSource;
 }
 
-bool ThreadAddress::operator != ( const ThreadAddress & other ) const
+unsigned int ThreadAddress::_magicNumber(const ThreadAddress & addrThread)
 {
-    return mThreadName != other.mThreadName;
-}
+    unsigned int result = NEMath::CHECKSUM_IGNORE;
+    if ((addrThread.mThreadName.isEmpty() == false) && (addrThread.mThreadName != ThreadAddress::INVALID_THREAD_NAME))
+    {
+        result = NEMath::crc32Calculate(addrThread.mThreadName.getString());
+    }
 
-ThreadAddress::operator unsigned int( void ) const
-{
-    return (isValid() ? NEMath::crc32Calculate(mThreadName.getString()) : NEMath::CHECKSUM_IGNORE);
+    return result;
 }
