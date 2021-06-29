@@ -1,8 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-    <!-- **************************************************************************************************************************************************************   -->
-    <!-- Project Property name.                                                                                                                                           -->
-    <!-- **************************************************************************************************************************************************************   -->
+    <!-- ********************************************************************************************************************************** -->
+    <!-- Project Property name.                                                                                                             -->
+    <!-- ********************************************************************************************************************************** -->
     <PropertyGroup>
         <_PropertySheetDisplayName>config_project_default</_PropertySheetDisplayName>
     </PropertyGroup>
@@ -33,9 +33,9 @@
             <RuntimeLibrary Condition="'$(ConfigShortName)'=='Release'">MultiThreaded</RuntimeLibrary>
             <Optimization Condition="'$(ConfigShortName)'=='Debug'">Disabled</Optimization>
             <Optimization Condition="'$(ConfigShortName)'=='Release'">Full</Optimization>
-            <!-- **************************************************************************************************************************************************************   -->
-            <!-- Release version only                                                                                                                                             -->
-            <!-- **************************************************************************************************************************************************************   -->
+            <!-- ************************************************************************************************************************** -->
+            <!-- Release version only                                                                                                       -->
+            <!-- ************************************************************************************************************************** -->
 			<InlineFunctionExpansion Condition="'$(ConfigShortName)'=='Release'">AnySuitable</InlineFunctionExpansion>
 			<ExceptionHandling Condition="'$(ConfigShortName)'=='Release'">false</ExceptionHandling>
 			<DebugInformationFormat Condition="'$(ConfigShortName)'=='Release'">None</DebugInformationFormat>

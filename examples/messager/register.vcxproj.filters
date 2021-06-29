@@ -15,28 +15,13 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="register\CECentralApp.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="register\NECentralApp.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="register\ui\CECentralDialog.hpp">
+    <ClInclude Include="shared\generated\private\CentralMessagerEvents.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="register\services\CEConnectionManager.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="register\ui\CEPageBrokerSetup.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="register\ui\CEPageConnections.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="shared\generated\private\CECentralMessagerEvents.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="shared\generated\private\CEConnectionManagerEvents.hpp">
+    <ClInclude Include="shared\generated\private\ConnectionManagerEvents.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="shared\generated\NECentralMessager.hpp">
@@ -57,39 +42,42 @@
     <ClInclude Include="register\res\targetver.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="register\services\ConnectionManager.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="register\ui\PageConnections.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="register\ui\PageBrokerSetup.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="register\ui\CentralDialog.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="register\CentralApp.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="shared\generated\CentralMessagerStub.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="register\CECentralApp.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="register\NECentralApp.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="register\ui\CECentralDialog.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="register\services\CEConnectionManager.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="register\ui\CEPageBrokerSetup.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="register\ui\CEPageConnections.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="register\res\stdafx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="shared\generated\private\CECentralMessagerEvents.cpp">
+    <ClCompile Include="shared\generated\private\CentralMessagerEvents.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="shared\generated\private\CECentralMessagerStub.cpp">
+    <ClCompile Include="shared\generated\private\CentralMessagerStub.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="shared\generated\private\CEConnectionManagerEvents.cpp">
+    <ClCompile Include="shared\generated\private\ConnectionManagerEvents.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="shared\generated\private\CEConnectionManagerStub.cpp">
+    <ClCompile Include="shared\generated\private\ConnectionManagerStub.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="shared\generated\private\NECentralMessager.cpp">
@@ -98,7 +86,22 @@
     <ClCompile Include="shared\generated\private\NEConnectionManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="register\ui\CEPageConnections.cpp">
+    <ClCompile Include="register\ui\PageConnections.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="register\services\ConnectionManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="register\ui\PageConnections.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="register\ui\PageBrokerSetup.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="register\ui\CentralDialog.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="register\CentralApp.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

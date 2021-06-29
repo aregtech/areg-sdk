@@ -6,8 +6,8 @@
 
 /************************************************************************
  * (c) copyright    2021
- *                  Create by AREGtech code generator tool from source DirectConnection.
- * Generated at     25.04.2021  23:50:45 GMT+02:00 
+ *                  Create by AREG SDK code generator tool from source DirectConnection.
+ * Generated at     23.05.2021  00:18:58 GMT+02:00 
  ************************************************************************/
 
 /************************************************************************
@@ -19,20 +19,20 @@
 /************************************************************************
  * Include files
  ************************************************************************/
-#include "areg/src/base/GEGlobal.h"
+#include "areg/base/GEGlobal.h"
 
 //////////////////////////////////////////////////////////////////////////
 // Dependency includes
 //////////////////////////////////////////////////////////////////////////
 #include "shared/NECommonSettings.hpp"
-#include "areg/src/base/CEString.hpp"
+#include "areg/base/String.hpp"
 
 //////////////////////////////////////////////////////////////////////////
 // Mandatory includes
 //////////////////////////////////////////////////////////////////////////
-#include "areg/src/base/IEIOStream.hpp"
-#include "areg/src/base/CEVersion.hpp"
-#include "areg/src/component/NEService.hpp"
+#include "areg/base/IEIOStream.hpp"
+#include "areg/base/Version.hpp"
+#include "areg/component/NEService.hpp"
 
 /************************************************************************
  * Dependencies
@@ -67,7 +67,7 @@ namespace   NEDirectConnection
      * \brief   Implemented Version
      *          NEDirectConnection::InterfaceVersion
      **/
-    const CEVersion           InterfaceVersion    = "1.0.0";
+    const Version             InterfaceVersion    = "1.0.0";
 
     /**
      * \brief   Indicates Invalid session
@@ -85,13 +85,13 @@ namespace   NEDirectConnection
      * \brief   The prefix to add when create stub instance
      *          NEDirectConnection::ServicePrefixStub
      **/
-    const CEString            ServicePrefixStub   = "ChatStub";
+    const String              ServicePrefixStub   = "ChatStub";
 
     /**
      * \brief   The prefix when instantiate chat proxy.
      *          NEDirectConnection::ServicePrefixClient
      **/
-    const CEString            ServicePrefixClient = "ChatClient";
+    const String              ServicePrefixClient = "ChatClient";
 
 /************************************************************************/
 // Service Interface data types
@@ -135,44 +135,44 @@ namespace   NEDirectConnection
      * Request IDs
      ************************************************************************/
         /**
-         * \brief   Request ID: MSG_ID_RequestConnectoinSetup
+         * \brief   Request ID: MSG_ID_requestConnectoinSetup
          *          Request to setup the direct connection to chat room initiator.
          **/
-          MSG_ID_RequestConnectoinSetup       = NEService::REQUEST_ID_FIRST     // void RequestConnectoinSetup( const NEDirectConnection::sInitiator & initiator, const NEDirectConnection::ListParticipants & listParticipants );
+          MSG_ID_requestConnectoinSetup       = NEService::REQUEST_ID_FIRST     // void requestConnectoinSetup( const NEDirectConnection::sInitiator & initiator, const NEDirectConnection::ListParticipants & listParticipants );
         /**
-         * \brief   Request ID: MSG_ID_RequestAddParticipant
+         * \brief   Request ID: MSG_ID_requestAddParticipant
          *          The request to add a participant in the direct chat-room.
          **/
-        , MSG_ID_RequestAddParticipant                                          // void RequestAddParticipant( const NEDirectConnection::sInitiator & initiator, const NEDirectConnection::ListParticipants & listParticipants );
+        , MSG_ID_requestAddParticipant                                          // void requestAddParticipant( const NEDirectConnection::sInitiator & initiator, const NEDirectConnection::ListParticipants & listParticipants );
         /**
-         * \brief   Request ID: MSG_ID_RequestRemoveParticipant
+         * \brief   Request ID: MSG_ID_requestRemoveParticipant
          *          Request to remove initiator from chat-room
          **/
-        , MSG_ID_RequestRemoveParticipant                                       // void RequestRemoveParticipant( const NEDirectConnection::sInitiator & initiator, const NEDirectConnection::ListParticipants & listParticipants );
+        , MSG_ID_requestRemoveParticipant                                       // void requestRemoveParticipant( const NEDirectConnection::sInitiator & initiator, const NEDirectConnection::ListParticipants & listParticipants );
         /**
-         * \brief   Request ID: MSG_ID_RequestCloseConnection
+         * \brief   Request ID: MSG_ID_requestCloseConnection
          *          Request to close chat-room. There is no response expected.
          **/
-        , MSG_ID_RequestCloseConnection                                         // void RequestCloseConnection( const NEDirectConnection::sInitiator & initiator );
+        , MSG_ID_requestCloseConnection                                         // void requestCloseConnection( const NEDirectConnection::sInitiator & initiator );
      
     /************************************************************************
      * Response IDs
      ************************************************************************/
         /**
-         * \brief   Response ID: MSG_ID_ResponseConnectoinSetup
+         * \brief   Response ID: MSG_ID_responseConnectoinSetup
          *          The response of connection setup
          **/
-        , MSG_ID_ResponseConnectoinSetup      = NEService::RESPONSE_ID_FIRST    // void ResponseConnectoinSetup( const bool & succeeded, const NEDirectConnection::sParticipant & target, const NEDirectConnection::sInitiator & initiator, const NEDirectConnection::ListParticipants & listParticipants );
+        , MSG_ID_responseConnectoinSetup      = NEService::RESPONSE_ID_FIRST    // void responseConnectoinSetup( bool succeeded, const NEDirectConnection::sParticipant & target, const NEDirectConnection::sInitiator & initiator, const NEDirectConnection::ListParticipants & listParticipants );
         /**
-         * \brief   Response ID: MSG_ID_ResponseAddParticipant
+         * \brief   Response ID: MSG_ID_responseAddParticipant
          *          The response to add initiator to chat room
          **/
-        , MSG_ID_ResponseAddParticipant                                         // void ResponseAddParticipant( const bool & succeeded, const NEDirectConnection::ListParticipants & listParticipants );
+        , MSG_ID_responseAddParticipant                                         // void responseAddParticipant( bool succeeded, const NEDirectConnection::ListParticipants & listParticipants );
         /**
-         * \brief   Response ID: MSG_ID_ResponseRemoveParticipant
+         * \brief   Response ID: MSG_ID_responseRemoveParticipant
          *          Response to remove initiator from chat-room
          **/
-        , MSG_ID_ResponseRemoveParticipant                                      // void ResponseRemoveParticipant( const bool & succeeded, const NEDirectConnection::ListParticipants & listParticipants );     
+        , MSG_ID_responseRemoveParticipant                                      // void responseRemoveParticipant( bool succeeded, const NEDirectConnection::ListParticipants & listParticipants );     
     /************************************************************************
      * Broadcast IDs
      ************************************************************************/
@@ -202,7 +202,7 @@ namespace   NEDirectConnection
     /**
      * \brief   Returns string value of NEDirectConnection::eMessageIDs
      **/
-    inline const char * GetString( NEDirectConnection::eMessageIDs msgId );
+    inline const char * getString( NEDirectConnection::eMessageIDs msgId );
      
 /************************************************************************
  * Service Interface standard functions and variables
@@ -211,61 +211,19 @@ namespace   NEDirectConnection
     /**
      * \brief   Creates and returns Service Interface Data
      **/
-    const NEService::SInterfaceData & CreateInterfaceData( void );
+    const NEService::SInterfaceData & getInterfaceData( void );
 
     /**
      * \brief   Returns the mapped Response ID of give Request ID.
      **/
-    NEDirectConnection::eMessageIDs GetResponseId( NEDirectConnection::eMessageIDs reqId );
+    NEDirectConnection::eMessageIDs getResponseId( NEDirectConnection::eMessageIDs reqId );
 
     /**
      * \brief   Returns the mapped Response ID of give Request ID.
      **/
-    NEDirectConnection::eMessageIDs GetRequestId( NEDirectConnection::eMessageIDs respId );
-
-    /**
-     * \brief   Array of supported Request IDs
-     **/
-    const eMessageIDs    RequestIds[] = 
-    {
-          MSG_ID_RequestConnectoinSetup
-        , MSG_ID_RequestAddParticipant
-        , MSG_ID_RequestRemoveParticipant
-        , MSG_ID_RequestCloseConnection
-    };
-    /**
-     * \brief   Number of supported Request entries
-     **/
-    const unsigned int NumberofRequests     = MACRO_ARRAYLEN(RequestIds);
-
-    /**
-     * \brief   Array of supported Response IDs
-     **/
-    const eMessageIDs    ResponseIds[] = 
-    {
-          MSG_ID_ResponseConnectoinSetup
-        , MSG_ID_ResponseAddParticipant
-        , MSG_ID_ResponseRemoveParticipant
-
-    };
-    /**
-     * \brief   Number of supported Response entries
-     **/
-    const unsigned int  NumberofResponses   = MACRO_ARRAYLEN(ResponseIds);
-
-    /**
-     * \brief   Array of supported Attribute IDs
-     **/
-    const eMessageIDs    AttributeIds[] =
-    {
-          MSG_ID_InitiatedConnections
-    };
-    /**
-     * \brief   Number of supported Attribute entries
-     **/
-    const unsigned int NumberofAttributes   = MACRO_ARRAYLEN(AttributeIds);
-
+    NEDirectConnection::eMessageIDs getRequestId( NEDirectConnection::eMessageIDs respId );
 }
+
 //////////////////////////////////////////////////////////////////////////
 // NEDirectConnection inline functions implementation
 //////////////////////////////////////////////////////////////////////////
@@ -279,24 +237,24 @@ IMPLEMENT_STREAMABLE( NEDirectConnection::eMessageIDs );
 /**
  * Returns string value of NEDirectConnection::eMessageIDs
  **/
-inline const char * NEDirectConnection::GetString( NEDirectConnection::eMessageIDs msgId )
+inline const char * NEDirectConnection::getString( NEDirectConnection::eMessageIDs msgId )
 {
     switch ( msgId )
     {
-    case    NEDirectConnection::MSG_ID_RequestConnectoinSetup:
-        return "NEDirectConnection::MSG_ID_RequestConnectoinSetup";
-    case    NEDirectConnection::MSG_ID_RequestAddParticipant:
-        return "NEDirectConnection::MSG_ID_RequestAddParticipant";
-    case    NEDirectConnection::MSG_ID_RequestRemoveParticipant:
-        return "NEDirectConnection::MSG_ID_RequestRemoveParticipant";
-    case    NEDirectConnection::MSG_ID_RequestCloseConnection:
-        return "NEDirectConnection::MSG_ID_RequestCloseConnection";
-    case    NEDirectConnection::MSG_ID_ResponseConnectoinSetup:
-        return "NEDirectConnection::MSG_ID_ResponseConnectoinSetup";
-    case    NEDirectConnection::MSG_ID_ResponseAddParticipant:
-        return "NEDirectConnection::MSG_ID_ResponseAddParticipant";
-    case    NEDirectConnection::MSG_ID_ResponseRemoveParticipant:
-        return "NEDirectConnection::MSG_ID_ResponseRemoveParticipant";
+    case    NEDirectConnection::MSG_ID_requestConnectoinSetup:
+        return "NEDirectConnection::MSG_ID_requestConnectoinSetup";
+    case    NEDirectConnection::MSG_ID_requestAddParticipant:
+        return "NEDirectConnection::MSG_ID_requestAddParticipant";
+    case    NEDirectConnection::MSG_ID_requestRemoveParticipant:
+        return "NEDirectConnection::MSG_ID_requestRemoveParticipant";
+    case    NEDirectConnection::MSG_ID_requestCloseConnection:
+        return "NEDirectConnection::MSG_ID_requestCloseConnection";
+    case    NEDirectConnection::MSG_ID_responseConnectoinSetup:
+        return "NEDirectConnection::MSG_ID_responseConnectoinSetup";
+    case    NEDirectConnection::MSG_ID_responseAddParticipant:
+        return "NEDirectConnection::MSG_ID_responseAddParticipant";
+    case    NEDirectConnection::MSG_ID_responseRemoveParticipant:
+        return "NEDirectConnection::MSG_ID_responseRemoveParticipant";
     case    NEDirectConnection::MSG_ID_InitiatedConnections:
         return "NEDirectConnection::MSG_ID_InitiatedConnections";
 

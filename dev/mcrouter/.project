@@ -3,6 +3,7 @@
 	<name>mcrouter</name>
 	<comment></comment>
 	<projects>
+		<project>areg</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

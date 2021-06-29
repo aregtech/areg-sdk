@@ -22,14 +22,14 @@ register.vcxproj.filters
     similar extensions under a specific node (for e.g. ".cpp" files are associated with the
     "Source Files" filter).
 
-CECentralApp.hpp
+CentralApp.hpp
     This is the main header file for the application.  It includes other
     project specific headers (including Resource.h) and declares the
-    CECentralApp application class.
+    CentralApp application class.
 
-CECentralApp.cpp
+CentralApp.cpp
     This is the main application source file that contains the application
-    class CECentralApp.
+    class CentralApp.
 
 register.rc
     This is a listing of all of the Microsoft Windows resources that the

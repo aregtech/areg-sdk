@@ -13,9 +13,6 @@
   <PropertyGroup Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
   </PropertyGroup>
-  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='dbg_vc142|Win32'">
-    <PlatformToolset>v110</PlatformToolset>
-  </PropertyGroup>
   <ImportGroup Label="PropertySheets">
     <Import Project="$(SolutionDir)\config_project.props" Label="LocalAppDataPlatform" />
   </ImportGroup>
@@ -39,14 +36,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="mcrouter\src\private\CEMulticastRouter.cpp" />
-    <ClCompile Include="mcrouter\src\private\CEMulticastRouterPosix.cpp" />
-    <ClCompile Include="mcrouter\src\private\CEMulticastRouterWin32.cpp" />
+    <ClCompile Include="mcrouter\private\MulticastRouter.cpp" />
+    <ClCompile Include="mcrouter\private\MulticastRouterPosix.cpp" />
+    <ClCompile Include="mcrouter\private\MulticastRouterWin32.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="system\src\GEPlatform.h" />
-    <ClInclude Include="mcrouter\src\CEMulticastRouter.hpp" />
-    <ClInclude Include="mcrouter\src\NEMulticastRouterSettings.hpp" />
+    <ClInclude Include="system\GEPlatform.h" />
+    <ClInclude Include="mcrouter\MulticastRouter.hpp" />
+    <ClInclude Include="mcrouter\NEMulticastRouterSettings.hpp" />
     <ClInclude Include="mcrouter\resources\resource.hpp" />
     <ClInclude Include="mcrouter\resources\targetver.hpp" />
     <ResourceCompile Include="mcrouter\resources\mcrouter.rc" />

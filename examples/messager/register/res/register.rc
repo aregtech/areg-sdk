@@ -19,7 +19,7 @@
 /////////////////////////////////////////////////////////////////////////////
 // English (United States) resources
 
-#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#if !defined(AFX_RESOUR_DLL) || defined(AFX_TARG_ENU)
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 #pragma code_page(1252)
 
@@ -46,12 +46,12 @@ END
 
 3 TEXTINCLUDE 
 BEGIN
-    "#define _AFX_NO_SPLITTER_RESOURCES\r\n"
-    "#define _AFX_NO_OLE_RESOURCES\r\n"
-    "#define _AFX_NO_TRACKER_RESOURCES\r\n"
-    "#define _AFX_NO_PROPERTY_RESOURCES\r\n"
+    "#define _AFX_NO_SPLITTER_RESOURS\r\n"
+    "#define _AFX_NO_OLE_RESOURS\r\n"
+    "#define _AFX_NO_TRACKER_RESOURS\r\n"
+    "#define _AFX_NO_PROPERTY_RESOURS\r\n"
     "\r\n"
-    "#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)\r\n"
+    "#if !defined(AFX_RESOUR_DLL) || defined(AFX_TARG_ENU)\r\n"
     "LANGUAGE 9, 1\r\n"
     "#include ""register.rc2""  // non-Microsoft Visual C++ edited resources\r\n"
     "#include ""afxres.rc""      // Standard components\r\n"
@@ -100,9 +100,9 @@ BEGIN
     EDITTEXT        IDC_BROKER_PORT,76,37,100,15,ES_AUTOHSCROLL | ES_NUMBER
     DEFPUSHBUTTON   "Co&nnect",IDC_BROKER_CONNECT,244,10,71,14
     PUSHBUTTON      "&Disconnect",IDC_BROKER_DISCONNECT,244,39,71,14
-    LTEXT           "Broker IP-Address:",IDC_STATIC,11,10,63,15,SS_CENTERIMAGE
-    LTEXT           "Broker Port:",IDC_STATIC,11,37,63,15,SS_CENTERIMAGE
-    CTEXT           "Please set IP-Address and port number of Message Broker.",IDC_STATIC,10,90,304,28
+    LTEXT           "Router IP-Address:",IDC_STATIC,11,10,63,15,SS_CENTERIMAGE
+    LTEXT           "Router Port:",IDC_STATIC,11,37,63,15,SS_CENTERIMAGE
+    CTEXT           "Please set IP-Address and port number of Message Router.",IDC_STATIC,10,90,304,28
 END
 
 IDD_PAGE_CONNECTIONS DIALOGEX 0, 0, 325, 203
@@ -234,12 +234,12 @@ END
 //
 // Generated from the TEXTINCLUDE 3 resource.
 //
-#define _AFX_NO_SPLITTER_RESOURCES
-#define _AFX_NO_OLE_RESOURCES
-#define _AFX_NO_TRACKER_RESOURCES
-#define _AFX_NO_PROPERTY_RESOURCES
+#define _AFX_NO_SPLITTER_RESOURS
+#define _AFX_NO_OLE_RESOURS
+#define _AFX_NO_TRACKER_RESOURS
+#define _AFX_NO_PROPERTY_RESOURS
 
-#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#if !defined(AFX_RESOUR_DLL) || defined(AFX_TARG_ENU)
 LANGUAGE 9, 1
 #include "register.rc2"  // non-Microsoft Visual C++ edited resources
 #include "afxres.rc"      // Standard components

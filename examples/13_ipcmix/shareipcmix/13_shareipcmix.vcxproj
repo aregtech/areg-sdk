@@ -1,0 +1,90 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(SolutionDir)\config_compile.props" Label="LocalAppCompileSettings" />
+  </ImportGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{D708316F-7E34-4E09-A782-4021C5500C0D}</ProjectGuid>
+    <ProjectName>13_shareipcmix</ProjectName>
+    <RootNamespace>13_shareipcmix</RootNamespace>
+    <Keyword>Win32Proj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+  </PropertyGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(SolutionDir)\config_project.props" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <ItemDefinitionGroup Condition="'$(ConfigShortName)'=='Debug'">
+    <ClCompile>
+      <PreprocessorDefinitions>IMPORT_SHARED_SYMBOLS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(TestRootDir)\13_ipcmix;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(ConfigShortName)'=='Release'">
+    <ClCompile>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>IMPORT_SHARED_SYMBOLS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(TestRootDir)\13_ipcmix;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="src\private\LocalHelloWorldClientBase.cpp" />
+    <ClCompile Include="src\private\LocalHelloWorldEvents.cpp" />
+    <ClCompile Include="src\private\LocalHelloWorldProxy.cpp" />
+    <ClCompile Include="src\private\LocalHelloWorldStub.cpp" />
+    <ClCompile Include="src\private\MainRemoteServiceClient.cpp" />
+    <ClCompile Include="src\private\MainServicingComponent.cpp" />
+    <ClCompile Include="src\private\NELocalHelloWorld.cpp" />
+    <ClCompile Include="src\private\LocalServicingComponent.cpp" />
+    <ClCompile Include="src\private\NERemoteRegistry.cpp" />
+    <ClCompile Include="src\private\NESystemShutdown.cpp" />
+    <ClCompile Include="src\private\RemoteRegistryClientBase.cpp" />
+    <ClCompile Include="src\private\RemoteRegistryEvents.cpp" />
+    <ClCompile Include="src\private\RemoteRegistryProxy.cpp" />
+    <ClCompile Include="src\private\RemoteRegistryStub.cpp" />
+    <ClCompile Include="src\private\RemoteServicingComponent.cpp" />
+    <ClCompile Include="src\private\LocalServiceClient.cpp" />
+    <ClCompile Include="src\private\RemoteServiceClient.cpp" />
+    <ClCompile Include="src\private\SystemShutdownClientBase.cpp" />
+    <ClCompile Include="src\private\SystemShutdownEvents.cpp" />
+    <ClCompile Include="src\private\SystemShutdownProxy.cpp" />
+    <ClCompile Include="src\private\SystemShutdownStub.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\IPCMixCommon.hpp" />
+    <ClInclude Include="src\LocalHelloWorldClientBase.hpp" />
+    <ClInclude Include="src\LocalHelloWorldStub.hpp" />
+    <ClInclude Include="src\MainRemoteServiceClient.hpp" />
+    <ClInclude Include="src\MainServicingComponent.hpp" />
+    <ClInclude Include="src\NELocalHelloWorld.hpp" />
+    <ClInclude Include="src\NERemoteRegistry.hpp" />
+    <ClInclude Include="src\NESystemShutdown.hpp" />
+    <ClInclude Include="src\private\LocalHelloWorldEvents.hpp" />
+    <ClInclude Include="src\private\LocalHelloWorldProxy.hpp" />
+    <ClInclude Include="src\LocalServicingComponent.hpp" />
+    <ClInclude Include="src\private\RemoteRegistryEvents.hpp" />
+    <ClInclude Include="src\private\RemoteRegistryProxy.hpp" />
+    <ClInclude Include="src\private\SystemShutdownEvents.hpp" />
+    <ClInclude Include="src\private\SystemShutdownProxy.hpp" />
+    <ClInclude Include="src\RemoteRegistryClientBase.hpp" />
+    <ClInclude Include="src\RemoteRegistryStub.hpp" />
+    <ClInclude Include="src\RemoteServicingComponent.hpp" />
+    <ClInclude Include="src\LocalServiceClient.hpp" />
+    <ClInclude Include="src\RemoteServiceClient.hpp" />
+    <ClInclude Include="src\SystemShutdownClientBase.hpp" />
+    <ClInclude Include="src\SystemShutdownStub.hpp" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

@@ -19,14 +19,14 @@ set PROJECT_DIR=%4
 set PROJECT_NAME=%5
 
 :: full path of project resource folder
-set PROJECT_RESOURCE_DIR=%6
+set PROJECT_RESOUR_DIR=%6
 
 :: full path of user resource folder
-set USER_RESOURCE_DIR=%7
+set USER_RESOUR_DIR=%7
 
 :: project resource directory, common and application
-set RESOURCE_PRJ_DIR=%PROJECT_DIR%resources\%PROJECT_NAME%
-set RESOURCE_CMN_DIR=%PROJECT_DIR%resources\common
+set RESOUR_PRJ_DIR=%PROJECT_DIR%resources\%PROJECT_NAME%
+set RESOUR_CMN_DIR=%PROJECT_DIR%resources\common
 
 set OLDPATH=%PATH%
 set PATH=%SystemRoot%\System32;%PATH%
@@ -35,8 +35,8 @@ set PATH=%SystemRoot%\System32;%PATH%
 
 :: copy additional dependencies
 
-copy /D /y %RESOURCE_PRJ_DIR%\broker_install.bat    %TARGET_DIR%\broker_install.bat
-copy /D /y %RESOURCE_PRJ_DIR%\broker_uninstall.bat  %TARGET_DIR%\broker_uninstall.bat
+copy /D /y %RESOUR_PRJ_DIR%\broker_install.bat    %TARGET_DIR%\broker_install.bat
+copy /D /y %RESOUR_PRJ_DIR%\broker_uninstall.bat  %TARGET_DIR%\broker_uninstall.bat
 
 
 :: check whether should copy debug or relase versions of libs
@@ -61,12 +61,12 @@ GOTO END_SCRIPT
 :: end, reset environment variables
 :END_SCRIPT
 set PATH=%OLDPATH%
-set RESOURCE_PRJ_DIR=
-set RESOURCE_CMN_DIR=
+set RESOUR_PRJ_DIR=
+set RESOUR_CMN_DIR=
 set TARGET_DIR=
 set CONFIG_NAME=
 set PLATFORM_NAME=
 set PROJECT_DIR=
 set PROJECT_NAME=
-set PROJECT_RESOURCE_DIR=
-set USER_RESOURCE_DIR=
+set PROJECT_RESOUR_DIR=
+set USER_RESOUR_DIR=

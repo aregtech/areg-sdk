@@ -59,35 +59,36 @@
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="register\ui\CEPageConnections.hpp" />
+    <ClInclude Include="register\ui\PageConnections.hpp" />
     <ClInclude Include="register\res\resource.h" />
     <ClInclude Include="register\res\stdafx.h" />
     <ClInclude Include="register\res\targetver.h" />
+    <ClInclude Include="shared\generated\CentralMessagerStub.hpp" />
     <ClInclude Include="shared\NECommonSettings.hpp" />
     <ClInclude Include="shared\generated\NECentralMessager.hpp" />
     <ClInclude Include="shared\generated\NEConnectionManager.hpp" />
-    <ClInclude Include="shared\generated\private\CECentralMessagerEvents.hpp" />
-    <ClInclude Include="shared\generated\private\CEConnectionManagerEvents.hpp" />
-    <ClInclude Include="register\ui\CEPageBrokerSetup.hpp" />
-    <ClInclude Include="register\services\CEConnectionManager.hpp" />
-    <ClInclude Include="register\ui\CECentralDialog.hpp" />
+    <ClInclude Include="shared\generated\private\CentralMessagerEvents.hpp" />
+    <ClInclude Include="shared\generated\private\ConnectionManagerEvents.hpp" />
+    <ClInclude Include="register\ui\PageBrokerSetup.hpp" />
+    <ClInclude Include="register\services\ConnectionManager.hpp" />
+    <ClInclude Include="register\ui\CentralDialog.hpp" />
     <ClInclude Include="register\NECentralApp.hpp" />
-    <ClInclude Include="register\CECentralApp.hpp" />
+    <ClInclude Include="register\CentralApp.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="register\ui\CEPageConnections.cpp" />
+    <ClCompile Include="register\ui\PageConnections.cpp" />
     <ClCompile Include="register\res\stdafx.cpp" />
-    <ClCompile Include="shared\generated\private\CECentralMessagerEvents.cpp" />
-    <ClCompile Include="shared\generated\private\CECentralMessagerStub.cpp" />
-    <ClCompile Include="shared\generated\private\CEConnectionManagerEvents.cpp" />
-    <ClCompile Include="shared\generated\private\CEConnectionManagerStub.cpp" />
+    <ClCompile Include="shared\generated\private\CentralMessagerEvents.cpp" />
+    <ClCompile Include="shared\generated\private\CentralMessagerStub.cpp" />
+    <ClCompile Include="shared\generated\private\ConnectionManagerEvents.cpp" />
+    <ClCompile Include="shared\generated\private\ConnectionManagerStub.cpp" />
     <ClCompile Include="shared\generated\private\NECentralMessager.cpp" />
     <ClCompile Include="shared\generated\private\NEConnectionManager.cpp" />
-    <ClCompile Include="register\ui\CEPageBrokerSetup.cpp" />
-    <ClCompile Include="register\services\CEConnectionManager.cpp" />
-    <ClCompile Include="register\ui\CECentralDialog.cpp" />
+    <ClCompile Include="register\ui\PageBrokerSetup.cpp" />
+    <ClCompile Include="register\services\ConnectionManager.cpp" />
+    <ClCompile Include="register\ui\CentralDialog.cpp" />
     <ClCompile Include="register\NECentralApp.cpp" />
-    <ClCompile Include="register\CECentralApp.cpp" />
+    <ClCompile Include="register\CentralApp.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="register\res\register.rc" />

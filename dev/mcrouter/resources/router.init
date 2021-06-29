@@ -1,0 +1,24 @@
+# ###########################################################################
+# This is a configuration file for service mcrouter (Multicast Router)
+# ###########################################################################
+
+# ###########################################################################
+# 
+# How to configure service mcrouter (Multicast Router)?
+# 	1. set connection type
+# 	2. enable or disable remote connection
+#   3. set connection service name
+#   4. set service mcrouter host address
+#   5. set service mcrouter connection port
+# 
+# ###########################################################################
+
+# ###########################################################################
+# connection configuration
+# ###########################################################################
+
+connection.type             = tcpip			# right now it supports only 'tcpip' (TCP/IP)
+connection.enable.tcpip     = true			# if 'true' the service mcrouter connection is enabled
+connection.name.tcpip       = TCPIP			# the connection name, which should be unique within system
+connection.address.tcpip    = 127.0.0.1	    # the address of service mcrouter host
+connection.port.tcpip       = 8181			# service mcrouter connection port
