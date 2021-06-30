@@ -60,9 +60,9 @@ public:
      * \param	mode	    The file open mode. By default file object is opened with write permission and in binary mode
      * \param	blockSize	The block size to increase. By default the block size is BLOCK_SIZE (64 bytes)
      **/
-    FileBuffer(   int         mode     = (FileBase::FO_MODE_WRITE | FileBase::FO_MODE_BINARY)
-                , const char* name     = NULL
-                , int         blockSize = BLOCK_SIZE);
+    FileBuffer(   int          mode      = (FileBase::FO_MODE_WRITE | FileBase::FO_MODE_BINARY)
+                , const char*  name      = NULL
+                , unsigned int blockSize = BLOCK_SIZE);
 
     /**
      * \brief	Constructor to set by default attached mode

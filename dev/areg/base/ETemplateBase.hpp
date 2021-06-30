@@ -104,14 +104,14 @@ public:
      **/
     unsigned int implHashKey(KEY_TYPE Key) const
     {
-#if _MSC_VER
+#if defined(_MSC_VER) && (_MSC_VER > 1200)
     #pragma warning(disable: 4311)
     #pragma warning(disable: 4302)
 #endif  // _MSC_VER
 
         return static_cast<unsigned int>(MACRO_MAKE_NUMBER( Key ));
 
-#if _MSC_VER
+#if defined(_MSC_VER) && (_MSC_VER > 1200)
     #pragma warning(default: 4302)
     #pragma warning(default: 4311)
 #endif  // _MSC_VER

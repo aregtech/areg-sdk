@@ -91,7 +91,7 @@ EventDispatcher& Event::getDispatcher( void ) const
     return (mTargetThread != NULL ? mTargetThread->getEventDispatcher() : DispatcherThread::getCurrentDispatcher());
 }
 
-void Event::sendEvent( void )
+void Event::deliverEvent( void )
 {
     if ((mTargetThread != NULL) && mTargetThread->isRunning())
     {

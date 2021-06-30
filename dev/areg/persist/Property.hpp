@@ -203,14 +203,14 @@ protected:
      * \brief   Comment of Property
      **/
     String              mComment;
-#if _MSC_VER
+#if defined(_MSC_VER) && (_MSC_VER > 1200)
     #pragma warning(disable: 4251)
 #endif  // _MSC_VER
     /**
      * \brief   Key-Value pair of the Property
      **/
     Property::Entry     mProperty;
-#if _MSC_VER
+#if defined(_MSC_VER) && (_MSC_VER > 1200)
     #pragma warning(default: 4251)
 #endif  // _MSC_VER
 };

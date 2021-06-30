@@ -265,7 +265,7 @@ namespace   NEHelloWorld
  * \brief   Declare and implement NEHelloWorld methods
  ************************************************************************/
 
-IMPLEMENT_STREAMABLE( NEHelloWorld::eMessageIDs );
+IMPLEMENT_STREAMABLE( NEHelloWorld::eMessageIDs )
 
 /************************************************************************
  * NEHelloWorld::sConnectedClient strcuture inline implementation

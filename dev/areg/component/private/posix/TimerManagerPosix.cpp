@@ -74,7 +74,7 @@ bool TimerManager::_startSystemTimer( TimerInfo & timerInfo, MapTimerTable & tim
         {
             struct timespec ts;
             clock_gettime(CLOCK_REALTIME, &ts);
-            timerInfo.isTimerStarting(ts.tv_sec, ts.tv_nsec);
+            timerInfo.isTimerStarting( static_cast<unsigned int>(ts.tv_sec), static_cast<unsigned int>(ts.tv_nsec));
             timerTable.registerObject( whichTimer, timerInfo );
 
             result = true;
@@ -119,8 +119,8 @@ void TimerManager::_defaultPosixTimerExpiredRoutine( union sigval argSig )
                         , posixTimer->getDueTime().tv_nsec
                         , static_cast<unsigned int>(posixTimer->mThreadId));
 
-        unsigned int highValue  = posixTimer->mDueTime.tv_sec;
-        unsigned int lowValue   = posixTimer->mDueTime.tv_nsec;
+        unsigned int highValue  = static_cast<unsigned int>(posixTimer->mDueTime.tv_sec );
+        unsigned int lowValue   = static_cast<unsigned int>(posixTimer->mDueTime.tv_nsec);
         posixTimer->timerExpired();
         TimerManager::getInstance()._timerExpired(posixTimer->mContext, highValue, lowValue);
     }

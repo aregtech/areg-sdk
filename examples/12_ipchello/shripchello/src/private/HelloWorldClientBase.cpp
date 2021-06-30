@@ -45,9 +45,9 @@ namespace NEHelloWorld
  * Constructor / Destructor
  ************************************************************************/
 
-HelloWorldClientBase::HelloWorldClientBase( const char* roleName, const char * ownerThread /*= static_cast<const char *>(NULL)*/ )
-    : IEProxyListener   ( )
-    , ClientBase        ( )
+HelloWorldClientBase::HelloWorldClientBase( const char * roleName, const char * ownerThread /*= static_cast<const char *>(NULL)*/ )
+	: ClientBase        ( )
+	, IEProxyListener   ( )
 
     , mIsConnected      ( false )
     , mCurrSequenceNr   ( 0 )
@@ -56,9 +56,9 @@ HelloWorldClientBase::HelloWorldClientBase( const char* roleName, const char * o
     ; // do nothing
 }
 
-HelloWorldClientBase::HelloWorldClientBase( const char* roleName, DispatcherThread & ownerThread )
-    : IEProxyListener   ( )
-    , ClientBase        ( )
+HelloWorldClientBase::HelloWorldClientBase( const char * roleName, DispatcherThread & ownerThread )
+    : ClientBase        ( )
+	, IEProxyListener   ( )
 
     , mIsConnected      ( false )
     , mCurrSequenceNr   ( 0 )
@@ -68,8 +68,8 @@ HelloWorldClientBase::HelloWorldClientBase( const char* roleName, DispatcherThre
 }
 
 HelloWorldClientBase::HelloWorldClientBase( const char* roleName, Component & owner )
-    : IEProxyListener   ( )
-    , ClientBase        ( )
+	: ClientBase        ( )
+	, IEProxyListener   ( )
 
     , mIsConnected      ( false )
     , mCurrSequenceNr   ( 0 )
@@ -82,8 +82,8 @@ HelloWorldClientBase::~HelloWorldClientBase( void )
 {
     if (mProxy != NULL)
     {
-        mProxy->clearAllNotifications( static_cast<IENotificationEventConsumer &>(self()) );
-        mProxy->freeProxy( static_cast<IEProxyListener &>(self()) );
+        mProxy->clearAllNotifications( static_cast<IENotificationEventConsumer &>(*this) );
+        mProxy->freeProxy( static_cast<IEProxyListener &>(*this) );
         mProxy  = NULL;
     }
     
@@ -97,26 +97,21 @@ HelloWorldClientBase::~HelloWorldClientBase( void )
 bool HelloWorldClientBase::recreateProxy( void )
 {
     bool result         = false;
-    String roleName   = mProxy != NULL ? mProxy->getProxyAddress().getRoleName() : String::InvalidString;
-    String threadName = mProxy != NULL ? mProxy->getProxyAddress().getThread()   : String::InvalidString;
-    if ( roleName.isEmpty() == false )
+    if (mProxy != NULL)
     {
-        HelloWorldProxy * newProxy = HelloWorldProxy::createProxy(roleName.getString(), static_cast<IEProxyListener &>(self()), threadName.getString());
-        if (newProxy != NULL)
+        String roleName   = mProxy->getProxyAddress().getRoleName();
+        String threadName = mProxy->getProxyAddress().getThread();
+        if ( roleName.isEmpty() == false )
         {
-            mProxy->clearAllNotifications( static_cast<IENotificationEventConsumer &>(self()) );
-            mProxy->freeProxy (static_cast<IEProxyListener &>(self()) );
-            mProxy = newProxy;
-            result = true;
+            HelloWorldProxy * newProxy = HelloWorldProxy::createProxy(roleName.getString(), static_cast<IEProxyListener &>(*this), threadName.getString());
+            if (newProxy != NULL)
+            {
+                mProxy->clearAllNotifications( static_cast<IENotificationEventConsumer &>(*this) );
+                mProxy->freeProxy (static_cast<IEProxyListener &>(*this) );
+                mProxy = newProxy;
+                result = true;
+            }
         }
-        else
-        {
-            ; // do nothing
-        }
-    }
-    else
-    {
-        ; // do nothing, no role name is assigned
     }
     
     return result;
@@ -150,9 +145,9 @@ bool HelloWorldClientBase::serviceConnected( bool isConnected, ProxyBase & proxy
 void HelloWorldClientBase::notifyOn( NEHelloWorld::eMessageIDs msgId, bool notify, bool always /* = false */ )
 {
     if (notify)
-        mProxy->setNotification(msgId, static_cast<IENotificationEventConsumer &>(self()), always);
+        mProxy->setNotification(msgId, static_cast<IENotificationEventConsumer &>(*this), always);
     else
-        mProxy->clearNotification(msgId, static_cast<IENotificationEventConsumer &>(self()));
+        mProxy->clearNotification(msgId, static_cast<IENotificationEventConsumer &>(*this));
 }
 
 /************************************************************************

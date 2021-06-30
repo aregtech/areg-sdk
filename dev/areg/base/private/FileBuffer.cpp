@@ -20,9 +20,9 @@ const unsigned int FileBuffer::BLOCK_SIZE  = (4 * NEMemory::BLOCK_SIZE);
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
-FileBuffer::FileBuffer( int         mode       /*= (FileBase::FO_MODE_WRITE | FileBase::FO_MODE_BINARY)*/
-                      , const char* name       /*= NULL*/
-                      , int         blockSize  /*= BLOCK_SIZE*/)
+FileBuffer::FileBuffer( int          mode       /*= (FileBase::FO_MODE_WRITE | FileBase::FO_MODE_BINARY)*/
+                      , const char * name       /*= NULL*/
+                      , unsigned int blockSize  /*= BLOCK_SIZE*/)
     : FileBase      ( )
 
     , mSharedBuffer (blockSize)

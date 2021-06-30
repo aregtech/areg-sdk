@@ -208,7 +208,7 @@ NEUtfString::sUtfStringHeader * NEUtfString::initString(  NEUtfString::CharCount
     return result;
 }
 
-NEUtfString::utf8 NEUtfString::getSequenceOne( const NEUtfString::sUtf8String & utfString, unsigned int & atPos )
+NEUtfString::utf8 NEUtfString::getSequenceOne( const NEUtfString::sUtf8String & utfString, CharPos & atPos )
 {
     NEUtfString::utf8 result = NEUtfString::InvalidCharUtf8;
     if ( canRead<NEUtfString::utf8>(utfString, atPos, NEUtfString::SeqOne) )
@@ -238,7 +238,7 @@ NEUtfString::CharPos NEUtfString::setSequenceOne( NEUtfString::sUtf8String & utf
     return atPos;
 }
 
-NEUtfString::utf16 NEUtfString::getSequenceTwo( const NEUtfString::sUtf8String & utfString, unsigned int & atPos )
+NEUtfString::utf16 NEUtfString::getSequenceTwo( const NEUtfString::sUtf8String & utfString, CharPos & atPos )
 {
     NEUtfString::utf16 result = NEUtfString::InvalidCharUtf16;
     if ( canRead<NEUtfString::utf8>( utfString, atPos, NEUtfString::SeqTwo ) )
@@ -268,7 +268,7 @@ NEUtfString::CharPos NEUtfString::setSequenceTwo( NEUtfString::sUtf8String & utf
     return atPos;
 }
 
-NEUtfString::utf32 NEUtfString::getSequenceThree( const NEUtfString::sUtf8String & utfString, unsigned int & atPos )
+NEUtfString::utf32 NEUtfString::getSequenceThree( const NEUtfString::sUtf8String & utfString, CharPos & atPos )
 {
     NEUtfString::utf32 result = NEUtfString::InvalidCharUtf32;
     if ( canRead<NEUtfString::utf8>( utfString, atPos, NEUtfString::SeqTwo ) )
@@ -297,7 +297,7 @@ NEUtfString::CharPos NEUtfString::setSequenceThree( NEUtfString::sUtf8String & u
     return atPos;
 }
 
-NEUtfString::utf32 NEUtfString::getSequenceFour( const NEUtfString::sUtf8String & utfString, unsigned int & atPos )
+NEUtfString::utf32 NEUtfString::getSequenceFour( const NEUtfString::sUtf8String & utfString, CharPos & atPos )
 {
     NEUtfString::utf32 result = NEUtfString::InvalidCharUtf32;
     if ( canRead<NEUtfString::utf8>( utfString, atPos, NEUtfString::SeqTwo ) )
@@ -325,7 +325,7 @@ NEUtfString::CharPos NEUtfString::setSequenceFour( NEUtfString::sUtf8String & ut
     return atPos;
 }
 
-NEUtfString::UtfChar NEUtfString::validateNext( const NEUtfString::sUtf8String & utfString, unsigned int & atPos )
+NEUtfString::UtfChar NEUtfString::validateNext( const NEUtfString::sUtf8String & utfString, CharPos & atPos )
 {
     NEUtfString::UtfChar result = getInvalidChar();
     // Save the original value of it so we can go back in case of failure
@@ -411,9 +411,9 @@ bool NEUtfString::startsWithUtf8Bom( const NEUtfString::sUtf8String & utfString 
     return (getStringBOM(utfString) == BOM_UTF8);
 }
 
-NEUtfString::CharPos NEUtfString::setAt( NEUtfString::utf32 newChar
+NEUtfString::CharPos NEUtfString::setAt(   NEUtfString::utf32 newChar
                                          , NEUtfString::sUtf8String & utfString
-                                         , unsigned int atPos /*= EndPos */ )
+                                         , CharPos atPos /*= EndPos */ )
 {
     NEUtfString::eSeqLength seqLen = getSequenceLength<utf32>( newChar );
     switch ( seqLen )

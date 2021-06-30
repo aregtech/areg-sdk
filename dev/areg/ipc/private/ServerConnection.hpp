@@ -380,7 +380,7 @@ private:
      **/
     ITEM_ID             mCookieGenerator;
 
-#if _MSC_VER
+#if defined(_MSC_VER) && (_MSC_VER > 1200)
     #pragma warning(disable: 4251)
 #endif  // _MSC_VER
     /**
@@ -399,7 +399,7 @@ private:
      * \brief   The list of accepted sockets.
      **/
     ListSockets         mMasterList;
-#if _MSC_VER
+#if defined(_MSC_VER) && (_MSC_VER > 1200)
     #pragma warning(default: 4251)
 #endif  // _MSC_VER
 

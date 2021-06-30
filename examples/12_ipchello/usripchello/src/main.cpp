@@ -2,7 +2,7 @@
 // Name        : main.cpp
 // Author      : Artak Avetyan
 // Version     :
-// Copyright   : Aregtech © 2021
+// Copyright   : Aregtech ï¿½ 2021
 // Description : Hello World in C++, Ansi-style
 //============================================================================
 
@@ -15,7 +15,7 @@
 #include "ServiceClient.hpp"
 
 #ifdef WINDOWS
-    #pragma comment(lib, "areg.lib")
+    #pragma comment(lib, "areg")
     #pragma comment(lib, "12_shripchello")
 #endif // WINDOWS
 

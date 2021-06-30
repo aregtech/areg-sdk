@@ -42,8 +42,8 @@ class DispatcherThread;
  *
  *              Simple Service Interface to demonstrate working features of AREG SDK.
  **/
-class HelloWorldClientBase  : public    IEProxyListener
-                            , protected ClientBase
+class HelloWorldClientBase  : private	ClientBase
+							, public    IEProxyListener
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor. Protected
@@ -438,7 +438,7 @@ private:
      * \brief   Returns reference of HelloWorldClientBase object
      **/
 
-    HelloWorldClientBase & self( void );
+    inline HelloWorldClientBase & self( void );
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

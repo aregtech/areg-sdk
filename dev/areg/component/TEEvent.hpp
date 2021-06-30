@@ -436,7 +436,7 @@ bool __##EventClass<DATA_CLASS>::_send(DispatcherThread & dispThread, __##EventC
     if (eventElem != NULL)                                                                                                                          \
     {                                                                                                                                               \
         static_cast<Event *>(eventElem)->registerForThread(&dispThread);                                                                            \
-        static_cast<Event *>(eventElem)->sendEvent();                                                                                               \
+        static_cast<Event *>(eventElem)->deliverEvent();                                                                                            \
         result = true;                                                                                                                              \
     }                                                                                                                                               \
     return result;                                                                                                                                  \

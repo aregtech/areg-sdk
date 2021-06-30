@@ -697,13 +697,13 @@ private:
 /************************************************************************/
 // Resource controlling and mapping variables
 /************************************************************************/
-#if _MSC_VER
+#if defined(_MSC_VER) && (_MSC_VER > 1200)
     #pragma warning(disable: 4251)
 #endif  // _MSC_VER
     static  MapThreadHandleResource     _mapThreadhHandle;  //!< Map of thread object where key is thread handle
     static  MapThreadNameResource       _mapThreadName;     //!< Map of thread object where key is thread name
     static  MapThreadIDResource         _mapThreadId;       //!< Map of thread object where key is thread ID
-#if _MSC_VER
+#if defined(_MSC_VER) && (_MSC_VER > 1200)
     #pragma warning(default: 4251)
 #endif  // _MSC_VER
 

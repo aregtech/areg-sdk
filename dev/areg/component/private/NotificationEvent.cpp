@@ -58,7 +58,7 @@ void NotificationEvent::sendEvent( const NotificationEventData& data, IENotifica
     {
         if (caller != NULL)
             eventElem->setEventConsumer(static_cast<IEEventConsumer *>(caller));
-        static_cast<Event *>(eventElem)->sendEvent();
+        static_cast<Event *>(eventElem)->deliverEvent();
     }
 }
 

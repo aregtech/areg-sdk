@@ -18,7 +18,6 @@ ClientBase::~ClientBase( void )
     ; // do nothing
 }
 
-#if defined(DEBUG) && defined(OUTPUT_DEBUG_LEVEL) && (OUTPUT_DEBUG_LEVEL >= OUTPUT_DEBUG_LEVEL_ERROR)
 
 void ClientBase::requestFailedNotImplemented( const char* clientName, unsigned int requestId ) const
 {
@@ -50,7 +49,9 @@ void ClientBase::onUpdateNotImplemented( const char* clientName, unsigned int up
     ASSERT(false);
 }
 
-#else
+#if 0
+// #if defined(DEBUG) && defined(OUTPUT_DEBUG_LEVEL) && (OUTPUT_DEBUG_LEVEL >= OUTPUT_DEBUG_LEVEL_ERROR)
+// #else
 
 void ClientBase::requestFailedNotImplemented( const char* /*clientName*/, unsigned int /*requestId*/ ) const
 {

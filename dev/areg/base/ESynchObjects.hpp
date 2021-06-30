@@ -428,12 +428,12 @@ public:
     /**
      * \brief   Returns the maximum lock count of Semaphore object
      **/
-    inline int getMaxCount( void ) const;
+    inline long getMaxCount( void ) const;
 
     /**
      * \brief   Returns the current lock count of Semaphore object.
      **/
-    inline int getCurrentCount( void ) const;
+    inline long getCurrentCount( void ) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -1443,12 +1443,12 @@ inline bool SynchEvent::isAutoReset( void ) const
 //////////////////////////////////////////////////////////////////////////
 // Semaphore class inline functions
 //////////////////////////////////////////////////////////////////////////
-inline int Semaphore::getMaxCount( void ) const
+inline long Semaphore::getMaxCount( void ) const
 {
     return mMaxCount;
 }
 
-inline int Semaphore::getCurrentCount( void ) const
+inline long Semaphore::getCurrentCount( void ) const
 {
     return mCurrCount;
 }

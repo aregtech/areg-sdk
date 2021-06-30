@@ -528,13 +528,13 @@ public:
     /**
      * \brief   Returns the length of string in number of characters without null-terminated character at the and of the string.
      **/
-    inline NEString::CharCount getLength( void ) const;
+    inline unsigned int getLength( void ) const;
 
     /**
      * \brief   Returns the actual length of allocated buffer for string, which is bigger than the length of string.
      *          The returned value is number of characters that can be written in the string without resizing.
      **/
-    inline NEString::CharCount getActualLength( void ) const;
+    inline unsigned int getActualLength( void ) const;
 
     /**
      * \brief   Returns used size of buffer in bytes, including null-terminated character of string.
@@ -1937,7 +1937,7 @@ inline int TEString<CharType, Implement>::trimRight(TEString<CharType, Implement
 template<typename CharType, class Implement /*= TEStringImpl<CharType>*/>
 inline int TEString<CharType, Implement>::trimAll( void )
 {
-    int result = 0;
+    unsigned int result = 0;
     if ( isEmpty() == false )
     {
         result = NEString::trimAll<CharType>(getChars(NEString::StartPos), getLength());
@@ -1945,7 +1945,7 @@ inline int TEString<CharType, Implement>::trimAll( void )
         mData->strUsed -= result;
     }
 
-    return result;
+    return static_cast<int>(result);
 }
 
 template<typename CharType, class Implement /*= TEStringImpl<CharType>*/>

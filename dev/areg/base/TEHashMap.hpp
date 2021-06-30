@@ -522,7 +522,8 @@ protected:
 
         if ( mHashTable != NULL )
         {
-            for ( result  = mHashTable[out_Hash % mHashTableSize]; result != NULL; result = result->mNext)
+        	unsigned int size = static_cast<unsigned int>(mHashTableSize);
+            for ( result  = mHashTable[out_Hash % size]; result != NULL; result = result->mNext)
             {
                 if ( out_Hash == result->mHash && isEqualKeys(result->mKey, Key) )
                     break;
@@ -544,7 +545,8 @@ protected:
         if ( mHashTable != NULL )
         {
             unsigned int hash = getHashKey(Key);
-            for ( result = &(mHashTable[hash % mHashTableSize]); (*result) != NULL; result = &((*result)->mNext))
+            unsigned int size = static_cast<unsigned int>(mHashTableSize);
+            for ( result = &(mHashTable[hash % size]); (*result) != NULL; result = &((*result)->mNext))
             {
                 if ( hash == (*result)->mHash && isEqualKeys((*result)->mKey, Key) )
                     break;
@@ -614,7 +616,8 @@ protected:
         Block* result = startAt->mNext;
         if (result == NULL)
         {
-            for ( int idx = static_cast<int>(startAt->mHash % mHashTableSize) + 1; result == NULL && idx < mHashTableSize; ++ idx )
+        	unsigned int size = static_cast<unsigned int>(mHashTableSize);
+            for ( unsigned int idx = startAt->mHash % size + 1; (result == NULL) && (idx < size); ++ idx )
                 result = mHashTable[idx];
         }
         
@@ -663,7 +666,7 @@ protected:
     {
         deleteBlockList();
 
-        NEMemory::zeroElements<Block *>(mHashTable, mHashTableSize);
+        NEMemory::zeroElements<Block *>(mHashTable, static_cast<unsigned int>(mHashTableSize));
         mElemCount	= 0;
         mFreeList	= static_cast<Block *>(NULL);
         mBlockList	= static_cast<Block *>(NULL);
@@ -932,7 +935,8 @@ MAPPOS TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::setAt(KEY_TYPE Ke
     if (block == static_cast<Block *>(NULL))
     {
         // it doesn't exist, add a new Block
-        int idx     = static_cast<int>(hash % mHashTableSize);
+    	unsigned int size = static_cast<unsigned int>(mHashTableSize);
+        unsigned int idx  = hash % size;
         block       = initNewBlock();
         block->mHash= hash;
         block->mKey	= (KEY)Key;
@@ -1204,7 +1208,7 @@ void TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::initHashTable(int s
 
     mHashTable	    = DEBUG_NEW Block *[sizeHashTable];
     mHashTableSize	= mHashTable != NULL ? sizeHashTable : 0;
-    NEMemory::zeroElements<Block *>( mHashTable, mHashTableSize);
+    NEMemory::zeroElements<Block *>( mHashTable, static_cast<unsigned int>(mHashTableSize));
 }
 
 template < typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename VALUE_TYPE /*= VALUE */, class Implement /* = HashMapBase */ >
@@ -1212,7 +1216,7 @@ void TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::createBlockList( vo
 {
     // add another block
     // chain them into free list
-    int length              = mBlockSize * sizeof(Block) + sizeof(Block *);
+    unsigned int length     = static_cast<unsigned int>(mBlockSize * sizeof(Block) + sizeof(Block *));
     unsigned char* newBlock = DEBUG_NEW unsigned char[length];
     if (newBlock != NULL)
     {

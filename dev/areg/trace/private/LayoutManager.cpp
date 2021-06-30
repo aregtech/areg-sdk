@@ -24,8 +24,8 @@ LayoutManager::~LayoutManager(void)
 bool LayoutManager::createLayouts( const char * layoutFormat )
 {
     deleteLayouts();
-    int len         = layoutFormat != NULL ? NEString::getStringLength<char>( layoutFormat ) + 1 : 0;
-    char * strFormat= len != 0 ? DEBUG_NEW char[len] : NULL;
+    unsigned int len = layoutFormat != NULL ? NEString::getStringLength<char>( layoutFormat ) + 1 : 0;
+    char * strFormat = len != 0 ? DEBUG_NEW char[len] : NULL;
 
     if ( strFormat != NULL )
     {

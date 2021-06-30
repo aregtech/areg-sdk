@@ -397,14 +397,14 @@ private:
      * \brief   Synchronization object
      **/
     CriticalSection mLock;
-#if _MSC_VER
+#if defined(_MSC_VER) && (_MSC_VER > 1200)
     #pragma warning(disable: 4251)
 #endif  // _MSC_VER
     /**
      * \brief   The application named storage.
      **/
     MapAppStorage   mStorage;
-#if _MSC_VER
+#if defined(_MSC_VER) && (_MSC_VER > 1200)
     #pragma warning(default: 4251)
 #endif  // _MSC_VER
 

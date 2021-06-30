@@ -62,11 +62,11 @@ namespace NEString
     /**
      * \brief   NEString::CharPos, Definition of character position type in string
      **/
-    typedef NECommon::ElemPos       CharPos;
+    typedef NECommon::ElemPos	CharPos;
     /**
      * \brief   NEString::CharCount, Definition of character counting type in string
      **/
-    typedef NECommon::ElemCount     CharCount;
+    typedef NECommon::ElemCount	CharCount;
 
     /**
      * \brief   Default block size to allocate string buffer

@@ -350,7 +350,7 @@ private:
 /************************************************************************/
 // Private member variables
 /************************************************************************/
-#if _MSC_VER
+#if defined(_MSC_VER) && (_MSC_VER > 1200)
     #pragma warning(disable: 4251)
 #endif  // _MSC_VER
     /**
@@ -361,7 +361,7 @@ private:
      * \brief   Static Resource map of created in system component.
      **/
     static  Component::MapComponentResource _mapComponentResource;
-#if _MSC_VER
+#if defined(_MSC_VER) && (_MSC_VER > 1200)
     #pragma warning(default: 4251)
 #endif  // _MSC_VER
 };

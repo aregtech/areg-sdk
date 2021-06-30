@@ -439,7 +439,7 @@ void ClientService::failedSendMessage(const RemoteMessage & msgFailed)
             StreamableEvent * eventError = RemoteEventFactory::createRequestFailedEvent(msgFailed, mChannel);
             if ( eventError != NULL )
             {
-                eventError->sendEvent();
+                eventError->deliverEvent();
             }
 
             ClientServiceEvent::sendEvent( ClientServiceEventData(ClientServiceEventData::CMD_ServiceLost), static_cast<IEClientServiceEventConsumer &>(self()), static_cast<DispatcherThread &>(self()) );
@@ -608,7 +608,7 @@ void ClientService::processReceivedMessage( const RemoteMessage & msgReceived, c
                     StreamableEvent * eventRemote = RemoteEventFactory::createEventFromStream(msgReceived, mChannel);
                     if ( eventRemote != NULL )
                     {
-                        eventRemote->sendEvent();
+                        eventRemote->deliverEvent();
                     }
                     else
                     {

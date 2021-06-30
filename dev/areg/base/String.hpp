@@ -765,7 +765,7 @@ inline String::String( const String & source )
 {   ;   }
 
 inline String::String( const char * source, int charCount )
-    : TEString<char>( source, charCount, NEString::EncodeAscii )
+    : TEString<char>( source, static_cast<NEString::CharCount>(charCount), NEString::EncodeAscii )
 {   ;   }
 
 inline String::String( const wchar_t* source )
@@ -775,9 +775,9 @@ inline String::String( const wchar_t* source )
 }
 
 inline String::String( const wchar_t* source, int charCount )
-    : TEString<char>( NULL_STRING, charCount, NEString::EncodeAscii )
+    : TEString<char>( NULL_STRING, static_cast<NEString::CharCount>(charCount), NEString::EncodeAscii )
 {
-    NEString::copyString<char, wchar_t>( getDataString( ), source, NEString::StartPos, charCount );
+    NEString::copyString<char, wchar_t>( getDataString( ), source, NEString::StartPos, static_cast<NEString::CharCount>(charCount) );
 }
 
 inline String::operator const char *(void) const

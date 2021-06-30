@@ -46,7 +46,7 @@ ProxyEvent::~ProxyEvent( void )
 //////////////////////////////////////////////////////////////////////////
 // ProxyEvent class, Methods
 //////////////////////////////////////////////////////////////////////////
-void ProxyEvent::sendEvent( void )
+void ProxyEvent::deliverEvent( void )
 {
     if ( mTargetThread == NULL )
     {
@@ -56,7 +56,7 @@ void ProxyEvent::sendEvent( void )
 
     if ( mTargetThread != NULL )
     {
-        StreamableEvent::sendEvent();
+        StreamableEvent::deliverEvent();
     }
     else
     {

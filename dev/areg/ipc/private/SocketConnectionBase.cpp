@@ -54,7 +54,7 @@ int SocketConnectionBase::sendMessage(const RemoteMessage & in_message, const So
         {
             ASSERT(buffer.rbhBufHeader.biLength >= buffer.rbhBufHeader.biUsed);
             // send the aligned length.
-            result += clientSocket.sendData(in_message.getBuffer(), buffer.rbhBufHeader.biLength);
+            result += clientSocket.sendData(in_message.getBuffer(), static_cast<int>(buffer.rbhBufHeader.biLength));
             TRACE_DBG("Sent [ %d ] bytes of aligned data, used size [ %d ]", buffer.rbhBufHeader.biLength, buffer.rbhBufHeader.biUsed);
         }
 
@@ -95,7 +95,7 @@ int SocketConnectionBase::receiveMessage(RemoteMessage & out_message, const Sock
                 ASSERT(msgHeader.rbhBufHeader.biLength >= msgHeader.rbhBufHeader.biUsed);
 
                 // receive aligned length of data.
-                result += clientSocket.receiveData(buffer, msgHeader.rbhBufHeader.biLength);
+                result += clientSocket.receiveData(buffer, static_cast<int>(msgHeader.rbhBufHeader.biLength));
                 TRACE_DBG("Received [ %d ] bytes of aligned data, used size [ %d ]", msgHeader.rbhBufHeader.biLength, msgHeader.rbhBufHeader.biUsed);
             }
 

@@ -161,13 +161,13 @@ inline bool NESynchTypesIX::timeoutFromNow( timespec & out_result, unsigned int 
 
 inline void NESynchTypesIX::convTimeout( timespec & out_result, unsigned int msTimeout )
 {
-    msTimeout += out_result.tv_nsec / NEUtilities::MILLISEC_TO_NS;
-    unsigned int nsec = out_result.tv_nsec % NEUtilities::MILLISEC_TO_NS;
-    unsigned int secs = msTimeout  / NEUtilities::SEC_TO_MILLISECS;
-    unsigned int msec = msTimeout  % NEUtilities::SEC_TO_MILLISECS;
+    msTimeout += static_cast<unsigned int>(out_result.tv_nsec / NEUtilities::MILLISEC_TO_NS);
+    unsigned int nsec = static_cast<unsigned int>(out_result.tv_nsec % NEUtilities::MILLISEC_TO_NS);
+    unsigned int secs = static_cast<unsigned int>(msTimeout  / NEUtilities::SEC_TO_MILLISECS);
+    unsigned int msec = static_cast<unsigned int>(msTimeout  % NEUtilities::SEC_TO_MILLISECS);
 
-    out_result.tv_sec   +=  secs;
-    out_result.tv_nsec   = (msec * NEUtilities::MILLISEC_TO_NS) + nsec;
+    out_result.tv_sec   += static_cast<int64_t>(secs);
+    out_result.tv_nsec   = static_cast<int64_t>(msec * NEUtilities::MILLISEC_TO_NS) + nsec;
 }
 
 inline const char * NESynchTypesIX::getString(NESynchTypesIX::eEventResetInfo val)

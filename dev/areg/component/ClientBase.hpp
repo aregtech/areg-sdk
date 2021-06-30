@@ -29,7 +29,7 @@ class AREG_API ClientBase
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor. Protected members.
 //////////////////////////////////////////////////////////////////////////
-protected:
+public:
     /**
      * \brief   Default constructor. Protected, should be instantiated by child classes.
      **/

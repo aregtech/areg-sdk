@@ -700,7 +700,7 @@ private:
     unsigned int                        mSessionId;
 
 private:
-#if _MSC_VER
+#if defined(_MSC_VER) && (_MSC_VER > 1200)
     #pragma warning(disable: 4251)
 #endif  // _MSC_VER
     /**
@@ -712,7 +712,7 @@ private:
      * \brief   Stub object resource map.
      **/
     static MapStubResource              _mapRegisteredStubs;
-#if _MSC_VER
+#if defined(_MSC_VER) && (_MSC_VER > 1200)
     #pragma warning(default: 4251)
 #endif  // _MSC_VER
 

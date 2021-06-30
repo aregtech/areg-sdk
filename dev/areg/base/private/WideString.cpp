@@ -42,13 +42,11 @@ static inline int32_t _formatBinary( WideString & result, DigitType number )
     wchar_t * dst  = buffer;
     DigitType base = static_cast<DigitType>(NEString::RadixBinary);
     bool isNegative = number < 0;
-    // if ( number < 0 )
-    //    number = NEMath::makeAbsolute<DigitType>(number);
     number = MACRO_ABS( number );
     short idx = 0;
     do
     {
-        idx = static_cast<uint32_t>(number % base);
+        idx = static_cast<short>(number % base);
         *dst ++ = _FormatRadixBinary[idx < 0 ? 1 : idx];
         number /= base;
     } while ( number != 0 );
@@ -341,7 +339,7 @@ void WideString::writeStream(IEOutStream & stream) const
 wchar_t WideString::operator [ ] (int atPos) const
 {
     ASSERT(isValid());
-    ASSERT(canRead(atPos));
+    ASSERT(canRead( static_cast<NEString::CharPos>(atPos)));
     return mData->strBuffer[atPos];
 }
 
@@ -413,9 +411,9 @@ double WideString::makeDouble(const wchar_t * strDigit, const wchar_t ** end /*=
 bool WideString::makeBool( const wchar_t * strBoolean, const wchar_t ** end /*= static_cast<const wchar_t **>(NULL)*/ )
 {
     bool result = false;
-    int lenSkip = 0;
-    int lenTrue = NEString::getStringLength<wchar_t>(BOOLEAN_TRUE);
-    int lenFalse= NEString::getStringLength<wchar_t>(BOOLEAN_FALSE);
+    unsigned int lenSkip = 0;
+    unsigned int lenTrue = NEString::getStringLength<wchar_t>(BOOLEAN_TRUE);
+    unsigned int lenFalse= NEString::getStringLength<wchar_t>(BOOLEAN_FALSE);
     if ( NEString::compareStrings<wchar_t, wchar_t>(strBoolean, BOOLEAN_TRUE, lenTrue, false ) == 0 )
     {
         result = true;

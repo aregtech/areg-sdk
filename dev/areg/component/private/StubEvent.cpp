@@ -62,7 +62,7 @@ IEOutStream & StubEvent::writeStream( IEOutStream & stream ) const
     return stream;
 }
 
-void StubEvent::sendEvent( void )
+void StubEvent::deliverEvent( void )
 {
     if ( mTargetThread == NULL )
     {
@@ -72,7 +72,7 @@ void StubEvent::sendEvent( void )
 
     if ( mTargetThread != NULL )
     {
-        StreamableEvent::sendEvent();
+        StreamableEvent::deliverEvent();
     }
     else
     {

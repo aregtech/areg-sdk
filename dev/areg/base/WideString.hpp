@@ -765,7 +765,7 @@ inline WideString::WideString( const WideString & source )
 {   ;   }
 
 inline WideString::WideString( const wchar_t * source, int charCount )
-    : TEString<wchar_t>( source, charCount, NEString::EncodeWide )
+    : TEString<wchar_t>( source, static_cast<NEString::CharCount>(charCount), NEString::EncodeWide )
 {   ;   }
 
 inline WideString::WideString( const char* const source )
@@ -775,9 +775,9 @@ inline WideString::WideString( const char* const source )
 }
 
 inline WideString::WideString( const char * source, int charCount )
-    : TEString<wchar_t>( NULL_STRING_W, charCount, NEString::EncodeWide )
+    : TEString<wchar_t>( NULL_STRING_W, static_cast<NEString::CharCount>(charCount), NEString::EncodeWide )
 {
-    NEString::copyString<wchar_t, char>( getDataString( ), source, NEString::StartPos, charCount );
+    NEString::copyString<wchar_t, char>( getDataString( ), source, NEString::StartPos, static_cast<NEString::CharCount>(charCount) );
 }
 
 inline WideString::operator const wchar_t *(void) const

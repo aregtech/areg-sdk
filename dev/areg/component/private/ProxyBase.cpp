@@ -331,7 +331,7 @@ ProxyBase::ProxyBase(const char* roleName, const NEService::SInterfaceData & ser
     , mProxyAddress     ( serviceIfData, roleName, (ownerThread != static_cast<DispatcherThread *>(NULL)) && (ownerThread->isValid()) ? ownerThread->getName().getString() : static_cast<const char *>(NULL) )
     , mStubAddress      ( StubAddress::INVALID_STUB_ADDRESS )
     , mSequenceCount    ( 0 )
-    , mListenerList     ( serviceIfData.idAttributeCount + serviceIfData.idResponseCount )
+    , mListenerList     ( static_cast<int>(serviceIfData.idAttributeCount + serviceIfData.idResponseCount) )
     , mListConnect      (   )
     , mIsConnected      ( false )
     , mIsStopped        ( false )
@@ -594,7 +594,7 @@ void ProxyBase::sendNotificationEvent( unsigned int msgId, NEService::eResultTyp
         {
             eventElem->setEventConsumer(static_cast<IEEventConsumer *>(caller));
         }
-        static_cast<Event *>(eventElem)->sendEvent();
+        static_cast<Event *>(eventElem)->deliverEvent();
     }
 }
 
@@ -665,7 +665,7 @@ void ProxyBase::sendServiceAvailableEvent( ProxyBase::ServiceAvailableEvent * ev
         eventInstance->addListener( self(), mDispatcherThread);
         eventInstance->setEventConsumer(this);
         eventInstance->registerForThread(&mDispatcherThread);
-        eventInstance->sendEvent( );
+        eventInstance->deliverEvent( );
     }
 }
 

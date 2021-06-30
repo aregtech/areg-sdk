@@ -283,7 +283,7 @@ protected:
      **/
     mutable SharedBuffer        mDataBuffer;
 
-#if _MSC_VER
+#if defined(_MSC_VER) && (_MSC_VER > 1200)
     #pragma warning(disable: 4251)
 #endif  // _MSC_VER
     /**
@@ -291,7 +291,7 @@ protected:
      *          All Shared Buffers instead of copying data, will be added to this list.
      **/
     mutable TENolockStack<SharedBuffer, const SharedBuffer &>  mSharedList;
-#if _MSC_VER
+#if defined(_MSC_VER) && (_MSC_VER > 1200)
     #pragma warning(default: 4251)
 #endif  // _MSC_VER
 };

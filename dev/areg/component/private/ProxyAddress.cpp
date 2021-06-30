@@ -166,7 +166,7 @@ bool ProxyAddress::_deliverEvent(Event & serviceEvent, ITEM_ID idTarget)
         if ( dispatcher != NULL )
         {
             result = serviceEvent.registerForThread(dispatcher);
-            serviceEvent.sendEvent();
+            serviceEvent.deliverEvent();
         }
         else
         {
