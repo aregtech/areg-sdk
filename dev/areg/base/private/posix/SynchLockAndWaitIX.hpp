@@ -415,17 +415,33 @@ private:
      **/
     mutable pthread_mutex_t                 mPosixMutex;
     /**
+     * \brief   The POSIX mutex validity flag.
+     **/
+    mutable bool                            mMutexValid;
+    /**
      * \brief   Internal POSIX mutex attribute to initialize mutex.
      **/
     mutable pthread_mutexattr_t             mPosixMutexAttr;
+    /**
+     * \brief   The POSIX mutex attribute validity flag.
+     **/
+    mutable bool                            mMutexAttrValid;
     /**
      * \brief   Internal POSIX conditional variable.
      **/
     pthread_cond_t                          mCondVariable;
     /**
+     * \brief   The POSIX conditional variable validity flag.
+     **/
+    bool                                    mCondVarValid;
+    /**
      * \brief   Internal POSIX conditional variable attribute
      **/
     pthread_condattr_t                      mCondAttribute;
+    /**
+     * \brief   The POSIX conditional variable attribute validity flag.
+     **/
+    bool                                    mCondAttrValid;
     /**
      * \brief   Indicates the fired event object or error code.
      **/

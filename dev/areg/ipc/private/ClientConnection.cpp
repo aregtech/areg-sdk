@@ -51,7 +51,7 @@ bool ClientConnection::createSocket(void)
     return mClientSocket.isValid();
 }
 
-inline void ClientConnection::closeSocket(void)
+void ClientConnection::closeSocket(void)
 {
     setCookie(NEService::COOKIE_UNKNOWN);
     return mClientSocket.closeSocket();

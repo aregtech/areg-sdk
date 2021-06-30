@@ -55,6 +55,10 @@ public:
      *          Boolean 'false' value as a string.
      **/
     static const char * const   BOOLEAN_FALSE   /*= "false"*/;  //!< Boolean value 'false' as string
+    /**
+     * \brief	Empty string object
+     **/
+    static const String 		InvalidString;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor

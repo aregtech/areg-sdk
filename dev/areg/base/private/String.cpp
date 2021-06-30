@@ -174,6 +174,7 @@ AREG_API IEOutStream & operator << (IEOutStream & stream, const String & output)
 const char * const   String::EmptyString      = "";
 const char * const   String::BOOLEAN_TRUE     = "true";
 const char * const   String::BOOLEAN_FALSE    = "false";
+const String		 String::InvalidString;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor

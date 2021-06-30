@@ -55,6 +55,10 @@ public:
      *          Boolean 'false' value as a string.
      **/
     static const wchar_t * const   BOOLEAN_FALSE   /*= L"false"*/; //!< Boolean value 'false' as string
+    /**
+     * \brief	Empty string object
+     **/
+    static const WideString		   InvalidString;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor

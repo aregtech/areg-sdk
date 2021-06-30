@@ -91,7 +91,14 @@ protected:
 // Member variables
 //////////////////////////////////////////////////////////////////////////
 private:
+    /**
+     * \brief   The POSIX spin lock object.
+     **/
     mutable pthread_spinlock_t  mSpin;
+    /**
+     * \brief   The POSIX spin lock validity flag.
+     **/
+    mutable bool                mSpinValid;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

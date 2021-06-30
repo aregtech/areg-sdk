@@ -97,8 +97,8 @@ HelloWorldClientBase::~HelloWorldClientBase( void )
 bool HelloWorldClientBase::recreateProxy( void )
 {
     bool result         = false;
-    String roleName   = mProxy != NULL ? mProxy->getProxyAddress().getRoleName() : "";
-    String threadName = mProxy != NULL ? mProxy->getProxyAddress().getThread()   : "";
+    String roleName   = mProxy != NULL ? mProxy->getProxyAddress().getRoleName() : String::InvalidString;
+    String threadName = mProxy != NULL ? mProxy->getProxyAddress().getThread()   : String::InvalidString;
     if ( roleName.isEmpty() == false )
     {
         HelloWorldProxy * newProxy = HelloWorldProxy::createProxy(roleName.getString(), static_cast<IEProxyListener &>(self()), threadName.getString());

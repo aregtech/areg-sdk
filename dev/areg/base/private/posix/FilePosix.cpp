@@ -540,20 +540,15 @@ String File::getFileFullPath( const char* filePath )
     String result  = filePath;
     if ( NEString::isEmpty<char>(filePath) == false )
     {
-        char * buffer = DEBUG_NEW char[File::MAXIMUM_PATH + 1];
-        if (buffer != NULL)
+        char * pathCanonical  = realpath(filePath, NULL);
+        if (pathCanonical != NULL)
         {
-            const char * temp   = realpath(filePath, buffer);
-            if (temp != NULL)
-            {
-                result = temp;
-            }
-            else
-            {
-                OUTPUT_ERR("Could not retrieve the full path of file [ %s ], error code [ %p ]", filePath, static_cast<id_type>(errno));
-            }
-
-            delete [] buffer;
+            result = pathCanonical;
+            free(pathCanonical);
+        }
+        else
+        {
+            OUTPUT_ERR("Could not retrieve the full path of file [ %s ], error code [ %p ]", filePath, static_cast<id_type>(errno));
         }
     }
 

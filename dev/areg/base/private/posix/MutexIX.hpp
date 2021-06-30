@@ -151,9 +151,17 @@ protected:
      **/
     mutable pthread_mutex_t     mPosixMutex;
     /**
+     * \brief   Mutex validity flag.
+     **/
+    mutable bool				mMutexValid;
+    /**
      * \brief   POSIX mutex attribute.
      **/
     mutable pthread_mutexattr_t mPosixMutexAttr;
+    /**
+     * \brief   Mutex Attribute validity flag.
+     **/
+    mutable bool				mMutexAttrValid;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls.

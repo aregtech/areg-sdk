@@ -40,10 +40,10 @@ void ServiceClient::DeleteComponent(Component & compObject, const NERegistry::Co
 
 ServiceClient::ServiceClient(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
     : Component             ( owner, entry.mRoleName )
-    , HelloWorldClientBase  ( entry.mDependencyServices[0].mRoleName, static_cast<Component &>(self()) )
+    , HelloWorldClientBase  ( entry.mDependencyServices[0].mRoleName.getString(), owner )
     , IETimerConsumer       ( )
 
-    , mTimer                ( static_cast<IETimerConsumer &>(self()), timerName( static_cast<Component &>(self()) ) )
+    , mTimer                ( static_cast<IETimerConsumer &>(self()), timerName( static_cast<Component &>(self()) ).getString() )
     , mID                   ( 0 )
 {
     TRACE_SCOPE(examples_12_ipchello_usripchello_ServiceClient_ServiceClient);

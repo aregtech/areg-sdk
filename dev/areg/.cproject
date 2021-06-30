@@ -11,7 +11,7 @@
 					</externalSetting>
 				</externalSettings>
 				<extensions>
-					<extension id="org.eclipse.cdt.core.Cygwin_PE" point="org.eclipse.cdt.core.BinaryParser"/>
+					<extension id="org.eclipse.cdt.core.GNU_ELF" point="org.eclipse.cdt.core.BinaryParser"/>
 					<extension id="org.eclipse.cdt.core.GASErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
 					<extension id="org.eclipse.cdt.core.GmakeErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
 					<extension id="org.eclipse.cdt.core.GLDErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
@@ -21,22 +21,17 @@
 				</extensions>
 			</storageModule>
 			<storageModule moduleId="cdtBuildSystem" version="4.0.0">
-				<configuration artifactExtension="lib" artifactName="${ProjName}" buildArtefactType="org.eclipse.cdt.build.core.buildArtefactType.staticLib" buildProperties="org.eclipse.cdt.build.core.buildArtefactType=org.eclipse.cdt.build.core.buildArtefactType.staticLib,org.eclipse.cdt.build.core.buildType=org.eclipse.cdt.build.core.buildType.debug" cleanCommand="rm -rf" description="" errorParsers="org.eclipse.cdt.core.GASErrorParser;org.eclipse.cdt.core.GmakeErrorParser;org.eclipse.cdt.core.GLDErrorParser;org.eclipse.cdt.core.CWDLocator;org.eclipse.cdt.core.GCCErrorParser;org.eclipse.cdt.core.VCErrorParser" id="cdt.managedbuild.config.gnu.cygwin.so.debug.893964160" name="Debug" optionalBuildProperties="org.eclipse.cdt.docker.launcher.containerbuild.property.selectedvolumes=,org.eclipse.cdt.docker.launcher.containerbuild.property.volumes=" parent="cdt.managedbuild.config.gnu.cygwin.so.debug">
+				<configuration artifactExtension="a" artifactName="${ProjName}" buildArtefactType="org.eclipse.cdt.build.core.buildArtefactType.staticLib" buildProperties="org.eclipse.cdt.build.core.buildArtefactType=org.eclipse.cdt.build.core.buildArtefactType.staticLib,org.eclipse.cdt.build.core.buildType=org.eclipse.cdt.build.core.buildType.debug" cleanCommand="rm -rf" description="" errorParsers="org.eclipse.cdt.core.GASErrorParser;org.eclipse.cdt.core.GmakeErrorParser;org.eclipse.cdt.core.GLDErrorParser;org.eclipse.cdt.core.CWDLocator;org.eclipse.cdt.core.GCCErrorParser;org.eclipse.cdt.core.VCErrorParser" id="cdt.managedbuild.config.gnu.cygwin.so.debug.893964160" name="Debug" optionalBuildProperties="org.eclipse.cdt.docker.launcher.containerbuild.property.selectedvolumes=,org.eclipse.cdt.docker.launcher.containerbuild.property.volumes=" parent="cdt.managedbuild.config.gnu.cygwin.so.debug">
 					<folderInfo id="cdt.managedbuild.config.gnu.cygwin.so.debug.893964160." name="/" resourcePath="">
-						<toolChain id="cdt.managedbuild.toolchain.gnu.cygwin.so.debug.2057256488" name="Cygwin GCC" superClass="cdt.managedbuild.toolchain.gnu.cygwin.so.debug">
-							<targetPlatform id="cdt.managedbuild.target.gnu.platform.cygwin.so.debug.1089572944" name="Debug Platform" superClass="cdt.managedbuild.target.gnu.platform.cygwin.so.debug"/>
-							<builder autoBuildTarget="all" buildPath="${workspace_loc:/areg}/Debug" cleanBuildTarget="clean" enableAutoBuild="false" enableCleanBuild="true" enabledIncrementalBuild="true" id="cdt.managedbuild.target.gnu.builder.cygwin.so.debug.628809224" incrementalBuildTarget="all" keepEnvironmentInBuildfile="false" managedBuildOn="true" name="Gnu Make Builder" parallelBuildOn="true" parallelizationNumber="optimal" superClass="cdt.managedbuild.target.gnu.builder.cygwin.so.debug"/>
-							<tool id="cdt.managedbuild.tool.gnu.assembler.cygwin.so.debug.372412000" name="GCC Assembler" superClass="cdt.managedbuild.tool.gnu.assembler.cygwin.so.debug">
-								<inputType id="cdt.managedbuild.tool.gnu.assembler.input.942519649" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>
-							</tool>
-							<tool id="cdt.managedbuild.tool.gnu.archiver.cygwin.base.280280706" name="GCC Archiver" superClass="cdt.managedbuild.tool.gnu.archiver.cygwin.base"/>
-							<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.cygwin.so.debug.1075912364" name="Cygwin C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.cygwin.so.debug">
-								<option id="gnu.cpp.compiler.cygwin.so.debug.option.optimization.level.802844889" name="Optimization Level" superClass="gnu.cpp.compiler.cygwin.so.debug.option.optimization.level" useByScannerDiscovery="false" value="gnu.cpp.compiler.optimization.level.none" valueType="enumerated"/>
-								<option defaultValue="gnu.cpp.compiler.debugging.level.max" id="gnu.cpp.compiler.cygwin.so.debug.option.debugging.level.1497653882" name="Debug Level" superClass="gnu.cpp.compiler.cygwin.so.debug.option.debugging.level" useByScannerDiscovery="false" valueType="enumerated"/>
-								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.cpp.compiler.option.include.paths.195128389" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc}\dev&quot;"/>
+						<toolChain id="cdt.managedbuild.toolchain.gnu.base.383810451" name="Linux GCC" superClass="cdt.managedbuild.toolchain.gnu.base">
+							<targetPlatform archList="all" binaryParser="org.eclipse.cdt.core.GNU_ELF" id="cdt.managedbuild.target.gnu.platform.base.811505006" name="Debug Platform" osList="linux,hpux,aix,qnx" superClass="cdt.managedbuild.target.gnu.platform.base"/>
+							<builder buildPath="${workspace_loc:/areg}/Debug" id="cdt.managedbuild.target.gnu.builder.base.802118184" keepEnvironmentInBuildfile="false" name="Gnu Make Builder" parallelBuildOn="true" parallelizationNumber="optimal" superClass="cdt.managedbuild.target.gnu.builder.base"/>
+							<tool id="cdt.managedbuild.tool.gnu.archiver.base.87780922" name="GCC Archiver" superClass="cdt.managedbuild.tool.gnu.archiver.base"/>
+							<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.base.2090148691" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.base">
+								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.cpp.compiler.option.include.paths.950111912" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:}/dev/&quot;"/>
 								</option>
-								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.cpp.compiler.option.preprocessor.def.1275911369" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" useByScannerDiscovery="false" valueType="definedSymbols">
+								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.cpp.compiler.option.preprocessor.def.1096816235" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" useByScannerDiscovery="false" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="_POSIX"/>
 									<listOptionValue builtIn="false" value="_OUTPUT_DEBUG_LEVEL=1"/>
 									<listOptionValue builtIn="false" value="_DEBUG_OUTPUT=0"/>
@@ -44,36 +39,36 @@
 									<listOptionValue builtIn="false" value="_ENABLE_TRACES"/>
 									<listOptionValue builtIn="false" value="_EXP_AREG_LIB"/>
 								</option>
-								<option id="gnu.cpp.compiler.option.other.other.409902117" name="Other flags" superClass="gnu.cpp.compiler.option.other.other" useByScannerDiscovery="false" value="-c -fmessage-length=0 -Wnon-virtual-dtor " valueType="string"/>
-								<option id="gnu.cpp.compiler.option.dialect.std.925820996" name="Language standard" superClass="gnu.cpp.compiler.option.dialect.std" useByScannerDiscovery="true" value="gnu.cpp.compiler.dialect.default" valueType="enumerated"/>
-								<option id="gnu.cpp.compiler.option.debugging.other.1073839874" name="Other debugging flags" superClass="gnu.cpp.compiler.option.debugging.other" useByScannerDiscovery="false" value="" valueType="string"/>
-								<option id="gnu.cpp.compiler.option.warnings.pedantic.280874228" name="Pedantic (-pedantic)" superClass="gnu.cpp.compiler.option.warnings.pedantic" useByScannerDiscovery="false" value="true" valueType="boolean"/>
-								<option id="gnu.cpp.compiler.option.warnings.extrawarn.896992820" name="Extra warnings (-Wextra)" superClass="gnu.cpp.compiler.option.warnings.extrawarn" useByScannerDiscovery="false" value="true" valueType="boolean"/>
-								<option id="gnu.cpp.compiler.option.warnings.allwarn.284616067" name="All warnings (-Wall)" superClass="gnu.cpp.compiler.option.warnings.allwarn" useByScannerDiscovery="false" value="true" valueType="boolean"/>
-								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.cygwin.1511158939" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input.cygwin"/>
+								<option id="gnu.cpp.compiler.option.optimization.level.814156688" name="Optimization Level" superClass="gnu.cpp.compiler.option.optimization.level" useByScannerDiscovery="false" value="gnu.cpp.compiler.optimization.level.none" valueType="enumerated"/>
+								<option defaultValue="gnu.cpp.compiler.debugging.level.max" id="gnu.cpp.compiler.option.debugging.level.1109649856" name="Debug Level" superClass="gnu.cpp.compiler.option.debugging.level" useByScannerDiscovery="false" valueType="enumerated"/>
+								<option id="gnu.cpp.compiler.option.dialect.std.1400779482" name="Language standard" superClass="gnu.cpp.compiler.option.dialect.std" useByScannerDiscovery="true" value="gnu.cpp.compiler.dialect.default" valueType="enumerated"/>
+								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.1478496247" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
-							<tool id="cdt.managedbuild.tool.gnu.c.compiler.cygwin.so.debug.246973471" name="Cygwin C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.cygwin.so.debug">
-								<option defaultValue="gnu.c.optimization.level.none" id="gnu.c.compiler.cygwin.so.debug.option.optimization.level.1956461303" name="Optimization Level" superClass="gnu.c.compiler.cygwin.so.debug.option.optimization.level" useByScannerDiscovery="false" valueType="enumerated"/>
-								<option defaultValue="gnu.c.debugging.level.max" id="gnu.c.compiler.cygwin.so.debug.option.debugging.level.1278871765" name="Debug Level" superClass="gnu.c.compiler.cygwin.so.debug.option.debugging.level" useByScannerDiscovery="false" valueType="enumerated"/>
-								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="true" id="gnu.c.compiler.option.include.paths.413736666" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" useByScannerDiscovery="false" valueType="includePath"/>
-								<option id="gnu.c.compiler.option.dialect.std.1832326537" name="Language standard" superClass="gnu.c.compiler.option.dialect.std" useByScannerDiscovery="true" value="gnu.c.compiler.dialect.default" valueType="enumerated"/>
-								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.cygwin.1381838276" superClass="cdt.managedbuild.tool.gnu.c.compiler.input.cygwin"/>
+							<tool id="cdt.managedbuild.tool.gnu.c.compiler.base.788332993" name="GCC C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.base">
+								<option defaultValue="gnu.c.optimization.level.none" id="gnu.c.compiler.option.optimization.level.72211049" name="Optimization Level" superClass="gnu.c.compiler.option.optimization.level" useByScannerDiscovery="false" valueType="enumerated"/>
+								<option defaultValue="gnu.c.debugging.level.max" id="gnu.c.compiler.option.debugging.level.1166701010" name="Debug Level" superClass="gnu.c.compiler.option.debugging.level" useByScannerDiscovery="false" valueType="enumerated"/>
+								<option id="gnu.c.compiler.option.dialect.std.1513743095" name="Language standard" superClass="gnu.c.compiler.option.dialect.std" useByScannerDiscovery="true" value="gnu.c.compiler.dialect.default" valueType="enumerated"/>
+								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.702034390" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 							</tool>
-							<tool id="cdt.managedbuild.tool.gnu.c.linker.cygwin.so.debug.578781030" name="Cygwin C Linker" superClass="cdt.managedbuild.tool.gnu.c.linker.cygwin.so.debug">
-								<option defaultValue="true" id="gnu.c.link.cygwin.so.debug.option.shared.222446853" name="Shared (-shared)" superClass="gnu.c.link.cygwin.so.debug.option.shared" valueType="boolean"/>
-							</tool>
-							<tool id="cdt.managedbuild.tool.gnu.cpp.linker.cygwin.so.debug.1616140811" name="Cygwin C++ Linker" superClass="cdt.managedbuild.tool.gnu.cpp.linker.cygwin.so.debug">
-								<option defaultValue="true" id="gnu.cpp.link.cygwin.so.debug.option.shared.1312855788" name="Shared (-shared)" superClass="gnu.cpp.link.cygwin.so.debug.option.shared" useByScannerDiscovery="false" value="false" valueType="boolean"/>
-								<inputType id="cdt.managedbuild.tool.gnu.cpp.linker.input.1598506917" superClass="cdt.managedbuild.tool.gnu.cpp.linker.input">
-									<additionalInput kind="additionalinputdependency" paths="$(USER_OBJS)"/>
-									<additionalInput kind="additionalinput" paths="$(LIBS)"/>
-								</inputType>
+							<tool id="cdt.managedbuild.tool.gnu.c.linker.base.1187522233" name="GCC C Linker" superClass="cdt.managedbuild.tool.gnu.c.linker.base"/>
+							<tool id="cdt.managedbuild.tool.gnu.cpp.linker.base.1144739618" name="GCC C++ Linker" superClass="cdt.managedbuild.tool.gnu.cpp.linker.base"/>
+							<tool id="cdt.managedbuild.tool.gnu.assembler.base.171811161" name="GCC Assembler" superClass="cdt.managedbuild.tool.gnu.assembler.base">
+								<inputType id="cdt.managedbuild.tool.gnu.assembler.input.2014124917" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>
 							</tool>
 						</toolChain>
 					</folderInfo>
 				</configuration>
 			</storageModule>
 			<storageModule moduleId="org.eclipse.cdt.core.externalSettings"/>
+			<storageModule buildDir="build/${ConfigName}" moduleId="de.marw.cdt.cmake.core.settings">
+				<options/>
+				<defs/>
+				<undefs/>
+				<linux command="cmake" generator="UnixMakefiles" use-default="true">
+					<defs/>
+					<undefs/>
+				</linux>
+			</storageModule>
 		</cconfiguration>
 		<cconfiguration id="cdt.managedbuild.config.gnu.cygwin.so.release.2032567544">
 			<storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="cdt.managedbuild.config.gnu.cygwin.so.release.2032567544" moduleId="org.eclipse.cdt.core.settings" name="Release">
@@ -85,7 +80,7 @@
 					</externalSetting>
 				</externalSettings>
 				<extensions>
-					<extension id="org.eclipse.cdt.core.Cygwin_PE" point="org.eclipse.cdt.core.BinaryParser"/>
+					<extension id="org.eclipse.cdt.core.GNU_ELF" point="org.eclipse.cdt.core.BinaryParser"/>
 					<extension id="org.eclipse.cdt.core.GASErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
 					<extension id="org.eclipse.cdt.core.GmakeErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
 					<extension id="org.eclipse.cdt.core.CWDLocator" point="org.eclipse.cdt.core.ErrorParser"/>
@@ -93,47 +88,35 @@
 				</extensions>
 			</storageModule>
 			<storageModule moduleId="cdtBuildSystem" version="4.0.0">
-				<configuration artifactExtension="lib" artifactName="${ProjName}" buildArtefactType="org.eclipse.cdt.build.core.buildArtefactType.staticLib" buildProperties="org.eclipse.cdt.build.core.buildArtefactType=org.eclipse.cdt.build.core.buildArtefactType.staticLib,org.eclipse.cdt.build.core.buildType=org.eclipse.cdt.build.core.buildType.release" cleanCommand="rm -rf" description="" id="cdt.managedbuild.config.gnu.cygwin.so.release.2032567544" name="Release" optionalBuildProperties="" parent="cdt.managedbuild.config.gnu.cygwin.so.release">
+				<configuration artifactExtension="a" artifactName="${ProjName}" buildArtefactType="org.eclipse.cdt.build.core.buildArtefactType.staticLib" buildProperties="org.eclipse.cdt.build.core.buildArtefactType=org.eclipse.cdt.build.core.buildArtefactType.staticLib,org.eclipse.cdt.build.core.buildType=org.eclipse.cdt.build.core.buildType.release" cleanCommand="rm -rf" description="" id="cdt.managedbuild.config.gnu.cygwin.so.release.2032567544" name="Release" optionalBuildProperties="org.eclipse.cdt.docker.launcher.containerbuild.property.selectedvolumes=,org.eclipse.cdt.docker.launcher.containerbuild.property.volumes=" parent="cdt.managedbuild.config.gnu.cygwin.so.release">
 					<folderInfo id="cdt.managedbuild.config.gnu.cygwin.so.release.2032567544." name="/" resourcePath="">
-						<toolChain id="cdt.managedbuild.toolchain.gnu.cygwin.so.release.1119050652" name="Cygwin GCC" superClass="cdt.managedbuild.toolchain.gnu.cygwin.so.release">
-							<targetPlatform id="cdt.managedbuild.target.gnu.platform.cygwin.so.release.368515674" name="Debug Platform" superClass="cdt.managedbuild.target.gnu.platform.cygwin.so.release"/>
-							<builder buildPath="${workspace_loc:/areg}/Release" id="cdt.managedbuild.target.gnu.builder.cygwin.so.release.673328540" keepEnvironmentInBuildfile="false" managedBuildOn="true" name="Gnu Make Builder" superClass="cdt.managedbuild.target.gnu.builder.cygwin.so.release"/>
-							<tool id="cdt.managedbuild.tool.gnu.assembler.cygwin.so.release.1436168335" name="GCC Assembler" superClass="cdt.managedbuild.tool.gnu.assembler.cygwin.so.release">
-								<inputType id="cdt.managedbuild.tool.gnu.assembler.input.332198361" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>
-							</tool>
-							<tool id="cdt.managedbuild.tool.gnu.archiver.cygwin.base.622178956" name="GCC Archiver" superClass="cdt.managedbuild.tool.gnu.archiver.cygwin.base"/>
-							<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.cygwin.so.release.1805046551" name="Cygwin C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.cygwin.so.release">
-								<option id="gnu.cpp.compiler.cygwin.so.release.option.optimization.level.2126137135" name="Optimization Level" superClass="gnu.cpp.compiler.cygwin.so.release.option.optimization.level" useByScannerDiscovery="false" value="gnu.cpp.compiler.optimization.level.most" valueType="enumerated"/>
-								<option defaultValue="gnu.cpp.compiler.debugging.level.none" id="gnu.cpp.compiler.cygwin.so.release.option.debugging.level.1138922900" name="Debug Level" superClass="gnu.cpp.compiler.cygwin.so.release.option.debugging.level" useByScannerDiscovery="false" valueType="enumerated"/>
-								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.cpp.compiler.option.preprocessor.def.1235374247" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" useByScannerDiscovery="false" valueType="definedSymbols">
+						<toolChain id="cdt.managedbuild.toolchain.gnu.base.1735835878" name="Linux GCC" superClass="cdt.managedbuild.toolchain.gnu.base">
+							<targetPlatform archList="all" binaryParser="org.eclipse.cdt.core.GNU_ELF" id="cdt.managedbuild.target.gnu.platform.base.44641023" name="Debug Platform" osList="linux,hpux,aix,qnx" superClass="cdt.managedbuild.target.gnu.platform.base"/>
+							<builder buildPath="${workspace_loc:/areg}/Release" id="cdt.managedbuild.target.gnu.builder.base.1018262936" keepEnvironmentInBuildfile="false" name="Gnu Make Builder" superClass="cdt.managedbuild.target.gnu.builder.base"/>
+							<tool id="cdt.managedbuild.tool.gnu.archiver.base.1588095271" name="GCC Archiver" superClass="cdt.managedbuild.tool.gnu.archiver.base"/>
+							<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.base.211861223" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.base">
+								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.cpp.compiler.option.include.paths.692432143" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:}/dev/&quot;"/>
+								</option>
+								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.cpp.compiler.option.preprocessor.def.1715729436" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" useByScannerDiscovery="false" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="_NDEBUG"/>
 									<listOptionValue builtIn="false" value="_POSIX"/>
 									<listOptionValue builtIn="false" value="_ENABLE_TRACES"/>
 									<listOptionValue builtIn="false" value="_EXP_AREG_LIB"/>
 								</option>
-								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.cpp.compiler.option.include.paths.519576391" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc}\dev&quot;"/>
-								</option>
-								<option id="gnu.cpp.compiler.option.warnings.pedantic.error.1678646467" name="Pedantic warnings as errors (-pedantic-errors)" superClass="gnu.cpp.compiler.option.warnings.pedantic.error" useByScannerDiscovery="false" value="false" valueType="boolean"/>
-								<option id="gnu.cpp.compiler.option.warnings.pedantic.1067160183" name="Pedantic (-pedantic)" superClass="gnu.cpp.compiler.option.warnings.pedantic" useByScannerDiscovery="false" value="true" valueType="boolean"/>
-								<option id="gnu.cpp.compiler.option.warnings.extrawarn.2126612232" name="Extra warnings (-Wextra)" superClass="gnu.cpp.compiler.option.warnings.extrawarn" useByScannerDiscovery="false" value="true" valueType="boolean"/>
-								<option id="gnu.cpp.compiler.option.other.other.621689907" name="Other flags" superClass="gnu.cpp.compiler.option.other.other" useByScannerDiscovery="false" value="-c -fmessage-length=0 -Wnon-virtual-dtor " valueType="string"/>
-								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.cygwin.1549724274" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input.cygwin"/>
+								<option id="gnu.cpp.compiler.option.optimization.level.2058982659" name="Optimization Level" superClass="gnu.cpp.compiler.option.optimization.level" useByScannerDiscovery="false" value="gnu.cpp.compiler.optimization.level.most" valueType="enumerated"/>
+								<option defaultValue="gnu.cpp.compiler.debugging.level.none" id="gnu.cpp.compiler.option.debugging.level.793870851" name="Debug Level" superClass="gnu.cpp.compiler.option.debugging.level" useByScannerDiscovery="false" valueType="enumerated"/>
+								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.1327214376" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
-							<tool id="cdt.managedbuild.tool.gnu.c.compiler.cygwin.so.release.1052197285" name="Cygwin C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.cygwin.so.release">
-								<option defaultValue="gnu.c.optimization.level.most" id="gnu.c.compiler.cygwin.so.release.option.optimization.level.1385512221" name="Optimization Level" superClass="gnu.c.compiler.cygwin.so.release.option.optimization.level" useByScannerDiscovery="false" valueType="enumerated"/>
-								<option defaultValue="gnu.c.debugging.level.none" id="gnu.c.compiler.cygwin.so.release.option.debugging.level.1852907986" name="Debug Level" superClass="gnu.c.compiler.cygwin.so.release.option.debugging.level" useByScannerDiscovery="false" valueType="enumerated"/>
-								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.cygwin.1499377777" superClass="cdt.managedbuild.tool.gnu.c.compiler.input.cygwin"/>
+							<tool id="cdt.managedbuild.tool.gnu.c.compiler.base.824210882" name="GCC C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.base">
+								<option defaultValue="gnu.c.optimization.level.most" id="gnu.c.compiler.option.optimization.level.1115441078" name="Optimization Level" superClass="gnu.c.compiler.option.optimization.level" useByScannerDiscovery="false" valueType="enumerated"/>
+								<option defaultValue="gnu.c.debugging.level.none" id="gnu.c.compiler.option.debugging.level.1131778109" name="Debug Level" superClass="gnu.c.compiler.option.debugging.level" useByScannerDiscovery="false" valueType="enumerated"/>
+								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.13378130" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 							</tool>
-							<tool id="cdt.managedbuild.tool.gnu.c.linker.cygwin.so.release.166649825" name="Cygwin C Linker" superClass="cdt.managedbuild.tool.gnu.c.linker.cygwin.so.release">
-								<option defaultValue="true" id="gnu.c.link.cygwin.so.release.option.shared.1356400166" name="Shared (-shared)" superClass="gnu.c.link.cygwin.so.release.option.shared" valueType="boolean"/>
-							</tool>
-							<tool id="cdt.managedbuild.tool.gnu.cpp.linker.cygwin.so.release.140346338" name="Cygwin C++ Linker" superClass="cdt.managedbuild.tool.gnu.cpp.linker.cygwin.so.release">
-								<option defaultValue="true" id="gnu.cpp.link.cygwin.so.release.option.shared.1457931301" name="Shared (-shared)" superClass="gnu.cpp.link.cygwin.so.release.option.shared" useByScannerDiscovery="false" valueType="boolean"/>
-								<inputType id="cdt.managedbuild.tool.gnu.cpp.linker.input.101879394" superClass="cdt.managedbuild.tool.gnu.cpp.linker.input">
-									<additionalInput kind="additionalinputdependency" paths="$(USER_OBJS)"/>
-									<additionalInput kind="additionalinput" paths="$(LIBS)"/>
-								</inputType>
+							<tool id="cdt.managedbuild.tool.gnu.c.linker.base.1098031630" name="GCC C Linker" superClass="cdt.managedbuild.tool.gnu.c.linker.base"/>
+							<tool id="cdt.managedbuild.tool.gnu.cpp.linker.base.1580593615" name="GCC C++ Linker" superClass="cdt.managedbuild.tool.gnu.cpp.linker.base"/>
+							<tool id="cdt.managedbuild.tool.gnu.assembler.base.2136802246" name="GCC Assembler" superClass="cdt.managedbuild.tool.gnu.assembler.base">
+								<inputType id="cdt.managedbuild.tool.gnu.assembler.input.2070557629" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>
 							</tool>
 						</toolChain>
 					</folderInfo>

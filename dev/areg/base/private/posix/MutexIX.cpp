@@ -21,8 +21,10 @@
 MutexIX::MutexIX( bool initLocked /*= false*/, const char * asciiName /* = NULL */)
     : IESynchObjectBaseIX   ( NESynchTypesIX::SoMutex, asciiName)
 
-    , mPosixMutex           ( NULL )
-    , mPosixMutexAttr       ( NULL )
+    , mPosixMutex           ( )
+    , mMutexValid           ( false )
+    , mPosixMutexAttr       ( )
+    , mMutexAttrValid       ( false )
 {
     _initPosixMutex( true );
     if (initLocked)
@@ -34,40 +36,48 @@ MutexIX::MutexIX( bool initLocked /*= false*/, const char * asciiName /* = NULL 
 MutexIX::MutexIX( NESynchTypesIX::eSynchObject synchType, bool isRecursive, const char * asciiName /* = NULL */ )
     : IESynchObjectBaseIX   ( synchType, asciiName )
 
-    , mPosixMutex           ( NULL )
-    , mPosixMutexAttr       ( NULL )
+    , mPosixMutex           ( )
+    , mMutexValid           ( false )
+    , mPosixMutexAttr       ( )
+    , mMutexAttrValid       ( false )
 {
     _initPosixMutex( isRecursive );
 }
 
 MutexIX::~MutexIX( void )
 {
-    if (mPosixMutex != NULL)
+    if (mMutexValid)
         pthread_mutex_destroy(&mPosixMutex);
-    if (mPosixMutexAttr != NULL)
+    if (mMutexAttrValid)
         pthread_mutexattr_destroy(&mPosixMutexAttr);
 
-    mPosixMutex     = NULL;
-    mPosixMutexAttr = NULL;
+    mMutexValid     = false;
+    mMutexAttrValid = false;
 }
 
 inline void MutexIX::_initPosixMutex( bool isRecursive )
 {
     if ( RETURNED_OK == pthread_mutexattr_init( &mPosixMutexAttr ) )
     {
+    	mMutexValid = true;
         if ( RETURNED_OK == pthread_mutexattr_settype( &mPosixMutexAttr, isRecursive ? PTHREAD_MUTEX_RECURSIVE : PTHREAD_MUTEX_DEFAULT ) )
         {
-            if ( RETURNED_OK != pthread_mutex_init( &mPosixMutex, &mPosixMutexAttr ) )
+            if ( RETURNED_OK == pthread_mutex_init( &mPosixMutex, &mPosixMutexAttr ) )
+            {
+            	mMutexAttrValid = true;
+            }
+            else
             {
                 pthread_mutexattr_destroy( &mPosixMutexAttr );
-                mPosixMutexAttr = NULL;
-                mPosixMutex     = NULL;
+                mMutexAttrValid = false;
+                mMutexValid     = false;
+
             }
         }
         else
         {
             pthread_mutexattr_destroy( &mPosixMutexAttr );
-            mPosixMutexAttr   = NULL;
+            mMutexAttrValid = false;
         }
     }
 }
@@ -75,7 +85,7 @@ inline void MutexIX::_initPosixMutex( bool isRecursive )
 bool MutexIX::lock( unsigned int msTimeout /*= IESynchObject::WAIT_INFINITE*/ ) const
 {
     bool result = false;
-    if ( mPosixMutex != NULL)
+    if ( mMutexValid )
     {
         if ( IESynchObject::WAIT_INFINITE == msTimeout )
         {
@@ -104,7 +114,7 @@ void MutexIX::unlock( void ) const
 
 bool MutexIX::isValid( void ) const
 {
-    return (mPosixMutex != NULL) && (mPosixMutexAttr != NULL);
+    return (mMutexValid && mMutexAttrValid);
 }
 
 void MutexIX::freeResources(void)

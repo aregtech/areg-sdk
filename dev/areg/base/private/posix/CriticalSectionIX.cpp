@@ -30,10 +30,11 @@
 CriticalSectionIX::CriticalSectionIX( bool initLock /*= false*/ )
     : IESynchObjectBaseIX( NESynchTypesIX::SoSpinLock, "CriticalSection" )
 
-    , mSpin ( static_cast<pthread_spinlock_t>(NULL) )
+    , mSpin              ( )
+    , mSpinValid         ( false )
 {
-    pthread_spin_init(&mSpin, PTHREAD_PROCESS_PRIVATE);
-    if (initLock)
+    mSpinValid = (RETURNED_OK == pthread_spin_init(&mSpin, PTHREAD_PROCESS_PRIVATE));
+    if (initLock && mSpinValid)
     {
         pthread_spin_lock(&mSpin);
     }
@@ -41,26 +42,26 @@ CriticalSectionIX::CriticalSectionIX( bool initLock /*= false*/ )
 
 CriticalSectionIX::~CriticalSectionIX(void)
 {
-    if (mSpin != static_cast<pthread_spinlock_t>(NULL))
+    if (mSpinValid)
     {
         pthread_spin_destroy(&mSpin);
-        mSpin = static_cast<pthread_spinlock_t>(NULL);
+        mSpinValid = false;
     }
 }
 
 bool CriticalSectionIX::isValid(void) const
 {
-    return (mSpin != static_cast<pthread_spinlock_t>(NULL));
+    return mSpinValid;
 }
 
 void CriticalSectionIX::freeResources(void)
 {
     unlock();
 
-    if (mSpin != static_cast<pthread_spinlock_t>(NULL))
+    if (mSpinValid)
     {
         pthread_spin_destroy(&mSpin);
-        mSpin = static_cast<pthread_spinlock_t>(NULL);
+        mSpinValid = false;
     }
 }
 

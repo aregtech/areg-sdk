@@ -174,6 +174,7 @@ AREG_API IEOutStream & operator << (IEOutStream & stream, const WideString & out
 const wchar_t * const   WideString::EmptyString   = L"";
 const wchar_t * const   WideString::BOOLEAN_TRUE  = L"true";
 const wchar_t * const   WideString::BOOLEAN_FALSE = L"false";
+const WideString		WideString::InvalidString;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor

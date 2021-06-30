@@ -248,37 +248,40 @@ ProxyBase * ProxyBase::findOrCreateProxy( const char * roleName
     TRACE_SCOPE(areg_component_ProxyBase_findOrCreateProxy);
 
     ProxyBase*   proxy = NULL;
-    ProxyAddress Key(serviceIfData, roleName, ownerThread.isValid() ? ownerThread.getName().getString() : static_cast<const char *>(NULL) );
-    proxy = _mapRegisteredProxies.findResourceObject(Key);
-    if (proxy == NULL)
+    if (ownerThread.isValid())
     {
-        TRACE_DBG("No proxy [ %s ] found, creating one in thread [ %u ]", ProxyAddress::convAddressToPath(Key).getString(), ownerThread.getId());
-        proxy = funcCreate(roleName, &ownerThread);
-    }
-
-    if (proxy != NULL)
-    {
-        if (proxy->mListConnect.addUnique(&connect))
+        ProxyAddress Key(serviceIfData, roleName, ownerThread.getName().getString() );
+        proxy = _mapRegisteredProxies.findResourceObject(Key);
+        if (proxy == NULL)
         {
-            TRACE_DBG("Add Service Connect notification for client [ %p ]", &connect);
-
-            static_cast<void>(proxy->addListener( static_cast<unsigned int>(NEService::SI_SERVICE_CONNECTION_NOTIFY), NEService::SEQUENCE_NUMBER_NOTIFY, static_cast<IENotificationEventConsumer *>(&connect) ));
-            ++ proxy->mProxyInstCount;
-            proxy->mIsStopped = false;
-
-            if ( proxy->mProxyInstCount == 1 )
-            {
-                proxy->registerServiceListeners( );
-                ServiceManager::requestRegisterClient( proxy->getProxyAddress( ) );
-            }
-            else if ( proxy->mIsConnected )
-            {
-                proxy->sendServiceAvailableEvent( proxy->createServiceAvailableEvent(connect) );
-            }
+            TRACE_DBG("No proxy [ %s ] found, creating one in thread [ %u ]", ProxyAddress::convAddressToPath(Key).getString(), ownerThread.getId());
+            proxy = funcCreate(roleName, &ownerThread);
         }
-        else
+
+        if (proxy != NULL)
         {
-            TRACE_WARN("The client [ %p ] is already registeref foro service connection notification", &connect);
+            if (proxy->mListConnect.addUnique(&connect))
+            {
+                TRACE_DBG("Add Service Connect notification for client [ %p ]", &connect);
+
+                static_cast<void>(proxy->addListener( static_cast<unsigned int>(NEService::SI_SERVICE_CONNECTION_NOTIFY), NEService::SEQUENCE_NUMBER_NOTIFY, static_cast<IENotificationEventConsumer *>(&connect) ));
+                ++ proxy->mProxyInstCount;
+                proxy->mIsStopped = false;
+
+                if ( proxy->mProxyInstCount == 1 )
+                {
+                    proxy->registerServiceListeners( );
+                    ServiceManager::requestRegisterClient( proxy->getProxyAddress( ) );
+                }
+                else if ( proxy->mIsConnected )
+                {
+                    proxy->sendServiceAvailableEvent( proxy->createServiceAvailableEvent(connect) );
+                }
+            }
+            else
+            {
+                TRACE_WARN("The client [ %p ] is already registeref foro service connection notification", &connect);
+            }
         }
     }
 
