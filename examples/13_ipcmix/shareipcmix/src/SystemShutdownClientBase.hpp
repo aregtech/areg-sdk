@@ -6,7 +6,7 @@
 /************************************************************************
  * (c) copyright    2021
  *                  Create by AREG SDK code generator tool from source SystemShutdown.
- * Generated at     11.06.2021  21:11:06 GMT+02:00 
+ * Generated at     04.07.2021  04:21:26 GMT+02:00 
  ************************************************************************/
 
 /************************************************************************
@@ -20,7 +20,6 @@
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
 #include "shareipcmix/src/NESystemShutdown.hpp"
-#include "areg/component/ClientBase.hpp"
 #include "areg/component/IEProxyListener.hpp"
 #include "areg/component/NotificationEvent.hpp"
 
@@ -45,7 +44,7 @@ class DispatcherThread;
  *              It also can be used by any other object that has interest in system shutdown state.
  *              System run and shutdown service.
  **/
-class SystemShutdownClientBase  : public    IEProxyListener, private ClientBase
+class SystemShutdownClientBase  : public IEProxyListener
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor. Protected
@@ -344,7 +343,7 @@ private:
      * \brief   Returns reference of SystemShutdownClientBase object
      **/
 
-    SystemShutdownClientBase & self( void );
+    inline SystemShutdownClientBase & self( void );
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

@@ -114,17 +114,12 @@
     <None Include="register\res\register.rc2">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="resources\CentralMessager.siml">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="resources\ConnectionManager.siml">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="resources\DirectConnection.siml">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="resources\DirectMessager.siml">
-      <Filter>Resource Files</Filter>
+    <None Include="res\CentralMessager.siml" />
+    <None Include="res\ConnectionManager.siml" />
+    <None Include="res\DirectConnection.siml" />
+    <None Include="res\DirectMessager.siml" />
+    <None Include="res\generate_files.bat">
+      <Filter>Source Files</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

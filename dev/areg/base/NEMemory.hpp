@@ -343,7 +343,7 @@ namespace NEMemory
          * \brief   Byte Buffer Data followed after structure.
          *          This is referring to the first element in the data buffer.
          **/
-        BufferData      bufData[1];
+        BufferData      bufData[4];
     } sByteBuffer;
 
 
@@ -366,7 +366,7 @@ namespace NEMemory
          * \brief   Byte Buffer Data followed after structure.
          *          This is referring to the first element in the data buffer.
          **/
-        BufferData              rbData[1];
+        BufferData              rbData[4];
     } sRemoteMessage;
 
     /**
@@ -384,7 +384,7 @@ namespace NEMemory
     /**
      * \brief   Converts the values of type NEMemory::eMessageResult to string, used in logs and output messages.
      **/
-    static const char * getString( NEMemory::eMessageResult msgResult );
+    inline const char * getString( NEMemory::eMessageResult msgResult );
 
     /**
      * \brief   NEMemory::BLOCK_SIZE
@@ -647,7 +647,7 @@ namespace NEMemory
      * \tparam  ELEM        The type of element entry. Can be primitive or objects (struct or class).
      **/
     template<typename ELEM>
-    inline void zeroElements( ELEM * elemList, uint32_t elemCount );
+    inline void zeroElements( ELEM * elemList, int elemCount );
 
     /**
      * \brief   Sets zero in a buffer.
@@ -664,7 +664,7 @@ namespace NEMemory
      * \param	memSrc	The pointer of source of data to move
      * \param	count   The number of bytes to move.
      **/
-    inline void memMove(void * memDst, const void * memSrc, unsigned int count);
+    inline void memMove(void * memDst, const void * memSrc, int count);
 
     /**
      * \brief	Copies data from source to destination. The allocated buffer of destination should be big enough
@@ -675,7 +675,7 @@ namespace NEMemory
      * \param	count       Amount of data in bytes to copy.
      * \return  Returns amount of data actually copied in destination buffer.
      **/
-    inline unsigned int memCopy( void * memDst, unsigned int dstSpace, const void * memSrc, unsigned int count);
+    inline int memCopy( void * memDst, int dstSpace, const void * memSrc, int count);
 }
 
 /************************************************************************
@@ -748,21 +748,21 @@ inline void NEMemory::zeroBuffer( void * buffer, int length )
     NEMemory::setMemory<unsigned char, unsigned char>( reinterpret_cast<unsigned char *>(buffer), 0x00u, length );
 }
 
-inline void NEMemory::memMove( void * memDst, const void * memSrc, unsigned int count )
+inline void NEMemory::memMove( void * memDst, const void * memSrc, int count )
 {
-    NEMemory::moveElems<unsigned char>( reinterpret_cast<unsigned char *>(memDst), reinterpret_cast<const unsigned char *>(memSrc), static_cast<int>(count));
+    NEMemory::moveElems<unsigned char>( reinterpret_cast<unsigned char *>(memDst), reinterpret_cast<const unsigned char *>(memSrc), count);
 }
 
-inline unsigned int NEMemory::memCopy( void * memDst, unsigned int dstSpace, const void * memSrc, unsigned int count )
+inline int NEMemory::memCopy( void * memDst, int dstSpace, const void * memSrc, int count )
 {
-    unsigned int result = 0;
+    int result = 0;
     if ( (memDst != memSrc) && (memDst != static_cast<const unsigned char *>(NULL)) && (memSrc != static_cast<const unsigned char *>(NULL)) )
     {
         result = MACRO_MIN(dstSpace, count);
-        NEMemory::copyElems<unsigned char, unsigned char>( reinterpret_cast<unsigned char *>(memDst), reinterpret_cast<const unsigned char *>(memSrc), static_cast<int>(result) );
+        NEMemory::copyElems<unsigned char, unsigned char>( reinterpret_cast<unsigned char *>(memDst), reinterpret_cast<const unsigned char *>(memSrc), result );
     }
 
-    return result;
+    return (result > 0 ? result : 0);
 }
 
 /************************************************************************/
@@ -810,14 +810,14 @@ inline ELEM_TYPE * NEMemory::constructElems(void *begin, int elemCount)
     {
         ELEM_TYPE* elems    = reinterpret_cast<ELEM_TYPE *>(begin);
 
-#if defined(_MSC_VER) && (_MSC_VER > 1200)
+#if _MSC_VER
     #pragma warning(disable: 4345)
 #endif  // _MSC_VER
         for (int i = 0; i < elemCount; ++ i, ++ elems)
         {
             ::new(elems) ELEM_TYPE;
         }
-#if defined(_MSC_VER) && (_MSC_VER > 1200)
+#if _MSC_VER
         #pragma warning(default: 4345)
 #endif  // _MSC_VER
     }
@@ -832,14 +832,14 @@ inline ELEM_TYPE * NEMemory::constructElemsWithArgument(void *begin, int elemCou
     {
         ELEM_TYPE* elems    = reinterpret_cast<ELEM_TYPE *>(begin);
 
-#if defined(_MSC_VER) && (_MSC_VER > 1200)
+#if _MSC_VER
     #pragma warning(disable: 4345)
 #endif  // _MSC_VER
         for ( int i = 0; i < elemCount; ++ i, ++ elems )
         {
             ::new (elems) ELEM_TYPE(arg);
         }
-#if defined(_MSC_VER) && (_MSC_VER > 1200)
+#if _MSC_VER
         #pragma warning(default: 4345)
 #endif  // _MSC_VER
     }
@@ -884,16 +884,12 @@ void NEMemory::moveElems(ELEM_TYPE *destination, const ELEM_TYPE *source, int el
         while (elemCount -- > 0)
             * --destination = * --source;
     }
-    else
-    {
-        ; // do nothing
-    }
 }
 
 template <typename ELEM, typename ELEM_TYPE>
 inline void NEMemory::setMemory(ELEM* begin, ELEM_TYPE elemValue, int elemCount)
 {
-    if (begin != static_cast<const ELEM *>(NULL) && elemCount > 0)
+    if (begin != static_cast<const ELEM *>(NULL))
     {
         while (elemCount -- > 0)
             *begin ++ = elemValue;
@@ -911,9 +907,10 @@ inline bool NEMemory::isEqualBuffer(const ELEM * lhs, const ELEM * rhs, int coun
         {
             const unsigned char * left  = reinterpret_cast<const unsigned char *>(reinterpret_cast<const void *>(lhs));
             const unsigned char * right = reinterpret_cast<const unsigned char *>(reinterpret_cast<const void *>(rhs));
-            count = count * sizeof(ELEM);
+            int single = static_cast<int>(sizeof(ELEM));
+            count = count * single;
 
-            for ( ; (count != 0) && (*left == *right); ++left, ++right)
+            for ( ; (count > 0) && (*left == *right); ++left, ++right)
                 --count;
 
             result = count == 0;
@@ -936,7 +933,7 @@ inline bool NEMemory::isEqualElement(const ELEM * lhs, const ELEM * rhs, int cou
         result = true;
         if (lhs != rhs)
         {
-            for ( ; (count != 0) && (*lhs == *rhs); ++lhs, ++rhs)
+            for ( ; (count > 0) && (*lhs == *rhs); ++lhs, ++rhs)
                 --count;
 
             result = count == 0;
@@ -960,7 +957,7 @@ inline bool NEMemory::isEqualElement(const ELEM_LEFT* lhs, const ELEM_RIGHT* rhs
         result = true;
         if ( reinterpret_cast<const void *>(lhs) != reinterpret_cast<const void *>(rhs) )
         {
-            for ( ;(count != 0) && (static_cast<const ELEM_LEFT &>(*lhs) == static_cast<const ELEM_LEFT &>(*rhs)); ++lhs, ++rhs)
+            for ( ;(count > 0) && (static_cast<const ELEM_LEFT &>(*lhs) == static_cast<const ELEM_LEFT &>(*rhs)); ++lhs, ++rhs)
                 -- count;
 
             result = count == 0;
@@ -981,10 +978,13 @@ inline void NEMemory::zeroData( ELEM & elem )
 }
 
 template<typename ELEM>
-inline void NEMemory::zeroElements( ELEM * elemList, uint32_t elemCount )
+inline void NEMemory::zeroElements( ELEM * elemList, int elemCount )
 {
-	unsigned int single = static_cast<unsigned int>(sizeof(ELEM));
-    NEMemory::zeroBuffer( reinterpret_cast<void *>(elemList), static_cast<int>(elemCount * single) );
+    if ( elemCount > 0 )
+    {
+        int single = static_cast<int>(sizeof(ELEM));
+        NEMemory::zeroBuffer( reinterpret_cast<void *>(elemList), elemCount * single );
+    }
 }
 
 inline const char * NEMemory::getString( NEMemory::eMessageResult msgResult )

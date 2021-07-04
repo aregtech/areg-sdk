@@ -4,7 +4,7 @@
 /************************************************************************
  * (c) copyright    2021
  *                  Create by AREG SDK code generator tool from source ConnectionManager.
- * Generated at     23.05.2021  00:18:56 GMT+02:00 
+ * Generated at     04.07.2021  04:30:00 GMT+02:00 
  ************************************************************************/
 
 /************************************************************************
@@ -46,9 +46,8 @@ namespace NEConnectionManager
  * Constructor / Destructor
  ************************************************************************/
 
-ConnectionManagerClientBase::ConnectionManagerClientBase( const char* roleName, const char * ownerThread /*= static_cast<const char *>(NULL)*/ )
+ConnectionManagerClientBase::ConnectionManagerClientBase( const char * roleName, const char * ownerThread /*= static_cast<const char *>(NULL)*/ )
     : IEProxyListener   ( )
-    , ClientBase        ( )
 
     , mIsConnected      ( false )
     , mCurrSequenceNr   ( 0 )
@@ -57,9 +56,8 @@ ConnectionManagerClientBase::ConnectionManagerClientBase( const char* roleName, 
     ; // do nothing
 }
 
-ConnectionManagerClientBase::ConnectionManagerClientBase( const char* roleName, DispatcherThread & ownerThread )
+ConnectionManagerClientBase::ConnectionManagerClientBase( const char * roleName, DispatcherThread & ownerThread )
     : IEProxyListener   ( )
-    , ClientBase        ( )
 
     , mIsConnected      ( false )
     , mCurrSequenceNr   ( 0 )
@@ -70,7 +68,6 @@ ConnectionManagerClientBase::ConnectionManagerClientBase( const char* roleName, 
 
 ConnectionManagerClientBase::ConnectionManagerClientBase( const char* roleName, Component & owner )
     : IEProxyListener   ( )
-    , ClientBase        ( )
 
     , mIsConnected      ( false )
     , mCurrSequenceNr   ( 0 )
@@ -98,28 +95,22 @@ ConnectionManagerClientBase::~ConnectionManagerClientBase( void )
 bool ConnectionManagerClientBase::recreateProxy( void )
 {
     bool result         = false;
-    String roleName   = mProxy != NULL ? mProxy->getProxyAddress().getRoleName() : "";
-    String threadName = mProxy != NULL ? mProxy->getProxyAddress().getThread()   : "";
-    if ( roleName.isEmpty() == false )
+    if (mProxy != NULL)
     {
-        ConnectionManagerProxy * newProxy = ConnectionManagerProxy::createProxy(roleName.getString(), static_cast<IEProxyListener &>(self()), threadName.getString());
-        if (newProxy != NULL)
+        String roleName   = mProxy->getProxyAddress().getRoleName();
+        String threadName = mProxy->getProxyAddress().getThread();
+        if ( roleName.isEmpty() == false )
         {
-            mProxy->clearAllNotifications( static_cast<IENotificationEventConsumer &>(self()) );
-            mProxy->freeProxy (static_cast<IEProxyListener &>(self()) );
-            mProxy = newProxy;
-            result = true;
-        }
-        else
-        {
-            ; // do nothing
-        }
+            ConnectionManagerProxy * newProxy = ConnectionManagerProxy::createProxy(roleName.getString(), static_cast<IEProxyListener &>(self()), threadName.getString());
+            if (newProxy != NULL)
+            {
+                mProxy->clearAllNotifications( static_cast<IENotificationEventConsumer &>(self()) );
+                mProxy->freeProxy (static_cast<IEProxyListener &>(self()) );
+                mProxy = newProxy;
+                result = true;
+            }
+        }    
     }
-    else
-    {
-        ; // do nothing, no role name is assigned
-    }
-    
     return result;
 }
 
@@ -128,20 +119,16 @@ DispatcherThread * ConnectionManagerClientBase::getDispatcherThread( void )
     return ( mProxy != static_cast<ConnectionManagerProxy *>(NULL) ? &(mProxy->getProxyDispatcherThread()) : static_cast<DispatcherThread *>(NULL) );
 }
 
-void ConnectionManagerClientBase::clearAllNotifications( void )
-{
-    mProxy->clearAllNotifications(static_cast<IENotificationEventConsumer &>(self()));
-}
-
-DEF_TRACE_SCOPE(shared_generated_ConnectionManagerClientBase_ServiceConnected);
+DEF_TRACE_SCOPE(shared_generated_ConnectionManagerClientBase_serviceConnected);
 bool ConnectionManagerClientBase::serviceConnected( bool isConnected, ProxyBase & proxy )
 {
-    TRACE_SCOPE(shared_generated_ConnectionManagerClientBase_ServiceConnected);
+    TRACE_SCOPE(shared_generated_ConnectionManagerClientBase_serviceConnected);
     
     bool result = false;
     if(mProxy == &proxy)
     {
-        TRACE_DBG("The Service [ %s ] with Role Name [ %s ] is [ %s ]"
+        TRACE_DBG("Client [ %p ]: The Service [ %s ] with Role Name [ %s ] is [ %s ]"
+                 , this
                  , proxy.getProxyAddress().getServiceName().getString()
                  , proxy.getProxyAddress().getRoleName().getString()
                  , isConnected ? "CONNECTED" : "DISCONNECTED");
@@ -306,19 +293,19 @@ DEF_TRACE_SCOPE(shared_generated_ConnectionManagerClientBase_invalidResponse);
 void ConnectionManagerClientBase::invalidResponse( NEConnectionManager::eMessageIDs InvalidRespId )
 {
     TRACE_SCOPE(shared_generated_ConnectionManagerClientBase_invalidResponse);
-    TRACE_WARN(">>> There is an invalid response [ %s ] (value = [ %d ]) in client ConnectionManagerClientBase with path [ %s ], which cannot be processed! Make error handling! <<<"
+    TRACE_ERR("The invalid response [ %s ] (value = [ %d ]) method of proxy [ %s ] client ConnectionManagerClientBase is not implemented! Make error handling!"
                     , NEConnectionManager::getString(InvalidRespId)
                     , static_cast<unsigned int>(InvalidRespId)
                     , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString() );
-                    
-    ClientBase::responseInvalidNotImpelemnted("ConnectionManagerClientBase", static_cast<unsigned int>(InvalidRespId));
+
+    ASSERT(false);
 }
 
 DEF_TRACE_SCOPE(shared_generated_ConnectionManagerClientBase_invalidRequest);
 void ConnectionManagerClientBase::invalidRequest( NEConnectionManager::eMessageIDs InvalidReqId )
 {
     TRACE_SCOPE(shared_generated_ConnectionManagerClientBase_invalidRequest);
-    TRACE_WARN(">>> There is an invalid request [ %s ] (value = [ %d ]) in client ConnectionManagerClientBase with path [ %s ], which was not able to process! Make error handling! <<<"
+    TRACE_ERR("The invalid request [ %s ] (value = [ %d ]) method of proxy [ %s ] client ConnectionManagerClientBase is not implemented! Make error handling!"
                     , NEConnectionManager::getString(InvalidReqId)
                     , static_cast<unsigned int>(InvalidReqId)
                     , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString() );
@@ -330,7 +317,7 @@ DEF_TRACE_SCOPE(shared_generated_ConnectionManagerClientBase_requestFailed);
 void ConnectionManagerClientBase::requestFailed( NEConnectionManager::eMessageIDs FailureMsgId, NEService::eResultType FailureReason )
 {
     TRACE_SCOPE(shared_generated_ConnectionManagerClientBase_requestFailed);
-    TRACE_WARN(">>> The request [ %s ] (value = [ %d ]) in Proxy [ %s ] of ConnectionManagerClientBase failed with reason [ %s ]! Triggering appropriate request failed function! <<<"
+    TRACE_WARN("The request [ %s ] (value = [ %d ]) method of proxy [ %s ] client ConnectionManagerClientBase failed with reason [ %s ]! Implemented error handling!"
                     , NEConnectionManager::getString(FailureMsgId)
                     , static_cast<unsigned int>(FailureMsgId)
                     , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString()
@@ -353,55 +340,93 @@ void ConnectionManagerClientBase::requestFailed( NEConnectionManager::eMessageID
  * Attribute notifications
  ************************************************************************/
 
+DEF_TRACE_SCOPE(shared_generated_ConnectionManagerClientBase_onConnectionListUpdate);
 void ConnectionManagerClientBase::onConnectionListUpdate( const NEConnectionManager::MapConnection & /* ConnectionList */, NEService::eDataStateType /* state */ )
 {
-    ClientBase::onUpdateNotImplemented( "ConnectionManagerClientBase", static_cast<unsigned int>(NEConnectionManager::MSG_ID_ConnectionList) );
+    TRACE_SCOPE(shared_generated_ConnectionManagerClientBase_onConnectionListUpdate);
+    TRACE_WARN("The attribute ConnectionList (value = %u) update method of proxy [ %s ] client ConnectionManagerClientBase is not implemented!"
+                    , static_cast<unsigned int>(NEConnectionManager::MSG_ID_ConnectionList)
+                    , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString());
 }
 
 /************************************************************************
  * Request failure / Response and Broadcast notifications
  ************************************************************************/
  
-void ConnectionManagerClientBase::requestConnetFailed( NEService::eResultType /* FailureReason */ )
+DEF_TRACE_SCOPE(shared_generated_ConnectionManagerClientBase_requestConnetFailed);
+void ConnectionManagerClientBase::requestConnetFailed( NEService::eResultType FailureReason )
 {
-    ClientBase::requestFailedNotImplemented( "ConnectionManagerClientBase", static_cast<unsigned int>(NEConnectionManager::MSG_ID_requestConnet) );
+    TRACE_SCOPE(shared_generated_ConnectionManagerClientBase_requestConnetFailed);
+    TRACE_WARN("The request requestConnet (value = %u) method of proxy [ %s ] client ConnectionManagerClientBase is failed with reason [ %s ]! Make error handling!"
+                    , static_cast<unsigned int>(NEConnectionManager::MSG_ID_requestConnet)
+                    , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString()
+                    , NEService::getString(FailureReason));
 }
 
-void ConnectionManagerClientBase::requestRegisterConnectionFailed( NEService::eResultType /* FailureReason */ )
+DEF_TRACE_SCOPE(shared_generated_ConnectionManagerClientBase_requestRegisterConnectionFailed);
+void ConnectionManagerClientBase::requestRegisterConnectionFailed( NEService::eResultType FailureReason )
 {
-    ClientBase::requestFailedNotImplemented( "ConnectionManagerClientBase", static_cast<unsigned int>(NEConnectionManager::MSG_ID_requestRegisterConnection) );
+    TRACE_SCOPE(shared_generated_ConnectionManagerClientBase_requestRegisterConnectionFailed);
+    TRACE_WARN("The request requestRegisterConnection (value = %u) method of proxy [ %s ] client ConnectionManagerClientBase is failed with reason [ %s ]! Make error handling!"
+                    , static_cast<unsigned int>(NEConnectionManager::MSG_ID_requestRegisterConnection)
+                    , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString()
+                    , NEService::getString(FailureReason));
 }
 
-void ConnectionManagerClientBase::requestDiconnectFailed( NEService::eResultType /* FailureReason */ )
+DEF_TRACE_SCOPE(shared_generated_ConnectionManagerClientBase_requestDiconnectFailed);
+void ConnectionManagerClientBase::requestDiconnectFailed( NEService::eResultType FailureReason )
 {
-    ClientBase::requestFailedNotImplemented( "ConnectionManagerClientBase", static_cast<unsigned int>(NEConnectionManager::MSG_ID_requestDiconnect) );
+    TRACE_SCOPE(shared_generated_ConnectionManagerClientBase_requestDiconnectFailed);
+    TRACE_WARN("The request requestDiconnect (value = %u) method of proxy [ %s ] client ConnectionManagerClientBase is failed with reason [ %s ]! Make error handling!"
+                    , static_cast<unsigned int>(NEConnectionManager::MSG_ID_requestDiconnect)
+                    , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString()
+                    , NEService::getString(FailureReason));
 }
 
+DEF_TRACE_SCOPE(shared_generated_ConnectionManagerClientBase_responseConnect);
 void ConnectionManagerClientBase::responseConnect( const String & /* nickName */, unsigned int /* cookie */, const DateTime & /* dateTime */, NEConnectionManager::eConnectionResult /* result */ )
 {
-    ClientBase::responseNotImplemented( "ConnectionManagerClientBase", static_cast<unsigned int>(NEConnectionManager::MSG_ID_responseConnect) );
+    TRACE_SCOPE(shared_generated_ConnectionManagerClientBase_responseConnect);
+    TRACE_WARN("The response responseConnect (value = %u) method of proxy [ %s ] client ConnectionManagerClientBase is not implemented!"
+                    , static_cast<unsigned int>(NEConnectionManager::MSG_ID_responseConnect)
+                    , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString());
 }
 
+DEF_TRACE_SCOPE(shared_generated_ConnectionManagerClientBase_responseRegisterConnection);
 void ConnectionManagerClientBase::responseRegisterConnection( const NEConnectionManager::sConnection & /* connection */, const NEConnectionManager::ListConnection & /* connectionList */, bool /* success */ )
 {
-    ClientBase::responseNotImplemented( "ConnectionManagerClientBase", static_cast<unsigned int>(NEConnectionManager::MSG_ID_responseRegisterConnection) );
+    TRACE_SCOPE(shared_generated_ConnectionManagerClientBase_responseRegisterConnection);
+    TRACE_WARN("The response responseRegisterConnection (value = %u) method of proxy [ %s ] client ConnectionManagerClientBase is not implemented!"
+                    , static_cast<unsigned int>(NEConnectionManager::MSG_ID_responseRegisterConnection)
+                    , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString());
 }
 
+DEF_TRACE_SCOPE(shared_generated_ConnectionManagerClientBase_broadcastConnectionUpdated);
 void ConnectionManagerClientBase::broadcastConnectionUpdated( const NEConnectionManager::MapConnection & /* updatedList */ )
 {
-    ClientBase::broadcastNotImplemented( "ConnectionManagerClientBase", static_cast<unsigned int>(NEConnectionManager::MSG_ID_broadcastConnectionUpdated) );
+    TRACE_SCOPE(shared_generated_ConnectionManagerClientBase_broadcastConnectionUpdated);
+    TRACE_WARN("The broadcast broadcastConnectionUpdated (value = %u) method of proxy [ %s ] client ConnectionManagerClientBase is not implemented!"
+                    , static_cast<unsigned int>(NEConnectionManager::MSG_ID_broadcastConnectionUpdated)
+                    , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString());
 }
 
+DEF_TRACE_SCOPE(shared_generated_ConnectionManagerClientBase_broadcastClientConnected);
 void ConnectionManagerClientBase::broadcastClientConnected( const NEConnectionManager::sConnection & /* clientConnected */ )
 {
-    ClientBase::broadcastNotImplemented( "ConnectionManagerClientBase", static_cast<unsigned int>(NEConnectionManager::MSG_ID_broadcastClientConnected) );
+    TRACE_SCOPE(shared_generated_ConnectionManagerClientBase_broadcastClientConnected);
+    TRACE_WARN("The broadcast broadcastClientConnected (value = %u) method of proxy [ %s ] client ConnectionManagerClientBase is not implemented!"
+                    , static_cast<unsigned int>(NEConnectionManager::MSG_ID_broadcastClientConnected)
+                    , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString());
 }
 
+DEF_TRACE_SCOPE(shared_generated_ConnectionManagerClientBase_broadcastClientDisconnected);
 void ConnectionManagerClientBase::broadcastClientDisconnected( const NEConnectionManager::sConnection & /* clientLeft */ )
 {
-    ClientBase::broadcastNotImplemented( "ConnectionManagerClientBase", static_cast<unsigned int>(NEConnectionManager::MSG_ID_broadcastClientDisconnected) );
+    TRACE_SCOPE(shared_generated_ConnectionManagerClientBase_broadcastClientDisconnected);
+    TRACE_WARN("The broadcast broadcastClientDisconnected (value = %u) method of proxy [ %s ] client ConnectionManagerClientBase is not implemented!"
+                    , static_cast<unsigned int>(NEConnectionManager::MSG_ID_broadcastClientDisconnected)
+                    , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString());
 }
-
 
 //////////////////////////////////////////////////////////////////////////
 // End generate shared/generated/private/ConnectionManagerClientBase.cpp file

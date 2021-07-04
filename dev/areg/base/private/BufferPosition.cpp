@@ -79,6 +79,7 @@ unsigned int BufferPosition::setPosition( int offset, IECursorPosition::eCursorP
     {
         offset = 0;
     }
+
     mPosition = static_cast<unsigned int>(curPos + offset);
     return mPosition;
 }

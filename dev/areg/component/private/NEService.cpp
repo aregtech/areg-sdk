@@ -115,6 +115,7 @@ void NEService::ParameterArray::construct( const unsigned int * params, int coun
                 {
                     ;  // no param, do nothing
                 }
+
                 // make sure that do not jump over the buffer
                 ASSERT(paramElem <= buffer + size);
                 mParamList[i] = param;

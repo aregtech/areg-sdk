@@ -7,7 +7,7 @@
 /************************************************************************
  * (c) copyright    2021
  *                  Create by AREG SDK code generator tool from source HelloWorld.
- * Generated at     27.05.2021  03:25:25 GMT+02:00 
+ * Generated at     04.07.2021  04:21:09 GMT+02:00 
  ************************************************************************/
 
 /************************************************************************
@@ -265,7 +265,7 @@ namespace   NEHelloWorld
  * \brief   Declare and implement NEHelloWorld methods
  ************************************************************************/
 
-IMPLEMENT_STREAMABLE( NEHelloWorld::eMessageIDs )
+IMPLEMENT_STREAMABLE( NEHelloWorld::eMessageIDs );
 
 /************************************************************************
  * NEHelloWorld::sConnectedClient strcuture inline implementation

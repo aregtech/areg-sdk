@@ -23,6 +23,8 @@ const char * NERemoteService::getServiceConnectionTypeString(NERemoteService::eS
     {
     case NERemoteService::ConnectionTcpip:
         return NERemoteService::STR_CONNECTION_TYPE_TCPIP;
+
+    case NERemoteService::ConnectionUndefined:  // fall through
     default:
         return String::EmptyString;
     }

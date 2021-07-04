@@ -921,13 +921,6 @@ const NERegistry::ComponentThreadEntry & NERegistry::ComponentThreadList::getThr
 int NERegistry::ComponentThreadList::findThread( const NERegistry::ComponentThreadEntry& entry ) const
 {
     return findThread( static_cast<const char *>(entry.mThreadName) );
-    int i = 0;
-    for ( ; i < getSize(); ++ i )
-    {
-        if (getAt(i) == entry)
-            break;
-    }
-    return (i < getSize() ? i : NECommon::InvalidIndex);
 }
 
 int NERegistry::ComponentThreadList::findThread( const char* threadName ) const
@@ -938,6 +931,7 @@ int NERegistry::ComponentThreadList::findThread( const char* threadName ) const
         if (getAt(i).mThreadName == threadName)
             break;
     }
+
     return (i < getSize() ? i : NECommon::InvalidIndex);
 }
 

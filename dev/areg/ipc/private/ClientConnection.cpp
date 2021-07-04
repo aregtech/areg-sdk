@@ -18,7 +18,7 @@ ClientConnection::ClientConnection( void )
     ; // do nothing
 }
 
-ClientConnection::ClientConnection(const char * hostName, unsigned int portNr)
+ClientConnection::ClientConnection(const char * hostName, unsigned short portNr)
     : SocketConnectionBase    ( )
     , mClientSocket ( hostName, portNr )
     , mCookie       ( NEService::COOKIE_UNKNOWN )

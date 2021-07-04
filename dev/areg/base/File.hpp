@@ -130,7 +130,7 @@ public:
      * \param	mode	    file open mode. 
      *                      For modes, see description in FileBase class 
      **/
-    File(const char* fileName, int mode = (FileBase::FO_MODE_WRITE | FileBase::FO_MODE_BINARY | FileBase::FOB_SHARE_READ));
+    File(const char* fileName, unsigned int mode = (FileBase::FO_MODE_WRITE | FileBase::FO_MODE_BINARY | FileBase::FOB_SHARE_READ));
 
     /**
      * \brief   Destructor

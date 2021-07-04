@@ -6,7 +6,7 @@
 /************************************************************************
  * (c) copyright    2021
  *                  Create by AREG SDK code generator tool from source HelloWorld.
- * Generated at     27.05.2021  03:25:25 GMT+02:00 
+ * Generated at     04.07.2021  04:21:09 GMT+02:00 
  ************************************************************************/
 
 /************************************************************************
@@ -20,7 +20,6 @@
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
 #include "shripchello/src/NEHelloWorld.hpp"
-#include "areg/component/ClientBase.hpp"
 #include "areg/component/IEProxyListener.hpp"
 #include "areg/component/NotificationEvent.hpp"
 
@@ -42,8 +41,7 @@ class DispatcherThread;
  *
  *              Simple Service Interface to demonstrate working features of AREG SDK.
  **/
-class HelloWorldClientBase  : private	ClientBase
-							, public    IEProxyListener
+class HelloWorldClientBase  : public IEProxyListener
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor. Protected

@@ -77,6 +77,7 @@ unsigned long Thread::_defaultThreadFunction(void* data)
     {
         do 
         {
+            // Check if initialization is completed and ready to run.
             Lock lock(threadObj->mSynchObject);
         } while (false);
 
@@ -94,7 +95,6 @@ unsigned long Thread::_defaultThreadFunction(void* data)
         OUTPUT_DBG("Thread [ %s ] completed job with code [ %s ]", static_cast<const char *>(threadObj->getName()), IEThreadConsumer::getString(result));
 
         threadObj->mWaitForExit.setEvent();
-        // Thread::switchThread();
     }
 #ifdef  _DEBUG
     else

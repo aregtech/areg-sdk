@@ -327,12 +327,12 @@ inline const RuntimeObject* RuntimeObject::runtimeCast( unsigned int classNumber
     return (isInstanceOfRuntimeClass( classNumber ) ? this : NULL);
 }
 
-inline const RuntimeObject* RuntimeCast(const RuntimeObject* ptr, const RuntimeClassID& classId)
+inline const RuntimeObject* RuntimeCast(const RuntimeObject * ptr, const RuntimeClassID & classId)
 {
     return (ptr != NULL ? ptr->runtimeCast(classId) : NULL);
 }
 
-inline const RuntimeObject* RuntimeCast(const RuntimeObject* ptr, const char* className)
+inline const RuntimeObject* RuntimeCast(const RuntimeObject * ptr, const char * className)
 {
     return (ptr != NULL ? ptr->runtimeCast(className) : NULL);
 }

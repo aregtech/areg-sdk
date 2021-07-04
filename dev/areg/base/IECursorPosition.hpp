@@ -68,13 +68,10 @@ protected:
      * \brief   Protected constructor
      **/
     IECursorPosition( void );
-
-public:
     /**
      * \brief   Destructor
      **/
     virtual ~IECursorPosition( void );
-
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides

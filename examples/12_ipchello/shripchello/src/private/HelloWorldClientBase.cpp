@@ -4,7 +4,7 @@
 /************************************************************************
  * (c) copyright    2021
  *                  Create by AREG SDK code generator tool from source HelloWorld.
- * Generated at     27.05.2021  03:25:25 GMT+02:00 
+ * Generated at     04.07.2021  04:21:09 GMT+02:00 
  ************************************************************************/
 
 /************************************************************************
@@ -46,8 +46,7 @@ namespace NEHelloWorld
  ************************************************************************/
 
 HelloWorldClientBase::HelloWorldClientBase( const char * roleName, const char * ownerThread /*= static_cast<const char *>(NULL)*/ )
-	: ClientBase        ( )
-	, IEProxyListener   ( )
+    : IEProxyListener   ( )
 
     , mIsConnected      ( false )
     , mCurrSequenceNr   ( 0 )
@@ -57,8 +56,7 @@ HelloWorldClientBase::HelloWorldClientBase( const char * roleName, const char * 
 }
 
 HelloWorldClientBase::HelloWorldClientBase( const char * roleName, DispatcherThread & ownerThread )
-    : ClientBase        ( )
-	, IEProxyListener   ( )
+    : IEProxyListener   ( )
 
     , mIsConnected      ( false )
     , mCurrSequenceNr   ( 0 )
@@ -68,8 +66,7 @@ HelloWorldClientBase::HelloWorldClientBase( const char * roleName, DispatcherThr
 }
 
 HelloWorldClientBase::HelloWorldClientBase( const char* roleName, Component & owner )
-	: ClientBase        ( )
-	, IEProxyListener   ( )
+    : IEProxyListener   ( )
 
     , mIsConnected      ( false )
     , mCurrSequenceNr   ( 0 )
@@ -82,8 +79,8 @@ HelloWorldClientBase::~HelloWorldClientBase( void )
 {
     if (mProxy != NULL)
     {
-        mProxy->clearAllNotifications( static_cast<IENotificationEventConsumer &>(*this) );
-        mProxy->freeProxy( static_cast<IEProxyListener &>(*this) );
+        mProxy->clearAllNotifications( static_cast<IENotificationEventConsumer &>(self()) );
+        mProxy->freeProxy( static_cast<IEProxyListener &>(self()) );
         mProxy  = NULL;
     }
     
@@ -103,17 +100,16 @@ bool HelloWorldClientBase::recreateProxy( void )
         String threadName = mProxy->getProxyAddress().getThread();
         if ( roleName.isEmpty() == false )
         {
-            HelloWorldProxy * newProxy = HelloWorldProxy::createProxy(roleName.getString(), static_cast<IEProxyListener &>(*this), threadName.getString());
+            HelloWorldProxy * newProxy = HelloWorldProxy::createProxy(roleName.getString(), static_cast<IEProxyListener &>(self()), threadName.getString());
             if (newProxy != NULL)
             {
-                mProxy->clearAllNotifications( static_cast<IENotificationEventConsumer &>(*this) );
-                mProxy->freeProxy (static_cast<IEProxyListener &>(*this) );
+                mProxy->clearAllNotifications( static_cast<IENotificationEventConsumer &>(self()) );
+                mProxy->freeProxy (static_cast<IEProxyListener &>(self()) );
                 mProxy = newProxy;
                 result = true;
             }
-        }
+        }    
     }
-    
     return result;
 }
 
@@ -130,7 +126,8 @@ bool HelloWorldClientBase::serviceConnected( bool isConnected, ProxyBase & proxy
     bool result = false;
     if(mProxy == &proxy)
     {
-        TRACE_DBG("The Service [ %s ] with Role Name [ %s ] is [ %s ]"
+        TRACE_DBG("Client [ %p ]: The Service [ %s ] with Role Name [ %s ] is [ %s ]"
+                 , this
                  , proxy.getProxyAddress().getServiceName().getString()
                  , proxy.getProxyAddress().getRoleName().getString()
                  , isConnected ? "CONNECTED" : "DISCONNECTED");
@@ -145,9 +142,9 @@ bool HelloWorldClientBase::serviceConnected( bool isConnected, ProxyBase & proxy
 void HelloWorldClientBase::notifyOn( NEHelloWorld::eMessageIDs msgId, bool notify, bool always /* = false */ )
 {
     if (notify)
-        mProxy->setNotification(msgId, static_cast<IENotificationEventConsumer &>(*this), always);
+        mProxy->setNotification(msgId, static_cast<IENotificationEventConsumer &>(self()), always);
     else
-        mProxy->clearNotification(msgId, static_cast<IENotificationEventConsumer &>(*this));
+        mProxy->clearNotification(msgId, static_cast<IENotificationEventConsumer &>(self()));
 }
 
 /************************************************************************
@@ -282,19 +279,19 @@ DEF_TRACE_SCOPE(shripchello_src_HelloWorldClientBase_invalidResponse);
 void HelloWorldClientBase::invalidResponse( NEHelloWorld::eMessageIDs InvalidRespId )
 {
     TRACE_SCOPE(shripchello_src_HelloWorldClientBase_invalidResponse);
-    TRACE_WARN(">>> There is an invalid response [ %s ] (value = [ %d ]) in client HelloWorldClientBase with path [ %s ], which cannot be processed! Make error handling! <<<"
+    TRACE_ERR("The invalid response [ %s ] (value = [ %d ]) method of proxy [ %s ] client HelloWorldClientBase is not implemented! Make error handling!"
                     , NEHelloWorld::getString(InvalidRespId)
                     , static_cast<unsigned int>(InvalidRespId)
                     , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString() );
-                    
-    ClientBase::responseInvalidNotImpelemnted("HelloWorldClientBase", static_cast<unsigned int>(InvalidRespId));
+
+    ASSERT(false);
 }
 
 DEF_TRACE_SCOPE(shripchello_src_HelloWorldClientBase_invalidRequest);
 void HelloWorldClientBase::invalidRequest( NEHelloWorld::eMessageIDs InvalidReqId )
 {
     TRACE_SCOPE(shripchello_src_HelloWorldClientBase_invalidRequest);
-    TRACE_WARN(">>> There is an invalid request [ %s ] (value = [ %d ]) in client HelloWorldClientBase with path [ %s ], which was not able to process! Make error handling! <<<"
+    TRACE_ERR("The invalid request [ %s ] (value = [ %d ]) method of proxy [ %s ] client HelloWorldClientBase is not implemented! Make error handling!"
                     , NEHelloWorld::getString(InvalidReqId)
                     , static_cast<unsigned int>(InvalidReqId)
                     , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString() );
@@ -306,7 +303,7 @@ DEF_TRACE_SCOPE(shripchello_src_HelloWorldClientBase_requestFailed);
 void HelloWorldClientBase::requestFailed( NEHelloWorld::eMessageIDs FailureMsgId, NEService::eResultType FailureReason )
 {
     TRACE_SCOPE(shripchello_src_HelloWorldClientBase_requestFailed);
-    TRACE_WARN(">>> The request [ %s ] (value = [ %d ]) in Proxy [ %s ] of HelloWorldClientBase failed with reason [ %s ]! Triggering appropriate request failed function! <<<"
+    TRACE_WARN("The request [ %s ] (value = [ %d ]) method of proxy [ %s ] client HelloWorldClientBase failed with reason [ %s ]! Implemented error handling!"
                     , NEHelloWorld::getString(FailureMsgId)
                     , static_cast<unsigned int>(FailureMsgId)
                     , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString()
@@ -329,43 +326,73 @@ void HelloWorldClientBase::requestFailed( NEHelloWorld::eMessageIDs FailureMsgId
  * Attribute notifications
  ************************************************************************/
 
+DEF_TRACE_SCOPE(shripchello_src_HelloWorldClientBase_onConnectedClientsUpdate);
 void HelloWorldClientBase::onConnectedClientsUpdate( const NEHelloWorld::ConnectionList & /* ConnectedClients */, NEService::eDataStateType /* state */ )
 {
-    ClientBase::onUpdateNotImplemented( "HelloWorldClientBase", static_cast<unsigned int>(NEHelloWorld::MSG_ID_ConnectedClients) );
+    TRACE_SCOPE(shripchello_src_HelloWorldClientBase_onConnectedClientsUpdate);
+    TRACE_WARN("The attribute ConnectedClients (value = %u) update method of proxy [ %s ] client HelloWorldClientBase is not implemented!"
+                    , static_cast<unsigned int>(NEHelloWorld::MSG_ID_ConnectedClients)
+                    , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString());
 }
 
+DEF_TRACE_SCOPE(shripchello_src_HelloWorldClientBase_onRemainOutputUpdate);
 void HelloWorldClientBase::onRemainOutputUpdate( short /* RemainOutput */, NEService::eDataStateType /* state */ )
 {
-    ClientBase::onUpdateNotImplemented( "HelloWorldClientBase", static_cast<unsigned int>(NEHelloWorld::MSG_ID_RemainOutput) );
+    TRACE_SCOPE(shripchello_src_HelloWorldClientBase_onRemainOutputUpdate);
+    TRACE_WARN("The attribute RemainOutput (value = %u) update method of proxy [ %s ] client HelloWorldClientBase is not implemented!"
+                    , static_cast<unsigned int>(NEHelloWorld::MSG_ID_RemainOutput)
+                    , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString());
 }
 
 /************************************************************************
  * Request failure / Response and Broadcast notifications
  ************************************************************************/
  
-void HelloWorldClientBase::requestHelloWorldFailed( NEService::eResultType /* FailureReason */ )
+DEF_TRACE_SCOPE(shripchello_src_HelloWorldClientBase_requestHelloWorldFailed);
+void HelloWorldClientBase::requestHelloWorldFailed( NEService::eResultType FailureReason )
 {
-    ClientBase::requestFailedNotImplemented( "HelloWorldClientBase", static_cast<unsigned int>(NEHelloWorld::MSG_ID_requestHelloWorld) );
+    TRACE_SCOPE(shripchello_src_HelloWorldClientBase_requestHelloWorldFailed);
+    TRACE_WARN("The request requestHelloWorld (value = %u) method of proxy [ %s ] client HelloWorldClientBase is failed with reason [ %s ]! Make error handling!"
+                    , static_cast<unsigned int>(NEHelloWorld::MSG_ID_requestHelloWorld)
+                    , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString()
+                    , NEService::getString(FailureReason));
 }
 
-void HelloWorldClientBase::requestClientShutdownFailed( NEService::eResultType /* FailureReason */ )
+DEF_TRACE_SCOPE(shripchello_src_HelloWorldClientBase_requestClientShutdownFailed);
+void HelloWorldClientBase::requestClientShutdownFailed( NEService::eResultType FailureReason )
 {
-    ClientBase::requestFailedNotImplemented( "HelloWorldClientBase", static_cast<unsigned int>(NEHelloWorld::MSG_ID_requestClientShutdown) );
+    TRACE_SCOPE(shripchello_src_HelloWorldClientBase_requestClientShutdownFailed);
+    TRACE_WARN("The request requestClientShutdown (value = %u) method of proxy [ %s ] client HelloWorldClientBase is failed with reason [ %s ]! Make error handling!"
+                    , static_cast<unsigned int>(NEHelloWorld::MSG_ID_requestClientShutdown)
+                    , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString()
+                    , NEService::getString(FailureReason));
 }
 
+DEF_TRACE_SCOPE(shripchello_src_HelloWorldClientBase_responseHelloWorld);
 void HelloWorldClientBase::responseHelloWorld( const NEHelloWorld::sConnectedClient & /* clientInfo */ )
 {
-    ClientBase::responseNotImplemented( "HelloWorldClientBase", static_cast<unsigned int>(NEHelloWorld::MSG_ID_responseHelloWorld) );
+    TRACE_SCOPE(shripchello_src_HelloWorldClientBase_responseHelloWorld);
+    TRACE_WARN("The response responseHelloWorld (value = %u) method of proxy [ %s ] client HelloWorldClientBase is not implemented!"
+                    , static_cast<unsigned int>(NEHelloWorld::MSG_ID_responseHelloWorld)
+                    , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString());
 }
 
+DEF_TRACE_SCOPE(shripchello_src_HelloWorldClientBase_broadcastHelloClients);
 void HelloWorldClientBase::broadcastHelloClients( const NEHelloWorld::ConnectionList & /* clientList */ )
 {
-    ClientBase::broadcastNotImplemented( "HelloWorldClientBase", static_cast<unsigned int>(NEHelloWorld::MSG_ID_broadcastHelloClients) );
+    TRACE_SCOPE(shripchello_src_HelloWorldClientBase_broadcastHelloClients);
+    TRACE_WARN("The broadcast broadcastHelloClients (value = %u) method of proxy [ %s ] client HelloWorldClientBase is not implemented!"
+                    , static_cast<unsigned int>(NEHelloWorld::MSG_ID_broadcastHelloClients)
+                    , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString());
 }
 
+DEF_TRACE_SCOPE(shripchello_src_HelloWorldClientBase_broadcastServiceUnavailable);
 void HelloWorldClientBase::broadcastServiceUnavailable( void )
 {
-    ClientBase::broadcastNotImplemented( "HelloWorldClientBase", static_cast<unsigned int>(NEHelloWorld::MSG_ID_broadcastServiceUnavailable) );
+    TRACE_SCOPE(shripchello_src_HelloWorldClientBase_broadcastServiceUnavailable);
+    TRACE_WARN("The broadcast broadcastServiceUnavailable (value = %u) method of proxy [ %s ] client HelloWorldClientBase is not implemented!"
+                    , static_cast<unsigned int>(NEHelloWorld::MSG_ID_broadcastServiceUnavailable)
+                    , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString());
 }
 
 //////////////////////////////////////////////////////////////////////////

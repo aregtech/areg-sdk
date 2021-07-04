@@ -490,7 +490,8 @@ AREG_API SOCKETHANDLE NESocket::serverAcceptConnection(SOCKETHANDLE serverSocket
 
             for ( int count = 0; count < entriesCount; ++ count)
                 readList.fd_array[count + 1] = masterList[count];
-            readList.fd_count = entriesCount + 1;
+            
+            readList.fd_count = static_cast<u_int>( entriesCount + 1 );
 
 #else   // !WINDOWS
 
@@ -600,5 +601,5 @@ AREG_API int NESocket::pendingRead(SOCKETHANDLE hSocket)
     return (ioctl(static_cast<int>(hSocket), FIONREAD, &result) == 0 ? result : -1);
 #endif  // _WINDOWS
 
-    return result;
+    return static_cast<int>(result);
 }

@@ -503,7 +503,7 @@ namespace NEString
      *          and automatically sets end-of-string symbol at the end.
      **/
     template <typename CharDst, typename CharSrc>
-    inline CharCount appendString( SString<CharDst> & strDst, const CharSrc * strSrc, CharCount charCount = CountAll );
+    inline CharCount appendString( SString<CharDst> & strDst, const CharSrc * strSrc, CharCount charsCopy = CountAll );
 
     /**
      * \brief   Returns the size of string buffer in bytes to allocate for string buffer to set specified number of characters.
@@ -729,7 +729,7 @@ namespace NEString
      * \brief   In given string buffer removes white-space characters from left-side (from begin).
      * \param   strBuffer   The string buffer to remove white characters.
      * \param   strLen      The length of the string or NEString:CountAll if the length should be calculated.
-     * \return  Returns number of characters removed from buffer.
+     * \return  Returns number of characters in the buffer.
      **/
     template<typename CharType>
     CharCount trimLeft( CharType * strBuffer, CharCount strLen = NEString::CountAll );
@@ -743,7 +743,7 @@ namespace NEString
      *                  Otherwise, it will copy only first (lenDst - 1) characters and set end-of-string at the end.
      * \param   strSrc  The source string buffer.
      * \param   lenSrc  The length of the source string or NEString:CountAll if the length should be calculated.
-     * \return  Returns number of characters removed from buffer.
+     * \return  Returns number of characters copied to the destination buffer.
      **/
     template<typename CharDst, typename CharSrc>
     CharCount trimLeft( CharDst *strDst, CharCount lenDst, const CharSrc * strSrc, CharCount lenSrc = NEString::CountAll );
@@ -752,7 +752,7 @@ namespace NEString
      * \brief   In given string buffer removes white-space characters from right-side (from end).
      * \param   strBuffer   The string buffer to remove white characters.
      * \param   strLen      The length of the string or NEString:CountAll if the length should be calculated.
-     * \return  Returns number of characters removed from buffer.
+     * \return  Returns number of characters in the buffer.
      **/
     template<typename CharType>
     CharCount trimRight( CharType * strBuffer, CharCount strLen = NEString::CountAll );
@@ -766,7 +766,7 @@ namespace NEString
      *                  Otherwise, it will copy only first (lenDst - 1) characters and set end-of-string at the end.
      * \param   strSrc  The source string buffer.
      * \param   lenSrc  The length of the source string or NEString:CountAll if the length should be calculated.
-     * \return  Returns number of characters removed from buffer.
+     * \return  Returns number of characters copied to the destination buffer.
      **/
     template<typename CharDst, typename CharSrc>
     CharCount trimRight( CharDst *strDst, CharCount lenDst, const CharSrc * strSrc, CharCount lenSrc = NEString::CountAll );
@@ -775,7 +775,7 @@ namespace NEString
      * \brief   In given string buffer removes white-space characters from left- and right-side (from begin and end).
      * \param   strBuffer   The string buffer to remove white characters.
      * \param   strLen      The length of the string or NEString:CountAll if the length should be calculated.
-     * \return  Returns number of characters removed from buffer.
+     * \return  Returns number of characters in buffer.
      **/
     template<typename CharType>
     CharCount trimAll( CharType * strBuffer, NEString::CharCount strLen = NEString::CountAll );
@@ -789,7 +789,7 @@ namespace NEString
      *                  Otherwise, it will copy only first (lenDst - 1) characters and set end-of-string at the end.
      * \param   strSrc  The source string buffer.
      * \param   lenSrc  The length of the source string or NEString:CountAll if the length should be calculated.
-     * \return  Returns number of characters removed from buffer.
+     * \return  Returns number of characters copied to the destination buffer.
      **/
     template<typename CharDst, typename CharSrc>
     CharCount trimAll( CharDst *strDst, NEString::CharCount lenDst, const CharSrc * strSrc, NEString::CharCount lenSrc = NEString::CountAll );
@@ -880,7 +880,7 @@ namespace NEString
      * \return  Returns true if the string starts with given phrase.
      **/
     template<typename CharType>
-    bool stringStartsWith(const CharType * strString, const char * phrase, bool isSensitive = true);
+    bool stringStartsWith(const CharType * strString, const CharType * phrase, bool isSensitive = true);
 
     /**
      * \brief   Returns true if a give string ends with specified phrase.
@@ -890,7 +890,7 @@ namespace NEString
      * \return  Returns true if the string ends with given phrase.
      **/
     template<typename CharType>
-    bool stringEndsWith(const CharType * strString, const char * phrase, bool isSensitive = true);
+    bool stringEndsWith(const CharType * strString, const CharType * phrase, bool isSensitive = true);
 
     /**
      * \brief   Returns printable string of given buffer. The buffer should be possible to modify.
@@ -975,6 +975,7 @@ int NEString::makeString( CharType * strDst, CharCount charCount, IntType digit,
 
             if ( (charCount != 0) && (digit < 0) && (radix == NEString::RadixDecimal) )
                 *dst ++ = '-';
+
             *dst = static_cast<CharType>(NEString::EndOfString);
             NEString::swapString<CharType>( strDst );
         }
@@ -998,25 +999,29 @@ int NEString::makeString( CharType * strDst, CharCount charCount, IntType digit,
                ++ result;
         }
     }
+    
     return result;
 }
 
 template<typename CharType>
 void NEString::swapString( CharType * strDst, NEString::CharCount charCount /*= NEString::CountAll*/ )
 {
-    if ( (NEString::isEmpty<CharType>( strDst ) == false) && (charCount != 0) )
+    if ( NEString::isEmpty<CharType>( strDst ) == false )
     {
         charCount = charCount == NEString::CountAll ? NEString::getStringLength<CharType>(strDst) : charCount;
-        CharType * begin    = strDst;
-        CharType * end      = strDst + charCount;
-        if ( *end == static_cast<CharType>(NEString::EndOfString) )
-            -- end;
-
-        while (end > begin )
+        if (charCount > 0)
         {
-            CharType ch = *begin;
-            *begin ++   = *end;
-            *end --     = ch;
+            CharType * begin    = strDst;
+            CharType * end      = strDst + charCount;
+            if ( *end == static_cast<CharType>(NEString::EndOfString) )
+                -- end;
+
+            while (end > begin )
+            {
+                CharType ch = *begin;
+                *begin ++   = *end;
+                *end --     = ch;
+            }
         }
     }
 }
@@ -1062,8 +1067,10 @@ int NEString::makeInteger(const CharType * strNumber, const CharType ** remain)
             }
         }
     }
+    
     if (remain != static_cast<CharType **>(NULL))
         *remain = strNumber;
+    
     return (static_cast<int>(sign) * result);
 }
 
@@ -1074,24 +1081,38 @@ const CharType * NEString::getLine( CharType * strSource, CharCount charCount/*=
     if ( out_next != NULL )
         *out_next = static_cast<CharType *>(NULL);
 
-    if ( (strSource != static_cast<const CharType *>(NULL)) && (charCount != 0) && (charCount < NEString::CountAll) )
+    if ( NEString::isEmpty<CharType>(strSource) == false )
     {
-        result = strSource;
+        charCount = charCount == NEString::CountAll ? MAX_INT_32 : charCount;
+        if ( charCount > 0 )
+        {
+            result = strSource;
 
-        // move pointer until char is printable
-        for ( ; (charCount != 0) && (NEString::isEndOfLine<CharType>(*strSource) == false); -- charCount )
-            ++ strSource;
+            // move pointer until char is printable
+            while (charCount != 0)
+            {
+                if (NEString::isEndOfLine<CharType>(*strSource))
+                {
+                    // set next position if not EOS.
+                    if ( (out_next != NULL) && (NEString::isEndOfString<CharType>(*strSource) == false) )
+                    {
+                        *out_next = (strSource + 1);
+                    }
 
-        if ( (result != strSource) && NEString::isCarriageReturn<CharType>(*(strSource - 1)) )
-            *(strSource - 1) = static_cast<CharType>(EndOfString);
-        
-        // if not the end, set null-terminated char
-        if ( charCount != 0 )
+                    break;  // break the loop.
+                }
+
+                ++ strSource;
+                -- charCount;
+            }
+
+            // remove carriage return
+            if ( (result != strSource) && NEString::isCarriageReturn<CharType>(*(strSource - 1)) )
+                *(strSource - 1) = static_cast<CharType>(EndOfString);
+
+            // set null-terminated char at the end of the line
             *strSource = static_cast<CharType>(EndOfString);
-        
-        // if there are still chars, set context to next position
-        if ( out_next != NULL )
-            *out_next = charCount > 1 ? ++ strSource : static_cast<CharType *>(NULL);
+        }
     }
 
     return result;
@@ -1104,19 +1125,34 @@ const CharType * NEString::getPrintable( CharType * strSource, CharCount charCou
     if ( out_next != NULL )
         *out_next = static_cast<CharType *>(NULL);
 
-    if ( (strSource != static_cast<const CharType *>(NULL)) && (charCount != 0) && (charCount < NEString::CountAll) )
+    if ( NEString::isEmpty<CharType>(strSource) == false )
     {
-        result = strSource;
+        charCount = charCount == NEString::CountAll ? MAX_INT_32 : charCount;
+        if ( charCount > 0 )
+        {
+            result = strSource;
 
-        // move pointer until char is printable
-        for ( ; (charCount != 0) && ((NEString::getISO8859CharDef(*strSource) & NEString::CD_Printable) != 0); -- charCount )
-            ++ strSource;
-        // if not the end, set null-terminated char
-        if ( charCount != 0 )
+            // move pointer until char is printable
+            while ( charCount != 0 )
+            {
+                if ( (NEString::getISO8859CharDef(*strSource) & NEString::CD_Printable) != 0 )
+                {
+                    // set next position if not EOS.
+                    if ( (out_next != NULL) && (NEString::isEndOfString<CharType>(*strSource) == false) )
+                    {
+                        *out_next = (strSource + 1);
+                    }
+
+                    break;  // break the loop.
+                }
+
+                ++ strSource;
+                -- charCount;
+            }
+
+            // set null-terminated char at the end.
             *strSource = static_cast<CharType>(EndOfString);
-        // if there are still chars, set context to next position
-        if ( out_next != NULL )
-            *out_next = charCount > 1 ? ++ strSource : static_cast<CharType *>(NULL);
+        }
     }
 
     return result;
@@ -1124,31 +1160,35 @@ const CharType * NEString::getPrintable( CharType * strSource, CharCount charCou
 
 template<typename CharType>
 NEString::CharPos NEString::findLastOf( CharType   chSearch
-                                        , const CharType * strSource
-                                        , NEString::CharPos startPos /*= NEString::EndPos*/
-                                        , const CharType ** out_next /*= static_cast<const CharType **>(NULL)*/ )
+                                      , const CharType * strSource
+                                      , NEString::CharPos startPos /*= NEString::EndPos*/
+                                      , const CharType ** out_next /*= static_cast<const CharType **>(NULL)*/ )
 {
     const CharType * result = static_cast<const CharType *>(NULL);
     if ( out_next != static_cast<const CharType **>(NULL) )
         *out_next = static_cast<const CharType *>(NULL);
 
-    if ( (isEmpty<CharType>( strSource ) == false) && (chSearch != static_cast<CharType>(EndOfString)) && (startPos != NEString::InvalidPos) )
+    if ( (isEmpty<CharType>( strSource ) == false) && (chSearch != static_cast<CharType>(EndOfString)) && (startPos > 0) )
     {
         CharPos posSrc = startPos == NEString::EndPos ? NEString::getStringLength<CharType>( strSource ) - 1 : startPos;
         const CharType * end = strSource + posSrc;
 
-        for ( ; (end >= strSource) && (result == static_cast<const CharType *>(NULL)); -- end )
+        while ( (end >= strSource) && (result == static_cast<const CharType *>(NULL)))
         {
             if ( *end == chSearch )
             {
                 result = end;
                 if ( (out_next != static_cast<const CharType **>(NULL)) && (end > strSource) )
                     *out_next =  end - 1;
+
+                break;
             }
+
+            -- end;
         }
     }
 
-    return static_cast<NEString::CharPos>(isEmpty<CharType>( result ) == false ? result - strSource : NEString::InvalidPos);
+    return (result > strSource ? static_cast<NEString::CharPos>(result - strSource) : NEString::InvalidPos);
 }
 
 template<typename CharType>
@@ -1168,7 +1208,7 @@ NEString::CharPos NEString::findLastOf( const CharType * strPhrase
         const CharType * end    = strSource + posSrc;
         const CharType * phrase = strPhrase + posPhr;
 
-        for ( ; (end >= strSource) && (result == static_cast<const CharType *>(NULL)); -- end )
+        while ( (end >= strSource) && (result == static_cast<const CharType *>(NULL)) )
         {
             if ( *end == *phrase )
             {
@@ -1180,106 +1220,133 @@ NEString::CharPos NEString::findLastOf( const CharType * strPhrase
                     -- one;
                     -- two;
                 }
+
                 if (  two < strPhrase )
                 {
                     result = one + 1;
                     if ( out_next != static_cast<const CharType **>(NULL) )
                         *out_next = one;
+
+                    break; // break the loop
                 }
             }
+
+            -- end;
         }
     }
 
-    return static_cast<NEString::CharPos>(isEmpty<CharType>( result ) == false ? result - strSource : NEString::InvalidPos);
+    return (result > strSource ? static_cast<NEString::CharPos>(result - strSource) : NEString::InvalidPos);
 }
 
 template<typename CharType>
-NEString::CharPos NEString::findFirstOf( CharType chSearch, const CharType * strSource, NEString::CharPos startPos /*= NEString::StartPos*/, const CharType ** out_next /*= static_cast<const CharType **>(NULL)*/ )
+NEString::CharPos NEString::findFirstOf( CharType chSearch
+                                       , const CharType * strSource
+                                       , NEString::CharPos startPos /*= NEString::StartPos*/
+                                       , const CharType ** out_next /*= static_cast<const CharType **>(NULL)*/ )
 {
     const CharType * result = static_cast<const CharType *>(NULL);
-    const CharType * begin  = strSource;
     if ( out_next != static_cast<const CharType **>(NULL) )
         *out_next = static_cast<const CharType *>(NULL);
 
-    if ( (isEmpty<CharType>(strSource) == false) && (chSearch != static_cast<CharType>(EndOfString)) && (startPos < NEString::getStringLength<CharType>(strSource)) )
+    if ( (isEmpty<CharType>(strSource) == false) && (chSearch != static_cast<CharType>(EndOfString)) && (startPos >= NEString::StartPos) )
     {
-        for ( strSource += startPos; (*strSource != static_cast<CharType>(EndOfString)) && (result == static_cast<const CharType *>(NULL)); ++ strSource)
+        const CharType * next = strSource + startPos;
+        while ( *next != static_cast<CharType>(EndOfString) )
         {
-            if (*strSource == chSearch)
+            if (*next == chSearch)
             {
-                result = strSource;
-                if ( (out_next != static_cast<const CharType **>(NULL)) && (*(strSource + 1) != static_cast<CharType>(EndOfString)) )
-                    *out_next = strSource + 1;
+                result = next ++;
+                if ( (out_next != static_cast<const CharType **>(NULL)) && (*next != static_cast<CharType>(EndOfString)) )
+                    *out_next = next;
+
+                break; // break the loop
             }
+
+            ++ next;
         }
     }
 
-    return static_cast<NEString::CharPos>(isEmpty<CharType>(result) == false ? result - begin : NEString::InvalidPos);
+    return ((result != NULL) && (result >= strSource) ? static_cast<NEString::CharPos>(result - strSource) : NEString::InvalidPos);
 }
 
 template<typename CharType>
-NEString::CharPos NEString::findFirstOf( const CharType * strPhrase, const CharType * strSource, CharPos startPos /*= NEString::StartPos*/, const CharType ** out_next /*= static_cast<const CharType **>(NULL)*/ )
+NEString::CharPos NEString::findFirstOf( const CharType * strPhrase
+                                       , const CharType * strSource
+                                       , NEString::CharPos startPos /*= NEString::StartPos*/
+                                       , const CharType ** out_next /*= static_cast<const CharType **>(NULL)*/ )
 {
     const CharType * result = static_cast<const CharType *>(NULL);
     const CharType * begin  = strSource;
+
     if ( out_next != static_cast<const CharType **>(NULL) )
         *out_next = static_cast<const CharType *>(NULL);
 
-    if ( (isEmpty<CharType>(strSource) == false) && (isEmpty<CharType>(strPhrase) == false) && (startPos < NEString::getStringLength<CharType>(strSource)) )
+    if ( (isEmpty<CharType>(strSource) == false) && (isEmpty<CharType>(strPhrase) == false) && (startPos >= NEString::StartPos) )
     {
-        for ( strSource += startPos; (*strSource != static_cast<CharType>(EndOfString)) && (result == static_cast<const CharType *>(NULL)); ++ strSource)
+        const CharType * next = strSource + startPos;
+        while ( *next != static_cast<CharType>(EndOfString) )
         {
-            if (*strSource == *strPhrase)
+            if ( *next == *strPhrase)
             {
-                const CharType * one = strSource + 1;
+                const CharType * one = next + 1;
                 const CharType * two = strPhrase + 1;
                 // no need to check (*one != static_cast<CharType>(EndofString))
+                
                 while ( (*two != static_cast<CharType>(EndOfString)) && (*one == *two) )
                 {
                     ++ one;
                     ++ two;
                 }
+
                 if (*two == static_cast<CharType>(EndOfString))
                 {
-                    result = strSource;
+                    result = next;
                     if (out_next != static_cast<const CharType **>(NULL))
                         *out_next = one;
+
+                    break; // break the loop
                 }
             }
+
+            ++ next;
         }
     }
 
-    return static_cast<NEString::CharPos>(isEmpty<CharType>(result) == false ? result - begin : NEString::InvalidPos);
+    return ((result != NULL) && (result >= strSource) ? static_cast<NEString::CharPos>(result - strSource) : NEString::InvalidPos);
 }
 
 template<typename CharType>
-bool NEString::stringStartsWith(const CharType * strString, const char * phrase, bool isSensitive /*= true*/)
+bool NEString::stringStartsWith(const CharType * strString, const CharType * phrase, bool isSensitive /*= true*/)
 {
     bool result = false;
     if ((isEmpty<CharType>(strString) == false) && (isEmpty<CharType>(phrase) == false))
     {
         result = true;
-        for ( ; result && (*phrase != NEString::EndOfString) && (*strString == NEString::EndOfString); ++ strString, ++ phrase )
+        for ( ; (*phrase != NEString::EndOfString) && (*strString == NEString::EndOfString); ++ strString, ++ phrase )
         {
-            char ch1 = *strString;
-            char ch2 = *phrase;
+            CharType ch1 = *strString;
+            CharType ch2 = *phrase;
             if ( isSensitive )
             {
                 ch1 = NEString::makeAsciiLower<CharType>(ch1);
                 ch2 = NEString::makeAsciiLower<CharType>(ch2);
             }
 
-            result = ch1 != ch2;
+            if (ch1 != ch2)
+            {
+                result = false;
+                break;
+            }
         }
 
-        result = result ? *phrase == NEString::EndOfString : false;
+        result = result && (*phrase == NEString::EndOfString);
     }
 
     return result;
 }
 
 template<typename CharType>
-bool NEString::stringEndsWith(const CharType * strString, const char * phrase, bool isSensitive /*= true*/)
+bool NEString::stringEndsWith(const CharType * strString, const CharType * phrase, bool isSensitive /*= true*/)
 {
     bool result = false;
     if ((isEmpty<CharType>(strString) == false) && (isEmpty<CharType>(phrase) == false))
@@ -1290,41 +1357,50 @@ bool NEString::stringEndsWith(const CharType * strString, const char * phrase, b
         ASSERT(lenString > 0);
         ASSERT(lenPhrase > 0);
 
-        result = (lenString >= lenPhrase) && NEString::stringStartsWith<CharType>(strString + lenString - 1, phrase, isSensitive);
+        int diff = lenString - lenPhrase;
+
+        result = (diff >= 0) && NEString::stringStartsWith<CharType>(strString + diff, phrase, isSensitive);
     }
 
     return result;
 }
 
 template<typename CharDst, typename CharSrc>
-NEString::CharCount NEString::trimAll(CharDst *strDst, NEString::CharCount lenDst, const CharSrc * strSrc, NEString::CharCount lenSrc /*= NEString::CountAll*/ )
+NEString::CharCount NEString::trimAll( CharDst *            strDst
+                                     , NEString::CharCount  lenDst
+                                     , const CharSrc *      strSrc
+                                     , NEString::CharCount  lenSrc /*= NEString::CountAll*/ )
 {
     NEString::CharCount result = 0;
-    if ((NEString::isEmpty<CharSrc>(strSrc) == false) && (strDst != static_cast<CharDst *>(NULL)) && (lenDst != 0) && (lenSrc != 0))
+
+    if ( (strDst != static_cast<CharDst *>(NULL)) && (lenDst > 0) )
     {
-        lenSrc = lenSrc != NEString::CountAll ? lenSrc : NEString::getStringLength<CharSrc>(strSrc);
-        const CharSrc * end     = strSrc + lenSrc - 1;
-        const CharSrc * begin   = strSrc;
+        CharDst * dst = strDst;
+        *dst    = static_cast<CharDst>(NEString::EndOfString);
+        lenSrc  = lenSrc == NEString::CountAll ? NEString::getStringLength<CharSrc>(strSrc) : lenSrc;
 
-        while ((end != begin) && NEString::isWhitespace<CharSrc>(*end) )
+        if ( (lenSrc > 0) && (NEString::isEmpty<CharSrc>(strSrc) == false) )
         {
-            ++ result;
-            -- end;
-        }
+            const CharSrc * end     = strSrc + lenSrc - 1;
+            const CharSrc * begin   = strSrc;
 
-        if (NEString::isWhitespace<CharSrc>(*end) == false)
+            while ((end > begin) && NEString::isWhitespace<CharSrc>(*end) )
+                -- end;
+
             ++ end;
 
-        while ( (begin != end) && NEString::isWhitespace<CharSrc>(*begin) )
-        {
-            ++ result;
-            ++ begin;
+            while ( (begin < end) && NEString::isWhitespace<CharSrc>(*begin) )
+                ++ begin;
+
+            if ( NEString::isWhitespace<CharSrc>(*begin) ==  false )
+            {
+                for ( ; (begin < end) && (lenDst > 1); -- lenDst)
+                    *dst ++ = static_cast<CharDst>(*begin ++);
+
+                result = static_cast<int>(dst - strDst);
+                *dst   = static_cast<CharDst>(NEString::EndOfString);
+            }
         }
-
-        for ( ; (begin != end) && (lenDst != 0); -- lenDst)
-            *strDst ++ = static_cast<CharDst>(*begin ++);
-
-        *strDst = static_cast<CharDst>(NEString::EndOfString);
     }
 
     return result;
@@ -1334,62 +1410,65 @@ template<typename CharType>
 NEString::CharCount NEString::trimAll( CharType * strBuffer, NEString::CharCount strLen /*= NEString::CountAll*/ )
 {
     NEString::CharCount result = 0;
-    if ( (NEString::isEmpty<CharType>( strBuffer ) == false) && (strLen != 0) )
+    if ( NEString::isEmpty<CharType>( strBuffer ) == false )
     {
-        strLen = strLen != NEString::CountAll ? strLen : NEString::getStringLength<CharType>( strBuffer );
-        CharType * end  = strBuffer + strLen - 1;
-        CharType * begin= strBuffer;
-        while ( (end != begin) && NEString::isWhitespace<CharType>(*end) )
+        strLen = strLen == NEString::CountAll ? NEString::getStringLength<CharType>( strBuffer ) : strLen;
+        if ( strLen > 0 )
         {
-            ++ result;
-            -- end;
-        }
+            CharType * end  = strBuffer + strLen - 1;
+            CharType * begin= strBuffer;
+            CharType * buf  = strBuffer;
 
-        if ( NEString::isWhitespace<CharType>( *end ) == false )
-            ++ end;
-        
-        while ( (begin != end) && NEString::isWhitespace<CharType>(*begin) )
-        {
-            ++ result;
-            ++ begin;
-        }
+            while ( (end > begin) && NEString::isWhitespace<CharType>(*end) )
+                -- end;
 
-        *end = static_cast<CharType>(NEString::EndOfString);
-        if (  begin != strBuffer )
-        {
-            while ( begin != end )
+            *(++ end) = static_cast<CharType>(NEString::EndOfString);
+
+            while ( (begin < end) && NEString::isWhitespace<CharType>(*begin) )
+                ++ begin;
+
+            result = static_cast<int>(end - begin);
+            if (begin != buf)
             {
-                *strBuffer ++ = *begin ++;
-            }
+                while (begin < end)
+                    *buf ++ = *begin ++;
 
-            *strBuffer = static_cast<CharType>(NEString::EndOfString);
+                *buf = static_cast<CharType>(NEString::EndOfString);
+            }
         }
     }
+
     return result;
 }
 
 template<typename CharDst, typename CharSrc>
-NEString::CharCount NEString::trimRight(CharDst *strDst, NEString::CharCount lenDst, const CharSrc * strSrc, NEString::CharCount lenSrc /*= NEString::CountAll*/ )
+NEString::CharCount NEString::trimRight( CharDst *           strDst
+                                       , NEString::CharCount lenDst
+                                       , const CharSrc *     strSrc
+                                       , NEString::CharCount lenSrc /*= NEString::CountAll*/ )
 {
     NEString::CharCount result = 0;
-    if ((NEString::isEmpty<CharSrc>(strSrc) == false) && (strDst != static_cast<CharDst *>(NULL)) && (lenDst != 0) && (lenSrc != 0) )
+    if ((NEString::isEmpty<CharSrc>(strSrc) == false) && (strDst != static_cast<CharDst *>(NULL)) && (lenDst > 0) )
     {
-        lenSrc = lenSrc != NEString::CountAll ? lenSrc : NEString::getStringLength<CharSrc>(strSrc);
-        const CharSrc * end = strSrc + lenSrc - 1;
-
-        while ( (end != strSrc) && NEString::isWhitespace<CharSrc>(*end) )
+        lenSrc = lenSrc == NEString::CountAll ? NEString::getStringLength<CharSrc>(strSrc) : lenSrc;
+        if ( lenSrc > 0 )
         {
-            ++ result;
-            -- end;
-        }
+            result = MACRO_MIN(lenSrc, lenDst - 1);
+            const CharSrc * end   = strSrc + lenSrc - 1;
+            const CharSrc * begin = strSrc;
+            CharDst * dst         = strDst;
 
-        if (NEString::isWhitespace<CharSrc>(*end) == false)
+            while ( (end != strSrc) && NEString::isWhitespace<CharSrc>(*end) )
+                -- end;
+
             ++ end;
 
-        for ( ; (end != strSrc) && (lenDst != 0); -- lenDst)
-            *strDst ++ = static_cast<CharDst>(*strSrc ++);
+            for ( ; (begin < end) && (lenDst > 1); -- lenDst)
+                *dst ++ = static_cast<CharDst>(*begin ++);
 
-        *strDst = static_cast<CharDst>(NEString::EndOfString);
+            result = static_cast<int>(dst - strDst);
+            *dst = static_cast<CharDst>(NEString::EndOfString);
+        }
     }
 
     return result;
@@ -1399,41 +1478,50 @@ template<typename CharType>
 NEString::CharCount NEString::trimRight( CharType * strBuffer, NEString::CharCount strLen /*= NEString::CountAll*/ )
 {
     NEString::CharCount result = 0;
-    if ( (NEString::isEmpty<CharType>( strBuffer ) == false) && (strLen != 0) )
+    if ( NEString::isEmpty<CharType>( strBuffer ) == false )
     {
-        strLen = strLen != NEString::CountAll ? strLen : NEString::getStringLength<CharType>(strBuffer);
-        CharType * end = strBuffer + strLen - 1;
-        while ( (end != strBuffer) && NEString::isWhitespace<CharType>( *end ) )
+        strLen = strLen == NEString::CountAll ? NEString::getStringLength<CharType>(strBuffer) : strLen;
+        if ( strLen > 0 )
         {
-            ++ result;
-            -- end;
+            CharType * end  = strBuffer + strLen - 1;
+            CharType * begin= strBuffer;
+
+            while ( (end > begin) && NEString::isWhitespace<CharType>( *end ) )
+                -- end;
+
+            *(++ end) = static_cast<CharType>(NEString::EndOfString);
+            result = static_cast<int>(end - begin);
         }
-        if (NEString::isWhitespace<CharType>( *end ) == false)
-            ++ end;
-        *end = static_cast<CharType>(NEString::EndOfString);
     }
+
     return result;
 }
 
 template<typename CharDst, typename CharSrc>
-NEString::CharCount NEString::trimLeft(CharDst *strDst, NEString::CharCount lenDst, const CharSrc * strSrc, NEString::CharCount lenSrc /*= NEString::CountAll*/ )
+NEString::CharCount NEString::trimLeft( CharDst *           strDst
+                                      , NEString::CharCount lenDst
+                                      , const CharSrc *     strSrc
+                                      , NEString::CharCount lenSrc /*= NEString::CountAll*/ )
 {
     NEString::CharCount result = 0;
-    if ((NEString::isEmpty<CharSrc>(strSrc) == false) && (strDst != static_cast<CharDst *>(NULL)) && (lenDst != 0) && (lenSrc != 0) )
+    if ((NEString::isEmpty<CharSrc>(strSrc) == false) && (strDst != static_cast<CharDst *>(NULL)) && (lenDst > 0) )
     {
-        lenSrc = lenSrc != NEString::CountAll ? lenSrc : NEString::getStringLength<CharSrc>(strSrc);
-        const CharSrc * begin = strSrc;
-        const CharSrc * end   = strSrc + lenSrc;
-        while ((begin != end) && NEString::isWhitespace<CharSrc>(*begin) )
+        lenSrc = lenSrc == NEString::CountAll ? NEString::getStringLength<CharSrc>(strSrc) : lenSrc;
+        if ( lenSrc > 0 )
         {
-            ++ result;
-            ++ begin;
-        }
+            const CharSrc * begin = strSrc;
+            const CharSrc * end   = strSrc + lenSrc;
+            CharDst * dst         = strDst;
 
-        for ( ; *begin != static_cast<CharSrc>(NEString::EndOfString) && (lenDst != 0); -- lenDst)
-            *strDst ++ = static_cast<CharDst>(*begin ++);
-            
-        *strDst = static_cast<CharDst>(NEString::EndOfString);
+            while ((end > begin) && NEString::isWhitespace<CharSrc>(*begin) )
+                ++ begin;
+
+            while (begin < end)
+                *dst ++ = static_cast<CharDst>(*begin ++);
+
+            result  = static_cast<int>(dst - strDst);
+            *dst    = static_cast<CharDst>(NEString::EndOfString);
+        }
     }
 
     return result;
@@ -1443,25 +1531,31 @@ template<typename CharType>
 NEString::CharCount NEString::trimLeft( CharType * strBuffer, NEString::CharCount strLen /*= NEString::CountAll*/ )
 {
     NEString::CharCount result = 0;
-    if ( (NEString::isEmpty<CharType>( strBuffer ) == false) && (strLen != 0) )
+    if ( NEString::isEmpty<CharType>( strBuffer ) == false )
     {
-        strLen = strLen != NEString::CountAll ? strLen : NEString::getStringLength<CharType>(strBuffer);
-        const CharType * begin = strBuffer;
-        const CharType * end   = strBuffer + strLen;
-        while ( (begin != end) && NEString::isWhitespace<CharType>(*begin) )
+        strLen = strLen == NEString::CountAll ? NEString::getStringLength<CharType>(strBuffer) : strLen;
+        if ( strLen > 0 )
         {
-            ++ result;
-            ++ begin;
-        }
+            result = strLen;
 
-        if ( begin != strBuffer )
-        {
-            while ( *begin != static_cast<CharType>(NEString::EndOfString) )
-                *strBuffer ++ = *begin ++;
+            const CharType * begin = strBuffer;
+            const CharType * end   = strBuffer + strLen;
+            CharType * buf         = strBuffer;
 
-            *strBuffer = static_cast<CharType>(NEString::EndOfString);
+            while ( (end > begin) && NEString::isWhitespace<CharType>(*begin) )
+                ++ begin;
+
+            if ( begin != buf )
+            {
+                while ( begin < end)
+                    *buf ++ = *begin ++;
+
+                result = static_cast<int>(buf - strBuffer);
+                *buf = static_cast<CharType>(NEString::EndOfString);
+            }
         }
     }
+
     return result;
 }
 
@@ -1620,14 +1714,14 @@ NEString::SString<CharType> * NEString::initString(   NEString::CharCount charCo
         blockSize = blockSize == 0 ? 1 : blockSize;
         unsigned int hdr    = sizeof(NEString::SString<CharType>);
         unsigned int bpch   = sizeof(CharType);
-        unsigned int space  = MACRO_ALIGN_SIZE(charCount + 1, blockSize);
+        unsigned int space  = static_cast<unsigned int>(MACRO_ALIGN_SIZE(charCount + 1, blockSize));
         unsigned int size   = hdr + (space * bpch);
         uint8_t * temp      = DEBUG_NEW uint8_t[size];
         if (temp != static_cast<unsigned char *>(NULL))
         {
             result = NEMemory::constructElems<NEString::SString<CharType>>(static_cast<void *>(temp), 1);
             result->strEncoding = encode;
-            result->strSpace    = space;
+            result->strSpace    = static_cast<NEString::CharCount>(space);
             result->strUsed     = 0;
             result->strBuffer[0]= static_cast<CharType>(EndOfString);
         }
@@ -1656,13 +1750,18 @@ inline NEString::SString<CharDst> * NEString::initString( const CharSrc * strSou
                                                         , NEString::eEncoding encode    /*= EncodeAscii         */
                                                         , NEString::CharCount blockSize /*= DEFAULT_BLOCK_SIZE  */ )
 {
+    NEString::SString<CharDst> * result = getInvalidString<CharDst>( );
+
     charCount = charCount == NEString::CountAll ? NEString::getStringLength<CharSrc>( strSource ) : charCount;
-    unsigned int space = charCount == 0 && strSource != NULL ? 1 : charCount;
-    NEString::SString<CharDst> * result = initString<CharDst>( space, encode, blockSize );
-    if ( isValid<CharDst>( result ) )
+    if ( charCount > 0 )
     {
-        result->strUsed = copyString<CharDst, CharSrc>( result->strBuffer, result->strSpace, strSource, charCount );
+        result = initString<CharDst>( charCount, encode, blockSize );
+        if ( isValid<CharDst>( result ) )
+        {
+            result->strUsed = copyString<CharDst, CharSrc>( result->strBuffer, result->strSpace, strSource, charCount );
+        }
     }
+
     return result;
 }
 
@@ -1701,21 +1800,19 @@ inline void NEString::releaseSpace(NEString::SString<CharType> * strString)
 template<typename CharType>
 inline bool NEString::canRead(const NEString::SString<CharType> & strString, NEString::CharPos atPos)
 {
-    return (isValid<CharType>(strString) ? strString.strUsed > atPos : false);
+    return ( isValid<CharType>(strString) && (atPos >= NEString::StartPos) && (atPos < strString.strUsed) );
 }
 
 template<typename CharType>
 inline bool NEString::canWrite(const NEString::SString<CharType> & strString, NEString::CharPos atPos /*= EndPos*/)
 {
     bool result = false;
-    if ( isValid<CharType>(strString) )
+    if ( isValid<CharType>(strString) && (atPos != NEString::InvalidPos) )
     {
-        if ( atPos != NEString::InvalidPos )
-        {
-            atPos = atPos == NEString::EndPos ? strString.strUsed : atPos;
-            result = (strString.strSpace - 1) > atPos;
-        }
+        atPos  = atPos == NEString::EndPos ? strString.strUsed : atPos;
+        result = atPos < (strString.strSpace - 1);
     }
+
     return result;
 }
 
@@ -1741,24 +1838,29 @@ bool NEString::setAt(NEString::SString<CharDst> & strDst, CharSrc chSrc, NEStrin
             }
         }
     }
+
     return result;
 }
 
 template<typename CharDst, typename CharSrc>
-NEString::CharCount NEString::copyString( CharDst * strDst, NEString::CharCount dstSpace, const CharSrc * strSrc, NEString::CharCount charsCopy /*= NEString::CountAll*/)
+NEString::CharCount NEString::copyString( CharDst *           strDst
+                                        , NEString::CharCount dstSpace
+                                        , const CharSrc *     strSrc
+                                        , NEString::CharCount charsCopy /*= NEString::CountAll*/)
 {
     CharDst * dst = strDst;
-    if (strDst != static_cast<CharDst *>(NULL))
+    if ( (dstSpace > 0) && (strDst != static_cast<CharDst *>(NULL)) && (strSrc != static_cast<const CharSrc *>(NULL)) )
     {
-        dstSpace -= 1;
-        charsCopy = MACRO_MIN(dstSpace, charsCopy);
-        if ( (charsCopy != 0) && (strSrc != static_cast<const CharSrc *>(NULL)) )
+        charsCopy = charsCopy == NEString::CountAll ? MAX_INT_32 : charsCopy;
+        if ( charsCopy > 0 )
         {
+            dstSpace -= 1;
+            charsCopy = MACRO_MIN(dstSpace, charsCopy);
             for ( ; (*strSrc != static_cast<CharDst>(EndOfString)) && (charsCopy != 0); -- charsCopy )
                 *dst++ = static_cast<CharDst>(*strSrc++);
-        }
 
-        *dst = static_cast<CharDst>(EndOfString);
+            *dst = static_cast<CharDst>(EndOfString);
+        }
     }
 
     return static_cast<NEString::CharCount>(dst - strDst);
@@ -1766,37 +1868,34 @@ NEString::CharCount NEString::copyString( CharDst * strDst, NEString::CharCount 
 
 template<typename CharDst, typename CharSrc>
 NEString::CharCount NEString::copyString( NEString::SString<CharDst> & strDst
-                                        , const CharSrc * strSrc
-                                        , NEString::CharPos startAt     /*= NEString::StartPos  */
-                                        , NEString::CharCount charsCopy /*= NEString::CountAll  */ )
+                                        , const CharSrc *              strSrc
+                                        , NEString::CharPos            startDst  /*= NEString::StartPos  */
+                                        , NEString::CharCount          charsCopy /*= NEString::CountAll  */ )
 {
     CharCount result = 0;
-    if ( canWrite<CharDst>(strDst, startAt) )
+    if ( (startDst >= NEString::StartPos) && canWrite<CharDst>(strDst, startDst) )
     {
-        result          = NEString::copyString<CharDst, CharSrc>( strDst.strBuffer + startAt, (strDst.strSpace - startAt), strSrc, charsCopy );
-        strDst.strUsed  = static_cast<CharCount>(result) + static_cast<CharCount>(startAt);
+        result          = NEString::copyString<CharDst, CharSrc>( strDst.strBuffer + startDst, (strDst.strSpace - startDst), strSrc, charsCopy );
+        strDst.strUsed  = result + startDst;
     }
+
     return result;
 }
 
 template<typename CharDst, typename CharSrc>
-NEString::CharCount NEString::copyString( NEString::SString<CharDst> & strDst
+NEString::CharCount NEString::copyString( NEString::SString<CharDst> &       strDst
                                         , const NEString::SString<CharSrc> & strSrc
-                                        , NEString::CharPos startDst    /*= NEString::StartPos  */
-                                        , NEString::CharPos startSrc    /*= NEString::StartPos  */
-                                        , NEString::CharCount charsCopy /*= NEString::CountAll  */ )
+                                        , NEString::CharPos                  startDst  /*= NEString::StartPos  */
+                                        , NEString::CharPos                  startSrc  /*= NEString::StartPos  */
+                                        , NEString::CharCount                charsCopy /*= NEString::CountAll  */ )
 {
     CharCount result = 0;
-    if ( canRead<CharSrc>(strSrc) )
+    if ( (startDst >= NEString::StartPos) && (startSrc >= NEString::StartPos) && canRead<CharSrc>(strSrc) && canWrite<CharDst>(strDst, startDst) )
     {
-        if ( charsCopy != NEString::CountAll )
-        {
-            CharCount remain = NEString::getRemainSpace<CharSrc>( strSrc );
-            charsCopy = MACRO_MIN( charsCopy, remain );
-        }
-
-        result = copyString<CharDst, CharSrc>( strDst, strSrc.strBuffer + startSrc, startDst, charsCopy);
+        result          = copyString<CharDst, CharSrc>( strDst.strBuffer + startDst, strDst.strSpace - startDst, strSrc.strBuffer + startSrc, charsCopy);
+        strDst.strUsed  = result + startDst;
     }
+
     return result;
 }
 
@@ -1814,43 +1913,56 @@ inline NEString::CharCount NEString::appendString( NEString::SString<CharDst> & 
                                                  , NEString::CharCount charsCopy/*= NEString::CountAll  */ )
 {
     CharCount result = 0;
-    if ( canRead<CharSrc>(strSrc, startSrc) )
+    charCopy = charsCopy == NEString::CountAll ? strSrc.strUsed : charsCopy;
+    if ( canRead<CharSrc>(strSrc, startSrc) && canWrite<CharDst>(strDst, NEString::EndPos) && (charsCopy > 0) )
     {
-        CharCount remain = strSrc.strUsed - startSrc;
-        charsCopy = MACRO_MIN(charsCopy, remain);
-        result = NEString::appendString<CharDst, CharSrc>( strDst, strSrc.strBuffer + startSrc, charsCopy );
+        CharCount readRemain  = strSrc.strUsed  - startSrc;
+        CharCount writeRemain = strDst.strSpace - strDst.strUsed;
+
+        charsCopy = MACRO_MIN(charsCopy, readRemain);
+        result    = copyString<CharDst, CharSrc>( strDst.strBuffer + strDst.strUsed, writeRemain, strSrc.strBuffer + startSrc, charsCopy );
+        strDst.strUsed += result;
     }
+
     return result;
 }
 
 template <typename CharDst, typename CharSrc>
 inline NEString::CharCount NEString::appendString( NEString::SString<CharDst> & strDst
                                                  , const CharSrc * strSrc
-                                                 , NEString::CharCount charCount /*= NEString::CountAll*/ )
+                                                 , NEString::CharCount charsCopy /*= NEString::CountAll*/ )
 {
     CharCount result = 0;
     if ( canWrite<CharDst>(strDst, NEString::EndPos) )
     {
         CharCount spaceRemain = getRemainSpace<CharDst>(strDst);
-        charCount   = charCount != NEString::EndPos ? charCount : NEString::getStringLength<CharSrc>( strSrc );
-        result      = copyString<CharDst, CharSrc>( strDst.strBuffer + strDst.strUsed, spaceRemain, strSrc, charCount );
+        charsCopy  = charsCopy != NEString::CountAll ? charsCopy : NEString::getStringLength<CharSrc>( strSrc );
+        result     = copyString<CharDst, CharSrc>( strDst.strBuffer + strDst.strUsed, spaceRemain, strSrc, charsCopy );
         strDst.strUsed += result;
     }
+
     return result;
 }
 
 template <typename CharType>
-inline unsigned int NEString::geStringRequiredSize( CharCount charCount, CharCount blockSize /*= DEFAULT_BLOCK_SIZE*/ )
+inline unsigned int NEString::geStringRequiredSize( NEString::CharCount charCount, NEString::CharCount blockSize /*= DEFAULT_BLOCK_SIZE*/ )
 {
-    charCount  += 1; // space for end of string
-    blockSize   = blockSize != 0 ? blockSize  : 1; // if zero, at least for one character
-    return (MACRO_ALIGN_SIZE( charCount, blockSize ) * sizeof( CharType ));
+    unsigned int result = 0;
+    if ( charCount > 0 )
+    {
+        charCount  += 1; // space for end of string
+        blockSize   = blockSize > 0 ? blockSize  : 1; // if zero, at least for one character
+        result = static_cast<unsigned int >(MACRO_ALIGN_SIZE(charCount, blockSize)) * sizeof(CharType);
+    }
+
+    return result;
 }
 
 template <typename CharType>
 inline unsigned int NEString::getBufferRequiredSize( NEString::CharCount charCount, NEString::CharCount blockSize /*= DEFAULT_BLOCK_SIZE*/ )
 {
-    return ( geStringRequiredSize<CharType>(charCount, blockSize) + sizeof(NEString::SString<CharType>) );
+    unsigned int result = geStringRequiredSize<CharType>(charCount, blockSize);
+    return ( result + sizeof(NEString::SString<CharType>) );
 }
 
 template <typename CharType>

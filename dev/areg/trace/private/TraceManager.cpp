@@ -99,13 +99,9 @@ bool TraceManager::startLogging( const char * configFile /*= NULL*/ )
     do
     {
         Lock lock(traceManager.mLock);
-        if (TraceManager::isLoggingConfigured()== false)
+        if ((TraceManager::isLoggingConfigured() == false) && (traceManager.isReady( ) == false))
         {
-            canStart = traceManager.isReady() == false ? traceManager.loadConfiguration( configFile) : false;
-        }
-        else
-        {
-            canStart = traceManager.isReady() == false;
+            canStart = traceManager.loadConfiguration( configFile);
         }
 
     } while (false);
@@ -370,7 +366,7 @@ bool TraceManager::loadConfiguration( const char * filePath /*= NULL */ )
     File fileConfig( static_cast<const char *>(mConfigFile), FileBase::FO_MODE_EXIST | FileBase::FO_MODE_READ | FileBase::FO_MODE_TEXT | FileBase::FO_MODE_SHARE_READ );
     fileConfig.open( );
 
-    return loadConfiguration( fileConfig );
+    return loadConfiguration( fileConfig ) && initializeConfig( );
 }
 
 bool TraceManager::loadConfiguration( const FileBase & configFile )
@@ -400,7 +396,7 @@ bool TraceManager::loadConfiguration( const FileBase & configFile )
         }
     }
 
-    return (mPropertyList.isEmpty() == false) && initializeConfig();
+    return (mPropertyList.isEmpty() == false);
 }
 
 void TraceManager::clearConfigData( void )
@@ -463,7 +459,7 @@ bool TraceManager::activateTracingDefaults( void )
             if ( scopes.logScope == NULL)
                 break;
 
-            mConfigScopeGroup.setAt(scopes.logScope, scopes.logPrio);
+            mConfigScopeGroup.setAt(scopes.logScope, static_cast<int>(scopes.logPrio));
         } while (true);
 
     } while (false);
@@ -636,6 +632,7 @@ bool TraceManager::initializeConfig(void)
 
                 break;
 
+            case NELogConfig::ConfigLast:   // fall through
             default:
                 break;  // do nothing
             }

@@ -26,8 +26,8 @@ void AREG_API NEDebug::outputConsole( NEDebug::eDegubPrio priority, const char *
     {
         va_start(args, msg);
         char buffer[NEDebug::MAX_DEBUG_BUFFER_SIZE];
-        int lenPref = String::formatString(buffer, NEDebug::MAX_DEBUG_BUFFER_SIZE - 2, "%s", NEDebug::getPrioPrefix(priority));
-        int lenMsg  = String::formatStringList(buffer + lenPref, NEDebug::MAX_DEBUG_BUFFER_SIZE - 2 - lenPref, msg, args);
+        int lenPref = String::formatString(buffer, static_cast<int>(NEDebug::MAX_DEBUG_BUFFER_SIZE) - 2, "%s", NEDebug::getPrioPrefix(priority));
+        int lenMsg  = String::formatStringList(buffer + lenPref, static_cast<int>(NEDebug::MAX_DEBUG_BUFFER_SIZE) - 2 - lenPref, msg, args);
         char last   = buffer[lenPref + lenMsg - 1];
         if ( last != '\n' )
         {

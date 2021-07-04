@@ -102,7 +102,9 @@ SynchEvent::~SynchEvent( void )
 
 bool SynchEvent::_unlockEvent( void * eventHandle )
 {
-    return (mSynchObject != NULL ? ::SetEvent(static_cast<HANDLE>(mSynchObject)) != FALSE : false);
+    HANDLE handle = static_cast<HANDLE>(eventHandle);
+    ASSERT(handle == static_cast<HANDLE>(mSynchObject));
+    return (handle != NULL ? ::SetEvent(handle) != FALSE : false);
 }
 
 bool SynchEvent::lock(unsigned int timeout /* = IESynchObject::WAIT_INFINITE */)
@@ -229,7 +231,8 @@ bool SynchTimer::setTimer( void )
 {
     LARGE_INTEGER dueTime;
     dueTime.QuadPart = static_cast<int64_t>(-1) * static_cast<int64_t>(mTimeMilliseconds) * static_cast<int64_t>(SynchTimer::NANOSECONDS_KOEF_100);
-    return (SetWaitableTimer(static_cast<HANDLE>(mSynchObject), &dueTime, mIsPeriodic ? mTimeMilliseconds : 0, NULL, NULL, FALSE) != FALSE);
+    LONG lPeriod = mIsPeriodic ? static_cast<LONG>(mTimeMilliseconds) : 0;
+    return (SetWaitableTimer(static_cast<HANDLE>(mSynchObject), &dueTime, lPeriod, NULL, NULL, FALSE) != FALSE);
 }
 
 bool SynchTimer::cancelTimer( void )
@@ -350,13 +353,14 @@ int MultiLock::lock(unsigned int timeout /* = IESynchObject::WAIT_INFINITE */, b
         syncHandles[i] = mSyncObjArray[i]->getHandle();
 
     int index = MultiLock::LOCK_INDEX_INVALID;
-    unsigned int result = mSizeCount > 0 ? WaitForMultipleObjectsEx(mSizeCount, static_cast<HANDLE *>(syncHandles), waitForAll ? TRUE : FALSE, timeout, isAlertable ? TRUE : FALSE) : WAIT_FAILED;
-    if (result >= WAIT_OBJECT_0 && result < (WAIT_OBJECT_0 + mSizeCount))
+    unsigned int maxEvent= static_cast<unsigned int>(WAIT_OBJECT_0 + mSizeCount);
+    unsigned int result  = mSizeCount > 0 ? WaitForMultipleObjectsEx(static_cast<unsigned int>(mSizeCount), static_cast<HANDLE *>(syncHandles), waitForAll ? TRUE : FALSE, timeout, isAlertable ? TRUE : FALSE) : WAIT_FAILED;
+    if (result < maxEvent)
     {
         if (waitForAll == false)
         {
-            index = result - WAIT_OBJECT_0;
-            ASSERT(index >= 0 && index < mSizeCount);
+            index = static_cast<int>(result - WAIT_OBJECT_0);
+            ASSERT((index >= 0) && index < mSizeCount);
             mLockedStates[index] = MultiLock::STATE_LOCKED;
         }
         else

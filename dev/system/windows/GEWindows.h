@@ -49,7 +49,7 @@
 #endif // _WIN64
 
 
-#if _WIN64
+#if defined(_WIN64) && (_WIN64 > 0)
     #undef BIT32
     #undef BIT64
     #undef _BIT32
@@ -57,7 +57,7 @@
 
     #define BIT64
     #define _BIT64
-#else
+#else // !_WIN64
     #undef BIT32
     #undef BIT64
     #undef _BIT32
@@ -65,7 +65,7 @@
 
     #define BIT32
     #define _BIT32
-#endif
+#endif  // _WIN64
 
 // Modify the following defines if you have to target a platform prior to the ones specified below.
 // Refer to MSDN for the latest info on corresponding values for different platforms.

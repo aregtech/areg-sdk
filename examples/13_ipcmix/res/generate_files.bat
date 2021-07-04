@@ -8,7 +8,7 @@ set CLASSPATH=D:\Program Files\jdk12\lib;%CLASSPATH%;E:\Projects\aregtech\areg-s
 
 set NEW_LINE=echo:
 
-rem cd %CODE_GEN_ROOT%
+cd %PROJECT_ROOT%
 
 @echo ......................................................
 %NEW_LINE%

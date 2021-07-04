@@ -142,6 +142,7 @@ const char * NELogConfig::convToString( NELogConfig::eLogConfig logConfig )
     case NELogConfig::ConfigScope:
         return NELogConfig::SYNTAX_CMD_LOG_SCOPE;
     case NELogConfig::ConfigUnknown:
+    case NELogConfig::ConfigLast:   // fall through
     default:
         return NELogConfig::DEFAULT_STRING_VALUE;
     }

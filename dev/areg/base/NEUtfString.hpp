@@ -186,44 +186,40 @@ namespace NEUtfString
      * \brief   Definition of Invalid Character structure template
      *          NEUtfString::S_InvalidChar
      **/
-    template<typename CharType>
-    struct S_InvalidChar
+    template<typename CharType> struct S_InvalidChar
     {
         /**
-         * \brief   Unchanged data defined as invalid character for different encodings
+         * \brief   Initialize invalid char
          **/
-        const CharType  data;
-        /**
-         * \brief   Default constructor to initialize internal data
-         **/
-        S_InvalidChar( void ) : data (static_cast<CharType>(-1)) {}
+        inline S_InvalidChar( void ) : data (static_cast<CharType>(~0)) {}
         /**
          * \brief   Conversion operator
          **/
-        operator CharType( void ) const
-        {   return data;    }
+        inline operator CharType( void ) const  {   return data;    }
+        /**
+         * \brief   Fixed invalid character for different encodings
+         **/
+        const CharType  data;
     };
 
     /**
      * \brief   Definition of End of String (EOS) character structure template
      *          NEUtfString::S_EndofString
      **/
-    template<typename CharType>
-    struct S_EndofString
+    template<typename CharType> struct S_EndofString
     {
         /**
-         * \brief   Unchanged data defined as end of string (EOS) character for different encodings
+         * \brief   Initialize end of string character
          **/
-        const CharType  data;
-        /**
-         * \brief   Default constructor to initialize internal data
-         **/
-        S_EndofString( void ) : data (static_cast<CharType>('\0')) {}
+        inline S_EndofString( void ) : data (static_cast<CharType>('\0')) {}
         /**
          * \brief   Conversion operator
          **/
-        operator CharType( void ) const
-        {   return data;    }
+        inline operator CharType( void ) const     {   return data;    }
+        /**
+         * \brief   Fixed end of string (EOS) character for different encodings
+         **/
+        const CharType  data;
     };
 
     /**
@@ -844,6 +840,7 @@ inline unsigned int NEUtfString::minBytesPerChar( NEUtfString::eEncoding encode 
         return sizeof( utf16 );
     case NEUtfString::EncodeUtf32:
         return sizeof( utf32 );
+    case NEUtfString::EncodeInvalid:    // fall through
     default:
         return 0;
     }
@@ -892,7 +889,7 @@ inline CharType * NEUtfString::getString( NEUtfString::SUtfString<CharType> & ut
 template<typename CharType>
 inline CharType NEUtfString::charAtPos( const NEUtfString::SUtfString<CharType> & utfString, NEUtfString::CharPos pos )
 {
-    return( utfString.utfHeader.utfUsed > pos ? utfString.utfBuffer[pos] : static_cast<CharType>(getInvalidChar().u32Bits) );
+    return( (pos >= 0) && (utfString.utfHeader.utfUsed > static_cast<unsigned int>(pos)) ? utfString.utfBuffer[pos] : static_cast<CharType>(getInvalidChar().u32Bits) );
 }
 
 template<typename CharType>
@@ -979,13 +976,13 @@ inline bool NEUtfString::isValidString( const NEUtfString::SUtfString<CharType> 
 template<typename CharType>
 inline bool NEUtfString::canRead( const NEUtfString::SUtfString<CharType> & utfString, NEUtfString::CharPos atPos, NEUtfString::eSeqLength seqLen )
 {
-    return (seqLen != NEUtfString::SeqInvalid ? utfString.utfHeader.utfUsed >= (atPos + static_cast<CharPos>(seqLen)) : false);
+    return ((seqLen != NEUtfString::SeqInvalid) && (atPos >= 0) ? utfString.utfHeader.utfUsed >= static_cast<unsigned int>(atPos + static_cast<CharPos>(seqLen)) : false);
 }
 
 template<typename CharType>
-inline bool NEUtfString::canWrite( const NEUtfString::SUtfString<CharType> & utfString, unsigned int atPos, NEUtfString::eSeqLength seqLen )
+inline bool NEUtfString::canWrite( const NEUtfString::SUtfString<CharType> & utfString, CharPos atPos, NEUtfString::eSeqLength seqLen )
 {
-    return (seqLen != NEUtfString::SeqInvalid ? utfString.utfHeader.utfSpace > (atPos + static_cast<CharPos>(seqLen)) : false);
+    return ((seqLen != NEUtfString::SeqInvalid) && (atPos >= 0) ? utfString.utfHeader.utfSpace > static_cast<unsigned int>(atPos + static_cast<CharPos>(seqLen)) : false);
 }
 
 template<typename CharType>
@@ -1000,7 +997,7 @@ NEUtfString::SUtfString<CharType> * NEUtfString::reserveSpace( const NEUtfString
                                                              , unsigned int blockSize /*= DEFAULT_BLOCK_SIZE*/ )
 {
     NEUtfString::SUtfString<CharType> * result = NULL;
-    if ( charCount >= utfString.utfHeader.utfSpace )
+    if ( (charCount >= 0) && (charCount >= static_cast<CharPos>(utfString.utfHeader.utfSpace)) )
     {
         NEUtfString::sUtfStringHeader * hdr = initString( charCount, utfString.utfHeader.utfEncode, blockSize );
         if ( hdr != NULL )
@@ -1008,9 +1005,11 @@ NEUtfString::SUtfString<CharType> * NEUtfString::reserveSpace( const NEUtfString
             hdr->utfUsed    = utfString.utfHeader.utfUsed;
             hdr->utfCount   = utfString.utfHeader.utfCount;
             result          = reinterpret_cast<NEUtfString::SUtfString<CharType> *>(hdr);
-            NEMemory::copyElems<CharType, CharType>( result->utfBuffer, utfString.utfBuffer, utfString.utfHeader.utfUsed );
+
+            NEMemory::copyElems<CharType, CharType>( result->utfBuffer, utfString.utfBuffer, static_cast<int>(utfString.utfHeader.utfUsed) );
         }
     }
+
     return result;
 }
 

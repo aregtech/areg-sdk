@@ -4,7 +4,7 @@
 /************************************************************************
  * (c) copyright    2021
  *                  Create by AREG SDK code generator tool from source RemoteRegistry.
- * Generated at     11.06.2021  21:11:05 GMT+02:00 
+ * Generated at     04.07.2021  04:21:25 GMT+02:00 
  ************************************************************************/
 
 /************************************************************************
@@ -46,9 +46,8 @@ namespace NERemoteRegistry
  * Constructor / Destructor
  ************************************************************************/
 
-RemoteRegistryClientBase::RemoteRegistryClientBase( const char* roleName, const char * ownerThread /*= static_cast<const char *>(NULL)*/ )
+RemoteRegistryClientBase::RemoteRegistryClientBase( const char * roleName, const char * ownerThread /*= static_cast<const char *>(NULL)*/ )
     : IEProxyListener   ( )
-    , ClientBase        ( )
 
     , mIsConnected      ( false )
     , mCurrSequenceNr   ( 0 )
@@ -57,9 +56,8 @@ RemoteRegistryClientBase::RemoteRegistryClientBase( const char* roleName, const 
     ; // do nothing
 }
 
-RemoteRegistryClientBase::RemoteRegistryClientBase( const char* roleName, DispatcherThread & ownerThread )
+RemoteRegistryClientBase::RemoteRegistryClientBase( const char * roleName, DispatcherThread & ownerThread )
     : IEProxyListener   ( )
-    , ClientBase        ( )
 
     , mIsConnected      ( false )
     , mCurrSequenceNr   ( 0 )
@@ -70,7 +68,6 @@ RemoteRegistryClientBase::RemoteRegistryClientBase( const char* roleName, Dispat
 
 RemoteRegistryClientBase::RemoteRegistryClientBase( const char* roleName, Component & owner )
     : IEProxyListener   ( )
-    , ClientBase        ( )
 
     , mIsConnected      ( false )
     , mCurrSequenceNr   ( 0 )
@@ -98,28 +95,22 @@ RemoteRegistryClientBase::~RemoteRegistryClientBase( void )
 bool RemoteRegistryClientBase::recreateProxy( void )
 {
     bool result         = false;
-    String roleName   = mProxy != NULL ? mProxy->getProxyAddress().getRoleName() : "";
-    String threadName = mProxy != NULL ? mProxy->getProxyAddress().getThread()   : "";
-    if ( roleName.isEmpty() == false )
+    if (mProxy != NULL)
     {
-        RemoteRegistryProxy * newProxy = RemoteRegistryProxy::createProxy(roleName.getString(), static_cast<IEProxyListener &>(self()), threadName.getString());
-        if (newProxy != NULL)
+        String roleName   = mProxy->getProxyAddress().getRoleName();
+        String threadName = mProxy->getProxyAddress().getThread();
+        if ( roleName.isEmpty() == false )
         {
-            mProxy->clearAllNotifications( static_cast<IENotificationEventConsumer &>(self()) );
-            mProxy->freeProxy (static_cast<IEProxyListener &>(self()) );
-            mProxy = newProxy;
-            result = true;
-        }
-        else
-        {
-            ; // do nothing
-        }
+            RemoteRegistryProxy * newProxy = RemoteRegistryProxy::createProxy(roleName.getString(), static_cast<IEProxyListener &>(self()), threadName.getString());
+            if (newProxy != NULL)
+            {
+                mProxy->clearAllNotifications( static_cast<IENotificationEventConsumer &>(self()) );
+                mProxy->freeProxy (static_cast<IEProxyListener &>(self()) );
+                mProxy = newProxy;
+                result = true;
+            }
+        }    
     }
-    else
-    {
-        ; // do nothing, no role name is assigned
-    }
-    
     return result;
 }
 
@@ -283,19 +274,19 @@ DEF_TRACE_SCOPE(shareipcmix_src_RemoteRegistryClientBase_invalidResponse);
 void RemoteRegistryClientBase::invalidResponse( NERemoteRegistry::eMessageIDs InvalidRespId )
 {
     TRACE_SCOPE(shareipcmix_src_RemoteRegistryClientBase_invalidResponse);
-    TRACE_WARN(">>> There is an invalid response [ %s ] (value = [ %d ]) in client RemoteRegistryClientBase with path [ %s ], which cannot be processed! Make error handling! <<<"
+    TRACE_ERR("The invalid response [ %s ] (value = [ %d ]) method of proxy [ %s ] client RemoteRegistryClientBase is not implemented! Make error handling!"
                     , NERemoteRegistry::getString(InvalidRespId)
                     , static_cast<unsigned int>(InvalidRespId)
                     , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString() );
-                    
-    ClientBase::responseInvalidNotImpelemnted("RemoteRegistryClientBase", static_cast<unsigned int>(InvalidRespId));
+
+    ASSERT(false);
 }
 
 DEF_TRACE_SCOPE(shareipcmix_src_RemoteRegistryClientBase_invalidRequest);
 void RemoteRegistryClientBase::invalidRequest( NERemoteRegistry::eMessageIDs InvalidReqId )
 {
     TRACE_SCOPE(shareipcmix_src_RemoteRegistryClientBase_invalidRequest);
-    TRACE_WARN(">>> There is an invalid request [ %s ] (value = [ %d ]) in client RemoteRegistryClientBase with path [ %s ], which was not able to process! Make error handling! <<<"
+    TRACE_ERR("The invalid request [ %s ] (value = [ %d ]) method of proxy [ %s ] client RemoteRegistryClientBase is not implemented! Make error handling!"
                     , NERemoteRegistry::getString(InvalidReqId)
                     , static_cast<unsigned int>(InvalidReqId)
                     , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString() );
@@ -307,7 +298,7 @@ DEF_TRACE_SCOPE(shareipcmix_src_RemoteRegistryClientBase_requestFailed);
 void RemoteRegistryClientBase::requestFailed( NERemoteRegistry::eMessageIDs FailureMsgId, NEService::eResultType FailureReason )
 {
     TRACE_SCOPE(shareipcmix_src_RemoteRegistryClientBase_requestFailed);
-    TRACE_WARN(">>> The request [ %s ] (value = [ %d ]) in Proxy [ %s ] of RemoteRegistryClientBase failed with reason [ %s ]! Triggering appropriate request failed function! <<<"
+    TRACE_WARN("The request [ %s ] (value = [ %d ]) method of proxy [ %s ] client RemoteRegistryClientBase failed with reason [ %s ]! Implemented error handling!"
                     , NERemoteRegistry::getString(FailureMsgId)
                     , static_cast<unsigned int>(FailureMsgId)
                     , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString()
@@ -330,43 +321,74 @@ void RemoteRegistryClientBase::requestFailed( NERemoteRegistry::eMessageIDs Fail
  * Attribute notifications
  ************************************************************************/
 
+DEF_TRACE_SCOPE(shareipcmix_src_RemoteRegistryClientBase_onRegistryListUpdate);
 void RemoteRegistryClientBase::onRegistryListUpdate( const NERemoteRegistry::ListRegistry & /* RegistryList */, NEService::eDataStateType /* state */ )
 {
-    ClientBase::onUpdateNotImplemented( "RemoteRegistryClientBase", static_cast<unsigned int>(NERemoteRegistry::MSG_ID_RegistryList) );
+    TRACE_SCOPE(shareipcmix_src_RemoteRegistryClientBase_onRegistryListUpdate);
+    TRACE_WARN("The attribute RegistryList (value = %u) update method of proxy [ %s ] client RemoteRegistryClientBase is not implemented!"
+                    , static_cast<unsigned int>(NERemoteRegistry::MSG_ID_RegistryList)
+                    , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString());
 }
 
+DEF_TRACE_SCOPE(shareipcmix_src_RemoteRegistryClientBase_onRemainOutputsUpdate);
 void RemoteRegistryClientBase::onRemainOutputsUpdate( unsigned int /* RemainOutputs */, NEService::eDataStateType /* state */ )
 {
-    ClientBase::onUpdateNotImplemented( "RemoteRegistryClientBase", static_cast<unsigned int>(NERemoteRegistry::MSG_ID_RemainOutputs) );
+    TRACE_SCOPE(shareipcmix_src_RemoteRegistryClientBase_onRemainOutputsUpdate);
+    TRACE_WARN("The attribute RemainOutputs (value = %u) update method of proxy [ %s ] client RemoteRegistryClientBase is not implemented!"
+                    , static_cast<unsigned int>(NERemoteRegistry::MSG_ID_RemainOutputs)
+                    , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString());
 }
 
 /************************************************************************
  * Request failure / Response and Broadcast notifications
  ************************************************************************/
  
-void RemoteRegistryClientBase::requestRegisterFailed( NEService::eResultType /* FailureReason */ )
+DEF_TRACE_SCOPE(shareipcmix_src_RemoteRegistryClientBase_requestRegisterFailed);
+void RemoteRegistryClientBase::requestRegisterFailed( NEService::eResultType FailureReason )
 {
-    ClientBase::requestFailedNotImplemented( "RemoteRegistryClientBase", static_cast<unsigned int>(NERemoteRegistry::MSG_ID_requestRegister) );
+    TRACE_SCOPE(shareipcmix_src_RemoteRegistryClientBase_requestRegisterFailed);
+    TRACE_WARN("The request requestRegister (value = %u) method of proxy [ %s ] client RemoteRegistryClientBase is failed with reason [ %s ]! Make error handling!"
+                    , static_cast<unsigned int>(NERemoteRegistry::MSG_ID_requestRegister)
+                    , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString()
+                    , NEService::getString(FailureReason));
 }
 
-void RemoteRegistryClientBase::requestUnregisterFailed( NEService::eResultType /* FailureReason */ )
+DEF_TRACE_SCOPE(shareipcmix_src_RemoteRegistryClientBase_requestUnregisterFailed);
+void RemoteRegistryClientBase::requestUnregisterFailed( NEService::eResultType FailureReason )
 {
-    ClientBase::requestFailedNotImplemented( "RemoteRegistryClientBase", static_cast<unsigned int>(NERemoteRegistry::MSG_ID_requestUnregister) );
+    TRACE_SCOPE(shareipcmix_src_RemoteRegistryClientBase_requestUnregisterFailed);
+    TRACE_WARN("The request requestUnregister (value = %u) method of proxy [ %s ] client RemoteRegistryClientBase is failed with reason [ %s ]! Make error handling!"
+                    , static_cast<unsigned int>(NERemoteRegistry::MSG_ID_requestUnregister)
+                    , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString()
+                    , NEService::getString(FailureReason));
 }
 
-void RemoteRegistryClientBase::requestHelloWorldFailed( NEService::eResultType /* FailureReason */ )
+DEF_TRACE_SCOPE(shareipcmix_src_RemoteRegistryClientBase_requestHelloWorldFailed);
+void RemoteRegistryClientBase::requestHelloWorldFailed( NEService::eResultType FailureReason )
 {
-    ClientBase::requestFailedNotImplemented( "RemoteRegistryClientBase", static_cast<unsigned int>(NERemoteRegistry::MSG_ID_requestHelloWorld) );
+    TRACE_SCOPE(shareipcmix_src_RemoteRegistryClientBase_requestHelloWorldFailed);
+    TRACE_WARN("The request requestHelloWorld (value = %u) method of proxy [ %s ] client RemoteRegistryClientBase is failed with reason [ %s ]! Make error handling!"
+                    , static_cast<unsigned int>(NERemoteRegistry::MSG_ID_requestHelloWorld)
+                    , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString()
+                    , NEService::getString(FailureReason));
 }
 
+DEF_TRACE_SCOPE(shareipcmix_src_RemoteRegistryClientBase_responseRegister);
 void RemoteRegistryClientBase::responseRegister( const NERemoteRegistry::sClientRegister & /* client */ )
 {
-    ClientBase::responseNotImplemented( "RemoteRegistryClientBase", static_cast<unsigned int>(NERemoteRegistry::MSG_ID_responseRegister) );
+    TRACE_SCOPE(shareipcmix_src_RemoteRegistryClientBase_responseRegister);
+    TRACE_WARN("The response responseRegister (value = %u) method of proxy [ %s ] client RemoteRegistryClientBase is not implemented!"
+                    , static_cast<unsigned int>(NERemoteRegistry::MSG_ID_responseRegister)
+                    , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString());
 }
 
+DEF_TRACE_SCOPE(shareipcmix_src_RemoteRegistryClientBase_responseHelloWorld);
 void RemoteRegistryClientBase::responseHelloWorld( unsigned int /* clientID */ )
 {
-    ClientBase::responseNotImplemented( "RemoteRegistryClientBase", static_cast<unsigned int>(NERemoteRegistry::MSG_ID_responseHelloWorld) );
+    TRACE_SCOPE(shareipcmix_src_RemoteRegistryClientBase_responseHelloWorld);
+    TRACE_WARN("The response responseHelloWorld (value = %u) method of proxy [ %s ] client RemoteRegistryClientBase is not implemented!"
+                    , static_cast<unsigned int>(NERemoteRegistry::MSG_ID_responseHelloWorld)
+                    , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString());
 }
 
 //////////////////////////////////////////////////////////////////////////

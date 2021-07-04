@@ -779,7 +779,8 @@ int TEArrayList<VALUE, VALUE_TYPE, Implement>::setSize(int elemCount, int increa
         int newMax   = MACRO_MAX(elemCount, mMaxElems + grow);
         ASSERT(newMax >= mMaxElems && elemCount > mElemCount);
 
-        VALUE* newValues = reinterpret_cast<VALUE *>( DEBUG_NEW unsigned char[newMax * static_cast<int>(sizeof(VALUE))] );
+        int single = static_cast<int>(sizeof(VALUE));
+        VALUE* newValues = reinterpret_cast<VALUE *>( DEBUG_NEW unsigned char[static_cast<unsigned int>(newMax * single)] );
         if (newValues != NULL)
         {
             ASSERT(elemCount <= newMax);

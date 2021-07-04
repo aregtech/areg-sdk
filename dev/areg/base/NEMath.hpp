@@ -471,8 +471,9 @@ inline char NEMath::getChar(NEMath::eDigitSign sign)
     {
     case NEMath::SignNegative:
         return '-';
-    case SignPositive:
+    case NEMath::SignPositive:
         return '+';
+    case NEMath::SignUndefined: // fall through
     default:
         return '\0';
     }

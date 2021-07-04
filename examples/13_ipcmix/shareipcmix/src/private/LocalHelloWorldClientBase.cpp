@@ -4,7 +4,7 @@
 /************************************************************************
  * (c) copyright    2021
  *                  Create by AREG SDK code generator tool from source LocalHelloWorld.
- * Generated at     11.06.2021  21:11:04 GMT+02:00 
+ * Generated at     04.07.2021  04:21:23 GMT+02:00 
  ************************************************************************/
 
 /************************************************************************
@@ -44,9 +44,8 @@ namespace NELocalHelloWorld
  * Constructor / Destructor
  ************************************************************************/
 
-LocalHelloWorldClientBase::LocalHelloWorldClientBase( const char* roleName, const char * ownerThread /*= static_cast<const char *>(NULL)*/ )
+LocalHelloWorldClientBase::LocalHelloWorldClientBase( const char * roleName, const char * ownerThread /*= static_cast<const char *>(NULL)*/ )
     : IEProxyListener   ( )
-    , ClientBase        ( )
 
     , mIsConnected      ( false )
     , mCurrSequenceNr   ( 0 )
@@ -55,9 +54,8 @@ LocalHelloWorldClientBase::LocalHelloWorldClientBase( const char* roleName, cons
     ; // do nothing
 }
 
-LocalHelloWorldClientBase::LocalHelloWorldClientBase( const char* roleName, DispatcherThread & ownerThread )
+LocalHelloWorldClientBase::LocalHelloWorldClientBase( const char * roleName, DispatcherThread & ownerThread )
     : IEProxyListener   ( )
-    , ClientBase        ( )
 
     , mIsConnected      ( false )
     , mCurrSequenceNr   ( 0 )
@@ -68,7 +66,6 @@ LocalHelloWorldClientBase::LocalHelloWorldClientBase( const char* roleName, Disp
 
 LocalHelloWorldClientBase::LocalHelloWorldClientBase( const char* roleName, Component & owner )
     : IEProxyListener   ( )
-    , ClientBase        ( )
 
     , mIsConnected      ( false )
     , mCurrSequenceNr   ( 0 )
@@ -96,28 +93,22 @@ LocalHelloWorldClientBase::~LocalHelloWorldClientBase( void )
 bool LocalHelloWorldClientBase::recreateProxy( void )
 {
     bool result         = false;
-    String roleName   = mProxy != NULL ? mProxy->getProxyAddress().getRoleName() : "";
-    String threadName = mProxy != NULL ? mProxy->getProxyAddress().getThread()   : "";
-    if ( roleName.isEmpty() == false )
+    if (mProxy != NULL)
     {
-        LocalHelloWorldProxy * newProxy = LocalHelloWorldProxy::createProxy(roleName.getString(), static_cast<IEProxyListener &>(self()), threadName.getString());
-        if (newProxy != NULL)
+        String roleName   = mProxy->getProxyAddress().getRoleName();
+        String threadName = mProxy->getProxyAddress().getThread();
+        if ( roleName.isEmpty() == false )
         {
-            mProxy->clearAllNotifications( static_cast<IENotificationEventConsumer &>(self()) );
-            mProxy->freeProxy (static_cast<IEProxyListener &>(self()) );
-            mProxy = newProxy;
-            result = true;
-        }
-        else
-        {
-            ; // do nothing
-        }
+            LocalHelloWorldProxy * newProxy = LocalHelloWorldProxy::createProxy(roleName.getString(), static_cast<IEProxyListener &>(self()), threadName.getString());
+            if (newProxy != NULL)
+            {
+                mProxy->clearAllNotifications( static_cast<IENotificationEventConsumer &>(self()) );
+                mProxy->freeProxy (static_cast<IEProxyListener &>(self()) );
+                mProxy = newProxy;
+                result = true;
+            }
+        }    
     }
-    else
-    {
-        ; // do nothing, no role name is assigned
-    }
-    
     return result;
 }
 
@@ -274,19 +265,19 @@ DEF_TRACE_SCOPE(shareipcmix_src_LocalHelloWorldClientBase_invalidResponse);
 void LocalHelloWorldClientBase::invalidResponse( NELocalHelloWorld::eMessageIDs InvalidRespId )
 {
     TRACE_SCOPE(shareipcmix_src_LocalHelloWorldClientBase_invalidResponse);
-    TRACE_WARN(">>> There is an invalid response [ %s ] (value = [ %d ]) in client LocalHelloWorldClientBase with path [ %s ], which cannot be processed! Make error handling! <<<"
+    TRACE_ERR("The invalid response [ %s ] (value = [ %d ]) method of proxy [ %s ] client LocalHelloWorldClientBase is not implemented! Make error handling!"
                     , NELocalHelloWorld::getString(InvalidRespId)
                     , static_cast<unsigned int>(InvalidRespId)
                     , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString() );
-                    
-    ClientBase::responseInvalidNotImpelemnted("LocalHelloWorldClientBase", static_cast<unsigned int>(InvalidRespId));
+
+    ASSERT(false);
 }
 
 DEF_TRACE_SCOPE(shareipcmix_src_LocalHelloWorldClientBase_invalidRequest);
 void LocalHelloWorldClientBase::invalidRequest( NELocalHelloWorld::eMessageIDs InvalidReqId )
 {
     TRACE_SCOPE(shareipcmix_src_LocalHelloWorldClientBase_invalidRequest);
-    TRACE_WARN(">>> There is an invalid request [ %s ] (value = [ %d ]) in client LocalHelloWorldClientBase with path [ %s ], which was not able to process! Make error handling! <<<"
+    TRACE_ERR("The invalid request [ %s ] (value = [ %d ]) method of proxy [ %s ] client LocalHelloWorldClientBase is not implemented! Make error handling!"
                     , NELocalHelloWorld::getString(InvalidReqId)
                     , static_cast<unsigned int>(InvalidReqId)
                     , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString() );
@@ -298,7 +289,7 @@ DEF_TRACE_SCOPE(shareipcmix_src_LocalHelloWorldClientBase_requestFailed);
 void LocalHelloWorldClientBase::requestFailed( NELocalHelloWorld::eMessageIDs FailureMsgId, NEService::eResultType FailureReason )
 {
     TRACE_SCOPE(shareipcmix_src_LocalHelloWorldClientBase_requestFailed);
-    TRACE_WARN(">>> The request [ %s ] (value = [ %d ]) in Proxy [ %s ] of LocalHelloWorldClientBase failed with reason [ %s ]! Triggering appropriate request failed function! <<<"
+    TRACE_WARN("The request [ %s ] (value = [ %d ]) method of proxy [ %s ] client LocalHelloWorldClientBase failed with reason [ %s ]! Implemented error handling!"
                     , NELocalHelloWorld::getString(FailureMsgId)
                     , static_cast<unsigned int>(FailureMsgId)
                     , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString()
@@ -321,28 +312,45 @@ void LocalHelloWorldClientBase::requestFailed( NELocalHelloWorld::eMessageIDs Fa
  * Attribute notifications
  ************************************************************************/
 
+DEF_TRACE_SCOPE(shareipcmix_src_LocalHelloWorldClientBase_onConnectedClientsUpdate);
 void LocalHelloWorldClientBase::onConnectedClientsUpdate( const NELocalHelloWorld::ConnectionList & /* ConnectedClients */, NEService::eDataStateType /* state */ )
 {
-    ClientBase::onUpdateNotImplemented( "LocalHelloWorldClientBase", static_cast<unsigned int>(NELocalHelloWorld::MSG_ID_ConnectedClients) );
+    TRACE_SCOPE(shareipcmix_src_LocalHelloWorldClientBase_onConnectedClientsUpdate);
+    TRACE_WARN("The attribute ConnectedClients (value = %u) update method of proxy [ %s ] client LocalHelloWorldClientBase is not implemented!"
+                    , static_cast<unsigned int>(NELocalHelloWorld::MSG_ID_ConnectedClients)
+                    , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString());
 }
 
+DEF_TRACE_SCOPE(shareipcmix_src_LocalHelloWorldClientBase_onRemainOutputUpdate);
 void LocalHelloWorldClientBase::onRemainOutputUpdate( short /* RemainOutput */, NEService::eDataStateType /* state */ )
 {
-    ClientBase::onUpdateNotImplemented( "LocalHelloWorldClientBase", static_cast<unsigned int>(NELocalHelloWorld::MSG_ID_RemainOutput) );
+    TRACE_SCOPE(shareipcmix_src_LocalHelloWorldClientBase_onRemainOutputUpdate);
+    TRACE_WARN("The attribute RemainOutput (value = %u) update method of proxy [ %s ] client LocalHelloWorldClientBase is not implemented!"
+                    , static_cast<unsigned int>(NELocalHelloWorld::MSG_ID_RemainOutput)
+                    , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString());
 }
 
 /************************************************************************
  * Request failure / Response and Broadcast notifications
  ************************************************************************/
  
-void LocalHelloWorldClientBase::requestHelloWorldFailed( NEService::eResultType /* FailureReason */ )
+DEF_TRACE_SCOPE(shareipcmix_src_LocalHelloWorldClientBase_requestHelloWorldFailed);
+void LocalHelloWorldClientBase::requestHelloWorldFailed( NEService::eResultType FailureReason )
 {
-    ClientBase::requestFailedNotImplemented( "LocalHelloWorldClientBase", static_cast<unsigned int>(NELocalHelloWorld::MSG_ID_requestHelloWorld) );
+    TRACE_SCOPE(shareipcmix_src_LocalHelloWorldClientBase_requestHelloWorldFailed);
+    TRACE_WARN("The request requestHelloWorld (value = %u) method of proxy [ %s ] client LocalHelloWorldClientBase is failed with reason [ %s ]! Make error handling!"
+                    , static_cast<unsigned int>(NELocalHelloWorld::MSG_ID_requestHelloWorld)
+                    , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString()
+                    , NEService::getString(FailureReason));
 }
 
+DEF_TRACE_SCOPE(shareipcmix_src_LocalHelloWorldClientBase_responseHelloWorld);
 void LocalHelloWorldClientBase::responseHelloWorld( const NELocalHelloWorld::sConnectedClient & /* clientInfo */ )
 {
-    ClientBase::responseNotImplemented( "LocalHelloWorldClientBase", static_cast<unsigned int>(NELocalHelloWorld::MSG_ID_responseHelloWorld) );
+    TRACE_SCOPE(shareipcmix_src_LocalHelloWorldClientBase_responseHelloWorld);
+    TRACE_WARN("The response responseHelloWorld (value = %u) method of proxy [ %s ] client LocalHelloWorldClientBase is not implemented!"
+                    , static_cast<unsigned int>(NELocalHelloWorld::MSG_ID_responseHelloWorld)
+                    , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString());
 }
 
 //////////////////////////////////////////////////////////////////////////

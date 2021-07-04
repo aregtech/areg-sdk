@@ -573,7 +573,7 @@ int ProxyBase::prepareListeners( ProxyBase::ProxyListenerList& out_listenerList,
     return out_listenerList.getSize();
 }
 
-void ProxyBase::notifyListeners( int respId, NEService::eResultType result, unsigned int seqNrToSearch )
+void ProxyBase::notifyListeners( unsigned int respId, NEService::eResultType result, unsigned int seqNrToSearch )
 {
     ProxyBase::ProxyListenerList listenerList;
     prepareListeners(listenerList, respId, seqNrToSearch);

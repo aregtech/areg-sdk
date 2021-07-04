@@ -204,6 +204,9 @@ void TimerManager::processEvent( const TimerManagingEventData & data )
         _processExpiredTimers();
         break;
 
+    case TimerManagingEventData::TimerIgnore:   // fall through
+    case TimerManagingEventData::TimerStop:     // fall through
+    case TimerManagingEventData::TimerCancel:   // fall through
     default:
         break; // ignore
     }

@@ -314,6 +314,26 @@ void ServerService::processEvent(const ServerServiceEventData & data)
                 }
                 break;
 
+            case NEService::SI_REGISTER_ID_LAST:            // fall through
+            case NEService::SI_ROUTER_QUERY:                // fall through
+            case NEService::SI_ROUTER_CONNECT:              // fall through
+            case NEService::SI_SERVICE_CONNECTION_REQUEST:  // fall through
+            case NEService::SI_NOTIFY_VERSION:              // fall through
+            case NEService::SI_REQUEST_VERSION:             // fall through
+            case NEService::SI_REGISTER_ID_FIRST:           // fall through
+            case NEService::COMPONENT_MAKE_CLEANUP:         // fall through
+            case NEService::SI_ROUTER_REGISTER_NOTIFY:      // fall through
+            case NEService::SI_ROUTER_NOTIFY:               // fall through
+                break;
+
+            case NEService::SI_SERVICE_CONNECTION_NOTIFY:   // fall through
+            case NEService::ATTRIBUTE_ID_LAST:              // fall through
+            case NEService::ATTRIBUTE_ID_FIRST:             // fall through
+            case NEService::RESPONSE_ID_LAST:               // fall through
+            case NEService::RESPONSE_ID_FIRST:              // fall through
+            case NEService::REQUEST_ID_LAST:                // fall through
+            case NEService::REQUEST_ID_FIRST:               // fall through
+            case NEService::EMPTY_FUNCTION_ID:              // fall through
             default:
                 if ( NEService::isExecutableId(msgId) || NEService::isConnectNotifyId(msgId) )
                 {

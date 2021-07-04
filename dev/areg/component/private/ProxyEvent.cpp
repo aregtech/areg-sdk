@@ -113,6 +113,11 @@ inline void IEProxyEventConsumer::localProcessResponseEvent(ResponseEvent & even
         processAttributeEvent(eventResponse);
         break;
 
+    case NEService::SERVICE_DATA_TYPE:      // fall through
+    case NEService::UNDEFINED_DATA_TYPE:
+        ASSERT(false);  // unexpected here
+        break;
+
     default:
         break;
     }

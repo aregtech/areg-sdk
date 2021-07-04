@@ -20,7 +20,7 @@ const unsigned int FileBuffer::BLOCK_SIZE  = (4 * NEMemory::BLOCK_SIZE);
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
-FileBuffer::FileBuffer( int          mode       /*= (FileBase::FO_MODE_WRITE | FileBase::FO_MODE_BINARY)*/
+FileBuffer::FileBuffer( unsigned int mode       /*= (FileBase::FO_MODE_WRITE | FileBase::FO_MODE_BINARY)*/
                       , const char * name       /*= NULL*/
                       , unsigned int blockSize  /*= BLOCK_SIZE*/)
     : FileBase      ( )
@@ -28,7 +28,7 @@ FileBuffer::FileBuffer( int          mode       /*= (FileBase::FO_MODE_WRITE | F
     , mSharedBuffer (blockSize)
     , mIsOpened     (false)
 {
-    mFileMode = mode & (~FileBase::FOB_ATTACH);  // FOB_MODE_ATTACH
+    mFileMode = mode & (~ static_cast<unsigned int>(FileBase::FOB_ATTACH) );  // FOB_MODE_ATTACH
     mFileName = name;
 }
 
@@ -208,7 +208,7 @@ bool FileBuffer::isOpened() const
 
 unsigned int FileBuffer::reserve(int newSize)
 {
-    return (isOpened() ? mSharedBuffer.resize(newSize, false) : NEMemory::INVALID_SIZE);
+    return (isOpened() && (newSize >= 0) ? mSharedBuffer.resize(static_cast<unsigned int>(newSize), false) : NEMemory::INVALID_SIZE);
 }
 
 bool FileBuffer::truncate( void )

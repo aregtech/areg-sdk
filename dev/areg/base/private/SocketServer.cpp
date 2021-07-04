@@ -45,6 +45,7 @@ bool SocketServer::createSocket(void)
         if ( mSocket != NESocket::InvalidSocketHandle )
         {
             ASSERT( mLockCount == NULL );
+
             mLockCount = DEBUG_NEW unsigned int;
             if ( mLockCount != NULL )
                 *mLockCount = 1;

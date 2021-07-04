@@ -6,7 +6,7 @@
 /************************************************************************
  * (c) copyright    2021
  *                  Create by AREG SDK code generator tool from source RemoteRegistry.
- * Generated at     11.06.2021  21:11:05 GMT+02:00 
+ * Generated at     04.07.2021  04:21:25 GMT+02:00 
  ************************************************************************/
 
 /************************************************************************
@@ -20,7 +20,6 @@
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
 #include "shareipcmix/src/NERemoteRegistry.hpp"
-#include "areg/component/ClientBase.hpp"
 #include "areg/component/IEProxyListener.hpp"
 #include "areg/component/NotificationEvent.hpp"
 
@@ -46,7 +45,7 @@ class DispatcherThread;
  *              This service is used by each remote servicing component to register clients.
  *              Before using services, the clients should be registered.
  **/
-class RemoteRegistryClientBase  : public    IEProxyListener, private ClientBase
+class RemoteRegistryClientBase  : public IEProxyListener
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor. Protected
@@ -442,7 +441,7 @@ private:
      * \brief   Returns reference of RemoteRegistryClientBase object
      **/
 
-    RemoteRegistryClientBase & self( void );
+    inline RemoteRegistryClientBase & self( void );
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

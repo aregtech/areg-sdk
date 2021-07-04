@@ -5,7 +5,7 @@
 /************************************************************************
  * (c) copyright    2021
  *                  Create by AREG SDK code generator tool from source ConnectionManager.
- * Generated at     23.05.2021  00:18:56 GMT+02:00 
+ * Generated at     04.07.2021  04:30:00 GMT+02:00 
  ************************************************************************/
 
 /************************************************************************
@@ -219,7 +219,7 @@ void ConnectionManagerProxy::processAttributeEvent( ServiceResponseEvent & event
  * Internal helper functions.
  ************************************************************************/
 
-DEF_TRACE_SCOPE(shared_generated_private_ConnectionManagerProxy_UpdateData);
+DEF_TRACE_SCOPE(shared_generated_private_ConnectionManagerProxy_updateData);
 void ConnectionManagerProxy::updateData( ConnectionManagerResponseEvent & eventElem, NEConnectionManager::eMessageIDs respId )
 {
     const IEInStream & stream = static_cast<const ConnectionManagerResponseEvent &>(eventElem).getData().getReadStream();
@@ -266,7 +266,7 @@ void ConnectionManagerProxy::updateData( ConnectionManagerResponseEvent & eventE
 
     default:
         {
-            TRACE_SCOPE(shared_generated_private_ConnectionManagerProxy_UpdateData);
+            TRACE_SCOPE(shared_generated_private_ConnectionManagerProxy_updateData);
             TRACE_ERR("Unexpected response message ID [ %d ] received in proxy [ %s ]!"
                         , static_cast<int>(respId)
                         , ProxyAddress::convAddressToPath(getProxyAddress()).getString());

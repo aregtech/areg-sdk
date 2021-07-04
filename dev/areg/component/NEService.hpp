@@ -878,6 +878,13 @@ namespace NEService
          **/
         NEService::ParamState               mParamState;    // state of parameters in response call.
 
+    //////////////////////////////////////////////////////////////////////////
+    // Forbidden calls
+    //////////////////////////////////////////////////////////////////////////
+    private:
+        ProxyData( void );
+        ProxyData( const ProxyData & /*src*/ );
+        const ProxyData & operator = ( const ProxyData & /*src*/ );
     };
 }
 
@@ -1154,17 +1161,16 @@ inline const char* NEService::getString( NEService::eMessageDataType dataType )
 {
     switch (dataType)
     {
-    case    NEService::UNDEFINED_DATA_TYPE:
+    case NEService::UNDEFINED_DATA_TYPE:
         return "NEService::UNDEFINED_DATA_TYPE";
-
-    case    NEService::REQUEST_DATA_TYPE:
+    case NEService::REQUEST_DATA_TYPE:
         return "NEService::REQUEST_DATA_TYPE";
-
-    case    NEService::RESPONSE_DATA_TYPE:
+    case NEService::RESPONSE_DATA_TYPE:
         return "NEService::RESPONSE_DATA_TYPE";
-
-    case    NEService::ATTRIBUTE_DATA_TYPE:
+    case NEService::ATTRIBUTE_DATA_TYPE:
         return "NEService::ATTRIBUTE_DATA_TYPE";
+    case NEService::SERVICE_DATA_TYPE:
+        return "NEService::SERVICE_DATA_TYPE";
 
     default:
         ASSERT(false);
@@ -1223,6 +1229,8 @@ inline const char * NEService::getString( NEService::eServiceType srvcType )
         return "NEService::ServiceRemote";
     case NEService::ServiceAny:
         return "NEService::ServiceAny";
+    case NEService::ServiceInvalid:
+        return "NEService::ServiceInvalid";
     default:
         return "ERR: Unexpected NEService::eServiceRequestType value!!!";
     }
@@ -1235,6 +1243,8 @@ inline const char * NEService::getString( NEService::eFuncIdRange funcId )
     {
     case NEService::EMPTY_FUNCTION_ID:
         return "NEService::EMPTY_FUNCTION_ID";
+    case NEService::COMPONENT_MAKE_CLEANUP:
+        return "NEService::COMPONENT_MAKE_CLEANUP";
     case NEService::SI_REQUEST_VERSION:
         return "NEService::SI_REQUEST_VERSION";
     case NEService::SI_NOTIFY_VERSION:
@@ -1255,13 +1265,27 @@ inline const char * NEService::getString( NEService::eFuncIdRange funcId )
         return "NEService::SI_ROUTER_QUERY";
     case NEService::SI_ROUTER_REGISTER_NOTIFY:
         return "NEService::SI_ROUTER_REGISTER_NOTIFY";
+    case NEService::REQUEST_ID_FIRST:
+        return "NEService::REQUEST_ID_FIRST";
+    case NEService::RESPONSE_ID_FIRST:
+        return "NEService::RESPONSE_ID_FIRST";
+    case NEService::ATTRIBUTE_ID_FIRST:
+        return "NEService::ATTRIBUTE_ID_FIRST";
+    case NEService::SI_REGISTER_ID_FIRST:
+        return "NEService::SI_REGISTER_ID_FIRST";
+    case NEService::REQUEST_ID_LAST:        // fall through
+    case NEService::RESPONSE_ID_LAST:       // fall through
+    case NEService::ATTRIBUTE_ID_LAST:      // fall through
+    case NEService::SI_REGISTER_ID_LAST:    // fall through
     default:
-        if ( funcId >= NEService::REQUEST_ID_FIRST && funcId <= NEService::REQUEST_ID_LAST )
+        if ( (funcId > NEService::REQUEST_ID_FIRST) && (funcId <= NEService::REQUEST_ID_LAST) )
             return "Request ID range";
-        else if ( funcId >= NEService::RESPONSE_ID_FIRST && funcId <= NEService::RESPONSE_ID_LAST )
+        else if ( (funcId > NEService::RESPONSE_ID_FIRST) && (funcId <= NEService::RESPONSE_ID_LAST) )
             return "Response ID range";
-        else if ( funcId >= NEService::ATTRIBUTE_ID_FIRST && funcId <= NEService::ATTRIBUTE_ID_LAST )
+        else if ( (funcId > NEService::ATTRIBUTE_ID_FIRST) && (funcId <= NEService::ATTRIBUTE_ID_LAST) )
             return "Attribute ID range";
+        else if ( (funcId > NEService::SI_REGISTER_ID_FIRST) && (funcId <= NEService::SI_REGISTER_ID_LAST) )
+            return "Service registration ID";
         else
             return "ERR: Unexpected ID";
     }

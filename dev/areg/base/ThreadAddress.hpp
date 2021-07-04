@@ -163,7 +163,7 @@ public:
      *          <string name> is the name of string.
      * \return  Returns converted path of thread as string.
      **/
-    String convToString( void ) const;
+    inline String convToString( void ) const;
 
     /**
      * \brief	Parse string and retrieves thread address data from path.

@@ -14,7 +14,7 @@
 /**
  * \brief   Indicator of invalid position of cursor
  **/
-const unsigned int IECursorPosition::INVALID_CURSOR_POSITION   = static_cast<unsigned int>(-1);
+const unsigned int IECursorPosition::INVALID_CURSOR_POSITION   = static_cast<unsigned int>(~0);
 
 /**
  * \brief   Indicator of cursor start position

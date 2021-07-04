@@ -16,6 +16,7 @@ inline void TracePropertyValue::_setValue( const char * newValue )
     NEString::CharPos pos = mValue.findFirstOf(NELogConfig::SYNTAX_END_COMMAND_DELIMITER);
     if ( pos != NEString::InvalidPos )
         mValue  = mValue.substring(0, pos);
+    
     mValue.trimAll();
 
     String prio   = mValue;

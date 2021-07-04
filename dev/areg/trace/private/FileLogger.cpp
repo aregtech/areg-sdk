@@ -134,6 +134,10 @@ bool FileLogger::logMessage( const NETrace::sLogMessage & logMessage )
             result = getLayoutExitScope().logMessage( logMessage, static_cast<IEOutStream &>(mLogFile) );
             break;
 
+        case NETrace::LogCommand:
+            break;
+
+        case NETrace::LogUndefined: // fall through
         default:
             ASSERT(false);  // unexpected message to log
             break;

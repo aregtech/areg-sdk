@@ -63,7 +63,7 @@ static inline NEUtfString::CharPos _getSequence2( const NEUtfString::utf8 * buff
     {
         ch1 = NEUtfString::mask8<NEUtfString::utf16>( ch1 );
         // two octets
-        out_char = ((ch1 << 6) & 0x07FF) + (ch2 & 0x3F);
+        out_char = static_cast<NEUtfString::utf16>(((ch1 << 6) & 0x07FF) + (ch2 & 0x3F));
     }
     return atPos;
 }
@@ -191,6 +191,7 @@ NEUtfString::sUtfStringHeader * NEUtfString::initString(  NEUtfString::CharCount
         }
         break;
 
+        case NEUtfString::EncodeInvalid:    // fall through
         default:
             delete [] temp;
             break;
@@ -225,7 +226,7 @@ NEUtfString::utf8 NEUtfString::getSequenceOne( const NEUtfString::sUtf8String & 
 
 NEUtfString::CharPos NEUtfString::setSequenceOne( NEUtfString::sUtf8String & utfString, NEUtfString::utf8 ch, NEUtfString::CharPos atPos )
 {
-    atPos = atPos == NEUtfString::EndPos ? utfString.utfHeader.utfUsed : atPos;
+    atPos = atPos == NEUtfString::EndPos ? static_cast<CharPos>(utfString.utfHeader.utfUsed) : atPos;
     if ( canWrite<utf8>(utfString, atPos, NEUtfString::SeqOne) )
     {
         // one octet
@@ -255,7 +256,7 @@ NEUtfString::utf16 NEUtfString::getSequenceTwo( const NEUtfString::sUtf8String &
 
 NEUtfString::CharPos NEUtfString::setSequenceTwo( NEUtfString::sUtf8String & utfString, NEUtfString::utf16 ch, NEUtfString::CharPos atPos )
 {
-    atPos = atPos == NEUtfString::EndPos ? utfString.utfHeader.utfUsed : atPos;
+    atPos = atPos == NEUtfString::EndPos ? static_cast<CharPos>(utfString.utfHeader.utfUsed) : atPos;
     if ( canWrite<utf8>( utfString, atPos, NEUtfString::SeqTwo ) )
     {
         // two octets
@@ -284,7 +285,7 @@ NEUtfString::utf32 NEUtfString::getSequenceThree( const NEUtfString::sUtf8String
 
 NEUtfString::CharPos NEUtfString::setSequenceThree( NEUtfString::sUtf8String & utfString, NEUtfString::utf32 ch, NEUtfString::CharPos atPos )
 {
-    atPos = atPos == NEUtfString::EndPos ? utfString.utfHeader.utfUsed : atPos;
+    atPos = atPos == NEUtfString::EndPos ? static_cast<CharPos>(utfString.utfHeader.utfUsed) : atPos;
     if ( canWrite<utf8>( utfString, atPos, NEUtfString::SeqThree ) )
     {
         // 3 octets
@@ -313,7 +314,7 @@ NEUtfString::utf32 NEUtfString::getSequenceFour( const NEUtfString::sUtf8String 
 
 NEUtfString::CharPos NEUtfString::setSequenceFour( NEUtfString::sUtf8String & utfString, NEUtfString::utf32 ch, NEUtfString::CharPos atPos )
 {
-    atPos = atPos == NEUtfString::EndPos ? utfString.utfHeader.utfUsed : atPos;
+    atPos = atPos == NEUtfString::EndPos ? static_cast<CharPos>(utfString.utfHeader.utfUsed) : atPos;
     if ( canWrite<utf8>( utfString, atPos, NEUtfString::SeqFour ) )
     {
         atPos = _setSequence4(getString<utf8>( utfString ), atPos, ch);
@@ -328,27 +329,35 @@ NEUtfString::CharPos NEUtfString::setSequenceFour( NEUtfString::sUtf8String & ut
 NEUtfString::UtfChar NEUtfString::validateNext( const NEUtfString::sUtf8String & utfString, CharPos & atPos )
 {
     NEUtfString::UtfChar result = getInvalidChar();
+
     // Save the original value of it so we can go back in case of failure
     // Of course, it does not make much sense with i.e. stream iterators
-    unsigned int pos = atPos;
+    NEUtfString::CharPos pos = atPos;
     utf8 ch = charAtPos<utf8>(utfString, pos);
+
     // Determine the sequence length based on the lead octet
     NEUtfString::eSeqLength seqLen = getSequenceLength<utf8>( ch );
+
     // Get trail octets and calculate the code point
     switch ( seqLen )
     {
     case NEUtfString::SeqOne:
         result.u32Bits = getSequenceOne( utfString, pos );
         break;
+    
     case NEUtfString::SeqTwo:
         result.u32Bits = getSequenceTwo( utfString, pos );
         break;
+    
     case NEUtfString::SeqThree:
         result.u32Bits = getSequenceThree( utfString, pos );
         break;
+    
     case NEUtfString::SeqFour:
         result.u32Bits = getSequenceFour( utfString, pos );
         break;
+
+    case NEUtfString::SeqInvalid: // fall through
     default:
         break;
     }
@@ -378,7 +387,8 @@ NEUtfString::CharPos NEUtfString::findInvalid( const NEUtfString::sUtf8String & 
     {
         ch = validateNext(utfString, result);
     } while ( isValid<utf32>(ch.u32Bits) );
-    return (result != utfString.utfHeader.utfUsed ? result : NEUtfString::InvalidPos);
+
+    return (result != static_cast<CharPos>(utfString.utfHeader.utfUsed) ? result : NEUtfString::InvalidPos);
 }
 
 NEUtfString::eBOM NEUtfString::getStringBOM( const NEUtfString::sUtf8String & utfString )
@@ -420,32 +430,33 @@ NEUtfString::CharPos NEUtfString::setAt(   NEUtfString::utf32 newChar
     {
     case NEUtfString::SeqOne:
         // one octet
-        atPos = setSequenceOne(utfString, newChar, atPos);
+        atPos = setSequenceOne(utfString, static_cast<NEUtfString::utf8>(newChar), atPos);
         break;
 
     case NEUtfString::SeqTwo:
         // two octets
-        atPos = setSequenceTwo( utfString, newChar, atPos );
+        atPos = setSequenceTwo( utfString, static_cast<NEUtfString::utf16>(newChar), atPos );
         break;
 
     case NEUtfString::SeqThree:
         // three octets
-        atPos = setSequenceThree( utfString, newChar, atPos );
+        atPos = setSequenceThree( utfString, static_cast<NEUtfString::utf32>(newChar), atPos );
         break;
 
     case NEUtfString::SeqFour:
         // four octets
-        atPos = setSequenceFour( utfString, newChar, atPos );
+        atPos = setSequenceFour( utfString, static_cast<NEUtfString::utf32>(newChar), atPos );
         break;
 
+    case NEUtfString::SeqInvalid:   // fall through
     default:
         break;
     }
 
-    if ( (atPos != NEUtfString::InvalidPos) && (atPos > utfString.utfHeader.utfUsed) )
+    if ( (atPos != NEUtfString::InvalidPos) && (atPos > static_cast<CharPos>(utfString.utfHeader.utfUsed)) )
     {
         utf8 * buffer = getString<utf8>(utfString);
-        utfString.utfHeader.utfUsed = atPos;
+        utfString.utfHeader.utfUsed = static_cast<unsigned int>(atPos);
         utfString.utfHeader.utfCount += 1;
         buffer[atPos] = NEUtfString::EndofStringUtf8;
     }
@@ -459,15 +470,17 @@ NEUtfString::CharPos NEUtfString::appendChar( NEUtfString::sUtf8String *& utfStr
     NEUtfString::eSeqLength seqLen = NEUtfString::getSequenceLength( newChar );
     if ( (seqLen != NEUtfString::SeqInvalid) && (utfString != static_cast<sUtf8String *>(NULL)) )
     {
-        if ( canWrite(*utfString, utfString->utfHeader.utfUsed, seqLen) == false )
+        if ( canWrite<utf8>(*utfString, static_cast<CharPos>(utfString->utfHeader.utfUsed), seqLen) == false )
         {
-            NEUtfString::sUtf8String * newUtf  = reserveSpace<utf8>(*utfString, getSequenceSpace(seqLen) + utfString->utfHeader.utfUsed, NEUtfString::DEFAULT_BLOCK_SIZE);
+            NEUtfString::CharPos newSpace       = static_cast<CharPos>(getSequenceSpace(seqLen) + utfString->utfHeader.utfUsed);
+            NEUtfString::sUtf8String * newUtf   = reserveSpace<utf8>(*utfString, newSpace, NEUtfString::DEFAULT_BLOCK_SIZE);
             if ( newUtf != utfString )
             {
-                releaseString( *utfString );
+                releaseString<utf8>( *utfString );
                 utfString = newUtf;
             }
         }
+
         result = setAt( newChar, *utfString, NEUtfString::EndPos );
     }
     return result;
@@ -481,25 +494,25 @@ NEUtfString::CharPos NEUtfString::insertAt( NEUtfString::utf32 newChar
     NEUtfString::eSeqLength seqLen = NEUtfString::getSequenceLength( newChar );
     if ( (seqLen != NEUtfString::SeqInvalid) && (utfString != static_cast<sUtf8String *>(NULL)) )
     {
-        if ( canWrite( *utfString, utfString->utfHeader.utfUsed, seqLen ) == false )
+        if ( canWrite<utf8>( *utfString, static_cast<CharPos>(utfString->utfHeader.utfUsed), seqLen ) == false )
         {
-            NEUtfString::sUtf8String * newUtf = reserveSpace<utf8>( *utfString, getSequenceSpace(seqLen)+ utfString->utfHeader.utfUsed, NEUtfString::DEFAULT_BLOCK_SIZE );
+            NEUtfString::sUtf8String * newUtf = reserveSpace<utf8>( *utfString, static_cast<CharPos>(getSequenceSpace(seqLen)+ utfString->utfHeader.utfUsed), NEUtfString::DEFAULT_BLOCK_SIZE );
             if ( newUtf != utfString )
             {
-                releaseString( *utfString );
+                releaseString<utf8>( *utfString );
                 utfString = newUtf;
             }
         }
         NEUtfString::sUtfStringHeader &hdr = utfString->utfHeader;
-        if ( canWrite( *utfString, hdr.utfUsed, seqLen ) )
+        if ( canWrite<utf8>( *utfString, static_cast<CharPos>(hdr.utfUsed), seqLen ) )
         {
-            atPos = atPos == NEUtfString::EndPos ? hdr.utfUsed : atPos;
+            atPos = atPos == NEUtfString::EndPos ? static_cast<CharPos>(hdr.utfUsed) : atPos;
             if ( (atPos + getSequenceSpace(seqLen)) < hdr.utfSpace )
             {
                 utf8 * buffer = getString<utf8>( *utfString );
                 unsigned int len = getSequenceSpace( seqLen );
                 ASSERT( buffer != NULL );
-                NEMemory::moveElems<utf8>( buffer + atPos + len, buffer + atPos, hdr.utfUsed + 1 );
+                NEMemory::moveElems<utf8>( buffer + atPos + len, buffer + atPos, static_cast<int>(hdr.utfUsed + 1) );
                 hdr.utfCount += 1;
                 hdr.utfUsed  += len;
 
@@ -507,24 +520,25 @@ NEUtfString::CharPos NEUtfString::insertAt( NEUtfString::utf32 newChar
                 {
                 case NEUtfString::SeqOne:
                     // one octet
-                    result = setSequenceOne( *utfString, newChar, atPos );
+                    result = setSequenceOne( *utfString, static_cast<NEUtfString::utf8>(newChar), atPos );
                     break;
 
                 case NEUtfString::SeqTwo:
                     // two octets
-                    result = setSequenceTwo( *utfString, newChar, atPos );
+                    result = setSequenceTwo( *utfString, static_cast<NEUtfString::utf16>(newChar), atPos );
                     break;
 
                 case NEUtfString::SeqThree:
                     // three octets
-                    result = setSequenceThree( *utfString, newChar, atPos );
+                    result = setSequenceThree( *utfString, static_cast<NEUtfString::utf32>(newChar), atPos );
                     break;
 
                 case NEUtfString::SeqFour:
                     // four octets
-                    result = setSequenceFour( *utfString, newChar, atPos );
+                    result = setSequenceFour( *utfString, static_cast<NEUtfString::utf32>(newChar), atPos );
                     break;
 
+                case NEUtfString::SeqInvalid:   // fall through
                 default:
                     ASSERT(false);
                     break;
@@ -559,9 +573,11 @@ NEUtfString::eSeqLength NEUtfString::getAt( NEUtfString::utf32 & out_Char
         out_Char = getSequenceFour( utfString, atPos );
         break;
 
+    case NEUtfString::SeqInvalid:   // fall through
     default:
         break;
     }
+
     return result;
 }
 
@@ -570,7 +586,7 @@ NEUtfString::utf32 NEUtfString::getNext( const NEUtfString::sUtf8String & utfStr
 {
     utf32 result = NEUtfString::InvalidCharUtf32;
     NEUtfString::eSeqLength seqLen = getAt(result, utfString, startPos);
-    startPos = seqLen != NEUtfString::SeqInvalid ? (startPos + getSequenceSpace(seqLen)) : NEUtfString::InvalidPos ;
+    startPos = seqLen != NEUtfString::SeqInvalid ? (startPos + static_cast<CharPos>(getSequenceSpace(seqLen))) : NEUtfString::InvalidPos ;
     return result;
 }
 
@@ -582,7 +598,7 @@ NEUtfString::utf32 NEUtfString::getPrev( const NEUtfString::sUtf8String & utfStr
     do 
     {
         ch = charAtPos<utf8>(utfString, -- atPos);
-    } while ( canRead(utfString, startPos, NEUtfString::SeqOne) && isTrail(ch) );
+    } while ( canRead<utf8>(utfString, startPos, NEUtfString::SeqOne) && isTrail(ch) );
     
     startPos = atPos;
     getAt( result, utfString, atPos );
@@ -594,24 +610,29 @@ void NEUtfString::skipChars(  const NEUtfString::sUtf8String & utfString
                             , NEUtfString::CharCount charCount )
 
 {
-    for ( unsigned int i = 0; canRead(utfString, startPos, NEUtfString::SeqOne)  && (i < charCount); ++ i )
+    for ( NEUtfString::CharCount i = 0; canRead<utf8>(utfString, startPos, NEUtfString::SeqOne)  && (i < charCount); ++ i )
+    {
         static_cast<void>( getNext(utfString, startPos) );
+    }
 }
 
-NEUtfString::CharCount NEUtfString::getCharCount(const NEUtfString::sUtf8String & utfString
-                                            , NEUtfString::CharPos startPos /*= StartPos*/
-                                            , CharPos endPos /*= EndPos*/)
+NEUtfString::CharCount NEUtfString::getCharCount( const NEUtfString::sUtf8String & utfString
+                                                , NEUtfString::CharPos startPos /*= StartPos*/
+                                                , CharPos endPos /*= EndPos*/)
 {
     CharCount result = NEUtfString::InvalidPos;
     if ( (startPos == NEUtfString::StartPos) && (endPos == NEUtfString::EndPos) )
     {
-        result = utfString.utfHeader.utfCount;
+        result = static_cast<CharCount>(utfString.utfHeader.utfCount);
     }
     else
     {
-        for ( ; (startPos < endPos) && canRead( utfString, startPos, NEUtfString::SeqOne ); ++ result )
+        for ( ; (startPos < endPos) && canRead<utf8>( utfString, startPos, NEUtfString::SeqOne ); ++ result )
+        {
             static_cast<void>(getNext( utfString, startPos ));
+        }
     }
+
     return result;
 }
 
@@ -626,21 +647,23 @@ NEUtfString::CharCount NEUtfString::convUtf16ToUtf8( NEUtfString::sUtf8String *&
         const NEUtfString::sUtfStringHeader & hdrSrc = utf16Source.utfHeader;
 
         const utf16 * src   = getString<utf16>( utf16Source );
-        CharCount oldUsed       = utf8Destination->utfHeader.utfUsed;
+        CharCount oldUsed   = static_cast<CharCount>(utf8Destination->utfHeader.utfUsed);
         ASSERT( hdrSrc.utfEncode == NEUtfString::EncodeUtf16 );
         ASSERT( utf8Destination->utfHeader.utfEncode == NEUtfString::EncodeUtf8 );
-        charCount = charCount == NEUtfString::EndPos ? (hdrSrc.utfUsed - startPos) : charCount;
+        charCount = charCount == NEUtfString::EndPos ? static_cast<CharCount>(hdrSrc.utfUsed - startPos) : charCount;
         for ( ; (charCount != 0) && (canRead<utf16>( utf16Source, startPos, NEUtfString::SeqOne )); -- charCount )
         {
             utf16 ch = mask16( src[startPos ++] );
             if ( isLeadSurrogate( ch ) )
             {
                 utf16 trailSurogate = mask16( src[startPos ++] );
-                ch = (ch << 10) + trailSurogate + NEUtfString::SURROGATE_OFFSET;
+                ch = static_cast<utf16>((ch << 10) + trailSurogate + NEUtfString::SURROGATE_OFFSET);
             }
+
             static_cast<void>(appendChar( utf8Destination, ch ));
         }
-        result = utf8Destination->utfHeader.utfUsed - oldUsed;
+
+        result = static_cast<CharCount>(utf8Destination->utfHeader.utfUsed - oldUsed);
     }
     return result;
 }
@@ -655,20 +678,20 @@ NEUtfString::CharCount NEUtfString::convUtf8ToUtf16( NEUtfString::sUtf16String *
     {
         const NEUtfString::sUtfStringHeader & hdrSrc = utf8Source.utfHeader;
 
-        charCount = charCount == NEUtfString::EndPos ? (hdrSrc.utfUsed - startPos) : charCount;
-        CharCount oldUsed = utf16Destination->utfHeader.utfUsed;
+        charCount = charCount == NEUtfString::EndPos ? static_cast<CharCount>(hdrSrc.utfUsed - startPos) : charCount;
+        CharCount oldUsed = static_cast<CharCount>(utf16Destination->utfHeader.utfUsed);
         ASSERT( hdrSrc.utfEncode == NEUtfString::EncodeUtf8 );
         ASSERT( utf16Destination->utfHeader.utfEncode == NEUtfString::EncodeUtf16 );
 
         utf16 * dst = getString<utf16>(*utf16Destination);
-        CharCount index = utf16Destination->utfHeader.utfUsed;
+        CharCount index = static_cast<CharCount>(utf16Destination->utfHeader.utfUsed);
 
         for ( ; (charCount != 0) && (canRead<utf8>( utf8Source, startPos, NEUtfString::SeqOne )); -- charCount )
         {
             utf32 ch = getNext(utf8Source, startPos);
             if ( ch > static_cast<utf32>(0x0000FFFF) )
             {
-                if ( (index + 3) >= utf16Destination->utfHeader.utfSpace )
+                if ( (index + 3) >= static_cast<CharCount>(utf16Destination->utfHeader.utfSpace) )
                 {
                     NEUtfString::sUtf16String * tmp = reserveSpace<utf16>(*utf16Destination, index + 2, DEFAULT_BLOCK_SIZE);
                     if ( tmp != NULL )
@@ -687,7 +710,7 @@ NEUtfString::CharCount NEUtfString::convUtf8ToUtf16( NEUtfString::sUtf16String *
             }
             else
             {
-                if ( (index + 2) >= utf16Destination->utfHeader.utfSpace )
+                if ( (index + 2) >= static_cast<CharCount>(utf16Destination->utfHeader.utfSpace) )
                 {
                     NEUtfString::sUtf16String * tmp = reserveSpace<utf16>( *utf16Destination, index + 2, DEFAULT_BLOCK_SIZE );
                     if ( tmp != NULL )
@@ -705,8 +728,9 @@ NEUtfString::CharCount NEUtfString::convUtf8ToUtf16( NEUtfString::sUtf16String *
             }
             utf16Destination->utfHeader.utfUsed += 1;
         }
+
         dst[index]  = NEUtfString::EndofStringUtf16;
-        result      = utf16Destination->utfHeader.utfUsed - oldUsed;
+        result      = static_cast<CharCount>(utf16Destination->utfHeader.utfUsed - oldUsed);
     }
     return result;
 }
@@ -722,15 +746,16 @@ NEUtfString::CharCount NEUtfString::convUtf32ToUtf8( NEUtfString::sUtf8String *&
         const NEUtfString::sUtfStringHeader & hdrSrc = utf32Source.utfHeader;
 
         const utf32 * src   = getString<utf32>( utf32Source );
-        CharCount oldUsed       = utf8Destination->utfHeader.utfUsed;
+        CharCount oldUsed   = static_cast<CharCount>(utf8Destination->utfHeader.utfUsed);
         ASSERT( hdrSrc.utfEncode == NEUtfString::EncodeUtf32 );
         ASSERT( utf8Destination->utfHeader.utfEncode == NEUtfString::EncodeUtf8 );
-        charCount = charCount == NEUtfString::EndPos ? (hdrSrc.utfUsed - startPos) : charCount;
+        charCount = charCount == NEUtfString::EndPos ? static_cast<CharCount>(hdrSrc.utfUsed - startPos) : charCount;
         for ( ; (charCount != 0) && (canRead<utf32>( utf32Source, startPos, NEUtfString::SeqOne )); -- charCount )
         {
             static_cast<void>(appendChar( utf8Destination, src[startPos ++]));
         }
-        result = utf8Destination->utfHeader.utfUsed - oldUsed;
+
+        result = static_cast<CharCount>(utf8Destination->utfHeader.utfUsed - oldUsed);
     }
     return result;
 }
@@ -745,18 +770,18 @@ NEUtfString::CharCount NEUtfString::convUtf8ToUtf32( NEUtfString::sUtf32String *
     {
         const NEUtfString::sUtfStringHeader & hdrSrc = utf8Source.utfHeader;
 
-        charCount = charCount == NEUtfString::EndPos ? (hdrSrc.utfUsed - startPos) : charCount;
-        CharCount oldUsed = utf32Destination->utfHeader.utfUsed;
+        charCount = charCount == NEUtfString::EndPos ? static_cast<CharCount>(hdrSrc.utfUsed - startPos) : charCount;
+        CharCount oldUsed = static_cast<CharCount>(utf32Destination->utfHeader.utfUsed);
         ASSERT( hdrSrc.utfEncode == NEUtfString::EncodeUtf8 );
         ASSERT( utf32Destination->utfHeader.utfEncode == NEUtfString::EncodeUtf16 );
 
         utf32 * dst = getString<utf32>( *utf32Destination );
-        CharCount index = utf32Destination->utfHeader.utfUsed;
+        CharCount index = static_cast<CharCount>(utf32Destination->utfHeader.utfUsed);
 
         for ( ; (charCount != 0) && (canRead<utf8>( utf8Source, startPos, NEUtfString::SeqOne )); -- charCount )
         {
             utf32 ch = getNext( utf8Source, startPos );
-            if ( (index + 2) >= utf32Destination->utfHeader.utfSpace )
+            if ( (index + 2) >= static_cast<CharCount>(utf32Destination->utfHeader.utfSpace) )
             {
                 NEUtfString::sUtf32String * tmp = reserveSpace<utf32>( *utf32Destination, index + 2, DEFAULT_BLOCK_SIZE );
                 if ( tmp != NULL)
@@ -773,8 +798,9 @@ NEUtfString::CharCount NEUtfString::convUtf8ToUtf32( NEUtfString::sUtf32String *
             dst[index ++] = static_cast<utf16>(ch);
             utf32Destination->utfHeader.utfUsed += 1;
         }
+
         dst[index]  = NEUtfString::EndofStringUtf16;
-        result      = utf32Destination->utfHeader.utfUsed - oldUsed;
+        result      = static_cast<CharCount>(utf32Destination->utfHeader.utfUsed - oldUsed);
     }
     return result;
 }

@@ -6,7 +6,7 @@
 /************************************************************************
  * (c) copyright    2021
  *                  Create by AREG SDK code generator tool from source DirectMessager.
- * Generated at     23.05.2021  00:18:59 GMT+02:00 
+ * Generated at     04.07.2021  04:30:03 GMT+02:00 
  ************************************************************************/
 
 /************************************************************************
@@ -20,7 +20,6 @@
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
 #include "shared/generated/NEDirectMessager.hpp"
-#include "areg/component/ClientBase.hpp"
 #include "areg/component/IEProxyListener.hpp"
 #include "areg/component/NotificationEvent.hpp"
 
@@ -42,7 +41,7 @@ class DispatcherThread;
  *
  *              The service interface of direct connection and messaging used in chat-room.
  **/
-class DirectMessagerClientBase  : public    IEProxyListener, private ClientBase
+class DirectMessagerClientBase  : public IEProxyListener
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor. Protected
@@ -87,19 +86,29 @@ public:
     /**
      * \brief   Clears all notifications, stops receiving notifications from server
      **/
-    void clearAllNotifications( void );
+    inline void clearAllNotifications( void );
 
     /**
      * \brief   Returns true if the specified certain notification is already assigned.
      *          Otherwise returns false.
      * \param   msgId   The ID of message to check.
      **/
-    bool isNotificationAssigned( NEDirectMessager::eMessageIDs msgId ) const;
+    inline bool isNotificationAssigned( NEDirectMessager::eMessageIDs msgId ) const;
 
     /**
      * \brief   Returns true if client object has got connection with servicing component
      **/
-    bool isConnected( void ) const;
+    inline bool isConnected( void ) const;
+    
+    /**
+     * \brief   Returns the name of used service.
+     **/
+    inline const String & getServiceName( void ) const;
+    
+    /**
+     * \brief   Returns the version of used service.
+     **/
+    inline const Version & getServiceVersion( void ) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Start Service Interface operations / attributes and overrides declaration
@@ -116,7 +125,7 @@ public:
      * \brief   Returns true if value of ChatParticipants attribute is valid.
      *          If Update Notification is disabled, this method will return false.
      **/
-    bool isChatParticipantsValid( void ) const;
+    inline bool isChatParticipantsValid( void ) const;
     /**
      * \brief   Returns the value of ChatParticipants attribute.
      *          To get valid value, the Update Notification should be enabled. 
@@ -126,7 +135,7 @@ public:
      *                  Check validation flag before use attribute value.
      * \see     isChatParticipantsValid, notifyChatParticipantsUpdate, onChatParticipantsUpdate
      **/
-    const NEDirectMessager::ListParticipants & getChatParticipants( NEService::eDataStateType & state ) const;
+    inline const NEDirectMessager::ListParticipants & getChatParticipants( NEService::eDataStateType & state ) const;
     /**
      * \brief   Call to enable or disable receiving notifications on ChatParticipants attribute update.
      *          Once notification is enabled and the data is updated, 
@@ -136,7 +145,7 @@ public:
      * \param   notify  If true, notification will be enable. If false, notification is disabled
      * \see     isChatParticipantsValid, getChatParticipants, onChatParticipantsUpdate
      **/
-    void notifyOnChatParticipantsUpdate( bool notify = true );
+    inline void notifyOnChatParticipantsUpdate( bool notify = true );
     /**
      * \brief   Triggered, when ChatParticipants attribute is updated. The function contains
      *          attribute value and validation flag. When notification is enabled,
@@ -165,7 +174,7 @@ public:
      * \return  The sequence count number of call
      * \see     responseChatJoin
      **/
-    unsigned int requestChatJoin( const NEDirectMessager::sParticipant & participant, const DateTime & timeConnect );
+    inline unsigned int requestChatJoin( const NEDirectMessager::sParticipant & participant, const DateTime & timeConnect );
     /**
      * \brief   Overwrite to handle error of ChatJoin request call.
      * \param   FailureReason   The failure reason value of request call.
@@ -377,16 +386,9 @@ protected:
      **/
     virtual bool serviceConnected( bool isConnected, ProxyBase & proxy );
 
-protected:
 /************************************************************************/
 // DirectMessagerClientBase Error Handling overrides
 /************************************************************************/
-
-    /**
-     * \brief   Overwrite this method if need to make error handling on invalid response
-     * \param   InvalidRespId   The ID of invalid response
-     **/
-    virtual void invalidResponse( NEDirectMessager::eMessageIDs InvalidRespId );
 
     /**
      * \brief   Overwrite this method if need to make error handling on invalid request
@@ -394,23 +396,9 @@ protected:
      **/
     virtual void invalidRequest( NEDirectMessager::eMessageIDs InvalidReqId );
     
-    /**
-     * \brief   By default, the function calls appropriate request failure function.
-     *          Overwrite this method if need to make error handling on request failed.
-     * \param   msgId           The ID of either response of request message, which failed. Normally ID of request.
-     * \param   FailureReason   The failure reason value of request call.
-     **/
-    virtual void requestFailed( NEDirectMessager::eMessageIDs FailureMsgId, NEService::eResultType FailureReason );
-
 //////////////////////////////////////////////////////////////////////////
 // Attributes
 //////////////////////////////////////////////////////////////////////////
-protected:
-
-    /**
-     * \brief   Returns the current sequence number
-     **/
-    unsigned int getCurrentSequenceNr( void ) const;
 
     /**
      * \brief   Call to recreate Proxy for the client. This call will remove and unregister all existing notifications
@@ -421,13 +409,28 @@ protected:
      *
      * \return  Returns true if Proxy was created with success.
      **/
-     bool recreateProxy( void );
+    bool recreateProxy( void );
 
-     /**
-      * \brief  Returns pointer to client dispatcher thread where the messages are dispatched.
-      *         The function can return NULL if Proxy was not instantiated yet.
-      **/
-     DispatcherThread * getDispatcherThread( void );
+    /**
+     * \brief  Returns pointer to client dispatcher thread where the messages are dispatched.
+     *         The function can return NULL if Proxy was not instantiated yet.
+     **/
+    DispatcherThread * getDispatcherThread( void );
+     
+    /**
+     * \brief   Returns the current sequence number
+     **/
+    inline unsigned int getCurrentSequenceNr( void ) const;
+
+    /**
+     * \brief  Returns instance of proxy object.
+     */
+    inline const DirectMessagerProxy * getProxy( void ) const;
+      
+    /**
+     * \brief Returns target service component role name.
+     **/
+    inline const String & getServiceRole( void ) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -460,7 +463,10 @@ private:
      **/
     virtual void processNotificationEvent( NotificationEvent & eventElem );
     
-private:
+/************************************************************************/
+// DirectMessagerClientBase hidden methods
+/************************************************************************/
+
     /**
      * \brief   Enables / Disables notification flags on appropriate message call.
      * \param   msgId   The ID of message to enable / disable notification
@@ -473,9 +479,24 @@ private:
      **/
     void notifyOn( NEDirectMessager::eMessageIDs msgId, bool notify, bool always = false );
     /**
+     * \brief   Overwrite this method if need to make error handling on invalid response
+     * \param   InvalidRespId   The ID of invalid response
+     **/
+     void invalidResponse( NEDirectMessager::eMessageIDs InvalidRespId );
+
+    /**
+     * \brief   By default, the function calls appropriate request failure function.
+     *          Overwrite this method if need to make error handling on request failed.
+     * \param   msgId           The ID of either response of request message, which failed. Normally ID of request.
+     * \param   FailureReason   The failure reason value of request call.
+     **/
+    void requestFailed( NEDirectMessager::eMessageIDs FailureMsgId, NEService::eResultType FailureReason );
+
+    /**
      * \brief   Returns reference of DirectMessagerClientBase object
      **/
-    DirectMessagerClientBase & self( void );
+
+    inline DirectMessagerClientBase & self( void );
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -500,14 +521,34 @@ inline unsigned int DirectMessagerClientBase::getCurrentSequenceNr( void ) const
     return mCurrSequenceNr;
 }
 
+inline void DirectMessagerClientBase::clearAllNotifications( void )
+{
+    ASSERT(mProxy != NULL);
+    mProxy->clearAllNotifications(static_cast<IENotificationEventConsumer &>(self()));
+}
+
 inline bool DirectMessagerClientBase::isConnected( void ) const
 {
+    ASSERT(mProxy != NULL);
     return mIsConnected;
 }
 
 inline bool DirectMessagerClientBase::isNotificationAssigned( NEDirectMessager::eMessageIDs msgId ) const
 {
+    ASSERT(mProxy != NULL);
     return mProxy->hasNotificationListener(static_cast<unsigned int>(msgId));
+}
+
+inline const String & DirectMessagerClientBase::getServiceName( void ) const
+{
+    ASSERT(mProxy != NULL);
+    return mProxy->getProxyAddress().getServiceName();
+}
+    
+inline const Version & DirectMessagerClientBase::getServiceVersion( void ) const
+{
+    ASSERT(mProxy != NULL);
+    return mProxy->getProxyAddress().getServiceVersion();
 }
 
 /************************************************************************
@@ -516,10 +557,12 @@ inline bool DirectMessagerClientBase::isNotificationAssigned( NEDirectMessager::
 
 inline bool DirectMessagerClientBase::isChatParticipantsValid( void ) const
 {
+    ASSERT(mProxy != NULL);
    return mProxy->isChatParticipantsValid( );
 }
 inline const NEDirectMessager::ListParticipants & DirectMessagerClientBase::getChatParticipants( NEService::eDataStateType & state ) const
 {
+    ASSERT(mProxy != NULL);
     return mProxy->getChatParticipants( state );
 }
 
@@ -534,21 +577,25 @@ inline void DirectMessagerClientBase::notifyOnChatParticipantsUpdate( bool notif
 
 inline unsigned int DirectMessagerClientBase::requestChatJoin( const NEDirectMessager::sParticipant & participant, const DateTime & timeConnect )
 {
+    ASSERT(mProxy != NULL);
     return mProxy->requestChatJoin( static_cast<IENotificationEventConsumer &>(self()), participant, timeConnect );
 }
 
 inline void DirectMessagerClientBase::requestMessageSend( const NEDirectMessager::sParticipant & sender, const String & msgText, const DateTime & timeSent )
 {
+    ASSERT(mProxy != NULL);
     mProxy->requestMessageSend( sender, msgText, timeSent );
 }
 
 inline void DirectMessagerClientBase::requestMessageType( const NEDirectMessager::sParticipant & participant, const String & msgText )
 {
+    ASSERT(mProxy != NULL);
     mProxy->requestMessageType( participant, msgText );
 }
 
 inline void DirectMessagerClientBase::requestChatLeave( const NEDirectMessager::sParticipant & participant, const DateTime & timeLeave )
 {
+    ASSERT(mProxy != NULL);
     mProxy->requestChatLeave( participant, timeLeave );
 }
 
@@ -588,6 +635,17 @@ inline void DirectMessagerClientBase::notifyOnBroadcastParticipantLeft( bool not
 inline void DirectMessagerClientBase::notifyOnBroadcastChatClosed( bool notify /* = true */ )
 {
     notifyOn(NEDirectMessager::MSG_ID_broadcastChatClosed, notify, false);
+}
+
+inline const DirectMessagerProxy * DirectMessagerClientBase::getProxy( void ) const
+{
+    return mProxy;
+}
+
+inline const String & DirectMessagerClientBase::getServiceRole( void ) const
+{
+    ASSERT(mProxy != NULL);
+    return mProxy->getProxyAddress().getRoleName();
 }
 
 #endif   // SHARED_GENERATED_DIRECTMESSAGERCLIENTBASE_HPP

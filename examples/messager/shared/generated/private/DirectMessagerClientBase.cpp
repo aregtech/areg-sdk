@@ -4,7 +4,7 @@
 /************************************************************************
  * (c) copyright    2021
  *                  Create by AREG SDK code generator tool from source DirectMessager.
- * Generated at     23.05.2021  00:18:59 GMT+02:00 
+ * Generated at     04.07.2021  04:30:03 GMT+02:00 
  ************************************************************************/
 
 /************************************************************************
@@ -47,9 +47,8 @@ namespace NEDirectMessager
  * Constructor / Destructor
  ************************************************************************/
 
-DirectMessagerClientBase::DirectMessagerClientBase( const char* roleName, const char * ownerThread /*= static_cast<const char *>(NULL)*/ )
+DirectMessagerClientBase::DirectMessagerClientBase( const char * roleName, const char * ownerThread /*= static_cast<const char *>(NULL)*/ )
     : IEProxyListener   ( )
-    , ClientBase        ( )
 
     , mIsConnected      ( false )
     , mCurrSequenceNr   ( 0 )
@@ -58,9 +57,8 @@ DirectMessagerClientBase::DirectMessagerClientBase( const char* roleName, const 
     ; // do nothing
 }
 
-DirectMessagerClientBase::DirectMessagerClientBase( const char* roleName, DispatcherThread & ownerThread )
+DirectMessagerClientBase::DirectMessagerClientBase( const char * roleName, DispatcherThread & ownerThread )
     : IEProxyListener   ( )
-    , ClientBase        ( )
 
     , mIsConnected      ( false )
     , mCurrSequenceNr   ( 0 )
@@ -71,7 +69,6 @@ DirectMessagerClientBase::DirectMessagerClientBase( const char* roleName, Dispat
 
 DirectMessagerClientBase::DirectMessagerClientBase( const char* roleName, Component & owner )
     : IEProxyListener   ( )
-    , ClientBase        ( )
 
     , mIsConnected      ( false )
     , mCurrSequenceNr   ( 0 )
@@ -99,28 +96,22 @@ DirectMessagerClientBase::~DirectMessagerClientBase( void )
 bool DirectMessagerClientBase::recreateProxy( void )
 {
     bool result         = false;
-    String roleName   = mProxy != NULL ? mProxy->getProxyAddress().getRoleName() : "";
-    String threadName = mProxy != NULL ? mProxy->getProxyAddress().getThread()   : "";
-    if ( roleName.isEmpty() == false )
+    if (mProxy != NULL)
     {
-        DirectMessagerProxy * newProxy = DirectMessagerProxy::createProxy(roleName.getString(), static_cast<IEProxyListener &>(self()), threadName.getString());
-        if (newProxy != NULL)
+        String roleName   = mProxy->getProxyAddress().getRoleName();
+        String threadName = mProxy->getProxyAddress().getThread();
+        if ( roleName.isEmpty() == false )
         {
-            mProxy->clearAllNotifications( static_cast<IENotificationEventConsumer &>(self()) );
-            mProxy->freeProxy (static_cast<IEProxyListener &>(self()) );
-            mProxy = newProxy;
-            result = true;
-        }
-        else
-        {
-            ; // do nothing
-        }
+            DirectMessagerProxy * newProxy = DirectMessagerProxy::createProxy(roleName.getString(), static_cast<IEProxyListener &>(self()), threadName.getString());
+            if (newProxy != NULL)
+            {
+                mProxy->clearAllNotifications( static_cast<IENotificationEventConsumer &>(self()) );
+                mProxy->freeProxy (static_cast<IEProxyListener &>(self()) );
+                mProxy = newProxy;
+                result = true;
+            }
+        }    
     }
-    else
-    {
-        ; // do nothing, no role name is assigned
-    }
-    
     return result;
 }
 
@@ -129,20 +120,16 @@ DispatcherThread * DirectMessagerClientBase::getDispatcherThread( void )
     return ( mProxy != static_cast<DirectMessagerProxy *>(NULL) ? &(mProxy->getProxyDispatcherThread()) : static_cast<DispatcherThread *>(NULL) );
 }
 
-void DirectMessagerClientBase::clearAllNotifications( void )
-{
-    mProxy->clearAllNotifications(static_cast<IENotificationEventConsumer &>(self()));
-}
-
-DEF_TRACE_SCOPE(shared_generated_DirectMessagerClientBase_ServiceConnected);
+DEF_TRACE_SCOPE(shared_generated_DirectMessagerClientBase_serviceConnected);
 bool DirectMessagerClientBase::serviceConnected( bool isConnected, ProxyBase & proxy )
 {
-    TRACE_SCOPE(shared_generated_DirectMessagerClientBase_ServiceConnected);
+    TRACE_SCOPE(shared_generated_DirectMessagerClientBase_serviceConnected);
     
     bool result = false;
     if(mProxy == &proxy)
     {
-        TRACE_DBG("The Service [ %s ] with Role Name [ %s ] is [ %s ]"
+        TRACE_DBG("Client [ %p ]: The Service [ %s ] with Role Name [ %s ] is [ %s ]"
+                 , this
                  , proxy.getProxyAddress().getServiceName().getString()
                  , proxy.getProxyAddress().getRoleName().getString()
                  , isConnected ? "CONNECTED" : "DISCONNECTED");
@@ -316,19 +303,19 @@ DEF_TRACE_SCOPE(shared_generated_DirectMessagerClientBase_invalidResponse);
 void DirectMessagerClientBase::invalidResponse( NEDirectMessager::eMessageIDs InvalidRespId )
 {
     TRACE_SCOPE(shared_generated_DirectMessagerClientBase_invalidResponse);
-    TRACE_WARN(">>> There is an invalid response [ %s ] (value = [ %d ]) in client DirectMessagerClientBase with path [ %s ], which cannot be processed! Make error handling! <<<"
+    TRACE_ERR("The invalid response [ %s ] (value = [ %d ]) method of proxy [ %s ] client DirectMessagerClientBase is not implemented! Make error handling!"
                     , NEDirectMessager::getString(InvalidRespId)
                     , static_cast<unsigned int>(InvalidRespId)
                     , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString() );
-                    
-    ClientBase::responseInvalidNotImpelemnted("DirectMessagerClientBase", static_cast<unsigned int>(InvalidRespId));
+
+    ASSERT(false);
 }
 
 DEF_TRACE_SCOPE(shared_generated_DirectMessagerClientBase_invalidRequest);
 void DirectMessagerClientBase::invalidRequest( NEDirectMessager::eMessageIDs InvalidReqId )
 {
     TRACE_SCOPE(shared_generated_DirectMessagerClientBase_invalidRequest);
-    TRACE_WARN(">>> There is an invalid request [ %s ] (value = [ %d ]) in client DirectMessagerClientBase with path [ %s ], which was not able to process! Make error handling! <<<"
+    TRACE_ERR("The invalid request [ %s ] (value = [ %d ]) method of proxy [ %s ] client DirectMessagerClientBase is not implemented! Make error handling!"
                     , NEDirectMessager::getString(InvalidReqId)
                     , static_cast<unsigned int>(InvalidReqId)
                     , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString() );
@@ -340,7 +327,7 @@ DEF_TRACE_SCOPE(shared_generated_DirectMessagerClientBase_requestFailed);
 void DirectMessagerClientBase::requestFailed( NEDirectMessager::eMessageIDs FailureMsgId, NEService::eResultType FailureReason )
 {
     TRACE_SCOPE(shared_generated_DirectMessagerClientBase_requestFailed);
-    TRACE_WARN(">>> The request [ %s ] (value = [ %d ]) in Proxy [ %s ] of DirectMessagerClientBase failed with reason [ %s ]! Triggering appropriate request failed function! <<<"
+    TRACE_WARN("The request [ %s ] (value = [ %d ]) method of proxy [ %s ] client DirectMessagerClientBase failed with reason [ %s ]! Implemented error handling!"
                     , NEDirectMessager::getString(FailureMsgId)
                     , static_cast<unsigned int>(FailureMsgId)
                     , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString()
@@ -363,65 +350,112 @@ void DirectMessagerClientBase::requestFailed( NEDirectMessager::eMessageIDs Fail
  * Attribute notifications
  ************************************************************************/
 
+DEF_TRACE_SCOPE(shared_generated_DirectMessagerClientBase_onChatParticipantsUpdate);
 void DirectMessagerClientBase::onChatParticipantsUpdate( const NEDirectMessager::ListParticipants & /* ChatParticipants */, NEService::eDataStateType /* state */ )
 {
-    ClientBase::onUpdateNotImplemented( "DirectMessagerClientBase", static_cast<unsigned int>(NEDirectMessager::MSG_ID_ChatParticipants) );
+    TRACE_SCOPE(shared_generated_DirectMessagerClientBase_onChatParticipantsUpdate);
+    TRACE_WARN("The attribute ChatParticipants (value = %u) update method of proxy [ %s ] client DirectMessagerClientBase is not implemented!"
+                    , static_cast<unsigned int>(NEDirectMessager::MSG_ID_ChatParticipants)
+                    , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString());
 }
 
 /************************************************************************
  * Request failure / Response and Broadcast notifications
  ************************************************************************/
  
-void DirectMessagerClientBase::requestChatJoinFailed( NEService::eResultType /* FailureReason */ )
+DEF_TRACE_SCOPE(shared_generated_DirectMessagerClientBase_requestChatJoinFailed);
+void DirectMessagerClientBase::requestChatJoinFailed( NEService::eResultType FailureReason )
 {
-    ClientBase::requestFailedNotImplemented( "DirectMessagerClientBase", static_cast<unsigned int>(NEDirectMessager::MSG_ID_requestChatJoin) );
+    TRACE_SCOPE(shared_generated_DirectMessagerClientBase_requestChatJoinFailed);
+    TRACE_WARN("The request requestChatJoin (value = %u) method of proxy [ %s ] client DirectMessagerClientBase is failed with reason [ %s ]! Make error handling!"
+                    , static_cast<unsigned int>(NEDirectMessager::MSG_ID_requestChatJoin)
+                    , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString()
+                    , NEService::getString(FailureReason));
 }
 
-void DirectMessagerClientBase::requestMessageSendFailed( NEService::eResultType /* FailureReason */ )
+DEF_TRACE_SCOPE(shared_generated_DirectMessagerClientBase_requestMessageSendFailed);
+void DirectMessagerClientBase::requestMessageSendFailed( NEService::eResultType FailureReason )
 {
-    ClientBase::requestFailedNotImplemented( "DirectMessagerClientBase", static_cast<unsigned int>(NEDirectMessager::MSG_ID_requestMessageSend) );
+    TRACE_SCOPE(shared_generated_DirectMessagerClientBase_requestMessageSendFailed);
+    TRACE_WARN("The request requestMessageSend (value = %u) method of proxy [ %s ] client DirectMessagerClientBase is failed with reason [ %s ]! Make error handling!"
+                    , static_cast<unsigned int>(NEDirectMessager::MSG_ID_requestMessageSend)
+                    , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString()
+                    , NEService::getString(FailureReason));
 }
 
-void DirectMessagerClientBase::requestMessageTypeFailed( NEService::eResultType /* FailureReason */ )
+DEF_TRACE_SCOPE(shared_generated_DirectMessagerClientBase_requestMessageTypeFailed);
+void DirectMessagerClientBase::requestMessageTypeFailed( NEService::eResultType FailureReason )
 {
-    ClientBase::requestFailedNotImplemented( "DirectMessagerClientBase", static_cast<unsigned int>(NEDirectMessager::MSG_ID_requestMessageType) );
+    TRACE_SCOPE(shared_generated_DirectMessagerClientBase_requestMessageTypeFailed);
+    TRACE_WARN("The request requestMessageType (value = %u) method of proxy [ %s ] client DirectMessagerClientBase is failed with reason [ %s ]! Make error handling!"
+                    , static_cast<unsigned int>(NEDirectMessager::MSG_ID_requestMessageType)
+                    , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString()
+                    , NEService::getString(FailureReason));
 }
 
-void DirectMessagerClientBase::requestChatLeaveFailed( NEService::eResultType /* FailureReason */ )
+DEF_TRACE_SCOPE(shared_generated_DirectMessagerClientBase_requestChatLeaveFailed);
+void DirectMessagerClientBase::requestChatLeaveFailed( NEService::eResultType FailureReason )
 {
-    ClientBase::requestFailedNotImplemented( "DirectMessagerClientBase", static_cast<unsigned int>(NEDirectMessager::MSG_ID_requestChatLeave) );
+    TRACE_SCOPE(shared_generated_DirectMessagerClientBase_requestChatLeaveFailed);
+    TRACE_WARN("The request requestChatLeave (value = %u) method of proxy [ %s ] client DirectMessagerClientBase is failed with reason [ %s ]! Make error handling!"
+                    , static_cast<unsigned int>(NEDirectMessager::MSG_ID_requestChatLeave)
+                    , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString()
+                    , NEService::getString(FailureReason));
 }
 
+DEF_TRACE_SCOPE(shared_generated_DirectMessagerClientBase_responseChatJoin);
 void DirectMessagerClientBase::responseChatJoin( bool /* succeed */, const NEDirectMessager::ListParticipants & /* listParticipant */, const DateTime & /* timeConnect */, const DateTime & /* timeConnected */ )
 {
-    ClientBase::responseNotImplemented( "DirectMessagerClientBase", static_cast<unsigned int>(NEDirectMessager::MSG_ID_responseChatJoin) );
+    TRACE_SCOPE(shared_generated_DirectMessagerClientBase_responseChatJoin);
+    TRACE_WARN("The response responseChatJoin (value = %u) method of proxy [ %s ] client DirectMessagerClientBase is not implemented!"
+                    , static_cast<unsigned int>(NEDirectMessager::MSG_ID_responseChatJoin)
+                    , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString());
 }
 
+DEF_TRACE_SCOPE(shared_generated_DirectMessagerClientBase_broadcastMessageSent);
 void DirectMessagerClientBase::broadcastMessageSent( const NEDirectMessager::sParticipant & /* sender */, const String & /* msgText */, const DateTime & /* timeSent */ )
 {
-    ClientBase::broadcastNotImplemented( "DirectMessagerClientBase", static_cast<unsigned int>(NEDirectMessager::MSG_ID_broadcastMessageSent) );
+    TRACE_SCOPE(shared_generated_DirectMessagerClientBase_broadcastMessageSent);
+    TRACE_WARN("The broadcast broadcastMessageSent (value = %u) method of proxy [ %s ] client DirectMessagerClientBase is not implemented!"
+                    , static_cast<unsigned int>(NEDirectMessager::MSG_ID_broadcastMessageSent)
+                    , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString());
 }
 
+DEF_TRACE_SCOPE(shared_generated_DirectMessagerClientBase_broadcastMessageTyped);
 void DirectMessagerClientBase::broadcastMessageTyped( const NEDirectMessager::sParticipant & /* participant */, const String & /* msgText */ )
 {
-    ClientBase::broadcastNotImplemented( "DirectMessagerClientBase", static_cast<unsigned int>(NEDirectMessager::MSG_ID_broadcastMessageTyped) );
+    TRACE_SCOPE(shared_generated_DirectMessagerClientBase_broadcastMessageTyped);
+    TRACE_WARN("The broadcast broadcastMessageTyped (value = %u) method of proxy [ %s ] client DirectMessagerClientBase is not implemented!"
+                    , static_cast<unsigned int>(NEDirectMessager::MSG_ID_broadcastMessageTyped)
+                    , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString());
 }
 
+DEF_TRACE_SCOPE(shared_generated_DirectMessagerClientBase_broadcastParticipantJoined);
 void DirectMessagerClientBase::broadcastParticipantJoined( const NEDirectMessager::sParticipant & /* participant */, const DateTime & /* timeJoined */ )
 {
-    ClientBase::broadcastNotImplemented( "DirectMessagerClientBase", static_cast<unsigned int>(NEDirectMessager::MSG_ID_broadcastParticipantJoined) );
+    TRACE_SCOPE(shared_generated_DirectMessagerClientBase_broadcastParticipantJoined);
+    TRACE_WARN("The broadcast broadcastParticipantJoined (value = %u) method of proxy [ %s ] client DirectMessagerClientBase is not implemented!"
+                    , static_cast<unsigned int>(NEDirectMessager::MSG_ID_broadcastParticipantJoined)
+                    , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString());
 }
 
+DEF_TRACE_SCOPE(shared_generated_DirectMessagerClientBase_broadcastParticipantLeft);
 void DirectMessagerClientBase::broadcastParticipantLeft( const NEDirectMessager::sParticipant & /* participant */, const DateTime & /* timeLeft */ )
 {
-    ClientBase::broadcastNotImplemented( "DirectMessagerClientBase", static_cast<unsigned int>(NEDirectMessager::MSG_ID_broadcastParticipantLeft) );
+    TRACE_SCOPE(shared_generated_DirectMessagerClientBase_broadcastParticipantLeft);
+    TRACE_WARN("The broadcast broadcastParticipantLeft (value = %u) method of proxy [ %s ] client DirectMessagerClientBase is not implemented!"
+                    , static_cast<unsigned int>(NEDirectMessager::MSG_ID_broadcastParticipantLeft)
+                    , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString());
 }
 
+DEF_TRACE_SCOPE(shared_generated_DirectMessagerClientBase_broadcastChatClosed);
 void DirectMessagerClientBase::broadcastChatClosed( void )
 {
-    ClientBase::broadcastNotImplemented( "DirectMessagerClientBase", static_cast<unsigned int>(NEDirectMessager::MSG_ID_broadcastChatClosed) );
+    TRACE_SCOPE(shared_generated_DirectMessagerClientBase_broadcastChatClosed);
+    TRACE_WARN("The broadcast broadcastChatClosed (value = %u) method of proxy [ %s ] client DirectMessagerClientBase is not implemented!"
+                    , static_cast<unsigned int>(NEDirectMessager::MSG_ID_broadcastChatClosed)
+                    , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString());
 }
-
 
 //////////////////////////////////////////////////////////////////////////
 // End generate shared/generated/private/DirectMessagerClientBase.cpp file

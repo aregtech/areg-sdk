@@ -42,16 +42,17 @@ static inline int32_t _formatBinary( String & result, DigitType number )
     char * dst  = buffer;
     DigitType base = static_cast<DigitType>(NEString::RadixBinary);
     bool isNegative = number < 0;
-    // if ( number < 0 )
-    //    number = NEMath::makeAbsolute<DigitType>(number);
+
     number = MACRO_ABS( number );
     short idx = 0;
     do
     {
-        idx = static_cast<uint32_t>(number % base);
+        idx = static_cast<short>(number % base);
+
         *dst ++ = _FormatRadixBinary[idx < 0 ? 1 : idx];
         number /= base;
     } while ( number != 0 );
+
     *dst    = static_cast<char>(NEString::EndOfString);
     int32_t count = static_cast<int32_t>(dst - buffer);
     NEString::swapString<char>(buffer, count);
@@ -61,6 +62,7 @@ static inline int32_t _formatBinary( String & result, DigitType number )
         result = '-';
         ++ count;
     }
+
     result  += buffer;
     return count;
 }
@@ -89,7 +91,7 @@ static inline int _formatStringList( char * buffer, int count, const char * form
     {
         *buffer = static_cast<char>(NEString::EndOfString);
 #ifdef  WIN32
-        result = vsprintf_s( buffer, count, format, argptr );
+        result = vsprintf_s( buffer, static_cast<size_t>(count), format, argptr );
 #else
         result = vsnprintf( buffer, count, format, argptr );
 #endif
@@ -193,7 +195,6 @@ String::String( const IEInStream & stream )
 
 String::~String( void )
 {
-    ;
 }
 
 //////////////////////////////////////////////////////////////////////////

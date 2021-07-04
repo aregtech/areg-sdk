@@ -296,7 +296,8 @@ unsigned int File::setPosition(int offset, IECursorPosition::eCursorPosition sta
             moveMethod  = FILE_CURRENT;
             moveOffset  = 0;
         }
-        result = static_cast<unsigned int>(SetFilePointer(static_cast<HANDLE>(mFileHandle), moveOffset, NULL, moveMethod));
+
+        result = static_cast<unsigned int>(SetFilePointer(static_cast<HANDLE>(mFileHandle), static_cast<LONG>(moveOffset), static_cast<PLONG>(NULL), static_cast<DWORD>(moveMethod)));
     }
     
     return result;
@@ -323,10 +324,10 @@ unsigned int File::reserve(int newSize)
         curPos = newSize > static_cast<int>(curPos) ? curPos : newSize;
         if (newSize > 0)
         {
-            if (::SetFilePointer(static_cast<HANDLE>(mFileHandle), static_cast<unsigned long>(newSize), NULL, FILE_BEGIN) != IECursorPosition::INVALID_CURSOR_POSITION)
+            if (::SetFilePointer(static_cast<HANDLE>(mFileHandle), static_cast<LONG>(newSize), NULL, FILE_BEGIN) != IECursorPosition::INVALID_CURSOR_POSITION)
             {
                 ::SetEndOfFile(static_cast<HANDLE>(mFileHandle));
-                result = static_cast<unsigned int>(::SetFilePointer(static_cast<HANDLE>(mFileHandle), curPos, NULL, FILE_BEGIN));
+                result = static_cast<unsigned int>(::SetFilePointer(static_cast<HANDLE>(mFileHandle), static_cast<LONG>(curPos), NULL, FILE_BEGIN));
             }
         }
         else if (::SetFilePointer(static_cast<HANDLE>(mFileHandle), 0, NULL, FILE_BEGIN) != IECursorPosition::INVALID_CURSOR_POSITION)

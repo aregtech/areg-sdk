@@ -446,17 +446,19 @@ Tokenizer::~Tokenizer( void )
 
 void Tokenizer::Tokenize( const String & str, const String & delimiters, bool keepEmpty/*=true*/)
 {
-    unsigned int lastPos= 0;
-    unsigned int length = str.getLength();
+    NEString::CharPos lastPos   = 0;
+    NEString::CharCount length  = str.getLength();
     // empty self
     removeAll();
     while (lastPos <= length)
     {
-        unsigned int pos = str.findOneOf(delimiters, lastPos);
+        NEString::CharPos pos = str.findOneOf(delimiters, lastPos);
         if (pos == NEString::InvalidPos)
            pos = length;
+
         if (pos != lastPos || keepEmpty)
             add(str.substring(lastPos, pos - lastPos));
+        
         lastPos = pos + 1;
     }
 }

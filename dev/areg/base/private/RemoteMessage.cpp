@@ -16,25 +16,19 @@
 #include "areg/base/NEMath.hpp"
 #include "areg/trace/GETrace.h"
 
-// DEF_TRACE_SCOPE(areg_base_RemoteMessage_checksumCalculate);
 inline unsigned int RemoteMessage::_checksumCalculate( const NEMemory::sRemoteMessage & remoteMessage )
 {
-    // TRACE_SCOPE(areg_base_RemoteMessage_checksumCalculate);
-
     unsigned int result = NEMemory::INVALID_VALUE;
+
     if ( &remoteMessage != &NEMemory::InvalidRemoteMessage )
     {
         const unsigned int offset   = MACRO_OFFSETOF(NEMemory::sRemoteMessageHeader, rbhSource);
         const unsigned char * data  = reinterpret_cast<const unsigned char *>(&remoteMessage.rbHeader.rbhSource);
         const unsigned int remain   = remoteMessage.rbHeader.rbhBufHeader.biOffset - offset;
         const unsigned int used     = remoteMessage.rbHeader.rbhBufHeader.biUsed;
-        // const unsigned int correct  = MACRO_MAX(used, sizeof(NEMemory::BufferData));
         const unsigned int length   = used + remain;
 
-        result = NEMath::crc32Calculate(data, length);
-
-//         TRACE_INFO("offset = [ %u ], data = [ %p ], remote data = [ %p ], remain = [ %u ], used = [ %u ], correct = [ %u ], length = [ %u ], checksum = [ %u ]"
-//                     , offset, data, reinterpret_cast<const unsigned char *>(&remoteMessage), remain, used, correct, length, result);
+        result = NEMath::crc32Calculate(data, static_cast<int>(length));
     }
 
     return result;
@@ -89,7 +83,7 @@ unsigned int RemoteMessage::initBuffer(unsigned char *newBuffer, unsigned int bu
     if (newBuffer != NULL)
     {
         result                  = 0;
-        unsigned int dataOffset = this->getDataOffset();
+        unsigned int dataOffset = getDataOffset();
         unsigned int dataLength = bufLength - dataOffset;
 
         NEMemory::zeroBuffer(newBuffer, sizeof(NEMemory::sRemoteMessage));
@@ -116,7 +110,7 @@ unsigned int RemoteMessage::initBuffer(unsigned char *newBuffer, unsigned int bu
             header.rbhResult            = getResult();
             header.rbhSequenceNr        = getSequenceNr();
 
-            NEMemory::memCopy(data, dataLength, srcBuf, srcCount);
+            NEMemory::memCopy(data, static_cast<int>(dataLength), srcBuf, static_cast<int>(srcCount));
         }
         else
         {
@@ -209,12 +203,12 @@ unsigned char * RemoteMessage::initMessage(const NEMemory::sRemoteMessageHeader 
     return getBuffer();
 }
 
-int RemoteMessage::getDataOffset(void) const
+unsigned int RemoteMessage::getDataOffset(void) const
 {
     return sizeof(NEMemory::sRemoteMessageHeader);
 }
 
-int RemoteMessage::getHeaderSize(void) const
+unsigned int RemoteMessage::getHeaderSize(void) const
 {
     return sizeof(NEMemory::sRemoteMessage);
 }

@@ -33,7 +33,7 @@ RawBuffer::RawBuffer( int reservedSize )
     : BufferStreamBase( NEMemory::InvalidBuffer, static_cast<IECursorPosition &>(self()), static_cast<IECursorPosition &>(self()) )
     , BufferPosition  ( static_cast<IEByteBuffer &>(self()) )
 {
-    resize(reservedSize, false);
+    resize(reservedSize > 0 ? static_cast<unsigned int>(reservedSize) : 0, false);
 }
 
 RawBuffer::RawBuffer( const RawBuffer& src )
@@ -109,12 +109,12 @@ void RawBuffer::invalidate( void )
     _deleteBuffer();
 }
 
-int RawBuffer::getDataOffset(void) const
+unsigned int RawBuffer::getDataOffset(void) const
 {
     return sizeof(NEMemory::sBuferHeader);
 }
 
-int RawBuffer::getHeaderSize(void) const
+unsigned int RawBuffer::getHeaderSize(void) const
 {
     return sizeof(NEMemory::sByteBuffer);
 }

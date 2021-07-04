@@ -25,7 +25,7 @@ const unsigned int      Thread::WAIT_INFINITE             = static_cast<unsigned
 /************************************************************************/
 // System specific thread routines
 /************************************************************************/
-void * Thread::_posixThreadRoutine( void * data )
+void * Thread::_posixThreadRoutine( void * /*data*/ )
 {
     ASSERT(false);
     return NULL;
@@ -201,6 +201,7 @@ Thread::eThreadPriority Thread::setPriority( eThreadPriority newPriority )
             Prio = THREAD_PRIORITY_HIGHEST;
             break;
 
+        case Thread::PriorityUndefined:     // fall through
         default:
             break;  // do nothing, invalid priority value
         }

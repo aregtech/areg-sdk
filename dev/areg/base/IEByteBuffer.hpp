@@ -234,14 +234,14 @@ protected:
     /**
      * \brief   Returns the offset value from the beginning of byte buffer, which should be set
      **/
-    virtual int getDataOffset( void ) const = 0;
+    virtual unsigned int getDataOffset( void ) const = 0;
 
     /**
      * \brief   Returns the size of data byte structure (header and one byte).
      *          This is a minimum size of byte buffer to reserve when initializing buffer.
      *          The size can differ for shared and remote message.
      **/
-    virtual int getHeaderSize( void ) const = 0;
+    virtual unsigned int getHeaderSize( void ) const = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -264,16 +264,20 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // IEByteBuffer class inline function implementation
 //////////////////////////////////////////////////////////////////////////
+#ifndef IS_BUFFER_NULL
+    #define IS_BUFFER_NULL(buf)     ((buf) == static_cast<NEMemory::sByteBuffer *>(NULL))
+#endif // !IS_BUFFER_NULL
+
 
 inline const NEMemory::sByteBuffer & IEByteBuffer::getByteBuffer(void) const
 {
-    ASSERT(mByteBuffer != NULL);
+    ASSERT( !IS_BUFFER_NULL(mByteBuffer) );
     return (*mByteBuffer);
 }
 
 inline NEMemory::sByteBuffer & IEByteBuffer::getByteBuffer(void)
 {
-    ASSERT(mByteBuffer != NULL);
+    ASSERT( !IS_BUFFER_NULL(mByteBuffer) );
     return (*mByteBuffer);
 }
 
@@ -304,13 +308,13 @@ inline bool IEByteBuffer::isValid( void ) const
 
 inline unsigned int IEByteBuffer::getSizeAvailable( void ) const
 {
-    ASSERT(mByteBuffer != NULL);
+    ASSERT( !IS_BUFFER_NULL(mByteBuffer) );
     return (isValid() ? mByteBuffer->bufHeader.biLength : 0);
 }
 
 inline NEMemory::eBufferType IEByteBuffer::getType( void ) const
 {
-    ASSERT(mByteBuffer != NULL);
+    ASSERT( !IS_BUFFER_NULL(mByteBuffer) );
     return mByteBuffer->bufHeader.biBufType;
 }
 

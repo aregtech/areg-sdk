@@ -892,7 +892,7 @@ protected:
      *                          all notification listeners assigned for specified
      *                          message ID will get notification.
      **/
-    void notifyListeners( int respId, NEService::eResultType result, unsigned int seqNrToSearch );
+    void notifyListeners( unsigned int respId, NEService::eResultType result, unsigned int seqNrToSearch );
 
     /**
      * \brief   Prepares list of listeners assigned for specified message ID.
