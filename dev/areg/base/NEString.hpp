@@ -1168,27 +1168,30 @@ NEString::CharPos NEString::findLastOf( CharType   chSearch
     if ( out_next != static_cast<const CharType **>(NULL) )
         *out_next = static_cast<const CharType *>(NULL);
 
-    if ( (isEmpty<CharType>( strSource ) == false) && (chSearch != static_cast<CharType>(EndOfString)) && (startPos > 0) )
+    if ( (isEmpty<CharType>( strSource ) == false) && (chSearch != static_cast<CharType>(EndOfString)) )
     {
-        CharPos posSrc = startPos == NEString::EndPos ? NEString::getStringLength<CharType>( strSource ) - 1 : startPos;
-        const CharType * end = strSource + posSrc;
-
-        while ( (end >= strSource) && (result == static_cast<const CharType *>(NULL)))
+        CharPos posSrc = startPos == NEString::EndPos ? NEString::getStringLength<CharType>(strSource) - 1 : startPos;
+        if ( posSrc >= NEString::StartPos )
         {
-            if ( *end == chSearch )
+            const CharType * end = strSource + posSrc;
+
+            while ( (end >= strSource) && (result == static_cast<const CharType *>(NULL)))
             {
-                result = end;
-                if ( (out_next != static_cast<const CharType **>(NULL)) && (end > strSource) )
-                    *out_next =  end - 1;
+                if ( *end == chSearch )
+                {
+                    result = end;
+                    if ( (out_next != static_cast<const CharType **>(NULL)) && (end > strSource) )
+                        *out_next =  end - 1;
 
-                break;
+                    break;
+                }
+
+                -- end;
             }
-
-            -- end;
         }
     }
 
-    return (result > strSource ? static_cast<NEString::CharPos>(result - strSource) : NEString::InvalidPos);
+    return ((result != NULL) && (result >= strSource) ? static_cast<NEString::CharPos>(result - strSource) : NEString::InvalidPos);
 }
 
 template<typename CharType>
@@ -1201,41 +1204,44 @@ NEString::CharPos NEString::findLastOf( const CharType * strPhrase
     if ( out_next != static_cast<const CharType **>(NULL) )
         *out_next = static_cast<const CharType *>(NULL);
 
-    if ( (isEmpty<CharType>( strSource ) == false) && (isEmpty<CharType>( strPhrase ) == false) && (startPos != NEString::InvalidPos) )
+    if ( (isEmpty<CharType>( strSource ) == false) && (isEmpty<CharType>( strPhrase ) == false) )
     {
-        CharPos posSrc = startPos >= NEString::EndPos ? NEString::getStringLength<CharType>(strSource) - 1 : startPos;
+        CharPos posSrc = startPos == NEString::EndPos ? NEString::getStringLength<CharType>(strSource) - 1 : startPos;
         CharPos posPhr = NEString::getStringLength<CharType>(strPhrase) - 1;
-        const CharType * end    = strSource + posSrc;
-        const CharType * phrase = strPhrase + posPhr;
+    	if ( (posSrc >= NEString::StartPos) && (posPhr >= NEString::StartPos) )
+    	{
+            const CharType * end    = strSource + posSrc;
+            const CharType * phrase = strPhrase + posPhr;
 
-        while ( (end >= strSource) && (result == static_cast<const CharType *>(NULL)) )
-        {
-            if ( *end == *phrase )
+            while ( (end >= strSource) && (result == static_cast<const CharType *>(NULL)) )
             {
-                const CharType * one = end    - 1;
-                const CharType * two = phrase - 1;
-                // no need to check (*one != static_cast<CharType>(EndofString))
-                while ( (two >= strPhrase) && (*one == *two) )
+                if ( *end == *phrase )
                 {
-                    -- one;
-                    -- two;
+                    const CharType * one = end    - 1;
+                    const CharType * two = phrase - 1;
+                    // no need to check (*one != static_cast<CharType>(EndofString))
+                    while ( (two >= strPhrase) && (*one == *two) )
+                    {
+                        -- one;
+                        -- two;
+                    }
+
+                    if (  two < strPhrase )
+                    {
+                        result = one + 1;
+                        if ( out_next != static_cast<const CharType **>(NULL) )
+                            *out_next = one;
+
+                        break; // break the loop
+                    }
                 }
 
-                if (  two < strPhrase )
-                {
-                    result = one + 1;
-                    if ( out_next != static_cast<const CharType **>(NULL) )
-                        *out_next = one;
-
-                    break; // break the loop
-                }
+                -- end;
             }
-
-            -- end;
-        }
+    	}
     }
 
-    return (result > strSource ? static_cast<NEString::CharPos>(result - strSource) : NEString::InvalidPos);
+    return ((result != NULL) && (result >= strSource) ? static_cast<NEString::CharPos>(result - strSource) : NEString::InvalidPos);
 }
 
 template<typename CharType>
@@ -1248,22 +1254,25 @@ NEString::CharPos NEString::findFirstOf( CharType chSearch
     if ( out_next != static_cast<const CharType **>(NULL) )
         *out_next = static_cast<const CharType *>(NULL);
 
-    if ( (isEmpty<CharType>(strSource) == false) && (chSearch != static_cast<CharType>(EndOfString)) && (startPos >= NEString::StartPos) )
+    if ( (isEmpty<CharType>(strSource) == false) && (chSearch != static_cast<CharType>(EndOfString)) )
     {
-        const CharType * next = strSource + startPos;
-        while ( *next != static_cast<CharType>(EndOfString) )
-        {
-            if (*next == chSearch)
+    	if ( startPos >= NEString::StartPos )
+    	{
+            const CharType * next = strSource + startPos;
+            while ( *next != static_cast<CharType>(EndOfString) )
             {
-                result = next ++;
-                if ( (out_next != static_cast<const CharType **>(NULL)) && (*next != static_cast<CharType>(EndOfString)) )
-                    *out_next = next;
+                if (*next == chSearch)
+                {
+                    result = next ++;
+                    if ( (out_next != static_cast<const CharType **>(NULL)) && (*next != static_cast<CharType>(EndOfString)) )
+                        *out_next = next;
 
-                break; // break the loop
+                    break; // break the loop
+                }
+
+                ++ next;
             }
-
-            ++ next;
-        }
+    	}
     }
 
     return ((result != NULL) && (result >= strSource) ? static_cast<NEString::CharPos>(result - strSource) : NEString::InvalidPos);
@@ -1276,40 +1285,42 @@ NEString::CharPos NEString::findFirstOf( const CharType * strPhrase
                                        , const CharType ** out_next /*= static_cast<const CharType **>(NULL)*/ )
 {
     const CharType * result = static_cast<const CharType *>(NULL);
-    const CharType * begin  = strSource;
 
     if ( out_next != static_cast<const CharType **>(NULL) )
         *out_next = static_cast<const CharType *>(NULL);
 
-    if ( (isEmpty<CharType>(strSource) == false) && (isEmpty<CharType>(strPhrase) == false) && (startPos >= NEString::StartPos) )
+    if ( (isEmpty<CharType>(strSource) == false) && (isEmpty<CharType>(strPhrase) == false) )
     {
-        const CharType * next = strSource + startPos;
-        while ( *next != static_cast<CharType>(EndOfString) )
-        {
-            if ( *next == *strPhrase)
+    	if ( startPos >= NEString::StartPos )
+    	{
+            const CharType * next = strSource + startPos;
+            while ( *next != static_cast<CharType>(EndOfString) )
             {
-                const CharType * one = next + 1;
-                const CharType * two = strPhrase + 1;
-                // no need to check (*one != static_cast<CharType>(EndofString))
-                
-                while ( (*two != static_cast<CharType>(EndOfString)) && (*one == *two) )
+                if ( *next == *strPhrase)
                 {
-                    ++ one;
-                    ++ two;
+                    const CharType * one = next + 1;
+                    const CharType * two = strPhrase + 1;
+                    // no need to check (*one != static_cast<CharType>(EndofString))
+
+                    while ( (*two != static_cast<CharType>(EndOfString)) && (*one == *two) )
+                    {
+                        ++ one;
+                        ++ two;
+                    }
+
+                    if (*two == static_cast<CharType>(EndOfString))
+                    {
+                        result = next;
+                        if (out_next != static_cast<const CharType **>(NULL))
+                            *out_next = one;
+
+                        break; // break the loop
+                    }
                 }
 
-                if (*two == static_cast<CharType>(EndOfString))
-                {
-                    result = next;
-                    if (out_next != static_cast<const CharType **>(NULL))
-                        *out_next = one;
-
-                    break; // break the loop
-                }
+                ++ next;
             }
-
-            ++ next;
-        }
+    	}
     }
 
     return ((result != NULL) && (result >= strSource) ? static_cast<NEString::CharPos>(result - strSource) : NEString::InvalidPos);
@@ -1909,11 +1920,11 @@ inline bool NEString::appendChar(NEString::SString<CharDst> & strDst, CharSrc ch
 template <typename CharDst, typename CharSrc>
 inline NEString::CharCount NEString::appendString( NEString::SString<CharDst> & strDst
                                                  , const NEString::SString<CharSrc> & strSrc
-                                                 , NEString::CharPos startSrc   /*= NEString::StartPos  */
-                                                 , NEString::CharCount charsCopy/*= NEString::CountAll  */ )
+                                                 , NEString::CharPos startSrc    /*= NEString::StartPos  */
+                                                 , NEString::CharCount charsCopy /*= NEString::CountAll  */ )
 {
     CharCount result = 0;
-    charCopy = charsCopy == NEString::CountAll ? strSrc.strUsed : charsCopy;
+    charsCopy = charsCopy == NEString::CountAll ? strSrc.strUsed : charsCopy;
     if ( canRead<CharSrc>(strSrc, startSrc) && canWrite<CharDst>(strDst, NEString::EndPos) && (charsCopy > 0) )
     {
         CharCount readRemain  = strSrc.strUsed  - startSrc;

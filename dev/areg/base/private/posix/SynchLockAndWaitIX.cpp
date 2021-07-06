@@ -19,6 +19,8 @@
 // SynchWaitableMapIX class implementation
 //////////////////////////////////////////////////////////////////////////
 
+SynchResourceMapIX	SynchResourceMapIX::_theSynchResourceMapIX;
+
 //////////////////////////////////////////////////////////////////////////
 // SynchResourceMapIX class implementation
 //////////////////////////////////////////////////////////////////////////
@@ -32,12 +34,6 @@ SynchResourceMapIX::SynchResourceMapIX( void )
 SynchResourceMapIX::~SynchResourceMapIX( void )
 {
     ; // do nothing
-}
-
-SynchResourceMapIX & SynchResourceMapIX::getInstance( void )
-{
-    static SynchResourceMapIX _mapSynchResources;
-    return _mapSynchResources;
 }
 
 //////////////////////////////////////////////////////////////////////////

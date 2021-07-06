@@ -37,7 +37,7 @@ IMPLEMENT_RUNTIME(TimerManager, DispatcherThread)
 /**
  * \brief   Timer Manager thread name
  **/
-const char * const TimerManager::TIMER_THREAD_NAME        = "_AREG_TIMER_THREAD_NAME_";
+const char * const 	TimerManager::TIMER_THREAD_NAME        = "_AREG_TIMER_THREAD_NAME_";
 
 //////////////////////////////////////////////////////////////////////////
 // Static functions
@@ -45,8 +45,8 @@ const char * const TimerManager::TIMER_THREAD_NAME        = "_AREG_TIMER_THREAD_
 
 TimerManager & TimerManager::getInstance( void )
 {
-    static TimerManager _timerManager;
-    return _timerManager;
+    static TimerManager	_theTimerManager;
+    return _theTimerManager;
 }
 
 bool TimerManager::startTimerManager( void )

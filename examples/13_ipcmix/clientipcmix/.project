@@ -3,9 +3,8 @@
 	<name>13_clientipcmix</name>
 	<comment></comment>
 	<projects>
-		<project>13_shareipcmix</project>
 		<project>areg</project>
-		<project>mcrouter</project>
+		<project>13_shareipcmix</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

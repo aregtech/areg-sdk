@@ -33,10 +33,22 @@ CriticalSectionIX::CriticalSectionIX( bool initLock /*= false*/ )
     , mSpin              ( )
     , mSpinValid         ( false )
 {
-    mSpinValid = (RETURNED_OK == pthread_spin_init(&mSpin, PTHREAD_PROCESS_PRIVATE));
-    if (initLock && mSpinValid)
+	mSpin.spinOwner		= 0;
+	mSpin.lockCounter	= 0;
+	mSpin.spinLock		= 0;
+	mSpin.internLock	= 0;
+
+	if ( (RETURNED_OK == pthread_spin_init(&mSpin.spinLock, PTHREAD_PROCESS_PRIVATE  )) &&
+	     (RETURNED_OK == pthread_spin_init(&mSpin.internLock, PTHREAD_PROCESS_PRIVATE)) )
     {
-        pthread_spin_lock(&mSpin);
+		mSpinValid = true;
+    }
+
+	if (initLock && mSpinValid)
+    {
+		mSpin.spinOwner 	= pthread_self();
+		mSpin.lockCounter   = 1;
+		lockSpin();
     }
 }
 
@@ -44,9 +56,123 @@ CriticalSectionIX::~CriticalSectionIX(void)
 {
     if (mSpinValid)
     {
-        pthread_spin_destroy(&mSpin);
+        pthread_spin_destroy(&mSpin.spinLock);
+        pthread_spin_destroy(&mSpin.internLock);
+
+        mSpin.spinOwner		= 0;
+    	mSpin.lockCounter	= 0;
+    	mSpin.spinLock		= 0;
+    	mSpin.internLock	= 0;
         mSpinValid = false;
     }
+}
+
+bool CriticalSectionIX::lock(void) const
+{
+	bool result = false;
+	if ( mSpinValid )
+	{
+		pthread_t newOwner = pthread_self();
+
+		lockIntern();
+
+		if ( mSpin.spinOwner == newOwner )
+		{
+			mSpin.lockCounter += 1;
+			result = true;
+			unlockIntern();
+		}
+		else
+		{
+			unlockIntern();
+
+			if ( lockSpin() )
+			{
+				lockIntern();
+				mSpin.spinOwner	  	= newOwner;
+				mSpin.lockCounter 	= 1;
+				result = true;
+				unlockIntern();
+			}
+		}
+	}
+
+	return result;
+}
+
+void CriticalSectionIX::unlock(void) const
+{
+	if ( mSpinValid )
+	{
+		lockIntern();
+
+		if ( mSpin.spinOwner == pthread_self() )
+		{
+			if ( mSpin.lockCounter > 1 )
+			{
+				mSpin.lockCounter -= 1;
+			}
+			else if (mSpin.lockCounter == 1 )
+			{
+				mSpin.lockCounter 	= 0;
+				mSpin.spinOwner	 	= 0;
+
+				unlockSpin();
+			}
+		}
+
+		unlockIntern();
+	}
+}
+
+bool CriticalSectionIX::tryLock(void) const
+{
+	bool result = false;
+	pthread_t newOwner = pthread_self();
+
+	lockIntern();
+
+	if ( mSpin.spinOwner == newOwner )
+	{
+		mSpin.lockCounter += 1;
+		result = true;
+		unlockIntern();
+	}
+	else
+	{
+		unlockIntern();
+
+		if ( RETURNED_OK == pthread_spin_trylock(&mSpin.spinLock) )
+		{
+			lockIntern();
+			mSpin.spinOwner	  	= newOwner;
+			mSpin.lockCounter 	= 1;
+			result = true;
+			unlockIntern();
+		}
+	}
+
+	return result;
+}
+
+inline bool CriticalSectionIX::lockSpin( void ) const
+{
+	return (RETURNED_OK == pthread_spin_lock(&mSpin.spinLock));
+}
+
+inline void CriticalSectionIX::unlockSpin( void ) const
+{
+	pthread_spin_unlock(&mSpin.spinLock);
+}
+
+inline void CriticalSectionIX::lockIntern( void ) const
+{
+	pthread_spin_lock(&mSpin.internLock);
+}
+
+inline void CriticalSectionIX::unlockIntern( void ) const
+{
+	pthread_spin_unlock(&mSpin.internLock);
 }
 
 bool CriticalSectionIX::isValid(void) const
@@ -60,7 +186,13 @@ void CriticalSectionIX::freeResources(void)
 
     if (mSpinValid)
     {
-        pthread_spin_destroy(&mSpin);
+        pthread_spin_destroy(&mSpin.spinLock);
+        pthread_spin_destroy(&mSpin.internLock);
+
+        mSpin.spinOwner		= 0;
+    	mSpin.lockCounter	= 0;
+    	mSpin.spinLock		= 0;
+    	mSpin.internLock	= 0;
         mSpinValid = false;
     }
 }

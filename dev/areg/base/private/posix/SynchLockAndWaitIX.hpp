@@ -114,7 +114,7 @@ public:
     /**
      * \brief   Gets the instance of resource map.
      **/
-    static SynchResourceMapIX & getInstance( void );
+    static inline SynchResourceMapIX & getInstance( void );
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor.
@@ -128,6 +128,15 @@ private:
      * \brief   Destructor.
      **/
     ~SynchResourceMapIX( void );
+
+//////////////////////////////////////////////////////////////////////////
+// Constructor / Destructor.
+//////////////////////////////////////////////////////////////////////////
+private:
+    /**
+     * \brief	The singleton instance of synchronization resource map.
+     */
+    static SynchResourceMapIX	_theSynchResourceMapIX;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -464,6 +473,15 @@ private:
     SynchLockAndWaitIX( const SynchLockAndWaitIX & /*src*/ );
     const SynchLockAndWaitIX & operator = (const SynchLockAndWaitIX & /*src*/ );
 };
+
+//////////////////////////////////////////////////////////////////////////
+// SynchResourceMapIX class inline methods
+//////////////////////////////////////////////////////////////////////////
+
+inline SynchResourceMapIX & SynchResourceMapIX::getInstance( void )
+{
+    return SynchResourceMapIX::_theSynchResourceMapIX;
+}
 
 #endif  // _POSIX
 #endif  // AREG_BASE_PRIVATE_POSIX_SYNCHLOCKANDWAITIX_HPP

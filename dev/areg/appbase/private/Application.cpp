@@ -21,6 +21,7 @@
 #include "areg/base/File.hpp"
 #include "areg/component/ComponentLoader.hpp"
 #include "areg/component/NERegistry.hpp"
+#include "areg/trace/private/TraceManager.hpp"
 #include "areg/component/private/ServiceManager.hpp"
 #include "areg/component/private/TimerManager.hpp"
 #include "areg/trace/NETrace.hpp"
@@ -28,12 +29,7 @@
 //////////////////////////////////////////////////////////////////////////
 // Constants and types
 //////////////////////////////////////////////////////////////////////////
-
-Application & Application::_getApplicationInstance( void )
-{
-    static Application _theApp;
-    return _theApp;
-}
+Application Application::_theApplication;
 
 Application::Application(void)
     : mStartTracer  ( false )
@@ -99,14 +95,14 @@ void Application::initApplication(  bool startTracing   /*= true */
         Application::configMessageRouting(fileRouterConfig);
     }
 
-    Application::_getApplicationInstance().mAppQuit.resetEvent();
+    Application::getInstance().mAppQuit.resetEvent();
 }
 
 void Application::releaseApplication(void)
 {
     Application::_setAppState(Application::AppStateReleasing);
 
-    Application & theApp  = Application::_getApplicationInstance();
+    Application & theApp  = Application::getInstance();
 
     TimerManager::stopTimerManager();
     ComponentLoader::unloadComponentModel( NULL );
@@ -163,7 +159,7 @@ void Application::setWorkingDirectory( const char * dirPath /*= NULL_STRING*/ )
 bool Application::tracerConfig( const char * configFile /*= NULL_STRING*/ )
 {
     bool result = false;
-    Application & theApp  = Application::_getApplicationInstance( );
+    Application & theApp  = Application::getInstance( );
     const char * config     = NEString::isEmpty<char>(configFile) ? configFile : NEApplication::DEFAULT_TRACING_CONFIG_FILE;
 
     OUTPUT_DBG("Requested to start tracer configuration [ %s ]", config);
@@ -187,14 +183,14 @@ bool Application::tracerConfig( const char * configFile /*= NULL_STRING*/ )
 bool Application::startTracer(const char * configFile /*= NULL_STRING*/, bool force /*= false*/ )
 {
     bool result = false;
-    Application & theApp  = Application::_getApplicationInstance( );
+    Application & theApp  = Application::getInstance( );
     const char * config     = NEString::isEmpty<char>(configFile) ? NEApplication::DEFAULT_TRACING_CONFIG_FILE : configFile;
 
     OUTPUT_DBG("Requested to start tracer with config file [ %s ], forcing [ %s ]", config, force ? "TRUE" : "FALSE");
 
     if (NETrace::isStarted() == false)
     {
-        if ( NETrace::startLogging(config) )
+        if (NETrace::startLogging(config))
         {
             OUTPUT_DBG("Succeeded to start tracer, setting flags and config file name [ %s ]", config);
             theApp.mStartTracer     = true;
@@ -229,7 +225,7 @@ bool Application::startTracer(const char * configFile /*= NULL_STRING*/, bool fo
 
 void Application::stopTracer(void)
 {
-    Application & theApp  = Application::_getApplicationInstance( );
+    Application & theApp  = Application::getInstance( );
     theApp.mStartTracer     = false;
     NETrace::stopLogging();
 }
@@ -266,7 +262,7 @@ bool Application::startServiceManager( void )
     Application::_setAppState(Application::AppStateInitializing);
 
     bool result = false;
-    Application & theApp  = Application::_getApplicationInstance( );
+    Application & theApp  = Application::getInstance( );
     if ( ServiceManager::isServiceManagerStarted( ) == false )
     {
         if (ServiceManager::_startServiceManager( ))
@@ -297,7 +293,7 @@ bool Application::startServiceManager( void )
 bool Application::startTimerManager( void )
 {
     bool result             = false;
-    Application & theApp  = Application::_getApplicationInstance( );
+    Application & theApp  = Application::getInstance( );
 
     if ( TimerManager::isTimerManagerStarted() == false )
     {
@@ -329,7 +325,7 @@ void Application::stopTimerManager(void)
 bool Application::startMessageRouting(const char * configFile /*= NULL_STRING*/ )
 {
     bool result = false;
-    Application & theApp  = Application::_getApplicationInstance( );
+    Application & theApp  = Application::getInstance( );
     const char * config     = NEString::isEmpty<char>(configFile) ? NEApplication::DEFAULT_ROUTER_CONFIG_FILE : configFile;
 
     if (Application::isServiceManagerStarted())
@@ -364,7 +360,7 @@ bool Application::startMessageRouting(const char * configFile /*= NULL_STRING*/ 
 bool Application::configMessageRouting( const char * configFile /*= NULL_STRING*/ )
 {
     bool result = false;
-    Application & theApp  = Application::_getApplicationInstance( );
+    Application & theApp  = Application::getInstance( );
     const char * config     = NEString::isEmpty<char>(configFile) ? NEApplication::DEFAULT_ROUTER_CONFIG_FILE : configFile;
 
     if ( ServiceManager::_isRoutingServiceStarted( ) == false )
@@ -390,7 +386,7 @@ bool Application::configMessageRouting( const char * configFile /*= NULL_STRING*
 
 bool Application::startMessageRouting( const char * ipAddress, unsigned short portNr )
 {
-    Application & theApp = Application::_getApplicationInstance( );
+    Application & theApp = Application::getInstance( );
     if ( Application::startServiceManager() )
     {
         if ( ServiceManager::_isRoutingServiceStarted( ) == false )
@@ -411,14 +407,14 @@ bool Application::startMessageRouting( const char * ipAddress, unsigned short po
 
 void Application::stopMessageRouting( void )
 {
-    Application & theApp = Application::_getApplicationInstance( );
+    Application & theApp = Application::getInstance( );
     ServiceManager::_routingServiceStop();
     theApp.mStartRouting = false;
 }
 
 void Application::enableMessageRouting( bool enable )
 {
-    Application & theApp = Application::_getApplicationInstance( );
+    Application & theApp = Application::getInstance( );
     theApp.mStartRouting = theApp.mStartRouting && enable ? false : theApp.mStartRouting;
 
     ServiceManager::_routingServiceEnable(enable);
@@ -451,14 +447,14 @@ bool Application::startRouterService(void)
 
 bool Application::isElementStored( const String & elemName )
 {
-    Application & theApp = Application::_getApplicationInstance();
+    Application & theApp = Application::getInstance();
     Lock lock(theApp.mLock);
     return (theApp.mStorage.find(elemName) != NULL);
 }
 
 NEMemory::uAlign Application::storeElement( const String & elemName, NEMemory::uAlign elem )
 {
-    Application & theApp = Application::_getApplicationInstance( );
+    Application & theApp = Application::getInstance( );
     Lock lock( theApp.mLock );
 
     MAPPOS pos = theApp.mStorage.find(elemName);
@@ -474,7 +470,7 @@ NEMemory::uAlign Application::storeElement( const String & elemName, NEMemory::u
 
 NEMemory::uAlign Application::getStoredElement( const String & elemName )
 {
-    Application & theApp = Application::_getApplicationInstance( );
+    Application & theApp = Application::getInstance( );
     Lock lock( theApp.mLock );
 
     MAPPOS pos = theApp.mStorage.find( elemName );
@@ -483,26 +479,26 @@ NEMemory::uAlign Application::getStoredElement( const String & elemName )
 
 bool Application::waitAppQuit(unsigned int waitTimeout /*= IESynchObject::WAIT_INFINITE*/)
 {
-    Application & theApp = Application::_getApplicationInstance( );
+    Application & theApp = Application::getInstance( );
     return theApp.mAppQuit.lock(waitTimeout);
 }
 
 void Application::signalAppQuit(void)
 {
-    Application & theApp = Application::_getApplicationInstance( );
+    Application & theApp = Application::getInstance( );
     theApp.mAppQuit.setEvent();
 }
 
 bool Application::isServicingReady(void)
 {
-    Application & theApp = Application::_getApplicationInstance();
+    Application & theApp = Application::getInstance();
     return (theApp.mAppState == Application::AppStateReady);
 }
 
 bool Application::_setAppState(eAppState newState)
 {
     bool result = false;
-    Application & theApp = Application::_getApplicationInstance();
+    Application & theApp = Application::getInstance();
     switch (theApp.mAppState)
     {
     case Application::AppStateStopped:

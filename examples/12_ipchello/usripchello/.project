@@ -3,6 +3,7 @@
 	<name>12_usripchello</name>
 	<comment></comment>
 	<projects>
+		<project>areg</project>
 		<project>12_shripchello</project>
 	</projects>
 	<buildSpec>

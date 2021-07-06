@@ -51,27 +51,27 @@ const char* const   ServiceManager::SERVICE_MANAGER_THREAD_NAME   = "_AREG_SERVI
 // Static methods
 //////////////////////////////////////////////////////////////////////////
 
-ServiceManager & ServiceManager::_getServiceManager( void )
+ServiceManager & ServiceManager::getInstance( void )
 {
-    static ServiceManager  _ServiceManager;
-    return _ServiceManager;
+    static ServiceManager	_theServiceManager;
+    return _theServiceManager;
 }
 
 bool ServiceManager::_startServiceManager( void )
 {
     OUTPUT_DBG("Starting Service Manager");
-    return _getServiceManager()._startServiceManagerThread( );
+    return getInstance()._startServiceManagerThread( );
 }
 
 void ServiceManager::_stopServiceManager( void )
 {
     OUTPUT_DBG( "Stopping Service Manager" );
-    _getServiceManager()._stopServiceManagerThread();
+    getInstance()._stopServiceManagerThread();
 }
 
 bool ServiceManager::isServiceManagerStarted( void )
 {
-    return ServiceManager::_getServiceManager().isReady();
+    return ServiceManager::getInstance().isReady();
 }
 
 void ServiceManager::requestRegisterServer( const StubAddress & whichServer )
@@ -83,7 +83,7 @@ void ServiceManager::requestRegisterServer( const StubAddress & whichServer )
     
     ASSERT(whichServer.isValid());
     
-    ServiceManager & serviceManager = ServiceManager::_getServiceManager();
+    ServiceManager & serviceManager = ServiceManager::getInstance();
     ServiceManagerEvent::sendEvent( ServiceManagerEventData::registerStub(whichServer), static_cast<IEServiceManagerEventConsumer &>(serviceManager) , static_cast<DispatcherThread &>(serviceManager));
 }
 
@@ -97,7 +97,7 @@ void ServiceManager::requestUnregisterServer( const StubAddress & whichServer )
     
     ASSERT(whichServer.isValid());
     
-    ServiceManager & serviceManager = ServiceManager::_getServiceManager();
+    ServiceManager & serviceManager = ServiceManager::getInstance();
     ServiceManagerEvent::sendEvent( ServiceManagerEventData::unregisterStub(whichServer), static_cast<IEServiceManagerEventConsumer &>(serviceManager) , static_cast<DispatcherThread &>(serviceManager));
 }
 
@@ -111,7 +111,7 @@ void ServiceManager::requestRegisterClient( const ProxyAddress & whichClient )
     
     ASSERT(whichClient.isValid());
     
-    ServiceManager & serviceManager = ServiceManager::_getServiceManager();
+    ServiceManager & serviceManager = ServiceManager::getInstance();
     ServiceManagerEvent::sendEvent( ServiceManagerEventData::registerProxy(whichClient), static_cast<IEServiceManagerEventConsumer &>(serviceManager) , static_cast<DispatcherThread &>(serviceManager));
 }
 
@@ -124,19 +124,19 @@ void ServiceManager::requestUnregisterClient( const ProxyAddress & whichClient )
     
     ASSERT(whichClient.isValid());
     
-    ServiceManager & serviceManager = ServiceManager::_getServiceManager();
+    ServiceManager & serviceManager = ServiceManager::getInstance();
     ServiceManagerEvent::sendEvent( ServiceManagerEventData::unregisterProxy(whichClient), static_cast<IEServiceManagerEventConsumer &>(serviceManager) , static_cast<DispatcherThread &>(serviceManager));
 }
 
 bool ServiceManager::_routingServiceConfigure( const char * configFile /*= NULL*/ )
 {
-    ServiceManager & serviceManager = ServiceManager::_getServiceManager();
+    ServiceManager & serviceManager = ServiceManager::getInstance();
     return ServiceManagerEvent::sendEvent( ServiceManagerEventData::configureConnection(String(configFile)), static_cast<IEServiceManagerEventConsumer &>(serviceManager) , static_cast<DispatcherThread &>(serviceManager));
 }
 
 bool ServiceManager::_routingServiceStart(const char * configFile /*= NULL */)
 {
-    ServiceManager & serviceManager = ServiceManager::_getServiceManager();
+    ServiceManager & serviceManager = ServiceManager::getInstance();
     return ServiceManagerEvent::sendEvent( ServiceManagerEventData::startConnection(String(configFile)), static_cast<IEServiceManagerEventConsumer &>(serviceManager) , static_cast<DispatcherThread &>(serviceManager));
 }
 
@@ -145,7 +145,7 @@ bool ServiceManager::_routingServiceStart( const char * ipAddress, unsigned shor
     bool result = false;
     if ( (NEString::isEmpty<char>(ipAddress) == false) && (portNr != NESocket::InvalidPort) )
     {
-        ServiceManager & serviceManager = ServiceManager::_getServiceManager( );
+        ServiceManager & serviceManager = ServiceManager::getInstance( );
         result =ServiceManagerEvent::sendEvent( ServiceManagerEventData::startNetConnection( String( ipAddress ), portNr ), static_cast<IEServiceManagerEventConsumer &>(serviceManager), static_cast<DispatcherThread &>(serviceManager) );
     }
     return result;
@@ -153,29 +153,29 @@ bool ServiceManager::_routingServiceStart( const char * ipAddress, unsigned shor
 
 void ServiceManager::_routingServiceStop(void)
 {
-    ServiceManager & serviceManager = ServiceManager::_getServiceManager();
+    ServiceManager & serviceManager = ServiceManager::getInstance();
     ServiceManagerEvent::sendEvent( ServiceManagerEventData::stopConnection(), static_cast<IEServiceManagerEventConsumer &>(serviceManager) , static_cast<DispatcherThread &>(serviceManager));
 }
 
 void ServiceManager::_routingServiceEnable( bool enable )
 {
-    ServiceManager & serviceManager = ServiceManager::_getServiceManager( );
+    ServiceManager & serviceManager = ServiceManager::getInstance( );
     ServiceManagerEvent::sendEvent( ServiceManagerEventData::enableRemoteService(enable), static_cast<IEServiceManagerEventConsumer &>(serviceManager), static_cast<DispatcherThread &>(serviceManager) );
 }
 
 bool ServiceManager::_isRoutingServiceStarted(void)
 {
-    return ServiceManager::_getServiceManager().mConnectService.isRemoteServicingStarted();
+    return ServiceManager::getInstance().mConnectService.isRemoteServicingStarted();
 }
 
 bool ServiceManager::_isRoutingServiceConfigured(void)
 {
-    return ServiceManager::_getServiceManager().mConnectService.isRemoteServicingConfigured();
+    return ServiceManager::getInstance().mConnectService.isRemoteServicingConfigured();
 }
 
 bool ServiceManager::_isRoutingServiceEnabled(void)
 {
-    return ServiceManager::_getServiceManager().mConnectService.isRemoteServicingEnabled();
+    return ServiceManager::getInstance().mConnectService.isRemoteServicingEnabled();
 }
 
 //////////////////////////////////////////////////////////////////////////

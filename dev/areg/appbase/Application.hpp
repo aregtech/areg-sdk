@@ -19,6 +19,10 @@
 #include "areg/base/ESynchObjects.hpp"
 
 //////////////////////////////////////////////////////////////////////////
+// Dependencies
+//////////////////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////////////////
 // Application class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
@@ -408,6 +412,10 @@ private:
     #pragma warning(default: 4251)
 #endif  // _MSC_VER
 
+    /**
+     * \brief	The singleton instance of Application object.
+     **/
+    static Application	_theApplication;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -425,7 +433,7 @@ private:
     /**
      * \brief   Returns instance of singleton Application object.
      **/
-    static Application & _getApplicationInstance( void );
+    static inline Application & getInstance( void );
 
     /**
      * \brief   Operating system specific implementation to start router service on machine.
@@ -454,22 +462,27 @@ private:
 //////////////////////////////////////////////////////////////////////////
 inline bool Application::startTracerRequested( void )
 {
-    return Application::_getApplicationInstance().mStartTracer;
+    return Application::getInstance().mStartTracer;
 }
 
 inline bool Application::startServiceManagerRequested( void )
 {
-    return Application::_getApplicationInstance().mStartService;
+    return Application::getInstance().mStartService;
 }
 
 inline const char * Application::getTracerConfigFile( void )
 {
-    return Application::_getApplicationInstance().mConfigTracer.getString();
+    return Application::getInstance().mConfigTracer.getString();
 }
 
 inline const char * Application::getRoutingConfigFile( void )
 {
-    return Application::_getApplicationInstance().mConfigService.getString();
+    return Application::getInstance().mConfigService.getString();
+}
+
+inline Application & Application::getInstance( void )
+{
+    return Application::_theApplication;
 }
 
 #endif  // AREG_APPBASE_APPLICATION_HPP
