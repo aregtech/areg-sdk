@@ -8,6 +8,7 @@
 #include "shared/generated/NEDirectConnection.hpp"
 
 #pragma comment(lib, "areg.lib")
+#pragma comment(lib, "messager.lib")
 
 static inline void _createRoleName( const String & nickName, uint32_t cookie, const char * prefix, String & output )
 {

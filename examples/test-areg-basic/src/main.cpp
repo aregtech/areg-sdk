@@ -134,6 +134,37 @@ int main()
     str3.trimAll();
     str4.trimAll();
 
+    int pos = 0;
+
+    initTrims(trim1, trim2, trim3, trim4);
+    const char * next = trim1;
+    pos = NEString::findFirstOf(' ', trim1, NEString::StartPos, &next);
+    while (pos != NEString::InvalidPos)
+    {
+        pos = NEString::findFirstOf(' ', trim1, pos + 1, &next);
+    }
+
+    next = trim1;
+    pos  = NEString::findFirstOf("  ", trim1, NEString::StartPos, &next);
+    while (pos != NEString::InvalidPos)
+    {
+        pos = NEString::findFirstOf("  ", trim1, pos + 1, &next);
+    }
+
+    const char * prev = trim1;
+    pos = NEString::findLastOf(' ', trim1, NEString::EndPos, &prev);
+    while (pos != NEString::InvalidPos)
+    {
+        pos = NEString::findLastOf(' ', trim1, pos - 1, &prev);
+    }
+
+    prev = trim1;
+    pos = NEString::findLastOf("  ", trim1, NEString::EndPos, &prev);
+    while (pos != NEString::InvalidPos)
+    {
+        pos = NEString::findLastOf("  ", trim1, pos - 1, &prev);
+    }
+
     if (sizeof(void *) == 4)
     {
         OUTPUT_DBG("32-bit system......");

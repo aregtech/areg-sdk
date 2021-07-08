@@ -4,7 +4,6 @@ cls
 set PATH=D:\Program Files\jdk12;D:\Program Files\jdk12\lib;D:\Program Files\jdk12\bin;%PATH%
 set PROJECT_ROOT=E:\Projects\aregtech\areg-sdk\examples\messager
 set CODE_GEN=shared\generated
-rem set CLASSPATH=D:\Program Files\jdk12\lib;%CLASSPATH%;E:\Projects\tools\sidesign\trunk\codegen\dist;E:\Projects\tools\sidesign\trunk\codegen\dist\codegen.jar;.\dist;.\dist\codegen.jar
 set CLASSPATH=D:\Program Files\jdk12\lib;%CLASSPATH%;E:\Projects\aregtech\areg-sdk\tools;E:\Projects\aregtech\areg-sdk\tools\codegen.jar
 
 set NEW_LINE=echo:

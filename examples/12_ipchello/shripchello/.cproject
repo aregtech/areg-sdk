@@ -70,7 +70,7 @@
 				<externalSettings containerId="areg;" factoryId="org.eclipse.cdt.core.cfg.export.settings.sipplier">
 					<externalSetting>
 						<entry flags="VALUE_WORKSPACE_PATH" kind="includePath" name="/areg"/>
-						<entry flags="VALUE_WORKSPACE_PATH" kind="libraryPath" name="/areg/Release"/>
+						<entry flags="VALUE_WORKSPACE_PATH" kind="libraryPath" name="/areg/Debug"/>
 						<entry flags="RESOLVED" kind="libraryFile" name="areg" srcPrefixMapping="" srcRootPath=""/>
 					</externalSetting>
 				</externalSettings>

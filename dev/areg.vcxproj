@@ -113,7 +113,6 @@
     <ClCompile Include="areg\base\private\NESocket.cpp" />
     <ClCompile Include="areg\base\private\NEString.cpp" />
     <ClCompile Include="areg\base\private\NEMath.cpp" />
-    <ClCompile Include="areg\base\private\NEUtfString.cpp" />
     <ClCompile Include="areg\base\private\NEBasicShape.cpp" />
     <ClCompile Include="areg\base\private\NEDebug.cpp" />
     <ClCompile Include="areg\base\private\NEMemory.cpp" />
@@ -121,7 +120,6 @@
     <ClCompile Include="areg\component\private\posix\TimerManagerPosix.cpp" />
     <ClCompile Include="areg\component\private\posix\TimerPosix.cpp" />
     <ClCompile Include="areg\component\private\win32\TimerManagerWin32.cpp" />
-    <ClCompile Include="areg\component\private\ClientBase.cpp" />
     <ClCompile Include="areg\component\private\ClientInfo.cpp" />
     <ClCompile Include="areg\component\private\ClientList.cpp" />
     <ClCompile Include="areg\component\private\Component.cpp" />
@@ -231,7 +229,6 @@
     <ClInclude Include="areg\base\IESynchObject.hpp" />
     <ClInclude Include="areg\base\NECommon.hpp" />
     <ClInclude Include="areg\base\NEString.hpp" />
-    <ClInclude Include="areg\base\NEUtfString.hpp" />
     <ClInclude Include="areg\appbase\private\configure.hpp" />
     <ClInclude Include="areg\base\private\BufferPosition.hpp" />
     <ClInclude Include="areg\base\BufferStreamBase.hpp" />
@@ -251,7 +248,6 @@
     <ClInclude Include="areg\base\TEResourceListMap.hpp" />
     <ClInclude Include="areg\base\TERingStack.hpp" />
     <ClInclude Include="areg\base\TEString.hpp" />
-    <ClInclude Include="areg\component\ClientBase.hpp" />
     <ClInclude Include="areg\component\private\ClientInfo.hpp" />
     <ClInclude Include="areg\component\private\ClientList.hpp" />
     <ClInclude Include="areg\component\Component.hpp" />
