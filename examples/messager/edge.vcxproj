@@ -80,24 +80,7 @@
     <ClInclude Include="edge\res\resource.h" />
     <ClInclude Include="edge\res\stdafx.h" />
     <ClInclude Include="edge\res\targetver.h" />
-    <ClInclude Include="shared\generated\CentralMessagerClientBase.hpp" />
-    <ClInclude Include="shared\generated\ConnectionManagerClientBase.hpp" />
-    <ClInclude Include="shared\generated\DirectConnectionClientBase.hpp" />
-    <ClInclude Include="shared\generated\DirectMessagerClientBase.hpp" />
-    <ClInclude Include="shared\generated\NECentralMessager.hpp" />
-    <ClInclude Include="shared\generated\NEConnectionManager.hpp" />
-    <ClInclude Include="shared\generated\NEDirectConnection.hpp" />
-    <ClInclude Include="shared\generated\private\CentralMessagerEvents.hpp" />
-    <ClInclude Include="shared\generated\private\ConnectionManagerEvents.hpp" />
-    <ClInclude Include="shared\generated\private\DirectConnectionEvents.hpp" />
-    <ClInclude Include="shared\generated\private\DirectConnectionProxy.hpp" />
     <ClInclude Include="shared\generated\private\DirectConnectionStub.hpp" />
-    <ClInclude Include="shared\NECommonSettings.hpp" />
-    <ClInclude Include="shared\generated\NEDirectMessager.hpp" />
-    <ClInclude Include="shared\generated\private\CentralMessagerProxy.hpp" />
-    <ClInclude Include="shared\generated\private\ConnectionManagerProxy.hpp" />
-    <ClInclude Include="shared\generated\private\DirectMessagerEvents.hpp" />
-    <ClInclude Include="shared\generated\private\DirectMessagerProxy.hpp" />
     <ClInclude Include="shared\generated\private\DirectMessagerStub.hpp" />
   </ItemGroup>
   <ItemGroup>
@@ -120,24 +103,6 @@
     <ClCompile Include="edge\DistrbutedApp.cpp" />
     <ClCompile Include="edge\NEDistributedApp.cpp" />
     <ClCompile Include="edge\res\stdafx.cpp" />
-    <ClCompile Include="shared\generated\private\CentralMessagerClientBase.cpp" />
-    <ClCompile Include="shared\generated\private\CentralMessagerEvents.cpp" />
-    <ClCompile Include="shared\generated\private\CentralMessagerProxy.cpp" />
-    <ClCompile Include="shared\generated\private\ConnectionManagerClientBase.cpp" />
-    <ClCompile Include="shared\generated\private\ConnectionManagerEvents.cpp" />
-    <ClCompile Include="shared\generated\private\ConnectionManagerProxy.cpp" />
-    <ClCompile Include="shared\generated\private\DirectConnectionClientBase.cpp" />
-    <ClCompile Include="shared\generated\private\DirectConnectionEvents.cpp" />
-    <ClCompile Include="shared\generated\private\DirectConnectionProxy.cpp" />
-    <ClCompile Include="shared\generated\private\DirectConnectionStub.cpp" />
-    <ClCompile Include="shared\generated\private\DirectMessagerClientBase.cpp" />
-    <ClCompile Include="shared\generated\private\DirectMessagerEvents.cpp" />
-    <ClCompile Include="shared\generated\private\DirectMessagerProxy.cpp" />
-    <ClCompile Include="shared\generated\private\DirectMessagerStub.cpp" />
-    <ClCompile Include="shared\generated\private\NECentralMessager.cpp" />
-    <ClCompile Include="shared\generated\private\NEConnectionManager.cpp" />
-    <ClCompile Include="shared\generated\private\NEDirectConnection.cpp" />
-    <ClCompile Include="shared\generated\private\NEDirectMessager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="edge\res\edge.rc" />
@@ -147,15 +112,14 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="edge\res\edge.rc2" />
+    <None Include="res\CentralMessager.siml" />
+    <None Include="res\ConnectionManager.siml" />
+    <None Include="res\DirectConnection.siml" />
+    <None Include="res\DirectMessager.siml" />
+    <None Include="res\generate_files.bat" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="edge\res\ReadMe.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="resources\CentralMessager.siml" />
-    <None Include="resources\ConnectionManager.siml" />
-    <None Include="resources\DirectConnection.siml" />
-    <None Include="resources\DirectMessager.siml" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

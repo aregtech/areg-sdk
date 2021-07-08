@@ -49,7 +49,7 @@ public:
      *                      is setup for localhost.
      * \param   portNr      Port number of remote server to connect, should not be invalid port.
      **/
-    ClientConnection( const char * hostName, unsigned int portNr );
+    ClientConnection( const char * hostName, unsigned short portNr );
 
     /**
      * \brief   Creates instance of object with invalid socket object. Before sending

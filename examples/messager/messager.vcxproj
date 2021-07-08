@@ -1,0 +1,100 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(SolutionDir)\config_compile.props" Label="LocalAppCompileSettings" />
+  </ImportGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{BAD5F8A5-B916-4E76-8594-78B003C1155B}</ProjectGuid>
+    <ProjectName>messager</ProjectName>
+    <RootNamespace>messager</RootNamespace>
+    <Keyword>Win32Proj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+  </PropertyGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(SolutionDir)\config_project.props" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <OutDir>$(OutLibDir)\</OutDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(ConfigShortName)'=='Debug'">
+    <ClCompile>
+      <PreprocessorDefinitions>IMPORT_SHARED_SYMBOLS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(TestRootDir)\messager;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(ConfigShortName)'=='Release'">
+    <ClCompile>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>IMPORT_SHARED_SYMBOLS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(TestRootDir)\messager;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="shared\generated\CentralMessagerClientBase.hpp" />
+    <ClInclude Include="shared\generated\CentralMessagerStub.hpp" />
+    <ClInclude Include="shared\generated\ConnectionManagerClientBase.hpp" />
+    <ClInclude Include="shared\generated\ConnectionManagerStub.hpp" />
+    <ClInclude Include="shared\generated\DirectConnectionClientBase.hpp" />
+    <ClInclude Include="shared\generated\DirectConnectionStub.hpp" />
+    <ClInclude Include="shared\generated\DirectMessagerClientBase.hpp" />
+    <ClInclude Include="shared\generated\DirectMessagerStub.hpp" />
+    <ClInclude Include="shared\generated\NECentralMessager.hpp" />
+    <ClInclude Include="shared\generated\NEConnectionManager.hpp" />
+    <ClInclude Include="shared\generated\NEDirectConnection.hpp" />
+    <ClInclude Include="shared\generated\private\CentralMessagerEvents.hpp" />
+    <ClInclude Include="shared\generated\private\ConnectionManagerEvents.hpp" />
+    <ClInclude Include="shared\generated\private\DirectConnectionEvents.hpp" />
+    <ClInclude Include="shared\generated\private\DirectConnectionProxy.hpp" />
+    <ClInclude Include="shared\generated\private\DirectConnectionStub.hpp" />
+    <ClInclude Include="shared\NECommonSettings.hpp" />
+    <ClInclude Include="shared\generated\NEDirectMessager.hpp" />
+    <ClInclude Include="shared\generated\private\CentralMessagerProxy.hpp" />
+    <ClInclude Include="shared\generated\private\ConnectionManagerProxy.hpp" />
+    <ClInclude Include="shared\generated\private\DirectMessagerEvents.hpp" />
+    <ClInclude Include="shared\generated\private\DirectMessagerProxy.hpp" />
+    <ClInclude Include="shared\generated\private\DirectMessagerStub.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="shared\generated\private\CentralMessagerClientBase.cpp" />
+    <ClCompile Include="shared\generated\private\CentralMessagerEvents.cpp" />
+    <ClCompile Include="shared\generated\private\CentralMessagerProxy.cpp" />
+    <ClCompile Include="shared\generated\private\CentralMessagerStub.cpp" />
+    <ClCompile Include="shared\generated\private\ConnectionManagerClientBase.cpp" />
+    <ClCompile Include="shared\generated\private\ConnectionManagerEvents.cpp" />
+    <ClCompile Include="shared\generated\private\ConnectionManagerProxy.cpp" />
+    <ClCompile Include="shared\generated\private\ConnectionManagerStub.cpp" />
+    <ClCompile Include="shared\generated\private\DirectConnectionClientBase.cpp" />
+    <ClCompile Include="shared\generated\private\DirectConnectionEvents.cpp" />
+    <ClCompile Include="shared\generated\private\DirectConnectionProxy.cpp" />
+    <ClCompile Include="shared\generated\private\DirectConnectionStub.cpp" />
+    <ClCompile Include="shared\generated\private\DirectMessagerClientBase.cpp" />
+    <ClCompile Include="shared\generated\private\DirectMessagerEvents.cpp" />
+    <ClCompile Include="shared\generated\private\DirectMessagerProxy.cpp" />
+    <ClCompile Include="shared\generated\private\DirectMessagerStub.cpp" />
+    <ClCompile Include="shared\generated\private\NECentralMessager.cpp" />
+    <ClCompile Include="shared\generated\private\NEConnectionManager.cpp" />
+    <ClCompile Include="shared\generated\private\NEDirectConnection.cpp" />
+    <ClCompile Include="shared\generated\private\NEDirectMessager.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="res\CentralMessager.siml" />
+    <None Include="res\ConnectionManager.siml" />
+    <None Include="res\DirectConnection.siml" />
+    <None Include="res\DirectMessager.siml" />
+    <None Include="res\generate_files.bat" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

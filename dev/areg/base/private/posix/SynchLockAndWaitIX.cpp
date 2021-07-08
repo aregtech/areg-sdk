@@ -19,6 +19,8 @@
 // SynchWaitableMapIX class implementation
 //////////////////////////////////////////////////////////////////////////
 
+SynchResourceMapIX	SynchResourceMapIX::_theSynchResourceMapIX;
+
 //////////////////////////////////////////////////////////////////////////
 // SynchResourceMapIX class implementation
 //////////////////////////////////////////////////////////////////////////
@@ -32,12 +34,6 @@ SynchResourceMapIX::SynchResourceMapIX( void )
 SynchResourceMapIX::~SynchResourceMapIX( void )
 {
     ; // do nothing
-}
-
-SynchResourceMapIX & SynchResourceMapIX::getInstance( void )
-{
-    static SynchResourceMapIX _mapSynchResources;
-    return _mapSynchResources;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -265,10 +261,14 @@ SynchLockAndWaitIX::SynchLockAndWaitIX(   IEWaitableBaseIX ** listWaitables
     , mMatchCondition   ( matchCondition )
     , mWaitTimeout      ( msTimeout )
     , mContext          ( pthread_self() )
-    , mPosixMutex       ( NULL )
-    , mPosixMutexAttr   ( NULL )
-    , mCondVariable     ( NULL )
-    , mCondAttribute    ( NULL )
+    , mPosixMutex       ( )
+    , mMutexValid       ( false )
+    , mPosixMutexAttr   ( )
+    , mMutexAttrValid   ( false )
+    , mCondVariable     ( )
+    , mCondVarValid     ( false )
+    , mCondAttribute    ( )
+    , mCondAttrValid    ( false )
     , mFiredEntry       ( NESynchTypesIX::SynchObjectInvalid )
     , mWaitingList      ( count )
 {
@@ -392,62 +392,71 @@ inline bool SynchLockAndWaitIX::_notifyEvent( void )
 inline bool SynchLockAndWaitIX::_initPosixSynchObjects( void )
 {
     // Init POSIX mutex
-    bool mutexReady = false;
     if (RETURNED_OK == pthread_mutexattr_init( &mPosixMutexAttr ))
     {
+    	mMutexAttrValid = true;
         if (RETURNED_OK == pthread_mutexattr_settype( &mPosixMutexAttr, PTHREAD_MUTEX_NORMAL ))
         {
-            mutexReady = (RETURNED_OK == pthread_mutex_init( &mPosixMutex, &mPosixMutexAttr ));
+            mMutexValid = (RETURNED_OK == pthread_mutex_init( &mPosixMutex, &mPosixMutexAttr ));
         }
     }
 
     // Init POSIX condition variable
-    bool condVarReady= false;
     if (RETURNED_OK == pthread_condattr_init( &mCondAttribute ))
     {
+    	mCondAttrValid = true;
         if (RETURNED_OK == pthread_condattr_setpshared( &mCondAttribute, PTHREAD_PROCESS_PRIVATE ))
         {
-            condVarReady = (RETURNED_OK == pthread_cond_init( &mCondVariable, &mCondAttribute ));
+            mCondVarValid = (RETURNED_OK == pthread_cond_init( &mCondVariable, &mCondAttribute ));
         }
     }
 
-    return (mutexReady && condVarReady);
+    return (mMutexValid && mCondVarValid);
 }
 
 inline void SynchLockAndWaitIX::_releasePosixSynchObjects( void )
 {
-    if (mPosixMutex != NULL)
+    if (mMutexValid)
+    {
         pthread_mutex_destroy(&mPosixMutex);
+        mMutexValid = false;
+    }
 
-    if (mPosixMutexAttr != NULL)
+    if (mMutexAttrValid)
+    {
         pthread_mutexattr_destroy(&mPosixMutexAttr);
+    	mMutexAttrValid = false;
+    }
 
-    if (mCondVariable != NULL)
+    if (mCondVarValid)
+    {
         pthread_cond_destroy(&mCondVariable);
+        mCondVarValid = false;
+    }
 
-    if (mCondAttribute != NULL)
+    if (mCondAttrValid)
+    {
         pthread_condattr_destroy(&mCondAttribute);
-
-    mPosixMutex     = NULL;
-    mPosixMutexAttr = NULL;
-    mCondVariable   = NULL;
-    mCondAttribute  = NULL;
+    	mCondAttrValid = false;
+    }
 }
 
 inline bool SynchLockAndWaitIX::_isValid( void ) const
 {
-    return ((mPosixMutex != NULL) && (mCondVariable != NULL) && (mWaitingList.isEmpty() == false));
+    return ((mMutexValid && mCondVarValid) && (mWaitingList.isEmpty() == false));
 }
 
 inline bool SynchLockAndWaitIX::_lock( void )
 {
-    return (mPosixMutex != NULL ? RETURNED_OK == pthread_mutex_lock(&mPosixMutex) : false);
+    return (mMutexValid && (RETURNED_OK == pthread_mutex_lock(&mPosixMutex)));
 }
 
 inline void SynchLockAndWaitIX::_unlock( void )
 {
-    if (mPosixMutex != NULL)
+    if (mMutexValid)
+    {
         pthread_mutex_unlock( &mPosixMutex );
+    }
 }
 
 inline int SynchLockAndWaitIX::_waitCondition( void )
@@ -518,7 +527,7 @@ NESynchTypesIX::eSynchObjectFired SynchLockAndWaitIX::SynchLockAndWaitIX::_check
                 }
             }
 #else   // !_DEBUG
-            for (  ; (i < mWaitingList.getSize()) && mWaitingList.getAt(i)->IsSignaled(); ++ i)
+            for (  ; (i < mWaitingList.getSize()) && mWaitingList.getAt(i)->checkSignaled(mContext); ++ i)
                 ;
 #endif  // !_DEBUG
 

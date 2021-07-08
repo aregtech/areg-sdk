@@ -52,7 +52,7 @@ public:
      * \param   hostName    Host name or IP-address of remote server to connect.
      * \param   portNr      Port number of remote server to connect.
      **/
-    SocketClient( const char * hostName, unsigned int portNr );
+    SocketClient( const char * hostName, unsigned short portNr );
 
     /**
      * \brief   Initialization constructor. Creates instance of object

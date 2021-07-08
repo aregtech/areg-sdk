@@ -18,21 +18,6 @@
     <ClInclude Include="register\NECentralApp.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="shared\generated\private\CentralMessagerEvents.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="shared\generated\private\ConnectionManagerEvents.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="shared\generated\NECentralMessager.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="shared\generated\NEConnectionManager.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="shared\NECommonSettings.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="register\res\resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -57,33 +42,12 @@
     <ClInclude Include="register\CentralApp.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="shared\generated\CentralMessagerStub.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="register\NECentralApp.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="register\res\stdafx.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="shared\generated\private\CentralMessagerEvents.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="shared\generated\private\CentralMessagerStub.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="shared\generated\private\ConnectionManagerEvents.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="shared\generated\private\ConnectionManagerStub.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="shared\generated\private\NECentralMessager.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="shared\generated\private\NEConnectionManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="register\ui\PageConnections.cpp">
@@ -114,17 +78,12 @@
     <None Include="register\res\register.rc2">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="resources\CentralMessager.siml">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="resources\ConnectionManager.siml">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="resources\DirectConnection.siml">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="resources\DirectMessager.siml">
-      <Filter>Resource Files</Filter>
+    <None Include="res\CentralMessager.siml" />
+    <None Include="res\ConnectionManager.siml" />
+    <None Include="res\DirectConnection.siml" />
+    <None Include="res\DirectMessager.siml" />
+    <None Include="res\generate_files.bat">
+      <Filter>Source Files</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

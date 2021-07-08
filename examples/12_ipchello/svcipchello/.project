@@ -3,9 +3,8 @@
 	<name>12_svcipchello</name>
 	<comment></comment>
 	<projects>
-		<project>12_shripchello</project>
 		<project>areg</project>
-		<project>mcrouter</project>
+		<project>12_shripchello</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

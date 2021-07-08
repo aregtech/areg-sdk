@@ -55,6 +55,10 @@ public:
      *          Boolean 'false' value as a string.
      **/
     static const wchar_t * const   BOOLEAN_FALSE   /*= L"false"*/; //!< Boolean value 'false' as string
+    /**
+     * \brief	Empty string object
+     **/
+    static const WideString		   InvalidString;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
@@ -746,23 +750,28 @@ inline const WideString & WideString::self( void ) const
 
 inline WideString::WideString( void )
     : TEString<wchar_t>( NEString::EncodeWide )
-{   ;   }
+{
+}
 
 inline WideString::WideString( const wchar_t * source )
     : TEString<wchar_t>( source, NEString::EncodeWide )
-{   ;   }
+{
+}
 
 inline WideString::WideString( wchar_t ch )
     : TEString<wchar_t>( ch, NEString::EncodeWide )
-{   ;   }
+{
+}
 
 inline WideString::WideString( const WideString & source )
     : TEString<wchar_t>( static_cast<const TEString<wchar_t> &>(source) )
-{   ;   }
+{
+}
 
 inline WideString::WideString( const wchar_t * source, int charCount )
-    : TEString<wchar_t>( source, charCount, NEString::EncodeWide )
-{   ;   }
+    : TEString<wchar_t>( source, static_cast<NEString::CharCount>(charCount), NEString::EncodeWide )
+{
+}
 
 inline WideString::WideString( const char* const source )
     : TEString<wchar_t>( NULL_STRING_W, NEString::getStringLength<char>( source ), NEString::EncodeWide )
@@ -771,9 +780,9 @@ inline WideString::WideString( const char* const source )
 }
 
 inline WideString::WideString( const char * source, int charCount )
-    : TEString<wchar_t>( NULL_STRING_W, charCount, NEString::EncodeWide )
+    : TEString<wchar_t>( NULL_STRING_W, static_cast<NEString::CharCount>(charCount), NEString::EncodeWide )
 {
-    NEString::copyString<wchar_t, char>( getDataString( ), source, NEString::StartPos, charCount );
+    NEString::copyString<wchar_t, char>( getDataString( ), source, NEString::StartPos, static_cast<NEString::CharCount>(charCount) );
 }
 
 inline WideString::operator const wchar_t *(void) const
@@ -838,21 +847,21 @@ inline NEString::CharPos WideString::substring( WideString & outResult, const wc
 
 inline WideString WideString::substring( NEString::CharPos startPos /*= NEString::StartPos*/, NEString::CharCount charCount /*= NEString::CountAll*/ ) const
 {
-    WideString result(getInitEncoding());
+    WideString result;
     TEString<wchar_t>::substring(result, startPos, charCount);
     return result;
 }
 
 inline WideString WideString::leftSide( NEString::CharCount charCount ) const
 {
-    WideString result( getInitEncoding( ) );
+    WideString result;
     TEString<wchar_t>::substring( result, NEString::StartPos, charCount );
     return result;
 }
 
 inline WideString WideString::rightSide( NEString::CharCount charCount ) const
 {
-    WideString result( getInitEncoding( ) );
+    WideString result;
     NEString::CharPos pos = charCount < getLength() ? getLength() - charCount : NEString::StartPos;
     TEString<wchar_t>::substring( result, pos, NEString::CountAll );
     return result;

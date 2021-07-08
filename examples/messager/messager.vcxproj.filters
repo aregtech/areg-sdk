@@ -15,142 +15,139 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="edge\NEDistributedApp.hpp">
+    <ClInclude Include="shared\NECommonSettings.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="shared\generated\private\DirectMessagerStub.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="shared\generated\NEDirectMessager.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="shared\generated\NECentralMessager.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="shared\generated\NEConnectionManager.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="shared\generated\NEDirectConnection.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="shared\generated\private\DirectConnectionStub.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="edge\res\resource.h">
+    <ClInclude Include="shared\generated\private\DirectMessagerProxy.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="edge\res\stdafx.h">
+    <ClInclude Include="shared\generated\private\DirectMessagerEvents.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="edge\res\targetver.h">
+    <ClInclude Include="shared\generated\private\DirectConnectionProxy.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="edge\services\CentralMessaging.hpp">
+    <ClInclude Include="shared\generated\private\DirectConnectionEvents.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="edge\services\ChatParticipantService.hpp">
+    <ClInclude Include="shared\generated\private\ConnectionManagerProxy.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="edge\services\ChatPrticipantHandler.hpp">
+    <ClInclude Include="shared\generated\private\ConnectionManagerEvents.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="edge\services\ConnectionHandler.hpp">
+    <ClInclude Include="shared\generated\private\CentralMessagerProxy.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="edge\services\ConnectionList.hpp">
+    <ClInclude Include="shared\generated\private\CentralMessagerEvents.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="edge\services\ConnectionServicing.hpp">
+    <ClInclude Include="shared\generated\DirectMessagerClientBase.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="edge\services\DirectChatService.hpp">
+    <ClInclude Include="shared\generated\DirectConnectionClientBase.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="edge\services\DirectConnectionClient.hpp">
+    <ClInclude Include="shared\generated\ConnectionManagerClientBase.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="edge\services\DirectConnectionService.hpp">
+    <ClInclude Include="shared\generated\CentralMessagerClientBase.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="edge\services\DirectMessagingClient.hpp">
+    <ClInclude Include="shared\generated\CentralMessagerStub.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="edge\services\NetworkSetup.hpp">
+    <ClInclude Include="shared\generated\ConnectionManagerStub.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="edge\ui\PageNetworkSetup.hpp">
+    <ClInclude Include="shared\generated\DirectConnectionStub.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="edge\ui\PageMessaging.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="edge\ui\PageConnections.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="edge\ui\PageChat.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="edge\ui\DistributedDialog.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="edge\DistrbutedApp.hpp">
+    <ClInclude Include="shared\generated\DirectMessagerStub.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="edge\NEDistributedApp.cpp">
+    <ClCompile Include="shared\generated\private\NEDirectMessager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="edge\res\stdafx.cpp">
+    <ClCompile Include="shared\generated\private\NECentralMessager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="edge\res\stdafx.cpp">
+    <ClCompile Include="shared\generated\private\NEConnectionManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="edge\services\CentralMessaging.cpp">
+    <ClCompile Include="shared\generated\private\NEDirectConnection.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="edge\services\ChatParticipantService.cpp">
+    <ClCompile Include="shared\generated\private\DirectMessagerStub.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="edge\services\ChatPrticipantHandler.cpp">
+    <ClCompile Include="shared\generated\private\DirectMessagerProxy.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="edge\services\ConnectionHandler.cpp">
+    <ClCompile Include="shared\generated\private\DirectMessagerEvents.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="edge\services\ConnectionList.cpp">
+    <ClCompile Include="shared\generated\private\DirectMessagerClientBase.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="edge\services\ConnectionServicing.cpp">
+    <ClCompile Include="shared\generated\private\DirectConnectionStub.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="edge\services\DirectChatService.cpp">
+    <ClCompile Include="shared\generated\private\DirectConnectionProxy.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="edge\services\DirectConnectionClient.cpp">
+    <ClCompile Include="shared\generated\private\DirectConnectionEvents.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="edge\services\DirectConnectionService.cpp">
+    <ClCompile Include="shared\generated\private\DirectConnectionClientBase.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="edge\services\DirectMessagingClient.cpp">
+    <ClCompile Include="shared\generated\private\ConnectionManagerProxy.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="edge\services\NetworkSetup.cpp">
+    <ClCompile Include="shared\generated\private\ConnectionManagerEvents.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="edge\ui\DistributedDialog.cpp">
+    <ClCompile Include="shared\generated\private\ConnectionManagerClientBase.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="edge\ui\PageNetworkSetup.cpp">
+    <ClCompile Include="shared\generated\private\CentralMessagerProxy.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="edge\ui\PageMessaging.cpp">
+    <ClCompile Include="shared\generated\private\CentralMessagerEvents.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="edge\ui\PageConnections.cpp">
+    <ClCompile Include="shared\generated\private\CentralMessagerClientBase.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="edge\ui\PageChat.cpp">
+    <ClCompile Include="shared\generated\private\CentralMessagerStub.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="edge\DistrbutedApp.cpp">
+    <ClCompile Include="shared\generated\private\ConnectionManagerStub.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="edge\res\edge.rc2">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="res\CentralMessager.siml" />
     <None Include="res\ConnectionManager.siml" />
     <None Include="res\DirectConnection.siml" />
@@ -158,20 +155,5 @@
     <None Include="res\generate_files.bat">
       <Filter>Source Files</Filter>
     </None>
-  </ItemGroup>
-  <ItemGroup>
-    <Image Include="edge\res\edge.ico">
-      <Filter>Resource Files</Filter>
-    </Image>
-  </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="edge\res\edge.rc">
-      <Filter>Resource Files</Filter>
-    </ResourceCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <Text Include="edge\res\ReadMe.txt">
-      <Filter>Resource Files</Filter>
-    </Text>
   </ItemGroup>
 </Project>

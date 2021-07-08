@@ -103,6 +103,13 @@ protected:
      * \brief   Destructor.
      **/
     virtual ~ThreadEventConsumerBase( void );
+
+//////////////////////////////////////////////////////////////////////////
+// Forbidden calls.
+//////////////////////////////////////////////////////////////////////////
+private:
+    ThreadEventConsumerBase( const ThreadEventConsumerBase & /*src*/ );
+    const ThreadEventConsumerBase & operator = ( const ThreadEventConsumerBase & /*src*/ );
 };
 
 #endif  // AREG_COMPONENT_PRIVATE_THREADEVENTBASE_HPP

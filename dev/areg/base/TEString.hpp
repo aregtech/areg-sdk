@@ -590,48 +590,51 @@ public:
 
     /**
      * \brief   Removes whitespace characters from left side, i.e. from begin of string
-     *          and returns number of characters removed.
+     *          and returns the actual length of the string.
      **/
     inline int trimLeft( void );
 
     /**
-     * \brief   Removes whitespace characters from left side, i.e. from begin of string,
-     *          copy the result in given destination string object and returns number of characters removed.
-     *          The method does not modify existing string.
+     * \brief   Copies data into given string without trailing whitespace at the begin of string, 
+     *          i.e. removes all whitespace characters at the begin of string, and returns number of
+     *          characters copied to the resulting destination string, i.e. the length of resulting string.
+     *          The existing string string remain unmodified.
      * \param   strResult   The destination string to copy result.
-     * \return  Returns number of characters removed from existing string.
+     * \return  Returns number of characters copied to the resulting string.
      **/
-    inline int trimLeft( TEString<CharType, Implement> & strResult ) const;
+    inline int trimLeft( TEString<CharType, Implement> & OUT strResult ) const;
 
     /**
-     * \brief   Removes whitespace characters from right side, i.e. from end of string
-     *          and returns number of characters removed.
+     * \brief   Removes whitespace characters from right side, i.e. from the end of string
+     *          and returns the actual length of the string.
      **/
     inline int trimRight( void );
 
     /**
-     * \brief   Removes whitespace characters from right side, i.e. from end of string,
-     *          copy the result in given destination string object and returns number of characters removed.
-     *          The method does not modify existing string.
+     * \brief   Copies data into given string without trailing whitespace at the end of string, 
+     *          i.e. removes all whitespace characters at the end of string, and returns number of
+     *          characters copied to the resulting destination string, i.e. the length of resulting string.
+     *          The existing string string remain unmodified.
      * \param   strResult   The destination string to copy result.
-     * \return  Returns number of characters removed from existing string.
+     * \return  Returns number of characters copied to the resulting string.
      **/
-    inline int trimRight( TEString<CharType, Implement> & strResult ) const;
+    inline int trimRight( TEString<CharType, Implement> & OUT strResult ) const;
 
     /**
      * \brief   Removes whitespace characters from left and right sides, i.e. from begin and end of string
-     *          and returns number of characters removed.
+     *          and returns the actual length of the string.
      **/
     inline int trimAll( void );
 
     /**
-     * \brief   Removes whitespace characters from left and right sides, i.e. from begin and end of string,
-     *          copy the result in given destination string object and returns number of characters removed.
-     *          The method does not modify existing string.
+     * \brief   Copies data into given string without trailing whitespace at the begin and end of string, 
+     *          i.e. removes all whitespace characters at the begin and end of string, and returns number of
+     *          characters copied to the resulting destination string, i.e. the length of resulting string.
+     *          The existing string string remain unmodified.
      * \param   strResult   The destination string to copy result.
-     * \return  Returns number of characters removed from existing string.
+     * \return  Returns number of characters copied to the resulting string.
      **/
-    inline int trimAll( TEString<CharType, Implement> & strResult ) const;
+    inline int trimAll( TEString<CharType, Implement> & OUT strResult ) const;
 
     /**
      * \brief   In existing string removes all characters, which are not alphanumeric.
@@ -956,8 +959,8 @@ inline NEMath::eCompare TEString<CharType, Implement>::compareString(   NEString
 template<typename CharType, class Implement /*= TEStringImpl<CharType>*/>
 void TEString<CharType, Implement>::readStream( const IEInStream & stream )
 {
-    unsigned int len    = 0;
-    unsigned int encode = static_cast<unsigned int>(NEString::EncodeInvalid);
+    int len     = 0;
+    int encode  = static_cast<int>(NEString::EncodeInvalid);
 
     stream >> len;
     stream >> encode;
@@ -976,8 +979,8 @@ void TEString<CharType, Implement>::writeStream( IEOutStream & stream ) const
     NEString::CharCount len     = getLength();
     NEString::eEncoding encode  = mData->strEncoding != NEString::EncodeInvalid ? mData->strEncoding : NEString::EncodeAscii;
     const CharType * src        = getString();
-    stream << static_cast<unsigned int>(len);
-    stream << static_cast<unsigned int>(encode);
+    stream << static_cast<int>(len);
+    stream << static_cast<int>(encode);
 
     Implement::implWriteStream(stream, src);
 }
@@ -1352,12 +1355,10 @@ bool TEString<CharType, Implement>::substring(TEString<CharType, Implement> & ou
 {
     bool result = false;
     outResult.release();
-    // The encoding must be already set
-    // outResult.mEncode   = mEncode;
     if ( canRead(startPos) )
     {
         const CharType * buffer     = getBuffer( startPos );
-        NEString::CharCount remain  = mData->strUsed - startPos;
+        NEString::CharCount remain  = static_cast<NEString::CharCount>(mData->strUsed) - startPos;
         charCount = MACRO_MIN(charCount, remain);
         result = outResult.copy(buffer, charCount) != 0;
     }
@@ -1466,18 +1467,22 @@ inline void TEString<CharType, Implement>::truncate( NEString::CharCount maxChar
     {
         release();
     }
-    else if ( NEString::geStringRequiredSize<CharType>(maxChars) < getActualLength() )
+    else
     {
-        ASSERT( isValidPtr() );
-        NEString::SString<CharType> * tmp = NEString::initString<CharType>(getString(), maxChars, mEncode);
-        if (tmp != static_cast<NEString::SString<CharType> *>(NULL))
+        NEString::CharCount spaceNeed = static_cast<NEString::CharCount>(NEString::geStringRequiredSize<CharType>(maxChars) / sizeof(CharType));
+        if ( spaceNeed < getActualLength() )
         {
-            NEString::releaseSpace<CharType>(mData);
-            mData   = tmp;
+            ASSERT( isValidPtr() );
+            NEString::SString<CharType> * tmp = NEString::initString<CharType>(getString(), maxChars, mEncode);
+            if (tmp != static_cast<NEString::SString<CharType> *>(NULL))
+            {
+                NEString::releaseSpace<CharType>(mData);
+                mData   = tmp;
 
 #ifdef DEBUG
-            mString = mData->strBuffer;
+                mString = mData->strBuffer;
 #endif // DEBUG
+            }
         }
     }
 }
@@ -1501,8 +1506,11 @@ inline void TEString<CharType, Implement>::compact( void )
     if ( isValid() )
     {
         NEString::CharCount len   = getLength();
-        NEString::CharCount space = NEString::geStringRequiredSize<CharType>( len );
-        if ( space < getActualLength() )
+        unsigned int single = sizeof(CharType);
+        unsigned int space  = NEString::geStringRequiredSize<CharType>( len );
+        NEString::CharCount charCount = static_cast<NEString::CharCount>(space / single);
+
+        if ( charCount < getActualLength() )
         {
             NEString::SString<CharType> * tmp = NEString::initString<CharType>( getString( ), len, mEncode );
             if ( tmp != static_cast<NEString::SString<CharType> *>(NULL) )
@@ -1519,7 +1527,7 @@ inline void TEString<CharType, Implement>::compact( void )
 }
 
 template<typename CharType, class Implement /*= TEStringImpl<CharType>*/>
-NEString::CharCount  TEString<CharType, Implement>::copy(const CharType * strSource, NEString::CharCount charCount /*= NEString::CountAll */)
+NEString::CharCount TEString<CharType, Implement>::copy(const CharType * strSource, NEString::CharCount charCount /*= NEString::CountAll */)
 {
     NEString::CharCount result = 0;
 
@@ -1529,6 +1537,7 @@ NEString::CharCount  TEString<CharType, Implement>::copy(const CharType * strSou
     {
         result = NEString::copyString<CharType, CharType>(*mData, strSource, NEString::StartPos, charCount);
     }
+
     return result;
 }
 
@@ -1725,16 +1734,6 @@ NEString::CharPos TEString<CharType, Implement>::replace( const CharType * strRe
         if ( (charsRemove != 0) && (lenReplace != 0) )
         {
             result = replaceWith(startPos, charsRemove, strReplace, lenReplace);
-            /*********************************
-            int diff = static_cast<int>(lenReplace - lenOrigin);
-            NEString::CharPos endPos = startPos + lenOrigin;
-            Move( endPos, diff );
-            CharType * dst = getChars( startPos );
-            const CharType * src = strReplace;
-            while ( *src != static_cast<CharType>(NEString::EndOfString) )
-                *dst ++ = *src ++;
-            result = endPos + diff;
-            *********************************/
         }
     }
     return result;
@@ -1750,17 +1749,6 @@ NEString::CharPos TEString<CharType, Implement>::replace( const TEString<CharTyp
         if ( (charsRemove != 0) && (lenReplace != 0) )
         {
             result = replaceWith( startPos, charsRemove, strReplace.getString(), lenReplace );
-
-            /*****************************
-            int diff = static_cast<int>(lenReplace - lenOrigin);
-            NEString::CharPos endPos = startPos + lenOrigin;
-            Move( endPos, diff );
-            CharType * dst = getChars( startPos );
-            const CharType * src = strReplace.getString();
-            while ( *src != static_cast<CharType>(NEString::EndofString) )
-                *dst ++ = *src ++;
-            result = endPos + diff;
-            *****************************/
         }
     }
     return result;
@@ -1785,21 +1773,21 @@ inline bool TEString<CharType, Implement>::isValid( void ) const
 }
 
 template<typename CharType, class Implement /*= TEStringImpl<CharType>*/>
-inline unsigned int TEString<CharType, Implement>::getLength( void ) const
+inline NEString::CharCount TEString<CharType, Implement>::getLength( void ) const
 {
-    return (isValid() ? mData->strUsed : 0);
+    return (isValid() ? static_cast<NEString::CharCount>(mData->strUsed) : 0);
 }
 
 template<typename CharType, class Implement /*= TEStringImpl<CharType>*/>
-inline unsigned int TEString<CharType, Implement>::getActualLength( void ) const
+inline NEString::CharCount TEString<CharType, Implement>::getActualLength( void ) const
 {
-    return (isValid() ? mData->strSpace : 0);
+    return (isValid() ? mData->strSpace : static_cast<NEString::CharCount>(0));
 }
 
 template<typename CharType, class Implement /*= TEStringImpl<CharType>*/>
 inline unsigned int TEString<CharType, Implement>::getUsedSpace(void) const
 {
-    return (isValid() ? (mData->strUsed + 1) * sizeof(CharType) : 0);
+    return (isValid() ? static_cast<unsigned int>(mData->strUsed + 1) * sizeof(CharType) : 0);
 }
 
 template<typename CharType, class Implement /*= TEStringImpl<CharType>*/>
@@ -1829,7 +1817,7 @@ inline NEString::eEncoding TEString<CharType, Implement>::getEncoding( void ) co
 template<typename CharType, class Implement /*= TEStringImpl<CharType>*/>
 inline CharType TEString<CharType, Implement>::getAt( NEString::CharPos atPos ) const
 {
-    return (canRead(atPos) ? mData->strBuffer[atPos] : NEString::EndOfString);
+    return (canRead(atPos) ? mData->strBuffer[atPos] : static_cast<CharType>(NEString::EndOfString));
 }
 
 template<typename CharType, class Implement /*= TEStringImpl<CharType>*/>
@@ -1857,6 +1845,7 @@ inline bool TEString<CharType, Implement>::resize( NEString::CharCount maxSpace 
         mString = mData->strBuffer;
 #endif // DEBUG
     }
+
     return (maxSpace < mData->strSpace);
 }
 
@@ -1868,8 +1857,9 @@ inline int TEString<CharType, Implement>::trimLeft( void )
     {
         result = NEString::trimLeft<CharType>( getChars(NEString::StartPos), getLength() );
         ASSERT(result <= static_cast<int>(mData->strUsed));
-        mData->strUsed -= result;
+        mData->strUsed = result;
     }
+
     return result;
 }
 
@@ -1880,18 +1870,20 @@ inline int TEString<CharType, Implement>::trimLeft(TEString<CharType, Implement>
     strResult.clear();
     if (isEmpty() == false)
     {
-        int len = static_cast<int>(getLength());
-        const CharType * begin = getString();
-        while (isWhitespace(*begin ++))
-            ++ result;
+        NEString::CharCount len = getLength();
+        const CharType * begin  = getString();
+        const CharType * end    = begin + len;
+        while (isWhitespace(*begin))
+            ++ begin;
 
-        int remain = len - result;
-        if (remain != 0)
+        ASSERT(begin <= end);
+        NEString::CharCount remain = static_cast<NEString::CharCount>(end - begin);
+        if (remain > 0)
         {
-            ASSERT(remain > 0);
-            strResult.copy(begin, remain);
+            result = static_cast<int>(strResult.copy(begin, remain));
         }
     }
+
     return result;
 }
 
@@ -1903,8 +1895,9 @@ inline int TEString<CharType, Implement>::trimRight( void )
     {
         result = NEString::trimRight<CharType>( getChars(NEString::StartPos), getLength() );
         ASSERT(result <= static_cast<int>(mData->strUsed));
-        mData->strUsed -= result;
+        mData->strUsed = result;
     }
+
     return result;
 }
 
@@ -1915,22 +1908,22 @@ inline int TEString<CharType, Implement>::trimRight(TEString<CharType, Implement
     strResult.clear();
     if (isEmpty() == false)
     {
-        int len = static_cast<int>(getLength());
+        NEString::CharCount len = getLength();
         const CharType * begin  = getString();
-        const CharType * end    = getChars(len - 1);
-        while ((end != begin) && isWhitespace(*end) )
-        {
-            -- end;
-            ++ result;
-        }
+        const CharType * end    = begin + len - 1;
 
-        int remain = len - result;
-        if (remain != 0)
+        while ((end > begin) && isWhitespace(*end) )
+            -- end;
+
+        ++ end;
+
+        NEString::CharCount remain = static_cast<NEString::CharCount>(end - begin);
+        if (remain > 0)
         {
-            ASSERT(remain > 0);
-            strResult.copy(begin, remain);
+            result = strResult.copy(begin, remain);
         }
     }
+
     return result;
 }
 
@@ -1941,8 +1934,8 @@ inline int TEString<CharType, Implement>::trimAll( void )
     if ( isEmpty() == false )
     {
         result = NEString::trimAll<CharType>(getChars(NEString::StartPos), getLength());
-        ASSERT(result <= static_cast<int>(mData->strUsed));
-        mData->strUsed -= result;
+        ASSERT(result <= mData->strUsed);
+        mData->strUsed = result;
     }
 
     return result;
@@ -1955,29 +1948,25 @@ inline int TEString<CharType, Implement>::trimAll(TEString<CharType, Implement> 
     strResult.clear();
     if (isEmpty() == false)
     {
-        int len = static_cast<int>(getLength());
-        const CharType * begin = getString();
-        const CharType * end = getChars(len - 1);
+        NEString::CharCount len = getLength();
+        const CharType * begin  = getString();
+        const CharType * end    = begin + len - 1;
 
-        while ((end != begin) && isWhitespace(*end))
-        {
+        while ((end > begin) && isWhitespace(*end))
             -- end;
-            ++ result;
-        }
 
-        while ((begin != end) && isWhitespace(*begin))
-        {
+        ++ end;
+
+        while ((begin < end) && isWhitespace(*begin))
             ++ begin;
-            ++ result;
-        }
 
-        int remain = len - result;
-        if (remain != 0)
+        NEString::CharCount remain = static_cast<NEString::CharCount>(end - begin);
+        if (remain > 0)
         {
-            ASSERT(remain > 0);
-            strResult.copy(begin, remain);
+            result = strResult.copy(begin, remain);
         }
     }
+
     return result;
 }
 

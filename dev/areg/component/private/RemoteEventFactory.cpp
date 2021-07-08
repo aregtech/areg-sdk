@@ -143,24 +143,41 @@ StreamableEvent * RemoteEventFactory::createEventFromStream( const RemoteMessage
         }
         break;
 
-    case Event::EventRemoteStubConnect:
-    case Event::EventRemoteProxyConnect:
+    case Event::EventRemoteStubConnect:     // fall through
+    case Event::EventRemoteProxyConnect:    // fall through
         break;
 
-    case Event::EventLocalStubConnect:
-    case Event::EventLocalProxyConnect:
-    case Event::EventLocalServiceRequest:
-    case Event::EventLocalNotifyRequest:
-    case Event::EventLocalServiceResponse:
+    case Event::EventLocalStubConnect:      // fall through
+    case Event::EventLocalProxyConnect:     // fall through
+    case Event::EventLocalServiceRequest:   // fall through
+    case Event::EventLocalNotifyRequest:    // fall through
+    case Event::EventLocalServiceResponse:  // fall through
         ASSERT(false);  // unexpected streaming for remote events
         break;
 
+    case Event::EventCustom:                // fall through
+    case Event::EventCustomInternal:        // fall through
+    case Event::EventCustomExternal:        // fall through
+    case Event::EventNotifyClient:          // fall through
+    case Event::EventConnect:               // fall through
+    case Event::EventToProxy:               // fall through
+    case Event::EventToStub:                // fall through
+    case Event::EventNotify:                // fall through
+    case Event::EventRemote:                // fall through
+    case Event::EventLocal:                 // fall through
+    case Event::EventExternal:              // fall through
+    case Event::EventInternal:              // fall through
+    case Event::EventUnknown:               // fall through
+        ASSERT(false);  // unexpected for remote event
+        break;
+
     default:
+        TRACE_ERR("Unexpected event value [ %d ]", static_cast<int>(eventType));
         ASSERT(false);  // unsupported remote streaming events
         break;
     }
 
-    ASSERT(result == NULL || result->getEventType() == eventType);
+    ASSERT((result == NULL) || (result->getEventType() == eventType));
     return result;
 }
 
@@ -171,7 +188,7 @@ bool RemoteEventFactory::createStreamFromEvent( RemoteMessage & stream, const St
     bool result = false;
     stream.invalidate();
 
-    TRACE_DBG("Going to stream event [ %s ] for remote messaging", Event::getString( eventStreamable.getEventType() ));
+    TRACE_DBG("Going to stream event [ %s ] for remote messaging", Event::getString( eventStreamable.getEventType()) );
 
     switch ( eventStreamable.getEventType() )
     {
@@ -262,21 +279,36 @@ bool RemoteEventFactory::createStreamFromEvent( RemoteMessage & stream, const St
         }
         break;
 
-    case Event::EventRemoteStubConnect:
-    case Event::EventRemoteProxyConnect:
+    case Event::EventRemoteStubConnect:     // fall through
+    case Event::EventRemoteProxyConnect:    // fall through
         break;
 
-    case Event::EventLocalStubConnect:
-    case Event::EventLocalProxyConnect:
-        break;
-
-    case Event::EventLocalServiceRequest:
-    case Event::EventLocalNotifyRequest:
-    case Event::EventLocalServiceResponse:
+    case Event::EventLocalStubConnect:      // fall through
+    case Event::EventLocalProxyConnect:     // fall through
+    case Event::EventLocalServiceRequest:   // fall through
+    case Event::EventLocalNotifyRequest:    // fall through
+    case Event::EventLocalServiceResponse:  // fall through
         ASSERT(false);  // unexpected streaming for remote events
         break;
 
+    case Event::EventCustom:                // fall through
+    case Event::EventCustomInternal:        // fall through
+    case Event::EventCustomExternal:        // fall through
+    case Event::EventNotifyClient:          // fall through
+    case Event::EventConnect:               // fall through
+    case Event::EventToProxy:               // fall through
+    case Event::EventToStub:                // fall through
+    case Event::EventNotify:                // fall through
+    case Event::EventRemote:                // fall through
+    case Event::EventLocal:                 // fall through
+    case Event::EventExternal:              // fall through
+    case Event::EventInternal:              // fall through
+    case Event::EventUnknown:               // fall through
+        ASSERT(false);  // unexpected for remote event
+        break;
+
     default:
+        TRACE_ERR("Unexpected event value [ %d ]", static_cast<int>(eventStreamable.getEventType()));
         ASSERT(false);  // unsupported remote streaming events
         break;
     }
@@ -284,8 +316,7 @@ bool RemoteEventFactory::createStreamFromEvent( RemoteMessage & stream, const St
     return result;
 }
 
-StreamableEvent * RemoteEventFactory::createRequestFailedEvent( const RemoteMessage & stream
-                                                              , const Channel & /* comChannel */ )
+StreamableEvent * RemoteEventFactory::createRequestFailedEvent( const RemoteMessage & stream, const Channel & /* comChannel */ )
 {
     TRACE_SCOPE(areg_component_RemoteEventFactory_createRequestFailedEvent);
 
@@ -293,7 +324,7 @@ StreamableEvent * RemoteEventFactory::createRequestFailedEvent( const RemoteMess
     Event::eEventType eventType;
     stream >> eventType;
 
-    TRACE_DBG("Creating request failed event of type [ %s ] (value = [ %d ]) from remote message stream", Event::getString(eventType));
+    TRACE_DBG("Creating request failed event of type [ %s ] from remote message stream", Event::getString(eventType));
 
     switch ( eventType )
     {
@@ -318,20 +349,37 @@ StreamableEvent * RemoteEventFactory::createRequestFailedEvent( const RemoteMess
     case Event::EventRemoteServiceResponse:
         break;  // not required
 
-    case Event::EventRemoteStubConnect:
+    case Event::EventRemoteStubConnect:     // fall through
     case Event::EventRemoteProxyConnect:
         break;
 
-    case Event::EventLocalServiceRequest:
-    case Event::EventLocalNotifyRequest:
-    case Event::EventLocalServiceResponse:
-    case Event::EventLocalStubConnect:
-    case Event::EventLocalProxyConnect:
-        // ASSERT(false);  // unexpected streaming for remote events
+    case Event::EventLocalServiceRequest:   // fall through
+    case Event::EventLocalNotifyRequest:    // fall through
+    case Event::EventLocalServiceResponse:  // fall through
+    case Event::EventLocalStubConnect:      // fall through
+    case Event::EventLocalProxyConnect:     // fall through
+        ASSERT(false);
+        break;
+
+    case Event::EventCustom:                // fall through
+    case Event::EventCustomInternal:        // fall through
+    case Event::EventCustomExternal:        // fall through
+    case Event::EventNotifyClient:          // fall through
+    case Event::EventConnect:               // fall through
+    case Event::EventToProxy:               // fall through
+    case Event::EventToStub:                // fall through
+    case Event::EventNotify:                // fall through
+    case Event::EventRemote:                // fall through
+    case Event::EventLocal:                 // fall through
+    case Event::EventExternal:              // fall through
+    case Event::EventInternal:              // fall through
+    case Event::EventUnknown:               // fall through
+        ASSERT(false);  // unexpected for remote event
         break;
 
     default:
-        // ASSERT(false);  // unsupported remote streaming events
+        TRACE_ERR("Unexpected event value [ %d ]", static_cast<int>(eventType));
+        ASSERT(false);  // unsupported remote streaming events
         break;
     }
 

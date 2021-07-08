@@ -25,24 +25,25 @@
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 
-Process::Process( void )
-    : mProcEnv          ( static_cast<Process::eProcEnv>(sizeof(id_type)) )
-    , mProcessHandle    ( static_cast<void *>(::GetCurrentProcess()) )
-    , mProcessId        ( ::GetCurrentProcessId() )
-    , mAppName          ( )
-    , mProcessName      ( )
-    , mProcessExt       ( )
-    , mProcessPath      ( )
-    , mProcessFullPath  ( )
+Process & Process::initilize( void )
 {
-    TCHAR fullPath[ MAX_PATH + 1 ];
-    NEMemory::zeroBuffer(fullPath, (MAX_PATH + 1) * sizeof(TCHAR));
+	if ( mIsInitialized == false )
+	{
+		mIsInitialized 	= true;
+	    mProcessId      = ::GetCurrentProcessId();
+	    mProcessHandle	= static_cast<void *>(::GetCurrentProcess());
 
-    if ( ::GetModuleFileNameEx( (HANDLE)(mProcessHandle), NULL, fullPath, MAX_PATH) != 0 )
-    {
-        String temp = fullPath;
-        _initPaths(temp.getString());
-    }
+	    TCHAR fullPath[ MAX_PATH + 1 ];
+	    NEMemory::zeroBuffer(fullPath, (MAX_PATH + 1) * sizeof(TCHAR));
+
+	    if ( ::GetModuleFileNameEx( (HANDLE)(mProcessHandle), NULL, fullPath, MAX_PATH) != 0 )
+	    {
+	        String temp = fullPath;
+	        _initPaths(temp.getString());
+	    }
+	}
+
+	return (*this);
 }
 
 String Process::getSafeEnvVariable( const char* var ) const

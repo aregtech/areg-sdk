@@ -70,8 +70,8 @@ const TraceManager::sLogEnabling    TraceManager::DEFAULT_LOG_ENABLED_SCOPES[]  
 
 TraceManager & TraceManager::getInstance( void )
 {
-    static TraceManager _traceManager;
-    return _traceManager;
+	static TraceManager	_theTraceManager;
+    return _theTraceManager;
 }
 
 unsigned int TraceManager::makeScopeId( const char * scopeName )
@@ -99,13 +99,9 @@ bool TraceManager::startLogging( const char * configFile /*= NULL*/ )
     do
     {
         Lock lock(traceManager.mLock);
-        if (TraceManager::isLoggingConfigured()== false)
+        if ((TraceManager::isLoggingConfigured() == false) && (traceManager.isReady( ) == false))
         {
-            canStart = traceManager.isReady() == false ? traceManager.loadConfiguration( configFile) : false;
-        }
-        else
-        {
-            canStart = traceManager.isReady() == false;
+            canStart = traceManager.loadConfiguration( configFile);
         }
 
     } while (false);
@@ -370,7 +366,7 @@ bool TraceManager::loadConfiguration( const char * filePath /*= NULL */ )
     File fileConfig( static_cast<const char *>(mConfigFile), FileBase::FO_MODE_EXIST | FileBase::FO_MODE_READ | FileBase::FO_MODE_TEXT | FileBase::FO_MODE_SHARE_READ );
     fileConfig.open( );
 
-    return loadConfiguration( fileConfig );
+    return loadConfiguration( fileConfig ) && initializeConfig( );
 }
 
 bool TraceManager::loadConfiguration( const FileBase & configFile )
@@ -400,7 +396,7 @@ bool TraceManager::loadConfiguration( const FileBase & configFile )
         }
     }
 
-    return (mPropertyList.isEmpty() == false) && initializeConfig();
+    return (mPropertyList.isEmpty() == false);
 }
 
 void TraceManager::clearConfigData( void )
@@ -463,7 +459,7 @@ bool TraceManager::activateTracingDefaults( void )
             if ( scopes.logScope == NULL)
                 break;
 
-            mConfigScopeGroup.setAt(scopes.logScope, scopes.logPrio);
+            mConfigScopeGroup.setAt(scopes.logScope, static_cast<int>(scopes.logPrio));
         } while (true);
 
     } while (false);
@@ -636,6 +632,7 @@ bool TraceManager::initializeConfig(void)
 
                 break;
 
+            case NELogConfig::ConfigLast:   // fall through
             default:
                 break;  // do nothing
             }
@@ -958,8 +955,7 @@ void TraceManager::setScopesPriority(const char * scopeName, unsigned int logPri
     if ( NEString::isEmpty<char>(scopeName) == false )
     {
         NEString::CharPos pos = NEString::findLastOf<char>( NELogConfig::SYNTAX_SCOPE_SEPARATOR, scopeName, NEString::EndPos );
-        const char * syntaxGroup = pos != NEString::InvalidPos ? scopeName + pos : EMPTY_STRING;
-        if ( syntaxGroup == NULL )
+        if ( pos == NEString::InvalidPos )
         {
             // there is a complete scope name, make changes.
             TraceScope * traceScope   = NULL;
@@ -967,18 +963,18 @@ void TraceManager::setScopesPriority(const char * scopeName, unsigned int logPri
             if ( mMapTraceScope.find(TraceManager::makeScopeId(scopeName), traceScope) && (traceScope != NULL) )
                 traceScope->setPriority( logPriority );
         }
-        else if ( syntaxGroup == scopeName )
+        else if ( pos == NEString::StartPos )
         {
             // change all, it is set group change for complete module
             mConfigScopeGroup.setAt(scopeName, static_cast<unsigned int>(logPriority));
             for ( MAPPOS mapPos = mMapTraceScope.firstPosition(); mapPos != NULL; mapPos = mMapTraceScope.nextPosition(mapPos) )
                 mMapTraceScope.valueAtPosition(mapPos)->setPriority( logPriority );
         }
-        else if ( *(-- syntaxGroup) == NELogConfig::SYNTAX_SCOPE_SEPARATOR )
+        else if ( (pos > 0) && (scopeName[pos - 1] == NELogConfig::SYNTAX_SCOPE_SEPARATOR))
         {
             // it is a group scope, update all groups
             mConfigScopeGroup.setAt(scopeName, static_cast<unsigned int>(logPriority));
-            int len = static_cast<int>(syntaxGroup - scopeName);
+            int len = static_cast<int>(pos - 1);
             for ( MAPPOS mapPos = mMapTraceScope.firstPosition(); mapPos != NULL; mapPos = mMapTraceScope.nextPosition(mapPos) )
             {
                 TraceScope * traceScope = mMapTraceScope.valueAtPosition(mapPos);
@@ -986,14 +982,6 @@ void TraceManager::setScopesPriority(const char * scopeName, unsigned int logPri
                     traceScope->setPriority( logPriority );
             }
         }
-        else
-        {
-            ; // do nothing, wrong syntax
-        }
-    }
-    else
-    {
-        ; // do nothing, empty scope name
     }
 }
 

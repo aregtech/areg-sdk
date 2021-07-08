@@ -46,7 +46,7 @@ ProxyEvent::~ProxyEvent( void )
 //////////////////////////////////////////////////////////////////////////
 // ProxyEvent class, Methods
 //////////////////////////////////////////////////////////////////////////
-void ProxyEvent::sendEvent( void )
+void ProxyEvent::deliverEvent( void )
 {
     if ( mTargetThread == NULL )
     {
@@ -56,7 +56,7 @@ void ProxyEvent::sendEvent( void )
 
     if ( mTargetThread != NULL )
     {
-        StreamableEvent::sendEvent();
+        StreamableEvent::deliverEvent();
     }
     else
     {
@@ -111,6 +111,11 @@ inline void IEProxyEventConsumer::localProcessResponseEvent(ResponseEvent & even
 
     case NEService::ATTRIBUTE_DATA_TYPE:
         processAttributeEvent(eventResponse);
+        break;
+
+    case NEService::SERVICE_DATA_TYPE:      // fall through
+    case NEService::UNDEFINED_DATA_TYPE:
+        ASSERT(false);  // unexpected here
         break;
 
     default:

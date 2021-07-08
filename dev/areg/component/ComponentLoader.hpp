@@ -580,14 +580,14 @@ private:
 //////////////////////////////////////////////////////////////////////////
 private:
 
-#if _MSC_VER
+#if defined(_MSC_VER) && (_MSC_VER > 1200)
     #pragma warning(disable: 4251)
 #endif  // _MSC_VER
     /**
      * \brief   The list of models
      **/
     ModelList       mModelList;
-#if _MSC_VER
+#if defined(_MSC_VER) && (_MSC_VER > 1200)
     #pragma warning(default: 4251)
 #endif  // _MSC_VER
         

@@ -135,7 +135,12 @@ bool NESocket::InterlockedValue::resolveSocket(SOCKETHANDLE hSocket)
         struct sockaddr_in sAddr;
         NEMemory::zeroBuffer(&sAddr, sizeof(sockaddr));
 
+#ifdef	_WINDOWS
         int len = sizeof(sockaddr);
+#else	// !_WINDOWS
+        socklen_t len = sizeof(sockaddr);
+#endif	// _WINDOWS
+
         if ( RETURNED_OK == getpeername(hSocket, reinterpret_cast<struct sockaddr *>(&sAddr), &len) )
         {
             sockaddr_in & addr_in = reinterpret_cast<sockaddr_in &>(sAddr);
@@ -272,9 +277,14 @@ AREG_API SOCKETHANDLE NESocket::socketCreate( void )
 AREG_API int NESocket::getMaxSendSize( SOCKETHANDLE hSocket )
 {
     long maxData= NESocket::DEFAULT_SEGMENT_SIZE;
-    int temp    = sizeof(long);
 
-    if ( (RETURNED_OK == getsockopt(hSocket, SOL_SOCKET, SO_SNDBUF, reinterpret_cast<char *>(&maxData), &temp))  || (maxData < 0) )
+#ifdef	_WINDOWS
+        int len = sizeof(long);
+#else	// !_WINDOWS
+        socklen_t len = sizeof(long);
+#endif	// _WINDOWS
+
+    if ( (RETURNED_OK == getsockopt(hSocket, SOL_SOCKET, SO_SNDBUF, reinterpret_cast<char *>(&maxData), &len))  || (maxData < 0) )
     {
         maxData = NESocket::DEFAULT_SEGMENT_SIZE;
     }
@@ -285,9 +295,14 @@ AREG_API int NESocket::getMaxSendSize( SOCKETHANDLE hSocket )
 AREG_API int NESocket::getMaxReceiveSize( SOCKETHANDLE hSocket )
 {
     long maxData= NESocket::DEFAULT_SEGMENT_SIZE;
-    int temp    = sizeof(long);
 
-    if ( (RETURNED_OK == getsockopt(hSocket, SOL_SOCKET, SO_RCVBUF, reinterpret_cast<char *>(&maxData), &temp)) || (maxData < 0) )
+#ifdef	_WINDOWS
+        int len = sizeof(long);
+#else	// !_WINDOWS
+        socklen_t len = sizeof(long);
+#endif	// _WINDOWS
+
+    if ( (RETURNED_OK == getsockopt(hSocket, SOL_SOCKET, SO_RCVBUF, reinterpret_cast<char *>(&maxData), &len)) || (maxData < 0) )
     {
         maxData = NESocket::DEFAULT_SEGMENT_SIZE;
     }
@@ -462,7 +477,7 @@ AREG_API SOCKETHANDLE NESocket::serverAcceptConnection(SOCKETHANDLE serverSocket
     SOCKETHANDLE result = NESocket::InvalidSocketHandle;
     if ( serverSocket != NESocket::InvalidSocketHandle )
     {
-        struct fd_set readList;
+        fd_set readList;
         FD_ZERO(&readList);
         FD_SET( serverSocket, &readList );
         SOCKETHANDLE maxSocket = serverSocket;
@@ -475,7 +490,8 @@ AREG_API SOCKETHANDLE NESocket::serverAcceptConnection(SOCKETHANDLE serverSocket
 
             for ( int count = 0; count < entriesCount; ++ count)
                 readList.fd_array[count + 1] = masterList[count];
-            readList.fd_count = entriesCount + 1;
+            
+            readList.fd_count = static_cast<u_int>( entriesCount + 1 );
 
 #else   // !WINDOWS
 
@@ -510,11 +526,16 @@ AREG_API SOCKETHANDLE NESocket::serverAcceptConnection(SOCKETHANDLE serverSocket
                 {
                     // have got new client connection. resolve and get socket
                     struct sockaddr_in acceptAddr; // connecting client address information
-                    int addrLength = sizeof(sockaddr_in);
                     NEMemory::zeroBuffer(&acceptAddr, sizeof(sockaddr_in));
 
+#ifdef	_WINDOWS
+                    int len = sizeof(sockaddr_in);
+#else	// !_WINDOWS
+                    socklen_t len = sizeof(sockaddr_in);
+#endif	// _WINDOWS
+
                     TRACE_DBG("... server waiting for new connection event ...");
-                    result = accept( serverSocket, reinterpret_cast<sockaddr *>(&acceptAddr), &addrLength );
+                    result = accept( serverSocket, reinterpret_cast<sockaddr *>(&acceptAddr), &len );
                     TRACE_DBG("Server accepted new connection of client socket [ %u ]", static_cast<unsigned int>(result));
                     if ( result != NESocket::InvalidSocketHandle && out_socketAddr != NULL )
                         out_socketAddr->setAddress(acceptAddr);
@@ -580,5 +601,5 @@ AREG_API int NESocket::pendingRead(SOCKETHANDLE hSocket)
     return (ioctl(static_cast<int>(hSocket), FIONREAD, &result) == 0 ? result : -1);
 #endif  // _WINDOWS
 
-    return result;
+    return static_cast<int>(result);
 }

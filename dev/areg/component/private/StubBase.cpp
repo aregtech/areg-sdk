@@ -448,7 +448,14 @@ void StubBase::processClientConnectEvent( const ProxyAddress & proxyAddress, NES
     case NEService::ServicePending:
         break;  // do nothing, the client connection is pending
 
-    case NEService::ServiceDisconnected:
+    case NEService::ServiceFailed:              // fall through
+    case NEService::ServiceRejected:            // fall through
+    case NEService::ServiceConnectionUnknown:   // fall through
+        ASSERT(false);  // unexpected here
+        break;
+
+    case NEService::ServiceDisconnected:        // fall through
+    case NEService::ServiceShutdown:            // fall through
     default:
         clientConnected( proxyAddress, false );
         break;

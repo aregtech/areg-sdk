@@ -114,7 +114,7 @@ public:
     /**
      * \brief   Gets the instance of resource map.
      **/
-    static SynchResourceMapIX & getInstance( void );
+    static inline SynchResourceMapIX & getInstance( void );
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor.
@@ -128,6 +128,15 @@ private:
      * \brief   Destructor.
      **/
     ~SynchResourceMapIX( void );
+
+//////////////////////////////////////////////////////////////////////////
+// Constructor / Destructor.
+//////////////////////////////////////////////////////////////////////////
+private:
+    /**
+     * \brief	The singleton instance of synchronization resource map.
+     */
+    static SynchResourceMapIX	_theSynchResourceMapIX;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -415,17 +424,33 @@ private:
      **/
     mutable pthread_mutex_t                 mPosixMutex;
     /**
+     * \brief   The POSIX mutex validity flag.
+     **/
+    mutable bool                            mMutexValid;
+    /**
      * \brief   Internal POSIX mutex attribute to initialize mutex.
      **/
     mutable pthread_mutexattr_t             mPosixMutexAttr;
+    /**
+     * \brief   The POSIX mutex attribute validity flag.
+     **/
+    mutable bool                            mMutexAttrValid;
     /**
      * \brief   Internal POSIX conditional variable.
      **/
     pthread_cond_t                          mCondVariable;
     /**
+     * \brief   The POSIX conditional variable validity flag.
+     **/
+    bool                                    mCondVarValid;
+    /**
      * \brief   Internal POSIX conditional variable attribute
      **/
     pthread_condattr_t                      mCondAttribute;
+    /**
+     * \brief   The POSIX conditional variable attribute validity flag.
+     **/
+    bool                                    mCondAttrValid;
     /**
      * \brief   Indicates the fired event object or error code.
      **/
@@ -448,6 +473,15 @@ private:
     SynchLockAndWaitIX( const SynchLockAndWaitIX & /*src*/ );
     const SynchLockAndWaitIX & operator = (const SynchLockAndWaitIX & /*src*/ );
 };
+
+//////////////////////////////////////////////////////////////////////////
+// SynchResourceMapIX class inline methods
+//////////////////////////////////////////////////////////////////////////
+
+inline SynchResourceMapIX & SynchResourceMapIX::getInstance( void )
+{
+    return SynchResourceMapIX::_theSynchResourceMapIX;
+}
 
 #endif  // _POSIX
 #endif  // AREG_BASE_PRIVATE_POSIX_SYNCHLOCKANDWAITIX_HPP

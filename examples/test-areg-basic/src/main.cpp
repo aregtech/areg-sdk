@@ -20,9 +20,150 @@
 
 static void printBufferData(const NEMemory::sRemoteMessage & msg, const char * info);
 
+void initTrims( char * trim1, char * trim2, char * trim3, char * trim4)
+{
+    *trim1 ++ = *trim2 ++ = ' ';
+    *trim1 ++ = *trim2 ++ = ' ';
+    *trim1 ++ = *trim2 ++ = *trim3 ++ = *trim4 ++ = '1';
+    *trim1 ++ = *trim2 ++ = *trim3 ++ = *trim4 ++ = '2';
+    *trim1 ++ = *trim2 ++ = *trim3 ++ = *trim4 ++ = '3';
+    *trim1 ++ = *trim2 ++ = *trim3 ++ = *trim4 ++ = '4';
+    *trim1 ++ = *trim2 ++ = *trim3 ++ = *trim4 ++ = '5';
+    *trim1 ++ = *trim2 ++ = *trim3 ++ = *trim4 ++ = '6';
+    *trim1 ++ = *trim2 ++ = *trim3 ++ = *trim4 ++ = '7';
+    *trim1 ++ = *trim2 ++ = *trim3 ++ = *trim4 ++ = '8';
+    *trim1 ++ = *trim2 ++ = *trim3 ++ = *trim4 ++ = '9';
+    *trim1 ++ = *trim2 ++ = *trim3 ++ = *trim4 ++ = '0';
+    *trim1 ++ = *trim3 ++ = ' ';
+    *trim1 ++ = *trim3 ++ = ' ';
+    *trim1 ++ = *trim2 ++ = *trim3 ++ = *trim4 ++ = '\0';
+}
+
 int main()
 {
 	std::cout << "!!!Hello World!!!" << std::endl; // prints !!!Hello World!!!
+
+    char trim1[32]  = {0};
+    char trim2[32]  = {0};
+    char trim3[32]  = {0};
+    char trim4[32]  = {0};
+    char buf[32]    = {0};
+
+    initTrims(trim1, trim2, trim3, trim4);
+    NEString::trimLeft<char, char>(buf, 32, trim1, NEString::CountAll);
+    NEString::trimLeft<char, char>(buf, 32, trim2, NEString::CountAll);
+    NEString::trimLeft<char, char>(buf, 32, trim3, NEString::CountAll);
+    NEString::trimLeft<char, char>(buf, 32, trim4, NEString::CountAll);
+
+    NEString::trimLeft(trim1, NEString::CountAll);
+    NEString::trimLeft(trim2, NEString::CountAll);
+    NEString::trimLeft(trim3, NEString::CountAll);
+    NEString::trimLeft(trim4, NEString::CountAll);
+
+    initTrims(trim1, trim2, trim3, trim4);
+    NEString::trimRight<char, char>(buf, 32, trim1, NEString::CountAll);
+    NEString::trimRight<char, char>(buf, 32, trim2, NEString::CountAll);
+    NEString::trimRight<char, char>(buf, 32, trim3, NEString::CountAll);
+    NEString::trimRight<char, char>(buf, 32, trim4, NEString::CountAll);
+
+    NEString::trimRight(trim1, NEString::CountAll);
+    NEString::trimRight(trim2, NEString::CountAll);
+    NEString::trimRight(trim3, NEString::CountAll);
+    NEString::trimRight(trim4, NEString::CountAll);
+
+    initTrims(trim1, trim2, trim3, trim4);
+    NEString::trimAll<char, char>(buf, 32, trim1, NEString::CountAll);
+    NEString::trimAll<char, char>(buf, 32, trim2, NEString::CountAll);
+    NEString::trimAll<char, char>(buf, 32, trim3, NEString::CountAll);
+    NEString::trimAll<char, char>(buf, 32, trim4, NEString::CountAll);
+
+    NEString::trimAll(trim1, NEString::CountAll);
+    NEString::trimAll(trim2, NEString::CountAll);
+    NEString::trimAll(trim3, NEString::CountAll);
+    NEString::trimAll(trim4, NEString::CountAll);
+
+//////////////////////////////////////////////////////////////
+
+    String str1, str2, str3, str4, str;
+
+    initTrims(trim1, trim2, trim3, trim4);
+    str1 = trim1;
+    str2 = trim2;
+    str3 = trim3;
+    str4 = trim4;
+   
+    str1.trimLeft(str);
+    str2.trimLeft(str);
+    str3.trimLeft(str);
+    str4.trimLeft(str);
+
+    str1.trimLeft();
+    str2.trimLeft();
+    str3.trimLeft();
+    str4.trimLeft();
+
+    initTrims(trim1, trim2, trim3, trim4);
+    str1 = trim1;
+    str2 = trim2;
+    str3 = trim3;
+    str4 = trim4;
+
+    str1.trimRight(str);
+    str2.trimRight(str);
+    str3.trimRight(str);
+    str4.trimRight(str);
+
+    str1.trimRight();
+    str2.trimRight();
+    str3.trimRight();
+    str4.trimRight();
+
+    initTrims(trim1, trim2, trim3, trim4);
+    str1 = trim1;
+    str2 = trim2;
+    str3 = trim3;
+    str4 = trim4;
+
+    str1.trimAll(str);
+    str2.trimAll(str);
+    str3.trimAll(str);
+    str4.trimAll(str);
+
+    str1.trimAll();
+    str2.trimAll();
+    str3.trimAll();
+    str4.trimAll();
+
+    int pos = 0;
+
+    initTrims(trim1, trim2, trim3, trim4);
+    const char * next = trim1;
+    pos = NEString::findFirstOf(' ', trim1, NEString::StartPos, &next);
+    while (pos != NEString::InvalidPos)
+    {
+        pos = NEString::findFirstOf(' ', trim1, pos + 1, &next);
+    }
+
+    next = trim1;
+    pos  = NEString::findFirstOf("  ", trim1, NEString::StartPos, &next);
+    while (pos != NEString::InvalidPos)
+    {
+        pos = NEString::findFirstOf("  ", trim1, pos + 1, &next);
+    }
+
+    const char * prev = trim1;
+    pos = NEString::findLastOf(' ', trim1, NEString::EndPos, &prev);
+    while (pos != NEString::InvalidPos)
+    {
+        pos = NEString::findLastOf(' ', trim1, pos - 1, &prev);
+    }
+
+    prev = trim1;
+    pos = NEString::findLastOf("  ", trim1, NEString::EndPos, &prev);
+    while (pos != NEString::InvalidPos)
+    {
+        pos = NEString::findLastOf("  ", trim1, pos - 1, &prev);
+    }
 
     if (sizeof(void *) == 4)
     {

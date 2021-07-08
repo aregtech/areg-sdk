@@ -59,22 +59,22 @@ namespace NEDebug
      * \brief   NEDebug::PREFIX_PRIO_DEBUG
      *          Prefix string, used to output messages with NEDebug::PRIO_DBG priority
      **/
-    const char* const   PREFIX_PRIO_DEBUG       = "DBG: ";
+    const char * const   PREFIX_PRIO_DEBUG      = "DBG: ";
     /**
      * \brief   NEDebug::PREFIX_PRIO_INFO
      *          Prefix string, used to output messages with NEDebug::PRIO_INFO priority
      **/
-    const char* const   PREFIX_PRIO_INFO        = "INF: ";
+    const char * const   PREFIX_PRIO_INFO       = "INF: ";
     /**
      * \brief   NEDebug::PREFIX_PRIO_WARNING
      *          Prefix string, used to output messages with NEDebug::PRIO_WARN priority
      **/
-    const char* const   PREFIX_PRIO_WARNING     = "WRN: ";
+    const char * const   PREFIX_PRIO_WARNING    = "WRN: ";
     /**
      * \brief   NEDebug::PREFIX_PRIO_ERROR
      *          Prefix string, used to output messages with NEDebug::PRIO_ERR priority
      **/
-    const char* const   PREFIX_PRIO_ERROR       = "ERR: ";
+    const char * const   PREFIX_PRIO_ERROR      = "ERR: ";
 
     /**
      * \brief   NEDebug::getPrioPrefix()
@@ -134,6 +134,9 @@ inline const char* NEDebug::getPrioPrefix( NEDebug::eDegubPrio priority )
 {
     switch ( priority )
     {
+    case NEDebug::PRIO_NONE:
+        return "";
+
     case NEDebug::PRIO_ERR:
         return NEDebug::PREFIX_PRIO_ERROR;
 

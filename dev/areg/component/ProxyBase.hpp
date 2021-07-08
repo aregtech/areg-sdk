@@ -892,7 +892,7 @@ protected:
      *                          all notification listeners assigned for specified
      *                          message ID will get notification.
      **/
-    void notifyListeners( int respId, NEService::eResultType result, unsigned int seqNrToSearch );
+    void notifyListeners( unsigned int respId, NEService::eResultType result, unsigned int seqNrToSearch );
 
     /**
      * \brief   Prepares list of listeners assigned for specified message ID.
@@ -1005,7 +1005,7 @@ protected:
     unsigned int            mProxyInstCount;
 
 private:
-#if _MSC_VER
+#if defined(_MSC_VER) && (_MSC_VER > 1200)
     #pragma warning(disable: 4251)
 #endif  // _MSC_VER
 
@@ -1018,7 +1018,7 @@ private:
      **/
     static MapThreadProxyList   _mapThreadProxies;
 
-#if _MSC_VER
+#if defined(_MSC_VER) && (_MSC_VER > 1200)
     #pragma warning(default: 4251)
 #endif  // _MSC_VER
 

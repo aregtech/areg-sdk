@@ -37,8 +37,8 @@ bool FileLogger::openLogger( void )
             // fileName = File::NormalizeFilePath( fileName );
             if ( fileName.isEmpty() == false )
             {
-                bool newFile    = static_cast<bool>(traceConfig.propertyAppendData()) == false;
-                int mode = File::FO_MODE_WRITE | File::FO_MODE_READ | File::FO_MODE_SHARE_READ | File::FO_MODE_SHARE_WRITE | File::FO_MODE_TEXT;
+                bool newFile      = static_cast<bool>(traceConfig.propertyAppendData()) == false;
+                unsigned int mode = File::FO_MODE_WRITE | File::FO_MODE_READ | File::FO_MODE_SHARE_READ | File::FO_MODE_SHARE_WRITE | File::FO_MODE_TEXT;
 
                 if ( File::existFile(fileName) )
                     mode |= newFile ? File::FO_MODE_TRUNCATE : File::FO_MODE_EXIST;
@@ -134,6 +134,10 @@ bool FileLogger::logMessage( const NETrace::sLogMessage & logMessage )
             result = getLayoutExitScope().logMessage( logMessage, static_cast<IEOutStream &>(mLogFile) );
             break;
 
+        case NETrace::LogCommand:
+            break;
+
+        case NETrace::LogUndefined: // fall through
         default:
             ASSERT(false);  // unexpected message to log
             break;

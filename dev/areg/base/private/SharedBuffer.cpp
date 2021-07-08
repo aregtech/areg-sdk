@@ -193,18 +193,19 @@ bool SharedBuffer::isEqual( const BufferStreamBase &other ) const
     bool result = static_cast<const NEMemory::sByteBuffer *>(&(this->getByteBuffer())) == static_cast<const NEMemory::sByteBuffer *>(&(other.getByteBuffer()));
     if ( (result == false) && this->isValid() && other.isValid())
     {
-        result = getSizeUsed() == other.getSizeUsed() ? NEMemory::isEqualBuffer<unsigned char>(getBuffer(), other.getBuffer(), getSizeUsed()) : false;
+        unsigned int sizeUsed = getSizeUsed();
+        result = (sizeUsed == other.getSizeUsed()) && NEMemory::isEqualBuffer<unsigned char>(getBuffer(), other.getBuffer(), static_cast<int>(sizeUsed));
     }
 
     return result;
 }
 
-int SharedBuffer::getDataOffset(void) const
+unsigned int SharedBuffer::getDataOffset(void) const
 {
     return sizeof(NEMemory::sBuferHeader);
 }
 
-int SharedBuffer::getHeaderSize(void) const
+unsigned int SharedBuffer::getHeaderSize(void) const
 {
     return sizeof(NEMemory::sByteBuffer);
 }

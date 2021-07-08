@@ -43,7 +43,7 @@ NEService::ParameterArray::ParameterArray( const NEService::SInterfaceData& ifDa
     : mElemCount (0)
     , mParamList(NULL)
 {
-    construct(ifData.idResponseParamCountMap, ifData.idResponseCount);
+    construct(ifData.idResponseParamCountMap, static_cast<int>(ifData.idResponseCount));
 }
 
 NEService::ParameterArray::ParameterArray( const unsigned int* paramCountMap, int count )
@@ -59,18 +59,19 @@ NEService::ParameterArray::~ParameterArray( void )
     mElemCount = 0;
 }
 
-void NEService::ParameterArray::construct( const unsigned int* params, int count )
+void NEService::ParameterArray::construct( const unsigned int * params, int count )
 {
     if ( (params != static_cast<const unsigned int *>(NULL)) && (count > 0) )
     {
+    	unsigned int single		= static_cast<unsigned int>(sizeof(NEService::StateArray *));
         // count pointers to state array
-        unsigned int size       = count * sizeof(NEService::StateArray *);
+        unsigned int size       = count * single;
 
         // how many bytes need to skip to start param Elements
         unsigned int skipList   = size;
 
         // reserve space for one "no param" element
-        size += sizeof(NEService::StateArray);
+        size += static_cast<unsigned int>( sizeof(NEService::StateArray) );
 
         // here we start having parameter list.
         unsigned int skipBegin  = size;
@@ -104,16 +105,17 @@ void NEService::ParameterArray::construct( const unsigned int* params, int count
                     // if parameter count is not zero
                     param = reinterpret_cast<NEService::StateArray *>(paramElem);
                     // initialize by calling private construct, implemented for this case.
-                    new (param) NEService::StateArray(paramElem, params[i]);
+                    new (param) NEService::StateArray(paramElem, static_cast<int>(params[i]));
 
                     // go to next elem
-                    unsigned int next = sizeof(NEService::StateArray) + params[i] * sizeof(NEService::eDataStateType);
+                    unsigned int next = static_cast<unsigned int>(sizeof(NEService::StateArray) + params[i] * sizeof(NEService::eDataStateType));
                     paramElem += next;
                 }
                 else
                 {
                     ;  // no param, do nothing
                 }
+
                 // make sure that do not jump over the buffer
                 ASSERT(paramElem <= buffer + size);
                 mParamList[i] = param;
@@ -129,7 +131,7 @@ unsigned int NEService::ParameterArray::countParamSpace( const unsigned int* par
     // space for size of NEService::eDataStateType multiplied on number of parameters.
     // If number of parameters is zero, do not reserve.
     for ( int i = 0; i < count; ++ i )
-        result += params[i] != 0 ? (sizeof(NEService::StateArray) + params[i] * sizeof(NEService::eDataStateType)) : 0;
+        result += params[i] != 0 ? static_cast<unsigned int>(sizeof(NEService::StateArray) + params[i] * sizeof(NEService::eDataStateType)) : 0;
     return result;
 }
 
@@ -145,7 +147,7 @@ void NEService::ParameterArray::resetParamState( int whichParam )
 NEService::ProxyData::ProxyData( const NEService::SInterfaceData& ifData )
     : mImplVersion  (NEService::DATA_UNAVAILABLE)
     , mIfData       (ifData)
-    , mAttrState    (ifData.idAttributeCount)
+    , mAttrState    (static_cast<int>(ifData.idAttributeCount))
     , mParamState   (ifData)
 {
     resetStates(); 

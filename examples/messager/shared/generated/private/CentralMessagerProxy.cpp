@@ -5,7 +5,7 @@
 /************************************************************************
  * (c) copyright    2021
  *                  Create by AREG SDK code generator tool from source CentralMessager.
- * Generated at     23.05.2021  00:18:55 GMT+02:00 
+ * Generated at     04.07.2021  04:29:59 GMT+02:00 
  ************************************************************************/
 
 /************************************************************************
@@ -200,7 +200,7 @@ void CentralMessagerProxy::processAttributeEvent( ServiceResponseEvent & eventEl
  * Internal helper functions.
  ************************************************************************/
 
-DEF_TRACE_SCOPE(shared_generated_private_CentralMessagerProxy_UpdateData);
+DEF_TRACE_SCOPE(shared_generated_private_CentralMessagerProxy_updateData);
 void CentralMessagerProxy::updateData( CentralMessagerResponseEvent & eventElem, NECentralMessager::eMessageIDs respId )
 {
     const IEInStream & stream = static_cast<const CentralMessagerResponseEvent &>(eventElem).getData().getReadStream();
@@ -236,7 +236,7 @@ void CentralMessagerProxy::updateData( CentralMessagerResponseEvent & eventElem,
      ************************************************************************/
     default:
         {
-            TRACE_SCOPE(shared_generated_private_CentralMessagerProxy_UpdateData);
+            TRACE_SCOPE(shared_generated_private_CentralMessagerProxy_updateData);
             TRACE_ERR("Unexpected response message ID [ %d ] received in proxy [ %s ]!"
                         , static_cast<int>(respId)
                         , ProxyAddress::convAddressToPath(getProxyAddress()).getString());

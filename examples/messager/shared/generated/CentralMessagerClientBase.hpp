@@ -6,7 +6,7 @@
 /************************************************************************
  * (c) copyright    2021
  *                  Create by AREG SDK code generator tool from source CentralMessager.
- * Generated at     23.05.2021  00:18:55 GMT+02:00 
+ * Generated at     04.07.2021  04:29:59 GMT+02:00 
  ************************************************************************/
 
 /************************************************************************
@@ -20,7 +20,6 @@
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
 #include "shared/generated/NECentralMessager.hpp"
-#include "areg/component/ClientBase.hpp"
 #include "areg/component/IEProxyListener.hpp"
 #include "areg/component/NotificationEvent.hpp"
 
@@ -45,7 +44,7 @@ class DispatcherThread;
  *              broadcast to all clients, which have subscribed on event.
  *              It as well broadcasts own text message to all connected clients.
  **/
-class CentralMessagerClientBase  : public    IEProxyListener, private ClientBase
+class CentralMessagerClientBase  : public IEProxyListener
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor. Protected
@@ -90,19 +89,29 @@ public:
     /**
      * \brief   Clears all notifications, stops receiving notifications from server
      **/
-    void clearAllNotifications( void );
+    inline void clearAllNotifications( void );
 
     /**
      * \brief   Returns true if the specified certain notification is already assigned.
      *          Otherwise returns false.
      * \param   msgId   The ID of message to check.
      **/
-    bool isNotificationAssigned( NECentralMessager::eMessageIDs msgId ) const;
+    inline bool isNotificationAssigned( NECentralMessager::eMessageIDs msgId ) const;
 
     /**
      * \brief   Returns true if client object has got connection with servicing component
      **/
-    bool isConnected( void ) const;
+    inline bool isConnected( void ) const;
+    
+    /**
+     * \brief   Returns the name of used service.
+     **/
+    inline const String & getServiceName( void ) const;
+    
+    /**
+     * \brief   Returns the version of used service.
+     **/
+    inline const Version & getServiceVersion( void ) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Start Service Interface operations / attributes and overrides declaration
@@ -249,16 +258,9 @@ protected:
      **/
     virtual bool serviceConnected( bool isConnected, ProxyBase & proxy );
 
-protected:
 /************************************************************************/
 // CentralMessagerClientBase Error Handling overrides
 /************************************************************************/
-
-    /**
-     * \brief   Overwrite this method if need to make error handling on invalid response
-     * \param   InvalidRespId   The ID of invalid response
-     **/
-    virtual void invalidResponse( NECentralMessager::eMessageIDs InvalidRespId );
 
     /**
      * \brief   Overwrite this method if need to make error handling on invalid request
@@ -266,23 +268,9 @@ protected:
      **/
     virtual void invalidRequest( NECentralMessager::eMessageIDs InvalidReqId );
     
-    /**
-     * \brief   By default, the function calls appropriate request failure function.
-     *          Overwrite this method if need to make error handling on request failed.
-     * \param   msgId           The ID of either response of request message, which failed. Normally ID of request.
-     * \param   FailureReason   The failure reason value of request call.
-     **/
-    virtual void requestFailed( NECentralMessager::eMessageIDs FailureMsgId, NEService::eResultType FailureReason );
-
 //////////////////////////////////////////////////////////////////////////
 // Attributes
 //////////////////////////////////////////////////////////////////////////
-protected:
-
-    /**
-     * \brief   Returns the current sequence number
-     **/
-    unsigned int getCurrentSequenceNr( void ) const;
 
     /**
      * \brief   Call to recreate Proxy for the client. This call will remove and unregister all existing notifications
@@ -293,13 +281,28 @@ protected:
      *
      * \return  Returns true if Proxy was created with success.
      **/
-     bool recreateProxy( void );
+    bool recreateProxy( void );
 
-     /**
-      * \brief  Returns pointer to client dispatcher thread where the messages are dispatched.
-      *         The function can return NULL if Proxy was not instantiated yet.
-      **/
-     DispatcherThread * getDispatcherThread( void );
+    /**
+     * \brief  Returns pointer to client dispatcher thread where the messages are dispatched.
+     *         The function can return NULL if Proxy was not instantiated yet.
+     **/
+    DispatcherThread * getDispatcherThread( void );
+     
+    /**
+     * \brief   Returns the current sequence number
+     **/
+    inline unsigned int getCurrentSequenceNr( void ) const;
+
+    /**
+     * \brief  Returns instance of proxy object.
+     */
+    inline const CentralMessagerProxy * getProxy( void ) const;
+      
+    /**
+     * \brief Returns target service component role name.
+     **/
+    inline const String & getServiceRole( void ) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -332,7 +335,10 @@ private:
      **/
     virtual void processNotificationEvent( NotificationEvent & eventElem );
     
-private:
+/************************************************************************/
+// CentralMessagerClientBase hidden methods
+/************************************************************************/
+
     /**
      * \brief   Enables / Disables notification flags on appropriate message call.
      * \param   msgId   The ID of message to enable / disable notification
@@ -345,9 +351,24 @@ private:
      **/
     void notifyOn( NECentralMessager::eMessageIDs msgId, bool notify, bool always = false );
     /**
+     * \brief   Overwrite this method if need to make error handling on invalid response
+     * \param   InvalidRespId   The ID of invalid response
+     **/
+     void invalidResponse( NECentralMessager::eMessageIDs InvalidRespId );
+
+    /**
+     * \brief   By default, the function calls appropriate request failure function.
+     *          Overwrite this method if need to make error handling on request failed.
+     * \param   msgId           The ID of either response of request message, which failed. Normally ID of request.
+     * \param   FailureReason   The failure reason value of request call.
+     **/
+    void requestFailed( NECentralMessager::eMessageIDs FailureMsgId, NEService::eResultType FailureReason );
+
+    /**
      * \brief   Returns reference of CentralMessagerClientBase object
      **/
-    CentralMessagerClientBase & self( void );
+
+    inline CentralMessagerClientBase & self( void );
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -372,14 +393,34 @@ inline unsigned int CentralMessagerClientBase::getCurrentSequenceNr( void ) cons
     return mCurrSequenceNr;
 }
 
+inline void CentralMessagerClientBase::clearAllNotifications( void )
+{
+    ASSERT(mProxy != NULL);
+    mProxy->clearAllNotifications(static_cast<IENotificationEventConsumer &>(self()));
+}
+
 inline bool CentralMessagerClientBase::isConnected( void ) const
 {
+    ASSERT(mProxy != NULL);
     return mIsConnected;
 }
 
 inline bool CentralMessagerClientBase::isNotificationAssigned( NECentralMessager::eMessageIDs msgId ) const
 {
+    ASSERT(mProxy != NULL);
     return mProxy->hasNotificationListener(static_cast<unsigned int>(msgId));
+}
+
+inline const String & CentralMessagerClientBase::getServiceName( void ) const
+{
+    ASSERT(mProxy != NULL);
+    return mProxy->getProxyAddress().getServiceName();
+}
+    
+inline const Version & CentralMessagerClientBase::getServiceVersion( void ) const
+{
+    ASSERT(mProxy != NULL);
+    return mProxy->getProxyAddress().getServiceVersion();
 }
 
 /************************************************************************
@@ -388,11 +429,13 @@ inline bool CentralMessagerClientBase::isNotificationAssigned( NECentralMessager
 
 inline void CentralMessagerClientBase::requestSendMessage( const String & nickName, unsigned int cookie, const String & newMessage, const DateTime & dateTime )
 {
+    ASSERT(mProxy != NULL);
     mProxy->requestSendMessage( nickName, cookie, newMessage, dateTime );
 }
 
 inline void CentralMessagerClientBase::requestKeyTyping( const String & nickName, unsigned int cookie, const String & newMessage )
 {
+    ASSERT(mProxy != NULL);
     mProxy->requestKeyTyping( nickName, cookie, newMessage );
 }
 
@@ -413,6 +456,17 @@ inline void CentralMessagerClientBase::notifyOnBroadcastKeyTyping( bool notify /
 inline void CentralMessagerClientBase::notifyOnBroadcastBroadcastMessage( bool notify /* = true */ )
 {
     notifyOn(NECentralMessager::MSG_ID_broadcastBroadcastMessage, notify, false);
+}
+
+inline const CentralMessagerProxy * CentralMessagerClientBase::getProxy( void ) const
+{
+    return mProxy;
+}
+
+inline const String & CentralMessagerClientBase::getServiceRole( void ) const
+{
+    ASSERT(mProxy != NULL);
+    return mProxy->getProxyAddress().getRoleName();
 }
 
 #endif   // SHARED_GENERATED_CENTRALMESSAGERCLIENTBASE_HPP

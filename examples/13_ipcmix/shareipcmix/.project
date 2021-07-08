@@ -3,7 +3,6 @@
 	<name>13_shareipcmix</name>
 	<comment></comment>
 	<projects>
-		<project>areg</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

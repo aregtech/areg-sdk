@@ -6,7 +6,7 @@
 /************************************************************************
  * (c) copyright    2021
  *                  Create by AREG SDK code generator tool from source DirectConnection.
- * Generated at     23.05.2021  00:18:58 GMT+02:00 
+ * Generated at     04.07.2021  04:30:02 GMT+02:00 
  ************************************************************************/
 
 /************************************************************************
@@ -20,7 +20,6 @@
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
 #include "shared/generated/NEDirectConnection.hpp"
-#include "areg/component/ClientBase.hpp"
 #include "areg/component/IEProxyListener.hpp"
 #include "areg/component/NotificationEvent.hpp"
 
@@ -45,7 +44,7 @@ class DispatcherThread;
  *              each application has one instance of implemented service where 
  *              the role name is a nick name of a registered application.
  **/
-class DirectConnectionClientBase  : public    IEProxyListener, private ClientBase
+class DirectConnectionClientBase  : public IEProxyListener
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor. Protected
@@ -90,19 +89,29 @@ public:
     /**
      * \brief   Clears all notifications, stops receiving notifications from server
      **/
-    void clearAllNotifications( void );
+    inline void clearAllNotifications( void );
 
     /**
      * \brief   Returns true if the specified certain notification is already assigned.
      *          Otherwise returns false.
      * \param   msgId   The ID of message to check.
      **/
-    bool isNotificationAssigned( NEDirectConnection::eMessageIDs msgId ) const;
+    inline bool isNotificationAssigned( NEDirectConnection::eMessageIDs msgId ) const;
 
     /**
      * \brief   Returns true if client object has got connection with servicing component
      **/
-    bool isConnected( void ) const;
+    inline bool isConnected( void ) const;
+    
+    /**
+     * \brief   Returns the name of used service.
+     **/
+    inline const String & getServiceName( void ) const;
+    
+    /**
+     * \brief   Returns the version of used service.
+     **/
+    inline const Version & getServiceVersion( void ) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Start Service Interface operations / attributes and overrides declaration
@@ -119,7 +128,7 @@ public:
      * \brief   Returns true if value of InitiatedConnections attribute is valid.
      *          If Update Notification is disabled, this method will return false.
      **/
-    bool isInitiatedConnectionsValid( void ) const;
+    inline bool isInitiatedConnectionsValid( void ) const;
     /**
      * \brief   Returns the value of InitiatedConnections attribute.
      *          To get valid value, the Update Notification should be enabled. 
@@ -129,7 +138,7 @@ public:
      *                  Check validation flag before use attribute value.
      * \see     isInitiatedConnectionsValid, notifyInitiatedConnectionsUpdate, onInitiatedConnectionsUpdate
      **/
-    const NEDirectConnection::MapParticipants & getInitiatedConnections( NEService::eDataStateType & state ) const;
+    inline const NEDirectConnection::MapParticipants & getInitiatedConnections( NEService::eDataStateType & state ) const;
     /**
      * \brief   Call to enable or disable receiving notifications on InitiatedConnections attribute update.
      *          Once notification is enabled and the data is updated, 
@@ -139,7 +148,7 @@ public:
      * \param   notify  If true, notification will be enable. If false, notification is disabled
      * \see     isInitiatedConnectionsValid, getInitiatedConnections, onInitiatedConnectionsUpdate
      **/
-    void notifyOnInitiatedConnectionsUpdate( bool notify = true );
+    inline void notifyOnInitiatedConnectionsUpdate( bool notify = true );
     /**
      * \brief   Triggered, when InitiatedConnections attribute is updated. The function contains
      *          attribute value and validation flag. When notification is enabled,
@@ -168,7 +177,7 @@ public:
      * \return  The sequence count number of call
      * \see     responseConnectoinSetup
      **/
-    unsigned int requestConnectoinSetup( const NEDirectConnection::sInitiator & initiator, const NEDirectConnection::ListParticipants & listParticipants );
+    inline unsigned int requestConnectoinSetup( const NEDirectConnection::sInitiator & initiator, const NEDirectConnection::ListParticipants & listParticipants );
     /**
      * \brief   Overwrite to handle error of ConnectoinSetup request call.
      * \param   FailureReason   The failure reason value of request call.
@@ -186,7 +195,7 @@ public:
      * \return  The sequence count number of call
      * \see     responseAddParticipant
      **/
-    unsigned int requestAddParticipant( const NEDirectConnection::sInitiator & initiator, const NEDirectConnection::ListParticipants & listParticipants );
+    inline unsigned int requestAddParticipant( const NEDirectConnection::sInitiator & initiator, const NEDirectConnection::ListParticipants & listParticipants );
     /**
      * \brief   Overwrite to handle error of AddParticipant request call.
      * \param   FailureReason   The failure reason value of request call.
@@ -204,7 +213,7 @@ public:
      * \return  The sequence count number of call
      * \see     responseRemoveParticipant
      **/
-    unsigned int requestRemoveParticipant( const NEDirectConnection::sInitiator & initiator, const NEDirectConnection::ListParticipants & listParticipants );
+    inline unsigned int requestRemoveParticipant( const NEDirectConnection::sInitiator & initiator, const NEDirectConnection::ListParticipants & listParticipants );
     /**
      * \brief   Overwrite to handle error of RemoveParticipant request call.
      * \param   FailureReason   The failure reason value of request call.
@@ -323,16 +332,9 @@ protected:
      **/
     virtual bool serviceConnected( bool isConnected, ProxyBase & proxy );
 
-protected:
 /************************************************************************/
 // DirectConnectionClientBase Error Handling overrides
 /************************************************************************/
-
-    /**
-     * \brief   Overwrite this method if need to make error handling on invalid response
-     * \param   InvalidRespId   The ID of invalid response
-     **/
-    virtual void invalidResponse( NEDirectConnection::eMessageIDs InvalidRespId );
 
     /**
      * \brief   Overwrite this method if need to make error handling on invalid request
@@ -340,23 +342,9 @@ protected:
      **/
     virtual void invalidRequest( NEDirectConnection::eMessageIDs InvalidReqId );
     
-    /**
-     * \brief   By default, the function calls appropriate request failure function.
-     *          Overwrite this method if need to make error handling on request failed.
-     * \param   msgId           The ID of either response of request message, which failed. Normally ID of request.
-     * \param   FailureReason   The failure reason value of request call.
-     **/
-    virtual void requestFailed( NEDirectConnection::eMessageIDs FailureMsgId, NEService::eResultType FailureReason );
-
 //////////////////////////////////////////////////////////////////////////
 // Attributes
 //////////////////////////////////////////////////////////////////////////
-protected:
-
-    /**
-     * \brief   Returns the current sequence number
-     **/
-    unsigned int getCurrentSequenceNr( void ) const;
 
     /**
      * \brief   Call to recreate Proxy for the client. This call will remove and unregister all existing notifications
@@ -367,13 +355,28 @@ protected:
      *
      * \return  Returns true if Proxy was created with success.
      **/
-     bool recreateProxy( void );
+    bool recreateProxy( void );
 
-     /**
-      * \brief  Returns pointer to client dispatcher thread where the messages are dispatched.
-      *         The function can return NULL if Proxy was not instantiated yet.
-      **/
-     DispatcherThread * getDispatcherThread( void );
+    /**
+     * \brief  Returns pointer to client dispatcher thread where the messages are dispatched.
+     *         The function can return NULL if Proxy was not instantiated yet.
+     **/
+    DispatcherThread * getDispatcherThread( void );
+     
+    /**
+     * \brief   Returns the current sequence number
+     **/
+    inline unsigned int getCurrentSequenceNr( void ) const;
+
+    /**
+     * \brief  Returns instance of proxy object.
+     */
+    inline const DirectConnectionProxy * getProxy( void ) const;
+      
+    /**
+     * \brief Returns target service component role name.
+     **/
+    inline const String & getServiceRole( void ) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -406,7 +409,10 @@ private:
      **/
     virtual void processNotificationEvent( NotificationEvent & eventElem );
     
-private:
+/************************************************************************/
+// DirectConnectionClientBase hidden methods
+/************************************************************************/
+
     /**
      * \brief   Enables / Disables notification flags on appropriate message call.
      * \param   msgId   The ID of message to enable / disable notification
@@ -419,9 +425,24 @@ private:
      **/
     void notifyOn( NEDirectConnection::eMessageIDs msgId, bool notify, bool always = false );
     /**
+     * \brief   Overwrite this method if need to make error handling on invalid response
+     * \param   InvalidRespId   The ID of invalid response
+     **/
+     void invalidResponse( NEDirectConnection::eMessageIDs InvalidRespId );
+
+    /**
+     * \brief   By default, the function calls appropriate request failure function.
+     *          Overwrite this method if need to make error handling on request failed.
+     * \param   msgId           The ID of either response of request message, which failed. Normally ID of request.
+     * \param   FailureReason   The failure reason value of request call.
+     **/
+    void requestFailed( NEDirectConnection::eMessageIDs FailureMsgId, NEService::eResultType FailureReason );
+
+    /**
      * \brief   Returns reference of DirectConnectionClientBase object
      **/
-    DirectConnectionClientBase & self( void );
+
+    inline DirectConnectionClientBase & self( void );
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -446,14 +467,34 @@ inline unsigned int DirectConnectionClientBase::getCurrentSequenceNr( void ) con
     return mCurrSequenceNr;
 }
 
+inline void DirectConnectionClientBase::clearAllNotifications( void )
+{
+    ASSERT(mProxy != NULL);
+    mProxy->clearAllNotifications(static_cast<IENotificationEventConsumer &>(self()));
+}
+
 inline bool DirectConnectionClientBase::isConnected( void ) const
 {
+    ASSERT(mProxy != NULL);
     return mIsConnected;
 }
 
 inline bool DirectConnectionClientBase::isNotificationAssigned( NEDirectConnection::eMessageIDs msgId ) const
 {
+    ASSERT(mProxy != NULL);
     return mProxy->hasNotificationListener(static_cast<unsigned int>(msgId));
+}
+
+inline const String & DirectConnectionClientBase::getServiceName( void ) const
+{
+    ASSERT(mProxy != NULL);
+    return mProxy->getProxyAddress().getServiceName();
+}
+    
+inline const Version & DirectConnectionClientBase::getServiceVersion( void ) const
+{
+    ASSERT(mProxy != NULL);
+    return mProxy->getProxyAddress().getServiceVersion();
 }
 
 /************************************************************************
@@ -462,10 +503,12 @@ inline bool DirectConnectionClientBase::isNotificationAssigned( NEDirectConnecti
 
 inline bool DirectConnectionClientBase::isInitiatedConnectionsValid( void ) const
 {
+    ASSERT(mProxy != NULL);
    return mProxy->isInitiatedConnectionsValid( );
 }
 inline const NEDirectConnection::MapParticipants & DirectConnectionClientBase::getInitiatedConnections( NEService::eDataStateType & state ) const
 {
+    ASSERT(mProxy != NULL);
     return mProxy->getInitiatedConnections( state );
 }
 
@@ -480,21 +523,25 @@ inline void DirectConnectionClientBase::notifyOnInitiatedConnectionsUpdate( bool
 
 inline unsigned int DirectConnectionClientBase::requestConnectoinSetup( const NEDirectConnection::sInitiator & initiator, const NEDirectConnection::ListParticipants & listParticipants )
 {
+    ASSERT(mProxy != NULL);
     return mProxy->requestConnectoinSetup( static_cast<IENotificationEventConsumer &>(self()), initiator, listParticipants );
 }
 
 inline unsigned int DirectConnectionClientBase::requestAddParticipant( const NEDirectConnection::sInitiator & initiator, const NEDirectConnection::ListParticipants & listParticipants )
 {
+    ASSERT(mProxy != NULL);
     return mProxy->requestAddParticipant( static_cast<IENotificationEventConsumer &>(self()), initiator, listParticipants );
 }
 
 inline unsigned int DirectConnectionClientBase::requestRemoveParticipant( const NEDirectConnection::sInitiator & initiator, const NEDirectConnection::ListParticipants & listParticipants )
 {
+    ASSERT(mProxy != NULL);
     return mProxy->requestRemoveParticipant( static_cast<IENotificationEventConsumer &>(self()), initiator, listParticipants );
 }
 
 inline void DirectConnectionClientBase::requestCloseConnection( const NEDirectConnection::sInitiator & initiator )
 {
+    ASSERT(mProxy != NULL);
     mProxy->requestCloseConnection( initiator );
 }
 
@@ -515,6 +562,17 @@ inline void DirectConnectionClientBase::notifyOnResponseAddParticipant( bool not
 inline void DirectConnectionClientBase::notifyOnResponseRemoveParticipant( bool notify /* = true */ )
 {
     notifyOn(NEDirectConnection::MSG_ID_responseRemoveParticipant, notify, false);
+}
+
+inline const DirectConnectionProxy * DirectConnectionClientBase::getProxy( void ) const
+{
+    return mProxy;
+}
+
+inline const String & DirectConnectionClientBase::getServiceRole( void ) const
+{
+    ASSERT(mProxy != NULL);
+    return mProxy->getProxyAddress().getRoleName();
 }
 
 #endif   // SHARED_GENERATED_DIRECTCONNECTIONCLIENTBASE_HPP

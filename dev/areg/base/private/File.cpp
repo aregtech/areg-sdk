@@ -43,7 +43,7 @@ File::File( void )
     ; // do nothing
 }
 
-File::File(const char* fileName, int mode /* = (FileBase::FO_MODE_WRITE | FileBase::FO_MODE_BINARY) */)
+File::File(const char* fileName, unsigned int mode /* = (FileBase::FO_MODE_WRITE | FileBase::FO_MODE_BINARY) */)
     : FileBase    ( )
     , mFileHandle   (File::INVALID_HANDLE)
 {
@@ -226,7 +226,7 @@ bool File::createDirCascaded( const char* dirPath )
     bool result = false;
     if ( NEString::isEmpty<char>(dirPath) == false )
     {
-        char * buffer = DEBUG_NEW char[File::MAXIMUM_PATH + 1];
+        char * buffer = DEBUG_NEW char[ static_cast<unsigned int>(File::MAXIMUM_PATH + 1) ];
         if ( buffer != NULL )
         {
             const char * src    = dirPath;

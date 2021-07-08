@@ -67,7 +67,7 @@ bool TimerEvent::sendEvent(Timer & timer, DispatcherThread & dispatchThread)
         TimerEvent* timerEvent = DEBUG_NEW TimerEvent(timer, dispatchThread);
         if (timerEvent != NULL)
         {
-            static_cast<Event *>(timerEvent)->sendEvent();
+            static_cast<Event *>(timerEvent)->deliverEvent();
             result = true;
         }
         else

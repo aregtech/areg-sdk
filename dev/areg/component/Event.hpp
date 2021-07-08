@@ -286,10 +286,10 @@ public:
     virtual void dispatchSelf( IEEventConsumer * consumer );
 
     /**
-     * \brief   Sends the event to target thread. If target thread
-     *          is NULL, it sends to current thread.
+     * \brief   Delivers the event to target thread. If target thread
+     *          is NULL, it deliveres to current thread.
      **/
-    virtual void sendEvent( void );
+    virtual void deliverEvent( void );
 
     /**
      * \brief	Adds the listener to target thread, i.e. registers

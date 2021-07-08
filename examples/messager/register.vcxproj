@@ -63,12 +63,6 @@
     <ClInclude Include="register\res\resource.h" />
     <ClInclude Include="register\res\stdafx.h" />
     <ClInclude Include="register\res\targetver.h" />
-    <ClInclude Include="shared\generated\CentralMessagerStub.hpp" />
-    <ClInclude Include="shared\NECommonSettings.hpp" />
-    <ClInclude Include="shared\generated\NECentralMessager.hpp" />
-    <ClInclude Include="shared\generated\NEConnectionManager.hpp" />
-    <ClInclude Include="shared\generated\private\CentralMessagerEvents.hpp" />
-    <ClInclude Include="shared\generated\private\ConnectionManagerEvents.hpp" />
     <ClInclude Include="register\ui\PageBrokerSetup.hpp" />
     <ClInclude Include="register\services\ConnectionManager.hpp" />
     <ClInclude Include="register\ui\CentralDialog.hpp" />
@@ -78,12 +72,6 @@
   <ItemGroup>
     <ClCompile Include="register\ui\PageConnections.cpp" />
     <ClCompile Include="register\res\stdafx.cpp" />
-    <ClCompile Include="shared\generated\private\CentralMessagerEvents.cpp" />
-    <ClCompile Include="shared\generated\private\CentralMessagerStub.cpp" />
-    <ClCompile Include="shared\generated\private\ConnectionManagerEvents.cpp" />
-    <ClCompile Include="shared\generated\private\ConnectionManagerStub.cpp" />
-    <ClCompile Include="shared\generated\private\NECentralMessager.cpp" />
-    <ClCompile Include="shared\generated\private\NEConnectionManager.cpp" />
     <ClCompile Include="register\ui\PageBrokerSetup.cpp" />
     <ClCompile Include="register\services\ConnectionManager.cpp" />
     <ClCompile Include="register\ui\CentralDialog.cpp" />
@@ -98,15 +86,14 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="register\res\register.rc2" />
+    <None Include="res\CentralMessager.siml" />
+    <None Include="res\ConnectionManager.siml" />
+    <None Include="res\DirectConnection.siml" />
+    <None Include="res\DirectMessager.siml" />
+    <None Include="res\generate_files.bat" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="register\res\ReadMe.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="resources\CentralMessager.siml" />
-    <None Include="resources\ConnectionManager.siml" />
-    <None Include="resources\DirectConnection.siml" />
-    <None Include="resources\DirectMessager.siml" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

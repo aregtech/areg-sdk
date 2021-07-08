@@ -515,14 +515,15 @@ protected:
      * \param	out_Hash    The Hash value of entry within Hash Table
      * \return	If found Key, returns pointer to Block element, otherwise returns NULL.
      **/
-    Block * blockAt( KEY_TYPE Key, unsigned int & OUT out_Hash ) const
+    inline Block * blockAt( KEY_TYPE Key, unsigned int & OUT out_Hash ) const
     {
         Block * result = NULL;
         out_Hash = getHashKey(Key);
 
         if ( mHashTable != NULL )
         {
-            for ( result  = mHashTable[out_Hash % mHashTableSize]; result != NULL; result = result->mNext)
+        	unsigned int size = static_cast<unsigned int>(mHashTableSize);
+            for ( result  = mHashTable[out_Hash % size]; result != NULL; result = result->mNext)
             {
                 if ( out_Hash == result->mHash && isEqualKeys(result->mKey, Key) )
                     break;
@@ -537,14 +538,15 @@ protected:
      *          Otherwise it returns NULL.
      * \param	Key     The Key to search
      **/
-    Block ** blockAt( KEY_TYPE Key ) const
+    inline Block ** blockAt( KEY_TYPE Key ) const
     {
         Block ** result = NULL;
 
         if ( mHashTable != NULL )
         {
             unsigned int hash = getHashKey(Key);
-            for ( result = &(mHashTable[hash % mHashTableSize]); (*result) != NULL; result = &((*result)->mNext))
+            unsigned int size = static_cast<unsigned int>(mHashTableSize);
+            for ( result = &(mHashTable[hash % size]); (*result) != NULL; result = &((*result)->mNext))
             {
                 if ( hash == (*result)->mHash && isEqualKeys((*result)->mKey, Key) )
                     break;
@@ -559,7 +561,7 @@ protected:
      *          If the position object is a first position, it will return first valid block.
      * \param atPosition    The position of Block
      **/
-    Block * blockAt( MAPPOS atPosition ) const
+    inline Block * blockAt( MAPPOS atPosition ) const
     {
         ASSERT(atPosition	!= static_cast<MAPPOS>(NULL));
         return (atPosition == TemplateConstants::START_POSITION ? firstValidBlock() : static_cast<Block *>(atPosition));
@@ -573,7 +575,7 @@ protected:
      * \param   block   Block to find reference.
      * \return  Address of pointer of block within hash map space.
      **/
-    Block ** blockReference( const Block & block )
+    inline Block ** blockReference( const Block & block )
     {
 
         Block ** result  = mHashTable != NULL ? &mHashTable[block.mHash % mHashTableSize] : NULL;
@@ -591,7 +593,7 @@ protected:
      *          Called if function was called with position parameter
      *          equal to START_POSITION (0xFFFFFFFF)
      **/
-    Block * firstValidBlock( void ) const
+    inline Block * firstValidBlock( void ) const
     {
         Block* result = NULL;
         for ( int idx = 0; (result == NULL) && (idx < mHashTableSize); ++ idx )
@@ -607,14 +609,15 @@ protected:
      * \param startAt   The pointer to Block object to start searching next entry. It must not be NULL,
      *                  otherwise assertion raised
      **/
-    Block * nextValidBlock( const Block * startAt ) const
+    inline Block * nextValidBlock( const Block * startAt ) const
     {
         ASSERT(startAt != NULL);
         ASSERT(mElemCount != 0);
         Block* result = startAt->mNext;
         if (result == NULL)
         {
-            for ( int idx = static_cast<int>(startAt->mHash % mHashTableSize) + 1; result == NULL && idx < mHashTableSize; ++ idx )
+        	unsigned int size = static_cast<unsigned int>(mHashTableSize);
+            for ( unsigned int idx = startAt->mHash % size + 1; (result == NULL) && (idx < size); ++ idx )
                 result = mHashTable[idx];
         }
         
@@ -625,7 +628,7 @@ protected:
      * \brief	Initialize new Block entry taken from Free List
      * \return	Returns pointer to new Block entry
      **/
-    Block * initNewBlock( void )
+    inline Block * initNewBlock( void )
     {
         if (mFreeList == NULL)
             createBlockList();
@@ -647,7 +650,7 @@ protected:
      *                  within Hash Map. Value returned
      *                  by GetBlockReference() function.
      **/
-    void removeBlock( Block ** block)
+    inline void removeBlock( Block ** block)
     {
         Block* nextBlock = (*block)->mNext;
         freeBlock(*block);
@@ -659,7 +662,7 @@ protected:
     /**
      * \brief   Deletes all blocks, reset all data.
      **/
-    void deleteAllBlocks( void )
+    inline void deleteAllBlocks( void )
     {
         deleteBlockList();
 
@@ -932,7 +935,8 @@ MAPPOS TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::setAt(KEY_TYPE Ke
     if (block == static_cast<Block *>(NULL))
     {
         // it doesn't exist, add a new Block
-        int idx     = static_cast<int>(hash % mHashTableSize);
+    	unsigned int size = static_cast<unsigned int>(mHashTableSize);
+        unsigned int idx  = hash % size;
         block       = initNewBlock();
         block->mHash= hash;
         block->mKey	= (KEY)Key;
@@ -1202,7 +1206,7 @@ void TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::initHashTable(int s
     if (mHashTable != NULL)
         delete [] mHashTable;
 
-    mHashTable	    = DEBUG_NEW Block *[sizeHashTable];
+    mHashTable	    = DEBUG_NEW Block *[static_cast<unsigned int>(sizeHashTable)];
     mHashTableSize	= mHashTable != NULL ? sizeHashTable : 0;
     NEMemory::zeroElements<Block *>( mHashTable, mHashTableSize);
 }
@@ -1212,13 +1216,13 @@ void TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::createBlockList( vo
 {
     // add another block
     // chain them into free list
-    int length              = mBlockSize * sizeof(Block) + sizeof(Block *);
+    unsigned int length     = static_cast<unsigned int>(mBlockSize * sizeof(Block) + sizeof(Block *));
     unsigned char* newBlock = DEBUG_NEW unsigned char[length];
     if (newBlock != NULL)
     {
         // link blocks, copy the address of last block into
         // beginning of new block (and skip address part)
-        NEMemory::memCopy(newBlock, length, &mBlockList, sizeof(Block *));
+        NEMemory::memCopy(newBlock, static_cast<int>(length), &mBlockList, static_cast<int>(sizeof(Block *)));
         mBlockList   = reinterpret_cast<Block *>(newBlock);
         newBlock    += sizeof(Block *);
         Block* block = reinterpret_cast<Block *>(newBlock);

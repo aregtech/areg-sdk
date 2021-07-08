@@ -4,7 +4,7 @@
 /************************************************************************
  * (c) copyright    2021
  *                  Create by AREG SDK code generator tool from source SystemShutdown.
- * Generated at     11.06.2021  21:11:06 GMT+02:00 
+ * Generated at     04.07.2021  04:21:26 GMT+02:00 
  ************************************************************************/
 
 /************************************************************************
@@ -43,9 +43,8 @@ namespace NESystemShutdown
  * Constructor / Destructor
  ************************************************************************/
 
-SystemShutdownClientBase::SystemShutdownClientBase( const char* roleName, const char * ownerThread /*= static_cast<const char *>(NULL)*/ )
+SystemShutdownClientBase::SystemShutdownClientBase( const char * roleName, const char * ownerThread /*= static_cast<const char *>(NULL)*/ )
     : IEProxyListener   ( )
-    , ClientBase        ( )
 
     , mIsConnected      ( false )
     , mCurrSequenceNr   ( 0 )
@@ -54,9 +53,8 @@ SystemShutdownClientBase::SystemShutdownClientBase( const char* roleName, const 
     ; // do nothing
 }
 
-SystemShutdownClientBase::SystemShutdownClientBase( const char* roleName, DispatcherThread & ownerThread )
+SystemShutdownClientBase::SystemShutdownClientBase( const char * roleName, DispatcherThread & ownerThread )
     : IEProxyListener   ( )
-    , ClientBase        ( )
 
     , mIsConnected      ( false )
     , mCurrSequenceNr   ( 0 )
@@ -67,7 +65,6 @@ SystemShutdownClientBase::SystemShutdownClientBase( const char* roleName, Dispat
 
 SystemShutdownClientBase::SystemShutdownClientBase( const char* roleName, Component & owner )
     : IEProxyListener   ( )
-    , ClientBase        ( )
 
     , mIsConnected      ( false )
     , mCurrSequenceNr   ( 0 )
@@ -95,28 +92,22 @@ SystemShutdownClientBase::~SystemShutdownClientBase( void )
 bool SystemShutdownClientBase::recreateProxy( void )
 {
     bool result         = false;
-    String roleName   = mProxy != NULL ? mProxy->getProxyAddress().getRoleName() : "";
-    String threadName = mProxy != NULL ? mProxy->getProxyAddress().getThread()   : "";
-    if ( roleName.isEmpty() == false )
+    if (mProxy != NULL)
     {
-        SystemShutdownProxy * newProxy = SystemShutdownProxy::createProxy(roleName.getString(), static_cast<IEProxyListener &>(self()), threadName.getString());
-        if (newProxy != NULL)
+        String roleName   = mProxy->getProxyAddress().getRoleName();
+        String threadName = mProxy->getProxyAddress().getThread();
+        if ( roleName.isEmpty() == false )
         {
-            mProxy->clearAllNotifications( static_cast<IENotificationEventConsumer &>(self()) );
-            mProxy->freeProxy (static_cast<IEProxyListener &>(self()) );
-            mProxy = newProxy;
-            result = true;
-        }
-        else
-        {
-            ; // do nothing
-        }
+            SystemShutdownProxy * newProxy = SystemShutdownProxy::createProxy(roleName.getString(), static_cast<IEProxyListener &>(self()), threadName.getString());
+            if (newProxy != NULL)
+            {
+                mProxy->clearAllNotifications( static_cast<IENotificationEventConsumer &>(self()) );
+                mProxy->freeProxy (static_cast<IEProxyListener &>(self()) );
+                mProxy = newProxy;
+                result = true;
+            }
+        }    
     }
-    else
-    {
-        ; // do nothing, no role name is assigned
-    }
-    
     return result;
 }
 
@@ -271,19 +262,19 @@ DEF_TRACE_SCOPE(shareipcmix_src_SystemShutdownClientBase_invalidResponse);
 void SystemShutdownClientBase::invalidResponse( NESystemShutdown::eMessageIDs InvalidRespId )
 {
     TRACE_SCOPE(shareipcmix_src_SystemShutdownClientBase_invalidResponse);
-    TRACE_WARN(">>> There is an invalid response [ %s ] (value = [ %d ]) in client SystemShutdownClientBase with path [ %s ], which cannot be processed! Make error handling! <<<"
+    TRACE_ERR("The invalid response [ %s ] (value = [ %d ]) method of proxy [ %s ] client SystemShutdownClientBase is not implemented! Make error handling!"
                     , NESystemShutdown::getString(InvalidRespId)
                     , static_cast<unsigned int>(InvalidRespId)
                     , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString() );
-                    
-    ClientBase::responseInvalidNotImpelemnted("SystemShutdownClientBase", static_cast<unsigned int>(InvalidRespId));
+
+    ASSERT(false);
 }
 
 DEF_TRACE_SCOPE(shareipcmix_src_SystemShutdownClientBase_invalidRequest);
 void SystemShutdownClientBase::invalidRequest( NESystemShutdown::eMessageIDs InvalidReqId )
 {
     TRACE_SCOPE(shareipcmix_src_SystemShutdownClientBase_invalidRequest);
-    TRACE_WARN(">>> There is an invalid request [ %s ] (value = [ %d ]) in client SystemShutdownClientBase with path [ %s ], which was not able to process! Make error handling! <<<"
+    TRACE_ERR("The invalid request [ %s ] (value = [ %d ]) method of proxy [ %s ] client SystemShutdownClientBase is not implemented! Make error handling!"
                     , NESystemShutdown::getString(InvalidReqId)
                     , static_cast<unsigned int>(InvalidReqId)
                     , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString() );
@@ -295,7 +286,7 @@ DEF_TRACE_SCOPE(shareipcmix_src_SystemShutdownClientBase_requestFailed);
 void SystemShutdownClientBase::requestFailed( NESystemShutdown::eMessageIDs FailureMsgId, NEService::eResultType FailureReason )
 {
     TRACE_SCOPE(shareipcmix_src_SystemShutdownClientBase_requestFailed);
-    TRACE_WARN(">>> The request [ %s ] (value = [ %d ]) in Proxy [ %s ] of SystemShutdownClientBase failed with reason [ %s ]! Triggering appropriate request failed function! <<<"
+    TRACE_WARN("The request [ %s ] (value = [ %d ]) method of proxy [ %s ] client SystemShutdownClientBase failed with reason [ %s ]! Implemented error handling!"
                     , NESystemShutdown::getString(FailureMsgId)
                     , static_cast<unsigned int>(FailureMsgId)
                     , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString()
@@ -309,23 +300,35 @@ void SystemShutdownClientBase::requestFailed( NESystemShutdown::eMessageIDs Fail
  * Attribute notifications
  ************************************************************************/
 
+DEF_TRACE_SCOPE(shareipcmix_src_SystemShutdownClientBase_onServiceStateUpdate);
 void SystemShutdownClientBase::onServiceStateUpdate( NESystemShutdown::eServiceState /* ServiceState */, NEService::eDataStateType /* state */ )
 {
-    ClientBase::onUpdateNotImplemented( "SystemShutdownClientBase", static_cast<unsigned int>(NESystemShutdown::MSG_ID_ServiceState) );
+    TRACE_SCOPE(shareipcmix_src_SystemShutdownClientBase_onServiceStateUpdate);
+    TRACE_WARN("The attribute ServiceState (value = %u) update method of proxy [ %s ] client SystemShutdownClientBase is not implemented!"
+                    , static_cast<unsigned int>(NESystemShutdown::MSG_ID_ServiceState)
+                    , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString());
 }
 
 /************************************************************************
  * Request failure / Response and Broadcast notifications
  ************************************************************************/
  
+DEF_TRACE_SCOPE(shareipcmix_src_SystemShutdownClientBase_broadcastServiceUnavailable);
 void SystemShutdownClientBase::broadcastServiceUnavailable( void )
 {
-    ClientBase::broadcastNotImplemented( "SystemShutdownClientBase", static_cast<unsigned int>(NESystemShutdown::MSG_ID_broadcastServiceUnavailable) );
+    TRACE_SCOPE(shareipcmix_src_SystemShutdownClientBase_broadcastServiceUnavailable);
+    TRACE_WARN("The broadcast broadcastServiceUnavailable (value = %u) method of proxy [ %s ] client SystemShutdownClientBase is not implemented!"
+                    , static_cast<unsigned int>(NESystemShutdown::MSG_ID_broadcastServiceUnavailable)
+                    , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString());
 }
 
+DEF_TRACE_SCOPE(shareipcmix_src_SystemShutdownClientBase_broadcastServiceShutdown);
 void SystemShutdownClientBase::broadcastServiceShutdown( void )
 {
-    ClientBase::broadcastNotImplemented( "SystemShutdownClientBase", static_cast<unsigned int>(NESystemShutdown::MSG_ID_broadcastServiceShutdown) );
+    TRACE_SCOPE(shareipcmix_src_SystemShutdownClientBase_broadcastServiceShutdown);
+    TRACE_WARN("The broadcast broadcastServiceShutdown (value = %u) method of proxy [ %s ] client SystemShutdownClientBase is not implemented!"
+                    , static_cast<unsigned int>(NESystemShutdown::MSG_ID_broadcastServiceShutdown)
+                    , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString());
 }
 
 //////////////////////////////////////////////////////////////////////////

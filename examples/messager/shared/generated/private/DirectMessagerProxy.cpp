@@ -5,7 +5,7 @@
 /************************************************************************
  * (c) copyright    2021
  *                  Create by AREG SDK code generator tool from source DirectMessager.
- * Generated at     23.05.2021  00:18:59 GMT+02:00 
+ * Generated at     04.07.2021  04:30:03 GMT+02:00 
  ************************************************************************/
 
 /************************************************************************
@@ -224,7 +224,7 @@ void DirectMessagerProxy::processAttributeEvent( ServiceResponseEvent & eventEle
  * Internal helper functions.
  ************************************************************************/
 
-DEF_TRACE_SCOPE(shared_generated_private_DirectMessagerProxy_UpdateData);
+DEF_TRACE_SCOPE(shared_generated_private_DirectMessagerProxy_updateData);
 void DirectMessagerProxy::updateData( DirectMessagerResponseEvent & eventElem, NEDirectMessager::eMessageIDs respId )
 {
     const IEInStream & stream = static_cast<const DirectMessagerResponseEvent &>(eventElem).getData().getReadStream();
@@ -277,7 +277,7 @@ void DirectMessagerProxy::updateData( DirectMessagerResponseEvent & eventElem, N
 
     default:
         {
-            TRACE_SCOPE(shared_generated_private_DirectMessagerProxy_UpdateData);
+            TRACE_SCOPE(shared_generated_private_DirectMessagerProxy_updateData);
             TRACE_ERR("Unexpected response message ID [ %d ] received in proxy [ %s ]!"
                         , static_cast<int>(respId)
                         , ProxyAddress::convAddressToPath(getProxyAddress()).getString());

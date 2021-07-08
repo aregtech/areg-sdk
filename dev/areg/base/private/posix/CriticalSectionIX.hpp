@@ -28,6 +28,18 @@
  **/
 class CriticalSectionIX   : protected IESynchObjectBaseIX
 {
+	/**
+	 * \brief	Describes the Critical Section structure, which has a simple
+	 * 			recursive spin-lock object thread locking mechanism
+	 */
+	typedef struct S_CSection
+	{
+		pthread_spinlock_t  spinLock;		//!< The POSIX spin lock to synchronize multithreading access of critical section.
+		pthread_spinlock_t  internLock;		//!< The POSIX spin lock to synchronize internal sructure resources.
+		pthread_t			spinOwner;		//!< The spin-lock owner POSIX thread
+		int 				lockCounter;	//!< The lock counter to release spin lock when counter reaches zero.
+	} sSection;
+
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor.
 //////////////////////////////////////////////////////////////////////////
@@ -55,13 +67,13 @@ public:
      *          the critical section.
      * \return  Returns true if operation succeeded.
      **/
-    inline bool lock( void ) const;
+    bool lock( void ) const;
 
     /**
      * \brief   Unlocks critical section so that, one of waiting threads is released
      *          to own critical section.
      **/
-    inline void unlock( void ) const;
+    void unlock( void ) const;
 
     /**
      * \brief   Tests whether the critical section can be locked or not.
@@ -69,7 +81,7 @@ public:
      * \return  Returns true if calling thread have got the ownership.
      *          Returns false if calling thread could not get the ownership.
      **/
-    inline bool tryLock( void ) const;
+    bool tryLock( void ) const;
 
 protected:
 /************************************************************************/
@@ -88,10 +100,39 @@ protected:
     virtual void freeResources( void );
 
 //////////////////////////////////////////////////////////////////////////
+// Hidden calls
+//////////////////////////////////////////////////////////////////////////
+private:
+    /**
+     * \brief	Takes the ownership of critical section spin lock.
+     * \return	Returns true if operation succeeded.
+     */
+    inline bool lockSpin( void ) const;
+    /**
+     * \brief	Releases the ownership of critical section spin lock.
+     */
+    inline void unlockSpin( void ) const;
+    /**
+     * \brief	Takes the ownership of spin lock to access resources of critical section.
+     */
+    inline void lockIntern( void ) const;
+    /**
+     * \brief	Releases the ownership of spin lock to access resources of critical section.
+     */
+    inline void unlockIntern( void ) const;
+
+//////////////////////////////////////////////////////////////////////////
 // Member variables
 //////////////////////////////////////////////////////////////////////////
 private:
-    mutable pthread_spinlock_t  mSpin;
+    /**
+     * \brief   The Critical Section object, which has implementation of recursive spin lock.
+     **/
+    mutable sSection	mSpin;
+    /**
+     * \brief   The spin lock validity flag.
+     **/
+    mutable bool        mSpinValid;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -173,21 +214,6 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // CriticalSectionIX inline methods.
 //////////////////////////////////////////////////////////////////////////
-
-inline bool CriticalSectionIX::lock(void) const
-{
-    return (RETURNED_OK == pthread_spin_lock(&mSpin));
-}
-
-inline void CriticalSectionIX::unlock(void) const
-{
-    pthread_spin_unlock(&mSpin);
-}
-
-inline bool CriticalSectionIX::tryLock(void) const
-{
-    return (RETURNED_OK == pthread_spin_trylock(&mSpin));
-}
 
 //////////////////////////////////////////////////////////////////////////
 // SpinLockIX inline methods.

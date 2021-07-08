@@ -24,8 +24,8 @@ LayoutManager::~LayoutManager(void)
 bool LayoutManager::createLayouts( const char * layoutFormat )
 {
     deleteLayouts();
-    int len         = layoutFormat != NULL ? NEString::getStringLength<char>( layoutFormat ) + 1 : 0;
-    char * strFormat= len != 0 ? DEBUG_NEW char[len] : NULL;
+    int len = NEString::isEmpty<char>(layoutFormat) == false ? NEString::getStringLength<char>( layoutFormat ) + 1 : 0;
+    char * strFormat = len != 0 ? DEBUG_NEW char[ static_cast<unsigned int>(len) ] : NULL;
 
     if ( strFormat != NULL )
     {
@@ -94,6 +94,8 @@ bool LayoutManager::createLayouts( const char * layoutFormat )
                     }
                     break;
 
+                case NELogConfig::LayoutUndefined:  // fall through
+                case NELogConfig::LayoutAnyText:    // fall through
                 default:
                     if ( ch == '%' )
                     {

@@ -16,8 +16,8 @@
 namespace NECommon
 {
 
-    typedef unsigned int    ElemPos;    //!< The type of character position in the string.
-    typedef unsigned int    ElemCount;  //!< The type of characters count in the string.
+    typedef signed int      ElemPos;    //!< The type of character position in the string.
+    typedef signed int      ElemCount;  //!< The type of characters count in the string.
     typedef signed int      IndexPos;   //!< The type of index position in buffer, list or array.
 
     const ElemCount DEFAULT_BLOCK_SIZE  = 32;                               //!< The default block size to allocate string buffer.

@@ -85,6 +85,13 @@ protected:
     // Disable Thread locking
     //////////////////////////////////////////////////////////////////////////
     virtual bool waitForDispatcherStart( unsigned int waitTimeout = IESynchObject::WAIT_INFINITE );
+
+//////////////////////////////////////////////////////////////////////////
+// Forbidden calls
+//////////////////////////////////////////////////////////////////////////
+private:
+    NullDispatcherThread( const NullDispatcherThread & /*src*/ );
+    const NullDispatcherThread & operator = ( const NullDispatcherThread & /*src*/ );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -141,13 +148,21 @@ bool NullDispatcherThread::postEvent( Event& eventElem )
 }
 
 bool NullDispatcherThread::onThreadRegistered( Thread * /* threadObj */)
-{   ASSERT(false); return false;    }
+{
+    ASSERT(false);
+    return false;
+}
 
 void NullDispatcherThread::onThreadRuns( void )
-{   ASSERT(false);                  }
+{
+    ASSERT(false);
+}
 
 int NullDispatcherThread::onThreadExit( void )
-{   ASSERT(false);  return IEThreadConsumer::EXIT_ERROR;   }
+{
+    ASSERT(false);
+    return IEThreadConsumer::EXIT_ERROR;
+}
 
 bool NullDispatcherThread::waitForDispatcherStart( unsigned int /* waitTimeout */ /*= IESynchObject::WAIT_INFINITE */ )
 {

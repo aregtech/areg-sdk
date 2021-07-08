@@ -73,8 +73,8 @@ bool TimerManager::_startSystemTimer( TimerInfo & timerInfo, MapTimerTable & tim
     ASSERT( whichTimer != static_cast<Timer *>(NULL) );
 
     // the period of time. If should be fired several times, set the period value. Otherwise set zero to fire once.
-    unsigned long period = whichTimer->getEventCount( ) > 1 ? whichTimer->getFireTime( ) : 0;
-    int64_t dueTime = whichTimer->getFireTime( ) * NEUtilities::MILLISEC_TO_100NS;  // timer from now
+    long period     = whichTimer->getEventCount( ) > 1 ? static_cast<long>(whichTimer->getFireTime()) : 0;
+    int64_t dueTime = static_cast<int64_t>(whichTimer->getFireTime( ) * NEUtilities::MILLISEC_TO_100NS);  // timer from now
     dueTime *= -1;
     LARGE_INTEGER timeTrigger;
 

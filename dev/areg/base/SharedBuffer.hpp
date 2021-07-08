@@ -252,12 +252,12 @@ protected:
     /**
      * \brief   Returns the offset value from the beginning of byte buffer, which should be set
      **/
-    virtual int getDataOffset( void ) const;
+    virtual unsigned int getDataOffset( void ) const;
 
     /**
      * \brief   Returns the size of data byte structure to allocate.
      **/
-    virtual int getHeaderSize( void ) const;
+    virtual unsigned int getHeaderSize( void ) const;
 
     /**
      * \brief   Returns the size to align the buffer. By default it is sizeof(NEMemory::uAlign)

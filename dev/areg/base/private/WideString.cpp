@@ -42,16 +42,17 @@ static inline int32_t _formatBinary( WideString & result, DigitType number )
     wchar_t * dst  = buffer;
     DigitType base = static_cast<DigitType>(NEString::RadixBinary);
     bool isNegative = number < 0;
-    // if ( number < 0 )
-    //    number = NEMath::makeAbsolute<DigitType>(number);
+
     number = MACRO_ABS( number );
     short idx = 0;
     do
     {
-        idx = static_cast<uint32_t>(number % base);
+        idx = static_cast<short>(number % base);
+
         *dst ++ = _FormatRadixBinary[idx < 0 ? 1 : idx];
         number /= base;
     } while ( number != 0 );
+
     *dst    = static_cast<char>(NEString::EndOfString);
     int32_t count = static_cast<int32_t>(dst - buffer);
     NEString::swapString<wchar_t>(buffer, count);
@@ -61,6 +62,7 @@ static inline int32_t _formatBinary( WideString & result, DigitType number )
         result = L'-';
         ++ count;
     }
+
     result  += buffer;
     return count;
 }
@@ -81,15 +83,15 @@ static inline int32_t _formatDigit( WideString & result, const wchar_t * format,
     return count;
 }
 
-static inline int32_t _formatStringList( wchar_t * buffer, int32_t count, const wchar_t * format, va_list argptr )
+static inline int _formatStringList( wchar_t * buffer, int count, const wchar_t * format, va_list argptr )
 {
 
-    int32_t result = -1;
+    int result = -1;
     if ( buffer != NULL_STRING_W )
     {
         *buffer = static_cast<wchar_t>(NEString::EndOfString);
 #ifdef  WIN32
-        result = _vsnwprintf_s( buffer, count * sizeof(wchar_t), count - 1, format, argptr );
+        result = vswprintf_s( buffer, static_cast<size_t>(count), format, argptr );
 #else
         result = vswprintf( buffer, count, format, argptr );
 #endif
@@ -174,12 +176,13 @@ AREG_API IEOutStream & operator << (IEOutStream & stream, const WideString & out
 const wchar_t * const   WideString::EmptyString   = L"";
 const wchar_t * const   WideString::BOOLEAN_TRUE  = L"true";
 const wchar_t * const   WideString::BOOLEAN_FALSE = L"false";
+const WideString		WideString::InvalidString;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
 WideString::WideString(const String & source)
-    : TEString<wchar_t>(static_cast<const wchar_t *>(NULL), source.getLength(), NEString::EncodeWide)
+    : TEString<wchar_t>(NULL_STRING_W, source.getLength(), NEString::EncodeWide)
 {
     NEString::copyString<wchar_t, char>(getDataString(), source.getString(), NEString::StartPos, source.getLength());
 }
@@ -192,7 +195,6 @@ WideString::WideString( const IEInStream & stream )
 
 WideString::~WideString( void )
 {
-    ;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -203,7 +205,10 @@ const WideString & WideString::operator = (const WideString & strSource)
     if (this != &strSource)
     {
         release();
-        mData = NEString::initString<wchar_t, wchar_t>(strSource.getString(), strSource.getLength(), NEString::EncodeAscii);
+        if ( strSource.isEmpty() == false)
+        {
+            mData = NEString::initString<wchar_t, wchar_t>(strSource.getString(), strSource.getLength(), NEString::EncodeWide);
+        }
 
 #ifdef DEBUG
         mString = mData->strBuffer;
@@ -344,7 +349,7 @@ wchar_t WideString::operator [ ] (int atPos) const
     return mData->strBuffer[atPos];
 }
 
-WideString::operator unsigned int(void) const
+WideString::operator unsigned int (void) const
 {
     return (isValid() ? NEMath::crc32Calculate(getString()) : NEMath::CHECKSUM_IGNORE);
 }

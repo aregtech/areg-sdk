@@ -250,14 +250,14 @@ private:
      **/
     ComponentThread & mMasterThread;
 
-#if _MSC_VER
+#if defined(_MSC_VER) && (_MSC_VER > 1200)
     #pragma warning(disable: 4251)
 #endif  // _MSC_VER
     /**
      * \brief   The map of Worker Threads binded with Component
      **/
     MapWorkerThread     mWorkerThreadMap;
-#if _MSC_VER
+#if defined(_MSC_VER) && (_MSC_VER > 1200)
     #pragma warning(default: 4251)
 #endif  // _MSC_VER
 

@@ -79,7 +79,7 @@ unsigned int IEByteBuffer::initBuffer(unsigned char * newBuffer, unsigned int bu
     if (newBuffer != NULL)
     {
         result                      = 0;
-        unsigned int dataOffset     = this->getDataOffset();
+        unsigned int dataOffset     = getDataOffset();
         unsigned int dataLength     = bufLength - dataOffset;
 
         NEMemory::sByteBuffer* buffer= NEMemory::constructElems<NEMemory::sByteBuffer>(newBuffer, 1);    
@@ -98,7 +98,7 @@ unsigned int IEByteBuffer::initBuffer(unsigned char * newBuffer, unsigned int bu
             result                      = srcCount;
 
             buffer->bufHeader.biUsed    = srcCount;
-            NEMemory::memCopy(data, dataLength, srcBuf, srcCount);
+            NEMemory::memCopy(data, static_cast<int>(dataLength), srcBuf, static_cast<int>(srcCount));
         }
         else
         {

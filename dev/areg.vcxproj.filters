@@ -54,9 +54,6 @@
     <ClCompile Include="areg\base\private\NEString.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\base\private\NEUtfString.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="areg\base\private\NEUtilities.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -310,9 +307,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="areg\component\private\Channel.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="areg\component\private\ClientBase.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="areg\component\private\ServerInfo.cpp">
@@ -620,9 +614,6 @@
     <ClInclude Include="areg\base\NEString.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\base\NEUtfString.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="areg\base\NEUtilities.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -927,9 +918,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\component\Channel.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="areg\component\ClientBase.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\component\Component.hpp">

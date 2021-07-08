@@ -16,16 +16,26 @@
 const ITEM_ID   Process::CURRENT_PROCESS  = static_cast<ITEM_ID>(0);
 const ITEM_ID   Process::UNKNOWN_PROCESS  = static_cast<ITEM_ID>(~0);
 
-Process & Process::getInstance( void )
+Process Process::_theProcess;
+
+Process::Process( void )
+    : mProcEnv          ( static_cast<Process::eProcEnv>(sizeof(id_type)) )
+	, mProcessId        ( Process::UNKNOWN_PROCESS )
+    , mProcessHandle    ( NULL )
+    , mAppName          ( )
+    , mProcessName      ( )
+    , mProcessExt       ( )
+    , mProcessPath      ( )
+    , mProcessFullPath  ( )
+	, mIsInitialized	( false )
 {
-    static Process    _process;
-    return _process;
 }
 
 Process::~Process( void )
 {
     mProcessHandle      = NULL;
     mProcessId          = Process::UNKNOWN_PROCESS;
+    mIsInitialized		= false;
 }
 
 void Process::_initPaths( const char * fullPath )

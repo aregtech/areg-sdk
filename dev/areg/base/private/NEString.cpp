@@ -238,9 +238,9 @@ static const unsigned char  ASCII_ISO8859_1_Table_upper[]  =
 };
 
 // Invalid String definitions
-AREG_API NEString::SString8   NEString::BadString8  = { NEString::EncodeInvalid, 0, 0, {static_cast<char >('\0')}};
-AREG_API NEString::SString16  NEString::BadString16 = { NEString::EncodeInvalid, 0, 0, {static_cast<short>('\0')}};
-AREG_API NEString::SString32  NEString::BadString32 = { NEString::EncodeInvalid, 0, 0, {static_cast<int  >('\0')}};
+AREG_API NEString::SString8   NEString::BadString8  = { NEString::EncodeInvalid, 0, 0, {static_cast<int>('\0')}};
+AREG_API NEString::SString16  NEString::BadString16 = { NEString::EncodeInvalid, 0, 0, {static_cast<int>('\0')}};
+AREG_API NEString::SString32  NEString::BadString32 = { NEString::EncodeInvalid, 0, 0, {static_cast<int>('\0')}};
 
 /************************************************************************/
 // NEString namespace global method implementation
@@ -253,10 +253,10 @@ AREG_API unsigned short NEString::getISO8859CharDef( int ch )
 
 AREG_API unsigned int NEString::getISO8859LowerChar( int ch )
 {
-    return (ch >= -128 && ch <= 127 ? ASCII_ISO8859_1_Table_lower[static_cast<unsigned char>(ch & 0xFF)] : ch);
+    return (ch >= -128 && ch <= 127 ? static_cast<unsigned int>(ASCII_ISO8859_1_Table_lower[static_cast<unsigned char>(ch & 0xFF)]) : static_cast<unsigned int>(ch));
 }
 
 AREG_API unsigned int NEString::getISO8859UpperChar( int ch )
 {
-    return (ch >= -128 && ch <= 127 ? ASCII_ISO8859_1_Table_upper[static_cast<unsigned char>(ch & 0xFF)] : ch);
+    return (ch >= -128 && ch <= 127 ? static_cast<unsigned int>(ASCII_ISO8859_1_Table_upper[static_cast<unsigned char>(ch & 0xFF)]) : static_cast<unsigned int>(ch));
 }

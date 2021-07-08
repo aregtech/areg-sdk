@@ -6,7 +6,7 @@
 /************************************************************************
  * (c) copyright    2021
  *                  Create by AREG SDK code generator tool from source LocalHelloWorld.
- * Generated at     11.06.2021  21:11:04 GMT+02:00 
+ * Generated at     04.07.2021  04:21:23 GMT+02:00 
  ************************************************************************/
 
 /************************************************************************
@@ -20,7 +20,6 @@
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
 #include "shareipcmix/src/NELocalHelloWorld.hpp"
-#include "areg/component/ClientBase.hpp"
 #include "areg/component/IEProxyListener.hpp"
 #include "areg/component/NotificationEvent.hpp"
 
@@ -44,7 +43,7 @@ class DispatcherThread;
  *              This interface serves only local components and can be duplicated in other processes.
  *              		
  **/
-class LocalHelloWorldClientBase  : public    IEProxyListener, private ClientBase
+class LocalHelloWorldClientBase  : public IEProxyListener
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor. Protected
@@ -385,7 +384,7 @@ private:
      * \brief   Returns reference of LocalHelloWorldClientBase object
      **/
 
-    LocalHelloWorldClientBase & self( void );
+    inline LocalHelloWorldClientBase & self( void );
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

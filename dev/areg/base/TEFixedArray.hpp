@@ -269,7 +269,7 @@ TEFixedArray<VALUE, VALUE_TYPE, Implement>::TEFixedArray( int elemCount /*= 0*/ 
     : Implement         ( )
     , TemplateConstants ( )
 
-    , mValueList( elemCount > 0 ? DEBUG_NEW VALUE[elemCount] : NULL )
+    , mValueList( elemCount > 0 ? DEBUG_NEW VALUE[static_cast<unsigned int>(elemCount)] : NULL )
     , mElemCount( mValueList != NULL ? elemCount : 0 )
 {
 }
@@ -279,7 +279,7 @@ TEFixedArray<VALUE, VALUE_TYPE, Implement>::TEFixedArray( const TEFixedArray<VAL
     : Implement         ( )
     , TemplateConstants ( )
 
-    , mValueList( src.mElemCount > 0 ? DEBUG_NEW VALUE[src.mElemCount] : NULL )
+    , mValueList( src.mElemCount > 0 ? DEBUG_NEW VALUE[static_cast<unsigned int>(src.mElemCount)] : NULL )
     , mElemCount( mValueList != NULL ? src.mElemCount : 0 )
 {
     NEMemory::copyElems<VALUE, VALUE>(mValueList, src.mValueList, mElemCount);
@@ -299,7 +299,7 @@ const TEFixedArray<VALUE, VALUE_TYPE, Implement> & TEFixedArray<VALUE, VALUE_TYP
         if (mElemCount != src.getSize())
         {
             removeAll();
-            mValueList    = src.getSize() > 0 ? DEBUG_NEW VALUE[src.getSize()] : NULL;
+            mValueList    = src.getSize() > 0 ? DEBUG_NEW VALUE[static_cast<unsigned int>(src.getSize())] : NULL;
             mElemCount    = mValueList != NULL ? src.getSize() : 0;
         }
 
@@ -430,7 +430,7 @@ inline void TEFixedArray<VALUE, VALUE_TYPE, Implement>::removeAll( void )
 template<typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /*= TEListImpl<VALUE_TYPE>*/>
 void TEFixedArray<VALUE, VALUE_TYPE, Implement>::resize(int newLength)
 {
-    VALUE * newList = newLength != 0 ? DEBUG_NEW VALUE[newLength] : NULL;
+    VALUE * newList = newLength != 0 ? DEBUG_NEW VALUE[static_cast<unsigned int>(newLength)] : NULL;
     int count = MACRO_MIN(newLength, mElemCount);
     for (int i = 0; i < count; ++ i)
         newList[i] = mValueList[i];

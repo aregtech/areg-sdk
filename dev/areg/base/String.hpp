@@ -55,6 +55,10 @@ public:
      *          Boolean 'false' value as a string.
      **/
     static const char * const   BOOLEAN_FALSE   /*= "false"*/;  //!< Boolean value 'false' as string
+    /**
+     * \brief	Empty string object
+     **/
+    static const String 		InvalidString;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
@@ -746,23 +750,28 @@ inline const String & String::self( void ) const
 
 inline String::String( void )
     : TEString<char>( NEString::EncodeAscii )
-{   ;   }
+{
+}
 
 inline String::String( const char * source )
     : TEString<char>( source, NEString::EncodeAscii )
-{   ;   }
+{
+}
 
 inline String::String( char ch )
     : TEString<char>( ch, NEString::EncodeAscii )
-{   ;   }
+{
+}
 
 inline String::String( const String & source )
     : TEString<char>( static_cast<const TEString<char> &>(source) )
-{   ;   }
+{
+}
 
 inline String::String( const char * source, int charCount )
-    : TEString<char>( source, charCount, NEString::EncodeAscii )
-{   ;   }
+    : TEString<char>( source, static_cast<NEString::CharCount>(charCount), NEString::EncodeAscii )
+{
+}
 
 inline String::String( const wchar_t* source )
     : TEString<char>( NULL_STRING, NEString::getStringLength<wchar_t>( source ), NEString::EncodeAscii )
@@ -771,9 +780,9 @@ inline String::String( const wchar_t* source )
 }
 
 inline String::String( const wchar_t* source, int charCount )
-    : TEString<char>( NULL_STRING, charCount, NEString::EncodeAscii )
+    : TEString<char>( NULL_STRING, static_cast<NEString::CharCount>(charCount), NEString::EncodeAscii )
 {
-    NEString::copyString<char, wchar_t>( getDataString( ), source, NEString::StartPos, charCount );
+    NEString::copyString<char, wchar_t>( getDataString( ), source, NEString::StartPos, static_cast<NEString::CharCount>(charCount) );
 }
 
 inline String::operator const char *(void) const
@@ -798,12 +807,12 @@ inline bool String::operator == (const wchar_t * other) const
 
 inline bool String::operator == (const char ch) const
 {
-    return ((getLength() == 1) && (getAt(0) == ch));
+    return ((getLength() == static_cast<NEString::CharCount>(1)) && (getAt(0) == ch));
 }
 
 inline bool String::operator == (const wchar_t ch) const
 {
-    return ((getLength() == 1) && (static_cast<wchar_t>(getAt(0)) == ch));
+    return ((getLength() == static_cast<NEString::CharCount>(1)) && (static_cast<wchar_t>(getAt(0)) == ch));
 }
 
 inline bool String::operator != (const String & other) const
@@ -838,22 +847,24 @@ inline NEString::CharPos String::substring( String & outResult, char chSymbol, N
 
 inline String String::substring( NEString::CharPos startPos /*= NEString::StartPos*/, NEString::CharCount charCount /*= NEString::CountAll*/ ) const
 {
-    String result(getInitEncoding());
+    String result;
     TEString<char>::substring(result, startPos, charCount);
     return result;
 }
 
 inline String String::leftSide( NEString::CharCount charCount ) const
 {
-    String result( getInitEncoding( ) );
+    String result;
     TEString<char>::substring( result, NEString::StartPos, charCount );
     return result;
 }
 
 inline String String::rightSide( NEString::CharCount charCount ) const
 {
-    String result( getInitEncoding( ) );
-    NEString::CharPos pos = charCount < getLength() ? getLength() - charCount : NEString::StartPos;
+    String result;
+
+    NEString::CharCount len = getLength();
+    NEString::CharPos pos   = charCount < len ? len - charCount : NEString::StartPos;
     TEString<char>::substring( result, pos, NEString::CountAll );
     return result;
 }

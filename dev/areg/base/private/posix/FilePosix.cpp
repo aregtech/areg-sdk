@@ -89,29 +89,46 @@ bool File::open( void )
         if ( (mFileName.isEmpty() == false) && (file != NULL) )
         {
             mFileMode = normalizeMode(mFileMode);
-            int     options = 0;
-            mode_t  modes   = 0;
+            int     flag = 0;
+            mode_t  mode = 0;
 
             if (mFileMode & FileBase::FOB_READ)
-                options |= O_RDONLY;
+            {
+            	flag |= O_RDONLY;
+            }
 
             if (mFileMode & FileBase::FOB_WRITE)
-                options |= O_RDWR;
-
-            if (mFileMode & FileBase::FOB_SHARE_READ) 
-                modes |= (S_IRGRP | S_IROTH | S_IRUSR);
-
-            if (mFileMode & FileBase::FOB_SHARE_WRITE)
-                modes |= (S_IWGRP | S_IWOTH | S_IWUSR);
+            {
+            	flag &= ~O_RDONLY;
+            	flag |= O_RDWR;
+            }
 
             if (mFileMode & FileBase::FOB_CREATE)
-                options |= O_CREAT;
+            {
+            	flag |= O_CREAT;
+            }
 
             if (mFileMode & FileBase::FOB_EXIST)
-                options &= ~O_CREAT;
+            {
+            	flag &= ~O_CREAT;
+            }
 
-            if (mFileMode & FileBase::FOB_TRUNCATE)
-                options |= O_TRUNC;
+            if ( (mFileMode & FileBase::FOB_TRUNCATE) || ((flag & O_CREAT) != 0) )
+            {
+            	flag |= O_TRUNC;
+            }
+
+            if (mFileMode & FileBase::FOB_SHARE_READ)
+            {
+                // modes |= (S_IRGRP | S_IROTH | S_IRUSR);
+            	mode |= (S_IRUSR | S_IXUSR) | (S_IRGRP | S_IXGRP) | (S_IROTH | S_IXOTH);
+            }
+
+            if (mFileMode & FileBase::FOB_SHARE_WRITE)
+            {
+                // modes |= (S_IWGRP | S_IWOTH | S_IWUSR);
+            	mode |= S_IRWXU | S_IRWXG | S_IRWXO;
+            }
 
             // if (mFileMode & FileBase::FOB_TEMP_FILE)
             //     ; // do nothing
@@ -120,15 +137,15 @@ bool File::open( void )
 
             String dirName = File::getFileDirectory( static_cast<const char *>(mFileName));
 
-            if ( options & O_CREAT )
+            if ( (flag & O_CREAT) != 0 )
             {
                 if (_existFile(mFileName.getString()))
                 {
-                    options &= ~O_CREAT;
+                	flag &= ~O_CREAT;
                     if (dirName == mFileName)
                     {
-                        options |= O_DIRECTORY; // set directory option
-                        options &= ~O_TRUNC;    // remove truncate, since it is not applicable for directories
+                    	flag |= O_DIRECTORY; // set directory option
+                    	flag &= ~O_TRUNC;    // remove truncate, since it is not applicable for directories
                     }
                 }
                 else
@@ -136,14 +153,22 @@ bool File::open( void )
                     File::createDirCascaded(dirName);
                     if (dirName == mFileName)
                     {
-                        options |= O_DIRECTORY; // set directory option
-                        options &= ~O_TRUNC;    // remove truncate, since it is not applicable for directories
-                        options &=~ O_CREAT;    // we don't need this, because it is automatically created cascaded
+                    	flag |= O_DIRECTORY; // set directory option
+                    	flag &= ~O_TRUNC;    // remove truncate, since it is not applicable for directories
+                    	flag &=~ O_CREAT;    // we don't need this, because it is automatically created cascaded
                     }
                 }
             }
 
-            file->fd = (mFileMode & FileBase::FOB_TEMP_FILE) ? ::mkstemp(mFileName.getUnsafeBuffer()) : ::open(mFileName.getString(), options, modes);
+            if (mFileMode & FileBase::FOB_TEMP_FILE)
+            {
+                file->fd =  ::mkstemp(mFileName.getUnsafeBuffer());
+            }
+            else
+            {
+                file->fd =  ::open(mFileName.getString(), flag, mode);
+            }
+
             if (file->fd != POSIX_INVALID_FD)
             {
                 mFileHandle = static_cast<void *>(file);
@@ -422,23 +447,23 @@ bool File::copyFile( const char* originPath, const char* newPath, bool copyForce
     bool result = false;
     if ( (NEString::isEmpty<char>(originPath) == false) && (NEString::isEmpty<char>(newPath) == false) )
     {
-        mode_t modes= 0;
-        int options = 0;
+        mode_t mode = 0;
+        int flag    = 0;
         struct stat buf;
         if ( RETURNED_OK == stat(newPath, &buf) )
         {
             if (S_ISREG(buf.st_mode) && copyForce)
             {
                 // keep current mode, add read-write permission for owner and group
-                modes   = (buf.st_mode & (~S_IFREG)) | S_IWUSR | S_IRUSR | S_IRGRP | S_IWGRP;
-                options = buf.st_size != 0 ? O_WRONLY | O_TRUNC : O_WRONLY; // for file with zero size, there is no need to truncate.
+            	mode = (buf.st_mode & (~S_IFREG)) | S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH;
+            	flag = buf.st_size != 0 ? O_WRONLY | O_TRUNC : O_WRONLY; // for file with zero size, there is no need to truncate.
             }
         }
         else
         {
-            // set default mode rw-rw-rw-
-            modes   = S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH;
-            options = O_WRONLY | O_CREAT;
+            // set default mode rw-rw-r--
+            mode = S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH;
+            flag = O_WRONLY | O_CREAT | O_TRUNC;
             if (copyForce)
             {
                 String dir = File::getFileDirectory(newPath);
@@ -446,10 +471,10 @@ bool File::copyFile( const char* originPath, const char* newPath, bool copyForce
             }
         }
 
-        if (modes != 0)
+        if (mode != 0)
         {
             int fdRead = ::open(originPath, O_RDONLY);
-            int fdWrite= ::open(newPath, options, modes);
+            int fdWrite= ::open(newPath, flag, mode);
             unsigned char * buffer = DEBUG_NEW unsigned char[BUF_SIZE];
 
             if ((buffer != NULL) && (fdRead != POSIX_INVALID_FD) && (fdWrite != POSIX_INVALID_FD))
@@ -540,20 +565,15 @@ String File::getFileFullPath( const char* filePath )
     String result  = filePath;
     if ( NEString::isEmpty<char>(filePath) == false )
     {
-        char * buffer = DEBUG_NEW char[File::MAXIMUM_PATH + 1];
-        if (buffer != NULL)
+        char * pathCanonical  = realpath(filePath, NULL);
+        if (pathCanonical != NULL)
         {
-            const char * temp   = realpath(filePath, buffer);
-            if (temp != NULL)
-            {
-                result = temp;
-            }
-            else
-            {
-                OUTPUT_ERR("Could not retrieve the full path of file [ %s ], error code [ %p ]", filePath, static_cast<id_type>(errno));
-            }
-
-            delete [] buffer;
+            result = pathCanonical;
+            free(pathCanonical);
+        }
+        else
+        {
+            OUTPUT_ERR("Could not retrieve the full path of file [ %s ], error code [ %p ]", filePath, static_cast<id_type>(errno));
         }
     }
 
@@ -564,7 +584,10 @@ bool File::_createFolder( const char * dirPath )
 {
     // no need to validate string. Put in assertion.
     ASSERT( NEString::isEmpty<char>(dirPath) == false );
-    return ( RETURNED_OK ==  mkdir(dirPath, S_IRGRP | S_IROTH | S_IRUSR | S_IWGRP | S_IWOTH | S_IWUSR) );
+    // mode_t mode = S_IRGRP | S_IROTH | S_IRUSR | S_IWGRP | S_IWOTH | S_IWUSR;
+    mode_t mode = S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH;
+
+    return ( RETURNED_OK ==  mkdir(dirPath, mode) );
 }
 
 String File::getSpecialDir(eSpecialFolder specialFolder)

@@ -19,7 +19,7 @@ void AREG_API NEDebug::outputMessageOS( const char * msg )
 {
     if ( NEString::isEmpty<char>( msg ) == false )
     {
-        fprintf( stdout, msg );
+        fprintf( stdout, "%s", msg );
         fflush( stdout );
     }
 }

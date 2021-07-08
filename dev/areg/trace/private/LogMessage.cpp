@@ -17,7 +17,7 @@
 LogMessage::LogMessage(NETrace::eLogType logType, const TraceScope & traceScope )
     : NETrace::sLogMessage( logType, traceScope.getScopeId(), NETrace::PrioScope, traceScope.getScopeName() )
 {
-    ASSERT(logType == NETrace::LogScopeEnter || logType == NETrace::LogScopeExit);
+    ASSERT( (logType == NETrace::LogScopeEnter) || (logType == NETrace::LogScopeExit) );
 }
 
 void LogMessage::setMessage(const char * message)

@@ -12,7 +12,7 @@ SocketClient::SocketClient( void )
     ; // do nothing
 }
 
-SocketClient::SocketClient( const char * hostName, unsigned int portNr )
+SocketClient::SocketClient( const char * hostName, unsigned short portNr )
     : Socket  ( )
 {
     mAddress.resolveAddress(hostName != NULL ? hostName : NESocket::LocalHost, portNr, false);
@@ -44,6 +44,7 @@ bool SocketClient::createSocket( void )
         if ( mSocket != NESocket::InvalidSocketHandle )
         {
             ASSERT( mLockCount == NULL );
+
             mLockCount = DEBUG_NEW unsigned int;
             if ( mLockCount != NULL )
                 *mLockCount = 1;

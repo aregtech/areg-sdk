@@ -116,7 +116,7 @@ public:
      * \brief   Sends the event to target thread. If target thread
      *          is NULL, it searches event target thread, registered in system.
      **/
-    virtual void sendEvent( void );
+    virtual void deliverEvent( void );
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes

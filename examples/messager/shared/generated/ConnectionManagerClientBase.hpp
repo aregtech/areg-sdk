@@ -6,7 +6,7 @@
 /************************************************************************
  * (c) copyright    2021
  *                  Create by AREG SDK code generator tool from source ConnectionManager.
- * Generated at     23.05.2021  00:18:56 GMT+02:00 
+ * Generated at     04.07.2021  04:30:00 GMT+02:00 
  ************************************************************************/
 
 /************************************************************************
@@ -20,7 +20,6 @@
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
 #include "shared/generated/NEConnectionManager.hpp"
-#include "areg/component/ClientBase.hpp"
 #include "areg/component/IEProxyListener.hpp"
 #include "areg/component/NotificationEvent.hpp"
 
@@ -42,7 +41,7 @@ class DispatcherThread;
  *
  *              The connection manager to register each application with client
  **/
-class ConnectionManagerClientBase  : public    IEProxyListener, private ClientBase
+class ConnectionManagerClientBase  : public IEProxyListener
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor. Protected
@@ -87,19 +86,29 @@ public:
     /**
      * \brief   Clears all notifications, stops receiving notifications from server
      **/
-    void clearAllNotifications( void );
+    inline void clearAllNotifications( void );
 
     /**
      * \brief   Returns true if the specified certain notification is already assigned.
      *          Otherwise returns false.
      * \param   msgId   The ID of message to check.
      **/
-    bool isNotificationAssigned( NEConnectionManager::eMessageIDs msgId ) const;
+    inline bool isNotificationAssigned( NEConnectionManager::eMessageIDs msgId ) const;
 
     /**
      * \brief   Returns true if client object has got connection with servicing component
      **/
-    bool isConnected( void ) const;
+    inline bool isConnected( void ) const;
+    
+    /**
+     * \brief   Returns the name of used service.
+     **/
+    inline const String & getServiceName( void ) const;
+    
+    /**
+     * \brief   Returns the version of used service.
+     **/
+    inline const Version & getServiceVersion( void ) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Start Service Interface operations / attributes and overrides declaration
@@ -116,7 +125,7 @@ public:
      * \brief   Returns true if value of ConnectionList attribute is valid.
      *          If Update Notification is disabled, this method will return false.
      **/
-    bool isConnectionListValid( void ) const;
+    inline bool isConnectionListValid( void ) const;
     /**
      * \brief   Returns the value of ConnectionList attribute.
      *          To get valid value, the Update Notification should be enabled. 
@@ -126,7 +135,7 @@ public:
      *                  Check validation flag before use attribute value.
      * \see     isConnectionListValid, notifyConnectionListUpdate, onConnectionListUpdate
      **/
-    const NEConnectionManager::MapConnection & getConnectionList( NEService::eDataStateType & state ) const;
+    inline const NEConnectionManager::MapConnection & getConnectionList( NEService::eDataStateType & state ) const;
     /**
      * \brief   Call to enable or disable receiving notifications on ConnectionList attribute update.
      *          Once notification is enabled and the data is updated, 
@@ -136,7 +145,7 @@ public:
      * \param   notify  If true, notification will be enable. If false, notification is disabled
      * \see     isConnectionListValid, getConnectionList, onConnectionListUpdate
      **/
-    void notifyOnConnectionListUpdate( bool notify = true );
+    inline void notifyOnConnectionListUpdate( bool notify = true );
     /**
      * \brief   Triggered, when ConnectionList attribute is updated. The function contains
      *          attribute value and validation flag. When notification is enabled,
@@ -165,7 +174,7 @@ public:
      * \return  The sequence count number of call
      * \see     responseConnect
      **/
-    unsigned int requestConnet( const String & nickName, const DateTime & dateTime );
+    inline unsigned int requestConnet( const String & nickName, const DateTime & dateTime );
     /**
      * \brief   Overwrite to handle error of Connet request call.
      * \param   FailureReason   The failure reason value of request call.
@@ -185,7 +194,7 @@ public:
      * \return  The sequence count number of call
      * \see     responseRegisterConnection
      **/
-    unsigned int requestRegisterConnection( const String & nickName, unsigned int cookie, unsigned int connectCookie, const DateTime & dateRegister );
+    inline unsigned int requestRegisterConnection( const String & nickName, unsigned int cookie, unsigned int connectCookie, const DateTime & dateRegister );
     /**
      * \brief   Overwrite to handle error of RegisterConnection request call.
      * \param   FailureReason   The failure reason value of request call.
@@ -343,16 +352,9 @@ protected:
      **/
     virtual bool serviceConnected( bool isConnected, ProxyBase & proxy );
 
-protected:
 /************************************************************************/
 // ConnectionManagerClientBase Error Handling overrides
 /************************************************************************/
-
-    /**
-     * \brief   Overwrite this method if need to make error handling on invalid response
-     * \param   InvalidRespId   The ID of invalid response
-     **/
-    virtual void invalidResponse( NEConnectionManager::eMessageIDs InvalidRespId );
 
     /**
      * \brief   Overwrite this method if need to make error handling on invalid request
@@ -360,23 +362,9 @@ protected:
      **/
     virtual void invalidRequest( NEConnectionManager::eMessageIDs InvalidReqId );
     
-    /**
-     * \brief   By default, the function calls appropriate request failure function.
-     *          Overwrite this method if need to make error handling on request failed.
-     * \param   msgId           The ID of either response of request message, which failed. Normally ID of request.
-     * \param   FailureReason   The failure reason value of request call.
-     **/
-    virtual void requestFailed( NEConnectionManager::eMessageIDs FailureMsgId, NEService::eResultType FailureReason );
-
 //////////////////////////////////////////////////////////////////////////
 // Attributes
 //////////////////////////////////////////////////////////////////////////
-protected:
-
-    /**
-     * \brief   Returns the current sequence number
-     **/
-    unsigned int getCurrentSequenceNr( void ) const;
 
     /**
      * \brief   Call to recreate Proxy for the client. This call will remove and unregister all existing notifications
@@ -387,13 +375,28 @@ protected:
      *
      * \return  Returns true if Proxy was created with success.
      **/
-     bool recreateProxy( void );
+    bool recreateProxy( void );
 
-     /**
-      * \brief  Returns pointer to client dispatcher thread where the messages are dispatched.
-      *         The function can return NULL if Proxy was not instantiated yet.
-      **/
-     DispatcherThread * getDispatcherThread( void );
+    /**
+     * \brief  Returns pointer to client dispatcher thread where the messages are dispatched.
+     *         The function can return NULL if Proxy was not instantiated yet.
+     **/
+    DispatcherThread * getDispatcherThread( void );
+     
+    /**
+     * \brief   Returns the current sequence number
+     **/
+    inline unsigned int getCurrentSequenceNr( void ) const;
+
+    /**
+     * \brief  Returns instance of proxy object.
+     */
+    inline const ConnectionManagerProxy * getProxy( void ) const;
+      
+    /**
+     * \brief Returns target service component role name.
+     **/
+    inline const String & getServiceRole( void ) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -426,7 +429,10 @@ private:
      **/
     virtual void processNotificationEvent( NotificationEvent & eventElem );
     
-private:
+/************************************************************************/
+// ConnectionManagerClientBase hidden methods
+/************************************************************************/
+
     /**
      * \brief   Enables / Disables notification flags on appropriate message call.
      * \param   msgId   The ID of message to enable / disable notification
@@ -439,9 +445,24 @@ private:
      **/
     void notifyOn( NEConnectionManager::eMessageIDs msgId, bool notify, bool always = false );
     /**
+     * \brief   Overwrite this method if need to make error handling on invalid response
+     * \param   InvalidRespId   The ID of invalid response
+     **/
+     void invalidResponse( NEConnectionManager::eMessageIDs InvalidRespId );
+
+    /**
+     * \brief   By default, the function calls appropriate request failure function.
+     *          Overwrite this method if need to make error handling on request failed.
+     * \param   msgId           The ID of either response of request message, which failed. Normally ID of request.
+     * \param   FailureReason   The failure reason value of request call.
+     **/
+    void requestFailed( NEConnectionManager::eMessageIDs FailureMsgId, NEService::eResultType FailureReason );
+
+    /**
      * \brief   Returns reference of ConnectionManagerClientBase object
      **/
-    ConnectionManagerClientBase & self( void );
+
+    inline ConnectionManagerClientBase & self( void );
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -466,14 +487,34 @@ inline unsigned int ConnectionManagerClientBase::getCurrentSequenceNr( void ) co
     return mCurrSequenceNr;
 }
 
+inline void ConnectionManagerClientBase::clearAllNotifications( void )
+{
+    ASSERT(mProxy != NULL);
+    mProxy->clearAllNotifications(static_cast<IENotificationEventConsumer &>(self()));
+}
+
 inline bool ConnectionManagerClientBase::isConnected( void ) const
 {
+    ASSERT(mProxy != NULL);
     return mIsConnected;
 }
 
 inline bool ConnectionManagerClientBase::isNotificationAssigned( NEConnectionManager::eMessageIDs msgId ) const
 {
+    ASSERT(mProxy != NULL);
     return mProxy->hasNotificationListener(static_cast<unsigned int>(msgId));
+}
+
+inline const String & ConnectionManagerClientBase::getServiceName( void ) const
+{
+    ASSERT(mProxy != NULL);
+    return mProxy->getProxyAddress().getServiceName();
+}
+    
+inline const Version & ConnectionManagerClientBase::getServiceVersion( void ) const
+{
+    ASSERT(mProxy != NULL);
+    return mProxy->getProxyAddress().getServiceVersion();
 }
 
 /************************************************************************
@@ -482,10 +523,12 @@ inline bool ConnectionManagerClientBase::isNotificationAssigned( NEConnectionMan
 
 inline bool ConnectionManagerClientBase::isConnectionListValid( void ) const
 {
+    ASSERT(mProxy != NULL);
    return mProxy->isConnectionListValid( );
 }
 inline const NEConnectionManager::MapConnection & ConnectionManagerClientBase::getConnectionList( NEService::eDataStateType & state ) const
 {
+    ASSERT(mProxy != NULL);
     return mProxy->getConnectionList( state );
 }
 
@@ -500,16 +543,19 @@ inline void ConnectionManagerClientBase::notifyOnConnectionListUpdate( bool noti
 
 inline unsigned int ConnectionManagerClientBase::requestConnet( const String & nickName, const DateTime & dateTime )
 {
+    ASSERT(mProxy != NULL);
     return mProxy->requestConnet( static_cast<IENotificationEventConsumer &>(self()), nickName, dateTime );
 }
 
 inline unsigned int ConnectionManagerClientBase::requestRegisterConnection( const String & nickName, unsigned int cookie, unsigned int connectCookie, const DateTime & dateRegister )
 {
+    ASSERT(mProxy != NULL);
     return mProxy->requestRegisterConnection( static_cast<IENotificationEventConsumer &>(self()), nickName, cookie, connectCookie, dateRegister );
 }
 
 inline void ConnectionManagerClientBase::requestDiconnect( const String & nickName, unsigned int cookie, const DateTime & dateTime )
 {
+    ASSERT(mProxy != NULL);
     mProxy->requestDiconnect( nickName, cookie, dateTime );
 }
 
@@ -544,6 +590,17 @@ inline void ConnectionManagerClientBase::notifyOnBroadcastClientConnected( bool 
 inline void ConnectionManagerClientBase::notifyOnBroadcastClientDisconnected( bool notify /* = true */ )
 {
     notifyOn(NEConnectionManager::MSG_ID_broadcastClientDisconnected, notify, false);
+}
+
+inline const ConnectionManagerProxy * ConnectionManagerClientBase::getProxy( void ) const
+{
+    return mProxy;
+}
+
+inline const String & ConnectionManagerClientBase::getServiceRole( void ) const
+{
+    ASSERT(mProxy != NULL);
+    return mProxy->getProxyAddress().getRoleName();
 }
 
 #endif   // SHARED_GENERATED_CONNECTIONMANAGERCLIENTBASE_HPP

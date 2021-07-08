@@ -72,15 +72,16 @@ void MulticastRouter::serviceMain( int argc, char ** argv )
             printf("Type \'quit\' or \'q\' to quit message router ...: ");
             const char quit = static_cast<int>('q' );
             char cmd[8]     = {0};
+            int charRead	= 0;
 
             do 
             {
 #ifdef _WINDOWS
-                scanf_s("%4s", cmd, 8);
+                charRead = scanf_s("%4s", cmd, 8);
 #else   // !_WINDOWS
-                scanf("%4s", cmd);
+                charRead = scanf("%4s", cmd);
 #endif  // !_WINDOWS
-            } while (NEString::makeAsciiLower<char>(*cmd) != quit);
+            } while ((NEString::makeAsciiLower<char>(*cmd) != quit) && (charRead > 0));
 
             Application::signalAppQuit();
         }

@@ -305,7 +305,7 @@ public:
      *
      * \return	Returns size of copied data in bytes 
      **/
-    int append(const unsigned char* buffer, int length);
+    int append(const unsigned char* buffer, unsigned int length);
 
     /**
      * \brief	Read data in inverted order.
@@ -313,7 +313,7 @@ public:
      * \param	length	The length of buffer in bytes
      * \return	Returns the size of data read out.
      **/
-    int readInvert(unsigned char* buffer, int length) const;
+    int readInvert(unsigned char* buffer, unsigned int length) const;
 
     /**
      * \brief	Write data in inverted order
@@ -321,7 +321,7 @@ public:
      * \param	length	The length of data to write
      * \return	Returns the size of written data in bytes.
      **/
-    int writeInvert(const unsigned char* buffer, int length);
+    int writeInvert(const unsigned char* buffer, unsigned int length);
 
     /**
      * \brief	Call to set new size of file object and returns the current position of pointer.

@@ -16,10 +16,12 @@
 /dev/areg/Debug/*
 /dev/areg/Release/*
 /dev/areg/.settings/
+/dev/areg/.gitignore
 
 /dev/mcrouter/Debug/*
 /dev/mcrouter/Release/*
 /dev/mcrouter/.settings/
+/dev/mcrouter/.gitignore
 
 /examples/*/.gitignore
 /examples/*/*/.gitignore
@@ -84,10 +86,12 @@
 /examples/12_ipchello/shripchello/release/
 /examples/12_ipchello/shripchello/.settings/
 /examples/12_ipchello/shripchello/logs/
+
 /examples/12_ipchello/svcipchello/debug/
 /examples/12_ipchello/svcipchello/release/
 /examples/12_ipchello/svcipchello/.settings/
 /examples/12_ipchello/svcipchello/logs/
+
 /examples/12_ipchello/usripchello/debug/
 /examples/12_ipchello/usripchello/release/
 /examples/12_ipchello/usripchello/.settings/
@@ -97,16 +101,20 @@
 /examples/13_ipcmix/clientipcmix/release/
 /examples/13_ipcmix/clientipcmix/.settings/
 /examples/13_ipcmix/clientipcmix/logs/
+
 /examples/13_ipcmix/mainipcmix/debug/
 /examples/13_ipcmix/mainipcmix/release/
 /examples/13_ipcmix/mainipcmix/.settings/
 /examples/13_ipcmix/mainipcmix/logs/
+
 /examples/13_ipcmix/secondipcmix/debug/
 /examples/13_ipcmix/secondipcmix/release/
 /examples/13_ipcmix/secondipcmix/.settings/
 /examples/13_ipcmix/secondipcmix/logs/
+/examples/13_ipcmix/secondipcmix/config
+
 /examples/13_ipcmix/shareipcmix/debug/
 /examples/13_ipcmix/shareipcmix/release/
 /examples/13_ipcmix/shareipcmix/.settings/
 /examples/13_ipcmix/shareipcmix/logs/
-/examples/13_ipcmix/secondipcmix/config
+

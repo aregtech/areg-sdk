@@ -168,7 +168,7 @@ bool StubAddress::deliverServiceEvent( ServiceRequestEvent & serviceEvent ) cons
         if ( dispatcher != NULL )
         {
             result = serviceEvent.registerForThread(dispatcher);
-            serviceEvent.sendEvent();
+            serviceEvent.deliverEvent();
         }
         else
         {

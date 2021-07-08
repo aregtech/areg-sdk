@@ -75,7 +75,7 @@ void TracePropertyKey::setKey(const char * fullKey)
     mLogConfig  = NELogConfig::convFromString( mKeyName );
     if ( mLogConfig != NELogConfig::ConfigUnknown )
     {
-        unsigned int len = static_cast<unsigned int>(NELogConfig::ValidSytaxList[static_cast<int>(mLogConfig)].syntaxLength);
+        int len = NELogConfig::ValidSytaxList[static_cast<int>(mLogConfig)].syntaxLength;
         if ( mKeyName.getLength() > len )
         {
             NEString::CharPos pos = mKeyName.findFirstOf(NELogConfig::SYNTAX_OBJECT_SEPARATOR, len + 1);

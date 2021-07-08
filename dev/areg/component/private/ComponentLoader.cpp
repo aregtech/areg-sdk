@@ -319,6 +319,7 @@ bool ComponentLoader::loadModel( const char * modelName /*= NULL*/ )
             NERegistry::Model & model = mModelList[i];
             if ( model.isModelLoaded() == false )
                 result = loadModel( model );
+
             ASSERT( model.isModelLoaded() );
         }
     }

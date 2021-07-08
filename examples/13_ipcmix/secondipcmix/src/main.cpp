@@ -45,17 +45,11 @@
 
 static const char * AnotherLocalService = "AnotherLocalService";
 
-#define THREAD_1    1
-#define THREAD_2    1
-
 // Describe mode, set model name
 BEGIN_MODEL(IPCMixCommon::ModelName)
 
-#if THREAD_1
     // define component thread
     BEGIN_REGISTER_THREAD( "Test_SecondServiceThread" )
-
-#if 1
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
         BEGIN_REGISTER_COMPONENT( IPCMixCommon::RemoteSecondaryService, RemoteServiceComponent )
             // register dummy 'empty service'. In this example we demonstrate simple initialization
@@ -66,9 +60,6 @@ BEGIN_MODEL(IPCMixCommon::ModelName)
             REGISTER_DEPENDENCY(AnotherLocalService)
         // end of component description
         END_REGISTER_COMPONENT( IPCMixCommon::RemoteSecondaryService )
-#endif
-
-#if 1
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
         BEGIN_REGISTER_COMPONENT( IPCMixCommon::LocalService, LocalServiceComponent )
             // register dummy 'empty service'. In this example we demonstrate simple initialization
@@ -77,17 +68,11 @@ BEGIN_MODEL(IPCMixCommon::ModelName)
             REGISTER_DEPENDENCY(AnotherLocalService)
         // end of component description
         END_REGISTER_COMPONENT( IPCMixCommon::LocalService )
-#endif
 
     // end of thread description
     END_REGISTER_THREAD( "Test_SecondServiceThread" )
-#endif  // !THREAD_1
-
-#if THREAD_2
 
     BEGIN_REGISTER_THREAD( "Test_ThirdServiceThread" )
-
-#if 1
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
         BEGIN_REGISTER_COMPONENT( IPCMixCommon::RemoteThirdService, RemoteServiceComponent )
             // register dummy 'empty service'. In this example we demonstrate simple initialization
@@ -98,9 +83,6 @@ BEGIN_MODEL(IPCMixCommon::ModelName)
             REGISTER_DEPENDENCY(AnotherLocalService)
         // end of component description
         END_REGISTER_COMPONENT( IPCMixCommon::RemoteThirdService )
-#endif
-
-#if 1
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
         BEGIN_REGISTER_COMPONENT( AnotherLocalService, LocalServiceComponent )
             // register dummy 'empty service'. In this example we demonstrate simple initialization
@@ -109,12 +91,9 @@ BEGIN_MODEL(IPCMixCommon::ModelName)
             REGISTER_DEPENDENCY(AnotherLocalService)
         // end of component description
         END_REGISTER_COMPONENT(AnotherLocalService )
-#endif 
 
     // end of thread description
     END_REGISTER_THREAD( "Test_ThirdServiceThread" )
-
-#endif  // THREAD_2
 
 // end of model IPCMixCommon::ModelName
 END_MODEL(IPCMixCommon::ModelName)
