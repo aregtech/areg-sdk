@@ -12,7 +12,7 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
-#include "areg/ipc/private/SocketConnectionBase.hpp"
+#include "areg/ipc/SocketConnectionBase.hpp"
 
 #include "areg/base/SocketClient.hpp"
 
@@ -27,7 +27,7 @@
  *          Client socket is using only TCP/IP connection. All other types
  *          and protocols are out of scope of this class and are not considered.
  **/
-class AREG_API ClientConnection   : private   SocketConnectionBase
+class ClientConnection   : private   SocketConnectionBase
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor

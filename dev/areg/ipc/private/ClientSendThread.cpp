@@ -6,9 +6,9 @@
  ************************************************************************/
 #include "areg/ipc/private/ClientSendThread.hpp"
 
-#include "areg/ipc/private/NEConnection.hpp"
+#include "areg/ipc/NEConnection.hpp"
 #include "areg/ipc/private/ClientConnection.hpp"
-#include "areg/ipc/private/IERemoteServiceHandler.hpp"
+#include "areg/ipc/IERemoteServiceHandler.hpp"
 
 #include "areg/trace/GETrace.h"
 DEF_TRACE_SCOPE(areg_ipc_private_ClientSendThread_runDispatcher);

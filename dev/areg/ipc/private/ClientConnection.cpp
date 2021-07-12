@@ -6,7 +6,7 @@
  ************************************************************************/
 #include "areg/ipc/private/ClientConnection.hpp"
 
-#include "areg/ipc/private/NEConnection.hpp"
+#include "areg/ipc/NEConnection.hpp"
 #include "areg/base/RemoteMessage.hpp"
 #include "areg/component/NEService.hpp"
 

@@ -4,12 +4,13 @@
  * \author      Artak Avetyan (mailto:artak@aregtech.com)
  * \brief       AREG Platform, Service Connection client implementation
  ************************************************************************/
-#include "areg/ipc/ClientService.hpp"
+#include "areg/ipc/private/ClientService.hpp"
 
 #include "areg/ipc/ConnectionConfiguration.hpp"
 #include "areg/ipc/IERemoteServiceConsumer.hpp"
-#include "areg/ipc/private/NEConnection.hpp"
-#include "areg/ipc/private/RemoteServiceEvent.hpp"
+#include "areg/ipc/NEConnection.hpp"
+
+#include "areg/ipc/RemoteServiceEvent.hpp"
 #include "areg/component/private/ServiceManager.hpp"
 #include "areg/component/RemoteEventFactory.hpp"
 #include "areg/component/DispatcherThread.hpp"
