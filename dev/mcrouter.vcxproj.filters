@@ -15,9 +15,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="mcrouter\NEMulticastRouterSettings.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="system\GEPlatform.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -27,7 +24,40 @@
     <ClInclude Include="mcrouter\resources\targetver.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="mcrouter\MulticastRouter.hpp">
+    <ClInclude Include="mcrouter\app\MulticastRouter.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="mcrouter\app\NEMulticastRouterSettings.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="mcrouter\tcp\ServerService.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="mcrouter\tcp\private\ServerConnection.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="mcrouter\tcp\private\ServerReceiveThread.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="mcrouter\tcp\private\ServerSendThread.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="mcrouter\tcp\private\ServerServiceEvent.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="mcrouter\tcp\private\IEServerConnectionHandler.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="mcrouter\tcp\private\ServiceRegistry.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="mcrouter\tcp\private\ListServiceProxies.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="mcrouter\tcp\private\ServiceProxy.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="mcrouter\tcp\private\ServiceStub.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -49,13 +79,43 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="mcrouter\private\MulticastRouter.cpp">
+    <ClCompile Include="mcrouter\app\private\MulticastRouter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="mcrouter\private\MulticastRouterPosix.cpp">
+    <ClCompile Include="mcrouter\app\private\MulticastRouterPosix.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="mcrouter\private\MulticastRouterWin32.cpp">
+    <ClCompile Include="mcrouter\app\private\MulticastRouterWin32.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="mcrouter\tcp\private\ServerConnection.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="mcrouter\tcp\private\ServerReceiveThread.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="mcrouter\tcp\private\ServerSendThread.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="mcrouter\tcp\private\ServerService.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="mcrouter\tcp\private\ServerServiceEvent.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="mcrouter\tcp\private\IEServerConnectionHandler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="mcrouter\tcp\private\ServiceRegistry.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="mcrouter\tcp\private\ListServiceProxies.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="mcrouter\tcp\private\ServiceProxy.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="mcrouter\tcp\private\ServiceStub.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

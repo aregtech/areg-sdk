@@ -9,7 +9,7 @@
 #include "areg/base/RemoteMessage.hpp"
 #include "areg/base/NEMemory.hpp"
 #include "areg/component/NEService.hpp"
-#include "areg/ipc/private/NEConnection.hpp"
+#include "areg/ipc/NEConnection.hpp"
 #include "areg/component/StubAddress.hpp"
 
 #include <iostream>

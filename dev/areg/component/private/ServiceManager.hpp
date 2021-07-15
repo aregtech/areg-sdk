@@ -18,7 +18,7 @@
 
 #include "areg/base/ESynchObjects.hpp"
 #include "areg/component/private/ServerList.hpp"
-#include "areg/ipc/ClientService.hpp"
+#include "areg/ipc/private/ClientService.hpp"
 #include "areg/ipc/IERemoteServiceConsumer.hpp"
 
 /************************************************************************

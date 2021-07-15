@@ -96,9 +96,6 @@
     <ClCompile Include="areg\ipc\private\IERemoteServiceHandler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\ipc\private\IEServerConnectionHandler.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="areg\ipc\private\NEConnection.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -459,37 +456,10 @@
     <ClCompile Include="areg\ipc\private\ConnectionConfiguration.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\ipc\private\ListServiceProxies.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="areg\ipc\private\ServerService.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="areg\ipc\private\ServerServiceEvent.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="areg\ipc\private\ServiceProxy.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="areg\ipc\private\ServiceRegistry.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="areg\ipc\private\ServiceStub.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="areg\ipc\private\SocketConnectionBase.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="areg\ipc\private\RemoteServiceEvent.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="areg\ipc\private\ServerConnection.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="areg\ipc\private\ServerReceiveThread.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="areg\ipc\private\ServerSendThread.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="areg\persist\private\PersistenceManager.cpp">
@@ -544,6 +514,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="areg\component\private\IETimerConsumer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="areg\ipc\private\ServerConnectionBase.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -683,15 +656,6 @@
     <ClInclude Include="areg\component\TEEvent.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\ipc\private\IERemoteServiceHandler.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="areg\ipc\private\IEServerConnectionHandler.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="areg\ipc\private\NEConnection.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="areg\ipc\IERemoteService.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -726,15 +690,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\base\IESynchObject.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="areg\base\private\CESynchLockAndWaitIX.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="areg\base\private\CESynchObjectBaseIX.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="areg\base\private\NESynchTypesIX.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\base\ETemplateBase.hpp">
@@ -1010,43 +965,7 @@
     <ClInclude Include="areg\ipc\private\ClientServiceEvent.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\ipc\private\ServerConnection.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="areg\ipc\private\ServerSendThread.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="areg\ipc\private\ServerServiceEvent.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="areg\ipc\private\ServiceProxy.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="areg\ipc\private\ServiceRegistry.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="areg\ipc\private\ServiceStub.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="areg\ipc\private\SocketConnectionBase.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="areg\ipc\private\ListServiceProxies.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="areg\ipc\private\RemoteServiceEvent.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="areg\ipc\private\ServerReceiveThread.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="areg\ipc\ClientService.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="areg\ipc\ConnectionConfiguration.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="areg\ipc\ServerService.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\persist\private\PersistenceManager.hpp">
@@ -1101,6 +1020,24 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\component\IETimerConsumer.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="areg\ipc\IERemoteServiceHandler.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="areg\ipc\NEConnection.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="areg\ipc\RemoteServiceEvent.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="areg\ipc\ServerConnectionBase.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="areg\ipc\SocketConnectionBase.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="areg\ipc\private\ClientService.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

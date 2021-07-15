@@ -17,7 +17,7 @@
 #include "areg/ipc/NERemoteService.hpp"
 #include "areg/base/String.hpp"
 
-const char * NERemoteService::getServiceConnectionTypeString(NERemoteService::eServiceConnection connectionType)
+AREG_API const char * NERemoteService::getServiceConnectionTypeString(NERemoteService::eServiceConnection connectionType)
 {
     switch (connectionType)
     {
@@ -30,7 +30,7 @@ const char * NERemoteService::getServiceConnectionTypeString(NERemoteService::eS
     }
 }
 
-NERemoteService::eServiceConnection NERemoteService::getServiceConnectionType(const char * connectionType, bool caseSensitive /* = true */ )
+AREG_API NERemoteService::eServiceConnection NERemoteService::getServiceConnectionType(const char * connectionType, bool caseSensitive /* = true */ )
 {
     if ( NEString::compareStrings<char, char>(NERemoteService::STR_CONNECTION_TYPE_TCPIP, connectionType, NEString::CountAll, caseSensitive ) == 0)
         return NERemoteService::ConnectionTcpip;

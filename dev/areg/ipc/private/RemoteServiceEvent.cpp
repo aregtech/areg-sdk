@@ -5,7 +5,7 @@
  * \brief       AREG Platform, Send message events
  ************************************************************************/
 
-#include "areg/ipc/private/RemoteServiceEvent.hpp"
+#include "areg/ipc/RemoteServiceEvent.hpp"
 
 
 SendMessageEventData::SendMessageEventData(void)
