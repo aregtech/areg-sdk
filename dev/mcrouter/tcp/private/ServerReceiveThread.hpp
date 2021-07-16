@@ -1,11 +1,11 @@
-#ifndef AREG_IPC_PRIVATE_CLIENTRECEIVETHREAD_HPP
-#define AREG_IPC_PRIVATE_CLIENTRECEIVETHREAD_HPP
+#ifndef MCROUTER_TCP_PRIVATE_SERVERRECEIVETHREAD_HPP
+#define MCROUTER_TCP_PRIVATE_SERVERRECEIVETHREAD_HPP
 
 /************************************************************************
- * \file        areg/ipc/private/ClientReceiveThread.hpp
+ * \file        mcrouter/tcp/private/ServerReceiveThread.hpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
  * \author      Artak Avetyan (mailto:artak@aregtech.com)
- * \brief       AREG Platform, Receive Message Thread
+ * \brief       AREG Platform Receive Message Thread of Server socket.
  ************************************************************************/
 
 /************************************************************************
@@ -13,39 +13,37 @@
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
 #include "areg/component/DispatcherThread.hpp"
-#include "areg/ipc/RemoteServiceEvent.hpp"
 
 /************************************************************************
  * Dependencies
  ************************************************************************/
+class IEServerConnectionHandler;
 class IERemoteServiceHandler;
-class ClientConnection;
+class ServerConnection;
 
 //////////////////////////////////////////////////////////////////////////
-// ClientConnection class declaration
+// ServerConnection class declaration.
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   The message receiver thread from remote routing service.
- *          All received messages are passed to receiver thread for further dispatching
- *          and distribution between components and services.
+ * \brief   The IPC message receiving thread of server socket.
  **/
-class ClientReceiveThread    : public    DispatcherThread
+class ServerReceiveThread    : public    DispatcherThread
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Initializes Service handler and client connection objects.
-     * \param   remoteService   The instance of remote service to process messages.
-     * \param   connection      The instance of client connection object to read messages.
+     * \brief   Initializes connection, connection servicing and connection handling objects
+     * \param   connectHandler  The instance of server socket connect / disconnect handling interface
+     * \param   remoteService   The instance of remote servicing handler
+     * \param   connection      The instance of server connection object.
      **/
-    ClientReceiveThread( IERemoteServiceHandler & remoteService, ClientConnection & connection );
-
+    ServerReceiveThread( IEServerConnectionHandler & connectHandler, IERemoteServiceHandler & remoteService, ServerConnection & connection );
     /**
-     * \brief   Destructor.
+     * \brief   Destructor
      **/
-    virtual ~ClientReceiveThread( void );
+    virtual ~ServerReceiveThread( void );
 
 protected:
 /************************************************************************/
@@ -62,25 +60,29 @@ protected:
     virtual bool runDispatcher( void );
 
 //////////////////////////////////////////////////////////////////////////
-// Member variables.
+// Member variables
 //////////////////////////////////////////////////////////////////////////
 private:
     /**
-     * \brief   The instance of remote service handler to dispatch messages.
+     * \brief   The instance of remote servicing interface object
      **/
-    IERemoteServiceHandler &    mRemoteService;
+    IERemoteServiceHandler &   mRemoteService;
     /**
-     * \brief   The instance of connection to receive messages from remote routing service.
+     * \brief   The instance of connection handler interface object
      **/
-    ClientConnection &          mConnection;
+    IEServerConnectionHandler& mConnectHandler;
+    /**
+     * \brief   The instance of server connection object
+     **/
+    ServerConnection &        mConnection;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    ClientReceiveThread( void );
-    ClientReceiveThread( const ClientReceiveThread & /*src*/ );
-    const ClientReceiveThread & operator = ( const ClientReceiveThread & /*src*/ );
+    ServerReceiveThread( void );
+    ServerReceiveThread( const ServerReceiveThread & /*src*/ );
+    const ServerReceiveThread & operator = ( const ServerReceiveThread & /*src*/ );
 };
 
-#endif  // AREG_IPC_PRIVATE_CLIENTRECEIVETHREAD_HPP
+#endif  // MCROUTER_TCP_PRIVATE_SERVERRECEIVETHREAD_HPP

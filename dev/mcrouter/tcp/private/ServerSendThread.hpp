@@ -1,11 +1,11 @@
-#ifndef AREG_IPC_PRIVATE_CLIENTSENDTHREAD_HPP
-#define AREG_IPC_PRIVATE_CLIENTSENDTHREAD_HPP
+#ifndef MCROUTER_TCP_PRIVATE_SERVERSENDTHREAD_HPP
+#define MCROUTER_TCP_PRIVATE_SERVERSENDTHREAD_HPP
 
 /************************************************************************
- * \file        areg/ipc/private/ClientSendThread.hpp
+ * \file        mcrouter/tcp/private/ServerSendThread.hpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
  * \author      Artak Avetyan (mailto:artak@aregtech.com)
- * \brief       AREG Platform Send Message Thread
+ * \brief       AREG Platform Server Send Message Thread
  ************************************************************************/
 
 /************************************************************************
@@ -15,20 +15,19 @@
 #include "areg/component/DispatcherThread.hpp"
 #include "areg/ipc/RemoteServiceEvent.hpp"
 
- /************************************************************************
+/************************************************************************
  * Dependencies
  ************************************************************************/
 class IERemoteServiceHandler;
-class ClientConnection;
+class ServerConnection;
 
 //////////////////////////////////////////////////////////////////////////
-// ClientSendThread class declaration
+// ServerSendThread class declaration.
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   The message sender thread. All messages to be sent to remote routing service
- *          are queued in message sender thread. 
+ * \brief   The IPC message sender thread
  **/
-class ClientSendThread  : public    DispatcherThread
+class ServerSendThread  : public    DispatcherThread
                         , public    IESendMessageEventConsumer
 {
 //////////////////////////////////////////////////////////////////////////
@@ -36,15 +35,16 @@ class ClientSendThread  : public    DispatcherThread
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Initializes Service handler and client connection objects.
-     * \param   remoteService   The instance of remote service to process messages.
-     * \param   connection      The instance of client connection object to send messages.
+     * \brief   Initializes connection servicing handler and server connection objects.
+     * \param   remoteService   The instance of remote servicing handle to set.
+     * \param   connection      The instance of server socket connection object.
      **/
-    ClientSendThread( IERemoteServiceHandler & remoteService, ClientConnection & connection );
+    ServerSendThread( IERemoteServiceHandler & remoteService, ServerConnection & connection );
+
     /**
      * \brief   Destructor
      **/
-    virtual ~ClientSendThread( void );
+    virtual ~ServerSendThread( void );
 
 protected:
 /************************************************************************/
@@ -89,25 +89,19 @@ private:
     virtual void processEvent( const SendMessageEventData & data );
 
 //////////////////////////////////////////////////////////////////////////
-// Member variables.
+// Member variables
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief   The instance of remote service handler to dispatch messages.
-     **/
     IERemoteServiceHandler &    mRemoteService;
-    /**
-     * \brief   The instance of connection to send messages from remote routing service.
-     **/
-    ClientConnection &          mConnection;
+    ServerConnection &        mConnection;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    ClientSendThread( void );
-    ClientSendThread( const ClientSendThread & /*src*/ );
-    const ClientSendThread & operator = ( const ClientSendThread & /*src*/ );
+    ServerSendThread( void );
+    ServerSendThread( const ServerSendThread & /*src*/ );
+    const ServerSendThread & operator = ( const ServerSendThread & /*src*/ );
 };
 
-#endif  // AREG_IPC_PRIVATE_CLIENTSENDTHREAD_HPP
+#endif  // MCROUTER_TCP_PRIVATE_SERVERSENDTHREAD_HPP

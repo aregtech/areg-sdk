@@ -5,7 +5,7 @@
  * \brief       AREG Platform Connection constants.
  ************************************************************************/
 
-#include "areg/ipc/private/NEConnection.hpp"
+#include "areg/ipc/NEConnection.hpp"
 #include "areg/component/NEService.hpp"
 #include "areg/component/StubAddress.hpp"
 #include "areg/component/ProxyAddress.hpp"
@@ -32,7 +32,7 @@ AREG_API const NEMemory::sRemoteMessage     NEConnection::MessageHelloServer    
     , {static_cast<char>(0)}                            // rbData
 };
 
-const NEMemory::sRemoteMessage     NEConnection::MessageByeServer         =
+AREG_API const NEMemory::sRemoteMessage     NEConnection::MessageByeServer         =
 {
     {
         {   /*rbhBufHeader*/
@@ -53,7 +53,7 @@ const NEMemory::sRemoteMessage     NEConnection::MessageByeServer         =
     , {static_cast<char>(0)}
 };
 
-const NEMemory::sRemoteMessage     NEConnection::MessageAcceptClient      =
+AREG_API const NEMemory::sRemoteMessage     NEConnection::MessageAcceptClient      =
 {
     {
         {   /*rbhBufHeader*/
@@ -74,7 +74,7 @@ const NEMemory::sRemoteMessage     NEConnection::MessageAcceptClient      =
     , {static_cast<char>(0)}
 };
 
-const NEMemory::sRemoteMessage     NEConnection::MessageRejectClient      =
+AREG_API const NEMemory::sRemoteMessage     NEConnection::MessageRejectClient      =
 {
     {
         {   /*rbhBufHeader*/
@@ -95,7 +95,7 @@ const NEMemory::sRemoteMessage     NEConnection::MessageRejectClient      =
     , {static_cast<char>(0)}
 };
 
-const NEMemory::sRemoteMessage     NEConnection::MessageByeClient         =
+AREG_API const NEMemory::sRemoteMessage     NEConnection::MessageByeClient         =
 {
     {
         {   /*rbhBufHeader*/
@@ -116,7 +116,7 @@ const NEMemory::sRemoteMessage     NEConnection::MessageByeClient         =
     , {static_cast<char>(0)}
 };
 
-const NEMemory::sRemoteMessage     NEConnection::MessageRegisterService   =
+AREG_API const NEMemory::sRemoteMessage     NEConnection::MessageRegisterService   =
 {
     {
         {   /*rbhBufHeader*/
@@ -137,7 +137,7 @@ const NEMemory::sRemoteMessage     NEConnection::MessageRegisterService   =
     , {static_cast<char>(0)}
 };
 
-const NEMemory::sRemoteMessage     NEConnection::MessageQueryService      =
+AREG_API const NEMemory::sRemoteMessage     NEConnection::MessageQueryService      =
 {
     {
         {   /*rbhBufHeader*/
@@ -158,7 +158,7 @@ const NEMemory::sRemoteMessage     NEConnection::MessageQueryService      =
     , {static_cast<char>(0)}
 };
 
-const NEMemory::sRemoteMessage     NEConnection::MessageRegisterNotify    =
+AREG_API const NEMemory::sRemoteMessage     NEConnection::MessageRegisterNotify    =
 {
     {
         {   /*rbhBufHeader*/
@@ -238,7 +238,7 @@ inline static void _createRegistereNotify( RemoteMessage & out_msgNotify, ITEM_I
     }
 }
 
-RemoteMessage NEConnection::createRouterRegisterService( const StubAddress & stub, ITEM_ID source )
+AREG_API RemoteMessage NEConnection::createRouterRegisterService( const StubAddress & stub, ITEM_ID source )
 {
     RemoteMessage msgResult;
     if ( stub.isServiceRemote() && _isValidSource(source) )
@@ -251,7 +251,7 @@ RemoteMessage NEConnection::createRouterRegisterService( const StubAddress & stu
     return msgResult;
 }
 
-RemoteMessage NEConnection::createRouterRegisterClient( const ProxyAddress & proxy, ITEM_ID source )
+AREG_API RemoteMessage NEConnection::createRouterRegisterClient( const ProxyAddress & proxy, ITEM_ID source )
 {
     RemoteMessage msgResult;
     if ( proxy.isServiceRemote() && _isValidSource(source) )
@@ -263,7 +263,7 @@ RemoteMessage NEConnection::createRouterRegisterClient( const ProxyAddress & pro
     return msgResult;
 }
 
-RemoteMessage NEConnection::createRouterUnregisterService( const StubAddress & stub, ITEM_ID source )
+AREG_API RemoteMessage NEConnection::createRouterUnregisterService( const StubAddress & stub, ITEM_ID source )
 {
     RemoteMessage msgResult;
     if ( stub.isServiceRemote() && _isValidSource(source) )
@@ -275,7 +275,7 @@ RemoteMessage NEConnection::createRouterUnregisterService( const StubAddress & s
     return msgResult;
 }
 
-RemoteMessage NEConnection::createRouterUnregisterClient( const ProxyAddress & proxy, ITEM_ID source )
+AREG_API RemoteMessage NEConnection::createRouterUnregisterClient( const ProxyAddress & proxy, ITEM_ID source )
 {
     RemoteMessage msgResult;
     if ( proxy.isServiceRemote() && _isValidSource(source) )
@@ -287,7 +287,7 @@ RemoteMessage NEConnection::createRouterUnregisterClient( const ProxyAddress & p
     return msgResult;
 }
 
-bool NEConnection::isMessageHelloServer(const RemoteMessage & msgHelloServer)
+AREG_API bool NEConnection::isMessageHelloServer(const RemoteMessage & msgHelloServer)
 {
     bool result = false;
     if ( msgHelloServer.isChecksumValid() )
@@ -298,7 +298,7 @@ bool NEConnection::isMessageHelloServer(const RemoteMessage & msgHelloServer)
     return result;
 }
 
-bool NEConnection::isMessageByeServer(const RemoteMessage & msgByeServer)
+AREG_API bool NEConnection::isMessageByeServer(const RemoteMessage & msgByeServer)
 {
     bool result = false;
     if ( msgByeServer.isChecksumValid() )
@@ -309,7 +309,7 @@ bool NEConnection::isMessageByeServer(const RemoteMessage & msgByeServer)
     return result;
 }
 
-bool NEConnection::isMessagNotifyClient(const RemoteMessage & msgNotifyClient)
+AREG_API bool NEConnection::isMessagNotifyClient(const RemoteMessage & msgNotifyClient)
 {
     bool result = false;
     if ( msgNotifyClient.isChecksumValid() )
@@ -320,7 +320,7 @@ bool NEConnection::isMessagNotifyClient(const RemoteMessage & msgNotifyClient)
     return result;
 }
 
-bool NEConnection::isMessageRegisterService(const RemoteMessage & msgRegisterService)
+AREG_API bool NEConnection::isMessageRegisterService(const RemoteMessage & msgRegisterService)
 {
     bool result = false;
     if ( msgRegisterService.isChecksumValid() )
@@ -332,7 +332,7 @@ bool NEConnection::isMessageRegisterService(const RemoteMessage & msgRegisterSer
     return result;
 }
 
-RemoteMessage NEConnection::createServiceRegisteredNotification(const StubAddress & stub, ITEM_ID target)
+AREG_API RemoteMessage NEConnection::createServiceRegisteredNotification(const StubAddress & stub, ITEM_ID target)
 {
     RemoteMessage msgResult;
     if ( stub.isServiceRemote() && _isValidSource(target) )
@@ -343,7 +343,7 @@ RemoteMessage NEConnection::createServiceRegisteredNotification(const StubAddres
     return msgResult;
 }
 
-RemoteMessage NEConnection::createServiceClientRegisteredNotification(const ProxyAddress & proxy, ITEM_ID target)
+AREG_API RemoteMessage NEConnection::createServiceClientRegisteredNotification(const ProxyAddress & proxy, ITEM_ID target)
 {
     RemoteMessage msgResult;
     if ( proxy.isServiceRemote() && _isValidSource(target) )
@@ -354,7 +354,7 @@ RemoteMessage NEConnection::createServiceClientRegisteredNotification(const Prox
     return msgResult;
 }
 
-RemoteMessage NEConnection::createServiceUnregisteredNotification(const StubAddress & stub, ITEM_ID target)
+AREG_API RemoteMessage NEConnection::createServiceUnregisteredNotification(const StubAddress & stub, ITEM_ID target)
 {
     RemoteMessage msgResult;
     if ( stub.isServiceRemote() && _isValidSource(target) )
@@ -365,7 +365,7 @@ RemoteMessage NEConnection::createServiceUnregisteredNotification(const StubAddr
     return msgResult;
 }
 
-RemoteMessage NEConnection::createServiceClientUnregisteredNotification(const ProxyAddress & proxy, ITEM_ID target)
+AREG_API RemoteMessage NEConnection::createServiceClientUnregisteredNotification(const ProxyAddress & proxy, ITEM_ID target)
 {
     RemoteMessage msgResult;
     if ( proxy.isServiceRemote() && _isValidSource(target) )
@@ -376,7 +376,7 @@ RemoteMessage NEConnection::createServiceClientUnregisteredNotification(const Pr
     return msgResult;
 }
 
-RemoteMessage NEConnection::createConnectRequest(void)
+AREG_API RemoteMessage NEConnection::createConnectRequest(void)
 {
     RemoteMessage msgHelloServer;
     if ( msgHelloServer.initMessage( NEConnection::MessageHelloServer.rbHeader ) != NULL )
@@ -389,7 +389,7 @@ RemoteMessage NEConnection::createConnectRequest(void)
     return msgHelloServer;
 }
 
-RemoteMessage NEConnection::createDisconnectRequest(ITEM_ID cookie)
+AREG_API RemoteMessage NEConnection::createDisconnectRequest(ITEM_ID cookie)
 {
     RemoteMessage msgBeyServer;
     if ( msgBeyServer.initMessage( NEConnection::MessageByeServer.rbHeader ) != NULL )
@@ -403,7 +403,7 @@ RemoteMessage NEConnection::createDisconnectRequest(ITEM_ID cookie)
     return msgBeyServer;
 }
 
-RemoteMessage NEConnection::createConnectNotify( ITEM_ID cookie  )
+AREG_API RemoteMessage NEConnection::createConnectNotify( ITEM_ID cookie  )
 {
     RemoteMessage msgNotifyConnect;
     if ( msgNotifyConnect.initMessage( NEConnection::MessageAcceptClient.rbHeader ) != NULL )
@@ -419,7 +419,7 @@ RemoteMessage NEConnection::createConnectNotify( ITEM_ID cookie  )
     return msgNotifyConnect;
 }
 
-RemoteMessage NEConnection::createDisconnectNotify(ITEM_ID cookie)
+AREG_API RemoteMessage NEConnection::createDisconnectNotify(ITEM_ID cookie)
 {
     RemoteMessage msgNotifyDisconnect;
     if ( msgNotifyDisconnect.initMessage( NEConnection::MessageByeClient.rbHeader ) != NULL )
@@ -435,7 +435,7 @@ RemoteMessage NEConnection::createDisconnectNotify(ITEM_ID cookie)
     return msgNotifyDisconnect;
 }
 
-RemoteMessage NEConnection::createRejectNotify(ITEM_ID cookie)
+AREG_API RemoteMessage NEConnection::createRejectNotify(ITEM_ID cookie)
 {
     RemoteMessage msgNotifyReject;
     if ( msgNotifyReject.initMessage( NEConnection::MessageRejectClient.rbHeader ) != NULL )

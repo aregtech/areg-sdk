@@ -1,17 +1,17 @@
 /************************************************************************
- * \file        areg/ipc/private/IERemoteServiceHandler.cpp
+ * \file        mcrouter/tcp/private/IEServerConnectionHandler.cpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
  * \author      Artak Avetyan (mailto:artak@aregtech.com)
- * \brief       AREG Platform, Remote Service Handler
+ * \brief       AREG Platform, Server connection handler
  ************************************************************************/
-#include "areg/ipc/IERemoteServiceHandler.hpp"
+#include "mcrouter/tcp/private/IEServerConnectionHandler.hpp"
 
-IERemoteServiceHandler::IERemoteServiceHandler(void)
+IEServerConnectionHandler::IEServerConnectionHandler(void)
 {
     ; // do nothing
 }
 
-IERemoteServiceHandler::~IERemoteServiceHandler(void)
+IEServerConnectionHandler::~IEServerConnectionHandler(void)
 {
     ; // do nothing
 }

@@ -109,14 +109,14 @@ namespace NERemoteService
      *          Returns the string value of service connection type
      * \param   connectionType  The connection type to convert
      **/
-    const char * getServiceConnectionTypeString( NERemoteService::eServiceConnection connectionType );
+    AREG_API const char * getServiceConnectionTypeString( NERemoteService::eServiceConnection connectionType );
     /**
      * \brief   NERemoteService::GetServiceConnectionType
      *          Converts string to connection type value.
      * \param   connectionType  The string of connection type name to convert
      * \param   caseSensitive   Flag, indicating whether the given name to convert is case sensitive or not.
      **/
-    NERemoteService::eServiceConnection getServiceConnectionType( const char * connectionType, bool caseSensitive = true );
+    AREG_API NERemoteService::eServiceConnection getServiceConnectionType( const char * connectionType, bool caseSensitive = true );
 }
 
 #endif  // AREG_IPC_NEREMOTESERVICE_HPP

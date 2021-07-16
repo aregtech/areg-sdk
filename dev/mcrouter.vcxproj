@@ -36,14 +36,34 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="mcrouter\private\MulticastRouter.cpp" />
-    <ClCompile Include="mcrouter\private\MulticastRouterPosix.cpp" />
-    <ClCompile Include="mcrouter\private\MulticastRouterWin32.cpp" />
+    <ClCompile Include="mcrouter\app\private\MulticastRouter.cpp" />
+    <ClCompile Include="mcrouter\app\private\MulticastRouterPosix.cpp" />
+    <ClCompile Include="mcrouter\app\private\MulticastRouterWin32.cpp" />
+    <ClCompile Include="mcrouter\tcp\private\IEServerConnectionHandler.cpp" />
+    <ClCompile Include="mcrouter\tcp\private\ListServiceProxies.cpp" />
+    <ClCompile Include="mcrouter\tcp\private\ServerConnection.cpp" />
+    <ClCompile Include="mcrouter\tcp\private\ServerReceiveThread.cpp" />
+    <ClCompile Include="mcrouter\tcp\private\ServerSendThread.cpp" />
+    <ClCompile Include="mcrouter\tcp\private\ServerService.cpp" />
+    <ClCompile Include="mcrouter\tcp\private\ServerServiceEvent.cpp" />
+    <ClCompile Include="mcrouter\tcp\private\ServiceProxy.cpp" />
+    <ClCompile Include="mcrouter\tcp\private\ServiceRegistry.cpp" />
+    <ClCompile Include="mcrouter\tcp\private\ServiceStub.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="mcrouter\tcp\private\IEServerConnectionHandler.hpp" />
+    <ClInclude Include="mcrouter\tcp\private\ListServiceProxies.hpp" />
+    <ClInclude Include="mcrouter\tcp\private\ServerConnection.hpp" />
+    <ClInclude Include="mcrouter\tcp\private\ServerReceiveThread.hpp" />
+    <ClInclude Include="mcrouter\tcp\private\ServerSendThread.hpp" />
+    <ClInclude Include="mcrouter\tcp\private\ServerServiceEvent.hpp" />
+    <ClInclude Include="mcrouter\tcp\private\ServiceProxy.hpp" />
+    <ClInclude Include="mcrouter\tcp\private\ServiceRegistry.hpp" />
+    <ClInclude Include="mcrouter\tcp\private\ServiceStub.hpp" />
+    <ClInclude Include="mcrouter\tcp\ServerService.hpp" />
     <ClInclude Include="system\GEPlatform.h" />
-    <ClInclude Include="mcrouter\MulticastRouter.hpp" />
-    <ClInclude Include="mcrouter\NEMulticastRouterSettings.hpp" />
+    <ClInclude Include="mcrouter\app\MulticastRouter.hpp" />
+    <ClInclude Include="mcrouter\app\NEMulticastRouterSettings.hpp" />
     <ClInclude Include="mcrouter\resources\resource.hpp" />
     <ClInclude Include="mcrouter\resources\targetver.hpp" />
     <ResourceCompile Include="mcrouter\resources\mcrouter.rc" />

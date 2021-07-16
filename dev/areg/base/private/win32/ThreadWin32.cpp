@@ -100,7 +100,7 @@ Thread::eCompletionStatus Thread::destroyThread(unsigned int waitForStopMs /* = 
         _unregisterThread();
         mSynchObject.unlock();  // unlock, to let thread complete exit task.
 
-        if (waitForStopMs != Thread::DO_NOT_WAIT && mWaitForExit.lock(waitForStopMs) == false)
+        if ((waitForStopMs != Thread::DO_NOT_WAIT) && (mWaitForExit.lock(waitForStopMs) == false))
         {
 #ifdef  _DEBUG
             //////////////////////////////////////////////////////////////////////////

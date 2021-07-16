@@ -10,7 +10,7 @@
  ************************************************************************/
 #include "areg/ipc/ConnectionConfiguration.hpp"
 #include "areg/base/File.hpp"
-#include "areg/ipc/private/NEConnection.hpp"
+#include "areg/ipc/NEConnection.hpp"
 
 int ConnectionConfiguration::getPosition(const String & strProperty)
 {
