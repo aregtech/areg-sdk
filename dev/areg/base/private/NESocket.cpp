@@ -213,11 +213,8 @@ bool NESocket::InterlockedValue::resolveAddress(const char * hostName, unsigned 
                     mPortNr = portNr;
 #if     (_MSC_VER >= 1800)
                     char ipAddr[32] = { 0 };
-                    if ( RETURNED_OK == inet_ntop(AF_INET, &addrIn->sin_addr, ipAddr, 32) )
-                    {
-                        mIpAddr = ipAddr;
-                        result = true;
-                    }
+                    mIpAddr = inet_ntop( AF_INET, &addrIn->sin_addr, ipAddr, 32 );
+                    result  = mIpAddr.isEmpty() == false;
 #else   // (_MSC_VER >= 1800)
                     mIpAddr = inet_ntoa(addrIn->sin_addr);
                     result = true;
