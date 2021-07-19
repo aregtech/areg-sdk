@@ -3,6 +3,7 @@ This file is part of AREG SDK, the multi-tasking application development platfor
 Copyright (c) Aregtech, 2017-2021
 Contact: info[at]aregtech.com
 ```
+===============================================================================
 
 This file describes the instruction to compile **AREG SDK** and example source codes under _Windows_ platform with the help of _Visual Studio_. The minimum requirement to compile sources is **Visual Studio 10 or higher** version. Open **areg-sdk.sln** Visual Studio solution file in your preferred Visual Studio IDE and compile **areg** or all projects. By default, the **AREG** connectivity framework is compiled as _dynamically linked library (areg.dll)_. BY default, all sources are build in **”product/build/xxx””** folders.
 

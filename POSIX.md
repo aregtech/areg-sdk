@@ -3,6 +3,7 @@ This file is part of AREG SDK, the multi-tasking application development platfor
 Copyright (c) Aregtech, 2017-2021
 Contact: info[at]aregtech.com
 ```
+===============================================================================
 
 This file describes the instruction to compile **AREG SDK** and example source codes in _Linux_ or any other _POSIX_ supporting 32- or 64-bit platform. The minimum requirement to run application built with the help of **AREG SDK** on the target device are 256KB of free RAM and 2MB of free storage space.
 

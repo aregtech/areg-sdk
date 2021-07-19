@@ -3,6 +3,7 @@ This file is part of AREG SDK, the multi-tasking application development platfor
 Copyright (c) Aregtech, 2017-2021
 Contact: info[at]aregtech.com
 ```
+===============================================================================
 
 Current sources of **AREG IoT SDK** (or **AREG SDK**) support _POSIX_ and _Win32_ API.
 
@@ -31,7 +32,7 @@ areg-sdk            --> the root folder of AREG SDK
     |   |
     |   +- areg     --> the source codes of AREG Framework
     |   |
-    |   +- mcrouter --> the sources of Multicasting Router
+    |   +- mcrouter --> the sources of Multicast Router
     |   |
     |   +- system   --> the development platform specific common codes
     |
