@@ -75,9 +75,9 @@ static inline int32_t _formatDigit( String & result, const char * format, DigitT
 
     int32_t count = -1;
 #ifdef _WIN32
-    count = sprintf_s(buffer, CharCount, format, number);
+    count = ::sprintf_s(buffer, CharCount, format, number);
 #else   // _WIN32
-    count = snprintf( buffer, CharCount, format, number);
+    count = ::snprintf( buffer, CharCount, format, number);
 #endif  // _WIN32
     result = buffer;
     return count;

@@ -36,7 +36,7 @@
 
 #ifdef DEBUG
     #ifndef OUTPUT_DEBUG_LEVEL
-        #define OUTPUT_DEBUG_LEVEL      OUTPUT_DEBUG_LEVEL_ALL
+        #define OUTPUT_DEBUG_LEVEL      OUTPUT_DEBUG_LEVEL_NONE
     #endif // !OUTPUT_DEBUG_LEVEL
 #else
     #undef  OUTPUT_DEBUG_LEVEL

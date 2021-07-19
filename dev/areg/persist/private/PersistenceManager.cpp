@@ -100,10 +100,10 @@ bool PersistenceManager::parseWritable(const char * filePath)
     return mMapWritable.isEmpty() == false;
 }
 
-int PersistenceManager::getProperty(  const char * /*section*/
-                                      , const char * /*property*/
-                                      , const char * /*position*/
-                                      , TEArrayList<Property, const Property &> & /*out_listProperties*/)
+int PersistenceManager::getProperty( const char * /*section*/
+                                   , const char * /*property*/
+                                   , const char * /*position*/
+                                   , TEArrayList<Property, const Property &> & /*out_listProperties*/)
 {
     return 0;
 }

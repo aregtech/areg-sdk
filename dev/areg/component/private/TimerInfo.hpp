@@ -181,14 +181,24 @@ public:
      *          The function updates timer state.
      * \return  Returns true if timer state has been updated.
      **/
-    bool isTimerExpired( unsigned int highValue, unsigned int lowValue );
+    bool timerExpired( unsigned int highValue, unsigned int lowValue );
 
     /**
      * \brief   Called when going to start timer. It will starting time.
      * \param   highValue   The start time high value
      * \param   lowValue    The start time low value
      **/
-    void isTimerStarting(unsigned int highValue, unsigned int lowValue);
+    void timerStarting(unsigned int highValue, unsigned int lowValue);
+
+    /**
+     * \brief   Called when timer is expired. Returns true, if timer is not in Idle state,
+     *          the timer events can be fired and can be continued. Otherwise, it returns
+     *          false indicating the timer manager can unregister the timer.
+     * \param   expiredTimer    The instance of expired timer information.
+     * \return  Returns true if timer is not Idle and can be continued.
+     *          Otherwise, returns false and the timer should be stopped.
+     */
+    bool canContinueTimer( const ExpiredTimerInfo & expiredTimer );
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables

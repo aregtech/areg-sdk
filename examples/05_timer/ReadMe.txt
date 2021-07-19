@@ -1,40 +1,15 @@
 ========================================================================
-    CONSOLE APPLICATION : 03-file Project Overview
+    CONSOLE APPLICATION : 05_timer Project Overview
 ========================================================================
 
-AppWizard has created this 03-file application for you.
+This project demonstrates how to setup and start timers. There are following timers set:
+- one time timer (it is triggered only once)
+- periodic timer (it is triggered certain ammount of times)
+- continues timer (it is triggered and runs continuesly until stopped).
 
-This file contains a summary of what you will find in each of the files that
-make up your 03-file application.
-
-
-03-file.vcxproj
-    This is the main project file for VC++ projects generated using an Application Wizard.
-    It contains information about the version of Visual C++ that generated the file, and
-    information about the platforms, configurations, and project features selected with the
-    Application Wizard.
-
-03-file.vcxproj.filters
-    This is the filters file for VC++ projects generated using an Application Wizard. 
-    It contains information about the association between the files in your project 
-    and the filters. This association is used in the IDE to show grouping of files with
-    similar extensions under a specific node (for e.g. ".cpp" files are associated with the
-    "Source Files" filter).
-
-03-file.cpp
-    This is the main application source file.
-
-/////////////////////////////////////////////////////////////////////////////
-Other standard files:
-
-StdAfx.h, StdAfx.cpp
-    These files are used to build a precompiled header (PCH) file
-    named 03-file.pch and a precompiled types file named StdAfx.obj.
-
-/////////////////////////////////////////////////////////////////////////////
-Other notes:
-
-AppWizard uses "TODO:" comments to indicate parts of the source code you
-should add to or customize.
-
-/////////////////////////////////////////////////////////////////////////////
+Before timers are started, the Timer Manager (time service) should be started.
+The timers are automatically dispatched in a dispatching thread.
+The application starts Timer Manager, creates separate 2 dispatcher threads, where each of them have 3 timers (one time, periodic, continues).
+Since the objects of Dispatcher Thread and same, the timers and the threads differ by names.
+The application runs for 30 seconds, stops timers and exit threads.
+All timer outputs are written in log file.

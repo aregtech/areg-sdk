@@ -99,10 +99,10 @@ bool TraceProperty::readProperty( const File & fileConfig )
 
 void TraceProperty::clearProperty( bool clearComment /* = true */ )
 {
-    mProperty.mKey  = "";
-    mProperty.mValue= "";
+    mProperty.mKey  = String::EmptyString;
+    mProperty.mValue= String::EmptyString;
     if ( clearComment )
-        mComment        = "";
+        mComment = String::EmptyString;
 }
 
 bool TraceProperty::parseProperty( const char * logSetting )

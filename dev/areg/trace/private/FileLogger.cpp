@@ -12,7 +12,7 @@
 #include "areg/base/DateTime.hpp"
 
 FileLogger::FileLogger( IETraceConfiguration & tracerConfig )
-    : LoggerBase         ( tracerConfig )
+    : LoggerBase( tracerConfig )
 
     , mLogFile          ( )
 {

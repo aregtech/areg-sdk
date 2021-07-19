@@ -19,9 +19,9 @@ inline void TracePropertyValue::_setValue( const char * newValue )
     
     mValue.trimAll();
 
-    String prio   = mValue;
-    mPriority       = static_cast<unsigned int>(NETrace::PrioNotset);
-    pos             = mValue.findFirstOf(NELogConfig::SYNTAX_LOGICAL_OR);
+    String prio = mValue;
+    mPriority   = static_cast<unsigned int>(NETrace::PrioNotset);
+    pos         = mValue.findFirstOf(NELogConfig::SYNTAX_LOGICAL_OR);
     if ( pos != NEString::InvalidPos )
     {
         prio = mValue.substring(0, pos);
@@ -40,22 +40,22 @@ inline void TracePropertyValue::_setValue( const char * newValue )
 
 
 TracePropertyValue::TracePropertyValue(void)
-    : mValue    ( "" )
+    : mValue    ( String::EmptyString )
     , mPriority ( static_cast<unsigned int>(NETrace::PrioNotset) )
 {
     ; // do nothing
 }
 
 TracePropertyValue::TracePropertyValue( const char * initValue )
-    : mValue    ( )
+    : mValue    ( String::EmptyString )
     , mPriority ( static_cast<unsigned int>(NETrace::PrioNotset) )
 {
     _setValue(initValue);
 }
 
 TracePropertyValue::TracePropertyValue( const String & initValue )
-    : mValue( )
-    , mPriority( static_cast<unsigned int>(NETrace::PrioNotset) )
+    : mValue    ( String::EmptyString )
+    , mPriority ( static_cast<unsigned int>(NETrace::PrioNotset) )
 {
     _setValue( initValue.getString() );
 }

@@ -38,9 +38,6 @@ const StubBase::Listener& StubBase::Listener::operator = ( const StubBase::Liste
 
 bool StubBase::Listener::operator == ( const StubBase::Listener & other ) const
 {
-//     return  (   (mMessageId == other.mMessageId && NEService::SEQUENCE_NUMBER_ANY == other.mSequenceNr)    ||
-//                 (mMessageId == other.mMessageId && mSequenceNr == other.mSequenceNr && mProxy == other.mProxy)
-//             );
     bool result = this == &other;
     if (result == false)
     {
@@ -214,6 +211,7 @@ void StubBase::sendResponseNotification( const StubListenerList & whichListeners
                 StubBase::Listener removed(masterEvent.getResponseId(), 0, listener.mProxy);
                 mListListener.removeEntry(removed, NULL);
             }
+
             sendServiceResponse(*eventResp);
         }
     }

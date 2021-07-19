@@ -117,11 +117,17 @@ void ServicingComponent::processTimer(Timer & timer)
                 , mCount
                 , (TIMER_EVENTS - mCount));
 
-    if (mTimer.isActive() == false)
+    if (mTimer.isActive())
+    {
+        printf("Hello Service!\n");
+    }
+    else
     {
         ASSERT(mCount == TIMER_EVENTS);
 
-        TRACE_INFO("The timer is not actuve anymore, signaling quit event");
+        printf("Goodbye Service...\n");
+
+        TRACE_INFO("The timer is not active anymore, signaling quit event");
         gExit.setEvent();
     }
 }

@@ -11,11 +11,11 @@
 IMPLEMENT_RUNTIME_EVENT(ServiceResponseEvent, ProxyEvent)
 
 ServiceResponseEvent::ServiceResponseEvent( const ProxyAddress & target
-                                              , NEService::eResultType result
-                                              , unsigned int responseId
-                                              , Event::eEventType eventType
-                                              , unsigned int seqNr    /*= NEService::SEQUENCE_NUMBER_NOTIFY*/)
-    : ProxyEvent  (target, eventType)
+                                          , NEService::eResultType result
+                                          , unsigned int responseId
+                                          , Event::eEventType eventType
+                                          , unsigned int seqNr    /*= NEService::SEQUENCE_NUMBER_NOTIFY*/)
+    : ProxyEvent    (target, eventType)
     , mResponseId   (responseId)
     , mResult       (result)
     , mSequenceNr   (seqNr)
@@ -24,7 +24,7 @@ ServiceResponseEvent::ServiceResponseEvent( const ProxyAddress & target
 }
 
 ServiceResponseEvent::ServiceResponseEvent( const ProxyAddress& target, const ServiceResponseEvent& src )
-    : ProxyEvent  (target, src.getEventType())
+    : ProxyEvent    (target, src.getEventType())
     , mResponseId   (src.mResponseId)
     , mResult       (src.mResult)
     , mSequenceNr   (src.mSequenceNr)
@@ -33,7 +33,7 @@ ServiceResponseEvent::ServiceResponseEvent( const ProxyAddress& target, const Se
 }
 
 ServiceResponseEvent::ServiceResponseEvent(const IEInStream & stream)
-    : ProxyEvent  ( stream )
+    : ProxyEvent    ( stream )
     , mResponseId   ( NEService::INVALID_MESSAGE_ID )
     , mResult       ( NEService::RESULT_UNDEFINED )
     , mSequenceNr   ( NEService::SEQUENCE_NUMBER_ANY )

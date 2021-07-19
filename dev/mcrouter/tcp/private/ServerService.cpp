@@ -33,13 +33,13 @@ DEF_TRACE_SCOPE(mcrouter_tcp_private_ServerService_failedReceiveMessage);
 const NERemoteService::eServiceConnection   ServerService::CONNECT_TYPE   = NERemoteService::ConnectionTcpip;
 
 ServerService::ServerService( void )
-    : IERemoteService              ( )
-    , DispatcherThread             ( NEConnection::SERVER_DISPATCH_MESSAGE_THREAD )
-    , IEServerConnectionHandler    ( )
-    , IERemoteServiceConsumer      ( )
-    , IERemoteServiceHandler       ( )
-    , IEServerServiceEventConsumer ( )
-    , IETimerConsumer              ( )
+    : IERemoteService               ( )
+    , DispatcherThread              ( NEConnection::SERVER_DISPATCH_MESSAGE_THREAD )
+    , IEServerConnectionHandler     ( )
+    , IERemoteServiceConsumer       ( )
+    , IERemoteServiceHandler        ( )
+    , IEServerServiceEventConsumer  ( )
+    , IETimerConsumer               ( )
 
     , mServerConnection ( )
     , mTimerConnect     ( static_cast<IETimerConsumer &>(self()), NEConnection::SERVER_CONNECT_TIMER_NAME)
@@ -92,8 +92,12 @@ bool ServerService::startRemoteServicing(void)
     bool result = true;
     if ( mServerConnection.isValid() == false && isRunning() == false )
     {
-        result = createThread( Thread::WAIT_INFINITE ) && waitForDispatcherStart(IESynchObject::WAIT_INFINITE);
-        TRACE_DBG("Created remote servicing thread with [ %s ]", result ? "SUCCESS" : "FAIL");
+        if ( createThread( Thread::WAIT_INFINITE ) && waitForDispatcherStart(IESynchObject::WAIT_INFINITE) )
+        {
+            result = ServerServiceEvent::sendEvent( ServerServiceEventData( ServerServiceEventData::CMD_StartService ), static_cast<IEServerServiceEventConsumer &>(self( )), static_cast<DispatcherThread &>(self( )) );
+        }
+
+        TRACE_DBG( "Created remote servicing thread with [ %s ]", result ? "SUCCESS" : "FAIL" );
     }
 #ifdef DEBUG
     else
@@ -806,7 +810,6 @@ void ServerService::processReceivedMessage(const RemoteMessage & msgReceived, co
 bool ServerService::runDispatcher(void)
 {
     ServerServiceEvent::addListener( static_cast<IEServerServiceEventConsumer &>(self()), static_cast<DispatcherThread &>(self()) );
-    ServerServiceEvent::sendEvent( ServerServiceEventData(ServerServiceEventData::CMD_StartService), static_cast<IEServerServiceEventConsumer &>(self()), static_cast<DispatcherThread &>(self()) );
 
     bool result = DispatcherThread::runDispatcher();
 

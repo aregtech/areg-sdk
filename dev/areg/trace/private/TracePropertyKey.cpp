@@ -31,11 +31,11 @@ TracePropertyKey::TracePropertyKey( const char * fullKey )
 }
 
 TracePropertyKey::TracePropertyKey( const String & fullKey )
-    : mKeyName( )
-    , mModuleName( )
-    , mModuleData( )
-    , mLogConfig( NELogConfig::ConfigUnknown )
-    , mConfigKey( NELogConfig::KeyUndefined )
+    : mKeyName      ( )
+    , mModuleName   ( )
+    , mModuleData   ( )
+    , mLogConfig    ( NELogConfig::ConfigUnknown )
+    , mConfigKey    ( NELogConfig::KeyUndefined )
 {
     setKey( fullKey );
 }
@@ -70,7 +70,7 @@ const TracePropertyKey & TracePropertyKey::operator = ( const TracePropertyKey &
 
 void TracePropertyKey::setKey(const char * fullKey)
 {
-    mKeyName    = fullKey != NULL ? fullKey : "";
+    mKeyName    = fullKey != NULL ? fullKey : String::EmptyString;
     mKeyName.trimAll();
     mLogConfig  = NELogConfig::convFromString( mKeyName );
     if ( mLogConfig != NELogConfig::ConfigUnknown )
@@ -87,7 +87,7 @@ void TracePropertyKey::setKey(const char * fullKey)
             else
             {
                 mModuleName = mKeyName.substring( len + 1);
-                mModuleData = "";
+                mModuleData = String::EmptyString;
             }
 
             if (mModuleName == NELogConfig::SYNTAX_SCOPE_GROUP)
@@ -102,14 +102,14 @@ void TracePropertyKey::setKey(const char * fullKey)
         }
         else
         {
-            mModuleName = "";
-            mModuleData = "";
+            mModuleName = String::EmptyString;
+            mModuleData = String::EmptyString;
         }
         mConfigKey  = mModuleName.isEmpty() ? NELogConfig::KeyGlobal : NELogConfig::KeyLocal;
     }
     else
     {
-        mModuleName = "";
+        mModuleName = String::EmptyString;
         mConfigKey  = NELogConfig::KeyUndefined;
     }
 }

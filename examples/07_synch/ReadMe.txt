@@ -1,40 +1,15 @@
 ========================================================================
-    CONSOLE APPLICATION : 03-file Project Overview
+    CONSOLE APPLICATION : 07_synch Project Overview
 ========================================================================
 
-AppWizard has created this 03-file application for you.
+This project demonstrates how to use synchronization objects and how to wait for one or more synchronization events.
+The waiting of an event can be combination of different types of synchronization objects. 
+For example, the thread can wait to one or all events like "released mutex" and "event".
+The synchronization event is not a default synchronization object in POSIX, but exist in Windows.
+The project runs indentical in Windows and POSIX (Linux).
 
-This file contains a summary of what you will find in each of the files that
-make up your 03-file application.
-
-
-03-file.vcxproj
-    This is the main project file for VC++ projects generated using an Application Wizard.
-    It contains information about the version of Visual C++ that generated the file, and
-    information about the platforms, configurations, and project features selected with the
-    Application Wizard.
-
-03-file.vcxproj.filters
-    This is the filters file for VC++ projects generated using an Application Wizard. 
-    It contains information about the association between the files in your project 
-    and the filters. This association is used in the IDE to show grouping of files with
-    similar extensions under a specific node (for e.g. ".cpp" files are associated with the
-    "Source Files" filter).
-
-03-file.cpp
-    This is the main application source file.
-
-/////////////////////////////////////////////////////////////////////////////
-Other standard files:
-
-StdAfx.h, StdAfx.cpp
-    These files are used to build a precompiled header (PCH) file
-    named 03-file.pch and a precompiled types file named StdAfx.obj.
-
-/////////////////////////////////////////////////////////////////////////////
-Other notes:
-
-AppWizard uses "TODO:" comments to indicate parts of the source code you
-should add to or customize.
-
-/////////////////////////////////////////////////////////////////////////////
+The following synchronization objects are used: Mutex and Event.
+The Mutex is recursive, so that if can be multiple times locked within one thread.
+The Events are auto- or manual-reset.
+Threads wait for more than one synchronization objects and they can be the same type of events or mixture.
+A thread can wait for one of events or all events in the synchronization wating list.

@@ -184,11 +184,6 @@ inline static bool _isValidSource( ITEM_ID client )
     return ((client != NEService::COOKIE_UNKNOWN) && client != (NEService::COOKIE_LOCAL));
 }
 
-inline static bool _isValidRouterCookie( ITEM_ID router )
-{
-    return (router == NEService::COOKIE_ROUTER);
-}
-
 inline static void _createRegisterRequest( RemoteMessage & out_msgRegister, ITEM_ID source, NEService::eServiceRequestType reqType, const StubAddress & addrService )
 {
     if ( out_msgRegister.initMessage( NEConnection::MessageRegisterService.rbHeader ) != NULL )

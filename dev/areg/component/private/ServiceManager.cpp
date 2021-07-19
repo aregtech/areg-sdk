@@ -210,11 +210,15 @@ void ServiceManager::_registerServer( const StubAddress & whichServer )
 
     ClientList clientList;
 
-    DECLARE_TRACE_VARIABLE(const ServerInfo &, server, mServerList.registerServer(whichServer, clientList));
+#ifdef ENABLE_TRACES
+    const ServerInfo & server = mServerList.registerServer(whichServer, clientList);
     TRACE_DBG("Server [ %s ] is registered. Connection status [ %s ], there are [ %d ] waiting clients"
                 , StubAddress::convAddressToPath(server.getAddress()).getString()
                 , NEService::getString(server.getConnectionStatus())
                 , clientList.getSize());
+#else   // !ENABLE_TRACES
+    mServerList.registerServer(whichServer, clientList);
+#endif  // !ENABLE_TRACES
 
     for ( LISTPOS pos = clientList.firstPosition(); pos != NULL; pos = clientList.nextPosition(pos) )
         _sendClientConnectedEvent( clientList.getAt(pos), whichServer );

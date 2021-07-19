@@ -35,6 +35,7 @@ const ComponentAddress    ComponentAddress::INVALID_COMPONENT_ADDRESS(ThreadAddr
 ComponentAddress::ComponentAddress( void )
     : mRoleName     ( ComponentAddress::INVALID_COMPONENT_NAME )
     , mThreadAddress( ThreadAddress::INVALID_THREAD_ADDRESS )
+    , mMagicNum     ( NEMath::CHECKSUM_IGNORE )
 {
     ; // do nothing
 }
@@ -42,6 +43,7 @@ ComponentAddress::ComponentAddress( void )
 ComponentAddress::ComponentAddress( const ThreadAddress & threadAddress )
     : mRoleName     ( ComponentAddress::INVALID_COMPONENT_NAME )
     , mThreadAddress( threadAddress )
+    , mMagicNum     ( NEMath::CHECKSUM_IGNORE )
 {
     ; // do nothing
 }
@@ -49,30 +51,38 @@ ComponentAddress::ComponentAddress( const ThreadAddress & threadAddress )
 ComponentAddress::ComponentAddress( const ThreadAddress& threadAddress, const char * roleName )
     : mRoleName     ( NEString::isEmpty<char>(roleName) == false ? roleName : ComponentAddress::INVALID_COMPONENT_NAME )
     , mThreadAddress( threadAddress )
+    , mMagicNum     ( NEMath::CHECKSUM_IGNORE )
 {
     mRoleName.truncate(NEUtilities::ITEM_NAMES_MAX_LENGTH);
+    mMagicNum   = ComponentAddress::_magicNumber(*this);
 }
 
 ComponentAddress::ComponentAddress( const char * roleName )
     : mRoleName     ( NEString::isEmpty<char>(roleName) == false ? roleName : ComponentAddress::INVALID_COMPONENT_NAME )
     , mThreadAddress( DispatcherThread::getCurrentDispatcherThread().getAddress() )
+    , mMagicNum     ( NEMath::CHECKSUM_IGNORE )
 {
     mRoleName.truncate(NEUtilities::ITEM_NAMES_MAX_LENGTH);
     Component* comp = Component::findComponentByName(roleName);
     if (comp != NULL)
         mThreadAddress = comp->getAddress().getThreadAddress();
+
+    mMagicNum   = ComponentAddress::_magicNumber(*this);
 }
 
 ComponentAddress::ComponentAddress( const char*  roleName, const char * nameThread )
     : mRoleName     ( NEString::isEmpty<char>(roleName) == false ? roleName : ComponentAddress::INVALID_COMPONENT_NAME )
     , mThreadAddress( nameThread != NULL ? DispatcherThread::getDispatcherThread(nameThread).getAddress() : ThreadAddress::INVALID_THREAD_ADDRESS )
+    , mMagicNum     ( NEMath::CHECKSUM_IGNORE )
 {
     mRoleName.truncate(NEUtilities::ITEM_NAMES_MAX_LENGTH);
+    mMagicNum   = ComponentAddress::_magicNumber(*this);
 }
 
 ComponentAddress::ComponentAddress( const ComponentAddress& src )
     : mRoleName     ( src.mRoleName )
     , mThreadAddress( src.mThreadAddress )
+    , mMagicNum     ( src.mMagicNum )
 {
     ; // do nothing
 }
@@ -80,8 +90,9 @@ ComponentAddress::ComponentAddress( const ComponentAddress& src )
 ComponentAddress::ComponentAddress( const IEInStream & stream )
     : mRoleName     ( stream )
     , mThreadAddress( stream )
+    , mMagicNum     ( NEMath::CHECKSUM_IGNORE )
 {
-    ;   // this
+    mMagicNum   = ComponentAddress::_magicNumber(*this);
 }
 
 ComponentAddress::~ComponentAddress( void )

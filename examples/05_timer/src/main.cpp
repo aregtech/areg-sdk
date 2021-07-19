@@ -2,7 +2,7 @@
 // Name        : main.cpp
 // Author      : Artak Avetyan
 // Version     :
-// Copyright   : Aregtech © 2021
+// Copyright   : Aregtech ï¿½ 2021
 // Description : Hello World in C++, Ansi-style
 //               This code example demonstrates timer processing in
 //               own thread.
@@ -37,9 +37,9 @@ const unsigned int TIMEOUT_APPLICATION  = Timer::TIMEOUT_1_SEC * 30;
 class TimerDispatcher   : public    DispatcherThread
                         , private   IETimerConsumer
 {
-    static const unsigned int TIMEOUT_ONE_TIME;
-    static const unsigned int TIMEOUT_PERIODIC_TIME;
-    static const unsigned int TIMEOUT_CONTINUOUS_TIME;
+    static const unsigned int TIMEOUT_ONE_TIME;         //!< The timeout in milliseconds of one time timer
+    static const unsigned int TIMEOUT_PERIODIC_TIME;    //!< The timeout in milliseconds of periodic timer
+    static const unsigned int TIMEOUT_CONTINUOUS_TIME;  //!< The timeout in milliseconds of continues timer
 
 public:
 
@@ -90,11 +90,12 @@ protected:
     virtual bool postEvent( Event & eventElem );
 
 private:
-    Timer   mOneTime;
-    Timer   mPeriodic;
-    Timer   mContinuous;
+    Timer   mOneTime;       //!< One time timer
+    Timer   mPeriodic;      //!< Periodic timer
+    Timer   mContinuous;    //!< Continues timer
 
 private:
+    // hidden method, used to wrap 'this' pointer in the constructor to avoid warnings.
     inline TimerDispatcher & self( void );
 };
 
@@ -272,6 +273,7 @@ static void stopTimerThread( TimerDispatcher & aThread )
  */
 int main()
 {
+    printf("Initializing timer for testing...\n");
     // Start tracing. Use default configuration file, which is "./config/log.init"
     // If not existing, force to start tracer.
     Application::startTracer(NULL, true);
@@ -315,6 +317,8 @@ int main()
 
     // Stop logging.
     Application::stopTracer();
+
+    printf("Testing timer completed, check the logs...\n");
 
 	return 0;
 }

@@ -2,7 +2,7 @@
 // Name        : main.cpp
 // Author      : Artak Avetyan
 // Version     :
-// Copyright   : Aregtech © 2021
+// Copyright   : Aregtech ï¿½ 2021
 // Description : Hello World in C++, Ansi-style
 //============================================================================
 
@@ -26,10 +26,10 @@ int main()
     const char * aLine1 = "This is some text.";
     const char * aLine2 = "And this one is another part of text.";
 
-    const char * fPath1 = "./debug/hello.txt";
-    const char * fPath2 = "./debug/copy_%time%.txt";
-    const char * fPath3 = "../../../../temp/%appname%.txt";
-    const char * fPath4 = "./debug/binary.dat";
+    const char * fPath1 = "./debug/hello.txt";              // the relative path to the text file
+    const char * fPath2 = "./debug/copy_%time%.txt";        // the file name with timestamp
+    const char * fPath3 = "../../../../temp/%appname%.txt"; // the file name that contains the name of application (process)
+    const char * fPath4 = "./debug/binary.dat";             // binary file
 
 /************************************************************************/
 // Initialization
@@ -49,22 +49,22 @@ int main()
     // Simple file
     /************************************************************************/
     file.open();
-    OUTPUT_DBG("[ %s ] to create file [ %s ]", file.isValid() ? "SUCCEDED" : "FAILED", file.getName());
+    printf("[ %s ] to create file [ %s ]\n", file.isValid() ? "SUCCEDED" : "FAILED", file.getName());
     if (file.isValid())
     {
-        OUTPUT_DBG("Succeeded to create file [ %s ]", file.getName());
+        printf("Succeeded to create file [ %s ]\n", file.getName());
         const char * nextPos = NULL;
         const char * lastPos = NULL;
         char * fileName = DEBUG_NEW char[File::MAXIMUM_PATH + 1];
         NEString::copyString<char>(fileName, File::MAXIMUM_PATH + 1, file.getName(), NEString::CountAll );
 
         // List parent folders.
-        OUTPUT_DBG("List of parents for path [ %s ]", fileName);
+        printf("List of parents for path [ %s ]\n", fileName);
         for ( int i = 1; File::findParent(fileName, &nextPos, lastPos); ++ i)
         {
             fileName[nextPos - fileName] = NEString::EndOfString;
             lastPos = nextPos;
-            OUTPUT_DBG("    >>  %d. %s", i, fileName);
+            printf("    >>  %d. %s\n", i, fileName);
         }
 
         // write data
@@ -75,9 +75,9 @@ int main()
         file.moveToBegin();
         file.read( txtFile );   // read content
 
-        OUTPUT_DBG("BEGIN File [ %s ] content >>>", file.getName());
+        printf("BEGIN File [ %s ] content >>>\n", file.getName());
         std::cout << txtFile.getString() << std::endl;
-        OUTPUT_DBG("END File [ %s ] content <<<", file.getName());
+        printf("END File [ %s ] content <<<\n", file.getName());
 
         delete [] fileName;
     }
@@ -86,7 +86,7 @@ int main()
     // FileBuffer
     /************************************************************************/
     buffer.open("FileBuffer_%time%", mode);
-    OUTPUT_DBG("[ %s ] to create file [ %s ]", buffer.isValid() ? "SUCCEDED" : "FAILED", buffer.getName());
+    printf("[ %s ] to create file [ %s ]\n", buffer.isValid() ? "SUCCEDED" : "FAILED", buffer.getName());
     if (buffer.isValid())
     {
         FileBuffer & stream = static_cast<FileBuffer &>(buffer);
@@ -97,15 +97,15 @@ int main()
         stream.moveToBegin();
         stream >> txtBuff;
 
-        OUTPUT_DBG("BEGIN File [ %s ] content >>>", buffer.getName());
+        printf("BEGIN File [ %s ] content >>>\n", buffer.getName());
         std::cout << txtBuff.getString() << std::endl;
-        OUTPUT_DBG("END File [ %s ] content <<<", buffer.getName());
+        printf("END File [ %s ] content <<<\n", buffer.getName());
     }
 
-    OUTPUT_DBG("2 file objects have [ %s ] content of data.", txtFile == txtBuff ? "identical" : "different");
+    printf("\n2 file objects have [ %s ] content of data.\n\n", txtFile == txtBuff ? "identical" : "different");
 
     temp.open();
-    OUTPUT_DBG("[ %s ] to create file [ %s ]", temp.isValid() ? "SUCCEDED" : "FAILED", temp.getName());
+    printf("[ %s ] to create file [ %s ]\n", temp.isValid() ? "SUCCEDED" : "FAILED", temp.getName());
     if (temp.isValid())
     {
         temp.writeLine(aText);
@@ -115,9 +115,9 @@ int main()
         temp.moveToBegin();
         temp.read(txtTemp);
 
-        OUTPUT_DBG("BEGIN File [ %s ] content >>>", temp.getName());
+        printf("BEGIN File [ %s ] content >>>\n", temp.getName());
         std::cout << txtTemp.getString() << std::endl;
-        OUTPUT_DBG("END File [ %s ] content <<<", temp.getName());
+        printf("END File [ %s ] content <<<\n", temp.getName());
     }
 
     /************************************************************************/
@@ -126,14 +126,14 @@ int main()
     // normalize file paths
     String src = File::normalizePath(fPath1);
     String dst = File::normalizePath(fPath2);
-    OUTPUT_DBG("Copying file [ %s ] to [ %s ]", src.getString(), dst.getString());
+    printf("\nCopying file [ %s ] to [ %s ]\n", src.getString(), dst.getString());
     File::copyFile(src, dst, true);
 
     /************************************************************************/
     // Open file binary write / read.
     /************************************************************************/
     binFile.open();
-    OUTPUT_DBG("[ %s ] to create file [ %s ]", binFile.isValid() ? "SUCCEDED" : "FAILED", binFile.getName());
+    printf("[ %s ] to create file [ %s ]\n\n", binFile.isValid() ? "SUCCEDED" : "FAILED", binFile.getName());
     if (binFile.isValid())
     {
         String txtBin;
@@ -147,13 +147,13 @@ int main()
 
         if (txtBin.isEmpty())
         {
-            OUTPUT_WARN("Read [ %s ], the string is empty!", binFile.getName());
+            printf("WARN: Read [ %s ], the string is empty!\n", binFile.getName());
         }
         else
         {
-            OUTPUT_DBG("BEGIN File [ %s ] content >>>", temp.getName());
+            printf("BEGIN File [ %s ] content >>>\n", temp.getName());
             std::cout << txtBin.getString() << std::endl;
-            OUTPUT_DBG("END File [ %s ] content <<<", temp.getName());
+            printf("END File [ %s ] content <<<\n", temp.getName());
         }
 
         // test reserving file space, 789 bytes.

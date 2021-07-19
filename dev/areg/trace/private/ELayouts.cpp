@@ -342,28 +342,28 @@ void ScopeNameLayout::logMessage( const NETrace::sLogMessage & msgLog, IEOutStre
 //////////////////////////////////////////////////////////////////////////
 
 AnyTextLayout::AnyTextLayout(void)
-    : IELayout     ( NELogConfig::LayoutAnyText )
+    : IELayout      ( NELogConfig::LayoutAnyText )
     , mTextMessage  ( )
 {
     ; // do nothing
 }
 
 AnyTextLayout::AnyTextLayout(const AnyTextLayout & src)
-    : IELayout     ( NELogConfig::LayoutAnyText )
+    : IELayout      ( NELogConfig::LayoutAnyText )
     , mTextMessage  ( src.mTextMessage )
 {
     ; // do nothing
 }
 
 AnyTextLayout::AnyTextLayout(const String & anyMessage)
-    : IELayout     ( NELogConfig::LayoutAnyText )
+    : IELayout      ( NELogConfig::LayoutAnyText )
     , mTextMessage  ( anyMessage )
 {
     ; // do nothing
 }
 
 AnyTextLayout::AnyTextLayout(const char * anyMessage)
-    : IELayout     ( NELogConfig::LayoutAnyText )
+    : IELayout      ( NELogConfig::LayoutAnyText )
     , mTextMessage  ( anyMessage != NULL ? anyMessage : "" )
 {
     ; // do nothing

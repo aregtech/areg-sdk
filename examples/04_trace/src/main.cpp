@@ -2,7 +2,7 @@
 // Name        : main.cpp
 // Author      : Artak Avetyan
 // Version     :
-// Copyright   : Aregtech © 2021
+// Copyright   : Aregtech ï¿½ 2021
 // Description : Hello World in C++, Ansi-style
 //============================================================================
 
@@ -106,6 +106,7 @@ DEF_TRACE_SCOPE(main_main);
  */
 int main()
 {
+    printf("Initializing and running tracing.\n");
     // Force to start logging. See outputs log files in appropriate "logs" subfolder.
     // To change the configuration and use dynamic logging, use macro TRACER_START_LOGGING
     // and specify the logging configuration file, where you can change logging format,
@@ -135,6 +136,8 @@ int main()
 
     // Stop logging.
     TRACER_STOP_LOGGING();
+
+    printf("Completed to run tracing.\n");
 
     return 0;
 }

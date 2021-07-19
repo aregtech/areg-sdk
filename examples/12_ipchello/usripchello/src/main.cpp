@@ -66,6 +66,7 @@ DEF_TRACE_SCOPE(example_12_ipchello_usripchello_main_main);
  **/
 int main()
 {
+    printf("Testing remote servicing ultra-small client...\n");
     // force to start logging with default settings
     TRACER_CONFIGURE_AND_START(NULL);
     // Initialize application, enable logging, servicing and the timer.
@@ -92,5 +93,7 @@ int main()
 
     } while (false);
     
+    printf("Completed testing remote servicing client, check the logs...\n");
+
 	return 0;
 }
