@@ -2,7 +2,7 @@
 // Name        : main.cpp
 // Author      : Artak Avetyan
 // Version     :
-// Copyright   : Aregtech © 2021
+// Copyright   : Aregtech ï¿½ 2021
 // Description : Hello World in C++, Ansi-style
 //============================================================================
 
@@ -84,7 +84,7 @@ inline HelloThread & HelloThread::self( void )
 
 void HelloThread::onThreadRuns( void )
 {
-    OUTPUT_DBG("The thread [ %s ] runs, going to output message", getName().getString());
+    printf("The thread [ %s ] runs, going to output message.\n", getName().getString());
 
     std::cout << "!!!Hello World!!!" << std::endl; // prints !!!Hello World!!!
 }

@@ -177,10 +177,6 @@
      *          per source file defined.
      **/
     #define GLOBAL_FATAL(...)                           _getGlobalScope().logFatal( __VA_ARGS__ )
-    /**
-     * \brief   Declare variable to use in the trace
-     **/
-    #define DECLARE_TRACE_VARIABLE(VarType, VarName, VarInit)   VarType VarName   = VarInit
 
 #else   // !defined(ENABLE_TRACES) && !defined(_ENABLE_TRACES)
 
@@ -266,10 +262,6 @@
      * \brief   If ENABLE_TRACES, does nothing, all parameters are ignored.
      **/
     #define GLOBAL_FATAL(...)
-    /**
-     * \brief   Declare variable to use in the trace
-     **/
-    #define DECLARE_TRACE_VARIABLE(VarType, VarName, VarInit)
 
 #endif  // (defined(ENABLE_TRACES) && defined(_ENABLE_TRACES))
 

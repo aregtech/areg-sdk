@@ -2,7 +2,7 @@
 // Name        : main.cpp
 // Author      : Artak Avetyan
 // Version     :
-// Copyright   : Aregtech © 2021
+// Copyright   : Aregtech ï¿½ 2021
 // Description : Hello World in C++, Ansi-style
 //============================================================================
 
@@ -26,7 +26,7 @@
  *          timer to run and exit application after certain time.
  **/
 
-static const char * gModelName = "Test_SimpleService";  //!< The name of model
+static const char * gModelName = "Test_MixedService";  //!< The name of model
 
 //////////////////////////////////////////////////////////////////////////
 //
@@ -84,6 +84,8 @@ DEF_TRACE_SCOPE(main_main);
  **/
 int main()
 {
+    printf("Testing multiple empty servicing components in multipple threads...\n");
+
     // force to start logging with default settings
     TRACER_CONFIGURE_AND_START(NULL);
     // Initialize application, enable logging, servicing and the timer.
@@ -110,5 +112,7 @@ int main()
 
     } while (false);
     
+    printf("Completed testing multiple empty servicing components, check logs...\n");
+
 	return 0;
 }

@@ -21,11 +21,11 @@ IMPLEMENT_RUNTIME_EVENT(ServiceRequestEvent, StubEvent)
 // ServiceRequestEvent class, constructor / destructor
 //////////////////////////////////////////////////////////////////////////
 ServiceRequestEvent::ServiceRequestEvent( const ProxyAddress & proxyAddress
-                                            , const StubAddress  & target
-                                            , unsigned int reqId
-                                            , NEService::eRequestType reqType
-                                            , Event::eEventType eventType)
-    : StubEvent   (target, eventType)
+                                        , const StubAddress  & target
+                                        , unsigned int reqId
+                                        , NEService::eRequestType reqType
+                                        , Event::eEventType eventType)
+    : StubEvent     (target, eventType)
     , mProxySource  (proxyAddress)
     , mMessageId    (reqId)
     , mRequestType  (reqType)
@@ -35,7 +35,7 @@ ServiceRequestEvent::ServiceRequestEvent( const ProxyAddress & proxyAddress
 }
 
 ServiceRequestEvent::ServiceRequestEvent(const IEInStream & stream)
-    : StubEvent   (stream)
+    : StubEvent     (stream)
     , mProxySource  (stream)
     , mMessageId    (NEService::INVALID_MESSAGE_ID)
     , mRequestType  (NEService::REQUEST_UNPROCESSED)

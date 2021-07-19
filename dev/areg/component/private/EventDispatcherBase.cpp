@@ -158,7 +158,7 @@ bool EventDispatcherBase::unregisterEventConsumer( const RuntimeClassID & whichC
     else
     {
         OUTPUT_WARN("[ %s ] dispatcher: Did not find registered consumer list for event [ %s ]", mDispatcherName.getString(), whichClass.getName());
-        // AAvetyan:    The reason why it does not find, because it cleaned in _clean() function.
+        // AAvetyan:    The reason why it does not find, because it is cleaned in _clean() function.
         //              This is mainly happening in component, which has server interface implementation.
         //              To make graceful shutdown, in _clean() method should be set filtering.
         //              But the consumer map indeed at this point is empty and the consumer is unregistered.
@@ -312,7 +312,6 @@ bool EventDispatcherBase::dispatchEvent( Event& eventElem )
         mConsumerMap.unlock();
     }
 
-    // OUTPUT_DBG("Processing Event [ %s ] in dispatcher [ %s ] for [ %d ] consumers", eventElem.GetRuntimeClassName(), mDispatcherName.getString(), processingList.getSize());
     LISTPOS pos = processingList.firstPosition();
     while (pos != NULL)
     {

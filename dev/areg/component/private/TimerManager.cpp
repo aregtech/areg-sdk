@@ -236,7 +236,8 @@ void TimerManager::_processExpiredTimers( void )
         {
             ASSERT(currTimer != NULL);
             ITEM_ID threadId = timerInfo->mOwnThreadId;
-            if ( mTimerTable.resetActiveTimerState(currTimer))
+
+            if ( timerInfo->canContinueTimer(expiredTime))
             {
                 TRACE_DBG("Send timer [ %s ] event to target [ %u ], continuing timer", currTimer->getName().getString(), static_cast<unsigned int>(timerInfo->mOwnThreadId));
             }

@@ -31,31 +31,36 @@ const ThreadAddress   ThreadAddress::INVALID_THREAD_ADDRESS(ThreadAddress::INVAL
 //////////////////////////////////////////////////////////////////////////
 ThreadAddress::ThreadAddress( void )
     : mThreadName   ( ThreadAddress::INVALID_THREAD_NAME )
+    , mMagicNum     ( NEMath::CHECKSUM_IGNORE )
 {
     ; // do nothing
 }
 
 ThreadAddress::ThreadAddress( const char* threadName )
     : mThreadName   ( threadName != NULL ? threadName : ThreadAddress::INVALID_THREAD_NAME )
+    , mMagicNum     ( NEMath::CHECKSUM_IGNORE )
 {
     mThreadName.truncate( NEUtilities::ITEM_NAMES_MAX_LENGTH );
+    mMagicNum    = ThreadAddress::_magicNumber(*this);
 }
 
 ThreadAddress::ThreadAddress( const ThreadAddress & src )
     : mThreadName   ( src.mThreadName )
+    , mMagicNum     ( src.mMagicNum )
 {
     ; // do nothing
 }
 
 ThreadAddress::ThreadAddress( const IEInStream & stream )
     : mThreadName   ( stream )
+    , mMagicNum     ( NEMath::CHECKSUM_IGNORE )
 {
-    ;
+    mMagicNum    = ThreadAddress::_magicNumber(*this);
 }
 
 ThreadAddress::~ThreadAddress( void )
 {
-    ; // do nothing
+    mMagicNum = NEMath::CHECKSUM_IGNORE;
 }
 
 bool ThreadAddress::isValid( void ) const

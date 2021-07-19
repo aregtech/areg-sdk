@@ -33,13 +33,13 @@ DEF_TRACE_SCOPE(mcrouter_tcp_private_ServerService_failedReceiveMessage);
 const NERemoteService::eServiceConnection   ServerService::CONNECT_TYPE   = NERemoteService::ConnectionTcpip;
 
 ServerService::ServerService( void )
-    : IERemoteService              ( )
-    , DispatcherThread             ( NEConnection::SERVER_DISPATCH_MESSAGE_THREAD )
-    , IEServerConnectionHandler    ( )
-    , IERemoteServiceConsumer      ( )
-    , IERemoteServiceHandler       ( )
-    , IEServerServiceEventConsumer ( )
-    , IETimerConsumer              ( )
+    : IERemoteService               ( )
+    , DispatcherThread              ( NEConnection::SERVER_DISPATCH_MESSAGE_THREAD )
+    , IEServerConnectionHandler     ( )
+    , IERemoteServiceConsumer       ( )
+    , IERemoteServiceHandler        ( )
+    , IEServerServiceEventConsumer  ( )
+    , IETimerConsumer               ( )
 
     , mServerConnection ( )
     , mTimerConnect     ( static_cast<IETimerConsumer &>(self()), NEConnection::SERVER_CONNECT_TIMER_NAME)

@@ -2,7 +2,7 @@
 // Name        : main.cpp
 // Author      : Artak Avetyan
 // Version     :
-// Copyright   : Aregtech © 2021
+// Copyright   : Aregtech ï¿½ 2021
 // Description : Hello World in C++, Ansi-style
 //============================================================================
 
@@ -104,6 +104,7 @@ DEF_TRACE_SCOPE(example_11_svcmix_main_main);
  **/
 int main()
 {
+    printf("Testing multiple local servicing components of the same service interface running with different names in different threads...\n");
     // force to start logging with default settings
     TRACER_CONFIGURE_AND_START(NULL);
     // Initialize application, enable logging, servicing and the timer.
@@ -133,5 +134,7 @@ int main()
 
     } while (false);
     
+    printf("Completed testing multiple local servicing components, check the logs...\n");
+
 	return 0;
 }

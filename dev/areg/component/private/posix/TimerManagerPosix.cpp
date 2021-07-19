@@ -74,7 +74,7 @@ bool TimerManager::_startSystemTimer( TimerInfo & timerInfo, MapTimerTable & tim
         {
             struct timespec ts;
             clock_gettime(CLOCK_REALTIME, &ts);
-            timerInfo.isTimerStarting( static_cast<unsigned int>(ts.tv_sec), static_cast<unsigned int>(ts.tv_nsec));
+            timerInfo.timerStarting( static_cast<unsigned int>(ts.tv_sec), static_cast<unsigned int>(ts.tv_nsec));
             timerTable.registerObject( whichTimer, timerInfo );
 
             result = true;

@@ -62,10 +62,10 @@ StubAddress::StubAddress( void )
 }
 
 StubAddress::StubAddress( const char * serviceName
-                            , const Version & serviceVersion
-                            , NEService::eServiceType serviceType
-                            , const char * roleName
-                            , const char * threadName   /*= NULL*/ )
+                        , const Version & serviceVersion
+                        , NEService::eServiceType serviceType
+                        , const char * roleName
+                        , const char * threadName   /*= NULL*/ )
     : ServiceAddress( serviceName, serviceVersion, serviceType, roleName )
     , mThreadName   ( threadName )
     , mChannel      ( )

@@ -2,7 +2,7 @@
 // Name        : main.cpp
 // Author      : Artak Avetyan
 // Version     :
-// Copyright   : Aregtech © 2021
+// Copyright   : Aregtech ï¿½ 2021
 // Description : Hello World in C++, Ansi-style
 //============================================================================
 
@@ -79,6 +79,7 @@ DEF_TRACE_SCOPE(main_main);
  **/
 int main()
 {
+    printf("Testing simple local servicing components running as a server and as a client...\n");
     // force to start logging with default settings
     TRACER_CONFIGURE_AND_START(NULL);
     // Initialize application, enable logging, servicing and the timer.
@@ -105,5 +106,7 @@ int main()
 
     } while (false);
     
+    printf("Completed testing simple local servicing components...\n");
+
 	return 0;
 }

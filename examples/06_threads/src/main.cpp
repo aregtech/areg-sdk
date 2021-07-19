@@ -2,7 +2,7 @@
 // Name        : main.cpp
 // Author      : Artak Avetyan
 // Version     :
-// Copyright   : Aregtech © 2021
+// Copyright   : Aregtech ï¿½ 2021
 // Description : Hello World in C++, Ansi-style
 //============================================================================
 
@@ -126,16 +126,31 @@ public:
 
 protected:
 /************************************************************************/
+// DispatcherThread overrides
+/************************************************************************/
+
+    /**
+     * \brief   Triggered when dispatcher starts running.
+     *          In this function runs main dispatching loop.
+     *          Events are picked and dispatched here.
+     *          Override if logic should be changed.
+     * \return  Returns true if Exit Event is signaled.
+     **/
+    virtual bool runDispatcher( void );
+
+/************************************************************************/
 // IEEventRouter interface overrides
 /************************************************************************/
 
     /**
-     * \brief	Posts event and delivers to its target.
-     *          This method must be overwritten to avoid assertion raise.
-     * \param	eventElem	Event object to post
-     * \return	In this class it always returns true.
+     * \brief   The method is triggered to start dispatching valid event.
+     *          Here dispatcher should forward message to appropriate
+     *          registered event consumer
+     * \param   eventElem   Event element to dispatch
+     * \return  Returns true if at least one consumer processed event.
+     *          Otherwise it returns false.
      **/
-    virtual bool postEvent( Event & eventElem );
+    virtual bool dispatchEvent( Event & eventElem );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -146,6 +161,7 @@ const char * HelloDispatcher::THREAD_NAME     = "Hello Thread";
 // Define HelloDispatcher trace scopes to make logging
 // Trace scopes must be defined before they are used.
 DEF_TRACE_SCOPE(main_HelloDispatcher_HelloDispatcher);
+DEF_TRACE_SCOPE(main_HelloDispatcher_runDispatcher);
 DEF_TRACE_SCOPE(main_HelloDispatcher_postEvent);
 
 HelloDispatcher::HelloDispatcher( void )
@@ -159,11 +175,18 @@ HelloDispatcher::~HelloDispatcher( void )
 {
 }
 
-bool HelloDispatcher::postEvent(Event & eventElem)
+bool HelloDispatcher::runDispatcher( void )
+{
+    TRACE_SCOPE(main_HelloDispatcher_runDispatcher);
+    TRACE_DBG("The dispatcher is running...");
+
+    return DispatcherThread::runDispatcher();
+}
+
+bool HelloDispatcher::dispatchEvent(Event & eventElem)
 {
     TRACE_SCOPE(main_HelloDispatcher_postEvent);
     TRACE_DBG("Received event [ %s ]", eventElem.getRuntimeClassName());
-    eventElem.destroy();
     return true;
 }
 
@@ -177,6 +200,7 @@ DEF_TRACE_SCOPE(main_main);
  */
 int main()
 {
+    printf("Initializing to test threads...\n");
     // Force to start logging. See outputs log files in appropriate "logs" subfolder.
     // To change the configuration and use dynamic logging, use macro TRACER_START_LOGGING
     // and specify the logging configuration file, where you can change logging format,
@@ -218,6 +242,8 @@ int main()
 
     // Stop logging.
     TRACER_STOP_LOGGING();
+
+    printf("Testing threads completed, check logs...\n");
 
     return 0;
 }

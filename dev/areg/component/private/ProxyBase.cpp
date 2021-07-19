@@ -207,7 +207,7 @@ const ProxyBase::ThreadProxyList & ProxyBase::ThreadProxyList::operator = ( cons
 IMPLEMENT_RUNTIME_EVENT(ProxyBase::ServiceAvailableEvent, ThreadEventBase)
 
 ProxyBase::ServiceAvailableEvent::ServiceAvailableEvent( IENotificationEventConsumer & consumer )
-    : ThreadEventBase ( Event::EventExternal )
+    : ThreadEventBase   ( Event::EventExternal )
     , mConsumer         ( consumer )
 {
     ; // do nothing

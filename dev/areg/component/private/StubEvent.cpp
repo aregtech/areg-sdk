@@ -27,14 +27,14 @@ IMPLEMENT_RUNTIME_EVENT(StubEvent, StreamableEvent)
 // StubEvent class, constructor / destructor
 //////////////////////////////////////////////////////////////////////////
 StubEvent::StubEvent( const StubAddress& toTarget, Event::eEventType eventType )
-    : StreamableEvent (eventType)
+    : StreamableEvent   (eventType)
     , mTargetStubAddress(toTarget)
 {
     ; // do nothing
 }
 
 StubEvent::StubEvent( const IEInStream & stream  )
-    : StreamableEvent (stream)
+    : StreamableEvent   (stream)
     , mTargetStubAddress(stream)
 {
     ; // do nothing
@@ -88,7 +88,7 @@ void StubEvent::deliverEvent( void )
 // IEStubEventConsumer class, constructor / destructor
 //////////////////////////////////////////////////////////////////////////
 IEStubEventConsumer::IEStubEventConsumer( const StubAddress & stubAddress )
-    : ThreadEventConsumerBase ( )
+    : ThreadEventConsumerBase   ( )
     , mStubAddress              ( stubAddress )
 {
     ; // do nothing

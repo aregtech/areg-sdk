@@ -1,40 +1,9 @@
 ========================================================================
-    CONSOLE APPLICATION : 03-file Project Overview
+    CONSOLE APPLICATION : 04_trace Project Overview
 ========================================================================
 
-AppWizard has created this 03-file application for you.
-
-This file contains a summary of what you will find in each of the files that
-make up your 03-file application.
-
-
-03-file.vcxproj
-    This is the main project file for VC++ projects generated using an Application Wizard.
-    It contains information about the version of Visual C++ that generated the file, and
-    information about the platforms, configurations, and project features selected with the
-    Application Wizard.
-
-03-file.vcxproj.filters
-    This is the filters file for VC++ projects generated using an Application Wizard. 
-    It contains information about the association between the files in your project 
-    and the filters. This association is used in the IDE to show grouping of files with
-    similar extensions under a specific node (for e.g. ".cpp" files are associated with the
-    "Source Files" filter).
-
-03-file.cpp
-    This is the main application source file.
-
-/////////////////////////////////////////////////////////////////////////////
-Other standard files:
-
-StdAfx.h, StdAfx.cpp
-    These files are used to build a precompiled header (PCH) file
-    named 03-file.pch and a precompiled types file named StdAfx.obj.
-
-/////////////////////////////////////////////////////////////////////////////
-Other notes:
-
-AppWizard uses "TODO:" comments to indicate parts of the source code you
-should add to or customize.
-
-/////////////////////////////////////////////////////////////////////////////
+This project demonstrates how to configure the loging and how to enable logging (including, force to enable).
+When starts, it uses default "./config/log.init" path to initialize logging. If the file does not exist,
+it forces to start logging and use default logging settings.
+By default, the logging is enabled for all scopes of the current process, and the log files contain the timestampt.
+The application starts a separate thread and makes log oututs.

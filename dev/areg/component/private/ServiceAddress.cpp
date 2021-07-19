@@ -81,7 +81,7 @@ ServiceAddress::ServiceAddress( const IEInStream & stream )
 ServiceAddress::ServiceAddress( const ServiceAddress & source )
     : ServiceItem   ( static_cast<const ServiceItem >(source) )
     , mRoleName     ( source.mRoleName )
-    , mMagicNum      ( source.mMagicNum )
+    , mMagicNum     ( source.mMagicNum )
 {
     ; // do nothing
 }

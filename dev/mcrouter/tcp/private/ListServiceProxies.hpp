@@ -55,7 +55,7 @@ public:
     /**
      * \brief   Destructor
      **/
-    virtual ~ListServiceProxies( void );
+    ~ListServiceProxies( void );
 
 //////////////////////////////////////////////////////////////////////////
 // Operators, operations and attributes

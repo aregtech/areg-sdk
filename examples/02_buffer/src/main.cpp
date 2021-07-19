@@ -2,7 +2,7 @@
 // Name        : main.cpp
 // Author      : Artak Avetyan
 // Version     :
-// Copyright   : Aregtech © 2021
+// Copyright   : Aregtech ï¿½ 2021
 // Description : Hello World in C++, Ansi-style
 //============================================================================
 
@@ -91,7 +91,7 @@ inline HelloThread & HelloThread::self( void )
 
 void HelloThread::onThreadRuns( void )
 {
-    OUTPUT_DBG("The thread [ %s ] runs, going to output message", Thread::getCurrentThreadName());
+    printf("The thread [ %s ] runs, going to output message:\n", Thread::getCurrentThreadName());
 
     int numDigit = 0;
     float numPI = 0.0;
@@ -134,19 +134,19 @@ int main()
     theSharedBuffer >> msgHello;
 
     // make debug output here, check values.
-    OUTPUT_DBG("The digital number is .: %d", numDigit);
-    OUTPUT_DBG("The floating number is : %f", numFloat);
-    OUTPUT_DBG("The hello message is ..: %s", msgHello.getString());
+    printf("The digital number is .: %d\n", numDigit);
+    printf("The floating number is : %f\n", numFloat);
+    printf("The hello message is ..: %s\n", msgHello.getString());
 
     // declare thread object.
     HelloThread aThread;
 
     // create and start thread, wait until it is started.
-    OUTPUT_INFO("Starting Thread [ %s ]...", aThread.getName().getString());
+    printf("\nStarting Thread [ %s ]...\n", aThread.getName().getString());
     aThread.createThread(Thread::WAIT_INFINITE);
 
     // stop and destroy thread, clean resources. Wait until thread ends.
-    OUTPUT_INFO("Destroying Thread [ %s ]...", aThread.getName().getString());
+    printf("Destroying Thread [ %s ]...\n", aThread.getName().getString());
     aThread.destroyThread(Thread::WAIT_INFINITE);
 
     std::cout << "Exit application!" << std::endl;

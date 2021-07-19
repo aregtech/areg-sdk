@@ -85,7 +85,7 @@ bool TimerInfo::operator == ( const TimerInfo & other ) const
 //////////////////////////////////////////////////////////////////////////
 // TimerInfo class, methods
 //////////////////////////////////////////////////////////////////////////
-bool TimerInfo::isTimerExpired( unsigned int highValue, unsigned int lowValue )
+bool TimerInfo::timerExpired( unsigned int highValue, unsigned int lowValue )
 {
     bool result = false;
     if (mTimerState == TimerInfo::TimerPending)
@@ -93,10 +93,13 @@ bool TimerInfo::isTimerExpired( unsigned int highValue, unsigned int lowValue )
         uint64_t expiredAt = MACRO_MAKE_64( highValue, lowValue );
         if ((mStartedAt <= expiredAt) && (mExpiredAt <= expiredAt))
         {
+            mTimerState= TimerInfo::TimerIdle;
             mExpiredAt = expiredAt;
-            mTimer->timerIsExpired( highValue, lowValue);
-            mTimerState= mTimer->isActive() ? TimerInfo::TimerExpired : TimerInfo::TimerIdle;
-            result = true;
+            if (mTimer->timerIsExpired( highValue, lowValue))
+            {
+                mTimerState = TimerInfo::TimerExpired;
+                result      = true;
+            }
         }
 #ifdef _DEBUG
         else
@@ -108,7 +111,26 @@ bool TimerInfo::isTimerExpired( unsigned int highValue, unsigned int lowValue )
     return result;
 }
 
-void TimerInfo::isTimerStarting( unsigned int highValue, unsigned int lowValue )
+bool TimerInfo::canContinueTimer( const ExpiredTimerInfo & expiredTimer )
+{
+    bool result = false;
+    if ( isTimerActive() )
+    {
+        uint32_t highValue  = expiredTimer.mHighValue;
+        uint32_t lowValue   = expiredTimer.mLowValue;
+        uint64_t expiredAt  = MACRO_MAKE_64( highValue, lowValue );
+        mExpiredAt = expiredAt;
+        if (mTimer->timerIsExpired( highValue, lowValue))
+        {
+            mTimerState = TimerInfo::TimerPending;
+            result      = true;
+        }
+    }
+
+    return result;
+}
+
+void TimerInfo::timerStarting( unsigned int highValue, unsigned int lowValue )
 {
     ASSERT(mTimerState == TimerInfo::TimerIdle);
     mStartedAt    = MACRO_MAKE_64(highValue, lowValue);

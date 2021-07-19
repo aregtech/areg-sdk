@@ -15,9 +15,9 @@
 #include <stdarg.h>
 
 TraceMessage::TraceMessage( const TraceScope & traceScope )
-    : mScopeName    ( traceScope.getScopeName() )
-    , mScopeId      ( traceScope.mScopeId )
-    , mScopePrio    ( traceScope.mScopePrio )
+    : mScopeName( traceScope.getScopeName() )
+    , mScopeId  ( traceScope.mScopeId )
+    , mScopePrio( traceScope.mScopePrio )
 {
     if ( isScopeEnabled() )
     {

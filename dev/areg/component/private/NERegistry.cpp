@@ -79,12 +79,11 @@ NERegistry::ServiceEntry::ServiceEntry( const char* serviceName, unsigned int ma
     ASSERT( mVersion.isValid( ) );
 }
 
-NERegistry::ServiceEntry::ServiceEntry( const char* serviceName, const Version& version )
+NERegistry::ServiceEntry::ServiceEntry( const char* serviceName, const Version & version )
     : mName     (serviceName)
     , mVersion  (version)
 {
     ASSERT( mName.isEmpty() == false );
-    ASSERT( mVersion.isValid() );
 }
 
 NERegistry::ServiceEntry::ServiceEntry( const NERegistry::ServiceEntry & src )
@@ -99,7 +98,7 @@ NERegistry::ServiceEntry::~ServiceEntry()
     ; // do nothing
 }
 
-const NERegistry::ServiceEntry& NERegistry::ServiceEntry::operator = ( const NERegistry::ServiceEntry& src )
+const NERegistry::ServiceEntry & NERegistry::ServiceEntry::operator = ( const NERegistry::ServiceEntry & src )
 {
     if (static_cast<const ServiceEntry *>(this) != &src)
     {
@@ -109,7 +108,7 @@ const NERegistry::ServiceEntry& NERegistry::ServiceEntry::operator = ( const NER
     return (*this);
 }
 
-bool NERegistry::ServiceEntry::operator == ( const NERegistry::ServiceEntry& other ) const
+bool NERegistry::ServiceEntry::operator == ( const NERegistry::ServiceEntry & other ) const
 {
     return (this != &other ? mName == other.mName && mVersion == other.mVersion : true);
 }

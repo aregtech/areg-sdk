@@ -2,7 +2,7 @@
 // Name        : main.cpp
 // Author      : Artak Avetyan
 // Version     :
-// Copyright   : Aregtech © 2021
+// Copyright   : Aregtech ï¿½ 2021
 // Description : Hello World in C++, Ansi-style
 //============================================================================
 
@@ -66,6 +66,8 @@ DEF_TRACE_SCOPE(example_12_ipchello_svcipchello_main_main);
  **/
 int main()
 {
+    printf("Testing simple remote servicing component. Run as a ultra-small Server...\n");
+
     // force to start logging with default settings
     TRACER_CONFIGURE_AND_START(NULL);
     // Initialize application, enable logging, servicing and the timer.
@@ -92,5 +94,7 @@ int main()
 
     } while (false);
     
+    printf("Completed testing simple remote servicing component. Check the logs...\n");
+
 	return 0;
 }

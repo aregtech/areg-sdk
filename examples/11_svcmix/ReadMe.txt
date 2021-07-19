@@ -1,40 +1,12 @@
 ========================================================================
-    CONSOLE APPLICATION : 03-file Project Overview
+    CONSOLE APPLICATION : 11_svcmix Project Overview
 ========================================================================
 
-AppWizard has created this 03-file application for you.
-
-This file contains a summary of what you will find in each of the files that
-make up your 03-file application.
-
-
-03-file.vcxproj
-    This is the main project file for VC++ projects generated using an Application Wizard.
-    It contains information about the version of Visual C++ that generated the file, and
-    information about the platforms, configurations, and project features selected with the
-    Application Wizard.
-
-03-file.vcxproj.filters
-    This is the filters file for VC++ projects generated using an Application Wizard. 
-    It contains information about the association between the files in your project 
-    and the filters. This association is used in the IDE to show grouping of files with
-    similar extensions under a specific node (for e.g. ".cpp" files are associated with the
-    "Source Files" filter).
-
-03-file.cpp
-    This is the main application source file.
-
-/////////////////////////////////////////////////////////////////////////////
-Other standard files:
-
-StdAfx.h, StdAfx.cpp
-    These files are used to build a precompiled header (PCH) file
-    named 03-file.pch and a precompiled types file named StdAfx.obj.
-
-/////////////////////////////////////////////////////////////////////////////
-Other notes:
-
-AppWizard uses "TODO:" comments to indicate parts of the source code you
-should add to or customize.
-
-/////////////////////////////////////////////////////////////////////////////
+The project 11_svcmix is an extension of project 10_service.
+This project demonstrates how can be same service interface instantiated in the same process multiple times.
+To have fully operable instances of the same servicing component object in the same process, they should run in different threads and have different names.
+There is no restriction for client part. The client can be instantiated in any thread multiple times.
+This application defines model with 3 component threads. Each thread instantiates same service interface with different names.
+Some components contain clients and the client objects refer to different services of the same service interfaces (SecondaryComponent).
+One of components is marked as 'main' and the application runs as long, until the main component does not trigger 'quit' event to stop application and release resources.
+ 
