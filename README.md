@@ -3,7 +3,7 @@ This file is part of AREG SDK, the multi-tasking application development platfor
 Copyright (c) Aregtech, 2017-2021
 Contact: info[at]aregtech.com
 ```
-===============================================================================
+==========================================================================
 
 Current sources of **AREG IoT SDK** (or **AREG SDK**) support _POSIX_ and _Win32_ API.
 
@@ -12,16 +12,16 @@ Current sources of **AREG IoT SDK** (or **AREG SDK**) support _POSIX_ and _Win32
 Materially, **AREG SDK** enables mist computing at extreme edge of the network, where devices connect to fog not only as traditional clients, but as ultra-small servers that provide services to execute either device specific or a narrow range of tasks. IoT service-enabled embedded applications make IoT devices an integral part of fog. The key importance of such a model are capabilities of embedded devices to provide and discover services used by applications in  the  network.
 
 Traditionally, IoT devices are connected clients of cloud or fog servers to stream data from sensors for further processing. Since data is generated and collected at devices, it makes sense to provide network accessible (public) services directly on things. Such a concept changes the role of connected devices and primarily solves the following challenges:
-    * It significantly increases data privacy, which is a very important factor for sensitive data. 
-    * It decreases data streaming, which is a fundamental condition for optimizing network communications that has a direct impact on energy consumption. 
-    * It renders devices more autonomous and more intelligent by providing network services directly in the environment of data origin. 
+* It significantly increases data privacy, which is a very important factor for sensitive data. 
+* It decreases data streaming, which is a fundamental condition for optimizing network communications that has a direct impact on energy consumption. 
+* It renders devices more autonomous and more intelligent by providing network services directly in the environment of data origin. 
 
  
 The current version of **AREG SDK** consists of following components:  
-    -- a connectivity and communication framework that contains the multitasking and distributed communication business logic;
-    -- logger, which is integrated in the framework and can be switched ON or OFF;
-    -- a multicast router to route messages between applications in real-time communication mode;
-    -- code generator to generate base servicing objects to extend and implement the application logic.
+- a connectivity and communication framework that contains the multitasking and distributed communication business logic;
+- logger, which is integrated in the framework and can be switched ON or OFF;
+- a multicast router to route messages between applications in real-time communication mode;
+- code generator to generate base servicing objects to extend and implement the application logic.
 
 
 ## The file system structure:
@@ -50,8 +50,8 @@ The compiled codes output in "areg-sdk/product/build/<platform info>" folder
 
 ## Preprocessor directives:
 
-    1. To compile sources with _POSIX API_, specify **POSIX** (or **_POSIX**) preprocessor directive.
-    2. To compile sources with _Win32 API_, specify **WINDOWS** (or **_WINDOWS**) preprocessor directive.
+1. To compile sources with _POSIX API_, specify **POSIX** (or **_POSIX**) preprocessor directive.
+1. To compile sources with _Win32 API_, specify **WINDOWS** (or **_WINDOWS**) preprocessor directive.
 
 **Other preprocessor directives:**
 - **DEBUG** to compile debug version
