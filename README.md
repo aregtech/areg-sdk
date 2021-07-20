@@ -137,9 +137,9 @@ To compile with Eclipse / GCC, include all projects in _"areg-sdk/dev/xxx"_ fold
 8.  [08_service](./examples/08_service/)     -- multithreading console application to start empty servicing component.
 9.  [09_duplicate](./examples/09_duplicate/) -- multithreading console application to duplicate instances of same servicing component.
 10. [10_svchello](./examples/10_svchello/)   -- multithreading console application to demonstrate _Local_ servicing component.
-11. [11_svcmix](./examples/11_svcmix/)       -- multithreading console application to demonstrate multiple instances of same _Local_ service in the process.
-12. [12_ipchello](./examples/12_ipchello/)   -- multiprocessing (IPC) application to demonstrate _Remote_ servicing component and client.
-13. [13_ipcmix](./examples/13_ipcmix/)       -- multiprocessing (IPC) application to demonstrate service meshing and mixture of _Local_ and _Remote_ services.
+11. [11_svcmix](./examples/11_svcmix/)       -- multithreading console application to demonstrate multi-instances of same _Local_ service.
+12. [12_ipchello](./examples/12_ipchello/)   -- multiprocessing (**IPC**) application to demonstrate _Remote_ servicing component and client.
+13. [13_ipcmix](./examples/13_ipcmix/)       -- multiprocessing (**IPC**) application to demonstrate meshing and mixture of _Local_ and _Remote_ services.
 14. [messager](./examples/messager/)         -- Windows GUI application to demonstrate dynamic modeling, fault tollerant environment and mist network.
 
 For more details of every project, read _ReadMe.txt_ file of each example project.
