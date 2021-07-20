@@ -76,6 +76,8 @@ In source codes, all paths are relative to **"areg-sdk/dev"** folder.
 To compile with Visual Studio, use _areg-sdk.sln_
 To compile with Eclipse / GCC, include all projects in _"areg-sdk/dev/xxx"_ folders and, by wish, _"areg-sdk/examples/xxx"_ folders.
 
+## Licensing
+ 
 **AREG SDK** is dual-licensed under commercial and free open source licenses. The commercial license gives the full rights to create and distribute software on own terms without any open source license obligations. For more details of licensing see [LICENSE.txt](https://github.com/aregtech/areg-sdk/blob/master/LICENSE.txt) file.
  
 For license, support or any additional information, please visit [Aregtech](https://www.aregtech.com/) to contact us.
