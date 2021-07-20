@@ -2,10 +2,13 @@
 This file is part of AREG SDK, the multi-tasking application development platform.
 Copyright (c) Aregtech, 2017-2021
 Contact: info[at]aregtech.com
+Website: https://www.aregtech.com
 ```
 ==========================================================================
 
 Current sources of **AREG IoT SDK** (or **AREG SDK**) support _POSIX_ and _Win32_ API.
+
+## Introduction
 
 **AREG SDK** is _an event-driven asynchronous connectivity and communication cross-platform framework_ written in C++ that helps to implement multitasking service enabled applications running on embedded and/or high-end machines with 32- or 64-bits multitasking operating systems such as Linux (_POSIX API_) or Windows (_Win32 API_). The inter-process communication (_IPC_) of current version of framework is based on a multicast routing communication model, which helps to create network of meshed services being distributes in any node.
 
@@ -26,32 +29,32 @@ The current version of **AREG SDK** consists of following components:
 
 ## The file system structure:
 ```
-areg-sdk            --> the root folder of AREG SDK
+areg-sdk  ......... --> the root folder of AREG SDK
     |
-    +- dev          --> the source codes of AREG Framework and Multicasting Router
+    +- dev  ....... --> the source codes of AREG Framework and Multicasting Router
     |   |
-    |   +- areg     --> the source codes of AREG Framework
+    |   +- areg  .. --> the source codes of AREG Framework
     |   |
     |   +- mcrouter --> the sources of Multicast Router
     |   |
-    |   +- system   --> the development platform specific common codes
+    |   +- system . --> the development platform specific common codes
     |
-    +- examples     --> examples and tests of AREG SDK
+    +- examples  .. --> examples and tests of AREG SDK
     |
-    +- tools        --> code generator and other tools
+    +- tools  ..... --> code generator and other tools
     |
     +- LICENSE.txt  --> the license. Please read before use or distribute.
     |
-    +- POSIX.md    --> the instruction to compile application in Linux.
+    +- POSIX.md  .. --> the instruction to compile application in Linux.
     |
-    +- WIN32.md    --> the instruction to compile application in Windows.
+    +- WIN32.md  .. --> the instruction to compile application in Windows.
 ```
 The compiled codes output in "areg-sdk/product/build/<platform info>" folder
 
 ## Preprocessor directives:
 
-1. To compile sources with _POSIX API_, specify **POSIX** (or **_POSIX**) preprocessor directive.
-1. To compile sources with _Win32 API_, specify **WINDOWS** (or **_WINDOWS**) preprocessor directive.
+1. To compile sources with _POSIX API_, specify **POSIX** (or **_POSIX**) preprocessor directive. For more details see [POSIX.md](https://github.com/aregtech/areg-sdk/blob/master/POSIX.md)
+1. To compile sources with _Win32 API_, specify **WINDOWS** (or **_WINDOWS**) preprocessor directive. For more details see [WIN32.md](https://github.com/aregtech/areg-sdk/blob/master/WIN32.md)
 
 **Other preprocessor directives:**
 - **DEBUG** to compile debug version
@@ -73,4 +76,6 @@ In source codes, all paths are relative to **"areg-sdk/dev"** folder.
 To compile with Visual Studio, use _areg-sdk.sln_
 To compile with Eclipse / GCC, include all projects in _"areg-sdk/dev/xxx"_ folders and, by wish, _"areg-sdk/examples/xxx"_ folders.
 
-**AREG SDK** is dual-licensed under commercial and free open source licenses. The commercial license gives the full rights to create and distribute software on own terms without any open source license obligations. For more details of licensing see **_LICENSE.txt_** file.
+**AREG SDK** is dual-licensed under commercial and free open source licenses. The commercial license gives the full rights to create and distribute software on own terms without any open source license obligations. For more details of licensing see [LICENSE.txt](https://github.com/aregtech/areg-sdk/blob/master/LICENSE.txt) file.
+ 
+For license, support or any additional information, please visit [Aregtech](https://www.aregtech.com/) to contact us.
