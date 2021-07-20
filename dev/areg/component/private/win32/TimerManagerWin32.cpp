@@ -67,7 +67,7 @@ bool TimerManager::_startSystemTimer( TimerInfo & timerInfo, MapTimerTable & tim
 
     FILETIME fileTime;
     ::GetSystemTimeAsFileTime( &fileTime );
-    timerInfo.isTimerStarting( fileTime.dwHighDateTime, fileTime.dwLowDateTime );
+    timerInfo.timerStarting( fileTime.dwHighDateTime, fileTime.dwLowDateTime );
 
     Timer* whichTimer = timerInfo.mTimer;
     ASSERT( whichTimer != static_cast<Timer *>(NULL) );
