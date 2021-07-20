@@ -1,8 +1,9 @@
 This file is part of AREG SDK, the multi-tasking application development platform.
 Copyright (c) Aregtech UG, 2017-2021
 Contact: info[at]aregtech.com
+Website: https://www.aregtech.com
 
-===============================================================================
+=============================================================================
                                 
                                 GENERAL
                                 
@@ -28,7 +29,7 @@ relationship with Aregtech company to met development goals.
     5.  Aregtech  any time may change the free source code distribution policy.
     
     
-===============================================================================
+=============================================================================
 
 
                                  Apache License
