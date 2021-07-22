@@ -188,8 +188,8 @@ Under _Windows_, change preprocessor directives in _config_user.props_ file to a
 When sources are compiled, the application can be started. The AREG framework has default settings to enable logging and inter-process communication. However, use appropriate initialization files to set the right settings.
 
 If after compilation the binary output folder does not contains _‘config’_ subfolder with _.init_ files:
-For logs: create _’config’_ subfolder and copy [log.init](./dev/areg/resources/log.init) file located in [areg-sdk\dev\areg\resources](./dev/areg/resources/).
-For IPC: create _’config’_ subfolder and copy [router.init](./dev/areg/resources/router.init) file located in [areg-sdk\dev\areg\resources](./dev/areg/resources/).
+For logs: create _’config’_ subfolder and copy [log.init](./dev/areg/resources/log.init) file located in [./dev/areg/resources](./dev/areg/resources/).
+For IPC: create _’config’_ subfolder and copy [router.init](./dev/areg/resources/router.init) file located in [./dev/areg/resources](./dev/areg/resources/).
 
 For further instructions of using or changing _.init_, see the instructions in the files. The syntax of initialization files are simple, and the parameters are described.
 
