@@ -37,7 +37,7 @@ The project _AREG_ has been started as a simple asynchronous multithreading modu
 
 With the help of AREG framework developers can implement service enabled multitasking applications running on embedded and/or high-end machines with 32- or 64-bits operating systems such as Linux (_POSIX API_) or Windows (_Win32 API_). The inter-process communication (_IPC_) is based on a multicast routing communication model, which has a combined features of client-server and publish-subscribe network communication models. 
 
-AREG framework forms a mesh of services distributed in physical or virtual nodes. It can be used to develop a single embedded application (process) or complex multi-process application running on one or several machines. The architects may easily balance computing resources by distributing services between multiple processes and this will remain transparent for software developers as they would write software for a single process or even in a single thread. In other words, the AREG framework does not care about the physical location of service. The automatic service discovery will always notify clients whenever service is available in the network. Therefore, the developers can focus on service or client business logic implementation, and trigger the methods, as both would run in the same process or even in the same thread.
+AREG framework forms a mesh of services distributed in virtual nodes, where the system has no interest about the physical location of the service to trigger requests. It can be used to develop a single multithreading or complex multi-process application running on one or several machines. The architects may easily balance computing resources by distributing services between processes and this will remain transparent for software developers as they would write codes for a single process or even in a single thread.
 
 Ideally, AREG framework is used in multi-processing projects or in the projects where connected Things within a network need to communicate in real-time mode. 
 
@@ -45,7 +45,7 @@ Ideally, AREG framework is used in multi-processing projects or in the projects 
 
 Traditionally, IoT devices are connected clients of cloud or fog servers to stream data from sensors for further processing. Since data is generated and collected at devices, it makes sense to provide network accessible (public) services directly on things. Such a concept changes the role of connected devices and primarily solves the following challenges:
 * It significantly _increases data privacy_, which is a very important factor for sensitive data. 
-* It _decreases data streaming_, which is a fundamental condition for optimizing network communications that has a direct impact on energy consumption. 
+* It _decreases data streaming_, which is a fundamental condition to optimize network communication that has a direct impact on energy consumption. 
 * It renders devices _more autonomous and more intelligent_ by providing network services directly in the environment of data origin. 
  
 ### Framework and tools
@@ -56,13 +56,13 @@ The current version of AREG SDK consists of following components:
 - A _multicast router_ to route messages between applications in real-time communication mode;
 - _Code generator_ to generate servicing base objects to extend and implement the service logic.
 
-The other tools and features, such as _remote logging service_, _design tools_, support of other _embedded RTOS_ (freeRTOS, for example) are in the development phase. Tools and features like featured log viewer, testing tool, multiple communication channels and protocols, further extension supported OS, etc., are in development pipeline.
+The other tools and features are either in the development phase or in the pipeline.
 
 ## More than embedded
 
-With the rapid growth of the Internet of Things (_IoT_) technology market, many corporates are faced with pulling together several technological solutions. Solutions that are not well chosen or thought through can create additional engineering, application development, and quality assurance difficulties in order to achieve goals. Technology change during any development phase is more difficult, more expensive, and sometimes impossible. Thus, there is a critical need to choose the right technology, architecture, and application frameworks in line with business needs.
+With the rapid growth of the Internet of Things (_IoT_) technology market, many projects are faced with pulling together several technological solutions. Solutions that are not well chosen or thought through can create additional engineering, application development, and quality assurance difficulties in order to achieve goals. Technology change during any development phase is more difficult, more expensive, and sometimes impossible. Thus, there is a critical need to choose the right technology, architecture, and application frameworks in line with business needs.
 
-Billions of smart devices with embedded operating systems are connected in both small and large networks. This requires robust solutions in the areas of network communications, device management, interoperability, data streaming, and communication protocols. AREG SDK focuses not only on embedded development, but on mist computing paradigm and communication protocols to form the network of ultra-small servers and increase visibility of provided services. AREG is a framework, where embedded applications do not need to adapt additional IoT enabling layers to increase the visibility in the network. This keeps the design and architecture of the entire embedded software homogeneous.
+Billions of smart devices with embedded operating systems are connected in small and large networks. This requires robust solutions in the areas of network communications, device management, interoperability, data streaming, and communication protocols. AREG is a framework, where embedded applications do not need to adapt additional IoT mist computing enabling layers to increase the visibility in the network. This keeps the design and architecture of the entire embedded software homogeneous.
 
 
 ## Intelligent edge device
