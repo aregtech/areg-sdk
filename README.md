@@ -6,10 +6,10 @@ Website: https://www.aregtech.com
 ```
 ========================================================================
 
-**_Bring your product to live service enabled_**
-
 
 # AREG IoT SDK to simplify multitasking programming
+
+**_Bring your product to live service enabled_**
 
 ## Table of content
 1. [Introduction](#introduction)
