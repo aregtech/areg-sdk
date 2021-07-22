@@ -145,7 +145,7 @@ Currently AREG SDK does not contain project files of any other IDE. The support 
 - _EXP_AREG_LIB_ or _EXPORT_STATIC_SYMBOLS_ to compile framework sources as static library
 - _EXP_AREG_DLL_ or _EXPORT_SHARED_SYMBOLS_ to compile framework sources as shared library
 - _IMP_AREG_LIB_ or _IMPORT_STATIC_SYMBOLS_ to link with framework static library
-- _IMP_AREG_DLL or _IMPORT_SHARED_SYMBOLS_ to link with framework shared library
+- _IMP_AREG_DLL_ or _IMPORT_SHARED_SYMBOLS_ to link with framework shared library
 
 Normally,
 - **framework is compiled** with _POSIX_ / _WINDOWS_, _EXP_AREG_DLL_ / _EXP_AREG_LIB_ and _DEBUG_ / _NDEBUG_ options;
