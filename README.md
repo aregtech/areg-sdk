@@ -47,7 +47,7 @@ Traditionally, IoT devices are connected clients of cloud or fog servers to stre
 ### Framework and tools
 
 The current version of AREG SDK consists of following components:  
-- A _connectivity and communication framework_ that contains the multitasking and distributed communication business logic;
+- A _framework_ that contains the multitasking, connectivity and distributed communication business logic;
 - _Logger / Tracer_, which is integrated in the framework and can be switched ON or OFF;
 - A _multicast router_ to route messages between applications in real-time communication mode;
 - _Code generator_ to generate servicing base objects to extend and implement the service logic.
