@@ -6,7 +6,7 @@
 
 **AREG IoT SDK** (or **AREG SDK**) is an Object Remote Procedure Call (_ORPC_) based, lightweight _real-time asynchronous communication framework written in C++_ that simplifies multitasking and service enabled applications development for embedded and/or high-end machines. AREG SDK enables _mist computing_ at the edge of the network, where devices connect to fog not only as traditional clients, but as thin servers and provide services to execute device specific or a narrow range of tasks.
 
-Ideally, AREG is used in multi-tasking projects or in the projects where connected Things need to communicate in real-time mode. 
+AREG is used in multithreading and multiprocessing projects where connected Things need to communicate in real-time mode. 
 
 
 ## Inter-process communication
@@ -18,9 +18,7 @@ The IPC of AREG framework is based on Multicast Routing (MCR) network communicat
 
 Software developers can benefit by using AREG framework:
 * The automations and code generator help to focus on business logic.
-* Transparency of service physical location as if developers would write code for a single process application.
-* It automatically makes the application design modular.
-* Easier to create a simulator by simulating data layer and placing it in another process.
+* The transparency of service location and modular design ease to simulate data layer to test the rest of codes.
 * Featured logging scopes allow to filter special logs and priorities without recompiling the code.
 
 For the examples of generated codes, logs and modular design, see [examples](#examples).
@@ -35,7 +33,7 @@ Traditionally, IoT devices are connected clients of cloud or fog servers to stre
 
 ## More than embedded
 
-Embedded applications developed with the help of _AREG framework_ do not need to adapt additional IoT mist computing enabling layers to increase the visibility in the network. Current 2 types of services (local and public) help to keep the design and architecture of the entire embedded software homogeneous, where Local services are used in multithreading and the Public services are used in multi-processing communication.
+Embedded applications developed with the help of _AREG framework_ do not need to adapt additional IoT mist enabling layers to increase the visibility in the network. Current 2 types of services (local and public) help to keep the design and architecture of the entire software homogeneous, where Local services are used in multithreading and the Public services are used in multi-processing communication.
 
 The guiding principles of AREG framework are:
 * The network of connected devices provides information, instead of simply data.
