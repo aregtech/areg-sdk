@@ -9,15 +9,21 @@
 Ideally, AREG is used in multi-tasking projects or in the projects where connected Things need to communicate in real-time mode. 
 
 
-## Network communication model
+## Inter-process communication
 
-As a network communication model, AREG framework is using Multicast Routing (MCR) that has combined features of client-server and publish-subscribe network communication models. In MCR client-server nodes have logical connections and all messages pass via message router. Every application in the network can provide multiple logical nodes where every node can be a mixture of logical servers and clients. This approach helps to form a mesh of services to trigger directly on connected Things.
+The IPC of AREG framework is based on Multicast Routing (MCR) network communication model that has combined features of client-server and publish-subscribe models. In MCR client-server nodes have logical connections and all messages pass via router. Every application in the network can provide multiple logical nodes where every node can be a mixture of logical servers and clients. This approach helps to form a mesh of services to trigger directly on connected Things.
 
-The benefits of such approach are connection abstraction, a higher degree of data privacy, network mesh, application scalability, fault tolerance, dynamic connection and message distribution, and optimized streaming.
+The benefits of such an approach are connection abstraction, a higher degree of data privacy, network mesh, application scalability, fault tolerance, dynamic connection and message distribution, and optimized streaming.
 
-## Automations and tools
 
-In the AREG framework service discovery and messaging are fully automated. There is no need manually checking service availability or message dispatching. All clients waiting for a specific service get notified whenever service is available and all messages are automatically delivered to the target component. In addition, the SDK has a code-generator that does the tedious job for developers and keeps codes clean. For the examples of generated codes, see source code [examples](#examples) of services.
+## Development benefits
+
+In the AREG framework service discovery and messaging are fully automated. In addition, the SDK has a code-generator that does the tedious job for developers and keeps codes clean. For the examples of generated codes, see services source code [examples](#examples). Software developers can benefit by using AREG framework:
+* The automations and code generator help to focus on business logic.
+* Transparency of service physical location as if developers would write code for a single process application.
+* It automatically makes the application design modular.
+* Easier to create a simulator by simulating data layer and placing it in another process.
+* Featured logging scopes allow to filter special logs and priorities without recompiling the code.
 
 
 ## Challenges and solutions
@@ -28,28 +34,18 @@ Traditionally, IoT devices are connected clients of cloud or fog servers to stre
 * It renders devices _more autonomous and more intelligent_ by providing network services directly in the environment of data origin. 
 
 
-## Development benefits
-
-Regardless there are more features are in development phase, already now software developers can benefit by using AREG framework:
-* The automations and code generator help to focus on business logic instead of making tedious jobs of manual dispatching.
-* Full transparency of component physical location as if developers would write a code for a single process or even single thread.
-* It automatically makes the application design modular.
-* Easier to create simulator by simulating data layer and placing in other process running on same or other machine.
-* Featured logging scopes allow to filter special logs and priorities without recompiling the code.
-
-
 ## More than embedded
 
-AREG is a framework, where embedded applications do not need to adapt additional IoT mist computing enabling layers to increase the visibility in the network. Current 2 types of services (Local and Remote) help to keep the design and architecture of the entire embedded software homogeneous, where Local services can be used in multithreading communication and the Remote services to use in inter-process communication.
+AREG is a framework, where embedded applications do not need to adapt additional IoT mist computing enabling layers to increase the visibility in the network. Current 2 types of services (Local and Remote) help to keep the design and architecture of the entire embedded software homogeneous, where Local services are used in multithreading and the Remote services are used in multi-processing communication.
 
 The guiding principles of AREG framework are:
 * The network of connected devices provides information, instead of simply data.
 * The network delivers only information that has been requested, and when it has been requested.
 * Devices create a dynamic system that works together using a subscriber-provider model.
-* Device applications are service providers that are accessible in the network to execute device specific or a narrow range of tasks.
-* Devices adapt to network configuration, dynamically discover data providers and available services before trigger tasks.
+* Device applications are service providers that are accessible in the network to execute device specific tasks.
+* Devices adapt to network configuration, dynamically discover data providers and available services.
 
-This concept of system architecture reduces the amount of streaming data in the network that has a direct impact on energy consumption, and the connected _Things_ can directly communicate with each other, remain autonomous and becoming an intelligent extension of the fog network.
+This concept of system architecture reduces the amount of streaming data in the network that has a direct impact on energy consumption, and the connected Things directly communicate with each other, remain autonomous and become an intelligent extension of the fog network.
 
 
 ## The file system structure
@@ -79,18 +75,18 @@ areg-sdk  ......... --> the root folder of AREG SDK
 
 ## Compilation
 
-AREG SDK provides Visual Studio and Eclipse IDE project files. In framework source codes, all paths are relative to **"areg-sdk/dev"** folder. _By default, there is no need to make additional changes in project settings to compile all_.
+AREG SDK provides Visual Studio and Eclipse IDE project files. Framework source paths are relative to **"areg-sdk/dev"** folder. _By default, there is no need to make additional changes in project settings to compile all_.
 
 ### Linux compilation
 
-The compilation under Linux requires _Eclipse IDE for C/C++ Developers_ and _GCC_ compiler version 98 or higher.
+The compilation under Linux requires _Eclipse IDE for C/C++ Developers_.
 
 1. Open _Eclipse_ and select _File_ ⇒ _Import_ to import existing projects located in _areg-sdk root_.
 1. In the _Projects_ list box select all projects and click _Finish_ button.
 
 ### Windows compilation
 
-The compilation under Windows requires IDE _Visual Studio 2012_ or higher, and minimum compiler version MSVC v.100.
+The compilation under Windows requires _Visual Studio 2012_ or higher.
 
 1. Open _areg-sdk.sln_ in Visual Studio IDE (should be VS2012 or higher version);
 1. Select _Solution Cofigurations_ and _Solution Platforms_ in the toolbar, and compile the entire solution.
@@ -107,39 +103,29 @@ Currently AREG SDK does not contain project files of any other IDE. The support 
 1. To compile sources with _POSIX API_, specify **POSIX** preprocessor directive. For more details see [POSIX.md](./POSIX.md)
 1. To compile sources with _Win32 API_, specify **WINDOWS** preprocessor directive. For more details see [WIN32.md](./WIN32.md)
 
-Under _Windows_, change preprocessor directives in _config_user.props_ file to apply changes to all projects. Under _Linux_, all changes should be manually done in each project.
-
 **Other preprocessor directives:**
-- _DEBUG_ to compile debug version
-- _NDEBUG_ to compile release version
+- _DEBUG_ or _NDEBUG_ to compile debug or release versions
 - _ENABLE_TRACES_ to enable tracing / logging
 - _EXP_AREG_LIB_ or _EXPORT_STATIC_SYMBOLS_ to compile framework as static library
 - _EXP_AREG_DLL_ or _EXPORT_SHARED_SYMBOLS_ to compile framework as shared library
 - _IMP_AREG_LIB_ or _IMPORT_STATIC_SYMBOLS_ to link with framework static library
 - _IMP_AREG_DLL_ or _IMPORT_SHARED_SYMBOLS_ to link with framework shared library
 
-Applicaton that use AREG frmework, should specify _IMP_AREG_DLL_ / _IMP_AREG_LIB_ option.
+Applications that use AREG framework, should specify _IMP_AREG_DLL_ / _IMP_AREG_LIB_ option.
 
 
 ## Log and IPC enabling
 
-The AREG framework has default settings to enable logging and IPC. However, use _.init_ files to set right settings.
-
-If after compilation the binary output folder does not contains _‘config’_ subfolder with _.init_ files:
-* **For logs:** create _’config’_ subfolder and copy [log.init](./dev/areg/resources/log.init) file located in [./dev/areg/resources](./dev/areg/resources/).
-* **For IPC :** create _’config’_ subfolder and copy [router.init](./dev/areg/resources/router.init) file located in [./dev/areg/resources](./dev/areg/resources/).
+The AREG framework has default settings to enable logging and IPC. However, use _.init_ files to set the right settings. If after compilation the binary output folder does not contains _‘config’_ subfolder with _.init_ files, create create _’config’_ subfolder in output folder and:
+* **For logs:** copy [log.init](./dev/areg/resources/log.init) file located in [./dev/areg/resources](./dev/areg/resources/).
+* **For IPC :** copy [router.init](./dev/areg/resources/router.init) file located in [./dev/areg/resources](./dev/areg/resources/).
 
 For options to change settings see the description in the _.init_ files.
 
 
-## System requirement
-
-AREG supports Linux or Windows 32- and 64-bit operating systems. Linux applications use at least 300 kB of RAM and 2 MB of disk space. The minimum resource requirement may change depending on the operating system (Windows OS requires more resources). The recommended resources are 1MB of free RAM and 15MB of free flash / disk space.
-
-
 ## Examples
 
-The AREG SDK contains various examples to demonstrate features of the framework. The examples will be periodically updated. **To run IPC examples, make sure the _mcrouter_ process has started**.
+The AREG SDK contains various examples to demonstrate features of the framework. **To run IPC examples, make sure the _mcrouter_ process has started**.
 
 1.  [01_hello](./examples/01_hello/)         -- multithreading console application to output "Hello World" message.
 2.  [02_buffer](./examples/02_buffer/)       -- multithreading console application to demonstrate work with shared buffer (stream).
