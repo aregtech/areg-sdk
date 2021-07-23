@@ -11,20 +11,19 @@ Ideally, AREG is used in multi-tasking projects or in the projects where connect
 
 ## Inter-process communication
 
-The IPC of AREG framework is based on Multicast Routing (MCR) network communication model that has combined features of client-server and publish-subscribe models. In MCR client-server nodes have logical connections and all messages pass via router. Every application in the network can provide multiple logical nodes where every node can be a mixture of logical servers and clients. This approach helps to form a mesh of services to trigger directly on connected Things.
-
-The benefits of such an approach are connection abstraction, a higher degree of data privacy, network mesh, application scalability, fault tolerance, dynamic connection and message distribution, and optimized streaming.
+The IPC of AREG framework is based on Multicast Routing (MCR) network communication model that has combined features of client-server and publish-subscribe models. In MCR client-server nodes have logical connections and all messages pass via router. Every application in the network can provide multiple logical nodes where every node can be a mixture of logical servers and clients. This approach helps to create a fault tolerant, scalable and distributed system of meshed services running directly on connected Things.
 
 
 ## Development benefits
 
-In the AREG framework service discovery and messaging are fully automated. In addition, the SDK has a code-generator that does the tedious job for developers and keeps codes clean. For the examples of generated codes, see services source code [examples](#examples). Software developers can benefit by using AREG framework:
+Software developers can benefit by using AREG framework:
 * The automations and code generator help to focus on business logic.
 * Transparency of service physical location as if developers would write code for a single process application.
 * It automatically makes the application design modular.
 * Easier to create a simulator by simulating data layer and placing it in another process.
 * Featured logging scopes allow to filter special logs and priorities without recompiling the code.
 
+For the examples of generated codes, logs and modular design, see [examples](#examples).
 
 ## Challenges and solutions
 
@@ -36,7 +35,7 @@ Traditionally, IoT devices are connected clients of cloud or fog servers to stre
 
 ## More than embedded
 
-AREG is a framework, where embedded applications do not need to adapt additional IoT mist computing enabling layers to increase the visibility in the network. Current 2 types of services (Local and Remote) help to keep the design and architecture of the entire embedded software homogeneous, where Local services are used in multithreading and the Remote services are used in multi-processing communication.
+Embedded applications developed with the help of _AREG framework_ do not need to adapt additional IoT mist computing enabling layers to increase the visibility in the network. Current 2 types of services (local and public) help to keep the design and architecture of the entire embedded software homogeneous, where Local services are used in multithreading and the Public services are used in multi-processing communication.
 
 The guiding principles of AREG framework are:
 * The network of connected devices provides information, instead of simply data.
@@ -45,7 +44,7 @@ The guiding principles of AREG framework are:
 * Device applications are service providers that are accessible in the network to execute device specific tasks.
 * Devices adapt to network configuration, dynamically discover data providers and available services.
 
-This concept of system architecture reduces the amount of streaming data in the network that has a direct impact on energy consumption, and the connected Things directly communicate with each other, remain autonomous and become an intelligent extension of the fog network.
+This concept of system architecture reduces the amount of streaming data in the network that has a direct impact on energy consumption, and the connected Things directly communicate with each other, remaining autonomous and becoming an intelligent extension of the fog network.
 
 
 ## The file system structure
@@ -60,7 +59,7 @@ areg-sdk  ......... --> the root folder of AREG SDK
     |   +- mcrouter --> the sources of Multicast Router
     |   |
     |   +- system . --> the development platform specific common codes
-    
+    |
     +- examples  .. --> examples and tests of AREG SDK
     |
     +- tools  ..... --> code generator and other tools
