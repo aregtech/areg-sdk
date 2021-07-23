@@ -47,31 +47,6 @@ The guiding principles of AREG framework are:
 This concept of system architecture reduces the amount of streaming data in the network that has a direct impact on energy consumption, and the connected Things directly communicate with each other, remaining autonomous and becoming an intelligent extension of the fog network.
 
 
-## The file system structure
-
-```
-areg-sdk  ......... --> the root folder of AREG SDK
-    |
-    +- dev  ....... --> the source codes of AREG Framework and Multicasting Router
-    |   |
-    |   +- areg  .. --> the source codes of AREG Framework
-    |   |
-    |   +- mcrouter --> the sources of Multicast Router
-    |   |
-    |   +- system . --> the development platform specific common codes
-    |
-    +- examples  .. --> examples and tests of AREG SDK
-    |
-    +- tools  ..... --> code generator and other tools
-    |
-    +- LICENSE.txt  --> the license. Please read before use or distribute.
-    |
-    +- POSIX.md  .. --> the instruction to compile applications in Linux.
-    |
-    +- WIN32.md  .. --> the instruction to compile applications in Windows.
-```
-
-
 ## Compilation
 
 AREG SDK provides Visual Studio and Eclipse IDE project files. Framework source paths are relative to **"areg-sdk/dev"** folder. _By default, there is no need to make additional changes in project settings to compile all_.
