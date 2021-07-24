@@ -40,8 +40,6 @@
             <AdditionalUsingDirectories>$(OutDir);%(AdditionalUsingDirectories)</AdditionalUsingDirectories>
             <PreprocessorDefinitions Condition="'$(ConfigShortName)'=='Debug'">$(ProjectCommonDefines);_DEBUG;DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
             <PreprocessorDefinitions Condition="'$(ConfigShortName)'=='Release'">$(ProjectCommonDefines);NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-			<RuntimeLibrary Condition="'$(ConfigShortName)'=='Debug'">MultiThreadedDebugDLL</RuntimeLibrary>
-			<RuntimeLibrary Condition="'$(ConfigShortName)'=='Release'">MultiThreadedDLL</RuntimeLibrary>
         </ClCompile>
         <Link>
             <ImportLibrary>$(OutLibDir)\$(TargetName).lib</ImportLibrary>

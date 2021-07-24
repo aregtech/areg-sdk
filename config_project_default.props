@@ -30,7 +30,7 @@
             <DebugInformationFormat Condition="'$(ConfigShortName)'=='Debug'">EditAndContinue</DebugInformationFormat>
             <DebugInformationFormat Condition="'$(ConfigShortName)'=='Release'">ProgramDatabase</DebugInformationFormat>
             <RuntimeLibrary Condition="'$(ConfigShortName)'=='Debug'">MultiThreadedDebugDLL</RuntimeLibrary>
-            <RuntimeLibrary Condition="'$(ConfigShortName)'=='Release'">MultiThreaded</RuntimeLibrary>
+            <RuntimeLibrary Condition="'$(ConfigShortName)'=='Release'">MultiThreadedDLL</RuntimeLibrary>
             <Optimization Condition="'$(ConfigShortName)'=='Debug'">Disabled</Optimization>
             <Optimization Condition="'$(ConfigShortName)'=='Release'">Full</Optimization>
             <!-- ************************************************************************************************************************** -->
