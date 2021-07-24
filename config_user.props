@@ -114,7 +114,7 @@
         <ProjectObjectDir>$(ProjectOutputDir)\$(Configuration)\$(DirObj)\$(ProjectName)</ProjectObjectDir>
         <!-- ****************************************************************************************************************************** -->
         <!-- The path of project development folder. Change this name if using other name.                                                  -->
-        <ProjectDevDir>$(ProjectRootDir)dev</ProjectDevDir>
+        <ProjectDevDir>$(ProjectRootDir)framework</ProjectDevDir>
         <!-- ****************************************************************************************************************************** -->
         <!-- Path of Root Folder of tests and examples. Change path if using other.                                                         -->
         <TestRootDir>$(ProjectRootDir)\$(ProjectTestDirName)</TestRootDir>

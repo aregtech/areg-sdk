@@ -29,7 +29,7 @@
 							<tool id="cdt.managedbuild.tool.gnu.archiver.base.87780922" name="GCC Archiver" superClass="cdt.managedbuild.tool.gnu.archiver.base"/>
 							<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.base.2090148691" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.base">
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.cpp.compiler.option.include.paths.950111912" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc}/dev/&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc}/framework/&quot;"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.cpp.compiler.option.preprocessor.def.1096816235" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" useByScannerDiscovery="false" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="_POSIX"/>
@@ -71,7 +71,7 @@
 				</configuration>
 			</storageModule>
 			<storageModule moduleId="org.eclipse.cdt.core.externalSettings"/>
-			<storageModule buildDir="${workspace_loc:}/dev/product/build/${ConfigName}" moduleId="de.marw.cdt.cmake.core.settings">
+			<storageModule buildDir="${workspace_loc:}/framework/product/build/${ConfigName}" moduleId="de.marw.cdt.cmake.core.settings">
 				<options/>
 				<linux command="cmake" generator="UnixMakefiles" use-default="true">
 				</linux>
@@ -105,7 +105,7 @@
 							<tool id="cdt.managedbuild.tool.gnu.archiver.base.1588095271" name="GCC Archiver" superClass="cdt.managedbuild.tool.gnu.archiver.base"/>
 							<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.base.211861223" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.base">
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.cpp.compiler.option.include.paths.692432143" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc}/dev/&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc}/framework/&quot;"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.cpp.compiler.option.preprocessor.def.1715729436" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" useByScannerDiscovery="false" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="_POSIX"/>

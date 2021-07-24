@@ -13,15 +13,15 @@
 /tools/*.zip
 /.metadata/
 
-/dev/areg/Debug/*
-/dev/areg/Release/*
-/dev/areg/.settings/
-/dev/areg/.gitignore
+/framework/areg/Debug/*
+/framework/areg/Release/*
+/framework/areg/.settings/
+/framework/areg/.gitignore
 
-/dev/mcrouter/Debug/*
-/dev/mcrouter/Release/*
-/dev/mcrouter/.settings/
-/dev/mcrouter/.gitignore
+/framework/mcrouter/Debug/*
+/framework/mcrouter/Release/*
+/framework/mcrouter/.settings/
+/framework/mcrouter/.gitignore
 
 /examples/*/.gitignore
 /examples/*/*/.gitignore

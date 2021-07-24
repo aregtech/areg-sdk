@@ -8,6 +8,14 @@
  *
  ************************************************************************/
 
+#if defined(BIT32)
+    #define TARGET_PLATFORM     32
+#elif defined(BIT64)
+    #define TARGET_PLATFORM     64
+#else
+    #define TARGET_PLATFORM     0
+#endif // BIT32
+
 #ifndef IN
     #define IN
 #endif  // !IN

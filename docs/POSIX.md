@@ -1,5 +1,5 @@
 ﻿```
-This file is part of AREG SDK, the multi-tasking application development platform.
+This file is part of AREG IoT SDK.
 Copyright (c) Aregtech, 2017-2021
 Contact: info[at]aregtech.com
 Website: https://www.aregtech.com
@@ -9,11 +9,11 @@ Website: https://www.aregtech.com
 This file describes the instruction to compile **AREG SDK** and example source codes in _Linux_ or any other _POSIX_ supporting 32- or 64-bit platform. The minimum requirement to run application built with the help of **AREG SDK** on the target device are 256KB of free RAM and 2MB of free storage space.
 
 The **AREG SDK** sources can be compiled under Linux or any other POSIX supporting platform by using _Eclipse IDE_. Open _Eclipse IDE for C/C++_ and **export** one or all projects located in:
-- **“areg-sdk/dev/areg/”** to build AREG connectivity framework
-- **“areg-sdk/dev/mcrouter/”** to build multicast message router
+- **“areg-sdk/framework/areg/”** to build AREG connectivity framework
+- **“areg-sdk/framework/mcrouter/”** to build multicast message router
 - **”areg-sdk/examples/xxx”** to build examples
 
-Select preferred toolchain to build project(s). By default, it uses _GNU GCC_ compoiler. **AREG SDK** sources can be compiled as static or shared library. By default, under Linux it is compiled as static library. Integrate **AREG** connectivity framework in your project(s) and make sure that is linked with _libareg.a_ (or _areg.so_) library.
+Select preferred toolchain to build project(s). By default, it uses _GNU GCC_ compiler. **AREG SDK** sources can be compiled as static or shared library. By default, under Linux it is compiled as static library. Integrate **AREG** connectivity framework in your project(s) and make sure that is linked with _libareg.a_ (or _areg.so_) library.
 
 
 To build **AREG SDK** connectivity framework, use **POSIX** (or **_POSIX**) preprocessor directive. 

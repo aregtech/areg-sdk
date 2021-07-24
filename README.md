@@ -17,15 +17,15 @@ The IPC of AREG framework is based on Multicast Routing (MCR) network communicat
 ## Development benefits
 
 Software developers can benefit by using AREG framework:
-* The automations and code generator help to focus on business logic.
-* The transparency of service location and modular design ease to simulate data layer to test the rest of codes.
+* The full automations of messaging and dispatching, and code generator help to focus on business logic.
+* The transparency of service location and modular design ease to simulate data layer to test the rest of the codes.
 * Featured logging scopes allow to filter special logs and priorities without recompiling the code.
 
-For the examples of generated codes, logs and modular design, see [examples](#examples).
+For the examples of generated codes, logs and modular design, see [_examples_](#examples) chapter.
 
 ## Challenges and solutions
 
-Traditionally, IoT devices are connected clients of cloud or fog servers to stream data from sensors for further processing. Since data is generated and collected at devices, it makes sense to provide network accessible (public) services directly on things. Such a concept changes the role of connected devices and primarily solves the following challenges:
+Traditionally, IoT devices are connected clients of cloud or fog servers to stream data from sensors for further processing. Since data is generated and collected at devices, it makes sense to provide network accessible (public) services directly on Things. Such a concept changes the role of connected devices and primarily solves the following challenges:
 * It significantly _increases data privacy_, which is a very important factor for sensitive data. 
 * It _decreases data streaming_, which is a fundamental condition to optimize network communication. 
 * It renders devices _more autonomous and more intelligent_ by providing network services directly in the environment of data origin. 
@@ -47,78 +47,31 @@ This concept of system architecture reduces the amount of streaming data in the 
 
 ## Compilation
 
-AREG SDK provides Visual Studio and Eclipse IDE project files. Framework source paths are relative to **"areg-sdk/dev"** folder. _By default, there is no need to make additional changes in project settings to compile all_.
+AREG SDK provides _Eclipse for C/C++ Developer_ project files to compile **POSIX** version of the framework and examples, and _Visual Studio_ project files to compile **Windows** version of the framework and examples. Import Eclipse projects or open Visual Studio solution file to compile. _The projects default settings should be enough to compile all_.
 
-### Linux compilation
-
-The compilation under Linux requires _Eclipse IDE for C/C++ Developers_.
-
-1. Open _Eclipse_ and select _File_ ⇒ _Import_ to import existing projects located in _areg-sdk root_.
-1. In the _Projects_ list box select all projects and click _Finish_ button.
-
-### Windows compilation
-
-The compilation under Windows requires _Visual Studio 2012_ or higher.
-
-1. Open _areg-sdk.sln_ in Visual Studio IDE (should be VS2012 or higher version);
-1. Select _Solution Cofigurations_ and _Solution Platforms_ in the toolbar, and compile the entire solution.
-
-For example, to compile sources in _Visual Studio 2019_, in _Soution Configurations_ select _dbg_v142_ for _Debug_ or _rls_v142_ for _Release_ builds, and select either _Win32_ for 32-bit or _x64_ for 64-bit builds and compile solution. All projects are output in **product** subfolder located in _areg-sdk root_.
-
-
-### Other IDE or command line
-
-Currently AREG SDK does not contain project files of any other IDE. The support of _make_ or _cmake_ to run from the command line will be integrated soon.
-
-## Preprocessor directives
-
-1. To compile sources with _POSIX API_, specify **POSIX** preprocessor directive. For more details see [POSIX.md](./POSIX.md)
-1. To compile sources with _Win32 API_, specify **WINDOWS** preprocessor directive. For more details see [WIN32.md](./WIN32.md)
-
-**Other preprocessor directives:**
-- _DEBUG_ or _NDEBUG_ to compile debug or release versions
-- _ENABLE_TRACES_ to enable tracing / logging
-- _EXP_AREG_LIB_ or _EXPORT_STATIC_SYMBOLS_ to compile framework as static library
-- _EXP_AREG_DLL_ or _EXPORT_SHARED_SYMBOLS_ to compile framework as shared library
-- _IMP_AREG_LIB_ or _IMPORT_STATIC_SYMBOLS_ to link with framework static library
-- _IMP_AREG_DLL_ or _IMPORT_SHARED_SYMBOLS_ to link with framework shared library
-
-Applications that use AREG framework, should specify _IMP_AREG_DLL_ / _IMP_AREG_LIB_ option.
-
+- _POSIX_ compilation requires **POSIX** preprocessor directive. More details about _POSIX_ and API are in [POSIX.md](./docs/POSIX.md). 
+- _Windows_ compilation requires **WINDOWS** preprocessor directive. More details about _Winodws_ are in [WIN32.md](./docs/WIN32.md).
+- The detailed instructions about importing projects and integration in other projects are in [HOWTO.md](./docs/HOWTO.md).
 
 ## Log and IPC enabling
 
-The AREG framework has default settings to enable logging and IPC. However, use _.init_ files to set the right settings. If after compilation the binary output folder does not contains _‘config’_ subfolder with _.init_ files, create create _’config’_ subfolder in output folder and:
-* **For logs:** copy [log.init](./dev/areg/resources/log.init) file located in [./dev/areg/resources](./dev/areg/resources/).
-* **For IPC :** copy [router.init](./dev/areg/resources/router.init) file located in [./dev/areg/resources](./dev/areg/resources/).
+The AREG framework has default settings to enable logging and IPC. However, use _.init_ files to set the right settings. If after compilation the binary output folder does not contains _‘config’_ subfolder with _.init_ files, create _’config’_ subfolder in output folder and:
+* **For logs:** copy [log.init](./framework/areg/resources/log.init) file located in [framework/areg/resources](./framework/areg/resources/).
+* **For IPC :** copy [router.init](./framework/areg/resources/router.init) file located in [framework/areg/resources](./framework/areg/resources/).
 
-For options to change settings see the description in the _.init_ files.
+For changing settings options see the description in the _.init_ files.
 
 
 ## Examples
 
-The AREG SDK contains various examples to demonstrate features of the framework. **To run IPC examples, make sure the _mcrouter_ process has started**.
+The AREG SDK contains various [examples](./examples/) to demonstrate features of the framework. The examples are listed and described in the [examples/README.md](./examples/README.md) file. Please read the details.
 
-1.  [01_hello](./examples/01_hello/)         -- multithreading console application to output "Hello World" message.
-2.  [02_buffer](./examples/02_buffer/)       -- multithreading console application to demonstrate work with shared buffer (stream).
-3.  [03_file](./examples/03_file/)           -- console application to demonstrate work with test/binary files and masks in file paths.
-4.  [04_trace](./examples/04_trace/)         -- multithreading console application to start and use logging.
-5.  [05_timer](./examples/05_timer/)         -- multithreading console application to start Timer Service and use various timers.
-6.  [06_threads](./examples/06_threads/)     -- multithreading console application to start and stop various threads.
-7.  [07_synch](./examples/07_synch/)         -- multithreading console application to use various combined synchronization objects.
-8.  [08_service](./examples/08_service/)     -- multithreading console application to start empty servicing component.
-9.  [09_duplicate](./examples/09_duplicate/) -- multithreading console application to duplicate instances of the same servicing component.
-10. [10_svchello](./examples/10_svchello/)   -- multithreading console application to demonstrate _Local_ servicing component.
-11. [11_svcmix](./examples/11_svcmix/)       -- multithreading console application to demonstrate multi-instances of same _Local_ service.
-12. [12_ipchello](./examples/12_ipchello/)   -- multiprocessing (**IPC**) application to demonstrate _Remote_ servicing component and client.
-13. [13_ipcmix](./examples/13_ipcmix/)       -- multiprocessing (**IPC**) application to demonstrate meshing and mixture of _Local_ and _Remote_ services.
-14. [messager](./examples/messager/)         -- Windows GUI application to demonstrate dynamic modeling, fault tolerant environment and mist network.
+## Documents
 
-For more details of every project, read _ReadMe.txt_ file of each example project.
-
+Read AREG SDK document structure in [docs/README.md](./docs/README.md).
 
 ## Licensing
  
 AREG SDK is _dual-licensed under commercial and free open source licenses_. The commercial license gives the commercial support, full rights to create and distribute software on own terms without any open source license obligations. For more details of licensing see [LICENSE.txt](./LICENSE.txt) file.
  
-For license, support or additional information, please visit [Aregtech](https://www.aregtech.com/) or contact by email _info[at]aregtec.com_.
+For license, support or additional information, please visit [Aregtech](https://www.aregtech.com/) web site or contact by email _info[at]aregtec.com_.
