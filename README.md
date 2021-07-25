@@ -15,10 +15,10 @@ When we were designing AREG SDK, the guiding principle was to create a framework
 
 ## Benefits
 
-AREG framework features to benefit projects:
+The major benefits of AREG SDK features:
 * A combination of request-response and broadcast communication, and subscription service.
 * Transparency of service location, which also eases the creation of a simulation and a test automation.
-* Automated service discovery, automated messaging, dispatching, code generator and featured logging.
+* Automated service discovery, automated messaging and dispatching, featured logging and code generator.
 
 
 ## Challenges to solve
@@ -29,7 +29,7 @@ Traditionally, IoT devices are connected clients of cloud or fog servers to stre
 * _Autonomous, intelligent and self-aware_ device development by providing network services directly in the environment of data origin. 
 
 
-## Building software
+## Software build
 
 AREG SDK provides _Eclipse for C/C++ Developer_ project files for **POSIX**, and _Visual Studio_ project files for **Windows** versions of the framework and examples. _The default settings of provided project files are enough to compile all_.
 
