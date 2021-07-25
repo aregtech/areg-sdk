@@ -26,7 +26,7 @@ AREG framework features to benefit projects:
 Traditionally, IoT devices are connected clients of cloud or fog servers to stream data from sensors for further processing. Since data is generated and collected at devices, it makes sense to provide network accessible (public) services directly on Things. Such a concept changes the role of connected devices and is a good foothold to provide robust solutions such as:
 * _Increased data privacy_, which is an important factor for sensitive data. 
 * _Decreased data streaming_, which is a fundamental condition to optimize network communication. 
-* _Autonomous, intelligent and self-aware_ devices development by providing network services directly in the environment of data origin. 
+* _Autonomous, intelligent and self-aware_ device development by providing network services directly in the environment of data origin. 
 
 
 ## Building software
