@@ -76,3 +76,31 @@ For example, to create a _POSIX_ application that uses static library of _AREG f
 - Specify _POSIX, DEBUG, IMP_AREG_LIB, ENABLE_TRACES_ preprocessor directive.
 
 After these steps, the POSIX application sources can use _AREG framework_ API and build the project.
+
+
+## How to use logging
+
+**Creating logs**
+
+Use predefined _MACRO_ to output logs. Tracing / Logging MACRO are declared in [_GTrace.h_](./../framework/areg/trace/GETrace.h) header file.
+
+First of all, to be able to see the logs, the project must be compiled with preprocessor directive _ENABLE_TRACES_. If this is not enabled, the log outputs will not exist in binaries. Second, there must be declared _scopes_, which is possible by using DEF_TRACE_SCOPE(_some_unique_name_of_scope_), and scopes should be used in the method(s) by declaring TRACE_SCOPE(_some_unique_name_of_scope_). As soon as the method is called, the scope generates _"Enter"_ message and then exit method, the scope generates _"Exit"_ message. In between, the developers need to make log output just in the same way as they would do when call _printf()_ except that there is no need to specify _end-of-line_. The logs are output by priority, such as DEBUG, INFO, WARN, ERROR, FATAL. Each of them has predefined MACRO.
+
+**Enable loging**
+
+Once application uses logging. It should be enabled during application startup. An example of starting logging is a project [**04_trace**](./../examples/04_trace/). There are many other example application sthat use logs. As soon as logging is enabled during runtime, the system is ready to output. The logging has intiaial default settings, but it is recommended to use configuration to enable logs and set logging priorities.
+
+_In the current version, all logs are output in the file on file system. It is planned to have remote logging, which is in development phase._
+
+**Configuring logging**
+
+When logging starts, it reads the initial instructions from [_configuration file_](./../framework/areg/resources/log.init), which has simple syntax and the parser of this syntax is part of AREG framework. So that, the projects can use same syntax to configure own components. If after compilation, the binary output folder does not contain _"config/log.init"_ file, create the _config_, copy [_log.init_](./../framework/areg/resources/log.init) located in [_resource_](./../framework/areg/resources/) folder. The configuration file does well documented instructions how to enable / disable loging, how to specify which loging scopes to use and to change the logging priority. 
+
+Please note, it is planned to change slightly the configuration logc.
+
+
+## How to use multicast router
+
+Multicast Router (MCR) is a part of AREG framework and it is used for inter-process communication (IPC). When start an application with public service, make sure that the **mcrouter** also has been started. Otherwise, the servicing will not work. The local services do not need to use multicast routing **mcrouter** process.
+
+The MCR is options are set in [_configuration file_](./../framework/areg/resources/router.init). Developers mainly need to change IP-address and the port number of router in this file. If after compilation, the binary output folder does not contain _"config/router.init"_ file, create the _config_, copy [_router.init_](./../framework/areg/resources/router.init) located in [_resource_](./../framework/areg/resources/) folder.
