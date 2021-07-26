@@ -33,7 +33,7 @@ Traditionally, IoT devices are connected clients of cloud or fog servers to stre
 
 AREG SDK provides _Eclipse for C/C++ Developer_ project files for **POSIX**, and _Visual Studio_ project files for **Windows** versions of the framework and examples. _The default settings of provided project files are enough to compile all_.
 
-For details on how to import projects, build and integrate framework, run examples, configure logging and multicast routing, please refer to [HOWTO.md](./docs/HOWTO.md) document.
+**In case of Visual Studio, please select appropriate _Solution Configuration_ in IDE toolbar to use the right _PlatformToolset_.** For details on how to import projects, build and integrate framework, run examples, configure logging and multicast routing, please refer to [HOWTO.md](./docs/HOWTO.md) document.
 
 ## Examples
 
