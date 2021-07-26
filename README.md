@@ -5,7 +5,7 @@
 
 ## Introduction
 
-**AREG IoT SDK** (or **AREG SDK**) is an Object Remote Procedure Call (_ORPC_) based, lightweight _real-time asynchronous communication framework written in C++_ that simplifies multitasking and service enabled applications development for embedded and high-end machines. AREG SDK enables _mist computing_ at the edge of the network, where devices connect to IoT fog network not only as traditional clients, but as thin servers and provide device specific services.
+**AREG IoT SDK** (or **AREG SDK**) is an Object Remote Procedure Call (_ORPC_) based, lightweight _real-time asynchronous communication framework written in C++_ that simplifies multitasking and service enabled applications development for embedded and high-end machines. AREG SDK enables [_mist computing_](https://csrc.nist.gov/publications/detail/sp/500-325/final) at the edge of the network, where devices connect to IoT fog network not only as traditional clients, but as thin servers and provide device specific services.
 
 
 ## More than embedded
