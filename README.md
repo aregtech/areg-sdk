@@ -10,12 +10,12 @@
 
 ## More than embedded
 
-When we were designing AREG SDK, the guiding principle was to create a framework to develop embedded applications that intelligently interact at the edge of the IoT network. To keep application design homogeneous, there are defined Local services for inter-thread and the Public services for inter-process communications. As a base of IPC we use multicast routing (MCR) network communication model to have combined features of client-server and subscriber-provider (publisher-subscriber) models. In MCR network client-server nodes have logical connections and every node can be a mixture of logical servers and clients. This approach helps to create a fault tolerant, scalable and distributed system of meshed services running directly on connected Things.
+When we were designing AREG SDK, the guiding principle was to create a framework to develop embedded applications that intelligently interact at the edge of the IoT network. To keep application design homogeneous, we defined Local services for inter-thread and the Public services for inter-process communications. As a base of IPC we used multicast routing (MCR) network communication model to have combined features of client-server and subscriber-provider (publisher-subscriber) models. In MCR network client-server nodes have logical connections and every node can be a mixture of logical servers and clients. This approach helps to create a fault tolerant, scalable and distributed system of meshed services running directly on connected Things.
 
 
 ## Benefits
 
-The major benefits of AREG SDK features:
+The major features of AREG SDK to benefit:
 * A combination of request-response and broadcast communication, and subscription service.
 * Transparency of service location, which also eases the creation of a simulation and a test automation.
 * Automated service discovery, automated messaging and dispatching, featured logging and code generator.
