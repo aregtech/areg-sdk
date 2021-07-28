@@ -18,10 +18,10 @@
     <PropertyGroup Label="UserMacros">
         <ProjectIncludes>$(SrcInc);$(ProjectSourceDir);$(ProjectDevDir);$(ProjectGeneratedDir);$(ProjectDir);</ProjectIncludes>
         <ProjectCommonDefines Condition="'$(Platform)'=='Win32'">
-            $(ProjectPreprocessorDefines);$(UserPreprocessorDefines);$(ThirdPreprocessorDefines);WIN32;_WIN32;_WINDOWS
+            $(ProjectPreprocessorDefines);$(UserPreprocessorDefines);$(ThirdPreprocessorDefines);_WINDOWS; _BIT32
         </ProjectCommonDefines>
         <ProjectCommonDefines Condition="'$(Platform)'=='x64'"  >
-			$(ProjectPreprocessorDefines);$(UserPreprocessorDefines);$(ThirdPreprocessorDefines);WIN32;_WIN32;_WINDOWS;WIN64;_WIN64
+			$(ProjectPreprocessorDefines);$(UserPreprocessorDefines);$(ThirdPreprocessorDefines);_WINDOWS; _BIT64
 		</ProjectCommonDefines>
     </PropertyGroup>
     <PropertyGroup>

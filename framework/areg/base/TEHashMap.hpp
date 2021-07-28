@@ -522,7 +522,7 @@ protected:
 
         if ( mHashTable != NULL )
         {
-        	unsigned int size = static_cast<unsigned int>(mHashTableSize);
+            unsigned int size = static_cast<unsigned int>(mHashTableSize);
             for ( result  = mHashTable[out_Hash % size]; result != NULL; result = result->mNext)
             {
                 if ( out_Hash == result->mHash && isEqualKeys(result->mKey, Key) )
@@ -580,11 +580,15 @@ protected:
 
         Block ** result  = mHashTable != NULL ? &mHashTable[block.mHash % mHashTableSize] : NULL;
 
-        for ( ; *result != NULL; result = &(*result)->mNext)
+        if (result != NULL)
         {
-            if ( block.mHash == (*result)->mHash && isEqualKeys((*result)->mKey, block.mKey) )
-                break;
+            for ( ; *result != NULL; result = &(*result)->mNext )
+            {
+                if ( block.mHash == (*result)->mHash && isEqualKeys( (*result)->mKey, block.mKey ) )
+                    break;
+            }
         }
+
         return result;
     }
 
@@ -616,7 +620,7 @@ protected:
         Block* result = startAt->mNext;
         if (result == NULL)
         {
-        	unsigned int size = static_cast<unsigned int>(mHashTableSize);
+            unsigned int size = static_cast<unsigned int>(mHashTableSize);
             for ( unsigned int idx = startAt->mHash % size + 1; (result == NULL) && (idx < size); ++ idx )
                 result = mHashTable[idx];
         }
@@ -935,7 +939,7 @@ MAPPOS TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::setAt(KEY_TYPE Ke
     if (block == static_cast<Block *>(NULL))
     {
         // it doesn't exist, add a new Block
-    	unsigned int size = static_cast<unsigned int>(mHashTableSize);
+        unsigned int size = static_cast<unsigned int>(mHashTableSize);
         unsigned int idx  = hash % size;
         block       = initNewBlock();
         block->mHash= hash;

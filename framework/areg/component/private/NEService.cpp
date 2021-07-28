@@ -63,7 +63,7 @@ void NEService::ParameterArray::construct( const unsigned int * params, int coun
 {
     if ( (params != static_cast<const unsigned int *>(NULL)) && (count > 0) )
     {
-    	unsigned int single		= static_cast<unsigned int>(sizeof(NEService::StateArray *));
+        unsigned int single		= static_cast<unsigned int>(sizeof(NEService::StateArray *));
         // count pointers to state array
         unsigned int size       = count * single;
 

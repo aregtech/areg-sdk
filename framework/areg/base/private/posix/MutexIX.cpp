@@ -59,12 +59,12 @@ inline void MutexIX::_initPosixMutex( bool isRecursive )
 {
     if ( RETURNED_OK == pthread_mutexattr_init( &mPosixMutexAttr ) )
     {
-    	mMutexValid = true;
+        mMutexValid = true;
         if ( RETURNED_OK == pthread_mutexattr_settype( &mPosixMutexAttr, isRecursive ? PTHREAD_MUTEX_RECURSIVE : PTHREAD_MUTEX_DEFAULT ) )
         {
             if ( RETURNED_OK == pthread_mutex_init( &mPosixMutex, &mPosixMutexAttr ) )
             {
-            	mMutexAttrValid = true;
+                mMutexAttrValid = true;
             }
             else
             {

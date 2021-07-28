@@ -153,7 +153,7 @@ protected:
     /**
      * \brief   Mutex validity flag.
      **/
-    mutable bool				mMutexValid;
+    mutable bool                mMutexValid;
     /**
      * \brief   POSIX mutex attribute.
      **/
@@ -161,7 +161,7 @@ protected:
     /**
      * \brief   Mutex Attribute validity flag.
      **/
-    mutable bool				mMutexAttrValid;
+    mutable bool                mMutexAttrValid;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls.

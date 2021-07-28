@@ -38,34 +38,42 @@
     #define _WIN32
 #endif // _WIN32
 
-#ifdef _WIN64
-    #ifndef WIN64
-        #define WIN64   1
-    #endif // !WIN64
-#elif defined(WIN64)
-    #ifndef _WIN64
-        #define _WIN64  1
-    #endif // !_WIN64
-#endif // _WIN64
+#if defined(BIT64) || defined(_BIT64) || defined(WIN64) || defined(_WIN64)
 
+    #if defined(BIT32) || defined(_BIT32)
+        #undef  BIT32
+        #undef  _BIT32
+    #endif // defined(BIT32) || defined(_BIT32)
 
-#if defined(_WIN64) && (_WIN64 > 0)
-    #undef BIT32
-    #undef BIT64
-    #undef _BIT32
-    #undef _BIT64
+    #ifndef BIT64
+        #define BIT64
+    #endif // !BIT64
 
-    #define BIT64
-    #define _BIT64
-#else // !_WIN64
-    #undef BIT32
-    #undef BIT64
-    #undef _BIT32
-    #undef _BIT64
+    #ifndef _BIT64
+        #define _BIT64
+    #endif // !_BIT64
 
-    #define BIT32
-    #define _BIT32
-#endif  // _WIN64
+    #if !defined(WIN64) || (WIN64 != 1)
+        #undef  WIN64
+        #define WIN64       1
+    #endif  // !defined(WIN64) || (WIN64 != 1)
+
+    #if !defined(_WIN64) || (_WIN64 != 1)
+        #undef  _WIN64
+        #define _WIN64       1
+    #endif  // !defined(_WIN64) || (_WIN64 != 1)
+
+#else   // defined(BIT64) || defined(_BIT64) || defined(WIN64) || defined(_WIN64)
+
+    #ifndef BIT32
+        #define BIT32
+    #endif // !BIT32
+
+    #ifndef _BIT32
+        #define _BIT32
+    #endif // !_BIT32
+
+#endif  // defined(BIT64) || defined(_BIT64) || defined(WIN64) || defined(_WIN64)
 
 // Modify the following defines if you have to target a platform prior to the ones specified below.
 // Refer to MSDN for the latest info on corresponding values for different platforms.

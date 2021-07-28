@@ -211,7 +211,7 @@ private:
 
 inline Process & Process::getInstance( void )
 {
-	return Process::_theProcess.initilize();
+    return Process::_theProcess.initilize();
 }
 
 inline const char * Process::getAppName( void ) const

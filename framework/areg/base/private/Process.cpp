@@ -20,14 +20,14 @@ Process Process::_theProcess;
 
 Process::Process( void )
     : mProcEnv          ( static_cast<Process::eProcEnv>(sizeof(id_type)) )
-	, mProcessId        ( Process::UNKNOWN_PROCESS )
+    , mProcessId        ( Process::UNKNOWN_PROCESS )
     , mProcessHandle    ( NULL )
     , mAppName          ( )
     , mProcessName      ( )
     , mProcessExt       ( )
     , mProcessPath      ( )
     , mProcessFullPath  ( )
-	, mIsInitialized	( false )
+    , mIsInitialized    ( false )
 {
 }
 
@@ -35,7 +35,7 @@ Process::~Process( void )
 {
     mProcessHandle      = NULL;
     mProcessId          = Process::UNKNOWN_PROCESS;
-    mIsInitialized		= false;
+    mIsInitialized      = false;
 }
 
 void Process::_initPaths( const char * fullPath )

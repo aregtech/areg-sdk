@@ -21,34 +21,34 @@
 
 Process & Process::initilize( void )
 {
-	if ( mIsInitialized == false )
-	{
-	    static const char * fmt     = "/proc/%d/cmdline";
+    if ( mIsInitialized == false )
+    {
+        static const char * fmt     = "/proc/%d/cmdline";
 
-	    mIsInitialized 	= true;
-	    mProcessId      = getpid();
-	    mProcessHandle	= static_cast<void *>(&mProcessId);
+        mIsInitialized  = true;
+        mProcessId      = getpid();
+        mProcessHandle  = static_cast<void *>(&mProcessId);
 
-	    char * buffer = DEBUG_NEW char [ File::MAXIMUM_PATH + 1 ];
-	    if ( buffer != NULL )
-	    {
-	        sprintf(buffer, fmt, static_cast<pid_t>(mProcessId));
-	        FILE * file = fopen(buffer, "r");
-	        if (file != NULL)
-	        {
-	            if (fgets(buffer, File::MAXIMUM_PATH + 1, file) != NULL)
-	            {
-	                _initPaths(buffer);
-	            }
+        char * buffer = DEBUG_NEW char [ File::MAXIMUM_PATH + 1 ];
+        if ( buffer != NULL )
+        {
+            sprintf(buffer, fmt, static_cast<pid_t>(mProcessId));
+            FILE * file = fopen(buffer, "r");
+            if (file != NULL)
+            {
+                if (fgets(buffer, File::MAXIMUM_PATH + 1, file) != NULL)
+                {
+                    _initPaths(buffer);
+                }
 
-	            fclose(file);
-	        }
+                fclose(file);
+            }
 
-	        delete [] buffer;
-	    }
-	}
+            delete [] buffer;
+        }
+    }
 
-	return (*this);
+    return (*this);
 }
 
 

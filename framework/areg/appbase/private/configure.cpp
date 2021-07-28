@@ -12,10 +12,6 @@
 
     // Enable or disable memory leak detect only for Debug version
     #ifdef  _DEBUG
-        #if (defined(COMPILE_ENABLED_LEAK_DETECT) && COMPILE_ENABLED_LEAK_DETECT)
-            #include "vld/vld.h"
-        #endif  // (defined(COMPILE_ENABLED_LEAK_DETECT) && COMPILE_ENABLED_LEAK_DETECT)
-
         #pragma comment(lib, "dbghelp.lib")
     #endif  // _DEBUG
 
@@ -24,6 +20,6 @@
     #pragma comment(lib, "ws2_32.lib")
     #pragma comment(lib, "advapi32.lib")
 
-#else   // WIN32
+#else   // !WIN32
 
 #endif  // WIN32

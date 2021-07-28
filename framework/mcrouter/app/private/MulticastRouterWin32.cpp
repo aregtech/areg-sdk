@@ -133,7 +133,7 @@ int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
         break;
     }
 
-	return result;
+    return result;
 }
 
 VOID WINAPI GServiceMain( DWORD argc, LPTSTR * argv )

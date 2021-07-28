@@ -925,42 +925,44 @@ bool TESortedLinkedList<VALUE, VALUE_TYPE, Implement>::removeAt(LISTPOS atPositi
     {
         out_value   = block->mValue;
         result      = true;
-    }
 
-    if (mCount == 1)
-    {
-        ASSERT(mHead == block && mTail == block);
-        mTail = mHead = NULL;
-    }
-    else if (mCount == 2)
-    {
-        ASSERT(mHead == block || mTail == block);
-        mHead = mTail = (block->mPrev != NULL ? block->mPrev : block->mNext);
-
-        ASSERT(mHead != NULL);
-        mHead->mPrev = mHead->mNext = mTail->mPrev = mTail->mNext = NULL;
-    }
-    else
-    {
-        if (block == mTail)
+        if (mCount == 1)
         {
-            block->mPrev->mNext = NULL;
-            mTail               = block->mPrev;
+            ASSERT(mHead == block && mTail == block);
+            mTail = mHead = NULL;
         }
-        else if (mHead == block)
+        else if (mCount == 2)
         {
-            block->mNext->mPrev = NULL;
-            mHead               = block->mNext;
+            ASSERT(mHead == block || mTail == block);
+            mHead = mTail = (block->mPrev != NULL ? block->mPrev : block->mNext);
+
+            ASSERT(mHead != NULL);
+            mHead->mPrev = mHead->mNext = mTail->mPrev = mTail->mNext = NULL;
         }
         else
         {
-            ASSERT(block->mNext != NULL && block->mPrev != NULL);
-            block->mPrev->mNext = block->mNext;
-            block->mNext->mPrev = block->mPrev;
+            if (block == mTail)
+            {
+                block->mPrev->mNext = NULL;
+                mTail               = block->mPrev;
+            }
+            else if (mHead == block)
+            {
+                block->mNext->mPrev = NULL;
+                mHead               = block->mNext;
+            }
+            else
+            {
+                ASSERT(block->mNext != NULL && block->mPrev != NULL);
+                block->mPrev->mNext = block->mNext;
+                block->mNext->mPrev = block->mPrev;
+            }
         }
+
+        delete	block;
+        -- mCount;
     }
-    delete	block;
-    -- mCount;
+
     return result;
 }
 

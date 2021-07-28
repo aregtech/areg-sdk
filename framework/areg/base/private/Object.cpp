@@ -248,8 +248,8 @@ void Object::operator delete( void * ptr, size_t /*size*/ )
 }
 
 /**
- * \brief	Overloaded delete() operator
- * \param	ptr	Pointer to the memory block to delete
+ * \brief   Overloaded delete() operator
+ * \param   ptr Pointer to the memory block to delete
  **/
 void Object::operator delete( void * ptr, int, const char *, int )
 {
@@ -277,8 +277,8 @@ void Object::operator delete [ ] ( void * ptr, size_t /*size*/ )
 }
 
 /**
- * \brief	Overloaded delete[] operator
- * \param	ptr	Pointer to the memory block to delete
+ * \brief   Overloaded delete[] operator
+ * \param   ptr Pointer to the memory block to delete
  **/
 void Object::operator delete [ ]( void * ptr, int, const char *, int )
 {

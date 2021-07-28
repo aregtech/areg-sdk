@@ -28,17 +28,17 @@
  **/
 class CriticalSectionIX   : protected IESynchObjectBaseIX
 {
-	/**
-	 * \brief	Describes the Critical Section structure, which has a simple
-	 * 			recursive spin-lock object thread locking mechanism
-	 */
-	typedef struct S_CSection
-	{
-		pthread_spinlock_t  spinLock;		//!< The POSIX spin lock to synchronize multithreading access of critical section.
-		pthread_spinlock_t  internLock;		//!< The POSIX spin lock to synchronize internal sructure resources.
-		pthread_t			spinOwner;		//!< The spin-lock owner POSIX thread
-		int 				lockCounter;	//!< The lock counter to release spin lock when counter reaches zero.
-	} sSection;
+    /**
+     * \brief   Describes the Critical Section structure, which has a simple
+     *          recursive spin-lock object thread locking mechanism
+     */
+    typedef struct S_CSection
+    {
+        pthread_spinlock_t  spinLock;       //!< The POSIX spin lock to synchronize multithreading access of critical section.
+        pthread_spinlock_t  internLock;     //!< The POSIX spin lock to synchronize internal sructure resources.
+        pthread_t           spinOwner;      //!< The spin-lock owner POSIX thread
+        int                 lockCounter;    //!< The lock counter to release spin lock when counter reaches zero.
+    } sSection;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor.
@@ -104,20 +104,20 @@ protected:
 //////////////////////////////////////////////////////////////////////////
 private:
     /**
-     * \brief	Takes the ownership of critical section spin lock.
-     * \return	Returns true if operation succeeded.
+     * \brief   Takes the ownership of critical section spin lock.
+     * \return  Returns true if operation succeeded.
      */
     inline bool lockSpin( void ) const;
     /**
-     * \brief	Releases the ownership of critical section spin lock.
+     * \brief   Releases the ownership of critical section spin lock.
      */
     inline void unlockSpin( void ) const;
     /**
-     * \brief	Takes the ownership of spin lock to access resources of critical section.
+     * \brief   Takes the ownership of spin lock to access resources of critical section.
      */
     inline void lockIntern( void ) const;
     /**
-     * \brief	Releases the ownership of spin lock to access resources of critical section.
+     * \brief   Releases the ownership of spin lock to access resources of critical section.
      */
     inline void unlockIntern( void ) const;
 
@@ -128,7 +128,7 @@ private:
     /**
      * \brief   The Critical Section object, which has implementation of recursive spin lock.
      **/
-    mutable sSection	mSpin;
+    mutable sSection    mSpin;
     /**
      * \brief   The spin lock validity flag.
      **/

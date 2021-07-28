@@ -19,7 +19,7 @@
 // SynchWaitableMapIX class implementation
 //////////////////////////////////////////////////////////////////////////
 
-SynchResourceMapIX	SynchResourceMapIX::_theSynchResourceMapIX;
+SynchResourceMapIX  SynchResourceMapIX::_theSynchResourceMapIX;
 
 //////////////////////////////////////////////////////////////////////////
 // SynchResourceMapIX class implementation
@@ -394,7 +394,7 @@ inline bool SynchLockAndWaitIX::_initPosixSynchObjects( void )
     // Init POSIX mutex
     if (RETURNED_OK == pthread_mutexattr_init( &mPosixMutexAttr ))
     {
-    	mMutexAttrValid = true;
+        mMutexAttrValid = true;
         if (RETURNED_OK == pthread_mutexattr_settype( &mPosixMutexAttr, PTHREAD_MUTEX_NORMAL ))
         {
             mMutexValid = (RETURNED_OK == pthread_mutex_init( &mPosixMutex, &mPosixMutexAttr ));
@@ -404,7 +404,7 @@ inline bool SynchLockAndWaitIX::_initPosixSynchObjects( void )
     // Init POSIX condition variable
     if (RETURNED_OK == pthread_condattr_init( &mCondAttribute ))
     {
-    	mCondAttrValid = true;
+        mCondAttrValid = true;
         if (RETURNED_OK == pthread_condattr_setpshared( &mCondAttribute, PTHREAD_PROCESS_PRIVATE ))
         {
             mCondVarValid = (RETURNED_OK == pthread_cond_init( &mCondVariable, &mCondAttribute ));
@@ -425,7 +425,7 @@ inline void SynchLockAndWaitIX::_releasePosixSynchObjects( void )
     if (mMutexAttrValid)
     {
         pthread_mutexattr_destroy(&mPosixMutexAttr);
-    	mMutexAttrValid = false;
+        mMutexAttrValid = false;
     }
 
     if (mCondVarValid)
@@ -437,7 +437,7 @@ inline void SynchLockAndWaitIX::_releasePosixSynchObjects( void )
     if (mCondAttrValid)
     {
         pthread_condattr_destroy(&mCondAttribute);
-    	mCondAttrValid = false;
+        mCondAttrValid = false;
     }
 }
 

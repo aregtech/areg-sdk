@@ -61,11 +61,11 @@ class ResourceListMapImpl : public TEResourceListMapImpl<IEWaitableBaseIX *, Syn
 {
 public:
     /**
-     * \brief	Called when all resources are removed.
+     * \brief   Called when all resources are removed.
      *          This function is called from RemoveAllResources() for every single
      *          resource being unregistered.
-     * \param	Key	    The Key value of resource.
-     * \param	List    The list of resource objects.
+     * \param   Key     The Key value of resource.
+     * \param   List    The list of resource objects.
      **/
     inline void implCleanResourceList( IEWaitableBaseIX * & /* Key */, ListLockAndWait & List )
     {
@@ -73,8 +73,8 @@ public:
     }
 
     /**
-     * \brief	Called when need to add resource object to the list.
-     * \param	List        The list of resource objects.
+     * \brief   Called when need to add resource object to the list.
+     * \param   List        The list of resource objects.
      * \param   Resource    The resource object to add to the list.
      **/
     inline void implAddResource( ListLockAndWait & List, SynchLockAndWaitIX * Resource )
@@ -83,8 +83,8 @@ public:
     }
 
     /**
-     * \brief	Called when need to remove resource object from the list.
-     * \param	List        The list of resource objects.
+     * \brief   Called when need to remove resource object from the list.
+     * \param   List        The list of resource objects.
      * \param   Resource    The resource object to remove from the list.
      **/
     inline bool implRemoveResource( ListLockAndWait & List, SynchLockAndWaitIX * Resource )
@@ -134,9 +134,9 @@ private:
 //////////////////////////////////////////////////////////////////////////
 private:
     /**
-     * \brief	The singleton instance of synchronization resource map.
+     * \brief   The singleton instance of synchronization resource map.
      */
-    static SynchResourceMapIX	_theSynchResourceMapIX;
+    static SynchResourceMapIX   _theSynchResourceMapIX;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

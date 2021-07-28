@@ -40,7 +40,7 @@ void AREG_API NEDebug::outputConsole( NEDebug::eDegubPrio priority, const char *
     }
 }
 
-#else	// !_DEBUG
+#else   // !_DEBUG
 
 void AREG_API NEDebug::outputConsole( NEDebug::eDegubPrio /*priority*/, const char * /*msg*/, ... )
 {
@@ -71,10 +71,10 @@ void AREG_API NEDebug::outputConsole(const char * msg, ...)
     }
 }
 
-#else	// !_DEBUG
+#else   // !_DEBUG
 
 void AREG_API NEDebug::outputConsole(const char * /*msg*/, ...)
 {
 }
 
-#endif	// _DEBUG
+#endif  // _DEBUG

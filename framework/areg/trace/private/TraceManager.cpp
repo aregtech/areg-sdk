@@ -70,7 +70,7 @@ const TraceManager::sLogEnabling    TraceManager::DEFAULT_LOG_ENABLED_SCOPES[]  
 
 TraceManager & TraceManager::getInstance( void )
 {
-	static TraceManager	_theTraceManager;
+    static TraceManager	_theTraceManager;
     return _theTraceManager;
 }
 

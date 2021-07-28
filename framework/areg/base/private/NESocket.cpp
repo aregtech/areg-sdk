@@ -135,11 +135,11 @@ bool NESocket::InterlockedValue::resolveSocket(SOCKETHANDLE hSocket)
         struct sockaddr_in sAddr;
         NEMemory::zeroBuffer(&sAddr, sizeof(sockaddr));
 
-#ifdef	_WINDOWS
+#ifdef  _WINDOWS
         int len = sizeof(sockaddr);
-#else	// !_WINDOWS
+#else   // !_WINDOWS
         socklen_t len = sizeof(sockaddr);
-#endif	// _WINDOWS
+#endif  // _WINDOWS
 
         if ( RETURNED_OK == getpeername(hSocket, reinterpret_cast<struct sockaddr *>(&sAddr), &len) )
         {
@@ -275,11 +275,11 @@ AREG_API int NESocket::getMaxSendSize( SOCKETHANDLE hSocket )
 {
     long maxData= NESocket::DEFAULT_SEGMENT_SIZE;
 
-#ifdef	_WINDOWS
+#ifdef  _WINDOWS
         int len = sizeof(long);
-#else	// !_WINDOWS
+#else   // !_WINDOWS
         socklen_t len = sizeof(long);
-#endif	// _WINDOWS
+#endif  // _WINDOWS
 
     if ( (RETURNED_OK == getsockopt(hSocket, SOL_SOCKET, SO_SNDBUF, reinterpret_cast<char *>(&maxData), &len))  || (maxData < 0) )
     {
@@ -293,11 +293,11 @@ AREG_API int NESocket::getMaxReceiveSize( SOCKETHANDLE hSocket )
 {
     long maxData= NESocket::DEFAULT_SEGMENT_SIZE;
 
-#ifdef	_WINDOWS
+#ifdef  _WINDOWS
         int len = sizeof(long);
-#else	// !_WINDOWS
+#else   // !_WINDOWS
         socklen_t len = sizeof(long);
-#endif	// _WINDOWS
+#endif  // _WINDOWS
 
     if ( (RETURNED_OK == getsockopt(hSocket, SOL_SOCKET, SO_RCVBUF, reinterpret_cast<char *>(&maxData), &len)) || (maxData < 0) )
     {
@@ -525,11 +525,11 @@ AREG_API SOCKETHANDLE NESocket::serverAcceptConnection(SOCKETHANDLE serverSocket
                     struct sockaddr_in acceptAddr; // connecting client address information
                     NEMemory::zeroBuffer(&acceptAddr, sizeof(sockaddr_in));
 
-#ifdef	_WINDOWS
+#ifdef  _WINDOWS
                     int len = sizeof(sockaddr_in);
-#else	// !_WINDOWS
+#else   // !_WINDOWS
                     socklen_t len = sizeof(sockaddr_in);
-#endif	// _WINDOWS
+#endif  // _WINDOWS
 
                     TRACE_DBG("... server waiting for new connection event ...");
                     result = accept( serverSocket, reinterpret_cast<sockaddr *>(&acceptAddr), &len );

@@ -42,7 +42,7 @@ static NEMemory::sRemoteMessage    __InvalidRemoteMessage  =
         , NEMemory::INVALID_VALUE              // rbhChecksum
         , NEMemory::INVALID_VALUE              // rbhSource
         , NEMemory::INVALID_VALUE              // rbhMessageId
-        , static_cast<unsigned int>(NEMemory::ResultUnknownError)	// rbhResult
+        , static_cast<unsigned int>(NEMemory::ResultUnknownError)   // rbhResult
         , NEMemory::INVALID_VALUE              // rbhSequenceNr
     }
     , {static_cast<char>(0)}

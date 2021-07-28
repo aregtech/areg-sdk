@@ -27,23 +27,23 @@
 
 Process & Process::initilize( void )
 {
-	if ( mIsInitialized == false )
-	{
-		mIsInitialized 	= true;
-	    mProcessId      = ::GetCurrentProcessId();
-	    mProcessHandle	= static_cast<void *>(::GetCurrentProcess());
+    if ( mIsInitialized == false )
+    {
+        mIsInitialized 	= true;
+        mProcessId      = ::GetCurrentProcessId();
+        mProcessHandle	= static_cast<void *>(::GetCurrentProcess());
 
-	    TCHAR fullPath[ MAX_PATH + 1 ];
-	    NEMemory::zeroBuffer(fullPath, (MAX_PATH + 1) * sizeof(TCHAR));
+        TCHAR fullPath[ MAX_PATH + 1 ];
+        NEMemory::zeroBuffer(fullPath, (MAX_PATH + 1) * sizeof(TCHAR));
 
-	    if ( ::GetModuleFileNameEx( (HANDLE)(mProcessHandle), NULL, fullPath, MAX_PATH) != 0 )
-	    {
-	        String temp = fullPath;
-	        _initPaths(temp.getString());
-	    }
-	}
+        if ( ::GetModuleFileNameEx( (HANDLE)(mProcessHandle), NULL, fullPath, MAX_PATH) != 0 )
+        {
+            String temp = fullPath;
+            _initPaths(temp.getString());
+        }
+    }
 
-	return (*this);
+    return (*this);
 }
 
 String Process::getSafeEnvVariable( const char* var ) const

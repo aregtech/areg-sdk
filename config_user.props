@@ -62,17 +62,6 @@
         <UserDefLibs Condition="'$(ConfigShortName)'=='Debug'"></UserDefLibs>
         <UserDefLibs Condition="'$(ConfigShortName)'=='Release'"></UserDefLibs>
 
-        <!-- ****************************************************************************************************************************** -->
-        <!-- User special binary folders to apply to all projects and available for Debug and Release versions.                             -->
-        <!-- Example:                                                                                                                       -->
-        <!-- <UserDefLibs Condition="'$(ConfigShortName)'=='Debug'">"C:\Tools\Visual Leak Detector\bin\Win32"</UserDefLibs>                 -->
-        <UserDefBins Condition="'$(ConfigShortName)'=='Debug'"></UserDefBins>
-        <UserDefBins Condition="'$(ConfigShortName)'=='Release'"></UserDefBins>
-
-        <!-- ****************************************************************************************************************************** -->
-        <!-- User special resource folder to apply to all projects and available for Debug and Release versions.                            -->
-        <UserResourceDir Condition="'$(ConfigShortName)'=='Debug'"></UserResourceDir>
-        <UserResourceDir Condition="'$(ConfigShortName)'=='Release'"></UserResourceDir>
 
         <!-- ****************************************************************************************************************************** -->
         <!-- ****************************************************************************************************************************** -->
@@ -86,7 +75,7 @@
         <DirBuild>build\$(PlatformToolset)\$(Platform)</DirBuild>
         <!-- ****************************************************************************************************************************** -->
         <!-- Compiled binaries folder name. Path is crated as $(ProjectProductDirName)\$(DirBuild)\$(Configuration)\$(DirBin).              -->
-        <DirBin>exe</DirBin>
+        <DirBin>bin</DirBin>
         <!-- ****************************************************************************************************************************** -->
         <!-- Compiled libraries folder name. Path is crated as $(ProjectProductDirName)\$(DirBuild)\$(Configuration)\$(DirLib).             -->
         <DirLib>lib</DirLib>
@@ -197,12 +186,6 @@
         </BuildMacro>
         <BuildMacro Include="UserDefLibs">
             <Value>$(UserDefLibs)</Value>
-        </BuildMacro>
-        <BuildMacro Include="UserDefBins">
-            <Value>$(UserDefBins)</Value>
-        </BuildMacro>
-        <BuildMacro Include="UserResourceDir">
-            <Value>$(UserResourceDir)</Value>
         </BuildMacro>
         
         <BuildMacro Include="ProjectProductDirName">

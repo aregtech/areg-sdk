@@ -24,25 +24,40 @@
     #endif  // _POSIX
 #endif  // POSIX
 
-#if __GNUC__
-#if __x86_64__ || __ppc64__
-    #undef BIT32
-    #undef BIT64
-    #undef _BIT32
-    #undef _BIT64
+#if defined(BIT32) || defined(_BIT32)
 
-    #define BIT64
-    #define _BIT64
-#else
-    #undef BIT32
-    #undef BIT64
-    #undef _BIT32
-    #undef _BIT64
+    #ifndef BIT32
+        #define BIT32
+    #endif // !BIT32
 
-    #define BIT32
-    #define _BIT32
-#endif
-#endif  // __GNUC__
+    #ifndef _BIT32
+        #define _BIT32
+    #endif // !_BIT32
+
+#elif defined(BIT64) || defined(_BIT64)
+
+    #ifndef BIT64
+        #define BIT64
+    #endif // !BIT64
+
+    #ifndef _BIT64
+        #define _BIT64
+    #endif // !_BIT64
+
+#else // defined(BIT64) || defined(_BIT64)
+
+    #if __GNUC__
+        #if __x86_64__ || __ppc64__
+            #define BIT64
+            #define _BIT64
+        #else
+            #define BIT32
+            #define _BIT32
+        #endif
+    #endif  // __GNUC__
+
+#endif  // defined(BIT32) || defined(_BIT32)
+
 #if defined(POSIX) || defined(_POSIX)
 
     #ifndef _POSIX_THREADS

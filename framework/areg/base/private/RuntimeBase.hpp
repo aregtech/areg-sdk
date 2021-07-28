@@ -76,7 +76,7 @@ public:
 public:
 
     /**
-     * \brief	Returns the Class Identifier object
+     * \brief   Returns the Class Identifier object
      **/
     virtual const RuntimeClassID & getRuntimeClassId( void ) const;
 

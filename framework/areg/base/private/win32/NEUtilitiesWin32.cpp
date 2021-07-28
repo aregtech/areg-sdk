@@ -105,7 +105,7 @@ namespace NEUtilities {
 
 AREG_API uint64_t NEUtilities::getTickCount( void )
 {
-    return static_cast<uint64_t>(::GetTickCount( ));
+    return static_cast<uint64_t>(::GetTickCount64( ));
 }
 
 AREG_API bool NEUtilities::convToLocalTime( const sSystemTime &inUtcTime, sSystemTime & outLocalTime )

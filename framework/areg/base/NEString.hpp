@@ -1208,8 +1208,8 @@ NEString::CharPos NEString::findLastOf( const CharType * strPhrase
     {
         CharPos posSrc = startPos == NEString::EndPos ? NEString::getStringLength<CharType>(strSource) - 1 : startPos;
         CharPos posPhr = NEString::getStringLength<CharType>(strPhrase) - 1;
-    	if ( (posSrc >= NEString::StartPos) && (posPhr >= NEString::StartPos) )
-    	{
+        if ( (posSrc >= NEString::StartPos) && (posPhr >= NEString::StartPos) )
+        {
             const CharType * end    = strSource + posSrc;
             const CharType * phrase = strPhrase + posPhr;
 
@@ -1238,7 +1238,7 @@ NEString::CharPos NEString::findLastOf( const CharType * strPhrase
 
                 -- end;
             }
-    	}
+        }
     }
 
     return result;
@@ -1256,8 +1256,8 @@ NEString::CharPos NEString::findFirstOf( CharType chSearch
 
     if ( (isEmpty<CharType>(strSource) == false) && (chSearch != static_cast<CharType>(NEString::EndOfString)) )
     {
-    	if ( startPos >= NEString::StartPos )
-    	{
+        if ( startPos >= NEString::StartPos )
+        {
             const CharType * next = strSource + startPos;
             while ( *next != static_cast<CharType>(EndOfString) )
             {
@@ -1273,7 +1273,7 @@ NEString::CharPos NEString::findFirstOf( CharType chSearch
 
                 ++ next;
             }
-    	}
+        }
     }
 
     return result;
@@ -1292,8 +1292,8 @@ NEString::CharPos NEString::findFirstOf( const CharType * strPhrase
 
     if ( (isEmpty<CharType>(strSource) == false) && (isEmpty<CharType>(strPhrase) == false) )
     {
-    	if ( startPos >= NEString::StartPos )
-    	{
+        if ( startPos >= NEString::StartPos )
+        {
             const CharType * next = strSource + startPos;
             while ( *next != static_cast<CharType>(NEString::EndOfString) )
             {
@@ -1321,7 +1321,7 @@ NEString::CharPos NEString::findFirstOf( const CharType * strPhrase
 
                 ++ next;
             }
-    	}
+        }
     }
 
     return result;

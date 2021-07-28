@@ -94,40 +94,40 @@ bool File::open( void )
 
             if (mFileMode & FileBase::FOB_READ)
             {
-            	flag |= O_RDONLY;
+                flag |= O_RDONLY;
             }
 
             if (mFileMode & FileBase::FOB_WRITE)
             {
-            	flag &= ~O_RDONLY;
-            	flag |= O_RDWR;
+                flag &= ~O_RDONLY;
+                flag |= O_RDWR;
             }
 
             if (mFileMode & FileBase::FOB_CREATE)
             {
-            	flag |= O_CREAT;
+                flag |= O_CREAT;
             }
 
             if (mFileMode & FileBase::FOB_EXIST)
             {
-            	flag &= ~O_CREAT;
+                flag &= ~O_CREAT;
             }
 
             if ( (mFileMode & FileBase::FOB_TRUNCATE) || ((flag & O_CREAT) != 0) )
             {
-            	flag |= O_TRUNC;
+                flag |= O_TRUNC;
             }
 
             if (mFileMode & FileBase::FOB_SHARE_READ)
             {
                 // modes |= (S_IRGRP | S_IROTH | S_IRUSR);
-            	mode |= (S_IRUSR | S_IXUSR) | (S_IRGRP | S_IXGRP) | (S_IROTH | S_IXOTH);
+                mode |= (S_IRUSR | S_IXUSR) | (S_IRGRP | S_IXGRP) | (S_IROTH | S_IXOTH);
             }
 
             if (mFileMode & FileBase::FOB_SHARE_WRITE)
             {
                 // modes |= (S_IWGRP | S_IWOTH | S_IWUSR);
-            	mode |= S_IRWXU | S_IRWXG | S_IRWXO;
+                mode |= S_IRWXU | S_IRWXG | S_IRWXO;
             }
 
             // if (mFileMode & FileBase::FOB_TEMP_FILE)
@@ -141,11 +141,11 @@ bool File::open( void )
             {
                 if (_existFile(mFileName.getString()))
                 {
-                	flag &= ~O_CREAT;
+                    flag &= ~O_CREAT;
                     if (dirName == mFileName)
                     {
-                    	flag |= O_DIRECTORY; // set directory option
-                    	flag &= ~O_TRUNC;    // remove truncate, since it is not applicable for directories
+                        flag |= O_DIRECTORY; // set directory option
+                        flag &= ~O_TRUNC;    // remove truncate, since it is not applicable for directories
                     }
                 }
                 else
@@ -153,9 +153,9 @@ bool File::open( void )
                     File::createDirCascaded(dirName);
                     if (dirName == mFileName)
                     {
-                    	flag |= O_DIRECTORY; // set directory option
-                    	flag &= ~O_TRUNC;    // remove truncate, since it is not applicable for directories
-                    	flag &=~ O_CREAT;    // we don't need this, because it is automatically created cascaded
+                        flag |= O_DIRECTORY; // set directory option
+                        flag &= ~O_TRUNC;    // remove truncate, since it is not applicable for directories
+                        flag &=~ O_CREAT;    // we don't need this, because it is automatically created cascaded
                     }
                 }
             }
@@ -455,8 +455,8 @@ bool File::copyFile( const char* originPath, const char* newPath, bool copyForce
             if (S_ISREG(buf.st_mode) && copyForce)
             {
                 // keep current mode, add read-write permission for owner and group
-            	mode = (buf.st_mode & (~S_IFREG)) | S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH;
-            	flag = buf.st_size != 0 ? O_WRONLY | O_TRUNC : O_WRONLY; // for file with zero size, there is no need to truncate.
+                mode = (buf.st_mode & (~S_IFREG)) | S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH;
+                flag = buf.st_size != 0 ? O_WRONLY | O_TRUNC : O_WRONLY; // for file with zero size, there is no need to truncate.
             }
         }
         else

@@ -421,7 +421,7 @@ inline IEOutStream & operator << (IEOutStream & stream, const char * output)
 {
     if (output != static_cast<const char *>(NULL))
     {
-    	unsigned int single = static_cast<unsigned int>(sizeof(char));
+        unsigned int single = static_cast<unsigned int>(sizeof(char));
         unsigned int length = 0;
         const char * src = output;
         while (*src ++ != '\0')
@@ -437,7 +437,7 @@ inline IEOutStream & operator << (IEOutStream & stream, const wchar_t * output)
 {
     if (output != static_cast<const wchar_t *>(NULL))
     {
-    	unsigned int single = static_cast<unsigned int>(sizeof(wchar_t));
+        unsigned int single = static_cast<unsigned int>(sizeof(wchar_t));
         unsigned int length = 0;
         const wchar_t * src = output;
         while (*src ++ != L'\0')
