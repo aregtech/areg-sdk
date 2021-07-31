@@ -5,7 +5,7 @@
     <!-- User Property                                                                                                                      -->
     <!-- ********************************************************************************************************************************** -->
     <PropertyGroup>
-        <_PropertySheetDisplayName>config_user</_PropertySheetDisplayName>
+        <_PropertySheetDisplayName>user_settings</_PropertySheetDisplayName>
     </PropertyGroup>
 
     <!-- ********************************************************************************************************************************** -->

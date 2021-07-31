@@ -4,7 +4,7 @@
     <!-- Project Property name.                                                                                                             -->
     <!-- ********************************************************************************************************************************** -->
     <PropertyGroup>
-        <_PropertySheetDisplayName>config_project_default</_PropertySheetDisplayName>
+        <_PropertySheetDisplayName>project_defaults</_PropertySheetDisplayName>
     </PropertyGroup>
   <PropertyGroup Label="Configuration">
     <CharacterSet>Unicode</CharacterSet>

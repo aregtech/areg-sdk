@@ -38,7 +38,7 @@
     #define _WIN32
 #endif // _WIN32
 
-#if defined(BIT64) || defined(_BIT64) || defined(WIN64) || defined(_WIN64)
+#if defined(BIT64) || defined(_BIT64) || defined(WIN64) || defined(_WIN64) || defined(_M_X64) || defined(_Wp64) || defined(_M_AMD64)
 
     #if defined(BIT32) || defined(_BIT32)
         #undef  BIT32
@@ -63,7 +63,7 @@
         #define _WIN64       1
     #endif  // !defined(_WIN64) || (_WIN64 != 1)
 
-#else   // defined(BIT64) || defined(_BIT64) || defined(WIN64) || defined(_WIN64)
+#elif defined(BIT32) || defined(_BIT32) || defined(_M_IX86) || defined(_M_IX86_FP)
 
     #ifndef BIT32
         #define BIT32
@@ -72,6 +72,10 @@
     #ifndef _BIT32
         #define _BIT32
     #endif // !_BIT32
+
+#else   // defined(BIT32) || defined(_BIT32) || defined(_M_IX86) || defined(_M_IX86_FP)
+
+    #error  Cannot detect the target bitness
 
 #endif  // defined(BIT64) || defined(_BIT64) || defined(WIN64) || defined(_WIN64)
 
@@ -89,8 +93,10 @@
  * \brief   Switcher of MS Visual C++
  **/
 #ifdef _MSC_VER
-  #define MS_VISUAL_CPP
-#endif
+    #ifndef MS_VISUAL_CPP
+        #define MS_VISUAL_CPP
+    #endif  // MS_VISUAL_CPP
+#endif  // _MSC_VER
 
 
 #ifndef  WIN32_LEAN_AND_MEAN

@@ -4,24 +4,24 @@
     <!-- Project Property name.                                                                                                             -->
     <!-- ********************************************************************************************************************************** -->
     <PropertyGroup>
-        <_PropertySheetDisplayName>config_project</_PropertySheetDisplayName>
+        <_PropertySheetDisplayName>project</_PropertySheetDisplayName>
     </PropertyGroup>
     <ImportGroup Label="PropertySheets">
-        <Import Project="$(SolutionDir)/config_project_default.props"/>
+        <Import Project="$(SolutionDir)\conf\msvc\project_defaults.props"/>
     </ImportGroup>
     <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
     <ImportGroup Label="ExtensionSettings">
     </ImportGroup>
     <ImportGroup Label="PropertySheets">
-        <Import Project="$(SolutionDir)\config_user.props" />
+        <Import Project="$(SolutionDir)\conf\msvc\user.props" />
     </ImportGroup>
     <PropertyGroup Label="UserMacros">
         <ProjectIncludes>$(SrcInc);$(ProjectSourceDir);$(ProjectDevDir);$(ProjectGeneratedDir);$(ProjectDir);</ProjectIncludes>
         <ProjectCommonDefines Condition="'$(Platform)'=='Win32'">
-            $(ProjectPreprocessorDefines);$(UserPreprocessorDefines);$(ThirdPreprocessorDefines);_WINDOWS; _BIT32
+            $(ProjectPreprocessorDefines);$(UserPreprocessorDefines);$(ThirdPreprocessorDefines);_WINDOWS
         </ProjectCommonDefines>
         <ProjectCommonDefines Condition="'$(Platform)'=='x64'"  >
-			$(ProjectPreprocessorDefines);$(UserPreprocessorDefines);$(ThirdPreprocessorDefines);_WINDOWS; _BIT64
+			$(ProjectPreprocessorDefines);$(UserPreprocessorDefines);$(ThirdPreprocessorDefines);_WINDOWS
 		</ProjectCommonDefines>
     </PropertyGroup>
     <PropertyGroup>
