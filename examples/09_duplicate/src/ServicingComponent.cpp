@@ -124,7 +124,7 @@ void ServicingComponent::processTimer(Timer & timer)
     {
         ASSERT(mCount == TIMER_EVENTS);
 
-        printf("Service % says goodbye...\n", getRoleName().getString());
+        printf("Service %s says goodbye...\n", getRoleName().getString());
 
         TRACE_INFO("The timer is not actuve anymore, signaling quit event");
         Application::signalAppQuit();
