@@ -1,5 +1,5 @@
 ```
-This file is part of AREG IoT SDK
+This file is part of AREG IoT SDK.
 Copyright (c) Aregtech, 2017-2021
 Contact: info[at]aregtech.com
 Website: https://www.aregtech.com
@@ -8,11 +8,13 @@ Website: https://www.aregtech.com
 
 # Information
 
-This file describes file system structure and the location of documents.
+This document describes the file system structure of **AREG SDK** and the location of documents.
 
 ## The structure of AREG SDK
 ```
 areg-sdk  ......... --> the root folder of AREG SDK
+    |
+    +- conf ....... --> the MS Visual Studio and Makefile configuration folder
     |
     +- docs ....... --> the documents location of AREG SDK
     |
@@ -33,21 +35,22 @@ areg-sdk  ......... --> the root folder of AREG SDK
     +- README.md  . --> the project description readme file.
 
 ```
-After compiling with Visual Studio, the root _areg-sdk_ will contain recoverable _product_ subfolder that contains build binaries.
+After compiling using _MS Visual Studio_ or _Makefile_, the root folder _areg-sdk_ will contain a recoverable _product_ subfolder that contains build binaries.
 
-## The structure of documents
+## The structure of _the document folder_:
 
 ```
 docs
   |
-  +- POSIX.md  .... --> the instruction to compile application in Linux.
+  +- POSIX.md  .... --> the instructions to compile applications in Linux.
   |
-  +- WIN32.md  .... --> the instruction to compile application in Windows.
+  +- WIN32.md  .... --> the instructions to compile applications in Windows.
 ```
 
 ## Locations
 
-- The source codes of _AREG IoT SDK_ are located in [_framework_](./../framework/) subfolder of _areg-sdk_ root.
-- The sources of _AREG IoT SDK_ examples are located in [_examples_](./../examples) subfolder of _areg-sdk_ root.
+- The source codes of _AREG IoT SDK_ are located in the [_framework_](./../framework/) subfolder of _areg-sdk_ root.
+- The sources of _AREG IoT SDK_ examples are located in the [_examples_](./../examples) subfolder of _areg-sdk_ root.
+- The MS Visual Studio property and Makefile user settings are located in the [_conf_](./../conf) subfolder of _areg-sdk_ root.
 - The **POSIX** related configuration, compilation and the list of used API are in [POSIX.md](./POSIX.md)
 - The **Windows** related configuration, compilation and the list of used API are in [WIN32.md](./WIN32.md)
