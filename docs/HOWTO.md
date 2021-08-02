@@ -12,95 +12,127 @@ This document replies to several howto questions.
 ## How to use preprocessor directives
 
 AREG SDK uses a few preprocessor directives to compile **POSIX** and **Windows** versions of codes. Here is the list:
-- **POSIX** to compile sources with _POSIX API_, also see details in [POSIX.md](./POSIX.md)
-- **WINDOWS** to compile sources with _Win32 API_, also see details in [WIN32.md](./WIN32.md) 
-- **DEBUG** to build debug version of codes
-- **NDEBUG** to build release version of codes
-- **ENABLE_TRACES** to enable tracing / logging
-- **EXP_AREG_LIB** or **EXPORT_STATIC_SYMBOLS** to compile static library of _AREG framerowk_
-- **EXP_AREG_DLL** or **EXPORT_SHARED_SYMBOLS** to compile shared library of _AREG framerowk_
-- **IMP_AREG_LIB** or **IMPORT_STATIC_SYMBOLS** to link with static library of _AREG framerowk_
-- **IMP_AREG_DLL** or **IMPORT_SHARED_SYMBOLS** to link with shared library of _AREG framerowk_
+- **POSIX** to compile sources with _POSIX API_, details are in [POSIX.md](./POSIX.md).
+- **WINDOWS** to compile sources with _Win32 API_, details are in [WIN32.md](./WIN32.md).
+- **DEBUG** to compile Debug configuration.
+- **NDEBUG** to compile Release configuration.
+- **ENABLE_TRACES** to enable logging / tracing in sources.
+- **EXP_AREG_LIB** or **EXPORT_STATIC_SYMBOLS** to build _AREG framerowk_ static library
+- **EXP_AREG_DLL** or **EXPORT_SHARED_SYMBOLS** to build _AREG framerowk_ shared library
+- **IMP_AREG_LIB** or **IMPORT_STATIC_SYMBOLS** to link with _AREG framerowk_ static library
+- **IMP_AREG_DLL** or **IMPORT_SHARED_SYMBOLS** to link with _AREG framerowk_ shared library
 
-For example, the _POSIX_ version of examples are compiled with preprocessor directives _POSIX, (N)DEBUG, IMP_AREG_LIB, ENABLE_TRACES_.
+A typical _POSIX_ application usually is compiled with _POSIX, DEBUG (NDEBUG), IMP_AREG_LIB (IMP_AREG_DLL), ENABLE_TRACES_ preprocessor directives.
 
 ## How to compile
 
-Currently, AREG SDK provides **Eclipse** and **Visual Studio** project files to compile projects. _Eclipe_ projects are used to compile **POSIX** (_Linux_) versions and _Visual Studio_ project files are used to compile **Windows** versions of projects. By default, there is no need to make additional changes in settings to compile projects. More details of importing and compiling projects are below. After compilation, to run **IPC** related examples, make sure the process **mcrouter** has started.
+AREG SDK provides **Eclipse** and **Visual Studio** project files to compile projects. _Eclipe_ projects are used to compile **POSIX** (_Linux_) and _Visual Studio_ project files are used to compile **Windows** versions of projects. By default, there is no need to make additional changes in settings to compile projects. More details of importing and compiling projects are below. To run **IPC** examples, make sure the process **mcrouter** has started.
 
 ### POSIX build
 
-To compile _POSIX_ version of projects use _Eclipse for C/C++ Developers_ IDE and _GCC_ compiler version 98 or higher. You need to import to _Eclipse_ the existing project files to compile projects.
+To compile _POSIX_ version of projects use _Eclipse for C/C++ Developers_ IDE and _GCC_ compiler version 11 or higher. You need to import to _Eclipse_ workspace the existing projects.
 
-**How to import project**:
+**How to import projects**:
 * Open _Eclipse for C/C++ Developers_ IDE.
-* Create a new workspace and specify the workflow root folder as _are-sdk root_.
+* Create a _New Workspace_, specify _areg-sdk_ as workspace root.
 * In _Eclipse_ IDE select _Import_ menu (_File_ ==> _Import_) to start importing.
-* In _Select_ dialog find _General_ and select option _Existing Projects into Workspace_.
-* Click _Next_ button of dialog box, this opens _Import Projects_ dialog.
-* In _Import Projects_ dialog choose radio _Select_, click _Browse_ button and set _areg-sdk root_ folder.
-* After scanning all folders of _areg-sdk root_ are listed in the _Projects_ list box.
-* Select either areg and mcrouter projects to compile framework, or select all to compile all.
+* In _Select_ dialog select _General_ ==> _Existing Projects into Workspace_.
+* Click _Next_ button, this opens _Import Projects_ dialog.
+* In _Import Projects_ dialog click _Select_ ==> _Browse_ and set _areg-sdk_ folder.
+* After scan, _Projects_ contains a list of projects.
+* Select either areg and mcrouter, or select all to compile all.
 
-The Debug builds are output in _Debug_ and the Release builds are in _Release_ subfolders of the projects. If changing settings of the project, make sure _POSIX_ (or __POSIX_) preprocessor directive is set.
+The Debug builds are output in _Debug_ and the Release builds are in _Release_ subfolders of each project. By default, _AREG framework_ is compiled as a static library. Change the settings of the framework and project if you need the shared library.
 
 ### Windows build
 
 To compile Windows versions of projects, use Visual Studio 12 or higher to open the solution. However, the sources can be compiled with Visual Studio 10 (MSVC v100) compiler or higher version.
 
-**How to load project**:
-* In your Visual Studio IDE (should be VS2012 or higher) open _areg-sdk.sln_ file located in _areg-sdk root_ folder to load all projects.
-* In the toolbar of your Visual Studio select specific _Solution Cofigurations_ version and select _Solution Platforms_ you'd like to compile and build the solution.
+**How to load projects**:
+* In Visual Studio (VS2012 or higher) open _areg-sdk.sln_ file, located in _areg-sdk_.
+* In the toolbar of Visual Studio select _Solution Cofigurations_ and _Solution Platforms_ to compile.
+* _Solution Platform_ **Win32** compiles 32-bit and **x64** compiles 64-bit applications.
+* _Solution Configuratin_ chose configuration suitable for your Visual Studio.
+    * _dbg_vc100_ or _rls_vc100_ use Visual Studio 10 compiler.
+    * _dbg_vc110_ or _rls_vc110_ use Visual Studio 2012 compiler.
+    * _dbg_vc120_ or _rls_vc120_ use Visual Studio 2013 compiler.
+    * _dbg_vc140_ or _rls_vc140_ use Visual Studio 2015 compiler.
+    * _dbg_vc141_ or _rls_vc141_ use Visual Studio 2017 compiler.
+    * _dbg_vc142_ or _rls_vc142_ use Visual Studio 2019 compiler.
 
-For example, to compile sources with Visual Studio 2019 compiler, in the _Solution Configurations_ tool select _dbg_v142_ Debug or _rls_v142_ Release builds. Then select either Win32 for 32-bit or x64 for 64-bit builds and compile the solution. With _Visual Studio_ all projects are output in *_product_* subfolder created in _areg-sdk root_.
+We have taken the advantage of Visual Studio property files and have chosen this behaviour of _Solution Configuration_ to escape changing the PlatformToolset settings in project files if a team works with different versions of Visual Studio. If you need to support newer versions of Visual Studio, register the _Platform_, _Configuration_ and _PlatformToolset_ in the **config_compile.props** file located in _areg-sdk_ and update _areg-sdk_ solution file.
+
+**Note:** _You'll get error if you choose the compiler version, which does not exist in your system!_ 
+
+Example of of building 64-bit Release in VS2019: in _Solution Configurations_ of _Visual Studio 2019_ toolbar select **_rls_v142_** and in _Solution Platform_ select **_x64_**. Compile the Solution. All projects are output in created *_product_* of _areg-sdk_.
 
 ### Other builds
-Currently AREG SDK does not contain project files of any other IDE. AREG SDK neither contains make files to build on the command line. This comes soon.
+Currently the AREG SDK neither contains project files of any other IDE, nor contains make files to build from command line. This addition comes soon.
 
 ## How to create a project or integrate in project
 
-Creating a new project or integrating _AREG framework_ in an existing project have almost the same logic. 
-1. Include **areg-sdk/framework** path in the _include path_ list of the project.
-2. Declare **POSIX** or **WINDOWS** preprocessor directive to specify _POSIX_ or _Win32_ API use in framework.
-3. Declare **DEBUG** or **NDEBUG** preprocessor directive to specify which build configuration to use. 
-4. Declare **IMP_AREG_DLL** or **IMP_AREG_LIB** preprocessor to specify shared or static library symbols of framework to import.
-5. Declare **ENABLE_TRACES** preprocessor directive if logs / tracing is going to exist in application.
-6. Include binary out directory of the library search path list.
-7. Make sure to link the project sources with _libareg.a_ for POSIX and _areg.lib_ for Windows version.
+Here is information to integrate _AREG framework_ in the existing project. 
+1. Include **areg-sdk/framework** in the _include path_ list of the project.
+2. Set preprocessor directive **POSIX** or **WINDOWS** to specify _POSIX_ or _Win32_ build of applications.
+3. Set preprocessor directive **DEBUG** for Debug and **NDEBUG** for Release build of applications.
+4. Set preprocessor directive **IMP_AREG_DLL** for the shared library or **IMP_AREG_LIB** for the static library of _AREG framework_.
+5. Optionally, set preprocessor directive **ENABLE_TRACES** if going to use logs / traces.
+6. Include library output directory in library search path and specify _AREG framework_ library to link.
 
-Steps (5) is optional, and (6) and (7) can be omitted if a project is a _static library_. Only steps (1) - (4) are obligatorily for all projects.
+Now the project is ready to use _AREG framework_.
 
-For example, to create a _POSIX_ application that uses static library of _AREG framework_:
-- Specify _areg-sdk/framework_ in source include paths and _areg-sdk/framework/areg/Debug_ path in library search path
-- Set linker option to link with _libareg.a_
-- Specify _POSIX, DEBUG, IMP_AREG_LIB, ENABLE_TRACES_ preprocessor directive.
-
-After these steps, the POSIX application sources can use _AREG framework_ API and build the project.
+The examples of _AREG SDK_ for **POSIX** in Eclipse IDE are built having following settings:
+- _areg-sdk/framework_ path is set in the include paths of projects.
+- The library search path has _areg-sdk/framework/areg/Debug_ path for Debug and _areg-sdk/framework/areg/Release_ path for Release configuration.
+- _areg_, _pthread_ and _rt_ libraries are listed in the list of libraries to link.
+- Preprocessor directives _POSIX, DEBUG / NDEBUG, IMP_AREG_LIB, ENABLE_TRACES_ are set for Debug and Release versions.
 
 
 ## How to use logging
 
-**Creating logs**
+#### Creating logs
 
-Use predefined _MACRO_ to output logs. Tracing / Logging MACRO are declared in [_GTrace.h_](./../framework/areg/trace/GETrace.h) header file.
+Use predefined _MACRO_ to configure, enable and output logs. Tracing / Logging MACRO are declared in the [_GTrace.h_](./../framework/areg/trace/GETrace.h) header file.
 
-First of all, to be able to see the logs, the project must be compiled with preprocessor directive _ENABLE_TRACES_. If this is not enabled, the log outputs will not exist in binaries. Second, there must be declared _scopes_, which is possible by using DEF_TRACE_SCOPE(_some_unique_name_of_scope_), and scopes should be used in the method(s) by declaring TRACE_SCOPE(_some_unique_name_of_scope_). As soon as the method is called, the scope generates _"Enter"_ message and then exit method, the scope generates _"Exit"_ message. In between, the developers need to make log output just in the same way as they would do when call _printf()_ except that there is no need to specify _end-of-line_. The logs are output by priority, such as DEBUG, INFO, WARN, ERROR, FATAL. Each of them has predefined MACRO.
+- To compile sources with logging, compile the application with _ENABLE_TRACES_ preprocessor directive. If this is not specified, the logs will not exist in binaries. 
+- There must be declared _scopes_ to generate logs. 
+- Use MACRO _**DEF_TRACE_SCOPE**(some_unique_name_of_scope)_ to declare scope.
+- Use macro _**TRACE_SCOPE**(some_unique_name_of_scope)_ in methods to prepare tracing. 
+- As soon as the method is executed, the scope generates _"Enter"_ message to log.
+- Use MACRO _TRACE_DBG, TRACE_INFO, TRACE_WARN, TRACE_ERR, TRACE_FATAL_ to log messages by priority.
+- Use standard string formatting flags to log messages (similar to _printf()_).
+- No need to set _end-of-line_ ('\n') at the end of the message. The tracer automatically adds.
+- When exit the method, the scope generates _"Exit"_ message to log.
 
-**Enable loging**
+#### Enable logging
 
-Once application uses logging. It should be enabled during application startup. An example of starting logging is a project [**04_trace**](./../examples/04_trace/). There are many other example application sthat use logs. As soon as logging is enabled during runtime, the system is ready to output. The logging has intiaial default settings, but it is recommended to use configuration to enable logs and set logging priorities.
+The application(s) must be compiled with the _TRACE_ENABLE_ preprocessor directive. The _lotgging service_ is enabled in 2 steps:
+1. In log initialization file (by default, **log.init** file) set _log.enable_ flag to _true_ to enable logging service for all applications or _log.enable.**appName**_ flag for a specific application.
+2. Use _TRACER_START_LOGGING_ macro and specify the log initialization file path to start logging service. If path is NULL, the default relative path _./config/log.init_ is used.
 
-_In the current version, all logs are output in the file on file system. It is planned to have remote logging, which is in development phase._
+See the details of initialization in [log.init](./../framework/areg/resources/log.init) file. In _log.init_ file the logs can be filtered by scopes and priorities. 
 
-**Configuring logging**
+Browse [**04_trace**](./../examples/04_trace/) and other following examples to see how logs are initialized and used. Use macro _TRACER_FORCE_LOGGING_ to force starting logging service with default settings (enable all log scopes and priorities of the application).
 
-When logging starts, it reads the initial instructions from [_configuration file_](./../framework/areg/resources/log.init), which has simple syntax and the parser of this syntax is part of AREG framework. So that, the projects can use same syntax to configure own components. If after compilation, the binary output folder does not contain _"config/log.init"_ file, create the _config_, copy [_log.init_](./../framework/areg/resources/log.init) located in [_resource_](./../framework/areg/resources/) folder. The configuration file does well documented instructions how to enable / disable loging, how to specify which loging scopes to use and to change the logging priority. 
+_In the current version of log service, the logs output messages in the file. It is planned to extend log service with more dynamic and powerful features._
 
-Please note, it is planned to change slightly the configuration logc.
+#### Configuring logging
 
+The logs are configured in [_initialization file_](./../framework/areg/resources/log.init), which has simple syntax (the parser is part of the framework). Change appropriate sections to filter log priorities and log scopes, or change the name of the output log file.
+
+An example of filtering logs and scopes:
+```
+scope.appName.some_unique_scope_name_in_method = SCOPE | DEBUG
+scope.appName.some_unique_scope_name_in_other_method = ERROR
+scope.appName.some_unique_scope_name_in_somewhere = NOTSET
+```
+In this example, in application _appName_:
+* _some_unique_scope_name_in_method_ scope enables all logs, including _Enter_ and _Exit_ messages of scope.
+* _some_unique_scope_name_in_other_method_ scope enables only logs with ERROR and FATAL priority. All other logs, including _Enter_ and _Exit_ messages of the scope, are filtered.
+* _some_unique_scope_name_in_somewhere_ scope disables any log.
 
 ## How to use multicast router
 
 Multicast Router (MCR) is a part of AREG framework and it is used for inter-process communication (IPC). When start an application with public service, make sure that the **mcrouter** also has been started. Otherwise, the servicing will not work. The local services do not need to use multicast routing **mcrouter** process.
 
-The MCR is options are set in [_configuration file_](./../framework/areg/resources/router.init). Developers mainly need to change IP-address and the port number of router in this file. If after compilation, the binary output folder does not contain _"config/router.init"_ file, create the _config_, copy [_router.init_](./../framework/areg/resources/router.init) located in [_resource_](./../framework/areg/resources/) folder.
+The MCR options are set in [_router.init_](./../framework/areg/resources/router.init) file. Developers mainly need to change IP-address and the port number of the router in this file. By default, the relative path of _router.init_ file is _./config/router.init_.

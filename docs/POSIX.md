@@ -4,30 +4,29 @@ Copyright (c) Aregtech, 2017-2021
 Contact: info[at]aregtech.com
 Website: https://www.aregtech.com
 ```
-===============================================================================
+============================================
 
-This file describes the instruction to compile **AREG SDK** and example source codes in _Linux_ or any other _POSIX_ supporting 32- or 64-bit platform. The minimum requirement to run application built with the help of **AREG SDK** on the target device are 256KB of free RAM and 2MB of free storage space.
+This document describes the instruction to compile **AREG SDK** and example source codes under _Linux_ or any other _POSIX_ 32- or 64-bit platform. The minimum requirement to run application built with the help of **AREG SDK** on the target device are 256KB of free RAM and 2MB of free storage space.
 
-The **AREG SDK** sources can be compiled under Linux or any other POSIX supporting platform by using _Eclipse IDE_. Open _Eclipse IDE for C/C++_ and **export** one or all projects located in:
-- **“areg-sdk/framework/areg/”** to build AREG connectivity framework
-- **“areg-sdk/framework/mcrouter/”** to build multicast message router
-- **”areg-sdk/examples/xxx”** to build examples
+The **AREG SDK** sources can be compiled under Linux or any other POSIX platform by using _Eclipse IDE_. Open _Eclipse IDE for C/C++_ and **import** one or all projects located in:
+- **“areg-sdk/framework/areg/”** to build _AREG framework_.
+- **“areg-sdk/framework/mcrouter/”** to build multicast message router.
+- **”areg-sdk/examples/xxx”** to build examples.
 
-Select preferred toolchain to build project(s). By default, it uses _GNU GCC_ compiler. **AREG SDK** sources can be compiled as static or shared library. By default, under Linux it is compiled as static library. Integrate **AREG** connectivity framework in your project(s) and make sure that is linked with _libareg.a_ (or _areg.so_) library.
+Select preferred toolchain to build project(s). By default, it uses _GNU GCC_ compiler. **AREG SDK** sources can be compiled as a static or a shared library. By default, under Linux it is compiled as a static library. Integrate **AREG** framework in your project(s) and make sure that is linked with _libareg.a_ (or _areg.so_) library. The [HOWTO.md](./HOWTO.md) document contains detailed description [to import Eclipse projects](./HOWTO.md#posix-build) and [to integrate _AREG framework_](./HOWTO.md#how-to-create-a-project-or-integrate-in-project) in the existing or new project.
 
+To build _AREG framework_ with _POSIX API_, **POSIX** (or **_POSIX**) preprocessor directive must be defined. 
 
-To build **AREG SDK** connectivity framework, use **POSIX** (or **_POSIX**) preprocessor directive. 
+**Other preprocessor directives to use to compile:**
+- **DEBUG** to compile the debug version.
+- **NDEBUG** to compile the release version.
+- **ENABLE_TRACES** to compile sources with tracing / logging.
+- **EXP_AREG_LIB** to compile _AREG frmework_ as a static library.
+- **EXP_AREG_DLL** to compile _AREG frmework_ as a shared library.
+- **IMP_AREG_LIB** to link a project with _AREG framework_ static library.
+- **IMP_AREG_DLL** to link a project with _AREG framework_ shared library.
 
-**Other preprocessor directives:**
-- **DEBUG** to compile debug version
-- **NDEBUG** to compile release version
-- **ENABLE_TRACES** to enable tracing / logging (requires additional space)
-- **EXP_AREG_LIB** or **EXPORT_STATIC_SYMBOLS** to compile sources as static library
-- **EXP_AREG_DLL** or **EXPORT_SHARED_SYMBOLS** to compile sources as shared library
-- **IMP_AREG_LIB** or **IMPORT_STATIC_SYMBOLS** to link static library
-- **IMP_AREG_DLL** or **IMPORT_SHARED_SYMBOLS** to link shared library
-
-_**AREG SDK** requires POSIX1.c_ for multithreading and synchronization.
+_**AREG SDK** requires POSIX1.c_ API for multithreading and synchronization.
 
 ## The list of POSIX API used in AREG SDK (including multicast message router)
 
