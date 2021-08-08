@@ -958,7 +958,6 @@ int NEString::makeString( CharType * strDst, CharCount charCount, IntType digit,
     if ( (NEString::isEmpty<CharType>(strDst) == false) && (charCount > 1) )
     {
         static const CharType _valid[]  = {'0', '1', '2', '3', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F', '\0'};
-        static const int     _maxLen    = MACRO_ARRAYLEN(_valid);
 
         CharType * dst = strDst;
         IntType num    = MACRO_ABS(digit);
@@ -1731,7 +1730,7 @@ NEString::SString<CharType> * NEString::initString(   NEString::CharCount charCo
         uint8_t * temp      = DEBUG_NEW uint8_t[size];
         if (temp != static_cast<unsigned char *>(NULL))
         {
-            result = NEMemory::constructElems<NEString::SString<CharType>>(static_cast<void *>(temp), 1);
+            result = NEMemory::constructElems<NEString::SString<CharType> >(static_cast<void *>(temp), 1);
             result->strEncoding = encode;
             result->strSpace    = static_cast<NEString::CharCount>(space);
             result->strUsed     = 0;

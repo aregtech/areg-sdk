@@ -34,7 +34,7 @@ class WideString;
  *          supports streaming and used in Hash Map since has operator
  *          to covert string value to integer.
  **/
-class AREG_API String : public TEString<char, TEStringImpl<char>>
+class AREG_API String : public TEString<char, TEStringImpl<char> >
 {
 //////////////////////////////////////////////////////////////////////////
 // defined constants

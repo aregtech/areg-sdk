@@ -462,7 +462,7 @@ void ClientService::failedReceiveMessage(SOCKETHANDLE whichSource)
     TRACE_WARN("Failed to receive message from socket [ %u ], current client socket is [ %u ]. Going to stop service",  whichSource, mClientConnection.getSocketHandle());
     if (Application::isServicingReady())
     {
-        if ( (whichSource == mClientConnection.getSocketHandle()))
+        if ( whichSource == mClientConnection.getSocketHandle() )
         {
             ClientServiceEvent::sendEvent( ClientServiceEventData(ClientServiceEventData::CMD_ServiceLost), static_cast<IEClientServiceEventConsumer &>(self()), static_cast<DispatcherThread &>(self()) );
         }

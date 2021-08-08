@@ -139,8 +139,7 @@ MessageLayout::~MessageLayout(void)
 
 void MessageLayout::logMessage( const NETrace::sLogMessage & msgLog, IEOutStream & stream ) const
 {
-    if ( msgLog.lmTrace.traceMessage != NULL )
-        stream.write(msgLog.lmTrace.traceMessage);
+    stream.write(msgLog.lmTrace.traceMessage);
 }
 
 //////////////////////////////////////////////////////////////////////////

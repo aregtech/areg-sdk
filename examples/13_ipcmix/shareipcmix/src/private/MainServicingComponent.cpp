@@ -109,7 +109,7 @@ void MainServicingComponent::clientConnected(const ProxyAddress & client, bool i
     if (isConnected == false)
     {
         TRACE_DBG("Searching serivce address [ %s ] in the thread [ %s ]"
-                        , ServiceAddress::convAddressToPath(static_cast<const ServiceAddress &>(client))
+                        , ServiceAddress::convAddressToPath(static_cast<const ServiceAddress &>(client)).getString()
                         , client.getThread().getString());
 
         NERemoteRegistry::ListRegistry & list = getRegistryList();

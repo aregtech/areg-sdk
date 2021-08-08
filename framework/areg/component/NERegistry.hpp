@@ -103,13 +103,13 @@ namespace NERegistry
  * \tparam  Class   The class name of component to create
  */
 template <class Class>
-inline Class * DefaultComponentCreate( const NERegistry::ComponentEntry & entry, ComponentThread & owner );
+Class * DefaultComponentCreate( const NERegistry::ComponentEntry & entry, ComponentThread & owner );
 
 /**
  * \brief   The default method to create component
  */
 template <class Class>
-inline void DefaultComponentRelease( Component & compObject, const NERegistry::ComponentEntry & entry );
+void DefaultComponentRelease( Component & compObject, const NERegistry::ComponentEntry & entry );
 
 //////////////////////////////////////////////////////////////////////////
 // NERegistry::ServiceEntry class declaration
@@ -1609,21 +1609,6 @@ inline void DefaultComponentRelease( Component & compObject, const NERegistry::C
      **/
     extern AREG_API const NERegistry::Model                   INVALID_MODEL;
 
-}
-
-//////////////////////////////////////////////////////////////////////////
-// Component Default create / release function templates
-//////////////////////////////////////////////////////////////////////////
-template <class Class>
-inline Class * NERegistry::DefaultComponentCreate( const NERegistry::ComponentEntry & entry, ComponentThread & owner )
-{
-    return DEBUG_NEW Class(entry, owner);
-}
-
-template <class Class>
-inline void NERegistry::DefaultComponentRelease( Component & compObject, const NERegistry::ComponentEntry & /* entry */ )
-{
-    delete (&compObject);
 }
 
 #endif  // AREG_COMPONENT_NEREGISTRY_HPP

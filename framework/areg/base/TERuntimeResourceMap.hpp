@@ -286,7 +286,7 @@ template <class RUNTIME_DELEGATE, class Implement>
 TENolockRuntimeResourceMap<RUNTIME_DELEGATE, Implement>::TENolockRuntimeResourceMap( void )
     : TERuntimeResourceMap<RUNTIME_DELEGATE, Implement>   (static_cast<IEResourceLock &>(mNoLock))
     
-    , mNoLock   ( false )
+    , mNoLock   ( )
 {
     ; // do nothing
 }

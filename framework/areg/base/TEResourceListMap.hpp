@@ -586,7 +586,7 @@ template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class 
 TENolockResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, ResourceList, Implement>::TENolockResourceListMap( void )
     : TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, ResourceList, Implement>( static_cast<IEResourceLock &>(mNoLock) )
 
-    , mNoLock   ( false )
+    , mNoLock   ( )
 {
     ; // do nothing
 }

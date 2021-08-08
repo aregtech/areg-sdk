@@ -6,6 +6,7 @@
  *
  ************************************************************************/
 #include "areg/component/NERegistry.hpp"
+#include "areg/component/Component.hpp"
 #include "areg/base/NEUtilities.hpp"
 #include "areg/base/NECommon.hpp"
 
@@ -13,7 +14,19 @@
 // NERegistry namespace implementation
 //////////////////////////////////////////////////////////////////////////
 
-//////////////////////////////////////////////////////////////////////////
+template <class Class>
+Class * NERegistry::DefaultComponentCreate( const NERegistry::ComponentEntry & entry, ComponentThread & owner )
+{
+    return DEBUG_NEW Class(entry, owner);
+}
+
+template <class Class>
+void NERegistry::DefaultComponentRelease( Component & compObject, const NERegistry::ComponentEntry & /* entry */ )
+{
+    delete (&compObject);
+}
+
+////////////////////////////////////////////////////////////////////////
 // NERegistry namespace Predefined constants
 //////////////////////////////////////////////////////////////////////////
 /**

@@ -62,7 +62,7 @@ int SynchLockAndWaitIX::waitForMultipleObjects( IEWaitableBaseIX ** listWaitable
 
         if ( (lockAndWait._isEmpty() == false) && lockAndWait._lock( ) )
         {
-            _mapWaitIdResource.registerResourceObject(reinterpret_cast<ITEM_ID>(lockAndWait.mContext), &lockAndWait);
+            _mapWaitIdResource.registerResourceObject(static_cast<ITEM_ID>(lockAndWait.mContext), &lockAndWait);
 
             int waitResult = ENOLCK;
             bool makeLoop = true;
@@ -78,7 +78,7 @@ int SynchLockAndWaitIX::waitForMultipleObjects( IEWaitableBaseIX ** listWaitable
                 _mapWaitIdResource.unlock();
             }
 
-            _mapWaitIdResource.unregisterResourceObject(reinterpret_cast<ITEM_ID>(lockAndWait.mContext));
+            _mapWaitIdResource.unregisterResourceObject(static_cast<ITEM_ID>(lockAndWait.mContext));
 
             lockAndWait._unlock( );
         }
