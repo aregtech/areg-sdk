@@ -15,6 +15,10 @@
 #include "areg/base/GEGlobal.h"
 #include "shareipcmix/src/RemoteServiceClient.hpp"
 
+/**
+ * \brief   The client object of main service, which should initiate application quit
+ *          when the main service is triggers system shutdown message.
+ **/
 class MainRemoteServiceClient   : public RemoteServiceClient
 {
 

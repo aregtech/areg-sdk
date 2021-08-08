@@ -385,20 +385,22 @@ public:
     static void unloadComponentModel( const char * modelName = NULL );
 
     /**
-     * \brief   Adds new component model in the list if there is no model with same name or the existing model is not loaded yet.
-     *          The operation ignored, if model with the same name exists and it is loaded.
-     * \param   model   New model to add in the list.
-     * \return  Returns true if model was successfully added.
-     **/
-    static bool addComponentModel( const NERegistry::Model & model );
-
-    /**
      * \brief   This call unloads components of specified mode and remove model
      *          from model list. If NULL is passed, all components and models are removed
      * \param   modelName   The name of model to unload and remove. If NULL, it will unloaded
      *                      all previously loaded models and all models will be removed.
      **/
     static void removeComponentModel( const char * modelName = NULL );
+
+    /**
+     * \brief   Adds new model to the model list. The name of the new model, names of threads and
+     *          services should be unique in the entire system. Otherwise, the model is not added.
+     * \param   newModel    The new model to add to the list.
+     * \return  Returns true, if succeeded to add new model to the list. 
+     *          Returns false, if there is already a model, thread or service with the same name
+     *          registered in the system.
+     **/
+    static bool addModelUnique( const NERegistry::Model & newModel );
 
     /**
      * \brief   In the model list searches thread entry and returns the list of

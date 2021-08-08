@@ -14,3 +14,6 @@
 // stdafx.obj will contain the pre-compiled type information
 
 #include "register/res/stdafx.h"
+
+#pragma comment(lib, "areg.lib")
+#pragma comment(lib, "msgshared.lib")

@@ -22,6 +22,9 @@
 //////////////////////////////////////////////////////////////////////////
 // ServicingComponent class declaration
 //////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   Local service to instantiate in every process.
+ **/
 class LocalServiceClient    : protected LocalHelloWorldClientBase
                             , private   SystemShutdownClientBase
                             , private   IETimerConsumer
@@ -55,20 +58,6 @@ protected:
      * \see     requestHelloWorld
      **/
     virtual void responseHelloWorld( const NELocalHelloWorld::sConnectedClient & clientInfo );
-
-    /**
-     * \brief   Overwrite to handle error of HelloWorld request call.
-     * \param   FailureReason   The failure reason value of request call.
-     **/
-    virtual void requestHelloWorldFailed( NEService::eResultType FailureReason );
-
-    /**
-     * \brief   Server broadcast.
-     *          Sent to notify the service unavailable state. All clients should be unregistered to start the shutdown procedure.
-     *          Overwrite, if need to handle Broadcast call of server object. 
-     *          This call will be automatically triggered, on every appropriate request call
-     **/
-    virtual void broadcastServiceUnavailable( void );
 
 /************************************************************************/
 // IEProxyListener Overrides

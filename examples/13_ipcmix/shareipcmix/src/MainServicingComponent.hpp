@@ -19,6 +19,9 @@
 
 #include "areg/component/Timer.hpp"
 
+/**
+ * \brief   The Main Service which controls client connections and initiates the system shutdown.
+ **/
 class MainServicingComponent    : public    RemoteServicingComponent
                                 , protected SystemShutdownStub
                                 , private   IETimerConsumer

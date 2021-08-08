@@ -51,6 +51,7 @@
     <ClInclude Include="src\HelloWorldClientBase.hpp" />
     <ClInclude Include="src\HelloWorldStub.hpp" />
     <ClInclude Include="src\NEHelloWorld.hpp" />
+    <ClInclude Include="src\NEProjectCommon.hpp" />
     <ClInclude Include="src\private\HelloWorldEvents.hpp" />
     <ClInclude Include="src\private\HelloWorldProxy.hpp" />
   </ItemGroup>

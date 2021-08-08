@@ -15,9 +15,6 @@
 #include "areg/appbase/Application.hpp"
 
 DEF_TRACE_SCOPE(examples_12_ipchello_usripchello_ServiceClient_serviceConnected);
-DEF_TRACE_SCOPE(examples_12_ipchello_usripchello_ServiceClient_onConnectedClientsUpdate);
-DEF_TRACE_SCOPE(examples_12_ipchello_usripchello_ServiceClient_onRemainOutputUpdate);
-DEF_TRACE_SCOPE(examples_12_ipchello_usripchello_ServiceClient_broadcastHelloClients);
 DEF_TRACE_SCOPE(examples_12_ipchello_usripchello_ServiceClient_broadcastServiceUnavailable);
 DEF_TRACE_SCOPE(examples_12_ipchello_usripchello_ServiceClient_responseHelloWorld);
 DEF_TRACE_SCOPE(examples_12_ipchello_usripchello_ServiceClient_requestHelloWorldFailed);
@@ -69,10 +66,10 @@ bool ServiceClient::serviceConnected(bool isConnected, ProxyBase & proxy)
                 , ProxyAddress::convAddressToPath(proxy.getProxyAddress()).getString()
                 , isConnected ? "connected" : "disconnected");
 
+    // subscribe when service connected and un-subscribe when disconnected.
+    notifyOnBroadcastServiceUnavailable(isConnected);
     if (isConnected)
     {
-        notifyOnRemainOutputUpdate(true);
-        notifyOnBroadcastServiceUnavailable(true);
         mTimer.startTimer(ServiceClient::TIMEOUT_VALUE);
     }
     else
@@ -86,21 +83,6 @@ bool ServiceClient::serviceConnected(bool isConnected, ProxyBase & proxy)
     return result;
 }
 
-void ServiceClient::onConnectedClientsUpdate(const NEHelloWorld::ConnectionList & ConnectedClients, NEService::eDataStateType state)
-{
-    TRACE_SCOPE(examples_12_ipchello_usripchello_ServiceClient_onConnectedClientsUpdate);
-    TRACE_DBG("Active client list of [ %s ] service is updated, active clients [ %d ], data is [ %s ]"
-                    , getServiceRole().getString()
-                    , ConnectedClients.getSize()
-                    , NEService::getString(state));
-}
-
-void ServiceClient::onRemainOutputUpdate(short RemainOutput, NEService::eDataStateType state)
-{
-    TRACE_SCOPE(examples_12_ipchello_usripchello_ServiceClient_onRemainOutputUpdate);
-    TRACE_DBG("Service [ %s ]: Remain greeting outputs [ %d ], data is [ %s ]", getServiceRole().getString(), RemainOutput, NEService::getString(state));
-}
-
 void ServiceClient::responseHelloWorld(const NEHelloWorld::sConnectedClient & clientInfo)
 {
     TRACE_SCOPE(examples_12_ipchello_usripchello_ServiceClient_responseHelloWorld);
@@ -112,19 +94,6 @@ void ServiceClient::responseHelloWorld(const NEHelloWorld::sConnectedClient & cl
         TRACE_DBG("Registring ID [ %d ] for service client [ %s ]", clientInfo.ccID, mTimer.getName().getString());
         mID = clientInfo.ccID;
     }
-
-    if (isNotificationAssigned(NEHelloWorld::MSG_ID_broadcastHelloClients) == false)
-    {
-        notifyOnBroadcastHelloClients(true);
-        notifyOnConnectedClientsUpdate(true);
-    }
-}
-
-void ServiceClient::broadcastHelloClients(const NEHelloWorld::ConnectionList & clientList)
-{
-    TRACE_SCOPE(examples_12_ipchello_usripchello_ServiceClient_broadcastHelloClients);
-
-    TRACE_DBG("[ %d ] clients use service [ %s ]", clientList.getSize(), getServiceName().getString());
 }
 
 void ServiceClient::broadcastServiceUnavailable(void)
@@ -137,18 +106,6 @@ void ServiceClient::broadcastServiceUnavailable(void)
     mID = 0;
 }
 
-void ServiceClient::requestHelloWorldFailed(NEService::eResultType FailureReason)
-{
-    TRACE_SCOPE(examples_12_ipchello_usripchello_ServiceClient_requestHelloWorldFailed);
-    TRACE_ERR("Request to output greetings failed with reason [ %s ]", NEService::getString(FailureReason));
-}
-
-void ServiceClient::requestClientShutdownFailed(NEService::eResultType FailureReason)
-{
-    TRACE_SCOPE(examples_12_ipchello_usripchello_ServiceClient_requestClientShutdownFailed);
-    TRACE_ERR("Request to notify client shutdown failed with reason [ %s ]", NEService::getString(FailureReason));
-}
-
 void ServiceClient::processTimer(Timer & timer)
 {
     TRACE_SCOPE(examples_12_ipchello_usripchello_ServiceClient_processTimer);
@@ -156,6 +113,20 @@ void ServiceClient::processTimer(Timer & timer)
 
     TRACE_DBG("Timer [ %s ] expired, send request to output message.", timer.getName().getString());
     requestHelloWorld(timer.getName(), "remote");
+}
+
+void ServiceClient::requestHelloWorldFailed(NEService::eResultType FailureReason)
+{
+    // make error handling here.
+    TRACE_SCOPE(examples_12_ipchello_usripchello_ServiceClient_requestHelloWorldFailed);
+    TRACE_ERR("Request to output greetings failed with reason [ %s ]", NEService::getString(FailureReason));
+}
+
+void ServiceClient::requestClientShutdownFailed(NEService::eResultType FailureReason)
+{
+    // make error handling here.
+    TRACE_SCOPE(examples_12_ipchello_usripchello_ServiceClient_requestClientShutdownFailed);
+    TRACE_ERR("Request to notify client shutdown failed with reason [ %s ]", NEService::getString(FailureReason));
 }
 
 inline String ServiceClient::timerName( Component & owner ) const

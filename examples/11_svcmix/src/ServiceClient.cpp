@@ -60,6 +60,7 @@ bool ServiceClient::serviceConnected(bool isConnected, ProxyBase & proxy)
 
     if (isConnected)
     {
+        // dynamic subscribe.
         notifyOnRemainOutputUpdate(true);
         notifyOnBroadcastServiceUnavailable(true);
         mTimer.startTimer(ServiceClient::TIMEOUT_VALUE);
@@ -67,6 +68,7 @@ bool ServiceClient::serviceConnected(bool isConnected, ProxyBase & proxy)
     else
     {
         mTimer.stopTimer();
+        // clear all subscriptions.
         clearAllNotifications();
     }
 

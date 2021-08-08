@@ -17,10 +17,8 @@
 
 DEF_TRACE_SCOPE(examples_13_ipcmix_shareipcmix_LocalServiceClient_serviceConnected);
 DEF_TRACE_SCOPE(examples_13_ipcmix_shareipcmix_LocalServiceClient_responseHelloWorld);
-DEF_TRACE_SCOPE(examples_13_ipcmix_shareipcmix_LocalServiceClient_requestHelloWorldFailed);
 DEF_TRACE_SCOPE(examples_13_ipcmix_shareipcmix_LocalServiceClient_processTimer);
 DEF_TRACE_SCOPE(examples_13_ipcmix_shareipcmix_LocalServiceClient_LocalServiceClient);
-DEF_TRACE_SCOPE(examples_13_ipcmix_shareipcmix_LocalServiceClient_broadcastServiceUnavailable);
 
 LocalServiceClient::LocalServiceClient(const String & roleName, Component & owner, unsigned int timeout)
     : LocalHelloWorldClientBase ( roleName, owner                                               )
@@ -90,13 +88,6 @@ void LocalServiceClient::responseHelloWorld(const NELocalHelloWorld::sConnectedC
     mID = clientInfo.ccID;
 }
 
-void LocalServiceClient::requestHelloWorldFailed(NEService::eResultType FailureReason)
-{
-    TRACE_SCOPE(examples_13_ipcmix_shareipcmix_LocalServiceClient_requestHelloWorldFailed);
-    TRACE_ERR("Request to output greetings failed with reason [ %s ]", NEService::getString(FailureReason));
-}
-
-
 void LocalServiceClient::processTimer(Timer & timer)
 {
     TRACE_SCOPE(examples_13_ipcmix_shareipcmix_LocalServiceClient_processTimer);
@@ -107,12 +98,6 @@ void LocalServiceClient::processTimer(Timer & timer)
     {
         requestHelloWorld(timer.getName(), "");
     }
-}
-
-void LocalServiceClient::broadcastServiceUnavailable(void)
-{
-    TRACE_SCOPE(examples_13_ipcmix_shareipcmix_LocalServiceClient_broadcastServiceUnavailable);
-    mTimer.stopTimer();
 }
 
 inline String LocalServiceClient::timerName( Component & owner ) const

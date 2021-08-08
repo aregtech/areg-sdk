@@ -27,8 +27,6 @@ void ServicingComponent::DeleteComponent(Component & compObject, const NERegistr
 
 DEF_TRACE_SCOPE(examples_09_duplicate_ServicingComponent_startupServiceInterface);
 DEF_TRACE_SCOPE(examples_09_duplicate_ServicingComponent_shutdownServiceIntrface);
-DEF_TRACE_SCOPE(examples_09_duplicate_ServicingComponent_startupComponent);
-DEF_TRACE_SCOPE(examples_09_duplicate_ServicingComponent_shutdownComponent);
 DEF_TRACE_SCOPE(examples_09_duplicate_ServicingComponent_processTimer);
 
 ServicingComponent::ServicingComponent(ComponentThread & masterThread, const char * const roleName, NEMemory::uAlign OPTIONAL data)
@@ -43,26 +41,6 @@ ServicingComponent::ServicingComponent(ComponentThread & masterThread, const cha
 
 ServicingComponent::~ServicingComponent(void)
 {
-}
-
-void ServicingComponent::sendNotification(unsigned int msgId)
-{
-
-}
-
-void ServicingComponent::errorRequest(unsigned int msgId, bool msgCancel)
-{
-
-}
-
-void ServicingComponent::processRequestEvent(ServiceRequestEvent & eventElem)
-{
-
-}
-
-void ServicingComponent::processAttributeEvent(ServiceRequestEvent & eventElem)
-{
-
 }
 
 void ServicingComponent::startupServiceInterface(Component & holder)
@@ -82,22 +60,6 @@ void ServicingComponent::shutdownServiceIntrface(Component & holder)
     
     mTimer.stopTimer();
     StubBase::shutdownServiceIntrface(holder);
-}
-
-void ServicingComponent::startupComponent(ComponentThread & comThread)
-{
-    TRACE_SCOPE(examples_09_duplicate_ServicingComponent_startupComponent);
-    TRACE_INFO("The component [ %s ] started in thread [ %s ], this starts services", Component::getRoleName().getString(), comThread.getName().getString());
-
-    Component::startupComponent(comThread);
-}
-
-void ServicingComponent::shutdownComponent(ComponentThread & comThread)
-{
-    TRACE_SCOPE(examples_09_duplicate_ServicingComponent_shutdownComponent);
-    TRACE_WARN("The component [ %s ] in thread [ %s ] is stopped, services unavailable", Component::getRoleName().getString(), comThread.getName().getString());
-
-    Component::shutdownComponent( comThread );
 }
 
 void ServicingComponent::processTimer(Timer & timer)
@@ -129,4 +91,24 @@ void ServicingComponent::processTimer(Timer & timer)
         TRACE_INFO("The timer is not actuve anymore, signaling quit event");
         Application::signalAppQuit();
     }
+}
+
+void ServicingComponent::sendNotification(unsigned int msgId)
+{
+
+}
+
+void ServicingComponent::errorRequest(unsigned int msgId, bool msgCancel)
+{
+
+}
+
+void ServicingComponent::processRequestEvent(ServiceRequestEvent & eventElem)
+{
+
+}
+
+void ServicingComponent::processAttributeEvent(ServiceRequestEvent & eventElem)
+{
+
 }

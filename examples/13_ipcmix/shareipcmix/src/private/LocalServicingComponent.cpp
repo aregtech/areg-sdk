@@ -18,7 +18,6 @@
 
 
 DEF_TRACE_SCOPE(examples_13_shareipcmix_LocalServicingComponent_startupServiceInterface);
-DEF_TRACE_SCOPE(examples_13_shareipcmix_LocalServicingComponent_shutdownServiceIntrface);
 DEF_TRACE_SCOPE(examples_13_shareipcmix_LocalServicingComponent_requestHelloWorld);
 
 LocalServicingComponent::LocalServicingComponent(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
@@ -43,14 +42,6 @@ void LocalServicingComponent::startupServiceInterface( Component & holder )
 
     TRACE_DBG("Component [ %s ] set maximum allowed output messages [ %d ]", getRoleName().getString(), NELocalHelloWorld::MaxMessages);
     setRemainOutput(NELocalHelloWorld::MaxMessages);
-}
-
-void LocalServicingComponent::shutdownServiceIntrface ( Component & holder )
-{
-    TRACE_SCOPE(examples_13_shareipcmix_LocalServicingComponent_shutdownServiceIntrface);
-    TRACE_WARN("Component [ %s ] shuts down service.", getRoleName().getString());
-
-    LocalHelloWorldStub::shutdownServiceIntrface(holder);
 }
 
 void LocalServicingComponent::requestHelloWorld(const String & roleName, const String & addMessage /*= "" */)

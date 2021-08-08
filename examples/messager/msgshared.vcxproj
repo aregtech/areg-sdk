@@ -5,8 +5,8 @@
   </ImportGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{BAD5F8A5-B916-4E76-8594-78B003C1155B}</ProjectGuid>
-    <ProjectName>messager</ProjectName>
-    <RootNamespace>messager</RootNamespace>
+    <ProjectName>msgshared</ProjectName>
+    <RootNamespace>msgshared</RootNamespace>
     <Keyword>Win32Proj</Keyword>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />

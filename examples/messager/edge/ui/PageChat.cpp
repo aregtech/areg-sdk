@@ -137,7 +137,7 @@ BOOL PageChat::OnInitDialog( )
     NERegistry::Model model = mIsChatInitiator ? DirectChatService::GetModel( initiator, parties, data ) : ChatParticipantService::GetModel(initiator, parties, data);
     if ( ComponentLoader::isModelLoaded(model.getModelName()) == false )
     {
-        ComponentLoader::addComponentModel( model );
+        ComponentLoader::addModelUnique( model );
         ComponentLoader::loadComponentModel( model.getModelName( ) );    
     }
     else

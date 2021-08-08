@@ -93,9 +93,10 @@ EventDispatcher& Event::getDispatcher( void ) const
 
 void Event::deliverEvent( void )
 {
-    if ((mTargetThread != NULL) && mTargetThread->isRunning())
+    EventDispatcher * dispatcher = mTargetThread != NULL ? &mTargetThread->getEventDispatcher( ) : NULL;
+    if ( (dispatcher != NULL) && (dispatcher->isReady()) )
     {
-        mTargetThread->getEventDispatcher().postEvent(*this);
+        dispatcher->postEvent(*this);
     }
     else
     {

@@ -119,18 +119,6 @@ protected:
      **/
     virtual void broadcastServiceUnavailable( void );
 
-    /**
-     * \brief   Overwrite to handle error of HelloWorld request call.
-     * \param   FailureReason   The failure reason value of request call.
-     **/
-    virtual void requestHelloWorldFailed( NEService::eResultType FailureReason );
-
-    /**
-     * \brief   Overwrite to handle error of ClientShutdown request call.
-     * \param   FailureReason   The failure reason value of request call.
-     **/
-    virtual void requestClientShutdownFailed( NEService::eResultType FailureReason );
-    
 /************************************************************************/
 // IEProxyListener Overrides
 /************************************************************************/

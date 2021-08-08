@@ -118,3 +118,17 @@
 /examples/13_ipcmix/shareipcmix/.settings/
 /examples/13_ipcmix/shareipcmix/logs/
 
+/examples/14_ipclight/lightcommon/debug/
+/examples/14_ipclight/lightcommon/release/
+/examples/14_ipclight/lightcommon/.settings/
+/examples/14_ipclight/lightcommon/logs/
+
+/examples/14_ipclight/lightctrl/debug/
+/examples/14_ipclight/lightctrl/release/
+/examples/14_ipclight/lightctrl/.settings/
+/examples/14_ipclight/lightctrl/logs/
+
+/examples/14_ipclight/trafficlight/debug/
+/examples/14_ipclight/trafficlight/release/
+/examples/14_ipclight/trafficlight/.settings/
+/examples/14_ipclight/trafficlight/logs/

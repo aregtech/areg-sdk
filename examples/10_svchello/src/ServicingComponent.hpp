@@ -105,14 +105,6 @@ protected:
      **/
     virtual void startupServiceInterface( Component & holder );
 
-    /**
-     * \brief   This function is triggered by Component when shuts down.
-     *          Overwrite this method to remove listeners and stub cleanup
-     * \param   holder  The holder component of service interface of Stub,
-     *                  which shuts down.
-     **/
-    virtual void shutdownServiceIntrface ( Component & holder );
-
 //////////////////////////////////////////////////////////////////////////
 // Member variables
 //////////////////////////////////////////////////////////////////////////

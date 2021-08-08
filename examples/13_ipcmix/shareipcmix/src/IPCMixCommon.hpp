@@ -24,13 +24,13 @@
 namespace IPCMixCommon
 {
     //!< The main service that is responsible to shutdown the complete system.
-    const char * const  MainService             = "TestRemoteMainService";
+    const char * const  MainService             = "TestPublicMainService";
 
     //!< Third remote service that is implemented in "13_secondipcmix" process.
-    const char * const  RemoteSecondaryService  = "TestRemoteSecondService";
+    const char * const  PublicSecondaryService  = "TestPublicSecondService";
 
     //!< Third remote service that is implemented in "13_secondipcmix" process.
-    const char * const  RemoteThirdService      = "TestRemoteThirdService";
+    const char * const  PublicThirdService      = "TestPublicThirdService";
 
     //! At least one local service in each process.
     const char * const  LocalService            = "TestLocalService";

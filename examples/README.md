@@ -25,6 +25,7 @@ Below is the list of examples:
 11. [11_svcmix](./11_svcmix/)       -- multithreading console application to demonstrate multi-instances of same _Local_ service.
 12. [12_ipchello](./12_ipchello/)   -- multiprocessing (**IPC**) application to demonstrate _Remote_ servicing component and client.
 13. [13_ipcmix](./13_ipcmix/)       -- multiprocessing (**IPC**) application to demonstrate meshing and mixture of _Local_ and _Remote_ services.
+15. [14_ipclight](./14_ipclight/)   -- multiprocessing (**PIC**) application to demonstrate create and load model dynamically, send and process custom event.
 14. [messager](./messager/)         -- Windows GUI application (**IPC**) to demonstrate dynamic modeling, fault tolerant environment and mist network.
 
 The list will be updated. We recommend periodically checking the list.

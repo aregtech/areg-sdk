@@ -76,11 +76,18 @@ bool TimerManager::startTimer(Timer &timer, const DispatcherThread & whichThread
     TimerManager & timerManager = getInstance();
 
     bool result = false;
-    if ( timerManager._registerTimer(timer, whichThread) )
+    if ( timerManager.isTimerManagerStarted() )
     {
-        TRACE_DBG("Registered timer [ %s ] for thread [ %p ], sending event to start timer", timer.getName().getString(), whichThread.getId());
-        TimerManagingEventData data(TimerManagingEventData::TimerStart, &timer);
-        result = TimerManagingEvent::sendEvent(data, static_cast<IETimerManagingEventConsumer &>(timerManager), static_cast<DispatcherThread &>(timerManager));
+        if ( timerManager._registerTimer( timer, whichThread ) )
+        {
+            TRACE_DBG( "Registered timer [ %s ] for thread [ %p ], sending event to start timer", timer.getName( ).getString( ), whichThread.getId( ) );
+            TimerManagingEventData data( TimerManagingEventData::TimerStart, &timer );
+            result = TimerManagingEvent::sendEvent( data, static_cast<IETimerManagingEventConsumer &>(timerManager), static_cast<DispatcherThread &>(timerManager) );
+        }
+    }
+    else
+    {
+        TRACE_ERR("The Timer manager service is not running, cannot start and process the timer.");
     }
 
     return result;
@@ -338,9 +345,10 @@ bool TimerManager::runDispatcher( void )
     IESynchObject* synchObjects[] = {&mEventExit, &mEventQueue};
     MultiLock multiLock(synchObjects, 2, false);
 
-    _timerThreadStarts( );
     int whichEvent  = static_cast<int>(EVENT_ERROR);
     const ExitEvent& exitEvent = ExitEvent::getExitEvent();
+
+    readyForEvents(true);
     do 
     {
         whichEvent = multiLock.lock(IESynchObject::WAIT_INFINITE, false, true);
@@ -369,28 +377,30 @@ bool TimerManager::runDispatcher( void )
 
     } while (whichEvent == static_cast<int>(EVENT_QUEUE) || (whichEvent == MultiLock::LOCK_INDEX_COMPLETION));
 
+    readyForEvents(false);
     removeAllEvents( );
-    _timerThreadExits( );
     ASSERT(static_cast<EventQueue &>(mInternalEvents).isEmpty());
 
     return (whichEvent == static_cast<int>(EVENT_EXIT));
 }
 
-void TimerManager::_timerThreadStarts( void )
+void TimerManager::readyForEvents( bool isReady )
 {
-    TimerManagingEvent::addListener(static_cast<IETimerManagingEventConsumer &>(self()), static_cast<DispatcherThread &>(self()));
+    if (isReady)
+    {
+        TimerManagingEvent::addListener(static_cast<IETimerManagingEventConsumer &>(self()), static_cast<DispatcherThread &>(self()));
 
-    mHasStarted = true;
-    mEventStarted.setEvent();
-}
+        mHasStarted = true;
+        mEventStarted.setEvent();
+    }
+    else
+    {
+        TimerManagingEvent::removeListener(static_cast<IETimerManagingEventConsumer &>(self()), static_cast<DispatcherThread &>(self()));
 
-void TimerManager::_timerThreadExits( void )
-{
-    TimerManagingEvent::removeListener(static_cast<IETimerManagingEventConsumer &>(self()), static_cast<DispatcherThread &>(self()));
-
-    _removeAllTimers( );
-    mHasStarted = false;
-    mEventStarted.resetEvent();
+        _removeAllTimers( );
+        mHasStarted = false;
+        mEventStarted.resetEvent();
+    }
 }
 
 bool TimerManager::_startTimerManagerThread( void )

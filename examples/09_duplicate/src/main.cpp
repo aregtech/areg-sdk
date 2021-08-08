@@ -2,7 +2,7 @@
 // Name        : main.cpp
 // Author      : Artak Avetyan
 // Version     :
-// Copyright   : Aregtech � 2021
+// Copyright   : Aregtech (c) 2021
 // Description : Hello World in C++, Ansi-style
 //============================================================================
 
@@ -26,7 +26,7 @@
  *          timer to run and exit application after certain time.
  **/
 
-static const char * gModelName = "Test_MixedService";  //!< The name of model
+static const char * _modelName = "TestModel";  //!< The name of model
 
 //////////////////////////////////////////////////////////////////////////
 //
@@ -37,18 +37,18 @@ static const char * gModelName = "Test_MixedService";  //!< The name of model
 //////////////////////////////////////////////////////////////////////////
 
 // Describe mode, set model name
-BEGIN_MODEL(gModelName)
+BEGIN_MODEL(_modelName)
 
     // define component thread
-    BEGIN_REGISTER_THREAD( "Test_ServiceThread1" )
+    BEGIN_REGISTER_THREAD( "ServiceThread1" )
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
-        BEGIN_REGISTER_COMPONENT( "TestServicingComponent1", ServicingComponent )
+        BEGIN_REGISTER_COMPONENT( "TestService1", ServicingComponent )
             // register dummy 'empty service'. In this example we demonstrate simple initialization
             REGISTER_IMPLEMENT_SERVICE( NEService::EmptyServiceName, NEService::EmptyServiceVersion )
         // end of component description
-        END_REGISTER_COMPONENT( "TestServicingComponent1" )
+        END_REGISTER_COMPONENT( "TestService1" )
     // end of thread description
-    END_REGISTER_THREAD( "Test_ServiceThread1" )
+    END_REGISTER_THREAD( "ServiceThread1" )
 
     //////////////////////////////////////////////////////////////////////////
     //
@@ -63,16 +63,16 @@ BEGIN_MODEL(gModelName)
     // define component thread
     BEGIN_REGISTER_THREAD( "Test_ServiceThread2" )
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
-        BEGIN_REGISTER_COMPONENT( "TestServicingComponent2", ServicingComponent )
+        BEGIN_REGISTER_COMPONENT( "TestService2", ServicingComponent )
             // register dummy 'empty service'. In this example we demonstrate simple initialization
             REGISTER_IMPLEMENT_SERVICE( NEService::EmptyServiceName, NEService::EmptyServiceVersion )
         // end of component description
-        END_REGISTER_COMPONENT( "TestServicingComponent2" )
+        END_REGISTER_COMPONENT( "TestService2" )
     // end of thread description
     END_REGISTER_THREAD( "Test_ServiceThread2" )
 
 // end of model description
-END_MODEL(gModelName)
+END_MODEL(_modelName)
 
 //////////////////////////////////////////////////////////////////////////
 // main method.
@@ -84,7 +84,7 @@ DEF_TRACE_SCOPE(main_main);
  **/
 int main()
 {
-    printf("Testing multiple empty servicing components in multipple threads...\n");
+    printf("Testing multiple empty servicing components in multiple threads...\n");
 
     // force to start logging with default settings
     TRACER_CONFIGURE_AND_START(NULL);
@@ -94,10 +94,10 @@ int main()
     do 
     {
         TRACE_SCOPE(main_main);
-        TRACE_DBG("The application has been initialized, loading model [ %s ]", gModelName);
+        TRACE_DBG("The application has been initialized, loading model [ %s ]", _modelName);
 
         // load model to initialize components
-        Application::loadModel(gModelName);
+        Application::loadModel(_modelName);
 
         TRACE_DBG("Servicing model is loaded");
         
@@ -105,7 +105,7 @@ int main()
         Application::waitAppQuit(IESynchObject::WAIT_INFINITE);
 
         // stop and unload components
-        Application::unloadModel(gModelName);
+        Application::unloadModel(_modelName);
 
         // release and cleanup resources of application.
         Application::releaseApplication();

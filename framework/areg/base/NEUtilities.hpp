@@ -347,9 +347,10 @@ namespace   NEUtilities
      *                      to contain prefix and prefix.
      * \param   length      The length of buffer to set name.
      * \param   specChar    Special character used in generated name.
+     * \return  Returns the content of 'out_buffer'. If 'out_buffer' is NULL, returns NULL.
      **/
-    AREG_API void generateName( const char * prefix, char * out_buffer, int length);
-    AREG_API void generateName( const char * prefix, char * out_buffer, int length, const char * specChar);
+    AREG_API const char * generateName( const char * prefix, char * OUT out_buffer, int length);
+    AREG_API const char * generateName( const char * prefix, char * OUT out_buffer, int length, const char * specChar);
 
 /************************************************************************/
 // NEUtilities namespace utility functions, generate unique ID

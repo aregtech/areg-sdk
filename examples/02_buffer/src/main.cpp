@@ -2,7 +2,7 @@
 // Name        : main.cpp
 // Author      : Artak Avetyan
 // Version     :
-// Copyright   : Aregtech � 2021
+// Copyright   : Aregtech (c) 2021
 // Description : Hello World in C++, Ansi-style
 //============================================================================
 
@@ -134,9 +134,9 @@ int main()
     theSharedBuffer >> msgHello;
 
     // make debug output here, check values.
-    printf("The digital number is .: %d\n", numDigit);
+    printf("The integer number is .: %d\n", numDigit);
     printf("The floating number is : %f\n", numFloat);
-    printf("The hello message is ..: %s\n", msgHello.getString());
+    printf("The string message is .: %s\n", msgHello.getString());
 
     // declare thread object.
     HelloThread aThread;

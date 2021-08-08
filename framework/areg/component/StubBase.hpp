@@ -257,7 +257,7 @@ public:
     /**
      * \brief   Returns Component Master thread object.
      **/
-    ComponentThread & getMasterThread( void ) const;
+    ComponentThread & getComponentThread( void ) const;
 
     /**
      * \brief   Returns the address of Stub object.

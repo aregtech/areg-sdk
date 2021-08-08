@@ -383,7 +383,7 @@ inline bool PageConnections::loadModel( const String & nickName, const uint32_t 
 
         TRACE_DBG("Going to load model [ %s ] with service name [ %s ]", model.getModelName().getString(), serviceName.getString() );
 
-        if ( ComponentLoader::addComponentModel( model ) )
+        if ( ComponentLoader::addModelUnique( model ) )
         {
             mDirectConnectModel     = model.getModelName( );
             mDirectConnectService   = serviceName;

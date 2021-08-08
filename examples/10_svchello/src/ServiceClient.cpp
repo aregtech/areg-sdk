@@ -18,8 +18,6 @@ DEF_TRACE_SCOPE(examples_10_svchello_ServiceClient_onRemainOutputUpdate);
 DEF_TRACE_SCOPE(examples_10_svchello_ServiceClient_broadcastHelloClients);
 DEF_TRACE_SCOPE(examples_10_svchello_ServiceClient_broadcastServiceUnavailable);
 DEF_TRACE_SCOPE(examples_10_svchello_ServiceClient_responseHelloWorld);
-DEF_TRACE_SCOPE(examples_10_svchello_ServiceClient_requestHelloWorldFailed);
-DEF_TRACE_SCOPE(examples_10_svchello_ServiceClient_requestClientShutdownFailed);
 DEF_TRACE_SCOPE(examples_10_svchello_ServiceClient_processTimer);
 
 const unsigned int  ServiceClient::TIMEOUT_VALUE    = 237;
@@ -63,6 +61,7 @@ bool ServiceClient::serviceConnected(bool isConnected, ProxyBase & proxy)
 
     if (isConnected)
     {
+        // dynamic subscribe on messages.
         notifyOnRemainOutputUpdate(true);
         notifyOnBroadcastServiceUnavailable(true);
         mTimer.startTimer(ServiceClient::TIMEOUT_VALUE);
@@ -70,6 +69,7 @@ bool ServiceClient::serviceConnected(bool isConnected, ProxyBase & proxy)
     else
     {
         mTimer.stopTimer();
+        // clear all subscriptions.
         clearAllNotifications();
     }
 
@@ -97,6 +97,7 @@ void ServiceClient::responseHelloWorld(const NEHelloWorld::sConnectedClient & cl
 
     if (isNotificationAssigned(NEHelloWorld::MSG_ID_broadcastHelloClients) == false)
     {
+        // If it is not subscribed on message, make subscription, which is cleaned when disconnect service.
         notifyOnBroadcastHelloClients(true);
         notifyOnRemainOutputUpdate(true);
     }
@@ -105,7 +106,6 @@ void ServiceClient::responseHelloWorld(const NEHelloWorld::sConnectedClient & cl
 void ServiceClient::broadcastHelloClients(const NEHelloWorld::ConnectionList & clientList)
 {
     TRACE_SCOPE(examples_10_svchello_ServiceClient_broadcastHelloClients);
-
     TRACE_DBG("[ %d ] clients use service [ %s ]", clientList.getSize(), getServiceName().getString());
 }
 
@@ -114,18 +114,6 @@ void ServiceClient::broadcastServiceUnavailable(void)
     TRACE_SCOPE(examples_10_svchello_ServiceClient_broadcastServiceUnavailable);
     TRACE_WARN("Service notify reached message output maximum, starting shutdown procedure");
     requestClientShutdown(mID, getRoleName());
-}
-
-void ServiceClient::requestHelloWorldFailed(NEService::eResultType FailureReason)
-{
-    TRACE_SCOPE(examples_10_svchello_ServiceClient_requestHelloWorldFailed);
-    TRACE_ERR("Request to output greetings failed with reason [ %s ]", NEService::getString(FailureReason));
-}
-
-void ServiceClient::requestClientShutdownFailed(NEService::eResultType FailureReason)
-{
-    TRACE_SCOPE(examples_10_svchello_ServiceClient_requestClientShutdownFailed);
-    TRACE_ERR("Request to notify client shutdown failed with reason [ %s ]", NEService::getString(FailureReason));
 }
 
 void ServiceClient::processTimer(Timer & timer)

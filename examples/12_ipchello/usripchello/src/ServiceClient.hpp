@@ -22,6 +22,9 @@
 //////////////////////////////////////////////////////////////////////////
 // ServicingComponent class declaration
 //////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   A demo of simple service client to trigger request calls and subscribe on event.
+ **/
 class ServiceClient : public    Component
                     , protected HelloWorldClientBase
                     , private   IETimerConsumer
@@ -71,28 +74,6 @@ public:
 protected:
 
     /**
-     * \brief   Triggered, when ConnectedClients attribute is updated. The function contains
-     *          attribute value and validation flag. When notification is enabled,
-     *          the method should be overwritten in derived class.
-     *          Attributes ConnectedClients description: 
-     *          The list of connected clients. Updated each time when new client requests to output Hello World message.
-     * \param   ConnectedClients    The value of ConnectedClients attribute.
-     * \param   state               The data validation flag.
-     **/
-    virtual void onConnectedClientsUpdate( const NEHelloWorld::ConnectionList & ConnectedClients, NEService::eDataStateType state );
-
-        /**
-     * \brief   Triggered, when RemainOutput attribute is updated. The function contains
-     *          attribute value and validation flag. When notification is enabled,
-     *          the method should be overwritten in derived class.
-     *          Attributes RemainOutput description: 
-     *          Remaining number of outputs to print Hello World.
-     * \param   RemainOutput    The value of RemainOutput attribute.
-     * \param   state           The data validation flag.
-     **/
-    virtual void onRemainOutputUpdate( short RemainOutput, NEService::eDataStateType state );
-
-    /**
      * \brief   Response callback.
      *          The response to hello world request.
      *          Overwrite, if need to handle Response call of server object. 
@@ -104,21 +85,15 @@ protected:
 
     /**
      * \brief   Server broadcast.
-     *          Broadcast to notify all clients about connection
-     *          Overwrite, if need to handle Broadcast call of server object. 
-     *          This call will be automatically triggered, on every appropriate request call
-     * \param   clientList  DESCRIPTION MISSED
-     **/
-    virtual void broadcastHelloClients( const NEHelloWorld::ConnectionList & clientList );
-
-    /**
-     * \brief   Server broadcast.
      *          DESCRIPTION MISSED
      *          Overwrite, if need to handle Broadcast call of server object. 
      *          This call will be automatically triggered, on every appropriate request call
      **/
     virtual void broadcastServiceUnavailable( void );
 
+/************************************************************************/
+// Error handling.
+/************************************************************************/
     /**
      * \brief   Overwrite to handle error of HelloWorld request call.
      * \param   FailureReason   The failure reason value of request call.
@@ -172,6 +147,9 @@ protected:
 private:
     inline ServiceClient & self( void );
 
+    /**
+     * \brief   Generates unique timer name.
+     **/
     inline String timerName( Component & owner ) const;
 
 //////////////////////////////////////////////////////////////////////////

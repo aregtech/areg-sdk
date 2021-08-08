@@ -18,7 +18,6 @@
 
 
 DEF_TRACE_SCOPE(examples_10_svchello_ServicingComponent_startupServiceInterface);
-DEF_TRACE_SCOPE(examples_10_svchello_ServicingComponent_shutdownServiceIntrface);
 DEF_TRACE_SCOPE(examples_10_svchello_ServicingComponent_requestHelloWorld);
 DEF_TRACE_SCOPE(examples_10_svchello_ServicingComponent_requestClientShutdown);
 
@@ -52,13 +51,6 @@ void ServicingComponent::startupServiceInterface( Component & holder )
 
     invalidateConnectedClients();
     setRemainOutput(NEHelloWorld::MaxMessages);
-}
-
-void ServicingComponent::shutdownServiceIntrface ( Component & holder )
-{
-    TRACE_SCOPE(examples_10_svchello_ServicingComponent_shutdownServiceIntrface);
-
-    HelloWorldStub::shutdownServiceIntrface(holder);
 }
 
 void ServicingComponent::requestHelloWorld(const String & roleName, const String & addMessage /*= "" */)

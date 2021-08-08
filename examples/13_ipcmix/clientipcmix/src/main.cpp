@@ -46,7 +46,7 @@
 BEGIN_MODEL(IPCMixCommon::ModelName)
 
     // define component thread
-    BEGIN_REGISTER_THREAD( "Test_ClientProcessThread" )
+    BEGIN_REGISTER_THREAD( "TestClientProcessThread" )
 
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
@@ -54,14 +54,14 @@ BEGIN_MODEL(IPCMixCommon::ModelName)
             // register dummy 'empty service'. In this example we demonstrate simple initialization
             REGISTER_IMPLEMENT_SERVICE( NELocalHelloWorld::ServiceName, NELocalHelloWorld::InterfaceVersion )
             REGISTER_DEPENDENCY(IPCMixCommon::MainService)
-            REGISTER_DEPENDENCY(IPCMixCommon::RemoteSecondaryService)
-            REGISTER_DEPENDENCY(IPCMixCommon::RemoteThirdService)
+            REGISTER_DEPENDENCY(IPCMixCommon::PublicSecondaryService)
+            REGISTER_DEPENDENCY(IPCMixCommon::PublicThirdService)
             REGISTER_DEPENDENCY(IPCMixCommon::LocalService)
         // end of component description
         END_REGISTER_COMPONENT( IPCMixCommon::LocalService )
 
     // end of thread description
-    END_REGISTER_THREAD( "Test_ClientProcessThread" )
+    END_REGISTER_THREAD( "TestClientProcessThread" )
 
 // end of model IPCMixCommon::ModelName
 END_MODEL(IPCMixCommon::ModelName)

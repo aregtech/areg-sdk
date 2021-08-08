@@ -15,3 +15,4 @@
 #include "edge/res/stdafx.h"
 
 #pragma comment(lib, "areg.lib")
+#pragma comment(lib, "msgshared.lib")

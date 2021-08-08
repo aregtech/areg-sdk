@@ -2,7 +2,7 @@
 // Name        : main.cpp
 // Author      : Artak Avetyan
 // Version     :
-// Copyright   : Aregtech � 2021
+// Copyright   : Aregtech (c) 2021
 // Description : Hello World in C++, Ansi-style
 //============================================================================
 
@@ -28,8 +28,8 @@
  *          timer to run and exit application after certain time.
  **/
 
-static const char * gModelName      = "Test_ServiceHello";  //!< The name of model
-static const char * gMainComponent  = "Test_MainComponent"; //!< Main component that controls shutdown.
+static const char * _modelName          = "TestModel";      //!< The name of model
+static const char * _mainServiceName    = "MainService";    //!< Main component that controls shutdown.
 
 //////////////////////////////////////////////////////////////////////////
 //
@@ -40,16 +40,16 @@ static const char * gMainComponent  = "Test_MainComponent"; //!< Main component 
 //////////////////////////////////////////////////////////////////////////
 
 // Describe mode, set model name
-BEGIN_MODEL(gModelName)
+BEGIN_MODEL(_modelName)
 
     // define component thread
     BEGIN_REGISTER_THREAD( "Test_ServiceThread" )
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
-        BEGIN_REGISTER_COMPONENT( gMainComponent, MainComponent )
+        BEGIN_REGISTER_COMPONENT( _mainServiceName, MainComponent )
             // register dummy 'empty service'. In this example we demonstrate simple initialization
             REGISTER_IMPLEMENT_SERVICE( NEHelloWorld::ServiceName, NEHelloWorld::InterfaceVersion )
         // end of component description
-        END_REGISTER_COMPONENT( gMainComponent )
+        END_REGISTER_COMPONENT( _mainServiceName )
     // end of thread description
     END_REGISTER_THREAD( "Test_ServiceThread" )
 
@@ -64,7 +64,7 @@ BEGIN_MODEL(gModelName)
         BEGIN_REGISTER_COMPONENT( "Test_SecondaryComponent", SecondaryComponent )
             // register dummy 'empty service'. In this example we demonstrate simple initialization
             REGISTER_IMPLEMENT_SERVICE( NEHelloWorld::ServiceName, NEHelloWorld::InterfaceVersion )
-            REGISTER_DEPENDENCY(gMainComponent)
+            REGISTER_DEPENDENCY(_mainServiceName)
             REGISTER_DEPENDENCY("Test_SecondaryComponent")
         // end of component description
         END_REGISTER_COMPONENT( "Test_SecondaryComponent" )
@@ -77,13 +77,13 @@ BEGIN_MODEL(gModelName)
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
         BEGIN_REGISTER_COMPONENT( "Test_ThirdComponent", SecondaryComponent )
             REGISTER_IMPLEMENT_SERVICE( NEHelloWorld::ServiceName, NEHelloWorld::InterfaceVersion )
-            REGISTER_DEPENDENCY( gMainComponent )
+            REGISTER_DEPENDENCY( _mainServiceName )
             REGISTER_DEPENDENCY( "Test_SecondaryComponent")
         // end of component description
         END_REGISTER_COMPONENT( "Test_ThirdComponent" )
 
         BEGIN_REGISTER_COMPONENT("Test_ClientComponent", ClientComponent)
-            REGISTER_DEPENDENCY( gMainComponent )
+            REGISTER_DEPENDENCY( _mainServiceName )
             REGISTER_DEPENDENCY( "Test_SecondaryComponent")
             REGISTER_DEPENDENCY( "Test_ThirdComponent" )
         END_REGISTER_COMPONENT("Test_ClientComponent")
@@ -92,7 +92,7 @@ BEGIN_MODEL(gModelName)
     END_REGISTER_THREAD( "Test_MixedThread" )
 
 // end of model description
-END_MODEL(gModelName)
+END_MODEL(_modelName)
 
 //////////////////////////////////////////////////////////////////////////
 // main method.
@@ -113,13 +113,13 @@ int main()
     do 
     {
         TRACE_SCOPE(example_11_svcmix_main_main);
-        TRACE_DBG("The application has been initialized, loading model [ %s ]", gModelName);
+        TRACE_DBG("The application has been initialized, loading model [ %s ]", _modelName);
 
         NEMemory::uAlign isMain = {true};
-        ComponentLoader::getInstance().setComponentData(gMainComponent, isMain);
+        ComponentLoader::getInstance().setComponentData(_mainServiceName, isMain);
 
         // load model to initialize components
-        Application::loadModel(gModelName);
+        Application::loadModel(_modelName);
 
         TRACE_DBG("Servicing model is loaded");
         
@@ -127,7 +127,7 @@ int main()
         Application::waitAppQuit(IESynchObject::WAIT_INFINITE);
 
         // stop and unload components
-        Application::unloadModel(gModelName);
+        Application::unloadModel(_modelName);
 
         // release and cleanup resources of application.
         Application::releaseApplication();

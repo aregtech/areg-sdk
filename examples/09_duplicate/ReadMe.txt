@@ -2,12 +2,7 @@
     CONSOLE APPLICATION : 09_duplicate Project Overview
 ========================================================================
 
-The project 09_duplicate is an extension of project 08_service.
-This project demonstrates how to instantiate multiple times the same servicing component.
-To instantiate same servicing component more than one time, they should run in separate threads and should have different names.
-The application is using same servicing objecs that have different names.
-The application uses dummy (empty) service interface and has no servicing client.
-Every service is using periodic timer that is triggered to make output on console.
-The threads and servicing components are described in the model "Test_MixedService".
-The application can have multiple models that are either loaded dynamically or all.
-See implementationof "08_service" project to compare the logic.
+The project project demonstrates the duplication of the same service implementation by assigning different service names.
+It suplicates the project 08_service regarding of code implementation and differ by creating model.
+The same service implementation can be instantiated more than one time if every instantiated service has unique role name
+and they are not running in the same thread.

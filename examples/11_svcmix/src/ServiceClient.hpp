@@ -152,6 +152,9 @@ protected:
 private:
     inline ServiceClient & self( void );
 
+    /**
+     * \brief   Generates unique timer name.
+     **/
     inline String timerName( Component & owner ) const;
 
 //////////////////////////////////////////////////////////////////////////

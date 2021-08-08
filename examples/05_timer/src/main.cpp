@@ -2,7 +2,7 @@
 // Name        : main.cpp
 // Author      : Artak Avetyan
 // Version     :
-// Copyright   : Aregtech � 2021
+// Copyright   : Aregtech (c) 2021
 // Description : Hello World in C++, Ansi-style
 //               This code example demonstrates timer processing in
 //               own thread.
@@ -77,18 +77,6 @@ protected:
      **/
     virtual void processTimer( Timer & timer );
 
-/************************************************************************/
-// IEEventRouter interface overrides
-/************************************************************************/
-
-    /**
-     * \brief	Posts event and delivers to its target.
-     *          This method must be overwritten to avoid assertion raise.
-     * \param	eventElem	Event object to post
-     * \return	In this class it always returns true.
-     **/
-    virtual bool postEvent( Event & eventElem );
-
 private:
     Timer   mOneTime;       //!< One time timer
     Timer   mPeriodic;      //!< Periodic timer
@@ -110,7 +98,6 @@ const unsigned int TimerDispatcher::TIMEOUT_CONTINUOUS_TIME = Timer::TIMEOUT_1_M
 // Trace scopes must be defined before they are used.
 DEF_TRACE_SCOPE(main_TimerDispatcher_TimerDispatcher);
 DEF_TRACE_SCOPE(main_TimerDispatcher_processTimer);
-DEF_TRACE_SCOPE(main_TimerDispatcher_postEvent);
 DEF_TRACE_SCOPE(main_TimerDispatcher_startTimers);
 DEF_TRACE_SCOPE(main_TimerDispatcher_stopTimers);
 
@@ -159,23 +146,6 @@ void TimerDispatcher::processTimer( Timer & timer )
     {
         TRACE_ERR("Unexpected timer has been triggered. This should not happen...");
     }
-}
-
-bool TimerDispatcher::postEvent(Event & eventElem)
-{
-    bool result = false;
-    if ( RUNTIME_CAST(&eventElem, TimerEvent) != NULL)
-    {
-        result = EventDispatcher::postEvent(eventElem);
-    }
-    else
-    {
-        TRACE_SCOPE(main_TimerDispatcher_postEvent);
-        TRACE_ERR("Not a TimerEvent, cannot Post. Destroying event type [ %s ]", eventElem.getRuntimeClassName());
-        eventElem.destroy();
-    }
-
-    return result;
 }
 
 void TimerDispatcher::startTimers(void)

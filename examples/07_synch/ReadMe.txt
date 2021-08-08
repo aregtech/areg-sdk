@@ -2,14 +2,11 @@
     CONSOLE APPLICATION : 07_synch Project Overview
 ========================================================================
 
-This project demonstrates how to use synchronization objects and how to wait for one or more synchronization events.
-The waiting of an event can be combination of different types of synchronization objects. 
-For example, the thread can wait to one or all events like "released mutex" and "event".
-The synchronization event is not a default synchronization object in POSIX, but exist in Windows.
-The project runs indentical in Windows and POSIX (Linux).
+This project demonstrates the use of synchronization objects, including waiting of multiple synchronization objects and events.
+The waiting of multiple synchronization objects can differ by types. For example, a thread can wait for one, many or a mixture of 
+synchronization objects such as Mutex or SynchEvents (synchronization events). The synchronization events are not part of
+POSIX standard, but exist in Windows. By business logic they are similar to POSIX signals of conditional variables,
+it is a poweful and usel object to use. 
 
-The following synchronization objects are used: Mutex and Event.
-The Mutex is recursive, so that if can be multiple times locked within one thread.
-The Events are auto- or manual-reset.
-Threads wait for more than one synchronization objects and they can be the same type of events or mixture.
-A thread can wait for one of events or all events in the synchronization wating list.
+The example creates several Mutex and SynchEvent objects, it wait for one or mixture of combinated synchronization objects.
+AREG SDK uses recursive mutex, auto- and manual-reset SynchEvents.

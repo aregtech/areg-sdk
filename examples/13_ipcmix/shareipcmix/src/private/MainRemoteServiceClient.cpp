@@ -38,6 +38,7 @@ void MainRemoteServiceClient::broadcastServiceShutdown(void)
     mTimer.stopTimer();
     mClient.crID = 0;
 
+    // Application quit.
     Application::signalAppQuit();
 }
 

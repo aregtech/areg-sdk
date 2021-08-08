@@ -288,3 +288,22 @@ bool DispatcherThread::isExitEvent(const Event * checkEvent) const
 {
     return ( checkEvent == static_cast<const Event *>(&ExitEvent::getExitEvent()) );
 }
+
+DispatcherThread * DispatcherThread::findEventConsumerThread( const RuntimeClassID & whichClass )
+{
+    DispatcherThread * result = NULL;
+    Thread* dispThread = RUNTIME_CAST(Thread::getCurrentThread(), DispatcherThread);
+    result = dispThread != NULL ? static_cast<DispatcherThread *>(dispThread)->getEventConsumerThread(whichClass) : NULL;
+
+    ITEM_ID threadId = Thread::INVALID_THREAD_ID;
+    dispThread = Thread::getFirstThread(threadId);
+    while ((result == NULL) && (dispThread != NULL))
+    {
+        dispThread = dispThread != NULL ? RUNTIME_CAST(dispThread, DispatcherThread) : NULL;
+        result = dispThread != NULL ? static_cast<DispatcherThread *>(dispThread)->getEventConsumerThread(whichClass) : NULL;
+
+        dispThread = Thread::getNextThread(threadId);
+    }
+
+    return result;
+}

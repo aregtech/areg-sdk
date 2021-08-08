@@ -11,6 +11,15 @@
  ************************************************************************/
 #include "LocalServiceComponent.hpp"
 
+Component * LocalServiceComponent::CreateComponent(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
+{
+    return DEBUG_NEW LocalServiceComponent(entry, owner);
+}
+
+void LocalServiceComponent::DeleteComponent(Component & compObject, const NERegistry::ComponentEntry & entry)
+{
+    delete (&compObject);
+}
 
 LocalServiceComponent::LocalServiceComponent(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
     : LocalServicingComponent( entry, owner )
@@ -20,14 +29,4 @@ LocalServiceComponent::LocalServiceComponent(const NERegistry::ComponentEntry & 
 
 LocalServiceComponent::~LocalServiceComponent(void)
 {
-}
-
-Component * LocalServiceComponent::CreateComponent(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
-{
-    return DEBUG_NEW LocalServiceComponent(entry, owner);
-}
-
-void LocalServiceComponent::DeleteComponent(Component & compObject, const NERegistry::ComponentEntry & entry)
-{
-    delete (&compObject);
 }

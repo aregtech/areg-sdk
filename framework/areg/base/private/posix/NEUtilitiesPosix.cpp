@@ -18,7 +18,7 @@
 
 namespace NEUtilities {
 
-    void _generateName( const char * prefix, char * out_buffer, int length, const char * specChar )
+    const char * _generateName( const char * prefix, char * out_buffer, int length, const char * specChar )
     {
         static const char * strFormat = "%s%s%08x%s%08x";
         if ( out_buffer != NULL )
@@ -29,6 +29,8 @@ namespace NEUtilities {
             clock_gettime(CLOCK_REALTIME, &now);
             String::formatString( out_buffer, length, strFormat, prefix != NULL ? prefix : NEUtilities::DEFAULT_GENERATED_NAME, spec, now.tv_sec, spec, now.tv_nsec);
         }
+
+        return out_buffer;
     }
 
     static inline void _convertMicrosecs(const TIME64 & quad, time_t & outSecs, unsigned short &outMilli, unsigned short &outMicro)

@@ -5,6 +5,3 @@
 
 #include "register/NECentralApp.hpp"
 #include "shared/NECommonSettings.hpp"
-
-#pragma comment(lib, "areg.lib")
-#pragma comment(lib, "messager.lib")

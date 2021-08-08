@@ -2,10 +2,10 @@
     CONSOLE APPLICATION : 02_buffer Project Overview
 ========================================================================
 
-This is a demo project to show usage or Shared Buffer object of AREG connectivity framework.
-On start, there is a data written in a global SharedBuffer object. The main thread starts a child thread that makes output on console the content of SharedBuffer object.
+This project demonstrates the usage of Shared Buffer object.
+The main thread initializes shared buffer, starts a child thread that makes output on console the content of SharedBuffer object.
 
-AREG connectivity framework used objects:
+areg framework used:
 - Thread
 - IEThreadConsumer
 - SharedBuffer

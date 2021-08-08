@@ -238,6 +238,19 @@ public:                                                                         
     /**                                                                                                                     **/                     \
     static inline bool sendEvent(const DATA_CLASS & data, __##ConsumerClass<DATA_CLASS> & listener, Event::eEventType eventType);                   \
     /**                                                                                                                     **/                     \
+    /** \brief  Sends event to specified dispatcher thread, which should alredy have registered event consumer.             **/                     \
+    /**         Call this method if sure that event should be processed within specified thread scope and                   **/                     \
+    /**         the dispatcher thread has reigistered consumer for the event.                                               **/                     \
+    /**         Returns true if could send event.                                                                           **/                     \
+    /**         It creates event object and pushes it into thread event queue for further processing.                       **/                     \
+    /** \param  data        The data object to send as an event.                                                            **/                     \
+    /** \param  dispThread  The Dispatcher Thread, which should receive event.                                              **/                     \
+    /**                     The event will be dispatched in this thread and the caller should be sure                       **/                     \
+    /**                     that the consumer is registered in specified thread.                                            **/                     \
+    /** \return Returns true if event successfully was sent.                                                                **/                     \
+    /**                                                                                                                     **/                     \
+    static inline bool sendEvent(const DATA_CLASS & data, DispatcherThread & dispThread);                                                           \
+    /**                                                                                                                     **/                     \
     /** \brief  Sends event to specified consumer within specified thread.                                                  **/                     \
     /**         Call this method if sure that event should be processed within specified thread scope.                      **/                     \
     /**         Returns true if could send event.                                                                           **/                     \
@@ -383,6 +396,14 @@ inline bool __##EventClass<DATA_CLASS>::sendEvent(const DATA_CLASS & data, __##C
     DispatcherThread& dispThread = DispatcherThread::getCurrentDispatcherThread( );                                                                 \
     return (dispThread.isValid() ? _send(dispThread, DEBUG_NEW __##EventClass<DATA_CLASS>(eventType, data, listener)) : false);                     \
 }                                                                                                                                                   \
+/**                                                                                                                         **/                     \
+/** Static function. Sends event to specified dispatcher thread.                                                            **/                     \
+/** Call this method if sure that specified thread has registered consumer.                                                 **/                     \
+/** Returns true if could send event.                                                                                       **/                     \
+/**                                                                                                                         **/                     \
+template <class DATA_CLASS>                                                                                                                         \
+inline bool __##EventClass<DATA_CLASS>::sendEvent(const DATA_CLASS & data, DispatcherThread & dispThread)                                           \
+{   return (dispThread.isValid() ? _send(dispThread, DEBUG_NEW __##EventClass<DATA_CLASS>(EventType, data)) : false);                }              \
 /**                                                                                                                         **/                     \
 /** Static function. Sends event to specified consumer within specified thread.                                             **/                     \
 /** Call this method if sure that event should be processed within specified thread scope.                                  **/                     \

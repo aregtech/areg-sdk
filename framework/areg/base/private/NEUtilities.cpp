@@ -19,7 +19,7 @@
 /************************************************************************/
 namespace NEUtilities 
 {
-    extern void _generateName(const char * prefix, char * out_buffer, int length, const char * specChar);
+    extern const char * _generateName(const char * prefix, char * out_buffer, int length, const char * specChar);
 
 
     NEMath::eCompare compareLargeIntegers( const NEMath::uLargeInteger & lsh, const NEMath::uLargeInteger & rhs )
@@ -155,14 +155,14 @@ AREG_API String NEUtilities::generateName( const char* prefix )
     return String(buffer);
 }
 
-AREG_API void NEUtilities::generateName(const char * prefix, char * out_buffer, int length)
+AREG_API const char * NEUtilities::generateName(const char * prefix, char * out_buffer, int length)
 {
     return NEUtilities::generateName(prefix, out_buffer, length, NEUtilities::DEFAULT_SPECIAL_CHAR);
 }
 
-AREG_API void NEUtilities::generateName(const char * prefix, char * out_buffer, int length, const char * specChar)
+AREG_API const char * NEUtilities::generateName(const char * prefix, char * out_buffer, int length, const char * specChar)
 {
-    NEUtilities::_generateName(prefix, out_buffer, length, specChar);
+    return NEUtilities::_generateName(prefix, out_buffer, length, specChar);
 }
 
 AREG_API unsigned int NEUtilities::generateUniqueId( void )

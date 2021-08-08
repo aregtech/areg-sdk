@@ -348,6 +348,16 @@ Thread::eThreadPriority Thread::getPriority( void ) const
     return (isValid() ? mThreadPriority : Thread::PriorityUndefined);
 }
 
+Thread * Thread::getFirstThread(ITEM_ID & OUT threadId)
+{
+    return _mapThreadId.resourceFirstKey(threadId);
+}
+
+Thread * Thread::getNextThread(ITEM_ID & IN OUT threadId)
+{
+    return _mapThreadId.resourceNextKey(threadId);
+}
+
 #ifdef  _DEBUG
 /************************************************************************/
 // Thread debugging function

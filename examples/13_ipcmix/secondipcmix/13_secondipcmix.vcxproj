@@ -38,9 +38,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <Text Include="..\ReadMe.txt" />
-  </ItemGroup>
-  <ItemGroup>
     <ClCompile Include="src\LocalServiceComponent.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\RemoteServiceComponent.cpp" />

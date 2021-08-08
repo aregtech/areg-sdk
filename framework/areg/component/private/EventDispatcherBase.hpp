@@ -269,6 +269,12 @@ protected:
      **/
     virtual bool pulseExit( void );
 
+    /**
+     * \brief   Triggered before dispatcher starts to dispatch events and when event dispatching just finished.
+     * \param   hasStarted  The flag to indicate whether the dispatcher is ready for events.
+     **/
+    virtual void readyForEvents( bool isReady );
+
 //////////////////////////////////////////////////////////////////////////
 // Member variables
 //////////////////////////////////////////////////////////////////////////

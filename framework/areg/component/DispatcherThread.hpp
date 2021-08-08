@@ -110,18 +110,17 @@ public:
 
     /**
      * \brief   For specified event class ID it searches the appropriate dispatcher thread.
-     *          Should be called when custom events are sent to communication between worker 
-     *          threads or with component master thread. The searching will be done according
-     *          of current thread type. Every worker thread should be able certain event object,
-     *          which means that do not assign same events to be dispatched by different consumers
-     *          registered within one set of bind threads. For more details, see getEventConsumerThread()
-     * \param   whichClass  The runtime class ID of event object to search dispatching thread.
+     *          Should be called when custom events are sent to communicate between threads
+     *          The searching is done by priority. At first, it checks the current thread.
+     *          If does not find, searches all threads. The event is properly sent to the
+     *          target thread if there is only one event consumer for the particular event.
+     *          Otherwise, when send an event, specify the target thread to send the event.
      * \return  Returns valid dispatcher thread, which contains consumer to dispatch
      *          event of specified class ID.
      *
      * \see     getEventConsumerThread()
      **/
-    static inline DispatcherThread * findEventConsumerThread(const RuntimeClassID & whichClass);
+    static DispatcherThread * findEventConsumerThread(const RuntimeClassID & whichClass);
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -315,12 +314,6 @@ inline DispatcherThread & DispatcherThread::getCurrentDispatcherThread( void )
 inline EventDispatcher & DispatcherThread::getCurrentDispatcher( void )
 {
     return getCurrentDispatcherThread().getEventDispatcher();
-}
-
-inline DispatcherThread * DispatcherThread::findEventConsumerThread( const RuntimeClassID & whichClass )
-{
-    DispatcherThread* thisThread = RUNTIME_CAST(Thread::getCurrentThread(), DispatcherThread);
-    return (thisThread != NULL ? thisThread->getEventConsumerThread(whichClass) : NULL);
 }
 
 /************************************************************************/

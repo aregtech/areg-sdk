@@ -18,7 +18,6 @@
 
 
 DEF_TRACE_SCOPE(examples_12_ipchello_svcipchello_ServicingComponent_startupServiceInterface);
-DEF_TRACE_SCOPE(examples_12_ipchello_svcipchello_ServicingComponent_shutdownServiceIntrface);
 DEF_TRACE_SCOPE(examples_12_ipchello_svcipchello_ServicingComponent_requestHelloWorld);
 DEF_TRACE_SCOPE(examples_12_ipchello_svcipchello_ServicingComponent_requestClientShutdown);
 
@@ -54,14 +53,6 @@ void ServicingComponent::startupServiceInterface( Component & holder )
 
     TRACE_DBG("Component [ %s ] set maximum allowed output messages [ %d ]", getRoleName().getString(), NEHelloWorld::MaxMessages);
     setRemainOutput(NEHelloWorld::MaxMessages);
-}
-
-void ServicingComponent::shutdownServiceIntrface ( Component & holder )
-{
-    TRACE_SCOPE(examples_12_ipchello_svcipchello_ServicingComponent_shutdownServiceIntrface);
-    TRACE_WARN("Component [ %s ] shuts down service.", getRoleName().getString());
-
-    HelloWorldStub::shutdownServiceIntrface(holder);
 }
 
 void ServicingComponent::requestHelloWorld(const String & roleName, const String & addMessage /*= "" */)

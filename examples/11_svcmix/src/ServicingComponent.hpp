@@ -98,20 +98,11 @@ protected:
      **/
     virtual void startupServiceInterface( Component & holder );
 
-    /**
-     * \brief   This function is triggered by Component when shuts down.
-     *          Overwrite this method to remove listeners and stub cleanup
-     * \param   holder  The holder component of service interface of Stub,
-     *                  which shuts down.
-     **/
-    virtual void shutdownServiceIntrface ( Component & holder );
-
 //////////////////////////////////////////////////////////////////////////
 // Member variables
 //////////////////////////////////////////////////////////////////////////
 private:
     unsigned int    mGnerateID; //!< The client ID generator
-
     const bool      mIsMain;    //!< Flag, indicating whether it is a main shutdown control component or not.
 
 //////////////////////////////////////////////////////////////////////////

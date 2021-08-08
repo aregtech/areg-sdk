@@ -27,11 +27,6 @@
  * \brief   This file demonstrates simple initialization of local and remote servicing component
  *          used in multiprocessing application development. This executable contains main
  *          controlling component to shutdown system.
- And how to duplicate same
- *          implemented service in the system. The duplication should not happen in the
- *          same thread, rather in different threads with different role names.
- *          The servicing component does not contain any servicing method, it uses
- *          timer to run and exit application after certain time.
  **/
 
 //////////////////////////////////////////////////////////////////////////
@@ -46,7 +41,7 @@
 BEGIN_MODEL(IPCMixCommon::ModelName)
 
     // define component thread
-    BEGIN_REGISTER_THREAD( "Test_MainServiceThread" )
+    BEGIN_REGISTER_THREAD( "TestMainServiceThread" )
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
         BEGIN_REGISTER_COMPONENT( IPCMixCommon::MainService, MainServiceComponent )
             // register dummy 'empty service'. In this example we demonstrate simple initialization
@@ -63,7 +58,7 @@ BEGIN_MODEL(IPCMixCommon::ModelName)
         // end of component description
         END_REGISTER_COMPONENT( IPCMixCommon::LocalService )
     // end of thread description
-    END_REGISTER_THREAD( "Test_MainServiceThread" )
+    END_REGISTER_THREAD( "TestMainServiceThread" )
 
 // end of model IPCMixCommon::ModelName
 END_MODEL(IPCMixCommon::ModelName)
