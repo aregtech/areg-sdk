@@ -13,9 +13,7 @@ else
 AREG_BINARY = static
 endif
 
-# Current directory
-ConfigDir := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
-include $(ConfigDir)/user.mk
+include $(MAKEFILE_CONFIG_DIR)/user.mk
 
 CXXFLAGS := -pthread -std=c++11
 LDFLAGS  := -lm -lstdc++ -lrt -pthread
@@ -78,4 +76,12 @@ $(2)/$(patsubst %.cpp,%.$(OBJ_EXT), $(notdir $(1))): ${1}
 ${3} += $(2)/$(patsubst %.cpp,%.$(OBJ_EXT), $(notdir $(1)))
 endef
 
-.PHONY: help
+# clean targets
+clean:
+	rm -rf $(AregRoot)/$(UserDefOutput)
+clean_build:
+	rm -rf $(ProjOutputDir)
+clean_gen:
+	rm -rf $(ProjGendDir)
+
+.PHONY: clean clean_build clean_gen help

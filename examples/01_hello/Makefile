@@ -28,7 +28,4 @@ $(hello_OUTPUT_BIN)/$(hello_TARGET_BIN): $(areg_OBJS) $(hello_OBJS)
 	@mkdir -p $(dir $@)
 	$(AREG_TOOLCHAIN) $^ $(LDFLAGS) -o $@
 
-clean_hello:
-	rm -f $(hello_OUTPUT_BIN)/$(hello_TARGET_BIN)
-
-.PHONY: 01_hello clean_hello
+.PHONY: 01_hello

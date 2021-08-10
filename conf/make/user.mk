@@ -55,14 +55,10 @@ endif
 # ###########################################################################
 
 # AREG SDK root directory without '/'
-MakefileRoot    := $(abspath $(firstword $(MAKEFILE_LIST)))
-AregRoot        := $(patsubst %/,%,$(dir $(MakefileRoot)))
+AregRoot        := $(AREG_SDK_ROOT)
 
 # The source codes of AREG SDK
-AregInclude     := $(AregRoot)/framework
-
-# The examples relative path
-AregExampleDir  := $(AregRoot)/examples
+AregInclude     := $(AREG_BASE)
 
 
 # ###########################################################################
