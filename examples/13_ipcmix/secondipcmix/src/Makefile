@@ -1,4 +1,4 @@
-secondipcmix_SRC += \
-	$(ipcmix_BASE)/secondipcmix/src/LocalServiceComponent.cpp \
-	$(ipcmix_BASE)/secondipcmix/src/RemoteServiceComponent.cpp \
-	$(ipcmix_BASE)/secondipcmix/src/main.cpp
+13_secondipcmix_SRC += \
+	$(13_secondipcmix_BASE)/src/LocalServiceComponent.cpp \
+	$(13_secondipcmix_BASE)/src/RemoteServiceComponent.cpp \
+	$(13_secondipcmix_BASE)/src/main.cpp
