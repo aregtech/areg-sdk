@@ -15,11 +15,12 @@ include $(mcrouter_BASE)/app/private/Makefile
 include $(mcrouter_BASE)/tcp/private/Makefile
 
 mcrouter_LDFLAGS :=
+mcrouter_CXXFLAGS :=
 ifeq ($(AREG_BINARY), shared)
-	mcrouter_CXXFLAGS += $(INITIAL_CXXFLAGS) $(COMMON_CXXFLAGS) -DIMP_AREG_DLL
+	mcrouter_CXXFLAGS += -DIMP_AREG_DLL
 	mcrouter_LDFLAGS  += -Wl,-rpath=$(mcrouter_OUTPUT_BIN) -L $(mcrouter_OUTPUT_BIN) -lareg $(LDFLAGS)
 else
-	mcrouter_CXXFLAGS += $(INITIAL_CXXFLAGS) $(COMMON_CXXFLAGS) -DIMP_AREG_LIB
+	mcrouter_CXXFLAGS += -DIMP_AREG_LIB
 	mcrouter_LDFLAGS  += -L $(mcrouter_OUTPUT_LIB) -Wl,-Bstatic -lareg -Wl,-Bdynamic $(LDFLAGS)
 endif
 

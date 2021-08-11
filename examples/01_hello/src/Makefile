@@ -1,2 +1,2 @@
-hello_SRC += \
-	$(hello_BASE)/src/main.cpp
+01_hello_SRC += \
+	$(01_hello_BASE)/src/main.cpp
