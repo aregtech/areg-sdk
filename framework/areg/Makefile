@@ -41,7 +41,7 @@ $(areg_TARGET_PATH): $(areg_OBJS)
 	@echo "Linking $(areg_PROJECT_NAME) $(AREG_BINARY) library ..."
 	@mkdir -p $(dir $@)
 	if [ "$(AREG_BINARY)" = "shared" ]; then \
-		$(AREG_TOOLCHAIN) -shared $(areg_OBJS) -o $@; \
+		$(AREG_TOOLCHAIN) -shared $(CXXFLAGS) $(areg_CXXFLAGS) $(areg_OBJS) -o $@; \
 	else \
 		$(AREG_AR) -rcs $@ $^; \
 	fi

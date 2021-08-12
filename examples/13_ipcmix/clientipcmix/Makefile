@@ -16,4 +16,4 @@ $(foreach cpp, $(13_clientipcmix_SRC), $(eval $(call obj, $(cpp), $(13_clientipc
 $(AREG_OUTPUT_BIN)/$(13_clientipcmix_TARGET_BIN): $(areg_OBJS) $(13_shareipcmix_OBJS) $(13_clientipcmix_OBJS)
 	@echo "Linking $@ ..."
 	@mkdir -p $(dir $@)
-	$(AREG_TOOLCHAIN) $^ $(LDFLAGS) -o $@
+	$(AREG_TOOLCHAIN) $(CXXFLAGS) $(ipcmix_CXXFLAGS) $^ $(LDFLAGS) -o $@

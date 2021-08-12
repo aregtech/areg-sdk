@@ -15,7 +15,7 @@ endif
 
 include $(MAKEFILE_CONFIG_DIR)/user.mk
 
-CXXFLAGS := -pthread -std=c++11
+CXXFLAGS := -g -pthread -std=c++11
 LDFLAGS  := -lm -lstdc++ -lrt -pthread
 
 #TODO fix the warnings reported by clang first
@@ -29,10 +29,19 @@ ifeq ($(Config), Release)
 # optimixation with O2?
 CXXFLAGS += -O2 -DNDEBUG
 else
-CXXFLAGS += -g -DDEBUG
+CXXFLAGS += -DDEBUG
 endif
 
-# TODO: bit, only x64's compilers can compile 32bitness on a 64bit host??
+# only native compilers on x86_64 can support bitness?
+ifeq ($(Platform), x86_64)
+ifeq ($(CrossCompile), )
+ifeq ($(bit), 32)
+CXXFLAGS += -m32
+else ifeq ($(bit), 64)
+CXXFLAGS += -m64
+endif
+endif
+endif
 
 ifeq ($(AREG_OS), windows)
 CXXFLAGS     += -DWINDOWS

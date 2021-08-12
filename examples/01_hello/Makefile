@@ -19,6 +19,6 @@ $(foreach cpp, $(01_hello_SRC), $(eval $(call obj, $(cpp), $(01_hello_OUTPUT_OBJ
 $(AREG_OUTPUT_BIN)/$(01_hello_TARGET_BIN): $(areg_OBJS) $(01_hello_OBJS)
 	@echo "Linking $(01_hello_PROJECT_NAME) ..."
 	@mkdir -p $(dir $@)
-	$(AREG_TOOLCHAIN) $^ $(LDFLAGS) -o $@
+	$(AREG_TOOLCHAIN) $(CXXFLAGS) $(examples_CXXFLAGS) $^ $(LDFLAGS) -o $@
 
 .PHONY: 01_hello

@@ -34,4 +34,4 @@ $(foreach cpp, $(mcrouter_SRC), $(eval $(call obj, $(cpp), $(mcrouter_OUTPUT_OBJ
 $(mcrouter_OUTPUT_BIN)/$(mcrouter_TARGET_BIN): $(areg_TARGET_PATH) $(mcrouter_OBJS)
 	@echo "Linking mcrouter ..."
 	@mkdir -p $(dir $@)
-	$(AREG_TOOLCHAIN) $(mcrouter_OBJS) $(mcrouter_LDFLAGS) -o $@
+	$(AREG_TOOLCHAIN) $(CXXFLAGS) $(mcrouter_CXXFLAGS) $(mcrouter_OBJS) $(mcrouter_LDFLAGS) -o $@
