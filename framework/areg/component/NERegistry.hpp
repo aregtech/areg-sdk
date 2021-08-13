@@ -92,24 +92,6 @@ typedef void            (*FuncDeleteComponent)  (Component & /*componentItem*/, 
  **/
 namespace NERegistry
 {
-//////////////////////////////////////////////////////////////////////////
-// NERegistry::DefaultComponentCreator
-//////////////////////////////////////////////////////////////////////////
-/**
- * \brief   The default method to create component.
- * \param   entry   The component entry object registered in Registers.
- * \param   owner   The component owner thread.
- * \return  Returns poiner to instantiated component.
- * \tparam  Class   The class name of component to create
- */
-template <class Class>
-Class * DefaultComponentCreate( const NERegistry::ComponentEntry & entry, ComponentThread & owner );
-
-/**
- * \brief   The default method to create component
- */
-template <class Class>
-void DefaultComponentRelease( Component & compObject, const NERegistry::ComponentEntry & entry );
 
 //////////////////////////////////////////////////////////////////////////
 // NERegistry::ServiceEntry class declaration

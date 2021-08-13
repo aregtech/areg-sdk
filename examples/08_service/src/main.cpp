@@ -11,7 +11,7 @@
 #include "areg/base/ESynchObjects.hpp"
 #include "areg/component/ComponentLoader.hpp"
 #include "areg/trace/GETrace.h"
-#include "ServicingComponent.hpp"
+#include "src/ServicingComponent.hpp"
 
 #ifdef WINDOWS
     #pragma comment(lib, "areg.lib")

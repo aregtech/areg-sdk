@@ -1,5 +1,5 @@
 /************************************************************************
- * \file        ServicingComponent.cpp
+ * \file        src/ServicingComponent.cpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework examples
  * \author      Artak Avetyan (mailto:artak@aregtech.com)
  * \brief       Collection of AREG SDK examples.
@@ -10,7 +10,7 @@
  * Include files.
  ************************************************************************/
 
-#include "ServicingComponent.hpp"
+#include "src/ServicingComponent.hpp"
 #include "areg/trace/GETrace.h"
 #include "areg/component/ComponentThread.hpp"
 #include "areg/appbase/Application.hpp"

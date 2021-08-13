@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<ServiceInterface FormatVesion="1.0.0">
+    <Overview ID="1" Name="PatientInformation" Version="0.1.0" isRemote="true">
+        <Description>This service sends the patient information to apply connected devices.</Description>
+    </Overview>
+    <DataTypeList>
+        <DataType ID="2" Name="PatientInfo" Type="Structure">
+            <Description>The patien information</Description>
+            <FieldList>
+                <Field DataType="String" ID="3" Name="firstName">
+                    <Value IsDefault="true"/>
+                    <Description>The first name of patient.</Description>
+                </Field>
+                <Field DataType="String" ID="4" Name="lastName">
+                    <Value IsDefault="true"/>
+                    <Description>The last name of patient.</Description>
+                </Field>
+                <Field DataType="double" ID="5" Name="weight">
+                    <Value IsDefault="true">0.0</Value>
+                    <Description>The weight of patient in kilogramms.</Description>
+                </Field>
+                <Field DataType="uint8" ID="6" Name="age">
+                    <Value IsDefault="true">0</Value>
+                    <Description>The age of patient.</Description>
+                </Field>
+            </FieldList>
+        </DataType>
+    </DataTypeList>
+    <AttributeList>
+        <Attribute DataType="PatientInfo" ID="7" Name="Patient" Notify="OnChange">
+            <Description>The patient information to apply to hardware.</Description>
+        </Attribute>
+    </AttributeList>
+    <ConstantList>
+        <Constant DataType="uint32" ID="8" Name="Timeout">
+            <Value>500</Value>
+            <Description>The timeout in milliseconds to apply the patient information.</Description>
+        </Constant>
+    </ConstantList>
+</ServiceInterface>

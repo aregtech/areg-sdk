@@ -1,7 +1,7 @@
 #ifndef AREG_EXAMPLES_08_SERVICE_SERVICINGCOMPONENT_HPP
 #define AREG_EXAMPLES_08_SERVICE_SERVICINGCOMPONENT_HPP
 /************************************************************************
- * \file        ServicingComponent.hpp
+ * \file        src/ServicingComponent.hpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework examples
  * \author      Artak Avetyan (mailto:artak@aregtech.com)
  * \brief       Collection of AREG SDK examples.
@@ -94,9 +94,6 @@ protected:
      **/
     virtual void shutdownServiceIntrface ( Component & holder );
 
-    /**
-     * \brief	This function is triggered by component thread when it 
-     *          requires component to start up. Set listeners and make
 /************************************************************************/
 // IETimerConsumer interface overrides.
 /************************************************************************/

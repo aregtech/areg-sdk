@@ -1,0 +1,52 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(SolutionDir)\conf\msvc\compile.props" Label="LocalAppCompileSettings" />
+  </ImportGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{1EB10EE3-1F75-440E-94EE-D74FCF7CA79E}</ProjectGuid>
+    <ProjectName>15_ipchwmgr</ProjectName>
+    <RootNamespace>15_ipchwmgr</RootNamespace>
+    <Keyword>Win32Proj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+  </PropertyGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(SolutionDir)\conf\msvc\project.props" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <ItemDefinitionGroup Condition="'$(ConfigShortName)'=='Debug'">
+    <ClCompile>
+      <PreprocessorDefinitions>IMPORT_SHARED_SYMBOLS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(TestRootDir)\15_ipcworker;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(ConfigShortName)'=='Release'">
+    <ClCompile>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>IMPORT_SHARED_SYMBOLS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(TestRootDir)\15_ipcworker;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="ipchwmgr\src\HardwareWorker.cpp" />
+    <ClCompile Include="ipchwmgr\src\HardwareManager.cpp" />
+    <ClCompile Include="ipchwmgr\src\main.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="ipchwmgr\src\HardwareWorker.hpp" />
+    <ClInclude Include="ipchwmgr\src\HardwareManager.hpp" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

@@ -1,0 +1,56 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(SolutionDir)\conf\msvc\compile.props" Label="LocalAppCompileSettings" />
+  </ImportGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{18CE1C5F-A87D-42E2-B9F8-89FDD6ECE323}</ProjectGuid>
+    <ProjectName>11_svcmix</ProjectName>
+    <RootNamespace>11_svcmix</RootNamespace>
+    <Keyword>Win32Proj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+  </PropertyGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(SolutionDir)\conf\msvc\project.props" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <ItemDefinitionGroup Condition="'$(ConfigShortName)'=='Debug'">
+    <ClCompile>
+      <PreprocessorDefinitions>IMPORT_SHARED_SYMBOLS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(ConfigShortName)'=='Release'">
+    <ClCompile>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>IMPORT_SHARED_SYMBOLS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="svcmix\src\MainComponent.cpp" />
+    <ClCompile Include="svcmix\src\SecondaryComponent.cpp" />
+    <ClCompile Include="svcmix\src\ServiceClient.cpp" />
+    <ClCompile Include="svcmix\src\ServicingComponent.cpp" />
+    <ClCompile Include="svcmix\src\main.cpp" />
+    <ClCompile Include="svcmix\src\ClientComponent.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="svcmix\src\MainComponent.hpp" />
+    <ClInclude Include="svcmix\src\SecondaryComponent.hpp" />
+    <ClInclude Include="svcmix\src\ServiceClient.hpp" />
+    <ClInclude Include="svcmix\src\ServicingComponent.hpp" />
+    <ClInclude Include="svcmix\src\ClientComponent.hpp" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

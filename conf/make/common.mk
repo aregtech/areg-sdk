@@ -6,6 +6,7 @@ AREG_INCLUDES   = $(ProjIncludes)
 AREG_TOOLCHAIN  = $(CrossCompile)$(Toolset)
 AREG_AR         = $(CrossCompile)ar
 AREG_OS         = $(os)
+AREG_STATIC_LIB =
 
 ifeq ($(areg), shared)
 AREG_BINARY = shared
@@ -48,6 +49,7 @@ CXXFLAGS     += -DWINDOWS
 OBJ_EXT      := obj
 AREG_BIN_EXT := .exe
 AREG_LIB_PREFIX :=
+AREG_STATIC_LIB := .lib
 ifeq ($(AREG_BINARY), shared)
 	AREG_LIB_EXT := .dll
 else
@@ -58,6 +60,7 @@ CXXFLAGS     += -DPOSIX
 OBJ_EXT      := o
 AREG_BIN_EXT := .out
 AREG_LIB_PREFIX := lib
+AREG_STATIC_LIB := .a
 ifeq ($(AREG_BINARY), shared)
 	AREG_LIB_EXT := .so
 else

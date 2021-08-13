@@ -1,0 +1,150 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>bat;rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="generated\src\private\LocalHelloWorldClientBase.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="generated\src\private\LocalHelloWorldEvents.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="generated\src\private\LocalHelloWorldProxy.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="generated\src\private\LocalHelloWorldStub.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="generated\src\private\NELocalHelloWorld.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="generated\src\private\LocalServicingComponent.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="generated\src\private\RemoteServicingComponent.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="generated\src\private\LocalServiceClient.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="generated\src\private\RemoteServiceClient.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="generated\src\private\NERemoteRegistry.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="generated\src\private\NESystemShutdown.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="generated\src\private\RemoteRegistryClientBase.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="generated\src\private\RemoteRegistryEvents.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="generated\src\private\RemoteRegistryProxy.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="generated\src\private\RemoteRegistryStub.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="generated\src\private\SystemShutdownClientBase.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="generated\src\private\SystemShutdownEvents.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="generated\src\private\SystemShutdownProxy.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="generated\src\private\SystemShutdownStub.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="generated\src\private\MainServicingComponent.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="generated\src\private\MainRemoteServiceClient.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="generated\src\LocalHelloWorldClientBase.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="generated\src\LocalHelloWorldStub.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="generated\src\NELocalHelloWorld.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="generated\src\private\LocalHelloWorldEvents.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="generated\src\private\LocalHelloWorldProxy.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="generated\src\LocalServicingComponent.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="generated\src\RemoteServicingComponent.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="generated\src\LocalServiceClient.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="generated\src\RemoteServiceClient.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="generated\src\IPCMixCommon.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="generated\src\private\RemoteRegistryEvents.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="generated\src\private\RemoteRegistryProxy.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="generated\src\private\SystemShutdownEvents.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="generated\src\private\SystemShutdownProxy.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="generated\src\NERemoteRegistry.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="generated\src\NESystemShutdown.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="generated\src\RemoteRegistryClientBase.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="generated\src\RemoteRegistryStub.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="generated\src\SystemShutdownClientBase.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="generated\src\SystemShutdownStub.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="generated\src\MainServicingComponent.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="generated\src\MainRemoteServiceClient.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

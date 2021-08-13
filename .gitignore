@@ -26,109 +26,130 @@
 /examples/*/.gitignore
 /examples/*/*/.gitignore
 
-/examples/test-areg-basic/Debug/
-/examples/test-areg-basic/Release/
-/examples/test-areg-basic/.settings/
-
-/examples/01_hello/debug/
-/examples/01_hello/release/
+/examples/01_hello/Debug/
+/examples/01_hello/Release/
 /examples/01_hello/.settings/
 
-/examples/02_buffer/debug/
-/examples/02_buffer/release/
+/examples/02_buffer/Debug/
+/examples/02_buffer/Release/
 /examples/02_buffer/.settings/
 
-/examples/03_file/debug/
-/examples/03_file/release/
+/examples/03_file/Debug/
+/examples/03_file/Release/
 /examples/03_file/.settings/
 
-/examples/04_trace/debug/
-/examples/04_trace/release/
+/examples/04_trace/Debug/
+/examples/04_trace/Release/
 /examples/04_trace/.settings/
 /examples/04_trace/logs/
 
-/examples/05_timer/debug/
-/examples/05_timer/release/
+/examples/05_timer/Debug/
+/examples/05_timer/Release/
 /examples/05_timer/.settings/
 /examples/05_timer/logs/
 
-/examples/06_threads/debug/
-/examples/06_threads/release/
+/examples/06_threads/Debug/
+/examples/06_threads/Release/
 /examples/06_threads/.settings/
 /examples/06_threads/logs/
 
-/examples/07_synch/debug/
-/examples/07_synch/release/
+/examples/07_synch/Debug/
+/examples/07_synch/Release/
 /examples/07_synch/.settings/
 /examples/07_synch/logs/
 
-/examples/08_service/debug/
-/examples/08_service/release/
+/examples/08_service/Debug/
+/examples/08_service/Release/
 /examples/08_service/.settings/
 /examples/08_service/logs/
 
-/examples/09_duplicate/debug/
-/examples/09_duplicate/release/
-/examples/09_duplicate/.settings/
-/examples/09_duplicate/logs/
+/examples/09_svcmulti/Debug/
+/examples/09_svcmulti/Release/
+/examples/09_svcmulti/.settings/
+/examples/09_svcmulti/logs/
 
-/examples/10_svchello/debug/
-/examples/10_svchello/release/
-/examples/10_svchello/.settings/
-/examples/10_svchello/logs/
+/examples/10_locsvchello/generated/Debug/
+/examples/10_locsvchello/generated/Release/
+/examples/10_locsvchello/generated/.settings/
+/examples/10_locsvchello/generated/logs/
 
-/examples/11_svcmix/debug/
-/examples/11_svcmix/release/
-/examples/11_svcmix/.settings/
-/examples/11_svcmix/logs/
+/examples/10_locsvchello/svchello/Debug/
+/examples/10_locsvchello/svchello/Release/
+/examples/10_locsvchello/svchello/.settings/
+/examples/10_locsvchello/svchello/logs/
 
-/examples/12_ipchello/shripchello/debug/
-/examples/12_ipchello/shripchello/release/
-/examples/12_ipchello/shripchello/.settings/
-/examples/12_ipchello/shripchello/logs/
+/examples/11_locsvcmix/generated/Debug/
+/examples/11_locsvcmix/generated/Release/
+/examples/11_locsvcmix/generated/.settings/
+/examples/11_locsvcmix/generated/logs/
 
-/examples/12_ipchello/svcipchello/debug/
-/examples/12_ipchello/svcipchello/release/
-/examples/12_ipchello/svcipchello/.settings/
-/examples/12_ipchello/svcipchello/logs/
+/examples/11_locsvcmix/svcmix/Debug/
+/examples/11_locsvcmix/svcmix/Release/
+/examples/11_locsvcmix/svcmix/.settings/
+/examples/11_locsvcmix/svcmix/logs/
 
-/examples/12_ipchello/usripchello/debug/
-/examples/12_ipchello/usripchello/release/
-/examples/12_ipchello/usripchello/.settings/
-/examples/12_ipchello/usripchello/logs/
+/examples/12_pubsvchello/generated/Debug/
+/examples/12_pubsvchello/generated/Release/
+/examples/12_pubsvchello/generated/.settings/
+/examples/12_pubsvchello/generated/logs/
 
-/examples/13_ipcmix/clientipcmix/debug/
-/examples/13_ipcmix/clientipcmix/release/
-/examples/13_ipcmix/clientipcmix/.settings/
-/examples/13_ipcmix/clientipcmix/logs/
+/examples/12_pubsvchello/ipcsvchello/Debug/
+/examples/12_pubsvchello/ipcsvchello/Release/
+/examples/12_pubsvchello/ipcsvchello/.settings/
+/examples/12_pubsvchello/ipcsvchello/logs/
 
-/examples/13_ipcmix/mainipcmix/debug/
-/examples/13_ipcmix/mainipcmix/release/
-/examples/13_ipcmix/mainipcmix/.settings/
-/examples/13_ipcmix/mainipcmix/logs/
+/examples/12_pubsvchello/ipcusrhello/Debug/
+/examples/12_pubsvchello/ipcusrhello/Release/
+/examples/12_pubsvchello/ipcusrhello/.settings/
+/examples/12_pubsvchello/ipcusrhello/logs/
 
-/examples/13_ipcmix/secondipcmix/debug/
-/examples/13_ipcmix/secondipcmix/release/
-/examples/13_ipcmix/secondipcmix/.settings/
-/examples/13_ipcmix/secondipcmix/logs/
-/examples/13_ipcmix/secondipcmix/config
+/examples/13_pubsvcmix/generated/Debug/
+/examples/13_pubsvcmix/generated/Release/
+/examples/13_pubsvcmix/generated/.settings/
+/examples/13_pubsvcmix/generated/logs/
 
-/examples/13_ipcmix/shareipcmix/debug/
-/examples/13_ipcmix/shareipcmix/release/
-/examples/13_ipcmix/shareipcmix/.settings/
-/examples/13_ipcmix/shareipcmix/logs/
+/examples/13_pubsvcmix/ipcmixclient/Debug/
+/examples/13_pubsvcmix/ipcmixclient/Release/
+/examples/13_pubsvcmix/ipcmixclient/.settings/
+/examples/13_pubsvcmix/ipcmixclient/logs/
 
-/examples/14_ipclight/lightcommon/debug/
-/examples/14_ipclight/lightcommon/release/
-/examples/14_ipclight/lightcommon/.settings/
-/examples/14_ipclight/lightcommon/logs/
+/examples/13_pubsvcmix/ipcmixmain/Debug/
+/examples/13_pubsvcmix/ipcmixmain/Release/
+/examples/13_pubsvcmix/ipcmixmain/.settings/
+/examples/13_pubsvcmix/ipcmixmain/logs/
 
-/examples/14_ipclight/lightctrl/debug/
-/examples/14_ipclight/lightctrl/release/
-/examples/14_ipclight/lightctrl/.settings/
-/examples/14_ipclight/lightctrl/logs/
+/examples/13_pubsvcmix/ipcmixsecond/Debug/
+/examples/13_pubsvcmix/ipcmixsecond/Release/
+/examples/13_pubsvcmix/ipcmixsecond/.settings/
+/examples/13_pubsvcmix/ipcmixsecond/logs/
 
-/examples/14_ipclight/trafficlight/debug/
-/examples/14_ipclight/trafficlight/release/
-/examples/14_ipclight/trafficlight/.settings/
-/examples/14_ipclight/trafficlight/logs/
+/examples/14_pubsvclight/generated/Debug/
+/examples/14_pubsvclight/generated/Release/
+/examples/14_pubsvclight/generated/.settings/
+/examples/14_pubsvclight/generated/logs/
+
+/examples/14_pubsvclight/ipclightctrl/Debug/
+/examples/14_pubsvclight/ipclightctrl/Release/
+/examples/14_pubsvclight/ipclightctrl/.settings/
+/examples/14_pubsvclight/ipclightctrl/logs/
+
+/examples/14_pubsvclight/ipctraffic/Debug/
+/examples/14_pubsvclight/ipctraffic/Release/
+/examples/14_pubsvclight/ipctraffic/.settings/
+/examples/14_pubsvclight/ipctraffic/logs/
+
+/examples/15_pubsvcworker/generated/Debug/
+/examples/15_pubsvcworker/generated/Release/
+/examples/15_pubsvcworker/generated/.settings/
+/examples/15_pubsvcworker/generated/logs/
+
+/examples/15_pubsvcworker/ipchwmgr/Debug/
+/examples/15_pubsvcworker/ipchwmgr/Release/
+/examples/15_pubsvcworker/ipchwmgr/.settings/
+/examples/15_pubsvcworker/ipchwmgr/logs/
+
+/examples/15_pubsvcworker/ipcsvcpatient/Debug/
+/examples/15_pubsvcworker/ipcsvcpatient/Release/
+/examples/15_pubsvcworker/ipcsvcpatient/.settings/
+/examples/15_pubsvcworker/ipcsvcpatient/logs/
+

@@ -4,7 +4,7 @@
     <Import Project="$(SolutionDir)\conf\msvc\compile.props" Label="LocalAppCompileSettings" />
   </ImportGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{E34CB5C7-BFF2-43FD-8178-299943868F04}</ProjectGuid>
+    <ProjectGuid>{24A4F250-C09B-40BF-A6F2-25BD8ABBED6F}</ProjectGuid>
     <ProjectName>mcrouter</ProjectName>
     <RootNamespace>mcrouter</RootNamespace>
     <Keyword>Win32Proj</Keyword>
