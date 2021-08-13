@@ -1,7 +1,7 @@
-#ifndef  AREG_EXAMPLES_15_PUBSVCWORKER_IPCHWMGR_SRC_HARDWAREWORKER_HPP
-#define  AREG_EXAMPLES_15_PUBSVCWORKER_IPCHWMGR_SRC_HARDWAREWORKER_HPP
+#ifndef  AREG_EXAMPLES_15_PUBSVCWORKER_IPCHWMGR_SRC_HARDWAREWORKERCONSUMER_HPP
+#define  AREG_EXAMPLES_15_PUBSVCWORKER_IPCHWMGR_SRC_HARDWAREWORKERCONSUMER_HPP
 /************************************************************************
- * \file        hwmgr/src/HardwareWorker.hpp
+ * \file        hwmgr/src/HardwareWorkerConsumer.hpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework examples
  * \author      Artak Avetyan (mailto:artak@aregtech.com)
  * \brief       Collection of AREG SDK examples.
@@ -15,13 +15,28 @@
 #include "areg/component/IEWorkerThreadConsumer.hpp"
 #include "generated/src/PatientInfoEvent.hpp"
 
-class HardwareWorker    : public    IEWorkerThreadConsumer
-                        , private   IEPatientInfoEventConsumer
+/**
+ * \brief   The worker thread consumer that is invoked to handle worker thread.
+ *          Normally, the custom events are used for the communication between
+ *          worker thread and the binding component (master), or between worker threads
+ *          of the same binding component (master).
+ **/
+class HardwareWorkerConsumer    : public    IEWorkerThreadConsumer
+                                , private   IEPatientInfoEventConsumer
 {
+//////////////////////////////////////////////////////////////////////////
+// Constructor / Destructor.
+//////////////////////////////////////////////////////////////////////////
 public:
-    HardwareWorker(const char * consumerName);
+    /**
+     * \brief   Initializes the worker thread consumer name.
+     **/
+    HardwareWorkerConsumer(const char * consumerName);
 
-    virtual ~HardwareWorker(void);
+    /**
+     * \brief   Destructor.
+     **/
+    virtual ~HardwareWorkerConsumer(void);
 
 protected:
 
@@ -53,9 +68,24 @@ protected:
     virtual void processEvent( const PatientInfoEventData & data );
 
 private:
-    inline HardwareWorker & self( void );
 
+    /**
+     * \brief   Updates the patient information (assumes here updates the HW data).
+     **/
     void updateInfoPatient( const SharedBuffer & data );
+
+    /**
+     * \brief   Wrapper of this pointer.
+     **/
+    inline HardwareWorkerConsumer & self( void );
+
+//////////////////////////////////////////////////////////////////////////
+// Forbidden calls.
+//////////////////////////////////////////////////////////////////////////
+private:
+    HardwareWorkerConsumer( void );
+    HardwareWorkerConsumer( const HardwareWorkerConsumer & /*src*/ );
+    const HardwareWorkerConsumer & operator = ( const HardwareWorkerConsumer & /*src*/ );
 };
 
-#endif  // AREG_EXAMPLES_15_PUBSVCWORKER_IPCHWMGR_SRC_HARDWAREWORKER_HPP
+#endif  // AREG_EXAMPLES_15_PUBSVCWORKER_IPCHWMGR_SRC_HARDWAREWORKERCONSUMER_HPP

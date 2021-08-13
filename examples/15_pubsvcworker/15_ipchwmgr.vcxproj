@@ -38,12 +38,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="ipchwmgr\src\HardwareWorker.cpp" />
+    <ClCompile Include="ipchwmgr\src\HardwareWorkerConsumer.cpp" />
     <ClCompile Include="ipchwmgr\src\HardwareManager.cpp" />
     <ClCompile Include="ipchwmgr\src\main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="ipchwmgr\src\HardwareWorker.hpp" />
+    <ClInclude Include="ipchwmgr\src\HardwareWorkerConsumer.hpp" />
     <ClInclude Include="ipchwmgr\src\HardwareManager.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

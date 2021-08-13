@@ -21,7 +21,7 @@
     <ClCompile Include="ipchwmgr\src\HardwareManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ipchwmgr\src\HardwareWorker.cpp">
+    <ClCompile Include="ipchwmgr\src\HardwareWorkerConsumer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -29,7 +29,7 @@
     <ClInclude Include="ipchwmgr\src\HardwareManager.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ipchwmgr\src\HardwareWorker.hpp">
+    <ClInclude Include="ipchwmgr\src\HardwareWorkerConsumer.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

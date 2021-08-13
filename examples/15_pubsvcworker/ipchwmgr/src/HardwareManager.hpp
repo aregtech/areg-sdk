@@ -16,8 +16,13 @@
 #include "areg/component/Component.hpp"
 #include "generated/src/PatientInformationClientBase.hpp"
 
-#include "ipchwmgr/src/HardwareWorker.hpp"
+#include "ipchwmgr/src/HardwareWorkerConsumer.hpp"
 
+/**
+ * \brief   This component imitates hardware manager and demonstrates the use
+ *          of worker thread, and the communication between servicing component and
+ *          the worker thread via custom events.
+ **/
 class HardwareManager   : public    Component
                         , protected PatientInformationClientBase
 {
@@ -26,8 +31,13 @@ class HardwareManager   : public    Component
 // Statics and constants.
 //////////////////////////////////////////////////////////////////////////
 public:
+    /**
+     * \brief   The worker thread consumer name.
+     **/
     static const char * const   HwWorkerThreadConsumer      /*= "HwUpdateConsumer"*/;
-
+    /**
+     * \brief   The worker thread thread name.
+     **/
     static const char * const   HwWorkerThreadName          /*= "HwUpdateThread"*/;
 
     /**
@@ -108,10 +118,24 @@ private:
      **/
     virtual ~HardwareManager( void );
 
+    /**
+     * \brief   Wrapper of this pointer.
+     **/
     inline HardwareManager & self( void );
 
 private:
-    HardwareWorker  mHwWorker;
+    /**
+     * \brief   The Worker Thread consumer object
+     **/
+    HardwareWorkerConsumer  mHwWorker;
+
+//////////////////////////////////////////////////////////////////////////
+// Forbidden calls.
+//////////////////////////////////////////////////////////////////////////
+private:
+    HardwareManager( void );
+    HardwareManager( const HardwareManager & /*src*/ );
+    const HardwareManager & operator = ( const HardwareManager & /*src*/ );
 };
 
 #endif  // AREG_EXAMPLES_15_PUBSVCWORKER_IPCHWMGR_SRC_HARDWAREMANAGER_HPP

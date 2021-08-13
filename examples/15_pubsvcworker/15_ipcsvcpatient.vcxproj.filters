@@ -21,7 +21,7 @@
     <ClCompile Include="ipcsvcpatient\src\PatientService.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ipcsvcpatient\src\PatientServiceWorker.cpp">
+    <ClCompile Include="ipcsvcpatient\src\PatientServiceWorkerConsumer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -29,7 +29,7 @@
     <ClInclude Include="ipcsvcpatient\src\PatientService.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ipcsvcpatient\src\PatientServiceWorker.hpp">
+    <ClInclude Include="ipcsvcpatient\src\PatientServiceWorkerConsumer.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

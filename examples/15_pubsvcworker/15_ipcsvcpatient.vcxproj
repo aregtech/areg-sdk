@@ -40,11 +40,11 @@
   <ItemGroup>
     <ClCompile Include="ipcsvcpatient\src\PatientService.cpp" />
     <ClCompile Include="ipcsvcpatient\src\main.cpp" />
-    <ClCompile Include="ipcsvcpatient\src\PatientServiceWorker.cpp" />
+    <ClCompile Include="ipcsvcpatient\src\PatientServiceWorkerConsumer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ipcsvcpatient\src\PatientService.hpp" />
-    <ClInclude Include="ipcsvcpatient\src\PatientServiceWorker.hpp" />
+    <ClInclude Include="ipcsvcpatient\src\PatientServiceWorkerConsumer.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -1,5 +1,5 @@
 /************************************************************************
- * \file        ipcsvcpatient/src/PatientServiceWorker.cpp
+ * \file        ipcsvcpatient/src/PatientServiceWorkerConsumer.cpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework examples
  * \author      Artak Avetyan (mailto:artak@aregtech.com)
  * \brief       Collection of AREG SDK examples.
@@ -8,30 +8,34 @@
  /************************************************************************
   * Include files.
   ************************************************************************/
-#include "ipcsvcpatient/src/PatientServiceWorker.hpp"
+#include "ipcsvcpatient/src/PatientServiceWorkerConsumer.hpp"
 
 #include "areg/base/NEUtilities.hpp"
 #include "generated/src/NEPatientMonitorCommon.hpp"
 #include "generated/src/PatientInformationStub.hpp"
 #include "areg/appbase/Application.hpp"
 
-PatientServiceWorker::PatientServiceWorker(const char * consumerName, PatientInformationStub & infoPatient)
+PatientServiceWorkerConsumer::PatientServiceWorkerConsumer(const char * consumerName, PatientInformationStub & infoPatient)
     : IEWorkerThreadConsumer( NEUtilities::createComponentItemName(NEPatientMonitorCommon::ServiceNamePatientInfo, consumerName) )
 
     , mStubPatienInfo       ( infoPatient )
 {
 }
 
-PatientServiceWorker::~PatientServiceWorker(void)
+PatientServiceWorkerConsumer::~PatientServiceWorkerConsumer(void)
 {
 }
 
-void PatientServiceWorker::registerEventConsumers(WorkerThread & workThread, ComponentThread & masterThread)
+void PatientServiceWorkerConsumer::registerEventConsumers(WorkerThread & workThread, ComponentThread & masterThread)
 {
     bool quitApp = false;
 
     do 
     {
+        /******************************************
+         * Read Patient information from console
+         ******************************************/
+
         // Patient information
         char firstName[128] = {0};
         char lastName[128]  = {0};
@@ -79,6 +83,9 @@ void PatientServiceWorker::registerEventConsumers(WorkerThread & workThread, Com
 
         mStubPatienInfo.setPatient(infoPatient);
 
+        /******************************************
+         * Do you want to continue or exit application?
+         ******************************************/
         char cmd[2] = {0};
         printf("Do you want to continue? (y/n): ");
 #ifdef _WINDOWS
@@ -95,6 +102,6 @@ void PatientServiceWorker::registerEventConsumers(WorkerThread & workThread, Com
     Application::signalAppQuit();
 }
 
-void PatientServiceWorker::unregisterEventConsumers(WorkerThread & workThread)
+void PatientServiceWorkerConsumer::unregisterEventConsumers(WorkerThread & workThread)
 {
 }

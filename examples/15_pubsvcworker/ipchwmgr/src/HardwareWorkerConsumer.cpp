@@ -1,5 +1,5 @@
 /************************************************************************
- * \file        ipchwmgr/src/HardwareWorker.cpp
+ * \file        ipchwmgr/src/HardwareWorkerConsumer.cpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework examples
  * \author      Artak Avetyan (mailto:artak@aregtech.com)
  * \brief       Collection of AREG SDK examples.
@@ -8,41 +8,41 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "ipchwmgr/src/HardwareWorker.hpp"
+#include "ipchwmgr/src/HardwareWorkerConsumer.hpp"
 
 
-HardwareWorker::HardwareWorker(const char * consumerName)
+HardwareWorkerConsumer::HardwareWorkerConsumer(const char * consumerName)
     : IEWorkerThreadConsumer    ( consumerName )
     , IEPatientInfoEventConsumer( )
 {
 
 }
 
-HardwareWorker::~HardwareWorker( void )
+HardwareWorkerConsumer::~HardwareWorkerConsumer( void )
 {
 
 }
 
-inline HardwareWorker & HardwareWorker::self(void)
+inline HardwareWorkerConsumer & HardwareWorkerConsumer::self(void)
 {
     return (*this);
 }
 
-void HardwareWorker::registerEventConsumers(WorkerThread & workThread, ComponentThread & masterThread)
+void HardwareWorkerConsumer::registerEventConsumers(WorkerThread & workThread, ComponentThread & masterThread)
 {
     PatientInfoEvent::addListener( static_cast<IEPatientInfoEventConsumer &>(self()), static_cast<DispatcherThread &>(workThread) );
 
     printf("Example Hardware is initialized .....\n\n");
 }
 
-void HardwareWorker::unregisterEventConsumers(WorkerThread & workThread)
+void HardwareWorkerConsumer::unregisterEventConsumers(WorkerThread & workThread)
 {
     PatientInfoEvent::removeListener( static_cast<IEPatientInfoEventConsumer &>(self()), static_cast<DispatcherThread &>(workThread) );
 
     printf("Example Hardware is uninitialized .....\n\n");
 }
 
-void HardwareWorker::processEvent(const PatientInfoEventData & data)
+void HardwareWorkerConsumer::processEvent(const PatientInfoEventData & data)
 {
     const SharedBuffer & buf = data.getData();
     PatientInfoEventData::eUpdateCommands cmd = PatientInfoEventData::CMD_Undefined;
@@ -60,7 +60,7 @@ void HardwareWorker::processEvent(const PatientInfoEventData & data)
     }
 }
 
-void HardwareWorker::updateInfoPatient(const SharedBuffer & data)
+void HardwareWorkerConsumer::updateInfoPatient(const SharedBuffer & data)
 {
     NEPatientInformation::PatientInfo infoPatient;
     data >> infoPatient;

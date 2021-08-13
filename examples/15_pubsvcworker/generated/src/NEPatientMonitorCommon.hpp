@@ -13,6 +13,9 @@
 #include "areg/base/GEGlobal.h"
 #include "areg/base/SharedBuffer.hpp"
 
+/**
+ * \brief   Common data for projects.
+ **/
 namespace NEPatientMonitorCommon
 {
     /**

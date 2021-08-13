@@ -14,8 +14,11 @@
 #include "areg/base/GEGlobal.h"
 #include "areg/component/Component.hpp"
 #include "generated/src/PatientInformationStub.hpp"
-#include "ipcsvcpatient/src/PatientServiceWorker.hpp"
+#include "ipcsvcpatient/src/PatientServiceWorkerConsumer.hpp"
 
+/**
+ * \brief   The servicing object.
+ **/
 class PatientService    : public    Component
                         , private   PatientInformationStub
 {
@@ -24,8 +27,14 @@ class PatientService    : public    Component
 //////////////////////////////////////////////////////////////////////////
 public:
 
+    /**
+     * \brief   The name of worker thread consumer
+     **/
     static const char * const   PatienServiceConsumerName       /*= "PatienServiceConsumer"*/;
 
+    /**
+     * \brief   The name or worker thread.
+     **/
     static const char * const   PatientServiceWorkerThread      /*= "PatientServiceWorkerThread"*/;
 
     /**
@@ -56,14 +65,40 @@ protected:
      **/
     virtual IEWorkerThreadConsumer * workerThreadConsumer( const char* consumerName, const char* workerThreadName );
 
+//////////////////////////////////////////////////////////////////////////
+// Hidden members.
+//////////////////////////////////////////////////////////////////////////
 private:
+    /**
+     * \brief   Initializes component and the implemented services.
+     **/
     PatientService( const NERegistry::ComponentEntry & entry, ComponentThread & owner );
+    /**
+     * \brief   Destructor.
+     **/
     virtual ~PatientService(void);
 
-private:
+    /**
+     * \brief   Wrapper of this pointer.
+     **/
     inline PatientService & self( void );
 
-    PatientServiceWorker    mWorkerConsumer;
+//////////////////////////////////////////////////////////////////////////
+// Member variables.
+//////////////////////////////////////////////////////////////////////////
+private:
+    /**
+     * \brief   The worker thread consumer object.
+     **/
+    PatientServiceWorkerConsumer    mWorkerConsumer;
+
+//////////////////////////////////////////////////////////////////////////
+// Forbidden calls.
+//////////////////////////////////////////////////////////////////////////
+private:
+    PatientService( void );
+    PatientService( const PatientService & /*src*/ );
+    const PatientService & operator = ( const PatientService & /*src*/ );
 };
 
 #endif  // AREG_EXAMPLES_15_PUBSVCWORKER_IPCSVCPATIENT_SRC_PATIENTSERVICE_HPP
