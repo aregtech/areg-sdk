@@ -5,7 +5,7 @@
   </ImportGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{68C8AE77-005B-4F81-8876-5A87A69823E3}</ProjectGuid>
-    <ProjectName>`</ProjectName>
+    <ProjectName>15_generated</ProjectName>
     <RootNamespace>15_generated</RootNamespace>
     <Keyword>Win32Proj</Keyword>
   </PropertyGroup>
