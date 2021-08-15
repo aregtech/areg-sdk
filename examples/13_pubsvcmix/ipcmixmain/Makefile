@@ -13,7 +13,7 @@ include $(13_ipcmixmain_BASE)/src/Makefile
 # define one target for each source file
 $(foreach cpp, $(13_ipcmixmain_SRC), $(eval $(call obj, $(cpp), $(13_ipcmixmain_OUTPUT_OBJ), 13_ipcmixmain_OBJS, $(13_pubsvcmix_CXXFLAGS))))
 
-$(AREG_OUTPUT_BIN)/$(13_ipcmixmain_TARGET_BIN): $(areg_OBJS) $(13_generated_OBJS) $(13_ipcmixmain_OBJS)
+$(AREG_OUTPUT_BIN)/$(13_ipcmixmain_TARGET_BIN): $(areg_TARGET_PATH) $(AREG_OUTPUT_LIB)/$(13_generated_TARGET_BIN) $(13_ipcmixmain_OBJS)
 	@echo "Linking $@ ..."
 	@mkdir -p $(dir $@)
-	$(AREG_TOOLCHAIN) $(CXXFLAGS) $(13_pubsvcmix_CXXFLAGS) $^ $(LDFLAGS) -o $@
+	$(AREG_TOOLCHAIN) $(CXXFLAGS) $(13_pubsvcmix_CXXFLAGS) $(13_ipcmixmain_OBJS) $(13_pubsvcmix_LDFLAGS) -o $@
