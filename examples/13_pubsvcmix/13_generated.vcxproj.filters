@@ -107,7 +107,7 @@
     <ClInclude Include="generated\src\RemoteServiceClient.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="generated\src\IPCMixCommon.hpp">
+    <ClInclude Include="generated\src\NECommon.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="generated\src\private\RemoteRegistryEvents.hpp">

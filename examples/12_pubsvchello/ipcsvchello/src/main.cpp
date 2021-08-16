@@ -11,7 +11,7 @@
 #include "areg/component/ComponentLoader.hpp"
 #include "areg/trace/GETrace.h"
 
-#include "generated/src/NEProjectCommon.hpp"
+#include "generated/src/NECommon.hpp"
 #include "ipcsvchello/src/ServicingComponent.hpp"
 
 #ifdef WINDOWS
@@ -43,11 +43,11 @@ BEGIN_MODEL(_modelName)
     // define component thread
     BEGIN_REGISTER_THREAD( "TestServiceThread" )
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
-        BEGIN_REGISTER_COMPONENT( NEProjectCommon::PublicServiceName, ServicingComponent )
-            // register dummy 'empty service'. In this example we demonstrate simple initialization
+        BEGIN_REGISTER_COMPONENT( NECommon::ServiceHelloName, ServicingComponent )
+            // register HelloWorld service implementation.
             REGISTER_IMPLEMENT_SERVICE( NEHelloWorld::ServiceName, NEHelloWorld::InterfaceVersion )
         // end of component description
-        END_REGISTER_COMPONENT( NEProjectCommon::PublicServiceName )
+        END_REGISTER_COMPONENT( NECommon::ServiceHelloName )
     // end of thread description
     END_REGISTER_THREAD( "TestServiceThread" )
 

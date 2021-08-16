@@ -47,7 +47,7 @@
     <ClInclude Include="generated\src\NEHelloWorld.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="generated\src\NEProjectCommon.hpp">
+    <ClInclude Include="generated\src\NECommon.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -12,7 +12,7 @@
 #include "areg/trace/GETrace.h"
 
 #include "ipcsvcpatient/src/PatientService.hpp"
-#include "generated/src/NEPatientMonitorCommon.hpp"
+#include "generated/src/NECommon.hpp"
 
 #ifdef WINDOWS
     #pragma comment(lib, "areg.lib")
@@ -42,13 +42,13 @@ BEGIN_MODEL(_modelName)
     // define component thread
     BEGIN_REGISTER_THREAD( _threadPatient )
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
-        BEGIN_REGISTER_COMPONENT( NEPatientMonitorCommon::ServiceNamePatientInfo, PatientService )
+        BEGIN_REGISTER_COMPONENT( NECommon::ServiceNamePatientInfo, PatientService )
             // register Patient service
             REGISTER_IMPLEMENT_SERVICE( NEPatientInformation::ServiceName, NEPatientInformation::InterfaceVersion )
             // register HW worker thread
             REGISTER_WORKER_THREAD( PatientService::PatientServiceWorkerThread, PatientService::PatienServiceConsumerName )
         // end of component description
-        END_REGISTER_COMPONENT( NEPatientMonitorCommon::ServiceNamePatientInfo )
+        END_REGISTER_COMPONENT( NECommon::ServiceNamePatientInfo )
     // end of thread description
     END_REGISTER_THREAD( _threadPatient )
 

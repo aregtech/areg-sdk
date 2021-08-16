@@ -13,7 +13,7 @@
 #include "areg/trace/GETrace.h"
 #include "areg/component/Component.hpp"
 #include "areg/component/ComponentThread.hpp"
-#include "generated/src/IPCMixCommon.hpp"
+#include "generated/src/NECommon.hpp"
 
 DEF_TRACE_SCOPE(examples_13_pubsvcmix_generated_LocalServiceClient_serviceConnected);
 DEF_TRACE_SCOPE(examples_13_pubsvcmix_generated_LocalServiceClient_responseHelloWorld);
@@ -22,7 +22,7 @@ DEF_TRACE_SCOPE(examples_13_pubsvcmix_generated_LocalServiceClient_LocalServiceC
 
 LocalServiceClient::LocalServiceClient(const String & roleName, Component & owner, unsigned int timeout)
     : LocalHelloWorldClientBase ( roleName, owner                                               )
-    , SystemShutdownClientBase  ( IPCMixCommon::MainService, owner                              )
+    , SystemShutdownClientBase  ( NECommon::MainService, owner                              )
     , IETimerConsumer           (                                                               )
 
     , mMsTimeout                ( timeout                                                       )

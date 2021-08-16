@@ -26,7 +26,7 @@ SimpleTrafficLightClient::SimpleTrafficLightClient(const NERegistry::ComponentEn
     : Component                     ( owner, entry.mRoleName )
     , SimpleTrafficLightClientBase  ( entry.mDependencyServices[0].mRoleName, static_cast<Component &>(self()) )
 
-    , mTrafficDirection             ( static_cast<NESimpleLightCommon::eTrafficDirection>(entry.getComponentData().alignInt.mElement) )
+    , mTrafficDirection             ( static_cast<NECommon::eTrafficDirection>(entry.getComponentData().alignInt.mElement) )
 {
 }
 
@@ -37,7 +37,7 @@ SimpleTrafficLightClient::~SimpleTrafficLightClient(void)
 bool SimpleTrafficLightClient::serviceConnected(bool isConnected, ProxyBase & proxy)
 {
     bool result = SimpleTrafficLightClientBase::serviceConnected(isConnected, proxy);
-    if (mTrafficDirection == NESimpleLightCommon::DirectionSouthNorth)
+    if (mTrafficDirection == NECommon::DirectionSouthNorth)
     {
         notifyOnSouthNorthUpdate(isConnected);
     }
@@ -80,7 +80,7 @@ void SimpleTrafficLightClient::onEastWestUpdate(NESimpleTrafficLight::eTrafficLi
 
 void SimpleTrafficLightClient::broadcastLightChanged(NESimpleTrafficLight::eTrafficLight SouthNorth, NESimpleTrafficLight::eTrafficLight EastWest)
 {
-    outputState( mTrafficDirection == NESimpleLightCommon::DirectionSouthNorth ? SouthNorth : EastWest );
+    outputState( mTrafficDirection == NECommon::DirectionSouthNorth ? SouthNorth : EastWest );
 }
 
 inline void SimpleTrafficLightClient::outputState(NESimpleTrafficLight::eTrafficLight lightState)

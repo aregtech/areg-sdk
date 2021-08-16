@@ -1,0 +1,88 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(SolutionDir)\conf\msvc\compile.props" Label="LocalAppCompileSettings" />
+  </ImportGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{B8884358-CC9D-41DB-A352-9EDA045DFD7A}</ProjectGuid>
+    <ProjectName>17_register</ProjectName>
+    <RootNamespace>17_register</RootNamespace>
+    <Keyword>MFCProj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseOfMfc>Dynamic</UseOfMfc>
+  </PropertyGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(SolutionDir)\conf\msvc\project.props" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <ItemDefinitionGroup Condition="'$(ConfigShortName)'=='Debug'">
+    <ClCompile>
+      <PreprocessorDefinitions>IMPORT_SHARED_SYMBOLS=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <SDLCheck>true</SDLCheck>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+    </Link>
+    <Midl>
+      <MkTypLibCompatible>false</MkTypLibCompatible>
+      <ValidateAllParameters>true</ValidateAllParameters>
+      <PreprocessorDefinitions>IMPORT_SHARED_SYMBOLS=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </Midl>
+    <ResourceCompile>
+      <Culture>0x0409</Culture>
+      <PreprocessorDefinitions>IMPORT_SHARED_SYMBOLS=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ResourceCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(ConfigShortName)'=='Release'">
+    <ClCompile>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>IMPORT_SHARED_SYMBOLS=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <SDLCheck>true</SDLCheck>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+    </Link>
+    <Midl>
+      <MkTypLibCompatible>false</MkTypLibCompatible>
+      <ValidateAllParameters>true</ValidateAllParameters>
+      <PreprocessorDefinitions>IMPORT_SHARED_SYMBOLS=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </Midl>
+    <ResourceCompile>
+      <Culture>0x0409</Culture>
+      <PreprocessorDefinitions>IMPORT_SHARED_SYMBOLS=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ResourceCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="register\res\resource.h" />
+    <ClInclude Include="register\res\stdafx.h" />
+    <ClInclude Include="register\res\targetver.h" />
+    <ClInclude Include="register\services\ConnectionManager.hpp" />
+    <ClInclude Include="register\ui\PageConnections.hpp" />
+    <ClInclude Include="register\ui\PageBrokerSetup.hpp" />
+    <ClInclude Include="register\ui\CentralDialog.hpp" />
+    <ClInclude Include="register\NECentralApp.hpp" />
+    <ClInclude Include="register\CentralApp.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="register\res\stdafx.cpp" />
+    <ClCompile Include="register\services\ConnectionManager.cpp" />
+    <ClCompile Include="register\ui\PageConnections.cpp" />
+    <ClCompile Include="register\ui\PageBrokerSetup.cpp" />
+    <ClCompile Include="register\ui\CentralDialog.cpp" />
+    <ClCompile Include="register\NECentralApp.cpp" />
+    <ClCompile Include="register\CentralApp.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="register\res\register.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="register\res\register.ico" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

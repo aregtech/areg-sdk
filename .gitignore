@@ -153,3 +153,17 @@
 /examples/15_pubsvcworker/ipcsvcpatient/.settings/
 /examples/15_pubsvcworker/ipcsvcpatient/logs/
 
+/examples/16_pubfsm/generated/Debug/
+/examples/16_pubfsm/generated/Release/
+/examples/16_pubfsm/generated/.settings/
+/examples/16_pubfsm/generated/logs/
+
+/examples/16_pubfsm/ipcfsmclient/Debug/
+/examples/16_pubfsm/ipcfsmclient/Release/
+/examples/16_pubfsm/ipcfsmclient/.settings/
+/examples/16_pubfsm/ipcfsmclient/logs/
+
+/examples/16_pubfsm/ipcfsmsvc/Debug/
+/examples/16_pubfsm/ipcfsmsvc/Release/
+/examples/16_pubfsm/ipcfsmsvc/.settings/
+/examples/16_pubfsm/ipcfsmsvc/logs/

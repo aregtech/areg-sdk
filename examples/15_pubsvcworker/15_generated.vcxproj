@@ -23,7 +23,6 @@
   <ItemDefinitionGroup Condition="'$(ConfigShortName)'=='Debug'">
     <ClCompile>
       <PreprocessorDefinitions>IMPORT_SHARED_SYMBOLS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(TestRootDir)\15_hwupdate;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -34,7 +33,6 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>IMPORT_SHARED_SYMBOLS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(TestRootDir)\15_hwupdate;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -42,7 +40,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="generated\src\NEPatientInformation.hpp" />
-    <ClInclude Include="generated\src\NEPatientMonitorCommon.hpp" />
+    <ClInclude Include="generated\src\NECommon.hpp" />
     <ClInclude Include="generated\src\PatientInfoEvent.hpp" />
     <ClInclude Include="generated\src\PatientInformationClientBase.hpp" />
     <ClInclude Include="generated\src\PatientInformationStub.hpp" />

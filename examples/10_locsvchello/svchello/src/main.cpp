@@ -44,7 +44,7 @@ BEGIN_MODEL(_modelName)
     BEGIN_REGISTER_THREAD( "TestServiceThread" )
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
         BEGIN_REGISTER_COMPONENT( "TestServiceComponent", ServicingComponent )
-            // register dummy 'empty service'. In this example we demonstrate simple initialization
+            // register HelloWorld service implementation.
             REGISTER_IMPLEMENT_SERVICE( NEHelloWorld::ServiceName, NEHelloWorld::InterfaceVersion )
         // end of component description
         END_REGISTER_COMPONENT( "TestServiceComponent" )

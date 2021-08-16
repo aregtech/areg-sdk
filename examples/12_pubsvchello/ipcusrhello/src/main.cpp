@@ -13,7 +13,7 @@
 #include "areg/trace/GETrace.h"
 
 
-#include "generated/src/NEProjectCommon.hpp"
+#include "generated/src/NECommon.hpp"
 #include "ServiceClient.hpp"
 
 #ifdef WINDOWS
@@ -47,8 +47,8 @@ BEGIN_MODEL(_modelName)
     BEGIN_REGISTER_THREAD( "TestServiceThread" )
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
         BEGIN_REGISTER_COMPONENT( _serviceClient.getString(), ServiceClient )
-            // register dummy 'empty service'. In this example we demonstrate simple initialization
-            REGISTER_DEPENDENCY(NEProjectCommon::PublicServiceName)
+            // register service dependency
+            REGISTER_DEPENDENCY(NECommon::ServiceHelloName)
         // end of component description
         END_REGISTER_COMPONENT( _serviceClient.getString() )
     // end of thread description

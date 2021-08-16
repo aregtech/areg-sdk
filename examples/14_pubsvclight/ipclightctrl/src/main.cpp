@@ -11,7 +11,7 @@
 #include "areg/component/ComponentLoader.hpp"
 #include "areg/trace/GETrace.h"
 
-#include "generated/src/NESimpleLightCommon.hpp"
+#include "generated/src/NECommon.hpp"
 #include "ipclightctrl/src/SimpleTrafficLightCtrl.hpp"
 
 #ifdef WINDOWS
@@ -41,12 +41,12 @@ BEGIN_MODEL(_modelName)
     // define component thread
     BEGIN_REGISTER_THREAD( "TestSimpleTrafficThread" )
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
-        BEGIN_REGISTER_COMPONENT( NESimpleLightCommon::SimpleLightControllerName, SimpleTrafficLightCtrl )
-            // register dummy 'empty service'. In this example we demonstrate simple initialization
+        BEGIN_REGISTER_COMPONENT( NECommon::SimpleLightControllerName, SimpleTrafficLightCtrl )
+            // register SimpleTrafficLight and SimpleTrafficSwitch service implementation.
             REGISTER_IMPLEMENT_SERVICE( NESimpleTrafficLight::ServiceName, NESimpleTrafficLight::InterfaceVersion )
             REGISTER_IMPLEMENT_SERVICE( NESimpleTrafficSwitch::ServiceName, NESimpleTrafficSwitch::InterfaceVersion )
         // end of component description
-        END_REGISTER_COMPONENT( NESimpleLightCommon::SimpleLightControllerName )
+        END_REGISTER_COMPONENT( NECommon::SimpleLightControllerName )
     // end of thread description
     END_REGISTER_THREAD( "TestSimpleTrafficThread" )
 

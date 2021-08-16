@@ -77,7 +77,7 @@
     <ClInclude Include="generated\src\SimpleTrafficSwitchStub.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="generated\src\NESimpleLightCommon.hpp">
+    <ClInclude Include="generated\src\NECommon.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

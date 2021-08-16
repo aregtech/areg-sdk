@@ -11,7 +11,7 @@
 #include "areg/component/ComponentLoader.hpp"
 #include "areg/trace/GETrace.h"
 
-#include "generated/src/IPCMixCommon.hpp"
+#include "generated/src/NECommon.hpp"
 #include "ipcmixmain/src/MainServiceComponent.hpp"
 #include "ipcmixmain/src/LocalServiceComponent.hpp"
 
@@ -35,30 +35,30 @@
 //////////////////////////////////////////////////////////////////////////
 
 // Describe mode, set model name
-BEGIN_MODEL(IPCMixCommon::ModelName)
+BEGIN_MODEL(NECommon::ModelName)
 
     // define component thread
     BEGIN_REGISTER_THREAD( "TestMainServiceThread" )
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
-        BEGIN_REGISTER_COMPONENT( IPCMixCommon::MainService, MainServiceComponent )
-            // register dummy 'empty service'. In this example we demonstrate simple initialization
+        BEGIN_REGISTER_COMPONENT( NECommon::MainService, MainServiceComponent )
+            // register RemoteRegistry, SystemShutdown service implementation and the dependency.
             REGISTER_IMPLEMENT_SERVICE( NERemoteRegistry::ServiceName, NERemoteRegistry::InterfaceVersion )
             REGISTER_IMPLEMENT_SERVICE( NESystemShutdown::ServiceName, NESystemShutdown::InterfaceVersion )
-            REGISTER_DEPENDENCY(IPCMixCommon::LocalService)
+            REGISTER_DEPENDENCY(NECommon::LocalService)
         // end of component description
-        END_REGISTER_COMPONENT( IPCMixCommon::MainService )
+        END_REGISTER_COMPONENT( NECommon::MainService )
 
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
-        BEGIN_REGISTER_COMPONENT( IPCMixCommon::LocalService, LocalServiceComponent )
-            // register dummy 'empty service'. In this example we demonstrate simple initialization
+        BEGIN_REGISTER_COMPONENT( NECommon::LocalService, LocalServiceComponent )
+            // register LocalHelloWorld service implementation.
             REGISTER_IMPLEMENT_SERVICE( NELocalHelloWorld::ServiceName, NELocalHelloWorld::InterfaceVersion )
         // end of component description
-        END_REGISTER_COMPONENT( IPCMixCommon::LocalService )
+        END_REGISTER_COMPONENT( NECommon::LocalService )
     // end of thread description
     END_REGISTER_THREAD( "TestMainServiceThread" )
 
-// end of model IPCMixCommon::ModelName
-END_MODEL(IPCMixCommon::ModelName)
+// end of model NECommon::ModelName
+END_MODEL(NECommon::ModelName)
 
 //////////////////////////////////////////////////////////////////////////
 // main method.
@@ -78,13 +78,13 @@ int main()
     do 
     {
         TRACE_SCOPE(example_13_pubsvcmix_ipcmixmain_main_main);
-        TRACE_DBG("The application has been initialized, loading model [ %s ]", IPCMixCommon::ModelName);
+        TRACE_DBG("The application has been initialized, loading model [ %s ]", NECommon::ModelName);
 
         NEMemory::uAlign isMain = {true};
-        ComponentLoader::setComponentData(IPCMixCommon::MainService, isMain);
+        ComponentLoader::setComponentData(NECommon::MainService, isMain);
 
         // load model to initialize components
-        Application::loadModel(IPCMixCommon::ModelName);
+        Application::loadModel(NECommon::ModelName);
 
         TRACE_DBG("Servicing model is loaded");
         
@@ -92,7 +92,7 @@ int main()
         Application::waitAppQuit(IESynchObject::WAIT_INFINITE);
 
         // stop and unload components
-        Application::unloadModel(IPCMixCommon::ModelName);
+        Application::unloadModel(NECommon::ModelName);
 
         // release and cleanup resources of application.
         Application::releaseApplication();

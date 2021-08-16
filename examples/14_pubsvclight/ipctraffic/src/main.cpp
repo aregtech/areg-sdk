@@ -12,7 +12,7 @@
 #include "areg/trace/GETrace.h"
 #include "areg/base/NEUtilities.hpp"
 
-#include "generated/src/NESimpleLightCommon.hpp"
+#include "generated/src/NECommon.hpp"
 #include "ipctraffic/src/SimpleTrafficLightClient.hpp"
 
 #ifdef WINDOWS
@@ -34,9 +34,9 @@ static const char * const _modelName = "TheModel";
  **/
 int main()
 {
-    NESimpleLightCommon::eTrafficDirection trafficDirection = NESimpleLightCommon::DirectionUnknown;
+    NECommon::eTrafficDirection trafficDirection = NECommon::DirectionUnknown;
 
-    String roleName(NESimpleLightCommon::SimpleLightClientNamePrefix);
+    String roleName( NECommon::SimpleLightClientNamePrefix);
     char name[128];
     char buffer[32];
 
@@ -58,14 +58,14 @@ int main()
     // Check whether the right option is selected.
     if ( (NEString::compareFastIgnoreCase(buffer, "sn") == 0) || (NEString::compareFast(buffer, "1") == 0) )
     {
-        trafficDirection = NESimpleLightCommon::DirectionSouthNorth;
+        trafficDirection = NECommon::DirectionSouthNorth;
         roleName += "SouthNorth";
         roleName = NEUtilities::generateName(roleName, name, 128);
         printf("\nSelected Choice: South-North traffic.\n");
     }
     else if ( (NEString::compareFastIgnoreCase(buffer, "ew") == 0) || (NEString::compareFast(buffer, "2") == 0) )
     {
-        trafficDirection = NESimpleLightCommon::DirectionEastWest;
+        trafficDirection = NECommon::DirectionEastWest;
         roleName += "EastWest";
         roleName = NEUtilities::generateName(roleName, name, 128);
         printf("\nSelected Choice: East-West traffic.\n");
@@ -91,7 +91,7 @@ int main()
     NERegistry::ComponentThreadEntry & threadEntry = model.addThread("SimpleTrafficLighThread");
     // Add component in the thread and set the service dependency.
     NERegistry::ComponentEntry & component = threadEntry.addComponent(roleName, SimpleTrafficLightClient::CreateComponent, SimpleTrafficLightClient::DeleteComponent);
-    component.addDependencyService(NESimpleLightCommon::SimpleLightControllerName);
+    component.addDependencyService( NECommon::SimpleLightControllerName);
     
     // Set component data, i.e. specify the traffic direction.
     NEMemory::uAlign data;

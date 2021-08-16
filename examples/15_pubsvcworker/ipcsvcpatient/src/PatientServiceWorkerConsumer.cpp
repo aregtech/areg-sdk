@@ -11,12 +11,12 @@
 #include "ipcsvcpatient/src/PatientServiceWorkerConsumer.hpp"
 
 #include "areg/base/NEUtilities.hpp"
-#include "generated/src/NEPatientMonitorCommon.hpp"
+#include "generated/src/NECommon.hpp"
 #include "generated/src/PatientInformationStub.hpp"
 #include "areg/appbase/Application.hpp"
 
 PatientServiceWorkerConsumer::PatientServiceWorkerConsumer(const char * consumerName, PatientInformationStub & infoPatient)
-    : IEWorkerThreadConsumer( NEUtilities::createComponentItemName(NEPatientMonitorCommon::ServiceNamePatientInfo, consumerName) )
+    : IEWorkerThreadConsumer( NEUtilities::createComponentItemName( NECommon::ServiceNamePatientInfo, consumerName) )
 
     , mStubPatienInfo       ( infoPatient )
 {

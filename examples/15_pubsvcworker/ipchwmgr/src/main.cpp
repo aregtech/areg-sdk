@@ -11,7 +11,7 @@
 #include "areg/component/ComponentLoader.hpp"
 #include "areg/trace/GETrace.h"
 
-#include "generated/src/NEPatientMonitorCommon.hpp"
+#include "generated/src/NECommon.hpp"
 #include "ipchwmgr/src/HardwareManager.hpp"
 
 #ifdef WINDOWS
@@ -41,13 +41,13 @@ BEGIN_MODEL(_modelName)
     // define component thread
     BEGIN_REGISTER_THREAD( "TestPatientMonitoring" )
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
-        BEGIN_REGISTER_COMPONENT( NEPatientMonitorCommon::ServiceNameHwManager, HardwareManager )
+        BEGIN_REGISTER_COMPONENT( NECommon::ServiceNameHwManager, HardwareManager )
             // register service dependencies
-            REGISTER_DEPENDENCY( NEPatientMonitorCommon::ServiceNamePatientInfo )
+            REGISTER_DEPENDENCY( NECommon::ServiceNamePatientInfo )
             // register HW worker thread
             REGISTER_WORKER_THREAD( HardwareManager::HwWorkerThreadName, HardwareManager::HwWorkerThreadConsumer )
         // end of component description
-        END_REGISTER_COMPONENT( NEPatientMonitorCommon::ServiceNameHwManager )
+        END_REGISTER_COMPONENT( NECommon::ServiceNameHwManager )
     // end of thread description
     END_REGISTER_THREAD( "TestPatientMonitoring" )
 

@@ -15,7 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="generated\src\NEPatientMonitorCommon.hpp">
+    <ClInclude Include="generated\src\NECommon.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="generated\src\private\PatientInformationEvents.hpp">

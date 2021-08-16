@@ -11,7 +11,7 @@
  ************************************************************************/
 #include "generated/src/RemoteServiceClient.hpp"
 
-#include "generated/src/IPCMixCommon.hpp"
+#include "generated/src/NECommon.hpp"
 #include "areg/component/ComponentThread.hpp"
 #include "areg/component/ProxyBase.hpp"
 #include "areg/component/Component.hpp"
@@ -29,7 +29,7 @@ DEF_TRACE_SCOPE(examples_13_pubsvcmix_generated_RemoteServiceClient_processTimer
 
 RemoteServiceClient::RemoteServiceClient(const String & roleName, Component & owner, unsigned int timeout)
     : RemoteRegistryClientBase  ( roleName, owner                                               )
-    , SystemShutdownClientBase  ( IPCMixCommon::MainService, owner                              )
+    , SystemShutdownClientBase  ( NECommon::MainService, owner                              )
     , IETimerConsumer           (                                                               )
 
     , mMsTimeout                ( timeout                                                       )

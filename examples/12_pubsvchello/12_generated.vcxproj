@@ -49,7 +49,7 @@
     <ClInclude Include="generated\src\HelloWorldClientBase.hpp" />
     <ClInclude Include="generated\src\HelloWorldStub.hpp" />
     <ClInclude Include="generated\src\NEHelloWorld.hpp" />
-    <ClInclude Include="generated\src\NEProjectCommon.hpp" />
+    <ClInclude Include="generated\src\NECommon.hpp" />
     <ClInclude Include="generated\src\private\HelloWorldEvents.hpp" />
     <ClInclude Include="generated\src\private\HelloWorldProxy.hpp" />
   </ItemGroup>

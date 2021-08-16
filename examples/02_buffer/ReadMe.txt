@@ -2,10 +2,10 @@
     CONSOLE APPLICATION : 02_buffer Project Overview
 ========================================================================
 
-This project demonstrates the usage of Shared Buffer object.
-The main thread initializes shared buffer, starts a child thread that makes output on console the content of SharedBuffer object.
+This project demonstrates the usage of a Shared Buffer object. The main thread initializes the shared buffer, starts 
+a child thread that makes output on console the content of the SharedBuffer object.
 
-areg framework used:
+Used objects of areg framework:
 - Thread
 - IEThreadConsumer
 - SharedBuffer

@@ -47,7 +47,7 @@ BEGIN_MODEL(_modelName)
     BEGIN_REGISTER_THREAD( "Test_ServiceThread" )
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
         BEGIN_REGISTER_COMPONENT( _mainServiceName, MainComponent )
-            // register dummy 'empty service'. In this example we demonstrate simple initialization
+            // register HelloWorld service implementation.
             REGISTER_IMPLEMENT_SERVICE( NEHelloWorld::ServiceName, NEHelloWorld::InterfaceVersion )
         // end of component description
         END_REGISTER_COMPONENT( _mainServiceName )
@@ -63,7 +63,7 @@ BEGIN_MODEL(_modelName)
     BEGIN_REGISTER_THREAD( "Test_SecondaryThread")
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
         BEGIN_REGISTER_COMPONENT( "Test_SecondaryComponent", SecondaryComponent )
-            // register dummy 'empty service'. In this example we demonstrate simple initialization
+            // register HelloWorld service implementation and the dependencies.
             REGISTER_IMPLEMENT_SERVICE( NEHelloWorld::ServiceName, NEHelloWorld::InterfaceVersion )
             REGISTER_DEPENDENCY(_mainServiceName)
             REGISTER_DEPENDENCY("Test_SecondaryComponent")
@@ -77,6 +77,7 @@ BEGIN_MODEL(_modelName)
 
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
         BEGIN_REGISTER_COMPONENT( "Test_ThirdComponent", SecondaryComponent )
+            // register HelloWorld service implementation and the dependencies.
             REGISTER_IMPLEMENT_SERVICE( NEHelloWorld::ServiceName, NEHelloWorld::InterfaceVersion )
             REGISTER_DEPENDENCY( _mainServiceName )
             REGISTER_DEPENDENCY( "Test_SecondaryComponent")
@@ -84,6 +85,7 @@ BEGIN_MODEL(_modelName)
         END_REGISTER_COMPONENT( "Test_ThirdComponent" )
 
         BEGIN_REGISTER_COMPONENT("Test_ClientComponent", ClientComponent)
+            // register HelloWorld service dependencies.
             REGISTER_DEPENDENCY( _mainServiceName )
             REGISTER_DEPENDENCY( "Test_SecondaryComponent")
             REGISTER_DEPENDENCY( "Test_ThirdComponent" )

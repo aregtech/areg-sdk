@@ -15,7 +15,7 @@
 #include "areg/component/Component.hpp"
 #include "generated/src/SimpleTrafficLightClientBase.hpp"
 
-#include "generated/src/NESimpleLightCommon.hpp"
+#include "generated/src/NECommon.hpp"
 
 /**
  * \brief   The simple traffic light service client.
@@ -139,7 +139,7 @@ private:
     /**
      * \brief   The symbolic traffic direction that is South-North or East-West.
      **/
-    NESimpleLightCommon::eTrafficDirection  mTrafficDirection;
+    NECommon::eTrafficDirection  mTrafficDirection;
 };
 
 //////////////////////////////////////////////////////////////////////////
