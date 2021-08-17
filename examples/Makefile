@@ -16,10 +16,13 @@ include $(AREG_EXAMPLES)/07_synch/Makefile
 include $(AREG_EXAMPLES)/08_service/Makefile
 include $(AREG_EXAMPLES)/09_svcmulti/Makefile
 include $(AREG_EXAMPLES)/10_locsvchello/Makefile
+include $(AREG_EXAMPLES)/11_locsvcmix/Makefile
+include $(AREG_EXAMPLES)/12_pubsvchello/Makefile
 include $(AREG_EXAMPLES)/13_pubsvcmix/Makefile
 
 examples: 01_hello 02_buffer 03_file 04_trace 05_timer \
 	06_threads 07_synch 08_service 09_svcmulti \
-	10_locsvchello 13_pubsvcmix
+	10_locsvchello 11_locsvcmix 12_pubsvchello \
+	13_pubsvcmix
 
 .PHONY: examples
