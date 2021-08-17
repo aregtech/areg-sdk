@@ -52,7 +52,14 @@ int main()
 #ifdef _WINDOWS
     scanf_s("%31s", buffer, 32);
 #else   // _POSIX
-    scanf("%31s", buffer);
+    if (scanf("%31s", buffer) != 1)
+    {
+        // should never happen, but returned code from scanf must be checked
+        printf("\nInvalid Choice: Quit the job ...\n");
+
+        // wrong option, quit application.
+        return 0;
+    }
 #endif 	// _WINDOWS
 
     // Check whether the right option is selected.

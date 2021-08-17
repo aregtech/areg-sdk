@@ -94,7 +94,14 @@ int main()
 #ifdef _WINDOWS
         scanf_s("%31s", command, 32);
 #else   // _POSIX
-        scanf("%31s", command);
+        if (scanf("%31s", command) != 1)
+        {
+            // should never happen, but returned code from scanf must be checked
+            printf("\nInvalid Choice: Quit the job ...\n");
+
+            // wrong option, quit application.
+            return 0;
+        }
 #endif	// _WINDOWS
 
 
