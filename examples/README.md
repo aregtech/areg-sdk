@@ -28,7 +28,7 @@ Below is the list of examples:
 14. [14_pubsvclight](./14_pubsvclight/) -- multiprocessing (**PIC**) application to demonstrate dynamic model creation and the custom event processing.
 15. [15_pubsvcworker](./15_pubsvcworker/) -- multiprocessing (**PIC**) application to demonstrate _Worker Thread_ definition in the model and custom event processing.
 16. [16_pubfsm](./16_pubfsm/) -- multiprocessing (**IPC**) application to demonstrate work of Finite State-Machine created by features of AREG framework.
-16. [17_17_winchat](./17_winchat/) -- Windows GUI application (**IPC**) to demonstrate dynamic modeling, fault tolerant and distributed system, and mist network.
+17. [17_winchat](./17_winchat/) -- Windows GUI application (**IPC**) to demonstrate dynamic modeling, fault tolerant and distributed system.
 
 The list will be updated. We recommend periodically checking the list.
 

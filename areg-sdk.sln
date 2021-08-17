@@ -12,7 +12,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "mcrouter", "framework\mcrou
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "17_winchat", "17_winchat", "{503FAC02-04F9-466D-B783-4608413BDFBA}"
 	ProjectSection(SolutionItems) = preProject
-		examples\17_chatter\ReadMe.txt = examples\17_chatter\ReadMe.txt
+		examples\17_winchat\ReadMe.txt = examples\17_winchat\ReadMe.txt
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "examples", "examples", "{07BFF46A-D4BC-4FAD-9727-D959755BFBAC}"
@@ -246,15 +246,15 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "16_ipcfsmclient", "examples
 		{2DF8165C-EDE2-4F76-8D2C-2FFE82CB6CE5} = {2DF8165C-EDE2-4F76-8D2C-2FFE82CB6CE5}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "17_generated", "examples\17_chatter\17_generated.vcxproj", "{BAD5F8A5-B916-4E76-8594-78B003C1155B}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "17_generated", "examples\17_winchat\17_generated.vcxproj", "{BAD5F8A5-B916-4E76-8594-78B003C1155B}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "17_chatter", "examples\17_chatter\17_chatter.vcxproj", "{DB6BDE22-DB74-49FD-AB01-8DB5FCEE16FD}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "17_chatter", "examples\17_winchat\17_chatter.vcxproj", "{DB6BDE22-DB74-49FD-AB01-8DB5FCEE16FD}"
 	ProjectSection(ProjectDependencies) = postProject
 		{2DF8165C-EDE2-4F76-8D2C-2FFE82CB6CE5} = {2DF8165C-EDE2-4F76-8D2C-2FFE82CB6CE5}
 		{BAD5F8A5-B916-4E76-8594-78B003C1155B} = {BAD5F8A5-B916-4E76-8594-78B003C1155B}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "17_register", "examples\17_chatter\17_register.vcxproj", "{B8884358-CC9D-41DB-A352-9EDA045DFD7A}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "17_register", "examples\17_winchat\17_register.vcxproj", "{B8884358-CC9D-41DB-A352-9EDA045DFD7A}"
 	ProjectSection(ProjectDependencies) = postProject
 		{2DF8165C-EDE2-4F76-8D2C-2FFE82CB6CE5} = {2DF8165C-EDE2-4F76-8D2C-2FFE82CB6CE5}
 		{BAD5F8A5-B916-4E76-8594-78B003C1155B} = {BAD5F8A5-B916-4E76-8594-78B003C1155B}
