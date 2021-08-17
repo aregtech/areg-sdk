@@ -30,7 +30,7 @@ DEF_TRACE_SCOPE(examples_09_svcmulti_ServicingComponent_shutdownServiceIntrface)
 DEF_TRACE_SCOPE(examples_09_svcmulti_ServicingComponent_processTimer);
 
 ServicingComponent::ServicingComponent(ComponentThread & masterThread, const char * const roleName, NEMemory::uAlign OPTIONAL data)
-    : Component ( masterThread, roleName)
+    : Component ( masterThread, roleName )
     , StubBase  ( self(), NEService::getEmptyInterface() )
 
     , mTimer    ( self(), roleName )
@@ -95,20 +95,16 @@ void ServicingComponent::processTimer(Timer & timer)
 
 void ServicingComponent::sendNotification(unsigned int msgId)
 {
-
 }
 
 void ServicingComponent::errorRequest(unsigned int msgId, bool msgCancel)
 {
-
 }
 
 void ServicingComponent::processRequestEvent(ServiceRequestEvent & eventElem)
 {
-
 }
 
 void ServicingComponent::processAttributeEvent(ServiceRequestEvent & eventElem)
 {
-
 }

@@ -1134,7 +1134,7 @@ const CharType * NEString::getPrintable( CharType * strSource, NEString::CharCou
             // move pointer until char is printable
             while ( charCount != 0 )
             {
-                if ( (NEString::getISO8859CharDef(*strSource) & NEString::CD_Printable) != 0 )
+                if ( NEString::isPrintable<CharType>(*strSource) == false )
                 {
                     // set next position if not EOS.
                     if ( (out_next != NULL) && (NEString::isEndOfString<CharType>(*strSource) == false) )

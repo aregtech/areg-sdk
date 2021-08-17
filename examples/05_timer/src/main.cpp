@@ -125,8 +125,7 @@ inline TimerDispatcher & TimerDispatcher::self( void )
 void TimerDispatcher::processTimer( Timer & timer )
 {
     TRACE_SCOPE(main_TimerDispatcher_processTimer);
-    TRACE_DBG("The timer [ %s ] has expired", timer.getName().getString());
-    TRACE_DBG("... Timeout [ %u ] ms, Event Count [ %u ], processing in Thread [ %s ]", timer.getTimeout(), timer.getEventCount(), getName().getString());
+    TRACE_DBG("The timer [ %s ] has expired. Timeout [ %u ] ms, Event Count [ %u ], processing in Thread [ %s ]", timer.getName( ).getString( ), timer.getTimeout(), timer.getEventCount(), getName().getString());
 
     printf("[ %s ] : Timer [ %s ] expired...\n", DateTime::getNow().formatTime().getString(), timer.getName().getString());
 
@@ -151,7 +150,6 @@ void TimerDispatcher::processTimer( Timer & timer )
 void TimerDispatcher::startTimers(void)
 {
     TRACE_SCOPE(main_TimerDispatcher_startTimers);
-    TRACE_DBG("Starting timers...");
 
     // Start one-time timer
     if (mOneTime.startTimer(TIMEOUT_ONE_TIME, self(), 1))
@@ -255,6 +253,7 @@ int main()
         // scope is initialized, the logging is not active yet.
         TRACE_SCOPE(main_main);
 
+        // Start timer service
         TRACE_INFO("Starting timer manager...");
         if (Application::startTimerManager())
         {
@@ -268,18 +267,24 @@ int main()
         // declare thread object.
         TRACE_DBG("Initializing timer dispatching threads");
 
+        // Start 'TimerThread_1'
         TimerDispatcher aThread1("TimerThread_1");
+        startTimerThread( aThread1 );
+
+        // Start 'TimerThread_2'
         TimerDispatcher aThread2("TimerThread_2");
-        startTimerThread(aThread1);
         startTimerThread(aThread2);
 
+        // Sleep for a while, let timers run
         TRACE_INFO("Main thread sleeping to let timers run..");
         Thread::sleep(Thread::WAIT_1_SECOND * 30);
         TRACE_INFO("Main thread resumed to stop timers...");
 
+        // Stop timer threads.
         stopTimerThread(aThread1);
         stopTimerThread(aThread2);
 
+        // Stop timer service, not more timers can run
         TRACE_WARN("Stopping timer manager, no timer can be triggered anymore...");
         Application::stopTimerManager();
 

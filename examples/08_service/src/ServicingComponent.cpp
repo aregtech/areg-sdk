@@ -36,7 +36,6 @@ ServicingComponent::ServicingComponent(ComponentThread & masterThread, const cha
     , mTimer    ( self(), "ServicingTimer" )
     , mCount    ( 0 )
 {
-
 }
 
 ServicingComponent::~ServicingComponent(void)
@@ -97,20 +96,16 @@ void ServicingComponent::processTimer(Timer & timer)
 //////////////////////////////////////////////////////////////////////////
 void ServicingComponent::sendNotification(unsigned int msgId)
 {
-
 }
 
 void ServicingComponent::errorRequest(unsigned int msgId, bool msgCancel)
 {
-
 }
 
 void ServicingComponent::processRequestEvent(ServiceRequestEvent & eventElem)
 {
-
 }
 
 void ServicingComponent::processAttributeEvent(ServiceRequestEvent & eventElem)
 {
-
 }

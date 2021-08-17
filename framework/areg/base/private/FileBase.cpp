@@ -187,14 +187,14 @@ inline int _readLine(const FileBase & file, CharType * buffer, int elemCount)
 }
 
 template<typename CharType>
-inline bool _writeString(FileBase & file, const CharType * buffer)
+inline bool _writeString(FileBase & file, const CharType * buffer, int strLen )
 {
     bool result = false;
     if (file.isOpened() && file.canWrite())
     {
         if (buffer != NULL)
         {
-            unsigned int len = static_cast<unsigned int>(NEString::getStringLength<CharType>(buffer));
+            unsigned int len = strLen >= 0 ? static_cast<unsigned int>(strLen) : static_cast<unsigned int>(NEString::getStringLength<CharType>( buffer ));
             len += file.isBinaryMode() ? 1 : 0;
             len *= sizeof(CharType);
 
@@ -423,12 +423,12 @@ int FileBase::readLine(WideString & outValue) const
 
 bool FileBase::writeString( const char* inValue )
 {
-    return _writeString<char>(self(), inValue);
+    return _writeString<char>(self(), inValue, -1);
 }
 
 bool FileBase::writeString( const wchar_t* inValue )
 {
-    return _writeString<wchar_t>(self(), inValue);
+    return _writeString<wchar_t>(self(), inValue, -1);
 }
 
 bool FileBase::writeLine( const char* inValue )
@@ -558,12 +558,12 @@ unsigned int FileBase::write(const WideString & wideString)
 
 bool FileBase::write(const char * asciiString)
 {
-    return this->writeString(asciiString);
+    return writeString(asciiString);
 }
 
 bool FileBase::write(const wchar_t * wideString)
 {
-    return this->writeString(wideString);
+    return writeString(wideString);
 }
 
 void FileBase::flush(void)

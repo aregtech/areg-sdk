@@ -180,6 +180,67 @@ public:
     virtual ~FileBase( void );
 
 //////////////////////////////////////////////////////////////////////////
+// Operators
+//////////////////////////////////////////////////////////////////////////
+public:
+
+    /**
+     * \brief   Inputs ASCII string to the file.
+     *          If file is opened in text mode, it does not write the string null-terminated character at the end.
+     *          If file is opened in binary mode, it writes the string null-terminated character at the end.
+     * \param   stream  The instance of file to write string.
+     * \param   ascii   The ASCII string to write.
+     * \return  The instance of file.
+     **/
+    friend inline FileBase & operator << (FileBase & stream, const char * ascii );
+
+    /**
+     * \brief   Inputs ASCII string to the file.
+     *          If file is opened in text mode, it does not write the string null-terminated character at the end.
+     *          If file is opened in binary mode, it writes the string null-terminated character at the end.
+     * \param   stream  The instance of file to write string.
+     * \param   ascii   The ASCII string to write.
+     * \return  The instance of file.
+     **/
+    friend inline FileBase & operator << (FileBase & stream, const String & ascii );
+
+    /**
+     * \brief   Inputs wide-char string to the file.
+     *          If file is opened in text mode, it does not write the string null-terminated character at the end.
+     *          If file is opened in binary mode, it writes the string null-terminated character at the end.
+     * \param   stream  The instance of file to write string.
+     * \param   wide    The wide-char string to write.
+     * \return  The instance of file.
+     **/
+    friend inline FileBase & operator << (FileBase & stream, const wchar_t * wide );
+
+    /**
+     * \brief   Inputs wide-char string to the file.
+     *          If file is opened in text mode, it does not write the string null-terminated character at the end.
+     *          If file is opened in binary mode, it writes the string null-terminated character at the end.
+     * \param   stream  The instance of file to write string.
+     * \param   wide    The wide-char string to write.
+     * \return  The instance of file.
+     **/
+    friend inline FileBase & operator << (FileBase & stream, const WideString & wide );
+
+    /**
+     * \brief   Writes files data as ASCII string. The file outputs string until reaches end of file,
+     *          or meets first unprintable symbol. On output, the 'ascii'
+     * \param   stream  The instance of file data contains the data.
+     * \param   ascii   On output, this contains the ASCII string data.
+     **/
+    friend inline const FileBase & operator >> ( const FileBase & stream, String & OUT ascii );
+
+    /**
+     * \brief   Writes files data as wide-char string. The file outputs string until reaches end of file,
+     *          or meets first unprintable symbol. On output, the 'ascii'
+     * \param   stream  The instance of file data contains the data.
+     * \param   ascii   On output, this contains the wide-char string data.
+     **/
+    friend inline const FileBase & operator >> ( const FileBase & stream, WideString & OUT wide );
+
+    //////////////////////////////////////////////////////////////////////////
 // Attributes and operations
 //////////////////////////////////////////////////////////////////////////
 public:
@@ -804,10 +865,11 @@ private:
      *          it writes the string without null-terminated character.
      * \param   file    The instance of file to write string.
      * \param   buffer  The string to write to file.
+     * \param   strLen  The length of the string. Pass -1 to calculate the length.
      * \return  Returns true if succeeded to write string.
      **/
     template<typename CharType>
-    friend bool _writeString(FileBase & file, const CharType * buffer);
+    friend bool _writeString(FileBase & file, const CharType * buffer, int strLen);
 
     /**
      * \brief   Writes the line of string into the file. It will add new-line symbol at the end.
@@ -818,7 +880,7 @@ private:
      * \return  Returns true if succeeded to write string.
      **/
     template<typename CharType>
-    friend bool _writeLine(FileBase & file, const CharType * buffer);
+    friend bool _writeLine(FileBase & file, const CharType * buffer );
 
     /**
      * \brief   Reads the string from file.
@@ -1049,5 +1111,42 @@ inline bool FileBase::writeDouble( double inValue )
 {
     return mWriteConvert.setDouble(inValue);
 }
+
+inline FileBase & operator << ( FileBase & stream, const char * ascii )
+{
+    stream.write(ascii);
+    return stream;
+}
+
+inline FileBase & operator << ( FileBase & stream, const String & ascii )
+{
+    stream.write( ascii );
+    return stream;
+}
+
+inline FileBase & operator << ( FileBase & stream, const wchar_t * wide )
+{
+    stream.write( wide );
+    return stream;
+}
+
+inline FileBase & operator << ( FileBase & stream, const WideString & wide )
+{
+    stream.write( wide );
+    return stream;
+}
+
+inline const FileBase & operator >> ( const FileBase & stream, String & OUT ascii )
+{
+    stream.read(ascii);
+    return stream;
+}
+
+inline const FileBase & operator >> ( const FileBase & stream, WideString & OUT wide )
+{
+    stream.read(wide);
+    return stream;
+}
+
 
 #endif  // AREG_BASE_FILEBASE_HPP
