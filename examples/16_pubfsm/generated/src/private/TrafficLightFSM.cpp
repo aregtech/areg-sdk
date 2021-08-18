@@ -60,7 +60,7 @@ using namespace NETrafficLightFSM;
 #define  INFO_EXIT_STATE(exitState)          \
     TRACE_DBG("FSM < %s >: Leaving state: < %s >.", mInstanceName, getString(exitState))
 
-// #define  INFO_GO_STATE(fromState, toState)   \
+// #define  INFO_GO_STATE(fromState, toState)   
 //     TRACE_DBG("FSM < %s >: Switched state: < %s > ==> < %s >.", mInstanceName, getString(fromState), getString(toState))
 
 #define  START_PROCESSING( triggerName )                        \

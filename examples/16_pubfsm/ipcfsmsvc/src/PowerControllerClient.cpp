@@ -51,7 +51,8 @@ void PowerControllerClient::responseStopTrafficLight(bool Success)
 void PowerControllerClient::onThreadRuns(void)
 {
     TRACE_SCOPE(ipcfsmsvc_src_PowerControllerClient_onThreadRuns);
-    DispatcherThread * dispThread = getDispatcherThread();
+
+    getDispatcherThread();
 
     bool loop = true;
 
@@ -72,7 +73,13 @@ void PowerControllerClient::onThreadRuns(void)
 #ifdef  _WINDOWS
         scanf_s("%31s", command, 32);
 #else   // _POSIX
-        scanf_s("%31s", command);
+        if (scanf("%31s", command) != 1)
+        {
+            // should never happen
+            printf("\nInvalid command. Quiting ...\n");
+            return;
+
+        }
 #endif  // _WINDOWS
 
         if ((NEString::compareFastIgnoreCase<char, char>(command, "off") == 0) || (NEString::compareFastIgnoreCase<char, char>(command, "1") == 0))
