@@ -19,6 +19,13 @@
     #pragma comment(lib, "14_generated.lib")
 #endif // WINDOWS
 
+#ifdef _WINDOWS
+    #define MACRO_SCANF(fmt, data, len)     scanf_s(fmt, data, len)
+#else   // _POSIX
+    #define MACRO_SCANF(fmt, data, len)     scanf(fmt, data)
+#endif  // _WINDOWS
+
+
 /**
  * \brief   This file demonstrates simple initialization of local and remote servicing component
  *          used in multiprocessing application development. This executable contains main
@@ -34,12 +41,13 @@
 //////////////////////////////////////////////////////////////////////////
 
 static const char * const _modelName    = "TheModel";   // The name of model
+static const char * const _threadName	= "TestSimpleTrafficThread";	// The name of component thread
 
 // Describe mode, set model name
 BEGIN_MODEL(_modelName)
 
     // define component thread
-    BEGIN_REGISTER_THREAD( "TestSimpleTrafficThread" )
+    BEGIN_REGISTER_THREAD( _threadName )
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
         BEGIN_REGISTER_COMPONENT( NECommon::SimpleLightControllerName, SimpleTrafficLightCtrl )
             // register SimpleTrafficLight and SimpleTrafficSwitch service implementation.
@@ -48,7 +56,7 @@ BEGIN_MODEL(_modelName)
         // end of component description
         END_REGISTER_COMPONENT( NECommon::SimpleLightControllerName )
     // end of thread description
-    END_REGISTER_THREAD( "TestSimpleTrafficThread" )
+    END_REGISTER_THREAD( _threadName )
 
 // end of model
 END_MODEL(_modelName)
@@ -71,7 +79,7 @@ int main()
 
     // The components are initialized. Find the service component thread.
     // It is used to send custom event.
-    Thread * thread = Thread::findThreadByName("SimpleTrafficThread");
+    Thread * thread = Thread::findThreadByName(_threadName);
     ASSERT(thread != NULL);
     ASSERT(thread->isInstanceOfRuntimeClass("DispatcherThread"));
 
@@ -91,18 +99,14 @@ int main()
         printf("- Type \"quit\" (or \'q\') to stop application.\n");
         printf("Type command: ");
 
-#ifdef _WINDOWS
-        scanf_s("%31s", command, 32);
-#else   // _POSIX
-        if (scanf("%31s", command) != 1)
+        if ( MACRO_SCANF("%31s", command, 32) != 1)
         {
             // should never happen, but returned code from scanf must be checked
-            printf("\nInvalid Choice: Quit the job ...\n");
+            printf("\nERROR: Invalid Choice, Quit example application ...\n");
 
             // wrong option, quit application.
-            return 0;
+            break;
         }
-#endif	// _WINDOWS
 
 
         if ( NEString::compareFastIgnoreCase<char, char>("start", command) == 0 )

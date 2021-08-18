@@ -36,7 +36,8 @@ CrossCompile :=
 os     := posix
 areg   := static
 bit    :=
-Config := Release
+# Config := Release
+Config := Debug
 
 # host settings, can leave them blank in case host's OS is Linux.
 Platform :=

@@ -34,12 +34,13 @@
 //////////////////////////////////////////////////////////////////////////
 
 static const char * const _modelName    = "TheModel";   // The name of model
+static const char * const _threadName	= "TestSimpleTrafficThread";	// The name of component thread
 
 // Describe mode, set model name
 BEGIN_MODEL(_modelName)
 
     // define component thread
-    BEGIN_REGISTER_THREAD( "TestSimpleTrafficThread" )
+    BEGIN_REGISTER_THREAD( _threadName )
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
         BEGIN_REGISTER_COMPONENT( NECommon::ServiceLightController, TrafficLightController )
             // register PowerManager and TrafficController service implementation, and the dependencies (client runs in the same thread).
@@ -50,7 +51,7 @@ BEGIN_MODEL(_modelName)
         // end of component description
         END_REGISTER_COMPONENT( NECommon::SimpleLightControllerName )
     // end of thread description
-    END_REGISTER_THREAD( "TestSimpleTrafficThread" )
+    END_REGISTER_THREAD( _threadName )
 
 // end of model
 END_MODEL(_modelName)

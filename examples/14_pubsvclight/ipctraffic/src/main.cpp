@@ -20,6 +20,12 @@
     #pragma comment(lib, "14_generated.lib")
 #endif // WINDOWS
 
+#ifdef _WINDOWS
+    #define MACRO_SCANF(fmt, data, len)     scanf_s(fmt, data, len)
+#else   // _POSIX
+    #define MACRO_SCANF(fmt, data, len)     scanf(fmt, data)
+#endif  // _WINDOWS
+
 /**
  * \brief   This file demonstrates dynamic initialization of model and the start of service client.
  **/
@@ -49,18 +55,14 @@ int main()
     printf("...........................................\n");
     printf("Type the choice: ");
 
-#ifdef _WINDOWS
-    scanf_s("%31s", buffer, 32);
-#else   // _POSIX
-    if (scanf("%31s", buffer) != 1)
+    if ( MACRO_SCANF("%31s", buffer, 32) != 1 )
     {
         // should never happen, but returned code from scanf must be checked
-        printf("\nInvalid Choice: Quit the job ...\n");
+        printf("\nERROR!!! Invalid Choice. Quit the example application ...\n");
 
         // wrong option, quit application.
         return 0;
     }
-#endif 	// _WINDOWS
 
     // Check whether the right option is selected.
     if ( (NEString::compareFastIgnoreCase(buffer, "sn") == 0) || (NEString::compareFast(buffer, "1") == 0) )

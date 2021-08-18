@@ -15,6 +15,15 @@
 #include "generated/src/PatientInformationStub.hpp"
 #include "areg/appbase/Application.hpp"
 
+#ifdef _WINDOWS
+    #define MACRO_SCANF(fmt, data, len)     scanf_s(fmt, data, len)
+    #define MACRO_SCANFX(fmt, data)         scanf_s(fmt, data)
+#else   // _POSIX
+    #define MACRO_SCANF(fmt, data, len)     scanf(fmt, data)
+    #define MACRO_SCANFX(fmt, data)         scanf(fmt, data)
+#endif  // _WINDOWS
+
+
 PatientServiceWorkerConsumer::PatientServiceWorkerConsumer(const char * consumerName, PatientInformationStub & infoPatient)
     : IEWorkerThreadConsumer( NEUtilities::createComponentItemName( NECommon::ServiceNamePatientInfo, consumerName) )
 
@@ -46,32 +55,32 @@ void PatientServiceWorkerConsumer::registerEventConsumers(WorkerThread & workThr
         printf("\nEnter Patient information .....\n");
 
         printf("\tFirst Name ...........: ");
-#ifdef _WINDOWS
-        scanf_s("%127s", firstName, 128);
-#else   // _POSIX
-        scanf("%127s", firstName);
-#endif 	// _WINDOWS
+        if (MACRO_SCANF( "%127s", firstName, 128 ) != 1)
+        {
+            printf("\nERROR: Unexpected choice, quit application ...\n");
+            break;
+        }
 
-        printf("\tLast Name ............: ");
-#ifdef _WINDOWS
-        scanf_s("%127s", lastName, 128);
-#else   // _POSIX
-        scanf("%127s", lastName);
-#endif 	// _WINDOWS
+        printf( "\tLast Name ............: " );
+        if ( MACRO_SCANF( "%127s", lastName, 128 ) != 1 )
+        {
+            printf( "\nERROR: Unexpected choice, quit application ...\n" );
+            break;
+        }
 
-        printf("\tPatient weight (kg) ..: ");
-#ifdef _WINDOWS
-        scanf_s("%f", &weight);
-#else   // _POSIX
-        scanf("%f", &weight);
-#endif // _WINDOWS
+        printf( "\tPatient weight (kg) ..: " );
+        if ( MACRO_SCANFX( "%f", &weight ) != 1 )
+        {
+            printf( "\nERROR: Unexpected choice, quit application ...\n" );
+            break;
+        }
 
         printf("\tPatient age ..........: ");
-#ifdef _WINDOWS
-        scanf_s("%u", &age);
-#else   // _POSIX
-        scanf("%u", &age);
-#endif // _WINDOWS
+        if ( MACRO_SCANFX( "%u", &age ) != 1 )
+        {
+            printf( "\nERROR: Unexpected choice, quit application ...\n" );
+            break;
+        }
 
         printf("===============================\n");
 
@@ -88,11 +97,11 @@ void PatientServiceWorkerConsumer::registerEventConsumers(WorkerThread & workThr
          ******************************************/
         char cmd[2] = {0};
         printf("Do you want to continue? (y/n): ");
-#ifdef _WINDOWS
-        scanf_s("%1s", cmd, 2);
-#else   // _POSIX
-        scanf("%1s", cmd);
-#endif 	// _WINDOWS
+        if ( MACRO_SCANF( "%1s", cmd, 2 ) != 1 )
+        {
+            printf( "\nERROR: Unexpected choice, quit application ...\n" );
+            break;
+        }
 
         quitApp = (*cmd == 'n') || (*cmd == 'N');
 

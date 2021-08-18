@@ -15,6 +15,13 @@
 #include "areg/appbase/NEApplication.hpp"
 #include "areg/trace/GETrace.h"
 
+#ifdef _WINDOWS
+    #define MACRO_SCANF(fmt, data, len)     scanf_s(fmt, data, len)
+#else   // _POSIX
+    #define MACRO_SCANF(fmt, data, len)     scanf(fmt, data)
+#endif  // _WINDOWS
+
+
 DEF_TRACE_SCOPE(mcrouter_app_MulticastRouter_serviceMain);
 DEF_TRACE_SCOPE(mcrouter_app_MulticastRouter_serviceStart);
 DEF_TRACE_SCOPE(mcrouter_app_MulticastRouter_serviceStop);
@@ -76,11 +83,11 @@ void MulticastRouter::serviceMain( int argc, char ** argv )
 
             do 
             {
-#ifdef _WINDOWS
-                charRead = scanf_s("%4s", cmd, 8);
-#else   // !_WINDOWS
-                charRead = scanf("%4s", cmd);
-#endif  // !_WINDOWS
+                if ( MACRO_SCANF( "%4s", cmd, 8 ) != 1 )
+                {
+                    printf( "\nERROR: Unexpected choice of command, quit application ...\n" );
+                }
+
             } while ((NEString::makeAsciiLower<char>(*cmd) != quit) && (charRead > 0));
 
             Application::signalAppQuit();
