@@ -19,7 +19,7 @@ the extreme edge.
 
 ////////////////////////////////////////////////////////////////////////
 
-        1. Project 'generated' / 14_generated
+        1. Project 'generated' / 15_generated
 
 Generated code of the service interface documents located in './res' sub-folder.
 The documents are created by the interface designing tool. In addition, it contains implementation of components 
