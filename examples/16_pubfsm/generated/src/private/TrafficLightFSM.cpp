@@ -60,8 +60,8 @@ using namespace NETrafficLightFSM;
 #define  INFO_EXIT_STATE(exitState)          \
     TRACE_DBG("FSM < %s >: Leaving state: < %s >.", mInstanceName, getString(exitState))
 
-// #define  INFO_GO_STATE(fromState, toState)   
-//     TRACE_DBG("FSM < %s >: Switched state: < %s > ==> < %s >.", mInstanceName, getString(fromState), getString(toState))
+#define  INFO_GO_STATE(fromState, toState)  \
+     TRACE_DBG("FSM < %s >: Switched state: < %s > ==> < %s >.", mInstanceName, getString(fromState), getString(toState))
 
 #define  START_PROCESSING( triggerName )                        \
     bool    isProcessed = false;                                \
@@ -382,7 +382,7 @@ inline void TrafficLightFSM::enterState( const TrafficLightFSM::eState curState,
             updateStateTree(curState,  TrafficLightFSM::UNDEFINED);
             updateStateTree(nextState, nextState);
 
-            // INFO_GO_STATE(mState, nextState);
+            INFO_GO_STATE(mState, nextState);
 
             mState = nextState;
         }

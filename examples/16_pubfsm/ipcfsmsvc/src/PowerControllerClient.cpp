@@ -14,6 +14,13 @@
 #include "areg/trace/GETrace.h"
 #include "areg/appbase/Application.hpp"
 
+#ifdef _WINDOWS
+    #define MACRO_SCANF(fmt, data, len)     scanf_s(fmt, data, len)
+#else   // _POSIX
+    #define MACRO_SCANF(fmt, data, len)     scanf(fmt, data)
+#endif  // _WINDOWS
+
+
 const char * const  PowerControllerClient::ConsoleThreadName    = "ConsoleThread";
 
 DEF_TRACE_SCOPE(ipcfsmsvc_src_PowerControllerClient_processEvent);
@@ -52,8 +59,6 @@ void PowerControllerClient::onThreadRuns(void)
 {
     TRACE_SCOPE(ipcfsmsvc_src_PowerControllerClient_onThreadRuns);
 
-    getDispatcherThread();
-
     bool loop = true;
 
     do 
@@ -70,17 +75,13 @@ void PowerControllerClient::onThreadRuns(void)
         printf("---------------------------------------------------------\n");
         printf("Type your command: ");
 
-#ifdef  _WINDOWS
-        scanf_s("%31s", command, 32);
-#else   // _POSIX
-        if (scanf("%31s", command) != 1)
+       if (MACRO_SCANF("%31s", command, 32) != 1)
         {
             // should never happen
-            printf("\nInvalid command. Quiting ...\n");
-            return;
+            printf("\nERROR: Unexpectd command, quiting applicatio ...\n");
+            break;
 
         }
-#endif  // _WINDOWS
 
         if ((NEString::compareFastIgnoreCase<char, char>(command, "off") == 0) || (NEString::compareFastIgnoreCase<char, char>(command, "1") == 0))
         {
