@@ -2,7 +2,7 @@
 // Name        : main.cpp
 // Author      : Artak Avetyan
 // Version     :
-// Copyright   : Aregtech � 2021
+// Copyright   : Aregtech (c) 2021
 // Description : Hello World in C++, Ansi-style
 //============================================================================
 
@@ -10,7 +10,11 @@
 #include "areg/base/Thread.hpp"
 #include "areg/base/IEThreadConsumer.hpp"
 #include "areg/component/DispatcherThread.hpp"
+#include "areg/component/IETimerConsumer.hpp"
+
+#include "areg/appbase/Application.hpp"
 #include "areg/component/Event.hpp"
+#include "areg/component/Timer.hpp"
 #include "areg/trace/GETrace.h"
 
 #ifdef WINDOWS
@@ -113,6 +117,7 @@ void HelloThread::onThreadRuns( void )
  *          the names might be identical, then the processing can be invalid.
  **/
 class HelloDispatcher   : public    DispatcherThread
+                        , private   IETimerConsumer
 {
     static const char * THREAD_NAME     /*= "Hello Thread"*/;
 public:
@@ -130,13 +135,10 @@ protected:
 /************************************************************************/
 
     /**
-     * \brief   Triggered when dispatcher starts running.
-     *          In this function runs main dispatching loop.
-     *          Events are picked and dispatched here.
-     *          Override if logic should be changed.
-     * \return  Returns true if Exit Event is signaled.
+     * \brief   Triggered before dispatcher starts to dispatch events and when event dispatching just finished.
+     * \param   hasStarted  The flag to indicate whether the dispatcher is ready for events.
      **/
-    virtual bool runDispatcher( void );
+    virtual void readyForEvents( bool isReady );
 
 /************************************************************************/
 // IEEventRouter interface overrides
@@ -151,6 +153,32 @@ protected:
      *          Otherwise it returns false.
      **/
     virtual bool dispatchEvent( Event & eventElem );
+
+    /**
+     * \brief   Posts event. Push event in internal or external
+     *          event queue depending on event type.
+     *          Thread should have registered consumer for
+     *          specified event object.
+     * \param   eventElem   The event object to push in the queue.
+     * \return  Returns true if successfully pushed event in the queue.
+     **/
+    virtual bool postEvent( Event & eventElem );
+
+/************************************************************************/
+// IETimerConsumer interface overrides.
+/************************************************************************/
+
+    /**
+     * \brief   Triggered when Timer is expired.
+     *          The passed Timer parameter is indicating object, which has been expired.
+     *          Overwrite method to receive messages.
+     * \param   timer   The timer object that is expired.
+     **/
+    virtual void processTimer( Timer & timer );
+
+private:
+    inline HelloDispatcher & self( void );  // wrapper of this pointer.
+    Timer   mTimer; // a dummy timer to force to trigger event.
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -161,11 +189,14 @@ const char * HelloDispatcher::THREAD_NAME     = "Hello Thread";
 // Define HelloDispatcher trace scopes to make logging
 // Trace scopes must be defined before they are used.
 DEF_TRACE_SCOPE(main_HelloDispatcher_HelloDispatcher);
-DEF_TRACE_SCOPE(main_HelloDispatcher_runDispatcher);
+DEF_TRACE_SCOPE(main_HelloDispatcher_readyForEvents );
 DEF_TRACE_SCOPE(main_HelloDispatcher_postEvent);
 
 HelloDispatcher::HelloDispatcher( void )
-    : DispatcherThread(HelloDispatcher::THREAD_NAME)
+    : DispatcherThread  (HelloDispatcher::THREAD_NAME)
+    , IETimerConsumer   ( )
+
+    , mTimer            ( static_cast<IETimerConsumer &>(self()), "aTimerName")
 {
     TRACE_SCOPE(main_HelloDispatcher_HelloDispatcher);
     TRACE_DBG("Instantiated hello dispatcher");
@@ -175,21 +206,42 @@ HelloDispatcher::~HelloDispatcher( void )
 {
 }
 
-bool HelloDispatcher::runDispatcher( void )
+void HelloDispatcher::readyForEvents(bool isReady )
 {
-    TRACE_SCOPE(main_HelloDispatcher_runDispatcher);
-    TRACE_DBG("The dispatcher is running...");
+    TRACE_SCOPE( main_HelloDispatcher_readyForEvents );
+    TRACE_DBG( "The dispatcher is running. The custom business logic can be set here ..." );
 
-    return DispatcherThread::runDispatcher();
+    if (isReady)
+    {
+        mTimer.startTimer(100);
+    }
+    else
+    {
+        mTimer.stopTimer();
+    }
+}
+
+bool HelloDispatcher::postEvent( Event& eventElem )
+{
+    return EventDispatcher::postEvent( eventElem );
 }
 
 bool HelloDispatcher::dispatchEvent(Event & eventElem)
 {
     TRACE_SCOPE(main_HelloDispatcher_postEvent);
-    TRACE_DBG("Received event [ %s ]", eventElem.getRuntimeClassName());
-    return true;
+    TRACE_DBG("Received event [ %s ], the custom event dispatching can be set here", eventElem.getRuntimeClassName());
+    return true; // break dispatching event.
 }
 
+void HelloDispatcher::processTimer( Timer & timer )
+{
+    ASSERT(false);  // this never happens, since we break dispatching in dispatchEvent() method.
+}
+
+inline HelloDispatcher & HelloDispatcher::self( void )
+{
+    return (*this);
+}
 
 //////////////////////////////////////////////////////////////////////////
 // Demo
@@ -213,6 +265,9 @@ int main()
         // otherwise, the logs will not be visible, since in the time when
         // scope is initialized, the logging is not active yet.
         TRACE_SCOPE(main_main);
+
+        // Start timer manager
+        Application::startTimerManager( );
 
         // declare thread object.
         TRACE_DBG("Starting Hello Thread");

@@ -6,6 +6,7 @@
  *
  ************************************************************************/
 #include "areg/component/NERegistry.hpp"
+#include "areg/component/Component.hpp"
 #include "areg/base/NEUtilities.hpp"
 #include "areg/base/NECommon.hpp"
 
@@ -13,7 +14,7 @@
 // NERegistry namespace implementation
 //////////////////////////////////////////////////////////////////////////
 
-//////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////
 // NERegistry namespace Predefined constants
 //////////////////////////////////////////////////////////////////////////
 /**
@@ -550,6 +551,17 @@ void NERegistry::ComponentEntry::addSupportedService( const NERegistry::ServiceL
         addSupportedService(serviceList[i]);
 }
 
+NERegistry::ServiceEntry & NERegistry::ComponentEntry::addSupportedService(const char * serviceName, const Version & version)
+{
+    int index = findSupportedService(serviceName);
+    if ( index == NECommon::InvalidIndex )
+    {
+        index = mSupportedServices.add(NERegistry::ServiceEntry(serviceName, version));
+    }
+
+    return mSupportedServices[index];
+}
+
 bool NERegistry::ComponentEntry::removeSupportedService( const char * serviceName )
 {
     bool result = false;
@@ -626,6 +638,17 @@ void NERegistry::ComponentEntry::addDependencyService( const NERegistry::Depende
 {
     for ( int i = 0; i < dependencyList.getSize(); ++ i )
         addDependencyService(dependencyList[i]);
+}
+
+NERegistry::DependencyEntry & NERegistry::ComponentEntry::addDependencyService(const char * roleName)
+{
+    int index = findDependencyService(roleName);
+    if ( index == NECommon::InvalidIndex )
+    {
+        index = mDependencyServices.add(NERegistry::DependencyEntry(roleName));
+    }
+
+    return mDependencyServices[index];
 }
 
 int NERegistry::ComponentEntry::findDependencyService( const NERegistry::DependencyEntry& entry ) const
@@ -819,6 +842,17 @@ void NERegistry::ComponentThreadEntry::addComponent( const NERegistry::Component
 {
     for (int i = 0; i < componentList.getSize(); ++ i )
         addComponent(componentList[i]);
+}
+
+NERegistry::ComponentEntry & NERegistry::ComponentThreadEntry::addComponent(const char * roleName, FuncCreateComponent funcCreate, FuncDeleteComponent funcDelete)
+{
+    int index = mComponents.findComponent(roleName);
+    if ( index == NECommon::InvalidIndex )
+    {
+        index = mComponents.add( NERegistry::ComponentEntry(mThreadName.getString(), roleName, funcCreate, funcDelete));
+    }
+
+    return mComponents[index];
 }
 
 bool NERegistry::ComponentThreadEntry::removeComponent( const char * roleName )
@@ -1021,6 +1055,17 @@ void NERegistry::Model::addThread( const NERegistry::ComponentThreadList& thread
 {
     for (int i = 0; i < threadList.getSize(); ++ i )
         addThread(threadList[i]);
+}
+
+NERegistry::ComponentThreadEntry & NERegistry::Model::addThread(const char * threadName)
+{
+    int index = findThread(threadName);
+    if (index == NECommon::InvalidIndex)
+    {
+        index = mModelThreads.add(NERegistry::ComponentThreadEntry(threadName));
+    }
+
+    return mModelThreads[index];
 }
 
 bool NERegistry::Model::removeThread( const char * threadName )

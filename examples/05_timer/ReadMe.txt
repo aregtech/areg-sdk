@@ -2,14 +2,12 @@
     CONSOLE APPLICATION : 05_timer Project Overview
 ========================================================================
 
-This project demonstrates how to setup and start timers. There are following timers set:
-- one time timer (it is triggered only once)
-- periodic timer (it is triggered certain ammount of times)
-- continues timer (it is triggered and runs continuesly until stopped).
+This project demonstrates use of timers. It explains how to initialize, start and stop timers.
 
-Before timers are started, the Timer Manager (time service) should be started.
-The timers are automatically dispatched in a dispatching thread.
-The application starts Timer Manager, creates separate 2 dispatcher threads, where each of them have 3 timers (one time, periodic, continues).
-Since the objects of Dispatcher Thread and same, the timers and the threads differ by names.
-The application runs for 30 seconds, stops timers and exit threads.
-All timer outputs are written in log file.
+There are following timers are used:
+- one time timer  (it runs only once)
+- periodic timer  (it runs certain amount of times)
+- continues timer (it runs continuously until stopped).
+
+The timer requires the start of Timer Manager (timer service), which normally starts when initializing an application.
+The timers are automatically dispatched in the timer owner thread.

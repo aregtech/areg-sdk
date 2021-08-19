@@ -200,25 +200,20 @@ protected:
      **/
     virtual bool runDispatcher( void );
 
+    /**
+     * \brief   Triggered before dispatcher starts to dispatch events and when event dispatching just finished.
+     * \param   hasStarted  The flag to indicate whether the dispatcher is ready for events.
+     **/
+    virtual void readyForEvents( bool isReady );
+
 //////////////////////////////////////////////////////////////////////////
 // Hidden operations. Called from Timer Thread.
 //////////////////////////////////////////////////////////////////////////
 private:
     /**
-     * \brief   Called by timer thread when it started 
-     *          and before starting dispatching events
-     **/
-    void _timerThreadStarts( void );
-
-    /**
      * \brief   Called when expired timers should be processed.
      **/
     void _processExpiredTimers( void );
-
-    /**
-     * \brief   Called by timer thread when it exits
-     **/
-    void _timerThreadExits( void );
 
     /**
      * \brief   Stops and removes all timers, i.e. unregisters all timers.

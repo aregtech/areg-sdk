@@ -1,20 +1,20 @@
 This file is part of AREG IoT SDK.
 Copyright (c) Aregtech UG, 2017-2021
-Contact: info[at]aregtech.com
+Contact: info[at]aregtech.com, contact[at]aregtech.com
 Website: https://www.aregtech.com
 
 =============================================================================
-                                
-                                GENERAL
-                                
 
-AREG IoT SDK (or AREG SDK) is dual-licensed under Commercial (with various 
-pricing models) and Free open source (Apache version 2.0 License) licenses, 
+                                GENERAL
+
+
+AREG IoT SDK (or AREG SDK) is dual-licensed under Free open source (Apache 
+version 2.0 License) and Commercial (with various pricing models) licenses, 
 depending on the nature of the project (commercial, research, academic or free).
 AREG SDK commercial license gives rights to create and distribute software on 
 own terms without any open source license obligations. The commercial license
 also gives access to the official AREG SDK support and close strategic 
-relationship with Aregtech company to met development goals.
+relationship with Aregtech company to meet development goals.
 
     1.  These source codes are free for use for individuals, educational and 
         non-profitable organizations, small businesses, which annual turnover
@@ -23,12 +23,12 @@ relationship with Aregtech company to met development goals.
         codes and supplied tools, depending on the nature of the project, 
         require additional license.
     3.  By use and distribution of compiled binaries or open sources, the 
-        distributer must keep the copyright of Aregtech.
+        distributor must keep the copyright of Aregtech.
     4.  Aregtech may define individual commercial or free license with business
         and government organizations.
-    5.  Aregtech  any time may change the free source code distribution policy.
-    
-    
+    5.  Aregtech any time may change the free source code distribution policy.
+
+
 =============================================================================
 
 
@@ -233,4 +233,3 @@ relationship with Aregtech company to met development goals.
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
    See the License for the specific language governing permissions and
    limitations under the License.
-   

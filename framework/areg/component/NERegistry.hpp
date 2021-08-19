@@ -92,24 +92,6 @@ typedef void            (*FuncDeleteComponent)  (Component & /*componentItem*/, 
  **/
 namespace NERegistry
 {
-//////////////////////////////////////////////////////////////////////////
-// NERegistry::DefaultComponentCreator
-//////////////////////////////////////////////////////////////////////////
-/**
- * \brief   The default method to create component.
- * \param   entry   The component entry object registered in Registers.
- * \param   owner   The component owner thread.
- * \return  Returns poiner to instantiated component.
- * \tparam  Class   The class name of component to create
- */
-template <class Class>
-inline Class * DefaultComponentCreate( const NERegistry::ComponentEntry & entry, ComponentThread & owner );
-
-/**
- * \brief   The default method to create component
- */
-template <class Class>
-inline void DefaultComponentRelease( Component & compObject, const NERegistry::ComponentEntry & entry );
 
 //////////////////////////////////////////////////////////////////////////
 // NERegistry::ServiceEntry class declaration
@@ -783,6 +765,17 @@ inline void DefaultComponentRelease( Component & compObject, const NERegistry::C
         void addSupportedService( const NERegistry::ServiceList & serviceList );
 
         /**
+         * \brief   Adds supported service interface entry in the component entry object.
+         *          The serviceName should be unique within component entry context.
+         * \param   serviceName The name of supported service interface. 
+         *                      If not unique, no new entry added.
+         * \param   version     The supported interface version.
+         * \return  Returns either new added instance or the existing instance of supported service interface.
+         *          The uniqueness is checked within component entry context and ignores the version number.
+         **/
+        NERegistry::ServiceEntry & addSupportedService( const char * serviceName, const Version & version );
+
+        /**
          * \brief   Searches given supported service. If found, removes from list.
          * \param   serviceName The name of supported service
          * \return  Returns true if found and remove supported service entry in the list.
@@ -886,6 +879,14 @@ inline void DefaultComponentRelease( Component & compObject, const NERegistry::C
          * \param   entry   The Dependency Entry, defining Role Name of Server Component.
          **/
         void addDependencyService( const NERegistry::DependencyList & dependencyList );
+
+        /**
+         * \brief   Adds a dependency entry in the component. The passed parameter should be
+         *          the name of local or public service.
+         * \param   roleName    The name dependent service.
+         * \return  Returns the instance of new added or existing dependency of specified service.
+         **/
+        NERegistry::DependencyEntry & addDependencyService( const char * roleName );
 
         /**
          * \brief   Searches Dependency Entry in the existing list of Component Entry
@@ -1207,6 +1208,19 @@ inline void DefaultComponentRelease( Component & compObject, const NERegistry::C
         void addComponent( const NERegistry::ComponentList & componentList );
 
         /**
+         * \brief   Adds a new component entry with the given role.
+         * \param   roleName    The name of component to add. The name must be unique to add new entry.
+         * \param   funcCreate  The pointer to the method that instantiates the component.
+         * \param   functDelete The pointer to the method that deletes the component.
+         * \return  Returns instance of new added or the instance of the existing component entry with
+         *          the given role name. The checkup happens only within the current thread list.
+         *
+         * \note    NOTE:   The method does not check the uniqueness of role name within the entire system or entire
+         *                  model. It checks only within the current component thread entry context.
+         **/
+        NERegistry::ComponentEntry & addComponent( const char * roleName, FuncCreateComponent funcCreate, FuncDeleteComponent funcDelete );
+
+        /**
          * \brief   Searches the component entry by given role name.
          *          If found, remove the component entry from the list.
          * \param   roleName    The roleName of service component to search and remove.
@@ -1481,6 +1495,19 @@ inline void DefaultComponentRelease( Component & compObject, const NERegistry::C
         void addThread( const NERegistry::ComponentThreadList & threadList );
 
         /**
+         * \brief   Adds new component thread entry in the list if the given thread does not exit.
+         * \param   threadName  The name of the thread to add. The name must be unique.
+         * \return  Returns the instance of the component thread or returns the instance of the
+         *          existing component thread if the thread with the given name is already registered.
+         *
+         * \note    NOTE:   The method does not check the uniqueness of thread entry in entire system
+         *                  and does not check the lists of worker threads. It checks only within current
+         *                  model context escaping worker thread names. The caller must take care of uniqueness
+         *                  by its self.
+         **/
+        NERegistry::ComponentThreadEntry & addThread(const char * threadName );
+
+        /**
          * \brief   Searches component thread entry in the list.
          *          If found, removes it.
          * \param   threadName  The name of component thread to search.
@@ -1609,21 +1636,6 @@ inline void DefaultComponentRelease( Component & compObject, const NERegistry::C
      **/
     extern AREG_API const NERegistry::Model                   INVALID_MODEL;
 
-}
-
-//////////////////////////////////////////////////////////////////////////
-// Component Default create / release function templates
-//////////////////////////////////////////////////////////////////////////
-template <class Class>
-inline Class * NERegistry::DefaultComponentCreate( const NERegistry::ComponentEntry & entry, ComponentThread & owner )
-{
-    return DEBUG_NEW Class(entry, owner);
-}
-
-template <class Class>
-inline void NERegistry::DefaultComponentRelease( Component & compObject, const NERegistry::ComponentEntry & /* entry */ )
-{
-    delete (&compObject);
 }
 
 #endif  // AREG_COMPONENT_NEREGISTRY_HPP

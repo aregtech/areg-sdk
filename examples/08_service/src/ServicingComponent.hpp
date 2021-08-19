@@ -1,7 +1,7 @@
 #ifndef AREG_EXAMPLES_08_SERVICE_SERVICINGCOMPONENT_HPP
 #define AREG_EXAMPLES_08_SERVICE_SERVICINGCOMPONENT_HPP
 /************************************************************************
- * \file        ServicingComponent.hpp
+ * \file        src/ServicingComponent.hpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework examples
  * \author      Artak Avetyan (mailto:artak@aregtech.com)
  * \brief       Collection of AREG SDK examples.
@@ -73,6 +73,42 @@ protected:
      **/
     virtual ~ServicingComponent(void);
 
+/************************************************************************/
+// CEStubBase overrides. Triggered by Component on startup.
+/************************************************************************/
+
+    /**
+     * \brief   This function is triggered by Component when starts up.
+     *          Overwrite this method and set appropriate request and
+     *          attribute update notification event listeners here
+     * \param   holder  The holder component of service interface of Stub,
+     *                  which started up.
+     **/
+    virtual void startupServiceInterface( Component & holder );
+
+    /**
+     * \brief   This function is triggered by Component when shuts down.
+     *          Overwrite this method to remove listeners and stub cleanup
+     * \param   holder  The holder component of service interface of Stub,
+     *                  which shuts down.
+     **/
+    virtual void shutdownServiceIntrface ( Component & holder );
+
+/************************************************************************/
+// IETimerConsumer interface overrides.
+/************************************************************************/
+
+    /**
+     * \brief   Triggered when Timer is expired.
+     *          The passed Timer parameter is indicating object, which has been expired.
+     *          Overwrite method to receive messages.
+     * \param   timer   The timer object that is expired.
+     **/
+    virtual void processTimer( Timer & timer );
+
+//////////////////////////////////////////////////////////////////////////
+// These methods must exist, but can have empty body
+//////////////////////////////////////////////////////////////////////////
 protected:
 /************************************************************************/
 // StubBase overrides. Public pure virtual methods 
@@ -124,55 +160,6 @@ protected:
      * \param   eventElem   Service Request Event object, contains attribute ID.
      **/
     virtual void processAttributeEvent( ServiceRequestEvent & eventElem );
-
-/************************************************************************/
-// CEStubBase overrides. Triggered by Component on startup.
-/************************************************************************/
-
-    /**
-     * \brief   This function is triggered by Component when starts up.
-     *          Overwrite this method and set appropriate request and
-     *          attribute update notification event listeners here
-     * \param   holder  The holder component of service interface of Stub,
-     *                  which started up.
-     **/
-    virtual void startupServiceInterface( Component & holder );
-
-    /**
-     * \brief   This function is triggered by Component when shuts down.
-     *          Overwrite this method to remove listeners and stub cleanup
-     * \param   holder  The holder component of service interface of Stub,
-     *                  which shuts down.
-     **/
-    virtual void shutdownServiceIntrface ( Component & holder );
-
-    /**
-     * \brief	This function is triggered by component thread when it 
-     *          requires component to start up. Set listeners and make
-     *          initialization in this function call.
-     * \param	comThread	The component thread, which triggered startup command
-     **/
-    virtual void startupComponent( ComponentThread & comThread );
-
-    /**
-     * \brief	This function is triggered by component thread when it
-     *          requires component to shut down. Remove listeners and 
-     *          make cleanups in this function call.
-     * \param	comThread	The component thread, which triggered shutdown command.
-     **/
-    virtual void shutdownComponent( ComponentThread & comThread );
-
-/************************************************************************/
-// IETimerConsumer interface overrides.
-/************************************************************************/
-
-    /**
-     * \brief   Triggered when Timer is expired.
-     *          The passed Timer parameter is indicating object, which has been expired.
-     *          Overwrite method to receive messages.
-     * \param   timer   The timer object that is expired.
-     **/
-    virtual void processTimer( Timer & timer );
 
 private:
     Timer   mTimer; //!< The timer to run in component thread.

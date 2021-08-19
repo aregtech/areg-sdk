@@ -262,7 +262,7 @@ void StubBase::cancelCurrentRequest( void )
     mCurrListener   = NULL;
 }
 
-ComponentThread & StubBase::getMasterThread( void ) const
+ComponentThread & StubBase::getComponentThread( void ) const
 {
     return mComponent.getMasterThread();
 }

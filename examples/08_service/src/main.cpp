@@ -2,7 +2,7 @@
 // Name        : main.cpp
 // Author      : Artak Avetyan
 // Version     :
-// Copyright   : Aregtech � 2021
+// Copyright   : Aregtech (c) 2021
 // Description : Hello World in C++, Ansi-style
 //============================================================================
 
@@ -11,7 +11,7 @@
 #include "areg/base/ESynchObjects.hpp"
 #include "areg/component/ComponentLoader.hpp"
 #include "areg/trace/GETrace.h"
-#include "ServicingComponent.hpp"
+#include "src/ServicingComponent.hpp"
 
 #ifdef WINDOWS
     #pragma comment(lib, "areg.lib")
@@ -25,11 +25,10 @@
  *          the job and cleans up the resources.
  **/
 
-static const char * gModelName = "Test_SimpleService";  //!< The name of model
-SynchEvent gExit(true, false);                          //!< The global event to quit application.
+static const char * _modelName = "TestModel";  //!< The name of model
 
 // Describe mode, set model name
-BEGIN_MODEL(gModelName)
+BEGIN_MODEL(_modelName)
 
     // define component thread
     BEGIN_REGISTER_THREAD( "Test_ServiceThread" )
@@ -43,7 +42,7 @@ BEGIN_MODEL(gModelName)
     END_REGISTER_THREAD( "Test_ServiceThread" )
 
 // end of model description
-END_MODEL(gModelName)
+END_MODEL(_modelName)
 
 //////////////////////////////////////////////////////////////////////////
 // main method.
@@ -55,7 +54,7 @@ DEF_TRACE_SCOPE(main_main);
  **/
 int main()
 {
-    printf("Intiailizing to test servicing component...\n");
+    printf("Initializing servicing component...\n");
     // force to start logging with default settings
     TRACER_CONFIGURE_AND_START(NULL);
     // Initialize application, enable logging, servicing and the timer.
@@ -64,18 +63,18 @@ int main()
     do 
     {
         TRACE_SCOPE(main_main);
-        TRACE_DBG("The application has been initialized, loading model [ %s ]", gModelName);
+        TRACE_DBG("The application has been initialized, loading model [ %s ]", _modelName);
 
         // load model to initialize components
-        Application::loadModel(gModelName);
+        Application::loadModel(_modelName);
 
         TRACE_DBG("Servicing model is loaded");
         
-        // wait until 'gExit' event is signaled
-        gExit.lock(IESynchObject::WAIT_INFINITE);
+        // wait for quit signal to complete application.
+        Application::waitAppQuit(IESynchObject::WAIT_INFINITE);
 
         // stop and unload components
-        Application::unloadModel(gModelName);
+        Application::unloadModel(_modelName);
 
         // release and cleanup resources of application.
         Application::releaseApplication();

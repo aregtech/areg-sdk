@@ -38,7 +38,7 @@ class IEOutStream;
  * \tparam  Implement   The name of class where the basic string alphabetic, comparing and 
  *                      stream read/write operations are implemented.
  **/
-template<typename CharType, class Implement = TEStringImpl<CharType>>
+template<typename CharType, class Implement = TEStringImpl<CharType> >
 class TEString  : protected Implement
 {
 //////////////////////////////////////////////////////////////////////////

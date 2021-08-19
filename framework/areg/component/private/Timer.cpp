@@ -96,7 +96,7 @@ bool Timer::startTimer(unsigned int timeoutInMs, DispatcherThread & whichThread,
 
     if (isActive())
     {
-        TRACE_WARN("The timer [ %s ] is still active, going to stop first. Current timeout [ %u ] ms and event count [ %d]", getName(), mTimeoutInMs, mEventsCount);
+        TRACE_WARN("The timer [ %s ] is still active, going to stop first. Current timeout [ %u ] ms and event count [ %d]", getName().getString(), mTimeoutInMs, mEventsCount);
         TimerManager::stopTimer(self());
     }
 

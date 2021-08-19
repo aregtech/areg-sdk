@@ -1,0 +1,112 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(SolutionDir)\conf\msvc\compile.props" Label="LocalAppCompileSettings" />
+  </ImportGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{DB6BDE22-DB74-49FD-AB01-8DB5FCEE16FD}</ProjectGuid>
+    <ProjectName>17_chatter</ProjectName>
+    <RootNamespace>17_chatter</RootNamespace>
+    <Keyword>MFCProj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseOfMfc>Dynamic</UseOfMfc>
+  </PropertyGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(SolutionDir)\conf\msvc\project.props" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <ItemDefinitionGroup Condition="'$(ConfigShortName)'=='Debug'">
+    <ClCompile>
+      <PreprocessorDefinitions>IMPORT_SHARED_SYMBOLS=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <SDLCheck>true</SDLCheck>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+    </Link>
+    <Midl>
+      <MkTypLibCompatible>false</MkTypLibCompatible>
+      <ValidateAllParameters>true</ValidateAllParameters>
+      <PreprocessorDefinitions>IMPORT_SHARED_SYMBOLS=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </Midl>
+    <ResourceCompile>
+      <Culture>0x0409</Culture>
+      <PreprocessorDefinitions>IMPORT_SHARED_SYMBOLS=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ResourceCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(ConfigShortName)'=='Release'">
+    <ClCompile>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>IMPORT_SHARED_SYMBOLS=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <SDLCheck>true</SDLCheck>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+    </Link>
+    <Midl>
+      <MkTypLibCompatible>false</MkTypLibCompatible>
+      <ValidateAllParameters>true</ValidateAllParameters>
+      <PreprocessorDefinitions>IMPORT_SHARED_SYMBOLS=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </Midl>
+    <ResourceCompile>
+      <Culture>0x0409</Culture>
+      <PreprocessorDefinitions>IMPORT_SHARED_SYMBOLS=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ResourceCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="chatter\services\ChatParticipantService.hpp" />
+    <ClInclude Include="chatter\services\ChatPrticipantHandler.hpp" />
+    <ClInclude Include="chatter\services\ConnectionHandler.hpp" />
+    <ClInclude Include="chatter\services\DirectConnectionClient.hpp" />
+    <ClInclude Include="chatter\services\DirectChatService.hpp" />
+    <ClInclude Include="chatter\services\DirectConnectionService.hpp" />
+    <ClInclude Include="chatter\services\ConnectionList.hpp" />
+    <ClInclude Include="chatter\services\DirectMessagingClient.hpp" />
+    <ClInclude Include="chatter\services\NetworkSetup.hpp" />
+    <ClInclude Include="chatter\services\CentralMessaging.hpp" />
+    <ClInclude Include="chatter\ui\PageChat.hpp" />
+    <ClInclude Include="chatter\ui\PageConnections.hpp" />
+    <ClInclude Include="chatter\ui\PageMessaging.hpp" />
+    <ClInclude Include="chatter\ui\DistributedDialog.hpp" />
+    <ClInclude Include="chatter\ui\PageNetworkSetup.hpp" />
+    <ClInclude Include="chatter\services\ConnectionServicing.hpp" />
+    <ClInclude Include="chatter\NEDistributedApp.hpp" />
+    <ClInclude Include="chatter\DistrbutedApp.hpp" />
+    <ClInclude Include="chatter\res\resource.h" />
+    <ClInclude Include="chatter\res\stdafx.h" />
+    <ClInclude Include="chatter\res\targetver.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="chatter\services\ChatParticipantService.cpp" />
+    <ClCompile Include="chatter\services\ConnectionHandler.cpp" />
+    <ClCompile Include="chatter\services\ConnectionList.cpp" />
+    <ClCompile Include="chatter\services\DirectConnectionClient.cpp" />
+    <ClCompile Include="chatter\services\DirectChatService.cpp" />
+    <ClCompile Include="chatter\services\DirectConnectionService.cpp" />
+    <ClCompile Include="chatter\services\DirectMessagingClient.cpp" />
+    <ClCompile Include="chatter\services\NetworkSetup.cpp" />
+    <ClCompile Include="chatter\services\CentralMessaging.cpp" />
+    <ClCompile Include="chatter\services\ChatPrticipantHandler.cpp" />
+    <ClCompile Include="chatter\ui\PageChat.cpp" />
+    <ClCompile Include="chatter\ui\PageConnections.cpp" />
+    <ClCompile Include="chatter\ui\PageMessaging.cpp" />
+    <ClCompile Include="chatter\ui\DistributedDialog.cpp" />
+    <ClCompile Include="chatter\ui\PageNetworkSetup.cpp" />
+    <ClCompile Include="chatter\services\ConnectionServicing.cpp" />
+    <ClCompile Include="chatter\DistrbutedApp.cpp" />
+    <ClCompile Include="chatter\NEDistributedApp.cpp" />
+    <ClCompile Include="chatter\res\stdafx.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="chatter\res\chatter.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="chatter\res\chatter.ico" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

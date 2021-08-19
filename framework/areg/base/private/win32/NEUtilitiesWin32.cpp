@@ -17,7 +17,7 @@
 
 namespace NEUtilities {
 
-    void _generateName( const char * prefix, char * out_buffer, int length, const char * specChar )
+    const char * _generateName( const char * prefix, char * out_buffer, int length, const char * specChar )
     {
         static const char * strFormat = "%s%s%08x%s%08x";
         if ( out_buffer != NULL )
@@ -29,6 +29,8 @@ namespace NEUtilities {
 
             String::formatString( out_buffer, length, strFormat, prefix != NULL ? prefix : NEUtilities::DEFAULT_GENERATED_NAME, spec, now.dwHighDateTime, spec, now.dwLowDateTime);
         }
+
+        return out_buffer;
     }
 
     inline void _convWinSysTime2AregSysTime( const SYSTEMTIME & winTime, NEUtilities::sSystemTime & aregTime )

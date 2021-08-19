@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<ServiceInterface FormatVesion="1.0.0">
+    <Overview ID="1" Name="SimpleTrafficSwitch" Version="1.0.0">
+        <Description>Simple traffic light switch on/off.
+Declared as local service to prevent any other external client to send unexpected signal to switch off the light.</Description>
+    </Overview>
+    <AttributeList>
+        <Attribute DataType="bool" ID="2" Name="IsSwitchedOn" Notify="OnChange">
+            <Description>Flag that indicates the light on/off state.</Description>
+        </Attribute>
+    </AttributeList>
+    <MethodList>
+        <Method ID="3" MethodType="request" Name="SwitchLight">
+            <Description>Sets the traffic light ON or OFF.</Description>
+            <ParamList>
+                <Parameter DataType="bool" ID="4" Name="switchOn">
+                    <Description>If true, the traffic light is switched ON. Otherwise, it is OFF.</Description>
+                </Parameter>
+            </ParamList>
+        </Method>
+    </MethodList>
+</ServiceInterface>

@@ -31,9 +31,21 @@ Traditionally, IoT devices are connected clients of cloud or fog servers to stre
 
 ## Software build
 
-AREG SDK provides _Eclipse for C/C++ Developer_ project files for **POSIX**, and _Visual Studio_ project files for **Windows** versions of the framework and examples. _The default settings of provided project files are enough to compile all_.
+AREG SDK provides possibility to compile SDK and example codes using _Makefile_, using _Eclipse for C/C++ Developer_ and _Visual Studio_. 
 
-**In case of Visual Studio, please select appropriate _Solution Configuration_ in IDE toolbar to use the right _PlatformToolset_.** For details on how to import projects, build and integrate framework, run examples, configure logging and multicast routing, please refer to [HOWTO.md](./docs/HOWTO.md) document.
+#### make
+
+_make_ and _Makefile_ in AREG SDK is used to build software with _POSIX_ API. Call _make_ in command line with or without argument:
+```
+$ make [all] [framework] [examples]
+```
+#### Eclipse
+In _Eclipse for C/C++ Developer_ IDE import AREG SDK framework and examplesto build software with _POSIX_ API.
+
+#### Microsoft Visual Studio
+In Microsoft Visual Studio IDE (MS VC 2012 or higher), open _areg-sdk.sln_ file. If Visual Studio offers to convert project files, ignore. **In Visual Studio toolbar, select appropriate _Solution Configuration_ and _PlatformToolset_** and compile projects.
+
+For details how to import projects, build and integrate framework, run examples, configure logging and multicast routing, please refer to [HOWTO.md](./docs/HOWTO.md) document.
 
 ## Examples
 

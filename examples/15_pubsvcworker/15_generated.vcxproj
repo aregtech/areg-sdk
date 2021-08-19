@@ -1,0 +1,60 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(SolutionDir)\conf\msvc\compile.props" Label="LocalAppCompileSettings" />
+  </ImportGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{68C8AE77-005B-4F81-8876-5A87A69823E3}</ProjectGuid>
+    <ProjectName>15_generated</ProjectName>
+    <RootNamespace>15_generated</RootNamespace>
+    <Keyword>Win32Proj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+  </PropertyGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(SolutionDir)\conf\msvc\project.props" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <OutDir>$(OutLibDir)\</OutDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(ConfigShortName)'=='Debug'">
+    <ClCompile>
+      <PreprocessorDefinitions>IMPORT_SHARED_SYMBOLS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(ConfigShortName)'=='Release'">
+    <ClCompile>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>IMPORT_SHARED_SYMBOLS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="generated\src\NEPatientInformation.hpp" />
+    <ClInclude Include="generated\src\NECommon.hpp" />
+    <ClInclude Include="generated\src\PatientInfoEvent.hpp" />
+    <ClInclude Include="generated\src\PatientInformationClientBase.hpp" />
+    <ClInclude Include="generated\src\PatientInformationStub.hpp" />
+    <ClInclude Include="generated\src\private\PatientInformationEvents.hpp" />
+    <ClInclude Include="generated\src\private\PatientInformationProxy.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="generated\src\private\NEPatientInformation.cpp" />
+    <ClCompile Include="generated\src\private\PatientInformationClientBase.cpp" />
+    <ClCompile Include="generated\src\private\PatientInformationEvents.cpp" />
+    <ClCompile Include="generated\src\private\PatientInformationProxy.cpp" />
+    <ClCompile Include="generated\src\private\PatientInformationStub.cpp" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

@@ -2,7 +2,7 @@
 // Name        : main.cpp
 // Author      : Artak Avetyan
 // Version     :
-// Copyright   : Aregtech � 2021
+// Copyright   : Aregtech (c) 2021
 // Description : Hello World in C++, Ansi-style
 //============================================================================
 
@@ -16,11 +16,6 @@
 #ifdef WINDOWS
     #pragma comment(lib, "areg.lib")
 #endif // WINDOWS
-
-/**
- * \brief   A shared buffer object. Not thread safe. Used to demonstrate serialization.
- */
-static SharedBuffer theSharedBuffer;
 
 //////////////////////////////////////////////////////////////////////////
 // HelloThread class declaration
@@ -43,7 +38,7 @@ class HelloThread   : public    Thread
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    HelloThread( void );
+    HelloThread( SharedBuffer & buffer );
 
     virtual ~HelloThread( void );
 
@@ -66,7 +61,12 @@ protected:
 // Hidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
+    /**
+     * \brief   Wrapper of this pointer
+     **/
     inline HelloThread & self( void );
+
+    SharedBuffer &  mBuffer;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -74,9 +74,10 @@ private:
 //////////////////////////////////////////////////////////////////////////
 const char * HelloThread::THREAD_NAME   = "HelloThread";
 
-HelloThread::HelloThread( void )
+HelloThread::HelloThread( SharedBuffer & buffer )
     : Thread            ( self(), HelloThread::THREAD_NAME )
     , IEThreadConsumer  ( )
+    , mBuffer           ( buffer )
 {
 }
 
@@ -93,14 +94,14 @@ void HelloThread::onThreadRuns( void )
 {
     printf("The thread [ %s ] runs, going to output message:\n", Thread::getCurrentThreadName());
 
-    int numDigit = 0;
-    float numPI = 0.0;
+    int numDigit  = 0;
+    float numPI   = 0.0;
     String strMsg = "";
 
-    theSharedBuffer.moveToBegin();
-    theSharedBuffer >> numDigit;
-    theSharedBuffer >> numPI;
-    theSharedBuffer >> strMsg;
+    mBuffer.moveToBegin();
+    mBuffer >> numDigit;
+    mBuffer >> numPI;
+    mBuffer >> strMsg;
 
     std::cout << "*********************************" << std::endl;
     std::cout << "BEGIN dump buffer data .........." << std::endl;
@@ -109,6 +110,8 @@ void HelloThread::onThreadRuns( void )
     std::cout << "Saved string is    : " << strMsg.getString() << std::endl;
     std::cout << "END dump buffer data ............" << std::endl;
     std::cout << "*********************************" << std::endl;
+
+    printf( "The thread [ %s ] completed job...\n", getName().getString() );
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -119,34 +122,33 @@ void HelloThread::onThreadRuns( void )
  */
 int main()
 {
-    theSharedBuffer.moveToBegin();
-    theSharedBuffer << static_cast<int>(1234);
-    theSharedBuffer << static_cast<float>(M_PI);
-    theSharedBuffer << String("!!!Hello World!!!");
+    SharedBuffer buffer;
 
-    theSharedBuffer.moveToBegin();
+    buffer << static_cast<int>(1234);
+    buffer << static_cast<float>(M_PI);
+    buffer << String("!!!Hello World!!!");
+
+    buffer.moveToBegin();
     int   numDigit = 0;
     float numFloat = 0.0;
     String msgHello= "";
 
-    theSharedBuffer >> numDigit;
-    theSharedBuffer >> numFloat;
-    theSharedBuffer >> msgHello;
+    buffer >> numDigit;
+    buffer >> numFloat;
+    buffer >> msgHello;
 
     // make debug output here, check values.
-    printf("The digital number is .: %d\n", numDigit);
+    printf("The integer number is .: %d\n", numDigit);
     printf("The floating number is : %f\n", numFloat);
-    printf("The hello message is ..: %s\n", msgHello.getString());
+    printf("The string message is .: %s\n", msgHello.getString());
 
     // declare thread object.
-    HelloThread aThread;
+    HelloThread aThread(buffer);
 
     // create and start thread, wait until it is started.
-    printf("\nStarting Thread [ %s ]...\n", aThread.getName().getString());
     aThread.createThread(Thread::WAIT_INFINITE);
 
     // stop and destroy thread, clean resources. Wait until thread ends.
-    printf("Destroying Thread [ %s ]...\n", aThread.getName().getString());
     aThread.destroyThread(Thread::WAIT_INFINITE);
 
     std::cout << "Exit application!" << std::endl;

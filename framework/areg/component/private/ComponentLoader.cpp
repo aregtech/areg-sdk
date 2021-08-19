@@ -184,6 +184,13 @@ bool ComponentLoader::setComponentData( const char * roleName, NEMemory::uAlign 
     return result;
 }
 
+bool ComponentLoader::addModelUnique(const NERegistry::Model & newModel)
+{
+    ComponentLoader & loader = ComponentLoader::getInstance();
+    Lock lock( loader.mLock );
+    return loader.addModel(newModel);
+}
+
 void ComponentLoader::removeComponentModel(const char * modelName /*= NULL */)
 {
     OUTPUT_WARN("Removing components and model [ %s ]", modelName != NULL ? modelName : "ALL MODELS");
@@ -206,14 +213,6 @@ void ComponentLoader::removeComponentModel(const char * modelName /*= NULL */)
     {
         loader.mModelList.removeAll();
     }
-}
-
-bool ComponentLoader::addComponentModel( const NERegistry::Model & model )
-{
-    OUTPUT_DBG("Adding new model [ %s ]", model.getModelName().getString());
-    ComponentLoader & loader = ComponentLoader::getInstance();
-    Lock lock( loader.mLock );
-    return loader.addModel(model);
 }
 
 //////////////////////////////////////////////////////////////////////////

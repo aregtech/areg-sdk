@@ -12,20 +12,23 @@ The AREG SDK contains various examples to demonstrate features of the framework.
 
 Below is the list of examples:
 
-1.  [01_hello](./01_hello/)         -- multithreading console application to output "Hello World" message.
-2.  [02_buffer](./02_buffer/)       -- multithreading console application to demonstrate work with shared buffer (stream).
-3.  [03_file](./03_file/)           -- console application to demonstrate work with test/binary files and masks in file paths.
-4.  [04_trace](./04_trace/)         -- multithreading console application to start and use logging.
-5.  [05_timer](./05_timer/)         -- multithreading console application to start Timer Service and use various timers.
-6.  [06_threads](./06_threads/)     -- multithreading console application to start and stop various threads.
-7.  [07_synch](./07_synch/)         -- multithreading console application to use various combined synchronization objects.
-8.  [08_service](./08_service/)     -- multithreading console application to start empty servicing component.
-9.  [09_duplicate](./09_duplicate/) -- multithreading console application to duplicate instances of the same servicing component.
-10. [10_svchello](./10_svchello/)   -- multithreading console application to demonstrate _Local_ servicing component.
-11. [11_svcmix](./11_svcmix/)       -- multithreading console application to demonstrate multi-instances of same _Local_ service.
-12. [12_ipchello](./12_ipchello/)   -- multiprocessing (**IPC**) application to demonstrate _Remote_ servicing component and client.
-13. [13_ipcmix](./13_ipcmix/)       -- multiprocessing (**IPC**) application to demonstrate meshing and mixture of _Local_ and _Remote_ services.
-14. [messager](./messager/)         -- Windows GUI application (**IPC**) to demonstrate dynamic modeling, fault tolerant environment and mist network.
+1.  [01_hello](./01_hello/) -- multithreading console application to output "Hello World" message.
+2.  [02_buffer](./02_buffer/) -- multithreading console application to demonstrate work with shared buffer (stream).
+3.  [03_file](./03_file/) -- console application to demonstrate work with test/binary files and masks in file paths.
+4.  [04_trace](./04_trace/) -- multithreading console application to start and use logging.
+5.  [05_timer](./05_timer/) -- multithreading console application to start Timer Service and use various timers.
+6.  [06_threads](./06_threads/) -- multithreading console application to start and stop various threads.
+7.  [07_synch](./07_synch/) -- multithreading console application to use various combined synchronization objects.
+8.  [08_service](./08_service/) -- multithreading console application to start empty servicing component.
+9.  [09_svcmulti](./09_svcmulti/) -- multithreading console application to create multiple instances of the same servicing component.
+10. [10_locsvchello](./10_locsvchello/) -- multithreading console application to demonstrate _Local_ servicing component.
+11. [11_locsvcmix](./11_locsvcmix/) -- multithreading console application to demonstrate multi-instances of same _Local_ service.
+12. [12_pubsvchello](./12_pubsvchello/) -- multiprocessing (**IPC**) application to demonstrate _Public_ service and the service client.
+13. [13_pubsvcmix](./13_pubsvcmix/) -- multiprocessing (**IPC**) application to demonstrate mesh of _Public_ and _Local_ services and the use of service clients.
+14. [14_pubsvclight](./14_pubsvclight/) -- multiprocessing (**PIC**) application to demonstrate dynamic model creation and the custom event processing.
+15. [15_pubsvcworker](./15_pubsvcworker/) -- multiprocessing (**PIC**) application to demonstrate _Worker Thread_ definition in the model and custom event processing.
+16. [16_pubfsm](./16_pubfsm/) -- multiprocessing (**IPC**) application to demonstrate work of Finite State-Machine created by features of AREG framework.
+17. [17_winchat](./17_winchat/) -- Windows GUI application (**IPC**) to demonstrate dynamic modeling, fault tolerant and distributed system.
 
 The list will be updated. We recommend periodically checking the list.
 

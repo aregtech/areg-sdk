@@ -2,7 +2,7 @@
 // Name        : main.cpp
 // Author      : Artak Avetyan
 // Version     :
-// Copyright   : Aregtech � 2021
+// Copyright   : Aregtech (c) 2021
 // Description : Hello World in C++, Ansi-style
 //============================================================================
 
@@ -92,9 +92,9 @@ void HelloThread::onThreadRuns( void )
 {
     TRACE_SCOPE(main_HelloThread_onThreadRuns);
 
-    TRACE_INFO("The thread [ %s ] runs, going to output message", getName().getString());
+    TRACE_WARN("The thread [ %s ] runs, going to output messages ...", getName().getString());
     TRACE_INFO("!!!Hello World!!!");
-    TRACE_INFO("!!!Hello Tracing!!!");
+    TRACE_DBG("!!!Hello Tracing!!!");
 }
 
 //////////////////////////////////////////////////////////////////////////

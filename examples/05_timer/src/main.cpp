@@ -2,7 +2,7 @@
 // Name        : main.cpp
 // Author      : Artak Avetyan
 // Version     :
-// Copyright   : Aregtech � 2021
+// Copyright   : Aregtech (c) 2021
 // Description : Hello World in C++, Ansi-style
 //               This code example demonstrates timer processing in
 //               own thread.
@@ -77,18 +77,6 @@ protected:
      **/
     virtual void processTimer( Timer & timer );
 
-/************************************************************************/
-// IEEventRouter interface overrides
-/************************************************************************/
-
-    /**
-     * \brief	Posts event and delivers to its target.
-     *          This method must be overwritten to avoid assertion raise.
-     * \param	eventElem	Event object to post
-     * \return	In this class it always returns true.
-     **/
-    virtual bool postEvent( Event & eventElem );
-
 private:
     Timer   mOneTime;       //!< One time timer
     Timer   mPeriodic;      //!< Periodic timer
@@ -110,7 +98,6 @@ const unsigned int TimerDispatcher::TIMEOUT_CONTINUOUS_TIME = Timer::TIMEOUT_1_M
 // Trace scopes must be defined before they are used.
 DEF_TRACE_SCOPE(main_TimerDispatcher_TimerDispatcher);
 DEF_TRACE_SCOPE(main_TimerDispatcher_processTimer);
-DEF_TRACE_SCOPE(main_TimerDispatcher_postEvent);
 DEF_TRACE_SCOPE(main_TimerDispatcher_startTimers);
 DEF_TRACE_SCOPE(main_TimerDispatcher_stopTimers);
 
@@ -138,8 +125,7 @@ inline TimerDispatcher & TimerDispatcher::self( void )
 void TimerDispatcher::processTimer( Timer & timer )
 {
     TRACE_SCOPE(main_TimerDispatcher_processTimer);
-    TRACE_DBG("The timer [ %s ] has expired", timer.getName().getString());
-    TRACE_DBG("... Timeout [ %u ] ms, Event Count [ %u ], processing in Thread [ %s ]", timer.getTimeout(), timer.getEventCount(), getName().getString());
+    TRACE_DBG("The timer [ %s ] has expired. Timeout [ %u ] ms, Event Count [ %u ], processing in Thread [ %s ]", timer.getName( ).getString( ), timer.getTimeout(), timer.getEventCount(), getName().getString());
 
     printf("[ %s ] : Timer [ %s ] expired...\n", DateTime::getNow().formatTime().getString(), timer.getName().getString());
 
@@ -161,27 +147,9 @@ void TimerDispatcher::processTimer( Timer & timer )
     }
 }
 
-bool TimerDispatcher::postEvent(Event & eventElem)
-{
-    bool result = false;
-    if ( RUNTIME_CAST(&eventElem, TimerEvent) != NULL)
-    {
-        result = EventDispatcher::postEvent(eventElem);
-    }
-    else
-    {
-        TRACE_SCOPE(main_TimerDispatcher_postEvent);
-        TRACE_ERR("Not a TimerEvent, cannot Post. Destroying event type [ %s ]", eventElem.getRuntimeClassName());
-        eventElem.destroy();
-    }
-
-    return result;
-}
-
 void TimerDispatcher::startTimers(void)
 {
     TRACE_SCOPE(main_TimerDispatcher_startTimers);
-    TRACE_DBG("Starting timers...");
 
     // Start one-time timer
     if (mOneTime.startTimer(TIMEOUT_ONE_TIME, self(), 1))
@@ -285,6 +253,7 @@ int main()
         // scope is initialized, the logging is not active yet.
         TRACE_SCOPE(main_main);
 
+        // Start timer service
         TRACE_INFO("Starting timer manager...");
         if (Application::startTimerManager())
         {
@@ -298,18 +267,24 @@ int main()
         // declare thread object.
         TRACE_DBG("Initializing timer dispatching threads");
 
+        // Start 'TimerThread_1'
         TimerDispatcher aThread1("TimerThread_1");
+        startTimerThread( aThread1 );
+
+        // Start 'TimerThread_2'
         TimerDispatcher aThread2("TimerThread_2");
-        startTimerThread(aThread1);
         startTimerThread(aThread2);
 
+        // Sleep for a while, let timers run
         TRACE_INFO("Main thread sleeping to let timers run..");
         Thread::sleep(Thread::WAIT_1_SECOND * 30);
         TRACE_INFO("Main thread resumed to stop timers...");
 
+        // Stop timer threads.
         stopTimerThread(aThread1);
         stopTimerThread(aThread2);
 
+        // Stop timer service, not more timers can run
         TRACE_WARN("Stopping timer manager, no timer can be triggered anymore...");
         Application::stopTimerManager();
 

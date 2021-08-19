@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<ServiceInterface FormatVesion="1.0.0">
+    <Overview ID="1" Name="PowerManager" Version="1.0.0">
+        <Description>This is a power manager of Traffic Light Controller. It powers the lights ON and OFF.</Description>
+    </Overview>
+    <DataTypeList>
+        <DataType ID="3" Name="ePoweredState" Type="Enumerate" Values="default">
+            <Description>The power state of the traffic lights.</Description>
+            <FieldList>
+                <EnumEntry ID="4" Name="LightsOFF">
+                    <Value/>
+                    <Description>The lights are OFF</Description>
+                </EnumEntry>
+                <EnumEntry ID="5" Name="LightsON">
+                    <Value/>
+                    <Description>The lights are ON.</Description>
+                </EnumEntry>
+            </FieldList>
+        </DataType>
+    </DataTypeList>
+    <AttributeList>
+        <Attribute DataType="ePoweredState" ID="6" Name="LightsPowerState" Notify="OnChange">
+            <Description>The power state of the traffic lights.</Description>
+        </Attribute>
+    </AttributeList>
+    <MethodList>
+        <Method ID="2" MethodType="request" Name="PowerOn">
+            <Description>Called to power ON the traffic lights.</Description>
+        </Method>
+        <Method ID="7" MethodType="request" Name="PowerOff">
+            <Description>Called to power OFF the traffic lights.</Description>
+        </Method>
+        <Method ID="8" MethodType="request" Name="StartTrafficLight" Response="StartTrafficLight">
+            <Description>Triggered to start the traffic light</Description>
+        </Method>
+        <Method ID="9" MethodType="response" Name="StartTrafficLight">
+            <Description>Sent as a response to start the traffic light. The traffic light can be started when it is powered ON and in initialization state.</Description>
+            <ParamList>
+                <Parameter DataType="bool" ID="10" Name="Success">
+                    <Description>Flag, indicating whether the operation succeeded or not.
+This flag is 'true' if lights are initialization state of if traffic light is already functioning.
+This flag is 'false' if lights are OFF.</Description>
+                </Parameter>
+            </ParamList>
+        </Method>
+        <Method ID="11" MethodType="request" Name="StopTrafficLight" Response="StopTrafficLight">
+            <Description>Call to stop the traffic lights and put them in initialization state.</Description>
+        </Method>
+        <Method ID="12" MethodType="response" Name="StopTrafficLight">
+            <Description>Response to stop the traffic lights.</Description>
+            <ParamList>
+                <Parameter DataType="bool" ID="13" Name="Success">
+                    <Description>Flag, indicating whether the request was processed with success or not.
+This flag is 'true' if traffic light are functioning or lights are in initialization state.
+This flag is 'false' if traffic lights are OFF.</Description>
+                </Parameter>
+            </ParamList>
+        </Method>
+    </MethodList>
+</ServiceInterface>

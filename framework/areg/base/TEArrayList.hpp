@@ -535,7 +535,7 @@ inline int TEArrayList<VALUE, VALUE_TYPE, Implement>::add(VALUE_TYPE newElement)
 {
     setSize(mElemCount + 1, -1);
     mValueList[mElemCount ++] = newElement;
-    return mElemCount;
+    return (mElemCount - 1);
 }
 
 template<typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /* = TEListImpl<VALUE_TYPE> */>

@@ -2,22 +2,6 @@
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <!-- Project configurations and compiler settings -->
   <ItemGroup Label="ProjectConfigurations">
-    <ProjectConfiguration Include="dbg_vc100|Win32">
-      <Configuration>dbg_vc100</Configuration>
-      <Platform>Win32</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="dbg_vc100|x64">
-      <Configuration>dbg_vc100</Configuration>
-      <Platform>x64</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="rls_vc100|Win32">
-      <Configuration>rls_vc100</Configuration>
-      <Platform>Win32</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="rls_vc100|x64">
-      <Configuration>rls_vc100</Configuration>
-      <Platform>x64</Platform>
-    </ProjectConfiguration>
     <ProjectConfiguration Include="dbg_vc110|Win32">
       <Configuration>dbg_vc110</Configuration>
       <Platform>Win32</Platform>

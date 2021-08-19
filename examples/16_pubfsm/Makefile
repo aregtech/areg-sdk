@@ -1,0 +1,14 @@
+16_pubfsm_BASE       := $(AREG_EXAMPLES)/16_pubfsm
+16_pubfsm_OUTPUT_OBJ := $(AREG_OUTPUT_OBJ)/16_pubfsm
+
+16_pubfsm_CXXFLAGS   = -I$(16_pubfsm_BASE) $(examples_CXXFLAGS)
+16_pubfsm_LDFLAGS    = -L $(AREG_OUTPUT_LIB) -Wl,-Bstatic -l$(16_generated_PROJECT_NAME) -Wl,-Bdynamic $(examples_LDFLAGS)
+
+# 'generated' have to be first
+include $(16_pubfsm_BASE)/generated/Makefile
+include $(16_pubfsm_BASE)/ipcfsmsvc/Makefile
+include $(16_pubfsm_BASE)/ipcfsmclient/Makefile
+
+16_pubfsm: $(AREG_OUTPUT_BIN)/$(16_ipcfsmsvc_TARGET_BIN) $(AREG_OUTPUT_BIN)/$(16_ipcfsmclient_TARGET_BIN)
+
+.PHONY: 16_pubfsm

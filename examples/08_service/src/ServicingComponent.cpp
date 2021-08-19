@@ -1,5 +1,5 @@
 /************************************************************************
- * \file        ServicingComponent.cpp
+ * \file        src/ServicingComponent.cpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework examples
  * \author      Artak Avetyan (mailto:artak@aregtech.com)
  * \brief       Collection of AREG SDK examples.
@@ -10,11 +10,10 @@
  * Include files.
  ************************************************************************/
 
-#include "ServicingComponent.hpp"
+#include "src/ServicingComponent.hpp"
 #include "areg/trace/GETrace.h"
 #include "areg/component/ComponentThread.hpp"
-
-extern SynchEvent gExit; //!< The global event to quit application.
+#include "areg/appbase/Application.hpp"
 
 Component * ServicingComponent::CreateComponent(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
 {
@@ -28,8 +27,6 @@ void ServicingComponent::DeleteComponent(Component & compObject, const NERegistr
 
 DEF_TRACE_SCOPE(examples_08_service_ServicingComponent_startupServiceInterface);
 DEF_TRACE_SCOPE(examples_08_service_ServicingComponent_shutdownServiceIntrface);
-DEF_TRACE_SCOPE(examples_08_service_ServicingComponent_startupComponent);
-DEF_TRACE_SCOPE(examples_08_service_ServicingComponent_shutdownComponent);
 DEF_TRACE_SCOPE(examples_08_service_ServicingComponent_processTimer);
 
 ServicingComponent::ServicingComponent(ComponentThread & masterThread, const char * const roleName, NEMemory::uAlign OPTIONAL data)
@@ -39,31 +36,10 @@ ServicingComponent::ServicingComponent(ComponentThread & masterThread, const cha
     , mTimer    ( self(), "ServicingTimer" )
     , mCount    ( 0 )
 {
-
 }
 
 ServicingComponent::~ServicingComponent(void)
 {
-}
-
-void ServicingComponent::sendNotification(unsigned int msgId)
-{
-
-}
-
-void ServicingComponent::errorRequest(unsigned int msgId, bool msgCancel)
-{
-
-}
-
-void ServicingComponent::processRequestEvent(ServiceRequestEvent & eventElem)
-{
-
-}
-
-void ServicingComponent::processAttributeEvent(ServiceRequestEvent & eventElem)
-{
-
 }
 
 void ServicingComponent::startupServiceInterface(Component & holder)
@@ -72,7 +48,6 @@ void ServicingComponent::startupServiceInterface(Component & holder)
     TRACE_INFO("The service [ %s ] of component [ %s ] has been started", StubBase::getAddress().getServiceName().getString(), holder.getRoleName().getString());
 
     StubBase::startupServiceInterface(holder);
-
     mTimer.startTimer(TIMER_TIMEOUT, TIMER_EVENTS);
 }
 
@@ -83,22 +58,6 @@ void ServicingComponent::shutdownServiceIntrface(Component & holder)
     
     mTimer.stopTimer();
     StubBase::shutdownServiceIntrface(holder);
-}
-
-void ServicingComponent::startupComponent(ComponentThread & comThread)
-{
-    TRACE_SCOPE(examples_08_service_ServicingComponent_startupComponent);
-    TRACE_INFO("The component [ %s ] started in thread [ %s ], this starts services", Component::getRoleName().getString(), comThread.getName().getString());
-
-    Component::startupComponent(comThread);
-}
-
-void ServicingComponent::shutdownComponent(ComponentThread & comThread)
-{
-    TRACE_SCOPE(examples_08_service_ServicingComponent_shutdownComponent);
-    TRACE_WARN("The component [ %s ] in thread [ %s ] is stopped, services unavailable", Component::getRoleName().getString(), comThread.getName().getString());
-
-    Component::shutdownComponent( comThread );
 }
 
 void ServicingComponent::processTimer(Timer & timer)
@@ -128,6 +87,25 @@ void ServicingComponent::processTimer(Timer & timer)
         printf("Goodbye Service...\n");
 
         TRACE_INFO("The timer is not active anymore, signaling quit event");
-        gExit.setEvent();
+        Application::signalAppQuit();
     }
+}
+
+//////////////////////////////////////////////////////////////////////////
+// These methods must exist, but can have empty body
+//////////////////////////////////////////////////////////////////////////
+void ServicingComponent::sendNotification(unsigned int msgId)
+{
+}
+
+void ServicingComponent::errorRequest(unsigned int msgId, bool msgCancel)
+{
+}
+
+void ServicingComponent::processRequestEvent(ServiceRequestEvent & eventElem)
+{
+}
+
+void ServicingComponent::processAttributeEvent(ServiceRequestEvent & eventElem)
+{
 }

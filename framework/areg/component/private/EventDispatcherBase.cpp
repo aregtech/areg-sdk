@@ -220,6 +220,9 @@ bool EventDispatcherBase::runDispatcher( void )
 
     int whichEvent  = static_cast<int>(EVENT_ERROR);
     const ExitEvent& exitEvent = ExitEvent::getExitEvent();
+
+    readyForEvents(true);
+
     do 
     {
         whichEvent = multiLock.lock(IESynchObject::WAIT_INFINITE, false);
@@ -266,6 +269,8 @@ bool EventDispatcherBase::runDispatcher( void )
             OUTPUT_WARN("Received exit event. Going to exit [ %s ] dispatcher", static_cast<const char *>(mDispatcherName.getString()));
         }
     } while (whichEvent == static_cast<int>(EVENT_QUEUE));
+
+    readyForEvents(false);
     mHasStarted = false;
     removeAllEvents( );
     _clean();
@@ -273,6 +278,10 @@ bool EventDispatcherBase::runDispatcher( void )
     OUTPUT_WARN("The Dispatcher [ %s ] completed job and stopping running.", mDispatcherName.getString());
 
     return (whichEvent == static_cast<int>(EVENT_EXIT));
+}
+
+void EventDispatcherBase::readyForEvents( bool /* isReady */ )
+{
 }
 
 Event* EventDispatcherBase::pickEvent( void )
