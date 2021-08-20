@@ -182,4 +182,3 @@ In this example, in application _appName_:
 Multicast Router (MCR) is a part of AREG framework and it is used for inter-process communication (IPC). When start an application with public service, make sure that the **mcrouter** also has been started. Otherwise, the servicing will not work. The local services do not need to use multicast routing **mcrouter** process.
 
 The MCR options are set in the [_router.init_](./../framework/areg/resources/router.init) file. Developers mainly need to change IP-address and the port number of the router in this file. By default, the relative path of _router.init_ file is _./config/router.init_.
-
