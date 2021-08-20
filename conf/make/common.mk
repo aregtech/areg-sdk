@@ -5,7 +5,7 @@ AREG_OUTPUT_BIN = $(ProjBinDir)
 AREG_INCLUDES   = $(ProjIncludes)
 AREG_TOOLCHAIN  = $(CrossCompile)$(Toolset)
 AREG_AR         = $(CrossCompile)ar
-AREG_OS         = $(os)
+AREG_OS         = $(OpSystem)
 AREG_STATIC_LIB =
 
 ifeq ($(areg), shared)

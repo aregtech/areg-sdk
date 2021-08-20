@@ -33,11 +33,10 @@ CrossCompile :=
 # ###########################################################################
 
 # taget settings
-os     := posix
 areg   := static
 bit    :=
-# Config := Release
-Config := Debug
+Config := Release
+# Config := Debug
 
 # host settings, can leave them blank in case host's OS is Linux.
 Platform :=

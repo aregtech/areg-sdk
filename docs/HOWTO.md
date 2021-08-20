@@ -26,11 +26,57 @@ A typical _POSIX_ application usually is compiled with _POSIX, DEBUG (NDEBUG), I
 
 ## How to compile
 
-AREG SDK provides **Eclipse** and **Visual Studio** project files to compile projects. _Eclipe_ projects are used to compile **POSIX** (_Linux_) and _Visual Studio_ project files are used to compile **Windows** versions of projects. By default, there is no need to make additional changes in settings to compile projects. More details of importing and compiling projects are below. To run **IPC** examples, make sure the process **mcrouter** has started.
+AREG SDK provides **Makefile**, **Eclipse** and **Visual Studio** project files to compile projects. _Makefile_ and _Eclipe_ projects are used to build software with _POSIX API_ and _Visual Studio_ project files are used to build software with _Win32 API_. By default, there is no need to make additional changes in settings to compile projects. More details of importing and compiling projects are below. To run **IPC** examples, make sure the process **mcrouter** has started.
 
 ### POSIX build
 
-To compile _POSIX_ version of projects use _Eclipse for C/C++ Developers_ IDE and _GCC_ compiler version 11 or higher. You need to import to _Eclipse_ workspace the existing projects.
+To build the _POSIX_ version of projects use _make_ or _Eclipse for C/C++ Developers_ IDE to compile with _GCC_ or _clang_ compilers. AREG framework and examples require C++ 11 or higher.
+
+#### make
+
+_make_ and _Makefile_ is used to build AREG framework with _POSIX API_. To build projects, open command line terminal in _AREG SDK root_ directory and do one of these actions:
+
+Compile all projects (framework and examples):
+```
+$ make [all]
+```
+
+Compile _framework_ only:
+```
+$ make framework
+```
+
+Compile _examples_ only:
+```
+$ make examples
+```
+
+All builds are located in created **'./product'** sub-folder located in _AREG SDK root_ directory.
+
+To clean existing build, open command line terminal in _AREG SDK root_ directory and make this action to remove all compiled files (this deletes the entire _'product'_ output directory)
+```
+$ make clean
+```
+
+**Change the compiler settings:**
+
+To change compiler settings, use [user.mk](../conf/make/user.mk) file and edit. Do not commit the developer specific file if other developers use different settings.
+* To set the compiler, change _Toolset_. Supported values: _g++_ (default compiler), _gcc_, _clang_.
+* To set the target build Operating System, change _OpSystem_. Supported values: _linux_, _windows_.
+* To set the hardware platform, change _Platform_. Supported values: _x86_, _x86_64_.
+* To set the cross-compiler, change _CrossCompiler_. Supported values: &lt;_no value&gt; (take default values), _arm-linux-gnueabihf-g++_ (Linux g++ compiler for arm32), _arm-linux-gnueabihf-gcc_ (Linux GCC compiler for arm32), _aarch64-linux-gnu-g++_ (Linux g++ compiler for amd64), _aarch64-linux-gnu-gcc_ (Linux GCC compiler for amd64).
+* To set the AREG framework library type, change _areg_. Supported values: **_static_** (build and link AREG framework as a static library), **_shared_** (build and linke AREG framework as a shared library).
+* To set build configuration, change _Config_. Supported values: **_Debug_** (build debug version) and **_Release_** (build release version).
+* To set additional compiler preprocessor directives, change _UserDefines_. By default, all projects are built to support tracing / logging (preprocessor _ENABLE_TRACES_).
+* To set additional include directories, change _UserDefIncludes_.
+* To set additional library directories, change _UserDefLibPaths_.
+* To set additional libraries, change _UserDefLibs_.
+* To set the build output directory, change _UserDefOutput_. By default, the binaries are compiled in **_./product_** sub-folder created in _AREG SDK root_.
+* To set the binary output directory, change _ProjBuildPath_. By default, the path includes compile, hardware, operating system and configuration information.
+
+#### Eclipse for C/C++ Developer
+
+_Eclipse_ IDE is used to build software with _POSIX API_ in Linux or Windows OS (For example, for Windows use _cygwin GCC_ compiler). You need to import the existing _Eclipse_ projects to workspace created in _AREG SDK root_ directory.
 
 **How to import projects**:
 * Open _Eclipse for C/C++ Developers_ IDE.
@@ -46,14 +92,14 @@ The Debug builds are output in _Debug_ and the Release builds are in _Release_ s
 
 ### Windows build
 
-To compile Windows versions of projects, use Visual Studio 12 or higher to open the solution. However, the sources can be compiled with Visual Studio 10 (MSVC v100) compiler or higher version.
+To compile Windows versions of projects, use Visual Studio 12 or higher to open the solution.
 
 **How to load projects**:
 * In Visual Studio (VS2012 or higher) open _areg-sdk.sln_ file, located in _areg-sdk_.
-* In the toolbar of Visual Studio select _Solution Cofigurations_ and _Solution Platforms_ to compile.
-* _Solution Platform_ **Win32** compiles 32-bit and **x64** compiles 64-bit applications.
-* _Solution Configuratin_ chose configuration suitable for your Visual Studio.
-    * _dbg_vc100_ or _rls_vc100_ use Visual Studio 10 compiler.
+* After loading the solution file, if Visual Studio offers to convert old versions of project files, ignore all.
+* In the toolbar of Visual Studio select _Solution Cofigurations_ and _Solution Platforms_ to compile the solution.
+* In _Solution Platform_ select either **Win32** to compile 32-bit and select **x64** to compile 64-bit versions of applications.
+* In _Solution Configuratin_ choose one of following configurations suitable for your Visual Studio.
     * _dbg_vc110_ or _rls_vc110_ use Visual Studio 2012 compiler.
     * _dbg_vc120_ or _rls_vc120_ use Visual Studio 2013 compiler.
     * _dbg_vc140_ or _rls_vc140_ use Visual Studio 2015 compiler.
@@ -135,4 +181,4 @@ In this example, in application _appName_:
 
 Multicast Router (MCR) is a part of AREG framework and it is used for inter-process communication (IPC). When start an application with public service, make sure that the **mcrouter** also has been started. Otherwise, the servicing will not work. The local services do not need to use multicast routing **mcrouter** process.
 
-The MCR options are set in [_router.init_](./../framework/areg/resources/router.init) file. Developers mainly need to change IP-address and the port number of the router in this file. By default, the relative path of _router.init_ file is _./config/router.init_.
+The MCR options are set in the [_router.init_](./../framework/areg/resources/router.init) file. Developers mainly need to change IP-address and the port number of the router in this file. By default, the relative path of _router.init_ file is _./config/router.init_.
