@@ -167,3 +167,5 @@
 /examples/16_pubfsm/ipcfsmsvc/Release/
 /examples/16_pubfsm/ipcfsmsvc/.settings/
 /examples/16_pubfsm/ipcfsmsvc/logs/
+
+/examples/benchmark/
