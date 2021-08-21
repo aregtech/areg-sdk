@@ -63,8 +63,8 @@ $ make clean
 To change compiler settings, use [user.mk](../conf/make/user.mk) file and edit. Do not commit the developer specific file if other developers use different settings.
 * To set the compiler, change _Toolset_. Supported values: _g++_ (default compiler), _gcc_, _clang_.
 * To set the target build Operating System, change _OpSystem_. Supported values: _linux_, _windows_.
-* To set the hardware platform, change _Platform_. Supported values: _x86_, _x86_64_.
-* To set the cross-compiler, change _CrossCompiler_. Supported values: &lt;_no value&gt; (take default values), _arm-linux-gnueabihf-g++_ (Linux g++ compiler for arm32), _arm-linux-gnueabihf-gcc_ (Linux GCC compiler for arm32), _aarch64-linux-gnu-g++_ (Linux g++ compiler for amd64), _aarch64-linux-gnu-gcc_ (Linux GCC compiler for amd64).
+* To set the hardware platform, change _Platform_. Supported values: _x86_, _x86_64_, _arm_, _aarch64_.
+* To set the cross-compiler, change _CrossCompiler_. Supported values: &lt;_no value&gt; (take default values), _arm-linux-gnueabihf-g++_ (Linux g++ compiler for arm32), _arm-linux-gnueabihf-gcc_ (Linux GCC compiler for arm32), _aarch64-linux-gnu-g++_ (Linux g++ compiler for arm64), _aarch64-linux-gnu-gcc_ (Linux GCC compiler for arm64).
 * To set the AREG framework library type, change _areg_. Supported values: **_static_** (build and link AREG framework as a static library), **_shared_** (build and linke AREG framework as a shared library).
 * To set build configuration, change _Config_. Supported values: **_Debug_** (build debug version) and **_Release_** (build release version).
 * To set additional compiler preprocessor directives, change _UserDefines_. By default, all projects are built to support tracing / logging (preprocessor _ENABLE_TRACES_).
