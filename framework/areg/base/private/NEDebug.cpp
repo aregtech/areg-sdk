@@ -56,11 +56,11 @@ void AREG_API NEDebug::outputConsole(const char * msg, ...)
     if (msg != NULL)
     {
         va_start(args, msg);
-        if ( args == NULL )
-        {
-            NEDebug::outputMessageOS( msg );
-        }
-        else
+        //if ( args == NULL )
+        //{
+        //    NEDebug::outputMessageOS( msg );
+        //}
+        //else
         {
             char buffer[NEDebug::MAX_DEBUG_BUFFER_SIZE];
             String::formatStringList(buffer, NEDebug::MAX_DEBUG_BUFFER_SIZE, msg, args);

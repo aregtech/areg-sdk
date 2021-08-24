@@ -57,8 +57,8 @@ test -z "$DOC_PATH"     && die "Doc path is missing, use -h or --help to see the
 TOOLS_PATH=$(dirname $ME)
 export CLASSPATH=${TOOLS_PATH}:${TOOLS_PATH}/codegen.jar
 
-echo ================================
-echo Generating code to $TARGET ....
-echo ================================
+echo ==============================================================================
+echo Generating class defined in $(basename ${DOC_PATH}) to $TARGET ....
+echo ==============================================================================
 
 exec java com.aregtech.CMFMain --root=${PROJECT_ROOT} --doc=${DOC_PATH} --target=$TARGET

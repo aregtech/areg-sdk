@@ -58,6 +58,11 @@ To clean existing build, open command line terminal in _AREG SDK root_ directory
 $ make clean
 ```
 
+In all cases, parallel compilation with `-j` can be used to speedup the compilation. For example, to compile `areg-sdk` with 8 threads:
+```
+$ make -j 8
+```
+
 **Change the compiler settings:**
 
 To change compiler settings, use [user.mk](../conf/make/user.mk) file and edit. Do not commit the developer specific file if other developers use different settings.
@@ -73,6 +78,22 @@ To change compiler settings, use [user.mk](../conf/make/user.mk) file and edit. 
 * To set additional libraries, change _UserDefLibs_.
 * To set the build output directory, change _UserDefOutput_. By default, the binaries are compiled in **_./product_** sub-folder created in _AREG SDK root_.
 * To set the binary output directory, change _ProjBuildPath_. By default, the path includes compile, hardware, operating system and configuration information.
+
+Examples for the command to use for different settings:
+
+```
+# Compile areg-sdk with clang using 8 threads
+$ make -j 8 Toolset=clang
+```
+```
+# Compile areg-sdk with arm-linux-gnueabihf-g++ for arm32
+$ make -j 8 CrossCompile=arm-linux-gnueabihf-
+```
+
+```
+# Compile areg-sdk as Debug shared library with aarch64-linux-gnu-gcc
+$ make -j 8 Config=Debug CrossCompile=aarch64-linux-gnu- Toolset=gcc
+```
 
 #### Eclipse for C/C++ Developer
 
