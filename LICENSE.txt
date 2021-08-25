@@ -1,4 +1,4 @@
-This file is part of AREG IoT SDK.
+This file is part of AREG SDK.
 Copyright (c) Aregtech UG, 2017-2021
 Contact: info[at]aregtech.com, contact[at]aregtech.com
 Website: https://www.aregtech.com
@@ -21,13 +21,11 @@ relationship with Aregtech company to meet development goals.
         is not higher than 500.000 USD (five hundred thousand US dollars). 
     2.  For other businesses and government organizations the use of source 
         codes and supplied tools, depending on the nature of the project, 
-        require additional license.
+        require additional license. Aregtech may define individual commercial
+        or free license with business and government organizations.
     3.  By use and distribution of compiled binaries or open sources, the 
-        distributor must keep the copyright of Aregtech.
-    4.  Aregtech may define individual commercial or free license with business
-        and government organizations.
-    5.  Aregtech any time may change the free source code distribution policy.
-
+        distributor must keep the copyright of Aregtech. The free source code
+        distribution policy can be changed at any time.
 
 =============================================================================
 
