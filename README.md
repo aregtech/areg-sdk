@@ -14,7 +14,7 @@ When we were designing AREG SDK, the guiding principle was to create a framework
 
 ## Get rid of tedious work
 
-Complex multiprocessing projects may suffer from mixed client-server complex networks, may have problems due to dependencies of start and shutdown priority of applications, may produce bugs when manually messaging and dispatching. The automation and intelligence of AREG SDK engine easily handles and simplifies any such complexity, and helps developers to focus on application business logic as they would program a single process application with one thread where function calls of objects are event-driven.
+Complex multiprocessing projects may suffer from mixed client-server complex networks, may have problems due to dependencies of start and shutdown priority of applications, may produce bugs when manually messaging and dispatching. The automation and intelligence of AREG SDK engine easily handles and simplifies any such complexity, and helps developers to focus on application business logic as they would program a single process application with one thread where methods of objects are event-driven.
 
 ## Benefits
 
