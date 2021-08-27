@@ -12,7 +12,7 @@
 When we were designing AREG SDK, the guiding principle was to create a framework to develop embedded applications that intelligently interact at the edge of the IoT network. To keep application design homogeneous, we defined Local services for inter-thread and the Public services for inter-process communications. As a base of IPC we use Object Remote Procedure Call (_ORPC_) protocol and multicast routing (MCR) network communication model, and combine features of client-server (request-reply) and subscriber-provider (publisher-subscriber) models. In the MCR network the engine of AREG Framework forms logical connections of software nodes, where every node can be a mixture of logical servers and clients, which provide or use service(s). This approach creates a fault tolerant system and scalable mesh of services running directly on connected Things.
 
 
-## Get rid of tedious work
+## Get rid of tedious complexity
 
 Complex multiprocessing projects may suffer from mixed client-server complex networks, may have problems due to dependencies of start and shutdown priority of applications, may produce bugs when manually messaging and dispatching. The automation and intelligence of AREG SDK engine easily handles and simplifies any such complexity, and helps developers to focus on application business logic as they would program a single process application with one thread where methods of objects are event-driven.
 
@@ -34,7 +34,7 @@ Traditionally, IoT devices are connected clients of cloud or fog servers to stre
 
 ## Software build
 
-AREG SDK can be used in Linux (Embedded Linux) and Windows machines running on x86, amd64, arm 32- and 64-bit processors. The SDK and example codes can be compiled by using _Makefile_, _Eclipse for C/C++ Developer_ and _Visual Studio_. 
+AREG SDK can be used in Linux (Embedded Linux) and Windows machines running on x86, amd64, arm 32- and 64-bit processors. The SDK and example codes can be compiled by using _Makefile_, _Eclipse for C/C++ Developer_ and _Visual Studio_. AREG SDK consists of [AREG framework library](./framework/areg/) and [Multicast Router](./framework/msrouter).
 
 #### make
 
