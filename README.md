@@ -34,7 +34,7 @@ Traditionally, IoT devices are connected clients of cloud or fog servers to stre
 
 ## Software build
 
-AREG SDK can be used in Linux (Embedded Linux) and Windows machines running on x86, amd64, arm 32- and 64-bit processors. The SDK and example codes can be compiled by using _Makefile_, _Eclipse for C/C++ Developer_ and _Visual Studio_. AREG SDK consists of [AREG framework library](./framework/areg/) and [Multicast Router](./framework/msrouter).
+AREG SDK can be used in Linux (Embedded Linux) and Windows machines running on x86, amd64, arm 32- and 64-bit processors. The SDK and example codes can be compiled by using _Makefile_, _Eclipse for C/C++ Developer_ and _Visual Studio_. AREG SDK consists of [AREG framework library](./framework/areg/) and [multicast router](./framework/mcrouter).
 
 #### make
 
