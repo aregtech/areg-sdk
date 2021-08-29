@@ -17,8 +17,8 @@ also gives access to the official AREG SDK support and close strategic
 relationship with Aregtech company to meet development goals.
 
     1.  These source codes are free for use for individuals, educational and 
-        non-profitable organizations, small businesses, which annual turnover
-        is not higher than 500.000 USD (five hundred thousand US dollars). 
+        non-profitable organizations, freelaners, R&D, small businesses, which
+        annual turnover is not higher than 1.000.000 USD (one million US dollars). 
     2.  For other businesses and government organizations the use of source 
         codes and supplied tools, depending on the nature of the project, 
         require additional license. Aregtech may define individual commercial
