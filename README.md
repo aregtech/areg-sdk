@@ -19,7 +19,7 @@ When we were designing AREG SDK, the guiding principle was to create a framework
 
 ## Escape complexity of multiprocessing
 
-AREG SDK simplifies the multiprocessing programming and helps developers to focus on application business logic as they would program a single process application with one thread where methods of objects are event-driven. The engine automatically forms a fault tolerant and scalable system of meshed services, and guarantees that the system will run the exact remote method of the exact remote object, whether it is a server (_service provider_) or client (_service user_) component.
+AREG SDK simplifies the multiprocessing programming and helps developers to focus on application business logic as they would program a single process application with one thread where methods of objects are event-driven. The engine automatically forms a fault tolerant and scalable system of meshed services, where application start and shutdown has no priority dependency. It guarantees that the system automatically delivers the newest data on subscription and the system runs the exact method of the exact remote object, whether it is a server (_service provider_) or client (_service user_) component.
 
 ## Benefits
 
