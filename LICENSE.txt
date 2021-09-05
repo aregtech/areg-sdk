@@ -8,7 +8,7 @@ Website: https://www.aregtech.com
                                 GENERAL
 
 
-AREG IoT SDK (or AREG SDK) is dual-licensed under Free open source (Apache 
+AREG SDK (or AREG IoT SDK) is dual-licensed under Free open source (Apache 
 version 2.0 License) and Commercial (with various pricing models) licenses, 
 depending on the nature of the project (commercial, research, academic or free).
 AREG SDK commercial license gives rights to create and distribute software on 

@@ -77,6 +77,17 @@ protected:
      **/
     virtual void processTimer( Timer & timer );
 
+    /**
+     * \brief	Posts event and delivers to its target.
+     *          Since the Dispatcher Thread is a Base object for
+     *          Worker and Component threads, it does nothing
+     *          and only destroys event object without processing.
+     *          Override this method or use Worker / Component thread.
+     * \param	eventElem	Event object to post
+     * \return	In this class it always returns true.
+     **/
+    virtual bool postEvent( Event & eventElem );
+
 private:
     Timer   mOneTime;       //!< One time timer
     Timer   mPeriodic;      //!< Periodic timer
@@ -97,6 +108,7 @@ const unsigned int TimerDispatcher::TIMEOUT_CONTINUOUS_TIME = Timer::TIMEOUT_1_M
 // Define TimerDispatcher trace scopes to make logging
 // Trace scopes must be defined before they are used.
 DEF_TRACE_SCOPE(main_TimerDispatcher_TimerDispatcher);
+DEF_TRACE_SCOPE( main_TimerDispatcher_postEvent );
 DEF_TRACE_SCOPE(main_TimerDispatcher_processTimer);
 DEF_TRACE_SCOPE(main_TimerDispatcher_startTimers);
 DEF_TRACE_SCOPE(main_TimerDispatcher_stopTimers);
@@ -120,6 +132,25 @@ TimerDispatcher::~TimerDispatcher( void )
 inline TimerDispatcher & TimerDispatcher::self( void )
 {
     return (*this);
+}
+
+bool TimerDispatcher::postEvent( Event & eventElem )
+{
+    TRACE_SCOPE( main_TimerDispatcher_postEvent );
+    bool result = false;
+
+    if ( RUNTIME_CAST( &eventElem, TimerEvent ) != nullptr )
+    {
+        result = EventDispatcher::postEvent( eventElem );
+    }
+    else
+    {
+        TRACE_ERR( "Unexpected event of type [ %s ] for this example. Raising assertion!", eventElem.getRuntimeClassName( ) );
+        eventElem.destroy( );
+        ASSERT(false);
+    }
+
+    return result;
 }
 
 void TimerDispatcher::processTimer( Timer & timer )

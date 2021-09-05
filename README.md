@@ -15,7 +15,7 @@ Traditionally, devices are connected clients to stream data to the cloud or fog 
 
 ## More than embedded
 
-When we were designing AREG SDK, the guiding principle was to create a framework to develop embedded applications that intelligently interact at the edge of the network. To keep application design homogeneous, we defined _Local_ services for multithreading and the _Public_ services for inter-process communications. These services are neither processes, nor tasks managed by the operating system, they are software components with specific Interfaces designed by developers or architects, which methods are called remotely indifferent of servicing component location.
+When we were designing AREG SDK, the guiding principle was to create a framework to develop embedded applications that intelligently interact at the edge of the network. To keep application design homogeneous, we defined _Local_ services for multithreading and the _Public_ services for inter-process communications. These services are neither processes, nor tasks managed by the operating system, they are software components with specific Interfaces designed by developers or architects, which methods are called remotely indifferent of servicing component location. This technique of remote object communicaton as well known as Object Remote Procedure Call (_ORPC_).
 
 ## Escape complexity of multiprocessing
 
