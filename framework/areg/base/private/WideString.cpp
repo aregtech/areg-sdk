@@ -41,95 +41,99 @@
 #define _MAX_BUF_SIZE        512
 #define _EXTRA_BUF_SIZE     1024
 
-static const wchar_t _FormatRadixBinary[] = { L'0', L'1', L'\0' };
+namespace 
+{
+    constexpr wchar_t const _formatRadixBinary[] = { L'0', L'1', L'\0' };
 
 //////////////////////////////////////////////////////////////////////////
 // String class implementation
 //////////////////////////////////////////////////////////////////////////
 
-template<typename DigitType>
-static inline int32_t _formatBinary( WideString & result, DigitType number )
-{
-    wchar_t buffer[_MAX_BINARY_BUFFER];
-    wchar_t * dst  = buffer;
-    DigitType base = static_cast<DigitType>(NEString::eRadix::RadixBinary);
-    bool isNegative = number < 0;
-
-    number = MACRO_ABS( number );
-    short idx = 0;
-    do
+    template<typename DigitType>
+    inline int32_t _formatBinary( WideString & result, DigitType number )
     {
-        idx = static_cast<short>(number % base);
+        wchar_t buffer[_MAX_BINARY_BUFFER];
+        wchar_t * dst  = buffer;
+        DigitType base = static_cast<DigitType>(NEString::eRadix::RadixBinary);
+        bool isNegative = number < 0;
 
-        *dst ++ = _FormatRadixBinary[idx < 0 ? 1 : idx];
-        number /= base;
-    } while ( number != 0 );
+        number = MACRO_ABS( number );
+        short idx = 0;
+        do
+        {
+            idx = static_cast<short>(number % base);
 
-    *dst    = static_cast<char>(NEString::EndOfString);
-    int32_t count = static_cast<int32_t>(dst - buffer);
-    NEString::swapString<wchar_t>(buffer, count);
-    result = WideString::EmptyChar;
-    if ( isNegative )
-    {
-        result = L'-';
-        ++ count;
+            *dst ++ = _formatRadixBinary[idx < 0 ? 1 : idx];
+            number /= base;
+        } while ( number != 0 );
+
+        *dst    = static_cast<char>(NEString::EndOfString);
+        int32_t count = static_cast<int32_t>(dst - buffer);
+        NEString::swapString<wchar_t>(buffer, count);
+        result = WideString::EmptyChar;
+        if ( isNegative )
+        {
+            result = L'-';
+            ++ count;
+        }
+
+        result  += buffer;
+        return count;
     }
 
-    result  += buffer;
-    return count;
-}
+    template<typename DigitType, int const CharCount>
+    inline int32_t _formatDigit( WideString & result, const wchar_t * format, DigitType number )
+    {
+        wchar_t buffer[CharCount];
+        buffer[0] = static_cast<char>(NEString::EndOfString);
 
-template<typename DigitType, int const CharCount>
-static inline int32_t _formatDigit( WideString & result, const wchar_t * format, DigitType number )
-{
-    wchar_t buffer[CharCount + 1];
-    buffer[0] = static_cast<char>(NEString::EndOfString);
-
-    int32_t count = -1;
+        int32_t count = -1;
 #ifdef _WIN32
-    count = swprintf_s(buffer, CharCount, format, number);
+        count = ::swprintf_s(buffer, CharCount, format, number);
 #else   // _WIN32
-    count = swprintf( buffer, CharCount, format, number);
+        count = ::swprintf( buffer, CharCount, format, number);
 #endif  // _WIN32
-    result = buffer;
-    return count;
-}
-
-static inline int _formatStringList( wchar_t * buffer, int count, const wchar_t * format, va_list argptr )
-{
-
-    int result = -1;
-    if ( buffer != NULL_STRING_W )
-    {
-        *buffer = static_cast<wchar_t>(NEString::EndOfString);
-#ifdef  WIN32
-        result = vswprintf_s( buffer, static_cast<size_t>(count), format, argptr );
-#else
-        result = vswprintf( buffer, count, format, argptr );
-#endif
+        result = buffer;
+        return count;
     }
-    return result;
-}
 
-template<int const CharCount>
-static inline int32_t _formatStringList( WideString & result, const wchar_t * format, va_list argptr )
-{
+    inline int _formatStringList( wchar_t * buffer, int count, const wchar_t * format, va_list argptr )
+    {
+
+        int result = -1;
+        if ( buffer != NULL_STRING_W )
+        {
+            *buffer = static_cast<wchar_t>(NEString::EndOfString);
+#ifdef  WIN32
+            result = vswprintf_s( buffer, static_cast<size_t>(count), format, argptr );
+#else   // !WIN32
+            result = vswprintf( buffer, count, format, argptr );
+#endif  // !WIN32
+        }
+        return result;
+    }
+
+    template<int const CharCount>
+    inline int32_t _formatStringList( WideString & result, const wchar_t * format, va_list argptr )
+    {
     
-    wchar_t buffer[CharCount];
-    int32_t count = _formatStringList(buffer, CharCount, format, argptr);
-    result = buffer;
-    return count;
-}
+        wchar_t buffer[CharCount];
+        int32_t count = _formatStringList(buffer, CharCount, format, argptr);
+        result = buffer;
+        return count;
+    }
 
-template<int const CharCount>
-static inline int32_t _formatString( WideString & result, const wchar_t * format, ... )
-{
-    va_list argptr;
-    va_start( argptr, format );
-    int32_t count = _formatStringList<CharCount>(result, format, argptr );
-    va_end( argptr );
-    return count;
-}
+    template<int const CharCount>
+    inline int32_t _formatString( WideString & result, const wchar_t * format, ... )
+    {
+        va_list argptr;
+        va_start( argptr, format );
+        int32_t count = _formatStringList<CharCount>(result, format, argptr );
+        va_end( argptr );
+        return count;
+    }
+
+} // namespace
 
 //////////////////////////////////////////////////////////////////////////
 // Friend methods
@@ -203,10 +207,6 @@ WideString::WideString( const IEInStream & stream )
 #endif // DEBUG
 }
 
-WideString::~WideString( void )
-{
-}
-
 //////////////////////////////////////////////////////////////////////////
 // operators / operations
 //////////////////////////////////////////////////////////////////////////
@@ -238,6 +238,7 @@ WideString & WideString::operator = ( WideString && src ) noexcept
 
 #ifdef DEBUG
         mString = mData != nullptr ? mData->strBuffer : nullptr;
+        src.mString = nullptr;
 #endif // DEBUG
     }
 
@@ -298,7 +299,15 @@ WideString & WideString::operator = (const String & src)
 
 bool WideString::operator == (const String & other) const
 {
-    return (NEString::compareFast<wchar_t, char>( getString( ), other.getString( ) ) == 0);
+    int len = getLength();
+    if ( len == other.getLength() )
+    {
+        return (NEString::compareFast<wchar_t, char>( getString( ), other.getString( ) ) == 0);
+    }
+    else
+    {
+        return false;
+    }
 }
 
 WideString & WideString::operator += (const WideString & src)
@@ -387,13 +396,26 @@ wchar_t WideString::operator [ ] (int atPos) const
 
 WideString::operator unsigned int (void) const
 {
-    return (isValid() ? NEMath::crc32Calculate(getString()) : NEMath::CHECKSUM_IGNORE);
+    const wchar_t * str = getBuffer();
+    if ( getLength( ) > 2 )
+    {
+        const unsigned int * buf = reinterpret_cast<const unsigned int *>(str);
+        return (*buf);
+    }
+    else if ( isValid() )
+    {
+        return NEMath::crc32Calculate( str );
+    }
+    else
+    {
+        return NEMath::CHECKSUM_IGNORE;
+    }
 }
 
 int32_t WideString::makeInt32( const wchar_t * strDigit, NEString::eRadix radix /*= NEString::RadixDecimal*/, const wchar_t ** end /*= nullptr*/ )
 {
     wchar_t * temp = nullptr;
-    int result = static_cast<int>(NEString::isEmpty<wchar_t>(strDigit) == false ? wcstol( strDigit, &temp, static_cast<int>(radix) ) : 0);
+    int result  = static_cast<int>(NEString::isEmpty<wchar_t>(strDigit) == false ? wcstol( strDigit, &temp, static_cast<int>(radix) ) : 0);
     if (end != nullptr)
     {
         *end = temp != nullptr ? temp : strDigit;
@@ -417,7 +439,7 @@ uint32_t WideString::makeUInt32( const wchar_t * strDigit, NEString::eRadix radi
 int64_t WideString::makeInt64( const wchar_t * strDigit, NEString::eRadix radix /*= NEString::RadixDecimal*/, const wchar_t ** end /*= nullptr*/ )
 {
     wchar_t * temp = nullptr;
-    long long int result = static_cast<long long int>(NEString::isEmpty<wchar_t>(strDigit) == false ? wcstoll(strDigit, &temp, static_cast<int>(radix)) : 0);
+    int64_t result = static_cast<long long int>(NEString::isEmpty<wchar_t>(strDigit) == false ? wcstoll(strDigit, &temp, static_cast<int>(radix)) : 0);
     if (end != nullptr)
     {
         *end = temp != nullptr ? temp : strDigit;
@@ -466,14 +488,14 @@ bool WideString::makeBool( const wchar_t * strBoolean, const wchar_t ** end /*= 
 {
     bool result = false;
     int lenSkip = 0;
-    int lenTrue = static_cast<int>(BOOLEAN_TRUE.length());
-    int lenFalse= static_cast<int>(BOOLEAN_FALSE.length());
-    if ( NEString::compareStrings<wchar_t, wchar_t>(strBoolean, BOOLEAN_TRUE.data(), lenTrue, false) == 0)
+    int lenTrue = static_cast<int>(NECommon::BOOLEAN_TRUE.length());
+    int lenFalse= static_cast<int>(NECommon::BOOLEAN_FALSE.length());
+    if ( NEString::compareStrings<wchar_t, char>(strBoolean, NECommon::BOOLEAN_TRUE.data(), lenTrue, false) == 0)
     {
         result = true;
         lenSkip= lenTrue;
     }
-    else if ( NEString::compareStrings<wchar_t, wchar_t>(strBoolean, BOOLEAN_FALSE.data(), lenFalse, false) == 0)
+    else if ( NEString::compareStrings<wchar_t, char>(strBoolean, NECommon::BOOLEAN_FALSE.data(), lenFalse, false) == 0)
     {
         result = false;
         lenSkip= lenFalse;
@@ -623,8 +645,8 @@ WideString WideString::doubleToString(double number)
 
 WideString WideString::boolToString( bool value )
 {
-    return (value ? WideString(BOOLEAN_TRUE.data(),  static_cast<int>(BOOLEAN_TRUE.length() )) : 
-                    WideString(BOOLEAN_FALSE.data(), static_cast<int>(BOOLEAN_FALSE.length())) );
+    return (value ? WideString(NECommon::BOOLEAN_TRUE.data(),  static_cast<int>(NECommon::BOOLEAN_TRUE.length() )) :
+                    WideString(NECommon::BOOLEAN_FALSE.data(), static_cast<int>(NECommon::BOOLEAN_FALSE.length())) );
 }
 
 int WideString::formatString( wchar_t * strDst, int count, const wchar_t * format, ... )

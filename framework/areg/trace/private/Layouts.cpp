@@ -51,7 +51,7 @@ TickCountLayout::TickCountLayout( TickCountLayout && /*src*/ ) noexcept
 void TickCountLayout::logMessage( const NETrace::sLogMessage & /*msgLog*/, IEOutStream & stream ) const
 {
     char buffer[65];    
-    String::formatString(buffer, 64, "%llu", static_cast<unsigned int>( DateTime::getProcessTickCount() ));
+    String::formatString(buffer, 64, "%llu", static_cast<uint64_t>( DateTime::getProcessTickCount() ));
     stream.write(buffer);
 }
 
@@ -107,8 +107,8 @@ void ModuleIdLayout::logMessage( const NETrace::sLogMessage & msgLog, IEOutStrea
 {
     if ( msgLog.lmHeader.logModuleId != 0 )
     {
-        char buffer[16];
-        String::formatString(buffer, 16, "%p", static_cast<id_type>(msgLog.lmHeader.logModuleId));
+        char buffer[32];
+        String::formatString( buffer, 16, "0x%llX", msgLog.lmHeader.logModuleId );
         stream.write(buffer);
     }
 }
@@ -239,7 +239,13 @@ void ThreadIdLayout::logMessage( const NETrace::sLogMessage & msgLog, IEOutStrea
     if ( msgLog.lmTrace.traceThreadId != 0 )
     {
         char buffer[32];
-        String::formatString(buffer, 32, "%p", static_cast<id_type>(msgLog.lmTrace.traceThreadId));
+
+#ifdef _BIT64
+        String::formatString( buffer, 32, "0x%08X", static_cast<uint32_t>(msgLog.lmTrace.traceThreadId) );
+#else   // _BIT32
+        String::formatString( buffer, 32, "0x%016llX", static_cast<uint64_t>(msgLog.lmTrace.traceThreadId) );
+#endif  // _BIT64
+
         stream.write(buffer);
     }
 }

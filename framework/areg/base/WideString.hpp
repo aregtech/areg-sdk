@@ -41,7 +41,7 @@ class String;
  *          supports streaming and used in Hash Map since has operator
  *          to covert string value to integer.
  **/
-class AREG_API WideString : public TEString<wchar_t>
+class AREG_API WideString : public TEString<wchar_t, TEStringImpl<wchar_t> >
 {
 //////////////////////////////////////////////////////////////////////////
 // defined constants
@@ -52,20 +52,10 @@ public:
 #endif  // _MSC_VER
 
     /**
-     * \brief   String::BOOLEAN_TRUE
-     *          Boolean 'true' value as a string.
-     **/
-    static constexpr std::wstring_view  BOOLEAN_TRUE    = L"true";   //!< Boolean value 'true' as string
-    /**
-     * \brief   String::BOOLEAN_FALSE
-     *          Boolean 'false' value as a string.
-     **/
-    static constexpr std::wstring_view  BOOLEAN_FALSE   = L"false";  //!< Boolean value 'false' as string
-    /**
      * \brief   String::EmptyString
      *          The empty string.
      **/
-    static constexpr std::wstring_view  EmptyString      = {L""};   //!< Empty String
+    static constexpr std::wstring_view   EmptyString      = {L""};   //!< Empty String
 
 #if defined(_MSC_VER) && (_MSC_VER > 1200)
     #pragma warning(default: 4251)
@@ -131,7 +121,7 @@ public:
     /**
      * \brief   Destructor.
      **/
-    virtual ~WideString( void );
+    virtual ~WideString( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // operators
@@ -141,7 +131,7 @@ public:
     /**
      * \brief   Converting operator, converts object to unsigned int primitive
      **/
-    operator unsigned int ( void ) const;
+    explicit operator unsigned int ( void ) const;
 
     /**
      * \brief   Converting operator, converts object to string buffer
@@ -825,12 +815,20 @@ inline WideString::operator const wchar_t *(void) const
 
 inline bool WideString::operator == (const WideString & other) const
 {
-    return (NEString::compareFast<wchar_t, wchar_t>( getString( ), other.getString( ) ) == 0);
+    int len = getLength();
+    if ( len == other.getLength() )
+    {
+        return (NEString::compareFast<wchar_t>( getString( ), other.getString( ), len ) == 0);
+    }
+    else
+    {
+        return false;
+    }
 }
 
 inline bool WideString::operator == (const wchar_t * other) const
 {
-    return (NEString::compareFast<wchar_t, wchar_t>( getString( ), other ) == 0);
+    return (NEString::compare<wchar_t>( getString( ), other ) == 0);
 }
 
 inline bool WideString::operator == (const char * other) const
@@ -850,22 +848,30 @@ inline bool WideString::operator == (const char ch) const
 
 inline bool WideString::operator != (const WideString & other) const
 {
-    return (NEString::compareFast<wchar_t, wchar_t>( getString( ), other.getString( ) ) != 0);
+    int len = getLength();
+    if ( len == other.getLength() )
+    {
+        return (NEString::compareFast<wchar_t>( getString( ), other.getString( ), len ) != 0);
+    }
+    else
+    {
+        return true; 
+    }
 }
 
 inline bool WideString::operator != (const wchar_t * other) const
 {
-    return (NEString::compareFast<wchar_t, wchar_t>( getString( ), other ) != 0);
+    return (NEString::compare<wchar_t>( getString( ), other ) != 0);
 }
 
 inline bool WideString::operator > (const WideString & other) const
 {
-    return (NEString::compareFast<wchar_t, wchar_t>( getString( ), other ) < 0);
+    return (NEString::compare<wchar_t>( getString( ), other.getString() ) > 0);
 }
 
 inline bool WideString::operator < (const WideString & other) const
 {
-    return (NEString::compareFast<wchar_t, wchar_t>( getString( ), other ) > 0);
+    return (NEString::compare<wchar_t>( getString( ), other.getString() ) < 0);
 }
 
 inline NEString::CharPos WideString::substring( WideString & outResult, const wchar_t * strPhrase, NEString::CharPos startPos /*= NEString::START_POS*/ ) const
@@ -934,7 +940,7 @@ inline double WideString::convToDouble( void ) const
 
 inline bool WideString::convToBool( void ) const
 {
-    return (NEString::compareIgnoreCase<wchar_t, wchar_t>( getString(), BOOLEAN_TRUE.data() ) == 0);
+    return (NEString::compareIgnoreCase<wchar_t, char>( getString(), NECommon::BOOLEAN_TRUE.data() ) == 0);
 }
 
 inline WideString & WideString::convFromInt32( int32_t value, NEString::eRadix radix /*= NEString::RadixDecimal */ )

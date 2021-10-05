@@ -2273,7 +2273,7 @@ inline int NEString::compareFast( const CharType * leftSide, const CharType * ri
 template<typename CharLhs, typename CharRhs>
 inline int NEString::compareFastIgnoreCase(const CharLhs *leftSide, const CharRhs * rightSide)
 {
-    if ( leftSide == rightSide )
+    if ( reinterpret_cast<const void *>(leftSide) == reinterpret_cast<const void *>(rightSide) )
     {
         return 0;
     }

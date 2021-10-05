@@ -272,10 +272,20 @@ namespace NECommon
      * \brief   NECommon::BOOLEAN_FALSE
      *          Boolean 'false' value as a string.
      **/
-    constexpr std::string_view  BOOLEAN_FALSE                  { "false" };  //!< Boolean value 'false' as string
+    constexpr std::string_view      BOOLEAN_FALSE               { "false" };  //!< Boolean value 'false' as string
+    /**
+     * \brief   NECommon::BOOLEAN_TRUE_W
+     *          Boolean 'true' value as a wide-string.
+     **/
+    constexpr std::wstring_view     BOOLEAN_TRUE_W              { L"true" };   //!< Boolean value 'true' as string
+    /**
+     * \brief   NECommon::BOOLEAN_FALSE_W
+     *          Boolean 'false' value as a wide-string.
+     **/
+    constexpr std::wstring_view     BOOLEAN_FALSE_W             { L"false" };  //!< Boolean value 'false' as string
     /**
      * \brief   NECommon::OBJECT_SEPARATOR
      *          Object separator such as channel or version numbers.
      **/
-    constexpr char              OBJECT_SEPARATOR                { '.' };
+    constexpr char                  OBJECT_SEPARATOR            { '.' };
 }

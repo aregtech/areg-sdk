@@ -861,7 +861,7 @@ inline bool String::operator != (const String & other) const
 
 inline bool String::operator != (const char * other) const
 {
-    return (NEString::compare<char>( getString( ), other) != 0);
+    return (NEString::compare<char>( getString( ), other ) != 0);
 }
 
 inline bool String::operator > (const String & other) const
@@ -871,7 +871,7 @@ inline bool String::operator > (const String & other) const
 
 inline bool String::operator < (const String & other) const
 {
-    return (NEString::compare<char>( getString( ), other.getString()) < 0);
+    return (NEString::compare<char>( getString( ), other.getString() ) < 0);
 }
 
 inline NEString::CharPos String::substring( String & outResult, const char * strPhrase, NEString::CharPos startPos /*= NEString::START_POS*/ ) const

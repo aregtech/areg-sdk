@@ -439,7 +439,7 @@ uint32_t String::makeUInt32( const char * strDigit, NEString::eRadix radix /*= N
 int64_t String::makeInt64( const char * strDigit, NEString::eRadix radix /*= NEString::RadixDecimal*/, const char ** end /*= nullptr*/ )
 {
     char * temp = nullptr;
-    long long int result = static_cast<long long int>(NEString::isEmpty<char>(strDigit) == false ? strtoll(strDigit, &temp, static_cast<int>(radix)) : 0);
+    int64_t result = static_cast<long long int>(NEString::isEmpty<char>(strDigit) == false ? strtoll(strDigit, &temp, static_cast<int>(radix)) : 0);
     if (end != nullptr)
     {
         *end = temp != nullptr ? temp : strDigit;
@@ -645,8 +645,8 @@ String String::doubleToString(double number)
 
 String String::boolToString( bool value )
 {
-    return (value ? String( NECommon::BOOLEAN_TRUE.data(),  static_cast<int>(NECommon::BOOLEAN_TRUE.length() )) :
-                    String( NECommon::BOOLEAN_FALSE.data(), static_cast<int>(NECommon::BOOLEAN_FALSE.length())) );
+    return (value ? String(NECommon::BOOLEAN_TRUE.data(),  static_cast<int>(NECommon::BOOLEAN_TRUE.length() )) :
+                    String(NECommon::BOOLEAN_FALSE.data(), static_cast<int>(NECommon::BOOLEAN_FALSE.length())) );
 }
 
 int String::formatString( char * strDst, int count, const char * format, ... )
