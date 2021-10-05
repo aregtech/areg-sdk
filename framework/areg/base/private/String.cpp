@@ -693,3 +693,9 @@ const String & String::formatList(const char * format, va_list argptr)
     }
     return self( );
 }
+
+int String::setString( const unsigned char * buffer )
+{
+    (*this) = reinterpret_cast<const char *>(buffer);
+    return getLength();
+}

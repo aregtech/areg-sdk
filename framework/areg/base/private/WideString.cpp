@@ -693,3 +693,35 @@ const WideString & WideString::formatList(const wchar_t * format, va_list argptr
     }
     return self( );
 }
+
+inline int WideString::setString( const unsigned char * buffer )
+{
+    int result = 0;
+
+    release( );
+
+    const unsigned char * src = buffer;
+    while ( (* ++src != static_cast<unsigned char>(NEString::EndOfString)) && (* ++src != static_cast<unsigned char>(NEString::EndOfString)) )
+    {
+        ++ result;
+    }
+
+    if (result != 0)
+    {
+        mData = NEString::initString<wchar_t>(result);
+        if (mData != nullptr)
+        {
+#ifdef DEBUG
+            mString = mData->strBuffer;
+#endif // DEBUG
+
+            int len = (result + 1) * sizeof(wchar_t);
+            wchar_t *dst = getUnsafeBuffer( );
+
+            NEMemory::memCopy( reinterpret_cast<void *>(dst), len, reinterpret_cast<const void *>(buffer), len);
+            dst[result] = static_cast<wchar_t>(NEString::EndOfString);
+        }
+    }
+
+    return result;
+}

@@ -43,6 +43,8 @@ class WideString;
  **/
 class AREG_API String : public TEString<char, TEStringImpl<char> >
 {
+    friend class BufferStreamBase;
+
 //////////////////////////////////////////////////////////////////////////
 // defined constants
 //////////////////////////////////////////////////////////////////////////
@@ -737,6 +739,13 @@ protected:
     * \param   stream  The streaming object to write string data.
     **/
     virtual void writeStream(IEOutStream & stream) const;
+
+    /**
+     * \brief   Copies byte buffer ASCII string. Used when de-serialize string.
+     * \param   buffer  The null-terminated string as a byte buffer.
+     * \return  The new length of string, i.e. the number of copied characters.
+     **/
+    int setString(const unsigned char * buffer);
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods

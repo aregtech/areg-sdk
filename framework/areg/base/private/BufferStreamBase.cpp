@@ -94,8 +94,7 @@ unsigned int BufferStreamBase::read( String & asciiString ) const
     const unsigned char* data = getBufferToRead();
     if ( data != nullptr )
     {
-        asciiString = reinterpret_cast<const char *>(data);
-        result      = (asciiString.getLength() + 1) * sizeof(char);
+        result = (asciiString.setString(data) + 1) * sizeof(char);
         mReadPosition.setPosition(static_cast<int>(curPos + result), IECursorPosition::eCursorPosition::PositionBegin);
     }
 
@@ -114,11 +113,10 @@ unsigned int BufferStreamBase::read( WideString & wideString ) const
     const unsigned char* data = getBufferToRead();
     if ( data != nullptr )
     {
-        const wchar_t * str = reinterpret_cast<const wchar_t *>(data);
-        wideString  = str;
-        result      = (wideString.getLength() + 1) * sizeof(wchar_t);
+        result = (wideString.setString(data) + 1) * sizeof(wchar_t);
         mReadPosition.setPosition(static_cast<int>(curPos + result), IECursorPosition::eCursorPosition::PositionBegin);
     }
+
     return result;
 }
 
