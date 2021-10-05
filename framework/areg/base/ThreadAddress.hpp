@@ -1,9 +1,16 @@
-#ifndef AREG_BASE_THREADADDRESS_HPP
-#define AREG_BASE_THREADADDRESS_HPP
+#pragma once
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/base/ThreadAddress.hpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, Thread Address class
  ************************************************************************/
 /************************************************************************
@@ -11,6 +18,9 @@
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
 #include "areg/base/String.hpp"
+
+#include <string_view>
+#include <utility>
 
 /************************************************************************
  * Dependencies
@@ -30,13 +40,6 @@ class AREG_API ThreadAddress
 //////////////////////////////////////////////////////////////////////////
 // ThreadAddress Internal types and constants
 //////////////////////////////////////////////////////////////////////////
-private:
-    /**
-     * \brief   Thread::INVALID_THREAD_NAME
-     *          Invalid thread name
-     **/
-    static const char* const        INVALID_THREAD_NAME     /*= "INVALID_THREAD_NAME"*/;
-
 public:
     /**
      * \brief   ThreadAddress::INVALID_THREAD_ADDRESS
@@ -56,12 +59,17 @@ public:
      * \brief   Initialization constructor. Sets current process ID and the thread name.
      * \param   threadID    Thread ID to set.
      **/
-    ThreadAddress( const char * threadName );
+    explicit ThreadAddress( const char * threadName );
     /**
      * \brief   Copy constructor.
      * \param   src     The source to copy data.
      **/
     ThreadAddress( const ThreadAddress & src );
+    /**
+     * \brief   Move constructor.
+     * \param   src     The source to move data.
+     **/
+    ThreadAddress( ThreadAddress && src ) noexcept;
     /**
      * \brief   Initialization constructor. Initialize variables from given stream
      * \param   stream  Input Streaming object that contains Thread Address data.
@@ -70,7 +78,7 @@ public:
     /**
      * \brief   Destructor
      **/
-    ~ThreadAddress( void );
+    ~ThreadAddress( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // ThreadAddress operators
@@ -79,12 +87,15 @@ public:
     /**
      * \brief   This operator converts thread address data to unsigned int value
      **/
-    inline operator unsigned int ( void ) const;
+    inline explicit operator unsigned int ( void ) const;
     /**
-     * \brief   This operator assigns data from source. 
-     *          The process ID cannot be changed. Only Thread ID is copied.
+     * \brief   Assigning operator to copy data from given source. 
      **/
-    inline const ThreadAddress & operator = (const ThreadAddress & src);
+    inline ThreadAddress & operator = (const ThreadAddress & src);
+    /**
+     * \brief   Move operator to move data from given source.
+     **/
+    inline ThreadAddress & operator = ( ThreadAddress && src ) noexcept;
     /**
      * \brief   Compares 2 thread address objects and if they are
      *          identical, returns true
@@ -146,15 +157,15 @@ public:
      *          If Thread Address was parsed and properly retrieved, on output, parameter 'out_nextPart' 
      *          will contains address of string in 'threadPath' after Thread Address part.
      *          For example: if path is "<process ID>::<thread name>::<component name>::<service name>::",
-     *          on output, out_nextPart will contain "<component name>::<service name>::" it is not NULL
+     *          on output, out_nextPart will contain "<component name>::<service name>::" it is not nullptr
      * \param	threadPath	    The path of thread to convert.
-     * \param   out_nextPart    If successfully retrieved thread address and it is not NULL, 
+     * \param   out_nextPart    If successfully retrieved thread address and it is not nullptr, 
      *                          on output will contain address of string after retrieving Thread address.
      *                          If parsing fails, it will contain same address as 'threadPart'.
-     *                          If parameter is NULL, it will be ignored.
+     *                          If parameter is nullptr, it will be ignored.
      * \return	Return created from path thread address object.
      **/
-    static ThreadAddress convPathToAddress( const char* const threadPath, const char** OUT out_nextPart = NULL );
+    static ThreadAddress convPathToAddress( const char* const threadPath, const char** OUT out_nextPart = nullptr );
 
     /**
      * \brief	Converts Thread Address object to the thread path string value.
@@ -168,10 +179,10 @@ public:
     /**
      * \brief	Parse string and retrieves thread address data from path.
      * \param	pathProxy	    The thread path as a string.
-     * \param	out_nextPart	If not a NULL, on output this will contain remaining
+     * \param	out_nextPart	If not a nullptr, on output this will contain remaining
      *                          part after getting thread path.
      **/
-    void convFromString(const char * threadPath, const char** OUT out_nextPart = NULL);
+    void convFromString(const char * threadPath, const char** OUT out_nextPart = nullptr );
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
@@ -199,14 +210,23 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // ThreadAddress class inline function implementation
 //////////////////////////////////////////////////////////////////////////
-inline const ThreadAddress & ThreadAddress::operator = ( const ThreadAddress & src )
+inline ThreadAddress & ThreadAddress::operator = ( const ThreadAddress & src )
 {
-    if (static_cast<const ThreadAddress *>(this) != &src)
+    mThreadName = src.mThreadName;
+    mMagicNum   = src.mMagicNum;
+
+    return (*this);
+}
+
+inline ThreadAddress & ThreadAddress::operator = ( ThreadAddress && src ) noexcept
+{
+    if ( static_cast<const ThreadAddress *>(this) != &src )
     {
-        mThreadName = src.mThreadName;
+        mThreadName = std::move(src.mThreadName);
         mMagicNum   = src.mMagicNum;
+        src.mMagicNum   = NEMath::CHECKSUM_IGNORE;
     }
-    
+
     return (*this);
 }
 
@@ -247,5 +267,3 @@ inline IEOutStream & operator << (IEOutStream & stream, const ThreadAddress & ou
 {
     return ( stream << output.mThreadName );
 }
-
-#endif  // AREG_BASE_THREADADDRESS_HPP

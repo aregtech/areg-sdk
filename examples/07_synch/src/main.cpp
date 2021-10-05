@@ -3,7 +3,19 @@
 // Author      : Artak Avetyan
 // Version     :
 // Copyright   : Aregtech (c) 2021
-// Description : Hello World in C++, Ansi-style
+// Description : This project demonstrates the use of synchronization objects,
+//               including waiting for multiple synchronization objects such 
+//               as mutex and synchronization events, that differ by types 
+//               such as automatic or manual reset, or initially locked or 
+//               unlocked, etc, and how they may be combined in one waiting 
+//               scope. For example, a thread can wait for one, many or a
+//               mixture of synchronization objects such as Mutex or 
+//               synchronization events.
+//
+//               The synchronization events are not part of POSIX standard, 
+//               but exists in Windows. By business logic they have similarity
+//               with POSIX signals of conditional variables. Synchronization
+//               events are powerful and useful objects.
 //============================================================================
 
 #include "areg/base/GEGlobal.h"
@@ -12,6 +24,8 @@
 #include "areg/component/DispatcherThread.hpp"
 #include "areg/component/Event.hpp"
 #include "areg/trace/GETrace.h"
+
+#include <string_view>
 
 #ifdef WINDOWS
     #pragma comment(lib, "areg.lib")
@@ -45,10 +59,12 @@ class HelloThread   : public    Thread
     /**
      * \brief   The thread name;
      */
-    static const char * THREAD_NAME /* = "HelloThread" */;
+    static constexpr std::string_view THREAD_NAME { "HelloThread" };
 
 public:
     HelloThread( void );
+
+    virtual ~HelloThread( void ) = default;
 
     SynchEvent  mQuit;  //!< Event, signaled when thread completes job.
 
@@ -60,7 +76,7 @@ protected:
      * \brief   This callback function is called from Thread object, when it is
      *          running and fully operable.
      **/
-    virtual void onThreadRuns( void );
+    virtual void onThreadRuns( void ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden calls
@@ -84,12 +100,12 @@ class GoodbyeThread : public    Thread
     /**
      * \brief   The thread name;
      */
-    static const char * THREAD_NAME /* = "GoodbyeThread" */;
+    static constexpr std::string_view THREAD_NAME { "GoodbyeThread" };
 
 public:
     GoodbyeThread( void );
+    virtual ~GoodbyeThread( void ) = default;
 
-public:
     SynchEvent  mQuit;  //!< Event, which is signaled when thread completes job.
 
 protected:
@@ -100,7 +116,7 @@ protected:
      * \brief   This callback function is called from Thread object, when it is
      *          running and fully operable.
      **/
-    virtual void onThreadRuns( void );
+    virtual void onThreadRuns( void ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden calls
@@ -112,8 +128,6 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // Static member initialization
 //////////////////////////////////////////////////////////////////////////
-const char * HelloThread::THREAD_NAME   = "HelloThread";
-const char * GoodbyeThread::THREAD_NAME = "GoodbyeThread";
 
 //////////////////////////////////////////////////////////////////////////
 // RunThread implementation
@@ -122,12 +136,12 @@ DEF_TRACE_SCOPE(main_HelloThread_HelloThread);
 DEF_TRACE_SCOPE(main_HelloThread_onThreadRuns);
 
 HelloThread::HelloThread( void )
-    : Thread            ( self(), HelloThread::THREAD_NAME )
+    : Thread            ( self(), HelloThread::THREAD_NAME.data() )
     , IEThreadConsumer  ( )
     , mQuit             (true, true)
 {
     TRACE_SCOPE(main_HelloThread_HelloThread);
-    TRACE_DBG("Initialized thread [ %s ]", HelloThread::THREAD_NAME);
+    TRACE_DBG("Initialized thread [ %s ]", HelloThread::THREAD_NAME.data());
 }
 
 void HelloThread::onThreadRuns( void )
@@ -135,18 +149,18 @@ void HelloThread::onThreadRuns( void )
     TRACE_SCOPE(main_HelloThread_onThreadRuns);
 
     TRACE_INFO("The thread [ %s ] runs, going to output message", getName().getString());
-    TRACE_INFO("!!!Hello World!!! from thread [ %s ]", THREAD_NAME);
+    TRACE_INFO("!!!Hello World!!! from thread [ %s ]", THREAD_NAME.data());
 
     // reset events
     mQuit.resetEvent();
     gMutexDummy.lock( );
 
     // lock, to wait auto-reset event
-    gEventRun.lock(IESynchObject::WAIT_INFINITE);
+    gEventRun.lock(NECommon::WAIT_INFINITE);
     TRACE_INFO("Auto-reset event \'gEventRun\' is signaled, locking again");
 
     // Setup multiple locking.
-    unsigned int waitTimeout        = IESynchObject::WAIT_1_MS * 150;
+    constexpr unsigned int waitTimeout        = NECommon::WAIT_1_MILLISECOND * 150;
 
     // This multi-lock uses 3 synchronization events and one mutex
     IESynchObject * synchObjects[]  = {&gEventExit, &gMutexWait, &gEventRun};
@@ -162,15 +176,15 @@ void HelloThread::onThreadRuns( void )
         
         if (waitResult == MultiLock::LOCK_INDEX_ALL)
         {
-            TRACE_DBG("All waiting objects of thread [ %s ] are signaled, exit the job.", THREAD_NAME);
+            TRACE_DBG("All waiting objects of thread [ %s ] are signaled, exit the job.", THREAD_NAME.data());
             break;  // exit loop
         }
         else if ( waitResult == MultiLock::LOCK_INDEX_TIMEOUT )
         {
-            TRACE_DBG("Thread [ %s ] waiting timeout expired, continuing the job", THREAD_NAME);
+            TRACE_DBG("Thread [ %s ] waiting timeout expired, continuing the job", THREAD_NAME.data());
             Lock lock(gMutexDummy);
             Thread::sleep(waitTimeout);
-            TRACE_DBG("Thread [ %s ] continues to wait", THREAD_NAME);
+            TRACE_DBG("Thread [ %s ] continues to wait", THREAD_NAME.data());
         }
         else
         {
@@ -193,12 +207,12 @@ DEF_TRACE_SCOPE(main_GoodbyeThread_GoodbyeThread);
 DEF_TRACE_SCOPE(main_GoodbyeThread_onThreadRuns);
 
 GoodbyeThread::GoodbyeThread( void )
-    : Thread            ( self(), GoodbyeThread::THREAD_NAME )
+    : Thread            ( self(), GoodbyeThread::THREAD_NAME.data() )
     , IEThreadConsumer  ( )
     , mQuit             (false, true)
 {
     TRACE_SCOPE(main_GoodbyeThread_GoodbyeThread);
-    TRACE_DBG("Initialized thread [ %s ]", GoodbyeThread::THREAD_NAME);
+    TRACE_DBG("Initialized thread [ %s ]", GoodbyeThread::THREAD_NAME.data());
 }
 
 void GoodbyeThread::onThreadRuns( void )
@@ -206,7 +220,7 @@ void GoodbyeThread::onThreadRuns( void )
     TRACE_SCOPE(main_GoodbyeThread_onThreadRuns);
 
     TRACE_INFO("The thread [ %s ] runs, going to output message", getName().getString());
-    TRACE_INFO("!!!Hello World!!! from thread [ %s ]", THREAD_NAME);
+    TRACE_INFO("!!!Hello World!!! from thread [ %s ]", THREAD_NAME.data());
 
     mQuit.resetEvent();
 
@@ -215,10 +229,10 @@ void GoodbyeThread::onThreadRuns( void )
     IESynchObject * synchObjects[]  = {&gEventExit, &gMutexDummy};
     MultiLock multiLock(synchObjects, MACRO_ARRAYLEN(synchObjects), false);
 
-    int waitResult = multiLock.lock( IESynchObject::WAIT_INFINITE, false, false );
+    int waitResult = multiLock.lock( NECommon::WAIT_INFINITE, false, false );
     TRACE_DBG( "Lock finished with result [ %d ]", waitResult );
     multiLock.unlock( waitResult );
-    Thread::sleep( Thread::WAIT_500_MILLISECONDS );
+    Thread::sleep( NECommon::WAIT_500_MILLISECONDS );
 
     mQuit.setEvent();           // set event to inform the thread completed job.
 }
@@ -237,7 +251,7 @@ int main()
     // To change the configuration and use dynamic logging, use macro TRACER_START_LOGGING
     // and specify the logging configuration file, where you can change logging format,
     // filter logging priority and scopes.
-    TRACER_CONFIGURE_AND_START(NULL);
+    TRACER_CONFIGURE_AND_START( nullptr );
 
     do
     {
@@ -254,23 +268,23 @@ int main()
         // Hello thread.
         TRACE_DBG("Starting Hello Thread");
         HelloThread helloThread;
-        helloThread.createThread(Thread::DO_NOT_WAIT);
+        helloThread.createThread( NECommon::DO_NOT_WAIT);
 
-        TRACE_INFO( "Sleep thread for [ %d ] ms, to signal \'gEventRun\' auto-reset event.", Thread::WAIT_500_MILLISECONDS );
-        Thread::sleep(Thread::WAIT_500_MILLISECONDS);
+        TRACE_INFO( "Sleep thread for [ %d ] ms, to signal \'gEventRun\' auto-reset event.", NECommon::WAIT_500_MILLISECONDS );
+        Thread::sleep( NECommon::WAIT_500_MILLISECONDS);
         gEventRun.setEvent();                           // signal auto-reset event to let hello thread to run
 
-        Thread::sleep(Thread::WAIT_500_MILLISECONDS);   // sleep to check whether auto-reset is working
+        Thread::sleep( NECommon::WAIT_500_MILLISECONDS);   // sleep to check whether auto-reset is working
         gMutexWait.unlock();                            // release mutex to let other thread to take ownership
-        Thread::sleep(Thread::WAIT_1_SECOND);           // sleep for no reason
+        Thread::sleep( NECommon::WAIT_1_SECOND);           // sleep for no reason
 
         // Goodbye thread
         TRACE_DBG("Starting Goodbye Thread");
         GoodbyeThread goodbyeThread;
-        goodbyeThread.createThread(Thread::WAIT_INFINITE);
+        goodbyeThread.createThread(NECommon::WAIT_INFINITE);
         TRACE_DBG("Created thread [ %s ], which is in [ %s ] state", goodbyeThread.getName().getString(), goodbyeThread.isRunning() ? "RUNNING" : "NOT RUNNING");
 
-        Thread::sleep(Thread::WAIT_1_SECOND);           // sleep for no reason
+        Thread::sleep( NECommon::WAIT_1_SECOND);           // sleep for no reason
 
         // Initialize multi-lock object
         // In this multi-lock are used 3 synchronization event object.
@@ -283,8 +297,8 @@ int main()
 
         // stop and destroy thread, clean resources. Wait until thread ends.
         TRACE_INFO("The threads completed jobs, wait threads to shutdown to exit application");
-        helloThread.destroyThread(Thread::WAIT_INFINITE);
-        goodbyeThread.destroyThread(Thread::WAIT_INFINITE);
+        helloThread.destroyThread(NECommon::WAIT_INFINITE);
+        goodbyeThread.destroyThread(NECommon::WAIT_INFINITE);
 
     } while (false);
 

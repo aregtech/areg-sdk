@@ -19,7 +19,7 @@ DEF_TRACE_SCOPE( distrbutedapp_DirectConnectionService_requestAddParticipant );
 DEF_TRACE_SCOPE( distrbutedapp_DirectConnectionService_requestRemoveParticipant );
 DEF_TRACE_SCOPE( distrbutedapp_DirectConnectionService_requestCloseConnection );
 
-DirectConnectionService * DirectConnectionService::mService = NULL;
+DirectConnectionService * DirectConnectionService::mService = nullptr;
 
 Component * DirectConnectionService::CreateComponent( const NERegistry::ComponentEntry & entry, ComponentThread & owner )
 {
@@ -73,7 +73,7 @@ DirectConnectionService::DirectConnectionService( ComponentThread & masterThread
 
 DirectConnectionService::~DirectConnectionService( )
 {
-    DirectConnectionService::mService = NULL;
+    DirectConnectionService::mService = nullptr;
 }
 
 void DirectConnectionService::startupServiceInterface( Component & holder )
@@ -103,7 +103,7 @@ inline bool DirectConnectionService::isInitiatorValid( const NEDirectConnection:
 
 inline bool DirectConnectionService::exists( const NEDirectConnection::sInitiator & initiator ) const
 {
-    return (getInitiatedConnections().find(initiator) != static_cast<MAPPOS>(NULL));
+    return (getInitiatedConnections().find(initiator) != nullptr);
 }
 
 uint64_t DirectConnectionService::getSession( const NEDirectConnection::ListParticipants & listParticipants )
@@ -281,6 +281,6 @@ void DirectConnectionService::requestCloseConnection( const NEDirectConnection::
     NEDirectConnection::MapParticipants & mapParticipants = getInitiatedConnections( );
     mapParticipants.removeAt(initiator);
     NEDirectConnection::sInitiator      * wParam = new NEDirectConnection::sInitiator( initiator );
-    NEDirectConnection::ListParticipants* lParam = NULL;
+    NEDirectConnection::ListParticipants* lParam = nullptr;
     DistributedDialog::PostServiceMessage(NEDistributedApp::CmdDirectConnectionClose, reinterpret_cast<WPARAM>(wParam), reinterpret_cast<LPARAM>(lParam) );
 }

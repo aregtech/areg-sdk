@@ -1,9 +1,16 @@
-#ifndef AREG_TRACE_PRIVATE_LOGMESSAGE_HPP
-#define AREG_TRACE_PRIVATE_LOGMESSAGE_HPP
+#pragma once
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/trace/private/LogMessage.hpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, Logging Message class. 
  ************************************************************************/
 /************************************************************************
@@ -47,7 +54,7 @@ public:
      * \brief   Initializes message log structure and sets the logging type value.
      * \param   logType     The log type value to set in message log structure
      **/
-    inline LogMessage( NETrace::eLogType logType );
+    inline explicit LogMessage( NETrace::eLogType logType );
 
     /**
      * \brief   Initializes message log structure, sets the logging type value,
@@ -57,7 +64,18 @@ public:
      * \param   msgPrio     The priority of message to log
      * \param   message     The text message to log
      **/
-    inline LogMessage( NETrace::eLogType logType, unsigned int scopeId, NETrace::eLogPriority msgPrio, const char * message = NULL );
+    inline LogMessage( NETrace::eLogType logType, unsigned int scopeId, NETrace::eLogPriority msgPrio, const String & message );
+
+    /**
+     * \brief   Initializes message log structure, sets the logging type value,
+     *          scope ID, message priority and message text, if the string is not empty.
+     * \param   logType     The log type value to set in message log structure.
+     * \param   scopeId     The ID of trace scope, which is messaging.
+     * \param   msgPrio     The priority of message to log.
+     * \param   message     The text message to log.
+     * \param   msgLen      The length of the message to log.
+     **/
+    inline LogMessage( NETrace::eLogType logType, unsigned int scopeId, NETrace::eLogPriority msgPrio, const char * message, unsigned int msgLen );
 
     /**
      * \brief   Initializes message log structure for scope enter or exit event.
@@ -72,7 +90,7 @@ public:
      * \brief   Copies logging message data from given source.
      * \param   source  The source of data to copy.
      **/
-    inline LogMessage( const LogMessage & source );
+    inline LogMessage( const LogMessage & source ) = default;
 
     /**
      * \brief   Initialization constructor.
@@ -83,12 +101,19 @@ public:
     /**
      * \brief   Destructor.
      **/
-    inline ~LogMessage(void);
+    ~LogMessage(void) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
 //////////////////////////////////////////////////////////////////////////
 public:
+
+    /**
+     * \brief   Copies data from given source. 
+     * \param   src     The source of data to copy.
+     **/
+    LogMessage & operator = ( const LogMessage & src ) = default;
+
     /**
      * \brief   Serialization operator. Initializes log message data from given stream
      * \param   stream  The streaming object, which contains log message data
@@ -122,7 +147,7 @@ public:
     /**
      * \brief   Return the ID of thread where the message was initialized
      **/
-    inline ITEM_ID getThreadId( void ) const;
+    inline id_type getThreadId( void ) const;
 
     /**
      * \brief   Returns the ID of trace scope, which was logging message
@@ -169,14 +194,14 @@ public:
     /**
      * \brief   Sets message text in log
      **/
-    void setMessage( const char * message );
+    void setMessage( const char * message, int msgLen );
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls.
 //////////////////////////////////////////////////////////////////////////
 private:
-    LogMessage( void );
-    const LogMessage & operator = ( const LogMessage & );
+    LogMessage( void ) = delete;
+    DECLARE_NOMOVE( LogMessage );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -184,22 +209,24 @@ private:
 //////////////////////////////////////////////////////////////////////////
 inline LogMessage::LogMessage( NETrace::eLogType logType )
     : NETrace::sLogMessage( logType )
-{   ;   }
+{
+}
 
-inline LogMessage::LogMessage( NETrace::eLogType logType, unsigned int scopeId, NETrace::eLogPriority msgPrio, const char * message /*= NULL*/ )
-    : NETrace::sLogMessage( logType, scopeId, msgPrio, message )
-{   ;   }
+inline LogMessage::LogMessage( NETrace::eLogType logType, unsigned int scopeId, NETrace::eLogPriority msgPrio, const String & message )
+    : NETrace::sLogMessage( logType, scopeId, msgPrio, message.getString(), message.getLength() )
+{
+}
 
-inline LogMessage::LogMessage( const LogMessage & source )
-    : NETrace::sLogMessage( static_cast<const NETrace::sLogMessage &>(source) )
-{   ;   }
+inline LogMessage::LogMessage( NETrace::eLogType logType, unsigned int scopeId, NETrace::eLogPriority msgPrio, const char * message, unsigned int msgLen )
+    : NETrace::sLogMessage( logType, scopeId, msgPrio, message, msgLen )
+{
+}
 
 inline LogMessage::LogMessage( const IEInStream & stream )
     : NETrace::sLogMessage( )
-{   stream >> static_cast<NETrace::sLogMessage &>(*this);  }
-
-inline LogMessage::~LogMessage(void)
-{   ;   }
+{
+    stream >> static_cast<NETrace::sLogMessage &>(*this);
+}
 
 inline const NETrace::sLogMessage & LogMessage::getLogData(void) const
 {
@@ -211,7 +238,7 @@ inline NETrace::eLogType LogMessage::getLogType(void) const
     return lmHeader.logType;
 }
 
-inline ITEM_ID LogMessage::getThreadId(void) const
+inline id_type LogMessage::getThreadId(void) const
 {
     return lmTrace.traceThreadId;
 }
@@ -262,5 +289,3 @@ inline IEOutStream & operator << ( IEOutStream & stream, const LogMessage & outp
     stream << static_cast<const NETrace::sLogMessage &>(output);
     return stream;
 }
-
-#endif  // AREG_TRACE_PRIVATE_LOGMESSAGE_HPP

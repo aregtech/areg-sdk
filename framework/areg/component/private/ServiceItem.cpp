@@ -1,21 +1,30 @@
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/component/private/ServiceItem.cpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, Service Item object
  ************************************************************************/
 #include "areg/component/ServiceItem.hpp"
+
 #include "areg/base/IEIOStream.hpp"
 #include "areg/base/NEUtilities.hpp"
 
-const char * const      ServiceItem::INVALID_SERVICE      = "INVALID_SERVICE";
+#include <utility>
 
 String ServiceItem::convAddressToPath( const ServiceItem & service )
 {
     return service.convToString();
 }
 
-ServiceItem ServiceItem::convPathToAddress( const char* pathService, const char** out_nextPart /*= NULL */ )
+ServiceItem ServiceItem::convPathToAddress( const char* pathService, const char** out_nextPart /*= nullptr */ )
 {
     ServiceItem result;
     result.convFromString(pathService, out_nextPart);
@@ -23,17 +32,17 @@ ServiceItem ServiceItem::convPathToAddress( const char* pathService, const char*
 }
 
 ServiceItem::ServiceItem( void )
-    : mServiceName      ( ServiceItem::INVALID_SERVICE )
+    : mServiceName      ( ServiceItem::INVALID_SERVICE.data() )
     , mServiceVersion   ( Version::INVALID_VERSION )
-    , mServiceType      ( NEService::ServiceLocal )
+    , mServiceType      ( NEService::eServiceType::ServiceLocal )
     , mMagicNum         ( NEMath::CHECKSUM_IGNORE )
 {
 }
 
 ServiceItem::ServiceItem(const char * serviceName)
-    : mServiceName      ( serviceName != NULL ? serviceName : "")
+    : mServiceName      ( serviceName != nullptr ? serviceName : "")
     , mServiceVersion   ( Version::INVALID_VERSION )
-    , mServiceType      ( NEService::ServiceLocal )
+    , mServiceType      ( NEService::eServiceType::ServiceLocal )
     , mMagicNum         ( NEMath::CHECKSUM_IGNORE )
 {
     mServiceName.truncate(NEUtilities::ITEM_NAMES_MAX_LENGTH);
@@ -41,7 +50,7 @@ ServiceItem::ServiceItem(const char * serviceName)
 }
 
 ServiceItem::ServiceItem( const char * serviceName, const Version & serviceVersion, NEService::eServiceType serviceType )
-    : mServiceName      ( serviceName != NULL ? serviceName : "")
+    : mServiceName      ( serviceName != nullptr ? serviceName : "")
     , mServiceVersion   ( serviceVersion )
     , mServiceType      ( serviceType )
     , mMagicNum         ( NEMath::CHECKSUM_IGNORE )
@@ -53,7 +62,7 @@ ServiceItem::ServiceItem( const char * serviceName, const Version & serviceVersi
 ServiceItem::ServiceItem( const IEInStream & stream )
     : mServiceName      ( stream )
     , mServiceVersion   ( stream )
-    , mServiceType      ( NEService::ServiceLocal )
+    , mServiceType      ( NEService::eServiceType::ServiceLocal )
     , mMagicNum         ( NEMath::CHECKSUM_IGNORE )
 {
     stream >> mServiceType;
@@ -66,37 +75,39 @@ ServiceItem::ServiceItem( const ServiceItem & source )
     , mServiceType      ( source.mServiceType )
     , mMagicNum         ( source.mMagicNum )
 {
-    ; // do nothing
 }
 
-ServiceItem::~ServiceItem(void)
+ServiceItem::ServiceItem( ServiceItem && source ) noexcept
+    : mServiceName      ( std::move(source.mServiceName) )
+    , mServiceVersion   ( std::move(source.mServiceVersion) )
+    , mServiceType      ( source.mServiceType )
+    , mMagicNum         ( source.mMagicNum )
 {
-    ; // do nothing
 }
 
 String ServiceItem::convToString(void) const
 {
-    String result = String::EmptyString;
+    String result;
 
     result += mServiceName;
-    result += NEUtilities::COMPONENT_PATH_SEPARATOR;
+    result += NECommon::COMPONENT_PATH_SEPARATOR.data();
     result += mServiceVersion.convToString();
-    result += NEUtilities::COMPONENT_PATH_SEPARATOR;
-    result += String::int32ToString(static_cast<int>(mServiceType), NEString::RadixDecimal);
+    result += NECommon::COMPONENT_PATH_SEPARATOR.data();
+    result += String::int32ToString(static_cast<int>(mServiceType), NEString::eRadix::RadixDecimal);
 
     return result;
 }
 
-void ServiceItem::convFromString(  const char* pathService, const char** out_nextPart /*= NULL*/ )
+void ServiceItem::convFromString(  const char* pathService, const char** out_nextPart /*= nullptr*/ )
 {
     const char* strSource   = pathService;
-    mServiceName        = String::getSubstring(strSource, NEUtilities::COMPONENT_PATH_SEPARATOR, &strSource);
-    mServiceVersion     = String::getSubstring(strSource, NEUtilities::COMPONENT_PATH_SEPARATOR, &strSource);
-    String serviceType  = String::getSubstring(strSource, NEUtilities::COMPONENT_PATH_SEPARATOR, &strSource);
+    mServiceName        = String::getSubstring(strSource, NECommon::COMPONENT_PATH_SEPARATOR.data( ), &strSource);
+    mServiceVersion     = String::getSubstring(strSource, NECommon::COMPONENT_PATH_SEPARATOR.data( ), &strSource);
+    String serviceType  = String::getSubstring(strSource, NECommon::COMPONENT_PATH_SEPARATOR.data( ), &strSource);
     mServiceType        = static_cast<NEService::eServiceType>(serviceType.convToInt32());
     mMagicNum           = ServiceItem::_magicNumber(*this);
 
-    if (out_nextPart != NULL)
+    if (out_nextPart != nullptr)
         *out_nextPart = strSource;
 }
 

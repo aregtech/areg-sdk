@@ -1,9 +1,16 @@
-#ifndef AREG_BASE_RUNTIMECLASSID_HPP
-#define AREG_BASE_RUNTIMECLASSID_HPP
+#pragma once
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/base/RuntimeClassID.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, Runtime Class ID
  *              This class contains information of Runtime Class ID.
  *              Every Runtime Class contains class ID value to identify and
@@ -17,6 +24,7 @@
 #include "areg/base/GEGlobal.h"
 
 #include "areg/base/String.hpp"
+#include <utility>
 
 //////////////////////////////////////////////////////////////////////////
 // RuntimeClassID class declaration
@@ -46,16 +54,6 @@ class AREG_API RuntimeClassID
     friend class TEResourceMap;
 
 //////////////////////////////////////////////////////////////////////////
-// Internal types and constants
-//////////////////////////////////////////////////////////////////////////
-private:
-    /**
-     * \brief   RuntimeClassID::BAD_CLASS_ID
-     *          Bad Class ID. Defined as constant. Used to indicate invalid class ID name.
-     **/
-    static const char * const   BAD_CLASS_ID;
-
-//////////////////////////////////////////////////////////////////////////
 // Static members
 //////////////////////////////////////////////////////////////////////////
 public:
@@ -75,7 +73,7 @@ public:
      *          This constructor is initializing the name Runtime Class ID
      * \param   className   The name of Runtime Class ID
      **/
-    RuntimeClassID( const char * className );
+    explicit RuntimeClassID( const char * className );
 
     /**
      * \brief   Copy constructor.
@@ -84,9 +82,15 @@ public:
     RuntimeClassID( const RuntimeClassID & src );
 
     /**
+     * \brief   Move constructor.
+     * \param   src     The source to move data.
+     **/
+    RuntimeClassID( RuntimeClassID && src ) noexcept;
+
+    /**
      * \brief   Destructor
      **/
-    ~RuntimeClassID( void );
+    ~RuntimeClassID( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
@@ -137,21 +141,28 @@ public:
      * \param   src     The source of Runtime Class ID to copy.
      * \return  Returns Runtime Class ID object.
      **/
-    inline const RuntimeClassID & operator = ( const RuntimeClassID & src );
+    inline RuntimeClassID & operator = ( const RuntimeClassID & src );
+
+    /**
+     * \brief   Move operator. Moves Runtime Class ID name from given Runtime Class ID source.
+     * \param   src     The source of Runtime Class ID to move.
+     * \return  Returns Runtime Class ID object.
+     **/
+    inline RuntimeClassID & operator = ( RuntimeClassID && src ) noexcept;
 
     /**
      * \brief   Assigning operator. Copies Runtime Class ID name from given string buffer source
      * \param   src     The source of string buffer to copy.
      * \return  Returns Runtime Class ID object.
      **/
-    inline const RuntimeClassID & operator = ( const char * src );
+    inline RuntimeClassID & operator = ( const char * src );
 
     /**
      * \brief   Assigning operator. Copies Runtime Class ID name from given string source
      * \param   src     The source of string to copy.
      * \return  Returns Runtime Class ID object.
      **/
-    inline const RuntimeClassID & operator = ( const String & src );
+    inline RuntimeClassID & operator = ( const String & src );
 
     /**
      * \brief   Comparing operator. Compares 2 Runtime Class ID objects.
@@ -182,7 +193,7 @@ public:
      * \brief   Operator to convert the value or Runtime Class ID to unsigned integer value.
      *          Used to calculate hash value in hash map
      **/
-    inline operator unsigned int ( void ) const;
+    inline explicit operator unsigned int ( void ) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes
@@ -208,7 +219,7 @@ public:
     inline unsigned getMagic( void ) const;
 
 //////////////////////////////////////////////////////////////////////////
-// Private members
+// Hidden methods
 //////////////////////////////////////////////////////////////////////////
 private:
     /**
@@ -237,26 +248,32 @@ private:
 
 inline RuntimeClassID RuntimeClassID::createEmptyClassID( void )
 {
-    return BAD_CLASS_ID;
+    return RuntimeClassID();
 }
 
-inline const RuntimeClassID & RuntimeClassID::operator = ( const RuntimeClassID & src )
+inline RuntimeClassID & RuntimeClassID::operator = ( const RuntimeClassID & src )
 {
-    if (static_cast<const RuntimeClassID *>(this) != &src)
-    {
-        this->mClassName= src.mClassName;
-        this->mMagicNum = src.mMagicNum;
-    }
+    this->mClassName= src.mClassName;
+    this->mMagicNum = src.mMagicNum;
+
     return (*this);
 }
 
-inline const RuntimeClassID & RuntimeClassID::operator = ( const char * src )
+inline RuntimeClassID & RuntimeClassID::operator = ( RuntimeClassID && src ) noexcept
+{
+    this->mClassName= std::move(src.mClassName);
+    this->mMagicNum = src.mMagicNum;
+
+    return (*this);
+}
+
+inline RuntimeClassID & RuntimeClassID::operator = ( const char * src )
 {
     setName(src);
     return (*this);
 }
 
-inline const RuntimeClassID & RuntimeClassID::operator = ( const String & src )
+inline RuntimeClassID & RuntimeClassID::operator = ( const String & src )
 {
     setName(src);
     return (*this);
@@ -321,5 +338,3 @@ inline bool operator != ( unsigned int lhs, const RuntimeClassID & rhs )
 {
     return rhs.mMagicNum != lhs;
 }
-
-#endif  // AREG_BASE_RUNTIMECLASSID_HPP

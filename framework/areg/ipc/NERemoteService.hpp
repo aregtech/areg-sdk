@@ -1,9 +1,16 @@
-#ifndef AREG_IPC_NEREMOTESERVICE_HPP
-#define AREG_IPC_NEREMOTESERVICE_HPP
+#pragma once
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/ipc/NERemoteService.hpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform Remote service namespace
  ************************************************************************/
 
@@ -12,6 +19,9 @@
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
 #include "areg/appbase/NEApplication.hpp"
+#include "areg/base/NESocket.hpp"
+
+#include <string_view>
 
 //////////////////////////////////////////////////////////////////////////
 // NERemoteService namespace declaration
@@ -25,84 +35,79 @@ namespace NERemoteService
      * \brief   NERemoteService::eServiceConnection
      *          Remote servicing connection type
      **/
-    typedef enum E_ServiceConnection
+    typedef enum class E_ServiceConnection
     {
           ConnectionTcpip       = 0 //!< Connection type open TCP/IP
         , ConnectionUndefined       //!< Connection type undefined
     } eServiceConnection;
 
     /**
-     * \brief   NERemoteService::DEFAULT_CONFIG_FILE
-     *          Default name of routing service connection configuration file.
-     **/
-    const char * const      DEFAULT_CONFIG_FILE         = NEApplication::DEFAULT_ROUTER_CONFIG_FILE;
-    /**
      * \brief   NERemoteService::DEFAULT_ROUTER_HOST
      *          Default IP-Address of routing service.
      **/
-    const char * const      DEFAULT_ROUTER_HOST         = "127.0.0.1";
+    constexpr std::string_view  DEFAULT_ROUTER_HOST         { NESocket::LocalAddress };
     /**
      * \brief   NERemoteService::DEFAULT_ROUTER_PORT
      *          Default connection port number of routing service.
      **/
-    const unsigned short    DEFAULT_ROUTER_PORT         = 8181;
+    constexpr unsigned short    DEFAULT_ROUTER_PORT         { 8181 };
     /**
      * \brief   NERemoteService::IP_SEPARATOR
      *          The property separator
      **/
-    const char              IP_SEPARATOR                = '.';
+    constexpr char              IP_SEPARATOR                { '.' };
     /**
      * \brief   NERemoteService::STR_CONNECTION_TYPE_TCPIP
      *          String value of TCP/IP connection type
      **/
-    const char * const      STR_CONNECTION_TYPE_TCPIP   = "tcpip";
+    constexpr std::string_view  STR_CONNECTION_TYPE_TCPIP   { "tcpip" };
 
     /**
      * \brief   NERemoteService::MAXLEN_PROPERTY_NAME
      *          Maximum length of property name in configuration file.
      **/
-    const int               MAXLEN_PROPERTY_NAME        = 256;
+    constexpr int               MAXLEN_PROPERTY_NAME        { 256 };
     /**
      * \brief   NERemoteService::MAXLEN_PROPERTY_HOST
      *          Maximum length of message router host name in configuration file
      **/
-    const int               MAXLEN_PROPERTY_HOST        = 256;
+    constexpr int               MAXLEN_PROPERTY_HOST        { 256 };
     /**
      * \brief   NERemoteService::MAXLEN_PROPERTY_PORT
      *          Maximum length of message router connection port number in configuration file
      **/
-    const int               MAXLEN_PROPERTY_PORT        = 8;
+    constexpr int               MAXLEN_PROPERTY_PORT        { 8 };
 
     /**
      * \brief   NERemoteService::CONFIG_KEY_CONNECTION
      *          The name of property for connection
      **/
-    const char * const      CONFIG_KEY_CONNECTION       = "connection";
+    constexpr std::string_view  CONFIG_KEY_CONNECTION       { "connection" };
     /**
      * \brief   NERemoteService::CONFIG_KEY_PROP_TYPE
      *          The name of property for connection type
      **/
-    const char * const      CONFIG_KEY_PROP_TYPE        = "type";
+    constexpr std::string_view  CONFIG_KEY_PROP_TYPE        { "type" };
     /**
      * \brief   NERemoteService::CONFIG_KEY_PROP_ENABLE
      *          The name of value in configuration
      **/
-    const char * const      CONFIG_KEY_PROP_ENABLE      = "enable";
+    constexpr std::string_view  CONFIG_KEY_PROP_ENABLE      { "enable" };
     /**
      * \brief   NERemoteService::CONFIG_KEY_PROP_NAME
      *          The name of property for connection name
      **/
-    const char * const      CONFIG_KEY_PROP_NAME        = "name";
+    constexpr std::string_view  CONFIG_KEY_PROP_NAME        { "name" };
     /**
      * \brief   NERemoteService::CONFIG_KEY_PROP_ADDRESS
      *          The name of property for connection address
      **/
-    const char * const      CONFIG_KEY_PROP_ADDRESS     = "address";
+    constexpr std::string_view  CONFIG_KEY_PROP_ADDRESS     { "address" };
     /**
      * \brief   NERemoteService::CONFIG_KEY_PROP_PORT
      *          The name of property for connection port
      **/
-    const char * const      CONFIG_KEY_PROP_PORT        = "port";
+    constexpr std::string_view  CONFIG_KEY_PROP_PORT        { "port" };
 
     /**
      * \brief   NERemoteService::GetServiceConnectionTypeString
@@ -118,5 +123,3 @@ namespace NERemoteService
      **/
     AREG_API NERemoteService::eServiceConnection getServiceConnectionType( const char * connectionType, bool caseSensitive = true );
 }
-
-#endif  // AREG_IPC_NEREMOTESERVICE_HPP

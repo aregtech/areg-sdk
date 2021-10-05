@@ -1,19 +1,18 @@
 //////////////////////////////////////////////////////////////////////////
 // Begin generate generated/src/NETrafficController.hpp file
 //////////////////////////////////////////////////////////////////////////
-#ifndef  GENERATED_SRC_NETRAFFICCONTROLLER_HPP
-#define  GENERATED_SRC_NETRAFFICCONTROLLER_HPP
+#pragma once
 
 /************************************************************************
  * (c) copyright    2021
+ *
+ * Generated at     30.09.2021  01:22:14 GMT+02:00 
  *                  Create by AREG SDK code generator tool from source TrafficController.
- * Generated at     15.08.2021  00:03:05 GMT+02:00 
- ************************************************************************/
-
-/************************************************************************
+ *
  * \file            generated/src/NETrafficController.hpp
  * \ingroup         TrafficController Service Interface
- * \brief           This is an automatic generated code of TrafficController Service Interface Namespace declaration.
+ * \brief           This is an automatic generated code of TrafficController
+ *                  Service Interface namespace declaration.
  ************************************************************************/
 
 /************************************************************************
@@ -31,6 +30,8 @@
 #include "areg/base/IEIOStream.hpp"
 #include "areg/base/Version.hpp"
 #include "areg/component/NEService.hpp"
+
+#include <utility>
 
 /************************************************************************
  * Dependencies
@@ -57,7 +58,7 @@ namespace   NETrafficController
      * \brief   Service Interface Name
      *          NETrafficController::ServiceName
      **/
-    const char * const    ServiceName         = "TrafficController";
+    constexpr char        ServiceName[]       { "TrafficController" };
     /**
      * \brief   Implemented Version
      *          NETrafficController::InterfaceVersion
@@ -73,7 +74,7 @@ namespace   NETrafficController
      * \brief   The direction of traffic.
      *          NETrafficController::eTrafficDirection
      **/
-    enum eTrafficDirection
+    enum class eTrafficDirection
     {
         /**
          * \brief   Undefined direction.
@@ -97,12 +98,12 @@ namespace   NETrafficController
      * \brief   The states of vehicle traffic states.
      *          NETrafficController::eVehicleTrafficLight
      **/
-    enum eVehicleTrafficLight
+    enum class eVehicleTrafficLight
     {
         /**
          * \brief   The vehicle lights are OFF.
          **/
-          VhicleLightOFF      
+          VehicleLightOFF     
         /**
          * \brief   The vehicle lights are initialized (blink yellow).
          **/
@@ -129,7 +130,7 @@ namespace   NETrafficController
      * \brief   The traffic light state of pedestrians.
      *          NETrafficController::ePedestrianTrafficLight
      **/
-    enum ePedestrianTrafficLight
+    enum class ePedestrianTrafficLight
     {
         /**
          * \brief   The pedestrian light is OFF.
@@ -173,24 +174,36 @@ namespace   NETrafficController
 
         /**
          * \brief   Copies data from given source. Every filed of structure should have copy constructor.
-         * \param   src     The source of NETrafficController::sTrafficLight structure to copy data
+         * \param   src     The source of NETrafficController::sTrafficLight structure to copy data.
          **/
         inline sTrafficLight( const NETrafficController::sTrafficLight & src );
 
         /**
-         * \brief   Destructor. No extra function is called, every field of structure should be able to be cleaned.
+         * \brief   Moves data from given source. Every filed of structure should have move constructor.
+         * \param   src     The source of NETrafficController::sTrafficLight structure to move data.
          **/
-        inline ~sTrafficLight( void );
+        inline sTrafficLight( NETrafficController::sTrafficLight && src ) noexcept;
+
+        /**
+         * \brief   Default destructor.
+         **/
+        ~sTrafficLight( void ) = default;
     
     //////////////////////////////////////////////////////////////////////////
     // Basic operators
     ///////////////////////////////////////////////////////////////////////////
         
         /**
-         * \brief   Copies data from given source
+         * \brief   Copies data from given source. Every field of structure should have copy constructor.
          * \param   src     The source of sTrafficLight structure to copy data.
          **/
-        inline const NETrafficController::sTrafficLight & operator = ( const NETrafficController::sTrafficLight & src );
+        inline NETrafficController::sTrafficLight & operator = ( const NETrafficController::sTrafficLight & src );
+        
+        /**
+         * \brief   Moves data from given source. Every field of structure should have move constructor.
+         * \param   src     The source of sTrafficLight structure to move data.
+         **/
+        inline NETrafficController::sTrafficLight & operator = ( NETrafficController::sTrafficLight && src ) noexcept;
         
         /**
          * \brief   Checks equality and returns true if 2 instances of sTrafficLight are equal
@@ -210,24 +223,24 @@ namespace   NETrafficController
          * \brief   Converts data to unsigned int, which might be used as a hash key value in map object.
          *          The conversion is a sum of each field of structure
          **/
-         inline operator unsigned int ( void ) const;
+         inline explicit operator unsigned int ( void ) const;
 
     //////////////////////////////////////////////////////////////////////////
     // sTrafficLight fields
     ///////////////////////////////////////////////////////////////////////////
 
         /**
-         * \brief   DESCRIPTION MISSED
+         * \brief   The traffic direction
          **/
-         NETrafficController::eTrafficDirection          trafficDirection    /* = DirectionUndefiend */;
+         NETrafficController::eTrafficDirection          trafficDirection    /* = eTrafficDirection::DirectionUndefiend */;
         /**
          * \brief   The state of vehicle lights.
          **/
-         NETrafficController::eVehicleTrafficLight       lightVehicle        /* = VhicleLightOFF */;
+         NETrafficController::eVehicleTrafficLight       lightVehicle        /* = eVehicleTrafficLight::VehicleLightOFF */;
         /**
          * \brief   Describes the state of pedestrian lights.
          **/
-         NETrafficController::ePedestrianTrafficLight    lightPedestrian     /* = PedestrianLightOFF */;
+         NETrafficController::ePedestrianTrafficLight    lightPedestrian     /* = ePedestrianTrafficLight::PedestrianLightOFF */;
     };
 
 /************************************************************************
@@ -237,7 +250,7 @@ namespace   NETrafficController
      * \brief   NETrafficController::eMessageIDs
      *          TrafficController Service interface defined message IDs
      **/
-    typedef enum E_MessageIDs
+    enum class eMessageIDs : msg_id
     {
     /************************************************************************
      * Request IDs
@@ -250,29 +263,29 @@ namespace   NETrafficController
      * Broadcast IDs
      ************************************************************************/
         /**
-         * \brief   Broadcast ID: MSG_ID_broadcastSouthNorth
+         * \brief   Broadcast ID: MsgId_broadcastSouthNorth
          *          Broadcasts the light states of south-north direction.
          **/
-          MSG_ID_broadcastSouthNorth   = NEService::RESPONSE_ID_FIRST    // void broadcastSouthNorth( NETrafficController::eVehicleTrafficLight LightVehicle, NETrafficController::ePedestrianTrafficLight LightPedestrian );
+          MsgId_broadcastSouthNorth   = NEService::RESPONSE_ID_FIRST    // void broadcastSouthNorth( NETrafficController::eVehicleTrafficLight LightVehicle, NETrafficController::ePedestrianTrafficLight LightPedestrian );
         /**
-         * \brief   Broadcast ID: MSG_ID_broadcastEastWest
+         * \brief   Broadcast ID: MsgId_broadcastEastWest
          *          Broadcasts the light states of east-west direction.
          **/
-        , MSG_ID_broadcastEastWest                                      // void broadcastEastWest( NETrafficController::eVehicleTrafficLight LightVehicle, NETrafficController::ePedestrianTrafficLight LightPedestrian );
+        , MsgId_broadcastEastWest                                       // void broadcastEastWest( NETrafficController::eVehicleTrafficLight LightVehicle, NETrafficController::ePedestrianTrafficLight LightPedestrian );
      
     /************************************************************************
      * Attributes IDs
      ************************************************************************/
         /**
-         * \brief   Attribute ID: MSG_ID_TrafficSouthNorth
+         * \brief   Attribute ID: MsgId_TrafficSouthNorth
          *          The south-north traffic.
          **/
-        , MSG_ID_TrafficSouthNorth    = NEService::ATTRIBUTE_ID_FIRST   // NETrafficController::sTrafficLight mTrafficSouthNorth;
+        , MsgId_TrafficSouthNorth     = NEService::ATTRIBUTE_ID_FIRST   // NETrafficController::sTrafficLight mTrafficSouthNorth;
         /**
-         * \brief   Attribute ID: MSG_ID_TrafficEastWest
+         * \brief   Attribute ID: MsgId_TrafficEastWest
          *          The east-west traffic
          **/
-        , MSG_ID_TrafficEastWest                                        // NETrafficController::sTrafficLight mTrafficEastWest;
+        , MsgId_TrafficEastWest                                         // NETrafficController::sTrafficLight mTrafficEastWest;
      
     /************************************************************************
      * Reserved constant IDs
@@ -280,13 +293,13 @@ namespace   NETrafficController
         /**
          * \brief   ID of empty function
          **/
-        , MSG_ID_NO_PROCEED           = NEService::RESPONSE_ID_NONE    
+        , MsgId_NotProcessed          = NEService::INVALID_MESSAGE_ID  
         /**
          * \brief   ID of invalid call
          **/
-        , MSG_ID_INVALID              = NEService::INVALID_MESSAGE_ID  
+        , MsgId_Invalid               = NEService::RESPONSE_ID_NONE    
      
-    } eMessageIDs;
+    };
     /**
      * \brief   Returns string value of NETrafficController::eMessageIDs
      **/
@@ -334,12 +347,12 @@ inline const char * NETrafficController::getString( NETrafficController::eTraffi
 {
     switch ( enumValue )
     {
-    case    NETrafficController::DirectionUndefiend:
-        return "NETrafficController::DirectionUndefiend";
-    case    NETrafficController::DirectionSouthNorth:
-        return "NETrafficController::DirectionSouthNorth";
-    case    NETrafficController::DirectionEastWest:
-        return "NETrafficController::DirectionEastWest";
+    case    NETrafficController::eTrafficDirection::DirectionUndefiend:
+        return "NETrafficController::eTrafficDirection::DirectionUndefiend";
+    case    NETrafficController::eTrafficDirection::DirectionSouthNorth:
+        return "NETrafficController::eTrafficDirection::DirectionSouthNorth";
+    case    NETrafficController::eTrafficDirection::DirectionEastWest:
+        return "NETrafficController::eTrafficDirection::DirectionEastWest";
     default:
         ASSERT(false);
         return "ERROR: Unexpected NETrafficController::eTrafficDirection value!";
@@ -358,16 +371,16 @@ inline const char * NETrafficController::getString( NETrafficController::eVehicl
 {
     switch ( enumValue )
     {
-    case    NETrafficController::VhicleLightOFF:
-        return "NETrafficController::VhicleLightOFF";
-    case    NETrafficController::VehicleLightsInit:
-        return "NETrafficController::VehicleLightsInit";
-    case    NETrafficController::VehicleLightRed:
-        return "NETrafficController::VehicleLightRed";
-    case    NETrafficController::VehicleLightYellow:
-        return "NETrafficController::VehicleLightYellow";
-    case    NETrafficController::VehicleLightGreen:
-        return "NETrafficController::VehicleLightGreen";
+    case    NETrafficController::eVehicleTrafficLight::VehicleLightOFF:
+        return "NETrafficController::eVehicleTrafficLight::VehicleLightOFF";
+    case    NETrafficController::eVehicleTrafficLight::VehicleLightsInit:
+        return "NETrafficController::eVehicleTrafficLight::VehicleLightsInit";
+    case    NETrafficController::eVehicleTrafficLight::VehicleLightRed:
+        return "NETrafficController::eVehicleTrafficLight::VehicleLightRed";
+    case    NETrafficController::eVehicleTrafficLight::VehicleLightYellow:
+        return "NETrafficController::eVehicleTrafficLight::VehicleLightYellow";
+    case    NETrafficController::eVehicleTrafficLight::VehicleLightGreen:
+        return "NETrafficController::eVehicleTrafficLight::VehicleLightGreen";
     default:
         ASSERT(false);
         return "ERROR: Unexpected NETrafficController::eVehicleTrafficLight value!";
@@ -386,12 +399,12 @@ inline const char * NETrafficController::getString( NETrafficController::ePedest
 {
     switch ( enumValue )
     {
-    case    NETrafficController::PedestrianLightOFF:
-        return "NETrafficController::PedestrianLightOFF";
-    case    NETrafficController::PedestrianLightRed:
-        return "NETrafficController::PedestrianLightRed";
-    case    NETrafficController::PedestrianLightGreen:
-        return "NETrafficController::PedestrianLightGreen";
+    case    NETrafficController::ePedestrianTrafficLight::PedestrianLightOFF:
+        return "NETrafficController::ePedestrianTrafficLight::PedestrianLightOFF";
+    case    NETrafficController::ePedestrianTrafficLight::PedestrianLightRed:
+        return "NETrafficController::ePedestrianTrafficLight::PedestrianLightRed";
+    case    NETrafficController::ePedestrianTrafficLight::PedestrianLightGreen:
+        return "NETrafficController::ePedestrianTrafficLight::PedestrianLightGreen";
     default:
         ASSERT(false);
         return "ERROR: Unexpected NETrafficController::ePedestrianTrafficLight value!";
@@ -405,9 +418,9 @@ inline const char * NETrafficController::getString( NETrafficController::ePedest
  * Every field of structure should have default constructor.
  **/
 inline NETrafficController::sTrafficLight::sTrafficLight( void )
-    : trafficDirection    ( DirectionUndefiend )
-    , lightVehicle        ( VhicleLightOFF )
-    , lightPedestrian     ( PedestrianLightOFF )
+    : trafficDirection    ( eTrafficDirection::DirectionUndefiend )
+    , lightVehicle        ( eVehicleTrafficLight::VehicleLightOFF )
+    , lightPedestrian     ( ePedestrianTrafficLight::PedestrianLightOFF )
 {   /* do nothing */    }
 
 inline NETrafficController::sTrafficLight::sTrafficLight( const NETrafficController::eTrafficDirection & _trafficDirection, const NETrafficController::eVehicleTrafficLight & _lightVehicle, const NETrafficController::ePedestrianTrafficLight & _lightPedestrian )
@@ -422,16 +435,31 @@ inline NETrafficController::sTrafficLight::sTrafficLight( const NETrafficControl
     , lightPedestrian     ( src.lightPedestrian )
 {   /* do nothing */    }
 
-inline NETrafficController::sTrafficLight::~sTrafficLight( void )
+inline NETrafficController::sTrafficLight::sTrafficLight( NETrafficController::sTrafficLight && src ) noexcept
+    : trafficDirection    ( std::move(src.trafficDirection) )
+    , lightVehicle        ( std::move(src.lightVehicle) )
+    , lightPedestrian     ( std::move(src.lightPedestrian) )
 {   /* do nothing */    }
 
-inline const NETrafficController::sTrafficLight & NETrafficController::sTrafficLight::operator = ( const NETrafficController::sTrafficLight & src )
+inline NETrafficController::sTrafficLight & NETrafficController::sTrafficLight::operator = ( const NETrafficController::sTrafficLight & src )
 {
     if ( static_cast<const NETrafficController::sTrafficLight *>(this) != &src )
     {
             this->trafficDirection    = src.trafficDirection;
             this->lightVehicle        = src.lightVehicle;
             this->lightPedestrian     = src.lightPedestrian;
+    }
+
+    return (*this);
+}
+
+inline NETrafficController::sTrafficLight & NETrafficController::sTrafficLight::operator = ( NETrafficController::sTrafficLight && src ) noexcept
+{
+    if ( static_cast<const NETrafficController::sTrafficLight *>(this) != &src )
+    {
+            this->trafficDirection    = std::move(src.trafficDirection);
+            this->lightVehicle        = std::move(src.lightVehicle);
+            this->lightPedestrian     = std::move(src.lightPedestrian);
     }
     return (*this);
 }
@@ -503,20 +531,20 @@ inline const char * NETrafficController::getString( NETrafficController::eMessag
 {
     switch ( msgId )
     {
-    case    NETrafficController::MSG_ID_broadcastSouthNorth:
-        return "NETrafficController::MSG_ID_broadcastSouthNorth";
-    case    NETrafficController::MSG_ID_broadcastEastWest:
-        return "NETrafficController::MSG_ID_broadcastEastWest";
-    case    NETrafficController::MSG_ID_TrafficSouthNorth:
-        return "NETrafficController::MSG_ID_TrafficSouthNorth";
-    case    NETrafficController::MSG_ID_TrafficEastWest:
-        return "NETrafficController::MSG_ID_TrafficEastWest";
+    case    NETrafficController::eMessageIDs::MsgId_broadcastSouthNorth:
+        return "NETrafficController::eMessageIDs::MsgId_broadcastSouthNorth";
+    case    NETrafficController::eMessageIDs::MsgId_broadcastEastWest:
+        return "NETrafficController::eMessageIDs::MsgId_broadcastEastWest";
+    case    NETrafficController::eMessageIDs::MsgId_TrafficSouthNorth:
+        return "NETrafficController::eMessageIDs::MsgId_TrafficSouthNorth";
+    case    NETrafficController::eMessageIDs::MsgId_TrafficEastWest:
+        return "NETrafficController::eMessageIDs::MsgId_TrafficEastWest";
 
-    case NETrafficController::MSG_ID_NO_PROCEED:
-        return "NETrafficController::MSG_ID_NO_PROCEED";
+    case NETrafficController::eMessageIDs::MsgId_NotProcessed:
+        return "NETrafficController::eMessageIDs::MsgId_NotProcessed";
         
-    case NETrafficController::MSG_ID_INVALID:
-        return "NETrafficController::MSG_ID_INVALID";
+    case NETrafficController::eMessageIDs::MsgId_Invalid:
+        return "NETrafficController::eMessageIDs::MsgId_Invalid";
     default:
         ASSERT(false);
         return "ERROR: Undefined NETrafficController::eMessageIDs value!";
@@ -526,8 +554,6 @@ inline const char * NETrafficController::getString( NETrafficController::eMessag
 //////////////////////////////////////////////////////////////////////////
 // NETrafficController namespace declaration End
 //////////////////////////////////////////////////////////////////////////
-
-#endif   // GENERATED_SRC_NETRAFFICCONTROLLER_HPP
 
 //////////////////////////////////////////////////////////////////////////
 // End generate generated/src/NETrafficController.hpp file

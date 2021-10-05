@@ -1,7 +1,15 @@
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/component/private/IETimerConsumer.cpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, Timer Event Consumer.
  *
  ************************************************************************/
@@ -12,20 +20,6 @@
 // IETimerConsumer class declaration
 //////////////////////////////////////////////////////////////////////////
 
-//////////////////////////////////////////////////////////////////////////
-// Constructor / Destructor
-//////////////////////////////////////////////////////////////////////////
-IETimerConsumer::IETimerConsumer( void )
-    : IETimerEventConsumerBase  ( )
-{
-    ; // do nothing
-}
-
-IETimerConsumer::~IETimerConsumer( void )
-{
-    ; // do nothing
-}
-
 void IETimerConsumer::processEvent( const TimerEventData & /* data */ )
 {
     ASSERT(false);
@@ -34,8 +28,8 @@ void IETimerConsumer::processEvent( const TimerEventData & /* data */ )
 void IETimerConsumer::startEventProcessing( Event& eventElem )
 {
     TimerEvent* timerEvent = static_cast<TimerEvent *>( RUNTIME_CAST(&eventElem, TimerEvent) );
-    Timer *timer = timerEvent != NULL ? timerEvent->getData().getTimer() : NULL;
-    if (timer != NULL )
+    Timer *timer = timerEvent != nullptr ? timerEvent->getData().getTimer() : nullptr;
+    if (timer != nullptr )
     {
         processTimer(*timer);
     }

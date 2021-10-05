@@ -1,11 +1,21 @@
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/component/private/EventDataStream.cpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, event data stream implementation
  *
  ************************************************************************/
 #include "areg/component/EventDataStream.hpp"
+
+#include <utility>
 
 //////////////////////////////////////////////////////////////////////////
 // EventDataStream class implementation
@@ -17,16 +27,16 @@
 /**
  * \brief   Predefined Empty Data object.
  **/
-const EventDataStream EventDataStream::EmptyData(EventDataStream::EventDataInternal, static_cast<const char *>("EventDataStream::EmptyData"));
+const EventDataStream EventDataStream::EmptyData(EventDataStream::eEventData::EventDataInternal, static_cast<const char *>("EventDataStream::EmptyData"));
 
 //////////////////////////////////////////////////////////////////////////
 // EventDataStream class, Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
-EventDataStream::EventDataStream( EventDataStream::eEventData evetDataType, const char* name /*= NULL*/ )
+EventDataStream::EventDataStream( EventDataStream::eEventData evetDataType, const char* name /*= nullptr*/ )
     : IEIOStream    ( )
 
     , mEventDataType(evetDataType)
-    , mBufferName   (name != NULL ? name : "EventDataStream")
+    , mBufferName   (name != nullptr ? name : "EventDataStream")
     , mDataBuffer   ( )
     , mSharedList   ( )
 {
@@ -37,9 +47,9 @@ EventDataStream::EventDataStream( const EventDataStream & buffer, const char* na
     : IEIOStream    ( )
 
     , mEventDataType(buffer.mEventDataType)
-    , mBufferName   (name != NULL ? name : "EventDataStream")
+    , mBufferName   (name != nullptr ? name : "EventDataStream")
     , mDataBuffer   (buffer.mDataBuffer)
-    , mSharedList   (static_cast<const TEStack<SharedBuffer, const SharedBuffer &> &>(buffer.mSharedList))
+    , mSharedList   (buffer.mSharedList)
 {
     mDataBuffer.moveToBegin();
 }
@@ -50,15 +60,26 @@ EventDataStream::EventDataStream( const EventDataStream & src )
     , mEventDataType(src.mEventDataType)
     , mBufferName   (src.mBufferName)
     , mDataBuffer   (src.mDataBuffer)
-    , mSharedList   (static_cast<const TEStack<SharedBuffer, const SharedBuffer &> &>(src.mSharedList))
+    , mSharedList   (src.mSharedList)
 {
     mDataBuffer.moveToBegin();
+}
+
+EventDataStream::EventDataStream( EventDataStream && src ) noexcept
+    : IEIOStream    ( )
+
+    , mEventDataType( src.mEventDataType )
+    , mBufferName   ( std::move(src.mBufferName) )
+    , mDataBuffer   ( std::move(src.mDataBuffer) )
+    , mSharedList   ( std::move(src.mSharedList) )
+{
+    mDataBuffer.moveToBegin( );
 }
 
 EventDataStream::EventDataStream(const IEInStream & stream)
     : IEIOStream    ( )
 
-    , mEventDataType( EventDataStream::EventDataExternal)
+    , mEventDataType( EventDataStream::eEventData::EventDataExternal)
     , mBufferName   ("EventDataStream")
     , mDataBuffer   ( )
     , mSharedList   ( )
@@ -75,14 +96,28 @@ EventDataStream::~EventDataStream( void )
 //////////////////////////////////////////////////////////////////////////
 // EventDataStream class, operators
 //////////////////////////////////////////////////////////////////////////
-const EventDataStream & EventDataStream::operator = ( const EventDataStream & src )
+EventDataStream & EventDataStream::operator = ( const EventDataStream & src )
 {
     if (static_cast<const EventDataStream *>(this) != &src)
     {
-        mSharedList = static_cast<const TEStack<SharedBuffer, const SharedBuffer &> &>(src.mSharedList);
+        mSharedList = src.mSharedList;
         mDataBuffer = src.mDataBuffer;
         mDataBuffer.moveToBegin();
     }
+
+    return (*this);
+}
+
+EventDataStream & EventDataStream::operator = ( EventDataStream && src ) noexcept
+{
+    if ( static_cast<EventDataStream *>(this) != &src )
+    {
+        mBufferName = std::move(src.mBufferName);
+        mSharedList = std::move(src.mSharedList);
+        mDataBuffer = std::move(src.mDataBuffer);
+        mDataBuffer.moveToBegin( );
+    }
+
     return (*this);
 }
 
@@ -97,7 +132,7 @@ unsigned int EventDataStream::read( unsigned char* buffer, unsigned int size ) c
 unsigned int EventDataStream::read( IEByteBuffer & buffer ) const
 {
     unsigned int result = 0;
-    if (mEventDataType == EventDataStream::EventDataInternal && mSharedList.isEmpty() == false)
+    if (mEventDataType == EventDataStream::eEventData::EventDataInternal && mSharedList.isEmpty() == false)
     {
         static_cast<SharedBuffer &>(buffer) = mSharedList.popFirst();
         result = buffer.getSizeUsed();
@@ -132,7 +167,7 @@ unsigned int EventDataStream::write( const unsigned char* buffer, unsigned int s
 unsigned int EventDataStream::write( const IEByteBuffer & buffer )
 {
     unsigned int result = 0;
-    if (mEventDataType == EventDataStream::EventDataInternal)
+    if (mEventDataType == EventDataStream::eEventData::EventDataInternal)
     {
         mSharedList.pushLast( static_cast<const SharedBuffer &>(buffer) );
         result = buffer.getSizeUsed();
@@ -181,8 +216,8 @@ AREG_API const IEInStream & operator >> ( const IEInStream & stream, EventDataSt
 
 AREG_API IEOutStream & operator << ( IEOutStream & stream, const EventDataStream & output )
 {
-    ASSERT(output.mEventDataType == EventDataStream::EventDataExternal);
-    stream << EventDataStream::EventDataExternal;
+    ASSERT(output.mEventDataType == EventDataStream::eEventData::EventDataExternal);
+    stream << EventDataStream::eEventData::EventDataExternal;
     stream << output.mBufferName;
     stream << output.mDataBuffer;
     return stream;

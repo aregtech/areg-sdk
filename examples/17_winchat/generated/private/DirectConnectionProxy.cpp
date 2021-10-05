@@ -4,14 +4,14 @@
 
 /************************************************************************
  * (c) copyright    2021
+ *
+ * Generated at     30.09.2021  01:22:15 GMT+02:00 
  *                  Create by AREG SDK code generator tool from source DirectConnection.
- * Generated at     04.07.2021  04:30:02 GMT+02:00 
- ************************************************************************/
-
-/************************************************************************
- * \file            generated/private/DirectConnectionProxy.cpp
+ *
+ * \file            generated/private/DirectConnectionProxy.hpp
  * \ingroup         DirectConnection Service Interface
- * \brief           This is an automatic generated code of DirectConnection Service Interface Proxy class implementation.
+ * \brief           This is an automatic generated code of DirectConnection
+ *                  Service Interface Proxy class implementation.
  ************************************************************************/
 
 /************************************************************************
@@ -32,12 +32,6 @@ IMPLEMENT_RUNTIME_EVENT(DirectConnectionProxy::DirectConnectionServiceAvailableE
 DirectConnectionProxy::DirectConnectionServiceAvailableEvent::DirectConnectionServiceAvailableEvent( IENotificationEventConsumer & consumer )
     : ProxyBase::ServiceAvailableEvent  ( consumer )
 {
-    ; // do nothing
-}
-
-DirectConnectionProxy::DirectConnectionServiceAvailableEvent::~DirectConnectionServiceAvailableEvent( void )
-{
-    ; // do nothing
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -48,7 +42,7 @@ DirectConnectionProxy::DirectConnectionServiceAvailableEvent::~DirectConnectionS
 // static function implementation
 //////////////////////////////////////////////////////////////////////////
 
-ProxyBase * DirectConnectionProxy::_createProxy( const char * roleName, DispatcherThread * ownerThread /*= static_cast<DispatcherThread *>(NULL)*/ )
+ProxyBase * DirectConnectionProxy::_createProxy( const char * roleName, DispatcherThread * ownerThread /*= nullptr*/ )
 {
     return DEBUG_NEW DirectConnectionProxy(roleName, ownerThread);
 }
@@ -62,7 +56,7 @@ DirectConnectionProxy * DirectConnectionProxy::createProxy( const char * roleNam
                                                                       , ownerThread) );
 }
 
-DirectConnectionProxy * DirectConnectionProxy::createProxy( const char * roleName, IEProxyListener & connectListener, const char * ownerThread /*= static_cast<const char *>(NULL)*/ )
+DirectConnectionProxy * DirectConnectionProxy::createProxy( const char * roleName, IEProxyListener & connectListener, const char * ownerThread /*= nullptr*/ )
 {
     return static_cast<DirectConnectionProxy *>(ProxyBase::findOrCreateProxy( roleName
                                                                       , NEDirectConnection::getInterfaceData()
@@ -74,7 +68,7 @@ DirectConnectionProxy * DirectConnectionProxy::createProxy( const char * roleNam
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
-DirectConnectionProxy::DirectConnectionProxy( const char * roleName, DispatcherThread * ownerThread /*= static_cast<DispatcherThread *>(NULL)*/ )
+DirectConnectionProxy::DirectConnectionProxy( const char * roleName, DispatcherThread * ownerThread /*= nullptr*/ )
     : ProxyBase(roleName, NEDirectConnection::getInterfaceData(), ownerThread)
 
 /************************************************************************
@@ -90,12 +84,10 @@ DirectConnectionProxy::DirectConnectionProxy( const char * roleName, DispatcherT
     , mParaminitiator         (  )
     , mParamlistParticipants  (  )
 {
-    ; // do nothing
 }
 
 DirectConnectionProxy::~DirectConnectionProxy( void )
 {
-    ; // do nothing
 }
 
 /************************************************************************
@@ -151,8 +143,8 @@ void DirectConnectionProxy::unregisterServiceListeners( void )
  
 unsigned int DirectConnectionProxy::requestConnectoinSetup( IENotificationEventConsumer & caller, const NEDirectConnection::sInitiator & initiator, const NEDirectConnection::ListParticipants & listParticipants )
 {
-    static const NEDirectConnection::eMessageIDs msgId = NEDirectConnection::MSG_ID_requestConnectoinSetup;
-    EventDataStream args(EventDataStream::EventDataExternal);
+    static const NEDirectConnection::eMessageIDs msgId = NEDirectConnection::eMessageIDs::MsgId_requestConnectoinSetup;
+    EventDataStream args(EventDataStream::eEventData::EventDataExternal);
     IEOutStream & stream = args.getStreamForWrite();
     stream << initiator;
     stream << listParticipants;
@@ -162,8 +154,8 @@ unsigned int DirectConnectionProxy::requestConnectoinSetup( IENotificationEventC
     
 unsigned int DirectConnectionProxy::requestAddParticipant( IENotificationEventConsumer & caller, const NEDirectConnection::sInitiator & initiator, const NEDirectConnection::ListParticipants & listParticipants )
 {
-    static const NEDirectConnection::eMessageIDs msgId = NEDirectConnection::MSG_ID_requestAddParticipant;
-    EventDataStream args(EventDataStream::EventDataExternal);
+    static const NEDirectConnection::eMessageIDs msgId = NEDirectConnection::eMessageIDs::MsgId_requestAddParticipant;
+    EventDataStream args(EventDataStream::eEventData::EventDataExternal);
     IEOutStream & stream = args.getStreamForWrite();
     stream << initiator;
     stream << listParticipants;
@@ -173,8 +165,8 @@ unsigned int DirectConnectionProxy::requestAddParticipant( IENotificationEventCo
     
 unsigned int DirectConnectionProxy::requestRemoveParticipant( IENotificationEventConsumer & caller, const NEDirectConnection::sInitiator & initiator, const NEDirectConnection::ListParticipants & listParticipants )
 {
-    static const NEDirectConnection::eMessageIDs msgId = NEDirectConnection::MSG_ID_requestRemoveParticipant;
-    EventDataStream args(EventDataStream::EventDataExternal);
+    static const NEDirectConnection::eMessageIDs msgId = NEDirectConnection::eMessageIDs::MsgId_requestRemoveParticipant;
+    EventDataStream args(EventDataStream::eEventData::EventDataExternal);
     IEOutStream & stream = args.getStreamForWrite();
     stream << initiator;
     stream << listParticipants;
@@ -184,11 +176,11 @@ unsigned int DirectConnectionProxy::requestRemoveParticipant( IENotificationEven
     
 void DirectConnectionProxy::requestCloseConnection( const NEDirectConnection::sInitiator & initiator )
 {
-    static const NEDirectConnection::eMessageIDs msgId = NEDirectConnection::MSG_ID_requestCloseConnection;
-    EventDataStream args(EventDataStream::EventDataExternal);
+    static const NEDirectConnection::eMessageIDs msgId = NEDirectConnection::eMessageIDs::MsgId_requestCloseConnection;
+    EventDataStream args(EventDataStream::eEventData::EventDataExternal);
     IEOutStream & stream = args.getStreamForWrite();
     stream << initiator;
-    sendRequestEvent( static_cast<unsigned int>(msgId), args, NULL );
+    sendRequestEvent( static_cast<unsigned int>(msgId), args, nullptr );
 }
 /************************************************************************
  * Event processing.
@@ -201,7 +193,7 @@ void DirectConnectionProxy::requestCloseConnection( const NEDirectConnection::sI
 void DirectConnectionProxy::processResponseEvent( ServiceResponseEvent & eventElem )
 {
     DirectConnectionResponseEvent * eventResp = RUNTIME_CAST( &eventElem, DirectConnectionResponseEvent );
-    if (eventResp != NULL)
+    if (eventResp != nullptr)
         processResponse( *eventResp );
     else
         processProxyEvent( eventElem );
@@ -210,7 +202,7 @@ void DirectConnectionProxy::processResponseEvent( ServiceResponseEvent & eventEl
 void DirectConnectionProxy::processAttributeEvent( ServiceResponseEvent & eventElem )
 {
     DirectConnectionResponseEvent * eventResp = RUNTIME_CAST( &eventElem, DirectConnectionResponseEvent );
-    if (eventResp != NULL)
+    if (eventResp != nullptr)
         processResponse( *eventResp );
     else
         processProxyEvent( eventElem );
@@ -220,7 +212,7 @@ void DirectConnectionProxy::processAttributeEvent( ServiceResponseEvent & eventE
  * Internal helper functions.
  ************************************************************************/
 
-DEF_TRACE_SCOPE(GENERATED_private_DirectConnectionProxy_updateData);
+DEF_TRACE_SCOPE(generated_private_DirectConnectionProxy_updateData);
 void DirectConnectionProxy::updateData( DirectConnectionResponseEvent & eventElem, NEDirectConnection::eMessageIDs respId )
 {
     const IEInStream & stream = static_cast<const DirectConnectionResponseEvent &>(eventElem).getData().getReadStream();
@@ -230,19 +222,19 @@ void DirectConnectionProxy::updateData( DirectConnectionResponseEvent & eventEle
     /************************************************************************
      * Update Response parameters
      ************************************************************************/
-    case NEDirectConnection::MSG_ID_responseConnectoinSetup:
+    case NEDirectConnection::eMessageIDs::MsgId_responseConnectoinSetup:
         stream >> mParamsucceeded;
         stream >> mParamtarget;
         stream >> mParaminitiator;
         stream >> mParamlistParticipants;
         break;
 
-    case NEDirectConnection::MSG_ID_responseAddParticipant:
+    case NEDirectConnection::eMessageIDs::MsgId_responseAddParticipant:
         stream >> mParamsucceeded;
         stream >> mParamlistParticipants;
         break;
 
-    case NEDirectConnection::MSG_ID_responseRemoveParticipant:
+    case NEDirectConnection::eMessageIDs::MsgId_responseRemoveParticipant:
         stream >> mParamsucceeded;
         stream >> mParamlistParticipants;
         break;
@@ -253,13 +245,13 @@ void DirectConnectionProxy::updateData( DirectConnectionResponseEvent & eventEle
     /************************************************************************
      * Update Attribute values
      ************************************************************************/
-    case NEDirectConnection::MSG_ID_InitiatedConnections:
+    case NEDirectConnection::eMessageIDs::MsgId_InitiatedConnections:
         stream >> mInitiatedConnections;
         break;
 
     default:
         {
-            TRACE_SCOPE(GENERATED_private_DirectConnectionProxy_updateData);
+            TRACE_SCOPE(generated_private_DirectConnectionProxy_updateData);
             TRACE_ERR("Unexpected response message ID [ %d ] received in proxy [ %s ]!"
                         , static_cast<int>(respId)
                         , ProxyAddress::convAddressToPath(getProxyAddress()).getString());
@@ -279,25 +271,28 @@ void DirectConnectionProxy::processResponse( DirectConnectionResponseEvent & eve
 
     switch (resultType)
     {
-    case NEService::RESULT_DATA_INVALID:
-    case NEService::RESULT_INVALID:
+    case NEService::eResultType::DataInvalid:   // fall through
+    case NEService::eResultType::RequestInvalid:
         break;  // do nothing
 
-    case NEService::RESULT_REQUEST_ERROR:
-    case NEService::RESULT_REQUEST_BUSY:
-    case NEService::RESULT_REQUEST_CANCELED:
-        respId      = static_cast<NEDirectConnection::eMessageIDs>( mProxyData.getResponseId(static_cast<unsigned int>(respId)) );
-        setStates   = respId != NEDirectConnection::MSG_ID_NO_PROCEED;
+    case NEService::eResultType::RequestError:  // fall through
+    case NEService::eResultType::RequestBusy:   // fall through
+    case NEService::eResultType::RequestCanceled:
+        respId      = static_cast<NEDirectConnection::eMessageIDs>( mProxyData.getResponseId(static_cast<msg_id>(respId)) );
+        setStates   = respId != NEDirectConnection::eMessageIDs::MsgId_NotProcessed;
         break;
 
-    case NEService::RESULT_MESSAGE_UNDELIVERED:
-        if ( NEService::isRequestId(respId) )
-            respId  = static_cast<NEDirectConnection::eMessageIDs>( mProxyData.getResponseId(static_cast<unsigned int>(respId)) );
-        setStates   = respId != NEDirectConnection::MSG_ID_NO_PROCEED;            
+    case NEService::eResultType::MessageUndelivered:
+        if ( NEService::isRequestId( static_cast<msg_id>(respId) ) )
+        {
+            respId  = static_cast<NEDirectConnection::eMessageIDs>( mProxyData.getResponseId(static_cast<msg_id>(respId)) );
+        }
+        
+        setStates   = respId != NEDirectConnection::eMessageIDs::MsgId_NotProcessed;            
         break;
 
-    case NEService::RESULT_OK:
-    case NEService::RESULT_DATA_OK:
+    case NEService::eResultType::RequestOK:     // fall through
+    case NEService::eResultType::DataOK:
         dataValid   = true;
         break;
 
@@ -307,11 +302,16 @@ void DirectConnectionProxy::processResponse( DirectConnectionResponseEvent & eve
     }
 
     if (dataValid == true)
+    {
         updateData(evenElem, respId);
+    }
+       
     if (setStates == true)
-        setState(static_cast<unsigned int>(respId), dataValid ? NEService::DATA_OK : NEService::DATA_INVALID);
-
-    notifyListeners(static_cast<unsigned int>(respId), resultType, evenElem.getSequenceNumber());
+    {
+        setState(static_cast<msg_id>(respId), dataValid ? NEService::eDataStateType::DataIsOK : NEService::eDataStateType::DataIsInvalid);
+    }
+    
+    notifyListeners(static_cast<msg_id>(respId), resultType, evenElem.getSequenceNumber());
 }
 
 //////////////////////////////////////////////////////////////////////////

@@ -1,9 +1,16 @@
-#ifndef AREG_BASE_GEMACROS_H
-#define AREG_BASE_GEMACROS_H
+#pragma once
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/base/GEMacros.h
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, Predefined MACRO
  *
  ************************************************************************/
@@ -28,12 +35,8 @@
     #define OPTIONAL
 #endif  // !OPTIONAL
 
-#ifndef NULL
-    #define NULL
-#endif // !NULL
-
 #ifndef IGNORE_PARAM
-    #define IGNORE_PARAM    NULL
+    #define IGNORE_PARAM        nullptr
 #endif // !IGNORE_PARAM
 
 /**
@@ -46,19 +49,19 @@
 #define EMPTY_STRING            ""
 
 /**
- * \brief   ASCII NULL string
+ * \brief   ASCII nullptr string
  **/
-#define NULL_STRING             static_cast<const char *>(0u)
+#define NULL_STRING             static_cast<const char *>(nullptr)
 
 /**
- * \brief   Wide NULL string
+ * \brief   Wide nullptr string
  **/
-#define NULL_STRING_W           static_cast<const wchar_t *>(0u)
+#define NULL_STRING_W           static_cast<const wchar_t *>(nullptr)
 
 /**
- * \brief	NULL buffer
+ * \brief	nullptr buffer
  **/
-#define	NULL_BUF		        static_cast<const unsigned char *>(0u)
+#define	NULL_BUF		        static_cast<const unsigned char *>(nullptr)
 
 /**
  * \brief   Success error code. Mainly used in POSIX methods
@@ -204,6 +207,32 @@
     #define CASE_DEFAULT(x)                 default:    return x
 #endif  // CASE_DEFAULT
 
+/**
+ * \brief   No copiable class declaration.
+ **/
+#ifndef DECLARE_NOCOPY
+    #define DECLARE_NOCOPY(ClassName)                                       \
+        ClassName( const ClassName & /*src*/ ) = delete;                    \
+        ClassName & operator = ( const ClassName & /*src*/ ) = delete
+#endif // !DECLARE_NOCOPY
+
+/**
+ * \brief   No movable class declaration.
+ **/
+#ifndef DECLARE_NOMOVE
+    #define DECLARE_NOMOVE(ClassName)                                       \
+        ClassName( ClassName && /*src*/ ) noexcept = delete;                \
+        ClassName & operator = ( ClassName && /*src*/ ) noexcept = delete
+#endif // !DECLARE_NOMOVE
+
+/**
+ * \brief   No copiable and no movable class declaration.
+ **/
+#ifndef DECLARE_NOCOPY_NOMOVE
+    #define DECLARE_NOCOPY_NOMOVE( ClassName )                              \
+                DECLARE_NOCOPY( ClassName );                                \
+                DECLARE_NOMOVE(ClassName)
+#endif // !DECLARE_NOCOPY_NOMOVE
 
 /**
  * \brief   PI number
@@ -257,7 +286,7 @@
  * \brief   Returns the sign of given number
  **/
 #ifndef MACRO_SIGN_OF
-    #define  MACRO_SIGN_OF( val )               ( (val) <  0 ?  -1 : ((val) > 0 ? 1 : 0) )
+    #define  MACRO_SIGN_OF( val )               ( (val) == 0 ? 0 : ((val) > 0 ? 1 : -1) )
 #endif  // MACRO_SIGN_OF
 
 /**
@@ -306,7 +335,7 @@
 #endif  // MACRO_REMAIN_SIZE
 
 #ifndef MACRO_MAKE_CONST_PTR
-    #define MACRO_MAKE_CONST_PTR(ptr)		    reinterpret_cast<const unsigned char *>(ptr)
+    #define MACRO_MAKE_CONST_PTR(ptr)		    ((const unsigned char *)(ptr))
 #endif // !MACRO_MAKE_CONST_PTR
 
 #ifndef MACRO_MAKE_PTR
@@ -330,7 +359,7 @@
 #endif  // !MACRO_MAKE_NUMBER
 
 #ifndef MACRO_PTR2NUMBER
-    #define MACRO_PTR2NUMBER(ptr)               static_cast<size_t>( MACRO_MAKE_CONST_PTR(ptr) - MACRO_MAKE_CONST_PTR(NULL) )
+    #define MACRO_PTR2NUMBER(ptr)               static_cast<size_t>( MACRO_MAKE_CONST_PTR(ptr) - MACRO_MAKE_CONST_PTR(nullptr) )
 #endif  // MACRO_PTR2NUMBER
 
 #ifndef MACRO_PTR2INT32
@@ -344,7 +373,6 @@
 #ifndef MACRO_ELEM_COUNT
     #define MACRO_ELEM_COUNT(first, last)       static_cast<int32_t>( last - first )
 #endif // !MACRO_ELEM_COUNT
-
 
 #ifndef MACRO_OFFSETOF
     #define MACRO_OFFSETOF(Cls, mem )           static_cast<uint32_t>((size_t)&(((Cls *)0)->mem))
@@ -420,7 +448,7 @@
      **/
     #ifndef OUTPUT_DBG
         #if defined(OUTPUT_DEBUG_LEVEL) && (OUTPUT_DEBUG_LEVEL >= OUTPUT_DEBUG_LEVEL_DEBUG)
-            #define OUTPUT_DBG(...)             NEDebug::outputConsole(NEDebug::PRIO_DBG, __VA_ARGS__)
+            #define OUTPUT_DBG(...)             NEDebug::outputConsole(NEDebug::eDegubPrio::PrioDbg, __VA_ARGS__)
         #else
             #define OUTPUT_DBG(...)             EMPTY_MACRO
         #endif
@@ -431,7 +459,7 @@
      **/
     #ifndef OUTPUT_INFO
         #if defined(OUTPUT_DEBUG_LEVEL) && (OUTPUT_DEBUG_LEVEL >= OUTPUT_DEBUG_LEVEL_INFO)
-            #define OUTPUT_INFO(...)            NEDebug::outputConsole(NEDebug::PRIO_INFO, __VA_ARGS__)
+            #define OUTPUT_INFO(...)            NEDebug::outputConsole(NEDebug::eDegubPrio::PrioInfo, __VA_ARGS__)
         #else
             #define OUTPUT_INFO(...)            EMPTY_MACRO
         #endif
@@ -442,7 +470,7 @@
      **/
     #ifndef OUTPUT_WARN
         #if defined(OUTPUT_DEBUG_LEVEL) && (OUTPUT_DEBUG_LEVEL >= OUTPUT_DEBUG_LEVEL_WARN)
-            #define OUTPUT_WARN(...)            NEDebug::outputConsole(NEDebug::PRIO_WARN, __VA_ARGS__)
+            #define OUTPUT_WARN(...)            NEDebug::outputConsole(NEDebug::eDegubPrio::PrioWarn, __VA_ARGS__)
         #else
             #define OUTPUT_WARN(...)            EMPTY_MACRO
         #endif
@@ -453,7 +481,7 @@
      **/
     #ifndef OUTPUT_ERR
         #if defined(OUTPUT_DEBUG_LEVEL) && (OUTPUT_DEBUG_LEVEL >= OUTPUT_DEBUG_LEVEL_ERROR)
-            #define OUTPUT_ERR(...)             NEDebug::outputConsole(NEDebug::PRIO_ERR, __VA_ARGS__)
+            #define OUTPUT_ERR(...)             NEDebug::outputConsole(NEDebug::eDegubPrio::PrioErr, __VA_ARGS__)
         #else
             #define OUTPUT_ERR(...)             EMPTY_MACRO
         #endif
@@ -505,5 +533,3 @@
     #endif
 
 #endif  // _DEBUG
-
-#endif  // AREG_BASE_GEMACROS_H

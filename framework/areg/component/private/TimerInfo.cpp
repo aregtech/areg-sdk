@@ -1,7 +1,15 @@
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/component/private/TimerInfo.cpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform. Timer Info class.
  *              Stores timer, timer state and timer fire information.
  *
@@ -10,7 +18,9 @@
 
 #include "areg/base/Thread.hpp"
 
-//////////////////////////////////////////////////////////////////////////
+#include <utility>
+
+ //////////////////////////////////////////////////////////////////////////
 // TimerInfo class implementation
 //////////////////////////////////////////////////////////////////////////
 
@@ -18,25 +28,23 @@
 // TimerInfo class, constructors / destructor
 //////////////////////////////////////////////////////////////////////////
 TimerInfo::TimerInfo( void )
-    : mTimer        (NULL)
-    , mHandle       (NULL)
+    : mTimer        (nullptr)
+    , mHandle       (nullptr)
     , mOwnThreadId  (Thread::INVALID_THREAD_ID)
     , mStartedAt    ( 0 )
     , mExpiredAt    ( 0 )
-    , mTimerState   (TimerInfo::TimerInvalid)
+    , mTimerState   (TimerInfo::eTimerState::TimerInvalid)
 {
-    ; // do nothing
 }
 
-TimerInfo::TimerInfo( Timer &timer, TIMERHANDLE timerHandle, ITEM_ID ownThreadId )
+TimerInfo::TimerInfo( Timer &timer, TIMERHANDLE timerHandle, id_type ownThreadId )
     : mTimer        (&timer)
     , mHandle       (timerHandle)
     , mOwnThreadId  (ownThreadId)
     , mStartedAt    ( 0 )
     , mExpiredAt    ( 0 )
-    , mTimerState   (TimerInfo::TimerIdle)
+    , mTimerState   (TimerInfo::eTimerState::TimerIdle)
 {
-    ; // do nothing
 }
 
 TimerInfo::TimerInfo( const TimerInfo & src )
@@ -47,23 +55,22 @@ TimerInfo::TimerInfo( const TimerInfo & src )
     , mExpiredAt    (src.mExpiredAt)
     , mTimerState   (src.mTimerState)
 {
-    ; // do nothing
 }
 
-TimerInfo::~TimerInfo( void )
+TimerInfo::TimerInfo( TimerInfo && src ) noexcept
+    : mTimer        ( std::move(src.mTimer) )
+    , mHandle       ( std::move( src.mHandle) )
+    , mOwnThreadId  ( std::move( src.mOwnThreadId) )
+    , mStartedAt    ( std::move( src.mStartedAt) )
+    , mExpiredAt    ( std::move( src.mExpiredAt) )
+    , mTimerState   ( std::move( src.mTimerState) )
 {
-    mTimer      = NULL;
-    mHandle     = NULL;
-    mOwnThreadId= Thread::INVALID_THREAD_ID;
-    mStartedAt  = 0;
-    mExpiredAt  = 0;
-    mTimerState = TimerInfo::TimerInvalid;
 }
 
 //////////////////////////////////////////////////////////////////////////
 // TimerInfo class, operators
 //////////////////////////////////////////////////////////////////////////
-const TimerInfo& TimerInfo::operator = ( const TimerInfo & src )
+TimerInfo& TimerInfo::operator = ( const TimerInfo & src )
 {
     if (static_cast<const TimerInfo *>(this) != &src)
     {
@@ -74,6 +81,22 @@ const TimerInfo& TimerInfo::operator = ( const TimerInfo & src )
         mExpiredAt  = src.mExpiredAt;
         mTimerState = src.mTimerState;
     }
+
+    return (*this);
+}
+
+TimerInfo & TimerInfo::operator = ( TimerInfo && src ) noexcept
+{
+    if ( static_cast<TimerInfo *>(this) != &src )
+    {
+        mTimer      = std::move( src.mTimer );
+        mHandle     = std::move( src.mHandle );
+        mOwnThreadId= std::move( src.mOwnThreadId );
+        mStartedAt  = std::move( src.mStartedAt );
+        mExpiredAt  = std::move( src.mExpiredAt );
+        mTimerState = std::move( src.mTimerState );
+    }
+
     return (*this);
 }
 
@@ -88,16 +111,16 @@ bool TimerInfo::operator == ( const TimerInfo & other ) const
 bool TimerInfo::timerExpired( unsigned int highValue, unsigned int lowValue )
 {
     bool result = false;
-    if (mTimerState == TimerInfo::TimerPending)
+    if (mTimerState == TimerInfo::eTimerState::TimerPending)
     {
         uint64_t expiredAt = MACRO_MAKE_64( highValue, lowValue );
         if ((mStartedAt <= expiredAt) && (mExpiredAt <= expiredAt))
         {
-            mTimerState= TimerInfo::TimerIdle;
+            mTimerState= TimerInfo::eTimerState::TimerIdle;
             mExpiredAt = expiredAt;
             if (mTimer->timerIsExpired( highValue, lowValue))
             {
-                mTimerState = TimerInfo::TimerExpired;
+                mTimerState = TimerInfo::eTimerState::TimerExpired;
                 result      = true;
             }
         }
@@ -122,7 +145,7 @@ bool TimerInfo::canContinueTimer( const ExpiredTimerInfo & expiredTimer )
         mExpiredAt = expiredAt;
         if (mTimer->timerIsExpired( highValue, lowValue))
         {
-            mTimerState = TimerInfo::TimerPending;
+            mTimerState = TimerInfo::eTimerState::TimerPending;
             result      = true;
         }
     }
@@ -132,9 +155,9 @@ bool TimerInfo::canContinueTimer( const ExpiredTimerInfo & expiredTimer )
 
 void TimerInfo::timerStarting( unsigned int highValue, unsigned int lowValue )
 {
-    ASSERT(mTimerState == TimerInfo::TimerIdle);
+    ASSERT(mTimerState == TimerInfo::eTimerState::TimerIdle);
     mStartedAt    = MACRO_MAKE_64(highValue, lowValue);
-    mTimerState   = TimerInfo::TimerPending;
+    mTimerState   = TimerInfo::eTimerState::TimerPending;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -144,7 +167,7 @@ void TimerInfo::timerStarting( unsigned int highValue, unsigned int lowValue )
 //////////////////////////////////////////////////////////////////////////
 // ExpiredTimerInfo class, methods
 //////////////////////////////////////////////////////////////////////////
-const ExpiredTimerInfo& ExpiredTimerInfo::operator = ( const ExpiredTimerInfo & src )
+ExpiredTimerInfo & ExpiredTimerInfo::operator = ( const ExpiredTimerInfo & src )
 {
     if (static_cast<const ExpiredTimerInfo *>(this) != &src)
     {
@@ -152,6 +175,19 @@ const ExpiredTimerInfo& ExpiredTimerInfo::operator = ( const ExpiredTimerInfo & 
         mLowValue = src.mLowValue;
         mHighValue= src.mHighValue;
     }
+
+    return (*this);
+}
+
+ExpiredTimerInfo & ExpiredTimerInfo::operator = ( ExpiredTimerInfo && src ) noexcept
+{
+    if ( static_cast<ExpiredTimerInfo *>(this) != &src )
+    {
+        mTimer    = std::move( src.mTimer );
+        mLowValue = std::move( src.mLowValue );
+        mHighValue= std::move( src.mHighValue );
+    }
+
     return (*this);
 }
 
@@ -159,29 +195,15 @@ const ExpiredTimerInfo& ExpiredTimerInfo::operator = ( const ExpiredTimerInfo & 
 // ExpiredTimers class implementation
 //////////////////////////////////////////////////////////////////////////
 
-//////////////////////////////////////////////////////////////////////////
-// ExpiredTimers class, constructor / destructor
-//////////////////////////////////////////////////////////////////////////
-ExpiredTimers::ExpiredTimers( void )
-    : TELinkedList<ExpiredTimerInfo, const ExpiredTimerInfo &> ( )
-{
-    ; // do nothing
-}
-
-ExpiredTimers::~ExpiredTimers( void )
-{
-    ; // do nothing
-}
-
-LISTPOS ExpiredTimers::findTimer(Timer * whichTimer, LISTPOS searchAfter /*= NULL*/)
+LISTPOS ExpiredTimers::findTimer(Timer * whichTimer, LISTPOS searchAfter /*= nullptr*/)
 {
     TELinkedList<ExpiredTimerInfo, const ExpiredTimerInfo &>::Block * block = mHead;
-    if ( (searchAfter != NULL) && (mCount != 0) )
+    if ( (searchAfter != nullptr) && (mCount != 0) )
     {
         block = reinterpret_cast<TELinkedList<ExpiredTimerInfo, const ExpiredTimerInfo &>::Block *>(searchAfter)->mNext;
     }
 
-    for ( ; block != NULL; block = block->mNext )
+    for ( ; block != nullptr; block = block->mNext )
     {
         if ( block->mValue.mTimer == whichTimer )
             break;
@@ -194,11 +216,11 @@ int ExpiredTimers::removeAllTimers( Timer * whichTimer )
 {
     int result = 0;
 
-    if (whichTimer != NULL)
+    if (whichTimer != nullptr)
     {
         TELinkedList<ExpiredTimerInfo, const ExpiredTimerInfo &>::Block * block = mHead;
 
-        while (block != NULL)
+        while (block != nullptr)
         {
             TELinkedList<ExpiredTimerInfo, const ExpiredTimerInfo &>::Block * next = block->mNext;
             if ( block->mValue.mTimer == whichTimer )
@@ -215,28 +237,18 @@ int ExpiredTimers::removeAllTimers( Timer * whichTimer )
 }
 
 //////////////////////////////////////////////////////////////////////////
-// MapTimerTable
+// MapTimerTable implementation
 //////////////////////////////////////////////////////////////////////////
-MapTimerTable::MapTimerTable(void)
-    : TEHashMap<Timer *, TimerInfo, const Timer *, const TimerInfo &, TimerTableImpl>( )
-{
-
-}
-
-MapTimerTable::~MapTimerTable(void)
-{
-
-}
 
 void MapTimerTable::registerObject(const Timer * key, const TimerInfo & object)
 {
-    ASSERT(mHashTable != static_cast<Block**>(NULL));
+    ASSERT(mHashTable != nullptr);
 
-    unsigned int hash = TemplateConstants::MAP_INVALID_HASH;
-    TEHashMap<Timer *, TimerInfo, const Timer *, const TimerInfo &, TimerTableImpl>::Block* block = TEHashMap<Timer *, TimerInfo, const Timer *, const TimerInfo &, TimerTableImpl>::blockAt(key, hash);
-    if (block == static_cast<Block *>(NULL))
+    unsigned int hash = NECommon::MAP_INVALID_HASH;
+    TEHashMap<Timer *, TimerInfo, const Timer *, const TimerInfo &, ImplTimerTable>::Block* block = TEHashMap<Timer *, TimerInfo, const Timer *, const TimerInfo &, ImplTimerTable>::blockAt(key, hash);
+    if (block == nullptr)
     {
-        ASSERT(hash != TemplateConstants::MAP_INVALID_HASH);
+        ASSERT(hash != NECommon::MAP_INVALID_HASH);
 
         // it doesn't exist, add a new Block
         int idx     = static_cast<int>(hash % mHashTableSize);
@@ -253,11 +265,11 @@ void MapTimerTable::registerObject(const Timer * key, const TimerInfo & object)
 bool MapTimerTable::updateObject(const Timer * key, const TimerInfo & object)
 {
     bool result = false;
-    ASSERT( mHashTable != static_cast<Block **>(NULL) );
+    ASSERT( mHashTable != nullptr );
 
-    unsigned int hash = TemplateConstants::MAP_INVALID_HASH;
-    TEHashMap<Timer *, TimerInfo, const Timer *, const TimerInfo &, TimerTableImpl>::Block* block = TEHashMap<Timer *, TimerInfo, const Timer *, const TimerInfo &, TimerTableImpl>::blockAt(key, hash);
-    if (block != static_cast<Block *>(NULL))
+    unsigned int hash = NECommon::MAP_INVALID_HASH;
+    TEHashMap<Timer *, TimerInfo, const Timer *, const TimerInfo &, ImplTimerTable>::Block* block = TEHashMap<Timer *, TimerInfo, const Timer *, const TimerInfo &, ImplTimerTable>::blockAt(key, hash);
+    if (block != nullptr)
     {
         block->mValue= object;
         result = false;
@@ -269,8 +281,8 @@ bool MapTimerTable::updateObject(const Timer * key, const TimerInfo & object)
 bool MapTimerTable::unregisterObject(const Timer * key)
 {
     bool result = false;
-    TEHashMap<Timer *, TimerInfo, const Timer *, const TimerInfo &, TimerTableImpl>::Block** block = blockAt(key);
-    if ((block != NULL) && (*block != NULL))
+    TEHashMap<Timer *, TimerInfo, const Timer *, const TimerInfo &, ImplTimerTable>::Block** block = blockAtRef(key);
+    if ((block != nullptr) && (*block != nullptr))
     {
         removeBlock(block);
         result = true;
@@ -282,8 +294,8 @@ bool MapTimerTable::unregisterObject(const Timer * key)
 bool MapTimerTable::unregisterObject(const Timer * key, TimerInfo & OUT object)
 {
     bool result = false;
-    TEHashMap<Timer *, TimerInfo, const Timer *, const TimerInfo &, TimerTableImpl>::Block** block = blockAt(key);
-    if ((block != NULL) && (*block != NULL))
+    TEHashMap<Timer *, TimerInfo, const Timer *, const TimerInfo &, ImplTimerTable>::Block** block = blockAtRef(key);
+    if ((block != nullptr) && (*block != nullptr))
     {
         object = (*block)->mValue;
         removeBlock(block);
@@ -296,8 +308,8 @@ bool MapTimerTable::unregisterObject(const Timer * key, TimerInfo & OUT object)
 bool MapTimerTable::unregisterFirstObject(Timer * & OUT key, TimerInfo & OUT object)
 {
     bool result = false;
-    TEHashMap<Timer *, TimerInfo, const Timer *, const TimerInfo &, TimerTableImpl>::Block* block = firstValidBlock();
-    if (block != NULL)
+    TEHashMap<Timer *, TimerInfo, const Timer *, const TimerInfo &, ImplTimerTable>::Block* block = firstValidBlock();
+    if (block != nullptr)
     {
         key     = block->mKey;
         object  = block->mValue;
@@ -311,8 +323,8 @@ bool MapTimerTable::unregisterFirstObject(Timer * & OUT key, TimerInfo & OUT obj
 bool MapTimerTable::resetActiveTimerState(const Timer * key)
 {
     bool result = false;
-    TEHashMap<Timer *, TimerInfo, const Timer *, const TimerInfo &, TimerTableImpl>::Block** block = blockAt(key);
-    if ((block != NULL) && (*block != NULL))
+    TEHashMap<Timer *, TimerInfo, const Timer *, const TimerInfo &, ImplTimerTable>::Block** block = blockAtRef(key);
+    if ((block != nullptr) && (*block != nullptr))
     {
         result = (*block)->mValue.resetActiveTimer();
     }

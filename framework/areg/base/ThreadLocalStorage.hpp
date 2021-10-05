@@ -1,9 +1,16 @@
-#ifndef AREG_BASE_THREADLOCALSTORAGE_HPP
-#define AREG_BASE_THREADLOCALSTORAGE_HPP
+#pragma once
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/base/ThreadLocalStorage.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, Thread Local Storage class.
  *              Should be initialized when thread starts running.
  *
@@ -29,10 +36,10 @@ class Thread;
 /**
  * \brief   A local storage of a thread.
  *          When thread starts, it initializes local storage.
- *          The user of local storage can save initialized value in the storage
- *          by unique key. By default, every Thread object contains
- *          thread consumer entry in the storage.
- *          The local storage items are access by name.
+ *          Any object of local threadcan save an entry in thread local storage
+ *          accessed by unique name. By default, every local storage ot a Thread
+ *          contains the entry of the thread consumer. The entries of the 
+ *          local storage are access by name.
  * \see     Thread
  **/
 class AREG_API ThreadLocalStorage
@@ -46,106 +53,21 @@ class AREG_API ThreadLocalStorage
 // Internal class declaration
 /************************************************************************/
 private:
-    class StorageItem;
-    class StorageList;
-
-//////////////////////////////////////////////////////////////////////////
-//
-// Internals of ThreadLocalStorage class. Begin
-// 
-//////////////////////////////////////////////////////////////////////////
-private:
     //////////////////////////////////////////////////////////////////////////
     // ThreadLocalStorage::StorageItem class declaration
     //////////////////////////////////////////////////////////////////////////
 
-    typedef TEPairImpl <const String &, NEMemory::uAlign>   ImplStorageItem;
+    //!< Definition of storage helper object to compare keys and values.
+    using ImplStorageItem   = TEPairImpl<const String &, NEMemory::uAlign>;
 
-    /**
-     * \brief   Local Storage Item class.
-     *          Local Storage Item is a pair of string and aligned NEMemory::uAlign
-     *          entry, which can be converted to any simple value.
-     **/
-    class AREG_API StorageItem : public TEPair<String, NEMemory::uAlign, const String &, NEMemory::uAlign, ImplStorageItem>
-    {
-    //////////////////////////////////////////////////////////////////////////
-    // Constructors / Destructor
-    //////////////////////////////////////////////////////////////////////////
-    public:
-        /**
-         * \brief   Default constructor. Creates empty item. Never used, required by linked list object
-         **/
-        StorageItem( void );
-        /**
-         * \brief   Creates Local Storage item and initializes key and value of an item.
-         * \param   Key     The name of a storage item
-         * \param   Value   The value of a storage item.
-         **/
-        StorageItem(const String & Key, NEMemory::uAlign Value);
-        /**
-         * \brief   Copy constructor.
-         * \param   src     The source to copy data.
-         **/
-        StorageItem( const ThreadLocalStorage::StorageItem & src );
-        /**
-         * \brief   Destructor
-         **/
-        ~StorageItem( void );
+    //!< Definition of storage item to store.
+    using StorageItem       = TEPair<String, NEMemory::uAlign, const String &, NEMemory::uAlign, ImplStorageItem>;
 
-    //////////////////////////////////////////////////////////////////////////
-    // Operators
-    //////////////////////////////////////////////////////////////////////////
-    public:
-        /**
-         * \brief   Assigning operator. Copies Key and Value values from given source.
-         **/
-        const ThreadLocalStorage::StorageItem & operator = ( const ThreadLocalStorage::StorageItem & src );
-    };
+    //!< Definition of storage list helper object to compare values.
+    using ImplStorageList   = TEListImpl<const ThreadLocalStorage::StorageItem &>;
 
-    //////////////////////////////////////////////////////////////////////////
-    // ThreadLocalStorage::StorageList class declaration
-    //////////////////////////////////////////////////////////////////////////
-
-    typedef TEListImpl<const ThreadLocalStorage::StorageItem &>   ImplStorageList;
-
-    /**
-     * \brief   Local Storage Item List, which contains local storage items.
-     *          The Local Storage Items are searched in this list by their name.
-     *          The name should be unique, otherwise when item is searched by
-     *          name, any first item entry will be returned.
-     **/
-    class AREG_API StorageList : public TELinkedList<ThreadLocalStorage::StorageItem, const ThreadLocalStorage::StorageItem &, ImplStorageList>
-    {
-    //////////////////////////////////////////////////////////////////////////
-    // Constructor / Destructor
-    //////////////////////////////////////////////////////////////////////////
-    public:
-        /**
-         * \brief   Default constructor.
-         **/
-        StorageList( void );
-        /**
-         * \brief   Destructor.
-         **/
-        ~StorageList( void );
-
-    //////////////////////////////////////////////////////////////////////////
-    // Hidden / Forbidden methods.
-    //////////////////////////////////////////////////////////////////////////
-    private:
-        StorageList( const ThreadLocalStorage::StorageList & /*src*/ );
-        const ThreadLocalStorage::StorageList & operator = ( const ThreadLocalStorage::StorageList & /*src*/ );
-    };
-
-//////////////////////////////////////////////////////////////////////////
-//
-// Internals of ThreadLocalStorage class. End
-// 
-//////////////////////////////////////////////////////////////////////////
-
-/************************************************************************/
-// Start Trhead class
-/************************************************************************/
+    //!< Definition of storage list object to store items.
+    using StorageList       = TELinkedList<ThreadLocalStorage::StorageItem, const ThreadLocalStorage::StorageItem &, ImplStorageList>;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -159,7 +81,7 @@ protected:
      *          withing thread context where it was created.
      * \param   owningThread    The local storage owning thread.
      **/
-    ThreadLocalStorage( Thread & owningThread );
+    explicit ThreadLocalStorage( Thread & owningThread );
     /**
      * \brief   Destructor
      **/
@@ -173,7 +95,7 @@ public:
      * \brief   Returns the name of thread local storage.
      *          The name of local storage is same as thread name.
      **/
-    const char * getName( void ) const;
+    const String & getName( void ) const;
 
     /**
      * \brief   Returns true, if there is an local storage item 
@@ -285,10 +207,19 @@ public:
 // Member variables
 //////////////////////////////////////////////////////////////////////////
 private:
+#if defined(_MSC_VER) && (_MSC_VER > 1200)
+    #pragma warning(disable: 4251)
+#endif  // _MSC_VER
+
     /**
      * \brief   The storage list object, which contains (key; value) pair entrier
      **/
     StorageList mStorageList;
+
+#if defined(_MSC_VER) && (_MSC_VER > 1200)
+    #pragma warning(default: 4251)
+#endif  // _MSC_VER
+
     /**
      * \brief   The thread object, which is a holder of thread storage.
      **/
@@ -298,9 +229,8 @@ private:
 // Forbidden methods
 //////////////////////////////////////////////////////////////////////////
 private:
-    ThreadLocalStorage( void );
-    ThreadLocalStorage( const ThreadLocalStorage & /*src*/ );
-    const ThreadLocalStorage & operator = ( const ThreadLocalStorage & /*src*/ );
+    ThreadLocalStorage( void ) = delete;
+    DECLARE_NOCOPY_NOMOVE( ThreadLocalStorage );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -321,5 +251,3 @@ inline void ThreadLocalStorage::removeAll( void )
 {
     return mStorageList.removeAll();
 }
-
-#endif  // AREG_BASE_THREADLOCALSTORAGE_HPP

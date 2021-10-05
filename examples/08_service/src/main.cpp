@@ -3,12 +3,20 @@
 // Author      : Artak Avetyan
 // Version     :
 // Copyright   : Aregtech (c) 2021
-// Description : Hello World in C++, Ansi-style
+// Description : This project demonstrates the use of simple local servicing 
+//               objects to create multithreading applications.It instantiates
+//               a dummy ( empty ) local service interface, which is not 
+//               visible outside of the process.
+//
+//               The service is created as an instance of Component, dummy 
+//               Stub and Timer consumer. The service is registered in a model
+//               that is loaded at start and unloaded when the application 
+//               completes the job.
 //============================================================================
 
 #include "areg/base/GEGlobal.h"
 #include "areg/appbase/Application.hpp"
-#include "areg/base/ESynchObjects.hpp"
+#include "areg/base/SynchObjects.hpp"
 #include "areg/component/ComponentLoader.hpp"
 #include "areg/trace/GETrace.h"
 #include "src/ServicingComponent.hpp"
@@ -17,15 +25,7 @@
     #pragma comment(lib, "areg.lib")
 #endif // WINDOWS
 
-/**
- * \brief   This file demonstrates simple initialization of servicing local component
- *          used for local multi-threading communication. The service does not contain
- *          any request, response or attribute update methods. Instead, the service
- *          contains local timer to run and when it is inactive, the application completes
- *          the job and cleans up the resources.
- **/
-
-static const char * _modelName = "TestModel";  //!< The name of model
+constexpr char const _modelName[] { "TestModel" };  //!< The name of model
 
 // Describe mode, set model name
 BEGIN_MODEL(_modelName)
@@ -56,9 +56,9 @@ int main()
 {
     printf("Initializing servicing component...\n");
     // force to start logging with default settings
-    TRACER_CONFIGURE_AND_START(NULL);
+    TRACER_CONFIGURE_AND_START( nullptr );
     // Initialize application, enable logging, servicing and the timer.
-    Application::initApplication(true, true, false, true, NULL, NULL);
+    Application::initApplication(true, true, false, true, nullptr, nullptr );
 
     do 
     {
@@ -67,11 +67,12 @@ int main()
 
         // load model to initialize components
         Application::loadModel(_modelName);
-
         TRACE_DBG("Servicing model is loaded");
-        
+
         // wait for quit signal to complete application.
-        Application::waitAppQuit(IESynchObject::WAIT_INFINITE);
+        Application::waitAppQuit( NECommon::WAIT_10_SECONDS );
+        
+        printf("10 secs passed. Unloading services and exit application...\n");
 
         // stop and unload components
         Application::unloadModel(_modelName);

@@ -1,13 +1,18 @@
-#ifndef AREG_BASE_FILE_HPP
-#define AREG_BASE_FILE_HPP
-
+#pragma once
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/base/File.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
- * \brief       AREG Platform, File class to work with
- *              files on File System. Also can be used as an object
- *              for data streaming.
+ * \author      Artak Avetyan
+ * \brief       AREG Platform, File class to work with files on File System.7
+ *              Can be also used as an object for data streaming.
  *
  ************************************************************************/
 /************************************************************************
@@ -16,18 +21,13 @@
 #include "areg/base/GEGlobal.h"
 #include "areg/base/FileBase.hpp"
 #include "areg/base/String.hpp"
+#include "areg/base/Containers.hpp"
 
-class StringList;
+#include <string_view>
 
 /**
- * \brief       File class to work with files on File System.
- *              Supports all functionalities for data streaming.
- * 
- * \details     This class derived from file base class. The class
- *              supports main functionalities with files on File System.
- *              Also functions to support data streaming and can be used
- *              as a streaming object.
- *
+ * \brief   File class to work with files on File System. Supports data streaming
+ *          functionalities.
  **/
 //////////////////////////////////////////////////////////////////////////
 // File class declaration
@@ -42,7 +42,7 @@ public:
     /**
      * \brief   Special folder definitions
      **/
-    typedef enum E_SpecialFolder
+    typedef enum class E_SpecialFolder : uint8_t
     {
           SpecialUserHome       //!< Current user home folder path.
         , SpecialPersonal       //!< The user's document folder path.
@@ -51,55 +51,59 @@ public:
 
     } eSpecialFolder;
 
+#if defined(_MSC_VER) && (_MSC_VER > 1200)
+    #pragma warning(disable: 4251)
+#endif  // _MSC_VER
+
     /**
      * \brief   File::SPEACIAL_MASKS
      *          The list of masked names to replace with special folders.
      */
-    static const char * const   SPEACIAL_MASKS[]    /* = {"%home%", "%personal", "%appdata%", "%temp%"} */;
+    static constexpr std::string_view   SPEACIAL_MASKS[]    = { "%home%", "%personal", "%appdata%", "%temp%" };
 
     /**
      * \brief   File::LEN_SPECIAL_MASKS
      *          The special masked names array length.
      */
-    static const int            LEN_SPECIAL_MASKS   /* = MACRO_SIZEOF_ARRAY(SPEACIAL_MASKS) */;
+    static constexpr int                LEN_SPECIAL_MASKS   { MACRO_ARRAYLEN(SPEACIAL_MASKS) };
 
     /**
      * \brief   File::TEMP_FILE_PREFIX
      *          The default prefix for temporary file. By default it is "_areg"
      **/
-    static const char * const   TEMP_FILE_PREFIX    /*= "_areg"*/;
+    static constexpr std::string_view   TEMP_FILE_PREFIX    { "_areg" };
 
     /**
      * \brief   Current directory
      **/
-    static const char           DIR_CURRENT[]       /*= '.'*/;
+    static constexpr std::string_view   DIR_CURRENT         { "." };
 
     /**
      * \brief   Parent directory
      **/
-    static const char           DIR_PARENT[]        /*= ".."*/;
+    static constexpr std::string_view   DIR_PARENT          { ".." };
 
     /**
      * \brief   File::EXTENSION_SEPARATOR
      *          File extension separator.
      **/
-    static const char           EXTENSION_SEPARATOR /*= '.'*/;
+    static constexpr char               EXTENSION_SEPARATOR { '.' };
 
     /**
      * \brief   File::UNIX_SEPARATOR
      *          Unix style path separator.
      **/
-    static const char           UNIX_SEPARATOR      /* = '/' */;
+    static constexpr char               UNIX_SEPARATOR      { '/' };
 
     /**
      * \brief   File::DOS_SEPARATOR
      *          DOS style path separator.
      **/
-    static const char           DOS_SEPARATOR       /* = '\\' */;
+    static constexpr char               DOS_SEPARATOR       { '\\' };
 
     /**
      * \brief   File::PATH_SEPARATOR
-     *          The file path separator
+     *          OS specific file path separator.
      **/
     static const char           PATH_SEPARATOR      /* OS specific */;
 
@@ -114,6 +118,10 @@ public:
      *          Invalid file handle
      **/
     static FILEHANDLE const     INVALID_HANDLE       /* OS specific */;
+
+#if defined(_MSC_VER) && (_MSC_VER > 1200)
+    #pragma warning(default: 4251)
+#endif  // _MSC_VER
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / destructor
@@ -130,7 +138,7 @@ public:
      * \param	mode	    file open mode. 
      *                      For modes, see description in FileBase class 
      **/
-    File(const char* fileName, unsigned int mode = (FileBase::FO_MODE_WRITE | FileBase::FO_MODE_BINARY | FileBase::FOB_SHARE_READ));
+    explicit File(const char * fileName, unsigned int mode = (FileBase::FO_MODE_WRITE | FileBase::FO_MODE_BINARY | FileBase::FOB_SHARE_READ));
 
     /**
      * \brief   Destructor
@@ -154,10 +162,10 @@ public:
      *
      * \return  Returns true if file object was opened with success.
      **/
-    virtual bool open( void );
+    virtual bool open( void ) override;
 
     /**
-     * \brief	Opens the file object. For memory buffered file the file name can be NULL.
+     * \brief	Opens the file object. For memory buffered file the file name can be nullptr.
      *          Any other name for memory buffered file object will have only symbolic meaning
      *          and will be ignored during open operation.
      *          For file system file object the file name should contain one of paths:
@@ -177,7 +185,7 @@ public:
      *
      * \return	Returns true if file was opened with success.
      **/
-    virtual bool open(const char* fileName, unsigned int mode);
+    virtual bool open(const char * fileName, unsigned int mode) override;
 
     /**
      * \brief   Call to close file object.
@@ -187,46 +195,46 @@ public:
      *          If FO_MODE_CREATE_TEMP is set, file object is always deleted on close.
      *          If FO_FOR_DELETE is set, file object is deleted only for memory buffered file even if file was opened with attach mode.
      **/
-    virtual void close( void );
+    virtual void close( void ) override;
 
     /**
      * \brief	Delete opened file. This will force to delete file object even if it is attached memory buffered file
      * \return	Returns true if succeeded.
      **/
-    virtual bool remove( void );
+    virtual bool remove( void ) override;
 
     /**
      * \brief	Sets the file pointer position and returns current position. 
      *          The positive value of offset means move pointer forward.
      *          The negative value of offset means move pointer back.
-     *          For memory buffered file the pointer cannot move more than IECursorPosition::POSITION_END.
+     *          For memory buffered file the pointer cannot move more than IECursorPosition::eCursorPosition::PositionEnd.
      *
      * \param	offset	The offset in bytes to move. Positive value means moving forward. Negative value means moving back.
      * \param	startAt	Specifies the starting position of pointer and should have one of values:
-     *                  IECursorPosition::POSITION_BEGIN   -- position from beginning of file
-     *                  IECursorPosition::POSITION_CURRENT -- from current pointer position
-     *                  IECursorPosition::POSITION_END     -- from end of file
+     *                  IECursorPosition::eCursorPosition::PositionBegin   -- position from beginning of file
+     *                  IECursorPosition::eCursorPosition::PositionCurrent -- from current pointer position
+     *                  IECursorPosition::eCursorPosition::PositionEnd     -- from end of file
      *
      * \return	If succeeds, returns the current position of pointer in bytes or value INVALID_POINTER_POSITION if fails.
      **/
-    virtual unsigned int setPosition(int offset, IECursorPosition::eCursorPosition startAt) const;
+    virtual unsigned int setPosition(int offset, IECursorPosition::eCursorPosition startAt) const override;
 
     /**
      * \brief	If succeeds, returns the current position of pointer in bytes or value INVALID_POINTER_POSITION if fails.
      *          Before calling function, the file object should be opened.
      * \return	If succeeds, returns the current position of pointer in bytes or value INVALID_POINTER_POSITION if fails.
      **/
-    virtual unsigned int getPosition( void ) const;
+    virtual unsigned int getPosition( void ) const override;
 
     /**
      * \brief	If succeeds, returns the current valid length of file data. otherwise returns INVALID_SIZE value.
      **/
-    virtual unsigned int getLength( void ) const;
+    virtual unsigned int getLength( void ) const override;
 
     /**
      * \brief   Returns the current open status of file object. If file is opened, returns true
      **/
-    virtual bool isOpened() const;
+    virtual bool isOpened() const override;
 
     /**
      * \brief	Call to reserve space or set new size of file object and returns the current position of pointer.
@@ -239,12 +247,12 @@ public:
      *
      * \return  If succeeds, returns the current position of file pointer. Otherwise it returns value INVALID_POINTER_POSITION.
      **/
-    virtual unsigned int reserve(int newSize);
+    virtual unsigned int reserve(int newSize) override;
 
     /**
      * \brief   Purge file object data, sets the size zero and if succeeds, return true
      **/
-    virtual bool truncate( void );
+    virtual bool truncate( void ) override;
 
 /************************************************************************/
 // IEInStream interface overrides
@@ -258,7 +266,7 @@ public:
      * \param   buffer  The instance of Byte Buffer object to stream data from Input Stream object
      * \return	Returns the size in bytes of copied data
      **/
-    virtual unsigned int read( IEByteBuffer & buffer ) const;
+    virtual unsigned int read( IEByteBuffer & buffer ) const override;
 
     /**
      * \brief   Reads string data from Input Stream object and copies into given ASCII String.
@@ -266,7 +274,7 @@ public:
      * \param   asciiString     The buffer of ASCII String to stream data from Input Stream object.
      * \return  Returns the size in bytes of copied string data.
      **/
-    virtual unsigned int read( String & asciiString ) const;
+    virtual unsigned int read( String & asciiString ) const override;
 
     /**
      * \brief   Reads string data from Input Stream object and copies into given Wide String.
@@ -274,7 +282,7 @@ public:
      * \param   wideString      The buffer of Wide String to stream data from Input Stream object.
      * \return  Returns the size in bytes of copied string data.
      **/
-    virtual unsigned int read( WideString & wideString ) const;
+    virtual unsigned int read( WideString & wideString ) const override;
 
     /**
      * \brief	Reads data from input stream object, copies into given buffer and
@@ -283,7 +291,7 @@ public:
      * \param	size	The size in bytes of available buffer
      * \return	Returns the size in bytes of copied data
      **/
-    virtual unsigned int read( unsigned char * buffer, unsigned int size ) const;
+    virtual unsigned int read( unsigned char * buffer, unsigned int size ) const override;
 
 /************************************************************************/
 // IEOutStream interface overrides
@@ -295,7 +303,7 @@ public:
      * \param	buffer	The instance of Byte Buffer object containing data to stream to Output Stream.
      * \return	Returns the size in bytes of written data
      **/
-    virtual unsigned int write( const IEByteBuffer & buffer );
+    virtual unsigned int write( const IEByteBuffer & buffer ) override;
 
     /**
      * \brief   Writes string data from given ASCII String object to output stream object.
@@ -303,7 +311,7 @@ public:
      * \param   asciiString     The buffer of String containing data to stream to Output Stream.
      * \return  Returns the size in bytes of copied string data.
      **/
-    virtual unsigned int write( const String & asciiString );
+    virtual unsigned int write( const String & asciiString ) override;
 
     /**
      * \brief   Writes string data from given wide-char String object to output stream object.
@@ -311,7 +319,7 @@ public:
      * \param   wideString  The buffer of String containing data to stream to Output Stream.
      * \return  Returns the size in bytes of copied string data.
      **/
-    virtual unsigned int write( const WideString & wideString );
+    virtual unsigned int write( const WideString & wideString ) override;
 
     /**
      * \brief	Write data to output stream object from given buffer
@@ -322,13 +330,13 @@ public:
      * \param	size	The size in bytes of data buffer
      * \return	Returns the size in bytes of written data
      **/
-    virtual unsigned int write( const unsigned char* buffer, unsigned int size );
+    virtual unsigned int write( const unsigned char* buffer, unsigned int size ) override;
 
     /**
      * \brief   Clears the buffers for the file and causes all buffered data 
      *          to be written to the file.
      **/
-    virtual void flush( void );
+    virtual void flush( void ) override;
 
 protected:
 /************************************************************************/
@@ -341,7 +349,7 @@ protected:
      *          For example, if the size of buffer is 'n' and 'x' bytes of data was
      *          already read from stream, the available readable size is 'n - x'.
      **/
-    virtual unsigned int getSizeReadable( void ) const;
+    virtual unsigned int getSizeReadable( void ) const override;
 
 /************************************************************************/
 // IEOutStream interface overrides
@@ -353,37 +361,37 @@ protected:
      *          For example, if the size of buffer is 'n' and 'x' bytes of data was
      *          already written to stream, the available writable size is 'n - x'.
      **/
-    virtual unsigned int getSizeWritable( void ) const;
+    virtual unsigned int getSizeWritable( void ) const override;
 
 //////////////////////////////////////////////////////////////////////////
 // Static operations
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief	Returns the absolute path to file / folder
-     * \param	filePath	Absolute or relative file / folder name
+     * \brief	Returns the absolute path to file / folder.
+     * \param	filePath	Absolute or relative file / folder name.
      **/
-    static String getFileFullPath(const char* filePath);
+    static String getFileFullPath(const char * filePath = nullptr);
 
     /**
      * \brief   Returns the full path of directory part of file path, including backslash
      * \param   filePath    Absolute or relative file path
      **/
-    static String getFileDirectory(const char* filePath);
+    static String getFileDirectory(const char * filePath);
 
     /**
      * \brief	Returns file name with extension of the given file path.
      *          If path is a folder, the file name is empty.
      * \param	filePath	Absolute or relative file path
      **/
-    static String getFileNameWithExtension(const char* filePath);
+    static String getFileNameWithExtension(const char * filePath);
 
     /**
      * \brief   Returns only file extension of the given file path.
      *          If path is a folder, the file name is empty.
      * \param   filePath    Absolute or relative file path
      **/
-    static String getFileExtension(const char* filePath);
+    static String getFileExtension(const char * filePath);
 
     /**
      * \brief   Returns only file name without extension of the given file path.
@@ -396,14 +404,14 @@ public:
      * \brief	Delete given file. Returns true if succeeds.
      * \param	filePath	Absolute or relative file path to delete.
      **/
-    static bool deleteFile(const char* filePath);
+    static bool deleteFile(const char * filePath);
 
     /**
      * \brief	Move file or folder from old location to new location
      * \param	oldPath	    Old absolute or relative path of file or folder
      * \param	newPath	    New absolute or relative path of file or folder
      **/
-    static bool moveFile(const char* oldPath, const char* newPath);
+    static bool moveFile(const char * oldPath, const char * newPath);
 
     /**
      * \brief	Copies file from old location to new location. File in original location will remain unchanged
@@ -414,29 +422,29 @@ public:
      *                          - if false, operation will fail
      * \return	Returns true if operation succeeds.
      **/
-    static bool copyFile(const char* originPath, const char* newPath, bool copyForce);
+    static bool copyFile(const char * originPath, const char * newPath, bool copyForce);
 
     /**
      * \brief	Checks whether the given path is an existing file or not.
      * \param	filePath    The relative or absolute path of file to check
      * \return	If file exists, returns true. Otherwise returns false
      **/
-    static bool existFile(const char* filePath);
+    static bool existFile(const char * filePath);
 
     /**
      * \brief	Generates temp file name in current or in temporary folder
-     * \param	prefix	        The prefix that should contain temp file. If NULL TEMP_FILE_PREFIX (i.e. "_cz") will be used
+     * \param	prefix	        The prefix that should contain temp file. If nullptr TEMP_FILE_PREFIX (i.e. "_cz") will be used
      * \param	unique	        If true, the system will generate own unique name. 
      *                          Otherwise it will use tick count and will not guaranty uniqueness.
      * \param	inTempFolder	If true, generated file path will be in system defined temp folder, otherwise in current folder. 
      *                          File path in current folder will have relative path
      * \return	Absolute or relative path to temp file.
      **/
-    static String genTempFileName(const char* prefix, bool unique, bool inTempFolder);
+    static String genTempFileName(const char * prefix, bool unique, bool inTempFolder);
     /**
      * \brief   Generate unique temp file name in temporary folder with prefix TEMP_FILE_PREFIX ("_cz")
      **/
-    static String genTempFileName();
+    static String genTempFileName( void );
 
     /**
      * \brief	Returns absolute path of current directory
@@ -447,19 +455,19 @@ public:
      * \brief	Sets current directory. Returns true if succeeds.
      * \param	dirPath	    Absolute or relative path to directory to set as current
      **/
-    static bool setCurrentDir(const char* dirPath);
+    static bool setCurrentDir(const char * dirPath);
 
     /**
      * \brief	Creates folder. Returns true if succeeds.
      * \param	dirPath	    Absolute or relative path of directory
      **/
-    static bool createDir(const char* dirPath);
+    static bool createDir(const char * dirPath);
 
     /**
     * \brief	Deletes folder. Returns true if succeeds.
     * \param	dirPath	    Absolute or relative path of directory
      **/
-    static bool deleteDir(const char* dirPath);
+    static bool deleteDir(const char * dirPath);
 
     /**
      * \brief	Returns full path of system defined temporary folder
@@ -471,7 +479,7 @@ public:
      * \param	dirPath     The relative or absolute path of directory to check
      * \return	If directory exists, returns true. Otherwise returns false
      **/
-    static bool existDir(const char* dirPath);
+    static bool existDir(const char * dirPath);
 
     /**
      * \brief   1.  Normalizes file path, replaces current and parent folder symbols like "." or "..".
@@ -507,12 +515,12 @@ public:
      *
      * \return	Returns true if succeeds.
      **/
-    static bool createDirCascaded(const char* dirPath);
+    static bool createDirCascaded(const char * dirPath);
 
     /**
      * \brief   Returns folder location of current executable.
      **/
-    static const char * getExecutableDir( void );
+    static const String & getExecutableDir( void );
 
     /**
      * \brief   Returns special folder path. The type of required folder is defined in
@@ -531,22 +539,22 @@ public:
     static String getParentDir( const char * filePath );
 
     /**
-     * \brief   Finds the parent directory name in the given file path. On output, if parameter 'nextPos' is not NULL, 
-     *          it will indicate the end of parent folder path in the given string. If parameter 'lastPos' is not NULL,
+     * \brief   Finds the parent directory name in the given file path. On output, if parameter 'nextPos' is not nullptr, 
+     *          it will indicate the end of parent folder path in the given string. If parameter 'lastPos' is not nullptr,
      *          the searching in the file path string will start from that position.
      * \param   filePath    The path of file or directory to search parent directory name.
-     * \param   nextPos     On output, if it is not NULL, it indicates the last position of parent directory name.
+     * \param   nextPos     On output, if it is not nullptr, it indicates the last position of parent directory name.
      *                      Otherwise, the function did not find parent directory.
-     * \param   lastPos     If not NULL, it should indicate the position in the filePath to start to search parent
-     *                      directory. If NULL, the function searches parent directory at the end of string.
+     * \param   lastPos     If not nullptr, it should indicate the position in the filePath to start to search parent
+     *                      directory. If nullptr, the function searches parent directory at the end of string.
      * \return  Returns true if the given path contains the name of parent directory.
      *
      * \example     Extract Parents:
      * 
      *      // This example recursively searches parent directory until reaches the end:
      *      const char * filePath   = "/home/auser/some/path/file.name";
-     *      const char * nextPos    = NULL;
-     *      const char * lastPos    = NULL;
+     *      const char * nextPos    = nullptr;
+     *      const char * lastPos    = nullptr;
      *      printf("File  : %s\n", filePath);
      *      while( File::findParent(filePath, &nextPos, lastPos) )
      *      {
@@ -563,7 +571,7 @@ public:
      *          Parent: /home/
      *          Parent: /
      **/
-    static bool findParent( const char * filePath, const char ** nextPos, const char * lastPos = NULL );
+    static bool findParent( const char * filePath, const char ** nextPos, const char * lastPos = nullptr );
 
     /**
      * \brief   Splits given file path. Each node is filled in StringList.
@@ -633,12 +641,5 @@ protected:
 // Hidden / Forbidden methods
 //////////////////////////////////////////////////////////////////////////
 private:
-    File( const File & /*src*/ );
-    const File & operator = ( const File & /*src*/ );
+    DECLARE_NOCOPY_NOMOVE( File );
 };
-
-//////////////////////////////////////////////////////////////////////////
-// File class inline functions
-//////////////////////////////////////////////////////////////////////////
-
-#endif  // AREG_BASE_FILE_HPP

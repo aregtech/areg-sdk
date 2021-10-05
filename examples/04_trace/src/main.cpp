@@ -3,13 +3,24 @@
 // Author      : Artak Avetyan
 // Version     :
 // Copyright   : Aregtech (c) 2021
-// Description : Hello World in C++, Ansi-style
+// Description : This project demonstrates use of logging (tracing). The 
+//               logging requires source code compilation with ENABLE_TRACES
+//               preprocessor directive to enable logging macro. It as well
+//               requires log enabling in the configuration file (by default 
+//               "./config/log.init" file). If there is no configuration file,
+//               the logging can be forced to be enabled to apply default
+//               logging settings.
+// 
+//               In this example enabling logging is forced and logging uses
+//               default settings.
 //============================================================================
 
 #include "areg/base/GEGlobal.h"
 #include "areg/base/Thread.hpp"
 #include "areg/base/IEThreadConsumer.hpp"
 #include "areg/trace/GETrace.h"
+
+#include <string_view>
 
 #ifdef WINDOWS
     #pragma comment(lib, "areg.lib")
@@ -30,7 +41,7 @@ class HelloThread   : public    Thread
     /**
      * \brief   The thread name;
      */
-    static const char * THREAD_NAME /* = "HelloThread" */;
+    static constexpr std::string_view THREAD_NAME { "HelloThread" };
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -38,7 +49,7 @@ class HelloThread   : public    Thread
 public:
     HelloThread( void );
 
-    virtual ~HelloThread( void );
+    virtual ~HelloThread( void ) = default;
 
 protected:
 
@@ -53,7 +64,7 @@ protected:
      *          the thread will complete work. To restart thread running,
      *          createThread() method should be called again.
      **/
-    virtual void onThreadRuns( void );
+    virtual void onThreadRuns( void ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden calls
@@ -65,22 +76,17 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // HelloThread implementation
 //////////////////////////////////////////////////////////////////////////
-const char * HelloThread::THREAD_NAME   = "HelloThread";
 
 
 DEF_TRACE_SCOPE(main_HelloThread_HelloThread);
 DEF_TRACE_SCOPE(main_HelloThread_onThreadRuns);
 
 HelloThread::HelloThread( void )
-    : Thread            ( self(), HelloThread::THREAD_NAME )
+    : Thread            ( self(), HelloThread::THREAD_NAME.data() )
     , IEThreadConsumer  ( )
 {
     TRACE_SCOPE(main_HelloThread_HelloThread);
-    TRACE_DBG("Initialized thread [ %s ]", HelloThread::THREAD_NAME);
-}
-
-HelloThread::~HelloThread( void )
-{
+    TRACE_DBG("Initialized thread [ %s ]", HelloThread::THREAD_NAME.data());
 }
 
 inline HelloThread & HelloThread::self( void )
@@ -111,7 +117,7 @@ int main()
     // To change the configuration and use dynamic logging, use macro TRACER_START_LOGGING
     // and specify the logging configuration file, where you can change logging format,
     // filter logging priority and scopes.
-    TRACER_CONFIGURE_AND_START(NULL);
+    TRACER_CONFIGURE_AND_START(nullptr);
 
     do
     {
@@ -125,12 +131,12 @@ int main()
         HelloThread aThread;
 
         // create and start thread, wait until it is started.
-        aThread.createThread(Thread::WAIT_INFINITE);
+        aThread.createThread(NECommon::WAIT_INFINITE);
         TRACE_DBG("[ %s ] to create thread [ %s ]", aThread.isValid() ? "SUCCEEDED" : "FAILED", aThread.getName().getString());
 
         // stop and destroy thread, clean resources. Wait until thread ends.
         TRACE_INFO("Going to stop and destroy [ %s ] thread.", aThread.getName().getString());
-        aThread.destroyThread(Thread::WAIT_INFINITE);
+        aThread.destroyThread(NECommon::WAIT_INFINITE);
 
     } while (false);
 

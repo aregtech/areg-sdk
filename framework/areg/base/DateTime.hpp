@@ -1,10 +1,16 @@
-#ifndef AREG_BASE_DATETIME_HPP
-#define AREG_BASE_DATETIME_HPP
-
+#pragma once
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/base/DateTime.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, Date and Time class.
  *
  ************************************************************************/
@@ -14,6 +20,7 @@
 #include "areg/base/GEGlobal.h"
 #include "areg/base/String.hpp"
 #include "areg/base/NEUtilities.hpp"
+#include <string_view>
 
 /************************************************************************
  * Dependencies
@@ -30,17 +37,9 @@ class IEOutStream;
  **/
 class AREG_API DateTime
 {
-//////////////////////////////////////////////////////////////////////////
-// Internal constants
-//////////////////////////////////////////////////////////////////////////
-private:
-/************************************************************************/
-// Hidden constants
-/************************************************************************/
-    /**
-     * \brief   Output format of milliseconds
-     **/
-    static const char * const       FORMAT_MILLISECOND                  /*= "%l"*/;
+#if defined(_MSC_VER) && (_MSC_VER > 1200)
+    #pragma warning(disable: 4251)
+#endif  // _MSC_VER
 
 public:
 /************************************************************************/
@@ -48,19 +47,23 @@ public:
 /************************************************************************/
 
     /**
-     * \brief   Format of timestamp to display logs
+     * \brief   ISO8601 format of timestamp to display logs
      **/
-    static const char * const       TIME_FORMAT_ISO8601_OUTPUT          /*= "%Y-%m-%d %H:%M:%S,%l"*/;
+    static constexpr std::string_view   TIME_FORMAT_ISO8601_OUTPUT          { "%Y-%m-%d %H:%M:%S,%l" };
 
     /**
      * \brief   Absolute time format of timestamp
      **/
-    static const char * const       TIME_FORMAT_ABSOLUTE_OUTPUT         /*= "%H:%M:%S,%l"*/;
+    static constexpr std::string_view   TIME_FORMAT_ABSOLUTE_OUTPUT         { "%H:%M:%S,%l" };
 
     /**
      * \brief   Format only data of timestamp
      **/
-    static const char * const       TIME_FORMAT_DATE_OUTPUT             /*= "%d %b %Y %H:%M:%S,%l"*/;
+    static constexpr std::string_view   TIME_FORMAT_DATE_OUTPUT             { "%d %b %Y %H:%M:%S,%l" };
+
+#if defined(_MSC_VER) && (_MSC_VER > 1200)
+    #pragma warning(default: 4251)
+#endif  // _MSC_VER
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
@@ -73,7 +76,7 @@ public:
 
     /**
      * \brief   Sets date and time value in microseconds passed since January 1 1970.
-     * \param   dateTime    Microseconds passed since January 1 1970.
+     * \param   dateTime    The time in microseconds passed since January 1 1970.
      **/
     DateTime( const TIME64 & dateTime );
 
@@ -81,19 +84,25 @@ public:
      * \brief   Sets date and time value from given system time structure.
      * \param   sysTime     System time structure to get date and time values.
      **/
-    DateTime( const NEUtilities::sSystemTime & sysTime );
+    explicit DateTime( const NEUtilities::sSystemTime & sysTime );
 
     /**
      * \brief   Sets date and time value from given file time structure.
      * \param   fileTime    File time structure to get date and time values.
      **/
-    DateTime( const NEUtilities::sFileTime & fileTime );
+    explicit DateTime( const NEUtilities::sFileTime & fileTime );
 
     /**
-     * \brief   Copy data and time data from given source.
+     * \brief   Copies data and time data from given source.
      * \param   src     The source to copy data.
      **/
     DateTime( const DateTime & dateTime );
+
+    /**
+     * \brief   Moves data and time data from given source.
+     * \param   src     The source to move data.
+     **/
+    DateTime( DateTime && dateTime ) noexcept;
 
     /**
      * \brief   Initializes data from streaming object
@@ -103,7 +112,7 @@ public:
     /**
      * \brief   Destructor.
      **/
-    ~DateTime(void);
+    ~DateTime(void) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
@@ -118,7 +127,13 @@ public:
      * \brief   Sets date and time value from given source.
      * \param   src     The source of date and time value.
      **/
-    inline const DateTime & operator = ( const DateTime & src );
+    inline DateTime & operator = ( const DateTime & src );
+
+    /**
+     * \brief   Move operator.
+     * \param   src     The source of date and time value.
+     **/
+    inline DateTime & operator = ( DateTime && src ) noexcept;
 
     /**
      * \brief   Returns true, if 2 date and time objects are equal. Otherwise, returns false.
@@ -228,7 +243,7 @@ public:
      * \brief   Formats time and outputs as a string. The caller should specify the
      *          the time format name for output
      **/
-    String formatTime( const char * formatName = DateTime::TIME_FORMAT_ISO8601_OUTPUT ) const;
+    String formatTime( const std::string_view & formatName = DateTime::TIME_FORMAT_ISO8601_OUTPUT ) const;
 
     /**
      * \brief   Returns the time data.
@@ -255,15 +270,28 @@ private:
 //////////////////////////////////////////////////////////////////////////
 
 inline DateTime::operator TIME64 ( void ) const
-{   return mDateTime;                                   }
+{
+    return mDateTime;
+}
 
-inline const DateTime & DateTime::operator = ( const DateTime & src )
-{   mDateTime = src.mDateTime; return (*this);          }
+inline DateTime & DateTime::operator = ( const DateTime & src )
+{
+    mDateTime = src.mDateTime;
+    return (*this);
+}
+
+inline DateTime & DateTime::operator = ( DateTime && src ) noexcept
+{
+    mDateTime = src.mDateTime;
+    return (*this);
+}
 
 inline const TIME64 & DateTime::getTime( void ) const
-{   return mDateTime;                                   }
+{
+    return mDateTime;
+}
 
 inline bool DateTime::isValid( void ) const
-{   return (mDateTime != 0);                            }
-
-#endif  // AREG_BASE_DATETIME_HPP
+{
+    return (mDateTime != 0);
+}

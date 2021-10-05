@@ -1,13 +1,21 @@
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/trace/private/DebugOutputLogger.cpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, Debug Output Logger object to log message into the
  *              system Output console object
  ************************************************************************/
 #include "areg/trace/private/DebugOutputLogger.hpp"
 
-#include "areg/trace/private/IETraceConfiguration.hpp"
+#include "areg/trace/private/LogConfiguration.hpp"
 #include "areg/trace/private/TraceProperty.hpp"
 #include "areg/base/Process.hpp"
 #include "areg/base/DateTime.hpp"
@@ -18,19 +26,13 @@
 
 #include "areg/base/private/NEDebug.hpp"
 
-DebugOutputLogger::DebugOutputLogger( IETraceConfiguration & tracerConfig )
+DebugOutputLogger::DebugOutputLogger( LogConfiguration & tracerConfig )
     : LoggerBase        ( tracerConfig )
     , IEOutStream       ( )
 
     , mIsOpened         ( false )
     , mOutputMessageA   ( )
 {
-    ; // do nothing
-}
-
-DebugOutputLogger::~DebugOutputLogger(void)
-{
-    ; // do nothing
 }
 
 bool DebugOutputLogger::openLogger(void)
@@ -38,7 +40,7 @@ bool DebugOutputLogger::openLogger(void)
 #if defined(_OUTPUT_DEBUG)
     if ( mIsOpened == false )
     {
-        const IETraceConfiguration & traceConfig = getTraceConfiguration();
+        const LogConfiguration & traceConfig = getTraceConfiguration();
         ASSERT( static_cast<bool>(traceConfig.propertyStatus().getValue()) );
         
         const TraceProperty & prop = traceConfig.propertyDebugOutput();
@@ -51,7 +53,7 @@ bool DebugOutputLogger::openLogger(void)
             {
                 Process & curProcess = Process::getInstance();
                 NETrace::sLogMessage logMsgHello;
-                NEMemory::zeroData<NETrace::sLogMessage>(logMsgHello);
+                NEMemory::zeroElement<NETrace::sLogMessage>(logMsgHello);
 
                 logMsgHello.lmHeader.logLength      = sizeof(NETrace::sLogMessage);
                 logMsgHello.lmHeader.logType        = NETrace::LogMessage;
@@ -65,7 +67,7 @@ bool DebugOutputLogger::openLogger(void)
                                     , NETrace::LOG_MESSAGE_BUFFER_SIZE
                                     , LoggerBase::FOMAT_MESSAGE_HELLO
                                     , Process::getString(curProcess.getEnvironment())
-                                    , curProcess.getFullPath()
+                                    , curProcess.getFullPath().getString()
                                     , curProcess.getId());
 
                 logMessage(logMsgHello);
@@ -88,7 +90,7 @@ void DebugOutputLogger::closeLogger(void)
     {
         Process & curProcess = Process::getInstance();
         NETrace::sLogMessage logMsgHello;
-        NEMemory::zeroData<NETrace::sLogMessage>(logMsgHello);
+        NEMemory::zeroElement<NETrace::sLogMessage>(logMsgHello);
 
         logMsgHello.lmHeader.logLength      = sizeof(NETrace::sLogMessage);
         logMsgHello.lmHeader.logType        = NETrace::LogMessage;
@@ -102,7 +104,7 @@ void DebugOutputLogger::closeLogger(void)
                             , NETrace::LOG_MESSAGE_BUFFER_SIZE
                             , LoggerBase::FORMAT_MESSAGE_BYE
                             , Process::getString(curProcess.getEnvironment())
-                            , curProcess.getFullPath()
+                            , curProcess.getFullPath().getString()
                             , curProcess.getId());
 
         logMessage(logMsgHello);

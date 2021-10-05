@@ -1,9 +1,16 @@
-#ifndef AREG_COMPONENT_EVENTDATASTREAM_HPP
-#define AREG_COMPONENT_EVENTDATASTREAM_HPP
+#pragma once
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/component/EventDataStream.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, Event data streaming object.
  *              This object is used to serialize and de-serialize
  *              data when service event is passed.
@@ -31,6 +38,8 @@
  **/
 class AREG_API EventDataStream : public IEIOStream
 {
+    using SharedList    = TENolockStack<SharedBuffer, const SharedBuffer &>;
+
 //////////////////////////////////////////////////////////////////////////
 // Internal constants and types public
 //////////////////////////////////////////////////////////////////////////
@@ -50,7 +59,7 @@ public:
      *          If internal, the Shared Buffer data will not be copied, but shared.
      *          If external, the Shared Buffer data will be copied.
      **/
-    typedef enum E_EventData
+    typedef enum class E_EventData : uint8_t
     {
           EventDataInternal //!< Internal Data
         , EventDataExternal //!< External Data
@@ -67,7 +76,7 @@ public:
      * \param   evetDataType    The type of event data. Either for internal or for external communication
      * \param   name            The name for streaming object. Can be ignored.
      **/
-    EventDataStream( EventDataStream::eEventData evetDataType, const char* name = NULL );
+    explicit EventDataStream( EventDataStream::eEventData evetDataType, const char* name = nullptr );
 
     /**
      * \brief	Constructor. Creates read only event data streaming object containing read only data of shared buffer.
@@ -81,6 +90,12 @@ public:
      * \param   src     The source of data to copy.
      **/
     EventDataStream( const EventDataStream & src );
+
+    /**
+     * \brief   Move constructor.
+     * \param   src     The source of data to move.
+     **/
+    EventDataStream( EventDataStream && src ) noexcept;
 
     /**
      * \brief   Initialization constructor.
@@ -102,7 +117,13 @@ public:
      * \brief   Copies Event Data from given source.
      * \param   src     The source of event data to copy.
      **/
-    const EventDataStream & operator = ( const EventDataStream & src );
+    EventDataStream & operator = ( const EventDataStream & src );
+
+    /**
+     * \brief   Moves Event Data from given source.
+     * \param   src     The source of event data to move.
+     **/
+    EventDataStream & operator = ( EventDataStream && src ) noexcept;
 
 
 /************************************************************************/
@@ -154,7 +175,7 @@ public:
      * \brief   Resets cursor pointer and moves to the begin of data.
      *          Implement the function if stream has pointer reset mechanism
      **/
-    virtual void resetCursor( void ) const;
+    virtual void resetCursor( void ) const override;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -171,7 +192,7 @@ protected:
      * \param	size	The size in bytes of available buffer
      * \return	Returns the size in bytes of copied data
      **/
-    virtual unsigned int read( unsigned char* buffer, unsigned int size ) const;
+    virtual unsigned int read( unsigned char* buffer, unsigned int size ) const override;
 
     /**
      * \brief   Reads data from input stream object, copies into give Byte Buffer object
@@ -181,7 +202,7 @@ protected:
      * \param   buffer  The instance of Byte Buffer object to stream data from Input Stream object
      * \return	Returns the size in bytes of copied data
      **/
-    virtual unsigned int read( IEByteBuffer & buffer ) const;
+    virtual unsigned int read( IEByteBuffer & buffer ) const override;
 
     /**
      * \brief   Reads string data from Input Stream object and copies into given ASCII String.
@@ -189,7 +210,7 @@ protected:
      * \param   asciiString     The buffer of ASCII String to stream data from Input Stream object.
      * \return  Returns the size in bytes of copied string data.
      **/
-    virtual unsigned int read( String & asciiString ) const;
+    virtual unsigned int read( String & asciiString ) const override;
 
     /**
      * \brief   Reads string data from Input Stream object and copies into given Wide String.
@@ -197,7 +218,7 @@ protected:
      * \param   wideString      The buffer of Wide String to stream data from Input Stream object.
      * \return  Returns the size in bytes of copied string data.
      **/
-    virtual unsigned int read( WideString & wideString ) const;
+    virtual unsigned int read( WideString & wideString ) const override;
 
 /************************************************************************/
 // IEOutStream interface overrides
@@ -211,7 +232,7 @@ protected:
      * \param	size	The size in bytes of data buffer
      * \return	Returns the size in bytes of written data
      **/
-    virtual unsigned int write( const unsigned char* buffer, unsigned int size );
+    virtual unsigned int write( const unsigned char* buffer, unsigned int size ) override;
 
     /**
      * \brief	Writes Binary data from Byte Buffer object to Output Stream object
@@ -220,7 +241,7 @@ protected:
      * \param	buffer	The instance of Byte Buffer object containing data to stream to Output Stream.
      * \return	Returns the size in bytes of written data
      **/
-    virtual unsigned int write( const IEByteBuffer & buffer );
+    virtual unsigned int write( const IEByteBuffer & buffer ) override;
 
     /**
     * \brief   Writes string data from given ASCII String object to output stream object.
@@ -228,7 +249,7 @@ protected:
     * \param   asciiString     The buffer of String containing data to stream to Output Stream.
     * \return  Returns the size in bytes of copied string data.
     **/
-    virtual unsigned int write( const String & asciiString );
+    virtual unsigned int write( const String & asciiString ) override;
 
     /**
     * \brief   Writes string data from given wide-char String object to output stream object.
@@ -236,13 +257,13 @@ protected:
     * \param   wideString  The buffer of String containing data to stream to Output Stream.
     * \return  Returns the size in bytes of copied string data.
     **/
-    virtual unsigned int write( const WideString & wideString );
+    virtual unsigned int write( const WideString & wideString ) override;
 
     /**
      * \brief	Flushes cached data to output stream object.
      *          Implement the function is device has caching mechanism
      **/
-    virtual void flush( void );
+    virtual void flush( void ) override;
 
 protected:
     /**
@@ -252,7 +273,7 @@ protected:
      *          For example, if the size of buffer is 'n' and 'x' bytes of data was
      *          already read from stream, the available readable size is 'n - x'.
      **/
-    virtual unsigned int getSizeReadable( void ) const;
+    virtual unsigned int getSizeReadable( void ) const override;
 
     /**
      * \brief	Returns size in bytes of available space that can be written, 
@@ -261,7 +282,7 @@ protected:
      *          For example, if the size of buffer is 'n' and 'x' bytes of data was
      *          already written to stream, the available writable size is 'n - x'.
      **/
-    virtual unsigned int getSizeWritable( void ) const;
+    virtual unsigned int getSizeWritable( void ) const override;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -286,11 +307,13 @@ protected:
 #if defined(_MSC_VER) && (_MSC_VER > 1200)
     #pragma warning(disable: 4251)
 #endif  // _MSC_VER
+
     /**
      * \brief   FIFO Stack of Shared Buffers. Used only if the data type is internal.
      *          All Shared Buffers instead of copying data, will be added to this list.
      **/
-    mutable TENolockStack<SharedBuffer, const SharedBuffer &>  mSharedList;
+    mutable SharedList          mSharedList;
+
 #if defined(_MSC_VER) && (_MSC_VER > 1200)
     #pragma warning(default: 4251)
 #endif  // _MSC_VER
@@ -309,7 +332,7 @@ inline bool EventDataStream::isEmpty( void ) const
 
 inline bool EventDataStream::isExternalDataStream( void ) const
 {
-    return (mEventDataType == EventDataStream::EventDataExternal);
+    return (mEventDataType == EventDataStream::eEventData::EventDataExternal);
 }
 
 inline const IEInStream & EventDataStream::getStreamForRead( void ) const
@@ -321,5 +344,3 @@ inline IEOutStream & EventDataStream::getStreamForWrite( void )
 {
     return static_cast<IEOutStream &>(*this);
 }
-
-#endif  // AREG_COMPONENT_EVENTDATASTREAM_HPP

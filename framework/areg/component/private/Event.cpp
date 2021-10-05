@@ -1,7 +1,15 @@
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/component/private/Event.cpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, Event Base class implementation
  *
  ************************************************************************/
@@ -26,11 +34,16 @@ IMPLEMENT_RUNTIME_EVENT(Event, RuntimeObject)
 /**
  * \brief   Predefined Bad Event object
  **/
-const Event Event::BAD_EVENT(Event::EventUnknown);
+const Event Event::BAD_EVENT(Event::eEventType::EventUnknown);
 
 bool Event::addListener( const RuntimeClassID & classId, IEEventConsumer & eventConsumer, const char* whichThread )
 {
     return Event::addListener(classId, eventConsumer, DispatcherThread::getDispatcherThread(whichThread));
+}
+
+bool Event::addListener( const RuntimeClassID & classId, IEEventConsumer & eventConsumer, id_type whichThread )
+{
+    return Event::addListener( classId, eventConsumer, DispatcherThread::getDispatcherThread( whichThread ) );
 }
 
 bool Event::addListener( const RuntimeClassID & classId, IEEventConsumer & eventConsumer, DispatcherThread & dispThread )
@@ -44,6 +57,11 @@ bool Event::removeListener( const RuntimeClassID & classId, IEEventConsumer & ev
     return Event::removeListener(classId, eventConsumer, DispatcherThread::getDispatcherThread(whichThread));
 }
 
+bool Event::removeListener( const RuntimeClassID & classId, IEEventConsumer & eventConsumer, id_type whichThread )
+{
+    return Event::removeListener( classId, eventConsumer, DispatcherThread::getDispatcherThread( whichThread ) );
+}
+
 bool Event::removeListener( const RuntimeClassID & classId, IEEventConsumer & eventConsumer, DispatcherThread & dispThread )
 {
     return dispThread.isRunning() ? dispThread.unregisterEventConsumer(classId, eventConsumer) : false;
@@ -54,27 +72,30 @@ bool Event::removeListener( const RuntimeClassID & classId, IEEventConsumer & ev
 //////////////////////////////////////////////////////////////////////////
 
 Event::Event( void )
-    : RuntimeObject   ( )
-    , mEventType        ( Event::EventUnknown )
-    , mConsumer         ( NULL )
-    , mTargetThread     ( NULL )
+    : RuntimeObject ( )
+    , mEventType    ( Event::eEventType::EventUnknown )
+    , mConsumer     ( nullptr )
+    , mTargetThread ( nullptr )
 {
-    ; // do nothing
 }
 
 Event::Event( Event::eEventType eventType )
-    : RuntimeObject   ( )
-    , mEventType        ( eventType )
-    , mConsumer         ( NULL )
-    , mTargetThread     ( NULL )
+    : RuntimeObject ( )
+    , mEventType    ( eventType )
+    , mConsumer     ( nullptr )
+    , mTargetThread ( nullptr )
 {
-    ; // do nothing
 }
 
 Event::~Event( void )
 {
-    mConsumer       = NULL;
-    mTargetThread   = NULL;
+    mConsumer       = nullptr;
+    mTargetThread   = nullptr;
+}
+
+inline Event & Event::self( void )
+{
+    return (*this);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -88,13 +109,13 @@ void Event::destroy( void )
 
 EventDispatcher& Event::getDispatcher( void ) const
 {
-    return (mTargetThread != NULL ? mTargetThread->getEventDispatcher() : DispatcherThread::getCurrentDispatcher());
+    return (mTargetThread != nullptr ? mTargetThread->getEventDispatcher() : DispatcherThread::getCurrentDispatcher());
 }
 
 void Event::deliverEvent( void )
 {
-    EventDispatcher * dispatcher = mTargetThread != NULL ? &mTargetThread->getEventDispatcher( ) : NULL;
-    if ( (dispatcher != NULL) && (dispatcher->isReady()) )
+    EventDispatcher * dispatcher = mTargetThread != nullptr ? &mTargetThread->getEventDispatcher( ) : nullptr;
+    if ( (dispatcher != nullptr) && (dispatcher->isReady()) )
     {
         dispatcher->postEvent(*this);
     }
@@ -105,7 +126,7 @@ void Event::deliverEvent( void )
     }
 }
 
-bool Event::registerForThread( ITEM_ID whichThread /*= 0*/ )
+bool Event::registerForThread( id_type whichThread /*= 0*/ )
 {
     return registerForThread(whichThread != 0 ? RUNTIME_CAST(Thread::findThreadById(whichThread), DispatcherThread) : 
                                                 RUNTIME_CAST(Thread::getCurrentThread(), DispatcherThread));
@@ -113,17 +134,17 @@ bool Event::registerForThread( ITEM_ID whichThread /*= 0*/ )
 
 bool Event::registerForThread( const char* whichThread )
 {
-    return registerForThread(whichThread != NULL ? RUNTIME_CAST(Thread::findThreadByName(whichThread), DispatcherThread) : NULL);
+    return registerForThread(whichThread != nullptr ? RUNTIME_CAST(Thread::findThreadByName(whichThread), DispatcherThread) : nullptr);
 }
 
 bool Event::registerForThread( DispatcherThread * dispatchThread )
 {
-    if ((dispatchThread != NULL) && dispatchThread->isValid())
+    if ((dispatchThread != nullptr) && dispatchThread->isValid())
     {
-        mTargetThread = dispatchThread->isReady() ? dispatchThread : NULL;
+        mTargetThread = dispatchThread->isReady() ? dispatchThread : nullptr;
     }
 
-    return (mTargetThread != NULL);
+    return (mTargetThread != nullptr);
 }
 
 bool Event::isEventRegistered( void ) const
@@ -143,8 +164,8 @@ bool Event::removeEventListener( IEEventConsumer& eventConsumer )
 
 void Event::dispatchSelf( IEEventConsumer* consumer )
 {
-    consumer = consumer != NULL ? consumer : this->mConsumer;
-    if (consumer != NULL)
+    consumer = consumer != nullptr ? consumer : this->mConsumer;
+    if (consumer != nullptr)
     {
         if ( consumer->preprocessEvent(*this) )
         {

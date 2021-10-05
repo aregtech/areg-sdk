@@ -1,9 +1,16 @@
-#ifndef AREG_COMPONENT_NESERVICE_HPP
-#define AREG_COMPONENT_NESERVICE_HPP
+#pragma once
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/component/NEService.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, NEService namespace contains
  *              collection of classes, structures and types defining
  *              Service Interface.
@@ -25,17 +32,17 @@
 /**
  * \brief   Converts request message id to index
  **/
-#define GET_REQ_INDEX(msgId)           (static_cast<unsigned int>(msgId) != static_cast<unsigned int>(NEService:: EMPTY_FUNCTION_ID) ? static_cast<int>(static_cast<unsigned int>(msgId) - static_cast<unsigned int>(NEService::REQUEST_ID_FIRST)) : -1)
+#define GET_REQ_INDEX(msgId)           (static_cast<unsigned int>(msgId) != static_cast<unsigned int>(NEService::eFuncIdRange::EmptyFunctionId) ? static_cast<int>(static_cast<unsigned int>(msgId) - static_cast<unsigned int>(NEService::eFuncIdRange::RequestFirstId)) : -1)
 
 /**
  * \brief   Converts response message id to index
  **/
-#define GET_RESP_INDEX(msgId)          (static_cast<unsigned int>(msgId) != static_cast<unsigned int>(NEService:: EMPTY_FUNCTION_ID) ? static_cast<int>(static_cast<unsigned int>(msgId) - static_cast<unsigned int>(NEService::RESPONSE_ID_FIRST)) : -1)
+#define GET_RESP_INDEX(msgId)          (static_cast<unsigned int>(msgId) != static_cast<unsigned int>(NEService::eFuncIdRange::EmptyFunctionId) ? static_cast<int>(static_cast<unsigned int>(msgId) - static_cast<unsigned int>(NEService::eFuncIdRange::ResponseFirstId)) : -1)
 
 /**
  * \brief   Converts attribute message id to index
  **/
-#define GET_ATTR_INDEX(msgId)          (static_cast<unsigned int>(msgId) != static_cast<unsigned int>(NEService:: EMPTY_FUNCTION_ID) ? static_cast<int>(static_cast<unsigned int>(msgId) - static_cast<unsigned int>(NEService::ATTRIBUTE_ID_FIRST)) : -1)
+#define GET_ATTR_INDEX(msgId)          (static_cast<unsigned int>(msgId) != static_cast<unsigned int>(NEService::eFuncIdRange::EmptyFunctionId) ? static_cast<int>(static_cast<unsigned int>(msgId) - static_cast<unsigned int>(NEService::eFuncIdRange::AttributeFirstId)) : -1)
 
 
 /**
@@ -59,35 +66,35 @@ namespace NEService
      *          Used when sending response service event
      *          and needs to define validation of execution.
      **/
-    typedef enum E_ResultType
+    typedef enum class E_ResultType : uint16_t
     {
         /* not used */
-          RESULT_UNDEFINED          =     0 /*0x0000*/      //!< undefined result. not used               Bits: 0000 0000 0000 0000
+          Undefined         =     0 /*0x0000*/  //!< undefined result. not used             Bits: 0000 0000 0000 0000
         /* additional bits */
-        , RESULT_ERROR              =     1 /*0x0001*/      //!< indicate error. contains error bit       Bits: 0000 0000 0000 0001
-        , RESULT_UNDELIVERED        =    32 /*0x0020*/      //!< message was not delivered                Bits: 0000 0000 0010 0000
-        , RESULT_NOT_PROCESSED      =    64 /*0x0040*/      //!< call did not reach target                Bits: 0000 0000 0100 0000
-        , RESULT_PROCESSED          =   128 /*0x0080*/      //!< call reached target                      Bits: 0000 0000 1000 0000
+        , Error             =     1 /*0x0001*/  //!< indicate error. contains error bit     Bits: 0000 0000 0000 0001
+        , Undelivered       =    32 /*0x0020*/  //!< message was not delivered              Bits: 0000 0000 0010 0000
+        , NotProcessed      =    64 /*0x0040*/  //!< call did not reach target              Bits: 0000 0000 0100 0000
+        , Processed         =   128 /*0x0080*/  //!< call reached target                    Bits: 0000 0000 1000 0000
 
          /* Message did not reach target, used in remote messaging */
-        , RESULT_MESSAGE_UNDELIVERED=  4129 /*0x1021*/      //!< request failed to reach target.          Bits: 0001 0000 0010 0001
+        , MessageUndelivered=  4129 /*0x1021*/  //!< request failed to reach target.        Bits: 0001 0000 0010 0001
 
         /* request calls result */
-        , RESULT_OK                 =  8320 /*0x2080*/      //!< indicates success of request call.       Bits: 0010 0000 1000 0000
-        , RESULT_INVALID            =  8257 /*0x2041*/      //!< indicates failure of request call.       Bits: 0010 0000 0100 0001
-        , RESULT_REQUEST_ERROR      =  8321 /*0x2081*/      //!< indicates request execution failure.     Bits: 0010 0000 1000 0001
-        , RESULT_REQUEST_BUSY       =  8323 /*0x2083*/      //!< request cannot execute, it is busy.      Bits: 0010 0000 1000 0011
-        , RESULT_REQUEST_CANCELED   =  8325 /*0x2085*/      //!< request is canceled and not executed.    Bits: 0010 0000 1000 0101
+        , RequestOK         =  8320 /*0x2080*/  //!< indicates success of request call.     Bits: 0010 0000 1000 0000
+        , RequestInvalid    =  8257 /*0x2041*/  //!< indicates failure of request call.     Bits: 0010 0000 0100 0001
+        , RequestError      =  8321 /*0x2081*/  //!< indicates request execution failure.   Bits: 0010 0000 1000 0001
+        , RequestBusy       =  8323 /*0x2083*/  //!< request cannot execute, it is busy.    Bits: 0010 0000 1000 0011
+        , RequestCanceled   =  8325 /*0x2085*/  //!< request is canceled and not executed.  Bits: 0010 0000 1000 0101
 
         /* data update result */
-        , RESULT_DATA_OK            = 16512 /*0x4080*/      //!< indicates data validation.               Bits: 0100 0000 1000 0000
-        , RESULT_DATA_INVALID       = 16449 /*0x4041*/      //!< indicates data invalid.                  Bits: 0100 0000 0100 0001
+        , DataOK            = 16512 /*0x4080*/  //!< indicates data validation.             Bits: 0100 0000 1000 0000
+        , DataInvalid       = 16449 /*0x4041*/  //!< indicates data invalid.                Bits: 0100 0000 0100 0001
 
         /* service call result */
-        , RESULT_SERVICE_OK         = 32896 /*0x8080*/      //!< service call processed.                  Bits: 1000 0000 1000 0000
-        , RESULT_SERVICE_UNAVAILABLE= 32833 /*0x8041*/      //!< service is unavailable.                  Bits: 1000 0000 0100 0001
-        , RESULT_SERVICE_INVALID    = 32897 /*0x8081*/      //!< service invalid (check cookie).          Bits: 1000 0000 1000 0001
-        , RESULT_SERVICE_REJECTED   = 32899 /*0x8083*/      //!< service rejected (unsupported).          Bits: 1000 0000 1000 0011
+        , ServiceOK         = 32896 /*0x8080*/  //!< service call processed.                Bits: 1000 0000 1000 0000
+        , ServiceUnavailable= 32833 /*0x8041*/  //!< service is unavailable.                Bits: 1000 0000 0100 0001
+        , ServiceInvalid    = 32897 /*0x8081*/  //!< service invalid (check cookie).        Bits: 1000 0000 1000 0001
+        , ServiceRejected   = 32899 /*0x8083*/  //!< service rejected (unsupported).        Bits: 1000 0000 1000 0011
 
     } eResultType;
     /**
@@ -99,13 +106,13 @@ namespace NEService
      * \brief   Data types
      *          Used getting data
      **/
-    typedef enum E_DataStateType
+    typedef enum class E_DataStateType  : uint16_t
     {
-          DATA_UNDEFINED        =     0 /*0x0000*/    //!< undefined type, not used
-        , DATA_OK               = 16384 /*0x4000*/    //!< data valid
-        , DATA_INVALID          = 16385 /*0x4001*/    //!< data is invalid
-        , DATA_UNAVAILABLE      = 16387 /*0x4003*/    //!< data is unavailable, no such data
-        , DATA_UNEXPECTED_ERROR = 16389 /*0x4005*/    //!< other errors
+          DataIsUndefined       =     0 /*0x0000*/  //!< undefined type, not used
+        , DataIsOK              = 16384 /*0x4000*/  //!< data valid
+        , DataIsInvalid         = 16385 /*0x4001*/  //!< data is invalid
+        , DataIsUnavailable     = 16387 /*0x4003*/  //!< data is unavailable, no such data
+        , DataUnexpectedError   = 16389 /*0x4005*/  //!< other errors
 
     } eDataStateType;
     /**
@@ -117,16 +124,16 @@ namespace NEService
      * \brief   Type of request.
      *          Used sending request event by proxy
      **/
-    typedef enum E_RequestType
+    typedef enum class E_RequestType : uint16_t
     {
-          REQUEST_UNPROCESSED           =     0 /*0x0000*/    //!< request is unprocessed
-        , REQUEST_START_NOTIFY          =  8193 /*0x2001*/    //!< request start notify on attribute update
-        , REQUEST_STOP_NOTIFY           =  8194 /*0x2002*/    //!< request stop notify on attribute update
-        , REQUEST_REMOVE_ALL_NOTIFY     =  8198 /*0x2006*/    //!< request remove all notifications
-        , REQUEST_CALL                  = 16385 /*0x4001*/    //!< request function call
-        , REQUEST_CONNECTION            = 16387 /*0x4003*/    //!< request connection status update
-        , REQUEST_CLIENT_CONNECTION     = 16389 /*0x4005*/    //!< request client connection status update
-        , REQUEST_LOAD_COMPONENT        = 16391 /*0x4007*/    //!< request load component
+          Unprocessed       =     0 /*0x0000*/  //!< request is unprocessed
+        , StartNotify       =  8193 /*0x2001*/  //!< request start notify on attribute update
+        , StopNotify        =  8194 /*0x2002*/  //!< request stop notify on attribute update
+        , RemoveAllNotify   =  8198 /*0x2006*/  //!< request remove all notifications
+        , CallFunction      = 16385 /*0x4001*/  //!< request function call
+        , ServiceConnection = 16387 /*0x4003*/  //!< request connection status update
+        , ClientConnection  = 16389 /*0x4005*/  //!< request client connection status update
+        , LoadComponent     = 16391 /*0x4007*/  //!< request load component
     } eRequestType;
     /**
      * \brief   Returns string value of NEService::eRequestType type
@@ -139,13 +146,13 @@ namespace NEService
      *          used either in service request or in service response
      *          event objects
      **/
-    typedef enum E_MessageDataType
+    typedef enum class E_MessageDataType : uint16_t
     {
-          UNDEFINED_DATA_TYPE       =     0 /*0x0000*/  //!< data type is undefined
-        , REQUEST_DATA_TYPE         =  4096 /*0x1000*/  //!< data type of request event
-        , RESPONSE_DATA_TYPE        =  8192 /*0x2000*/  //!< data type response event
-        , ATTRIBUTE_DATA_TYPE       = 16384 /*0x3000*/  //!< data type of attribute event
-        , SERVICE_DATA_TYPE         = 32768 /*0x8000*/  //!< data type service call
+          UndefinedDataType = 0x0000u   //!< data type is undefined
+        , RequestDataType   = 0x1000u   //!< data type of request event
+        , ResponseDataType  = 0x2000u   //!< data type response event
+        , AttributeDataType = 0x4000u   //!< data type of attribute event
+        , ServiceDataType   = 0x8000u   //!< data type service call
 
     } eMessageDataType;
     /**
@@ -162,7 +169,7 @@ namespace NEService
      * \brief   NEService::eServiceConnection
      *          Service Connections. Used in service calls
      **/
-    typedef enum E_ServiceConnection
+    typedef enum class E_ServiceConnection : uint16_t
     {
           ServiceConnectionUnknown  =    0  /*0x0000*/  //!< Connection is unknown.               Bit set: 0000 0000
         , ServiceConnected          =    1  /*0x0001*/  //!< Service Connected, ready to serve.   Bit set: 0000 0001
@@ -177,12 +184,12 @@ namespace NEService
      **/
     inline const char* getString( NEService::eServiceConnection serviceConnection );
 
-    typedef enum E_ServiceRequestType
+    typedef enum class E_ServiceRequestType : uint16_t
     {
-          SERVICE_REQUEST_REGISTER_CLIENT       = 0x10  //!< Client requests to register for service.     Bit set:    0001 0000
-        , SERVICE_REQUEST_UNREGISTER_CLIENT     = 0x11  //!< Client requests to unregister for service.   Bit set:    0001 0001
-        , SERVICE_REQUEST_REGISTER_STUB         = 0x20  //!< Server requests to register for service.     Bit set:    0010 0000
-        , SERVICE_REQUEST_UNREGISTER_STUB       = 0x21  //!< Server requests to unregister for service.   Bit set:    0010 0001
+          RegisterClient    = 0x10  //!< Client requests to register for service.     Bit set:    0001 0000
+        , UnregisterClient  = 0x11  //!< Client requests to unregister for service.   Bit set:    0001 0001
+        , RegisterStub      = 0x20  //!< Server requests to register for service.     Bit set:    0010 0000
+        , UnregisterStub    = 0x21  //!< Server requests to unregister for service.   Bit set:    0010 0001
     } eServiceRequestType;
     
     /**
@@ -194,11 +201,11 @@ namespace NEService
      * \brief   NEService::eServiceType
      *          Service Type. Either local or Remote.
      **/
-    typedef enum E_ServiceType
+    typedef enum class E_ServiceType : uint16_t
     {
           ServiceInvalid    = 0x00  //!< Invalid Service      Bit set: 0000 0000
         , ServiceLocal      = 0x40  //!< Local Service.       Bit set: 0100 0000
-        , ServiceRemote     = 0x80  //!< External Service.    Bit set: 1000 0000
+        , ServicePublic     = 0x80  //!< External Service.    Bit set: 1000 0000
         , ServiceAny        = 0xC0  //!< Any service.         Bit set: 1100 0000
     } eServiceType;
 
@@ -222,11 +229,11 @@ namespace NEService
      * \brief   NEService::eCookie
      *          The list of reserved cookie values
      **/
-    typedef enum E_Cookies
+    typedef enum class E_Cookies : ITEM_ID
     {
           CookieInvalid     = 0     //!< Invalid cookie value
-        , CookieLocal               //!< Valid cookie value of local services
-        , CookieRouter              //!< Valid cookie value of Routing Service
+        , CookieLocal       = 1     //!< Valid cookie value of local services
+        , CookieRouter      = 2     //!< Valid cookie value of Routing Service
         , CookieAny         = 255   //!< Any valid cookie
         , CookieFirstValid  = 256   //!< First valid cookie of any other remote service
     } eCookies;
@@ -235,54 +242,54 @@ namespace NEService
      * \brief   NEService::COOKIE_UNKNOWN
      *          Unknown cookie
      **/
-    const ITEM_ID   COOKIE_UNKNOWN      = NEService::CookieInvalid;
+    const ITEM_ID   COOKIE_UNKNOWN      = static_cast<ITEM_ID>(NEService::eCookies::CookieInvalid);
     /**
      * \brief   NEService::COOKIE_LOCAL
      *          The indication of local service.
      **/
-    const ITEM_ID   COOKIE_LOCAL        = NEService::CookieLocal;
+    const ITEM_ID   COOKIE_LOCAL        = static_cast<ITEM_ID>(NEService::eCookies::CookieLocal);
     /**
      * \brief   NEService::COOKIE_ROUTER
      *          Indicates Router cookie
      **/
-    const ITEM_ID   COOKIE_ROUTER       = NEService::CookieRouter;
+    const ITEM_ID   COOKIE_ROUTER       = static_cast<ITEM_ID>(NEService::eCookies::CookieRouter);
     /**
      * \brief   NEService::COOKIE_ANY
      *          Indicates any valid cookie
      **/
-    const ITEM_ID   COOKIE_ANY          = NEService::CookieAny;
+    const ITEM_ID   COOKIE_ANY          = static_cast<ITEM_ID>(NEService::eCookies::CookieAny);
     /**
      * \brief   NEService::TARGET_UNKNOWN
      *          The unknown target ID
      **/
-    const ITEM_ID   TARGET_UNKNOWN      = NEService::CookieInvalid;
+    const ITEM_ID   TARGET_UNKNOWN      = static_cast<ITEM_ID>(NEService::eCookies::CookieInvalid);
     /**
      * \brief   NEService::TARGET_LOCAL
      *          The local target ID
      **/
-    const ITEM_ID   TARGET_LOCAL        = NEService::CookieLocal;
+    const ITEM_ID   TARGET_LOCAL        = static_cast<ITEM_ID>(NEService::eCookies::CookieLocal);
     /**
      * \brief   NEService::SOURCE_UNKNOWN
      *          The unknown source ID
      **/
-    const ITEM_ID   SOURCE_UNKNOWN      = NEService::CookieInvalid;
+    const ITEM_ID   SOURCE_UNKNOWN      = static_cast<ITEM_ID>(NEService::eCookies::CookieInvalid);
     /**
      * \brief   NEService::SOURCE_UNKNOWN
      *          The unknown source ID
      **/
-    const ITEM_ID   SOURCE_LOCAL        = NEService::CookieLocal;
+    const ITEM_ID   SOURCE_LOCAL        = static_cast<ITEM_ID>(NEService::eCookies::CookieLocal);
 
     /**
      * \brief   NEService::eServiceCalls
      *          Specifies the service call type
      **/
-    typedef enum E_ServiceCall
+    typedef enum class E_ServiceCall  : uint16_t
     {
-          ServiceCallNoFunction     = 0x0000    //!< No function call
-        , ServiceCallRequest        = 0x1000    //!< Call of service request function
-        , ServiceCallResponse       = 0x2000    //!< Call of service response function
-        , ServiceCallAttribute      = 0x4000    //!< Call of service attribute update function
-        , ServiceCallRegister       = 0x8000    //!< Call of service registration
+          ServiceCallNoFunction = static_cast<uint16_t>(eMessageDataType::UndefinedDataType) //!< No function call
+        , ServiceCallRequest    = static_cast<uint16_t>(eMessageDataType::RequestDataType  ) //!< Call of service request function
+        , ServiceCallResponse   = static_cast<uint16_t>(eMessageDataType::ResponseDataType ) //!< Call of service response function
+        , ServiceCallAttribute  = static_cast<uint16_t>(eMessageDataType::AttributeDataType) //!< Call of service attribute update function
+        , ServiceCallRegister   = static_cast<uint16_t>(eMessageDataType::ServiceDataType  ) //!< Call of service registration
     } eServiceCalls;
 
     /**
@@ -293,82 +300,118 @@ namespace NEService
     /**
      * \brief   The first ID of valid service interface function call
      **/
-    const unsigned int  SERVICE_FUNCTION        = static_cast<unsigned int>(NEService::ServiceCallRequest);    /*0x1000*/
+    const unsigned int  SERVICE_FUNCTION        = static_cast<uint32_t>(eServiceCalls::ServiceCallRequest);    /*0x1000*/
+
+    /**
+     * \brief   NEService::REQUEST_ID_FIRST
+     *          The first ID in request call.
+     **/
+    constexpr unsigned int  REQUEST_ID_FIRST    = static_cast<uint32_t>(eServiceCalls::ServiceCallRequest);
+    /**
+     * \brief   NEService::REQUEST_ID_LAST
+     *          The last ID in request call.
+     **/
+    constexpr unsigned int  REQUEST_ID_LAST     = REQUEST_ID_FIRST + FUNC_RANGE;
+
+    /**
+     * \brief   NEService::RESPONSE_ID_FIRST
+     *          The first ID in response call.
+     **/
+    constexpr unsigned int  RESPONSE_ID_FIRST   = static_cast<uint32_t>(eServiceCalls::ServiceCallResponse);
+    /**
+     * \brief   NEService::RESPONSE_ID_LAST
+     *          The last ID in response call.
+     **/
+    constexpr unsigned int  RESPONSE_ID_LAST    = RESPONSE_ID_FIRST + FUNC_RANGE;
+
+    /**
+     * \brief   NEService::ATTRIBUTE_ID_FIRST
+     *          The first ID in attribute call.
+     **/
+    constexpr unsigned int  ATTRIBUTE_ID_FIRST  = static_cast<uint32_t>(eServiceCalls::ServiceCallAttribute);
+    /**
+     * \brief   NEService::ATTRIBUTE_ID_LAST
+     *          The last ID in attribute call.
+     **/
+    constexpr unsigned int  ATTRIBUTE_ID_LAST   = ATTRIBUTE_ID_FIRST + FUNC_RANGE;
+
+    /**
+     * \brief   NEService::SERVICE_ID_FIRST
+     *          The last ID in service call.
+     **/
+    constexpr unsigned int  SERVICE_ID_FIRST    = static_cast<uint32_t>(NEService::eServiceCalls::ServiceCallRegister);
+    /**
+     * \brief   NEService::SERVICE_ID_LAST
+     *          The last ID in service call.
+     **/
+    constexpr unsigned int  SERVICE_ID_LAST     = SERVICE_ID_FIRST + FUNC_RANGE;
+
+    /**
+     * \brief   NEService::RESPONSE_ID_NONE
+     *          Constant no response. Used to indicate that the request has no response.
+     **/
+    constexpr unsigned int  RESPONSE_ID_NONE    = static_cast<uint32_t>(eServiceCalls::ServiceCallNoFunction);
+
+    /**
+     * \brief   NEService::INVALID_MESSAGE_ID
+     *          The invalid message ID
+     **/
+    constexpr unsigned int  INVALID_MESSAGE_ID  = static_cast<unsigned int>(~0);    /*0xFFFFFFFF*/
 
     /**
      * \brief   Predefined range of function calls
      **/
-    typedef enum E_FuncIdRange
+    typedef enum class E_FuncIdRange  : uint32_t
     {
-        /**
-         * \brief   Empty function ID
-         **/        
-          EMPTY_FUNCTION_ID     = static_cast<unsigned int>(NEService::ServiceCallNoFunction)   /* 0x00000000 */    //!< No function
-        , COMPONENT_MAKE_CLEANUP= 0x00000100                                                                        //!< A call to remove pointer in a component thread context.
+        // Reserved system calls.
 
-        /**
-         * \brief   Request call range. Should start from REQUEST_ID_FIRST
-         **/
-        , REQUEST_ID_FIRST      = static_cast<unsigned int>(NEService::ServiceCallRequest)      /* 0x00001000 */    //!< Request call first ID
-        , REQUEST_ID_LAST       = static_cast<unsigned int>(REQUEST_ID_FIRST)   + NEService::FUNC_RANGE             //!< Request call last ID
+        //!< Empty function ID.
+          EmptyFunctionId       = RESPONSE_ID_NONE
+        //!< A call to remove pointer in a component thread context.
+        , ComponentCleanup      = 0x00000100
 
-        /**
-         * \brief   Response call range. Should start from RESPONSE_ID_FIRST
-         **/
-        , RESPONSE_ID_FIRST     = static_cast<unsigned int>(NEService::ServiceCallResponse)     /* 0x00002000 */    //!< Response call first ID
-        , RESPONSE_ID_LAST      = static_cast<unsigned int>(RESPONSE_ID_FIRST)  + NEService::FUNC_RANGE             //!< Response call last ID
+        // The developer defined calls.
         
-        /**
-         * \brief   Attribute request call. Should start from ATTRIBUTE_ID_FIRST
-         **/
-        , ATTRIBUTE_ID_FIRST    = static_cast<unsigned int>(NEService::ServiceCallAttribute)    /* 0x00004000 */    //!< Attribute update notification call first ID
-        , ATTRIBUTE_ID_LAST     = static_cast<unsigned int>(ATTRIBUTE_ID_FIRST) + NEService::FUNC_RANGE             //!< Attribute update notification call last ID
+        //!< The first ID or request call range. Requests should start from this ID.
+        , RequestFirstId        = REQUEST_ID_FIRST
+        //!< The last ID of request calls.
+        , RequestLastId         = REQUEST_ID_LAST
 
-        , SI_REGISTER_ID_FIRST  = static_cast<unsigned int>(NEService::ServiceCallRegister)     /* 0x00008000 */    //!< Service registration first ID
+        //!< The first ID of response call range. Responses should start from this ID
+        , ResponseFirstId       = RESPONSE_ID_FIRST
+        //!< The last ID of request calls.
+        , ResponseLastId        = RESPONSE_ID_LAST
+        
+        //!< The first ID of Attribute update call range. Attribute updates should start from this ID
+        , AttributeFirstId      = ATTRIBUTE_ID_FIRST
+        , AttributeLastId       = ATTRIBUTE_ID_LAST
 
-        /**
-         * \brief   Sent by client to Stub to get supported version information
-         **/
-        , SI_REQUEST_VERSION                                                                                        //!< Service Interface request version
-        /**
-         * \brief   Sent by Stub to notify clients implementation version
-         **/
-        , SI_NOTIFY_VERSION                                                                                         //!< Service Interface notify version
-        /**
-         * \brief   Sent by client or stub when requesting service connection (eServiceRequestType)
-         **/
-        , SI_SERVICE_CONNECTION_REQUEST                                                                             //!< Service connect request
-        /**
-         * \brief   Sent by service to targets to notify connection status update
-         **/
-        , SI_SERVICE_CONNECTION_NOTIFY                                                                              //!< Service connection notify request
+        // Reserved system calls.
 
-        /**
-         * \brief   Called to connect to Routing Service
-         **/
-        , SI_ROUTER_CONNECT                                                                                         //!< Routing Service connect
-        /**
-         * \brief   Called to disconnect Routing Service
-         **/
-        , SI_ROUTER_DISCONNECT                                                                                      //!< Routing Service disconnect
-        /**
-         * \brief   Sent by Routing Service to notify connection status
-         **/
-        , SI_ROUTER_NOTIFY                                                                                          //!< Routing Service notification
-        /**
-         * \brief   Called to register new service at Routing Service
-         **/
-        , SI_ROUTER_REGISTER                                                                                        //!< Routing Service registration
-        /**
-         * \brief   Called to query service registration at Routing Service
-         **/
-        , SI_ROUTER_QUERY                                                                                           //!< Routing Service query
-        /**
-         * \brief   Sent by Routing Service to notify the queried service registration availability
-         **/
-        , SI_ROUTER_REGISTER_NOTIFY                                                                                 //!< Routing Service registration notify
-
-        , SI_REGISTER_ID_LAST   = static_cast<unsigned int>(SI_REGISTER_ID_FIRST)  + NEService::FUNC_RANGE          //!< Servicing call last ID
+        //!< The service registratio call. Service calls should start from this ID.
+        , ServiceRequestRegister= SERVICE_ID_FIRST
+        //!< Sent by client to Stub to get supported version information
+        , ServiceRequestVersion
+        //!< Sent by Stub to clients as a reply to get service version and notifies interface implementated version
+        , ServiceNotifyVersion
+        //!< Sent by client or stub to request service manager connection.
+        , ServiceRequestConnection
+        //!< Sent by service manager to targets (client or stub) to notify connection status update.
+        , ServiceNotifyConnection
+        //!< Called by service manager when connecting Routing Service (handshake procedure)
+        , ServiceRouterConnect
+        //!< Called by service manager when disconnecting Routing Service (graceful shutdown procedure)
+        , ServiceRouterDisconnect
+        //!< Sent by Routing Service to service manager to notify request connect status
+        , ServiceRouterNotify
+        //!< Called by service manager to register available client or stub services
+        , ServiceRouterRegister
+        //!< Called by service manager to routing service to query registration status of services.
+        , ServiceRouterQuery
+        //!< Sent by Routing Service as a reply to register service and notifies the the registered service availability
+        , ServiceRouterNotifyRegister
+        //!< The last ID of service calls.
+        , ServiceLastId         = SERVICE_ID_LAST  //!< Servicing call last ID
 
     } eFuncIdRange;
 
@@ -376,18 +419,6 @@ namespace NEService
      * \brief   Returns string value of NEService::eFuncIdRange type
      **/
     inline const char * getString( NEService::eFuncIdRange funcId );
-
-    /**
-     * \brief   Constant no response. Should be used in Request to Response map for request
-     *           calls, which have no response
-     **/
-    const unsigned int  RESPONSE_ID_NONE    = static_cast<unsigned int>(NEService::EMPTY_FUNCTION_ID);
-
-    /**
-     * \brief   NEService::INVALID_MESSAGE_ID
-     *          The invalid message ID
-     **/
-    const unsigned int INVALID_MESSAGE_ID   = static_cast<unsigned int>(-1);    /*0xFFFFFFFF*/
 
     /**
      * \brief   Returns true if message ID is in range of attribute call.
@@ -434,12 +465,14 @@ namespace NEService
     //////////////////////////////////////////////////////////////////////////
     // StateArray class declaration
     //////////////////////////////////////////////////////////////////////////
-    typedef TEListImpl<NEService::eDataStateType>   ImplStateArray;
+    using ImplStateArray    = TEListImpl<NEService::eDataStateType>;
+    using StateArrayBase    = TEFixedArray<NEService::eDataStateType, NEService::eDataStateType, ImplStateArray>;
     /**
      * \brief   StateArray class. Keeps data state information
      **/
-    class AREG_API StateArray : public TEFixedArray<NEService::eDataStateType, NEService::eDataStateType, ImplStateArray>
+    class AREG_API StateArray : public StateArrayBase
     {
+        friend class ParameterArray;
     //////////////////////////////////////////////////////////////////////////
     // Constructors / Destructor
     //////////////////////////////////////////////////////////////////////////
@@ -447,25 +480,43 @@ namespace NEService
         /**
          * \brief   Sets initial size of fixed array. The size of array cannot be changed dynamically.
          **/
-        StateArray(int size = 0);
+        explicit StateArray(int size = 0);
 
         /**
-         * \brief   Copy constructor.
+         * \brief   Copies entries from given source.
          * \param   src     The source of data to copy.
          **/
-        StateArray(const StateArray & src);
+        StateArray(const StateArray & src) = default;
+
+        /**
+         * \brief   Copies entries from given source.
+         * \param   src     The source of data to copy.
+         **/
+        StateArray( StateArray && src ) noexcept = default;
 
         /**
          * \brief   Destructor
          **/
-        ~StateArray( void );
+        ~StateArray( void ) = default;
+
+        /**
+         * \brief   Copies data from give source.
+         * \param   src     The source of data to copy.
+         **/
+        StateArray & operator = ( const StateArray & src) = default;
+
+        /**
+         * \brief   Moves data from give source.
+         * \param   src     The source of data to move.
+         **/
+        StateArray & operator = ( StateArray && src) noexcept = default;
 
     //////////////////////////////////////////////////////////////////////////
     // Attributes and operations
     //////////////////////////////////////////////////////////////////////////
     public:
         /**
-         * \brief   Resets states in array. All states will be set to NEService::DATA_UNAVAILABLE
+         * \brief   Resets states in array. All states will be set to NEService::DataIsUnavailable
          **/
         inline void resetStates( void );
 
@@ -492,7 +543,6 @@ namespace NEService
     // Hidden methods
     //////////////////////////////////////////////////////////////////////////
     private:
-        friend class ParameterArray;
 
         /**
          * \brief   Initialization constructor.
@@ -515,52 +565,52 @@ namespace NEService
         /**
          * \brief   The name of service (interface)
          **/
-        const char*         idServiceName;              // service (interface) name
+        const char *        idServiceName;      // service (interface) name
 
         /**
          * \brief   Implementation version
          **/
-        Version           idVersion;                  // interface version
+        Version             idVersion;          // interface version
 
         /**
          * \brief   The service type. Either local or remote
          **/
-        eServiceType       idServiceType;
+        eServiceType        idServiceType;      // local or publis service type
 
         /**
          * \brief   Number of requests in service interface
          **/
-        unsigned int        idRequestCount;             // number of requests
+        unsigned int        idRequestCount;     // number of requests
 
         /**
          * \brief   Number of responses in service interface
          **/
-        unsigned int        idResponseCount;            // number of responses
+        unsigned int        idResponseCount;    // number of responses
 
         /**
          * \brief   Number of attributes in service interface
          **/
-        unsigned int        idAttributeCount;           // number of attributes
+        unsigned int        idAttributeCount;   // number of attributes
 
         /**
-         * \brief   The list of requests. It is NULL if the list is empty.
+         * \brief   The list of requests. It is nullptr if the list is empty.
          **/
         const unsigned int* idRequestList;
 
         /**
-         * \brief   The list of responses. It is NULL if the list is empty.
+         * \brief   The list of responses. It is nullptr if the list is empty.
          **/
         const unsigned int* idResponseList;
 
         /**
-         * \brief   The list of attributes. It is NULL if the list is empty.
+         * \brief   The list of attributes. It is nullptr if the list is empty.
          **/
         const unsigned int* idAttributeList;
 
         /**
          * \brief   Request to Response map. All requests are accessed by index 
          *          and every request indexed is calculated by calculating 
-         *          ('request ID' - NEService::REQUEST_ID_FIRST)
+         *          ('request ID' - NEService::eFuncIdRange::RequestFirstId)
          *          Every request should have appropriate response value. If request does not
          *          have response, it should have value NEService::RESPONSE_ID_NONE
          **/
@@ -568,7 +618,7 @@ namespace NEService
 
         /**
          * \brief   Map of parameter count in every response. Every response index
-         *          is calculated by formula ('response ID' - NEService::RESPONSE_ID_FIRST)
+         *          is calculated by formula ('response ID' - NEService::eFuncIdRange::ResponseFirstId)
          *          The size of this map should be equal to idResponseCount
          **/
         const unsigned int* idResponseParamCountMap;    // map of parameter count in every response. Must have same size as idResponseCount
@@ -581,7 +631,7 @@ namespace NEService
     /**
      * \brief   The name of empty service
      **/
-    const char * const  EmptyServiceName    = "AREG_EmptyService_";
+    constexpr char  EmptyServiceName[]  { "AREG_EmptyService_" };
     /**
      * \brief   Empty service version
      **/
@@ -597,11 +647,7 @@ namespace NEService
     /**
      * \brief   Invalid service name
      **/
-    const char * const  InvalidServiceName  = "";
-    /**
-     * \brief   Invalid Version
-     **/
-    const Version       InvalidVersion(0, 0, 0);
+    constexpr char InvalidServiceName[] { "" };
 
     //////////////////////////////////////////////////////////////////////////
     // ParameterArray class declaration
@@ -646,6 +692,12 @@ namespace NEService
         ParameterArray(const unsigned int* paramCountMap, int count);
 
         /**
+         * \brief   Moves data from given source.
+         * \param   src     The source of data to move.
+         **/
+        ParameterArray( ParameterArray && src ) noexcept;
+
+        /**
          * \brief   Destructor
          **/
         ~ParameterArray( void );
@@ -656,19 +708,25 @@ namespace NEService
     public:
 
         /**
+         * \brief   Moves data from given source.
+         * \param   src     The source of data to move.
+         **/
+        ParameterArray & operator = ( ParameterArray && src ) noexcept;
+
+        /**
          * \brief   Access state by given index of array allowed for writing.
          *          The index is calculated by formula
-         *          ('response ID' - NEService::RESPONSE_ID_FIRST) or use
+         *          ('response ID' - NEService::eFuncIdRange::ResponseFirstId) or use
          *          GET_RESP_INDEX() macro
          **/
-        inline NEService::StateArray& operator [] (int index);
+        inline NEService::StateArray & operator [] (int index);
         /**
          * \brief   Access read-only state by given index of array.
          *          The index is calculated by formula
-         *          ('response ID' - NEService::RESPONSE_ID_FIRST) or use
+         *          ('response ID' - NEService::eFuncIdRange::ResponseFirstId) or use
          *          GET_RESP_INDEX() macro
          **/
-        inline const NEService::StateArray& operator [] (int index) const;
+        inline const NEService::StateArray & operator [] (int index) const;
 
     //////////////////////////////////////////////////////////////////////////
     // Attributes
@@ -766,25 +824,24 @@ namespace NEService
         /**
          * \brief   Table of parameter states
          **/
-        NEService::StateArray**  mParamList;
+        NEService::StateArray **    mParamList;
 
     //////////////////////////////////////////////////////////////////////////
     // Forbidden calls
     //////////////////////////////////////////////////////////////////////////
     private:
-        ParameterArray( void );
-        ParameterArray(const NEService::ParameterArray & /*src*/ );
-        const NEService::ParameterArray& operator = (const NEService::ParameterArray & /*src*/ );
+        ParameterArray( void ) = delete;
+        DECLARE_NOCOPY( ParameterArray );
     };
 
     /**
      * \brief   Type of parameter array
      **/
-    typedef NEService::ParameterArray    ParamState;
+    using ParamState    = NEService::ParameterArray;
     /**
      * \brief   Type of state array
      **/
-    typedef NEService::StateArray        AttrState;
+    using AttrState     = NEService::StateArray;
 
     //////////////////////////////////////////////////////////////////////////
     // NEService::ProxyData class declaration
@@ -882,9 +939,8 @@ namespace NEService
     // Forbidden calls
     //////////////////////////////////////////////////////////////////////////
     private:
-        ProxyData( void );
-        ProxyData( const ProxyData & /*src*/ );
-        const ProxyData & operator = ( const ProxyData & /*src*/ );
+        ProxyData( void ) = delete;
+        DECLARE_NOCOPY_NOMOVE( ProxyData );
     };
 }
 
@@ -906,60 +962,60 @@ IMPLEMENT_STREAMABLE(NEService::eFuncIdRange)
 
 inline bool NEService::isRequestId(unsigned int msgId)
 {
-    return (msgId & static_cast<unsigned int>(NEService::ServiceCallRequest)) != 0;
+    return (msgId & static_cast<unsigned int>(NEService::eServiceCalls::ServiceCallRequest)) != 0;
 }
 
 inline bool NEService::isResponseId(unsigned int msgId)
 {
-    return (msgId & static_cast<unsigned int>(NEService::ServiceCallResponse)) != 0;
+    return (msgId & static_cast<unsigned int>(NEService::eServiceCalls::ServiceCallResponse)) != 0;
 }
 
 inline bool NEService::isAttributeId(unsigned int msgId)
 {
-    return (msgId & static_cast<unsigned int>(NEService::ServiceCallAttribute)) != 0;
+    return (msgId & static_cast<unsigned int>(NEService::eServiceCalls::ServiceCallAttribute)) != 0;
 }
 
 inline bool NEService::isRegistrationId( unsigned int msgId )
 {
-    return (msgId & static_cast<unsigned int>(NEService::ServiceCallRegister)) != 0;
+    return (msgId & static_cast<unsigned int>(NEService::eServiceCalls::ServiceCallRegister)) != 0;
 }
 
 inline bool NEService::isEmptyFunctionId(unsigned int msgId)
 {
-    return (msgId == static_cast<unsigned int>(NEService::EMPTY_FUNCTION_ID));
+    return (msgId == static_cast<unsigned int>(NEService::eFuncIdRange::EmptyFunctionId));
 }
 
 inline bool NEService::isVersionNotifyId( unsigned int msgId )
 {
-    return (msgId == static_cast<unsigned int>(NEService::SI_NOTIFY_VERSION));
+    return (msgId == static_cast<unsigned int>(NEService::eFuncIdRange::ServiceNotifyVersion));
 }
 
 inline bool NEService::isConnectNotifyId( unsigned int msgId )
 {
-    return (msgId == static_cast<unsigned int>(NEService::SI_SERVICE_CONNECTION_NOTIFY));
+    return (msgId == static_cast<unsigned int>(NEService::eFuncIdRange::ServiceNotifyConnection));
 }
 
 inline bool NEService::isExecutableId(unsigned int msgId)
 {
-    return ( (msgId  & static_cast<unsigned int>(NEService::ServiceCallRequest)     ) != 0 ||
-             (msgId  & static_cast<unsigned int>(NEService::ServiceCallResponse)    ) != 0 ||
-             (msgId  & static_cast<unsigned int>(NEService::ServiceCallAttribute)   ) != 0 ||
-             (msgId == static_cast<unsigned int>(NEService::ServiceCallNoFunction)  ) );
+    return ( (msgId  & static_cast<unsigned int>(NEService::eServiceCalls::ServiceCallRequest)     ) != 0 ||
+             (msgId  & static_cast<unsigned int>(NEService::eServiceCalls::ServiceCallResponse)    ) != 0 ||
+             (msgId  & static_cast<unsigned int>(NEService::eServiceCalls::ServiceCallAttribute)   ) != 0 ||
+             (msgId == static_cast<unsigned int>(NEService::eServiceCalls::ServiceCallNoFunction)  ) );
 }
 
 
 inline NEService::eMessageDataType NEService::getMessageDataType( unsigned int msgId )
 {
     if ( NEService::isRequestId(msgId) )
-        return NEService::REQUEST_DATA_TYPE;
+        return NEService::eMessageDataType::RequestDataType;
     else if (NEService::isResponseId(msgId))
-        return NEService::RESPONSE_DATA_TYPE;
+        return NEService::eMessageDataType::ResponseDataType;
     else if (NEService::isAttributeId(msgId))
-        return NEService::ATTRIBUTE_DATA_TYPE;
+        return NEService::eMessageDataType::AttributeDataType;
     else if (NEService::isRegistrationId(msgId))
-        return NEService::SERVICE_DATA_TYPE;
+        return NEService::eMessageDataType::ServiceDataType;
     else
-        return NEService::UNDEFINED_DATA_TYPE;
+        return NEService::eMessageDataType::UndefinedDataType;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -967,7 +1023,7 @@ inline NEService::eMessageDataType NEService::getMessageDataType( unsigned int m
 //////////////////////////////////////////////////////////////////////////
 inline void NEService::StateArray::resetStates( void )
 {
-    setAllState(NEService::DATA_UNAVAILABLE);
+    setAllState(NEService::eDataStateType::DataIsUnavailable);
 }
 
 inline bool NEService::StateArray::hasParams( void ) const
@@ -1049,7 +1105,7 @@ inline NEService::eDataStateType NEService::ProxyData::getAttributeState( unsign
 inline NEService::eDataStateType NEService::ProxyData::getParamState( unsigned int msgId ) const
 {
     const NEService::StateArray& param = mParamState[GET_RESP_INDEX(msgId)];
-    return (param.hasParams() ? param[0] : NEService::DATA_UNAVAILABLE);
+    return (param.hasParams() ? param[0] : NEService::eDataStateType::DataIsUnavailable);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1060,45 +1116,45 @@ inline const char* NEService::getString(NEService::eResultType resultType)
 {
     switch (resultType)
     {
-    case    NEService::RESULT_UNDEFINED:
-        return "NEService::RESULT_UNDEFINED";
+    case    NEService::eResultType::Undefined:
+        return "NEService::eResultType::Undefined";
 
-    case    NEService::RESULT_ERROR:
-        return "NEService::RESULT_ERROR";
-    case NEService::RESULT_UNDELIVERED:
-        return "NEService::RESULT_UNDELIVERED";
-    case    NEService::RESULT_NOT_PROCESSED:
-        return "NEService::RESULT_NOT_PROCESSED";
-    case NEService::RESULT_PROCESSED:
-        return "NEService::RESULT_PROCESSED";
+    case    NEService::eResultType::Error:
+        return "NEService::eResultType::Error";
+    case NEService::eResultType::Undelivered:
+        return "NEService::eResultType::Undelivered";
+    case    NEService::eResultType::NotProcessed:
+        return "NEService::eResultType::NotProcessed";
+    case NEService::eResultType::Processed:
+        return "NEService::eResultType::Processed";
 
-    case NEService::RESULT_MESSAGE_UNDELIVERED:
-        return "NEService::RESULT_MESSAGE_UNDELIVERED";
+    case NEService::eResultType::MessageUndelivered:
+        return "NEService::eResultType::MessageUndelivered";
 
-    case    NEService::RESULT_OK:
-        return "NEService::RESULT_OK";
-    case    NEService::RESULT_INVALID:
-        return "NEService::RESULT_INVALID";
-    case    NEService::RESULT_REQUEST_ERROR:
-        return "NEService::RESULT_REQUEST_ERROR";
-    case    NEService::RESULT_REQUEST_BUSY:
-        return "NEService::RESULT_REQUEST_BUSY";
-    case    NEService::RESULT_REQUEST_CANCELED:
-        return "NEService::RESULT_REQUEST_CANCELED";
+    case    NEService::eResultType::RequestOK:
+        return "NEService::eResultType::RequestOK";
+    case    NEService::eResultType::RequestInvalid:
+        return "NEService::eResultType::RequestInvalid";
+    case    NEService::eResultType::RequestError:
+        return "NEService::eResultType::RequestError";
+    case    NEService::eResultType::RequestBusy:
+        return "NEService::eResultType::RequestBusy";
+    case    NEService::eResultType::RequestCanceled:
+        return "NEService::eResultType::RequestCanceled";
 
-    case    NEService::RESULT_DATA_OK:
-        return "NEService::RESULT_DATA_OK";
-    case    NEService::RESULT_DATA_INVALID:
-        return "NEService::RESULT_DATA_INVALID";
+    case    NEService::eResultType::DataOK:
+        return "NEService::eResultType::DataOK";
+    case    NEService::eResultType::DataInvalid:
+        return "NEService::eResultType::DataInvalid";
 
-    case    NEService::RESULT_SERVICE_OK:
-        return "NEService::RESULT_SERVICE_OK";
-    case    NEService::RESULT_SERVICE_UNAVAILABLE:
-        return "NEService::RESULT_SERVICE_UNAVAILABLE";
-    case    NEService::RESULT_SERVICE_INVALID:
-        return "NEService::RESULT_SERVICE_INVALID";
-    case    NEService::RESULT_SERVICE_REJECTED:
-        return "NEService::RESULT_SERVICE_REJECTED";
+    case    NEService::eResultType::ServiceOK:
+        return "NEService::eResultType::ServiceOK";
+    case    NEService::eResultType::ServiceUnavailable:
+        return "NEService::eResultType::ServiceUnavailable";
+    case    NEService::eResultType::ServiceInvalid:
+        return "NEService::eResultType::ServiceInvalid";
+    case    NEService::eResultType::ServiceRejected:
+        return "NEService::eResultType::ServiceRejected";
 
     default:
         ASSERT(false);
@@ -1110,20 +1166,20 @@ inline const char* NEService::getString(NEService::eDataStateType dataState)
 {
     switch (dataState)
     {
-    case    NEService::DATA_UNDEFINED:
-        return "NEService::DATA_UNDEFINED";
+    case    NEService::eDataStateType::DataIsUndefined:
+        return "NEService::eDataStateType::DataIsUndefined";
 
-    case    NEService::DATA_OK:
-        return "NEService::DATA_OK";
+    case    NEService::eDataStateType::DataIsOK:
+        return "NEService::eDataStateType::DataIsOK";
 
-    case    NEService::DATA_INVALID:
-        return "NEService::DATA_INVALID";
+    case    NEService::eDataStateType::DataIsInvalid:
+        return "NEService::eDataStateType::DataIsInvalid";
 
-    case    NEService::DATA_UNAVAILABLE:
-        return "NEService::DATA_UNAVAILABLE";
+    case    NEService::eDataStateType::DataIsUnavailable:
+        return "NEService::eDataStateType::DataIsUnavailable";
 
-    case    NEService::DATA_UNEXPECTED_ERROR:
-        return "NEService::DATA_UNEXPECTED_ERROR";
+    case    NEService::eDataStateType::DataUnexpectedError:
+        return "NEService::eDataStateType::DataUnexpectedError";
 
     default:
         ASSERT(false);
@@ -1135,22 +1191,22 @@ inline const char* NEService::getString( NEService::eRequestType resultType )
 {
     switch (resultType)
     {
-    case    NEService::REQUEST_UNPROCESSED:
-        return "NEService::REQUEST_UNPROCESSED";
-    case    NEService::REQUEST_START_NOTIFY:
-        return "NEService::REQUEST_START_NOTIFY";
-    case    NEService::REQUEST_STOP_NOTIFY:
-        return "NEService::REQUEST_STOP_NOTIFY";        
-    case    NEService::REQUEST_REMOVE_ALL_NOTIFY:
-        return "NEService::REQUEST_REMOVE_ALL_NOTIFY";
-    case    NEService::REQUEST_CALL:
-        return "NEService::REQUEST_CALL";
-    case    NEService::REQUEST_CONNECTION:
-        return "NEService::REQUEST_CONNECTION";
-    case    NEService::REQUEST_CLIENT_CONNECTION:
-        return "NEService::REQUEST_CLIENT_CONNECTION";
-    case    NEService::REQUEST_LOAD_COMPONENT:
-        return "NEService::REQUEST_LOAD_COMPONENT";
+    case    NEService::eRequestType::Unprocessed:
+        return "NEService::eRequestType::Unprocessed";
+    case    NEService::eRequestType::StartNotify:
+        return "NEService::eRequestType::StartNotify";
+    case    NEService::eRequestType::StopNotify:
+        return "NEService::eRequestType::StopNotify";        
+    case    NEService::eRequestType::RemoveAllNotify:
+        return "NEService::eRequestType::RemoveAllNotify";
+    case    NEService::eRequestType::CallFunction:
+        return "NEService::eRequestType::CallFunction";
+    case    NEService::eRequestType::ServiceConnection:
+        return "NEService::eRequestType::ServiceConnection";
+    case    NEService::eRequestType::ClientConnection:
+        return "NEService::eRequestType::ClientConnection";
+    case    NEService::eRequestType::LoadComponent:
+        return "NEService::eRequestType::LoadComponent";
     default:
         ASSERT(false);
         return "ERR: Undefined NEService::eRequestType value!";
@@ -1161,16 +1217,16 @@ inline const char* NEService::getString( NEService::eMessageDataType dataType )
 {
     switch (dataType)
     {
-    case NEService::UNDEFINED_DATA_TYPE:
-        return "NEService::UNDEFINED_DATA_TYPE";
-    case NEService::REQUEST_DATA_TYPE:
-        return "NEService::REQUEST_DATA_TYPE";
-    case NEService::RESPONSE_DATA_TYPE:
-        return "NEService::RESPONSE_DATA_TYPE";
-    case NEService::ATTRIBUTE_DATA_TYPE:
-        return "NEService::ATTRIBUTE_DATA_TYPE";
-    case NEService::SERVICE_DATA_TYPE:
-        return "NEService::SERVICE_DATA_TYPE";
+    case NEService::eMessageDataType::UndefinedDataType:
+        return "NEService::eMessageDataType::UndefinedDataType";
+    case NEService::eMessageDataType::RequestDataType:
+        return "NEService::eMessageDataType::RequestDataType";
+    case NEService::eMessageDataType::ResponseDataType:
+        return "NEService::eMessageDataType::ResponseDataType";
+    case NEService::eMessageDataType::AttributeDataType:
+        return "NEService::eMessageDataType::AttributeDataType";
+    case NEService::eMessageDataType::ServiceDataType:
+        return "NEService::eMessageDataType::ServiceDataType";
 
     default:
         ASSERT(false);
@@ -1182,20 +1238,20 @@ inline const char* NEService::getString( NEService::eServiceConnection serviceCo
 {
     switch (serviceConnection)
     {
-    case NEService::ServiceConnectionUnknown:
-        return "NEService::ServiceConnectionUnknown";
-    case NEService::ServiceDisconnected:
-        return "NEService::ServiceDisconnected";
-    case NEService::ServicePending:
-        return "NEService::ServicePending";
-    case NEService::ServiceConnected:
-        return "NEService::ServiceConnected";
-    case NEService::ServiceRejected:
-        return "NEService::ServiceRejected";
-    case NEService::ServiceFailed:
-        return "NEService::ServiceFailed";
-    case NEService::ServiceShutdown:
-        return "NEService::ServiceShutdown";
+    case NEService::eServiceConnection::ServiceConnectionUnknown:
+        return "NEService::eServiceConnection::ServiceConnectionUnknown";
+    case NEService::eServiceConnection::ServiceDisconnected:
+        return "NEService::eServiceConnection::ServiceDisconnected";
+    case NEService::eServiceConnection::ServicePending:
+        return "NEService::eServiceConnection::ServicePending";
+    case NEService::eServiceConnection::ServiceConnected:
+        return "NEService::eServiceConnection::ServiceConnected";
+    case NEService::eServiceConnection::ServiceRejected:
+        return "NEService::eServiceConnection::ServiceRejected";
+    case NEService::eServiceConnection::ServiceFailed:
+        return "NEService::eServiceConnection::ServiceFailed";
+    case NEService::eServiceConnection::ServiceShutdown:
+        return "NEService::eServiceConnection::ServiceShutdown";
     default:
         ASSERT(false);
         return "ERR: Undefined NEService::eServiceConnection value!";
@@ -1206,14 +1262,14 @@ inline const char * NEService::getString( NEService::eServiceRequestType svcRequ
 {
     switch ( svcRequestType )
     {
-    case NEService::SERVICE_REQUEST_REGISTER_CLIENT:
-        return "NEService::SERVICE_REQUEST_REGISTER_CLIENT";
-    case NEService::SERVICE_REQUEST_UNREGISTER_CLIENT:
-        return "NEService::SERVICE_REQUEST_UNREGISTER_CLIENT";
-    case NEService::SERVICE_REQUEST_REGISTER_STUB:
-        return "NEService::SERVICE_REQUEST_REGISTER_STUB";
-    case NEService::SERVICE_REQUEST_UNREGISTER_STUB:
-        return "NEService::SERVICE_REQUEST_UNREGISTER_STUB";
+    case NEService::eServiceRequestType::RegisterClient:
+        return "NEService::eServiceRequestType::RegisterClient";
+    case NEService::eServiceRequestType::UnregisterClient:
+        return "NEService::eServiceRequestType::UnregisterClient";
+    case NEService::eServiceRequestType::RegisterStub:
+        return "NEService::RegisterStub";
+    case NEService::eServiceRequestType::UnregisterStub:
+        return "NEService::eServiceRequestType::UnregisterStub";
     default:
         return "ERR: Unexpected NEService::eServiceRequestType value!!!";
     }
@@ -1223,14 +1279,14 @@ inline const char * NEService::getString( NEService::eServiceType srvcType )
 {
     switch ( srvcType )
     {
-    case NEService::ServiceLocal:
-        return "NEService::ServiceLocal";
-    case NEService::ServiceRemote:
-        return "NEService::ServiceRemote";
-    case NEService::ServiceAny:
-        return "NEService::ServiceAny";
-    case NEService::ServiceInvalid:
-        return "NEService::ServiceInvalid";
+    case NEService::eServiceType::ServiceLocal:
+        return "NEService::eServiceType::ServiceLocal";
+    case NEService::eServiceType::ServicePublic:
+        return "NEService::eServiceType::ServicePublic";
+    case NEService::eServiceType::ServiceAny:
+        return "NEService::eServiceType::ServiceAny";
+    case NEService::eServiceType::ServiceInvalid:
+        return "NEService::eServiceType::ServiceInvalid";
     default:
         return "ERR: Unexpected NEService::eServiceRequestType value!!!";
     }
@@ -1241,54 +1297,53 @@ inline const char * NEService::getString( NEService::eFuncIdRange funcId )
 {
     switch ( funcId )
     {
-    case NEService::EMPTY_FUNCTION_ID:
-        return "NEService::EMPTY_FUNCTION_ID";
-    case NEService::COMPONENT_MAKE_CLEANUP:
-        return "NEService::COMPONENT_MAKE_CLEANUP";
-    case NEService::SI_REQUEST_VERSION:
-        return "NEService::SI_REQUEST_VERSION";
-    case NEService::SI_NOTIFY_VERSION:
-        return "NEService::SI_NOTIFY_VERSION";
-    case NEService::SI_SERVICE_CONNECTION_REQUEST:
-        return "NEService::SI_SERVICE_CONNECTION_REQUEST";
-    case NEService::SI_SERVICE_CONNECTION_NOTIFY:
-        return "NEService::SI_SERVICE_CONNECTION_NOTIFY";
-    case NEService::SI_ROUTER_CONNECT:
-        return "NEService::SI_ROUTER_CONNECT";
-    case NEService::SI_ROUTER_DISCONNECT:
-        return "NEService::SI_ROUTER_DISCONNECT";
-    case NEService::SI_ROUTER_NOTIFY:
-        return "NEService::SI_ROUTER_NOTIFY";
-    case NEService::SI_ROUTER_REGISTER:
-        return "NEService::SI_ROUTER_REGISTER";
-    case NEService::SI_ROUTER_QUERY:
-        return "NEService::SI_ROUTER_QUERY";
-    case NEService::SI_ROUTER_REGISTER_NOTIFY:
-        return "NEService::SI_ROUTER_REGISTER_NOTIFY";
-    case NEService::REQUEST_ID_FIRST:
-        return "NEService::REQUEST_ID_FIRST";
-    case NEService::RESPONSE_ID_FIRST:
-        return "NEService::RESPONSE_ID_FIRST";
-    case NEService::ATTRIBUTE_ID_FIRST:
-        return "NEService::ATTRIBUTE_ID_FIRST";
-    case NEService::SI_REGISTER_ID_FIRST:
-        return "NEService::SI_REGISTER_ID_FIRST";
-    case NEService::REQUEST_ID_LAST:        // fall through
-    case NEService::RESPONSE_ID_LAST:       // fall through
-    case NEService::ATTRIBUTE_ID_LAST:      // fall through
-    case NEService::SI_REGISTER_ID_LAST:    // fall through
+    case NEService::eFuncIdRange::EmptyFunctionId:
+        return "NEService::eFuncIdRange::EmptyFunctionId";
+    case NEService::eFuncIdRange::ComponentCleanup:
+        return "NEService::eFuncIdRange::ComponentCleanup";
+    case NEService::eFuncIdRange::ServiceRequestVersion:
+        return "NEService::eFuncIdRange::ServiceRequestVersion";
+    case NEService::eFuncIdRange::ServiceNotifyVersion:
+        return "NEService::eFuncIdRange::ServiceNotifyVersion";
+    case NEService::eFuncIdRange::ServiceRequestConnection:
+        return "NEService::eFuncIdRange::ServiceRequestConnection";
+    case NEService::eFuncIdRange::ServiceNotifyConnection:
+        return "NEService::eFuncIdRange::ServiceNotifyConnection";
+    case NEService::eFuncIdRange::ServiceRouterConnect:
+        return "NEService::eFuncIdRange::ServiceRouterConnect";
+    case NEService::eFuncIdRange::ServiceRouterDisconnect:
+        return "NEService::eFuncIdRange::ServiceRouterDisconnect";
+    case NEService::eFuncIdRange::ServiceRouterNotify:
+        return "NEService::eFuncIdRange::ServiceRouterNotify";
+    case NEService::eFuncIdRange::ServiceRouterRegister:
+        return "NEService::eFuncIdRange::ServiceRouterRegister";
+    case NEService::eFuncIdRange::ServiceRouterQuery:
+        return "NEService::eFuncIdRange::ServiceRouterQuery";
+    case NEService::eFuncIdRange::ServiceRouterNotifyRegister:
+        return "NEService::eFuncIdRange::ServiceRouterNotifyRegister";
+    case NEService::eFuncIdRange::RequestFirstId:
+        return "NEService::eFuncIdRange::RequestFirstId";
+    case NEService::eFuncIdRange::ResponseFirstId:
+        return "NEService::eFuncIdRange::ResponseFirstId";
+    case NEService::eFuncIdRange::AttributeFirstId:
+        return "NEService::eFuncIdRange::AttributeFirstId";
+    case NEService::eFuncIdRange::ServiceRequestRegister:
+        return "NEService::eFuncIdRange::ServiceRequestRegister";
+
+    case NEService::eFuncIdRange::RequestLastId:    // fall through
+    case NEService::eFuncIdRange::ResponseLastId:   // fall through
+    case NEService::eFuncIdRange::AttributeLastId:  // fall through
+    case NEService::eFuncIdRange::ServiceLastId:    // fall through
     default:
-        if ( (funcId > NEService::REQUEST_ID_FIRST) && (funcId <= NEService::REQUEST_ID_LAST) )
+        if ( (funcId > NEService::eFuncIdRange::RequestFirstId) && (funcId <= NEService::eFuncIdRange::RequestLastId) )
             return "Request ID range";
-        else if ( (funcId > NEService::RESPONSE_ID_FIRST) && (funcId <= NEService::RESPONSE_ID_LAST) )
+        else if ( (funcId > NEService::eFuncIdRange::ResponseFirstId) && (funcId <= NEService::eFuncIdRange::ResponseLastId) )
             return "Response ID range";
-        else if ( (funcId > NEService::ATTRIBUTE_ID_FIRST) && (funcId <= NEService::ATTRIBUTE_ID_LAST) )
+        else if ( (funcId > NEService::eFuncIdRange::AttributeFirstId) && (funcId <= NEService::eFuncIdRange::AttributeLastId) )
             return "Attribute ID range";
-        else if ( (funcId > NEService::SI_REGISTER_ID_FIRST) && (funcId <= NEService::SI_REGISTER_ID_LAST) )
+        else if ( (funcId > NEService::eFuncIdRange::ServiceRequestRegister) && (funcId <= NEService::eFuncIdRange::ServiceLastId) )
             return "Service registration ID";
         else
             return "ERR: Unexpected ID";
     }
 }
-
-#endif  //AREG_COMPONENT_NESERVICE_HPP

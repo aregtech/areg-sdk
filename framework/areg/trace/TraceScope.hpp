@@ -1,9 +1,16 @@
-#ifndef AREG_TRACE_TRACESCOPE_HPP
-#define AREG_TRACE_TRACESCOPE_HPP
+#pragma once
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/trace/TraceScope.hpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, Trace messaging scope object definition.
  ************************************************************************/
 /************************************************************************
@@ -18,23 +25,30 @@
 //////////////////////////////////////////////////////////////////////////////
 /**
  * \brief   Tracing scope object is used to enable or disable logging messages.
+ * 
  *          Before message output, the trace scopes should be defined.
- *          Depending on logging enabling and priority bit flags in scope,
+ *          Depending on logging enable and priority flags of the scope,
  *          the system decides whether the message should be logged or not.
  *          Each created tracing scope is automatically registered in the system.
- *          Each tracing scope should have unique name. Out of name, it is generating
- *          scope ID. Neither name, nor scope ID can be changed anymore.
- *          Instead, the scope priority can be changed during runtime and
- *          by this the certain logs can be dynamically enabled, disabled or filtered.
- *          This approach makes logging dynamic. To see certain logs in output target,
- *          there is no more need to stop and start application, it is enough
+ *          Each tracing scope should have fixed unique name, which is used to
+ *          generate scope ID. Neither name, nor scope ID can be changed. The scope
+ *          priority can be changed during runtime and to enable dynamically certain
+ *          logs and associated priorities.
+ * 
+ *          This makes logging dynamic. To see certain logs in output target,
+ *          there is no need to stop and start application, it is enough
  *          to enable or disable certain logging priorities and the system
- *          will automatically start logging message for enabled priorities.
- *          The activation of scopes and enabling of certain priorities to
- *          certain scope or group of scopes is possible to do via configuration file.
- *          These scope are automatically enabled or disable during each system start.
- *          By changing logging configuration, changes are automatically applied to
- *          application after next start.
+ *          automatically filters logs.
+ * 
+ *          The initial activation of scopes, enabling of priorities of scope or 
+ *          group of scopes can be done in configuration file, which sets up the
+ *          initial configuration of logging service and the scopes.
+ * 
+ * \note    In this version all logs are written as a text in the log file. At the
+ *          moment, there is no tool to change scope priorities. So that, there is
+ *          a need to restart application if need to filter scopes and this filtering
+ *          should be done in configuration file. In the next versions there will be
+ *          a tool to configure and view logs during runtime.
  **/
 class AREG_API TraceScope
 {
@@ -135,7 +149,7 @@ public:
     /**
      * \brief   Returns name of trace scope. The name cannot be changed
      **/
-    inline const char * getScopeName( void ) const;
+    inline const String & getScopeName( void ) const;
 
 //////////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -167,9 +181,8 @@ private:
 // Forbidden methods
 //////////////////////////////////////////////////////////////////////////////
 private:
-    TraceScope( void );
-    TraceScope( const TraceScope & /*src*/ );
-    const TraceScope & operator = ( const TraceScope & /*src*/ );
+    TraceScope( void ) = delete;
+    DECLARE_NOCOPY_NOMOVE( TraceScope );
 };
 
 //////////////////////////////////////////////////////////////////////////////
@@ -226,9 +239,7 @@ inline unsigned int TraceScope::getScopeId( void ) const
     return mScopeId;
 }
 
-inline const char * TraceScope::getScopeName( void ) const
+inline const String & TraceScope::getScopeName( void ) const
 {
-    return mScopeName.getString();
+    return mScopeName;
 }
-
-#endif  // AREG_TRACE_TRASCOPE_HPP

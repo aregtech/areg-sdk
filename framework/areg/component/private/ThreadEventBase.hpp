@@ -1,9 +1,16 @@
-#ifndef AREG_COMPONENT_PRIVATE_THREADEVENTBASE_HPP
-#define AREG_COMPONENT_PRIVATE_THREADEVENTBASE_HPP
+#pragma once
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/component/private/ThreadEventBase.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, Multi-Threading communication Event.
  *
  ************************************************************************/
@@ -62,20 +69,19 @@ protected:
      * \brief   Initialization constructor.
      *          Creates Thread Event and sets event type.
      **/
-    ThreadEventBase( Event::eEventType eventType );
+    explicit ThreadEventBase( Event::eEventType eventType );
 
     /**
      * \brief   Destructor
      **/
-    virtual ~ThreadEventBase( void );
+    virtual ~ThreadEventBase( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    ThreadEventBase( void );
-    ThreadEventBase( const ThreadEventBase & /*src*/ );
-    const ThreadEventBase & operator = ( const ThreadEventBase & /*src*/ );
+    ThreadEventBase( void ) = delete;
+    DECLARE_NOCOPY_NOMOVE( ThreadEventBase );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -97,19 +103,16 @@ protected:
     /**
      * \brief   Default constructor
      **/
-    ThreadEventConsumerBase( void );
+    ThreadEventConsumerBase( void ) = default;
 
     /**
      * \brief   Destructor.
      **/
-    virtual ~ThreadEventConsumerBase( void );
+    virtual ~ThreadEventConsumerBase( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls.
 //////////////////////////////////////////////////////////////////////////
 private:
-    ThreadEventConsumerBase( const ThreadEventConsumerBase & /*src*/ );
-    const ThreadEventConsumerBase & operator = ( const ThreadEventConsumerBase & /*src*/ );
+    DECLARE_NOCOPY_NOMOVE( ThreadEventConsumerBase );
 };
-
-#endif  // AREG_COMPONENT_PRIVATE_THREADEVENTBASE_HPP

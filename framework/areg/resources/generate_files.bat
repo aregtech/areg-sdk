@@ -1,40 +1,24 @@
 echo off
 cls
 
-set PATH=D:\Program Files\jdk12;D:\Program Files\jdk12\lib;D:\Program Files\jdk12\bin;%PATH%
-set PROJECT_ROOT=E:\Projects\aregtech\areg-sdk\examples\test-areg-basic
-set CODE_GEN=src\gen
-rem set CLASSPATH=D:\Program Files\jdk12\lib;%CLASSPATH%;E:\Projects\tools\sidesign\trunk\codegen\dist;E:\Projects\tools\sidesign\trunk\codegen\dist\codegen.jar;.\dist;.\dist\codegen.jar
-set CLASSPATH=D:\Program Files\jdk12\lib;%CLASSPATH%;E:\Projects\aregtech\areg-sdk\tools;E:\Projects\aregtech\areg-sdk\tools\codegen.jar
+:: set the AREG_SDK_ROOT directory here
+set AREG_SDK_ROOT=E:\Projects\aregtech\areg-sdk
 
-set NEW_LINE=echo:
-
-rem cd %CODE_GEN_ROOT%
-
-@echo ......................................................
-%NEW_LINE%
-@echo Generating class of MessageOutput Service Interface in folder %PROJECT_ROOT%\%CODE_GEN% .....
-java com.aregtech.CMFMain --root=%PROJECT_ROOT% --doc=src\interfaces\MessageOutput.siml --target=%CODE_GEN%
+:: .bat file directory
+set BATCH_ROOT=%~dp0
+:: In case of examples, one level up.
+set PROJECT_ROOT=%BATCH_ROOT%\..
+:: Specify the relative path of output folder
+set CODE_GEN=generated\src
+:: Include codegen.jar in CLASSPATH
+set CLASSPATH=%CLASSPATH%;%AREG_SDK_ROOT%\tools;%AREG_SDK_ROOT%\tools\codegen.jar
 
 @echo ......................................................
-%NEW_LINE%
-@echo Generating class of System Service Interface in folder %PROJECT_ROOT%\%CODE_GEN% .....
-java com.aregtech.CMFMain --root=%PROJECT_ROOT% --doc=src\interfaces\System.siml --target=%CODE_GEN%
+rem @echo Generating class of HelloWorld Service Interface in folder %CODE_GEN% .....
+rem java com.aregtech.CMFMain --root=%PROJECT_ROOT% --doc=res\HelloWorld.siml --target=%CODE_GEN%
 
 @echo ......................................................
-%NEW_LINE%
-@echo Generating class of TrafficLight Service Interface in folder %PROJECT_ROOT%\%CODE_GEN% .....
-java com.aregtech.CMFMain --root=%PROJECT_ROOT% --doc=src\interfaces\TrafficLight.siml --target=%CODE_GEN%
-
-@echo ......................................................
-%NEW_LINE%
-rem @echo Generating class of DriectMessager Service Interface in folder %CODE_GEN% .....
-rem java com.aregtech.CMFMain --root=%PROJECT_ROOT% --doc=resources\DirectMessager.siml --target=%CODE_GEN%
-
-
-
-@echo ......................................................
-%NEW_LINE%
+echo:
 echo End of code generating
 
 pause

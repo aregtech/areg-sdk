@@ -18,24 +18,20 @@ include $(areg_BASE)/trace/private/Makefile
 
 areg_CXXFLAGS :=
 ifeq ($(AREG_BINARY), shared)
-	# TODO: need to verify fPIC on 'windows'
-	areg_CXXFLAGS += -fPIC
-	ifeq ($(AREG_OS), windows)
-		areg_CXXFLAGS += -DEXP_AREG_DLL
-	else
-		areg_CXXFLAGS += -DEXP_AREG_LIB
-	endif
+	areg_CXXFLAGS += -fPIC -DEXP_AREG_DLL
 	areg_TARGET_PATH := $(areg_OUTPUT_BIN)/$(AREG_LIB_PREFIX)$(areg_PROJECT_NAME)$(AREG_LIB_EXT)
 else
 	areg_CXXFLAGS += -DEXP_AREG_LIB
 	areg_TARGET_PATH := $(areg_OUTPUT_LIB)/$(AREG_LIB_PREFIX)$(areg_PROJECT_NAME)$(AREG_LIB_EXT)
 endif
 
-
 areg: $(areg_TARGET_PATH)
 
 # define one target for each source file
 $(foreach cpp, $(areg_SRC), $(eval $(call obj, $(cpp), $(areg_OUTPUT_OBJ), areg_OBJS, $(areg_CXXFLAGS))))
+
+DEPS = $(areg_OBJS:%.o=%.d)
+-include $(DEPS)
 
 $(areg_TARGET_PATH): $(areg_OBJS)
 	@echo "Linking $(areg_PROJECT_NAME) $(AREG_BINARY) library ..."

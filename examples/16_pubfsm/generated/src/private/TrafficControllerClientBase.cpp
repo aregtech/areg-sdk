@@ -3,14 +3,14 @@
 //////////////////////////////////////////////////////////////////////////
 /************************************************************************
  * (c) copyright    2021
+ *
+ * Generated at     30.09.2021  01:22:14 GMT+02:00 
  *                  Create by AREG SDK code generator tool from source TrafficController.
- * Generated at     15.08.2021  00:03:05 GMT+02:00 
- ************************************************************************/
-
-/************************************************************************
- * \file            generated/src/private/TrafficControllerClientBase.cpp
+ *
+ * \file            generated/src/TrafficControllerClientBase.hpp
  * \ingroup         TrafficController Service Interface
- * \brief           This is an automatic generated code of TrafficController Service Interface Client base class implementation.
+ * \brief           This is an automatic generated code of TrafficController
+ *                  Service Interface Client base class implementation.
  ************************************************************************/
 
 /************************************************************************
@@ -31,7 +31,7 @@ namespace NETrafficController
      **/
     typedef void (TrafficControllerClientBase::* FuncRequestFailure) ( NEService::eResultType );
 #ifdef  _DEBUG
-    static FuncRequestFailure failureFunctions = static_cast<FuncRequestFailure>(NULL);
+    static FuncRequestFailure failureFunctions = nullptr;
 #endif  // _DEBUG
 }
 
@@ -43,14 +43,13 @@ namespace NETrafficController
  * Constructor / Destructor
  ************************************************************************/
 
-TrafficControllerClientBase::TrafficControllerClientBase( const char * roleName, const char * ownerThread /*= static_cast<const char *>(NULL)*/ )
+TrafficControllerClientBase::TrafficControllerClientBase( const char * roleName, const char * ownerThread /*= nullptr*/ )
     : IEProxyListener   ( )
 
     , mIsConnected      ( false )
     , mCurrSequenceNr   ( 0 )
     , mProxy            ( TrafficControllerProxy::createProxy(roleName, static_cast<IEProxyListener &>(self()), ownerThread) )
 {
-    ; // do nothing
 }
 
 TrafficControllerClientBase::TrafficControllerClientBase( const char * roleName, DispatcherThread & ownerThread )
@@ -60,7 +59,6 @@ TrafficControllerClientBase::TrafficControllerClientBase( const char * roleName,
     , mCurrSequenceNr   ( 0 )
     , mProxy            ( TrafficControllerProxy::createProxy(roleName, static_cast<IEProxyListener &>(self()), ownerThread) )
 {
-    ; // do nothing
 }
 
 TrafficControllerClientBase::TrafficControllerClientBase( const char* roleName, Component & owner )
@@ -70,16 +68,15 @@ TrafficControllerClientBase::TrafficControllerClientBase( const char* roleName, 
     , mCurrSequenceNr   ( 0 )
     , mProxy            ( TrafficControllerProxy::createProxy(roleName, static_cast<IEProxyListener &>(self()), owner.getMasterThread()) )
 {
-    ; // do nothing
 }
 
 TrafficControllerClientBase::~TrafficControllerClientBase( void )
 {
-    if (mProxy != NULL)
+    if (mProxy != nullptr)
     {
         mProxy->clearAllNotifications( static_cast<IENotificationEventConsumer &>(self()) );
         mProxy->freeProxy( static_cast<IEProxyListener &>(self()) );
-        mProxy  = NULL;
+        mProxy  = nullptr;
     }
     
     mIsConnected= false;
@@ -92,14 +89,14 @@ TrafficControllerClientBase::~TrafficControllerClientBase( void )
 bool TrafficControllerClientBase::recreateProxy( void )
 {
     bool result         = false;
-    if (mProxy != NULL)
+    if (mProxy != nullptr)
     {
         String roleName   = mProxy->getProxyAddress().getRoleName();
         String threadName = mProxy->getProxyAddress().getThread();
         if ( roleName.isEmpty() == false )
         {
             TrafficControllerProxy * newProxy = TrafficControllerProxy::createProxy(roleName.getString(), static_cast<IEProxyListener &>(self()), threadName.getString());
-            if (newProxy != NULL)
+            if (newProxy != nullptr)
             {
                 mProxy->clearAllNotifications( static_cast<IENotificationEventConsumer &>(self()) );
                 mProxy->freeProxy (static_cast<IEProxyListener &>(self()) );
@@ -113,7 +110,7 @@ bool TrafficControllerClientBase::recreateProxy( void )
 
 DispatcherThread * TrafficControllerClientBase::getDispatcherThread( void )
 {
-    return ( mProxy != static_cast<TrafficControllerProxy *>(NULL) ? &(mProxy->getProxyDispatcherThread()) : static_cast<DispatcherThread *>(NULL) );
+    return ( mProxy != nullptr ? &(mProxy->getProxyDispatcherThread()) : nullptr );
 }
 
 DEF_TRACE_SCOPE(generated_src_TrafficControllerClientBase_serviceConnected);
@@ -159,9 +156,9 @@ void TrafficControllerClientBase::processNotificationEvent( NotificationEvent & 
 
     switch (result)
     {
-    case NEService::RESULT_REQUEST_BUSY:
-    case NEService::RESULT_REQUEST_ERROR:
-    case NEService::RESULT_REQUEST_CANCELED:
+    case NEService::eResultType::RequestBusy:       // fall through
+    case NEService::eResultType::RequestError:      // fall through
+    case NEService::eResultType::RequestCanceled:   // fall through
         {
         /************************************************************************
          * Trigger request error handling if request failed.
@@ -170,7 +167,7 @@ void TrafficControllerClientBase::processNotificationEvent( NotificationEvent & 
         }
         break;
 
-    case NEService::RESULT_INVALID:
+    case NEService::eResultType::RequestInvalid:
         {
         /************************************************************************
          * Trigger invalid response / broadcast handling. May happen when remove notification 
@@ -179,8 +176,8 @@ void TrafficControllerClientBase::processNotificationEvent( NotificationEvent & 
         }
         break;
 
-    case NEService::RESULT_DATA_OK:
-    case NEService::RESULT_DATA_INVALID:
+    case NEService::eResultType::DataOK:            // fall through
+    case NEService::eResultType::DataInvalid:
         {
             NEService::eDataStateType dataState;
             switch (msgId)
@@ -188,14 +185,14 @@ void TrafficControllerClientBase::processNotificationEvent( NotificationEvent & 
         /************************************************************************
          * Trigger attribute update processing
          ************************************************************************/
-            case NETrafficController::MSG_ID_TrafficSouthNorth:
+            case NETrafficController::eMessageIDs::MsgId_TrafficSouthNorth:
                 {
                     const NETrafficController::sTrafficLight & TrafficSouthNorth = mProxy->getTrafficSouthNorth(dataState);
                     onTrafficSouthNorthUpdate(TrafficSouthNorth, dataState);
                 }
                 break;
 
-            case NETrafficController::MSG_ID_TrafficEastWest:
+            case NETrafficController::eMessageIDs::MsgId_TrafficEastWest:
                 {
                     const NETrafficController::sTrafficLight & TrafficEastWest = mProxy->getTrafficEastWest(dataState);
                     onTrafficEastWestUpdate(TrafficEastWest, dataState);
@@ -215,7 +212,7 @@ void TrafficControllerClientBase::processNotificationEvent( NotificationEvent & 
         }
         break;
 
-    case NEService::RESULT_OK:
+    case NEService::eResultType::RequestOK:
         {
             switch (msgId)
             {
@@ -225,7 +222,7 @@ void TrafficControllerClientBase::processNotificationEvent( NotificationEvent & 
         /************************************************************************
          * Trigger broadcast processing
          ************************************************************************/
-            case NETrafficController::MSG_ID_broadcastSouthNorth:
+            case NETrafficController::eMessageIDs::MsgId_broadcastSouthNorth:
                 {
                     NETrafficController::eVehicleTrafficLight LightVehicle = mProxy->getParamLightVehicle();
                     NETrafficController::ePedestrianTrafficLight LightPedestrian = mProxy->getParamLightPedestrian();
@@ -233,7 +230,7 @@ void TrafficControllerClientBase::processNotificationEvent( NotificationEvent & 
                 }
                 break;
 
-            case NETrafficController::MSG_ID_broadcastEastWest:
+            case NETrafficController::eMessageIDs::MsgId_broadcastEastWest:
                 {
                     NETrafficController::eVehicleTrafficLight LightVehicle = mProxy->getParamLightVehicle();
                     NETrafficController::ePedestrianTrafficLight LightPedestrian = mProxy->getParamLightPedestrian();
@@ -303,7 +300,7 @@ void TrafficControllerClientBase::requestFailed( NETrafficController::eMessageID
                     , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString()
                     , NEService::getString(FailureReason) );
                     
-    ASSERT(NETrafficController::failureFunctions == NULL);
+    ASSERT(NETrafficController::failureFunctions == nullptr);
     invalidRequest( FailureMsgId );
 }
 
@@ -316,7 +313,7 @@ void TrafficControllerClientBase::onTrafficSouthNorthUpdate( const NETrafficCont
 {
     TRACE_SCOPE(generated_src_TrafficControllerClientBase_onTrafficSouthNorthUpdate);
     TRACE_WARN("The attribute TrafficSouthNorth (value = %u) update method of proxy [ %s ] client TrafficControllerClientBase is not implemented!"
-                    , static_cast<unsigned int>(NETrafficController::MSG_ID_TrafficSouthNorth)
+                    , static_cast<unsigned int>(NETrafficController::eMessageIDs::MsgId_TrafficSouthNorth)
                     , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString());
 }
 
@@ -325,7 +322,7 @@ void TrafficControllerClientBase::onTrafficEastWestUpdate( const NETrafficContro
 {
     TRACE_SCOPE(generated_src_TrafficControllerClientBase_onTrafficEastWestUpdate);
     TRACE_WARN("The attribute TrafficEastWest (value = %u) update method of proxy [ %s ] client TrafficControllerClientBase is not implemented!"
-                    , static_cast<unsigned int>(NETrafficController::MSG_ID_TrafficEastWest)
+                    , static_cast<unsigned int>(NETrafficController::eMessageIDs::MsgId_TrafficEastWest)
                     , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString());
 }
 
@@ -338,7 +335,7 @@ void TrafficControllerClientBase::broadcastSouthNorth( NETrafficController::eVeh
 {
     TRACE_SCOPE(generated_src_TrafficControllerClientBase_broadcastSouthNorth);
     TRACE_WARN("The broadcast broadcastSouthNorth (value = %u) method of proxy [ %s ] client TrafficControllerClientBase is not implemented!"
-                    , static_cast<unsigned int>(NETrafficController::MSG_ID_broadcastSouthNorth)
+                    , static_cast<unsigned int>(NETrafficController::eMessageIDs::MsgId_broadcastSouthNorth)
                     , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString());
 }
 
@@ -347,7 +344,7 @@ void TrafficControllerClientBase::broadcastEastWest( NETrafficController::eVehic
 {
     TRACE_SCOPE(generated_src_TrafficControllerClientBase_broadcastEastWest);
     TRACE_WARN("The broadcast broadcastEastWest (value = %u) method of proxy [ %s ] client TrafficControllerClientBase is not implemented!"
-                    , static_cast<unsigned int>(NETrafficController::MSG_ID_broadcastEastWest)
+                    , static_cast<unsigned int>(NETrafficController::eMessageIDs::MsgId_broadcastEastWest)
                     , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString());
 }
 

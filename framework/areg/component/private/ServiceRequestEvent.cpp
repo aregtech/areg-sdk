@@ -1,7 +1,15 @@
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/component/private/ServiceRequestEvent.cpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, Service Request Event implementation.
  *
  ************************************************************************/
@@ -31,24 +39,18 @@ ServiceRequestEvent::ServiceRequestEvent( const ProxyAddress & proxyAddress
     , mRequestType  (reqType)
     , mSequenceNr   (NEService::SEQUENCE_NUMBER_NOTIFY)
 {
-    ; // do nothing
 }
 
 ServiceRequestEvent::ServiceRequestEvent(const IEInStream & stream)
     : StubEvent     (stream)
     , mProxySource  (stream)
     , mMessageId    (NEService::INVALID_MESSAGE_ID)
-    , mRequestType  (NEService::REQUEST_UNPROCESSED)
+    , mRequestType  (NEService::eRequestType::Unprocessed)
     , mSequenceNr   (NEService::SEQUENCE_NUMBER_NOTIFY)
 {
     stream >> mMessageId;
     stream >> mRequestType;
     stream >> mSequenceNr;
-}
-
-ServiceRequestEvent::~ServiceRequestEvent( void )
-{
-    ; // do nothing
 }
 
 const IEInStream & ServiceRequestEvent::readStream(const IEInStream & stream)

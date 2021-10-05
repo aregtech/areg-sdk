@@ -1,9 +1,16 @@
-#ifndef AREG_COMPONENT_EVENTDATA_HPP
-#define AREG_COMPONENT_EVENTDATA_HPP
+#pragma once
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/component/EventData.hpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, Event Data object containing data to
  *              support request and response communication.
  *
@@ -47,9 +54,9 @@ public:
      *                  Data type will be set according of 
      *                  message ID type.
      * \param	name	Optional. Used to name data streaming object.
-     *                  Can be NULL if there is no need to name streaming object.
+     *                  Can be nullptr if there is no need to name streaming object.
      **/
-    EventData(unsigned int msgId, EventDataStream::eEventData dataType, const char* name = NULL);
+    EventData(unsigned int msgId, EventDataStream::eEventData dataType, const char* name = nullptr);
 
     /**
      * \brief	Constructor.
@@ -59,9 +66,9 @@ public:
      * \param	args	Streaming object containing serialized information
      *                  of parameters.
      * \param	name	Optional. Used to name data streaming object.
-     *                  Can be NULL if there is no need to name streaming object.
+     *                  Can be nullptr if there is no need to name streaming object.
      **/
-    EventData(unsigned int msgId, const EventDataStream & args, const char* name = NULL);
+    EventData(unsigned int msgId, const EventDataStream & args, const char* name = nullptr);
 
     /**
      * \brief   Copy constructor.
@@ -69,6 +76,12 @@ public:
      **/
     EventData(const EventData & src);
     
+    /**
+     * \brief   Move constructor.
+     * \param   src     The source of data to move.
+     **/
+    EventData( EventData && src ) noexcept;
+
     /**
      * \brief   Initialization constructor.
      *          Initializes object data from streaming object.
@@ -79,7 +92,7 @@ public:
     /**
      * \brief   Destructor.
      **/
-    ~EventData( void );
+    ~EventData( void ) = default;
 
 public:
 /************************************************************************/
@@ -90,7 +103,13 @@ public:
      * \brief   Copies event data from given source.
      * \param   src     The source of data to copy.
      **/
-    const EventData & operator = ( const EventData & src );
+    EventData & operator = ( const EventData & src );
+
+    /**
+     * \brief   Moves event data from given source.
+     * \param   src     The source of data to move.
+     **/
+    EventData & operator = ( EventData && src ) noexcept;
 
     /**
      * \brief	Friend global operator to initialize data from streaming.
@@ -174,5 +193,3 @@ inline const EventDataStream & EventData::getDataStream( void ) const
 {
     return mData;
 }
-
-#endif  // AREG_COMPONENT_EVENTDATA_HPP

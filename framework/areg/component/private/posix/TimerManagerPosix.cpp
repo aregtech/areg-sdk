@@ -1,7 +1,15 @@
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/component/private/TimerManagerWin.cpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, The System Timer Manager.
  *              Controlling, triggering and stopping timer.
  *              POSIX specific calls.
@@ -9,7 +17,7 @@
  ************************************************************************/
 #include "areg/component/private/TimerManager.hpp"
 
-#ifdef  _POSIX
+#if defined(_POSIX) || defined(POSIX)
 
 #include "areg/component/private/posix/TimerPosix.hpp"
 #include "areg/base/private/posix/SynchLockAndWaitIX.hpp"
@@ -20,23 +28,11 @@
 #include <time.h>
 #include <errno.h>
 
-DEF_TRACE_SCOPE(areg_component_private_posix_TimerManager__startSystemTimer);
+DEF_TRACE_SCOPE(areg_component_private_posix_TimerManager__createSystemTimer);
 DEF_TRACE_SCOPE(areg_component_private_posix_TimerManager__defaultPosixTimerExpiredRoutine);
 
-// Auto-reset, initially not signaled
-typedef struct S_PosixTimer
-{
-    timer_t     timerId;
-    Timer*      timerOwner;
-    uint32_t    timerTimeout;
-    uint32_t    timerPeriod;
-    time_t      timerDueSecs;
-    long        timerDueNs;
-    ITEM_ID     timerThreadId;
-} sPosixTimer;
-
 //////////////////////////////////////////////////////////////////////////
-//  Windows OS specific methods
+// Linux specific methods
 //////////////////////////////////////////////////////////////////////////
 
 TIMERHANDLE TimerManager::_createWaitableTimer( const char * /* timerName */ )
@@ -47,29 +43,30 @@ TIMERHANDLE TimerManager::_createWaitableTimer( const char * /* timerName */ )
 void TimerManager::_stopSystemTimer( TIMERHANDLE timerHandle )
 {
     TimerPosix * posixTimer = reinterpret_cast<TimerPosix *>(timerHandle);
-    if ( posixTimer != NULL )
+    if ( posixTimer != nullptr )
         posixTimer->stopTimer();
 }
 
 void TimerManager::_destroyWaitableTimer( TIMERHANDLE timerHandle, bool /* cancelTimer */ )
 {
     TimerPosix * posixTimer = reinterpret_cast<TimerPosix *>(timerHandle);
-    if ( posixTimer != NULL )
+    if ( posixTimer != nullptr )
     {
         posixTimer->destroyTimer();
         delete posixTimer;
     }
 }
 
-bool TimerManager::_startSystemTimer( TimerInfo & timerInfo, MapTimerTable & timerTable )
+bool TimerManager::_createSystemTimer( TimerInfo & timerInfo, MapTimerTable & timerTable )
 {
-    TRACE_SCOPE(areg_component_private_posix_TimerManager__startSystemTimer);
+    TRACE_SCOPE(areg_component_private_posix_TimerManager__createSystemTimer);
 
     bool result = false;
     TimerPosix * posixTimer   = reinterpret_cast<TimerPosix *>(timerInfo.getHandle());
     Timer * whichTimer        = timerInfo.getTimer();
-    if ((posixTimer != NULL) && (whichTimer != NULL))
+    if ((posixTimer != nullptr) && (whichTimer != nullptr))
     {
+    	ASSERT(posixTimer->mContext == nullptr);
         if (posixTimer->createTimer(&TimerManager::_defaultPosixTimerExpiredRoutine))
         {
             struct timespec ts;
@@ -86,7 +83,7 @@ bool TimerManager::_startSystemTimer( TimerInfo & timerInfo, MapTimerTable & tim
                                 , static_cast<id_type>(errno) );
 
                 result = false;
-                timerInfo.mTimerState   = TimerInfo::TimerIdle;
+                timerInfo.mTimerState   = TimerInfo::eTimerState::TimerIdle;
                 timerTable.updateObject( whichTimer, timerInfo );
             }
             else
@@ -101,6 +98,14 @@ bool TimerManager::_startSystemTimer( TimerInfo & timerInfo, MapTimerTable & tim
                             , posixTimer->getDueTime().tv_nsec- ts.tv_nsec);
             }
         }
+        else
+        {
+        	TRACE_ERR("Failed to create instance of POSIX system timer [ %s ]", whichTimer->getName().getString());
+        }
+    }
+    else
+    {
+    	TRACE_ERR("Either POSIX system [ %p ], or the timer [ %p ] object are null", posixTimer, whichTimer);
     }
 
     return result;
@@ -111,7 +116,9 @@ void TimerManager::_defaultPosixTimerExpiredRoutine( union sigval argSig )
     TRACE_SCOPE(areg_component_private_posix_TimerManager__defaultPosixTimerExpiredRoutine);
 
     TimerPosix * posixTimer = reinterpret_cast<TimerPosix *>(argSig.sival_ptr);
-    if (posixTimer != NULL && posixTimer->isValid())
+    Timer *timer = TimerManager::getInstance().mTimerResource.findResourceObject(reinterpret_cast<TIMERHANDLE>(posixTimer));
+
+    if ((timer != nullptr) && (posixTimer->isValid()))
     {
         TRACE_DBG("Timer [ %s ] expired at [ %u ] sec and [ %u ] ns, going to notify thread [ %u ]"
                         , posixTimer->mContext->getName().getString()
@@ -124,6 +131,10 @@ void TimerManager::_defaultPosixTimerExpiredRoutine( union sigval argSig )
         posixTimer->timerExpired();
         TimerManager::getInstance()._timerExpired(posixTimer->mContext, highValue, lowValue);
     }
+    else
+    {
+        TRACE_WARN("Ignore handling timer [ %p ], it is [ %s ]", posixTimer, timer == nullptr ? "NOT REGISTERED ANYMORE" : "ALREADY INVALID");
+    }
 }
 
-#endif // _POSIX
+#endif  // defined(_POSIX) || defined(POSIX)

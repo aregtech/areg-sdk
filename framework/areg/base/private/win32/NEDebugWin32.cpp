@@ -1,7 +1,15 @@
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/base/private/win32/NEDebugWin32.cpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, Windows OS specific implementation of Debugging utilities
  *
  ************************************************************************/
@@ -10,7 +18,7 @@
 #ifdef  _WINDOWS
 
 #include "areg/base/NEUtilities.hpp"
-#include "areg/base/EContainers.hpp"
+#include "areg/base/Containers.hpp"
 
 #include <windows.h>
 
@@ -32,29 +40,29 @@ void AREG_API NEDebug::outputMessageOS( const char * msg )
 #endif  // _DEBUG
 }
 
-void AREG_API NEDebug::dumpExceptionCallStack( struct _EXCEPTION_POINTERS *ep, StringList & out_callStack )
+void AREG_API NEDebug::dumpExceptionCallStack( struct _EXCEPTION_POINTERS *ep, std::list<std::string> & OUT out_callStack )
 {
 #ifdef  _DEBUG
 
-    static const char * const   _stackFormat            = "        %s:(%d): %s: %s";
-    static const char * const   _msgFileUnavailable     = "<File and line number not available>";
-    static const char * const   _msgFunctionUnavailable = "<Function name unavailable>";
-    static const char * const   _msgModuleUnavailable   = "<Module name unavailable>";
-    static const char * const   _msgCannotExtractSym    = "<Cannot extract symbols for current process>";
-    static const char * const   _msgUnknownMachine      = "<Unknown machine type>";
-    static const char * const   _msgIncompleteStack     = "Call Stack is incomplete....";
+    constexpr char  _stackFormat[]              { "        %s:(%d): %s: %s" };
+    constexpr char  _msgFileUnavailable[]       { "<File and line number not available>" };
+    constexpr char  _msgFunctionUnavailable[]   { "<Function name unavailable>" };
+    constexpr char  _msgModuleUnavailable[]     { "<Module name unavailable>" };
+    constexpr char  _msgCannotExtractSym[]      { "<Cannot extract symbols for current process>" };
+    constexpr char  _msgUnknownMachine[]        { "<Unknown machine type>" };
+    constexpr char  _msgIncompleteStack[]       { "Call Stack is incomplete...." };
 
-    static const unsigned int   _stackMaxDepth          = 64;
-    static const unsigned int   _symNameLength          = MAX_SYM_NAME;
-    static const unsigned int   _messageNameLength      = _symNameLength + MAX_PATH + 16;
-    static const unsigned int   _sizeOfSymInfo          = MACRO_ALIGN_SIZE( sizeof( SYMBOL_INFO ) + _symNameLength * sizeof( char ), sizeof( ULONG64 ) );
+    constexpr unsigned int   _stackMaxDepth     { 64 };
+    constexpr unsigned int   _symNameLength     { MAX_SYM_NAME };
+    constexpr unsigned int   _messageNameLength { _symNameLength + MAX_PATH + 16 };
+    constexpr unsigned int   _sizeOfSymInfo     { MACRO_ALIGN_SIZE( sizeof( SYMBOL_INFO ) + _symNameLength * sizeof( char ), sizeof( ULONG64 ) ) };
 
-    out_callStack.removeAll( );
+    out_callStack.clear();
 
     // Walk through the stack frames.
     HANDLE hProcess = GetCurrentProcess( );
     HANDLE hThread = GetCurrentThread( );
-    if ( ep != NULL && SymInitialize( hProcess, NULL, TRUE ) == TRUE )
+    if ( ep != nullptr && SymInitialize( hProcess, nullptr, TRUE ) == TRUE )
     {
         unsigned long machineType = IMAGE_FILE_MACHINE_UNKNOWN;
 #if defined(_X86_)
@@ -92,7 +100,7 @@ void AREG_API NEDebug::dumpExceptionCallStack( struct _EXCEPTION_POINTERS *ep, S
             PSYMBOL_INFO        symbolInfo  = reinterpret_cast<PSYMBOL_INFO>(symBuffer);
 
             unsigned int curDepth = 0;
-            while ( ::StackWalk64( machineType, hProcess, hThread, &frame, context, NULL, SymFunctionTableAccess64, SymGetModuleBase64, NULL ) == TRUE )
+            while ( ::StackWalk64( machineType, hProcess, hThread, &frame, context, nullptr, SymFunctionTableAccess64, SymGetModuleBase64, nullptr ) == TRUE )
             {
                 if ( frame.AddrFrame.Offset == 0 || ++ curDepth > _stackMaxDepth )
                     break;
@@ -125,23 +133,25 @@ void AREG_API NEDebug::dumpExceptionCallStack( struct _EXCEPTION_POINTERS *ep, S
                                     , hasFunction ? symbolInfo->Name     : _msgFunctionUnavailable
                                     , hasModule   ? moduleInfo.ImageName : _msgModuleUnavailable );
 
-                out_callStack.pushLast( message );
+                out_callStack.push_back( message );
 
             }
 
             if ( curDepth > _stackMaxDepth )
-                out_callStack.pushFirst( _msgIncompleteStack );
+            {
+                out_callStack.push_front( _msgIncompleteStack );
+            }
         }
         else
         {
-            out_callStack.pushLast( _msgUnknownMachine );
+            out_callStack.push_back( _msgUnknownMachine );
         }
 
         SymCleanup( hProcess );
     }
     else
     {
-        out_callStack.pushLast( _msgCannotExtractSym );
+        out_callStack.push_back( _msgCannotExtractSym );
     }
 #endif  // _DEBUG
 }

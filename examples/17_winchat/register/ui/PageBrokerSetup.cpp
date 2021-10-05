@@ -82,7 +82,7 @@ void PageBrokerSetup::OnBnClickedBrokerDisconnect( )
     if ( mIsConnected )
     {
         CPropertySheet * sheet = GetParentSheet();
-        if ( sheet != NULL )
+        if ( sheet != nullptr )
         {
             ::PostMessage(sheet->m_hWnd, NECentralApp::CmdServiceConnection, static_cast<WPARAM>(false), 0 );
         }
@@ -161,19 +161,19 @@ BOOL PageBrokerSetup::OnInitDialog( )
     CPropertyPage::OnInitDialog( );
 
     CButton * btnConnect = reinterpret_cast<CButton *>(GetDlgItem( IDC_BROKER_CONNECT ));
-    if (btnConnect != NULL )
+    if (btnConnect != nullptr )
         btnConnect->SetFocus();
   
     mCtrlAddress.SetAddress( 127, 0, 0, 1 );
     mCtrlPort.SetWindowText( _T( "8181" ) );
 
     ConnectionConfiguration config;
-    if ( config.loadConfiguration(NEApplication::DEFAULT_ROUTER_CONFIG_FILE) )
+    if ( config.loadConfiguration(NEApplication::DEFAULT_ROUTER_CONFIG_FILE.data()) )
     {
         unsigned char field0, field1, field2, field3;
-        if ( config.getConnectionHostIpAddress(field0, field1, field2, field3, NERemoteService::ConnectionTcpip) )
+        if ( config.getConnectionHostIpAddress(field0, field1, field2, field3, NERemoteService::eServiceConnection::ConnectionTcpip) )
         {
-            mBrokerPort = static_cast<USHORT>( config.getConnectionPort(NERemoteService::ConnectionTcpip) );
+            mBrokerPort = static_cast<USHORT>( config.getConnectionPort(NERemoteService::eServiceConnection::ConnectionTcpip) );
             CString port ( String::uint32ToString(mBrokerPort).getString() );
             mCtrlAddress.SetAddress(field0, field1, field2, field3);
             mCtrlPort.SetWindowText( port );
@@ -189,7 +189,7 @@ void PageBrokerSetup::OnDefaultClicked( void )
 {
     CButton * btnConnect = reinterpret_cast<CButton *>(GetDlgItem( IDC_BROKER_CONNECT ));
     CButton * btnDisconnect = reinterpret_cast<CButton *>(GetDlgItem( IDC_BROKER_DISCONNECT ));
-    if ( (btnConnect != NULL) && (btnDisconnect != NULL) )
+    if ( (btnConnect != nullptr) && (btnDisconnect != nullptr) )
     {
         if ( mDisconnectEnabled )
         {

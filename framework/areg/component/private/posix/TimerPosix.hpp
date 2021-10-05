@@ -1,9 +1,16 @@
-#ifndef AREG_COMPONENT_PRIVATE_TIMERPOSIX_HPP
-#define AREG_COMPONENT_PRIVATE_TIMERPOSIX_HPP
+#pragma once
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/component/private/posix/TimerPosix.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, POSIX specific timer information
  *
  ************************************************************************/
@@ -12,11 +19,11 @@
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
 
-#ifdef _POSIX
-#include "areg/base/private/posix/CriticalSectionIX.hpp"
+#if defined(_POSIX) || defined(POSIX)
+
 #include "areg/component/Timer.hpp"
+#include "areg/base/private/posix/SpinLockIX.hpp"
 #include <time.h>
-#include <signal.h>
 
 //////////////////////////////////////////////////////////////////////////
 // Dependency.
@@ -36,7 +43,7 @@ typedef void (*FuncPosixTimerRoutine)( union sigval );
 class TimerPosix
 {
 //////////////////////////////////////////////////////////////////////////
-// Friend class that can access protected members.
+// Friend class and constants
 //////////////////////////////////////////////////////////////////////////
     friend class TimerManager;
 
@@ -47,10 +54,10 @@ public:
     
     /**
      * \brief   Initializes the POSIX timer object. Sets context, timeout and period.
-     * \param   context         The timer context to set. If this value is NULL, the timer is invalid
+     * \param   context         The timer context to set. If this value is nullptr, the timer is invalid
      *                          and it will never start.
      * \param   timerRoutine    The pointer to timer routine to trigger when expired. If this value
-     *                          is NULL, the timer is not started.
+     *                          is nullptr, the timer is not started.
      * \param   msTimeout       Timeout in milliseconds when the timer should expire.
      * \param   period          The period count. The timer can be trigger either only on (value is 1),
      *                          or until period is not expired (value is any number),
@@ -175,6 +182,12 @@ private:
     inline bool _createTimer( FuncPosixTimerRoutine funcTimer );
 
     /**
+     * \brief	Initializes and starts the timer.
+     * \param	context	The pointer to Timer object as a timer context.
+     * \return	Returns true if timer succeeded to start.
+     **/
+    inline bool _startTimer( Timer * context );
+    /**
      * \brief   Starts the initialized timer.
      * \param   msTimeout   The timeout of timer is milliseconds.
      * \param   eventCount  The number of periods to trigger.
@@ -225,19 +238,18 @@ private:
     /**
      * \brief   The ID of thread where timer is started.
      */
-    ITEM_ID                 mThreadId;
+    id_type                 mThreadId;
 
     /**
      * \brief   Synchronization object.
      */
-    mutable CriticalSectionIX mLock;
+    mutable SpinLockIX      mLock;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls.
 //////////////////////////////////////////////////////////////////////////
 private:
-    TimerPosix( const TimerPosix & /*src*/ );
-    const TimerPosix & operator = ( const TimerPosix & /*src*/ );
+    DECLARE_NOCOPY_NOMOVE( TimerPosix );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -246,32 +258,32 @@ private:
 
 inline timer_t TimerPosix::getTimerId(void) const
 {
-    SpinLockIX lock(mLock);
+	SpinAutolockIX lock(mLock);
     return mTimerId;
 }
 
 inline Timer * TimerPosix::getContext(void) const
 {
-    SpinLockIX lock(mLock);
+	SpinAutolockIX lock(mLock);
     return mContext;
 }
 
 inline const timespec & TimerPosix::getDueTime(void) const
 {
-    SpinLockIX lock(mLock);
+	SpinAutolockIX lock(mLock);
     return mDueTime;
 }
 
 inline unsigned int TimerPosix::getRemainPeriod(void) const
 {
-    SpinLockIX lock(mLock);
+	SpinAutolockIX lock(mLock);
     return mContext->getEventCount();
 }
 
 inline bool TimerPosix::isValid(void) const
 {
-    SpinLockIX lock(mLock);
-    return ((mContext != NULL) && (mTimerId != 0));
+	SpinAutolockIX lock(mLock);
+    return ((mContext != nullptr) && (mTimerId != 0));
 }
 
 inline bool TimerPosix::_isStarted(void) const
@@ -279,5 +291,4 @@ inline bool TimerPosix::_isStarted(void) const
     return ((mDueTime.tv_sec != 0) || (mDueTime.tv_nsec != 0));
 }
 
-#endif  // _POSIX
-#endif  // AREG_COMPONENT_PRIVATE_TIMERPOSIX_HPP
+#endif  // defined(_POSIX) || defined(POSIX)

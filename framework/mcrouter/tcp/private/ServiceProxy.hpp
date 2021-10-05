@@ -1,9 +1,16 @@
-#ifndef MCROUTER_TCP_PRIVATE_SERVICEPROXY_HPP
-#define MCROUTER_TCP_PRIVATE_SERVICEPROXY_HPP
+#pragma once
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        mcrouter/tcp/private/ServiceProxy.hpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform Proxy Service object
  ************************************************************************/
 
@@ -40,18 +47,30 @@ public:
      * \brief   The remote proxy address to set in object
      * \param   addrProxy   The address of remote proxy object.
      **/
-    ServiceProxy( const ProxyAddress & addrProxy );
+    explicit ServiceProxy( const ProxyAddress & addrProxy );
 
     /**
-     * \brief   Copies data from given source
-     * \param   serviceProxy    The source object to copy data
+     * \brief   The remote proxy address to set in object
+     * \param   addrProxy   The address of remote proxy object.
      **/
-    ServiceProxy( const ServiceProxy & serviceProxy );
+    ServiceProxy( ProxyAddress && addrProxy ) noexcept;
+
+    /**
+     * \brief   Copies data from given source.
+     * \param   serviceProxy    The source object to copy data.
+     **/
+    explicit ServiceProxy( const ServiceProxy & serviceProxy );
+
+    /**
+     * \brief   Moves data from given source.
+     * \param   serviceProxy    The source object to move data.
+     **/
+    ServiceProxy( ServiceProxy && serviceProxy ) noexcept;
 
     /**
      * \brief   Destructor
      **/
-    ~ServiceProxy( void );
+    ~ServiceProxy( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
@@ -62,13 +81,25 @@ public:
      * \brief   Copies data from given source
      * \param   serviceProxy    The source of remote servicing data to copy
      **/
-    const ServiceProxy & operator = ( const ServiceProxy & serviceProxy );
+    ServiceProxy & operator = ( const ServiceProxy & serviceProxy );
+
+    /**
+     * \brief   Moves data from given source.
+     * \param   serviceProxy    The source of remote servicing data to move.
+     **/
+    ServiceProxy & operator = ( ServiceProxy && serviceProxy ) noexcept;
 
     /**
      * \brief   Copies remote servicing proxy address data from given source
      * \param   addrProxy   The address of remote proxy object to set in object.
      **/
-    const ServiceProxy & operator = ( const ProxyAddress & addrProxy );
+    ServiceProxy & operator = ( const ProxyAddress & addrProxy );
+
+    /**
+     * \brief   Moves remote servicing proxy address data from given source.
+     * \param   addrProxy   The address of remote proxy object to set in object.
+     **/
+    ServiceProxy & operator = ( ProxyAddress && addrProxy ) noexcept;
 
     /**
      * \brief   Checks equality of 2 service proxy objects.
@@ -157,7 +188,7 @@ private:
      * \param   addrProxy       The remote servicing proxy address to set.
      * \param   connectStatus   The connection status to update.
      **/
-    void _setService( const ProxyAddress & addrProxy, NEService::eServiceConnection connectStatus = NEService::ServicePending );
+    void _setService( const ProxyAddress & addrProxy, NEService::eServiceConnection connectStatus = NEService::eServiceConnection::ServicePending );
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -194,12 +225,10 @@ inline bool ServiceProxy::isValid(void) const
 
 inline bool ServiceProxy::isConnected( void ) const
 {
-    return ( mConnectStatus == NEService::ServiceConnected );
+    return ( mConnectStatus == NEService::eServiceConnection::ServiceConnected );
 }
 
 inline bool ServiceProxy::isWaiting( void ) const
 {
-    return ( mConnectStatus == NEService::ServicePending );
+    return ( mConnectStatus == NEService::eServiceConnection::ServicePending );
 }
-
-#endif  // MCROUTER_TCP_PRIVATE_SERVICEPROXY_HPP

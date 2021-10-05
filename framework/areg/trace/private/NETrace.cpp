@@ -1,7 +1,15 @@
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/trace/private/NETrace.cpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       NETrace namespace contains , structures and types.
  *
  ************************************************************************/
@@ -10,63 +18,57 @@
 #include "areg/base/Thread.hpp"
 #include "areg/base/DateTime.hpp"
 
-AREG_API const char * const     NETrace::PRIO_NOTSET_STR       = "NOTSET";
-AREG_API const char * const     NETrace::PRIO_FATAL_STR        = "FATAL";
-AREG_API const char * const     NETrace::PRIO_ERROR_STR        = "ERROR";
-AREG_API const char * const     NETrace::PRIO_WARNING_STR      = "WARN";
-AREG_API const char * const     NETrace::PRIO_INFO_STR         = "INFO";
-AREG_API const char * const     NETrace::PRIO_DEBUG_STR        = "DEBUG";
-AREG_API const char * const     NETrace::PRIO_SCOPE_STR        = "SCOPE";
-
+#include <string.h>
 
 AREG_API const char * NETrace::convToString( NETrace::eLogPriority prio )
 {
     switch ( prio )
     {
-    case NETrace::PrioNotset:
-        return NETrace::PRIO_NOTSET_STR;
-    case NETrace::PrioFatal:
-        return NETrace::PRIO_FATAL_STR;
-    case NETrace::PrioError:
-        return NETrace::PRIO_ERROR_STR;
-    case NETrace::PrioWarning:
-        return NETrace::PRIO_WARNING_STR;
-    case NETrace::PrioInfo:
-        return NETrace::PRIO_INFO_STR;
-    case NETrace::PrioDebug:
-        return NETrace::PRIO_DEBUG_STR;
-    case NETrace::PrioScope:
-        return NETrace::PRIO_SCOPE_STR;
-    case NETrace::PrioIgnore:
-    case NETrace::PrioIgnoreLayout:
-    case NETrace::PrioAny:
-        return "";
+    case NETrace::eLogPriority::PrioNotset:
+        return NETrace::PRIO_NOTSET_STR.data( );
+    case NETrace::eLogPriority::PrioFatal:
+        return NETrace::PRIO_FATAL_STR.data( );
+    case NETrace::eLogPriority::PrioError:
+        return NETrace::PRIO_ERROR_STR.data( );
+    case NETrace::eLogPriority::PrioWarning:
+        return NETrace::PRIO_WARNING_STR.data( );
+    case NETrace::eLogPriority::PrioInfo:
+        return NETrace::PRIO_INFO_STR.data( );
+    case NETrace::eLogPriority::PrioDebug:
+        return NETrace::PRIO_DEBUG_STR.data( );
+    case NETrace::eLogPriority::PrioScope:
+        return NETrace::PRIO_SCOPE_STR.data( );
+    case NETrace::eLogPriority::PrioIgnore:
+    case NETrace::eLogPriority::PrioIgnoreLayout:
+    case NETrace::eLogPriority::PrioAny:
+        return NETrace::PRIO_NO_PRIO.data( );
     default:
         ASSERT(false);
-        return "";
+        return NETrace::PRIO_NO_PRIO.data( );
     }
 }
 
 AREG_API NETrace::eLogPriority NETrace::convFromString( const char * strPrio )
 {
-    if ( strPrio != NULL && *strPrio != '\0' )
+    if ( NEString::isEmpty<char>(strPrio) == false )
     {
-        if ( NEString::compareIgnoreCase( strPrio, NETrace::PRIO_NOTSET_STR ) == 0 )
-            return NETrace::PrioNotset;
-        else if ( NEString::compareIgnoreCase(strPrio, NETrace::PRIO_SCOPE_STR ) == 0 )
-            return NETrace::PrioScope;
-        else if ( NEString::compareIgnoreCase(strPrio, NETrace::PRIO_DEBUG_STR ) == 0 )
-            return NETrace::PrioDebug;
-        else if ( NEString::compareIgnoreCase(strPrio, NETrace::PRIO_INFO_STR ) == 0 )
-            return NETrace::PrioInfo;
-        else if ( NEString::compareIgnoreCase(strPrio, NETrace::PRIO_WARNING_STR ) == 0 )
-            return NETrace::PrioWarning;
-        else if ( NEString::compareIgnoreCase(strPrio, NETrace::PRIO_ERROR_STR ) == 0 )
-            return NETrace::PrioError;
-        else if ( NEString::compareIgnoreCase(strPrio, NETrace::PRIO_FATAL_STR ) == 0 )
-            return NETrace::PrioFatal;
+        if ( NEString::compareIgnoreCase<char, char>( strPrio, NETrace::PRIO_NOTSET_STR.data( ) ) == 0 )
+            return NETrace::eLogPriority::PrioNotset;
+        else if ( NEString::compareIgnoreCase(strPrio, NETrace::PRIO_SCOPE_STR.data( ) ) == 0 )
+            return NETrace::eLogPriority::PrioScope;
+        else if ( NEString::compareIgnoreCase(strPrio, NETrace::PRIO_DEBUG_STR.data( ) ) == 0 )
+            return NETrace::eLogPriority::PrioDebug;
+        else if ( NEString::compareIgnoreCase(strPrio, NETrace::PRIO_INFO_STR.data( ) ) == 0 )
+            return NETrace::eLogPriority::PrioInfo;
+        else if ( NEString::compareIgnoreCase(strPrio, NETrace::PRIO_WARNING_STR.data( ) ) == 0 )
+            return NETrace::eLogPriority::PrioWarning;
+        else if ( NEString::compareIgnoreCase(strPrio, NETrace::PRIO_ERROR_STR.data( ) ) == 0 )
+            return NETrace::eLogPriority::PrioError;
+        else if ( NEString::compareIgnoreCase(strPrio, NETrace::PRIO_FATAL_STR.data( ) ) == 0 )
+            return NETrace::eLogPriority::PrioFatal;
     }
-    return NETrace::PrioNotset;
+
+    return NETrace::eLogPriority::PrioNotset;
 }
 
 
@@ -75,18 +77,16 @@ NETrace::S_LogHeader::S_LogHeader( NETrace::eLogType logType /*= NETrace::LogUnd
     , logType       ( logType )
     , logModuleId   ( 0 )
 {
-    ; // do nothing
 }
 
 NETrace::S_LogHeader::S_LogHeader(const NETrace::S_LogHeader & src)
-    : logLength     ( src.logLength )
-    , logType       ( src.logType )
-    , logModuleId   ( src.logModuleId )
+    : logLength     ( src.logLength     )
+    , logType       ( src.logType       )
+    , logModuleId   ( src.logModuleId   )
 {
-    ; // do nothing
 }
 
-void NETrace::S_LogHeader::operator = (const NETrace::S_LogHeader & src)
+NETrace::S_LogHeader & NETrace::S_LogHeader::operator = (const NETrace::S_LogHeader & src)
 {
     if ( static_cast<const NETrace::S_LogHeader *>(this) != &src )
     {
@@ -94,86 +94,106 @@ void NETrace::S_LogHeader::operator = (const NETrace::S_LogHeader & src)
         logType     = src.logType;
         logModuleId = src.logModuleId;
     }
+
+    return (*this);
 }
 
 NETrace::S_LogData::S_LogData(void)
-    : traceThreadId     ( Thread::getCurrentThreadId() )
-    , traceScopeId      ( NETrace::TRACE_SCOPE_ID_NONE )
-    , traceTimestamp    ( DateTime::getNow() )
-    , traceMessagePrio  ( NETrace::PrioNotset )
+    : traceThreadId     ( Thread::getCurrentThreadId()  )
+    , traceScopeId      ( NETrace::TRACE_SCOPE_ID_NONE  )
+    , traceTimestamp    ( DateTime::getNow()            )
+    , traceMessagePrio  ( NETrace::PrioNotset           )
+    , traceMessageLen   ( 0                             )
 {
     traceMessage[0] = String::EmptyChar;
 }
 
-NETrace::S_LogData::S_LogData(const S_LogData & src)
-    : traceThreadId     ( src.traceThreadId )
-    , traceScopeId      ( src.traceScopeId )
-    , traceTimestamp    ( src.traceTimestamp )
-    , traceMessagePrio  ( src.traceMessagePrio )
+NETrace::S_LogData::S_LogData(const S_LogData & source)
+    : traceThreadId     ( source.traceThreadId      )
+    , traceScopeId      ( source.traceScopeId       )
+    , traceTimestamp    ( source.traceTimestamp     )
+    , traceMessagePrio  ( source.traceMessagePrio   )
+    , traceMessageLen   ( source.traceMessageLen    )
 {
-    NEString::copyString<char, char>( traceMessage, NETrace::LOG_MESSAGE_BUFFER_SIZE, src.traceMessage );
+    int len = NEMemory::memCopy( traceMessage, NETrace::LOG_MESSAGE_BUFFER_SIZE - 1, source.traceMessage, source.traceMessageLen );
+    traceMessage[len] = String::EmptyChar;
 }
 
-NETrace::S_LogData::S_LogData(unsigned int scopeId, NETrace::eLogPriority msgPrio, const char * message /*= NULL */)
-    : traceThreadId     ( Thread::getCurrentThreadId() )
-    , traceScopeId      ( scopeId )
-    , traceTimestamp    ( DateTime::getNow() )
-    , traceMessagePrio  ( msgPrio )
+NETrace::S_LogData::S_LogData(unsigned int scopeId, NETrace::eLogPriority msgPrio, const char * message, unsigned int msgLen )
+    : traceThreadId     ( Thread::getCurrentThreadId()  )
+    , traceScopeId      ( scopeId                       )
+    , traceTimestamp    ( DateTime::getNow()            )
+    , traceMessagePrio  ( msgPrio                       )
+    , traceMessageLen   ( MACRO_MIN( LOG_MESSAGE_BUFFER_SIZE - 1, msgLen) )
 {
-    NEString::copyString<char, char>( traceMessage, NETrace::LOG_MESSAGE_BUFFER_SIZE, message != NULL ? message : String::EmptyString );
-}
-
-void NETrace::S_LogData::operator = (const S_LogData & src)
-{
-    if (static_cast<NETrace::S_LogData *>(this) != &src)
+    if ( (traceMessageLen != 0) && (message != nullptr) )
     {
-        traceThreadId   = src.traceThreadId;
-        traceScopeId    = src.traceScopeId;
-        traceTimestamp  = src.traceTimestamp;
-        traceMessagePrio= src.traceMessagePrio;
-        NEString::copyString<char, char>( traceMessage, NETrace::LOG_MESSAGE_BUFFER_SIZE, src.traceMessage );
+        int len = NEMemory::memCopy( traceMessage, NETrace::LOG_MESSAGE_BUFFER_SIZE - 1, message, msgLen );
+        traceMessageLen     = len;
+        traceMessage[len]   = String::EmptyChar;
     }
+    else
+    {
+        traceMessage[0] = String::EmptyChar;
+        traceMessageLen = 0;
+    }
+}
+
+NETrace::S_LogData & NETrace::S_LogData::operator = (const NETrace::S_LogData & source )
+{
+    if (static_cast<NETrace::S_LogData *>(this) != &source )
+    {
+        traceThreadId   = source.traceThreadId;
+        traceScopeId    = source.traceScopeId;
+        traceTimestamp  = source.traceTimestamp;
+        traceMessagePrio= source.traceMessagePrio;
+        traceMessageLen = source.traceMessageLen;
+
+        int len = NEMemory::memCopy( traceMessage, LOG_MESSAGE_BUFFER_SIZE - 1, source.traceMessage, source.traceMessageLen );
+        traceMessageLen     = len;
+        traceMessage[len]   = String::EmptyChar;
+    }
+
+    return (*this);
 }
 
 NETrace::S_LogMessage::S_LogMessage(void)
     : lmHeader  ( NETrace::LogUndefined )
     , lmTrace   ( )
 {
-    ; // do nothing
 }
 
 NETrace::S_LogMessage::S_LogMessage(const NETrace::S_LogMessage & src)
     : lmHeader  ( src.lmHeader )
     , lmTrace   ( src.lmTrace )
 {
-    ; // do nothing
 }
 
 NETrace::S_LogMessage::S_LogMessage(NETrace::eLogType logType)
     : lmHeader  ( logType )
     , lmTrace   ( )
 {
-    ; // do nothing
 }
 
-NETrace::S_LogMessage::S_LogMessage(NETrace::eLogType logType, unsigned int scopeId, NETrace::eLogPriority msgPrio, const char * message /*= NULL */)
+NETrace::S_LogMessage::S_LogMessage(NETrace::eLogType logType, unsigned int scopeId, NETrace::eLogPriority msgPrio, const char * message, unsigned int msgLen )
     : lmHeader  ( logType )
-    , lmTrace   ( scopeId, msgPrio, message )
+    , lmTrace   ( scopeId, msgPrio, message, msgLen )
 {
-    ; // do nothing
 }
 
 
-void NETrace::S_LogMessage::operator = (const S_LogMessage & src)
+NETrace::S_LogMessage & NETrace::S_LogMessage::operator = (const NETrace::S_LogMessage & src)
 {
     if ( static_cast<const NETrace::S_LogMessage *>(this) != &src )
     {
         lmHeader= src.lmHeader;
         lmTrace = src.lmTrace;
     }
+
+    return (*this);
 }
 
-AREG_API bool NETrace::startLogging(const char * fileConfig /*= NULL */ )
+AREG_API bool NETrace::startLogging(const char * fileConfig /*= nullptr */ )
 {
     return TraceManager::startLogging(fileConfig);
 }
@@ -213,12 +233,12 @@ AREG_API bool NETrace::forceStartLogging(void)
     return TraceManager::forceActivateLogging();
 }
 
-AREG_API bool NETrace::configAndStart(const char * fileConfig /*= NULL */)
+AREG_API bool NETrace::configAndStart(const char * fileConfig /*= nullptr */)
 {
     if (TraceManager::configureLogging(fileConfig))
     {
         TraceManager::forceEnableLogging();
-        return TraceManager::startLogging(NULL);
+        return TraceManager::startLogging(nullptr);
     }
     else
     {

@@ -3,14 +3,14 @@
 //////////////////////////////////////////////////////////////////////////
 /************************************************************************
  * (c) copyright    2021
+ *
+ * Generated at     30.09.2021  01:22:15 GMT+02:00 
  *                  Create by AREG SDK code generator tool from source DirectConnection.
- * Generated at     04.07.2021  04:30:02 GMT+02:00 
- ************************************************************************/
-
-/************************************************************************
- * \file            generated/private/DirectConnectionStub.cpp
+ *
+ * \file            generated/DirectConnectionStub.hpp
  * \ingroup         DirectConnection Service Interface
- * \brief           This is an automatic generated code of DirectConnection Service Interface Stub class implementation.
+ * \brief           This is an automatic generated code of DirectConnection
+ *                  Service Interface Stub class implementation.
  ************************************************************************/
 
 /************************************************************************
@@ -34,15 +34,9 @@ DirectConnectionStub::DirectConnectionStub( Component & masterComp )
     : StubBase    ( masterComp, NEDirectConnection::getInterfaceData() )
     
     , mInitiatedConnections       (  )
-    , mInitiatedConnectionsState  ( NEService::DATA_UNAVAILABLE )
+    , mInitiatedConnectionsState  ( NEService::eDataStateType::DataIsUnavailable )
     
 {
-    ; // do nothing
-}
-
-DirectConnectionStub::~DirectConnectionStub( void )
-{
-    ; // do nothing
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -58,10 +52,10 @@ void DirectConnectionStub::unlockAllRequests( void )
 // Overrides
 //////////////////////////////////////////////////////////////////////////
 
-DEF_TRACE_SCOPE(GENERATED_DirectConnectionStub_startupServiceInterface);
+DEF_TRACE_SCOPE(generated_DirectConnectionStub_startupServiceInterface);
 void DirectConnectionStub::startupServiceInterface( Component & holder )
 {
-    TRACE_SCOPE(GENERATED_DirectConnectionStub_startupServiceInterface);
+    TRACE_SCOPE(generated_DirectConnectionStub_startupServiceInterface);
     
     DirectConnectionRequestEvent::addListener( static_cast<IEEventConsumer &>(self()), Thread::getCurrentThreadName() );
     DirectConnectionNotifyRequestEvent::addListener( static_cast<IEEventConsumer &>(self()), Thread::getCurrentThreadName() );
@@ -70,10 +64,10 @@ void DirectConnectionStub::startupServiceInterface( Component & holder )
     TRACE_DBG("The Stub Service [ %s ] of component with role name [ %s ] has been started and is available ...", mAddress.getServiceName().getString(), mAddress.getRoleName().getString());
 }
 
-DEF_TRACE_SCOPE(GENERATED_DirectConnectionStub_shutdownServiceIntrface);
+DEF_TRACE_SCOPE(generated_DirectConnectionStub_shutdownServiceIntrface);
 void DirectConnectionStub::shutdownServiceIntrface( Component & holder )
 {
-    TRACE_SCOPE(GENERATED_DirectConnectionStub_shutdownServiceIntrface);
+    TRACE_SCOPE(generated_DirectConnectionStub_shutdownServiceIntrface);
     TRACE_DBG("The Stub Service [ %s ] of component with role name [ %s ] is shutting down and not available anymore ...", mAddress.getServiceName().getString(), mAddress.getRoleName().getString());
     
     DirectConnectionRequestEvent::removeListener( static_cast<IEEventConsumer &>(self()), Thread::getCurrentThreadName() );
@@ -96,23 +90,23 @@ RemoteNotifyRequestEvent * DirectConnectionStub::createRemoteNotifyRequestEvent(
     return static_cast<RemoteNotifyRequestEvent *>( DEBUG_NEW DirectConnectionNotifyRequestEvent(stream) );
 }
 
-DEF_TRACE_SCOPE(GENERATED_DirectConnectionStub_sendNotification);
+DEF_TRACE_SCOPE(generated_DirectConnectionStub_sendNotification);
 void DirectConnectionStub::sendNotification( unsigned int msgId )
 {
-    EventDataStream args(EventDataStream::EventDataExternal);
+    EventDataStream args(EventDataStream::eEventData::EventDataExternal);
     IEOutStream & stream = args.getStreamForWrite();
 
     switch ( static_cast<NEDirectConnection::eMessageIDs>(msgId) )
     {
-    case NEDirectConnection::MSG_ID_InitiatedConnections:
-        mInitiatedConnectionsState = NEService::DATA_OK;
+    case NEDirectConnection::eMessageIDs::MsgId_InitiatedConnections:
+        mInitiatedConnectionsState = NEService::eDataStateType::DataIsOK;
         stream << mInitiatedConnections;
-        sendUpdateEvent(msgId, args, NEService::RESULT_DATA_OK);
+        sendUpdateEvent(msgId, args, NEService::eResultType::DataOK);
         break;
 
     default:
         {
-            TRACE_SCOPE(GENERATED_DirectConnectionStub_sendNotification);
+            TRACE_SCOPE(generated_DirectConnectionStub_sendNotification);
             TRACE_ERR("Unexpected attribute ID [ %d ] requested to send by Stub [ %s ].", msgId, StubAddress::convAddressToPath(mAddress).getString());
             ASSERT(false);
         }
@@ -120,43 +114,43 @@ void DirectConnectionStub::sendNotification( unsigned int msgId )
     }
 }
 
-DEF_TRACE_SCOPE(GENERATED_DirectConnectionStub_errorRequest);
+DEF_TRACE_SCOPE(generated_DirectConnectionStub_errorRequest);
 void DirectConnectionStub::errorRequest( unsigned int msgId, bool msgCancel )
 {
-    NEService::eResultType result = NEService::RESULT_NOT_PROCESSED;
-    unsigned int listenerId = static_cast<unsigned int>(msgId);
+    NEService::eResultType result = NEService::eResultType::NotProcessed;
+    msg_id listenerId = msgId;
     
     switch ( static_cast<NEDirectConnection::eMessageIDs>(msgId) )
     {
 /************************************************************************
  * Attribute errors
  ************************************************************************/
-    case NEDirectConnection::MSG_ID_InitiatedConnections:
-        mInitiatedConnectionsState = NEService::DATA_INVALID;
-        result = NEService::RESULT_DATA_INVALID;
+    case NEDirectConnection::eMessageIDs::MsgId_InitiatedConnections:
+        mInitiatedConnectionsState = NEService::eDataStateType::DataIsInvalid;
+        result = NEService::eResultType::DataInvalid;
         break;
 
 /************************************************************************
  * Response errors
  ************************************************************************/
-    case NEDirectConnection::MSG_ID_responseConnectoinSetup:
-    case NEDirectConnection::MSG_ID_responseAddParticipant:
-    case NEDirectConnection::MSG_ID_responseRemoveParticipant:
+    case NEDirectConnection::eMessageIDs::MsgId_responseConnectoinSetup:
+    case NEDirectConnection::eMessageIDs::MsgId_responseAddParticipant:
+    case NEDirectConnection::eMessageIDs::MsgId_responseRemoveParticipant:
 /************************************************************************
  * Broadcast errors
  ************************************************************************/
-        result = NEService::RESULT_INVALID;
+        result = NEService::eResultType::DataInvalid;
         break;
 
 /************************************************************************
  * Request errors
  ************************************************************************/
-    case NEDirectConnection::MSG_ID_requestConnectoinSetup:
-    case NEDirectConnection::MSG_ID_requestAddParticipant:
-    case NEDirectConnection::MSG_ID_requestRemoveParticipant:
-    case NEDirectConnection::MSG_ID_requestCloseConnection:
-        listenerId = NEDirectConnection::getResponseId(static_cast< NEDirectConnection::eMessageIDs>(msgId));
-        result = msgCancel ? NEService::RESULT_REQUEST_CANCELED : NEService::RESULT_REQUEST_ERROR;
+    case NEDirectConnection::eMessageIDs::MsgId_requestConnectoinSetup:
+    case NEDirectConnection::eMessageIDs::MsgId_requestAddParticipant:
+    case NEDirectConnection::eMessageIDs::MsgId_requestRemoveParticipant:
+    case NEDirectConnection::eMessageIDs::MsgId_requestCloseConnection:
+        listenerId = static_cast<msg_id>(NEDirectConnection::getResponseId(static_cast< NEDirectConnection::eMessageIDs>(msgId)));
+        result = msgCancel ? NEService::eResultType::RequestCanceled : NEService::eResultType::RequestError;
         break;
 
     default:
@@ -168,7 +162,7 @@ void DirectConnectionStub::errorRequest( unsigned int msgId, bool msgCancel )
     StubBase::StubListenerList listeners;
     if ( findListeners(listenerId, listeners) > 0 )
     {
-        TRACE_SCOPE(GENERATED_DirectConnectionStub_errorRequest);
+        TRACE_SCOPE(generated_DirectConnectionStub_errorRequest);
         TRACE_WARN(" >>> The message [ %s ] of Stub [ %s ] is responding with error [ %s ], sending message [ %s ] to [ %d ] targets... <<<"
                         , NEDirectConnection::getString( static_cast<NEDirectConnection::eMessageIDs>(msgId) )
                         , StubAddress::convAddressToPath(mAddress).getString()
@@ -186,10 +180,10 @@ void DirectConnectionStub::errorRequest( unsigned int msgId, bool msgCancel )
 
 void DirectConnectionStub::setInitiatedConnections( const NEDirectConnection::MapParticipants & newValue )
 {
-    if ( (mInitiatedConnectionsState != NEService::DATA_OK) || (mInitiatedConnections != newValue) )
+    if ( (mInitiatedConnectionsState != NEService::eDataStateType::DataIsOK) || (mInitiatedConnections != newValue) )
     {
         mInitiatedConnections = newValue;
-        sendNotification( NEDirectConnection::MSG_ID_InitiatedConnections );
+        sendNotification( static_cast<msg_id>(NEDirectConnection::eMessageIDs::MsgId_InitiatedConnections) );
     }
 }
 
@@ -199,34 +193,34 @@ void DirectConnectionStub::setInitiatedConnections( const NEDirectConnection::Ma
 
 void DirectConnectionStub::responseConnectoinSetup( bool succeeded, const NEDirectConnection::sParticipant & target, const NEDirectConnection::sInitiator & initiator, const NEDirectConnection::ListParticipants & listParticipants )
 {
-    static const NEDirectConnection::eMessageIDs msgId = NEDirectConnection::MSG_ID_responseConnectoinSetup;
-    EventDataStream args(EventDataStream::EventDataExternal);
+    static const NEDirectConnection::eMessageIDs msgId = NEDirectConnection::eMessageIDs::MsgId_responseConnectoinSetup;
+    EventDataStream args(EventDataStream::eEventData::EventDataExternal);
     IEOutStream & stream = args.getStreamForWrite();
     stream << succeeded;
     stream << target;
     stream << initiator;
     stream << listParticipants;
-    sendResponseEvent( msgId, args );
+    sendResponseEvent( static_cast<msg_id>(msgId), args );
 }
 
 void DirectConnectionStub::responseAddParticipant( bool succeeded, const NEDirectConnection::ListParticipants & listParticipants )
 {
-    static const NEDirectConnection::eMessageIDs msgId = NEDirectConnection::MSG_ID_responseAddParticipant;
-    EventDataStream args(EventDataStream::EventDataExternal);
+    static const NEDirectConnection::eMessageIDs msgId = NEDirectConnection::eMessageIDs::MsgId_responseAddParticipant;
+    EventDataStream args(EventDataStream::eEventData::EventDataExternal);
     IEOutStream & stream = args.getStreamForWrite();
     stream << succeeded;
     stream << listParticipants;
-    sendResponseEvent( msgId, args );
+    sendResponseEvent( static_cast<msg_id>(msgId), args );
 }
 
 void DirectConnectionStub::responseRemoveParticipant( bool succeeded, const NEDirectConnection::ListParticipants & listParticipants )
 {
-    static const NEDirectConnection::eMessageIDs msgId = NEDirectConnection::MSG_ID_responseRemoveParticipant;
-    EventDataStream args(EventDataStream::EventDataExternal);
+    static const NEDirectConnection::eMessageIDs msgId = NEDirectConnection::eMessageIDs::MsgId_responseRemoveParticipant;
+    EventDataStream args(EventDataStream::eEventData::EventDataExternal);
     IEOutStream & stream = args.getStreamForWrite();
     stream << succeeded;
     stream << listParticipants;
-    sendResponseEvent( msgId, args );
+    sendResponseEvent( static_cast<msg_id>(msgId), args );
 }
 
 /************************************************************************
@@ -237,23 +231,23 @@ void DirectConnectionStub::responseRemoveParticipant( bool succeeded, const NEDi
  * Process messages
  ************************************************************************/
 
-DEF_TRACE_SCOPE(GENERATED_DirectConnectionStub_processRequestEvent);
+DEF_TRACE_SCOPE(generated_DirectConnectionStub_processRequestEvent);
 void DirectConnectionStub::processRequestEvent( ServiceRequestEvent & eventElem )
 {
     ASSERT( NEService::isRequestId(eventElem.getRequestId()) );
     DirectConnectionRequestEvent * reqEvent = RUNTIME_CAST(&eventElem, DirectConnectionRequestEvent);
 
-    if ( (reqEvent != static_cast<DirectConnectionRequestEvent *>(NULL)) && (reqEvent->getRequestType() == NEService::REQUEST_CALL) )
+    if ( (reqEvent != nullptr) && (reqEvent->getRequestType() == NEService::eRequestType::CallFunction) )
     {
-        unsigned int reqId          = reqEvent->getRequestId();
+        msg_id reqId = static_cast<msg_id>(reqEvent->getRequestId());
         const IEInStream & stream  = static_cast<const DirectConnectionRequestEvent *>(reqEvent)->getData().getReadStream();
         StubBase::Listener listener( reqId, 0, reqEvent->getEventSource() );
         NEDirectConnection::eMessageIDs respId = NEDirectConnection::getResponseId(static_cast<NEDirectConnection::eMessageIDs>(reqId));
 
         switch ( static_cast<NEDirectConnection::eMessageIDs>(reqId) )
         {
-        case NEDirectConnection::MSG_ID_requestConnectoinSetup:
-            if ( canExecuteRequest(listener, respId, reqEvent->getSequenceNumber()) )
+        case NEDirectConnection::eMessageIDs::MsgId_requestConnectoinSetup:
+            if ( canExecuteRequest(listener, static_cast<msg_id>(respId), reqEvent->getSequenceNumber()) )
             {
                 NEDirectConnection::sInitiator          initiator;
                 NEDirectConnection::ListParticipants    listParticipants;
@@ -263,8 +257,8 @@ void DirectConnectionStub::processRequestEvent( ServiceRequestEvent & eventElem 
             }
             break;
             
-        case NEDirectConnection::MSG_ID_requestAddParticipant:
-            if ( canExecuteRequest(listener, respId, reqEvent->getSequenceNumber()) )
+        case NEDirectConnection::eMessageIDs::MsgId_requestAddParticipant:
+            if ( canExecuteRequest(listener, static_cast<msg_id>(respId), reqEvent->getSequenceNumber()) )
             {
                 NEDirectConnection::sInitiator          initiator;
                 NEDirectConnection::ListParticipants    listParticipants;
@@ -274,8 +268,8 @@ void DirectConnectionStub::processRequestEvent( ServiceRequestEvent & eventElem 
             }
             break;
             
-        case NEDirectConnection::MSG_ID_requestRemoveParticipant:
-            if ( canExecuteRequest(listener, respId, reqEvent->getSequenceNumber()) )
+        case NEDirectConnection::eMessageIDs::MsgId_requestRemoveParticipant:
+            if ( canExecuteRequest(listener, static_cast<msg_id>(respId), reqEvent->getSequenceNumber()) )
             {
                 NEDirectConnection::sInitiator          initiator;
                 NEDirectConnection::ListParticipants    listParticipants;
@@ -285,7 +279,7 @@ void DirectConnectionStub::processRequestEvent( ServiceRequestEvent & eventElem 
             }
             break;
             
-        case NEDirectConnection::MSG_ID_requestCloseConnection:
+        case NEDirectConnection::eMessageIDs::MsgId_requestCloseConnection:
             if ( true )
             {
                 NEDirectConnection::sInitiator  initiator;
@@ -296,7 +290,7 @@ void DirectConnectionStub::processRequestEvent( ServiceRequestEvent & eventElem 
             
         default:
             {
-                TRACE_SCOPE(GENERATED_DirectConnectionStub_processRequestEvent);
+                TRACE_SCOPE(generated_DirectConnectionStub_processRequestEvent);
                 TRACE_ERR("Unexpected request ID [ %d ] to process in Stub [ %s ]!", reqId, StubAddress::convAddressToPath(mAddress).getString());
                 ASSERT(false);
             }
@@ -307,11 +301,11 @@ void DirectConnectionStub::processRequestEvent( ServiceRequestEvent & eventElem 
     cancelCurrentRequest();
 }
 
-DEF_TRACE_SCOPE(GENERATED_DirectConnectionStub_processAttributeEvent);
+DEF_TRACE_SCOPE(generated_DirectConnectionStub_processAttributeEvent);
 void DirectConnectionStub::processAttributeEvent( ServiceRequestEvent & eventElem )
 {
     const NEService::eRequestType reqType = eventElem.getRequestType();
-    if (reqType == NEService::REQUEST_REMOVE_ALL_NOTIFY)
+    if (reqType == NEService::eRequestType::RemoveAllNotify)
     {
         IntegerArray removedIds;
         StubBase::clearAllListeners(eventElem.getEventSource(), removedIds);
@@ -319,52 +313,52 @@ void DirectConnectionStub::processAttributeEvent( ServiceRequestEvent & eventEle
     else
     {
         NEDirectConnection::eMessageIDs updId  = static_cast<NEDirectConnection::eMessageIDs>(eventElem.getRequestId());
-        if (reqType == NEService::REQUEST_STOP_NOTIFY)
+        if (reqType == NEService::eRequestType::StopNotify)
         {
-            removeNotificationListener( static_cast<unsigned int>(updId), eventElem.getEventSource() );
+            removeNotificationListener( static_cast<msg_id>(updId), eventElem.getEventSource() );
         }
-        else if (reqType == NEService::REQUEST_START_NOTIFY)
+        else if (reqType == NEService::eRequestType::StartNotify)
         {
 #ifdef  _DEBUG
-            if (addNotificationListener( static_cast<unsigned int>(updId), eventElem.getEventSource() ) == false )
+            if (addNotificationListener( static_cast<msg_id>(updId), eventElem.getEventSource() ) == false )
             {
-                TRACE_SCOPE(GENERATED_DirectConnectionStub_processAttributeEvent);
+                TRACE_SCOPE(generated_DirectConnectionStub_processAttributeEvent);
                 TRACE_WARN("The notification request of message ID [ %s ] of sources [ %s ] is already registered. Ignoring start notification registration request."
                             , NEDirectConnection::getString(updId)
                             , ProxyAddress::convAddressToPath(eventElem.getEventSource()).getString());
             }
 #else   // _DEBUG
-            addNotificationListener( static_cast<unsigned int>(updId), eventElem.getEventSource() );
+            addNotificationListener( static_cast<msg_id>(updId), eventElem.getEventSource() );
 #endif  // _DEBUG
-            EventDataStream args(EventDataStream::EventDataExternal);
-            NEService::eResultType validUpdate = NEService::RESULT_DATA_OK;
+            EventDataStream args(EventDataStream::eEventData::EventDataExternal);
+            NEService::eResultType validUpdate = NEService::eResultType::DataOK;
             IEOutStream & stream               = args.getStreamForWrite();
 
             switch (updId)
             {
-            case NEDirectConnection::MSG_ID_InitiatedConnections:
-                if ( mInitiatedConnectionsState == NEService::DATA_OK )
+            case NEDirectConnection::eMessageIDs::MsgId_InitiatedConnections:
+                if ( mInitiatedConnectionsState == NEService::eDataStateType::DataIsOK )
                     stream << mInitiatedConnections;
                 else
-                    validUpdate = NEService::RESULT_DATA_INVALID;
+                    validUpdate = NEService::eResultType::DataInvalid;
                 break;
 
             default:
 #ifdef  _DEBUG
-                if ( NEService::isResponseId(static_cast<unsigned int>(updId)) == false )
+                if ( NEService::isResponseId(static_cast<msg_id>(updId)) == false )
                 {
-                    TRACE_SCOPE(GENERATED_DirectConnectionStub_processAttributeEvent);
+                    TRACE_SCOPE(generated_DirectConnectionStub_processAttributeEvent);
                     TRACE_ERR("Unexpected notification request of attribute ID [ %d ] received in Stub [ %s ]!", updId, StubAddress::convAddressToPath(getAddress()).getString());
                     ASSERT(false);
                 }
 #endif // _DEBUG
-                validUpdate = NEService::RESULT_DATA_INVALID;
-                updId       = NEDirectConnection::MSG_ID_NO_PROCEED;
+                validUpdate = NEService::eResultType::DataInvalid;
+                updId       = NEDirectConnection::eMessageIDs::MsgId_NotProcessed;
                 break;
             }
 
-            if (updId != NEDirectConnection::MSG_ID_NO_PROCEED)
-                sendUpdateEvent( static_cast<unsigned int>(updId), args, validUpdate );
+            if (updId != NEDirectConnection::eMessageIDs::MsgId_NotProcessed)
+                sendUpdateEvent( static_cast<msg_id>(updId), args, validUpdate );
         }
     }
 }

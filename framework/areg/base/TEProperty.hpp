@@ -1,9 +1,16 @@
-#ifndef AREG_BASE_TEPROPERTY_HPP
-#define AREG_BASE_TEPROPERTY_HPP
+#pragma once
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/base/TEProperty.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, FIFO Stack base class templates.
  ************************************************************************/
 /************************************************************************
@@ -32,7 +39,7 @@ public:
     /**
      * \brief   Default constructor
      **/
-    TEProperty( void );
+    TEProperty( void ) = default;
 
     /**
      * \brief   Initializes key and value pairs
@@ -45,12 +52,18 @@ public:
      * \brief   Copy constructor.
      * \param   src     The source to copy data.
      **/
-    TEProperty( const TEProperty<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement> & src );
+    TEProperty( const TEProperty<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement> & src ) = default;
+
+    /**
+     * \brief   Move constructor.
+     * \param   src     The source to move data.
+     **/
+    TEProperty( TEProperty<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement> && src )  noexcept = default;
 
     /**
      * \brief   Destructor
      **/
-    ~TEProperty( void );
+    ~TEProperty( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
@@ -59,7 +72,12 @@ public:
     /**
      * \brief   Assignment operator. Copies data from given source.
      */
-    const TEProperty<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement> & operator = (const TEProperty<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement> & src);
+    TEProperty<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement> & operator = (const TEProperty<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement> & src) = default;
+
+    /**
+     * \brief   Move operator. Moves data from given source.
+     */
+    TEProperty<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement> & operator = ( TEProperty<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement> && src ) noexcept = default;
 
     /**
      * \brief	Checks equality of 2 property objects, and returns true if they are equal.
@@ -83,29 +101,9 @@ public:
 //////////////////////////////////////////////////////////////////////////
 
 template <typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename VALUE_TYPE /*= VALUE*/, class Implement /* = TEPairImpl<KEY_TYPE, VALUE_TYPE> */>
-TEProperty<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::TEProperty( void )
-    : TEPair<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement> ( )
-{   ;   }
-
-template <typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename VALUE_TYPE /*= VALUE*/, class Implement /* = TEPairImpl<KEY_TYPE, VALUE_TYPE> */>
 TEProperty<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::TEProperty( KEY_TYPE Key, VALUE_TYPE Value )
     : TEPair<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement> ( Key, Value )
-{   ;   }
-
-template <typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename VALUE_TYPE /*= VALUE*/, class Implement /* = TEPairImpl<KEY_TYPE, VALUE_TYPE> */>
-TEProperty<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::TEProperty( const TEProperty<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement> & src )
-    : TEPair<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement> ( static_cast<const TEPair<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement> &>(src) )
-{   ;   }
-
-template <typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename VALUE_TYPE /*= VALUE*/, class Implement /* = TEPairImpl<KEY_TYPE, VALUE_TYPE> */>
-TEProperty<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::~TEProperty( void )
-{   ;   }
-
-template <typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename VALUE_TYPE /*= VALUE*/, class Implement /* = TEPairImpl<KEY_TYPE, VALUE_TYPE> */>
-const TEProperty<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement> & TEProperty<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::operator = (const TEProperty<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement> & src)
 {
-    static_cast<TEPair<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement> &>(*this) = static_cast<const TEPair<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement> &>(src);
-    return (*this);
 }
 
 template <typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename VALUE_TYPE /*= VALUE*/, class Implement /* = TEPairImpl<KEY_TYPE, VALUE_TYPE> */>
@@ -117,7 +115,5 @@ inline bool TEProperty<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::operator ==
 template <typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename VALUE_TYPE /*= VALUE*/, class Implement /* = TEPairImpl<KEY_TYPE, VALUE_TYPE> */>
 inline bool TEProperty<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::operator != ( const TEProperty<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement> & other ) const
 {
-    return (this != &other ? !TEPair<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::isEqualKeys(this->mKey, other.mKey) : false);
+    return (this != &other ? TEPair<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::isEqualKeys(this->mKey, other.mKey) == false: false);
 }
-
-#endif  // AREG_BASE_TEPROPERTY_HPP

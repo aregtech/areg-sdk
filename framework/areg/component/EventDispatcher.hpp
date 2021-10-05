@@ -1,9 +1,16 @@
-#ifndef AREG_COMPONENT_EVENTDISPATCHER_HPP
-#define AREG_COMPONENT_EVENTDISPATCHER_HPP
+#pragma once
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/component/EventDispatcher.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, Event Dispatcher class
  *              Posts, receives dispatcher event objects, registers
  *              event consumers in dispatcher registry and triggers
@@ -40,7 +47,7 @@ public:
      * \brief   Initialization constructor.
      * \param   name    The name of Event Dispatcher
      **/
-    EventDispatcher( const char* name );
+    explicit EventDispatcher( const char* name );
     /**
      * \brief   Destructor.
      **/
@@ -64,23 +71,23 @@ public:
      *                      which contains this consumer.
      * \return	Return true if thread should run. Return false, it it should not run.
      **/
-    virtual bool onThreadRegistered( Thread * threadObj );
+    virtual bool onThreadRegistered( Thread * threadObj ) override;
 
     /**
      * \brief   Function is triggered from thread object when it is going to be destroyed.
      **/
-    virtual void onThreadUnregistering( void );
+    virtual void onThreadUnregistering( void ) override;
 
     /**
      * \brief   Function is called from Thread object, when it is running and fully operable.
      **/
-    virtual void onThreadRuns( void );
+    virtual void onThreadRuns( void ) override;
 
     /**
      * \brief   Function is called from Thread object when it is going to exit.
      * \return  Return thread exit error code.
      **/
-    virtual int onThreadExit( void );
+    virtual int onThreadExit( void ) override;
 
 /************************************************************************/
 // IEEventRouter interface overrides
@@ -92,7 +99,7 @@ public:
      * \return	Returns true if target was found and the event
      *          delivered with success. Otherwise it returns false.
      **/
-    virtual bool postEvent(Event& eventElem);
+    virtual bool postEvent(Event& eventElem) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes
@@ -127,9 +134,8 @@ private:
 // Hidden / Forbidden method calls.
 //////////////////////////////////////////////////////////////////////////
 private:
-    EventDispatcher( void );
-    EventDispatcher( const EventDispatcher & /*src*/ );
-    const EventDispatcher & operator = ( const EventDispatcher & /*src*/ );
+    EventDispatcher( void ) = delete;
+    DECLARE_NOCOPY_NOMOVE( EventDispatcher );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -144,5 +150,3 @@ inline bool EventDispatcher::hasMoreEvents( void ) const
 {
     return (static_cast<const EventQueue &>(mExternaEvents).getSize() > 0);
 }
-
-#endif  // AREG_COMPONENT_EVENTDISPATCHER_HPP

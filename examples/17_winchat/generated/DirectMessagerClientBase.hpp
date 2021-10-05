@@ -1,18 +1,18 @@
 //////////////////////////////////////////////////////////////////////////
 // Begin generate generated/DirectMessagerClientBase.hpp file
 //////////////////////////////////////////////////////////////////////////
-#ifndef  GENERATED_DIRECTMESSAGERCLIENTBASE_HPP
-#define  GENERATED_DIRECTMESSAGERCLIENTBASE_HPP
-/************************************************************************
- * (c) copyright    2021
- *                  Create by AREG SDK code generator tool from source DirectMessager.
- * Generated at     04.07.2021  04:30:03 GMT+02:00 
- ************************************************************************/
+#pragma once
 
 /************************************************************************
+ * (c) copyright    2021
+ *
+ * Generated at     30.09.2021  01:22:16 GMT+02:00 
+ *                  Create by AREG SDK code generator tool from source DirectMessager.
+ *
  * \file            generated/DirectMessagerClientBase.hpp
  * \ingroup         DirectMessager Service Interface
- * \brief           This is an automatic generated code of DirectMessager Service Interface Client base class declaration.
+ * \brief           This is an automatic generated code of DirectMessager
+ *                  Service Interface Client base class declaration.
  ************************************************************************/
 
 /************************************************************************
@@ -52,9 +52,9 @@ protected:
      *          Specifies used service and owner thread.
      * \param   roleName    The role name assigned to DirectMessager servicing component object.
      * \param   ownerThread The name of component owner thread to dispatch messages.
-     *                      If NULL, all messages are dispatched in current component thread.
+     *                      If nullptr, all messages are dispatched in current component thread.
      **/
-    DirectMessagerClientBase( const char* roleName, const char * ownerThread = static_cast<const char *>(NULL) );
+    DirectMessagerClientBase( const char* roleName, const char * ownerThread = nullptr );
 
     /**
      * \brief   Initialize DirectMessager Service Interface client object.
@@ -384,7 +384,7 @@ protected:
      *          i.e. if passed Proxy address is equal to the Proxy object that client has.
      *          If Proxy objects are not equal, it should return false;
      **/
-    virtual bool serviceConnected( bool isConnected, ProxyBase & proxy );
+    virtual bool serviceConnected( bool isConnected, ProxyBase & proxy ) override;
 
 /************************************************************************/
 // DirectMessagerClientBase Error Handling overrides
@@ -413,7 +413,7 @@ protected:
 
     /**
      * \brief  Returns pointer to client dispatcher thread where the messages are dispatched.
-     *         The function can return NULL if Proxy was not instantiated yet.
+     *         The function can return nullptr if Proxy was not instantiated yet.
      **/
     DispatcherThread * getDispatcherThread( void );
      
@@ -461,7 +461,7 @@ private:
      * \brief   Is processing notification event calls.
      * \param   eventElem   Notification Event object to process
      **/
-    virtual void processNotificationEvent( NotificationEvent & eventElem );
+    virtual void processNotificationEvent( NotificationEvent & eventElem ) override;
     
 /************************************************************************/
 // DirectMessagerClientBase hidden methods
@@ -502,9 +502,8 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    DirectMessagerClientBase( void );
-    DirectMessagerClientBase( const DirectMessagerClientBase & /* src */ );
-    const DirectMessagerClientBase & operator = ( const DirectMessagerClientBase & /* src */ );
+    DirectMessagerClientBase( void ) = delete;
+    DECLARE_NOCOPY_NOMOVE( DirectMessagerClientBase );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -523,31 +522,31 @@ inline unsigned int DirectMessagerClientBase::getCurrentSequenceNr( void ) const
 
 inline void DirectMessagerClientBase::clearAllNotifications( void )
 {
-    ASSERT(mProxy != NULL);
+    ASSERT(mProxy != nullptr);
     mProxy->clearAllNotifications(static_cast<IENotificationEventConsumer &>(self()));
 }
 
 inline bool DirectMessagerClientBase::isConnected( void ) const
 {
-    ASSERT(mProxy != NULL);
+    ASSERT(mProxy != nullptr);
     return mIsConnected;
 }
 
 inline bool DirectMessagerClientBase::isNotificationAssigned( NEDirectMessager::eMessageIDs msgId ) const
 {
-    ASSERT(mProxy != NULL);
+    ASSERT(mProxy != nullptr);
     return mProxy->hasNotificationListener(static_cast<unsigned int>(msgId));
 }
 
 inline const String & DirectMessagerClientBase::getServiceName( void ) const
 {
-    ASSERT(mProxy != NULL);
+    ASSERT(mProxy != nullptr);
     return mProxy->getProxyAddress().getServiceName();
 }
     
 inline const Version & DirectMessagerClientBase::getServiceVersion( void ) const
 {
-    ASSERT(mProxy != NULL);
+    ASSERT(mProxy != nullptr);
     return mProxy->getProxyAddress().getServiceVersion();
 }
 
@@ -557,18 +556,18 @@ inline const Version & DirectMessagerClientBase::getServiceVersion( void ) const
 
 inline bool DirectMessagerClientBase::isChatParticipantsValid( void ) const
 {
-    ASSERT(mProxy != NULL);
+    ASSERT(mProxy != nullptr);
    return mProxy->isChatParticipantsValid( );
 }
 inline const NEDirectMessager::ListParticipants & DirectMessagerClientBase::getChatParticipants( NEService::eDataStateType & state ) const
 {
-    ASSERT(mProxy != NULL);
+    ASSERT(mProxy != nullptr);
     return mProxy->getChatParticipants( state );
 }
 
 inline void DirectMessagerClientBase::notifyOnChatParticipantsUpdate( bool notify /* = true */ )
 {
-    notifyOn( NEDirectMessager::MSG_ID_ChatParticipants, notify, false );
+    DirectMessagerClientBase::notifyOn( NEDirectMessager::eMessageIDs::MsgId_ChatParticipants, notify, false );
 }
 
 /************************************************************************
@@ -577,25 +576,25 @@ inline void DirectMessagerClientBase::notifyOnChatParticipantsUpdate( bool notif
 
 inline unsigned int DirectMessagerClientBase::requestChatJoin( const NEDirectMessager::sParticipant & participant, const DateTime & timeConnect )
 {
-    ASSERT(mProxy != NULL);
+    ASSERT(mProxy != nullptr);
     return mProxy->requestChatJoin( static_cast<IENotificationEventConsumer &>(self()), participant, timeConnect );
 }
 
 inline void DirectMessagerClientBase::requestMessageSend( const NEDirectMessager::sParticipant & sender, const String & msgText, const DateTime & timeSent )
 {
-    ASSERT(mProxy != NULL);
+    ASSERT(mProxy != nullptr);
     mProxy->requestMessageSend( sender, msgText, timeSent );
 }
 
 inline void DirectMessagerClientBase::requestMessageType( const NEDirectMessager::sParticipant & participant, const String & msgText )
 {
-    ASSERT(mProxy != NULL);
+    ASSERT(mProxy != nullptr);
     mProxy->requestMessageType( participant, msgText );
 }
 
 inline void DirectMessagerClientBase::requestChatLeave( const NEDirectMessager::sParticipant & participant, const DateTime & timeLeave )
 {
-    ASSERT(mProxy != NULL);
+    ASSERT(mProxy != nullptr);
     mProxy->requestChatLeave( participant, timeLeave );
 }
 
@@ -605,7 +604,7 @@ inline void DirectMessagerClientBase::requestChatLeave( const NEDirectMessager::
 
 inline void DirectMessagerClientBase::notifyOnResponseChatJoin( bool notify /* = true */ )
 {
-    notifyOn(NEDirectMessager::MSG_ID_responseChatJoin, notify, false);
+    DirectMessagerClientBase::notifyOn(NEDirectMessager::eMessageIDs::MsgId_responseChatJoin, notify, false);
 }
 
 /************************************************************************
@@ -614,27 +613,27 @@ inline void DirectMessagerClientBase::notifyOnResponseChatJoin( bool notify /* =
 
 inline void DirectMessagerClientBase::notifyOnBroadcastMessageSent( bool notify /* = true */ )
 {
-    notifyOn(NEDirectMessager::MSG_ID_broadcastMessageSent, notify, false);
+    DirectMessagerClientBase::notifyOn(NEDirectMessager::eMessageIDs::MsgId_broadcastMessageSent, notify, false);
 }
 
 inline void DirectMessagerClientBase::notifyOnBroadcastMessageTyped( bool notify /* = true */ )
 {
-    notifyOn(NEDirectMessager::MSG_ID_broadcastMessageTyped, notify, false);
+    DirectMessagerClientBase::notifyOn(NEDirectMessager::eMessageIDs::MsgId_broadcastMessageTyped, notify, false);
 }
 
 inline void DirectMessagerClientBase::notifyOnBroadcastParticipantJoined( bool notify /* = true */ )
 {
-    notifyOn(NEDirectMessager::MSG_ID_broadcastParticipantJoined, notify, false);
+    DirectMessagerClientBase::notifyOn(NEDirectMessager::eMessageIDs::MsgId_broadcastParticipantJoined, notify, false);
 }
 
 inline void DirectMessagerClientBase::notifyOnBroadcastParticipantLeft( bool notify /* = true */ )
 {
-    notifyOn(NEDirectMessager::MSG_ID_broadcastParticipantLeft, notify, false);
+    DirectMessagerClientBase::notifyOn(NEDirectMessager::eMessageIDs::MsgId_broadcastParticipantLeft, notify, false);
 }
 
 inline void DirectMessagerClientBase::notifyOnBroadcastChatClosed( bool notify /* = true */ )
 {
-    notifyOn(NEDirectMessager::MSG_ID_broadcastChatClosed, notify, false);
+    DirectMessagerClientBase::notifyOn(NEDirectMessager::eMessageIDs::MsgId_broadcastChatClosed, notify, false);
 }
 
 inline const DirectMessagerProxy * DirectMessagerClientBase::getProxy( void ) const
@@ -644,11 +643,9 @@ inline const DirectMessagerProxy * DirectMessagerClientBase::getProxy( void ) co
 
 inline const String & DirectMessagerClientBase::getServiceRole( void ) const
 {
-    ASSERT(mProxy != NULL);
+    ASSERT(mProxy != nullptr);
     return mProxy->getProxyAddress().getRoleName();
 }
-
-#endif   // GENERATED_DIRECTMESSAGERCLIENTBASE_HPP
 
 //////////////////////////////////////////////////////////////////////////
 // End generate generated/DirectMessagerClientBase.hpp file

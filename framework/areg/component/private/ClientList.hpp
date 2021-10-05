@@ -1,9 +1,16 @@
-#ifndef AREG_COMPONENT_PRIVATE_CLIENTLIST_HPP
-#define AREG_COMPONENT_PRIVATE_CLIENTLIST_HPP
+#pragma once
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/component/private/ClientList.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, Client List declaration
  *
  ************************************************************************/
@@ -23,7 +30,7 @@ class ServerInfo;
 //////////////////////////////////////////////////////////////////////////
 // ClientList class declaration
 //////////////////////////////////////////////////////////////////////////
-class ClientListImpl  : public TEListImpl<const ClientInfo &>
+class ImplClientList	: public TEListImpl<const ClientInfo &>
 {
 public:
     /**
@@ -37,12 +44,15 @@ public:
         return ( value1.getAddress() == value2.getAddress() );
     }
 };
+
+using ClientListBse = TELinkedList<ClientInfo, const ClientInfo &, ImplClientList>;
+
 /**
  * \brief   ClientList is a linked list object containing the list
  *          of Client Info objects related to one server Stub address.
  *          The object is used in Router Service to control clients.
  **/
-class ClientList    : public TELinkedList<ClientInfo, const ClientInfo &, ClientListImpl>
+class ClientList    : public ClientListBse
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -51,18 +61,24 @@ public:
     /**
      * \brief   Default constructor. Creates empty list.
      **/
-    ClientList( void );
+    ClientList( void ) = default;
 
     /**
      * \brief   Copy constructor.
      * \param   src     The source of data to copy.
      **/
-    ClientList( const ClientList & src );
+    ClientList( const ClientList & src ) = default;
+
+    /**
+     * \brief   Move constructor.
+     * \param   src     The source of data to move.
+     **/
+    ClientList( ClientList && src ) noexcept = default;
 
     /**
      * \brief   Destructor
      **/
-    ~ClientList( void );
+    ~ClientList( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
@@ -72,7 +88,13 @@ public:
      * \brief   Assigning operator. Copies the list of Client Info from given source
      * \param   src     The source of Client Info list
      **/
-    const ClientList & operator = ( const ClientList & src );
+    ClientList & operator = ( const ClientList & src ) = default;
+
+    /**
+     * \brief   Move operator.
+     * \param   src     The source of Client Info list
+     **/
+    ClientList & operator = ( ClientList && src ) noexcept = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes
@@ -146,5 +168,3 @@ public:
      **/
     void serverUnavailable( ClientList & out_clientList );
 };
-
-#endif  // AREG_COMPONENT_PRIVATE_CLIENTLIST_HPP

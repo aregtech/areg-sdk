@@ -1,14 +1,21 @@
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/base/private/NEDebug.cpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, Debugging utilities
  *
  ************************************************************************/
 #include "areg/base/private/NEDebug.hpp"
 
-#include "areg/base/GEGlobal.h"
-#include "areg/base/EContainers.hpp"
+#include "areg/base/Containers.hpp"
 
 #include <stdio.h>
 #include <stdarg.h>
@@ -22,7 +29,7 @@
 void AREG_API NEDebug::outputConsole( NEDebug::eDegubPrio priority, const char * msg, ... )
 {
     va_list args;
-    if (msg != NULL)
+    if (msg != nullptr)
     {
         va_start(args, msg);
         char buffer[NEDebug::MAX_DEBUG_BUFFER_SIZE];
@@ -53,19 +60,13 @@ void AREG_API NEDebug::outputConsole( NEDebug::eDegubPrio /*priority*/, const ch
 void AREG_API NEDebug::outputConsole(const char * msg, ...)
 {
     va_list args;
-    if (msg != NULL)
+    if (msg != nullptr)
     {
         va_start(args, msg);
-        //if ( args == NULL )
-        //{
-        //    NEDebug::outputMessageOS( msg );
-        //}
-        //else
-        {
-            char buffer[NEDebug::MAX_DEBUG_BUFFER_SIZE];
-            String::formatStringList(buffer, NEDebug::MAX_DEBUG_BUFFER_SIZE, msg, args);
-            NEDebug::outputMessageOS( buffer );
-        }
+
+        char buffer[NEDebug::MAX_DEBUG_BUFFER_SIZE];
+        String::formatStringList( buffer, NEDebug::MAX_DEBUG_BUFFER_SIZE, msg, args );
+        NEDebug::outputMessageOS( buffer );
 
         va_end(args);
     }

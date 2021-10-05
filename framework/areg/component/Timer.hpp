@@ -1,9 +1,16 @@
-#ifndef AREG_COMPONENT_TIMER_HPP
-#define AREG_COMPONENT_TIMER_HPP
+#pragma once
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/component/Timer.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, Timer class.
  *              Use to fire timer.
  *
@@ -14,7 +21,7 @@
 #include "areg/base/GEGlobal.h"
 
 #include "areg/base/String.hpp"
-#include "areg/base/ESynchObjects.hpp"
+#include "areg/base/SynchObjects.hpp"
 
 /************************************************************************
  * Dependencies
@@ -26,19 +33,12 @@ class DispatcherThread;
 // Timer class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief       The timer is used to fire event in a certain period of time.
- *              When timer is expired, it will trigger Timer Event and
- *              forward to specified Timer Consumer object to process.
- * 
- * \details     The Timer object is used for periodic event.
- *              Create Timer and pass consumer object, which will process
- *              the Timer Event. The Consumer object cannot be changed.
- *              The Timer Event will be processed in the thread,
- *              which was requesting to start timer.
- *              The Timer Events are processed only in Dispatcher Threads.
- *              If Timer is requested to start in non-dispatcher thread,
- *              the starting will be ignored and no timer event will be processed.
- *
+ * \brief   The timer is used to fire event in a certain period of time.
+ *          When timer is expired, it will trigger Timer Event and forward 
+ *          to specified Timer Consumer object to process. There are 2 types
+ *          of available timers:
+ *              - Periodic timer to set the number of timer events to fire.
+ *              - Continues timers run in cycle until are not manually stopped.
  **/
 class AREG_API Timer
 {
@@ -57,51 +57,51 @@ public:
      * \brief   Timer::INVALID_TIMEOUT
      *          A value, indicating invalid timeout. The timers with invalid timeouts are invalid
      **/
-    static const unsigned int   INVALID_TIMEOUT     /*= static_cast<unsigned int>(~0)*/;
+    static constexpr unsigned int   INVALID_TIMEOUT     = static_cast<unsigned int>(0);
 
     /**
      * \brief   Timer::CONTINUOUSLY
      *          This value is used to set continues Timer, which will not
      *          stop, until it is not requested to be stopped manually.
      **/
-    static const unsigned int   CONTINUOUSLY          /*= static_cast<unsigned int>(-1)*/;    /*0xFFFFFFFF*/
+    static constexpr unsigned int   CONTINUOUSLY        = static_cast<unsigned int>(~0);    /*0xFFFFFFFF*/
 
     /**
      * \brief   Timer::DEFAULT_MAXIMUM_QUEUE
      *          Default number of maximum queued number of timer events in dispatcher thread.
      **/
-    static const int            DEFAULT_MAXIMUM_QUEUE /*= static_cast<int>(5)*/;            /*0x00000005*/
+    static constexpr int            DEFAULT_MAXIMUM_QUEUE= static_cast<int>(5);            /*0x00000005*/
 
     /**
      * \brief   Timer::IGNORE_TIMER_QUEUE
      *          Defined to ignore number of maximum queued timer events in dispatcher thread.
      **/
-    static const int            IGNORE_TIMER_QUEUE    /*= static_cast<int>(0)*/;            /*0x00000000*/
+    static constexpr int            IGNORE_TIMER_QUEUE    = static_cast<int>(0);            /*0x00000000*/
 
     /**
      * \brief   1 millisecond
      **/
-    static const unsigned int   TIMEOUT_1_MS            /*= 1*/;
+    static constexpr unsigned int   TIMEOUT_1_MS            = 1;
 
     /**
      * \brief   100 milliseconds
      **/
-    static const unsigned int   TIMEOUT_100_MS          /*= (TIMEOUT_1_MS * 100)*/;
+    static constexpr unsigned int   TIMEOUT_100_MS          = (TIMEOUT_1_MS * 100);
 
     /**
      * \brief   500 milliseconds
      **/
-    static const unsigned int   TIMEOUT_500_MS          /*= (TIMEOUT_100_MS * 5)*/;
+    static constexpr unsigned int   TIMEOUT_500_MS          = (TIMEOUT_100_MS * 5);
 
     /**
      * \brief   1 second in milliseconds
      **/
-    static const unsigned int   TIMEOUT_1_SEC           /*= (TIMEOUT_1_MS * 1000)*/;
+    static constexpr unsigned int   TIMEOUT_1_SEC           = (TIMEOUT_1_MS * 1000);
 
     /**
      * \brief   1 minute in milliseconds
      **/
-    static const unsigned int   TIMEOUT_1_MIN           /*= (TIMEOUT_1_SEC * 60)*/;
+    static constexpr unsigned int   TIMEOUT_1_MIN           = (TIMEOUT_1_SEC * 60);
 
     /**
      * \brief   Retrieves the number of milliseconds that have elapsed since the system was started, up to 49.7 days
@@ -114,10 +114,10 @@ public:
 public:
     /**
      * \brief   The constructor sets Timer object consumer and optional the name.
-     *          If timer name is not NULL and to provide uniqueness of names in the system, 
+     *          If timer name is not nullptr and to provide uniqueness of names in the system, 
      *          the system will use passed name as a prefix.
      * \param   timerConsumer   The Timer Consumer object.
-     * \param   timerName       The name of Timer. If this is not NULL, the system will 
+     * \param   timerName       The name of Timer. If this is not nullptr, the system will 
      *                          generate unique name using passed name as a prefix.
      *                          The timer objects must have unique names and should not
      *                          contain back slashes.
@@ -130,11 +130,11 @@ public:
      *                          fired once or less than maxQueued timer, this parameter will be ignored
      *                          and play no role.
      **/
-    Timer( IETimerConsumer & timerConsumer, const char* timerName = NULL, int maxQueued = Timer::IGNORE_TIMER_QUEUE );
+    explicit Timer( IETimerConsumer & timerConsumer, const char* timerName = nullptr, int maxQueued = Timer::IGNORE_TIMER_QUEUE );
     /**
      * \brief   Destructor
      **/
-    ~Timer( void );
+    ~Timer( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -352,7 +352,7 @@ private:
     /**
      * \brief   Synchronization object
      **/
-    CriticalSection     mLock;
+    ResourceLock        mLock;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
@@ -386,9 +386,8 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    Timer( void );
-    Timer(const Timer & /*src*/);
-    const Timer& operator = (const Timer & /*src*/ );
+    Timer( void ) = delete;
+    DECLARE_NOCOPY_NOMOVE(Timer);
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -459,5 +458,3 @@ inline unsigned int Timer::getNextFireTime( void ) const
 {
     return mNextFire;
 }
-
-#endif  // AREG_COMPONENT_TIMER_HPP

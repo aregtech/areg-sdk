@@ -1,14 +1,22 @@
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/base/private/posix/NESocketPosix.cpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform. Socket POSIX specific wrappers methods
  ************************************************************************/
 #include "areg/base/NESocket.hpp"
 
-#ifdef  _POSIX
+#if defined(_POSIX) || defined(POSIX)
 
-#include "areg/base/ESynchObjects.hpp"
+#include "areg/base/SynchObjects.hpp"
 #include "areg/base/GEMacros.h"
 #include "areg/base/NEMemory.hpp"
 #include "areg/trace/GETrace.h"
@@ -22,17 +30,11 @@
 #include <errno.h>
 #include <arpa/inet.h>
 #include <ctype.h>      // IEEE Std 1003.1-2001
+#include <atomic>
 
 //////////////////////////////////////////////////////////////////////////
 // Local static members
 //////////////////////////////////////////////////////////////////////////
-
-/**
- * \brief   Global socket initialize / release counter.
- *          Initialize socket in process if counter is changing from 0 to 1.
- *          Release socket in frees resources in process when counter reaches 0.
- **/
-static InterlockedValue   _instanceCount( static_cast<unsigned int>(0));
 
 DEF_TRACE_SCOPE(areg_base_NESocketPosix_socketClose);
 DEF_TRACE_SCOPE(areg_base_NESocketPosix_sendData);
@@ -45,6 +47,7 @@ DEF_TRACE_SCOPE(areg_base_NESocketPosix_remainDataRead);
 
 AREG_API bool NESocket::socketInitialize(void)
 {
+    static_assert( std::atomic_uint::is_always_lock_free );
     return true;
 }
 
@@ -78,7 +81,7 @@ AREG_API int NESocket::sendData(SOCKETHANDLE hSocket, const unsigned char * data
     if ( hSocket != NESocket::InvalidSocketHandle )
     {
         result = 0;
-        if ( dataBuffer != NULL && dataLength > 0 )
+        if ( (dataBuffer != nullptr) && (dataLength > 0) )
         {
             bool checkSize  = false;
             blockMaxSize    = blockMaxSize > 0 ? blockMaxSize : NESocket::getMaxSendSize(hSocket);
@@ -117,7 +120,7 @@ AREG_API int NESocket::sendData(SOCKETHANDLE hSocket, const unsigned char * data
         }
         else
         {
-            TRACE_ERR("Either buffer is null [ %s ] or wrong data length to sent [ %d ]", dataBuffer == NULL ? "YES" : "NO", dataLength);
+            TRACE_ERR("Either buffer is nullptr [ %s ] or wrong data length to sent [ %d ]", dataBuffer == nullptr ? "YES" : "NO", dataLength);
         }
     }
     else
@@ -136,7 +139,7 @@ AREG_API int NESocket::receiveData(SOCKETHANDLE hSocket, unsigned char * dataBuf
     if ( hSocket != NESocket::InvalidSocketHandle )
     {
         result = 0;
-        if ( dataBuffer != NULL && dataLength > 0 )
+        if ( (dataBuffer != nullptr) && (dataLength > 0) )
         {
             blockMaxSize    = blockMaxSize > 0 ? blockMaxSize : NESocket::getMaxReceiveSize(hSocket);
             TRACE_DBG("Going to receive data, available space [ %d ] bytes, blockMaxSize [ %d ] bytes", dataLength, blockMaxSize);
@@ -169,7 +172,7 @@ AREG_API int NESocket::receiveData(SOCKETHANDLE hSocket, unsigned char * dataBuf
         }
         else
         {
-            TRACE_ERR("Either buffer is null [ %s ] or wrong data length to receive [ %d ]", dataBuffer == NULL ? "YES" : "NO", dataLength);
+            TRACE_ERR("Either buffer is nullptr [ %s ] or wrong data length to receive [ %d ]", dataBuffer == nullptr ? "YES" : "NO", dataLength);
         }
     }
     else
@@ -213,4 +216,4 @@ AREG_API unsigned int NESocket::remainDataRead( SOCKETHANDLE hSocket )
     return result;
 }
 
-#endif  // _POSIX
+#endif  // defined(_POSIX) || defined(POSIX)

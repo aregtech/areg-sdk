@@ -1,7 +1,15 @@
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/base/private/win32/FileWin32.cpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, File object 
  *              Windows OS specific implementation
  *
@@ -27,16 +35,16 @@
 //////////////////////////////////////////////////////////////////////////
 // defined constants
 //////////////////////////////////////////////////////////////////////////
-void * const        File::INVALID_HANDLE      = static_cast<void *>(INVALID_HANDLE_VALUE);
 const char          File::PATH_SEPARATOR      = '\\';
 const int           File::MAXIMUM_PATH        = MAX_PATH;
+void * const        File::INVALID_HANDLE      = static_cast<void *>(INVALID_HANDLE_VALUE);
 
 #if 0
 
 
 /**
  * \brief	Search given file in directory and returns full path. 
- *          If searchInDirectory is NULL, it will search file name
+ *          If searchInDirectory is nullptr, it will search file name
  *              - in current directory
  *              - in system directory
  *              - in windows directory
@@ -49,9 +57,9 @@ const int           File::MAXIMUM_PATH        = MAX_PATH;
  *                              The first character of the file name extension must be a period (.) (example, ".cfg"). 
  *                              The extension is added only if the specified file name does not end with an extension. 
  *                              If a file name extension is not required or if the file name contains an extension, 
- *                              this parameter can be NULL.
+ *                              this parameter can be nullptr.
  * 
- * \param	searchInDirectory	Set folder name to search. If NULL, it will search file name
+ * \param	searchInDirectory	Set folder name to search. If nullptr, it will search file name
  *                                  - in current directory
  *                                  - in system directory
  *                                  - in windows directory
@@ -64,7 +72,7 @@ static String _searchFile( const char* fileName, const char* fileExtension, cons
     String result;
     if ( NEString::isEmpty<char>(fileName) == false )
     {
-        fileExtension != NULL && *fileExtension == '.' ? fileExtension : NULL;
+        fileExtension = fileExtension != nullptr && *fileExtension == '.' ? fileExtension : nullptr;
         String searchPath = File::NameHasCurrentFolder(searchInDirectory) ? File::GetCurrentDir() : searchInDirectory;
         char * buffer = DEBUG_NEW char[File::MAXIMUM_PATH + 1];
         unsigned int length = ::SearchPathA(searchPath, fileName, fileExtension, File::MAXIMUM_PATH, buffer, &fileName);
@@ -85,31 +93,31 @@ static String _searchFile( const char* fileName, const char* fileExtension, cons
  * \return  If function succeeds, the return value is full path of special folder.
  *          Otherwise, it returns empty string.
  **/
-String File::getSpecialDir(eSpecialFolder specialFolder)
+String File::getSpecialDir(File::eSpecialFolder specialFolder)
 {
     String result;
     char * buffer = DEBUG_NEW char [File::MAXIMUM_PATH + 1];
     int csidl = -1;
 
-    if (buffer != NULL)
+    if (buffer != nullptr)
     {
         buffer[0] = NEString::EndOfString;
 
         switch ( specialFolder )
         {
-        case File::SpecialUserHome:
+        case File::eSpecialFolder::SpecialUserHome:
             csidl = CSIDL_PROFILE;
             break;
 
-        case File::SpecialPersonal:
+        case File::eSpecialFolder::SpecialPersonal:
             csidl = CSIDL_PERSONAL;
             break;
 
-        case File::SpecialAppData:
+        case File::eSpecialFolder::SpecialAppData:
             csidl = CSIDL_APPDATA;
             break;
 
-        case File::SpecialTemp:
+        case File::eSpecialFolder::SpecialTemp:
             GetTempPathA(File::MAXIMUM_PATH, buffer);
             break;
 
@@ -119,7 +127,7 @@ String File::getSpecialDir(eSpecialFolder specialFolder)
 
         if (csidl != -1)
         {
-            SHGetFolderPathA(NULL, csidl, NULL, SHGFP_TYPE_CURRENT, buffer);
+            SHGetFolderPathA( nullptr, csidl, nullptr, SHGFP_TYPE_CURRENT, buffer);
         }
 
         result = static_cast<const char *>(buffer);
@@ -188,7 +196,7 @@ bool File::open( void )
                 File::createDirCascaded( File::getFileDirectory( static_cast<const char *>(mFileName) ).getString() );
             }
 
-            mFileHandle = static_cast<void *>(::CreateFileA(mFileName.getString(), access, shared, NULL, creation, attributes, NULL));
+            mFileHandle = static_cast<FILEHANDLE>(::CreateFileA(mFileName.getString(), access, shared, nullptr, creation, attributes, nullptr ));
             result = isOpened();
         }
         else
@@ -214,10 +222,10 @@ unsigned int File::read(unsigned char* buffer, unsigned int size) const
     unsigned int result = 0;
     if ( isOpened() && canRead() )
     {
-        if ((buffer != NULL) && (size > 0))
+        if ((buffer != nullptr) && (size > 0))
         {
             unsigned long sizeRead = 0;
-            if (::ReadFile(static_cast<HANDLE>(mFileHandle), buffer, static_cast<unsigned long>(size), &sizeRead, NULL))
+            if (::ReadFile(static_cast<HANDLE>(mFileHandle), buffer, static_cast<unsigned long>(size), &sizeRead, nullptr ))
             {
                 result = static_cast<unsigned int>(sizeRead);
             }
@@ -244,10 +252,10 @@ unsigned int File::write(const unsigned char* buffer, unsigned int size)
     unsigned int result = 0;
     if ( isOpened() && canWrite() )
     {
-        if (buffer != NULL && size > 0)
+        if ((buffer != nullptr) && (size > 0))
         {
             unsigned long sizeWrite = 0;
-            if ( ::WriteFile( static_cast<HANDLE>(mFileHandle), buffer, static_cast<unsigned long>(size), &sizeWrite, NULL ) )
+            if ( ::WriteFile( static_cast<HANDLE>(mFileHandle), buffer, static_cast<unsigned long>(size), &sizeWrite, nullptr ) )
             {
                 result = static_cast<unsigned int>(sizeWrite);
             }
@@ -279,15 +287,15 @@ unsigned int File::setPosition(int offset, IECursorPosition::eCursorPosition sta
         unsigned long moveOffset = static_cast<unsigned long>(offset);
         switch (startAt)
         {
-        case    IECursorPosition::POSITION_BEGIN:
+        case    IECursorPosition::eCursorPosition::PositionBegin:
             moveMethod  = FILE_BEGIN;
             break;
 
-        case    IECursorPosition::POSITION_CURRENT:
+        case    IECursorPosition::eCursorPosition::PositionCurrent:
             moveMethod  = FILE_CURRENT;
             break;
 
-        case    IECursorPosition::POSITION_END:
+        case    IECursorPosition::eCursorPosition::PositionEnd:
             moveMethod = FILE_END;
             break;
 
@@ -297,7 +305,7 @@ unsigned int File::setPosition(int offset, IECursorPosition::eCursorPosition sta
             moveOffset  = 0;
         }
 
-        result = static_cast<unsigned int>(SetFilePointer(static_cast<HANDLE>(mFileHandle), static_cast<LONG>(moveOffset), static_cast<PLONG>(NULL), static_cast<DWORD>(moveMethod)));
+        result = static_cast<unsigned int>(SetFilePointer(static_cast<HANDLE>(mFileHandle), static_cast<LONG>(moveOffset), nullptr, static_cast<DWORD>(moveMethod)));
     }
     
     return result;
@@ -305,12 +313,12 @@ unsigned int File::setPosition(int offset, IECursorPosition::eCursorPosition sta
 
 unsigned int File::getPosition( void ) const
 {
-    return (isOpened() ? static_cast<unsigned int>(SetFilePointer(static_cast<HANDLE>(mFileHandle), 0, NULL, FILE_CURRENT)) : IECursorPosition::INVALID_CURSOR_POSITION);
+    return (isOpened() ? static_cast<unsigned int>(SetFilePointer(static_cast<HANDLE>(mFileHandle), 0, nullptr, FILE_CURRENT)) : IECursorPosition::INVALID_CURSOR_POSITION);
 }
 
 unsigned int File::getLength( void ) const
 {
-    return (isOpened() ? static_cast<unsigned int>(GetFileSize(static_cast<HANDLE>(mFileHandle), NULL)) : NEMemory::INVALID_SIZE);
+    return (isOpened() ? static_cast<unsigned int>(GetFileSize(static_cast<HANDLE>(mFileHandle), nullptr )) : NEMemory::INVALID_SIZE);
 }
 
 unsigned int File::reserve(int newSize)
@@ -324,13 +332,13 @@ unsigned int File::reserve(int newSize)
         curPos = newSize > static_cast<int>(curPos) ? curPos : newSize;
         if (newSize > 0)
         {
-            if (::SetFilePointer(static_cast<HANDLE>(mFileHandle), static_cast<LONG>(newSize), NULL, FILE_BEGIN) != IECursorPosition::INVALID_CURSOR_POSITION)
+            if (::SetFilePointer(static_cast<HANDLE>(mFileHandle), static_cast<LONG>(newSize), nullptr, FILE_BEGIN) != IECursorPosition::INVALID_CURSOR_POSITION)
             {
                 ::SetEndOfFile(static_cast<HANDLE>(mFileHandle));
-                result = static_cast<unsigned int>(::SetFilePointer(static_cast<HANDLE>(mFileHandle), static_cast<LONG>(curPos), NULL, FILE_BEGIN));
+                result = static_cast<unsigned int>(::SetFilePointer(static_cast<HANDLE>(mFileHandle), static_cast<LONG>(curPos), nullptr, FILE_BEGIN));
             }
         }
-        else if (::SetFilePointer(static_cast<HANDLE>(mFileHandle), 0, NULL, FILE_BEGIN) != IECursorPosition::INVALID_CURSOR_POSITION)
+        else if (::SetFilePointer(static_cast<HANDLE>(mFileHandle), 0, nullptr, FILE_BEGIN) != IECursorPosition::INVALID_CURSOR_POSITION)
         {
             result = ::SetEndOfFile(static_cast<HANDLE>(mFileHandle)) ? 0 : IECursorPosition::INVALID_CURSOR_POSITION;
         }
@@ -347,7 +355,7 @@ bool File::truncate( void )
     bool result = false;
     if (isOpened() && canWrite())
     {
-        if (SetFilePointer(static_cast<HANDLE>(mFileHandle), 0, NULL, FILE_BEGIN) != IECursorPosition::INVALID_CURSOR_POSITION)
+        if (SetFilePointer(static_cast<HANDLE>(mFileHandle), 0, nullptr, FILE_BEGIN) != IECursorPosition::INVALID_CURSOR_POSITION)
         {
             result = SetEndOfFile(static_cast<HANDLE>(mFileHandle)) ? true : false;
         }
@@ -361,7 +369,7 @@ bool File::truncate( void )
 
 void File::flush( void )
 {
-    if ( mFileHandle != NULL )
+    if ( mFileHandle != nullptr )
     {
         ::FlushFileBuffers(static_cast<HANDLE>(mFileHandle));
     }
@@ -378,7 +386,7 @@ bool File::deleteFile( const char* filePath )
 
 bool File::createDir( const char* dirPath )
 {
-    return ( NEString::isEmpty<char>(dirPath) == false ? ::CreateDirectoryA(dirPath, NULL) == TRUE : false );
+    return ( NEString::isEmpty<char>(dirPath) == false ? ::CreateDirectoryA(dirPath, nullptr) == TRUE : false );
 }
 
 bool File::deleteDir( const char* dirPath )
@@ -396,7 +404,7 @@ String File::getCurrentDir( void )
     String result;
     char * buffer = DEBUG_NEW char[File::MAXIMUM_PATH + 1];
 
-    if (buffer != NULL)
+    if (buffer != nullptr)
     {
         result = ::GetCurrentDirectoryA(File::MAXIMUM_PATH, buffer) <= File::MAXIMUM_PATH ? buffer : "";
         delete [] buffer;
@@ -421,7 +429,7 @@ String File::getTempDir( void )
 {
     String result;
     char * buffer = DEBUG_NEW char[File::MAXIMUM_PATH + 1];
-    if (buffer != NULL)
+    if (buffer != nullptr)
     {
         result = ::GetTempPathA(File::MAXIMUM_PATH, buffer) <= File::MAXIMUM_PATH ? buffer : "";
         delete [] buffer;
@@ -434,10 +442,10 @@ String File::genTempFileName( const char* prefix, bool unique, bool inTempFolder
 {
     String result;
     char * buffer = DEBUG_NEW char [File::MAXIMUM_PATH + 1];
-    if (buffer != NULL)
+    if (buffer != nullptr)
     {
         unsigned int tmpUnique = unique ? 0 : static_cast<unsigned int>( DateTime::getSystemTickCount() );
-        prefix = prefix == NULL ? File::TEMP_FILE_PREFIX : prefix;
+        prefix = prefix == nullptr ? File::TEMP_FILE_PREFIX.data() : prefix;
         String folder = inTempFolder ? File::getTempDir() : File::getCurrentDir();
         result = ::GetTempFileNameA(folder, prefix, tmpUnique, buffer) != 0 ? buffer : "";
 
@@ -475,11 +483,15 @@ String File::getFileFullPath( const char* filePath )
     if ( NEString::isEmpty<char>(filePath) == false )
     {
         char * buffer = DEBUG_NEW char[File::MAXIMUM_PATH + 1];
-        if ( (buffer != NULL) && (::GetFullPathNameA(result, File::MAXIMUM_PATH, buffer, NULL) <= File::MAXIMUM_PATH) )
-            result = buffer;
+        if ( buffer != nullptr )
+        {
+            if ( ::GetFullPathNameA( result, File::MAXIMUM_PATH, buffer, nullptr ) <= File::MAXIMUM_PATH )
+            {
+                result = buffer;
+            }
 
-        if (buffer != NULL)
             delete [] buffer;
+        }
     }
 
     return result;
@@ -489,7 +501,7 @@ bool File::_createFolder( const char * dirPath )
 {
     // no need to validate string. Put in assertion.
     ASSERT( NEString::isEmpty<char>(dirPath) == false );
-    return (::CreateDirectoryA(dirPath, NULL) == TRUE);
+    return (::CreateDirectoryA(dirPath, nullptr ) == TRUE);
 }
 
 #endif // _WINDOWS

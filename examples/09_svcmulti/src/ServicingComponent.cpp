@@ -1,7 +1,7 @@
 /************************************************************************
  * \file        src/ServicingComponent.cpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework examples
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       Collection of AREG SDK examples.
  *              This file contains simple implementation of servicing component
  *              without requests
@@ -39,10 +39,6 @@ ServicingComponent::ServicingComponent(ComponentThread & masterThread, const cha
 
 }
 
-ServicingComponent::~ServicingComponent(void)
-{
-}
-
 void ServicingComponent::startupServiceInterface(Component & holder)
 {
     TRACE_SCOPE(examples_09_svcmulti_ServicingComponent_startupServiceInterface);
@@ -51,6 +47,8 @@ void ServicingComponent::startupServiceInterface(Component & holder)
     StubBase::startupServiceInterface(holder);
 
     mTimer.startTimer(TIMER_TIMEOUT, TIMER_EVENTS);
+
+    printf("Local servicing started, waits for [ %d ] ms to stop and exit application...\n", TIMER_TIMEOUT * TIMER_EVENTS);
 }
 
 void ServicingComponent::shutdownServiceIntrface(Component & holder)
@@ -60,6 +58,8 @@ void ServicingComponent::shutdownServiceIntrface(Component & holder)
     
     mTimer.stopTimer();
     StubBase::shutdownServiceIntrface(holder);
+
+    printf("Local servicing stopped...\n");
 }
 
 void ServicingComponent::processTimer(Timer & timer)
@@ -78,17 +78,18 @@ void ServicingComponent::processTimer(Timer & timer)
                 , mCount
                 , (TIMER_EVENTS - mCount));
 
-    if (mTimer.isActive())
+    if (TIMER_EVENTS > mCount)
     {
-        printf("Hello from %s Service!\n", getRoleName().getString());
+    	ASSERT(mTimer.isActive());
+        printf("Hello from [ %s ] service!\n", getRoleName().getString());
     }
     else
     {
-        ASSERT(mCount == TIMER_EVENTS);
+        ASSERT(mTimer.isActive() == false);
 
-        printf("Service %s says goodbye...\n", getRoleName().getString());
+        printf("Service [ %s ] says goodbye...\n", getRoleName().getString());
 
-        TRACE_INFO("The timer is not actuve anymore, signaling quit event");
+        TRACE_INFO("The timer is not active anymore, signaling quit event");
         Application::signalAppQuit();
     }
 }

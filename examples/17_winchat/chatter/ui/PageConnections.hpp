@@ -78,14 +78,14 @@ private:
 
 private:
     // List of connections
-    CListCtrl               mCtrlConnections;
+    CListCtrl           mCtrlConnections;
     // Connection list service client
-    ConnectionList *      mClientConnections;
+    ConnectionList *    mClientConnections;
     // The name of direct connection model, which contains service
-    String                mDirectConnectModel;
+    String              mDirectConnectModel;
     // The name of generated direct connection service
-    String                mDirectConnectService;
+    String              mDirectConnectService;
     // The instance of connection handler object
-    ConnectionHandler &   mConnectionHandler;
-    BOOL                    mChatEnable;
+    ConnectionHandler & mConnectionHandler;
+    BOOL                mChatEnable;
 };

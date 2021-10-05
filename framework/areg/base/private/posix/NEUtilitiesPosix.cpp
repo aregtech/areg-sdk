@@ -1,14 +1,22 @@
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/base/private/NEUtilitiesPosix.cpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG POSIX specific hidden utility methods.
  *
  ************************************************************************/
 
 #include "areg/base/NEUtilities.hpp"
 
-#ifdef  _POSIX
+#if defined(_POSIX) || defined(POSIX)
 
 #include "areg/base/String.hpp"
 #include "areg/base/NEMemory.hpp"
@@ -16,24 +24,47 @@
 #include <time.h>
 #include <unistd.h>
 
-namespace NEUtilities {
+namespace NEUtilities
+{
 
-    const char * _generateName( const char * prefix, char * out_buffer, int length, const char * specChar )
+    /**
+     * \brief   Generates a name, sets the timestapt of now.
+     * 
+     * \param   prefix          The prefix to add to name.
+     * \param   out_buffer[out] On output, this contains the result.
+     * \param   length          The length of output buffer.
+     * \param   specChar        Special character to add when generating name.
+     * \return Generated name.
+     **/
+    const char * _generateName( const char * prefix, char * OUT out_buffer, int length, const char * specChar )
     {
-        static const char * strFormat = "%s%s%08x%s%08x";
-        if ( out_buffer != NULL )
+        constexpr char strFormat[]   { "%s%s%08x%s%08x" };
+        
+        if ( out_buffer != nullptr )
         {
-            const char * spec = specChar != NULL ? specChar : NEUtilities::DEFAULT_SPECIAL_CHAR;
+            const char * spec = specChar != nullptr ? specChar : NECommon::DEFAULT_SPECIAL_CHAR.data();
             *out_buffer = '\0';
             struct timespec now;
             clock_gettime(CLOCK_REALTIME, &now);
-            String::formatString( out_buffer, length, strFormat, prefix != NULL ? prefix : NEUtilities::DEFAULT_GENERATED_NAME, spec, now.tv_sec, spec, now.tv_nsec);
+            String::formatString( out_buffer, length, strFormat
+                                , prefix != nullptr ? prefix : NEUtilities::DEFAULT_GENERATED_NAME.data()
+                                , spec
+                                , now.tv_sec
+                                , spec, now.tv_nsec);
         }
 
         return out_buffer;
     }
 
-    static inline void _convertMicrosecs(const TIME64 & quad, time_t & outSecs, unsigned short &outMilli, unsigned short &outMicro)
+    /**
+     * \brief   Converts given time in microseconds into the time in seconds, milliseconds and microseconds.
+     * 
+     * \param   quad[in]        The time in microseconds to parse and extract.
+     * \param   outSecs[out]    On output, this contains the time in seconds.
+     * \param   outMilli[out]   On output, this contains the remaining time in milliseconds.
+     * \param   outMicro[out]   On output, this contains the remaining time in microseconds.
+     **/
+    inline void _convertMicrosecs(const TIME64 & IN quad, time_t & OUT outSecs, unsigned short & OUT outMilli, unsigned short & OUT outMicro)
     {
         time_t secs = static_cast<time_t>(quad / SEC_TO_MICROSECS);
         time_t rest = static_cast<time_t>(quad % SEC_TO_MICROSECS);
@@ -42,7 +73,7 @@ namespace NEUtilities {
         outMicro    = static_cast<unsigned short>(rest % MILLISEC_TO_MICROSECS);
 
     }
-}
+}   // namespace
 
 AREG_API bool NEUtilities::convToLocalTime( const TIME64 & inUtcTime, sSystemTime & outLocalTime )
 {
@@ -58,7 +89,7 @@ AREG_API bool NEUtilities::convToLocalTime( const TIME64 & inUtcTime, sSystemTim
     _convertMicrosecs(inUtcTime, secs, milli, micro);
 
     struct tm * conv = localtime(&secs);
-    if (conv != NULL)
+    if (conv != nullptr)
     {
         outLocalTime.stYear      = conv->tm_year + 1900;
         outLocalTime.stMonth     = conv->tm_mon  + 1;
@@ -91,7 +122,7 @@ AREG_API bool NEUtilities::convToLocalTime( const sSystemTime &inUtcTime, sSyste
     _convertMicrosecs(quad, secs, milli, micro);
 
     struct tm * conv = localtime(&secs);
-    if (conv != NULL)
+    if (conv != nullptr)
     {
         outLocalTime.stYear      = conv->tm_year + 1900;
         outLocalTime.stMonth     = conv->tm_mon  + 1;
@@ -206,7 +237,7 @@ AREG_API TIME64 NEUtilities::convToTime( const NEUtilities::sSystemTime & sysTim
 
 AREG_API void NEUtilities::convToSystemTime( const TIME64 &  timeValue, NEUtilities::sSystemTime & out_sysTime )
 {
-    NEMemory::zeroBuffer(&out_sysTime, sizeof(NEUtilities::sSystemTime));
+    NEMemory::memZero(&out_sysTime, sizeof(NEUtilities::sSystemTime));
 
     // time_t secs = static_cast<time_t>(timeValue / SEC_TO_MICROSECS);
     // time_t rest = timeValue - (secs * SEC_TO_MICROSECS);
@@ -218,7 +249,7 @@ AREG_API void NEUtilities::convToSystemTime( const TIME64 &  timeValue, NEUtilit
     _convertMicrosecs(timeValue, secs, milli, micro);
 
     struct tm * conv = gmtime(&secs);
-    if (conv != NULL)
+    if (conv != nullptr)
     {
         out_sysTime.stYear      = conv->tm_year + 1900;
         out_sysTime.stMonth     = conv->tm_mon  + 1;
@@ -245,5 +276,4 @@ AREG_API void NEUtilities::convToFileTime( const NEUtilities::sSystemTime & sysT
     out_fileTime.ftHighDateTime= MACRO_64_HI_BYTE32(quad);
 }
 
-
-#endif // _POSIX
+#endif // defined(_POSIX) || defined(POSIX)

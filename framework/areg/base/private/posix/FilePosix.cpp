@@ -1,7 +1,15 @@
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/base/private/posix/FilePosix.cpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, File object
  *              POSIX specific implementation
  *
@@ -9,14 +17,14 @@
 
 #include "areg/base/File.hpp"
 
-#ifdef  _POSIX
+#if defined(_POSIX) || defined(POSIX)
 
 
 #include "areg/base/SharedBuffer.hpp"
 #include "areg/base/Process.hpp"
 #include "areg/base/DateTime.hpp"
 #include "areg/base/NEUtilities.hpp"
-#include "areg/base/EContainers.hpp"
+#include "areg/base/Containers.hpp"
 
 #include <sys/stat.h>
 #include <limits.h>
@@ -33,24 +41,27 @@
 // File class implementation
 //////////////////////////////////////////////////////////////////////////
 
-#define POSIX_INVALID_FD        -1
-
-typedef struct S_PosixFile
+namespace
 {
-    inline S_PosixFile( void )
-        : fd (POSIX_INVALID_FD)
-    {    }
+    //!< POSIX invalid file descriptor.
+    constexpr int   POSIX_INVALID_FD        { -1 };
+    constexpr char  DIR_NAME_DOCUMENTS[]    { "Documents" };
+    constexpr char  DIR_NAME_APPDATA[]      { "profile" };
 
-    int     fd;     //!< The POSIX file description. Invalid or not used if -1 (POSIX_INVALID_FD)
-} sPosixFile;
+    typedef struct S_PosixFile
+    {
+        //!< The POSIX file description. Invalid or not used if -1 (POSIX_INVALID_FD)
+        int fd  = POSIX_INVALID_FD;
+    } sPosixFile;
 
-//////////////////////////////////////////////////////////////////////////
-// local statics
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // local statics
+    //////////////////////////////////////////////////////////////////////////
 
-static inline bool _existFile( const char * filePath )
-{
-    return ( (NEString::isEmpty<char>(filePath) == false) && (RETURNED_OK == ::access(filePath, R_OK)) );
+    inline bool _existFile( const char * filePath )
+    {
+        return ((NEString::isEmpty<char>( filePath ) == false) && (RETURNED_OK == ::access( filePath, R_OK )));
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -58,7 +69,7 @@ static inline bool _existFile( const char * filePath )
 //////////////////////////////////////////////////////////////////////////
 const char      File::PATH_SEPARATOR    = '/';
 const int       File::MAXIMUM_PATH      = _POSIX_PATH_MAX;
-void * const    File::INVALID_HANDLE    = static_cast<void *>(NULL);
+void * const    File::INVALID_HANDLE    = nullptr;
 
 //////////////////////////////////////////////////////////////////////////
 // Methods
@@ -69,9 +80,11 @@ void File::_closeFile( void )
     if ( isOpened( ) )
     {
         sPosixFile * file = reinterpret_cast<sPosixFile *>(mFileHandle);
-        ASSERT(file != NULL);
+
         if (file->fd != POSIX_INVALID_FD)
-            ::close(file->fd);
+        {
+            ::close( file->fd );
+        }
 
         delete file;
     }
@@ -81,12 +94,12 @@ void File::_closeFile( void )
 
 bool File::open( void )
 {
-    sPosixFile * file = NULL;
+    sPosixFile * file = nullptr;
 
     if (isOpened() == false)
     {
         file = DEBUG_NEW sPosixFile;
-        if ( (mFileName.isEmpty() == false) && (file != NULL) )
+        if ( (mFileName.isEmpty() == false) && (file != nullptr) )
         {
             mFileMode = normalizeMode(mFileMode);
             int     flag = 0;
@@ -171,13 +184,13 @@ bool File::open( void )
 
             if (file->fd != POSIX_INVALID_FD)
             {
-                mFileHandle = static_cast<void *>(file);
+                mFileHandle = static_cast<FILEHANDLE>(file);
             }
             else
             {
                 OUTPUT_ERR("Failed to open file [ %s ], errno = [ %p ]", mFileName.getString(), static_cast<id_type>(errno));
                 delete file;
-                file = NULL;
+                file = nullptr;
             }
         }
         else
@@ -190,7 +203,7 @@ bool File::open( void )
         OUTPUT_WARN("File is already opened. Close file.");
     }
 
-    return (file != NULL);
+    return (file != nullptr);
 }
 
 void File::close( void )
@@ -203,10 +216,9 @@ unsigned int File::read(unsigned char* buffer, unsigned int size) const
     unsigned int result = 0;
     if ( isOpened() && canRead() )
     {
-        if ((buffer != NULL) && (size > 0))
+        if ((buffer != nullptr) && (size > 0))
         {
             sPosixFile * file = reinterpret_cast<sPosixFile *>(mFileHandle);
-            ASSERT(file != NULL);
 
             ssize_t sizeRead = ::read(file->fd, buffer, size);
             if (sizeRead > 0)
@@ -243,9 +255,9 @@ unsigned int File::write(const unsigned char* buffer, unsigned int size)
     if ( isOpened() && canWrite() )
     {
         sPosixFile * file = reinterpret_cast<sPosixFile *>(mFileHandle);
-        ASSERT(file != NULL);
+        ASSERT(file != nullptr);
 
-        if ((buffer != NULL) && (size != 0))
+        if ((buffer != nullptr) && (size != 0))
         {
             if ( (result = ::write(file->fd, buffer, size)) != static_cast<int>(size) )
             {
@@ -273,18 +285,17 @@ unsigned int File::setPosition(int offset, IECursorPosition::eCursorPosition sta
     if (isOpened())
     {
         sPosixFile * file = reinterpret_cast<sPosixFile *>(mFileHandle);
-        ASSERT(file != NULL);
         switch (startAt)
         {
-        case IECursorPosition::POSITION_BEGIN:
+        case IECursorPosition::eCursorPosition::PositionBegin:
             result = static_cast<unsigned int>( lseek(file->fd, offset, SEEK_SET) );
             break;
 
-        case IECursorPosition::POSITION_CURRENT:
+        case IECursorPosition::eCursorPosition::PositionCurrent:
             result = static_cast<unsigned int>( lseek(file->fd, offset, SEEK_CUR) );
             break;
 
-        case IECursorPosition::POSITION_END:
+        case IECursorPosition::eCursorPosition::PositionEnd:
             result = static_cast<unsigned int>( lseek(file->fd, offset, SEEK_END));
             break;
 
@@ -315,7 +326,6 @@ unsigned int File::getLength( void ) const
     if (isOpened())
     {
         sPosixFile * file = reinterpret_cast<sPosixFile *>(mFileHandle);
-        ASSERT(file != NULL);
         unsigned int curPos = static_cast<unsigned int>(lseek(file->fd, 0, SEEK_CUR));
         unsigned int endPos = static_cast<unsigned int>(lseek(file->fd, 0, SEEK_END));
         if (curPos != IECursorPosition::INVALID_CURSOR_POSITION)
@@ -325,26 +335,18 @@ unsigned int File::getLength( void ) const
 
         result = endPos;
     }
-    /**********************************************
-    struct stat buf;
-    if (RETURNED_OK == stat(mFileName.getString(), &buf))
-    {
-        result = static_cast<unsigned int>(buf.st_size);
-    }
-    **********************************************/
 
     return result;
 }
 
 unsigned int File::reserve(int newSize)
 {
-    OUTPUT_DBG("Going to reserve [ %d ] of data for file [ %s ].", newSize, mFileName.isValid() ? static_cast<const char *>(mFileName) : "NULL");
+    OUTPUT_DBG("Going to reserve [ %d ] of data for file [ %s ].", newSize, mFileName.isValid() ? static_cast<const char *>(mFileName) : "null");
 
     unsigned int result = IECursorPosition::INVALID_CURSOR_POSITION;
     if (isOpened() && canWrite())
     {
         sPosixFile * file = reinterpret_cast<sPosixFile *>(mFileHandle);
-        ASSERT(file != NULL);
         unsigned int setSize= newSize > 0 ? newSize : 0;
         unsigned int curPos = lseek(file->fd, 0, SEEK_CUR);
         unsigned int oldSize= lseek(file->fd, 0, SEEK_END);
@@ -379,8 +381,6 @@ bool File::truncate( void )
     if (isOpened() && canWrite())
     {
         sPosixFile * file = reinterpret_cast<sPosixFile *>(mFileHandle);
-        ASSERT(file != NULL);
-
         result = RETURNED_OK == ftruncate(file->fd, 0);
     }
 
@@ -392,8 +392,6 @@ void File::flush( void )
     if ( isOpened() )
     {
         sPosixFile * file = reinterpret_cast<sPosixFile *>(mFileHandle);
-        ASSERT(file != NULL);
-
         fsync(file->fd);
     }
 }
@@ -426,7 +424,7 @@ String File::getCurrentDir( void )
 {
     String result;
     char * buffer = DEBUG_NEW char[File::MAXIMUM_PATH + 1];
-    if (buffer != NULL)
+    if (buffer != nullptr)
     {
         result = static_cast<const char *>(getcwd(buffer, File::MAXIMUM_PATH));
         delete [] buffer;
@@ -477,33 +475,44 @@ bool File::copyFile( const char* originPath, const char* newPath, bool copyForce
             int fdWrite= ::open(newPath, flag, mode);
             unsigned char * buffer = DEBUG_NEW unsigned char[BUF_SIZE];
 
-            if ((buffer != NULL) && (fdRead != POSIX_INVALID_FD) && (fdWrite != POSIX_INVALID_FD))
+            if (buffer != nullptr)
             {
-                int readSize = 0;
-                result = true;
-                while ( (readSize = ::read(fdRead, buffer, BUF_SIZE)) > 0 )
+                if ( (fdRead != POSIX_INVALID_FD) && (fdWrite != POSIX_INVALID_FD) )
                 {
-                    if (::write(fdWrite, buffer, readSize) < 0)
+                    int readSize = 0;
+                    result = true;
+                    while ( (readSize = ::read( fdRead, buffer, BUF_SIZE )) > 0 )
                     {
-                        OUTPUT_ERR("Failed to copy [ %s ] into [ %s ], error code [ %p ]", originPath, newPath, static_cast<id_type>(errno));
-                        result = false;
-                        break;
+                        if ( ::write( fdWrite, buffer, readSize ) < 0 )
+                        {
+                            OUTPUT_ERR( "Failed to copy [ %s ] into [ %s ], error code [ %p ]", originPath, newPath, static_cast<id_type>(errno) );
+                            result = false;
+                            break;
+                        }
                     }
                 }
+                else
+                {
+                    OUTPUT_ERR( "Error during copying file. Read fd [ %d ], write fd [ %d ], error [ %p ]", buffer, fdRead, fdWrite, static_cast<id_type>(errno) );
+                }
+
+                if ( fdRead != POSIX_INVALID_FD )
+                {
+                    ::close( fdRead );
+                }
+
+                if ( fdWrite != POSIX_INVALID_FD )
+                {
+                    ::close( fdWrite );
+                }
+
+                delete [] buffer;
             }
             else
             {
-                OUTPUT_ERR("Error during copying file. Allocated buffer address [ %p ], read fd [ %d ], write fd [ %d ], error [ %p ]", buffer, fdRead, fdWrite, static_cast<id_type>(errno));
+                OUTPUT_ERR("Failed to allocate buffer to copy files.");
             }
 
-            if (buffer != NULL)
-                delete [] buffer;
-
-            if (fdRead != POSIX_INVALID_FD)
-                ::close(fdRead);
-
-            if (fdWrite != POSIX_INVALID_FD)
-                ::close(fdWrite);
         }
     }
 
@@ -513,7 +522,7 @@ bool File::copyFile( const char* originPath, const char* newPath, bool copyForce
 String File::getTempDir( void )
 {
     char const * dirTemp = getenv("TMPDIR");
-    return String( dirTemp != NULL ? dirTemp : "/tmp");
+    return String( dirTemp != nullptr ? dirTemp : "/tmp");
 }
 
 String File::genTempFileName( const char* prefix, bool unique, bool inTempFolder )
@@ -521,13 +530,15 @@ String File::genTempFileName( const char* prefix, bool unique, bool inTempFolder
     String result;
     char * buffer = DEBUG_NEW char[File::MAXIMUM_PATH + 1];
 
-    if (buffer != NULL)
+    if (buffer != nullptr)
     {
         unsigned int tmpUnique  = unique ? 0 : static_cast<unsigned int>( DateTime::getSystemTickCount() );
-        prefix = prefix == NULL ? File::TEMP_FILE_PREFIX : prefix;
+        prefix = prefix == nullptr ? File::TEMP_FILE_PREFIX.data() : prefix;
         String folder = inTempFolder ? File::getTempDir() : File::getCurrentDir();
         if (folder.isEmpty() == false)
-            folder += "/";
+        {
+            folder += File::PATH_SEPARATOR;
+        }
 
         sprintf(buffer, "%s%s%dXXXXXX.tmp", folder.isEmpty() == false ? folder.getString() : "", prefix, tmpUnique);
         int fd = mkstemp(buffer);
@@ -565,8 +576,8 @@ String File::getFileFullPath( const char* filePath )
     String result  = filePath;
     if ( NEString::isEmpty<char>(filePath) == false )
     {
-        char * pathCanonical  = realpath(filePath, NULL);
-        if (pathCanonical != NULL)
+        char * pathCanonical  = realpath(filePath, nullptr);
+        if (pathCanonical != nullptr)
         {
             result = pathCanonical;
             free(pathCanonical);
@@ -592,56 +603,72 @@ bool File::_createFolder( const char * dirPath )
 
 String File::getSpecialDir(eSpecialFolder specialFolder)
 {
+    String result;
 
     char * buffer = DEBUG_NEW char [File::MAXIMUM_PATH + 1];
-    const char * filePath   = NULL;
+    const char * filePath   = nullptr;
 
-    if (buffer != NULL)
+    if (buffer != nullptr)
     {
+        buffer[0] = '\0';
+
         switch ( specialFolder )
         {
-        case File::SpecialUserHome:
+        case File::eSpecialFolder::SpecialUserHome:
             filePath = getenv("HOME");
-            if (filePath != NULL)
-                sprintf(buffer, "%s", filePath != NULL ? filePath : "");
-            break;
-
-        case File::SpecialPersonal:
-            filePath = getenv("HOME");
-            sprintf(buffer, "%s%c%s", filePath != NULL ? filePath : "", File::PATH_SEPARATOR, "docs");
-            break;
-
-        case File::SpecialAppData:
-            filePath = getenv("HOME");
-            if (filePath != NULL)
+            if (filePath != nullptr)
             {
-                sprintf(  buffer, "%s%c.%s%cprofiles"
-                    , filePath
-                    , static_cast<int>(File::PATH_SEPARATOR)
-                    , Process::getInstance().getAppName()
-                    , static_cast<int>(File::PATH_SEPARATOR));
+                sprintf( buffer, "%s", filePath != nullptr ? filePath : "~" );
             }
             break;
 
-        case File::SpecialTemp:
-            filePath = getenv("TMPDIR");
-            if (filePath == NULL)
-                filePath = getenv("TMP");
-            if (filePath == NULL)
-                filePath = getenv("TEMP");
+        case File::eSpecialFolder::SpecialPersonal:
+            filePath = getenv("HOME");
+            if ( filePath != nullptr )
+            {
+                sprintf( buffer, "%s%c%s", filePath != nullptr ? filePath : "", File::PATH_SEPARATOR, DIR_NAME_DOCUMENTS );
+            }
+            break;
 
-            if (filePath != NULL)
-                sprintf(buffer, "%s", filePath);
+        case File::eSpecialFolder::SpecialAppData:
+            filePath = getenv("HOME");
+            if (filePath != nullptr)
+            {
+                sprintf(  buffer, "%s%c.%s%c%s"
+						, filePath
+						, static_cast<int>(File::PATH_SEPARATOR)
+						, Process::getInstance().getAppName().getString()
+						, static_cast<int>(File::PATH_SEPARATOR)
+						, DIR_NAME_APPDATA);
+            }
+            break;
+
+        case File::eSpecialFolder::SpecialTemp:
+            filePath = getenv("TMPDIR");
+            if (filePath == nullptr )
+            {
+                filePath = getenv( "TMP" );
+                if ( filePath == nullptr )
+                {
+                    filePath = getenv( "TEMP" );
+                }
+            }
+
+            if (filePath != nullptr)
+            {
+                sprintf( buffer, "%s", filePath );
+            }
             break;
 
         default:
             break;
         }
 
+        result = buffer;
         delete [] buffer;
     }
 
-    return String(filePath);
+    return result;
 }
 
-#endif // _POSIX
+#endif //  defined(_POSIX) || defined(POSIX)

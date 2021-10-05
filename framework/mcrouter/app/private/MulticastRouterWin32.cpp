@@ -1,7 +1,15 @@
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        mcrouter/app/private/MulticastRouterWin32.cpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       Router, Multicast Router Service process
  ************************************************************************/
 #include "mcrouter/app/MulticastRouter.hpp"
@@ -15,7 +23,6 @@
 #include "areg/base/File.hpp"
 #include "areg/base/Process.hpp"
 #include "areg/base/String.hpp"
-#include "areg/base/WideString.hpp"
 #include "areg/appbase/Application.hpp"
 #include "areg/appbase/NEApplication.hpp"
 #include "areg/trace/GETrace.h"
@@ -26,12 +33,6 @@
 #include <shellapi.h>
 #include "mcrouter/resources/resource.hpp"
 
-#ifdef UNICODE
-    #define ServiceName     NEMulticastRouterSettings::ServiceNameW
-#else   // UNICODE
-    #define ServiceName     NEMulticastRouterSettings::ServiceNameA
-#endif  // UNICODE
-
 DEF_TRACE_SCOPE(mcrouter_app_MulticastRouter_setState);
 
 //////////////////////////////////////////////////////////////////////////
@@ -40,24 +41,23 @@ DEF_TRACE_SCOPE(mcrouter_app_MulticastRouter_setState);
 VOID WINAPI GServiceMain(DWORD argc, LPTSTR * argv);
 VOID WINAPI GServiceCtrlHandler(DWORD);
 
+namespace
+{
 #ifdef UNICODE
-    static WideString _serviceDescribe(NEApplication::ROUTER_SERVICE_NAME_WIDE);
+    wchar_t *               _serviceDescribe    = NEApplication::ROUTER_SERVICE_NAME_WIDE;
 #else
-    static String     _serviceDescribe(NEApplication::ROUTER_SERVICE_NAME_ASCII);
+    char *                  _serviceDescribe    = NEApplication::ROUTER_SERVICE_NAME_ASCII;
 #endif // UNICODE
 
-static SERVICE_STATUS           gServiceStatus  = {0};
-static SERVICE_STATUS_HANDLE    gStatusHandle   = NULL;
-static SERVICE_TABLE_ENTRY      gServiceTable[ ]= 
-{
-      {_serviceDescribe.getUnsafeBuffer(), &::GServiceMain}
-    , {NULL, NULL}
-};
+    SERVICE_STATUS          _serviceStatus  { 0 };
+    SERVICE_STATUS_HANDLE   _statusHandle   { nullptr };
+    SERVICE_TABLE_ENTRY     _serviceTable[] { {_serviceDescribe, &::GServiceMain}, {nullptr, nullptr} };
+}
 
 inline static char ** _convertArguments( TCHAR ** argv, int argc)
 {
-    char ** argvTemp = argc != 0 ? DEBUG_NEW char * [argc] : NULL;
-    if ( argvTemp != NULL )
+    char ** argvTemp = argc != 0 ? DEBUG_NEW char * [argc] : nullptr;
+    if ( argvTemp != nullptr )
     {
         for ( int i = 0; i < static_cast<int>(argc); ++ i )
         {
@@ -73,7 +73,7 @@ inline static char ** _convertArguments( TCHAR ** argv, int argc)
 
 inline static void _deleteArguments( char ** argv, int argc )
 {
-    if ( argv != NULL )
+    if ( argv != nullptr )
     {
         for ( int i = 0; i < static_cast<int>(argc); ++ i )
             delete [] argv[i];
@@ -81,51 +81,32 @@ inline static void _deleteArguments( char ** argv, int argc )
     }
 }
 
-inline static bool _isEqual( const char * strLeft, const char * strRight )
-{
-    return (NEString::compareStrings<char, char>(strLeft, strRight, NEString::CountAll, false) == 0);
-}
-
 int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 {
     int result      = 0;
     char ** argvTemp = _convertArguments(argv, argc);
     MulticastRouter & router = MulticastRouter::getInstance();
-    router.setCurrentCommand( MulticastRouter::CMD_Console );
-
-    if ( argc > 1 )
-    {
-        const char * cmd = argvTemp[1];
-
-        if ( _isEqual( cmd, NEMulticastRouterSettings::ServiceCommandInstall) )
-            router.setCurrentCommand( MulticastRouter::CMD_Install );
-        else if ( _isEqual(cmd, NEMulticastRouterSettings::ServiceCommandUninstall) )
-            router.setCurrentCommand( MulticastRouter::CMD_Uninstall );
-        else if ( _isEqual(cmd, NEMulticastRouterSettings::ServiceCommandConsole) )
-            router.setCurrentCommand( MulticastRouter::CMD_Console );
-        else if ( _isEqual(cmd, NEMulticastRouterSettings::ServiceCommandService) )
-            router.setCurrentCommand(MulticastRouter::CMD_Service);
-    }
+    router.setCurrentCommand( NEMulticastRouterSettings::parseOption( argc > 1 ?  argvTemp[1] : nullptr) );
 
     _deleteArguments(argvTemp, argc);
 
-    switch ( MulticastRouter::getInstance().getCurrentCommand() )
+    switch ( router.getCurrentCommand() )
     {
-    case MulticastRouter::CMD_Install:
-        result = MulticastRouter::getInstance().serviceInstall() ? 0 : -2;
+    case NEMulticastRouterSettings::eServiceCommand::CMD_Install:
+        result = router.serviceInstall() ? 0 : -2;
         break;
 
-    case MulticastRouter::CMD_Uninstall:
-        MulticastRouter::getInstance().serviceUninstall();
+    case NEMulticastRouterSettings::eServiceCommand::CMD_Uninstall:
+        router.serviceUninstall();
         break;
 
-    case MulticastRouter::CMD_Console:
+    case NEMulticastRouterSettings::eServiceCommand::CMD_Console:
         ::GServiceMain(argc, argv);
-        MulticastRouter::getInstance().serviceStop();
+        router.serviceStop();
         break;
 
-    case MulticastRouter::CMD_Service:
-        result = ::StartServiceCtrlDispatcher(gServiceTable) ? 0 : -1;
+    case NEMulticastRouterSettings::eServiceCommand::CMD_Service:
+        result = ::StartServiceCtrlDispatcher(_serviceTable) ? 0 : -1;
         break;
 
     default:
@@ -138,23 +119,32 @@ int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 
 VOID WINAPI GServiceMain( DWORD argc, LPTSTR * argv )
 {
-    NEMemory::zeroData<SERVICE_STATUS>(gServiceStatus);
-    gServiceStatus.dwServiceType            = SERVICE_WIN32_OWN_PROCESS;
-    gServiceStatus.dwCurrentState           = SERVICE_STOPPED;
-    gServiceStatus.dwControlsAccepted       = SERVICE_ACCEPT_PAUSE_CONTINUE | SERVICE_ACCEPT_STOP;
-    gServiceStatus.dwWin32ExitCode          = NO_ERROR;
-    gServiceStatus.dwServiceSpecificExitCode= 0;
-    gServiceStatus.dwCheckPoint             = 0;    
-    gServiceStatus.dwWaitHint               = 0;
+    try
+    {
 
-    MulticastRouter & router = MulticastRouter::getInstance();
-    router.setState(NEMulticastRouterSettings::RouterStarting);
+        NEMemory::zeroElement<SERVICE_STATUS>( _serviceStatus );
+        _serviceStatus.dwServiceType            = SERVICE_WIN32_OWN_PROCESS;
+        _serviceStatus.dwCurrentState           = SERVICE_STOPPED;
+        _serviceStatus.dwControlsAccepted       = SERVICE_ACCEPT_PAUSE_CONTINUE | SERVICE_ACCEPT_STOP;
+        _serviceStatus.dwWin32ExitCode          = NO_ERROR;
+        _serviceStatus.dwServiceSpecificExitCode= 0;
+        _serviceStatus.dwCheckPoint             = 0;
+        _serviceStatus.dwWaitHint               = 0;
 
-    char ** argvTemp = _convertArguments(argv, static_cast<int>(argc));
-    router.serviceMain( static_cast<int>(argc), argvTemp);
-    _deleteArguments(argvTemp, static_cast<int>(argc));
+        MulticastRouter & router = MulticastRouter::getInstance( );
+        router.setState( NEMulticastRouterSettings::eRouterState::RouterStarting );
 
-    router.setState( NEMulticastRouterSettings::RouterStopped );
+        char ** argvTemp = _convertArguments( argv, static_cast<int>(argc) );
+        router.serviceMain( static_cast<int>(argc), argvTemp );
+        _deleteArguments( argvTemp, static_cast<int>(argc) );
+
+        router.setState( NEMulticastRouterSettings::eRouterState::RouterStopped );
+    }
+    catch ( const std::exception& )
+    {
+        ASSERT(false);
+    }
+
 }
 
 VOID WINAPI GServiceCtrlHandler (DWORD CtrlCode)
@@ -187,124 +177,123 @@ VOID WINAPI GServiceCtrlHandler (DWORD CtrlCode)
 //////////////////////////////////////////////////////////////////////////
 bool MulticastRouter::_isValid( void ) const
 {
-    return (mSeMHandle != NULL && mSvcHandle != NULL);
+    return (mSeMHandle != nullptr && mSvcHandle != nullptr);
 }
 
 void MulticastRouter::_freeResources( void )
 {
-    if ( mSvcHandle != NULL )
+    if ( mSvcHandle != nullptr )
         ::CloseServiceHandle( reinterpret_cast<SC_HANDLE>(mSvcHandle) );
-    if ( mSeMHandle != NULL )
+    if ( mSeMHandle != nullptr )
         ::CloseServiceHandle( reinterpret_cast<SC_HANDLE>(mSeMHandle) );
 
-    mSvcHandle = NULL;
-    mSeMHandle = NULL;
+    mSvcHandle = nullptr;
+    mSeMHandle = nullptr;
 }
 
 bool MulticastRouter::_openService(void)
 {
-    if ( mSeMHandle == NULL )
-        mSeMHandle = reinterpret_cast<void *>(::OpenSCManager(NULL, NULL, SC_MANAGER_ALL_ACCESS));
-    
-    if ( mSeMHandle != NULL )
+    if ( mSeMHandle == nullptr )
     {
-        if ( mSvcHandle == NULL )
-            mSvcHandle = reinterpret_cast<void *>(::OpenService(reinterpret_cast<SC_HANDLE>(mSeMHandle), ServiceName, SERVICE_ALL_ACCESS));
+        mSeMHandle = reinterpret_cast<void *>(::OpenSCManager( nullptr, nullptr, SC_MANAGER_ALL_ACCESS ));
     }
     
-    return ( mSvcHandle != NULL );
+    if ( (mSeMHandle != nullptr) && (mSvcHandle == nullptr) )
+    {
+        mSvcHandle = reinterpret_cast<void *>(::OpenService( reinterpret_cast<SC_HANDLE>(mSeMHandle), ::_serviceDescribe, SERVICE_ALL_ACCESS ));
+    }
+    
+    return ( mSvcHandle != nullptr );
 }
 
 bool MulticastRouter::_createService(void)
 {
-    if ( mSeMHandle == NULL )
-        mSeMHandle = reinterpret_cast<void *>(::OpenSCManager(NULL, NULL, SC_MANAGER_ALL_ACCESS));
-    
-    if ( mSeMHandle != NULL )
+    if ( mSeMHandle == nullptr )
     {
-        if ( mSvcHandle == NULL )
+        mSeMHandle = reinterpret_cast<void *>(::OpenSCManager( nullptr, nullptr, SC_MANAGER_ALL_ACCESS ));
+    }
+    
+    if ( (mSeMHandle != nullptr) && (mSvcHandle == nullptr) )
+    {
+        TCHAR szPath[MAX_PATH];
+        if( ::GetModuleFileName( nullptr, szPath, MAX_PATH ) )
         {
-            TCHAR szPath[MAX_PATH];
-            if( ::GetModuleFileName( NULL, szPath, MAX_PATH ) )
-            {
 
-#define DEVELOPMENT_PENDING     1
+#define DEVELOPMENT_PENDING     0
 
 #if defined(DEVELOPMENT_PENDING) && (DEVELOPMENT_PENDING != 0)
-                DWORD startType = SERVICE_DEMAND_START;
+            DWORD startType = SERVICE_DEMAND_START;
 #else   // defined(DEVELOPMENT_PENDING) && (DEVELOPMENT_PENDING != 0)
-                DWORD startType = SERVICE_AUTO_START;
+            DWORD startType = SERVICE_AUTO_START;
 #endif  // defined(DEVELOPMENT_PENDING) && (DEVELOPMENT_PENDING != 0)
 
-                mSvcHandle = reinterpret_cast<void *>(::CreateService(reinterpret_cast<SC_HANDLE>(mSeMHandle), ServiceName, ServiceName, SERVICE_ALL_ACCESS
-                                                                    , SERVICE_WIN32_OWN_PROCESS, startType, SERVICE_ERROR_NORMAL, szPath
-                                                                    , NULL, NULL, NULL, NULL, NULL));
-                if ( mSvcHandle != NULL )
-                {
-                    SERVICE_DESCRIPTION description;
-                    description.lpDescription = _serviceDescribe.getUnsafeBuffer();
-                    ::ChangeServiceConfig2(reinterpret_cast<SC_HANDLE>(mSvcHandle), SERVICE_CONFIG_DESCRIPTION, &description);
+            mSvcHandle = reinterpret_cast<void *>(::CreateService(reinterpret_cast<SC_HANDLE>(mSeMHandle), _serviceDescribe, _serviceDescribe, SERVICE_ALL_ACCESS
+                                                                , SERVICE_WIN32_OWN_PROCESS, startType, SERVICE_ERROR_NORMAL, szPath
+                                                                , nullptr, nullptr, nullptr, nullptr, nullptr));
+            if ( mSvcHandle != nullptr )
+            {
+                SERVICE_DESCRIPTION description;
+                description.lpDescription = _serviceDescribe;
+                ::ChangeServiceConfig2(reinterpret_cast<SC_HANDLE>(mSvcHandle), SERVICE_CONFIG_DESCRIPTION, &description);
 
-                    SERVICE_FAILURE_ACTIONS_FLAG actionFlag = {1};
-                    actionFlag.fFailureActionsOnNonCrashFailures = TRUE;
-                    ::ChangeServiceConfig2(reinterpret_cast<SC_HANDLE>(mSvcHandle), SERVICE_CONFIG_FAILURE_ACTIONS_FLAG, &actionFlag);
+                SERVICE_FAILURE_ACTIONS_FLAG actionFlag = {1};
+                actionFlag.fFailureActionsOnNonCrashFailures = TRUE;
+                ::ChangeServiceConfig2(reinterpret_cast<SC_HANDLE>(mSvcHandle), SERVICE_CONFIG_FAILURE_ACTIONS_FLAG, &actionFlag);
 
-                    SERVICE_FAILURE_ACTIONS failures = {0};
-                    SC_ACTION actions[4];
-                    int count = 4;
+                SERVICE_FAILURE_ACTIONS failures = {0};
+                SC_ACTION actions[4];
+                int count = 4;
 
-                    failures.dwResetPeriod  = INFINITE;
-                    failures.lpRebootMsg    = NULL;
-                    failures.lpCommand      = NULL;
-                    failures.cActions       = count;
-                    failures.lpsaActions    = actions;
+                failures.dwResetPeriod  = INFINITE;
+                failures.lpRebootMsg    = nullptr;
+                failures.lpCommand      = nullptr;
+                failures.cActions       = count;
+                failures.lpsaActions    = actions;
 
-                    // first failure
-                    actions[0].Delay        = 500;
-                    actions[0].Type         = SC_ACTION_RESTART;
+                // first failure
+                actions[0].Delay        = 500;
+                actions[0].Type         = SC_ACTION_RESTART;
 
-                    // first second
-                    actions[1].Delay        = 500;
-                    actions[1].Type         = SC_ACTION_RESTART;
+                // first second
+                actions[1].Delay        = 500;
+                actions[1].Type         = SC_ACTION_RESTART;
 
-                    // third failure
-                    actions[2].Delay        = 500;
-                    actions[2].Type         = SC_ACTION_RESTART;
+                // third failure
+                actions[2].Delay        = 500;
+                actions[2].Type         = SC_ACTION_RESTART;
 
-                    // fourth failure
-                    actions[3].Delay        = 0;
-                    actions[3].Type         = SC_ACTION_NONE;
+                // fourth failure
+                actions[3].Delay        = 0;
+                actions[3].Type         = SC_ACTION_NONE;
 
-                    actions[count - 1].Delay= 0;
-                    actions[count - 1].Type = SC_ACTION_NONE;
+                actions[count - 1].Delay= 0;
+                actions[count - 1].Type = SC_ACTION_NONE;
 
-                    ::ChangeServiceConfig2(reinterpret_cast<SC_HANDLE>(mSvcHandle), SERVICE_CONFIG_FAILURE_ACTIONS, &failures);
+                ::ChangeServiceConfig2(reinterpret_cast<SC_HANDLE>(mSvcHandle), SERVICE_CONFIG_FAILURE_ACTIONS, &failures);
 
 #if !defined(DEVELOPMENT_PENDING) || (DEVELOPMENT_PENDING == 0)
-                    SERVICE_DELAYED_AUTO_START_INFO delay = {1};
-                    delay.fDelayedAutostart = TRUE;
-                    ::ChangeServiceConfig2(reinterpret_cast<SC_HANDLE>(mSvcHandle), SERVICE_CONFIG_DELAYED_AUTO_START_INFO, &delay);
+                SERVICE_DELAYED_AUTO_START_INFO delay = {1};
+                delay.fDelayedAutostart = TRUE;
+                ::ChangeServiceConfig2(reinterpret_cast<SC_HANDLE>(mSvcHandle), SERVICE_CONFIG_DELAYED_AUTO_START_INFO, &delay);
 #endif // !defined(DEVELOPMENT_PENDING) || (DEVELOPMENT_PENDING == 0)
-                }
             }
         }
     }
     
-    return ( mSvcHandle != NULL );
+    return ( mSvcHandle != nullptr );
 }
 
 void MulticastRouter::_deleteService( void )
 {
-    if ( reinterpret_cast<SC_HANDLE>(mSvcHandle) != reinterpret_cast<SC_HANDLE>(NULL) )
+    if ( mSvcHandle != nullptr )
         ::DeleteService( reinterpret_cast<SC_HANDLE>(mSvcHandle) );
-
 }
 
 bool MulticastRouter::_registerService( void )
 {
-    if ( mServiceCmd == MulticastRouter::CMD_Service )
-        gStatusHandle = ::RegisterServiceCtrlHandler(ServiceName, GServiceCtrlHandler);
-    return (gStatusHandle != NULL);
+    if ( mServiceCmd == NEMulticastRouterSettings::eServiceCommand::CMD_Service )
+        _statusHandle = ::RegisterServiceCtrlHandler( _serviceDescribe, GServiceCtrlHandler);
+    return (_statusHandle != nullptr);
 }
 
 bool MulticastRouter::setState( NEMulticastRouterSettings::eRouterState newState )
@@ -313,58 +302,58 @@ bool MulticastRouter::setState( NEMulticastRouterSettings::eRouterState newState
     TRACE_DBG("Changing Service Router state. Old state [ %s ], new state [ %s ]", NEMulticastRouterSettings::GetString(mRouterState), NEMulticastRouterSettings::GetString(newState));
 
     bool result = true;
-    gServiceStatus.dwControlsAccepted   = 0;
-    gServiceStatus.dwWin32ExitCode      = 0;
+    _serviceStatus.dwControlsAccepted   = 0;
+    _serviceStatus.dwWin32ExitCode      = 0;
 
     if ( newState != mRouterState )
     {
         switch ( newState )
         {
-        case NEMulticastRouterSettings::RouterStopped:
-            gServiceStatus.dwCurrentState       = SERVICE_STOPPED;
-            gServiceStatus.dwControlsAccepted   = 0;
-            gServiceStatus.dwCheckPoint         = 7;
-            gServiceStatus.dwWin32ExitCode      = ERROR_SUCCESS;
+        case NEMulticastRouterSettings::eRouterState::RouterStopped:
+            _serviceStatus.dwCurrentState       = SERVICE_STOPPED;
+            _serviceStatus.dwControlsAccepted   = 0;
+            _serviceStatus.dwCheckPoint         = 7;
+            _serviceStatus.dwWin32ExitCode      = ERROR_SUCCESS;
             break;
 
-        case NEMulticastRouterSettings::RouterStarting:
-            gServiceStatus.dwCurrentState       = SERVICE_START_PENDING;
-            gServiceStatus.dwCheckPoint         = 1;
+        case NEMulticastRouterSettings::eRouterState::RouterStarting:
+            _serviceStatus.dwCurrentState       = SERVICE_START_PENDING;
+            _serviceStatus.dwCheckPoint         = 1;
             break;
 
-        case NEMulticastRouterSettings::RouterStopping:
-            gServiceStatus.dwCurrentState       = SERVICE_STOP_PENDING;
-            gServiceStatus.dwCheckPoint         = 6;
+        case NEMulticastRouterSettings::eRouterState::RouterStopping:
+            _serviceStatus.dwCurrentState       = SERVICE_STOP_PENDING;
+            _serviceStatus.dwCheckPoint         = 6;
             break;
 
-        case NEMulticastRouterSettings::RouterRunning:
-            gServiceStatus.dwCurrentState       = SERVICE_RUNNING;
-            gServiceStatus.dwControlsAccepted   = SERVICE_ACCEPT_PAUSE_CONTINUE | SERVICE_ACCEPT_STOP;
-            gServiceStatus.dwCheckPoint         = 2;
+        case NEMulticastRouterSettings::eRouterState::RouterRunning:
+            _serviceStatus.dwCurrentState       = SERVICE_RUNNING;
+            _serviceStatus.dwControlsAccepted   = SERVICE_ACCEPT_PAUSE_CONTINUE | SERVICE_ACCEPT_STOP;
+            _serviceStatus.dwCheckPoint         = 2;
             break;
 
-        case NEMulticastRouterSettings::RouterContinuing:
-            gServiceStatus.dwCurrentState       = SERVICE_CONTINUE_PENDING;
-            gServiceStatus.dwCheckPoint         = 5;
+        case NEMulticastRouterSettings::eRouterState::RouterContinuing:
+            _serviceStatus.dwCurrentState       = SERVICE_CONTINUE_PENDING;
+            _serviceStatus.dwCheckPoint         = 5;
             break;
 
-        case NEMulticastRouterSettings::RouterPausing:
-            gServiceStatus.dwCurrentState       = SERVICE_PAUSE_PENDING;
-            gServiceStatus.dwCheckPoint         = 3;
+        case NEMulticastRouterSettings::eRouterState::RouterPausing:
+            _serviceStatus.dwCurrentState       = SERVICE_PAUSE_PENDING;
+            _serviceStatus.dwCheckPoint         = 3;
             break;
 
-        case NEMulticastRouterSettings::RouterPaused:
-            gServiceStatus.dwCurrentState       = SERVICE_PAUSED;
-            gServiceStatus.dwControlsAccepted   = SERVICE_ACCEPT_PAUSE_CONTINUE | SERVICE_ACCEPT_STOP;
-            gServiceStatus.dwCheckPoint         = 4;
+        case NEMulticastRouterSettings::eRouterState::RouterPaused:
+            _serviceStatus.dwCurrentState       = SERVICE_PAUSED;
+            _serviceStatus.dwControlsAccepted   = SERVICE_ACCEPT_PAUSE_CONTINUE | SERVICE_ACCEPT_STOP;
+            _serviceStatus.dwCheckPoint         = 4;
             break;
 
         default:
             ASSERT(false);
         }
         mRouterState = newState;
-        if ( gStatusHandle != NULL )
-            result = ::SetServiceStatus(gStatusHandle, &gServiceStatus) != FALSE;
+        if ( _statusHandle != nullptr )
+            result = ::SetServiceStatus(_statusHandle, &_serviceStatus) != FALSE;
     }
 
     return result;

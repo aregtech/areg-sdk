@@ -1,7 +1,15 @@
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/component/private/Component.cpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, Component class implementation.
  *
  ************************************************************************/
@@ -32,17 +40,17 @@ Component::MapComponentResource       Component::_mapComponentResource;
 //////////////////////////////////////////////////////////////////////////
 Component* Component::loadComponent(const NERegistry::ComponentEntry &entry, ComponentThread & componentThread )
 {
-    ASSERT(entry.mFuncCreate != NULL);
+    ASSERT(entry.mFuncCreate != nullptr);
 
     Component* component = entry.mFuncCreate(entry, componentThread);
-    if (component != NULL)
+    if (component != nullptr)
     {
         const NERegistry::WorkerThreadList& wThreads = entry.getWorkerThreads();
         for (int i = 0; i < wThreads.getSize(); ++ i)
         {
             const NERegistry::WorkerThreadEntry& wtEntry = wThreads[i];
             IEWorkerThreadConsumer* consumer = static_cast<Component *>(component)->workerThreadConsumer(wtEntry.mConsumerName.getString(), wtEntry.mThreadName.getBuffer());
-            if (consumer != NULL)
+            if (consumer != nullptr)
                 component->createWorkerThread(wtEntry.mThreadName.getString(), *consumer, componentThread);
         }
     }
@@ -52,7 +60,7 @@ Component* Component::loadComponent(const NERegistry::ComponentEntry &entry, Com
 
 void Component::unloadComponent( Component& comItem, const NERegistry::ComponentEntry& entry )
 {
-    ASSERT(entry.mFuncDelete != NULL);
+    ASSERT(entry.mFuncDelete != nullptr);
 
     const NERegistry::WorkerThreadList& wThreads = entry.getWorkerThreads();
     for (int i = 0; i < wThreads.getSize(); ++ i)
@@ -78,7 +86,7 @@ Component * Component::findComponentByNumber(unsigned int magicNum)
 Component* Component::findComponentByAddress( const ComponentAddress& comAddress )
 {
     Component* result = _mapComponentResource.findResourceObject( static_cast<unsigned int>(comAddress.getRoleName()) );
-    return (result != NULL && result->getAddress() == comAddress ? result : NULL);
+    return (result != nullptr && result->getAddress() == comAddress ? result : nullptr);
 }
 
 bool Component::existComponent( const char* roleName )
@@ -90,7 +98,7 @@ bool Component::existComponent( const char* roleName )
 ComponentThread& Component::_getCurrentComponentThread( void )
 {
     ComponentThread* result = RUNTIME_CAST(&(DispatcherThread::getCurrentDispatcherThread()), ComponentThread);
-    ASSERT(result != NULL);
+    ASSERT(result != nullptr);
     return *result;
 }
 
@@ -129,13 +137,13 @@ Component::~Component( void )
 WorkerThread* Component::createWorkerThread( const char* threadName, IEWorkerThreadConsumer& consumer, ComponentThread & /* masterThread */ )
 {
     WorkerThread* workThread = mComponentInfo.findWorkerThread(threadName);
-    if (workThread == NULL)
+    if (workThread == nullptr)
     {
         OUTPUT_DBG("Going to Create WorkerThread object [ %s ]", threadName);
         workThread = DEBUG_NEW WorkerThread(threadName, self(), consumer);
-        if (workThread != NULL)
+        if (workThread != nullptr)
         {
-            if (workThread->createThread(Thread::WAIT_INFINITE))
+            if (workThread->createThread(NECommon::WAIT_INFINITE))
             {
                 OUTPUT_DBG("Registering WorkerThread [ %s ]", threadName);
                 mComponentInfo.registerWorkerThread(*workThread);
@@ -143,7 +151,7 @@ WorkerThread* Component::createWorkerThread( const char* threadName, IEWorkerThr
             else
             {
                 delete workThread;
-                workThread = NULL;
+                workThread = nullptr;
             }
         }
     }
@@ -155,10 +163,10 @@ void Component::deleteWorkerThread( const char* threadName )
 {
     OUTPUT_DBG("Going to Delete WorkerThread object [ %s ]", threadName);
     WorkerThread* workThread = mComponentInfo.findWorkerThread(threadName);
-    if (workThread != NULL)
+    if (workThread != nullptr)
     {
         OUTPUT_DBG("Unregistering and deleting WorkerThread [ %s ]", threadName);
-        workThread->destroyThread(Thread::WAIT_INFINITE);
+        workThread->destroyThread(NECommon::WAIT_INFINITE);
         mComponentInfo.unregisterWorkerThread(*workThread);
         delete workThread;
     }
@@ -166,12 +174,12 @@ void Component::deleteWorkerThread( const char* threadName )
 
 void Component::startupComponent( ComponentThread& /* comThread */ )
 {
-    LISTPOS pos = NULL;
+    LISTPOS pos = nullptr;
     
-    for (pos = mServerList.firstPosition(); pos != NULL; pos = mServerList.nextPosition(pos))
+    for (pos = mServerList.firstPosition(); pos != nullptr; pos = mServerList.nextPosition(pos))
     {
         StubBase * stub = mServerList[pos];
-        ASSERT( stub != NULL );
+        ASSERT( stub != nullptr );
         stub->startupServiceInterface(self());
         ServiceManager::requestRegisterServer(stub->getAddress());
     }
@@ -179,12 +187,12 @@ void Component::startupComponent( ComponentThread& /* comThread */ )
 
 void Component::shutdownComponent( ComponentThread& /* comThread */ )
 {
-    LISTPOS pos = NULL;
+    LISTPOS pos = nullptr;
 
-    for (pos = mServerList.firstPosition(); pos != NULL; pos = mServerList.nextPosition(pos))
+    for (pos = mServerList.firstPosition(); pos != nullptr; pos = mServerList.nextPosition(pos))
     {
         StubBase * stub = mServerList[pos];
-        ASSERT(stub != NULL);
+        ASSERT(stub != nullptr);
         OUTPUT_INFO("Shutting down Service Interface [ %s ] of component [ %s ]", stub->getAddress().getServiceName().getString(), getRoleName().getBuffer());
         stub->shutdownServiceIntrface(self());
         ServiceManager::requestUnregisterServer(stub->getAddress());
@@ -192,7 +200,7 @@ void Component::shutdownComponent( ComponentThread& /* comThread */ )
     
     ThreadAddress addrThread;
     WorkerThread * workerThread = mComponentInfo.getFirstWorkerThread(addrThread);
-    while (workerThread != NULL)
+    while (workerThread != nullptr)
     {
         OUTPUT_INFO("Sutting down worker thread [ %s ] of component [ %s ]", workerThread->getName().getString(), getRoleName().getBuffer());
         workerThread->shutdownThread();
@@ -204,7 +212,7 @@ void Component::notifyComponentShutdown( ComponentThread& /*comThread */ )
 {
     ThreadAddress addrThread;
     WorkerThread * workerThread = mComponentInfo.getFirstWorkerThread(addrThread);
-    while (workerThread != NULL)
+    while (workerThread != nullptr)
     {
         OUTPUT_INFO("Sutting down worker thread [ %s ] of component [ %s ]", workerThread->getName().getString(), getRoleName().getBuffer());
         workerThread->shutdownThread();
@@ -219,12 +227,12 @@ void Component::registerServerItem( StubBase& server )
 
 StubBase* Component::findServerByName( const char* serviceName )
 {
-    StubBase* result = NULL;
+    StubBase* result = nullptr;
     LISTPOS pos = mServerList.firstPosition();
-    for ( ; pos != NULL; pos = mServerList.nextPosition(pos))
+    for ( ; pos != nullptr; pos = mServerList.nextPosition(pos))
     {
         StubBase* stub = mServerList.getAt(pos);
-        ASSERT(stub != NULL);
+        ASSERT(stub != nullptr);
         if (stub->getAddress().getServiceName() == serviceName)
         {
             result = stub;
@@ -238,7 +246,7 @@ void Component::waitComponentCompletion( unsigned int waitTimeout )
 {
     ThreadAddress addrThread;
     WorkerThread * workerThread = mComponentInfo.getFirstWorkerThread(addrThread);
-    while (workerThread != NULL)
+    while (workerThread != nullptr)
     {
         workerThread->completionWait(waitTimeout);
         workerThread = mComponentInfo.getNextWorkerThread(addrThread);
@@ -247,7 +255,7 @@ void Component::waitComponentCompletion( unsigned int waitTimeout )
 
 IEWorkerThreadConsumer* Component::workerThreadConsumer( const char* /* consumerName */, const char* /* workerThreadName */)
 {
-    return NULL;
+    return nullptr;
 }
 
 unsigned int Component::_magicNumber(Component & comp)

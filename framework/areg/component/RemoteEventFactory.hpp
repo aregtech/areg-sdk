@@ -1,9 +1,16 @@
-#ifndef AREG_COMPONENT_REMOTEEVENTFACTORY_HPP
-#define AREG_COMPONENT_REMOTEEVENTFACTORY_HPP
+#pragma once
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/component/RemoteEventFactory.hpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, Remote Event Factory class. 
  *              Creates event from stream and converts event to stream.
  ************************************************************************/
@@ -50,7 +57,7 @@ public:
      * \return  If function succeeds, the return value is valid pointer
      *          to one of remote event objects, which type can be found
      *          by runtime casting. Otherwise, if streaming data contains
-     *          wrong or unsupported event types, function returns NULL.
+     *          wrong or unsupported event types, function returns nullptr.
      **/
     static StreamableEvent * createEventFromStream( const RemoteMessage & stream, const Channel & comChannel );
 
@@ -83,19 +90,16 @@ private:
      * \brief   Default constructor. Hidden.
      *          Object cannot be instantiated directly.
      **/
-    RemoteEventFactory( void );
+    RemoteEventFactory( void ) = default;
 
     /**
      * \brief   Destructor. The object cannot be deleted directly.
      **/
-    ~RemoteEventFactory( void );
+    ~RemoteEventFactory( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    RemoteEventFactory( const RemoteEventFactory & /*src*/ );
-    const RemoteEventFactory & operator = ( const RemoteEventFactory & /*src*/ );
+    DECLARE_NOCOPY_NOMOVE( RemoteEventFactory );
 };
-
-#endif  // AREG_COMPONENT_REMOTEEVENTFACTORY_HPP

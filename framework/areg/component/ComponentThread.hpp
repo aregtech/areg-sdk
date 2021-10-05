@@ -1,9 +1,16 @@
-#ifndef AREG_COMPONENT_COMPONENTTHREAD_HPP
-#define AREG_COMPONENT_COMPONENTTHREAD_HPP
+#pragma once
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/component/ComponentThread.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, Component Thread.
  *              All components are instantiated and run within
  *              component thread. The component thread is a 
@@ -43,7 +50,7 @@ private:
      * \brief   ComponentThread::ListComponent;
      *          Linked List of instantiated components in the Component Thread.
      **/
-    typedef TELinkedList<Component*, Component*>  ListComponent;
+    using ListComponent     = TELinkedList<Component*, Component*>;
 
 //////////////////////////////////////////////////////////////////////////
 // Declare as Runtime instance
@@ -60,19 +67,19 @@ public:
      *          The current should be Component Thread and there should be
      *          current Component set in the thread.
      *          If current thread is not a Component Thread and there is
-     *          current Component set in the thread, it will return NULL.
+     *          current Component set in the thread, it will return nullptr.
      * \return  Returns the current Component object of current Component Thread.
      **/
     static Component * getCurrentComponent( void );
 
     /**
      * \brief   Sets current Component object of current Component Thread.
-     *          By passing NULL, it will reset current Component in the Component Thread.
+     *          By passing nullptr, it will reset current Component in the Component Thread.
      *          The current Component is set automatically in every Component Thread
      *          before processing Event. And resets current Component when
      *          Event processing is completed.
      * \param   curComponent    The current Component to set in the current
-     *                          Component Thread. If NULL, it will reset current Component.
+     *                          Component Thread. If nullptr, it will reset current Component.
      * \return  The function returns true if current Thread is Component Thread.
      *          Otherwise, current Component is not set and function returns false.
      **/
@@ -88,12 +95,12 @@ public:
      *          To create dispatcher thread, unique thread name required.
      * \param   threadName  The unique name of component thread.
      **/
-    ComponentThread( const char * threadName );
+    explicit ComponentThread( const char * threadName );
 
     /**
      * \brief   Destructor
      **/
-    virtual ~ComponentThread( void );
+    virtual ~ComponentThread( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations and overrides.
@@ -105,17 +112,17 @@ public:
     /**
      * \brief   Stops Dispatcher and exists Dispatcher Thread without terminating
      **/
-    virtual void shutdownThread( void );
+    virtual void shutdownThread( void ) override;
 
     /**
      * \brief   Wait for thread completion. It will neither sent exit message, nor terminate thread.
      *          The function waits as long, until the thread is not completed.
-     *          It will return true if thread has been completed or waiting timeout is Thread::DO_NOT_WAIT.
+     *          It will return true if thread has been completed or waiting timeout is NECommon::DO_NOT_WAIT.
      *          If thread exists normally, it will return true.
      * \param   waitForCompleteMs   The timeout to wait for completion.
-     * \return  Returns true if either thread completed or the waiting timeout is Thread::DO_NOT_WAIT.
+     * \return  Returns true if either thread completed or the waiting timeout is NECommon::DO_NOT_WAIT.
      **/
-    virtual bool completionWait( unsigned int waitForCompleteMs = Thread::WAIT_INFINITE );
+    virtual bool completionWait( unsigned int waitForCompleteMs = NECommon::WAIT_INFINITE ) override;
 
 /************************************************************************/
 // IEEventRouter interface overrides
@@ -129,7 +136,7 @@ public:
      * \param   eventElem   The event object to push in the queue.
      * \return  Returns true if successfully pushed event in the queue.
      **/
-    virtual bool postEvent( Event & eventElem );
+    virtual bool postEvent( Event & eventElem ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides. Protected
@@ -146,7 +153,18 @@ protected:
      *          Override if logic should be changed.
      * \return	Returns true if Exit Event is signaled.
      **/
-    virtual bool runDispatcher( void );
+    virtual bool runDispatcher( void ) override;
+
+    /**
+     * \brief   Search for consumer thread that can dispatch event.
+     *          It will check whether component thread has 
+     *          registered consumer or not. If not found, will check in worker thread
+     *          list of every registered component.
+     * \param   whichClass  The runtime class ID to search registered component
+     * \return  If found, returns valid pointer of dispatching thread. 
+     *          Otherwise returns nullptr
+     **/
+    virtual DispatcherThread * getEventConsumerThread( const RuntimeClassID & whichClass ) override;
 
 /************************************************************************/
 // IEThreadConsumer interface overrides
@@ -157,7 +175,7 @@ protected:
      *          This method is triggered after exiting from Run() function.
      * \return  Return thread exit error code.
      **/
-    virtual int onThreadExit( void );
+    virtual int onThreadExit( void ) override;
 
 /************************************************************************/
 // ComponentThread overrides
@@ -197,16 +215,21 @@ protected:
      **/
     virtual void destroyComponents( void );
 
+//////////////////////////////////////////////////////////////////////////
+// Hidden methods
+//////////////////////////////////////////////////////////////////////////
+private:
     /**
-     * \brief   Search for consumer thread that can dispatch event.
-     *          It will check whether component thread has 
-     *          registered consumer or not. If not found, will check in worker thread
-     *          list of every registered component.
-     * \param   whichClass  The runtime class ID to search registered component
-     * \return  If found, returns valid pointer of dispatching thread. 
-     *          Otherwise returns NULL
+     * \brief   Returns reference to component thread.
      **/
-    virtual DispatcherThread * getEventConsumerThread( const RuntimeClassID & whichClass );
+    inline ComponentThread & self( void );
+
+    /**
+     * \brief   Returns pointer of current component thread.
+     *          If returns nullptr, the current thread is not
+     *          a Component Thread.
+     **/
+    static inline ComponentThread * _getCurrentComponentThread( void );
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables.
@@ -224,51 +247,24 @@ private:
 #if defined(_MSC_VER) && (_MSC_VER > 1200)
     #pragma warning(disable: 4251)
 #endif  // _MSC_VER
+
     /**
      * \brief   List of instantiated components in Component Thread.
      **/
     ListComponent   mListComponent;
+
 #if defined(_MSC_VER) && (_MSC_VER > 1200)
     #pragma warning(default: 4251)
 #endif  // _MSC_VER
 
 //////////////////////////////////////////////////////////////////////////
-// Hidden methods
+// Forbidden calls.
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief   Returns reference to component thread.
-     **/
-    inline ComponentThread & self( void );
-
-    /**
-     * \brief   Returns pointer of current component thread.
-     *          If returns NULL, the current thread is not
-     *          a Component Thread.
-     **/
-    static inline ComponentThread * _getCurrentComponentThread( void );
-
-//////////////////////////////////////////////////////////////////////////
-// Forbidden method calls.
-//////////////////////////////////////////////////////////////////////////
-private:
-    ComponentThread( void );
-    ComponentThread( const ComponentThread & /*src*/ );
-    const ComponentThread & operator = ( const ComponentThread & /*src*/ );
+    ComponentThread( void ) = delete;
+    DECLARE_NOCOPY_NOMOVE( ComponentThread );
 };
 
 //////////////////////////////////////////////////////////////////////////
 // ComponentThread class inline function implementation
 //////////////////////////////////////////////////////////////////////////
-
-inline ComponentThread & ComponentThread::self( void )
-{
-    return (*this);
-}
-
-inline ComponentThread* ComponentThread::_getCurrentComponentThread( void )
-{
-    return RUNTIME_CAST(&(DispatcherThread::getCurrentDispatcherThread()), ComponentThread);
-}
-
-#endif  // AREG_COMPONENT_COMPONENTTHREAD_HPP

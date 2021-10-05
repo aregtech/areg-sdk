@@ -1,9 +1,16 @@
-#ifndef AREG_COMPONENT_PRIVATE_SERVICEMANAGEREVENTS_HPP
-#define AREG_COMPONENT_PRIVATE_SERVICEMANAGEREVENTS_HPP
+#pragma once
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/component/private/ServiceManagerEvents.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, Service Manager communication Events
  *
  ************************************************************************/
@@ -40,7 +47,7 @@ public:
     /**
      * \brief   The Service Manager event commands
      **/
-    typedef enum E_ServiceManagerCommands
+    typedef enum class E_ServiceManagerCommands
     {
           CMD_StopRoutingClient         //!< Requested to stop Service Manager client connection
         , CMD_RegisterProxy             //!< Requested to register Proxy
@@ -156,7 +163,7 @@ public:
      * \brief   Constructor. Sets Service Manager event command
      * \param   cmdServiceManager    The command to set
      **/
-    inline ServiceManagerEventData( ServiceManagerEventData::eServiceManagerCommands cmdServiceManager );
+    inline explicit ServiceManagerEventData( ServiceManagerEventData::eServiceManagerCommands cmdServiceManager );
 
     /**
      * \brief   Copy constructor.
@@ -165,9 +172,15 @@ public:
     inline ServiceManagerEventData( const ServiceManagerEventData & source );
 
     /**
+     * \brief   Move constructor.
+     * \param   src     The source of data to move.
+     **/
+    inline ServiceManagerEventData( ServiceManagerEventData && source ) noexcept;
+
+    /**
      * \brief   Destructor.
      **/
-    inline ~ServiceManagerEventData( void );
+    ~ServiceManagerEventData( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes
@@ -178,7 +191,13 @@ public:
      * \brief   Copies Service Manager event data with comment from given source.
      * \param   source  The source of data to copy
      **/
-    inline void operator = ( const ServiceManagerEventData & source );
+    inline ServiceManagerEventData & operator = ( const ServiceManagerEventData & source );
+
+    /**
+     * \brief   Moves Service Manager event data with comment from given source.
+     * \param   source  The source of data to move.
+     **/
+    inline ServiceManagerEventData & operator = ( ServiceManagerEventData && source ) noexcept;
 
     /**
      * \brief   Returns streaming object to read data
@@ -206,7 +225,7 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    ServiceManagerEventData( void );
+    ServiceManagerEventData( void ) = delete;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -217,23 +236,39 @@ DECLARE_EVENT(ServiceManagerEventData, ServiceManagerEvent, IEServiceManagerEven
 //////////////////////////////////////////////////////////////////////////
 // ServiceManagerEventData inline methods
 //////////////////////////////////////////////////////////////////////////
+
 inline ServiceManagerEventData::ServiceManagerEventData( ServiceManagerEventData::eServiceManagerCommands cmdServiceManager )
     : mCommand  ( cmdServiceManager )
     , mStream   ( )
-{   ;   }
+{
+}
 
 inline ServiceManagerEventData::ServiceManagerEventData( const ServiceManagerEventData & source )
     : mCommand  ( source.mCommand )
     , mStream   ( source.mStream )
-{   ;   }
+{
+}
 
-inline ServiceManagerEventData::~ServiceManagerEventData( void )
-{   ;   }
+inline ServiceManagerEventData::ServiceManagerEventData( ServiceManagerEventData && source ) noexcept
+    : mCommand  ( std::move(source.mCommand) )
+    , mStream   ( std::move(source.mStream) )
+{
+}
 
-inline void ServiceManagerEventData::operator = (const ServiceManagerEventData & source)
+inline ServiceManagerEventData & ServiceManagerEventData::operator = (const ServiceManagerEventData & source)
 {
     mCommand= source.mCommand;
     mStream = source.mStream;
+
+    return (*this);
+}
+
+inline ServiceManagerEventData & ServiceManagerEventData::operator = ( ServiceManagerEventData && source ) noexcept
+{
+    mCommand= source.mCommand;
+    mStream = std::move(source.mStream);
+
+    return (*this);
 }
 
 inline const IEInStream & ServiceManagerEventData::getReadStream( void ) const
@@ -255,37 +290,35 @@ inline const char * ServiceManagerEventData::getString( ServiceManagerEventData:
 {
     switch ( val )
     {
-    case ServiceManagerEventData::CMD_StopRoutingClient:
-        return "ServiceManagerEventData::CMD_StopRoutingClient";
-    case ServiceManagerEventData::CMD_RegisterProxy:
-        return "ServiceManagerEventData::CMD_RegisterProxy";
-    case ServiceManagerEventData::CMD_UnregisterProxy:
-        return "ServiceManagerEventData::CMD_UnregisterProxy";
-    case ServiceManagerEventData::CMD_RegisterStub:
-        return "ServiceManagerEventData::CMD_RegisterStub";
-    case ServiceManagerEventData::CMD_UnregisterStub:
-        return "ServiceManagerEventData::CMD_UnregisterStub";
-    case ServiceManagerEventData::CMD_ConfigureConnection:
-        return "ServiceManagerEventData::CMD_ConfigureConnection";
-    case ServiceManagerEventData::CMD_StartConnection:
-        return "ServiceManagerEventData::CMD_StartConnection";
-    case ServiceManagerEventData::CMD_StartNetConnection:
-        return "ServiceManagerEventData::CMD_StartNetConnection";
-    case ServiceManagerEventData::CMD_StopConnection:
-        return "ServiceManagerEventData::CMD_StopConnection";
-    case ServiceManagerEventData::CMD_SetEnableService:
-        return "ServiceManagerEventData::CMD_SetEnableService";
-    case ServiceManagerEventData::CMD_RegisterConnection:
-        return "ServiceManagerEventData::CMD_RegisterConnection";
-    case ServiceManagerEventData::CMD_UnregisterConnection:
-        return "ServiceManagerEventData::CMD_UnregisterConnection";
-    case ServiceManagerEventData::CMD_LostConnection:
-        return "ServiceManagerEventData::CMD_LostConnection";
-    case ServiceManagerEventData::CMD_ShutdownService:
-        return "ServiceManagerEventData::CMD_ShutdownService";
+    case ServiceManagerEventData::eServiceManagerCommands::CMD_StopRoutingClient:
+        return "ServiceManagerEventData::eServiceManagerCommands::CMD_StopRoutingClient";
+    case ServiceManagerEventData::eServiceManagerCommands::CMD_RegisterProxy:
+        return "ServiceManagerEventData::eServiceManagerCommands::CMD_RegisterProxy";
+    case ServiceManagerEventData::eServiceManagerCommands::CMD_UnregisterProxy:
+        return "ServiceManagerEventData::eServiceManagerCommands::CMD_UnregisterProxy";
+    case ServiceManagerEventData::eServiceManagerCommands::CMD_RegisterStub:
+        return "ServiceManagerEventData::eServiceManagerCommands::CMD_RegisterStub";
+    case ServiceManagerEventData::eServiceManagerCommands::CMD_UnregisterStub:
+        return "ServiceManagerEventData::eServiceManagerCommands::CMD_UnregisterStub";
+    case ServiceManagerEventData::eServiceManagerCommands::CMD_ConfigureConnection:
+        return "ServiceManagerEventData::eServiceManagerCommands::CMD_ConfigureConnection";
+    case ServiceManagerEventData::eServiceManagerCommands::CMD_StartConnection:
+        return "ServiceManagerEventData::eServiceManagerCommands::CMD_StartConnection";
+    case ServiceManagerEventData::eServiceManagerCommands::CMD_StartNetConnection:
+        return "ServiceManagerEventData::eServiceManagerCommands::CMD_StartNetConnection";
+    case ServiceManagerEventData::eServiceManagerCommands::CMD_StopConnection:
+        return "ServiceManagerEventData::eServiceManagerCommands::CMD_StopConnection";
+    case ServiceManagerEventData::eServiceManagerCommands::CMD_SetEnableService:
+        return "ServiceManagerEventData::eServiceManagerCommands::CMD_SetEnableService";
+    case ServiceManagerEventData::eServiceManagerCommands::CMD_RegisterConnection:
+        return "ServiceManagerEventData::eServiceManagerCommands::CMD_RegisterConnection";
+    case ServiceManagerEventData::eServiceManagerCommands::CMD_UnregisterConnection:
+        return "ServiceManagerEventData::eServiceManagerCommands::CMD_UnregisterConnection";
+    case ServiceManagerEventData::eServiceManagerCommands::CMD_LostConnection:
+        return "ServiceManagerEventData::eServiceManagerCommands::CMD_LostConnection";
+    case ServiceManagerEventData::eServiceManagerCommands::CMD_ShutdownService:
+        return "ServiceManagerEventData::eServiceManagerCommands::CMD_ShutdownService";
     default:
         return "ERR: undefined ServiceManagerEventData::eServiceManagerCommands value!!!";
     }
 }
-
-#endif  // AREG_COMPONENT_PRIVATE_SERVICEMANAGEREVENTS_HPP

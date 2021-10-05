@@ -1,9 +1,16 @@
-#ifndef AREG_BASE_TEHASHMAP_HPP
-#define AREG_BASE_TEHASHMAP_HPP
+#pragma once
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/base/TEHashMap.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, Hash Map class template.
  *              Hash Map object to store elements by its hash value.
  *              Every element is accessed by unique Key value.
@@ -13,7 +20,8 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
-#include "areg/base/ETemplateBase.hpp"
+
+#include "areg/base/TETemplateBase.hpp"
 #include "areg/base/TEPair.hpp"
 #include "areg/base/IEIOStream.hpp"
 #include "areg/base/NEMemory.hpp"
@@ -23,35 +31,23 @@
 //////////////////////////////////////////////////////////////////////////
 
 /**
- * \brief       Hash Map class template declaration. Derives private
- *              class TemplateConstants to have defined constants.
- *              The Hash Map binds Value with its Key. The Key element
- *              is unique. Values are accessed by Key. Key and Value
- *              can be of different types.
+ * \brief   The Hash Map binds Value with its Key. The Key element is unique. 
+ *          Values are accessed by Key. Key and Value can be of different types.
  *
- *              Every element is stored in Block containing Key, Value
- *              Hash value and pointer to next Block within Hash Table.
- *              The Hash value is calculated on Key value. By hash value
- *              elements are accessed in Hash Table. This makes accessing
- *              elements faster. Every element also has Position, which
- *              makes accessing elements faster. For better performance,
- *              if large number of element is going to be saved in Hash
- *              Map, it is recommended to increase the size of Hash Table.
- *              By default, the size of Hash Table is
- *              TemplateConstants::MAP_DEFAULT_HASH_SIZE. The maximum
- *              size of Hash Table is TemplateConstants::MAP_MAX_TABLE_SIZE.
- *              To access first element in Hash Map, get Start Position,
- *              which is called by function firstPosition()
- *              The type KEY should be possible to convert to
- *              unsigned int type. This is required to calculate Hash Value.
- *              KEY and VALUE types should have at least default constructor
- *              and valid assigning operator. By default KEY_TYPE is equal
- *              to type KEY and VALUE_TYPE is equal to type VALUE.
- *              If a Key element has different logic to calculate
- *              Hash value, make own implementation of base class and pass
- *              it in type parameter list.
- *              The HashMap object is not thread safe and data access 
- *              should be  synchronized manually.
+ *          Every element is stored in Block containing the Key, Value, Hash and 
+ *          the pointer to the next Block within the Hash Table. The Hash value 
+ *          is calculated on Key. If large number of element is going to be saved 
+ *          in Hash Map, it is recommended to increase the size of Hash Table.
+ *          By default, the size of the Hash Table is NECommon::MAP_DEFAULT_HASH_SIZE.
+ *          The maximum size of the Hash Table is NECommon::MAP_MAX_TABLE_SIZE.
+ *
+ *          To access first element in Hash Map, get the first Position (call function 
+ *          firstPosition()). Each next element is accessed by calling nex position.
+ *          The type KEY should be possible to convert to unsigned int type required to 
+ *          calculate the Hash. KEY and VALUE types should have at least default constructor
+ *          and valid assigning operator.
+ * 
+ *          The HashMap object is not thread safe and data should be  synchronized manually.
  *
  * \tparam  KEY         The type of Key to identify values in hash map.
  *                      Either should be primitive or should have at least
@@ -73,8 +69,7 @@
  *                      if default methods needs to be changed.
  **/
 template < typename KEY, typename VALUE, typename KEY_TYPE = KEY, typename VALUE_TYPE = VALUE, class Implement = TEHashMapImpl<KEY_TYPE, VALUE_TYPE> >
-class TEHashMap     : protected Implement
-                    , protected TemplateConstants
+class TEHashMap
 {
 //////////////////////////////////////////////////////////////////////////
 // Internal objects and types declaration
@@ -103,6 +98,10 @@ public:
          * \brief   Initialization constructor.
          **/
         Block(unsigned int hash, KEY_TYPE key, VALUE_TYPE value);
+        /**
+         * \brief   Moves data from given source.
+         **/
+        Block( Block && src ) noexcept;
         /**
          * \brief   Destructor.
          **/
@@ -154,9 +153,15 @@ public:
     TEHashMap( const TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement> & src );
 
     /**
+     * \brief   Move constructor.
+     * \param   src     The source to move data.
+     **/
+    TEHashMap( TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement> && src ) noexcept;
+
+    /**
      * \brief   Destructor
      **/
-    virtual ~TEHashMap( void );
+    ~TEHashMap( void );
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
@@ -169,7 +174,12 @@ public:
     /**
      * \brief	Assigning operator. It copies all elements from source map
      **/
-    const TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>& operator = ( const TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement> & src );
+    TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>& operator = ( const TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement> & src );
+
+    /**
+     * \brief	Move operator. It moves all elements from source map
+     **/
+    TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>& operator = ( TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement> && src ) noexcept;
 
     /**
      * \brief   Checks equality of 2 hash-map objects, and returns true if they are equal.
@@ -250,8 +260,8 @@ public:
     inline int getTableSize( void ) const;
 
     /**
-     * \brief	If Hash Map is not empty, returns the starting position (0xFFFFFFFF).
-     *          Otherwise returns NULL
+     * \brief	If Hash Map is not empty, returns the starting position.
+     *          Otherwise, returns nullptr.
      **/
     inline MAPPOS firstPosition( void ) const;
 
@@ -271,9 +281,9 @@ public:
 
     /**
      * \brief	Search an element by given key and returns position.
-     *          If could not find element, returns NULL (INVALID_POSITION)
-     * \param	Key	    Key to search.
-     * \return	If finds, return position in Hash Map, otherwise returns NULL (INVALID_POSITION)
+     *          If could not find element, returns nullptr (INVALID_POSITION).
+     * \param	Key	    The key to search.
+     * \return	If finds, return position in Hash Map, otherwise returns nullptr (INVALID_POSITION)
      **/
     inline MAPPOS find( KEY_TYPE Key ) const;
 
@@ -308,12 +318,12 @@ public:
     /**
      * \brief   Updates Existing Key and returns the position in the map.
      *          If Key does not exit, no new key will be set and function
-     *          will return NULL.
+     *          will return nullptr.
      * \param   Key         The key of map to update. The function will update
      *                      only existing key. 
      * \param   newValue    New value to set on existing key.
-     * \return  Returns non-NULL position value of existing key.
-     *          And returns NULL if key does not exit.
+     * \return  Returns non-nullptr position value of existing key.
+     *          And returns nullptr if key does not exit.
      **/
     MAPPOS updateAt( KEY_TYPE Key, VALUE_TYPE newValue );
 
@@ -336,7 +346,7 @@ public:
      * \brief	Update value of an element by given position and return position to next element
      * \param	atPosition      Position of element to update value
      * \param	newValue	    New value to set for existing element.
-     * \return  Returns position of next element. If given position was position of last valid element, it will return NULL
+     * \return  Returns position of next element. If given position was position of last valid element, it will return nullptr.
      **/
     MAPPOS setPosition( MAPPOS atPosition, VALUE_TYPE newValue );
 
@@ -347,7 +357,7 @@ public:
      * \param	curPos      This should contain valid position of hash map.
      * \param	out_Key     On output, this contains key of removed element
      * \param	out_Value   On output, this contains value of removed element.
-     * \return  Next position in hash map or NULL if reached the end.
+     * \return  Next position in hash map or nullptr if reached the end.
      **/
     MAPPOS removePosition( MAPPOS curPos, KEY & out_Key, VALUE & out_Value );
 
@@ -388,7 +398,7 @@ public:
      * \brief   Returns reverence of element value at given valid position.
      *          If index is not valid, assertion is raised.
      **/
-    inline VALUE& getPosition( const MAPPOS atPosition );
+    inline VALUE & getPosition( const MAPPOS atPosition );
     /**
      * \brief   Returns element value at given valid position.
      *          If index is not valid, assertion is raised.
@@ -488,7 +498,7 @@ protected:
      * \brief	Initialize the Hash Table object.
      * \param	sizeHashTable	The initial size of hash table. By default it is MAP_DEFAULT_HASH_SIZE (48)
      **/
-    void initHashTable( int sizeHashTable = TemplateConstants::MAP_DEFAULT_HASH_SIZE );
+    void initHashTable( int sizeHashTable = NECommon::MAP_DEFAULT_HASH_SIZE );
 
     /**
      * \brief   Creates block list (mBlockSize elements contained in Block List)
@@ -509,21 +519,21 @@ protected:
 
     /**
      * \brief	Finds and returns pointer to block object by given Key if element by key exists.
-     *          Otherwise it returns NULL.
+     *          Otherwise, it returns nullptr.
      *          On output, 'outHash' contains hash value, which is defining index in Hash Table.
      * \param	Key	        The Key to search
      * \param	out_Hash    The Hash value of entry within Hash Table
-     * \return	If found Key, returns pointer to Block element, otherwise returns NULL.
+     * \return	If found Key, returns pointer to Block element, otherwise returns nullptr.
      **/
     inline Block * blockAt( KEY_TYPE Key, unsigned int & OUT out_Hash ) const
     {
-        Block * result = NULL;
+        Block * result = nullptr;
         out_Hash = getHashKey(Key);
 
-        if ( mHashTable != NULL )
+        if ( mHashTable != nullptr )
         {
             unsigned int size = static_cast<unsigned int>(mHashTableSize);
-            for ( result  = mHashTable[out_Hash % size]; result != NULL; result = result->mNext)
+            for ( result  = mHashTable[out_Hash % size]; result != nullptr; result = result->mNext)
             {
                 if ( out_Hash == result->mHash && isEqualKeys(result->mKey, Key) )
                     break;
@@ -535,18 +545,18 @@ protected:
 
     /**
      * \brief	Finds and returns pointer to pointer of block object by given Key if element by key exists.
-     *          Otherwise it returns NULL.
+     *          Otherwise it returns nullptr.
      * \param	Key     The Key to search
      **/
-    inline Block ** blockAt( KEY_TYPE Key ) const
+    inline Block ** blockAtRef( KEY_TYPE Key ) const
     {
-        Block ** result = NULL;
+        Block ** result = nullptr;
 
-        if ( mHashTable != NULL )
+        if ( mHashTable != nullptr )
         {
             unsigned int hash = getHashKey(Key);
             unsigned int size = static_cast<unsigned int>(mHashTableSize);
-            for ( result = &(mHashTable[hash % size]); (*result) != NULL; result = &((*result)->mNext))
+            for ( result = &(mHashTable[hash % size]); (*result) != nullptr; result = &((*result)->mNext))
             {
                 if ( hash == (*result)->mHash && isEqualKeys((*result)->mKey, Key) )
                     break;
@@ -563,8 +573,8 @@ protected:
      **/
     inline Block * blockAt( MAPPOS atPosition ) const
     {
-        ASSERT(atPosition	!= static_cast<MAPPOS>(NULL));
-        return (atPosition == TemplateConstants::START_POSITION ? firstValidBlock() : static_cast<Block *>(atPosition));
+        ASSERT(atPosition != nullptr );
+        return (atPosition == NECommon::START_POSITION ? firstValidBlock() : static_cast<Block *>(atPosition));
     }
 
     /**
@@ -578,11 +588,11 @@ protected:
     inline Block ** blockReference( const Block & block )
     {
 
-        Block ** result  = mHashTable != NULL ? &mHashTable[block.mHash % mHashTableSize] : NULL;
+        Block ** result  = mHashTable != nullptr ? &mHashTable[block.mHash % mHashTableSize] : nullptr;
 
-        if (result != NULL)
+        if (result != nullptr )
         {
-            for ( ; *result != NULL; result = &(*result)->mNext )
+            for ( ; *result != nullptr; result = &(*result)->mNext )
             {
                 if ( block.mHash == (*result)->mHash && isEqualKeys( (*result)->mKey, block.mKey ) )
                     break;
@@ -599,29 +609,29 @@ protected:
      **/
     inline Block * firstValidBlock( void ) const
     {
-        Block* result = NULL;
-        for ( int idx = 0; (result == NULL) && (idx < mHashTableSize); ++ idx )
+        Block* result = nullptr;
+        for ( int idx = 0; (result == nullptr) && (idx < mHashTableSize); ++ idx )
             result = mHashTable[idx];
 
         // must find something
-        ASSERT(result != static_cast<Block *>(NULL));
+        ASSERT(result != nullptr);
         return result;
     }
 
     /**
      * \brief   Gets the next valid Block within Hash Table bay given valid pointer to block object.
-     * \param startAt   The pointer to Block object to start searching next entry. It must not be NULL,
+     * \param startAt   The pointer to Block object to start searching next entry. It must not be nullptr,
      *                  otherwise assertion raised
      **/
     inline Block * nextValidBlock( const Block * startAt ) const
     {
-        ASSERT(startAt != NULL);
+        ASSERT(startAt != nullptr);
         ASSERT(mElemCount != 0);
         Block* result = startAt->mNext;
-        if (result == NULL)
+        if (result == nullptr)
         {
             unsigned int size = static_cast<unsigned int>(mHashTableSize);
-            for ( unsigned int idx = startAt->mHash % size + 1; (result == NULL) && (idx < size); ++ idx )
+            for ( unsigned int idx = startAt->mHash % size + 1; (result == nullptr) && (idx < size); ++ idx )
                 result = mHashTable[idx];
         }
         
@@ -634,10 +644,10 @@ protected:
      **/
     inline Block * initNewBlock( void )
     {
-        if (mFreeList == NULL)
+        if (mFreeList == nullptr)
             createBlockList();
 
-        ASSERT(mFreeList != NULL);
+        ASSERT(mFreeList != nullptr);
         Block* block= mFreeList;
         mFreeList   = mFreeList->mNext;
         mElemCount ++;
@@ -672,8 +682,8 @@ protected:
 
         NEMemory::zeroElements<Block *>(mHashTable, mHashTableSize);
         mElemCount	= 0;
-        mFreeList	= static_cast<Block *>(NULL);
-        mBlockList	= static_cast<Block *>(NULL);
+        mFreeList	= nullptr;
+        mBlockList	= nullptr;
     }
 
 
@@ -714,7 +724,11 @@ protected:
     /**
      * \brief   List of Free Blocks
      **/
-    Block *   mFreeList;
+    Block *     mFreeList;
+    /**
+     * \brief   Instance of object that copares keys and values.
+     **/
+    Implement   mImplement;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -728,62 +742,78 @@ protected:
 template < typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename VALUE_TYPE /*= VALUE */, class Implement /* = HashMapBase */ >
 inline TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::Block::Block( void )
     : TEPair<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>( )
-    , mNext (NULL)
+    , mNext ( nullptr )
     , mHash (0)
-{   ;   }
+{
+}
 
 template < typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename VALUE_TYPE /*= VALUE */, class Implement /* = HashMapBase */ >
 inline TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::Block::Block(unsigned int hash, KEY_TYPE key, VALUE_TYPE value)
     : TEPair<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>(key, value)
-    , mNext (NULL)
+    , mNext ( nullptr )
     , mHash (hash)
-{   ;   }
+{
+}
+
+template < typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename VALUE_TYPE /*= VALUE */, class Implement /* = HashMapBase */ >
+inline TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::Block::Block( TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::Block && src ) noexcept
+    : TEPair<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>( static_cast<TEPair<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement> &&>(src) )
+    , mNext ( src.mNext )
+    , mHash ( src.mHash )
+{
+    src.mNext   = nullptr;
+    src.mHash   = NECommon::MAP_INVALID_HASH;
+}
 
 template < typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename VALUE_TYPE /*= VALUE */, class Implement /* = HashMapBase */ >
 TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::Block::~Block( void )
-{   ;   }
+{
+}
 
 //////////////////////////////////////////////////////////////////////////
 // TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement> class template Implement
 //////////////////////////////////////////////////////////////////////////
 template < typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename VALUE_TYPE /*= VALUE */, class Implement /* = HashMapBase */ >
 TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::TEHashMap( void )
-    : mHashTable    (NULL)
+    : mHashTable    ( nullptr )
     , mHashTableSize(0)
-    , mBlockList    (NULL)
-    , mBlockSize    (TemplateConstants::MAP_DEFAULT_BLOCK_SIZE)
+    , mBlockList    ( nullptr )
+    , mBlockSize    ( NECommon::MAP_DEFAULT_BLOCK_SIZE)
     , mElemCount    (0)
-    , mFreeList     (NULL)
+    , mFreeList     ( nullptr )
+    , mImplement    ( )
 {
-    initHashTable(TemplateConstants::MAP_DEFAULT_HASH_SIZE);
+    initHashTable( NECommon::MAP_DEFAULT_HASH_SIZE);
 }
 
 template < typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename VALUE_TYPE /*= VALUE */, class Implement /* = HashMapBase */ >
 TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::TEHashMap(int blockSize, int hashSize)
-    : mHashTable    (NULL)
+    : mHashTable    ( nullptr )
     , mHashTableSize(0)
-    , mBlockList    (NULL)
-    , mBlockSize    (blockSize > 0 && blockSize <= TemplateConstants::MAP_MAX_BLOCK_SIZE ? blockSize : (blockSize < 0 ? TemplateConstants::MAP_DEFAULT_BLOCK_SIZE : TemplateConstants::MAP_MAX_BLOCK_SIZE))
+    , mBlockList    ( nullptr )
+    , mBlockSize    (blockSize > 0 && blockSize <= NECommon::MAP_MAX_BLOCK_SIZE ? blockSize : (blockSize < 0 ? NECommon::MAP_DEFAULT_BLOCK_SIZE : NECommon::MAP_MAX_BLOCK_SIZE))
     , mElemCount    (0)
-    , mFreeList     (NULL)
+    , mFreeList     ( nullptr )
+    , mImplement    ( )
 {
-    initHashTable(hashSize > 0 && hashSize <= TemplateConstants::MAP_MAX_TABLE_SIZE ? hashSize : hashSize < 0 ? TemplateConstants::MAP_DEFAULT_HASH_SIZE : TemplateConstants::MAP_MAX_TABLE_SIZE);
+    initHashTable(hashSize > 0 && hashSize <= NECommon::MAP_MAX_TABLE_SIZE ? hashSize : hashSize < 0 ? NECommon::MAP_DEFAULT_HASH_SIZE : NECommon::MAP_MAX_TABLE_SIZE);
 }
 
 template < typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename VALUE_TYPE /*= VALUE */, class Implement /* = HashMapBase */ >
 TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::TEHashMap(const TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>& src)
-    : mHashTable    (NULL)
+    : mHashTable    ( nullptr )
     , mHashTableSize(0)
-    , mBlockList    (NULL)
+    , mBlockList    ( nullptr )
     , mBlockSize    (src.mBlockSize)
     , mElemCount    (0)
-    , mFreeList     (NULL)
+    , mFreeList     ( nullptr )
+    , mImplement    ( )
 {
     initHashTable(src.mHashTableSize);
     MAPPOS pos = src.firstPosition();
     KEY key;
     VALUE value;
-    while (pos != TemplateConstants::INVALID_POSITION)
+    while (pos != NECommon::INVALID_POSITION)
     {
         pos = src.nextPosition(pos, key, value);
         setAt(key, value, false);
@@ -791,19 +821,37 @@ TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::TEHashMap(const TEHashMa
 }
 
 template < typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename VALUE_TYPE /*= VALUE */, class Implement /* = HashMapBase */ >
+TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::TEHashMap( TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement> && src ) noexcept
+    : mHashTable    ( src.mHashTable )
+    , mHashTableSize( src.mHashTableSize )
+    , mBlockList    ( src.mBlockList )
+    , mBlockSize    ( src.mBlockSize )
+    , mElemCount    ( src.mElemCount )
+    , mFreeList     ( src.mFreeList  )
+    , mImplement    ( )
+{
+    src.mBlockList      = nullptr;
+    src.mBlockSize      = 0;
+    src.mElemCount      = 0;
+    src.mFreeList       = nullptr;
+
+    src.mHashTable	    = DEBUG_NEW Block *[src.mHashTableSize];
+    NEMemory::zeroElements<Block *>( mHashTable, mHashTableSize );
+}
+
+template < typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename VALUE_TYPE /*= VALUE */, class Implement /* = HashMapBase */ >
 TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::~TEHashMap( void )
 {
-    ASSERT(mHashTable!= (Block**)NULL);
-
     removeAll();
-    if (mHashTable != NULL) 
+    if (mHashTable != nullptr )
         delete [] mHashTable;
-    mHashTable      = NULL;
+
+    mHashTable      = nullptr;
     mHashTableSize  = 0;
 }
 
 template < typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename VALUE_TYPE /*= VALUE */, class Implement /* = HashMapBase */ >
-const TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>& TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::operator = ( const TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement> & src )
+TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>& TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::operator = ( const TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement> & src )
 {
     if (static_cast<const TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement> *>(this) != static_cast<const TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement> *>(&src))
     {
@@ -815,12 +863,39 @@ const TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>& TEHashMap<KEY, VAL
         KEY key;
         VALUE value;
 
-        while (pos != TemplateConstants::INVALID_POSITION)
+        while (pos != NECommon::INVALID_POSITION)
         {
             pos = src.nextPosition(pos, key, value);
             setAt(key, value, false);
         }
     }
+    return (*this);
+}
+
+template < typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename VALUE_TYPE /*= VALUE */, class Implement /* = HashMapBase */ >
+TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>& TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::operator = ( TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement> && src ) noexcept
+{
+    if ( static_cast<const TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement> *>(this) != static_cast<const TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement> *>(&src) )
+    {
+        removeAll( );
+        if ( mHashTable != nullptr )
+            delete [] mHashTable;
+
+        mHashTable    = src.mHashTable;
+        mHashTableSize= src.mHashTableSize;
+        mBlockList    = src.mBlockList;
+        mBlockSize    = src.mBlockSize;
+        mElemCount    = src.mElemCount;
+        mFreeList     = src.mFreeList;
+
+        src.mHashTable      = nullptr;
+        src.mHashTableSize  = 0;
+        src.mBlockList      = nullptr;
+        src.mBlockSize      = 0;
+        src.mElemCount      = 0;
+        src.mFreeList       = nullptr;
+    }
+
     return (*this);
 }
 
@@ -837,7 +912,7 @@ bool TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::operator == (const 
             KEY otherKey;
             VALUE otherValue, thisValue;
 
-            for ( MAPPOS otherPos = other.firstPosition( ); result && (otherPos != TemplateConstants::INVALID_POSITION); )
+            for ( MAPPOS otherPos = other.firstPosition( ); result && (otherPos != NECommon::INVALID_POSITION); )
             {
                 otherPos = other.nextPosition( otherPos, otherKey, otherValue );
                 result = find( otherKey, thisValue ) ? isEqualValues( otherValue, thisValue ) : false;
@@ -856,17 +931,17 @@ bool TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::operator != ( const
         result = true;
         if (other.mElemCount == mElemCount)
         {
-            result = false;
             KEY otherKey;
             VALUE otherValue, thisValue;
 
-            for ( MAPPOS otherPos = other.firstPosition(); (result == false) && (otherPos != TemplateConstants::INVALID_POSITION); )
+            for ( MAPPOS otherPos = other.firstPosition(); result && (otherPos != NECommon::INVALID_POSITION); )
             {
                 otherPos = other.nextPosition(otherPos, otherKey, otherValue);
                 result = find(otherKey, thisValue) ? isEqualValues( otherValue, thisValue ) == false : true;
             }
         }
     }
+
     return result;
 }
 
@@ -884,26 +959,34 @@ inline VALUE_TYPE TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::operat
 
 template < typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename VALUE_TYPE /*= VALUE */, class Implement /* = HashMapBase */ >
 inline int TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::getSize( void ) const
-{   return mElemCount;          }
+{
+    return mElemCount;
+}
 
 template < typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename VALUE_TYPE /*= VALUE */, class Implement /* = HashMapBase */ >
 inline int TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::getTableSize( void ) const
-{   return mHashTableSize;                                                  }
+{
+    return mHashTableSize;
+}
 
 template < typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename VALUE_TYPE /*= VALUE */, class Implement /* = HashMapBase */ >
 inline bool TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::isEmpty( void ) const
-{   return (mElemCount == 0);                                               }
+{
+    return (mElemCount == 0);
+}
 
 template < typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename VALUE_TYPE /*= VALUE */, class Implement /* = HashMapBase */ >
 inline MAPPOS TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::firstPosition( void ) const
-{   return (mElemCount != 0 ? TemplateConstants::START_POSITION : NULL);  }
+{
+    return (mElemCount != 0 ? NECommon::START_POSITION : nullptr);
+}
 
 template < typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename VALUE_TYPE /*= VALUE */, class Implement /* = HashMapBase */ >
 inline bool TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::find( KEY_TYPE Key, VALUE & out_Value ) const
 {
     bool result     = false;
-    Block **block = blockAt(Key);
-    if ( (block != NULL) && (*block != NULL) )
+    Block **block = blockAtRef(Key);
+    if ( (block != nullptr) && (*block != nullptr) )
     {
         out_Value   = (*block)->mValue;
         result      = true;
@@ -915,17 +998,17 @@ inline bool TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::find( KEY_TY
 template < typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename VALUE_TYPE /*= VALUE */, class Implement /* = HashMapBase */ >
 inline MAPPOS TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::find(KEY_TYPE Key) const
 {
-    Block** result = blockAt(Key);
-    return (result != NULL ? static_cast<MAPPOS>(*result) : static_cast<MAPPOS>(NULL));
+    Block** result = blockAtRef(Key);
+    return (result != nullptr ? static_cast<MAPPOS>(*result) : nullptr);
 }
 
 template < typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename VALUE_TYPE /*= VALUE */, class Implement /* = HashMapBase */ >
 MAPPOS TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::setAt(KEY_TYPE Key, VALUE_TYPE newValue, bool searchBeforeInsert /*= true*/)
 {
-    ASSERT(mHashTable != (Block**)NULL);
+    ASSERT(mHashTable != nullptr);
 
-    unsigned int hash = TemplateConstants::MAP_INVALID_HASH;
-    Block* block = NULL; 
+    unsigned int hash = NECommon::MAP_INVALID_HASH;
+    Block* block = nullptr; 
     
     if ( searchBeforeInsert )
     {
@@ -936,20 +1019,20 @@ MAPPOS TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::setAt(KEY_TYPE Ke
         hash = getHashKey(Key);
     }
 
-    if (block == static_cast<Block *>(NULL))
+    if (block == nullptr)
     {
         // it doesn't exist, add a new Block
         unsigned int size = static_cast<unsigned int>(mHashTableSize);
         unsigned int idx  = hash % size;
         block       = initNewBlock();
         block->mHash= hash;
-        block->mKey	= (KEY)Key;
+        block->mKey	= Key;
         // 'block->mValue' is a constructed object, nothing more put into hash table
         block->mNext= mHashTable[idx];
         mHashTable[idx]= block;
     }
 
-    block->mValue = (VALUE)(newValue);
+    block->mValue = newValue;
     return static_cast<MAPPOS>(block);
 }
 
@@ -962,14 +1045,14 @@ inline MAPPOS TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::setAt(cons
 template < typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename VALUE_TYPE /*= VALUE */, class Implement /* = HashMapBase */ >
 MAPPOS TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::updateAt(KEY_TYPE Key, VALUE_TYPE newValue)
 {
-    ASSERT(mHashTable != (Block**)NULL);
+    ASSERT(mHashTable != nullptr );
 
-    unsigned int hash = TemplateConstants::MAP_INVALID_HASH;
+    unsigned int hash = NECommon::MAP_INVALID_HASH;
     Block* block    = blockAt(Key, hash);
-    if (block != static_cast<Block *>(NULL))
+    if (block != nullptr)
     {
         // Block exists, update existing key value.
-        block->mValue = (VALUE)(newValue);
+        block->mValue = newValue;
     }
 
     return static_cast<MAPPOS>(block);
@@ -979,8 +1062,8 @@ template < typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename V
 bool TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::removeAt(KEY_TYPE Key)
 {
     bool result = false;
-    Block** block = blockAt(Key);
-    if ((block != NULL) && (*block != NULL))
+    Block** block = blockAtRef(Key);
+    if ((block != nullptr) && (*block != nullptr))
     {
         result = true;
         removeBlock(block);
@@ -993,8 +1076,8 @@ template < typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename V
 bool TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::removeAt(KEY_TYPE Key, VALUE& out_Value)
 {
     bool result = false;
-    Block** block = blockAt(Key);
-    if ((block != NULL) && (*block != NULL))
+    Block** block = blockAtRef(Key);
+    if ((block != nullptr) && (*block != nullptr))
     {
         result      = true;
         out_Value   = (*block)->mValue;
@@ -1007,28 +1090,28 @@ bool TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::removeAt(KEY_TYPE K
 template < typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename VALUE_TYPE /*= VALUE */, class Implement /* = HashMapBase */ >
 MAPPOS TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::setPosition(MAPPOS atPosition, VALUE_TYPE newValue)
 {
-    ASSERT(mHashTable   != static_cast<Block **>(NULL));
-    ASSERT(atPosition   != static_cast<MAPPOS>(NULL));
+    ASSERT( mHashTable != nullptr );
+    ASSERT( atPosition != nullptr );
 
     Block* block      = blockAt(atPosition);
     Block* nextBlock  = nextValidBlock(block);
-    block->mValue       = (VALUE)(newValue);
+    block->mValue     = newValue;
     return static_cast<MAPPOS>(nextBlock);
 }
 
 template < typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename VALUE_TYPE /*= VALUE */, class Implement /* = HashMapBase */ >
 MAPPOS TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::removePosition(MAPPOS curPos, KEY& out_Key, VALUE& out_Value)
 {
-    ASSERT(mHashTable   != static_cast<Block **>(NULL));
-    ASSERT(curPos       != static_cast<MAPPOS>(NULL));
-    MAPPOS   result     = NULL;
-    Block* block      = blockAt(curPos);
-    Block* nextBlock  = nextValidBlock(block);
+    ASSERT( mHashTable != nullptr );
+    ASSERT( curPos     != nullptr );
+    MAPPOS   result = nullptr;
+    Block* block    = blockAt(curPos);
+    Block* nextBlock= nextValidBlock(block);
     result      = static_cast<MAPPOS>(nextBlock);
     out_Key		= block->mKey;
     out_Value	= block->mValue;
 
-    ASSERT(block != NULL);
+    ASSERT(block != nullptr);
     removeBlock(blockReference(*block));
 
     return result;
@@ -1037,14 +1120,14 @@ MAPPOS TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::removePosition(MA
 template < typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename VALUE_TYPE /*= VALUE */, class Implement /* = HashMapBase */ >
 VALUE TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::removePosition(MAPPOS atPosition)
 {
-    ASSERT(mHashTable   != static_cast<Block **>(NULL));
-    ASSERT(atPosition	!= static_cast<MAPPOS>(NULL));
+    ASSERT(mHashTable != nullptr);
+    ASSERT(atPosition != nullptr);
 
     VALUE result;
     Block* block = blockAt(atPosition);
     result = block->mValue;
     
-    ASSERT(block != NULL);
+    ASSERT(block != nullptr);
     removeBlock(blockReference(*block));
     return result;
 }
@@ -1052,12 +1135,10 @@ VALUE TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::removePosition(MAP
 template < typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename VALUE_TYPE /*= VALUE */, class Implement /* = HashMapBase */ >
 void TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::removeAll( void )
 {
-    ASSERT(mHashTable   != static_cast<Block **>(NULL));
-
-    Block	*block = NULL;
+    Block	*block = nullptr;
     for (int idx = 0; idx < mHashTableSize; ++ idx)
     {
-        for (block = mHashTable[idx]; block != NULL; block = block->mNext)
+        for (block = mHashTable[idx]; block != nullptr; block = block->mNext)
         {
             (&block->mKey)->~KEY();
             (&block->mValue)->~VALUE();
@@ -1070,13 +1151,13 @@ void TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::removeAll( void )
 template < typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename VALUE_TYPE /*= VALUE */, class Implement /* = HashMapBase */ >
 MAPPOS TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::nextPosition(MAPPOS atPosition, KEY& out_Key, VALUE& out_Value) const
 {
-    ASSERT(mHashTable   != static_cast<Block **>(NULL));
-    ASSERT(atPosition   != static_cast<MAPPOS>(NULL));
+    ASSERT(mHashTable != nullptr);
+    ASSERT(atPosition != nullptr);
 
     Block* block      = blockAt(atPosition);
     Block* nextBlock  = nextValidBlock(block);
-    out_Key		        = block->mKey;
-    out_Value	        = block->mValue;
+    out_Key		      = block->mKey;
+    out_Value	      = block->mValue;
 
     return static_cast<MAPPOS>(nextBlock);
 }
@@ -1090,8 +1171,8 @@ inline MAPPOS TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::nextPositi
 template < typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename VALUE_TYPE /*= VALUE */, class Implement /* = HashMapBase */ >
 inline MAPPOS TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::nextPosition( MAPPOS atPosition ) const
 {
-    ASSERT(mHashTable   != static_cast<Block **>(NULL));
-    ASSERT(atPosition   != static_cast<MAPPOS>(NULL));
+    ASSERT(mHashTable != nullptr);
+    ASSERT(atPosition != nullptr);
     Block* block      = blockAt(atPosition);
     return static_cast<MAPPOS>( nextValidBlock(block) );
 }
@@ -1099,8 +1180,8 @@ inline MAPPOS TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::nextPositi
 template < typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename VALUE_TYPE /*= VALUE */, class Implement /* = HashMapBase */ >
 inline VALUE& TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::getPosition( const MAPPOS atPosition )
 {
-    ASSERT( mHashTable != static_cast<Block **>(NULL) );
-    ASSERT( atPosition != static_cast<MAPPOS>(NULL) );
+    ASSERT( mHashTable != nullptr );
+    ASSERT( atPosition != nullptr );
 
     Block* block = blockAt( atPosition );
     return block->mValue;
@@ -1109,8 +1190,8 @@ inline VALUE& TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::getPositio
 template < typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename VALUE_TYPE /*= VALUE */, class Implement /* = HashMapBase */ >
 inline VALUE_TYPE TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::getPosition( const MAPPOS atPosition ) const
 {
-    ASSERT( mHashTable != static_cast<Block **>(NULL) );
-    ASSERT( atPosition != static_cast<MAPPOS>(NULL) );
+    ASSERT( mHashTable != nullptr );
+    ASSERT( atPosition != nullptr );
 
     Block* block = blockAt( atPosition );
     return block->mValue;
@@ -1119,17 +1200,17 @@ inline VALUE_TYPE TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::getPos
 template < typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename VALUE_TYPE /*= VALUE */, class Implement /* = HashMapBase */ >
 VALUE& TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::getAt( KEY_TYPE Key )
 {
-    ASSERT( mHashTable != static_cast<Block **>(NULL) );
+    ASSERT( mHashTable != nullptr );
 
-    unsigned int hash   = TemplateConstants::MAP_INVALID_HASH;
+    unsigned int hash   = NECommon::MAP_INVALID_HASH;
     Block *list = blockAt( Key, hash );
-    if ( list == static_cast<Block *>(NULL) )
+    if ( list == nullptr )
     {
         // add new list
         int idx     = static_cast<int>(hash % mHashTableSize);
         list        = initNewBlock( );
         list->mHash = hash;
-        list->mKey	= (KEY)Key;
+        list->mKey	= Key;
         list->mNext	= mHashTable[idx];
         mHashTable[idx] = list;
     }
@@ -1140,16 +1221,16 @@ VALUE& TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::getAt( KEY_TYPE K
 template < typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename VALUE_TYPE /*= VALUE */, class Implement /* = HashMapBase */ >
 inline VALUE_TYPE TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::getAt(KEY_TYPE Key) const
 {
-    Block ** block  = blockAt(Key);
-    ASSERT((block != NULL) && (*block != NULL));
+    Block ** block  = blockAtRef(Key);
+    ASSERT((block != nullptr) && (*block != nullptr));
     return (*block)->mValue;
 }
 
 template < typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename VALUE_TYPE /*= VALUE */, class Implement /* = HashMapBase */ >
 inline void TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::getAtPosition(MAPPOS atPosition, KEY & out_Key, VALUE & out_Value) const
 {
-    ASSERT(mHashTable	!= static_cast<Block **>(NULL));
-    ASSERT(atPosition   != static_cast<MAPPOS>(NULL));
+    ASSERT(mHashTable != nullptr);
+    ASSERT(atPosition != nullptr);
 
     Block* block    = blockAt(atPosition);
     out_Key   = block->mKey;
@@ -1165,8 +1246,8 @@ inline void TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::getAtPositio
 template < typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename VALUE_TYPE /*= VALUE */, class Implement /* = HashMapBase */ >
 inline VALUE_TYPE TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::valueAtPosition( MAPPOS atPosition ) const
 {
-    ASSERT(mHashTable	!= static_cast<Block **>(NULL));
-    ASSERT(atPosition   != static_cast<MAPPOS>(NULL));
+    ASSERT( mHashTable != nullptr );
+    ASSERT( atPosition != nullptr );
 
     Block* block    = blockAt(atPosition);
     return block->mValue;
@@ -1175,8 +1256,8 @@ inline VALUE_TYPE TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::valueA
 template < typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename VALUE_TYPE /*= VALUE */, class Implement /* = HashMapBase */ >
 inline KEY_TYPE TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::keyAtPosition( MAPPOS atPosition ) const
 {
-    ASSERT(mHashTable	!= static_cast<Block **>(NULL));
-    ASSERT(atPosition   != static_cast<MAPPOS>(NULL));
+    ASSERT( mHashTable != nullptr );
+    ASSERT( atPosition != nullptr );
 
     Block* block    = blockAt(atPosition);
     return block->mKey;
@@ -1185,14 +1266,14 @@ inline KEY_TYPE TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::keyAtPos
 template < typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename VALUE_TYPE /*= VALUE */, class Implement /* = HashMapBase */ >
 bool TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::nextEntry(MAPPOS & in_out_NextPosition, KEY & out_NextKey, VALUE & out_NextValue) const
 {
-    ASSERT(mHashTable	        != static_cast<Block **>(NULL));
-    ASSERT(in_out_NextPosition  != static_cast<MAPPOS>(NULL));
+    ASSERT( mHashTable != nullptr );
+    ASSERT( in_out_NextPosition != nullptr );
 
-    bool result         = false;
-    Block* block      = blockAt(in_out_NextPosition);
-    Block* nextBlock  = nextValidBlock(block);
+    bool result     = false;
+    Block* block    = blockAt(in_out_NextPosition);
+    Block* nextBlock= nextValidBlock(block);
     in_out_NextPosition = static_cast<MAPPOS>(nextBlock);
-    if ( nextBlock != static_cast<Block *>(NULL) )
+    if ( nextBlock != nullptr )
     {
         out_NextKey     = nextBlock->mKey;
         out_NextValue   = nextBlock->mValue;
@@ -1203,15 +1284,15 @@ bool TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::nextEntry(MAPPOS & 
 }
 
 template < typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename VALUE_TYPE /*= VALUE */, class Implement /* = HashMapBase */ >
-void TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::initHashTable(int sizeHashTable /*= TemplateConstants::MAP_DEFAULT_HASH_SIZE*/)
+void TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::initHashTable(int sizeHashTable /*= NECommon::MAP_DEFAULT_HASH_SIZE*/)
 {
     ASSERT(mElemCount   == 0);
-    ASSERT(sizeHashTable >  0 && sizeHashTable <= TemplateConstants::MAP_MAX_TABLE_SIZE);
-    if (mHashTable != NULL)
+    ASSERT(sizeHashTable >  0 && sizeHashTable <= NECommon::MAP_MAX_TABLE_SIZE);
+    if (mHashTable != nullptr)
         delete [] mHashTable;
 
     mHashTable	    = DEBUG_NEW Block *[static_cast<unsigned int>(sizeHashTable)];
-    mHashTableSize	= mHashTable != NULL ? sizeHashTable : 0;
+    mHashTableSize	= mHashTable != nullptr ? sizeHashTable : 0;
     NEMemory::zeroElements<Block *>( mHashTable, mHashTableSize);
 }
 
@@ -1222,7 +1303,7 @@ void TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::createBlockList( vo
     // chain them into free list
     unsigned int length     = static_cast<unsigned int>(mBlockSize * sizeof(Block) + sizeof(Block *));
     unsigned char* newBlock = DEBUG_NEW unsigned char[length];
-    if (newBlock != NULL)
+    if (newBlock != nullptr)
     {
         // link blocks, copy the address of last block into
         // beginning of new block (and skip address part)
@@ -1243,7 +1324,7 @@ template < typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename V
 void TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::deleteBlockList( void )
 {
     unsigned char* blocks = reinterpret_cast<unsigned char *>(mBlockList);
-    while (blocks != NULL)
+    while (blocks != nullptr)
     {
         // copy address of next block, placed during creating blocks.
         NEMemory::memCopy(&mBlockList, sizeof(Block *), blocks, sizeof(Block *));
@@ -1267,19 +1348,19 @@ void TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::freeBlock(Block* bl
 template < typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename VALUE_TYPE /*= VALUE */, class Implement /* = HashMapBase */ >
 inline unsigned int TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::getHashKey( KEY_TYPE Key ) const
 {
-    return Implement::implHashKey(Key);
+    return mImplement.implHashKey(Key);
 }
 
 template < typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename VALUE_TYPE /*= VALUE */, class Implement /* = HashMapBase */>
 inline bool TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::isEqualKeys(KEY_TYPE key1, KEY_TYPE key2) const
 {
-    return Implement::implEqualKeys(key1, key2);
+    return mImplement.implEqualKeys(key1, key2);
 }
 
 template < typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename VALUE_TYPE /*= VALUE */, class Implement /* = HashMapBase */>
 inline bool TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::isEqualValues(VALUE_TYPE value1, VALUE_TYPE value2) const
 {
-    return Implement::implEqualValues(value1, value2);
+    return mImplement.implEqualValues(value1, value2);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1308,11 +1389,9 @@ IEOutStream & operator << ( IEOutStream & stream, const TEHashMap<K, V, KT, VT, 
     if ( size != 0 )
     {
         const typename TEHashMap<K, V, KT, VT, Impl>::Block * block = output.firstValidBlock();
-        for ( ; block != NULL; block = output.nextValidBlock(block))
+        for ( ; block != nullptr; block = output.nextValidBlock(block))
             stream << static_cast<const TEPair<K, V, KT, VT, Impl> &>(*block);
     }
 
     return stream;
 }
-
-#endif  // AREG_BASE_TEHASHMAP_HPP

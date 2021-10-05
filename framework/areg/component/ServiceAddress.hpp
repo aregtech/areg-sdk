@@ -1,9 +1,16 @@
-#ifndef AREG_COMPONENT_SERVICEADDRESS_HPP
-#define AREG_COMPONENT_SERVICEADDRESS_HPP
+#pragma once
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/component/ServiceAddress.hpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, Generic Service Address object
  *
  ************************************************************************/
@@ -13,6 +20,8 @@
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
 #include "areg/component/ServiceItem.hpp"
+
+#include <utility>
 
 /************************************************************************
  * Child objects
@@ -44,10 +53,10 @@ public:
     /**
      * \brief   Converts given service address path as a string to service address object.
      * \param   pathService     The path of service address as a string.
-     * \param   out_nextPart    If not NULL, on output this parameter points to next part of part after service address.
+     * \param   out_nextPart    If not nullptr, on output this parameter points to next part of part after service address.
      * \return  Returns generated service address object.
      **/
-    static ServiceAddress convPathToAddress( const char * pathService, const char** out_nextPart = NULL );
+    static ServiceAddress convPathToAddress( const char * pathService, const char** out_nextPart = nullptr );
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / destructor
@@ -81,13 +90,13 @@ public:
      * \brief   Creates service address, which is contained in stub address object.
      * \param   addrStub        The address of stub object with contains information of service address.
      **/
-    ServiceAddress( const StubAddress & addrStub );
+    explicit ServiceAddress( const StubAddress & addrStub );
 
     /**
      * \brief   Creates service address, which is contained in proxy address object.
      * \param   addrProxy       The address of proxy object with contains information of service address.
      **/
-    ServiceAddress( const ProxyAddress & addrProxy );
+    explicit ServiceAddress( const ProxyAddress & addrProxy );
 
     /**
      * \brief   Initializes service address data from given streaming object.
@@ -102,9 +111,15 @@ public:
     ServiceAddress( const ServiceAddress & source );
 
     /**
+     * \brief   Moves data from given source.
+     * \param   source      The source of data to move.
+     **/
+    ServiceAddress( ServiceAddress && source ) noexcept;
+
+    /**
      * \brief   Destructor.
      **/
-    virtual ~ServiceAddress( void );
+    virtual ~ServiceAddress( void ) = default;
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -115,7 +130,13 @@ public:
      * \brief   Copies service address from given source.
      * \param   source      The source of service address to copy data.
      **/
-    inline const ServiceAddress & operator = ( const ServiceAddress & source );
+    inline ServiceAddress & operator = ( const ServiceAddress & source );
+
+    /**
+     * \brief   Copies service address from given source.
+     * \param   source      The source of service address to copy data.
+     **/
+    inline ServiceAddress & operator = ( ServiceAddress && source ) noexcept;
 
     /**
      * \brief   Checks equality of 2 service addresses and returns true if they are equal.
@@ -132,7 +153,7 @@ public:
     /**
      * \brief   Converts service address to 32-bit unsigned integer value.
      **/
-    inline operator unsigned int ( void ) const;
+    inline explicit operator unsigned int ( void ) const;
 
 /************************************************************************/
 // Friend global operators for streaming
@@ -182,9 +203,9 @@ public:
     /**
      * \brief   Converts given service address path as a string to service address object.
      * \param   pathService     The path of service address as a string.
-     * \param   out_nextPart    If not NULL, on output this parameter points to next part of part after service address.
+     * \param   out_nextPart    If not nullptr, on output this parameter points to next part of part after service address.
      **/
-    void convFromString( const char * pathService, const char** out_nextPart = NULL );
+    void convFromString( const char * pathService, const char** out_nextPart = nullptr );
 
 protected:
     /**
@@ -224,12 +245,24 @@ private:
 // ServiceAddress class inline methods
 //////////////////////////////////////////////////////////////////////////
 
-inline const ServiceAddress & ServiceAddress::operator = ( const ServiceAddress & source )
+inline ServiceAddress & ServiceAddress::operator = ( const ServiceAddress & source )
 {
     if ( static_cast<const ServiceAddress *>(this) != &source )
     {
         static_cast<ServiceItem &>(*this) = static_cast<const ServiceItem &>(source);
         mRoleName   = source.mRoleName;
+        mMagicNum   = source.mMagicNum;
+    }
+
+    return (*this);
+}
+
+inline ServiceAddress & ServiceAddress::operator = ( ServiceAddress && source ) noexcept
+{
+    if ( static_cast<ServiceAddress *>(this) != &source )
+    {
+        static_cast<ServiceItem &>(*this) = static_cast<ServiceItem &&>(source);
+        mRoleName   = std::move(source.mRoleName);
         mMagicNum   = source.mMagicNum;
     }
 
@@ -292,5 +325,3 @@ inline IEOutStream & operator << ( IEOutStream & stream, const ServiceAddress & 
     stream << output.mRoleName;
     return stream;
 }
-
-#endif  // AREG_COMPONENT_SERVICEADDRESS_HPP

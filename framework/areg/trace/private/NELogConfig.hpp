@@ -1,9 +1,16 @@
-#ifndef AREG_TRACE_PRIVATE_NELOGCONFIG_HPP
-#define AREG_TRACE_PRIVATE_NELOGCONFIG_HPP
+#pragma once
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/trace/private/NELogConfig.hpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, The namespace with helper constants
  *              of trace log configuration syntax and outputs
  ************************************************************************/
@@ -14,6 +21,10 @@
 #include "areg/trace/NETrace.hpp"
 #include "areg/appbase/NEApplication.hpp"
 #include "areg/base/String.hpp"
+#include "areg/base/NESocket.hpp"
+#include "areg/base/NECommon.hpp"
+
+#include <string_view>
 
  //////////////////////////////////////////////////////////////////////////
  // NELogConfig namespace declaration
@@ -30,7 +41,7 @@ namespace NELogConfig
      * \brief   NELogConfig::eLogConfig
      *          The list of supported logging properties in configuration file
      **/
-    typedef enum E_LogConfig
+    typedef enum class E_LogConfig : int
     {
           ConfigUnknown             //!< Configuration property is unknown, should not be used
         , ConfigLogVersion          //!< Configuration property is version information
@@ -51,14 +62,17 @@ namespace NELogConfig
         , ConfigLogLayoutExit       //!< Configuration property is information for layout to output exit scope message
         , ConfigScope               //!< Configuration property is information of scopes to activate or deactivate
 
-        , ConfigLast                //!< The size of configuration data
-
     } eLogConfig;
 
     /**
      * \brief   Converts and returns the string of NELogConfig::eLogConfig value
      **/
     inline const char * getString( NELogConfig::eLogConfig logConfig );
+
+    /**
+     * \brief   The number of supported log configuration property entries, used when read configuration file.
+     **/
+    constexpr int       LOG_PROPERTY_COUNT      { static_cast<int>(eLogConfig::ConfigScope) + 1 };
 
     /**
      * \brief   Returns the log configuration type parsed from syntax of passed command string.
@@ -76,13 +90,13 @@ namespace NELogConfig
      *          if type is undefined
      * \see     FromString, NELogConfig::eLogConfig
      **/
-    const char * convToString( NELogConfig::eLogConfig logConfig );
+    const std::string_view & convToString( NELogConfig::eLogConfig logConfig );
 
     /**
      * \brief   NELogConfig::eLogStatus
      *          Defines logging status
      **/
-    typedef enum E_LogStatus
+    typedef enum class E_LogStatus
     {
           StatusUndefined   //!< Logging status is undefined
         , StatusDisabled    //!< Logging status is disabled, no messages are output
@@ -93,7 +107,7 @@ namespace NELogConfig
      * \brief   NELogConfig::eConfigKey
      *          The configuration key visibility levels
      **/
-    typedef enum E_ConfigKey
+    typedef enum class E_ConfigKey
     {
           KeyUndefined  //!< Configuration key visibility is undefined.
         , KeyGlobal     //!< Configuration key visibility level is global and valid for all modules.
@@ -113,7 +127,7 @@ namespace NELogConfig
      *          for example like this:
      *          2019-07-04 14:34:47,969: [ 1587.17524  distrbutedapp.distrbutedapp_ConnectionServicing_CreateComponent: Enter --> ]
      **/
-    typedef enum E_Layouts
+    typedef enum class E_Layouts : char
     {
           LayoutUndefined       = 0     //!< Undefined specifier, no layout is created
         , LayoutAnyText         = 1     //!< Create any text layout to output message without formating
@@ -140,299 +154,324 @@ namespace NELogConfig
     /**
      * \brief   Symbol of comment in configuration file
      **/
-    const char              SYNTAX_COMMENT                      = '#';
+    constexpr char              SYNTAX_COMMENT                      { '#' };
 
     /**
      * \brief   Symbol of equal operation in configuration file
      **/
-    const char              SYNTAX_EQUAL                        = '=';
+    constexpr char              SYNTAX_EQUAL                        { '=' };
 
     /**
      * \brief   End of line symbol in configuration file
      **/
-    const char              SYNTAX_LINEEND                      = '\n';
+    constexpr char              SYNTAX_LINEEND                      { '\n' };
 
     /**
      * \brief   Symbol of object separator in configuration file
      **/
-    const char              SYNTAX_OBJECT_SEPARATOR             = '.';
+    constexpr char              SYNTAX_OBJECT_SEPARATOR             { '.' };
 
     /**
      * \brief   Symbol of data separator in configuration file
      **/
-    const char              SYNTAX_DATA_SEPARATOR               = ':';
+    constexpr char              SYNTAX_DATA_SEPARATOR               { ':' };
 
     /**
      * \brief   White space delimiter
      **/
-    const char              SYNTAX_WHITESPACE_DELIMITER         = ' ';
+    constexpr char              SYNTAX_WHITESPACE_DELIMITER         { ' ' };
 
     /**
      * \brief   Tab delimiter
      **/
-    const char              SYNTAX_TAB_DELIMITER                = '\t';
+    constexpr char              SYNTAX_TAB_DELIMITER                { '\t' };
 
     /**
      * \brief   End of command delimiter, optional. Might be skipped
      **/
-    const char              SYNTAX_END_COMMAND_DELIMITER        = ';';
+    constexpr char              SYNTAX_END_COMMAND_DELIMITER        { ';' };
 
     /**
      * \brief   List of valid delimiters
      **/
-    const char * const      SYNTAX_DELIMITERS                   = " \t";
+    constexpr std::string_view  SYNTAX_DELIMITERS                   { " \t" };
 
     /**
      * \brief   Boolean syntax 'true'
      **/
-    const char * const      SYNTAX_TRUE                         = String::BOOLEAN_TRUE;
+    constexpr std::string_view  SYNTAX_TRUE                         { NECommon::BOOLEAN_TRUE };
 
     /**
      * \brief   Boolean syntax 'false'
      **/
-    const char * const      SYNTAX_FALSE                        = String::BOOLEAN_FALSE;
+    constexpr std::string_view  SYNTAX_FALSE                        { NECommon::BOOLEAN_FALSE };
 
     /**
      * \brief   The logical OR operation used setting scope priorities only
      **/
-    const char * const      SYNTAX_LOGICAL_OR                   = "|";
-
-    /**
-     * \brief   Syntax of current directory (used in file path) in UNIX system
-     **/
-    const char * const      SYNTAX_CURRENT_DIR_UNIX             = "./";
-
-    /**
-     * \brief   Syntax of current directory (used in file path) in DOS system
-     **/
-    const char * const      SYNTAX_CURRENT_DIR_DOS              = ".\\";
+    constexpr std::string_view  SYNTAX_LOGICAL_OR                   { "|" };
 
 //////////////////////////////////////////////////////////////////////////
 // Syntax of commands in configuration file
 //////////////////////////////////////////////////////////////////////////
 
-    const char * const      SYNTAX_CMD_EMPTY                    = "";               //!< The empty Syntax.
-    extern const int        SYNTAX_CMD_EMPTY_LENGTH                 ;               //!< The length of empty syntax.
-
-    const char * const      SYNTAX_CMD_LOG                      = "log";            //!< The logging general syntax. All logging related commands should start with this command.
-    extern const int        SYNTAX_CMD_LOG_LENGTH                   ;               //!< The length of log syntax.
-
-    const char * const      SYNTAX_CMD_LOG_VERSION              = "log.version";    //!< The syntax of logging version command.
-    extern const int        SYNTAX_CMD_LOG_VERSION_LENGTH           ;               //!< The length of logging version syntax.
-
-    const char * const      SYNTAX_CMD_LOG_FILE                 = "log.file";       //!< The syntax of logging file name command.
-    extern const int        SYNTAX_CMD_LOG_FILE_LENGTH              ;               //!< The length of logging file name syntax.
-
-    const char * const      SYNTAX_CMD_LOG_REMOTE               = "log.remote";     //!< The syntax of remote logging service command.
-    extern const int        SYNTAX_CMD_LOG_REMOTE_LENGTH            ;               //!< The length of remote logging service syntax.
-
-    const char * const      SYNTAX_CMD_LOG_REMOTE_HOST          = "log.remote.host";//!< The syntax of remote logging service host name command.
-    extern const int        SYNTAX_CMD_LOG_REMOTE_HOST_LENGTH       ;               //!< The length of remote logging service host name syntax.
-
-    const char * const      SYNTAX_CMD_LOG_REMOTE_PORT          = "log.remote.port";//!< The syntax of remote logging service port number command.
-    extern const int        SYNTAX_CMD_LOG_REMOTE_PORT_LENGTH       ;               //!< The length of remote logging service port number syntax.
-
-    const char * const      SYNTAX_CMD_LOG_DB                   = "log.db";         //!< The syntax of database service command.
-    extern const int        SYNTAX_CMD_LOG_DB_LENGTH                ;               //!< The length of database service syntax.
-
-    const char * const      SYNTAX_CMD_LOG_DB_DRIVER            = "log.db.driver";  //!< The syntax of database service driver name command.
-    extern const int        SYNTAX_CMD_LOG_DB_DRIVER_LENGTH         ;               //!< The length of database service driver name syntax.
-
-    const char * const      SYNTAX_CMD_LOG_DB_HOST              = "log.db.host";    //!< The syntax of database service driver host command.
-    extern const int        SYNTAX_CMD_LOG_DB_HOST_LENGTH           ;               //!< The length of database service driver host syntax.
-
-    const char * const      SYNTAX_CMD_LOG_DB_USER              = "log.db.user";    //!< The syntax of database service user name command.
-    extern const int        SYNTAX_CMD_LOG_DB_USER_LENGTH           ;               //!< The length of database service user name syntax.
-
-    const char * const      SYNTAX_CMD_LOG_DB_PASSWORD          = "log.db.pwd";     //!< The syntax of database service user password command.
-    extern const int        SYNTAX_CMD_LOG_DB_PASSWORD_LENGTH       ;               //!< The length of database service user password syntax.
-
-    const char * const      SYNTAX_CMD_LOG_DB_NAME              = "log.db.name";    //!< The syntax of database name command.
-    extern const int        SYNTAX_CMD_LOG_DB_NAME_LENGTH           ;               //!< The length of database name syntax.
-
-    const char * const      SYNTAX_CMD_LOG_DEBUG                = "log.debug";      //!< The syntax of debug output command.
-    extern const int        SYNTAX_CMD_LOG_DEBUG_LENGTH             ;               //!< The length of debug output syntax.
-
-    const char * const      SYNTAX_CMD_LOG_APPEND               = "log.append";     //!< The syntax of target (file or database) output command -- append in existing or create new.
-    extern const int        SYNTAX_CMD_LOG_APPEND_LENGTH            ;               //!< The length of target output syntax.
-
-    const char * const      SYNTAX_CMD_LOG_STACK                = "log.stack";      //!< The syntax of logging stack size command.
-    extern const int        SYNTAX_CMD_LOG_STACK_LENGTH             ;               //!< The length of logging stack size syntax.
-
-    const char * const      SYNTAX_CMD_LOG_ENABLE               = "log.enable";     //!< The syntax of logging enabling command.
-    extern const int        SYNTAX_CMD_LOG_ENABLE_LENGTH            ;               //!< The length of logging enabling syntax.
-
-    const char * const      SYNTAX_CMD_LOG_LAYOUT_ENTER         = "log.layout.enter";   //!< The syntax of logging enter scope command.
-    extern const int        SYNTAX_CMD_LOG_LAYOUT_ENTER_LENGTH      ;                   //!< The length of logging enter scope syntax.
-
-    const char * const      SYNTAX_CMD_LOG_LAYOUT_MESSAGE       = "log.layout.message"; //!< The syntax of logging message command.
-    extern const int        SYNTAX_CMD_LOG_LAYOUT_MESSAGE_LENGTH    ;                   //!< The length of logging message syntax.
-
-    const char * const      SYNTAX_CMD_LOG_LAYOUT_EXIT          = "log.layout.exit";    //!< The syntax of logging exit scope command.
-    extern const int        SYNTAX_CMD_LOG_LAYOUT_EXIT_LENGTH       ;                   //!< The length of logging exit scope syntax
-
-    const char * const      SYNTAX_CMD_LOG_SCOPE                = "scope";              //!< The syntax of logging general scope command.
-    extern const int        SYNTAX_CMD_LOG_SCOPE_LENGTH             ;                   //!< The length of logging general scope syntax.
+    /**
+     * \brief   The empty Syntax.
+     **/
+    constexpr std::string_view  SYNTAX_CMD_EMPTY                    { "" };
+    /**
+     * \brief   The logging general syntax. All logging related commands should start with this command.
+     **/
+    constexpr std::string_view  SYNTAX_CMD_LOG                      { "log" };
+    /**
+     * \brief   The syntax of logging version command.
+     **/
+    constexpr std::string_view  SYNTAX_CMD_LOG_VERSION              { "log.version" };
+    /**
+     * \brief   The syntax of logging file name command.
+     **/
+    constexpr std::string_view  SYNTAX_CMD_LOG_FILE                 { "log.file" };
+    /**
+     * \breif   The syntax of remote logging service command.
+     **/
+    constexpr std::string_view  SYNTAX_CMD_LOG_REMOTE               { "log.remote" };
+    /**
+     * \breif   The syntax of remote logging service host name command.
+     **/
+    constexpr std::string_view  SYNTAX_CMD_LOG_REMOTE_HOST          { "log.remote.host" };
+    /**
+     * \breif   The syntax of remote logging service port number command.
+     **/
+    constexpr std::string_view  SYNTAX_CMD_LOG_REMOTE_PORT          { "log.remote.port" };
+    /**
+     * \breif   The syntax of database service command.
+     **/
+    constexpr std::string_view  SYNTAX_CMD_LOG_DB                   { "log.db" };
+    /**
+     * \breif   The syntax of database service driver name command.
+     **/
+    constexpr std::string_view  SYNTAX_CMD_LOG_DB_DRIVER            { "log.db.driver" };
+    /**
+     * \breif   The syntax of database service driver host command.
+     **/
+    constexpr std::string_view  SYNTAX_CMD_LOG_DB_HOST              { "log.db.host" };
+    /**
+     * \breif   The syntax of database service user name command.
+     **/
+    constexpr std::string_view  SYNTAX_CMD_LOG_DB_USER              { "log.db.user" };
+    /**
+     * \breif   The syntax of database service user password command.
+     **/
+    constexpr std::string_view  SYNTAX_CMD_LOG_DB_PASSWORD          { "log.db.pwd" };
+    /**
+     * \breif   The syntax of database name command.
+     **/
+    constexpr std::string_view  SYNTAX_CMD_LOG_DB_NAME              { "log.db.name" };
+    /**
+     * \breif   The syntax of debug output command.
+     **/
+    constexpr std::string_view  SYNTAX_CMD_LOG_DEBUG                { "log.debug" };
+    /**
+     * \breif   The syntax of target (file or database) output command -- append in existing or create new.
+     **/
+    constexpr std::string_view  SYNTAX_CMD_LOG_APPEND               { "log.append" };
+    /**
+     * \breif   The syntax of logging stack size command.
+     **/
+    constexpr std::string_view  SYNTAX_CMD_LOG_STACK                { "log.stack" };
+    /**
+     * \breif   The syntax of logging enabling command.
+     **/
+    constexpr std::string_view  SYNTAX_CMD_LOG_ENABLE               { "log.enable" };
+    /**
+     * \breif   The syntax of logging enter scope command.
+     **/
+    constexpr std::string_view  SYNTAX_CMD_LOG_LAYOUT_ENTER         { "log.layout.enter" };
+    /**
+     * \breif   The syntax of logging message command.
+     **/
+    constexpr std::string_view  SYNTAX_CMD_LOG_LAYOUT_MESSAGE       { "log.layout.message" };
+    /**
+     * \breif   The syntax of logging exit scope command.
+     **/
+    constexpr std::string_view  SYNTAX_CMD_LOG_LAYOUT_EXIT          { "log.layout.exit" };
+    /**
+     * \breif   The syntax of logging general scope command.
+     **/
+    constexpr std::string_view  SYNTAX_CMD_LOG_SCOPE                { "scope" };
 
     /**
      * \brief   The scope name path separator
      **/
-    const char              SYNTAX_SCOPE_SEPARATOR              = '_';
+    constexpr char              SYNTAX_SCOPE_SEPARATOR              { '_' };
 
     /**
      * \brief   Group of scopes in specified sub-path
      **/
-    const char              SYNTAX_SCOPE_GROUP                  = '*';
+    constexpr char              SYNTAX_SCOPE_GROUP                  { '*' };
 
     /**
      * \brief   The reserved name of invalid scope
      **/
-    const char * const      INVALID_SCOPE_NAME                  = "INVALID_SCOPE_NAME";
-
-    /**
-     * \brief   Use timestamp in name (file name, database name)
-     **/
-    extern const char * const      LOG_FILENAME_MASK_TIMESTAMP  /*= File::FILE_MASK_TIMESTAMP*/;  // %time%
-
-    /**
-     * \brief   Log in special folder for application data
-     **/
-    extern const char * const      LOG_FILE_NAME_MASK_APPDATA   /*= File::FILE_MASK_APP_DATA*/;   // %appdata%
-
-    /**
-     * \brief   The timestamp format to output when generate name
-     **/
-    extern const char * const      LOG_FORMAT_TIMESTAMP         /*= File::TIMESTAMP_FORMAT*/;     // "%04d_%02d_%02d_%02d_%02d_%02d_%03d" ==> yyyy_mm_dd_hh_mm_ss_ms
+    constexpr std::string_view  INVALID_SCOPE_NAME                  { "INVALID_SCOPE_NAME" };
 
     /**
      * \brief   Format of timestamp to display logs
      **/
-    const char* const       TIME_FORMAT_ISO8601                 = "ISO8601";
-    const char* const       TIME_FORMAT_ISO8601_OUTPUT          = "%Y-%m-%d %H:%M:%S,%l";
+    constexpr std::string_view  TIME_FORMAT_ISO8601                 { "ISO8601" };
+    constexpr std::string_view  TIME_FORMAT_ISO8601_OUTPUT          { "%Y-%m-%d %H:%M:%S,%l" };
 
     /**
      * \brief   Absolute time format of timestamp
      **/
-    const char* const       TIME_FORMAT_ABSOLUTE                = "ABSOLUTE";
-    const char* const       TIME_FORMAT_ABSOLUTE_OUTPUT         = "%H:%M:%S,%l";
+    constexpr std::string_view  TIME_FORMAT_ABSOLUTE                { "ABSOLUTE" };
+    constexpr std::string_view  TIME_FORMAT_ABSOLUTE_OUTPUT         { "%H:%M:%S,%l" };
 
     /**
      * \brief   Format only data of timestamp
      **/
-    const char * const      TIME_FORMAT_DATE                    = "DATE";
-    const char * const      TIME_FORMAT_DATE_OUTPUT             = "%d %b %Y %H:%M:%S,%l";
+    constexpr std::string_view  TIME_FORMAT_DATE                    { "DATE" };
+    constexpr std::string_view  TIME_FORMAT_DATE_OUTPUT             { "%d %b %Y %H:%M:%S,%l" };
 
     /**
      * \brief   Enter scope marker to display / log
      **/
-    const char * const      MARK_SCOPE_ENTER                    = "%s: Enter -->";
+    constexpr std::string_view  MARK_SCOPE_ENTER                    { "%s: Enter -->" };
 
     /**
      * \brief   Exit scope marker to display / log
      **/
-    const char * const      MARK_SCOPE_EXIT                     = "%s: Exit  <--";
+    constexpr std::string_view  MARK_SCOPE_EXIT                     { "%s: Exit  <--" };
 
     /**
      * \brief   Log messages to display / log
      **/
-    const char * const      MARK_LOG_MESSAGE                    = ">>> ";
+    constexpr std::string_view  MARK_LOG_MESSAGE                    { ">>> " };
 
     /**
      * \brief   Predefined name of logger to log into file
      **/
-    const char * const      LOGGER_NAME_FILE                    = "FileLogger";
+    constexpr std::string_view  LOGGER_NAME_FILE                    { "FileLogger" };
 
     /**
      * \brief   Predefined name of logger to log to remote host
      **/
-    const char * const      LOGGER_NAME_REMOTE                  = "RemoteLogger";
+    constexpr std::string_view  LOGGER_NAME_REMOTE                  { "RemoteLogger" };
     /**
      * \brief   Predefined name of logger to log to database
      **/
-    const char * const      LOGGER_NAME_DATABASE                = "DatabaseLogger";
+    constexpr std::string_view  LOGGER_NAME_DATABASE                { "DatabaseLogger" };
     /**
      * \brief   Predefined name of logger to log to debug output window
      **/
-    const char * const      LOGGER_NAME_DEBUG                   = "DebugLogger";
+    constexpr std::string_view  LOGGER_NAME_DEBUG                   { "DebugLogger" };
 
     /**
      * \brief   Default value of integer, if not set in configuration file
      **/
-    const int               DEFAULT_INTEGER_VALUE               = 0;
+    constexpr int               DEFAULT_INTEGER_VALUE               { 0 };
 
     /**
      * \brief   Default value of boolean, if not set in configuration file
      **/
-    const bool              DEFAULT_BOOLEAN_VALUE               = false;
+    constexpr bool              DEFAULT_BOOLEAN_VALUE               { false };
 
     /**
      * \brief   The default logging priority
      **/
-    const unsigned int      DEFAULT_LOG_PRIORITY                = static_cast<unsigned int>(NETrace::PrioNotset);
+    constexpr unsigned int      DEFAULT_LOG_PRIORITY                { static_cast<unsigned int>(NETrace::PrioNotset) };
 
     /**
      * \brief   Default value of string, if not set in configuration file
      **/
-    const char * const      DEFAULT_STRING_VALUE                = String::EmptyString;
+    constexpr std::string_view  DEFAULT_STRING_VALUE                { String::EmptyString };
 
     /**
      * \brief   Default delimiter
      **/
-    const char              DEFAULT_SYNTAX_DELIMITER            = NELogConfig::SYNTAX_WHITESPACE_DELIMITER;
+    constexpr char              DEFAULT_SYNTAX_DELIMITER            { NELogConfig::SYNTAX_WHITESPACE_DELIMITER };
     /**
      * \brief   Default time format
      **/
-    const char * const      DEFAULT_TIME_FORMAT                 = TIME_FORMAT_ISO8601;
+    constexpr std::string_view  DEFAULT_TIME_FORMAT                 { TIME_FORMAT_ISO8601 };
     /**
      * \brief   Default time format output
      **/
-    const char * const      DEFAULT_TIME_FORMAT_OUTPUT          = TIME_FORMAT_ISO8601_OUTPUT;
-
-    /**
-     * \brief   Default log initialization file name. Relative path to current process
-     **/
-    const char * const      DEFAULT_CONFIG_FILE_NAME            = NEApplication::DEFAULT_TRACING_CONFIG_FILE;
+    constexpr std::string_view  DEFAULT_TIME_FORMAT_OUTPUT          { TIME_FORMAT_ISO8601_OUTPUT };
 
     /**
      * \brief   Default flag to indicate logging enable / disable status. By default it is disabled.
      **/
-    const bool              DEFAULT_LOG_ENABLED                 = false;
+    constexpr bool              DEFAULT_LOG_ENABLED                 { false };
 
     /**
      * \brief   Default host name to connect logging service
      **/
-    const char * const      DEFAULT_REMOTE_HOST                 = "localhost";
+    constexpr std::string_view  DEFAULT_REMOTE_HOST                 { NESocket::LocalHost };
 
     /**
      * \brief   Default port number to connect to logging service
      **/
-    const unsigned short    DEFAULT_REMOTE_PORT                 = 8082;
+    constexpr unsigned short    DEFAULT_REMOTE_PORT                 { 8082 };
 
     /**
      * \brief   Default log file name. Relative path to current process
      **/
-    const char * const      DEFAULT_LOG_FILE_NAME               = "./logs/trace_%time%.log";
+    constexpr std::string_view  DEFAULT_LOG_FILE_NAME               { "./logs/trace_%time%.log" };
 
     /**
      * \brief   Symbol, indicating scope group, which start by name before '*' symbol
      **/
-    const char * const      MODULE_SCOPE                        = "*";
-
-    /**
-     * \brief   NELogConfig::sConfigSytax
-     *          The structure of log configuration syntax.
-     **/
-    typedef struct S_ConfigSytax
-    {
-        const char *    sytaxName;      //!< The syntax / or syntax name
-        const int       syntaxLength;   //!< The length of syntax
-    } sConfigSytax;
+    constexpr std::string_view  MODULE_SCOPE                        { "*" };
 
     /**
      * \brief   The list of valid syntax lists.
      **/
-    extern const NELogConfig::sConfigSytax     ValidSytaxList[NELogConfig::ConfigLast];
+    constexpr const std::string_view    ValidSytaxList[ ] = 
+            {
+                  NEString::EmptyStringA                        //!< eLogConfig::ConfigUnknown
+                , NELogConfig::SYNTAX_CMD_LOG_VERSION           //!< eLogConfig::ConfigLogVersion
+                , NELogConfig::SYNTAX_CMD_LOG_FILE              //!< eLogConfig::ConfigLogFile
+                , NELogConfig::SYNTAX_CMD_LOG_REMOTE_HOST       //!< eLogConfig::ConfigLogRemoteHost
+                , NELogConfig::SYNTAX_CMD_LOG_REMOTE_PORT       //!< eLogConfig::ConfigLogRemotePort
+                , NELogConfig::SYNTAX_CMD_LOG_DB_DRIVER         //!< eLogConfig::ConfigLogDatabaseDriver
+                , NELogConfig::SYNTAX_CMD_LOG_DB_HOST           //!< eLogConfig::ConfigLogDatabaseHost
+                , NELogConfig::SYNTAX_CMD_LOG_DB_USER           //!< eLogConfig::ConfigLogDatabaseUser
+                , NELogConfig::SYNTAX_CMD_LOG_DB_PASSWORD       //!< eLogConfig::ConfigLogDatabasePwd
+                , NELogConfig::SYNTAX_CMD_LOG_DB_NAME           //!< eLogConfig::ConfigLogDatabaseName
+                , NELogConfig::SYNTAX_CMD_LOG_DEBUG             //!< eLogConfig::ConfigLogDebug
+                , NELogConfig::SYNTAX_CMD_LOG_APPEND            //!< eLogConfig::ConfigLogAppend
+                , NELogConfig::SYNTAX_CMD_LOG_STACK             //!< eLogConfig::ConfigLogStack
+                , NELogConfig::SYNTAX_CMD_LOG_ENABLE            //!< eLogConfig::ConfigLogEnable
+                , NELogConfig::SYNTAX_CMD_LOG_LAYOUT_ENTER      //!< eLogConfig::ConfigLogLayoutEnter
+                , NELogConfig::SYNTAX_CMD_LOG_LAYOUT_MESSAGE    //!< eLogConfig::ConfigLogLayoutMessage
+                , NELogConfig::SYNTAX_CMD_LOG_LAYOUT_EXIT       //!< eLogConfig::ConfigLogLayoutExit
+                , NELogConfig::SYNTAX_CMD_LOG_SCOPE             //!< eLogConfig::ConfigScope
+            };
 
+    //!< The default logging version
+    constexpr std::string_view   DEFAULT_LOG_VERSION            { "log.version = 1.0.0" };
+
+    //!< The default logging enabled flag.
+    constexpr std::string_view   DEFAULT_LOG_ENABLE             { "log.enable = true" };
+
+    //!< The default file name of loggs.
+    constexpr std::string_view   DEFAULT_LOG_FILE               { "log.file = ./logs/trace_%time%.log" };
+
+    //!< The default flag, indicating whether logs are enabled.
+    constexpr std::string_view   DEFAULT_LOG_APPEND             { "log.append = false" };
+
+    //!< Logging default layout format of logging scope activation. /*%d: [ %c.%t  %x.%z: Enter --> ]%n*/
+    constexpr std::string_view   DEFAULT_LOG_LAYOUT_ENTER       { "log.layout.enter = %d: [ %t  %x.%z: Enter --> ]%n" };
+
+    //!< Logging default layout format for logging messages.        /*d: [ %c.%t  %p >>> ] %m%n*/
+    constexpr std::string_view   DEFAULT_LOG_LAYOUT_MESSAGE     { "log.layout.message = %d: [ %t  %p >>> ] %m%n" };
+
+    //!< Logging default layout format of logging scope deactivation./*%d: [ %c.%t  %x.%z: Exit <-- ]%n*/
+    constexpr std::string_view   DEFAULT_LOG_LAYOUT_EXIT        { "log.layout.exit = %d: [ %t  %x.%z: Exit <-- ]%n" };
+
+    //!< Default flag enabling output in debugging window or console.
+    constexpr std::string_view   DEFAULT_LOG_LAYOUT_DEBUG       { "log.debug = false" };
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -442,46 +481,44 @@ inline const char * NELogConfig::getString( NELogConfig::eLogConfig logConfig )
 {
     switch ( logConfig )
     {
-    case NELogConfig::ConfigUnknown:
+    case NELogConfig::eLogConfig::ConfigUnknown:
         return "NELogConfig::ConfigUnknown";
-    case NELogConfig::ConfigLogVersion:
+    case NELogConfig::eLogConfig::ConfigLogVersion:
         return "NELogConfig::ConfigLogVersion";
-    case NELogConfig::ConfigLogFile:
+    case NELogConfig::eLogConfig::ConfigLogFile:
         return "NELogConfig::ConfigLogFile";
-    case NELogConfig::ConfigLogRemoteHost:
+    case NELogConfig::eLogConfig::ConfigLogRemoteHost:
         return "NELogConfig::ConfigLogRemoteHost";
-    case NELogConfig::ConfigLogRemotePort:
+    case NELogConfig::eLogConfig::ConfigLogRemotePort:
         return "NELogConfig::ConfigLogRemotePort";
-    case NELogConfig::ConfigLogDatabaseDriver:
+    case NELogConfig::eLogConfig::ConfigLogDatabaseDriver:
         return "NELogConfig::ConfigLogDatabaseDriver";
-    case NELogConfig::ConfigLogDatabaseHost:
+    case NELogConfig::eLogConfig::ConfigLogDatabaseHost:
         return "NELogConfig::ConfigLogDatabaseHost";
-    case NELogConfig::ConfigLogDatabaseUser:
+    case NELogConfig::eLogConfig::ConfigLogDatabaseUser:
         return "NELogConfig::ConfigLogDatabaseUser";
-    case NELogConfig::ConfigLogDatabasePwd:
+    case NELogConfig::eLogConfig::ConfigLogDatabasePwd:
         return "NELogConfig::ConfigLogDatabasePwd";
-    case NELogConfig::ConfigLogDatabaseName:
+    case NELogConfig::eLogConfig::ConfigLogDatabaseName:
         return "NELogConfig::ConfigLogDatabaseName";
-    case NELogConfig::ConfigLogDebug:
+    case NELogConfig::eLogConfig::ConfigLogDebug:
         return "NELogConfig::ConfigLogDebug";
-    case NELogConfig::ConfigLogAppend:
+    case NELogConfig::eLogConfig::ConfigLogAppend:
         return "NELogConfig::ConfigLogNew";
-    case NELogConfig::ConfigLogStack:
+    case NELogConfig::eLogConfig::ConfigLogStack:
         return "NELogConfig::ConfigLogStack";
-    case NELogConfig::ConfigLogEnable:
+    case NELogConfig::eLogConfig::ConfigLogEnable:
         return "NELogConfig::ConfigLogEnable";
-    case NELogConfig::ConfigLogLayoutEnter:
+    case NELogConfig::eLogConfig::ConfigLogLayoutEnter:
         return "NELogConfig::ConfigLogLayoutEnter";
-    case NELogConfig::ConfigLogLayoutMessage:
+    case NELogConfig::eLogConfig::ConfigLogLayoutMessage:
         return "NELogConfig::ConfigLogLayoutMessage";
-    case NELogConfig::ConfigLogLayoutExit:
+    case NELogConfig::eLogConfig::ConfigLogLayoutExit:
         return "NELogConfig::ConfigLogLayoutExit";
-    case NELogConfig::ConfigScope:
+    case NELogConfig::eLogConfig::ConfigScope:
         return "NELogConfig::ConfigScope";
     default:
         ASSERT(false);
     return "ERR: Invalid NELogConfig::eLogConfig value!";
     }
 }
-
-#endif  // AREG_TRACE_PRIVATE_NELOGCONFIG_HPP

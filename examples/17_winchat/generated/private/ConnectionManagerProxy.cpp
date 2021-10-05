@@ -4,14 +4,14 @@
 
 /************************************************************************
  * (c) copyright    2021
+ *
+ * Generated at     30.09.2021  01:22:14 GMT+02:00 
  *                  Create by AREG SDK code generator tool from source ConnectionManager.
- * Generated at     04.07.2021  04:30:00 GMT+02:00 
- ************************************************************************/
-
-/************************************************************************
- * \file            generated/private/ConnectionManagerProxy.cpp
+ *
+ * \file            generated/private/ConnectionManagerProxy.hpp
  * \ingroup         ConnectionManager Service Interface
- * \brief           This is an automatic generated code of ConnectionManager Service Interface Proxy class implementation.
+ * \brief           This is an automatic generated code of ConnectionManager
+ *                  Service Interface Proxy class implementation.
  ************************************************************************/
 
 /************************************************************************
@@ -32,12 +32,6 @@ IMPLEMENT_RUNTIME_EVENT(ConnectionManagerProxy::ConnectionManagerServiceAvailabl
 ConnectionManagerProxy::ConnectionManagerServiceAvailableEvent::ConnectionManagerServiceAvailableEvent( IENotificationEventConsumer & consumer )
     : ProxyBase::ServiceAvailableEvent  ( consumer )
 {
-    ; // do nothing
-}
-
-ConnectionManagerProxy::ConnectionManagerServiceAvailableEvent::~ConnectionManagerServiceAvailableEvent( void )
-{
-    ; // do nothing
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -48,7 +42,7 @@ ConnectionManagerProxy::ConnectionManagerServiceAvailableEvent::~ConnectionManag
 // static function implementation
 //////////////////////////////////////////////////////////////////////////
 
-ProxyBase * ConnectionManagerProxy::_createProxy( const char * roleName, DispatcherThread * ownerThread /*= static_cast<DispatcherThread *>(NULL)*/ )
+ProxyBase * ConnectionManagerProxy::_createProxy( const char * roleName, DispatcherThread * ownerThread /*= nullptr*/ )
 {
     return DEBUG_NEW ConnectionManagerProxy(roleName, ownerThread);
 }
@@ -62,7 +56,7 @@ ConnectionManagerProxy * ConnectionManagerProxy::createProxy( const char * roleN
                                                                       , ownerThread) );
 }
 
-ConnectionManagerProxy * ConnectionManagerProxy::createProxy( const char * roleName, IEProxyListener & connectListener, const char * ownerThread /*= static_cast<const char *>(NULL)*/ )
+ConnectionManagerProxy * ConnectionManagerProxy::createProxy( const char * roleName, IEProxyListener & connectListener, const char * ownerThread /*= nullptr*/ )
 {
     return static_cast<ConnectionManagerProxy *>(ProxyBase::findOrCreateProxy( roleName
                                                                       , NEConnectionManager::getInterfaceData()
@@ -74,7 +68,7 @@ ConnectionManagerProxy * ConnectionManagerProxy::createProxy( const char * roleN
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
-ConnectionManagerProxy::ConnectionManagerProxy( const char * roleName, DispatcherThread * ownerThread /*= static_cast<DispatcherThread *>(NULL)*/ )
+ConnectionManagerProxy::ConnectionManagerProxy( const char * roleName, DispatcherThread * ownerThread /*= nullptr*/ )
     : ProxyBase(roleName, NEConnectionManager::getInterfaceData(), ownerThread)
 
 /************************************************************************
@@ -96,12 +90,10 @@ ConnectionManagerProxy::ConnectionManagerProxy( const char * roleName, Dispatche
     , mParamclientConnected   (  )
     , mParamclientLeft        (  )
 {
-    ; // do nothing
 }
 
 ConnectionManagerProxy::~ConnectionManagerProxy( void )
 {
-    ; // do nothing
 }
 
 /************************************************************************
@@ -157,8 +149,8 @@ void ConnectionManagerProxy::unregisterServiceListeners( void )
  
 unsigned int ConnectionManagerProxy::requestConnet( IENotificationEventConsumer & caller, const String & nickName, const DateTime & dateTime )
 {
-    static const NEConnectionManager::eMessageIDs msgId = NEConnectionManager::MSG_ID_requestConnet;
-    EventDataStream args(EventDataStream::EventDataExternal);
+    static const NEConnectionManager::eMessageIDs msgId = NEConnectionManager::eMessageIDs::MsgId_requestConnet;
+    EventDataStream args(EventDataStream::eEventData::EventDataExternal);
     IEOutStream & stream = args.getStreamForWrite();
     stream << nickName;
     stream << dateTime;
@@ -168,8 +160,8 @@ unsigned int ConnectionManagerProxy::requestConnet( IENotificationEventConsumer 
     
 unsigned int ConnectionManagerProxy::requestRegisterConnection( IENotificationEventConsumer & caller, const String & nickName, unsigned int cookie, unsigned int connectCookie, const DateTime & dateRegister )
 {
-    static const NEConnectionManager::eMessageIDs msgId = NEConnectionManager::MSG_ID_requestRegisterConnection;
-    EventDataStream args(EventDataStream::EventDataExternal);
+    static const NEConnectionManager::eMessageIDs msgId = NEConnectionManager::eMessageIDs::MsgId_requestRegisterConnection;
+    EventDataStream args(EventDataStream::eEventData::EventDataExternal);
     IEOutStream & stream = args.getStreamForWrite();
     stream << nickName;
     stream << cookie;
@@ -181,13 +173,13 @@ unsigned int ConnectionManagerProxy::requestRegisterConnection( IENotificationEv
     
 void ConnectionManagerProxy::requestDiconnect( const String & nickName, unsigned int cookie, const DateTime & dateTime )
 {
-    static const NEConnectionManager::eMessageIDs msgId = NEConnectionManager::MSG_ID_requestDiconnect;
-    EventDataStream args(EventDataStream::EventDataExternal);
+    static const NEConnectionManager::eMessageIDs msgId = NEConnectionManager::eMessageIDs::MsgId_requestDiconnect;
+    EventDataStream args(EventDataStream::eEventData::EventDataExternal);
     IEOutStream & stream = args.getStreamForWrite();
     stream << nickName;
     stream << cookie;
     stream << dateTime;
-    sendRequestEvent( static_cast<unsigned int>(msgId), args, NULL );
+    sendRequestEvent( static_cast<unsigned int>(msgId), args, nullptr );
 }
 /************************************************************************
  * Event processing.
@@ -200,7 +192,7 @@ void ConnectionManagerProxy::requestDiconnect( const String & nickName, unsigned
 void ConnectionManagerProxy::processResponseEvent( ServiceResponseEvent & eventElem )
 {
     ConnectionManagerResponseEvent * eventResp = RUNTIME_CAST( &eventElem, ConnectionManagerResponseEvent );
-    if (eventResp != NULL)
+    if (eventResp != nullptr)
         processResponse( *eventResp );
     else
         processProxyEvent( eventElem );
@@ -209,7 +201,7 @@ void ConnectionManagerProxy::processResponseEvent( ServiceResponseEvent & eventE
 void ConnectionManagerProxy::processAttributeEvent( ServiceResponseEvent & eventElem )
 {
     ConnectionManagerResponseEvent * eventResp = RUNTIME_CAST( &eventElem, ConnectionManagerResponseEvent );
-    if (eventResp != NULL)
+    if (eventResp != nullptr)
         processResponse( *eventResp );
     else
         processProxyEvent( eventElem );
@@ -219,7 +211,7 @@ void ConnectionManagerProxy::processAttributeEvent( ServiceResponseEvent & event
  * Internal helper functions.
  ************************************************************************/
 
-DEF_TRACE_SCOPE(GENERATED_private_ConnectionManagerProxy_updateData);
+DEF_TRACE_SCOPE(generated_private_ConnectionManagerProxy_updateData);
 void ConnectionManagerProxy::updateData( ConnectionManagerResponseEvent & eventElem, NEConnectionManager::eMessageIDs respId )
 {
     const IEInStream & stream = static_cast<const ConnectionManagerResponseEvent &>(eventElem).getData().getReadStream();
@@ -229,14 +221,14 @@ void ConnectionManagerProxy::updateData( ConnectionManagerResponseEvent & eventE
     /************************************************************************
      * Update Response parameters
      ************************************************************************/
-    case NEConnectionManager::MSG_ID_responseConnect:
+    case NEConnectionManager::eMessageIDs::MsgId_responseConnect:
         stream >> mParamnickName;
         stream >> mParamcookie;
         stream >> mParamdateTime;
         stream >> mParamresult;
         break;
 
-    case NEConnectionManager::MSG_ID_responseRegisterConnection:
+    case NEConnectionManager::eMessageIDs::MsgId_responseRegisterConnection:
         stream >> mParamconnection;
         stream >> mParamconnectionList;
         stream >> mParamsuccess;
@@ -245,28 +237,28 @@ void ConnectionManagerProxy::updateData( ConnectionManagerResponseEvent & eventE
     /************************************************************************
      * Update Broadcast parameters
      ************************************************************************/
-    case NEConnectionManager::MSG_ID_broadcastConnectionUpdated:
+    case NEConnectionManager::eMessageIDs::MsgId_broadcastConnectionUpdated:
         stream >> mParamupdatedList;
         break;
 
-    case NEConnectionManager::MSG_ID_broadcastClientConnected:
+    case NEConnectionManager::eMessageIDs::MsgId_broadcastClientConnected:
         stream >> mParamclientConnected;
         break;
 
-    case NEConnectionManager::MSG_ID_broadcastClientDisconnected:
+    case NEConnectionManager::eMessageIDs::MsgId_broadcastClientDisconnected:
         stream >> mParamclientLeft;
         break;
 
     /************************************************************************
      * Update Attribute values
      ************************************************************************/
-    case NEConnectionManager::MSG_ID_ConnectionList:
+    case NEConnectionManager::eMessageIDs::MsgId_ConnectionList:
         stream >> mConnectionList;
         break;
 
     default:
         {
-            TRACE_SCOPE(GENERATED_private_ConnectionManagerProxy_updateData);
+            TRACE_SCOPE(generated_private_ConnectionManagerProxy_updateData);
             TRACE_ERR("Unexpected response message ID [ %d ] received in proxy [ %s ]!"
                         , static_cast<int>(respId)
                         , ProxyAddress::convAddressToPath(getProxyAddress()).getString());
@@ -286,25 +278,28 @@ void ConnectionManagerProxy::processResponse( ConnectionManagerResponseEvent & e
 
     switch (resultType)
     {
-    case NEService::RESULT_DATA_INVALID:
-    case NEService::RESULT_INVALID:
+    case NEService::eResultType::DataInvalid:   // fall through
+    case NEService::eResultType::RequestInvalid:
         break;  // do nothing
 
-    case NEService::RESULT_REQUEST_ERROR:
-    case NEService::RESULT_REQUEST_BUSY:
-    case NEService::RESULT_REQUEST_CANCELED:
-        respId      = static_cast<NEConnectionManager::eMessageIDs>( mProxyData.getResponseId(static_cast<unsigned int>(respId)) );
-        setStates   = respId != NEConnectionManager::MSG_ID_NO_PROCEED;
+    case NEService::eResultType::RequestError:  // fall through
+    case NEService::eResultType::RequestBusy:   // fall through
+    case NEService::eResultType::RequestCanceled:
+        respId      = static_cast<NEConnectionManager::eMessageIDs>( mProxyData.getResponseId(static_cast<msg_id>(respId)) );
+        setStates   = respId != NEConnectionManager::eMessageIDs::MsgId_NotProcessed;
         break;
 
-    case NEService::RESULT_MESSAGE_UNDELIVERED:
-        if ( NEService::isRequestId(respId) )
-            respId  = static_cast<NEConnectionManager::eMessageIDs>( mProxyData.getResponseId(static_cast<unsigned int>(respId)) );
-        setStates   = respId != NEConnectionManager::MSG_ID_NO_PROCEED;            
+    case NEService::eResultType::MessageUndelivered:
+        if ( NEService::isRequestId( static_cast<msg_id>(respId) ) )
+        {
+            respId  = static_cast<NEConnectionManager::eMessageIDs>( mProxyData.getResponseId(static_cast<msg_id>(respId)) );
+        }
+        
+        setStates   = respId != NEConnectionManager::eMessageIDs::MsgId_NotProcessed;            
         break;
 
-    case NEService::RESULT_OK:
-    case NEService::RESULT_DATA_OK:
+    case NEService::eResultType::RequestOK:     // fall through
+    case NEService::eResultType::DataOK:
         dataValid   = true;
         break;
 
@@ -314,11 +309,16 @@ void ConnectionManagerProxy::processResponse( ConnectionManagerResponseEvent & e
     }
 
     if (dataValid == true)
+    {
         updateData(evenElem, respId);
+    }
+       
     if (setStates == true)
-        setState(static_cast<unsigned int>(respId), dataValid ? NEService::DATA_OK : NEService::DATA_INVALID);
-
-    notifyListeners(static_cast<unsigned int>(respId), resultType, evenElem.getSequenceNumber());
+    {
+        setState(static_cast<msg_id>(respId), dataValid ? NEService::eDataStateType::DataIsOK : NEService::eDataStateType::DataIsInvalid);
+    }
+    
+    notifyListeners(static_cast<msg_id>(respId), resultType, evenElem.getSequenceNumber());
 }
 
 //////////////////////////////////////////////////////////////////////////

@@ -1,9 +1,16 @@
-#ifndef AREG_COMPONENT_NOTIFICATIONEVENT_HPP
-#define AREG_COMPONENT_NOTIFICATIONEVENT_HPP
+#pragma once
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/component/NotificationEvent.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, Generic Notification event,
  *              Notification data and notification consumer classes.
  *              This generic event class is a base class for all
@@ -75,15 +82,33 @@ public:
     NotificationEventData( const ProxyBase & proxy, NEService::eResultType notifyType, unsigned int notifyId, unsigned int seqNr );
 
     /**
-     * \brief   Copy constructor.
+     * \brief   Copies data from given source.
      * \param   src     The source of data to copy.
      **/
     NotificationEventData( const NotificationEventData & src );
 
     /**
+     * \brief   Moves data from given source.
+     * \param   src     The source of data to move.
+     **/
+    NotificationEventData( NotificationEventData && src ) noexcept;
+
+    /**
      * \brief   Destructor.
      **/
-    ~NotificationEventData( void );
+    ~NotificationEventData( void ) = default;
+
+    /**
+     * \brief   Copies data from given source.
+     * \param   src     The source of data to copy.
+     **/
+    NotificationEventData & operator = ( const NotificationEventData & src );
+
+    /**
+     * \brief   Moves data from given source.
+     * \param   src     The source of data to move.
+     **/
+    NotificationEventData & operator = ( NotificationEventData && src ) noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes
@@ -150,8 +175,7 @@ private:
 // Hidden / Forbidden method calls.
 //////////////////////////////////////////////////////////////////////////
 private:
-    NotificationEventData( void );
-    const NotificationEventData & operator = ( const NotificationEventData & /*src*/ );
+    NotificationEventData( void ) = delete;
 };
 
 
@@ -159,23 +183,20 @@ private:
 // NotificationEvent class declaration, used to send notifications
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief       The Notification Event is an internal Event created by
- *              Proxy to notify about certain event its clients.
- *              This is Generic and base class for notifications.
- *              Every Service Interface should have own Notification
- *              Event type to provide uniqueness.
+ * \brief   The Notification Event is an internal Event created by
+ *          Proxy to notify its clients. This class is a base class
+ *          for all proxy notifications. Every Service Interface has
+ *          own Notification Event type to provide uniqueness.
  * 
- * \details     When a certain request call response, or request failure,
- *              or attribute update message has been arrived on Proxy side,
- *              it will lookup for assigned listeners and send internal
- *              Notification Events. All notification events are queued
- *              in the internal queue of dispatcher and will be processed
- *              immediately after external event processing has been finished.
- *              The internal event queue will get list of notification
- *              event listeners, which are clients of Proxy, and trigger
- *              appropriate event processing call. All Proxy clients should
- *              be instance of IENotificationEventConsumer
+ *          Notification events are created when a proxy notifies response
+ *          of request, broadcast or data update that clients receive. 
+ *          The notification events are queued in the internal queue of 
+ *          the dispatcher and are processed immediately after external 
+ *          event processing is finished. All Proxy clients are instances
+ *          of IENotificationEventConsumer
  *
+ *          The state-machines as well use internal notification events
+ *          when generate event to trigger in state-machine.
  **/
 class AREG_API NotificationEvent   : public ThreadEventBase
 {
@@ -195,7 +216,7 @@ public:
      * \param	data	    Notification Data to forward.
      * \param	consumer	The Notification Consumer, which should be notified.
      **/
-    static void sendEvent(const NotificationEventData& data, IENotificationEventConsumer* caller = NULL);
+    static void sendEvent(const NotificationEventData & data, IENotificationEventConsumer * caller = nullptr);
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
@@ -207,12 +228,12 @@ protected:
      *          Sets notification event data.
      * \param	data	The Notification Event Data to set
      **/
-    NotificationEvent( const NotificationEventData & data );
+    explicit NotificationEvent( const NotificationEventData & data );
 
     /**
      * \brief   Destructor.
      **/
-    virtual ~NotificationEvent( void );
+    virtual ~NotificationEvent( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations.
@@ -252,30 +273,18 @@ private:
 // Hidden / Forbidden method calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    NotificationEvent( void );
-    NotificationEvent( const NotificationEvent & /*src*/ );
-    const NotificationEvent & operator = ( const NotificationEvent & /*src*/ );
+    NotificationEvent( void ) = delete;
+    DECLARE_NOCOPY_NOMOVE( NotificationEvent );
 };
 
 //////////////////////////////////////////////////////////////////////////
 // IENotificationEventConsumer class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief       Notification Event consumer is an object, which will 
- *              receive notification messages. All Client objects should
- *              be instances of Notification Event Consumer to be able
- *              to receive and process notifications.
- * 
- * \details     Every client object should overwrite event processing
- *              function, dispatch notification message, make updates 
- *              according of message and result. All attribute data
- *              and response parameters are stored on Proxy side
- *              to share information between several instances of 
- *              same client type. The notification consumer is an instance
- *              of IEEventConsumer (ThreadEventConsumerBase) and 
- *              registered in Proxy listener list to process Notification
- *              events sent by proxy to its clients.
- *
+ * \brief   Notification Event consumer is an object that receives
+ *          notification messages. All Client objects are instances of 
+ *          Notification Event Consumer to be able to receive and process
+ *          notifications from proxies.
  **/
 class AREG_API IENotificationEventConsumer  : public ThreadEventConsumerBase
 {
@@ -286,12 +295,12 @@ protected:
     /**
      * \brief   Default constructor.
      **/
-    IENotificationEventConsumer( void );
+    IENotificationEventConsumer( void ) = default;
 
     /**
      * \brief   Destructor.
      **/
-    virtual ~IENotificationEventConsumer( void );
+    virtual ~IENotificationEventConsumer( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides.
@@ -323,14 +332,13 @@ private:
      *          This function is filtering out notification events
      *          and triggers notification event processing function.
      **/
-    virtual void startEventProcessing( Event & eventElem );
+    virtual void startEventProcessing( Event & eventElem ) override;
 
 //////////////////////////////////////////////////////////////////////////
-// Hidden / Forbidden method calls
+// Forbidden method calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    IENotificationEventConsumer(const IENotificationEventConsumer & /*src*/ );
-    const IENotificationEventConsumer & operator = (const IENotificationEventConsumer & /*src*/ );
+    DECLARE_NOCOPY_NOMOVE( IENotificationEventConsumer );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -393,5 +401,3 @@ inline NotificationEventData & NotificationEvent::getData( void )
 {
     return mData;
 }
-
-#endif  // AREG_COMPONENT_NOTIFICATIONEVENT_HPP

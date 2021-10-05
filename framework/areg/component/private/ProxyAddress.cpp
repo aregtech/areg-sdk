@@ -1,7 +1,15 @@
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/component/private/ProxyAddress.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, Proxy Address class implementation.
  *
  ************************************************************************/
@@ -14,6 +22,28 @@
 #include "areg/component/DispatcherThread.hpp"
 #include "areg/component/StubAddress.hpp"
 
+#include <string_view>
+#include <utility>
+
+namespace
+{
+//////////////////////////////////////////////////////////////////////////
+// Predefined constants
+//////////////////////////////////////////////////////////////////////////
+    /**
+     * \brief   The name of invalid proxy.
+     *          None of service interfaces should contain this name.
+     **/
+    constexpr std::string_view  INVALID_PROXY_NAME      { "INVALID_PROXY" };
+
+    /**
+     * \brief   ProxyAddress::EXTENTION_PROXY
+     *          Extension, used in the path to convert Proxy Address to string object.
+     **/
+    constexpr std::string_view  EXTENTION_PROXY         { "proxy" };
+
+}
+
 //////////////////////////////////////////////////////////////////////////
 // ProxyAddress class implementation
 //////////////////////////////////////////////////////////////////////////
@@ -21,15 +51,6 @@
 //////////////////////////////////////////////////////////////////////////
 // Static variables
 //////////////////////////////////////////////////////////////////////////
-
-/**
- * \brief   The name of invalid proxy.
- **/
-const char * const      ProxyAddress::INVALID_PROXY_NAME      = "INVALID_PROXY";
-/**
- * \brief   Extension, used in the path to convert Proxy Address to string object.
- **/
-const char * const      ProxyAddress::EXTENTION_PROXY         = "proxy";
 /**
  * \brief   Invalid proxy address.
  **/
@@ -43,7 +64,7 @@ String ProxyAddress::convAddressToPath( const ProxyAddress & proxyAddress )
     return proxyAddress.convToString();
 }
 
-ProxyAddress ProxyAddress::convPathToAddress( const char* pathProxy, const char** out_nextPart /*= NULL*/ )
+ProxyAddress ProxyAddress::convPathToAddress( const char* pathProxy, const char** out_nextPart /*= nullptr*/ )
 {
     ProxyAddress result;
     result.convFromString(pathProxy, out_nextPart);
@@ -55,15 +76,14 @@ ProxyAddress ProxyAddress::convPathToAddress( const char* pathProxy, const char*
 //////////////////////////////////////////////////////////////////////////
 
 ProxyAddress::ProxyAddress( void )
-    : ServiceAddress( ServiceItem(), ProxyAddress::INVALID_PROXY_NAME )
+    : ServiceAddress( ServiceItem(), INVALID_PROXY_NAME.data() )
     , mThreadName   ( ThreadAddress::INVALID_THREAD_ADDRESS.getThreadName() )
     , mChannel      ( )
     , mMagicNum     ( NEMath::CHECKSUM_IGNORE )
 {
-    ; // do nothing
 }
 
-ProxyAddress::ProxyAddress( const char * serviceName, const Version & serviceVersion, NEService::eServiceType serviceType, const char * roleName, const char * threadName /*= NULL*/ )
+ProxyAddress::ProxyAddress( const char * serviceName, const Version & serviceVersion, NEService::eServiceType serviceType, const char * roleName, const char * threadName /*= nullptr*/ )
     : ServiceAddress( serviceName, serviceVersion, serviceType, roleName )
     , mThreadName   ( threadName )
     , mChannel      ( )
@@ -74,7 +94,7 @@ ProxyAddress::ProxyAddress( const char * serviceName, const Version & serviceVer
         mChannel.setCookie(NEService::COOKIE_LOCAL);
 }
 
-ProxyAddress::ProxyAddress( const ServiceItem & service, const char * roleName, const char * threadName /*= NULL*/ )
+ProxyAddress::ProxyAddress( const ServiceItem & service, const char * roleName, const char * threadName /*= nullptr*/ )
     : ServiceAddress( service, roleName )
     , mThreadName   ( "" )
     , mChannel      ( )
@@ -85,7 +105,7 @@ ProxyAddress::ProxyAddress( const ServiceItem & service, const char * roleName, 
         mChannel.setCookie(NEService::COOKIE_LOCAL);
 }
 
-ProxyAddress::ProxyAddress(const NEService::SInterfaceData & siData, const char * roleName, const char * threadName /*= NULL */)
+ProxyAddress::ProxyAddress(const NEService::SInterfaceData & siData, const char * roleName, const char * threadName /*= nullptr */)
     : ServiceAddress( siData.idServiceName, siData.idVersion, siData.idServiceType, roleName )
     , mThreadName   ( "" )
     , mChannel      ( )
@@ -102,7 +122,14 @@ ProxyAddress::ProxyAddress( const ProxyAddress & source )
     , mChannel      ( source.mChannel )
     , mMagicNum     ( source.mMagicNum )
 {
-    ; // do nothing
+}
+
+ProxyAddress::ProxyAddress( ProxyAddress && source ) noexcept
+    : ServiceAddress( static_cast<ServiceAddress &&>(source) )
+    , mThreadName   ( std::move(source.mThreadName) )
+    , mChannel      ( std::move(source.mChannel) )
+    , mMagicNum     ( source.mMagicNum )
+{
 }
 
 ProxyAddress::ProxyAddress( const IEInStream & stream )
@@ -119,11 +146,6 @@ ProxyAddress::ProxyAddress( const IEInStream & stream )
     mMagicNum = ProxyAddress::_magicNumber(*this);
 }
 
-ProxyAddress::~ProxyAddress( void )
-{
-    ; // do nothing
-}
-
 bool ProxyAddress::isStubCompatible(const StubAddress & addrStub ) const
 {
     return addrStub.isProxyCompatible(*this);
@@ -133,7 +155,7 @@ void ProxyAddress::setThread( const char * threadName )
 {
     Thread * thread = NEString::isEmpty<char>(threadName) ? Thread::getCurrentThread() : Thread::findThreadByName(threadName);
     DispatcherThread * dispatcher = RUNTIME_CAST( thread, DispatcherThread);
-    if ( (dispatcher != NULL) && dispatcher->isValid() )
+    if ( (dispatcher != nullptr) && dispatcher->isValid() )
     {
         mThreadName = dispatcher->getAddress().getThreadName();
         mMagicNum   = ProxyAddress::_magicNumber(*this);
@@ -161,9 +183,9 @@ bool ProxyAddress::_deliverEvent(Event & serviceEvent, ITEM_ID idTarget)
     bool result = false;
     if ( idTarget != NEService::TARGET_UNKNOWN )
     {
-        Thread * thread = Thread::findThreadById(idTarget);
-        DispatcherThread * dispatcher = thread != NULL ? RUNTIME_CAST(thread, DispatcherThread) : NULL;
-        if ( dispatcher != NULL )
+        Thread * thread = Thread::findThreadById(static_cast<id_type>(idTarget));
+        DispatcherThread * dispatcher = thread != nullptr ? RUNTIME_CAST(thread, DispatcherThread) : nullptr;
+        if ( dispatcher != nullptr )
         {
             result = serviceEvent.registerForThread(dispatcher);
             serviceEvent.deliverEvent();
@@ -211,25 +233,25 @@ String ProxyAddress::convToString(void) const
 {
     String result = "";
 
-    result += ProxyAddress::EXTENTION_PROXY;
-    result += NEUtilities::COMPONENT_PATH_SEPARATOR;
+    result += EXTENTION_PROXY.data();
+    result += NECommon::COMPONENT_PATH_SEPARATOR.data();
     result += ServiceAddress::convToString( );
-    result += NEUtilities::COMPONENT_PATH_SEPARATOR;
+    result += NECommon::COMPONENT_PATH_SEPARATOR.data();
     result += mThreadName;
-    result += NEUtilities::COMPONENT_PATH_SEPARATOR;
+    result += NECommon::COMPONENT_PATH_SEPARATOR.data();
     result += mChannel.convToString();
 
     return result;
 }
 
-void ProxyAddress::convFromString(const char * pathProxy, const char** out_nextPart /*= NULL*/)
+void ProxyAddress::convFromString(const char * pathProxy, const char** out_nextPart /*= nullptr*/)
 {
     const char* strSource = pathProxy;
-    if ( String::getSubstring(strSource, NEUtilities::COMPONENT_PATH_SEPARATOR, &strSource) == ProxyAddress::EXTENTION_PROXY )
+    if ( String::getSubstring(strSource, NECommon::COMPONENT_PATH_SEPARATOR.data(), &strSource) == EXTENTION_PROXY.data() )
     {
         ServiceAddress::convFromString(strSource, &strSource);
-        mThreadName  = String::getSubstring(strSource, NEUtilities::COMPONENT_PATH_SEPARATOR, &strSource);
-        mChannel.convFromString( String::getSubstring(strSource, NEUtilities::COMPONENT_PATH_SEPARATOR, &strSource).getString() );
+        mThreadName  = String::getSubstring(strSource, NECommon::COMPONENT_PATH_SEPARATOR.data( ), &strSource);
+        mChannel.convFromString( String::getSubstring(strSource, NECommon::COMPONENT_PATH_SEPARATOR.data( ), &strSource).getString() );
 
         mMagicNum = ProxyAddress::_magicNumber(*this);
     }
@@ -238,7 +260,7 @@ void ProxyAddress::convFromString(const char * pathProxy, const char** out_nextP
         *this = ProxyAddress::INVALID_PROXY_ADDRESS;
     }
 
-    if (out_nextPart != NULL)
+    if (out_nextPart != nullptr)
         *out_nextPart = strSource;
 }
 

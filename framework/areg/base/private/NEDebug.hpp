@@ -1,9 +1,16 @@
-#ifndef AREG_BASE_PRIVATE_NEDEBUG_HPP
-#define AREG_BASE_PRIVATE_NEDEBUG_HPP
+#pragma once
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/base/private/NEDebug.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, Debugging utilities
  *
  ************************************************************************/
@@ -12,6 +19,10 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
+
+#include <list>
+#include <string>
+#include <string_view>
 
 /**
  * \brief   Debugging utilities.
@@ -24,8 +35,6 @@
 // Make visible only in Debug version
 /************************************************************************/
 
-
-class StringList;
 struct _EXCEPTION_POINTERS;
 
 //////////////////////////////////////////////////////////////////////////
@@ -40,13 +49,13 @@ namespace NEDebug
      *          by using these constants, user makes appropriate 
      *          message output prefix, showing importance. 
      **/
-    typedef enum E_DegubPrio
+    typedef enum class E_DegubPrio : int
     {
-          PRIO_NONE = OUTPUT_DEBUG_LEVEL_NONE   //!< No priority, output message shoud be ignored.
-        , PRIO_DBG  = OUTPUT_DEBUG_LEVEL_DEBUG  //!< Priority Debug, outputs "DBG:" string in front of message
-        , PRIO_INFO = OUTPUT_DEBUG_LEVEL_INFO   //!< Priority Information, outputs "INF:" string in front of message
-        , PRIO_WARN = OUTPUT_DEBUG_LEVEL_WARN   //!< Priority Warning, outputs "WRN:" string in front of message
-        , PRIO_ERR  = OUTPUT_DEBUG_LEVEL_ERROR  //!< Priority Error, outputs "ERR:" string in front of message
+          PrioNone  = OUTPUT_DEBUG_LEVEL_NONE   //!< No priority, output message shoud be ignored.
+        , PrioDbg   = OUTPUT_DEBUG_LEVEL_DEBUG  //!< Priority Debug, outputs "DBG:" string in front of message
+        , PrioInfo  = OUTPUT_DEBUG_LEVEL_INFO   //!< Priority Information, outputs "INF:" string in front of message
+        , PrioWarn  = OUTPUT_DEBUG_LEVEL_WARN   //!< Priority Warning, outputs "WRN:" string in front of message
+        , PrioErr   = OUTPUT_DEBUG_LEVEL_ERROR  //!< Priority Error, outputs "ERR:" string in front of message
 
     } eDegubPrio;
 
@@ -54,34 +63,23 @@ namespace NEDebug
      * \brief   NEDebug::MAX_DEBUG_BUFFER_SIZE
      *          The maximum buffer size for message output.
      **/
-    const unsigned int  MAX_DEBUG_BUFFER_SIZE   = 1024;
-    /**
-     * \brief   NEDebug::PREFIX_PRIO_DEBUG
-     *          Prefix string, used to output messages with NEDebug::PRIO_DBG priority
-     **/
-    const char * const   PREFIX_PRIO_DEBUG      = "DBG: ";
-    /**
-     * \brief   NEDebug::PREFIX_PRIO_INFO
-     *          Prefix string, used to output messages with NEDebug::PRIO_INFO priority
-     **/
-    const char * const   PREFIX_PRIO_INFO       = "INF: ";
-    /**
-     * \brief   NEDebug::PREFIX_PRIO_WARNING
-     *          Prefix string, used to output messages with NEDebug::PRIO_WARN priority
-     **/
-    const char * const   PREFIX_PRIO_WARNING    = "WRN: ";
-    /**
-     * \brief   NEDebug::PREFIX_PRIO_ERROR
-     *          Prefix string, used to output messages with NEDebug::PRIO_ERR priority
-     **/
-    const char * const   PREFIX_PRIO_ERROR      = "ERR: ";
+    constexpr unsigned int  MAX_DEBUG_BUFFER_SIZE       = 1024;
+
+    constexpr std::string_view PREFIX_DBG_PRIORITIES [] =
+    {
+          ""        //!< No priority.
+        , "DBG: "   //!< Priority Debug message.
+        , "INF: "   //!< Priority Information message.
+        , "WRN: "   //!< Priority Warning message.
+        , "ERR: "   //!< Priority Error message.
+    };
 
     /**
      * \brief   NEDebug::getPrioPrefix()
      *          Returns prefix string of specified priority
      * \param   priority    The priority of message
      * \return  Returns one of defined prefixes, depending of priority.
-     *          By default, the priority is  NEDebug::PRIO_DBG
+     *          By default, the priority is  NEDebug::PrioDbg
      **/
     inline const char * getPrioPrefix( NEDebug::eDegubPrio priority );
 
@@ -112,7 +110,7 @@ namespace NEDebug
      * \param   out_callStack   On output this will contain the message of call stack.
      **/
 
-    void AREG_API dumpExceptionCallStack( struct _EXCEPTION_POINTERS *ep, StringList & out_callStack);
+    void AREG_API dumpExceptionCallStack( struct _EXCEPTION_POINTERS *ep, std::list<std::string> & OUT out_callStack);
 #endif  // _WINDOWS
 
     /**
@@ -132,24 +130,17 @@ namespace NEDebug
 //////////////////////////////////////////////////////////////////////////
 inline const char* NEDebug::getPrioPrefix( NEDebug::eDegubPrio priority )
 {
+    return NEDebug::PREFIX_DBG_PRIORITIES[ static_cast<int>(priority) ].data();
     switch ( priority )
     {
-    case NEDebug::PRIO_NONE:
-        return "";
+    case NEDebug::eDegubPrio::PrioNone: // fall through
+    case NEDebug::eDegubPrio::PrioDbg:  // fall through
+    case NEDebug::eDegubPrio::PrioInfo: // fall through
+    case NEDebug::eDegubPrio::PrioWarn: // fall through
+    case NEDebug::eDegubPrio::PrioErr:  // fall through
+        return NEDebug::PREFIX_DBG_PRIORITIES[static_cast<int>(priority)].data( );
 
-    case NEDebug::PRIO_ERR:
-        return NEDebug::PREFIX_PRIO_ERROR;
-
-    case NEDebug::PRIO_WARN:
-        return NEDebug::PREFIX_PRIO_WARNING;
-
-    case NEDebug::PRIO_INFO:
-        return NEDebug::PREFIX_PRIO_INFO;
-
-    case NEDebug::PRIO_DBG:
     default:
-        return NEDebug::PREFIX_PRIO_DEBUG;
+        return NEDebug::PREFIX_DBG_PRIORITIES[static_cast<int>(NEDebug::eDegubPrio::PrioDbg)].data( );
     }
 }
-
-#endif  // AREG_BASE_PRIVATE_NEDEBUG_HPP

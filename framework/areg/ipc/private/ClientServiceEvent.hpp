@@ -1,10 +1,16 @@
-#ifndef AREG_IPC_PRIVATE_CLIENTSERVICEEVENT_HPP
-#define AREG_IPC_PRIVATE_CLIENTSERVICEEVENT_HPP
-
+#pragma once
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/ipc/private/ClientServiceEvent.hpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform Client Service Event
  ************************************************************************/
 
@@ -30,7 +36,7 @@ public:
     /**
      * \brief   The list of commands for client connection service
      **/
-    typedef enum E_ClientServiceCommands
+    typedef enum class E_ClientServiceCommands
     {
           CMD_StartService      //!< Sent to start client connection service.
         , CMD_StopService       //!< Sent to stop client connection service.
@@ -52,16 +58,21 @@ public:
      * \brief   Initializes client connection service event data, sets command.
      * \param   cmdService  The command to set in event data.
      **/
-    ClientServiceEventData( ClientServiceEventData::eClientServiceCommands cmdService );
+    explicit ClientServiceEventData( ClientServiceEventData::eClientServiceCommands cmdService );
     /**
      * \brief   Copies the event data from given source.
      * \param   source  The source to copy data.
      **/
-    ClientServiceEventData( const ClientServiceEventData & source );
+    ClientServiceEventData( const ClientServiceEventData & source ) = default;
+    /**
+     * \brief   Moves the event data from given source.
+     * \param   source  The source to move data.
+     **/
+    ClientServiceEventData( ClientServiceEventData && source ) noexcept = default;
     /**
      * \brief   Destructor.
      **/
-    ~ClientServiceEventData( void );
+    ~ClientServiceEventData( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operators and attributes
@@ -71,7 +82,13 @@ public:
      * \brief   Copies event data from given source.
      * \param   source      The source to copy data.
      **/
-    const ClientServiceEventData & operator = ( const ClientServiceEventData & source );
+    ClientServiceEventData & operator = ( const ClientServiceEventData & source ) = default;
+
+    /**
+     * \brief   Moves event data from given source.
+     * \param   source      The source to move data.
+     **/
+    ClientServiceEventData & operator = ( ClientServiceEventData && source ) noexcept = default;
 
     /**
      * \brief   Returns command saved in event data.
@@ -113,19 +130,17 @@ inline const char * ClientServiceEventData::getString( ClientServiceEventData::e
 {
     switch ( cmdService )
     {
-    case ClientServiceEventData::CMD_StartService:
+    case ClientServiceEventData::eClientServiceCommands::CMD_StartService:
         return "ClientServiceEventData::CMD_StartService";
-    case ClientServiceEventData::CMD_StopService:
+    case ClientServiceEventData::eClientServiceCommands::CMD_StopService:
         return "ClientServiceEventData::CMD_StopService";
-    case ClientServiceEventData::CMD_ServiceStarted:
+    case ClientServiceEventData::eClientServiceCommands::CMD_ServiceStarted:
         return "ClientServiceEventData::CMD_ServiceStarted";
-    case ClientServiceEventData::CMD_ServiceStopped:
+    case ClientServiceEventData::eClientServiceCommands::CMD_ServiceStopped:
         return "ClientServiceEventData::CMD_ServiceStopped";
-    case ClientServiceEventData::CMD_ServiceLost:
+    case ClientServiceEventData::eClientServiceCommands::CMD_ServiceLost:
         return "ClientServiceEventData::CMD_ServiceLost";
     default:
         return "ERR: Undefined ClientServiceEventData::eClientServiceCommands value!!!";
     }
 }
-
-#endif  // AREG_IPC_PRIVATE_CLIENTSERVICEEVENT_HPP

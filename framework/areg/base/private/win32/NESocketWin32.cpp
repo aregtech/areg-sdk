@@ -1,14 +1,22 @@
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/base/private/win32/NESocketWin32.cpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform. Socket POSIX specific wrappers methods
  ************************************************************************/
 #include "areg/base/NESocket.hpp"
 
 #ifdef  _WINDOWS
 
-#include "areg/base/ESynchObjects.hpp"
+#include "areg/base/SynchObjects.hpp"
 #include "areg/base/GEMacros.h"
 #include "areg/base/NEMemory.hpp"
 
@@ -18,16 +26,22 @@
 #include <winsock2.h>
 #include <ws2tcpip.h>
 
+#include <atomic>
+
 //////////////////////////////////////////////////////////////////////////
 // Local static members
 //////////////////////////////////////////////////////////////////////////
 
-/**
- * \brief   Global socket initialize / release counter.
- *          Initialize socket in process if counter is changing from 0 to 1.
- *          Release socket in frees resources in process when counter reaches 0.
- **/
-static InterlockedValue   _instanceCount( static_cast<unsigned int>(0));
+namespace
+{
+	/**
+	 * \brief   Global socket initialize / release counter.
+	 *          Initialize socket in process if counter is changing from 0 to 1.
+	 *          Release socket in frees resources in process when counter reaches 0.
+	 **/
+	std::atomic_uint _instanceCount( 0u );
+
+} // namespace
 
 //////////////////////////////////////////////////////////////////////////
 // NESocket namespace functions implementation
@@ -36,7 +50,7 @@ static InterlockedValue   _instanceCount( static_cast<unsigned int>(0));
 AREG_API bool NESocket::socketInitialize(void)
 {
     bool result = true;
-    if ( _instanceCount.increment() == 1 )
+    if ( _instanceCount.fetch_add(1) == 0 )
     {
         WSADATA wsaData;
         ::memset(&wsaData, 0, sizeof(WSADATA));
@@ -45,7 +59,7 @@ AREG_API bool NESocket::socketInitialize(void)
             OUTPUT_ERR("Failed to initialize Windows Socket of version 2.2, error code [ %p ]", static_cast<id_type>(::WSAGetLastError()));
 
             result = false;
-            _instanceCount.decrement();
+            _instanceCount.fetch_sub(1);
         }
     }
 
@@ -54,7 +68,7 @@ AREG_API bool NESocket::socketInitialize(void)
 
 AREG_API void NESocket::socketRelease(void)
 {
-    if ( _instanceCount.testDecrementZero() )
+    if ( _instanceCount.fetch_sub(1) == 1 )
     {
         OUTPUT_INFO("Releasing socket, no more instances are created");
         ::WSACleanup();
@@ -70,13 +84,13 @@ AREG_API void NESocket::socketClose(SOCKETHANDLE hSocket)
     }
 }
 
-AREG_API int NESocket::sendData(SOCKETHANDLE hSocket, const unsigned char * dataBuffer, int dataLength, int blockMaxSize /*= NECommon::DefaultSize*/ )
+AREG_API int NESocket::sendData(SOCKETHANDLE hSocket, const unsigned char * dataBuffer, int dataLength, int blockMaxSize /*= NECommon::DEFAULT_SIZE*/ )
 {
     int result = -1;
     if ( hSocket != NESocket::InvalidSocketHandle )
     {
         result = 0;
-        if ( dataBuffer != NULL && dataLength > 0 )
+        if ( (dataBuffer != nullptr) && (dataLength > 0) )
         {
             blockMaxSize    = blockMaxSize > 0 ? blockMaxSize : NESocket::getMaxSendSize(hSocket);
             result          = dataLength;
@@ -119,14 +133,14 @@ AREG_API int NESocket::sendData(SOCKETHANDLE hSocket, const unsigned char * data
     return result;
 }
 
-AREG_API int NESocket::receiveData(SOCKETHANDLE hSocket, unsigned char * dataBuffer, int dataLength, int blockMaxSize /*= NECommon::DefaultSize*/ )
+AREG_API int NESocket::receiveData(SOCKETHANDLE hSocket, unsigned char * dataBuffer, int dataLength, int blockMaxSize /*= NECommon::DEFAULT_SIZE*/ )
 {
     int result = -1;
 
     if ( hSocket != NESocket::InvalidSocketHandle )
     {
         result = 0;
-        if ( dataBuffer != NULL && dataLength > 0 )
+        if ( (dataBuffer != nullptr) && (dataLength > 0) )
         {
             blockMaxSize    = blockMaxSize > 0 ? blockMaxSize : NESocket::getMaxReceiveSize(hSocket);
             while ( dataLength > 0 )

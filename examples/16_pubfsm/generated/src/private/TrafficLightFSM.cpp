@@ -156,9 +156,9 @@ TrafficLightFSM::TrafficLightFSM( IETrafficLightActionHandler & actionHandler, c
     , mTimerVehicleWait( static_cast< IETimerConsumer &>(self()) , "TrafficLightFsm::VehicleWait" )
     
 
-    , mFsmName      ( String("TrafficLightFSM:") + (instanceName != static_cast<const char*>(NULL) ? instanceName : "") )
+    , mFsmName      ( String("TrafficLightFSM:") + (instanceName != nullptr ? instanceName : "") )
     , mInstanceName ( mFsmName.getString() )
-    , mMasterThread ( NULL )
+    , mMasterThread ( nullptr )
     , mProcessing   ( false )
     , mState        ( TrafficLightFSM::UNDEFINED )    
 {
@@ -471,7 +471,7 @@ inline void TrafficLightFSM::leaveState( const TrafficLightFSM::eState curState,
 /**
  * Call to initialize State Machine. Initialize before calling any trigger.
  **/
-void TrafficLightFSM::initFSM( DispatcherThread * masterThread /*= NULL*/ )
+void TrafficLightFSM::initFSM( DispatcherThread * masterThread /*= nullptr*/ )
 {
     TRACE_SCOPE(generated_src_private_TrafficLightFSM_initFSM);
     if (mState != TrafficLightFSM::UNDEFINED)
@@ -480,7 +480,7 @@ void TrafficLightFSM::initFSM( DispatcherThread * masterThread /*= NULL*/ )
         ASSERT(false);
     }
 
-    mMasterThread   = masterThread != NULL ? masterThread : &(DispatcherThread::getCurrentDispatcherThread( ));    
+    mMasterThread   = masterThread != nullptr ? masterThread : &(DispatcherThread::getCurrentDispatcherThread( ));
     NETrafficLightFSM::FsmEvent::addListener( static_cast<NETrafficLightFSM::IEFsmEventConsumer &>(self()), *mMasterThread );
     
     mCurrentStates[UNDEFINED]                 = TrafficLightFSM::UNDEFINED;
@@ -507,15 +507,15 @@ void TrafficLightFSM::initFSM( DispatcherThread * masterThread /*= NULL*/ )
 void TrafficLightFSM::releaseFSM( void )
 {
     TRACE_SCOPE(generated_src_private_TrafficLightFSM_releaseFSM);
-    TRACE_DBG("Releasing < %s > State Machine. Initialize before calling triggers.", mInstanceName != NULL ? mInstanceName : "");
+    TRACE_DBG("Releasing < %s > State Machine. Initialize before calling triggers.", mInstanceName != nullptr ? mInstanceName : "");
 
-    if ( mMasterThread != NULL )
+    if ( mMasterThread != nullptr )
         NETrafficLightFSM::FsmEvent::removeListener( static_cast<NETrafficLightFSM::IEFsmEventConsumer &>(self()), *mMasterThread );
     else
         NETrafficLightFSM::FsmEvent::removeListener( static_cast<NETrafficLightFSM::IEFsmEventConsumer &>(self()) );
  
     mState          = TrafficLightFSM::UNDEFINED;
-    mMasterThread   = NULL;
+    mMasterThread   = nullptr;
 
     mTimerRed.stopTimer( );
     mTimerYellowRed.stopTimer( );
@@ -677,7 +677,7 @@ void TrafficLightFSM::processEvent( const NETrafficLightFSM::FsmEventData & data
     }
     else
     {
-        TRACE_WARN("Ignoring event < %s >, the state machine < %s > is not initialized.", NETrafficLightFSM::getString(data.mEventValue), mInstanceName != NULL ? mInstanceName : "");
+        TRACE_WARN("Ignoring event < %s >, the state machine < %s > is not initialized.", NETrafficLightFSM::getString(data.mEventValue), mInstanceName != nullptr ? mInstanceName : "");
     }
 }
 

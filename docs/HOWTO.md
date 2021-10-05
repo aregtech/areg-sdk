@@ -1,6 +1,6 @@
 ```
 This file is part of AREG IoT SDK
-Copyright (c) Aregtech, 2017-2021
+Copyright (c) 2017-2021, Aregtech
 Contact: info[at]aregtech.com
 Website: https://www.aregtech.com
 ```

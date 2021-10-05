@@ -26,7 +26,7 @@ PageNetworkSetup::PageNetworkSetup( ConnectionHandler & handlerConnection)
     , mNickName         ( )
     , mCtrlNickName     ( )
     , mBrokerPort       ( NESocket::InvalidPort )
-    , mNetworkSetup     ( NULL )
+    , mNetworkSetup     ( nullptr )
     , mConnectionHandler( handlerConnection )
     , mConnectPending   ( false )
     , mRegisterPending  ( false )
@@ -47,18 +47,18 @@ void PageNetworkSetup::cleanService(void)
     mConnectionHandler.SetConnected(false);
     mConnectionHandler.SetRegistered(false);
 
-    if (mNetworkSetup != NULL)
+    if (mNetworkSetup != nullptr)
     {
         mNetworkSetup->DisconnectServicing( );
 
         delete mNetworkSetup;
-        mNetworkSetup = NULL;
+        mNetworkSetup = nullptr;
     }
 }
 
 bool PageNetworkSetup::isServiceConnected(void) const
 {
-    return (mNetworkSetup != NULL ? mNetworkSetup->isConnected() : false);
+    return (mNetworkSetup != nullptr ? mNetworkSetup->isConnected() : false);
 }
 
 
@@ -67,14 +67,14 @@ void PageNetworkSetup::OnServiceStartup( bool isStarted, Component * owner )
     mConnectionHandler.SetConnected( false);
     if ( isStarted )
     {
-        if ( (mNetworkSetup == NULL) && (owner != NULL) )
+        if ( (mNetworkSetup == nullptr) && (owner != nullptr) )
             mNetworkSetup = DEBUG_NEW NetworkSetup( NECommon::COMP_NAME_CENTRAL_SERVER, *owner, mConnectionHandler );
     }
     else
     {
-        if ( mNetworkSetup != NULL )
+        if ( mNetworkSetup != nullptr )
             delete mNetworkSetup;
-        mNetworkSetup = NULL;
+        mNetworkSetup = nullptr;
     }
 }
 
@@ -85,7 +85,7 @@ void PageNetworkSetup::OnServiceNetwork( bool isConnected, DispatcherThread * ow
     {
         if ( (mConnectionHandler.GetNickName().isEmpty() == false) && (mConnectionHandler.GetCookie() == NECommon::InvalidCookie) )
         {
-            ASSERT(mNetworkSetup != NULL);
+            ASSERT(mNetworkSetup != nullptr);
             mNetworkSetup->requestConnet(mConnectionHandler.GetNickName(), DateTime::getNow() );
         }
     }
@@ -111,7 +111,7 @@ void PageNetworkSetup::OnClientRegistration( bool isRegistered, DispatcherThread
         mNickName = mConnectionHandler.GetNickName().getString();
         UpdateData(FALSE);
     }
-    else if ( (isRegistered == false) && (mNetworkSetup != NULL) )
+    else if ( (isRegistered == false) && (mNetworkSetup != nullptr) )
     {
         mNetworkSetup->requestDiconnect( mConnectionHandler.GetNickName(), mConnectionHandler.GetCookie(), DateTime::getNow());
         mConnectionHandler.ResetConnectionList( );
@@ -135,11 +135,11 @@ void PageNetworkSetup::OnUpdateConnection( void )
 
 void PageNetworkSetup::OnDisconnectTriggered( void )
 {
-    if ( mNetworkSetup != NULL )
+    if ( mNetworkSetup != nullptr )
     {
         mNetworkSetup->requestDiconnect(mConnectionHandler.GetNickName(), mConnectionHandler.GetCookie(), mConnectionHandler.GetTimeConnect());
         delete mNetworkSetup;
-        mNetworkSetup = NULL;
+        mNetworkSetup = nullptr;
     }
 }
 
@@ -216,7 +216,7 @@ void PageNetworkSetup::OnClickedBrokerDisconnect()
 
 void PageNetworkSetup::OnClickedButtonRegister( )
 {
-    if ( (mNetworkSetup != NULL) && (mConnectionHandler.GetRegistered() == false) )
+    if ( (mNetworkSetup != nullptr) && (mConnectionHandler.GetRegistered() == false) )
     {
         UpdateData(TRUE);
         if ( mNickName.IsEmpty( ) == false )
@@ -362,7 +362,7 @@ bool PageNetworkSetup::canRegistered( void ) const
 void PageNetworkSetup::setFocusNickname( void ) const
 {
     CEdit * nick = reinterpret_cast<CEdit *>(GetDlgItem( IDC_EDIT_NICKNAME ));
-    if ( nick != NULL )
+    if ( nick != nullptr )
     {
         nick->SetFocus( );
         nick->SetSel( 0, mNickName.GetLength( ), TRUE );
@@ -377,12 +377,12 @@ BOOL PageNetworkSetup::OnInitDialog( )
     mCtrlPort.SetWindowText( _T( "8181" ) );
 
     ConnectionConfiguration config;
-    if ( config.loadConfiguration( NEApplication::DEFAULT_ROUTER_CONFIG_FILE ) )
+    if ( config.loadConfiguration( NEApplication::DEFAULT_ROUTER_CONFIG_FILE.data() ) )
     {
         unsigned char field0, field1, field2, field3;
-        if ( config.getConnectionHostIpAddress( field0, field1, field2, field3, NERemoteService::ConnectionTcpip ) )
+        if ( config.getConnectionHostIpAddress( field0, field1, field2, field3, NERemoteService::eServiceConnection::ConnectionTcpip ) )
         {
-            mBrokerPort = static_cast<USHORT>(config.getConnectionPort( NERemoteService::ConnectionTcpip ));
+            mBrokerPort = static_cast<USHORT>(config.getConnectionPort( NERemoteService::eServiceConnection::ConnectionTcpip ));
             CString port( String::uint32ToString( mBrokerPort ).getString( ) );
             mCtrlAddress.SetAddress( field0, field1, field2, field3 );
             mCtrlPort.SetWindowText( port );
@@ -399,11 +399,11 @@ void PageNetworkSetup::OnDestroy( )
 {
     CPropertyPage::OnDestroy();
 
-    if ( mNetworkSetup != NULL )
+    if ( mNetworkSetup != nullptr )
     {
         mNetworkSetup->requestDiconnect( mConnectionHandler.GetNickName( ), mConnectionHandler.GetCookie( ), mConnectionHandler.GetTimeConnect( ) );
         delete mNetworkSetup;
-        mNetworkSetup = NULL;
+        mNetworkSetup = nullptr;
     }
 }
 
@@ -412,7 +412,7 @@ void PageNetworkSetup::OnDefaultClicked( void )
     CButton * btnConnect    = reinterpret_cast<CButton *>(GetDlgItem( IDC_BROKER_CONNECT ));
     CButton * btnDisconnect = reinterpret_cast<CButton *>(GetDlgItem( IDC_BROKER_DISCONNECT ));
     CButton * btnRegister   = reinterpret_cast<CButton *>(GetDlgItem( IDC_BUTTON_REGISTER ));
-    if ( (btnConnect != NULL) && (btnDisconnect != NULL) && (btnRegister != NULL) )
+    if ( (btnConnect != nullptr) && (btnDisconnect != nullptr) && (btnRegister != nullptr) )
     {
         if ( mRegisterEnabled )
         {

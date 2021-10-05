@@ -1,10 +1,16 @@
-#ifndef AREG_COMPONENT_PRIVATE_EVENTDISPATCHERBASE_HPP
-#define AREG_COMPONENT_PRIVATE_EVENTDISPATCHERBASE_HPP
-
+#pragma once
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/component/private/EventDispatcherBase.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       Global AREG Platform, Event Dispatcher base class.
  *              The class is providing basic dispatching functionalities,
  *              keeps track of queued events and registered event consumers, 
@@ -28,7 +34,7 @@
 #include "areg/component/private/EventConsumerMap.hpp"
 #include "areg/component/private/EventQueue.hpp"
 #include "areg/base/String.hpp"
-#include "areg/base/ESynchObjects.hpp"
+#include "areg/base/SynchObjects.hpp"
 
 /************************************************************************
  * Dependencies
@@ -59,11 +65,11 @@ protected:
      * \brief   EventDispatcherBase::eEventOrder
      *          Used in main loop to identify event signal.
      **/
-    typedef enum E_EventOrder
+    typedef enum class E_EventOrder : int8_t
     {
-          EVENT_ERROR   = -1    //!< Error happened during waiting for event
-        , EVENT_EXIT    =  0    //!< Exit event has been signaled.
-        , EVENT_QUEUE   =  1    //!< Queue event has been signaled.
+          EventError    = -1    //!< Error happened during waiting for event
+        , EventExit     =  0    //!< Exit event has been signaled.
+        , EventQueue    =  1    //!< Queue event has been signaled.
     } eEventOrder;
 
 //////////////////////////////////////////////////////////////////////////
@@ -130,23 +136,17 @@ public:
     /**
      * \brief   Call to start dispatcher. Returns true if successfully started.
      **/
-    virtual bool startDispatcher( void );
+    virtual bool startDispatcher( void ) override;
 
     /**
      * \brief   Call to stop running dispatcher.
      **/
-    virtual void stopDispatcher( void );
-    
-    /**
-     * \brief   Notifies exit event to shutdown dispatcher.
-     *          No element will be removed.
-     **/
-    virtual void shutdownDispatcher( void );
+    virtual void stopDispatcher( void ) override;
     
     /**
      * \brief   Call to queue event object in the event queue of dispatcher.
      **/
-    virtual bool queueEvent( Event & eventElem );
+    virtual bool queueEvent( Event & eventElem ) override;
     
     /**
      * \brief   Call to register specified event consumer for the specified
@@ -164,7 +164,7 @@ public:
      *          If specified consumer is already registered for specified
      *          event class type, it returns false.
      **/
-    virtual bool registerEventConsumer( const RuntimeClassID & whichClass, IEEventConsumer & whichConsumer );
+    virtual bool registerEventConsumer( const RuntimeClassID & whichClass, IEEventConsumer & whichConsumer ) override;
 
     /**
      * \brief	Call to unregister specified event consumer previously registered
@@ -173,7 +173,7 @@ public:
      * \param	whichConsumer	Reference to consumer that should be unregistered.
      * \return	Returns true if successfully unregistered event consumer.
      **/
-    virtual bool unregisterEventConsumer( const RuntimeClassID & whichClass, IEEventConsumer & whichConsumer );
+    virtual bool unregisterEventConsumer( const RuntimeClassID & whichClass, IEEventConsumer & whichConsumer ) override;
 
     /**
      * \brief	Call to remove specified consumer for all registered event class types,
@@ -181,7 +181,7 @@ public:
      * \param	whichConsumer	Reference to consumer object to unregister.
      * \return	Returns unregister count. If zero, consumer is not registered for any event.
      **/
-    virtual int  removeConsumer( IEEventConsumer & whichConsumer );
+    virtual int  removeConsumer( IEEventConsumer & whichConsumer ) override;
 
     /**
      * \brief	Call to check whether specified event class type has any registered consumer.
@@ -189,7 +189,7 @@ public:
      * \return	Returns true if dispatcher has at least one registered consumer for
      *          specified runtime class ID.
      **/
-    virtual bool hasRegisteredConsumer( const RuntimeClassID & whichClass ) const;
+    virtual bool hasRegisteredConsumer( const RuntimeClassID & whichClass ) const override;
 
 //////////////////////////////////////////////////////////////////////////
 // Protected overrides
@@ -206,7 +206,7 @@ protected:
      * \param	eventCount	The number of event elements currently in the queue.
      *                      If zero, queue is empty, dispatcher can be suspended.
      **/
-    virtual void signalEvent(int eventCount);
+    virtual void signalEvent(int eventCount) override;
 
 /************************************************************************/
 // IEEventDispatcher overrides
@@ -220,7 +220,7 @@ protected:
      * \return	Returns true if at least one consumer processed event.
      *          Otherwise it returns false.
      **/
-    virtual bool dispatchEvent( Event & eventElem );
+    virtual bool dispatchEvent( Event & eventElem ) override;
     /**
      * \brief   The method is triggered after picking up event from event queue.
      *          Before starting dispatching, this function is called and if it
@@ -229,7 +229,7 @@ protected:
      * \return  Return true if event should be forwarded for dispatching.
      *          Return false if event should be ignored / dropped.
      **/
-    virtual bool prepareDispatchEvent( Event * eventElem );
+    virtual bool prepareDispatchEvent( Event * eventElem ) override;
     /**
      * \brief	All events after being processed are forwarded
      *          to this method. All cleanup operations should be provided
@@ -238,7 +238,7 @@ protected:
      *                      to be dispatched.
      * \return	
      **/
-    virtual void postDispatchEvent( Event * eventElem );
+    virtual void postDispatchEvent( Event * eventElem ) override;
 
 /************************************************************************/
 // EventDispatcherBase overrides
@@ -252,6 +252,13 @@ protected:
      * \return	Returns true if Exit Event is signaled.
      **/
     virtual bool runDispatcher( void );
+
+    /**
+     * \brief   Notifies exit event to shutdown dispatcher.
+     *          No element will be removed.
+     **/
+    virtual void shutdownDispatcher( void );
+
     /**
      * \brief	Picks up single Event element from the event queue
      *          and forwards to be dispatched.
@@ -296,10 +303,18 @@ protected:
      **/
     InternalEventQueue  mInternalEvents;
 
+#if defined(_MSC_VER) && (_MSC_VER > 1200)
+    #pragma warning(disable: 4251)
+#endif  // _MSC_VER
+
     /**
      * \brief   Map of registered consumers.
      **/
     EventConsumerMap    mConsumerMap;
+
+#if defined(_MSC_VER) && (_MSC_VER > 1200)
+    #pragma warning(default: 4251)
+#endif  // _MSC_VER
 
     /**
      * \brief   Exit Synchronization Event. 
@@ -337,9 +352,8 @@ private:
 // Forbidden method calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    EventDispatcherBase( void );
-    EventDispatcherBase(const EventDispatcherBase &);
-    const EventDispatcherBase& operator = (const EventDispatcherBase &);
+    EventDispatcherBase( void ) = delete;
+    DECLARE_NOCOPY_NOMOVE( EventDispatcherBase );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -376,5 +390,3 @@ inline EventDispatcherBase& EventDispatcherBase::self( void )
 {
     return (*this);
 }
-
-#endif  // AREG_COMPONENT_PRIVATE_EVENTDISPATCHERBASE_HPP

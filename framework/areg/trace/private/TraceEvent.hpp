@@ -1,9 +1,16 @@
-#ifndef AREG_TRACE_PRIVATE_TRAEVENT_HPP
-#define AREG_TRACE_PRIVATE_TRAEVENT_HPP
+#pragma once
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/trace/private/TraceEvent.hpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, The logging thread, which is receiving logging events and performs log operations. 
  ************************************************************************/
 /************************************************************************
@@ -38,7 +45,7 @@ public:
     /**
      * \brief   The list of supported actions for logging
      **/
-    typedef enum E_TraceAction
+    typedef enum class E_TraceAction
     {
           TraceUndefined                //!< Action is undefined, do nothing
         , TraceConfigure                //!< Action to notify to configure logging
@@ -74,7 +81,7 @@ public:
      * \brief   Creates the logging even data with specified action
      * \param   action  The action ID to set in event data
      **/
-    TraceEventData( TraceEventData::eTraceAction action );
+    explicit TraceEventData( TraceEventData::eTraceAction action );
     
     /**
      * \brief   Creates the logging even data with specified action and data
@@ -97,9 +104,15 @@ public:
     TraceEventData( const TraceEventData & src );
 
     /**
+     * \brief   Copies logging event data from given source.
+     * \param   src     The source to copy data.
+     **/
+    TraceEventData( TraceEventData && src ) noexcept;
+
+    /**
      * \brief   Destructor
      **/
-    ~TraceEventData( void );
+    ~TraceEventData( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
@@ -109,7 +122,13 @@ public:
      * \brief   Copies data from given source
      * \param   src     The source of data to copy.
      **/
-    const TraceEventData & operator = ( const TraceEventData & src );
+    TraceEventData & operator = ( const TraceEventData & src );
+
+    /**
+     * \brief   Moves data from given source
+     * \param   src     The source of data to move.
+     **/
+    TraceEventData & operator = ( TraceEventData && src ) noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes
@@ -171,21 +190,19 @@ inline const char * TraceEventData::getString( TraceEventData::eTraceAction acti
 {
     switch ( action )
     {
-    CASE_MAKE_STRING(TraceEventData::TraceUndefined);
-    CASE_MAKE_STRING(TraceEventData::TraceConfigure);
-    CASE_MAKE_STRING(TraceEventData::TraceChangeConfig);
-    CASE_MAKE_STRING(TraceEventData::TraceStartLogs);
-    CASE_MAKE_STRING(TraceEventData::TraceStopLogs);
-    CASE_MAKE_STRING(TraceEventData::TraceEnableLogs);
-    CASE_MAKE_STRING(TraceEventData::TraceDisableLogs);
-    CASE_MAKE_STRING(TraceEventData::TraceChangeScopes);
-    CASE_MAKE_STRING(TraceEventData::TraceSaveScopes);
-    CASE_MAKE_STRING(TraceEventData::TraceMessage);
-    CASE_MAKE_STRING(TraceEventData::TraceThreadRegistered);
-    CASE_MAKE_STRING(TraceEventData::TraceThreadUnregistered);
-    CASE_MAKE_STRING(TraceEventData::TraceChangeStack);
+    CASE_MAKE_STRING(TraceEventData::eTraceAction::TraceUndefined);
+    CASE_MAKE_STRING(TraceEventData::eTraceAction::TraceConfigure);
+    CASE_MAKE_STRING(TraceEventData::eTraceAction::TraceChangeConfig);
+    CASE_MAKE_STRING(TraceEventData::eTraceAction::TraceStartLogs);
+    CASE_MAKE_STRING(TraceEventData::eTraceAction::TraceStopLogs);
+    CASE_MAKE_STRING(TraceEventData::eTraceAction::TraceEnableLogs);
+    CASE_MAKE_STRING(TraceEventData::eTraceAction::TraceDisableLogs);
+    CASE_MAKE_STRING(TraceEventData::eTraceAction::TraceChangeScopes);
+    CASE_MAKE_STRING(TraceEventData::eTraceAction::TraceSaveScopes);
+    CASE_MAKE_STRING(TraceEventData::eTraceAction::TraceMessage);
+    CASE_MAKE_STRING(TraceEventData::eTraceAction::TraceThreadRegistered);
+    CASE_MAKE_STRING(TraceEventData::eTraceAction::TraceThreadUnregistered);
+    CASE_MAKE_STRING(TraceEventData::eTraceAction::TraceChangeStack);
     CASE_DEFAULT("ERR: Undefined TraceEventData::eTraceAction value!");
     }
 }
-
-#endif  // AREG_TRACE_PRIVATE_TRAEVENT_HPP

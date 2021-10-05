@@ -4,14 +4,14 @@
 
 /************************************************************************
  * (c) copyright    2021
+ *
+ * Generated at     30.09.2021  01:22:12 GMT+02:00 
  *                  Create by AREG SDK code generator tool from source PowerManager.
- * Generated at     15.08.2021  00:03:03 GMT+02:00 
- ************************************************************************/
-
-/************************************************************************
- * \file            generated/src/private/PowerManagerProxy.cpp
+ *
+ * \file            generated/src/private/PowerManagerProxy.hpp
  * \ingroup         PowerManager Service Interface
- * \brief           This is an automatic generated code of PowerManager Service Interface Proxy class implementation.
+ * \brief           This is an automatic generated code of PowerManager
+ *                  Service Interface Proxy class implementation.
  ************************************************************************/
 
 /************************************************************************
@@ -32,12 +32,6 @@ IMPLEMENT_RUNTIME_EVENT(PowerManagerProxy::PowerManagerServiceAvailableEvent, Pr
 PowerManagerProxy::PowerManagerServiceAvailableEvent::PowerManagerServiceAvailableEvent( IENotificationEventConsumer & consumer )
     : ProxyBase::ServiceAvailableEvent  ( consumer )
 {
-    ; // do nothing
-}
-
-PowerManagerProxy::PowerManagerServiceAvailableEvent::~PowerManagerServiceAvailableEvent( void )
-{
-    ; // do nothing
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -48,7 +42,7 @@ PowerManagerProxy::PowerManagerServiceAvailableEvent::~PowerManagerServiceAvaila
 // static function implementation
 //////////////////////////////////////////////////////////////////////////
 
-ProxyBase * PowerManagerProxy::_createProxy( const char * roleName, DispatcherThread * ownerThread /*= static_cast<DispatcherThread *>(NULL)*/ )
+ProxyBase * PowerManagerProxy::_createProxy( const char * roleName, DispatcherThread * ownerThread /*= nullptr*/ )
 {
     return DEBUG_NEW PowerManagerProxy(roleName, ownerThread);
 }
@@ -62,7 +56,7 @@ PowerManagerProxy * PowerManagerProxy::createProxy( const char * roleName, IEPro
                                                                       , ownerThread) );
 }
 
-PowerManagerProxy * PowerManagerProxy::createProxy( const char * roleName, IEProxyListener & connectListener, const char * ownerThread /*= static_cast<const char *>(NULL)*/ )
+PowerManagerProxy * PowerManagerProxy::createProxy( const char * roleName, IEProxyListener & connectListener, const char * ownerThread /*= nullptr*/ )
 {
     return static_cast<PowerManagerProxy *>(ProxyBase::findOrCreateProxy( roleName
                                                                       , NEPowerManager::getInterfaceData()
@@ -74,7 +68,7 @@ PowerManagerProxy * PowerManagerProxy::createProxy( const char * roleName, IEPro
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
-PowerManagerProxy::PowerManagerProxy( const char * roleName, DispatcherThread * ownerThread /*= static_cast<DispatcherThread *>(NULL)*/ )
+PowerManagerProxy::PowerManagerProxy( const char * roleName, DispatcherThread * ownerThread /*= nullptr*/ )
     : ProxyBase(roleName, NEPowerManager::getInterfaceData(), ownerThread)
 
 /************************************************************************
@@ -87,12 +81,10 @@ PowerManagerProxy::PowerManagerProxy( const char * roleName, DispatcherThread * 
  ************************************************************************/
     , mParamSuccess       (  )
 {
-    ; // do nothing
 }
 
 PowerManagerProxy::~PowerManagerProxy( void )
 {
-    ; // do nothing
 }
 
 /************************************************************************
@@ -138,24 +130,24 @@ void PowerManagerProxy::unregisterServiceListeners( void )
  
 void PowerManagerProxy::requestPowerOn( void )
 {
-    static const NEPowerManager::eMessageIDs msgId = NEPowerManager::MSG_ID_requestPowerOn;
-    sendRequestEvent( static_cast<unsigned int>(msgId), EventDataStream::EmptyData, NULL );
+    static const NEPowerManager::eMessageIDs msgId = NEPowerManager::eMessageIDs::MsgId_requestPowerOn;
+    sendRequestEvent( static_cast<unsigned int>(msgId), EventDataStream::EmptyData, nullptr );
 }
 void PowerManagerProxy::requestPowerOff( void )
 {
-    static const NEPowerManager::eMessageIDs msgId = NEPowerManager::MSG_ID_requestPowerOff;
-    sendRequestEvent( static_cast<unsigned int>(msgId), EventDataStream::EmptyData, NULL );
+    static const NEPowerManager::eMessageIDs msgId = NEPowerManager::eMessageIDs::MsgId_requestPowerOff;
+    sendRequestEvent( static_cast<unsigned int>(msgId), EventDataStream::EmptyData, nullptr );
 }
 unsigned int PowerManagerProxy::requestStartTrafficLight( IENotificationEventConsumer & caller )
 {
-    static const NEPowerManager::eMessageIDs msgId = NEPowerManager::MSG_ID_requestStartTrafficLight;
+    static const NEPowerManager::eMessageIDs msgId = NEPowerManager::eMessageIDs::MsgId_requestStartTrafficLight;
     sendRequestEvent( static_cast<unsigned int>(msgId), EventDataStream::EmptyData, &caller );
     return mSequenceCount;
 }
     
 unsigned int PowerManagerProxy::requestStopTrafficLight( IENotificationEventConsumer & caller )
 {
-    static const NEPowerManager::eMessageIDs msgId = NEPowerManager::MSG_ID_requestStopTrafficLight;
+    static const NEPowerManager::eMessageIDs msgId = NEPowerManager::eMessageIDs::MsgId_requestStopTrafficLight;
     sendRequestEvent( static_cast<unsigned int>(msgId), EventDataStream::EmptyData, &caller );
     return mSequenceCount;
 }
@@ -171,7 +163,7 @@ unsigned int PowerManagerProxy::requestStopTrafficLight( IENotificationEventCons
 void PowerManagerProxy::processResponseEvent( ServiceResponseEvent & eventElem )
 {
     PowerManagerResponseEvent * eventResp = RUNTIME_CAST( &eventElem, PowerManagerResponseEvent );
-    if (eventResp != NULL)
+    if (eventResp != nullptr)
         processResponse( *eventResp );
     else
         processProxyEvent( eventElem );
@@ -180,7 +172,7 @@ void PowerManagerProxy::processResponseEvent( ServiceResponseEvent & eventElem )
 void PowerManagerProxy::processAttributeEvent( ServiceResponseEvent & eventElem )
 {
     PowerManagerResponseEvent * eventResp = RUNTIME_CAST( &eventElem, PowerManagerResponseEvent );
-    if (eventResp != NULL)
+    if (eventResp != nullptr)
         processResponse( *eventResp );
     else
         processProxyEvent( eventElem );
@@ -200,11 +192,11 @@ void PowerManagerProxy::updateData( PowerManagerResponseEvent & eventElem, NEPow
     /************************************************************************
      * Update Response parameters
      ************************************************************************/
-    case NEPowerManager::MSG_ID_responseStartTrafficLight:
+    case NEPowerManager::eMessageIDs::MsgId_responseStartTrafficLight:
         stream >> mParamSuccess;
         break;
 
-    case NEPowerManager::MSG_ID_responseStopTrafficLight:
+    case NEPowerManager::eMessageIDs::MsgId_responseStopTrafficLight:
         stream >> mParamSuccess;
         break;
 
@@ -214,7 +206,7 @@ void PowerManagerProxy::updateData( PowerManagerResponseEvent & eventElem, NEPow
     /************************************************************************
      * Update Attribute values
      ************************************************************************/
-    case NEPowerManager::MSG_ID_LightsPowerState:
+    case NEPowerManager::eMessageIDs::MsgId_LightsPowerState:
         stream >> mLightsPowerState;
         break;
 
@@ -240,25 +232,28 @@ void PowerManagerProxy::processResponse( PowerManagerResponseEvent & evenElem )
 
     switch (resultType)
     {
-    case NEService::RESULT_DATA_INVALID:
-    case NEService::RESULT_INVALID:
+    case NEService::eResultType::DataInvalid:   // fall through
+    case NEService::eResultType::RequestInvalid:
         break;  // do nothing
 
-    case NEService::RESULT_REQUEST_ERROR:
-    case NEService::RESULT_REQUEST_BUSY:
-    case NEService::RESULT_REQUEST_CANCELED:
-        respId      = static_cast<NEPowerManager::eMessageIDs>( mProxyData.getResponseId(static_cast<unsigned int>(respId)) );
-        setStates   = respId != NEPowerManager::MSG_ID_NO_PROCEED;
+    case NEService::eResultType::RequestError:  // fall through
+    case NEService::eResultType::RequestBusy:   // fall through
+    case NEService::eResultType::RequestCanceled:
+        respId      = static_cast<NEPowerManager::eMessageIDs>( mProxyData.getResponseId(static_cast<msg_id>(respId)) );
+        setStates   = respId != NEPowerManager::eMessageIDs::MsgId_NotProcessed;
         break;
 
-    case NEService::RESULT_MESSAGE_UNDELIVERED:
-        if ( NEService::isRequestId(respId) )
-            respId  = static_cast<NEPowerManager::eMessageIDs>( mProxyData.getResponseId(static_cast<unsigned int>(respId)) );
-        setStates   = respId != NEPowerManager::MSG_ID_NO_PROCEED;            
+    case NEService::eResultType::MessageUndelivered:
+        if ( NEService::isRequestId( static_cast<msg_id>(respId) ) )
+        {
+            respId  = static_cast<NEPowerManager::eMessageIDs>( mProxyData.getResponseId(static_cast<msg_id>(respId)) );
+        }
+        
+        setStates   = respId != NEPowerManager::eMessageIDs::MsgId_NotProcessed;            
         break;
 
-    case NEService::RESULT_OK:
-    case NEService::RESULT_DATA_OK:
+    case NEService::eResultType::RequestOK:     // fall through
+    case NEService::eResultType::DataOK:
         dataValid   = true;
         break;
 
@@ -268,11 +263,16 @@ void PowerManagerProxy::processResponse( PowerManagerResponseEvent & evenElem )
     }
 
     if (dataValid == true)
+    {
         updateData(evenElem, respId);
+    }
+       
     if (setStates == true)
-        setState(static_cast<unsigned int>(respId), dataValid ? NEService::DATA_OK : NEService::DATA_INVALID);
-
-    notifyListeners(static_cast<unsigned int>(respId), resultType, evenElem.getSequenceNumber());
+    {
+        setState(static_cast<msg_id>(respId), dataValid ? NEService::eDataStateType::DataIsOK : NEService::eDataStateType::DataIsInvalid);
+    }
+    
+    notifyListeners(static_cast<msg_id>(respId), resultType, evenElem.getSequenceNumber());
 }
 
 //////////////////////////////////////////////////////////////////////////

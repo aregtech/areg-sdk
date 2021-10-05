@@ -1,9 +1,16 @@
-#ifndef AREG_TRACE_PRIVATE_TRAPROPERTYKEY_HPP
-#define AREG_TRACE_PRIVATE_TRAPROPERTYKEY_HPP
+#pragma once
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/trace/private/TracePropertyKey.hpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, Trace Property key class. Used when reading or 
  *              saving configuration file. It contains Key value and type
  ************************************************************************/
@@ -35,21 +42,26 @@ public:
      * \brief   Parses given string and initializes property key data.
      * \param   fullKey     The full string of property key to parse and initialize.
      **/
-    TracePropertyKey( const char * fullKey );
+    explicit TracePropertyKey( const char * fullKey );
+    /**
+     * \brief   Parses given string and initializes property key data.
+     * \param   fullKey     The full string of property key to parse and initialize.
+     **/
+    explicit TracePropertyKey( const String & fullKey );
     /**
      * \brief   Copies property key data from given source
      * \param   source  The source of property key to copy data.
      **/
     TracePropertyKey( const TracePropertyKey & source );
     /**
-     * \brief   Parses given string and initializes property key data.
-     * \param   fullKey     The full string of property key to parse and initialize.
+     * \brief   Moves property key data from given source
+     * \param   source  The source of property key to move data.
      **/
-    TracePropertyKey( const String & fullKey );
+    TracePropertyKey( TracePropertyKey && source ) noexcept;
     /**
      * \brief   Destructor
      **/
-    ~TracePropertyKey( void );
+    ~TracePropertyKey( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
@@ -59,19 +71,25 @@ public:
      * \brief   Copies property key data from given source
      * \param   source  The source of property key to copy data.
      **/
-    const TracePropertyKey & operator = ( const TracePropertyKey & source );
+    TracePropertyKey & operator = ( const TracePropertyKey & source );
+
+    /**
+     * \brief   Moves property key data from given source
+     * \param   source  The source of property key to move data.
+     **/
+    TracePropertyKey & operator = ( TracePropertyKey && source ) noexcept;
 
     /**
      * \brief   Parses given string and initializes property key data
      * \param   fullKey     The full string of property key to parse and initialize.
      **/
-    inline void operator = ( const String & fullKey );
+    inline TracePropertyKey & operator = ( const String & fullKey );
 
     /**
      * \brief   Parses given string and initializes property key data
      * \param   fullKey     The full string of property key to parse and initialize.
      **/
-    inline void operator = ( const char * fullKey );
+    inline TracePropertyKey & operator = ( const char * fullKey );
 
     /**
      * \brief   Checks equality of two property key objects and returns true
@@ -139,11 +157,11 @@ public:
      * \brief   Returns true if the module key is empty or equal to given module name.
      * \param   moduleName  The name of module to check. The parameter is ignored
      *                      if the key data visibility level is global (i.e. no module name is set).
-     *                      The parameter cane be NULL or empty if only global visibility should checked.
+     *                      The parameter cane be nullptr or empty if only global visibility should checked.
      * \return  Returns true if property key is set and either module name is empty (i.e. global visibility)
      *          or equal to the given module name.
      **/
-    bool isModuleKeySet( const char * moduleName = NULL ) const;
+    bool isModuleKeySet( const char * moduleName = nullptr ) const;
 
     /**
      * \brief   Returns the syntax name of the property key.
@@ -181,14 +199,16 @@ private:
 // TracePropertyKey class inline methods implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline void TracePropertyKey::operator = ( const String & fullKey )
+inline TracePropertyKey & TracePropertyKey::operator = ( const String & fullKey )
 {
     setKey( fullKey );
+    return (*this);
 }
 
-inline void TracePropertyKey::operator = ( const char * fullKey )
+inline TracePropertyKey & TracePropertyKey::operator = ( const char * fullKey )
 {
     setKey( fullKey );
+    return (*this);
 }
 
 inline bool TracePropertyKey::operator == ( const TracePropertyKey & other ) const
@@ -223,17 +243,15 @@ inline NELogConfig::eConfigKey TracePropertyKey::getConfigKey( void ) const
 
 inline bool TracePropertyKey::isLocalKey( void ) const
 {
-    return ( mConfigKey == NELogConfig::KeyLocal );
+    return ( mConfigKey == NELogConfig::eConfigKey::KeyLocal );
 }
 
 inline bool TracePropertyKey::isGlobalKey( void ) const
 {
-    return ( mConfigKey == NELogConfig::KeyGlobal );
+    return ( mConfigKey == NELogConfig::eConfigKey::KeyGlobal );
 }
 
 inline bool TracePropertyKey::isValidKey( void ) const
 {
-    return ( mConfigKey != NELogConfig::KeyUndefined );
+    return ( mConfigKey != NELogConfig::eConfigKey::KeyUndefined );
 }
-
-#endif  // AREG_TRACE_PRIVATE_TRAPROPERTYKEY_HPP

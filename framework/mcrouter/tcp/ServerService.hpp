@@ -1,10 +1,16 @@
-#ifndef MCROUTER_TCP_SERVERSERVICE_HPP
-#define MCROUTER_TCP_SERVERSERVICE_HPP
-
+#pragma once
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        mcrouter/tcp/ServerService.hpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, Service Connection server declaration
  ************************************************************************/
 
@@ -25,9 +31,9 @@
 #include "mcrouter/tcp/private/ServerConnection.hpp"
 #include "mcrouter/tcp/private/ServiceRegistry.hpp"
 #include "areg/ipc/NERemoteService.hpp"
-#include "areg/base/ESynchObjects.hpp"
+#include "areg/base/SynchObjects.hpp"
 #include "areg/base/TEArrayList.hpp"
-#include "areg/base/EContainers.hpp"
+#include "areg/base/Containers.hpp"
 #include "areg/component/Timer.hpp"
 
 /************************************************************************
@@ -57,7 +63,7 @@ private:
     /**
      * \brief   The default connection type of server service.
      **/
-    static const NERemoteService::eServiceConnection   CONNECT_TYPE /*= NERemoteService::ConnectionTcpip*/;
+    static constexpr NERemoteService::eServiceConnection    CONNECT_TYPE    { NERemoteService::eServiceConnection::ConnectionTcpip };
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -70,7 +76,7 @@ public:
     /**
      * \brief   Destructor
      **/
-    virtual ~ServerService( void );
+    virtual ~ServerService( void )= default;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations
@@ -81,38 +87,38 @@ public:
      * \param   addrClient  The object, which contains client host address to check.
      * \return  Returns true if specified host address is in the white-list.
      **/
-    inline bool isAddressInWhiteList( const NESocket::InterlockedValue & addrClient ) const;
+    inline bool isAddressInWhiteList( const NESocket::SocketAddress & addrClient ) const;
 
     /**
      * \brief   Checks whether the specified host address is in the black-list.
      * \param   addrClient  The object, which contains client host address to check.
      * \return  Returns true if specified host address is in the black-list.
      **/
-    inline bool isAddressInBlackList( const NESocket::InterlockedValue & addrClient ) const;
+    inline bool isAddressInBlackList( const NESocket::SocketAddress & addrClient ) const;
 
     /**
      * \brief   Adds specified host address to the white-list.
      * \param   addrClient  The host address of client to add to list.
      **/
-    inline void addWhiteList( const NESocket::InterlockedValue & addrClient );
+    inline void addWhiteList( const NESocket::SocketAddress & addrClient );
 
     /**
      * \brief   Adds specified host address to black-list.
      * \param   addrClient  The host address of client to add to list.
      **/
-    void addBlackList( const NESocket::InterlockedValue & addrClient );
+    void addBlackList( const NESocket::SocketAddress & addrClient );
 
     /**
      * \brief   Removes specified host address from white-list.
      * \param   addrClient  The host address of client to remove from list.
      **/
-    inline void removeWhiteList( const NESocket::InterlockedValue & addrClient );
+    inline void removeWhiteList( const NESocket::SocketAddress & addrClient );
 
     /**
      * \brief   Removes specified host address from black-list.
      * \param   addrClient  The host address of client to remove from list.
      **/
-    inline void removeBlackList( const NESocket::InterlockedValue & addrClient );
+    inline void removeBlackList( const NESocket::SocketAddress & addrClient );
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -126,13 +132,13 @@ public:
      * \brief   Call to configure remote service. The passed file name
      *          can be either absolute or relative path.
      *          The function will read configuration file and initialize settings.
-     *          If file path is NULL or empty, Remote Service will have default 
+     *          If file path is nullptr or empty, Remote Service will have default 
      *          configuration settings.
      * \param   configFile  Relative or absolute path of remote service configuration file.
-     *                      If NULL or empty, it will use default settings.
+     *                      If nullptr or empty, it will use default settings.
      * \return  Returns true if system could configure. Otherwise, it returns false.
      **/
-    virtual bool configureRemoteServicing( const char * configFile );
+    virtual bool configureRemoteServicing( const char * configFile ) override;
 
     /**
      * \brief   Call manually to set routing service host name and port number.
@@ -141,33 +147,33 @@ public:
      * \param   hostName    IP-address or host name of routing service to connect.
      * \param   portNr      Port number of routing service to connect.
      **/
-    virtual void setRemoteServiceAddress( const char * hostName, unsigned short portNr );
+    virtual void setRemoteServiceAddress( const char * hostName, unsigned short portNr ) override;
 
     /**
      * \brief   Call to start remote service. The host name and port number should be already set.
      * \return  Returns true if start service is triggered.
      **/
-    virtual bool startRemoteServicing( void );
+    virtual bool startRemoteServicing( void ) override;
 
     /**
      * \brief   Call to stop service. No more remote communication should be possible.
      **/
-    virtual void stopRemoteServicing( void );
+    virtual void stopRemoteServicing( void ) override;
 
     /**
      * \brief   Returns true, if remote service is started and ready to operate.
      **/
-    virtual bool isRemoteServicingStarted( void ) const;
+    virtual bool isRemoteServicingStarted( void ) const override;
 
     /**
      * \brief   Returns true if service is configured and ready to start
      **/
-    virtual bool isRemoteServicingConfigured( void ) const;
+    virtual bool isRemoteServicingConfigured( void ) const override;
 
     /**
      * \brief   Returns true if remote service is enabled.
      **/
-    virtual bool isRemoteServicingEnabled( void ) const;
+    virtual bool isRemoteServicingEnabled( void ) const override;
 
     /**
      * \brief   Enables or disables remote service.
@@ -175,7 +181,7 @@ public:
      *          remote service in case if it is already started.
      * \param   enable  If true, the service is enabled. Otherwise, it is disabled.
      **/
-    virtual void enableRemoteServicing( bool enable );
+    virtual void enableRemoteServicing( bool enable ) override;
 
 protected:
     /**
@@ -185,13 +191,13 @@ protected:
      *                          The address contains service name and role name of service.
      * \return  Returns true if succeeded to start registration.
      **/
-    virtual bool registerService( const StubAddress & stubService );
+    virtual bool registerService( const StubAddress & stubService ) override;
 
     /**
      * \brief   Call to unregister previously registered server stub interface.
      * \param   stubService     The address of server stub service to unregister in system.
      **/
-    virtual void unregisterService( const StubAddress & stubService );
+    virtual void unregisterService( const StubAddress & stubService ) override;
 
     /**
      * \brief   Call to register client proxy of service. If system already has registered
@@ -201,13 +207,13 @@ protected:
      * \param   proxyService    The address of client proxy to register in system.
      * \return  Returns true if registration process started with success. Otherwise, it returns false.
      **/
-    virtual bool registerServiceClient( const ProxyAddress & proxyService );
+    virtual bool registerServiceClient( const ProxyAddress & proxyService ) override;
 
     /**
      * \brief   Call to unregister previously registered client prosy service.
      * \param   proxyService    The address of client proxy to unregister from system.
      **/
-    virtual void unregisterServiceClient( const ProxyAddress & proxyService );
+    virtual void unregisterServiceClient( const ProxyAddress & proxyService ) override;
 
 /************************************************************************/
 // IEServerConnectionHandler interface overrides
@@ -222,14 +228,14 @@ protected:
      * \return  Returns true if client connection can be accepted. To reject and close
      *          connection with client, the method should return false.
      **/
-    virtual bool canAcceptConnection( const SocketAccepted & clientSocket );
+    virtual bool canAcceptConnection( const SocketAccepted & clientSocket ) override;
 
     /**
      * \brief   Triggered, when lost connection with client.
      *          Passed clientSocket parameter specifies client socket, which lost connection.
      * \param   clientSocket    Client socket object, which lost connection.
      **/
-    virtual void connectionLost( SocketAccepted & clientSocket );
+    virtual void connectionLost( SocketAccepted & clientSocket ) override;
 
 /************************************************************************/
 // IETimerConsumer interface overrides.
@@ -241,7 +247,7 @@ protected:
      *          Overwrite method to receive messages.
      * \param   timer   The timer object that is expired.
      **/
-    virtual void processTimer( Timer & timer );
+    virtual void processTimer( Timer & timer ) override;
 
 /************************************************************************/
 // TEEventConsumer<DATA_CLASS, DATA_CLASS_TYPE> interface overrides.
@@ -253,7 +259,7 @@ protected:
      *                  default constructor and assigning operator.
      *                  This object is not used for IPC.
      **/
-    virtual void processEvent( const ServerServiceEventData & data );
+    virtual void processEvent( const ServerServiceEventData & data ) override;
 
 /************************************************************************/
 // IERemoteServiceConsumer
@@ -266,19 +272,19 @@ protected:
      * \param   out_listStubs   On output this will contain list of remote stub addresses connected with specified cookie value.
      * \param   out_lisProxies  On output this will contain list of remote proxy addresses connected with specified cookie value.
      **/
-    virtual void getServiceList( ITEM_ID cookie, TEArrayList<StubAddress, const StubAddress &> & OUT out_listStubs, TEArrayList<ProxyAddress, const ProxyAddress &> & OUT out_lisProxies ) const;
+    virtual void getServiceList( ITEM_ID cookie, TEArrayList<StubAddress, const StubAddress &> & OUT out_listStubs, TEArrayList<ProxyAddress, const ProxyAddress &> & OUT out_lisProxies ) const override;
 
     /**
      * \brief   Registers remote stub in the current process.
      * \param   stub    The address of remote stub server to register
      **/
-    virtual void registerRemoteStub( const StubAddress & stub );
+    virtual void registerRemoteStub( const StubAddress & stub ) override;
 
     /**
      * \brief   Registers remote proxy in the current process.
      * \param   proxy   The address of remote proxy client to register
      **/
-    virtual void registerRemoteProxy( const ProxyAddress & proxy );
+    virtual void registerRemoteProxy( const ProxyAddress & proxy ) override;
 
     /**
      * \brief   Unregisters remote stub in the current process.
@@ -286,7 +292,7 @@ protected:
      * \param   cookie  The cookie that has initiated unregister message.
      *                  The parameter is ignored if 'NEService::COOKIE_ANY'.
      **/
-    virtual void unregisterRemoteStub( const StubAddress & stub, ITEM_ID cookie /*= NEService::COOKIE_ANY*/ );
+    virtual void unregisterRemoteStub( const StubAddress & stub, ITEM_ID cookie /*= NEService::COOKIE_ANY*/ ) override;
 
     /**
      * \brief   Unregisters remote proxy in the current process.
@@ -294,20 +300,20 @@ protected:
      * \param   cookie  The cookie that has initiated unregister message.
      *                  The parameter is ignored if 'NEService::COOKIE_ANY'.
      **/
-    virtual void unregisterRemoteProxy( const ProxyAddress & proxy, ITEM_ID cookie /*= NEService::COOKIE_ANY*/ );
+    virtual void unregisterRemoteProxy( const ProxyAddress & proxy, ITEM_ID cookie /*= NEService::COOKIE_ANY*/ ) override;
 
     /**
      * \brief   Triggered when remote service has been started and there is a
      *          connection established with service.
      * \param   channel     The connection channel of remote routing service.
      **/
-    virtual void remoteServiceStarted( const Channel & channel );
+    virtual void remoteServiceStarted( const Channel & channel ) override;
 
     /**
      * \brief   Triggered when connection with remote service has been stopped.
      * \param   channel     The connection channel of remote routing service.
      **/
-    virtual void remoteServiceStopped( const Channel & channel );
+    virtual void remoteServiceStopped( const Channel & channel ) override;
 
     /**
      * \brief   Triggered when connection with remote routing service is lost.
@@ -315,7 +321,7 @@ protected:
      *          receive data, and there was not stop connection triggered.
      * \param   channel     The connection channel of remote routing service.
      **/
-    virtual void remoteServiceConnectionLost( const Channel & channel );
+    virtual void remoteServiceConnectionLost( const Channel & channel ) override;
 
 /************************************************************************/
 // IERemoteServiceHandler interface overrides
@@ -325,20 +331,20 @@ protected:
      * \brief   Triggered, when failed to send message.
      * \param   msgFailed   The message, which failed to send.
      **/
-    virtual void failedSendMessage( const RemoteMessage & msgFailed );
+    virtual void failedSendMessage( const RemoteMessage & msgFailed ) override;
 
     /**
      * \brief   Triggered, when failed to receive message.
      * \param   whichSource Indicated the source, which failed.
      **/
-    virtual void failedReceiveMessage( SOCKETHANDLE whichSource );
+    virtual void failedReceiveMessage( SOCKETHANDLE whichSource ) override;
 
     /**
      * \brief   Triggered, when failed to process message, i.e. the target for message processing was not found.
      *          In case of request message processing, the source should receive error notification.
      * \param   msgUnprocessed  Unprocessed message data.
      **/
-    virtual void failedProcessMessage( const RemoteMessage & msgUnprocessed );
+    virtual void failedProcessMessage( const RemoteMessage & msgUnprocessed ) override;
 
     /**
      * \brief   Triggered, when need to process received message.
@@ -346,7 +352,7 @@ protected:
      * \param   addrHost    The address of remote host, which sent message.
      * \param   whichSource The socket handle, which received message.
      **/
-    virtual void processReceivedMessage( const RemoteMessage & msgReceived, const NESocket::InterlockedValue & addrHost, SOCKETHANDLE whichSource );
+    virtual void processReceivedMessage( const RemoteMessage & msgReceived, const NESocket::SocketAddress & addrHost, SOCKETHANDLE whichSource ) override;
 
 /************************************************************************/
 // DispatcherThread overrides
@@ -359,7 +365,7 @@ protected:
      *          Override if logic should be changed.
      * \return	Returns true if Exit Event is signaled.
      **/
-    virtual bool runDispatcher( void );
+    virtual bool runDispatcher( void ) override;
 
 /************************************************************************/
 // IEEventRouter interface overrides
@@ -374,7 +380,7 @@ protected:
      * \param	eventElem	Event object to post
      * \return	In this class it always returns true.
      **/
-    virtual bool postEvent( Event & eventElem );
+    virtual bool postEvent( Event & eventElem ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods.
@@ -390,7 +396,7 @@ private:
      * \param   addrClient  The client host to check connection acceptance possibility
      * \return  Returns true if the client connection can be accepted.
      **/
-    bool canAcceptConnection( const NESocket::InterlockedValue & addrConnect ) const;
+    bool canAcceptConnection( const NESocket::SocketAddress & addrConnect ) const;
 
     /**
      * \brief   Called to start connection procedure to accept client connections.
@@ -412,23 +418,22 @@ private:
 // Member variables
 //////////////////////////////////////////////////////////////////////////////
 private:
-    ServerConnection            mServerConnection;      //!< The instance of server connection object.
-    Timer                       mTimerConnect;          //!< The timer object to trigger in case if failed to create server socket.
-    ServerSendThread            mThreadSend;            //!< The thread to send messages to clients
-    ServerReceiveThread         mThreadReceive;         //!< The thread to receive messages from clients
-    ServiceRegistry             mServiceRegistry;       //!< The service registry map to track stub-proxy connections
-    bool                        mIsServiceEnabled;      //!< The flag indicating whether the server servicing is enabled or not.
-    String                      mConfigFile;            //!< The full path of connection configuration file.
-    StringArray                 mWhiteList;             //!< The list of enabled fixed client hosts.
-    StringArray                 mBlackList;             //!< The list of disabled fixes client hosts.
-    mutable CriticalSection     mLock;                  //!< The synchronization object to be accessed from different threads.
+    ServerConnection    mServerConnection;      //!< The instance of server connection object.
+    Timer               mTimerConnect;          //!< The timer object to trigger in case if failed to create server socket.
+    ServerSendThread    mThreadSend;            //!< The thread to send messages to clients
+    ServerReceiveThread mThreadReceive;         //!< The thread to receive messages from clients
+    ServiceRegistry     mServiceRegistry;       //!< The service registry map to track stub-proxy connections
+    bool                mIsServiceEnabled;      //!< The flag indicating whether the server servicing is enabled or not.
+    String              mConfigFile;            //!< The full path of connection configuration file.
+    StringArray         mWhiteList;             //!< The list of enabled fixed client hosts.
+    StringArray         mBlackList;             //!< The list of disabled fixes client hosts.
+    mutable ResourceLock    mLock;              //!< The synchronization object to be accessed from different threads.
 
 //////////////////////////////////////////////////////////////////////////////
 // Forbidden calls.
 //////////////////////////////////////////////////////////////////////////////
 private:
-    ServerService( const ServerService & /*src*/ );
-    const ServerService & operator = ( const ServerService & /*src*/ );
+    DECLARE_NOCOPY_NOMOVE( ServerService );
 };
 
 //////////////////////////////////////////////////////////////////////////////
@@ -440,17 +445,17 @@ inline ServerService & ServerService::self( void )
     return (*this);
 }
 
-inline bool ServerService::isAddressInWhiteList(const NESocket::InterlockedValue & addrClient) const
+inline bool ServerService::isAddressInWhiteList(const NESocket::SocketAddress & addrClient) const
 {
-    return mWhiteList.find(addrClient.getHostAddress()) != -1;
+    return (mWhiteList.isEmpty() == false ? mWhiteList.find(addrClient.getHostAddress()) != -1 : false);
 }
 
-inline bool ServerService::isAddressInBlackList(const NESocket::InterlockedValue & addrClient) const
+inline bool ServerService::isAddressInBlackList(const NESocket::SocketAddress & addrClient) const
 {
-    return mBlackList.find(addrClient.getHostAddress()) != -1;
+    return mBlackList.isEmpty() == false ? mBlackList.find(addrClient.getHostAddress()) != -1 : false;
 }
 
-inline void ServerService::addWhiteList(const NESocket::InterlockedValue & addrClient)
+inline void ServerService::addWhiteList(const NESocket::SocketAddress & addrClient)
 {
     if ( mWhiteList.find(addrClient.getHostAddress()) == -1 )
     {
@@ -458,7 +463,7 @@ inline void ServerService::addWhiteList(const NESocket::InterlockedValue & addrC
     }
 }
 
-inline void ServerService::addBlackList(const NESocket::InterlockedValue & addrClient)
+inline void ServerService::addBlackList(const NESocket::SocketAddress & addrClient)
 {
     if ( mBlackList.find(addrClient.getHostAddress()) == -1 )
     {
@@ -466,14 +471,12 @@ inline void ServerService::addBlackList(const NESocket::InterlockedValue & addrC
     }
 }
 
-inline void ServerService::removeWhiteList(const NESocket::InterlockedValue & addrClient)
+inline void ServerService::removeWhiteList(const NESocket::SocketAddress & addrClient)
 {
     mWhiteList.remove( addrClient.getHostAddress(), 0);
 }
 
-inline void ServerService::removeBlackList(const NESocket::InterlockedValue & addrClient)
+inline void ServerService::removeBlackList(const NESocket::SocketAddress & addrClient)
 {
     mBlackList.remove( addrClient.getHostAddress(), 0);
 }
-
-#endif  // MCROUTER_TCP_SERVERSERVICE_HPP

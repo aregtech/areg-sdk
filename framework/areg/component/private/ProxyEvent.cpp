@@ -1,7 +1,15 @@
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/component/private/ProxyEvent.cpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, Proxy Event class implementation.
  *
  ************************************************************************/
@@ -28,19 +36,12 @@ ProxyEvent::ProxyEvent( const ProxyAddress & targetProxy, Event::eEventType even
     : StreamableEvent       (eventType)
     , mTargetProxyAddress   (targetProxy)
 {
-    ; // do nothing
 }
 
 ProxyEvent::ProxyEvent( const IEInStream & stream )
     : StreamableEvent       ( stream )
     , mTargetProxyAddress   ( stream )
 {
-    ; // do nothing
-}
-
-ProxyEvent::~ProxyEvent( void )
-{
-    ; // do nothing
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -48,13 +49,13 @@ ProxyEvent::~ProxyEvent( void )
 //////////////////////////////////////////////////////////////////////////
 void ProxyEvent::deliverEvent( void )
 {
-    if ( mTargetThread == NULL )
+    if ( mTargetThread == nullptr )
     {
         Thread * thread = Thread::findThreadByName(mTargetProxyAddress.getThread());
-        registerForThread( thread != NULL ? RUNTIME_CAST(thread, DispatcherThread) : NULL );
+        registerForThread( thread != nullptr ? RUNTIME_CAST(thread, DispatcherThread) : nullptr );
     }
 
-    if ( mTargetThread != NULL )
+    if ( mTargetThread != nullptr )
     {
         StreamableEvent::deliverEvent();
     }
@@ -89,12 +90,6 @@ IEProxyEventConsumer::IEProxyEventConsumer( const ProxyAddress & proxy )
     : ThreadEventConsumerBase   ( )
     , mProxyAddress             ( proxy )
 {
-    ; // do nothing
-}
-
-IEProxyEventConsumer::~IEProxyEventConsumer( void )
-{
-    ; // do nothing
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -104,18 +99,18 @@ inline void IEProxyEventConsumer::localProcessResponseEvent(ResponseEvent & even
 {
     switch (eventResponse.getDataType() )
     {
-    case NEService::REQUEST_DATA_TYPE:
-    case NEService::RESPONSE_DATA_TYPE:
+    case NEService::eMessageDataType::RequestDataType:      // fall through
+    case NEService::eMessageDataType::ResponseDataType:
         processResponseEvent(eventResponse);
         break;
 
-    case NEService::ATTRIBUTE_DATA_TYPE:
+    case NEService::eMessageDataType::AttributeDataType:
         processAttributeEvent(eventResponse);
         break;
 
-    case NEService::SERVICE_DATA_TYPE:      // fall through
-    case NEService::UNDEFINED_DATA_TYPE:
-        ASSERT(false);  // unexpected here
+    case NEService::eMessageDataType::ServiceDataType:      // fall through
+    case NEService::eMessageDataType::UndefinedDataType:
+        ASSERT(false);
         break;
 
     default:
@@ -125,7 +120,7 @@ inline void IEProxyEventConsumer::localProcessResponseEvent(ResponseEvent & even
 
 inline void IEProxyEventConsumer::localProcessConnectEvent( ProxyConnectEvent & eventConnect )
 {
-    if ( eventConnect.getResponseId() == NEService::SI_SERVICE_CONNECTION_NOTIFY )
+    if ( eventConnect.getResponseId() == static_cast<unsigned int>(NEService::eFuncIdRange::ServiceNotifyConnection) )
     {
         serviceConnectionUpdated( eventConnect.getStubAddress(), eventConnect.getTargetProxy().getChannel(), eventConnect.getConnectionStatus() );
     }
@@ -138,34 +133,34 @@ inline void IEProxyEventConsumer::localProcessConnectEvent( ProxyConnectEvent & 
 void IEProxyEventConsumer::startEventProcessing( Event & eventElem )
 {
     ProxyEvent * proxyEvent = RUNTIME_CAST(&eventElem, ProxyEvent);
-    if ( proxyEvent != NULL )
+    if ( proxyEvent != nullptr )
     {
         const ProxyAddress & addrProxy = proxyEvent->getTargetProxy();
         if ( static_cast<const ServiceAddress &>(addrProxy) == static_cast<const ServiceAddress &>(mProxyAddress) )
         {
             ProxyConnectEvent * eventConnect  = RUNTIME_CAST(&eventElem, ProxyConnectEvent);
-            if ( eventConnect != NULL )
+            if ( eventConnect != nullptr )
             {
                 localProcessConnectEvent(*eventConnect);
             }
             else if ( addrProxy.getChannel() == mProxyAddress.getChannel() )
             {
                 ResponseEvent * eventResponse = RUNTIME_CAST(&eventElem, ResponseEvent);
-                if ( eventResponse != NULL )
+                if ( eventResponse != nullptr )
                 {
                     localProcessResponseEvent(*eventResponse);
                 }
                 else
                 {
                     ServiceResponseEvent* eventServiceResponse = RUNTIME_CAST(&eventElem, ServiceResponseEvent);
-                    if ( eventServiceResponse != NULL )
+                    if ( eventServiceResponse != nullptr )
                     {
                         processResponseEvent(*eventServiceResponse);
                     }
                     else
                     {
                         ProxyEvent* proxyEvent = RUNTIME_CAST(&eventElem, ProxyEvent);
-                        if (proxyEvent != NULL)
+                        if (proxyEvent != nullptr)
                             processProxyEvent(*proxyEvent);
                         else
                             processGenericEvent(eventElem);

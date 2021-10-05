@@ -1,9 +1,16 @@
-#ifndef AREG_COMPONENT_IEPROXYLISTENER_HPP
-#define AREG_COMPONENT_IEPROXYLISTENER_HPP
+#pragma once
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/component/IEProxyListener.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, Proxy Listener interface
  *
  ************************************************************************/
@@ -37,13 +44,13 @@ public:
     /**
      * \brief   Protected default constructor.
      **/
-    IEProxyListener( void );
+    IEProxyListener( void ) = default;
 
 public:
     /**
      * \brief   Destructor
      **/
-    virtual ~IEProxyListener( void );
+    virtual ~IEProxyListener( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Override operations
@@ -98,8 +105,5 @@ public:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    IEProxyListener( const IEProxyListener & /*src*/ );
-    const IEProxyListener & operator = ( const IEProxyListener & /*src*/ );
+    DECLARE_NOCOPY_NOMOVE( IEProxyListener );
 };
-
-#endif  // AREG_COMPONENT_IEPROXYLISTENER_HPP

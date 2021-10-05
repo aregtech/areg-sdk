@@ -1,7 +1,15 @@
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/component/private/RequestEvents.cpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, Generic Local and Remote Request 
  *              Event object for local and remote communication
  ************************************************************************/
@@ -25,10 +33,9 @@ RequestEvent::RequestEvent( const ProxyAddress & fromSource
                           , const StubAddress & toTarget
                           , unsigned int reqId
                           , Event::eEventType eventType )
-    : ServiceRequestEvent(fromSource, toTarget, reqId, NEService::REQUEST_CALL, eventType)
-    , mData(reqId, (eventType & Event::EventExternal) != 0 ? EventDataStream::EventDataExternal : EventDataStream::EventDataInternal)
+    : ServiceRequestEvent(fromSource, toTarget, reqId, NEService::eRequestType::CallFunction, eventType)
+    , mData(reqId, Event::isExternal(eventType) ? EventDataStream::eEventData::EventDataExternal : EventDataStream::eEventData::EventDataInternal)
 {
-    ; // do nothing
 }
 
 RequestEvent::RequestEvent( const EventDataStream & args
@@ -36,23 +43,16 @@ RequestEvent::RequestEvent( const EventDataStream & args
                           , const StubAddress& toTarget
                           , unsigned int reqId
                           , Event::eEventType eventType
-                          , const char* name /*= NULL*/ )
-    : ServiceRequestEvent(fromSource, toTarget, reqId, NEService::REQUEST_CALL, eventType)
+                          , const char* name /*= nullptr*/ )
+    : ServiceRequestEvent(fromSource, toTarget, reqId, NEService::eRequestType::CallFunction, eventType)
     , mData(reqId, args, name)
 {
-    ; // do nothing
 }
 
 RequestEvent::RequestEvent( const IEInStream & stream )
     : ServiceRequestEvent( stream )
     , mData( stream )
 {
-    ; // do nothing
-}
-
-RequestEvent::~RequestEvent( void )
-{
-    ; // do nothing
 }
 
 const IEInStream & RequestEvent::readStream(const IEInStream & stream)
@@ -82,30 +82,22 @@ IMPLEMENT_RUNTIME_EVENT(LocalRequestEvent, RequestEvent)
 // RequestEvent class, Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
 LocalRequestEvent::LocalRequestEvent( const ProxyAddress & fromSource, const StubAddress & toTarget, unsigned int reqId )
-    : RequestEvent(fromSource, toTarget, reqId, Event::EventLocalServiceRequest)
+    : RequestEvent(fromSource, toTarget, reqId, Event::eEventType::EventLocalServiceRequest)
 {
-    ; // do nothing
 }
 
 LocalRequestEvent::LocalRequestEvent( const EventDataStream & args
-                                        , const ProxyAddress & fromSource
-                                        , const StubAddress & toTarget
-                                        , unsigned int reqId
-                                        , const char* name /*= NULL*/ )
-    : RequestEvent(args, fromSource, toTarget, reqId, Event::EventLocalServiceRequest, name)
+                                    , const ProxyAddress & fromSource
+                                    , const StubAddress & toTarget
+                                    , unsigned int reqId
+                                    , const char* name /*= nullptr*/ )
+    : RequestEvent(args, fromSource, toTarget, reqId, Event::eEventType::EventLocalServiceRequest, name)
 {
-    ; // do nothing
 }
 
 LocalRequestEvent::LocalRequestEvent( const IEInStream & stream )
     : RequestEvent ( stream)
 {
-    ; // do nothing
-}
-
-LocalRequestEvent::~LocalRequestEvent( void )
-{
-    ; // do nothing
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -121,28 +113,21 @@ IMPLEMENT_RUNTIME_EVENT(RemoteRequestEvent, RequestEvent)
 // RequestEvent class, Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
 RemoteRequestEvent::RemoteRequestEvent( const ProxyAddress & fromSource, const StubAddress & toTarget, unsigned int reqId )
-    : RequestEvent(fromSource, toTarget, reqId, Event::EventRemoteServiceRequest)
+    : RequestEvent(fromSource, toTarget, reqId, Event::eEventType::EventRemoteServiceRequest)
 {
-    ; // do nothing
 }
 
 RemoteRequestEvent::RemoteRequestEvent( const EventDataStream & args
                                           , const ProxyAddress & fromSource
                                           , const StubAddress & toTarget
                                           , unsigned int reqId
-                                          , const char* name /*= NULL*/ )
-    : RequestEvent(args, fromSource, toTarget, reqId, Event::EventRemoteServiceRequest, name)
+                                          , const char* name /*= nullptr*/ )
+    : RequestEvent(args, fromSource, toTarget, reqId, Event::eEventType::EventRemoteServiceRequest, name)
 {
-    ; // do nothing
 }
 
 RemoteRequestEvent::RemoteRequestEvent( const IEInStream & stream )
     : RequestEvent ( stream)
-{
-    ASSERT(getData().getDataStream().isExternalDataStream());
-}
-
-RemoteRequestEvent::~RemoteRequestEvent( void )
 {
     ASSERT(getData().getDataStream().isExternalDataStream());
 }
@@ -166,18 +151,11 @@ NotifyRequestEvent::NotifyRequestEvent( const ProxyAddress & fromProxy
                                           , Event::eEventType eventType)
     : ServiceRequestEvent ( fromProxy, toStub, msgId, reqType, eventType)
 {
-    ; // do nothing
 }
 
 NotifyRequestEvent::NotifyRequestEvent(const IEInStream & stream)
     : ServiceRequestEvent ( stream )
 {
-    ; // do nothing
-}
-
-NotifyRequestEvent::~NotifyRequestEvent(void)
-{
-    ; // do nothing
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -196,20 +174,13 @@ LocalNotifyRequestEvent::LocalNotifyRequestEvent( const ProxyAddress & fromProxy
                                                     , const StubAddress & toStub
                                                     , unsigned int msgId
                                                     , NEService::eRequestType reqType )
-    : NotifyRequestEvent  ( fromProxy, toStub, msgId, reqType, Event::EventLocalNotifyRequest)
+    : NotifyRequestEvent  ( fromProxy, toStub, msgId, reqType, Event::eEventType::EventLocalNotifyRequest)
 {
-    ; // do nothing
 }
 
 LocalNotifyRequestEvent::LocalNotifyRequestEvent( const IEInStream & stream )
     : NotifyRequestEvent ( stream )
 {
-    ; // do nothing
-}
-
-LocalNotifyRequestEvent::~LocalNotifyRequestEvent( void )
-{
-    ; // do nothing
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -228,18 +199,11 @@ RemoteNotifyRequestEvent::RemoteNotifyRequestEvent( const ProxyAddress & fromPro
                                                       , const StubAddress & toStub
                                                       , unsigned int msgId
                                                       , NEService::eRequestType reqType )
-    : NotifyRequestEvent  ( fromProxy, toStub, msgId, reqType, Event::EventRemoteNotifyRequest)
+    : NotifyRequestEvent  ( fromProxy, toStub, msgId, reqType, Event::eEventType::EventRemoteNotifyRequest)
 {
-    ; // do nothing
 }
 
 RemoteNotifyRequestEvent::RemoteNotifyRequestEvent( const IEInStream & stream )
     : NotifyRequestEvent ( stream )
 {
-    ; // do nothing
-}
-
-RemoteNotifyRequestEvent::~RemoteNotifyRequestEvent( void )
-{
-    ; // do nothing
 }

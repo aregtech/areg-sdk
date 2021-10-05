@@ -1,9 +1,16 @@
-#ifndef AREG_COMPONENT_COMPONENTADDRESS_HPP
-#define AREG_COMPONENT_COMPONENTADDRESS_HPP
+#pragma once
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/component/ComponentAddress.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, Component Address class.
  *              This class defines address object of component.
  *              Every created component has address to be able to find
@@ -17,6 +24,8 @@
 
 #include "areg/base/ThreadAddress.hpp"
 #include "areg/base/String.hpp"
+
+#include <utility>
 
 /************************************************************************
  * Dependencies
@@ -44,13 +53,6 @@ class AREG_API ComponentAddress
 /************************************************************************/
 // Static variables
 /************************************************************************/
-
-    /**
-     * \brief   Constant. The name of invalid component.
-     *          Do not use this name as role name for component.
-     **/
-    static const char* const        INVALID_COMPONENT_NAME  /*= "INVALID_COMPONENT_NAME"*/;
-
 public:
     /**
      * \brief   Constant. Defined invalid component.
@@ -78,12 +80,12 @@ public:
      * \brief   From given component path creates component address and returns pointer
      *          to remaining part of path.
      * \param   componentPath   String, containing component path
-     * \param   out_nextPart    If not NULL, on output it will contain remaining part after
+     * \param   out_nextPart    If not nullptr, on output it will contain remaining part after
      *                          component address in the path.
      * \return  Returns parsed and instantiated component address object. 
      *          Verify validation before use.
      **/
-    static ComponentAddress convPathToAddress( const char* componentPath, const char ** out_nextPart = NULL );
+    static ComponentAddress convPathToAddress( const char* componentPath, const char ** out_nextPart = nullptr );
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
@@ -133,6 +135,13 @@ public:
      * \param   src     The source of data to copy.
      **/
     ComponentAddress( const ComponentAddress & src );
+
+    /**
+     * \brief   Copy constructor.
+     * \param   src     The source of data to copy.
+     **/
+    ComponentAddress( ComponentAddress && src ) noexcept;
+
     /**
      * \brief   Initialization constructor.
      *          De-serialize component address information stored in stream.
@@ -142,7 +151,7 @@ public:
     /**
      * \brief   Destructor.
      **/
-    ~ComponentAddress( void );
+    ~ComponentAddress( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
@@ -155,12 +164,17 @@ public:
     /**
      * \brief   Converting operator.
      **/
-    inline operator unsigned int ( void ) const;
+    inline explicit operator unsigned int ( void ) const;
 
     /**
-     * \brief   Assigning operator. Copies address data from given source.
+     * \brief   Copies address data from given source.
      **/
-    inline const ComponentAddress & operator = ( const ComponentAddress & src );
+    inline ComponentAddress & operator = ( const ComponentAddress & src );
+
+    /**
+     * \brief   Copies address data from given source.
+     **/
+    inline ComponentAddress & operator = ( ComponentAddress && src ) noexcept;
 
     /**
      * \brief   Comparing operator. Returns true if 2 addresses are equal.
@@ -216,11 +230,27 @@ public:
     /**
      * \brief	Parses component path string and retrieves component address data from path.
      * \param	pathComponent   The component path as a string.
-     * \param	out_nextPart	If not a NULL, on output this will contain remaining
+     * \param	out_nextPart	If not a nullptr, on output this will contain remaining
      *                          part after getting component path. On output usually
-     *                          should be NULL.
+     *                          should be nullptr.
      **/
-    void convFromString(const char * pathComponent, const char** out_nextPart = NULL);
+    void convFromString(const char * pathComponent, const char** out_nextPart = nullptr);
+
+//////////////////////////////////////////////////////////////////////////
+// Hidden members
+//////////////////////////////////////////////////////////////////////////
+private:
+/************************************************************************/
+// Private methods
+/************************************************************************/
+    /**
+     * \brief   Default constructor. Cannot be accessed. For internal use only.
+     **/
+    ComponentAddress( void );
+    /**
+     * \brief   Returns the calculated numeric value of specified component address object.
+     **/
+    static unsigned int _magicNumber( const ComponentAddress & addrComp );
 
 private:
 /************************************************************************/
@@ -238,29 +268,13 @@ private:
      * \brief   The numeric value of Component Address object
      **/
     unsigned int    mMagicNum;
-
-//////////////////////////////////////////////////////////////////////////
-// Private / Hidden members
-//////////////////////////////////////////////////////////////////////////
-private:
-/************************************************************************/
-// Private methods
-/************************************************************************/
-    /**
-     * \brief   Default constructor. Cannot be accessed. For internal use only.
-     **/
-    ComponentAddress( void );
-    /**
-     * \brief   Returns the calculated numeric value of specified component address object.
-     **/
-    static unsigned int _magicNumber( const ComponentAddress & addrComp );
 };
 
 //////////////////////////////////////////////////////////////////////////
 // ComponentAddress class inline function implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline const ComponentAddress& ComponentAddress::operator = ( const ComponentAddress& src )
+inline ComponentAddress & ComponentAddress::operator = ( const ComponentAddress& src )
 {
     mThreadAddress  = src.mThreadAddress;
     mRoleName       = src.mRoleName;
@@ -269,7 +283,20 @@ inline const ComponentAddress& ComponentAddress::operator = ( const ComponentAdd
     return (*this);
 }
 
-inline bool ComponentAddress::operator == ( const ComponentAddress& other ) const
+inline ComponentAddress & ComponentAddress::operator = ( ComponentAddress && src ) noexcept
+{
+    if (this != &src)
+    {
+        mThreadAddress  = std::move(src.mThreadAddress);
+        mRoleName       = std::move(src.mRoleName);
+        mMagicNum       = src.mMagicNum;
+        src.mMagicNum   = NEMath::CHECKSUM_IGNORE;
+    }
+
+    return (*this);
+}
+
+inline bool ComponentAddress::operator == ( const ComponentAddress & other ) const
 {
     return (mThreadAddress == other.mThreadAddress) && (mRoleName == other.mRoleName);
 }
@@ -309,5 +336,3 @@ inline IEOutStream & operator << (IEOutStream & stream, const ComponentAddress &
     stream << output.mThreadAddress;
     return stream;
 }
-
-#endif  // AREG_COMPONENT_COMPONENTADDRESS_HPP

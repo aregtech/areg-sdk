@@ -1,18 +1,18 @@
 //////////////////////////////////////////////////////////////////////////
 // Begin generate generated/ConnectionManagerClientBase.hpp file
 //////////////////////////////////////////////////////////////////////////
-#ifndef  GENERATED_CONNECTIONMANAGERCLIENTBASE_HPP
-#define  GENERATED_CONNECTIONMANAGERCLIENTBASE_HPP
-/************************************************************************
- * (c) copyright    2021
- *                  Create by AREG SDK code generator tool from source ConnectionManager.
- * Generated at     04.07.2021  04:30:00 GMT+02:00 
- ************************************************************************/
+#pragma once
 
 /************************************************************************
+ * (c) copyright    2021
+ *
+ * Generated at     30.09.2021  01:22:14 GMT+02:00 
+ *                  Create by AREG SDK code generator tool from source ConnectionManager.
+ *
  * \file            generated/ConnectionManagerClientBase.hpp
  * \ingroup         ConnectionManager Service Interface
- * \brief           This is an automatic generated code of ConnectionManager Service Interface Client base class declaration.
+ * \brief           This is an automatic generated code of ConnectionManager
+ *                  Service Interface Client base class declaration.
  ************************************************************************/
 
 /************************************************************************
@@ -52,9 +52,9 @@ protected:
      *          Specifies used service and owner thread.
      * \param   roleName    The role name assigned to ConnectionManager servicing component object.
      * \param   ownerThread The name of component owner thread to dispatch messages.
-     *                      If NULL, all messages are dispatched in current component thread.
+     *                      If nullptr, all messages are dispatched in current component thread.
      **/
-    ConnectionManagerClientBase( const char* roleName, const char * ownerThread = static_cast<const char *>(NULL) );
+    ConnectionManagerClientBase( const char* roleName, const char * ownerThread = nullptr );
 
     /**
      * \brief   Initialize ConnectionManager Service Interface client object.
@@ -350,7 +350,7 @@ protected:
      *          i.e. if passed Proxy address is equal to the Proxy object that client has.
      *          If Proxy objects are not equal, it should return false;
      **/
-    virtual bool serviceConnected( bool isConnected, ProxyBase & proxy );
+    virtual bool serviceConnected( bool isConnected, ProxyBase & proxy ) override;
 
 /************************************************************************/
 // ConnectionManagerClientBase Error Handling overrides
@@ -379,7 +379,7 @@ protected:
 
     /**
      * \brief  Returns pointer to client dispatcher thread where the messages are dispatched.
-     *         The function can return NULL if Proxy was not instantiated yet.
+     *         The function can return nullptr if Proxy was not instantiated yet.
      **/
     DispatcherThread * getDispatcherThread( void );
      
@@ -427,7 +427,7 @@ private:
      * \brief   Is processing notification event calls.
      * \param   eventElem   Notification Event object to process
      **/
-    virtual void processNotificationEvent( NotificationEvent & eventElem );
+    virtual void processNotificationEvent( NotificationEvent & eventElem ) override;
     
 /************************************************************************/
 // ConnectionManagerClientBase hidden methods
@@ -468,9 +468,8 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    ConnectionManagerClientBase( void );
-    ConnectionManagerClientBase( const ConnectionManagerClientBase & /* src */ );
-    const ConnectionManagerClientBase & operator = ( const ConnectionManagerClientBase & /* src */ );
+    ConnectionManagerClientBase( void ) = delete;
+    DECLARE_NOCOPY_NOMOVE( ConnectionManagerClientBase );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -489,31 +488,31 @@ inline unsigned int ConnectionManagerClientBase::getCurrentSequenceNr( void ) co
 
 inline void ConnectionManagerClientBase::clearAllNotifications( void )
 {
-    ASSERT(mProxy != NULL);
+    ASSERT(mProxy != nullptr);
     mProxy->clearAllNotifications(static_cast<IENotificationEventConsumer &>(self()));
 }
 
 inline bool ConnectionManagerClientBase::isConnected( void ) const
 {
-    ASSERT(mProxy != NULL);
+    ASSERT(mProxy != nullptr);
     return mIsConnected;
 }
 
 inline bool ConnectionManagerClientBase::isNotificationAssigned( NEConnectionManager::eMessageIDs msgId ) const
 {
-    ASSERT(mProxy != NULL);
+    ASSERT(mProxy != nullptr);
     return mProxy->hasNotificationListener(static_cast<unsigned int>(msgId));
 }
 
 inline const String & ConnectionManagerClientBase::getServiceName( void ) const
 {
-    ASSERT(mProxy != NULL);
+    ASSERT(mProxy != nullptr);
     return mProxy->getProxyAddress().getServiceName();
 }
     
 inline const Version & ConnectionManagerClientBase::getServiceVersion( void ) const
 {
-    ASSERT(mProxy != NULL);
+    ASSERT(mProxy != nullptr);
     return mProxy->getProxyAddress().getServiceVersion();
 }
 
@@ -523,18 +522,18 @@ inline const Version & ConnectionManagerClientBase::getServiceVersion( void ) co
 
 inline bool ConnectionManagerClientBase::isConnectionListValid( void ) const
 {
-    ASSERT(mProxy != NULL);
+    ASSERT(mProxy != nullptr);
    return mProxy->isConnectionListValid( );
 }
 inline const NEConnectionManager::MapConnection & ConnectionManagerClientBase::getConnectionList( NEService::eDataStateType & state ) const
 {
-    ASSERT(mProxy != NULL);
+    ASSERT(mProxy != nullptr);
     return mProxy->getConnectionList( state );
 }
 
 inline void ConnectionManagerClientBase::notifyOnConnectionListUpdate( bool notify /* = true */ )
 {
-    notifyOn( NEConnectionManager::MSG_ID_ConnectionList, notify, false );
+    ConnectionManagerClientBase::notifyOn( NEConnectionManager::eMessageIDs::MsgId_ConnectionList, notify, false );
 }
 
 /************************************************************************
@@ -543,19 +542,19 @@ inline void ConnectionManagerClientBase::notifyOnConnectionListUpdate( bool noti
 
 inline unsigned int ConnectionManagerClientBase::requestConnet( const String & nickName, const DateTime & dateTime )
 {
-    ASSERT(mProxy != NULL);
+    ASSERT(mProxy != nullptr);
     return mProxy->requestConnet( static_cast<IENotificationEventConsumer &>(self()), nickName, dateTime );
 }
 
 inline unsigned int ConnectionManagerClientBase::requestRegisterConnection( const String & nickName, unsigned int cookie, unsigned int connectCookie, const DateTime & dateRegister )
 {
-    ASSERT(mProxy != NULL);
+    ASSERT(mProxy != nullptr);
     return mProxy->requestRegisterConnection( static_cast<IENotificationEventConsumer &>(self()), nickName, cookie, connectCookie, dateRegister );
 }
 
 inline void ConnectionManagerClientBase::requestDiconnect( const String & nickName, unsigned int cookie, const DateTime & dateTime )
 {
-    ASSERT(mProxy != NULL);
+    ASSERT(mProxy != nullptr);
     mProxy->requestDiconnect( nickName, cookie, dateTime );
 }
 
@@ -565,12 +564,12 @@ inline void ConnectionManagerClientBase::requestDiconnect( const String & nickNa
 
 inline void ConnectionManagerClientBase::notifyOnResponseConnect( bool notify /* = true */ )
 {
-    notifyOn(NEConnectionManager::MSG_ID_responseConnect, notify, false);
+    ConnectionManagerClientBase::notifyOn(NEConnectionManager::eMessageIDs::MsgId_responseConnect, notify, false);
 }
 
 inline void ConnectionManagerClientBase::notifyOnResponseRegisterConnection( bool notify /* = true */ )
 {
-    notifyOn(NEConnectionManager::MSG_ID_responseRegisterConnection, notify, false);
+    ConnectionManagerClientBase::notifyOn(NEConnectionManager::eMessageIDs::MsgId_responseRegisterConnection, notify, false);
 }
 
 /************************************************************************
@@ -579,17 +578,17 @@ inline void ConnectionManagerClientBase::notifyOnResponseRegisterConnection( boo
 
 inline void ConnectionManagerClientBase::notifyOnBroadcastConnectionUpdated( bool notify /* = true */ )
 {
-    notifyOn(NEConnectionManager::MSG_ID_broadcastConnectionUpdated, notify, false);
+    ConnectionManagerClientBase::notifyOn(NEConnectionManager::eMessageIDs::MsgId_broadcastConnectionUpdated, notify, false);
 }
 
 inline void ConnectionManagerClientBase::notifyOnBroadcastClientConnected( bool notify /* = true */ )
 {
-    notifyOn(NEConnectionManager::MSG_ID_broadcastClientConnected, notify, false);
+    ConnectionManagerClientBase::notifyOn(NEConnectionManager::eMessageIDs::MsgId_broadcastClientConnected, notify, false);
 }
 
 inline void ConnectionManagerClientBase::notifyOnBroadcastClientDisconnected( bool notify /* = true */ )
 {
-    notifyOn(NEConnectionManager::MSG_ID_broadcastClientDisconnected, notify, false);
+    ConnectionManagerClientBase::notifyOn(NEConnectionManager::eMessageIDs::MsgId_broadcastClientDisconnected, notify, false);
 }
 
 inline const ConnectionManagerProxy * ConnectionManagerClientBase::getProxy( void ) const
@@ -599,11 +598,9 @@ inline const ConnectionManagerProxy * ConnectionManagerClientBase::getProxy( voi
 
 inline const String & ConnectionManagerClientBase::getServiceRole( void ) const
 {
-    ASSERT(mProxy != NULL);
+    ASSERT(mProxy != nullptr);
     return mProxy->getProxyAddress().getRoleName();
 }
-
-#endif   // GENERATED_CONNECTIONMANAGERCLIENTBASE_HPP
 
 //////////////////////////////////////////////////////////////////////////
 // End generate generated/ConnectionManagerClientBase.hpp file

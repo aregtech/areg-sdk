@@ -3,7 +3,12 @@
 // Author      : Artak Avetyan
 // Version     :
 // Copyright   : Aregtech (c) 2021
-// Description : Hello World in C++, Ansi-style
+// Description : This project demonstrates use of file objects. It creates 
+//               text and binary files, it shows how files can be copied, 
+//               use of masks in file names, relative and full paths. 
+//               For example, how the mask %time% (timestamp) or %appname%
+//               (process name) can be used.In the areg framework file objects
+//               are also streaming objects.
 //============================================================================
 
 #include "areg/base/GEGlobal.h"
@@ -25,7 +30,7 @@ static void writeText(FileBase & file)
 
     if (file.isValid())
     {
-        printf( "Writing text to file [ %s ] ...\n", file.getName( ) );
+        printf( "Writing text to file [ %s ] ...\n", file.getName( ).getString() );
         // Write some texts.
         file.write( String( "!!!Hello World!!!" ) );
         file << "This is some text.";
@@ -33,7 +38,7 @@ static void writeText(FileBase & file)
     }
     else
     {
-        std::cerr << "Invalid file " << file.getName() << ". Cannot write text ..." << std::endl;
+        std::cerr << "Invalid file " << file.getName().getString() << ". Cannot write text ..." << std::endl;
     }
 }
 
@@ -43,7 +48,7 @@ static void writeLines(FileBase & file)
 
     if ( file.isValid( ) )
     {
-        printf( "Writing lines of text to file [ %s ] ...\n", file.getName( ) );
+        printf( "Writing lines of text to file [ %s ] ...\n", file.getName( ).getString() );
         // Write some texts.
         file.writeLine( String( "!!!Hello World!!!" ) );
         file.writeLine( "This is some text." );
@@ -51,7 +56,7 @@ static void writeLines(FileBase & file)
     }
     else
     {
-        std::cerr << "Invalid file " << file.getName( ) << ". Cannot write text ..." << std::endl;
+        std::cerr << "Invalid file " << file.getName( ).getString() << ". Cannot write text ..." << std::endl;
     }
 }
 
@@ -68,13 +73,13 @@ static void dumpText(FileBase & file)
         file >> text;
 
         // dump the content
-        printf( "BEGIN File [ %s ] content >>>\n", file.getName( ) );
+        printf( "BEGIN File [ %s ] content >>>\n", file.getName( ).getString( ) );
         std::cout << text.getString( ) << std::endl;
-        printf( "END   File [ %s ] content <<<\n", file.getName( ) );
+        printf( "END   File [ %s ] content <<<\n", file.getName( ).getString( ) );
     }
     else
     {
-        std::cerr << "Invalid file " << file.getName( ) << ". Cannot dump text ..." << std::endl;
+        std::cerr << "Invalid file " << file.getName( ).getString() << ". Cannot dump text ..." << std::endl;
     }
 }
 

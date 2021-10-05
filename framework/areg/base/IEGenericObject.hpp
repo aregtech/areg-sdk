@@ -1,9 +1,16 @@
-#ifndef AREG_BASE_IEGENERICOBJECT_HPP
-#define AREG_BASE_IEGENERICOBJECT_HPP
+#pragma once
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/base/IEGenericObject.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, Generic Object Interface and 
  *              Generic Object instance factory.
  *              Following classes are declared here:
@@ -147,7 +154,7 @@ public:
      *          value passed in function call.
      *          Overwrite method if need to change instantiation procedure.
      * \param	objData	The object data to set in generic object.
-     *                  If NULL, default constructor will be called.
+     *                  If nullptr, default constructor will be called.
      * \return	Returns pointer to new created generic object.
      **/
     IEGenericObject * createObject( void * objData );
@@ -166,28 +173,26 @@ public:
 //////////////////////////////////////////////////////////////////////////
 
 template <typename ClassName>
-TEObjectFactory<ClassName>::TEObjectFactory()
+TEObjectFactory<ClassName>::TEObjectFactory( void )
 {
-    ; // do nothing
 }
 
 template <typename ClassName>
-TEObjectFactory<ClassName>::~TEObjectFactory()
+TEObjectFactory<ClassName>::~TEObjectFactory( void )
 {
-    ; // do nothing
 }
 
 template <typename ClassName>
 IEGenericObject* TEObjectFactory<ClassName>::createObject( void * objData )
 {
-    return static_cast<IEGenericObject *>(objData != static_cast<void *>(NULL) ? DEBUG_NEW ClassName(objData) : DEBUG_NEW ClassName());
+    return static_cast<IEGenericObject *>(objData != nullptr ? DEBUG_NEW ClassName(objData) : DEBUG_NEW ClassName());
 }
 
 template <typename ClassName>
 void TEObjectFactory<ClassName>::destroyObject( IEGenericObject * obj )
 {
-    if (obj != static_cast<IEGenericObject *>(NULL))
-        obj->destroy();
+    if (obj != nullptr)
+    {
+        obj->destroy( );
+    }
 }
-
-#endif  // AREG_BASE_IEGENERICOBJECT_HPP

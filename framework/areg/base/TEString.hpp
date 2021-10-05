@@ -1,18 +1,25 @@
-#ifndef AREG_BASE_TESTRING_HPP
-#define AREG_BASE_TESTRING_HPP
+#pragma once
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/base/TEString.hpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
- * \brief       AREG Platform, String Class. Supports ASCII, UTF-8, UTF-16 and UTF-32
- *              string encodings.
+ * \author      Artak Avetyan
+ * \brief       AREG Platform, ASCII string Class.
  ************************************************************************/
 /************************************************************************
  * Include files.
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
+
 #include "areg/base/NEString.hpp"
-#include "areg/base/ETemplateBase.hpp"
+#include "areg/base/TETemplateBase.hpp"
 
 /************************************************************************
  * Dependencies
@@ -24,8 +31,7 @@ class IEOutStream;
 // TEString class template declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   Class template of string.
- *          The basic string class, which contains basic operations 
+ * \brief   The basic string class template, which contains basic operations 
  *          to set, append, insert, search and replace string, as well to get substring.
  *          When deriving class, should be paid special attention on string structure
  *          validation. The string should be allocated and released via methods 
@@ -35,11 +41,11 @@ class IEOutStream;
  *          basic operations.
  * 
  * \tparam  CharType    The type of character. Normally, either 8-bit character or 16-bit wide character.
- * \tparam  Implement   The name of class where the basic string alphabetic, comparing and 
- *                      stream read/write operations are implemented.
+ * \tparam  Helper      The name of class where the basic string alphabetic, comparing and 
+ *                      stream read/write operations are Helpered.
  **/
-template<typename CharType, class Implement = TEStringImpl<CharType> >
-class TEString  : protected Implement
+template<typename CharType, class Helper = TEStringImpl<CharType> >
+class TEString
 {
 //////////////////////////////////////////////////////////////////////////
 // Public constants
@@ -48,17 +54,17 @@ public:
     /**
      * \brief   Empty character constant
      **/
-    static const CharType   EmptyChar       /*= static_cast<CharType>('\0')*/;
+    static constexpr CharType   EmptyChar       { static_cast<CharType>('\0') };
 
     /**
      * \brief   New line constant
      **/
-    static const CharType   NewLine         /*= static_cast<CharType>('\n')*/;
+    static constexpr CharType   NewLine         { static_cast<CharType>('\n') };
 
     /**
      * \brief   DOS format new line
      **/
-    static const CharType   NewLineDos[2]   /*= {static_cast<CharType>('\r'), static_cast<CharType>('\n')}*/;
+    static constexpr CharType   NewLineDos[2]   {static_cast<CharType>('\r'), static_cast<CharType>('\n')};
 
 //////////////////////////////////////////////////////////////////////////
 // Protected constructor / destructor
@@ -66,45 +72,46 @@ public:
 protected:
 
     /**
-     * \brief   Sets the encoding
-     * \param   encode      The initialized encoding of string.
+     * \brief   Default constructor creates empty string.
      **/
-    inline TEString( NEString::eEncoding encode );
+    inline TEString( void );
 
     /**
-     * \brief   Sets the encoding, converts char to string.
+     * \brief   Sets the char to string.
      * \param   chSource    The character to set at the begin of string.
-     * \param   encode      The initialized encoding of string.
      **/
-    inline TEString( CharType chSource, NEString::eEncoding encode );
+    inline TEString( CharType chSource );
 
     /**
-     * \brief   Sets encoding, copies string from given source.
-     * \param   strSource   The initial string to initialize. If NULL, invalid string is created.
-     * \param   encode      The initialized encoding of string.
+     * \brief   Copies string from given source.
+     * \param   strSource   The initial string to initialize. If nullptr, empty string is created.
      **/
-    inline TEString( const CharType * strSource, NEString::eEncoding encode );
+    inline TEString( const CharType * strSource );
 
     /**
-     * \brief   Sets encoding, copies specified amount of symbols from given string.
-     * \param   strSource   The null-terminated string buffer to initialize. If NULL, invalid string is created.
-     * \param   charCount   The number of character to initialize from given string source. If zero, invalid string is created.
-     * \param   encode      The initialized encoding of string.
+     * \brief   Copies specified amount of symbols from given string.
+     * \param   strSource   The null-terminated string buffer to initialize. If nullptr, empty string is created.
+     * \param   charCount   The number of character to initialize from given string source. If zero, empty string is created.
      **/
-    inline TEString( const CharType * strSource, NEString::CharCount charCount, NEString::eEncoding encode );
+    inline TEString( const CharType * strSource, NEString::CharCount charCount );
 
     /**
-     * \brief   Sets encoding, copies specified amount of symbols from given string structure.
+     * \brief   Copies string structure.
      * \param   strSource   The string structure as source to initialize.
-     * \param   encode      The initialized encoding of string.
      **/
-    inline TEString( const NEString::SString<CharType> & strSource, NEString::eEncoding encode );
+    inline TEString( const NEString::SString<CharType> & strSource );
 
     /**
      * \brief   Copy constructor.
      * \param   strSource   The source to copy data.
      **/
-    inline TEString( const TEString<CharType, Implement> & strSource );
+    inline TEString( const TEString<CharType, Helper> & strSource );
+
+    /**
+     * \brief   Move constructor.
+     * \param   strSource   The source to move data.
+     **/
+    inline TEString( TEString<CharType, Helper> && strSource );
 
     /**
      * \brief   Destructor.
@@ -119,36 +126,36 @@ public:
     /**
      * \brief   Find the first occurrence of any of the characters in string buffer 'chars'. 
      *          The search starts at given 'startPos'. If any character is found, returns valid position.
-     *          Otherwise, returns NEString::InvalidPos.
+     *          Otherwise, returns NEString::INVALID_POS.
      * \param   chars       The one or more characters as set in null-terminated string to search.
      * \param   startPos    The start position in string to search. Should be valid.
-     *                      By default, starts to search at begin of string, i.e. at 'NEString::StartPos'
+     *                      By default, starts to search at begin of string, i.e. at 'NEString::START_POS'
      * \return  Returns valid string position value, if any occurrence of given characters found.
      *          Otherwise, returns NEString::InvalildPos value.
      **/
-    NEString::CharPos findOneOf( const CharType * chars, NEString::CharPos startPos = NEString::StartPos ) const;
+    NEString::CharPos findOneOf( const CharType * chars, NEString::CharPos startPos = NEString::START_POS ) const;
 
     /**
      * \brief   Find the first occurrence of given character in the string. If found, returns valid
-     *          position value in the string. Otherwise, it returns NEString::InvalidPos value.
+     *          position value in the string. Otherwise, it returns NEString::INVALID_POS value.
      * \param   chSearch        The character to search in the string.
      * \param   startPos        The start position in string to search. Should be valid.
      *                          By default, starts to search at the begin of string,
-     *                          i.e. at 'NEString::StartPos'
+     *                          i.e. at 'NEString::START_POS'
      * \param   caseSensitive   If true, the character match should be by exact, i.e. case-sensitive.
      *                          Otherwise, the search is by upper and lower case.
      * \return  Returns valid string position value, if found given character.
      *          Otherwise, returns NEString::InvalildPos value.
      **/
-    NEString::CharPos findFirstOf( CharType chSearch, NEString::CharPos startPos = NEString::StartPos, bool caseSensitive = true ) const;
+    NEString::CharPos findFirstOf( CharType chSearch, NEString::CharPos startPos = NEString::START_POS, bool caseSensitive = true ) const;
 
     /**
      * \brief   Find the first occurrence of given character in the string. If found, returns valid
-     *          position value in the string. Otherwise, it returns NEString::InvalidPos value.
+     *          position value in the string. Otherwise, it returns NEString::INVALID_POS value.
      * \param   chSearch        The character to search in the string.
      * \param   startPos        The start position in string to search. Should be valid.
      *                          By default, starts to search at the begin of string,
-     *                          i.e. at 'NEString::StartPos'
+     *                          i.e. at 'NEString::START_POS'
      * \param   caseSensitive   If true, the search of phrase should be match should be by exact, i.e. case-sensitive.
      *                          Otherwise, the search is by upper and lower case.
      * \param   wholeWord       If true, the search of phrase should match the whole word.
@@ -156,43 +163,43 @@ public:
      * \return  Returns valid string position value, if found given character.
      *          Otherwise, returns NEString::InvalildPos value.
      **/
-    NEString::CharPos findFirstOf( const CharType * phrase, NEString::CharPos startPos = NEString::StartPos, bool caseSensitive = true, bool wholeWord = false ) const;
+    NEString::CharPos findFirstOf( const CharType * phrase, NEString::CharPos startPos = NEString::START_POS, bool caseSensitive = true, bool wholeWord = false ) const;
     
     /**
      * \brief   Find the last occurrence of given character in the string. If found, returns valid
-     *          position value in the string. Otherwise, it returns NEString::InvalidPos value.
+     *          position value in the string. Otherwise, it returns NEString::INVALID_POS value.
      * \param   chSearch        The character to search in the string.
      * \param   startPos        The start position in string to search. Should be valid.
      *                          By default, starts to search at the end of string,
-     *                          i.e. at 'NEString::EndPos'
+     *                          i.e. at 'NEString::END_POS'
      * \param   caseSensitive   If true, the character match should be by exact, i.e. case-sensitive.
      *                          Otherwise, the search is by upper and lower case.
      * \return  Returns valid string position value, if found given character.
      *          Otherwise, returns NEString::InvalildPos value.
      **/
-    NEString::CharPos findLastOf( CharType chSearch, NEString::CharPos startPos = NEString::EndPos, bool caseSensitive = true ) const;
+    NEString::CharPos findLastOf( CharType chSearch, NEString::CharPos startPos = NEString::END_POS, bool caseSensitive = true ) const;
 
     /**
      * \brief   Find the last occurrence of given character in the string. If found, returns valid
-     *          position value in the string. Otherwise, it returns NEString::InvalidPos value.
+     *          position value in the string. Otherwise, it returns NEString::INVALID_POS value.
      * \param   chSearch        The character to search in the string.
      * \param   startPos        The start position in string to search. Should be valid.
      *                          By default, starts to search at the end of string,
-     *                          i.e. at 'NEString::EndPos'
+     *                          i.e. at 'NEString::END_POS'
      * \param   caseSensitive   If true, the search of phrase should be match should be by exact, i.e. case-sensitive.
      *                          Otherwise, the search is by upper and lower case.
      * \return  Returns valid string position value, if found given character.
      *          Otherwise, returns NEString::InvalildPos value.
      **/
-    NEString::CharPos findLastOf( const CharType * phrase, NEString::CharPos startPos = NEString::EndPos, bool caseSensitive = true ) const;
+    NEString::CharPos findLastOf( const CharType * phrase, NEString::CharPos startPos = NEString::END_POS, bool caseSensitive = true ) const;
 
     /**
      * \brief   Compares with the given string at given position. The comparing is either complete string or
      *          given number of characters. Comparing either by exact match (case-sensitive) or ignore case.
      *          The function returns:
-     *              NEMath::CompSmaller if string is less than given string
-     *              NEMath::CompEqual   if strings have equal
-     *              NEMath::CompGreater if string is more than given string
+     *              NEMath::Smaller if string is less than given string
+     *              NEMath::Equal   if strings have equal
+     *              NEMath::Bigger if string is more than given string
      * \param   strOther        The given other string to compare
      * \param   startAt         The position of string to start comparing. 
      *                          By default, it compares at the begin of string.
@@ -201,40 +208,40 @@ public:
      * \param   caseSensitive   If true, compares by exact match, i.e. case-sensitive.
      *                          Otherwise, it ignores upper and lower cases.
      * \return  Returns:
-     *              NEMath::CompSmaller if string is less than given string
-     *              NEMath::CompEqual   if strings have equal
-     *              NEMath::CompGreater if string is more than given string
+     *              NEMath::Smaller if string is less than given string
+     *              NEMath::Equal   if strings have equal
+     *              NEMath::Bigger if string is more than given string
      **/
-    inline NEMath::eCompare compare( const CharType * strOther, NEString::CharPos startAt = NEString::StartPos, NEString::CharCount charCount = NEString::CountAll, bool caseSensitive = true) const;
+    inline NEMath::eCompare compare( const CharType * strOther, NEString::CharPos startAt = NEString::START_POS, NEString::CharCount charCount = NEString::COUNT_ALL, bool caseSensitive = true) const;
     
     /**
      * \brief   Compares with the given string at given position. The comparing is either complete string or
      *          given number of characters. Comparing either by exact match (case-sensitive) or ignore case.
      *          The function returns:
-     *              NEMath::CompSmaller if string is less than given string
-     *              NEMath::CompEqual   if strings have equal
-     *              NEMath::CompGreater if string is more than given string
+     *              NEMath::Smaller if string is less than given string
+     *              NEMath::Equal   if strings have equal
+     *              NEMath::Bigger if string is more than given string
      * \param   other           The string to compare with.
      * \param   caseSensitive   If true, compares by exact match, i.e. case-sensitive.
      *                          Otherwise, it ignores upper and lower cases.
      * \return  Returns:
-     *              NEMath::CompSmaller if string is less than given string
-     *              NEMath::CompEqual   if strings have equal
-     *              NEMath::CompGreater if string is more than given string
+     *              NEMath::Smaller if string is less than given string
+     *              NEMath::Equal   if strings have equal
+     *              NEMath::Bigger if string is more than given string
      **/
-    inline NEMath::eCompare compare(const TEString<CharType, Implement> & other, bool caseSensitive = true ) const;
+    inline NEMath::eCompare compare(const TEString<CharType, Helper> & other, bool caseSensitive = true ) const;
 
     /**
      * \brief   Extracts the substring starting at startPos and given number of characters.
      * \param   outResult   On output, this parameter contains resulting substring.
      * \param   startPos    Starting position of the substring to create.
-     *                      By default, the substring starts at the begin, i.e. NEString::StartPos
+     *                      By default, the substring starts at the begin, i.e. NEString::START_POS
      * \param   charCount   The number of characters in substring, starting at given starting position.
      *                      By default, it gets characters until end of string.
      * \return  Returns true if could create substring. Otherwise, returns false.
      *          The substring can fail if method is called for invalid string, if given position is invalid.
      **/
-    bool substring( TEString<CharType, Implement> & outResult, NEString::CharPos startPos = NEString::StartPos, NEString::CharCount charCount = NEString::CountAll ) const;
+    bool substring( TEString<CharType, Helper> & outResult, NEString::CharPos startPos = NEString::START_POS, NEString::CharCount charCount = NEString::COUNT_ALL ) const;
 
     /**
      * \brief   Searches given phrase in the string starting from given position until the end of string.
@@ -245,27 +252,27 @@ public:
      * \param   strPhrase   The phrase to search in the string.
      * \param   startPos    The starting position to search the string.
      * \return  Returns next position after searched phrase and value are followings:
-     *              -   Valid string position not equal to NEString::EndPos,
+     *              -   Valid string position not equal to NEString::END_POS,
      *                  if found phrase and the phrase is not at the end;
-     *              -   NEString::EndPos if found the phrase at end of string;
-     *              -   NEString::InvalidPos if could not find the phrase.
+     *              -   NEString::END_POS if found the phrase at end of string;
+     *              -   NEString::INVALID_POS if could not find the phrase.
      *
      * \example     Example of Substr()
      * \code [.cpp]
      *
      *  String test("0123 456 789 0123");
      *  String result;
-     *  NEString::CharPos next = NEString::StartPos;
+     *  NEString::CharPos next = NEString::START_POS;
      *  next = test.Substr(result, "0123", next);   // results: next == 4, result == ""
-     *  next = test.Substr(result, "0123", next);   // results: next == NEString::EndPos, result == " 456 789 "
+     *  next = test.Substr(result, "0123", next);   // results: next == NEString::END_POS, result == " 456 789 "
      *
-     *  next = NEString::StartPos;
+     *  next = NEString::START_POS;
      *  next = test.Substr(result, " ", next);      // results: next == 5, result == "0123"
      *  next = test.Substr(result, " ", next);      // results: next == 9, result == "456"
-     *  next = test.Substr(result, " ", next);      // results: next == NEString::InvalidPos, result == "0123"
+     *  next = test.Substr(result, " ", next);      // results: next == NEString::INVALID_POS, result == "0123"
      * \endcode
      **/
-    NEString::CharPos substring( TEString<CharType, Implement> & outResult, const CharType * strPhrase, NEString::CharPos startPos = NEString::StartPos ) const;
+    NEString::CharPos substring( TEString<CharType, Helper> & outResult, const CharType * strPhrase, NEString::CharPos startPos = NEString::START_POS ) const;
 
     /**
      * \brief   Searches given symbol in the string starting from given position until end of string.
@@ -276,42 +283,37 @@ public:
      * \param   chSymbol    The symbol to search in the string.
      * \param   startPos    The starting position to search the symbol.
      * \return  Returns next position after searched symbol and value are followings:
-     *              -   Valid string position not equal to NEString::EndPos,
+     *              -   Valid string position not equal to NEString::END_POS,
      *                  if found phrase and the symbol is not at the end;
-     *              -   NEString::EndPos if found the symbol at end of string;
-     *              -   NEString::InvalidPos if could not find the phrase.
+     *              -   NEString::END_POS if found the symbol at end of string;
+     *              -   NEString::INVALID_POS if could not find the phrase.
      **/
-    NEString::CharPos substring( TEString<CharType, Implement> & outResult, CharType chSymbol, NEString::CharPos startPos = NEString::StartPos ) const;
+    NEString::CharPos substring( TEString<CharType, Helper> & outResult, CharType chSymbol, NEString::CharPos startPos = NEString::START_POS ) const;
 
     /**
      * \brief   Copies given amount of characters of given string and returns the amount of copied characters.
-     *          If string is Invalid, it will re-initialize string and copy characters. 
      *          If string has not enough space to copy characters, it will reallocate the space.
-     *          The encoding remains unchanged.
      * \param   strSource   The source of string to copy characters.
-     * \param   charCount   The number of characters to copy.
-     *                      By default, it copies all characters.
+     * \param   charCount   The number of characters to copy. By default, it copies all characters.
      * \return  Returns number of copied characters. If zero, nothing was copied.
      **/
-    NEString::CharCount copy( const CharType * strSource, NEString::CharCount charCount = NEString::CountAll );
+    NEString::CharCount copy( const CharType * strSource, NEString::CharCount charCount = NEString::COUNT_ALL );
 
     /**
-     * \brief   Appends given amount of characters of given string at the end and returns the amount of appended characters.
-     *          If string is Invalid, it will re-initialize string and copy characters at the begin.
-     *          If string has not enough space to append characters, it will reallocate the space.
+     * \brief   Appends given amount of characters of given string at the end of the string
+     *          and returns the amount of appended characters. If string has not enough space
+     *          to append characters, it will reallocate the space.
      * \param   strSource   The source of string to append characters.
-     * \param   charCount   The number of characters to append.
-     *                      By default, it copies all characters.
+     * \param   charCount   The number of characters to append. By default, it copies all characters.
      * \return  Returns number of append characters. If zero, nothing was added.
      **/
-    NEString::CharCount append( const CharType * strSource, NEString::CharCount charCount = NEString::CountAll );
+    NEString::CharCount append( const CharType * strSource, NEString::CharCount charCount = NEString::COUNT_ALL );
 
     /**
      * \brief   Inserts given source of character at given position in the string. 
      *          The character can be inserted at any position, including
      *          begin of string or at the end of string (append). The caller should make sure
      *          that the specified position is valid and not more end-of-string.
-     *          If string is Invalid, it will re-initialize string and insert character at specified position.
      *          If string has not enough space to insert character, it will reallocate the space.
      * \param   chSource    The source of character to insert.
      * \param   atPos       The position in the string to insert.
@@ -323,79 +325,77 @@ public:
      *          The character can be inserted at any position, including
      *          begin of string or at the end of string (append). The caller should make sure
      *          that the specified position is valid and not more end-of-string.
-     *          If string is Invalid, it will re-initialize string and insert character at specified position.
      *          If string has not enough space to insert character, it will reallocate the space.
      * \param   strSource   The source of character to insert.
      * \param   atPos       The position in the string to insert.
      * \param   charCount   The number of characters in string to insert.
      *                      By default it inserts complete source of string.
      **/
-    void insertAt( const CharType * strSource, NEString::CharPos atPos, NEString::CharCount charCount = NEString::CountAll );
+    void insertAt( const CharType * strSource, NEString::CharPos atPos, NEString::CharCount charCount = NEString::COUNT_ALL );
 
     /**
      * \brief   Inserts given source of string at given position in the string. 
      *          The character can be inserted at any position, including
      *          begin of string or at the end of string (append). The caller should make sure
      *          that the specified position is valid and not more end-of-string.
-     *          If string is Invalid, it will re-initialize string and insert character at specified position.
      *          If string has not enough space to insert character, it will reallocate the space.
      * \param   strSource   The source of character to insert.
      * \param   atPos       The position in the string to insert.
      * \param   charCount   The number of characters in string to insert.
      *                      By default it inserts complete source of string.
      **/
-    void insertAt( const TEString<CharType, Implement> & strSrc, NEString::CharPos atPos, NEString::CharCount charCount = NEString::CountAll );
+    void insertAt( const TEString<CharType, Helper> & strSrc, NEString::CharPos atPos, NEString::CharCount charCount = NEString::COUNT_ALL );
 
     /**
      * \brief   Searches and replaces given character by another given. The search and replacement starts at given position.
      *          The method either replaces first match of character and returns next position,
-     *          or replaces all matches of given characters and returns end-of-string position (NEString::EndPos).
+     *          or replaces all matches of given characters and returns end-of-string position (NEString::END_POS).
      * \param   chOrigin    The character to be searched to replace.
      * \param   chReplace   The character, which should be set
      * \param   startPos    The position to start searching character to replace.
      *                      By default, it searches at the begin of string.
-     * \param   replaceAll  If true, replaces all matched characters in the string and returns End Position (NEString::EndPos).
+     * \param   replaceAll  If true, replaces all matched characters in the string and returns End Position (NEString::END_POS).
      *                      Otherwise, replace first matched.
      * \return  Returns:
      *          - valid next position value if found 'chOrigin' character and replaced, where 'replaceAll' parameter is false.
-     *          - NEString::EndPos if replaced character was at the end of string or could replace at least once, where 'replaceAll' is true.
-     *          - NEString::InvalidPos if could not find and replace any character.
+     *          - NEString::END_POS if replaced character was at the end of string or could replace at least once, where 'replaceAll' is true.
+     *          - NEString::INVALID_POS if could not find and replace any character.
      **/
-    NEString::CharPos replace( CharType chOrigin, CharType chReplace, NEString::CharPos startPos = NEString::StartPos, bool replaceAll = true );
+    NEString::CharPos replace( CharType chOrigin, CharType chReplace, NEString::CharPos startPos = NEString::START_POS, bool replaceAll = true );
 
     /**
      * \brief   Searches and replaces given string by another string. The search and replacement starts at given position.
      *          The method either replaces first match of string and returns next position,
-     *          or replaces all matches of given string and returns end-of-string position (NEString::EndPos).
+     *          or replaces all matches of given string and returns end-of-string position (NEString::END_POS).
      * \param   strOrigin   The string to be searched to replace.
      * \param   strReplace  The string to set
      * \param   startPos    The position to start searching string to replace.
      *                      By default, it searches at the begin of string.
-     * \param   replaceAll  If true, replaces all matches of string and returns End Position (NEString::EndPos).
+     * \param   replaceAll  If true, replaces all matches of string and returns End Position (NEString::END_POS).
      *                      Otherwise, replace first matched.
      * \return  Returns:
      *          - valid next position value if found 'strOrigin' string and replaced, where 'replaceAll' parameter is false.
-     *          - NEString::EndPos if replaced string was at the end of data or could replace at least once, where 'replaceAll' is true.
-     *          - NEString::InvalidPos if could not find and replace any match of string.
+     *          - NEString::END_POS if replaced string was at the end of data or could replace at least once, where 'replaceAll' is true.
+     *          - NEString::INVALID_POS if could not find and replace any match of string.
      **/
-    NEString::CharPos replace( const CharType * strOrigin, const CharType * strReplace, NEString::CharPos startPos = NEString::StartPos, bool replaceAll = true );
+    NEString::CharPos replace( const CharType * strOrigin, const CharType * strReplace, NEString::CharPos startPos = NEString::START_POS, bool replaceAll = true );
 
     /**
      * \brief   Searches and replaces given string by another string. The search and replacement starts at given position.
      *          The method either replaces first match of string and returns next position,
-     *          or replaces all matches of given string and returns end-of-string position (NEString::EndPos).
+     *          or replaces all matches of given string and returns end-of-string position (NEString::END_POS).
      * \param   strOrigin   The string to be searched to replace.
      * \param   strReplace  The string to set
      * \param   startPos    The position to start searching string to replace.
      *                      By default, it searches at the begin of string.
-     * \param   replaceAll  If true, replaces all matches of string and returns End Position (NEString::EndPos).
+     * \param   replaceAll  If true, replaces all matches of string and returns End Position (NEString::END_POS).
      *                      Otherwise, replace first matched.
      * \return  Returns:
      *          - valid next position value if found 'strOrigin' string and replaced, where 'replaceAll' parameter is false.
-     *          - NEString::EndPos if replaced string was at the end of data or could replace at least once, where 'replaceAll' is true.
-     *          - NEString::InvalidPos if could not find and replace any match of string.
+     *          - NEString::END_POS if replaced string was at the end of data or could replace at least once, where 'replaceAll' is true.
+     *          - NEString::INVALID_POS if could not find and replace any match of string.
      **/
-    NEString::CharPos replace( const TEString<CharType, Implement> & strOrigin, const TEString<CharType, Implement> & strReplace, NEString::CharPos startPos = NEString::StartPos, bool replaceAll = true );
+    NEString::CharPos replace( const TEString<CharType, Helper> & strOrigin, const TEString<CharType, Helper> & strReplace, NEString::CharPos startPos = NEString::START_POS, bool replaceAll = true );
 
     /**
      * \brief   Replaces specified amount of characters starting at given position by given string.
@@ -404,7 +404,7 @@ public:
      * \param   startPos    The position to start setting string.
      * \param   charsRemove Amount of characters to replace in string.
      * \return  Returns next position after replacing string. If specified position in invalid
-     (          returns NEString::InvalidPos. If string was inserted at the end, returns NEString::EndPos.
+     (          returns NEString::INVALID_POS. If string was inserted at the end, returns NEString::END_POS.
      **/
     NEString::CharPos replace( const CharType * strReplace, NEString::CharPos startPos, NEString::CharCount charsRemove );
 
@@ -415,35 +415,35 @@ public:
      * \param   startPos    The position to start setting string.
      * \param   charsRemove Amount of characters to replace in string.
      * \return  Returns next position after replacing string. If specified position in invalid
-     (          returns NEString::InvalidPos. If string was inserted at the end, returns NEString::EndPos.
+     (          returns NEString::INVALID_POS. If string was inserted at the end, returns NEString::END_POS.
      **/
-    NEString::CharPos replace( const TEString<CharType, Implement> & strReplace, NEString::CharPos startPos, NEString::CharCount charsRemove );
+    NEString::CharPos replace( const TEString<CharType, Helper> & strReplace, NEString::CharPos startPos, NEString::CharCount charsRemove );
 
     /**
      * \brief   Searches and removes given phrase of string. The search starts at given position.
      *          The method either removes only first match of string and returns next position,
-     *          or removes all matches of given string and returns end-of-string position (NEString::EndPos).
+     *          or removes all matches of given string and returns end-of-string position (NEString::END_POS).
      * \param   strRemove   The string to search and remove.
      * \param   startPos    The position to start searching string to replace.
      *                      By default, it searches at the begin of string.
-     * \param   removeAll   If true, removes all matches of string and returns End Position (NEString::EndPos).
+     * \param   removeAll   If true, removes all matches of string and returns End Position (NEString::END_POS).
      *                      Otherwise, removes only first matched.
      * \return  Returns:
      *          - valid next position value if found 'strRemove' string phrase and removed, where 'removeAll' parameter is false.
-     *          - NEString::EndPos if removed string was at the end of data or could remove at least once, where 'removeAll' is true.
-     *          - NEString::InvalidPos if could not find any match of string.
+     *          - NEString::END_POS if removed string was at the end of data or could remove at least once, where 'removeAll' is true.
+     *          - NEString::INVALID_POS if could not find any match of string.
      **/
-    NEString::CharPos remove( const CharType * strRemove, NEString::CharPos startPos = NEString::StartPos, bool removeAll = true );
+    NEString::CharPos remove( const CharType * strRemove, NEString::CharPos startPos = NEString::START_POS, bool removeAll = true );
 
     /**
      * \brief   Removes specified amount of characters in string at specified starting position.
-     *          If 'charCount' is NEString::CountAll, it will remove all until end, i.e. sets
+     *          If 'charCount' is NEString::COUNT_ALL, it will remove all until end, i.e. sets
      *          end-of-string character at specified position.
      * \param   startPos    The starting position to remove string. Operation is ignored if not valid position.
-     * \param   charCount   The amount of characters to remove. If 'NEString::CountAll' removes all until end of string,
+     * \param   charCount   The amount of characters to remove. If 'NEString::COUNT_ALL' removes all until end of string,
      *                      i.e. sets end-of-string value at specified position.
      **/
-    inline void remove( NEString::CharPos startPos, NEString::CharCount charCount = NEString::CountAll );
+    inline void remove( NEString::CharPos startPos, NEString::CharCount charCount = NEString::COUNT_ALL );
 
     /**
      * \brief   Moves string inside string buffer starting at specified position.
@@ -467,7 +467,7 @@ public:
      * \param   charCount   The amount of characters to swap.
      *                      By default, swaps all characters until end of string.
      **/
-    void swap( NEString::CharPos startPos = NEString::StartPos, NEString::CharCount charCount = NEString::CountAll );
+    void swap( NEString::CharPos startPos = NEString::START_POS, NEString::CharCount charCount = NEString::COUNT_ALL );
 
     /**
      * \brief   Truncates the string to maximum allowed length.
@@ -546,19 +546,14 @@ public:
      * \param   startAt     The position in string to return read-only buffer.
      *                      By default it returns begin of string buffer.
      * \return  Returns valid pointer of read-only string buffer if specified position
-     *          is valid for read. Otherwise, it returns NULL
+     *          is valid for read. Otherwise, it returns nullptr
      **/
-    inline const CharType * getBuffer( NEString::CharPos startAt = NEString::StartPos ) const;
+    inline const CharType * getBuffer( NEString::CharPos startAt = NEString::START_POS ) const;
 
     /**
-     * \brief   Returns null-terminated buffer of string or NULL pointer if string is invalid.
+     * \brief   Returns null-terminated buffer of string or nullptr pointer if string is invalid.
      **/
     inline const CharType * getString( void ) const;
-
-    /**
-     * \brief   Returns the encoding of string
-     **/
-    inline NEString::eEncoding getEncoding( void ) const;
 
     /**
      * \brief   Returns character at specified string position.
@@ -577,7 +572,7 @@ public:
      *                  If position is more or equal to length of string, it sets character
      *                  at specified position and increase string length.
      **/
-    inline void setAt( CharType ch, NEString::CharPos atPos = NEString::EndPos );
+    inline void setAt( CharType ch, NEString::CharPos atPos = NEString::END_POS );
 
     /**
      * \brief   Makes sure to allocate string buffer with specified space.
@@ -602,7 +597,7 @@ public:
      * \param   strResult   The destination string to copy result.
      * \return  Returns number of characters copied to the resulting string.
      **/
-    inline int trimLeft( TEString<CharType, Implement> & OUT strResult ) const;
+    inline int trimLeft( TEString<CharType, Helper> & OUT strResult ) const;
 
     /**
      * \brief   Removes whitespace characters from right side, i.e. from the end of string
@@ -618,7 +613,7 @@ public:
      * \param   strResult   The destination string to copy result.
      * \return  Returns number of characters copied to the resulting string.
      **/
-    inline int trimRight( TEString<CharType, Implement> & OUT strResult ) const;
+    inline int trimRight( TEString<CharType, Helper> & OUT strResult ) const;
 
     /**
      * \brief   Removes whitespace characters from left and right sides, i.e. from begin and end of string
@@ -634,7 +629,7 @@ public:
      * \param   strResult   The destination string to copy result.
      * \return  Returns number of characters copied to the resulting string.
      **/
-    inline int trimAll( TEString<CharType, Implement> & OUT strResult ) const;
+    inline int trimAll( TEString<CharType, Helper> & OUT strResult ) const;
 
     /**
      * \brief   In existing string removes all characters, which are not alphanumeric.
@@ -651,7 +646,7 @@ public:
     inline CharType *  getUnsafeBuffer( void ) ;
 
 /************************************************************************/
-// Methods that can be overwritten in implementation class template
+// Methods that can be overwritten in Helperation class template
 /************************************************************************/
 protected:
 
@@ -710,24 +705,24 @@ protected:
 
     /**
      * \brief   Compares the existing string with given string and returns:
-     *              NEMath::CompSmaller if string is less than given string
-     *              NEMath::CompEqual   if strings have equal
-     *              NEMath::CompGreater if string is more than given string
+     *              NEMath::Smaller if string is less than given string
+     *              NEMath::Equal   if strings have equal
+     *              NEMath::Bigger if string is more than given string
      *          The comparing starts from given position, compares given
-     *          amount of character of until the end if 'charCount' is NEString::CountAll,
+     *          amount of character of until the end if 'charCount' is NEString::COUNT_ALL,
      *          and the comparing is either by exact match or ignores cases sensitive.
      * \param   startPos        The position in string buffer to start comparing.
-     *                          If equal to NEString::StartPos, compares from beginning of string.
+     *                          If equal to NEString::START_POS, compares from beginning of string.
      * \param   strOther        The given string to compare
      * \param   charCount       The amount of characters to compare.
-     *                          If equal to NEString::CountAll compares until end of string.
+     *                          If equal to NEString::COUNT_ALL compares until end of string.
      * \param   caseSensitive   If true, compares exact match of string. Otherwise, compares lower and upper cases.
      * \return  Return:
-     *              NEMath::CompSmaller if string is less than given string
-     *              NEMath::CompEqual   if strings have equal
-     *              NEMath::CompGreater if string is more than given string
+     *              NEMath::Smaller if string is less than given string
+     *              NEMath::Equal   if strings have equal
+     *              NEMath::Bigger if string is more than given string
      **/
-    inline NEMath::eCompare compareString( NEString::CharPos startPos, const CharType * strOther, NEString::CharCount charCount = NEString::CountAll, bool caseSensitive = true ) const;
+    inline NEMath::eCompare compareString( NEString::CharPos startPos, const CharType * strOther, NEString::CharCount charCount = NEString::COUNT_ALL, bool caseSensitive = true ) const;
 
     /**
      * \brief   Reads string data from streaming object.
@@ -747,16 +742,10 @@ protected:
 protected:
 
     /**
-     * \brief   Returns string initialized encoding, which is set via constructor.
-     **/
-    inline NEString::eEncoding getInitEncoding( void ) const;
-
-    /**
      * \brief   Reallocates string buffer.
      * \param   charsAdd    The amount of characters expected to add in string after reallocating buffer
-     * \param   encode      The encoding to set in case if string does not have encoding.
      **/
-    inline void reallocate( NEString::CharCount charsAdd, NEString::eEncoding encode);
+    inline void reallocate( NEString::CharCount charsAdd );
 
     /**
      * \brief   Checks whether possible to read data at specified position.
@@ -798,7 +787,7 @@ protected:
      *          for reading, i.e. should be less than the string length.
      * \param   atPos       The position in string buffer to get pointer.
      * \return  Returns valid pointer of string if string is valid and specified position is valid for read.
-     *          Returns invalid pointer (NULL) if string is invalid or specified position is invalid for reading.
+     *          Returns invalid pointer (nullptr) if string is invalid or specified position is invalid for reading.
      **/
     inline CharType * getChars( NEString::CharPos atPos );
 
@@ -808,29 +797,29 @@ protected:
      *          for reading, i.e. should be less than the string length.
      * \param   atPos       The position in string buffer to get pointer.
      * \return  Returns valid pointer of string if string is valid and specified position is valid for read.
-     *          Returns invalid pointer (NULL) if string is invalid or specified position is invalid for reading.
+     *          Returns invalid pointer (nullptr) if string is invalid or specified position is invalid for reading.
      **/
     inline const CharType * getChars( NEString::CharPos atPos ) const;
 
     /**
-     * \brief   Return true if string data pointer is NULL.
+     * \brief   Return true if string data pointer is nullptr.
      **/
     inline bool isNull( void ) const;
 
     /**
-     * \brief   Returns true if string data structure has non-NULL pointer.
+     * \brief   Returns true if string data structure has valid pointer.
      **/
     inline bool isValidPtr( void ) const;
 
     /**
      * \brief   Returns the pointer of string buffer starting at the end of string, where the pointer shows end-of-string.
-     *          If string is invalid, returns NULL. The returned pointer is for writing.
+     *          If string is invalid, returns nullptr. The returned pointer is for writing.
      **/
     inline CharType * getStringEnd( void );
 
     /**
      * \brief   Returns the pointer of string buffer starting at the end of string, where the pointer shows end-of-string.
-     *          If string is invalid, returns NULL. The returned pointer is for read only.
+     *          If string is invalid, returns nullptr. The returned pointer is for read only.
      **/
     inline const CharType * getStringEnd( void ) const;
 
@@ -841,7 +830,7 @@ protected:
      * \param   strReplace  The string to replace
      * \param   lenReplace  The amount of characters to replace
      * \param   startPos    The starting position to start searching.
-     * \return  Returns next position after replacing string. Returns NEString::InvalidPos if could not find specified string.
+     * \return  Returns next position after replacing string. Returns NEString::INVALID_POS if could not find specified string.
      **/
     inline NEString::CharPos replaceWith( const CharType * strOrigin
                                         , NEString::CharCount lenOrigin
@@ -855,7 +844,7 @@ protected:
      * \param   charCount   The amount characters to replace is string buffer.
      * \param   strReplace  The string to replace
      * \param   lenReplace  The amount of characters to replace
-     * \return  Returns next position after replacing string. Returns NEString::InvalidPos if could not find specified string.
+     * \return  Returns next position after replacing string. Returns NEString::INVALID_POS if could not find specified string.
      **/
     inline NEString::CharPos replaceWith( NEString::CharPos startPos
                                         , NEString::CharCount charCount
@@ -871,128 +860,109 @@ protected:
      **/
     NEString::SString<CharType> *   mData;
     /**
-     * \brief   The assigned encoding for string
+     * \brief   The instance of helper object that makes char conversions.
      **/
-    NEString::eEncoding             mEncode;
+    Helper                          mHelper;
 
 #ifdef DEBUG
     const CharType *                mString;
 #endif // DEBUG
 
-
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
-private:
-    TEString( void );   // no default constructor is allowed.
 };
 
 //////////////////////////////////////////////////////////////////////////
-// Template class TEString implementation
+// Template class TEString Helperation
 //////////////////////////////////////////////////////////////////////////
 
-template<typename CharType, class Implement /*= TEStringImpl<CharType>*/>
-const CharType  TEString<CharType, Implement>::EmptyChar        = static_cast<CharType>('\0');
-
-template<typename CharType, class Implement /*= TEStringImpl<CharType>*/>
-const CharType  TEString<CharType, Implement>::NewLine          = static_cast<CharType>('\n');
-
-template<typename CharType, class Implement /*= TEStringImpl<CharType>*/>
-const CharType  TEString<CharType, Implement>::NewLineDos[2]    = {static_cast<CharType>('\r'), static_cast<CharType>('\n')};
-
-template<typename CharType, class Implement /*= TEStringImpl<CharType>*/>
-inline bool TEString<CharType, Implement>::isSymbol( CharType ch ) const
+template<typename CharType, class Helper /*= TEStringImpl<CharType>*/>
+inline bool TEString<CharType, Helper>::isSymbol( CharType ch ) const
 {
-    return Implement::implIsSymbol(ch);
+    return mHelper.implIsSymbol(ch);
 }
 
-template<typename CharType, class Implement /*= TEStringImpl<CharType>*/>
-inline bool TEString<CharType, Implement>::isWhitespace( CharType ch ) const
+template<typename CharType, class Helper /*= TEStringImpl<CharType>*/>
+inline bool TEString<CharType, Helper>::isWhitespace( CharType ch ) const
 {
-    return Implement::implIsWhitespace(ch);
+    return mHelper.implIsWhitespace(ch);
 }
 
-template<typename CharType, class Implement /*= TEStringImpl<CharType>*/>
-inline bool TEString<CharType, Implement>::isAlphanumeric( CharType ch ) const
+template<typename CharType, class Helper /*= TEStringImpl<CharType>*/>
+inline bool TEString<CharType, Helper>::isAlphanumeric( CharType ch ) const
 {
-    return Implement::implIsAlphanumeric(ch);
+    return mHelper.implIsAlphanumeric(ch);
 }
 
-template<typename CharType, class Implement /*= TEStringImpl<CharType>*/>
-inline bool TEString<CharType, Implement>::isNumeric( CharType ch ) const
+template<typename CharType, class Helper /*= TEStringImpl<CharType>*/>
+inline bool TEString<CharType, Helper>::isNumeric( CharType ch ) const
 {
-    return Implement::implIsNumeric(ch);
+    return mHelper.implIsNumeric(ch);
 }
 
-template<typename CharType, class Implement /*= TEStringImpl<CharType>*/>
-inline bool TEString<CharType, Implement>::isLetter( CharType ch ) const
+template<typename CharType, class Helper /*= TEStringImpl<CharType>*/>
+inline bool TEString<CharType, Helper>::isLetter( CharType ch ) const
 {
-    return Implement::implIsLetter(ch);
+    return mHelper.implIsLetter(ch);
 }
 
-template<typename CharType, class Implement /*= TEStringImpl<CharType>*/>
-inline CharType TEString<CharType, Implement>::makeLower( CharType ch ) const
+template<typename CharType, class Helper /*= TEStringImpl<CharType>*/>
+inline CharType TEString<CharType, Helper>::makeLower( CharType ch ) const
 {
-    // return ((ch >= static_cast<CharType>('A')) && (ch <= static_cast<CharType>('Z')) ? ch - 'A' + 'a' : ch);
-    return Implement::implMakeLower(ch);
+    return mHelper.implMakeLower(ch);
 }
 
-template<typename CharType, class Implement /*= TEStringImpl<CharType>*/>
-inline CharType TEString<CharType, Implement>::makeUpper( CharType ch ) const
+template<typename CharType, class Helper /*= TEStringImpl<CharType>*/>
+inline CharType TEString<CharType, Helper>::makeUpper( CharType ch ) const
 {
-    // return ((ch >= static_cast<CharType>('a')) && (ch <= static_cast<CharType>('z')) ? ch - 'a' + 'A' : ch);
-    return Implement::implMakeUpper(ch);
+    return mHelper.implMakeUpper(ch);
 }
 
-template<typename CharType, class Implement /*= TEStringImpl<CharType>*/>
-inline NEMath::eCompare TEString<CharType, Implement>::compareString(   NEString::CharPos startPos
+template<typename CharType, class Helper /*= TEStringImpl<CharType>*/>
+inline NEMath::eCompare TEString<CharType, Helper>::compareString(   NEString::CharPos startPos
                                                                       , const CharType * strOther
-                                                                      , NEString::CharCount charCount/*= NEString::CountAll  */
+                                                                      , NEString::CharCount charCount/*= NEString::COUNT_ALL  */
                                                                       , bool caseSensitive           /*= true                */ ) const
 {
     const CharType * leftSide = getChars(startPos);
     const CharType * rightSide= strOther;
 
-    return Implement::implCompareString(leftSide, rightSide, charCount, caseSensitive);
+    return mHelper.implCompareString(leftSide, rightSide, charCount, caseSensitive);
 }
 
-template<typename CharType, class Implement /*= TEStringImpl<CharType>*/>
-void TEString<CharType, Implement>::readStream( const IEInStream & stream )
+template<typename CharType, class Helper /*= TEStringImpl<CharType>*/>
+void TEString<CharType, Helper>::readStream( const IEInStream & stream )
 {
     int len     = 0;
-    int encode  = static_cast<int>(NEString::EncodeInvalid);
-
     stream >> len;
-    stream >> encode;
 
-    reallocate( static_cast<NEString::CharCount>(len), static_cast<NEString::eEncoding>(encode) );
-    CharType * dst  = getChars(NEString::EndPos);
+    reallocate( static_cast<NEString::CharCount>(len) );
+    CharType * dst  = getChars(NEString::END_POS);
 
-    int count = Implement::implReadStream(stream, dst, len);
+    int count = mHelper.implReadStream(stream, dst, len);
 
     mData->strUsed += count;
 }
 
-template<typename CharType, class Implement /*= TEStringImpl<CharType>*/>
-void TEString<CharType, Implement>::writeStream( IEOutStream & stream ) const
+template<typename CharType, class Helper /*= TEStringImpl<CharType>*/>
+void TEString<CharType, Helper>::writeStream( IEOutStream & stream ) const
 {
     NEString::CharCount len     = getLength();
-    NEString::eEncoding encode  = mData->strEncoding != NEString::EncodeInvalid ? mData->strEncoding : NEString::EncodeAscii;
     const CharType * src        = getString();
     stream << static_cast<int>(len);
-    stream << static_cast<int>(encode);
 
-    Implement::implWriteStream(stream, src);
+    mHelper.implWriteStream(stream, src);
 }
 
-template<typename CharType, class Implement /*= TEStringImpl<CharType>*/>
-inline NEString::CharPos TEString<CharType, Implement>::replaceWith(  NEString::CharPos startPos
-                                                                    , NEString::CharCount charCount
-                                                                    , const CharType * strReplace
-                                                                    , NEString::CharCount lenReplace )
+template<typename CharType, class Helper /*= TEStringImpl<CharType>*/>
+inline NEString::CharPos TEString<CharType, Helper>::replaceWith(  NEString::CharPos startPos
+                                                                 , NEString::CharCount charCount
+                                                                 , const CharType * strReplace
+                                                                 , NEString::CharCount lenReplace )
 {
-    NEString::CharPos nextPos = NEString::InvalidPos;
-    if ( (startPos != NEString::InvalidPos) && (startPos != NEString::EndPos) )
+    NEString::CharPos nextPos = NEString::INVALID_POS;
+    if ( (startPos != NEString::INVALID_POS) && (startPos != NEString::END_POS) )
     {
         int diff = static_cast<int>(lenReplace - charCount);
         NEString::CharPos endPos = startPos + charCount;
@@ -1006,48 +976,48 @@ inline NEString::CharPos TEString<CharType, Implement>::replaceWith(  NEString::
     return nextPos;
 }
 
-template<typename CharType, class Implement /*= TEStringImpl<CharType>*/>
-inline NEString::CharPos TEString<CharType, Implement>::replaceWith( const CharType * strOrigin
-                                                        , NEString::CharCount lenOrigin
-                                                        , const CharType * strReplace
-                                                        , NEString::CharCount lenReplace
-                                                        , NEString::CharPos startPos )
+template<typename CharType, class Helper /*= TEStringImpl<CharType>*/>
+inline NEString::CharPos TEString<CharType, Helper>::replaceWith( const CharType * strOrigin
+                                                                    , NEString::CharCount lenOrigin
+                                                                    , const CharType * strReplace
+                                                                    , NEString::CharCount lenReplace
+                                                                    , NEString::CharPos startPos )
 {
     ASSERT( isValid() );
     return replaceWith( findFirstOf( strOrigin, startPos, true ), lenOrigin, strReplace, lenReplace);
 }
 
-template<typename CharType, class Implement /*= TEStringImpl<CharType>*/>
-inline CharType * TEString<CharType, Implement>::getStringEnd( void )
+template<typename CharType, class Helper /*= TEStringImpl<CharType>*/>
+inline CharType * TEString<CharType, Helper>::getStringEnd( void )
 {
-    return ( isValid( ) ? mData->strBuffer + mData->strUsed : static_cast<CharType *>(NULL) );
+    return ( isValid( ) ? mData->strBuffer + mData->strUsed : nullptr );
 }
 
-template<typename CharType, class Implement /*= TEStringImpl<CharType>*/>
-inline const CharType * TEString<CharType, Implement>::getStringEnd( void ) const
+template<typename CharType, class Helper /*= TEStringImpl<CharType>*/>
+inline const CharType * TEString<CharType, Helper>::getStringEnd( void ) const
 {
-    return (isValid( ) ? mData->strBuffer + mData->strUsed : static_cast<const CharType *>(NULL));
+    return (isValid( ) ? mData->strBuffer + mData->strUsed : nullptr);
 }
 
-template<typename CharType, class Implement /*= TEStringImpl<CharType>*/>
-inline bool TEString<CharType, Implement>::isNull( void ) const
+template<typename CharType, class Helper /*= TEStringImpl<CharType>*/>
+inline bool TEString<CharType, Helper>::isNull( void ) const
 {
-    return ( mData == static_cast<const NEString::SString<CharType> *>(NULL) );
+    return ( mData == nullptr );
 }
 
-template<typename CharType, class Implement /*= TEStringImpl<CharType>*/>
-inline bool TEString<CharType, Implement>::isValidPtr( void ) const
+template<typename CharType, class Helper /*= TEStringImpl<CharType>*/>
+inline bool TEString<CharType, Helper>::isValidPtr( void ) const
 {
-    return ( mData != static_cast<const NEString::SString<CharType> *>(NULL) );
+    return ( mData != nullptr );
 }
 
-template<typename CharType, class Implement /*= TEStringImpl<CharType>*/>
-inline const CharType * TEString<CharType, Implement>::getChars( NEString::CharPos atPos ) const
+template<typename CharType, class Helper /*= TEStringImpl<CharType>*/>
+inline const CharType * TEString<CharType, Helper>::getChars( NEString::CharPos atPos ) const
 {
-    const CharType * result = static_cast<const CharType *>(&TEString<CharType, Implement>::EmptyChar);
+    const CharType * result = static_cast<const CharType *>(&TEString<CharType, Helper>::EmptyChar);
     if ( isValidPtr() )
     {
-        // strUsed is always less than NEString::EndPos
+        // strUsed is always less than NEString::END_POS
         atPos   = mData->strUsed < atPos ? mData->strUsed : atPos;
         result  = mData->strBuffer + atPos;
     }
@@ -1055,35 +1025,29 @@ inline const CharType * TEString<CharType, Implement>::getChars( NEString::CharP
     return result;
 }
 
-template<typename CharType, class Implement /*= TEStringImpl<CharType>*/>
-inline CharType * TEString<CharType, Implement>::getChars( NEString::CharPos atPos )
+template<typename CharType, class Helper /*= TEStringImpl<CharType>*/>
+inline CharType * TEString<CharType, Helper>::getChars( NEString::CharPos atPos )
 {
-    atPos = atPos == NEString::EndPos ? getLength( ) : atPos;
-    return (isValid( ) && (mData->strUsed >= atPos) ? mData->strBuffer + atPos : static_cast<CharType *>(NULL));
+    atPos = atPos == NEString::END_POS ? getLength( ) : atPos;
+    return (isValid( ) && (mData->strUsed >= atPos) ? mData->strBuffer + atPos : nullptr);
 }
 
-template<typename CharType, class Implement /*= TEStringImpl<CharType>*/>
-inline NEString::SString<CharType> & TEString<CharType, Implement>::getDataString( void )
+template<typename CharType, class Helper /*= TEStringImpl<CharType>*/>
+inline NEString::SString<CharType> & TEString<CharType, Helper>::getDataString( void )
 {
     return (isValid( ) ? *mData : *NEString::getInvalidString<CharType>( ));
 }
 
-template<typename CharType, class Implement /*= TEStringImpl<CharType>*/>
-inline const NEString::SString<CharType> & TEString<CharType, Implement>::getDataString( void ) const
+template<typename CharType, class Helper /*= TEStringImpl<CharType>*/>
+inline const NEString::SString<CharType> & TEString<CharType, Helper>::getDataString( void ) const
 {
     return (isValid( ) ? *mData : *NEString::getInvalidString<CharType>( ));
 }
 
-template<typename CharType, class Implement /*= TEStringImpl<CharType>*/>
-inline NEString::eEncoding TEString<CharType, Implement>::getInitEncoding( void ) const
+template<typename CharType, class Helper /*= TEStringImpl<CharType>*/>
+inline void TEString<CharType, Helper>::reallocate( NEString::CharCount charsAdd )
 {
-    return mEncode;
-}
-
-template<typename CharType, class Implement /*= TEStringImpl<CharType>*/>
-inline void TEString<CharType, Implement>::reallocate( NEString::CharCount charsAdd, NEString::eEncoding encode )
-{
-    NEString::SString<CharType> * tmp = NEString::reallocSpace<CharType, CharType>( *mData, charsAdd, isValid( ) ? mData->strEncoding : encode );
+    NEString::SString<CharType> * tmp = NEString::reallocSpace<CharType, CharType>( *mData, charsAdd );
     if ( NEString::isValid<CharType>(tmp))
     {
         NEString::releaseSpace<CharType>( mData );
@@ -1095,20 +1059,20 @@ inline void TEString<CharType, Implement>::reallocate( NEString::CharCount chars
     }
 }
 
-template<typename CharType, class Implement /*= TEStringImpl<CharType>*/>
-inline bool TEString<CharType, Implement>::canRead( NEString::CharPos atPos ) const
+template<typename CharType, class Helper /*= TEStringImpl<CharType>*/>
+inline bool TEString<CharType, Helper>::canRead( NEString::CharPos atPos ) const
 {
     return (isValidPtr() && NEString::canRead<CharType>(*mData, atPos));
 }
 
-template<typename CharType, class Implement /*= TEStringImpl<CharType>*/>
-inline bool TEString<CharType, Implement>::canWrite( NEString::CharPos atPos ) const
+template<typename CharType, class Helper /*= TEStringImpl<CharType>*/>
+inline bool TEString<CharType, Helper>::canWrite( NEString::CharPos atPos ) const
 {
     return (isValidPtr() && NEString::canWrite<CharType>( *mData, atPos ));
 }
 
-template<typename CharType, class Implement /*= TEStringImpl<CharType>*/>
-inline void TEString<CharType, Implement>::release( void )
+template<typename CharType, class Helper /*= TEStringImpl<CharType>*/>
+inline void TEString<CharType, Helper>::release( void )
 {
     NEString::releaseSpace<CharType>( mData );
     mData   = NEString::getInvalidString<CharType>( );
@@ -1118,80 +1082,83 @@ inline void TEString<CharType, Implement>::release( void )
 #endif // DEBUG
 }
 
-template<typename CharType, class Implement /*= TEStringImpl<CharType>*/>
-inline TEString<CharType, Implement>::TEString( NEString::eEncoding encode )
-    : Implement ( )
-
-    , mData     ( NEString::initString<CharType>(static_cast<NEString::CharCount>(0), encode) )
-    , mEncode   ( encode )
-
+template<typename CharType, class Helper /*= TEStringImpl<CharType>*/>
+inline TEString<CharType, Helper>::TEString( void )
+    : mData     ( NEString::initString<CharType>(static_cast<NEString::CharCount>(0) ) )
+    , mHelper   ( )
 #ifdef DEBUG
     , mString   ( mData->strBuffer )
 #endif // DEBUG
-{   }
+{
+}
 
-template<typename CharType, class Implement /*= TEStringImpl<CharType>*/>
-inline TEString<CharType, Implement>::TEString( CharType ch, NEString::eEncoding encode )
-    : Implement ( )
-
-    , mData     ( NEString::initString<CharType, CharType>(&ch, 1, encode) )
-    , mEncode   ( encode )
-
+template<typename CharType, class Helper /*= TEStringImpl<CharType>*/>
+inline TEString<CharType, Helper>::TEString( CharType ch )
+    : mData     ( NEString::initString<CharType, CharType>(&ch, 1) )
+    , mHelper   ( )
 #ifdef DEBUG
     , mString   ( mData->strBuffer )
 #endif // DEBUG
-{   }
+{
+}
 
-template<typename CharType, class Implement /*= TEStringImpl<CharType>*/>
-inline TEString<CharType, Implement>::TEString( const CharType * strSource, NEString::eEncoding encode )
-    : Implement ( )
-
-    , mData     ( NEString::initString<CharType, CharType>(strSource, NEString::CountAll, encode) )
-    , mEncode   ( encode )
-
+template<typename CharType, class Helper /*= TEStringImpl<CharType>*/>
+inline TEString<CharType, Helper>::TEString( const CharType * strSource )
+    : mData     ( NEString::initString<CharType, CharType>(strSource, NEString::COUNT_ALL) )
+    , mHelper   ( )
 #ifdef DEBUG
     , mString   ( mData->strBuffer )
 #endif // DEBUG
-{   }
+{
+}
 
-template<typename CharType, class Implement /*= TEStringImpl<CharType>*/>
-inline TEString<CharType, Implement>::TEString( const CharType * strSource, NEString::CharCount charCount, NEString::eEncoding encode )
-    : Implement ( )
-
-    , mData     ( NEString::initString<CharType, CharType>(strSource, charCount, encode) )
-    , mEncode   ( encode )
-
+template<typename CharType, class Helper /*= TEStringImpl<CharType>*/>
+inline TEString<CharType, Helper>::TEString( const CharType * strSource, NEString::CharCount charCount )
+    : mData     ( NEString::initString<CharType, CharType>(strSource, charCount) )
+    , mHelper   ( )
 #ifdef DEBUG
     , mString   ( mData->strBuffer )
 #endif // DEBUG
-{   }
+{
+}
 
-template<typename CharType, class Implement /*= TEStringImpl<CharType>*/>
-inline TEString<CharType, Implement>::TEString( const NEString::SString<CharType> & strSource, NEString::eEncoding encode )
-    : Implement ( )
-
-    , mData     ( NEString::initString<CharType, CharType>(strSource, encode) )
-    , mEncode   ( encode )
-
+template<typename CharType, class Helper /*= TEStringImpl<CharType>*/>
+inline TEString<CharType, Helper>::TEString( const NEString::SString<CharType> & strSource )
+    : mData     ( NEString::initString<CharType, CharType>(strSource) )
+    , mHelper   ( )
 #ifdef DEBUG
     , mString   ( mData->strBuffer )
 #endif // DEBUG
-{   }
+{
+}
 
-template<typename CharType, class Implement /*= TEStringImpl<CharType>*/>
-inline TEString<CharType, Implement>::TEString( const TEString<CharType, Implement> & strSource )
-    : Implement ( )
-
-    , mData     ( NEString::initString<CharType, CharType>( strSource.getDataString(), strSource.getInitEncoding() ) )
-    , mEncode   ( strSource.mEncode )
-
+template<typename CharType, class Helper /*= TEStringImpl<CharType>*/>
+inline TEString<CharType, Helper>::TEString( const TEString<CharType, Helper> & strSource )
+    : mData     ( NEString::initString<CharType, CharType>( strSource.getDataString() ) )
+    , mHelper   ( )
 #ifdef DEBUG
     , mString   ( mData->strBuffer )
 #endif // DEBUG
-{   }
+{
+}
 
-template<typename CharType, class Implement /*= TEStringImpl<CharType>*/>
-TEString<CharType, Implement>::~TEString( void )
+template<typename CharType, class Helper /*= TEStringImpl<CharType>*/>
+inline TEString<CharType, Helper>::TEString( TEString<CharType, Helper> && strSource )
+    : mData     ( strSource.mData )
+    , mHelper   ( )
+#ifdef DEBUG
+    , mString   ( mData->strBuffer )
+#endif // DEBUG
+{
+    strSource.mData     = nullptr;
+#ifdef DEBUG
+    strSource.mString   = nullptr;
+#endif // DEBUG
+
+}
+
+template<typename CharType, class Helper /*= TEStringImpl<CharType>*/>
+TEString<CharType, Helper>::~TEString( void )
 {
     NEString::releaseSpace<CharType>(mData);
     mData = NEString::getInvalidString<CharType>();
@@ -1200,49 +1167,49 @@ TEString<CharType, Implement>::~TEString( void )
 #endif // DEBUG
 }
 
-template<typename CharType, class Implement /*= TEStringImpl<CharType>*/>
-NEString::CharPos TEString<CharType, Implement>::findOneOf( const CharType * chars, NEString::CharPos startPos /*= NEString::StartPos*/ ) const
+template<typename CharType, class Helper /*= TEStringImpl<CharType>*/>
+NEString::CharPos TEString<CharType, Helper>::findOneOf( const CharType * chars, NEString::CharPos startPos /*= NEString::START_POS*/ ) const
 {
-    NEString::CharPos result= NEString::InvalidPos;
-    if ( canRead(startPos) && (chars != static_cast<const CharType *>(NULL)) )
+    NEString::CharPos result= NEString::INVALID_POS;
+    if ( canRead(startPos) && (chars != nullptr) )
     {
         const CharType * strThis    = getBuffer( startPos );
-        for ( ; (result == NEString::InvalidPos) && (*strThis != NEString::EndOfString); ++strThis, ++ startPos)
+        for ( ; (result == NEString::INVALID_POS) && (*strThis != NEString::EndOfString); ++strThis, ++ startPos)
         {
             CharType chThis = *strThis;
-            for ( const CharType * strOther = chars; (result == NEString::InvalidPos) && (*strOther != NEString::EndOfString); ++ strOther)
+            for ( const CharType * strOther = chars; (result == NEString::INVALID_POS) && (*strOther != NEString::EndOfString); ++ strOther)
             {
                 CharType chOther = *strOther;
-                result = chThis == chOther ? startPos : NEString::InvalidPos;
+                result = chThis == chOther ? startPos : NEString::INVALID_POS;
             }
         }
     }
     return result;
 }
 
-template<typename CharType, class Implement /*= TEStringImpl<CharType>*/>
-NEString::CharPos TEString<CharType, Implement>::findFirstOf( CharType chSearch, NEString::CharPos startPos /*= NEString::StartPos*/, bool caseSensitive /*= true*/ ) const
+template<typename CharType, class Helper /*= TEStringImpl<CharType>*/>
+NEString::CharPos TEString<CharType, Helper>::findFirstOf( CharType chSearch, NEString::CharPos startPos /*= NEString::START_POS*/, bool caseSensitive /*= true*/ ) const
 {
-    NEString::CharPos result = NEString::InvalidPos;
+    NEString::CharPos result = NEString::INVALID_POS;
 
     if ( canRead( startPos ) )
     {
         CharType chUpper = caseSensitive ? chSearch : makeUpper( chSearch );
         CharType chLower = caseSensitive ? chSearch : makeLower( chSearch );
         const CharType * strThis = getBuffer( startPos );
-        for ( ; (result == NEString::InvalidPos) && (*strThis != NEString::EndOfString); ++strThis, ++ startPos )
+        for ( ; (result == NEString::INVALID_POS) && (*strThis != NEString::EndOfString); ++strThis, ++ startPos )
         {
-            result = (*strThis == chUpper) || (*strThis == chLower) ? startPos : NEString::InvalidPos;
+            result = (*strThis == chUpper) || (*strThis == chLower) ? startPos : NEString::INVALID_POS;
         }
     }
     return result;
 }
 
-template<typename CharType, class Implement /*= TEStringImpl<CharType>*/>
-NEString::CharPos TEString<CharType, Implement>::findFirstOf( const CharType * phrase, NEString::CharPos startPos /*= NEString::StartPos*/, bool caseSensitive /*= true*/, bool wholeWord /*= false*/ ) const
+template<typename CharType, class Helper /*= TEStringImpl<CharType>*/>
+NEString::CharPos TEString<CharType, Helper>::findFirstOf( const CharType * phrase, NEString::CharPos startPos /*= NEString::START_POS*/, bool caseSensitive /*= true*/, bool wholeWord /*= false*/ ) const
 {
-    NEString::CharPos result = NEString::InvalidPos;
-    if ( canRead( startPos ) && (phrase != static_cast<const CharType *>(NULL)) )
+    NEString::CharPos result = NEString::INVALID_POS;
+    if ( canRead( startPos ) && (phrase != nullptr) )
     {
         NEString::CharCount lenThis = getLength();
         NEString::CharCount lenOther= NEString::getStringLength<CharType>(phrase);
@@ -1250,7 +1217,7 @@ NEString::CharPos TEString<CharType, Implement>::findFirstOf( const CharType * p
         {
             ASSERT( lenThis >= lenOther);
             NEString::CharPos endPos= lenThis - lenOther + 1;
-            const CharType * buffer = static_cast<const CharType *>(NULL);
+            const CharType * buffer = nullptr;
             CharType beginPrev      = static_cast<CharType>(NEString::EndOfString);
             CharType beginCurr      = static_cast<CharType>(NEString::EndOfString);
             CharType endCurr        = static_cast<CharType>(NEString::EndOfString);
@@ -1259,14 +1226,14 @@ NEString::CharPos TEString<CharType, Implement>::findFirstOf( const CharType * p
             if ( wholeWord )
             {
                 buffer      = getChars( startPos );
-                beginPrev   = startPos == NEString::StartPos ? static_cast<CharType>(NEString::EndOfString) : *(buffer - 1);
+                beginPrev   = startPos == NEString::START_POS ? static_cast<CharType>(NEString::EndOfString) : *(buffer - 1);
                 endNext     = *(buffer + lenOther - 1);
             }
 
-            for ( NEString::CharPos pos = startPos; (result == NEString::InvalidPos) && (pos < endPos); ++ pos )
+            for ( NEString::CharPos pos = startPos; (result == NEString::INVALID_POS) && (pos < endPos); ++ pos )
             {
                 bool isWord = true;
-                if ( buffer != static_cast<const CharType *>(NULL) )
+                if ( buffer != nullptr )
                 {
                     isWord      = false;
                     endCurr     = endNext;
@@ -1278,7 +1245,7 @@ NEString::CharPos TEString<CharType, Implement>::findFirstOf( const CharType * p
                     }
                     beginPrev = beginCurr;
                 }
-                if ( isWord && (compareString( pos, phrase, lenOther, caseSensitive ) == NEMath::CompEqual) )
+                if ( isWord && (compareString( pos, phrase, lenOther, caseSensitive ) == NEMath::eCompare::Equal) )
                 {
                     result = pos;
                 }
@@ -1288,12 +1255,12 @@ NEString::CharPos TEString<CharType, Implement>::findFirstOf( const CharType * p
     return result;
 }
 
-template<typename CharType, class Implement /*= TEStringImpl<CharType>*/>
-NEString::CharPos TEString<CharType, Implement>::findLastOf( CharType chSearch, NEString::CharPos startPos /*= NEString::EndPos*/, bool caseSensitive /*= true*/ ) const
+template<typename CharType, class Helper /*= TEStringImpl<CharType>*/>
+NEString::CharPos TEString<CharType, Helper>::findLastOf( CharType chSearch, NEString::CharPos startPos /*= NEString::END_POS*/, bool caseSensitive /*= true*/ ) const
 {
-    NEString::CharPos result = NEString::InvalidPos;
+    NEString::CharPos result = NEString::INVALID_POS;
     NEString::CharCount strLen = getLength( );
-    if ( startPos == NEString::EndPos )
+    if ( startPos == NEString::END_POS )
     {
         startPos = strLen != 0 ? strLen - 1 : 0;
     }
@@ -1302,36 +1269,36 @@ NEString::CharPos TEString<CharType, Implement>::findLastOf( CharType chSearch, 
         CharType chUpper = caseSensitive ? chSearch : makeUpper( chSearch );
         CharType chLower = caseSensitive ? chSearch : makeLower( chSearch );
 
-        const CharType * begin  = getBuffer(NEString::StartPos);
+        const CharType * begin  = getBuffer(NEString::START_POS);
         const CharType * end    = getBuffer(startPos);
-        for ( ; (result == NEString::InvalidPos) && (end >= begin); -- end, -- startPos)
+        for ( ; (result == NEString::INVALID_POS) && (end >= begin); -- end, -- startPos)
         {
-            result = (*end == chUpper) || (*end == chLower) ? startPos : NEString::InvalidPos;
+            result = (*end == chUpper) || (*end == chLower) ? startPos : NEString::INVALID_POS;
         }
     }
 
     return result;
 }
 
-template<typename CharType, class Implement /*= TEStringImpl<CharType>*/>
-NEString::CharPos TEString<CharType, Implement>::findLastOf( const CharType * phrase, NEString::CharPos startPos /*= NEString::EndPos*/, bool caseSensitive /*= true*/ ) const
+template<typename CharType, class Helper /*= TEStringImpl<CharType>*/>
+NEString::CharPos TEString<CharType, Helper>::findLastOf( const CharType * phrase, NEString::CharPos startPos /*= NEString::END_POS*/, bool caseSensitive /*= true*/ ) const
 {
-    NEString::CharPos result    = NEString::InvalidPos;
+    NEString::CharPos result    = NEString::INVALID_POS;
     NEString::CharCount count   = NEString::getStringLength<CharType>( phrase );
     NEString::CharCount strLen  = getLength();
 
-    if ( startPos == NEString::EndPos )
+    if ( startPos == NEString::END_POS )
     {
         startPos = strLen != 0 ? strLen - 1 : 0;
     }
     if ( canRead(startPos) && (count != 0))
     {
-        const CharType * begin  = getBuffer( NEString::StartPos );
+        const CharType * begin  = getBuffer( NEString::START_POS );
         const CharType * end    = getBuffer( startPos );
 
-        for ( NEString::CharPos pos = startPos; (result == NEString::InvalidPos) && (end >= begin); --end, --pos )
+        for ( NEString::CharPos pos = startPos; (result == NEString::INVALID_POS) && (end >= begin); --end, --pos )
         {
-            if ( (compareString( pos, phrase, count, caseSensitive ) == NEMath::CompEqual) )
+            if ( (compareString( pos, phrase, count, caseSensitive ) == NEMath::eCompare::Equal) )
             {
                 result = pos;
             }
@@ -1340,18 +1307,18 @@ NEString::CharPos TEString<CharType, Implement>::findLastOf( const CharType * ph
     return result;
 }
 
-template<typename CharType, class Implement /*= TEStringImpl<CharType>*/>
-inline NEMath::eCompare TEString<CharType, Implement>::compare( const CharType * what, NEString::CharPos startAt /*= NEString::StartPos*/, NEString::CharCount charCount /*= NEString::CountAll*/, bool caseSensitive /*= true*/) const
+template<typename CharType, class Helper /*= TEStringImpl<CharType>*/>
+inline NEMath::eCompare TEString<CharType, Helper>::compare( const CharType * what, NEString::CharPos startAt /*= NEString::START_POS*/, NEString::CharCount charCount /*= NEString::COUNT_ALL*/, bool caseSensitive /*= true*/) const
 {   return compareString( startAt, what, charCount, caseSensitive );   }
 
-template<typename CharType, class Implement /*= TEStringImpl<CharType>*/>
-inline NEMath::eCompare TEString<CharType, Implement>::compare(const TEString<CharType, Implement> & other, bool caseSensitive /*= true*/ ) const
+template<typename CharType, class Helper /*= TEStringImpl<CharType>*/>
+inline NEMath::eCompare TEString<CharType, Helper>::compare(const TEString<CharType, Helper> & other, bool caseSensitive /*= true*/ ) const
 {
-    return compare(other.getChars(NEString::StartPos), NEString::StartPos, NEString::CountAll, caseSensitive);
+    return compare(other.getChars(NEString::START_POS), NEString::START_POS, NEString::COUNT_ALL, caseSensitive);
 }
 
-template<typename CharType, class Implement /*= TEStringImpl<CharType>*/>
-bool TEString<CharType, Implement>::substring(TEString<CharType, Implement> & outResult, NEString::CharPos startPos /* = NEString::StartPos */, NEString::CharCount charCount /*= NEString::CountAll*/ ) const
+template<typename CharType, class Helper /*= TEStringImpl<CharType>*/>
+bool TEString<CharType, Helper>::substring(TEString<CharType, Helper> & outResult, NEString::CharPos startPos /* = NEString::START_POS */, NEString::CharCount charCount /*= NEString::COUNT_ALL*/ ) const
 {
     bool result = false;
     outResult.release();
@@ -1365,50 +1332,50 @@ bool TEString<CharType, Implement>::substring(TEString<CharType, Implement> & ou
     return result;
 }
 
-template<typename CharType, class Implement /*= TEStringImpl<CharType>*/>
-NEString::CharPos TEString<CharType, Implement>::substring( TEString<CharType, Implement> & outResult, const CharType * strPhrase, NEString::CharPos startPos /*= NEString::StartPos*/ ) const
+template<typename CharType, class Helper /*= TEStringImpl<CharType>*/>
+NEString::CharPos TEString<CharType, Helper>::substring( TEString<CharType, Helper> & outResult, const CharType * strPhrase, NEString::CharPos startPos /*= NEString::START_POS*/ ) const
 {
-    NEString::CharPos result= NEString::InvalidPos;
+    NEString::CharPos result= NEString::INVALID_POS;
     const CharType * buffer = getBuffer(startPos);
-    const CharType * next   = static_cast<const CharType *>(NULL);
+    const CharType * next   = nullptr;
 
-    NEString::CharPos pos   = NEString::findFirstOf<CharType>(strPhrase, buffer, NEString::StartPos, &next);
-    NEString::CharPos nextPos= next != static_cast<const CharType *>(NULL) ? startPos + static_cast<NEString::CharPos>(next - buffer) : NEString::InvalidPos;
-    outResult.copy( buffer, pos != NEString::InvalidPos ? pos : NEString::CountAll );
+    NEString::CharPos pos   = NEString::findFirstOf<CharType>(strPhrase, buffer, NEString::START_POS, &next);
+    NEString::CharPos nextPos= next != nullptr ? startPos + static_cast<NEString::CharPos>(next - buffer) : NEString::INVALID_POS;
+    outResult.copy( buffer, pos != NEString::INVALID_POS ? pos : NEString::COUNT_ALL );
 
     if ( nextPos < getLength() )
         result = nextPos;
     else if ( nextPos == getLength() )
-        result = NEString::EndPos;
+        result = NEString::END_POS;
     return result;
 }
 
-template<typename CharType, class Implement /*= TEStringImpl<CharType>*/>
-NEString::CharPos TEString<CharType, Implement>::substring( TEString<CharType, Implement> & outResult, CharType chSymbol, NEString::CharPos startPos /* = NEString::StartPos */ ) const
+template<typename CharType, class Helper /*= TEStringImpl<CharType>*/>
+NEString::CharPos TEString<CharType, Helper>::substring( TEString<CharType, Helper> & outResult, CharType chSymbol, NEString::CharPos startPos /* = NEString::START_POS */ ) const
 {
-    NEString::CharPos result = NEString::InvalidPos;
+    NEString::CharPos result= NEString::INVALID_POS;
     const CharType * buffer = getBuffer(startPos);
-    const CharType * next = static_cast<const CharType *>(NULL);
+    const CharType * next   = nullptr;
 
-    NEString::CharPos pos = NEString::findFirstOf<CharType>(chSymbol, buffer, NEString::StartPos, &next);
-    NEString::CharPos nextPos = next != static_cast<const CharType *>(NULL) ? startPos + static_cast<NEString::CharPos>(next - buffer) : NEString::InvalidPos;
-    outResult.copy(buffer, pos != NEString::InvalidPos ? pos : NEString::CountAll);
+    NEString::CharPos pos = NEString::findFirstOf<CharType>(chSymbol, buffer, NEString::START_POS, &next);
+    NEString::CharPos nextPos = next != nullptr ? startPos + static_cast<NEString::CharPos>(next - buffer) : NEString::INVALID_POS;
+    outResult.copy(buffer, pos != NEString::INVALID_POS ? pos : NEString::COUNT_ALL);
 
     if ( nextPos < getLength( ) )
         result = nextPos;
     else if ( nextPos == getLength( ) )
-        result = NEString::EndPos;
+        result = NEString::END_POS;
     return result;
 }
 
-template<typename CharType, class Implement /*= TEStringImpl<CharType>*/>
-inline bool TEString<CharType, Implement>::isNumeric( bool signIgnore /*= true*/ ) const
+template<typename CharType, class Helper /*= TEStringImpl<CharType>*/>
+inline bool TEString<CharType, Helper>::isNumeric( bool signIgnore /*= true*/ ) const
 {
     bool result = false;
     if ( isValid() )
     {
         result = true;
-        const CharType * src = getChars( NEString::StartPos );
+        const CharType * src = getChars( NEString::START_POS );
         if ( signIgnore && ( (*src == '-') || (*src == '+') ))
             ++src; // Escape sign, if it should.
 
@@ -1418,27 +1385,27 @@ inline bool TEString<CharType, Implement>::isNumeric( bool signIgnore /*= true*/
     return result;
 }
 
-template<typename CharType, class Implement /*= TEStringImpl<CharType>*/>
-inline bool TEString<CharType, Implement>::isAlphanumeric( void ) const
+template<typename CharType, class Helper /*= TEStringImpl<CharType>*/>
+inline bool TEString<CharType, Helper>::isAlphanumeric( void ) const
 {
     bool result = false;
     if ( isValid() )
     {
         result = true;
-        for (const CharType * src = getChars( NEString::StartPos ); result && (*src != static_cast<CharType>(NEString::EndOfString)); ++ src )
+        for (const CharType * src = getChars( NEString::START_POS ); result && (*src != static_cast<CharType>(NEString::EndOfString)); ++ src )
             result = isAlphanumeric(*src);
     }
     return result;
 }
 
-template<typename CharType, class Implement /*= TEStringImpl<CharType>*/>
-inline bool TEString<CharType, Implement>::isValidName( void ) const
+template<typename CharType, class Helper /*= TEStringImpl<CharType>*/>
+inline bool TEString<CharType, Helper>::isValidName( void ) const
 {
     bool result = false;
     if ( isValid( ) )
     {
         result = true;
-        for ( const CharType * src = getChars( NEString::StartPos ); result && (*src != static_cast<CharType>(NEString::EndOfString)); ++ src )
+        for ( const CharType * src = getChars( NEString::START_POS ); result && (*src != static_cast<CharType>(NEString::EndOfString)); ++ src )
         {
             if ( isAlphanumeric( *src ) == false )
                 result = (*src == '-') || (*src == '_') || (*src == '.');
@@ -1447,21 +1414,21 @@ inline bool TEString<CharType, Implement>::isValidName( void ) const
     return result;
 }
 
-template<typename CharType, class Implement /*= TEStringImpl<CharType>*/>
-inline bool TEString<CharType, Implement>::validate( const CharType * validityList ) const
+template<typename CharType, class Helper /*= TEStringImpl<CharType>*/>
+inline bool TEString<CharType, Helper>::validate( const CharType * validityList ) const
 {
     bool result = false;
     if ( isValid( ) && (NEString::isEmpty<CharType>(validityList) == false) )
     {
         result = true;
-        for ( const CharType * src = getChars( NEString::StartPos ); result && (*src != static_cast<CharType>(NEString::EndOfString)); ++ src )
-            result = NEString::findFirstOf<CharType>(*src, validityList) != NEString::InvalidPos;
+        for ( const CharType * src = getChars( NEString::START_POS ); result && (*src != static_cast<CharType>(NEString::EndOfString)); ++ src )
+            result = NEString::findFirstOf<CharType>(*src, validityList) != NEString::INVALID_POS;
     }
     return result;
 }
 
-template<typename CharType, class Implement /*= TEStringImpl<CharType>*/>
-inline void TEString<CharType, Implement>::truncate( NEString::CharCount maxChars )
+template<typename CharType, class Helper /*= TEStringImpl<CharType>*/>
+inline void TEString<CharType, Helper>::truncate( NEString::CharCount maxChars )
 {
     if ( maxChars == 0 )
     {
@@ -1473,8 +1440,8 @@ inline void TEString<CharType, Implement>::truncate( NEString::CharCount maxChar
         if ( spaceNeed < getActualLength() )
         {
             ASSERT( isValidPtr() );
-            NEString::SString<CharType> * tmp = NEString::initString<CharType>(getString(), maxChars, mEncode);
-            if (tmp != static_cast<NEString::SString<CharType> *>(NULL))
+            NEString::SString<CharType> * tmp = NEString::initString<CharType>(getString(), maxChars);
+            if (tmp != nullptr)
             {
                 NEString::releaseSpace<CharType>(mData);
                 mData   = tmp;
@@ -1487,8 +1454,8 @@ inline void TEString<CharType, Implement>::truncate( NEString::CharCount maxChar
     }
 }
 
-template<typename CharType, class Implement /*= TEStringImpl<CharType>*/>
-inline void TEString<CharType, Implement>::remove( NEString::CharPos startPos, NEString::CharCount charCount /*= NEString::CountAll*/ )
+template<typename CharType, class Helper /*= TEStringImpl<CharType>*/>
+inline void TEString<CharType, Helper>::remove( NEString::CharPos startPos, NEString::CharCount charCount /*= NEString::COUNT_ALL*/ )
 {
     if ( canRead( startPos ) )
     {
@@ -1500,8 +1467,8 @@ inline void TEString<CharType, Implement>::remove( NEString::CharPos startPos, N
     }
 }
 
-template<typename CharType, class Implement /*= TEStringImpl<CharType>*/>
-inline void TEString<CharType, Implement>::compact( void )
+template<typename CharType, class Helper /*= TEStringImpl<CharType>*/>
+inline void TEString<CharType, Helper>::compact( void )
 {
     if ( isValid() )
     {
@@ -1512,8 +1479,8 @@ inline void TEString<CharType, Implement>::compact( void )
 
         if ( charCount < getActualLength() )
         {
-            NEString::SString<CharType> * tmp = NEString::initString<CharType>( getString( ), len, mEncode );
-            if ( tmp != static_cast<NEString::SString<CharType> *>(NULL) )
+            NEString::SString<CharType> * tmp = NEString::initString<CharType>( getString( ), len );
+            if ( tmp != nullptr )
             {
                 NEString::releaseSpace<CharType>( mData );
                 mData   = tmp;
@@ -1526,26 +1493,29 @@ inline void TEString<CharType, Implement>::compact( void )
     }
 }
 
-template<typename CharType, class Implement /*= TEStringImpl<CharType>*/>
-NEString::CharCount TEString<CharType, Implement>::copy(const CharType * strSource, NEString::CharCount charCount /*= NEString::CountAll */)
+template<typename CharType, class Helper /*= TEStringImpl<CharType>*/>
+NEString::CharCount TEString<CharType, Helper>::copy(const CharType * strSource, NEString::CharCount charCount /*= NEString::COUNT_ALL */)
 {
     NEString::CharCount result = 0;
 
-    charCount = charCount == NEString::CountAll ? NEString::getStringLength<CharType>(strSource) : charCount;
+    charCount = charCount == NEString::COUNT_ALL ? NEString::getStringLength<CharType>(strSource) : charCount;
     resize(charCount);
     if ( isValid() )
     {
-        result = NEString::copyString<CharType, CharType>(*mData, strSource, NEString::StartPos, charCount);
+        result = NEString::copyString<CharType, CharType>(*mData, strSource, NEString::START_POS, charCount);
+#ifdef DEBUG
+        mString = mData->strBuffer;
+#endif // DEBUG
     }
 
     return result;
 }
 
-template<typename CharType, class Implement /*= TEStringImpl<CharType>*/>
-NEString::CharCount  TEString<CharType, Implement>::append(const CharType * strSource, NEString::CharCount charCount /*= NEString::CountAll*/)
+template<typename CharType, class Helper /*= TEStringImpl<CharType>*/>
+NEString::CharCount  TEString<CharType, Helper>::append(const CharType * strSource, NEString::CharCount charCount /*= NEString::COUNT_ALL*/)
 {
     NEString::CharCount result = 0;
-    charCount = charCount == NEString::CountAll ? NEString::getStringLength<CharType>(strSource) : charCount;
+    charCount = charCount == NEString::COUNT_ALL ? NEString::getStringLength<CharType>(strSource) : charCount;
     resize( getLength() + charCount);
     if ( isValid( ) )
     {
@@ -1554,14 +1524,14 @@ NEString::CharCount  TEString<CharType, Implement>::append(const CharType * strS
     return result;
 }
 
-template<typename CharType, class Implement /*= TEStringImpl<CharType>*/>
-NEString::CharCount TEString<CharType, Implement>::move( NEString::CharPos startPos, int moveTo )
+template<typename CharType, class Helper /*= TEStringImpl<CharType>*/>
+NEString::CharCount TEString<CharType, Helper>::move( NEString::CharPos startPos, int moveTo )
 {
     NEString::CharCount result = 0;
     if ( moveTo < 0 )
     {
         NEString::CharCount cnt = static_cast<NEString::CharCount>( -1 * moveTo);
-        NEString::CharPos dstPos= startPos >= cnt ? startPos + moveTo : NEString::StartPos;
+        NEString::CharPos dstPos= startPos >= cnt ? startPos + moveTo : NEString::START_POS;
         const CharType * src    = getChars(startPos);
         CharType * dst          = getChars(dstPos);
         for ( ; *src != static_cast<CharType>(NEString::EndOfString); ++ result)
@@ -1593,8 +1563,8 @@ NEString::CharCount TEString<CharType, Implement>::move( NEString::CharPos start
     return result;
 }
 
-template<typename CharType, class Implement /*= TEStringImpl<CharType>*/>
-void TEString<CharType, Implement>::swap( NEString::CharPos startPos /*= NEString::StartPos*/, NEString::CharCount charCount /*= NEString::CountAll*/ )
+template<typename CharType, class Helper /*= TEStringImpl<CharType>*/>
+void TEString<CharType, Helper>::swap( NEString::CharPos startPos /*= NEString::START_POS*/, NEString::CharCount charCount /*= NEString::COUNT_ALL*/ )
 {
     if ( canRead(startPos) )
     {
@@ -1614,21 +1584,21 @@ void TEString<CharType, Implement>::swap( NEString::CharPos startPos /*= NEStrin
     }
 }
 
-template<typename CharType, class Implement /*= TEStringImpl<CharType>*/>
-void TEString<CharType, Implement>::insertAt( CharType chSrc, NEString::CharPos atPos )
+template<typename CharType, class Helper /*= TEStringImpl<CharType>*/>
+void TEString<CharType, Helper>::insertAt( CharType chSrc, NEString::CharPos atPos )
 {
     if ( move(atPos, 1) != 0 )
         mData->strBuffer[atPos] = chSrc;
 }
 
-template<typename CharType, class Implement /*= TEStringImpl<CharType>*/>
-void TEString<CharType, Implement>::insertAt( const CharType * strSrc, NEString::CharPos atPos, NEString::CharCount charCount /*= NEString::CountAll*/ )
+template<typename CharType, class Helper /*= TEStringImpl<CharType>*/>
+void TEString<CharType, Helper>::insertAt( const CharType * strSrc, NEString::CharPos atPos, NEString::CharCount charCount /*= NEString::COUNT_ALL*/ )
 {
-    if ( strSrc != static_cast<const CharType *>(NULL) )
+    if ( strSrc != nullptr )
     {
         NEString::CharCount eos = getLength( );
         NEString::CharCount len = NEString::getStringLength( strSrc );
-        atPos = atPos == NEString::EndPos ? eos : atPos;
+        atPos = atPos == NEString::END_POS ? eos : atPos;
         charCount = MACRO_MIN( len, charCount );
         if ( move( atPos, charCount ) != 0 )
         {
@@ -1638,25 +1608,28 @@ void TEString<CharType, Implement>::insertAt( const CharType * strSrc, NEString:
             if ( atPos == eos )
                 *dst = static_cast<CharType>(NEString::EndOfString);
         }
+#ifdef DEBUG
+        mString = mData != nullptr ? mData->strBuffer : nullptr;
+#endif // DEBUG
     }
 }
 
-template<typename CharType, class Implement /*= TEStringImpl<CharType>*/>
-void TEString<CharType, Implement>::insertAt( const TEString<CharType, Implement> & strSrc, NEString::CharPos atPos, NEString::CharCount charCount /*= NEString::CountAll*/ )
+template<typename CharType, class Helper /*= TEStringImpl<CharType>*/>
+void TEString<CharType, Helper>::insertAt( const TEString<CharType, Helper> & strSrc, NEString::CharPos atPos, NEString::CharCount charCount /*= NEString::COUNT_ALL*/ )
 {
     insertAt( strSrc.getString(), atPos, charCount);
 }
 
-template<typename CharType, class Implement /*= TEStringImpl<CharType>*/>
-NEString::CharPos TEString<CharType, Implement>::replace( CharType chOrigin, CharType chReplace, NEString::CharPos startPos /*= NEString::StartPos*/, bool replaceAll /*= true*/ )
+template<typename CharType, class Helper /*= TEStringImpl<CharType>*/>
+NEString::CharPos TEString<CharType, Helper>::replace( CharType chOrigin, CharType chReplace, NEString::CharPos startPos /*= NEString::START_POS*/, bool replaceAll /*= true*/ )
 {
-    NEString::CharPos result = NEString::InvalidPos;
+    NEString::CharPos result = NEString::INVALID_POS;
     if ( canRead(startPos) )
     {
-        CharType * buffer     = getChars( NEString::StartPos );
+        CharType * buffer     = getChars( NEString::START_POS );
         NEString::CharPos len = getLength();
         NEString::CharPos pos = startPos;
-        for ( ; (result == NEString::InvalidPos) && (pos < len); ++ pos )
+        for ( ; (result == NEString::INVALID_POS) && (pos < len); ++ pos )
         {
             if ( buffer[pos] == chOrigin )
             {
@@ -1665,15 +1638,15 @@ NEString::CharPos TEString<CharType, Implement>::replace( CharType chOrigin, Cha
                     result = pos + 1;
             }
         }
-        result = (result == NEString::InvalidPos) || (result == len) ? NEString::EndPos : result;
+        result = (result == NEString::INVALID_POS) || (result == len) ? NEString::END_POS : result;
     }
     return result;
 }
 
-template<typename CharType, class Implement /*= TEStringImpl<CharType>*/>
-NEString::CharPos TEString<CharType, Implement>::replace( const CharType * strOrigin, const CharType * strReplace, NEString::CharPos startPos /*= NEString::StartPos*/, bool replaceAll /*= true*/ )
+template<typename CharType, class Helper /*= TEStringImpl<CharType>*/>
+NEString::CharPos TEString<CharType, Helper>::replace( const CharType * strOrigin, const CharType * strReplace, NEString::CharPos startPos /*= NEString::START_POS*/, bool replaceAll /*= true*/ )
 {
-    NEString::CharPos result = NEString::InvalidPos;
+    NEString::CharPos result = NEString::INVALID_POS;
     if ( canRead(startPos) )
     {
         NEString::CharPos lenOrigin = NEString::getStringLength<CharType>( strOrigin );
@@ -1685,20 +1658,20 @@ NEString::CharPos TEString<CharType, Implement>::replace( const CharType * strOr
             {
                 result = replaceWith( strOrigin, lenOrigin, strReplace, lenReplace, startPos );
                 startPos = result;
-                if ( result != NEString::InvalidPos )
+                if ( result != NEString::INVALID_POS )
                     replacedOnce = true;
-            } while ( replaceAll && (result != NEString::InvalidPos) );
+            } while ( replaceAll && (result != NEString::INVALID_POS) );
 
-            result = ( (result == NEString::InvalidPos) && replacedOnce ? NEString::EndPos : result );
+            result = ( (result == NEString::INVALID_POS) && replacedOnce ? NEString::END_POS : result );
         }
     }
     return result;
 }
 
-template<typename CharType, class Implement /*= TEStringImpl<CharType>*/>
-NEString::CharPos TEString<CharType, Implement>::replace( const TEString<CharType, Implement> & strOrigin, const TEString<CharType, Implement> & strReplace, NEString::CharPos startPos /*= NEString::StartPos*/, bool replaceAll /*= true*/ )
+template<typename CharType, class Helper /*= TEStringImpl<CharType>*/>
+NEString::CharPos TEString<CharType, Helper>::replace( const TEString<CharType, Helper> & strOrigin, const TEString<CharType, Helper> & strReplace, NEString::CharPos startPos /*= NEString::START_POS*/, bool replaceAll /*= true*/ )
 {
-    NEString::CharPos result = NEString::InvalidPos;
+    NEString::CharPos result = NEString::INVALID_POS;
     if ( canRead( startPos ) )
     {
         NEString::CharPos lenOrigin  = strOrigin.getLength();
@@ -1708,26 +1681,26 @@ NEString::CharPos TEString<CharType, Implement>::replace( const TEString<CharTyp
             bool replacedOnce = false;
             const CharType * bufOrigin = strOrigin.getString();
             const CharType * bufReplace= strReplace.getString();
-            ASSERT( (bufOrigin != static_cast<const CharType *>(NULL)) && (bufReplace != static_cast<const CharType *>(NULL)) );
+            ASSERT( (bufOrigin != nullptr) && (bufReplace != nullptr) );
     
             do
             {
                 result = replaceWith( bufOrigin, lenOrigin, bufReplace, lenReplace, startPos );
                 startPos = result;
-                if ( result != NEString::InvalidPos )
+                if ( result != NEString::INVALID_POS )
                     replacedOnce = true;
-            } while ( replaceAll && (result != NEString::InvalidPos) );
+            } while ( replaceAll && (result != NEString::INVALID_POS) );
 
-            result = ((result == NEString::InvalidPos) && replacedOnce ? NEString::EndPos : result);
+            result = ((result == NEString::INVALID_POS) && replacedOnce ? NEString::END_POS : result);
         }
     }
     return result;
 }
 
-template<typename CharType, class Implement /*= TEStringImpl<CharType>*/>
-NEString::CharPos TEString<CharType, Implement>::replace( const CharType * strReplace, NEString::CharPos startPos, NEString::CharCount charsRemove )
+template<typename CharType, class Helper /*= TEStringImpl<CharType>*/>
+NEString::CharPos TEString<CharType, Helper>::replace( const CharType * strReplace, NEString::CharPos startPos, NEString::CharCount charsRemove )
 {
-    NEString::CharPos result = NEString::InvalidPos;
+    NEString::CharPos result = NEString::INVALID_POS;
     if ( canRead( startPos ) )
     {
         NEString::CharPos lenReplace = NEString::getStringLength<CharType>(strReplace);
@@ -1739,10 +1712,10 @@ NEString::CharPos TEString<CharType, Implement>::replace( const CharType * strRe
     return result;
 }
 
-template<typename CharType, class Implement /*= TEStringImpl<CharType>*/>
-NEString::CharPos TEString<CharType, Implement>::replace( const TEString<CharType, Implement> & strReplace, NEString::CharPos startPos, NEString::CharCount charsRemove )
+template<typename CharType, class Helper /*= TEStringImpl<CharType>*/>
+NEString::CharPos TEString<CharType, Helper>::replace( const TEString<CharType, Helper> & strReplace, NEString::CharPos startPos, NEString::CharCount charsRemove )
 {
-    NEString::CharPos result = NEString::InvalidPos;
+    NEString::CharPos result = NEString::INVALID_POS;
     if ( canRead( startPos ) )
     {
         NEString::CharPos lenReplace = strReplace.getLength();
@@ -1754,74 +1727,68 @@ NEString::CharPos TEString<CharType, Implement>::replace( const TEString<CharTyp
     return result;
 }
 
-template<typename CharType, class Implement /*= TEStringImpl<CharType>*/>
-inline NEString::CharPos TEString<CharType, Implement>::remove(const CharType * strRemove, NEString::CharPos startPos /*= NEString::StartPos*/, bool removeAll /*= true*/)
+template<typename CharType, class Helper /*= TEStringImpl<CharType>*/>
+inline NEString::CharPos TEString<CharType, Helper>::remove(const CharType * strRemove, NEString::CharPos startPos /*= NEString::START_POS*/, bool removeAll /*= true*/)
 {
     return replace(strRemove, &EmptyChar, startPos, removeAll);
 }
 
-template<typename CharType, class Implement /*= TEStringImpl<CharType>*/>
-inline bool TEString<CharType, Implement>::isEmpty( void ) const
+template<typename CharType, class Helper /*= TEStringImpl<CharType>*/>
+inline bool TEString<CharType, Helper>::isEmpty( void ) const
 {
     return ( (isValid() == false) || (mData->strUsed == 0) );
 }
 
-template<typename CharType, class Implement /*= TEStringImpl<CharType>*/>
-inline bool TEString<CharType, Implement>::isValid( void ) const
+template<typename CharType, class Helper /*= TEStringImpl<CharType>*/>
+inline bool TEString<CharType, Helper>::isValid( void ) const
 {
     return NEString::isValid<CharType>(mData);
 }
 
-template<typename CharType, class Implement /*= TEStringImpl<CharType>*/>
-inline NEString::CharCount TEString<CharType, Implement>::getLength( void ) const
+template<typename CharType, class Helper /*= TEStringImpl<CharType>*/>
+inline NEString::CharCount TEString<CharType, Helper>::getLength( void ) const
 {
     return (isValid() ? static_cast<NEString::CharCount>(mData->strUsed) : 0);
 }
 
-template<typename CharType, class Implement /*= TEStringImpl<CharType>*/>
-inline NEString::CharCount TEString<CharType, Implement>::getActualLength( void ) const
+template<typename CharType, class Helper /*= TEStringImpl<CharType>*/>
+inline NEString::CharCount TEString<CharType, Helper>::getActualLength( void ) const
 {
     return (isValid() ? mData->strSpace : static_cast<NEString::CharCount>(0));
 }
 
-template<typename CharType, class Implement /*= TEStringImpl<CharType>*/>
-inline unsigned int TEString<CharType, Implement>::getUsedSpace(void) const
+template<typename CharType, class Helper /*= TEStringImpl<CharType>*/>
+inline unsigned int TEString<CharType, Helper>::getUsedSpace(void) const
 {
     return (isValid() ? static_cast<unsigned int>(mData->strUsed + 1) * sizeof(CharType) : 0);
 }
 
-template<typename CharType, class Implement /*= TEStringImpl<CharType>*/>
-inline void TEString<CharType, Implement>::clear( void )
+template<typename CharType, class Helper /*= TEStringImpl<CharType>*/>
+inline void TEString<CharType, Helper>::clear( void )
 {
     release();
 }
 
-template<typename CharType, class Implement /*= TEStringImpl<CharType>*/>
-inline const CharType * TEString<CharType, Implement>::getBuffer( NEString::CharPos startAt /*= NEString::StartPos*/ ) const
+template<typename CharType, class Helper /*= TEStringImpl<CharType>*/>
+inline const CharType * TEString<CharType, Helper>::getBuffer( NEString::CharPos startAt /*= NEString::START_POS*/ ) const
 {
     return getChars(startAt);
 }
 
-template<typename CharType, class Implement /*= TEStringImpl<CharType>*/>
-inline const CharType * TEString<CharType, Implement>::getString( void ) const
+template<typename CharType, class Helper /*= TEStringImpl<CharType>*/>
+inline const CharType * TEString<CharType, Helper>::getString( void ) const
 {
-    return static_cast<const CharType *>(isValid() ? mData->strBuffer : NULL);
+    return static_cast<const CharType *>(isValid() ? mData->strBuffer : nullptr);
 }
 
-template<typename CharType, class Implement /*= TEStringImpl<CharType>*/>
-inline NEString::eEncoding TEString<CharType, Implement>::getEncoding( void ) const
-{
-    return (isValid() ? mData->strEncoding : NEString::EncodeInvalid);
-}
-
-template<typename CharType, class Implement /*= TEStringImpl<CharType>*/>
-inline CharType TEString<CharType, Implement>::getAt( NEString::CharPos atPos ) const
+template<typename CharType, class Helper /*= TEStringImpl<CharType>*/>
+inline CharType TEString<CharType, Helper>::getAt( NEString::CharPos atPos ) const
 {
     return (canRead(atPos) ? mData->strBuffer[atPos] : static_cast<CharType>(NEString::EndOfString));
 }
 
-template<typename CharType, class Implement /*= TEStringImpl<CharType>*/>
-inline void TEString<CharType, Implement>::setAt( CharType ch, NEString::CharPos atPos /*= NEString::EndPos*/ )
+template<typename CharType, class Helper /*= TEStringImpl<CharType>*/>
+inline void TEString<CharType, Helper>::setAt( CharType ch, NEString::CharPos atPos /*= NEString::END_POS*/ )
 {
     if ( isValidPtr() )
     {
@@ -1829,8 +1796,8 @@ inline void TEString<CharType, Implement>::setAt( CharType ch, NEString::CharPos
     }
 }
 
-template<typename CharType, class Implement /*= TEStringImpl<CharType>*/>
-inline bool TEString<CharType, Implement>::resize( NEString::CharCount maxSpace )
+template<typename CharType, class Helper /*= TEStringImpl<CharType>*/>
+inline bool TEString<CharType, Helper>::resize( NEString::CharCount maxSpace )
 {
     NEString::CharCount len = getLength( );
     maxSpace = MACRO_MAX( maxSpace, len );
@@ -1849,13 +1816,13 @@ inline bool TEString<CharType, Implement>::resize( NEString::CharCount maxSpace 
     return (maxSpace < mData->strSpace);
 }
 
-template<typename CharType, class Implement /*= TEStringImpl<CharType>*/>
-inline int TEString<CharType, Implement>::trimLeft( void )
+template<typename CharType, class Helper /*= TEStringImpl<CharType>*/>
+inline int TEString<CharType, Helper>::trimLeft( void )
 {
     int result = 0;
     if (isEmpty() == false)
     {
-        result = NEString::trimLeft<CharType>( getChars(NEString::StartPos), getLength() );
+        result = NEString::trimLeft<CharType>( getChars(NEString::START_POS), getLength() );
         ASSERT(result <= static_cast<int>(mData->strUsed));
         mData->strUsed = result;
     }
@@ -1863,8 +1830,8 @@ inline int TEString<CharType, Implement>::trimLeft( void )
     return result;
 }
 
-template<typename CharType, class Implement /*= TEStringImpl<CharType>*/>
-inline int TEString<CharType, Implement>::trimLeft(TEString<CharType, Implement> & strResult) const
+template<typename CharType, class Helper /*= TEStringImpl<CharType>*/>
+inline int TEString<CharType, Helper>::trimLeft(TEString<CharType, Helper> & OUT strResult) const
 {
     int result = 0;
     strResult.clear();
@@ -1887,13 +1854,13 @@ inline int TEString<CharType, Implement>::trimLeft(TEString<CharType, Implement>
     return result;
 }
 
-template<typename CharType, class Implement /*= TEStringImpl<CharType>*/>
-inline int TEString<CharType, Implement>::trimRight( void )
+template<typename CharType, class Helper /*= TEStringImpl<CharType>*/>
+inline int TEString<CharType, Helper>::trimRight( void )
 {
     int result = 0;
     if ( isEmpty() == false )
     {
-        result = NEString::trimRight<CharType>( getChars(NEString::StartPos), getLength() );
+        result = NEString::trimRight<CharType>( getChars(NEString::START_POS), getLength() );
         ASSERT(result <= static_cast<int>(mData->strUsed));
         mData->strUsed = result;
     }
@@ -1901,8 +1868,8 @@ inline int TEString<CharType, Implement>::trimRight( void )
     return result;
 }
 
-template<typename CharType, class Implement /*= TEStringImpl<CharType>*/>
-inline int TEString<CharType, Implement>::trimRight(TEString<CharType, Implement> & strResult) const
+template<typename CharType, class Helper /*= TEStringImpl<CharType>*/>
+inline int TEString<CharType, Helper>::trimRight(TEString<CharType, Helper> & OUT strResult) const
 {
     int result = 0;
     strResult.clear();
@@ -1927,13 +1894,13 @@ inline int TEString<CharType, Implement>::trimRight(TEString<CharType, Implement
     return result;
 }
 
-template<typename CharType, class Implement /*= TEStringImpl<CharType>*/>
-inline int TEString<CharType, Implement>::trimAll( void )
+template<typename CharType, class Helper /*= TEStringImpl<CharType>*/>
+inline int TEString<CharType, Helper>::trimAll( void )
 {
     int result = 0;
     if ( isEmpty() == false )
     {
-        result = NEString::trimAll<CharType>(getChars(NEString::StartPos), getLength());
+        result = NEString::trimAll<CharType>(getChars(NEString::START_POS), getLength());
         ASSERT(result <= mData->strUsed);
         mData->strUsed = result;
     }
@@ -1941,8 +1908,8 @@ inline int TEString<CharType, Implement>::trimAll( void )
     return result;
 }
 
-template<typename CharType, class Implement /*= TEStringImpl<CharType>*/>
-inline int TEString<CharType, Implement>::trimAll(TEString<CharType, Implement> & strResult) const
+template<typename CharType, class Helper /*= TEStringImpl<CharType>*/>
+inline int TEString<CharType, Helper>::trimAll(TEString<CharType, Helper> & strResult) const
 {
     int result = 0;
     strResult.clear();
@@ -1970,13 +1937,13 @@ inline int TEString<CharType, Implement>::trimAll(TEString<CharType, Implement> 
     return result;
 }
 
-template<typename CharType, class Implement /*= TEStringImpl<CharType>*/>
-inline NEString::CharCount TEString<CharType, Implement>::makeAlphanumeric(void)
+template<typename CharType, class Helper /*= TEStringImpl<CharType>*/>
+inline NEString::CharCount TEString<CharType, Helper>::makeAlphanumeric(void)
 {
     NEString::CharCount result = 0;
     if (isEmpty() == false)
     {
-        CharType * begin= getChars( NEString::StartPos);
+        CharType * begin= getChars( NEString::START_POS);
         CharType * dst  = begin;
         for (const CharType * src = begin; *src != static_cast<CharType>(NEString::EndOfString); ++src)
         {
@@ -1990,10 +1957,8 @@ inline NEString::CharCount TEString<CharType, Implement>::makeAlphanumeric(void)
     return result;
 }
 
-template<typename CharType, class Implement /*= TEStringImpl<CharType>*/>
-inline CharType * TEString<CharType, Implement>::getUnsafeBuffer(void)
+template<typename CharType, class Helper /*= TEStringImpl<CharType>*/>
+inline CharType * TEString<CharType, Helper>::getUnsafeBuffer(void)
 {
-    return (isEmpty() == false ? mData->strBuffer : static_cast<CharType *>(NULL));
+    return (isEmpty() == false ? mData->strBuffer : nullptr);
 }
-
-#endif  // AREG_BASE_TESTRING_HPP

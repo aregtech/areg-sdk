@@ -1,18 +1,19 @@
 //////////////////////////////////////////////////////////////////////////
 // Begin generate generated/src/private/PowerManagerEvents.hpp file
 //////////////////////////////////////////////////////////////////////////
-#ifndef  GENERATED_SRC_PRIVATE_POWERMANAGEREVENTS_HPP
-#define  GENERATED_SRC_PRIVATE_POWERMANAGEREVENTS_HPP
-/************************************************************************
- * (c) copyright    2021
- *                  Create by AREG SDK code generator tool from source PowerManager.
- * Generated at     15.08.2021  00:03:03 GMT+02:00 
- ************************************************************************/
+
+#pragma once
 
 /************************************************************************
+ * (c) copyright    2021
+ *
+ * Generated at     30.09.2021  01:22:12 GMT+02:00 
+ *                  Create by AREG SDK code generator tool from source PowerManager.
+ *
  * \file            generated/src/private/PowerManagerEvents.hpp
  * \ingroup         PowerManager Service Interface
- * \brief           This is an automatic generated code of PowerManager Service Interface Event classes declaration.
+ * \brief           This is an automatic generated code of PowerManager
+ *                  Service Interface event classes declaration.
  ************************************************************************/
 
 /************************************************************************
@@ -88,15 +89,14 @@ public:
     /**
      * \brief   Destructor.
      **/
-    virtual ~PowerManagerRequestEvent( void );
+    virtual ~PowerManagerRequestEvent( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    PowerManagerRequestEvent( void );
-    PowerManagerRequestEvent( const PowerManagerRequestEvent & /* src */ );
-    const PowerManagerRequestEvent & operator = ( const PowerManagerRequestEvent & /* src */ );
+    PowerManagerRequestEvent( void ) = delete;
+    DECLARE_NOCOPY_NOMOVE( PowerManagerRequestEvent );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -128,15 +128,14 @@ public:
     /**
      * \brief   Destructor.
      **/
-    virtual ~PowerManagerNotifyRequestEvent( void );
+    virtual ~PowerManagerNotifyRequestEvent( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    PowerManagerNotifyRequestEvent( void );
-    PowerManagerNotifyRequestEvent( const PowerManagerNotifyRequestEvent & /* src */ );
-    const PowerManagerNotifyRequestEvent & operator = ( const PowerManagerNotifyRequestEvent & /* src */ );
+    PowerManagerNotifyRequestEvent( void ) = delete;
+    DECLARE_NOCOPY_NOMOVE( PowerManagerNotifyRequestEvent );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -182,7 +181,7 @@ public:
     /**
      * \brief   Destructor
      **/
-    virtual ~PowerManagerResponseEvent( void );
+    virtual ~PowerManagerResponseEvent( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -201,15 +200,14 @@ public:
      * \return  Cloned service response event object, which contains specified
      *          target proxy address.
      **/
-    virtual ServiceResponseEvent * cloneForTarget( const ProxyAddress & target ) const;
+    virtual ServiceResponseEvent * cloneForTarget( const ProxyAddress & target ) const override;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    PowerManagerResponseEvent( void );
-    PowerManagerResponseEvent( const PowerManagerResponseEvent & /* src */ );
-    const PowerManagerResponseEvent & operator = ( const PowerManagerResponseEvent & /* src */ );
+    PowerManagerResponseEvent( void ) = delete;
+    DECLARE_NOCOPY_NOMOVE( PowerManagerResponseEvent );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -234,24 +232,21 @@ public:
      * \brief   Initialization constructor. Copies notification event data
      * \param   data    The notification event data to copy
      **/
-    PowerManagerNotificationEvent( const NotificationEventData & data );
+    explicit PowerManagerNotificationEvent( const NotificationEventData & data );
 
 protected:
     /**
      * \brief   Destructor. Protected
      **/
-    virtual ~PowerManagerNotificationEvent( void );
+    virtual ~PowerManagerNotificationEvent( void ) = default;
     
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    PowerManagerNotificationEvent( void );
-    PowerManagerNotificationEvent( const PowerManagerNotificationEvent & /* src */ );
-    const PowerManagerNotificationEvent & operator = ( const PowerManagerNotificationEvent & /* src */ );
+    PowerManagerNotificationEvent( void ) = delete;
+    DECLARE_NOCOPY_NOMOVE( PowerManagerNotificationEvent );
 };
-
-#endif   // GENERATED_SRC_PRIVATE_POWERMANAGEREVENTS_HPP
 
 //////////////////////////////////////////////////////////////////////////
 // End generate generated/src/private/PowerManagerEvents.hpp file

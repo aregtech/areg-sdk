@@ -1,6 +1,13 @@
-#ifndef AREG_COMPONENT_DISPATCHERTHREAD_HPP
-#define AREG_COMPONENT_DISPATCHERTHREAD_HPP
+#pragma once
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/component/DispatcherThread.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
  * \brief       AREG Platform, Dispatcher thread.
@@ -30,12 +37,6 @@ class NullDispatcherThread;
  * \brief   Global type.
  ************************************************************************/
 /**
- * \brief   DispatcherList
- *          List of Dispatcher Thread type.
- **/
-typedef TELinkedList<DispatcherThread *, DispatcherThread *>   DispatcherList;
-
-/**
  * \brief   Generic event dispatching thread.
  *          It is derived from generic thread and event dispatcher classes.
  *          It also contains NullDispatcher object used in case if 
@@ -50,6 +51,12 @@ class AREG_API DispatcherThread : public Thread
      * \brief   EventDispatcher needs this to access NullDispatcher.
      **/
     friend class EventDispatcher;
+
+    /**
+     * \brief   DispatcherList
+     *          List of Dispatcher Thread type.
+     **/
+    using DispatcherList    = TELinkedList<DispatcherThread *, DispatcherThread *>;
 
 //////////////////////////////////////////////////////////////////////////
 // Internal types, constants, etc.
@@ -80,7 +87,7 @@ public:
      * \param   threadId    The unique thread ID.
      * \return	If found, returns valid Dispatcher thread. Otherwise, returns NullDispather object, which destroys any event passed to thread.
      **/
-    static inline DispatcherThread & getDispatcherThread(ITEM_ID threadId);
+    static inline DispatcherThread & getDispatcherThread( id_type threadId);
 
     /**
      * \brief	By given thread address searches registered Event Dispatcher thread and returns object.
@@ -129,13 +136,13 @@ public:
     /**
      * \brief	The only constructor to create Dispatcher Thread. The dispatcher thread should have unique
      *          name, which is registered in system (in resource mapping). The Dispatcher Thread can be accessed by its unique name.
-     * \param	threadName	The unique name of dispatcher. If this parameter is NULL or empty, system will unique thread name.
+     * \param	threadName	The unique name of dispatcher. If this parameter is nullptr or empty, system will unique thread name.
      **/
-    DispatcherThread( const char * threadName );
+    explicit DispatcherThread( const char * threadName );
     /**
      * \brief   Destructor.
      **/
-    virtual ~DispatcherThread( void );
+    virtual ~DispatcherThread( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes
@@ -160,6 +167,14 @@ public:
 //////////////////////////////////////////////////////////////////////////
 // Operations and overrides.
 //////////////////////////////////////////////////////////////////////////
+
+    /**
+     * \brief   Locks current thread and unlocks it when dispatcher is started and ready to dispatch
+     * \param   waitTimeout     The waiting timeout in milliseconds
+     * \return  Returns true, if dispatcher is started with ready to dispatch. Otherwise it returns false.
+     **/
+    virtual bool waitForDispatcherStart( unsigned int waitTimeout = NECommon::WAIT_INFINITE );
+
 /************************************************************************/
 // Thread overrides
 /************************************************************************/
@@ -183,19 +198,12 @@ public:
      *              Thread::ThreadCompleted   -- The thread was valid and completed normally;
      *              Thread::ThreadInvalid     -- The thread was not valid and was not running, nothing was done.
      **/
-    virtual Thread::eCompletionStatus destroyThread(unsigned int waitForStopMs = Thread::DO_NOT_WAIT);
+    virtual Thread::eCompletionStatus destroyThread(unsigned int waitForStopMs = NECommon::DO_NOT_WAIT) override;
 
     /**
      * \brief   Stops Dispatcher and exists Dispatcher Thread without terminating
      **/
-    virtual void shutdownThread( void );
-
-    /**
-     * \brief   Locks current thread and unlocks it when dispatcher is started and ready to dispatch
-     * \param   waitTimeout     The waiting timeout in milliseconds
-     * \return  Returns true, if dispatcher is started with ready to dispatch. Otherwise it returns false.
-     **/
-    virtual bool waitForDispatcherStart( unsigned int waitTimeout = IESynchObject::WAIT_INFINITE );
+    virtual void shutdownThread( void ) override;
 
 protected:
 /************************************************************************/
@@ -211,7 +219,7 @@ protected:
      * \param	eventElem	Event object to post
      * \return	In this class it always returns true.
      **/
-    virtual bool postEvent( Event & eventElem );
+    virtual bool postEvent( Event & eventElem ) override;
 
 /************************************************************************/
 // DispatcherThread overrides
@@ -224,7 +232,7 @@ protected:
      *          Override if logic should be changed.
      * \return	Returns true if Exit Event is signaled.
      **/
-    virtual bool runDispatcher( void );
+    virtual bool runDispatcher( void ) override;
 
     /**
      * \brief   Search for consumer thread that can dispatch event.
@@ -237,20 +245,9 @@ protected:
      *          list of every registered component.
      * \param   whichClass  The runtime class ID to search registered component
      * \return  If found, returns valid pointer of dispatching thread. 
-     *          Otherwise returns NULL
+     *          Otherwise returns nullptr
      **/
     virtual DispatcherThread * getEventConsumerThread( const RuntimeClassID & whichClass );
-
-//////////////////////////////////////////////////////////////////////////
-// Member variables
-//////////////////////////////////////////////////////////////////////////
-protected:
-    /**
-     * \brief   Event, indicating whether Dispatcher started or not.
-     *          When Dispatcher is started, this event is signaled.
-     *          Otherwise it is not signaled.
-     **/
-    SynchEvent    mEventStarted;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden members
@@ -270,55 +267,58 @@ private:
      * \brief   Return reference to self object.
      **/
     inline DispatcherThread & self( void );
+
+//////////////////////////////////////////////////////////////////////////
+// Member variables
+//////////////////////////////////////////////////////////////////////////
+protected:
+    /**
+     * \brief   Event, indicating whether Dispatcher started or not.
+     *          When Dispatcher is started, this event is signaled.
+     *          Otherwise it is not signaled.
+     **/
+    SynchEvent    mEventStarted;
+
 //////////////////////////////////////////////////////////////////////////
 // Hidden / Forbidden method calls.
 //////////////////////////////////////////////////////////////////////////
 private:
-    DispatcherThread( void );
-    DispatcherThread( const DispatcherThread & /*src*/ );
-    const DispatcherThread & operator = ( const DispatcherThread & /*src*/ );
+    DispatcherThread( void ) = delete;
+    DECLARE_NOCOPY_NOMOVE( DispatcherThread );
 };
 
 //////////////////////////////////////////////////////////////////////////
 // DispatcherThread class inline functions implementation
 //////////////////////////////////////////////////////////////////////////
 
-/************************************************************************/
-// Inline static methods
-/************************************************************************/
-
 inline DispatcherThread & DispatcherThread::getDispatcherThread( const char * threadName )
 {
-    DispatcherThread * dispThread = RUNTIME_CAST(threadName != NULL ? Thread::findThreadByName(threadName) : Thread::getCurrentThread(), DispatcherThread);
-    return ( dispThread != NULL ? *dispThread : DispatcherThread::_getNullDispatherThread() );
+    DispatcherThread * dispThread = RUNTIME_CAST(threadName != nullptr ? Thread::findThreadByName(threadName) : Thread::getCurrentThread(), DispatcherThread);
+    return ( dispThread != nullptr ? *dispThread : DispatcherThread::_getNullDispatherThread() );
 }
 
-inline DispatcherThread & DispatcherThread::getDispatcherThread( ITEM_ID threadId )
+inline DispatcherThread & DispatcherThread::getDispatcherThread( id_type threadId )
 {
-    DispatcherThread* dispThread = RUNTIME_CAST(Thread::findThreadById(threadId), DispatcherThread);
-    return ( dispThread != NULL ? *dispThread : DispatcherThread::_getNullDispatherThread() );
+    DispatcherThread* dispThread = RUNTIME_CAST(threadId != 0 ? Thread::findThreadById(threadId) : Thread::getCurrentThread(), DispatcherThread);
+    return ( dispThread != nullptr ? *dispThread : DispatcherThread::_getNullDispatherThread() );
 }
 
 inline DispatcherThread & DispatcherThread::getDispatcherThread(const ThreadAddress & threadAddr )
 {
     DispatcherThread* dispThread = RUNTIME_CAST(Thread::findThreadByAddress(threadAddr), DispatcherThread);
-    return ( dispThread != NULL ? *dispThread : DispatcherThread::_getNullDispatherThread() );
+    return ( dispThread != nullptr ? *dispThread : DispatcherThread::_getNullDispatherThread() );
 }
 
 inline DispatcherThread & DispatcherThread::getCurrentDispatcherThread( void )
 {
     DispatcherThread* currThread = RUNTIME_CAST(Thread::getCurrentThread(), DispatcherThread);
-    return ( currThread != NULL ? *currThread : DispatcherThread::_getNullDispatherThread() );
+    return ( currThread != nullptr ? *currThread : DispatcherThread::_getNullDispatherThread() );
 }
 
 inline EventDispatcher & DispatcherThread::getCurrentDispatcher( void )
 {
     return getCurrentDispatcherThread().getEventDispatcher();
 }
-
-/************************************************************************/
-// Inline methods
-/************************************************************************/
 
 inline EventDispatcher & DispatcherThread::getEventDispatcher( void )
 {
@@ -329,5 +329,3 @@ inline DispatcherThread & DispatcherThread::self( void )
 {
     return (*this);
 }
-
-#endif  // AREG_COMPONENT_DISPATCHERTHREAD_HPP

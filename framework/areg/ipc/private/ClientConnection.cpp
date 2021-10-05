@@ -1,7 +1,15 @@
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/ipc/ClientConnection.hpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform Client Connection class declaration
  ************************************************************************/
 #include "areg/ipc/private/ClientConnection.hpp"
@@ -15,7 +23,6 @@ ClientConnection::ClientConnection( void )
     , mClientSocket ( )
     , mCookie       ( NEService::COOKIE_UNKNOWN )
 {
-    ; // do nothing
 }
 
 ClientConnection::ClientConnection(const char * hostName, unsigned short portNr)
@@ -23,20 +30,17 @@ ClientConnection::ClientConnection(const char * hostName, unsigned short portNr)
     , mClientSocket ( hostName, portNr )
     , mCookie       ( NEService::COOKIE_UNKNOWN )
 {
-    ; // do nothing
 }
 
-ClientConnection::ClientConnection(const NESocket::InterlockedValue & remoteAddress)
+ClientConnection::ClientConnection(const NESocket::SocketAddress & remoteAddress)
     : SocketConnectionBase    ( )
     , mClientSocket ( remoteAddress )
     , mCookie       ( NEService::COOKIE_UNKNOWN )
 {
-    ; // do nothing
 }
 
 ClientConnection::~ClientConnection( void )
 {
-    ; // do nothing
 }
 
 bool ClientConnection::createSocket(const char * hostName, unsigned short portNr)

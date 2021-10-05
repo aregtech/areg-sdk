@@ -1,7 +1,15 @@
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/base/private/posix/WaitableMutexIX.cpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, POSIX Waitable Event class.
  *
  ************************************************************************/
@@ -11,27 +19,21 @@
   ************************************************************************/
 #include "areg/base/private/posix/WaitableMutexIX.hpp"
 
-#ifdef  _POSIX
+#if defined(_POSIX) || defined(POSIX)
+
 #include "areg/base/private/posix/SynchLockAndWaitIX.hpp"
 
 //////////////////////////////////////////////////////////////////////////
 // WaitableMutexIX class implementation.
 //////////////////////////////////////////////////////////////////////////
 
-WaitableMutexIX::WaitableMutexIX(bool initOwned /*= false*/, const char * asciiName /*= NULL*/)
-    : IEWaitableBaseIX  ( NESynchTypesIX::SoWaitMutex, true, asciiName             )
+WaitableMutexIX::WaitableMutexIX(bool initOwned /*= false*/, const char * asciiName /*= nullptr*/)
+    : IEWaitableBaseIX  ( NESynchTypesIX::eSynchObject::SoWaitMutex, true, asciiName             )
 
-    , mOwnerThread      ( initOwned ? pthread_self() : static_cast<pthread_t>(NULL) )
-    , mLockCount        ( initOwned ? 1 : 0                                         )
+    , mOwnerThread      ( initOwned ? pthread_self() : static_cast<pthread_t>(0) )
+    , mLockCount        ( initOwned ? 1 : 0                                      )
 {
-    ; // do nothing
 }
-
-WaitableMutexIX::~WaitableMutexIX(void)
-{
-    ; // do nothing
-}
-
 
 bool WaitableMutexIX::releaseMutex(void)
 {
@@ -48,7 +50,7 @@ bool WaitableMutexIX::releaseMutex(void)
 
             if ( mLockCount == 1 )
             {
-                mOwnerThread= static_cast<pthread_t>(NULL);
+                mOwnerThread= static_cast<pthread_t>(0);
                 mLockCount  = 0;
                 sendSignal  = true;
 
@@ -56,7 +58,7 @@ bool WaitableMutexIX::releaseMutex(void)
             }
             else if (mLockCount > 1)
             {
-                ASSERT(mOwnerThread != static_cast<pthread_t>(NULL));
+                ASSERT(mOwnerThread != static_cast<pthread_t>(0));
                 OUTPUT_INFO("Waitable Mutex remains locked, the lock count is still [ %d ], the owner thead [ %p ]"
                             , mLockCount - 1
                             , reinterpret_cast<id_type>(mOwnerThread));
@@ -66,7 +68,7 @@ bool WaitableMutexIX::releaseMutex(void)
 #ifdef DEBUG
             else
             {
-                ASSERT(mOwnerThread == static_cast<pthread_t>(NULL));
+                ASSERT(mOwnerThread == static_cast<pthread_t>(0));
                 OUTPUT_DBG("Ignoring to unlock the waitable mutex. The lock count is 0, nothing to release, owner thread [ %p ].", reinterpret_cast<id_type>(mOwnerThread));
             }
 #endif // DEBUG
@@ -84,16 +86,16 @@ bool WaitableMutexIX::releaseMutex(void)
 bool WaitableMutexIX::checkSignaled(pthread_t contextThread) const
 {
     ObjectLockIX lock(*this);
-    return (mOwnerThread == static_cast<pthread_t>(NULL)) || (mOwnerThread == contextThread);
+    return (mOwnerThread == static_cast<pthread_t>(0)) || (mOwnerThread == contextThread);
 }
 
 bool WaitableMutexIX::notifyRequestOwnership(pthread_t ownerThread)
 {
     bool result = false;
-    if (ownerThread != static_cast<pthread_t>(NULL))
+    if (ownerThread != static_cast<pthread_t>(0))
     {
         ObjectLockIX lock(*this);
-        if (mOwnerThread == static_cast<pthread_t>(NULL))
+        if (mOwnerThread == static_cast<pthread_t>(0))
         {
             ASSERT(mLockCount == 0);
 
@@ -129,4 +131,4 @@ void WaitableMutexIX::notifyReleasedThreads(int /*numThreads*/)
 }
 #endif
 
-#endif  // _POSIX
+#endif  // defined(_POSIX) || defined(POSIX)

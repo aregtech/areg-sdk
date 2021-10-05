@@ -4,14 +4,14 @@
 
 /************************************************************************
  * (c) copyright    2021
+ *
+ * Generated at     30.09.2021  01:22:14 GMT+02:00 
  *                  Create by AREG SDK code generator tool from source ConnectionManager.
- * Generated at     04.07.2021  04:30:00 GMT+02:00 
- ************************************************************************/
-
-/************************************************************************
- * \file            generated/private/ConnectionManagerEvents.cpp
+ *
+ * \file            generated/private/ConnectionManagerEvents.hpp
  * \ingroup         ConnectionManager Service Interface
- * \brief           This is an automatic generated code of ConnectionManager Service Interface Event classes implementation.
+ * \brief           This is an automatic generated code of ConnectionManager
+ *                  Service Interface event classes implementation.
  ************************************************************************/
 
 /************************************************************************
@@ -38,25 +38,17 @@ IMPLEMENT_RUNTIME_EVENT( ConnectionManagerRequestEvent, RemoteRequestEvent )
 ConnectionManagerRequestEvent::ConnectionManagerRequestEvent( const ProxyAddress & fromSource, const StubAddress & toTarget, unsigned int reqId )
     : RemoteRequestEvent( fromSource, toTarget, reqId )
 {
-    ; // do nothing
 }
 
 ConnectionManagerRequestEvent::ConnectionManagerRequestEvent( const EventDataStream & args, const ProxyAddress & fromSource, const StubAddress & toTarget, unsigned int reqId )
     : RemoteRequestEvent( args, fromSource, toTarget, reqId, NEConnectionManager::getString( static_cast<NEConnectionManager::eMessageIDs>(reqId) ) )
 {
-    ; // do nothing
 }
 
 ConnectionManagerRequestEvent::ConnectionManagerRequestEvent( const IEInStream & stream )
     : RemoteRequestEvent( stream )
 {
-    ; // do nothing
 }    
-
-ConnectionManagerRequestEvent::~ConnectionManagerRequestEvent( void )
-{
-    ; // do nothing
-}
 
 //////////////////////////////////////////////////////////////////////////
 // ConnectionManagerNotifyRequestEvent class implementation
@@ -75,19 +67,12 @@ IMPLEMENT_RUNTIME_EVENT( ConnectionManagerNotifyRequestEvent, RemoteNotifyReques
 ConnectionManagerNotifyRequestEvent::ConnectionManagerNotifyRequestEvent( const ProxyAddress & fromProxy, const StubAddress & toStub, unsigned int msgId, NEService::eRequestType reqType )
     : RemoteNotifyRequestEvent( fromProxy, toStub, msgId, reqType )
 {
-    ; // do nothing
 }
 
 ConnectionManagerNotifyRequestEvent::ConnectionManagerNotifyRequestEvent( const IEInStream & stream )
     : RemoteNotifyRequestEvent( stream )
 {
-    ; // do nothing
 }    
-
-ConnectionManagerNotifyRequestEvent::~ConnectionManagerNotifyRequestEvent( void )
-{
-    ; // do nothing
-}
 
 //////////////////////////////////////////////////////////////////////////
 // ConnectionManagerResponseEvent class implementation
@@ -106,30 +91,22 @@ IMPLEMENT_RUNTIME_EVENT( ConnectionManagerResponseEvent, RemoteResponseEvent )
 ConnectionManagerResponseEvent::ConnectionManagerResponseEvent( const ProxyAddress & proxyTarget, NEService::eResultType result, unsigned int responseId, unsigned int seqNr /* = NEService::SEQUENCE_NUMBER_NOTIFY */ )
     : RemoteResponseEvent( proxyTarget, result, responseId, seqNr )
 {
-    ; // do nothing
 }
 
 ConnectionManagerResponseEvent::ConnectionManagerResponseEvent( const EventDataStream & args, const ProxyAddress & proxyTarget, NEService::eResultType result, unsigned int responseId, unsigned int seqNr /* = NEService::SEQUENCE_NUMBER_NOTIFY */ )
     : RemoteResponseEvent( args, proxyTarget, result, responseId, seqNr, NEConnectionManager::getString(static_cast<NEConnectionManager::eMessageIDs>(responseId)) )
 {
-    ; // do nothing
 }
 
 ConnectionManagerResponseEvent::ConnectionManagerResponseEvent( const ProxyAddress & proxyTarget, const RemoteResponseEvent & source )
     : RemoteResponseEvent( proxyTarget, source )
 {
-    ; // do nothing
 }
 
 ConnectionManagerResponseEvent::ConnectionManagerResponseEvent( const IEInStream & stream )
     : RemoteResponseEvent( stream )
 {
-    ; // do nothing
 }    
-ConnectionManagerResponseEvent::~ConnectionManagerResponseEvent( void )
-{
-    ; // do nothing
-}
 
 //////////////////////////////////////////////////////////////////////////
 // ConnectionManagerResponseEvent class, Methods
@@ -157,12 +134,6 @@ IMPLEMENT_RUNTIME_EVENT( ConnectionManagerNotificationEvent, NotificationEvent )
 ConnectionManagerNotificationEvent::ConnectionManagerNotificationEvent( const NotificationEventData & data )
     : NotificationEvent   ( data )
 {
-    ; // do nothing
-}
-
-ConnectionManagerNotificationEvent::~ConnectionManagerNotificationEvent( void )
-{
-    ; // do nothing
 }
 
 //////////////////////////////////////////////////////////////////////////

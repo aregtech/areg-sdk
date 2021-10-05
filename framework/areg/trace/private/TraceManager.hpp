@@ -1,9 +1,16 @@
-#ifndef AREG_TRACE_PRIVATE_TRAMANAGER_HPP
-#define AREG_TRACE_PRIVATE_TRAMANAGER_HPP
+#pragma once
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/trace/private/TraceManager.hpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, Trace manager. The container of scopes, configuring
  *              tracer, starts and stops tracing.
  ************************************************************************/
@@ -14,25 +21,26 @@
 
 #include "areg/component/DispatcherThread.hpp"
 #include "areg/trace/private/TraceEvent.hpp"
-#include "areg/trace/private/IETraceConfiguration.hpp"
 
+#include "areg/trace/private/LogConfiguration.hpp"
 #include "areg/base/TEResourceMap.hpp"
-#include "areg/base/EContainers.hpp"
+#include "areg/base/Containers.hpp"
 #include "areg/base/Version.hpp"
 #include "areg/base/String.hpp"
-#include "areg/base/ESynchObjects.hpp"
+#include "areg/base/SynchObjects.hpp"
 
 #include "areg/trace/NETrace.hpp"
 #include "areg/trace/private/TraceProperty.hpp"
 #include "areg/trace/private/FileLogger.hpp"
 #include "areg/trace/private/DebugOutputLogger.hpp"
 
+#include <string_view>
+
 /************************************************************************
  * Dependencies
  ************************************************************************/
 class TraceScope;
 class LogMessage;
-class SortedStringList;
 class IELogger;
 
 //////////////////////////////////////////////////////////////////////////
@@ -48,7 +56,6 @@ class IELogger;
  **/
 class TraceManager  : private   DispatcherThread
                     , private   IETraceEventConsumer
-                    , private   IETraceConfiguration
 {
 //////////////////////////////////////////////////////////////////////////
 // Internal types and constants
@@ -58,9 +65,12 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // TraceManager::TraceScopeMap class declaration
 //////////////////////////////////////////////////////////////////////////
-    typedef TEHashMapImpl<unsigned int, TraceScope *>                                               MapTraceScopeImpl;  //!< Scope hash map helper
-    typedef TEHashMap<unsigned int, TraceScope *, unsigned int, TraceScope *, MapTraceScopeImpl>    MapTraceScope;      //!< Scope hash map
-    typedef TEResourceMapImpl<unsigned int, TraceScope>                                             ImplTraceScope;     //!< Scope map helper
+    //!< Scope hash map helper
+    using ImplMapTraceScope	= TEHashMapImpl<unsigned int, TraceScope *>;
+    //!< Scope hash map
+    using MapTraceScope     = TEHashMap<unsigned int, TraceScope *, unsigned int, TraceScope *, ImplMapTraceScope>;
+    //!< Scope resource map helper
+    using ImplTraceScope    = TEResourceMapImpl<unsigned int, TraceScope>;
     /**
      * \brief   Resource map, container of all logging scopes
      **/
@@ -77,18 +87,17 @@ private:
         /**
          * \brief   Constructor.
          **/
-        TraceScopeMap( void );
+        TraceScopeMap( void ) = default;
         /**
          * \brief   Destructor.
          **/
-        ~TraceScopeMap( void );
+        ~TraceScopeMap( void ) = default;
 
     //////////////////////////////////////////////////////////////////////////
     // Forbidden calls
     //////////////////////////////////////////////////////////////////////////
     private:
-        TraceScopeMap( const TraceScopeMap & );
-        const TraceScopeMap & operator = ( const TraceScopeMap & );
+        DECLARE_NOCOPY_NOMOVE( TraceScopeMap );
     };
 
     /**
@@ -97,58 +106,34 @@ private:
      * \tparam  Value   The value is a digital number of scope.
      **/
 
-    typedef StringToIntegerMap                                    ListScopes;
+    using ListScopes        = StringToIntegerMap;
     /**
      * \brief   The list of logging properties
      * \tparam  Value   The value is a property
      **/
-    typedef TELinkedList<TraceProperty, const TraceProperty &>  ListProperties;
+    using ListProperties    = TELinkedList<TraceProperty, const TraceProperty &>;
 
     //!< The thread name of tracer
-    static const char * const   TRACER_THREAD_NAME          /*= "_AREG_TRACER_THREAD_"*/;
-
-    //!< The default logging version
-    static const char * const   DEFAULT_LOG_VERSION         /*= "log.version = 1.0.0"*/;
-
-    //!< The default logging enabled flag.
-    static const char * const   DEFAULT_LOG_ENABLE          /*= "log.enable = true"*/;
-
-    //!< The default file name of loggs.
-    static const char * const   DEFAULT_LOG_FILE            /*= "log.file = ./logs/trace_%time%.log"*/;
-    
-    //!< The default flag, indicating whether logs are enabled.
-    static const char * const   DEFAULT_LOG_APPEND          /*= "log.append = false"*/;
-
-    //!< Logging default layout format of logging scope activation.
-    static const char * const   DEFAULT_LOG_LAYOUT_ENTER    /*= "log.layout.enter = %d: [ %c.%t  %x.%z: Enter --> ]%n"*/;
-
-    //!< Logging default layout format for logging messages.
-    static const char * const   DEFAULT_LOG_LAYOUT_MESSAGE  /*= "log.layout.message = %d: [ %c.%t  %p >>> ] %m%n"*/;
-
-    //!< Logging default layout format of logging scope deactivation.
-    static const char * const   DEFAULT_LOG_LAYOUT_EXIT     /*= "log.layout.exit = %d: [ %c.%t  %x.%z: Exit <-- ]%n"*/;
-
-    //!< Default flag enabling output in debugging window or console.
-    static const char * const   DEFAULT_LOG_LAYOUT_DEBUG    /*= "log.debug = true"*/;
+    static constexpr std::string_view   TRACER_THREAD_NAME          { "_AREG_TRACER_THREAD_" };
 
     //!< All scopes.
-    static const char * const   LOG_SCOPES_ALL              /*= "*"*/;
+    static constexpr std::string_view   LOG_SCOPES_ALL              { "*" };
 
     //!< Scope indicating AREG SDK internal logs.
-    static const char * const   LOG_SCOPES_SELF             /*= "areg_*"*/;
+    static constexpr std::string_view   LOG_SCOPES_SELF             { "areg_*" };
 
     //!< Logging activation waiting maximum timeout
-    static const unsigned int   LOG_START_WAITING_TIME      /*= 10 secs*/;
+    static constexpr unsigned int       LOG_START_WAITING_TIME      { NECommon::WAIT_10_SECONDS };
 
     //!< Structure of default enabled scopes and priorities.
     typedef struct S_LogEnabling
     {
-        const char* logScope;   //!< Name of the scope or scope group
-        const int   logPrio;    //!< The logging priority for that scope or scope group
+        const char * const  logScope;   //!< Name of the scope or scope group
+        const unsigned int  logPrio;    //!< The logging priority for that scope or scope group
     } sLogEnabling;
 
     //!< The list scopes or group of scopes and enabled logging priority.
-    //!< The last entry in the list must have NULL instead of name.
+    //!< The last entry in the list must have nullptr instead of name.
     static const sLogEnabling   DEFAULT_LOG_ENABLED_SCOPES[];
 
 public:
@@ -159,8 +144,8 @@ public:
 
     /**
      * \brief   Returns the ID of given scope name.
-     *          If scope name is NULL or empty, it returns zero.
-     * \param   scopeName   The name of scope. If NULL or empty,
+     *          If scope name is nullptr or empty, it returns zero.
+     * \param   scopeName   The name of scope. If nullptr or empty,
      *                      the return value is zero.
      * \return  Returns the ID of given scope name.
      **/
@@ -174,31 +159,32 @@ public:
 
     /**
      * \brief   Call to configure logging. The passed configuration file name should be either
-     *          full or relative path to configuration file. If passed NULL,
+     *          full or relative path to configuration file. If passed nullptr,
      *          the default configuration file will be loaded.
      **/
-    static bool configureLogging( const char * configFile = NULL );
+    static bool configureLogging( const char * configFile = nullptr );
 
     /**
      * \brief   Call to initialize and start logging.
      *          The initialization data is read out from specified log configuration file.
-     *          If specified file is NULL, the configuration will be read out from
+     *          If specified file is nullptr, the configuration will be read out from
      *          default log configuration.
      * \param   configFile  The full or relative path to configuration file.
-     *                      If NULL, the log configuration will be read out
+     *                      If nullptr, the log configuration will be read out
      *                      from default configuration file.
+     * \param   waitTimeout The timeout in milliseconds to wait until logging starts.
      * \return  Returns true if could read configuration and start logging thread.
      *          If logging was already started, the call will be ignored and return true.
      *          If starting fails, returns false.
      **/
-    static bool startLogging( const char * configFile = NULL );
+    static bool startLogging( const char * configFile = nullptr, unsigned int waitTimeout = NECommon::WAIT_INFINITE );
 
     /**
      * \brief   Call to stop logging. This call will stop all loggers and exit thread.
      *          The call will be blocked until either logging thread is not stopped,
      *          or the waiting timeout is not expired.
      **/
-    static void stopLogging( unsigned int waitTimeout = Thread::WAIT_INFINITE );
+    static void stopLogging( unsigned int waitTimeout = NECommon::WAIT_INFINITE );
 
     /**
      * \brief   Registers instance of trace scope object in trace manager.
@@ -261,7 +247,7 @@ private:
     /**
      * \brief   Protected destructor.
      **/
-    ~TraceManager( void );
+    virtual ~TraceManager( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations
@@ -282,23 +268,23 @@ private:
 
     /**
      * \brief   By given unique scope ID it returns instance of
-     *          Trace Scope object. Returns NULL if there is no
+     *          Trace Scope object. Returns nullptr if there is no
      *          trace scope object with specified ID registered 
      *          in the system.
      * \param   scopeId     The unique trace scope ID to lookup in the system
      * \return  Returns valid pointer to Trace Scope object if it is
-     *          registered. Otherwise, it returns NULL.
+     *          registered. Otherwise, it returns nullptr.
      **/
     inline TraceScope * _getScope( unsigned int scopeId ) const;
 
     /**
      * \brief   By given unique scope name it returns instance of
-     *          Trace Scope object. Returns NULL if there is no
+     *          Trace Scope object. Returns nullptr if there is no
      *          trace scope object with specified name registered 
      *          in the system.
      * \param   scopeName   The unique trace scope name to lookup in the system
      * \return  Returns valid pointer to Trace Scope object if it is
-     *          registered. Otherwise, it returns NULL.
+     *          registered. Otherwise, it returns nullptr.
      **/
     inline TraceScope * _getScope( const char * scopeName ) const;
 
@@ -522,7 +508,7 @@ private:
      * \param	eventElem	Event object to post
      * \return	In this class it always returns true.
      **/
-    virtual bool postEvent( Event & eventElem );
+    virtual bool postEvent( Event & eventElem ) override;
 
 /************************************************************************/
 // DispatcherThread overrides
@@ -535,96 +521,12 @@ private:
      *          Override if logic should be changed.
      * \return	Returns true if Exit Event is signaled.
      **/
-    virtual bool runDispatcher( void );
+    virtual bool runDispatcher( void ) override;
 
 /************************************************************************/
 // IETraceEventConsumer interface overrides
 /************************************************************************/
-    virtual void processEvent( const TraceEventData & data );
-
-/************************************************************************/
-// IETraceConfiguration interface overrides
-/************************************************************************/
-
-    /**
-     * \brief   Returns property value of logging version.
-     **/
-    virtual const TraceProperty & propertyVersion( void ) const;
-
-    /**
-     * \brief   Returns property value of layout format of scope enter.
-     **/
-    virtual const TraceProperty & propertyLayoutEnter( void ) const;
-
-    /**
-     * \brief   Returns property value of layout format form message text output.
-     **/
-    virtual const TraceProperty & propertyLayoutMessage( void ) const;
-
-    /**
-     * \brief   Returns property value of layout format of scope exit.
-     **/
-    virtual const TraceProperty & propertyLayoutExit( void ) const;
-
-    /**
-     * \brief   Returns property value of stack size.
-     **/
-    virtual const TraceProperty & propertyStackSize( void ) const;
-
-    /**
-     * \brief   Returns property value of debug output settings.
-     **/
-    virtual const TraceProperty & propertyDebugOutput( void ) const;
-
-    /**
-     * \brief   Returns property value of logging status (enabled / disabled).
-     **/
-    virtual const TraceProperty & propertyStatus( void ) const;
-
-    /**
-     * \brief   Returns property value of append data status.
-     **/
-    virtual const TraceProperty & propertyAppendData( void ) const;
-
-    /**
-     * \brief   Returns property value of file logging settings.
-     **/
-    virtual const TraceProperty & propertyLogFile( void ) const;
-
-    /**
-     * \brief   Returns property value of remote host name logging settings.
-     **/
-    virtual const TraceProperty & propertyRemoteHost( void ) const;
-
-    /**
-     * \brief   Returns property value of remote host port logging settings.
-     **/
-    virtual const TraceProperty & propertyRemotePort( void ) const;
-
-    /**
-     * \brief   Returns property value of database host name logging settings.
-     **/
-    virtual const TraceProperty & propertyDatabaseHost( void ) const;
-
-    /**
-     * \brief   Returns property value of database name logging settings.
-     **/
-    virtual const TraceProperty & propertyDatabaseName( void ) const;
-
-    /**
-     * \brief   Returns property value of database driver name logging settings.
-     **/
-    virtual const TraceProperty & propertyDatabaseDriver( void ) const;
-
-    /**
-     * \brief   Returns property value of database user name logging settings.
-     **/
-    virtual const TraceProperty & propertyDatabaseUser( void ) const;
-
-    /**
-     * \brief   Returns property value of database user password logging settings.
-     **/
-    virtual const TraceProperty & propertyDatabasePassword( void ) const;
+    virtual void processEvent( const TraceEventData & data ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
@@ -646,13 +548,13 @@ private:
 /************************************************************************/
 
     /**
-     * \brief   Loads specified logging configuration file. If specified file is NULL or empty,
+     * \brief   Loads specified logging configuration file. If specified file is nullptr or empty,
      *          the system will use default path to load configuration and scopes.
      * \param   filePath    Relative or absolute path of configuration file.
      * \return  Returns true if succeeded to load configuration file. Otherwise, returns false.
      *          The valid configuration should contain at least one tracing, even if it is disabled.
      **/
-    bool loadConfiguration( const char * filePath = NULL );
+    bool loadConfiguration( const char * filePath = nullptr );
     /**
      * \brief   Loads specified logging configuration file. The specified file should be already
      *          opened for reading. If file is not opened for reading, the system will not automatically open file.
@@ -665,9 +567,10 @@ private:
     /**
      * \brief   Starts logging thread, loads scopes and sets up all tracers.
      *          The configuration should be already loaded.
+     * \param   waitTimeout     The timeout in milliseconds to wait until loggint starts.
      * \return  Returns true if started with success.
      **/
-    bool startLoggingThread( void );
+    bool startLoggingThread( unsigned int waitTimeout = NECommon::WAIT_INFINITE );
 
     /**
      * \brief   Stops logging thread. If needed, it will wait for completion.
@@ -675,7 +578,7 @@ private:
      *                          and immediately returns from method. If INFINITE (value 0xFFFFFFFF),
      *                          it will wait until thread completes job and exits.
      **/
-    void stopLoggingThread( unsigned int waitTimeout );
+    void stopLoggingThread( unsigned int waitTimeout = NECommon::WAIT_INFINITE );
 
     /**
      * \brief   Call if a logging property of specified scopes or scope group has been changed.
@@ -779,122 +682,61 @@ private:
     /**
      * \brief   The map of registered trace scope objects.
      **/
-    TraceScopeMap   mMapTraceScope;
+    TraceScopeMap       mMapTraceScope;
     /**
      * \brief   The flag, indicating whether the scopes are activated or not.
      **/
-    bool            mScopesActivated;
+    bool                mScopesActivated;
     /**
      * \brief   The flag, indicating whether logger is started or not
      **/
-    bool            mIsStarted;
+    bool                mIsStarted;
     /**
      * \brief   The file path of configuration file.
      **/
-    String          mConfigFile;
+    String              mConfigFile;
     /**
-     * \brief   The property of supported logging version.
+     * \brief   The logging configuration
      **/
-    TraceProperty   mLogVersion;
-    /**
-     * \brief   The property of enter scope layout
-     **/
-    TraceProperty   mLogLayoutEnter;
-    /**
-     * \brief   The property of logging message layout
-     **/
-    TraceProperty   mLogLayoutMessage;
-    /**
-     * \brief   The property of exit scope layout
-     **/
-    TraceProperty   mLogLayoutExit;
-    /**
-     * \brief   The property of logging stack size, which can be cached by application.
-     **/
-    TraceProperty   mLogStackSize;
-    /**
-     * \brief   The property of debug output logger
-     **/
-    TraceProperty   mLogDebugOutput;
-    /**
-     * \brief   The property of logging status
-     **/
-    TraceProperty   mLogStatus;
-    /**
-     * \brief   The property of appending logs or added to new file
-     **/
-    TraceProperty   mLogAppendData;
-    /**
-     * \brief   The property of logging file name format
-     **/
-    TraceProperty   mLogFile;
-    /**
-     * \brief   The property of remote logging service host name
-     **/
-    TraceProperty   mLogRemoteHost;
-    /**
-     * \brief   The property of remote logging service port number
-     **/
-    TraceProperty   mLogRemotePort;
-    /**
-     * \brief   The property of logging database host.
-     **/
-    TraceProperty   mLogDbHost;
-    /**
-     * \brief   The property of logging database name
-     **/
-    TraceProperty   mLogDbName;
-    /**
-     * \brief   The property of logging driver (engine) name
-     **/
-    TraceProperty   mLogDbDriver;
-    /**
-     * \brief   The property of logging database user name
-     **/
-    TraceProperty   mLogDbUser;
-    /**
-     * \brief   The property of logging database user password
-     **/
-    TraceProperty   mLogDbPassword;
+    LogConfiguration    mLogConfig;
     /**
      * \brief   The list of scopes read out from configuration file.
      **/
-    ListScopes      mConfigScopeList;
+    ListScopes          mConfigScopeList;
     /**
      * \brief   The list of scope groups read out from configuration file
      **/
-    ListScopes      mConfigScopeGroup;
+    ListScopes          mConfigScopeGroup;
     /**
      * \brief   The list of all properties read out from configuration file.
      **/
-    ListProperties  mPropertyList;
+    ListProperties      mPropertyList;
     /**
      * \brief   The unique ID of the module.
      **/
-    ITEM_ID         mModuleId;
+    ITEM_ID             mModuleId;
     /**
      * \brief   The file logger object, to output logs in the file.
      **/
-    FileLogger      mLoggerFile;
+    FileLogger          mLoggerFile;
     /**
      * \brief   The debug output logger to output logs in the output device (window).
      **/
-    DebugOutputLogger mLoggerDebug;
+    DebugOutputLogger   mLoggerDebug;
     /**
      * \brief   An event, indicating that the logging has been started.
      */
-    SynchEvent      mLogStarted;
+    SynchEvent          mLogStarted;
     /**
      * \brief   Synchronization object used to synchronize data access.
      **/
-    mutable CriticalSection   mLock;
+    mutable ResourceLock    mLock;
 
 private:
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
-    TraceManager( const TraceManager & );
-    const TraceManager & operator = ( const TraceManager & );
+    DECLARE_NOCOPY_NOMOVE( TraceManager );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -981,5 +823,3 @@ inline int TraceManager::removeScopeGroupPriority(const char * scopeGroupName, c
 {
     return removeScopeGroupPriority(scopeGroupName, NETrace::convFromString(remPrio) );
 }
-
-#endif  // AREG_TRACE_PRIVATE_TRAMANAGER_HPP

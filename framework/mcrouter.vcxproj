@@ -39,6 +39,7 @@
     <ClCompile Include="mcrouter\app\private\MulticastRouter.cpp" />
     <ClCompile Include="mcrouter\app\private\MulticastRouterPosix.cpp" />
     <ClCompile Include="mcrouter\app\private\MulticastRouterWin32.cpp" />
+    <ClCompile Include="mcrouter\app\private\NEMulticastRouterSettings.cpp" />
     <ClCompile Include="mcrouter\tcp\private\IEServerConnectionHandler.cpp" />
     <ClCompile Include="mcrouter\tcp\private\ListServiceProxies.cpp" />
     <ClCompile Include="mcrouter\tcp\private\ServerConnection.cpp" />

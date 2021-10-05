@@ -1,12 +1,22 @@
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/base/private/BufferPosition.cpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, cursor position interface
  *
  ************************************************************************/
 #include "areg/base/private/BufferPosition.hpp"
 #include "areg/base/IEByteBuffer.hpp"
+
+#include <algorithm>
 
 //////////////////////////////////////////////////////////////////////////
 // BufferPosition class implementation
@@ -17,16 +27,10 @@
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 BufferPosition::BufferPosition( IEByteBuffer & buffer )
-    : IECursorPosition ( )
+    : IECursorPosition  ( )
     , mBuffer           ( buffer )
     , mPosition         ( IECursorPosition::INVALID_CURSOR_POSITION )
 {
-    ; // do nothing
-}
-
-BufferPosition::~BufferPosition( void )
-{
-    ; // do nothing
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -39,15 +43,19 @@ BufferPosition::~BufferPosition( void )
 unsigned int BufferPosition::getPosition( void ) const
 {
     if ( mBuffer.isValid() )
-        return ( mPosition == IECursorPosition::INVALID_CURSOR_POSITION ? 0 : mPosition );
+    {
+        return (mPosition == IECursorPosition::INVALID_CURSOR_POSITION ? 0 : mPosition);
+    }
     else
+    {
         return IECursorPosition::INVALID_CURSOR_POSITION;
+    }
 }
 
 /**
  * \brief   Sets the current position of cursor
  **/
-unsigned int BufferPosition::setPosition( int offset, IECursorPosition::eCursorPosition startAt ) const 
+unsigned int BufferPosition::setPosition( int offset, IECursorPosition::eCursorPosition startAt ) const
 {
     int size   = static_cast<int>( mBuffer.getSizeUsed() );
     int curPos = static_cast<int>( getPosition() );
@@ -57,18 +65,18 @@ unsigned int BufferPosition::setPosition( int offset, IECursorPosition::eCursorP
 
         switch (startAt)
         {
-        case IECursorPosition::POSITION_BEGIN:
+        case IECursorPosition::eCursorPosition::PositionBegin:
             curPos = 0;
-            offset = offset < 0 ? 0 : MACRO_MIN(offset, size);
+            offset = offset < 0 ? 0 : std::min(offset, size);
             break;
 
-        case IECursorPosition::POSITION_CURRENT:
-            offset = offset < 0 ? MACRO_MAX(offset, -1 * curPos) : MACRO_MIN(offset, size - curPos);
+        case IECursorPosition::eCursorPosition::PositionCurrent:
+            offset = offset < 0 ? std::max(offset, -1 * curPos) : std::min(offset, size - curPos);
             break;
 
-        case IECursorPosition::POSITION_END:
+        case IECursorPosition::eCursorPosition::PositionEnd:
             curPos = size;
-            offset = offset < 0 ? MACRO_MAX(offset, -1 * size) : 0;
+            offset = offset < 0 ? std::max(offset, -1 * size) : 0;
             break;
 
         default:

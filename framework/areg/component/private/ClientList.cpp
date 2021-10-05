@@ -1,7 +1,15 @@
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/component/private/ClientList.cpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, Client List implementation
  *
  ************************************************************************/
@@ -15,71 +23,42 @@
 //////////////////////////////////////////////////////////////////////////
 
 //////////////////////////////////////////////////////////////////////////
-// Constructor / Destructor
-//////////////////////////////////////////////////////////////////////////
-ClientList::ClientList( void )
-    : TELinkedList<ClientInfo, const ClientInfo &, ClientListImpl> ( )
-{
-    ; // do nothing
-}
-
-ClientList::ClientList( const ClientList & src )
-    : TELinkedList<ClientInfo, const ClientInfo &, ClientListImpl> (static_cast<const TELinkedList<ClientInfo, const ClientInfo &, ClientListImpl> &>(src))
-{
-    ; // do nothing
-}
-
-ClientList::~ClientList( void )
-{
-    ; // do nothing
-}
-
-//////////////////////////////////////////////////////////////////////////
-// Operators
-//////////////////////////////////////////////////////////////////////////
-const ClientList & ClientList::operator = ( const ClientList & src )
-{
-    static_cast<TELinkedList<ClientInfo, const ClientInfo &, ClientListImpl> &>(*this) = static_cast<const TELinkedList<ClientInfo, const ClientInfo &, ClientListImpl> &>(src);
-    return (*this);
-}
-
-//////////////////////////////////////////////////////////////////////////
 // Methods
 //////////////////////////////////////////////////////////////////////////
 bool ClientList::existClient( const ProxyAddress & client ) const
 {
     ClientInfo clientInfo(client);
     LISTPOS pos = firstPosition();
-    for ( ; pos != NULL; pos = nextPosition(pos))
+    for ( ; pos != nullptr; pos = nextPosition(pos))
     {
         if ( isEqualValues(getAt(pos), clientInfo) )
             break;
     }
-    return (pos != NULL ? true : false);
+    return (pos != nullptr ? true : false);
 }
 
 const ClientInfo & ClientList::getClient( const ProxyAddress & whichClient ) const
 {
     ClientInfo clientInfo(whichClient);
     LISTPOS pos = firstPosition();
-    for ( ; pos != NULL; pos = nextPosition(pos))
+    for ( ; pos != nullptr; pos = nextPosition(pos))
     {
         if ( isEqualValues(getAt(pos), clientInfo) )
             break;
     }
-    return (pos != NULL ? getAt(pos) : ClientInfo::INVALID_CLIENT_INFO);
+    return (pos != nullptr ? getAt(pos) : ClientInfo::INVALID_CLIENT_INFO);
 }
 
 const ClientInfo & ClientList::registerClient( const ProxyAddress & whichClient, const ServerInfo & server )
 {
     ClientInfo clientInfo(whichClient);
     LISTPOS pos = firstPosition();
-    for ( ; pos != NULL; pos = nextPosition(pos))
+    for ( ; pos != nullptr; pos = nextPosition(pos))
     {
         if ( isEqualValues(getAt(pos), clientInfo) )
             break;
     }
-    if (pos == NULL)
+    if (pos == nullptr)
         pos = pushLast( clientInfo );
 
     ClientInfo & client = getAt(pos);
@@ -92,14 +71,14 @@ bool ClientList::unregisterClient( const ProxyAddress & whichClient, ClientInfo 
 {
     bool exist = false;
     ClientInfo clientInfo(whichClient);
-    for ( LISTPOS pos = firstPosition(); pos != NULL; pos = nextPosition(pos) )
+    for ( LISTPOS pos = firstPosition(); pos != nullptr; pos = nextPosition(pos) )
     {
         ClientInfo & client = getAt(pos);
         if ( isEqualValues(client, clientInfo) )
         {
             exist       = true;
             client.setTargetServer( StubAddress::INVALID_STUB_ADDRESS );
-            client.setConnectionStatus( NEService::ServicePending );
+            client.setConnectionStatus( NEService::eServiceConnection::ServicePending );
             out_client  = client;
             removeAt(pos);
             break;
@@ -113,7 +92,7 @@ void ClientList::serverAvailable( const ServerInfo & whichServer, ClientList & o
     NEService::eServiceConnection state = whichServer.getConnectionStatus();
     const StubAddress & addrStub = whichServer.getAddress();
 
-    for ( LISTPOS pos = firstPosition(); pos != NULL; pos = nextPosition(pos))
+    for ( LISTPOS pos = firstPosition(); pos != nullptr; pos = nextPosition(pos))
     {
         ClientInfo & client = getAt(pos);
         client.setTargetServer(addrStub);
@@ -124,11 +103,11 @@ void ClientList::serverAvailable( const ServerInfo & whichServer, ClientList & o
 
 void ClientList::serverUnavailable( ClientList & out_clientList )
 {
-    for ( LISTPOS pos = firstPosition(); pos != NULL; )
+    for ( LISTPOS pos = firstPosition(); pos != nullptr; )
     {
         ClientInfo & client = getAt( pos );
         client.setTargetServer( StubAddress::INVALID_STUB_ADDRESS );
-        client.setConnectionStatus( NEService::ServicePending );
+        client.setConnectionStatus( NEService::eServiceConnection::ServicePending );
         out_clientList.pushLast(client);
         pos = nextPosition(pos);
     }

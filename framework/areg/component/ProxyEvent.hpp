@@ -1,9 +1,16 @@
-#ifndef AREG_COMPONENT_PROXYEVENT_HPP
-#define AREG_COMPONENT_PROXYEVENT_HPP
+#pragma once
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/component/ProxyEvent.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, Proxy Event and Proxy Event
  *              Consumer classes.
  *
@@ -46,19 +53,10 @@ class ProxyConnectEvent;
 // ProxyEvent class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief       Proxy Event is a base class to send Service Response
- *              events. The response events are sent by Stub to target 
- *              Proxy, which was requesting to execute a function call.
- *              Proxy event is a runtime class derived from streamable
- *              event and contains Proxy target address.
- * 
- * \details     All Proxy object are receiving Proxy Event instances
- *              to process. These instances are specified as a main
- *              communication between Stub and Proxy and considered
- *              as a Service Internal type events. The events will be
- *              Placed in External event queue of Dispatcher and will
- *              be processed one by one.
- *
+ * \brief   Proxy Event is a base class to send Service Response events. 
+ *          The response events are sent by Stub to target Proxy when 
+ *          finish request to execute a certain function call. Proxy event
+ *          is a runtime class and contains Proxy target address.
  **/
 class AREG_API ProxyEvent  : public StreamableEvent
 {
@@ -88,7 +86,7 @@ protected:
      * \brief   Destructor. Protected.
      * \remark  Call Destroy() method to delete object.
      **/
-    virtual ~ProxyEvent( void );
+    virtual ~ProxyEvent( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -99,9 +97,9 @@ public:
 /************************************************************************/
     /**
      * \brief   Sends the event to target thread. If target thread
-     *          is NULL, it searches target thread, registered in system.
+     *          is nullptr, it searches target thread, registered in system.
      **/
-    virtual void deliverEvent( void );
+    virtual void deliverEvent( void ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes
@@ -123,14 +121,14 @@ protected:
      * \param   stream  The streaming object to read out event data
      * \return  Returns streaming object to read out data.
      **/
-    virtual const IEInStream & readStream( const IEInStream & stream );
+    virtual const IEInStream & readStream( const IEInStream & stream ) override;
 
     /**
      * \brief   Writes event data to streaming object
      * \param   stream  The streaming object to write event data.
      * \return  Returns streaming object to write event data.
      **/
-    virtual IEOutStream & writeStream( IEOutStream & stream ) const;
+    virtual IEOutStream & writeStream( IEOutStream & stream ) const override;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variable
@@ -145,9 +143,8 @@ protected:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    ProxyEvent( void );
-    ProxyEvent( const ProxyEvent & /*src*/ );
-    const ProxyEvent & operator = ( const ProxyEvent & /*src*/ );
+    ProxyEvent( void ) = delete;
+    DECLARE_NOCOPY_NOMOVE( ProxyEvent );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -170,12 +167,12 @@ protected:
      * \brief   Constructor. Sets the Proxy address of event consumer.
      * \param   proxy   The address of proxy object, which is handling consumer
      **/
-    IEProxyEventConsumer( const ProxyAddress & proxy );
+    explicit IEProxyEventConsumer( const ProxyAddress & proxy );
 
     /**
      * \brief   Destructor.
      **/
-    virtual ~IEProxyEventConsumer( void );
+    virtual ~IEProxyEventConsumer( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides. Should be implemented
@@ -231,7 +228,7 @@ private:
      *          Event processing function
      * \param   eventElem   The generic Event object to process.
      **/
-    virtual void startEventProcessing( Event & eventElem );
+    virtual void startEventProcessing( Event & eventElem ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden operations
@@ -264,9 +261,8 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    IEProxyEventConsumer( void );
-    IEProxyEventConsumer( const IEProxyEventConsumer & /*src*/ );
-    const IEProxyEventConsumer & operator = ( const IEProxyEventConsumer & /*src*/ );
+    IEProxyEventConsumer( void ) = delete;
+    DECLARE_NOCOPY_NOMOVE( IEProxyEventConsumer );
 };
 
 /************************************************************************
@@ -280,5 +276,3 @@ inline const ProxyAddress & ProxyEvent::getTargetProxy( void ) const
 {
     return mTargetProxyAddress;
 }
-
-#endif  // AREG_COMPONENT_PROXYEVENT_HPP

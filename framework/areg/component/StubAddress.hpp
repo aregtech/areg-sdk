@@ -1,9 +1,16 @@
-#ifndef AREG_COMPONENT_STUBADDRESS_HPP
-#define AREG_COMPONENT_STUBADDRESS_HPP
+#pragma once
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/component/StubAddress.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, Stub Address class.
  *
  ************************************************************************/
@@ -13,6 +20,8 @@
 #include "areg/base/GEGlobal.h"
 #include "areg/component/ServiceAddress.hpp"
 #include "areg/component/Channel.hpp"
+
+#include <utility>
 
 /************************************************************************
  * Dependencies
@@ -40,27 +49,6 @@ class ServiceRequestEvent;
  **/
 class AREG_API StubAddress    : public    ServiceAddress
 {
-//////////////////////////////////////////////////////////////////////////
-// Predefined constants and types
-//////////////////////////////////////////////////////////////////////////
-private:
-/************************************************************************/
-// Hidden constants
-/************************************************************************/
-
-    /**
-     * \brief   StubAddress::INVALID_STUB_NAME
-     *          The invalid service interface name (invalid stub name)
-     *          None of service interfaces should contain this name.
-     **/
-    static const char * const   INVALID_STUB_NAME   /*= "INVALID_STUB"*/;
-
-    /**
-     * \brief   StubAddress::EXTENTION_STUB
-     *          Extension to add to Stub path.
-     **/
-    static const char * const   EXTENTION_STUB      /*= "stub"*/;
-
 public:
 /************************************************************************/
 // Public constants
@@ -86,13 +74,13 @@ public:
 
     /**
      * \brief   Instantiate Stub Address from given address path.
-     *          If out_nextPart is not NULL, on output this will contain remaining part
+     *          If out_nextPart is not nullptr, on output this will contain remaining part
      *          from Stub path.
      * \param   pathStub        The path of Stub object, containing information for address.
-     * \param   out_nextPart    If not NULL, on output this will contain remaining part of Stub path
+     * \param   out_nextPart    If not nullptr, on output this will contain remaining part of Stub path
      * \return  Returns initialized StubAddress object, containing information taken from path
      **/
-    static StubAddress convPathToAddress(const char* pathStub, const char** out_nextPart = NULL);
+    static StubAddress convPathToAddress(const char* pathStub, const char** out_nextPart = nullptr);
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
@@ -109,35 +97,41 @@ public:
      * \param   serviceVersion  The implemented version of Service Interface
      * \param   serviceType     The type of service
      * \param   roleName        The role name of holder component
-     * \param   threadName      Optional thread name of Stub. If NULL, the current thread where Stub instantiated is set.
+     * \param   threadName      Optional thread name of Stub. If nullptr, the current thread where Stub instantiated is set.
      **/
     StubAddress( const char * serviceName
                , const Version & serviceVersion
                , NEService::eServiceType serviceType
                , const char * roleName
-               , const char * threadName = NULL );
+               , const char * threadName = nullptr );
 
     /**
      * \brief   Initialize Stub address from given service item, role name and holder thread.
      * \param   serviceItem     Service item, which contains basic information of service
      * \param   roleName        The role name of holder component
-     * \param   threadName      Optional thread name of Stub. If NULL, the current thread where Stub instantiated is set.
+     * \param   threadName      Optional thread name of Stub. If nullptr, the current thread where Stub instantiated is set.
      **/
-    StubAddress( const ServiceItem & service, const char * roleName, const char * threadName = NULL );
+    StubAddress( const ServiceItem & service, const char * roleName, const char * threadName = nullptr );
 
     /**
      * \brief   Initialize Stub address from given service data, role name and holder thread.
      * \param   siData          Service data, which contains basic information of service
      * \param   roleName        The role name of holder component
-     * \param   threadName      Optional thread name of Stub. If NULL, the current thread where Stub instantiated is set.
+     * \param   threadName      Optional thread name of Stub. If nullptr, the current thread where Stub instantiated is set.
      **/
-    StubAddress( const NEService::SInterfaceData & siData, const char * roleName, const char * threadName = NULL );
+    StubAddress( const NEService::SInterfaceData & siData, const char * roleName, const char * threadName = nullptr );
 
     /**
      * \brief   Copy constructor.
      * \param   source  The source of data to copy.
      **/
     StubAddress( const StubAddress & source );
+
+    /**
+     * \brief   Move constructor.
+     * \param   source  The source of data to move.
+     **/
+    StubAddress( StubAddress && source ) noexcept;
 
     /**
      * \brief   Initialize Stub address from stream.
@@ -148,7 +142,7 @@ public:
     /**
      * \brief   Destructor.
      **/
-    virtual ~StubAddress( void );
+    virtual ~StubAddress( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
@@ -162,31 +156,48 @@ public:
      * \brief   Copies Stub Address data from given source.
      * \param   source  The source of stub address to copy
      **/
-    const StubAddress & operator = ( const StubAddress & source );
+    inline StubAddress & operator = ( const StubAddress & source );
+
+    /**
+     * \brief   Moves Stub Address data from given source.
+     * \param   source  The source of stub address to move.
+     **/
+    inline StubAddress & operator = ( StubAddress && source ) noexcept;
 
     /**
      * \brief   Copies Stub Address data from given service address.
      * \param   addrService The service address as a source of basic information.
      **/
-    const StubAddress & operator = ( const ServiceAddress & addrService );
+    inline StubAddress & operator = ( const ServiceAddress & addrService );
+
+    /**
+     * \brief   Copies Stub Address data from given service address.
+     * \param   addrService The service address as a source of basic information.
+     **/
+    inline StubAddress & operator = ( ServiceAddress && addrService ) noexcept;
 
     /**
      * \brief   Checks equality of 2 stub address and returns true if objects are equal.
      * \param   other   The stub address to compare.
      **/
-    bool operator == ( const StubAddress & other ) const;
+    inline bool operator == ( const StubAddress & other ) const;
 
     /**
      * \brief   Checks compatibility of stub and proxy addresses and returns true if addresses of objects are compatible.
      * \param   addrProxy   The proxy address to check compatibility.
      **/
-    bool operator == ( const ProxyAddress & addrProxy ) const;
+    inline bool operator == ( const ProxyAddress & addrProxy ) const;
 
     /**
      * \brief   Checks inequality of 2 stub address and returns true if objects are not equal.
      * \param   other   The stub address to compare.
      **/
-    bool operator != ( const StubAddress & other ) const;
+    inline bool operator != ( const StubAddress & other ) const;
+
+    /**
+     * \brief   Converts the stub address to 32-bit integer.
+     **/
+    inline explicit operator unsigned int ( void ) const;
 
 /************************************************************************/
 // Friend global operators for streaming
@@ -297,13 +308,13 @@ public:
 
     /**
      * \brief   Instantiate Stub Address from given address path.
-     *          If out_nextPart is not NULL, on output this will contain remaining part
+     *          If out_nextPart is not nullptr, on output this will contain remaining part
      *          from Stub path.
      * \param   pathStub        The path of Stub object, containing information for address.
-     * \param   out_nextPart    If not NULL, on output this will contain remaining part of Stub path
+     * \param   out_nextPart    If not nullptr, on output this will contain remaining part of Stub path
      * \return  Returns initialized StubAddress object, containing information taken from path
      **/
-    void convFromString(const char* pathStub, const char** out_nextPart = NULL);
+    void convFromString(const char* pathStub, const char** out_nextPart = nullptr);
 
 protected:
     /**
@@ -346,7 +357,7 @@ private:
 // Operators
 //////////////////////////////////////////////////////////////////////////
 
-inline const StubAddress & StubAddress::operator = ( const StubAddress & source )
+inline StubAddress & StubAddress::operator = ( const StubAddress & source )
 {
     if (this != &source)
     {
@@ -359,7 +370,20 @@ inline const StubAddress & StubAddress::operator = ( const StubAddress & source 
     return (*this);
 }
 
-inline const StubAddress & StubAddress::operator = (const ServiceAddress & addrService)
+inline StubAddress & StubAddress::operator = ( StubAddress && source ) noexcept
+{
+    if ( this != &source )
+    {
+        static_cast<ServiceAddress &>(*this) = static_cast<ServiceAddress &&>(source);
+        mThreadName = std::move(source.mThreadName);
+        mChannel    = std::move(source.mChannel);
+        mMagicNum   = source.mMagicNum;
+    }
+
+    return (*this);
+}
+
+inline StubAddress & StubAddress::operator = (const ServiceAddress & addrService)
 {
     if ( static_cast<const ServiceAddress *>(this) != &addrService)
     {
@@ -367,6 +391,19 @@ inline const StubAddress & StubAddress::operator = (const ServiceAddress & addrS
         mThreadName = "";
         mChannel    = Channel();
         mMagicNum   = StubAddress::_magicNumber(*this);
+    }
+
+    return (*this);
+}
+
+inline StubAddress & StubAddress::operator = ( ServiceAddress && addrService ) noexcept
+{
+    if ( static_cast<const ServiceAddress *>(this) != &addrService )
+    {
+        static_cast<ServiceAddress &>(*this) = static_cast<ServiceAddress &&>(addrService);
+        mThreadName = "";
+        mChannel    = Channel( );
+        mMagicNum   = StubAddress::_magicNumber( *this );
     }
 
     return (*this);
@@ -385,6 +422,11 @@ inline bool StubAddress::operator != ( const StubAddress& other ) const
 inline bool StubAddress::operator == ( const ProxyAddress & addrProxy ) const
 {
     return isProxyCompatible(addrProxy);
+}
+
+inline StubAddress::operator unsigned int ( void ) const
+{
+    return mMagicNum;
 }
 
 inline bool StubAddress::isLocalAddress(void) const
@@ -431,5 +473,3 @@ inline void StubAddress::setSource( ITEM_ID source )
 {
     return mChannel.setSource(source);
 }
-
-#endif  // AREG_COMPONENT_STUBADDRESS_HPP

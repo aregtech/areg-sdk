@@ -1,10 +1,16 @@
-#ifndef AREG_IPC_NECONNECTION_HPP
-#define AREG_IPC_NECONNECTION_HPP
-
+#pragma once
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/ipc/NEConnection.hpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform Connection constants.
  ************************************************************************/
 
@@ -16,6 +22,8 @@
 #include "areg/component/Timer.hpp"
 #include "areg/appbase/NEApplication.hpp"
 #include "areg/ipc/NERemoteService.hpp"
+
+#include <string_view>
 
 /************************************************************************
  * Dependencies
@@ -79,70 +87,65 @@ namespace NEConnection
      * \brief   NEConnection::CLIENT_SEND_MESSAGE_THREAD
      *          Fixed name of client message sender thread
      **/
-    const char * const      CLIENT_SEND_MESSAGE_THREAD      = "CLIENT_SEND_MESSAGE_THREAD";
+    constexpr std::string_view  CLIENT_SEND_MESSAGE_THREAD      { "CLIENT_SEND_MESSAGE_THREAD" };
     /**
      * \brief   NEConnection::CLIENT_RECEIVE_MESSAGE_THREAD
      *          Fixed name of client message receiver thread
      **/
-    const char * const      CLIENT_RECEIVE_MESSAGE_THREAD   = "CLIENT_RECEIVE_MESSAGE_THREAD";
+    constexpr std::string_view  CLIENT_RECEIVE_MESSAGE_THREAD   { "CLIENT_RECEIVE_MESSAGE_THREAD" };
     /**
      * \brief   NEConnection::CLIENT_DISPATCH_MESSAGE_THREAD
      *          Fixed name of client message dispatcher thread
      **/
-    const char * const      CLIENT_DISPATCH_MESSAGE_THREAD  = "CLIENT_DISPATCH_MESSAGE_THREAD";
+    constexpr std::string_view  CLIENT_DISPATCH_MESSAGE_THREAD  { "CLIENT_DISPATCH_MESSAGE_THREAD" };
     /**
      * \brief   NEConnection::SERVER_SEND_MESSAGE_THREAD
      *          Fixed name of server message sender thread
      **/
-    const char * const      SERVER_SEND_MESSAGE_THREAD      = "SERVER_SEND_MESSAGE_THREAD";
+    constexpr std::string_view  SERVER_SEND_MESSAGE_THREAD      { "SERVER_SEND_MESSAGE_THREAD" };
     /**
      * \brief   NEConnection::SERVER_RECEIVE_MESSAGE_THREAD
      *          Fixed name of server message receiver thread
      **/
-    const char * const      SERVER_RECEIVE_MESSAGE_THREAD   = "SERVER_RECEIVE_MESSAGE_THREAD";
+    constexpr std::string_view  SERVER_RECEIVE_MESSAGE_THREAD   { "SERVER_RECEIVE_MESSAGE_THREAD" };
     /**
      * \brief   NEConnection::SERVER_DISPATCH_MESSAGE_THREAD
      *          Fixed name of server message dispatcher thread
      **/
-    const char * const      SERVER_DISPATCH_MESSAGE_THREAD  = "SERVER_DISPATCH_MESSAGE_THREAD";
+    constexpr std::string_view  SERVER_DISPATCH_MESSAGE_THREAD  { "SERVER_DISPATCH_MESSAGE_THREAD" };
     /**
      * \brief   NEConnection::CLIENT_CONNECT_TIMER_NAME
      *          Fixed name of client connection retry timer name
      **/
-    const char * const      CLIENT_CONNECT_TIMER_NAME       = "CLIENT_CONNECT_TIMER_NAME";
+    constexpr std::string_view  CLIENT_CONNECT_TIMER_NAME       { "CLIENT_CONNECT_TIMER_NAME" };
     /**
      * \brief   NEConnection::SERVER_CONNECT_TIMER_NAME
      *          Fixed name of server connection retry timer name
      **/
-    const char * const      SERVER_CONNECT_TIMER_NAME       = "SERVER_CONNECT_TIMER_NAME";
-    /**
-     * \brief   NEConnection::DEFAULT_ROUTER_CONFIG_FILE
-     *          Default path of remote routing service configuration file name
-     **/
-    const char * const      DEFAULT_ROUTER_CONFIG_FILE      = NERemoteService::DEFAULT_CONFIG_FILE;
-    /**
-     * \brief   NEConnection::DEFAULT_RETRY_CONNECT_TIMEOUT
-     *          Default connect retry timer timeout value in milliseconds
-     **/
-    const unsigned int      DEFAULT_RETRY_CONNECT_TIMEOUT   = Timer::TIMEOUT_500_MS;  // 500 ms
+    constexpr std::string_view  SERVER_CONNECT_TIMER_NAME       { "SERVER_CONNECT_TIMER_NAME" };
     /**
      * \brief   NEConnection::DEFAULT_REMOTE_SERVICE_HOST
      *          Default IP-address of remote routing service.
      *          The default values are used if failed to read and parse router configuration file.
      **/
-    const char * const      DEFAULT_REMOTE_SERVICE_HOST     = NERemoteService::DEFAULT_ROUTER_HOST;
+    constexpr std::string_view  DEFAULT_REMOTE_SERVICE_HOST     { NERemoteService::DEFAULT_ROUTER_HOST };
     /**
      * \brief   NEConnection::DEFAULT_REMOTE_SERVICE_PORT
      *          Default connection port number of remote routing service
      *          The default values are used if failed to read and parse router configuration file.
      **/
-    const unsigned short    DEFAULT_REMOTE_SERVICE_PORT     = NERemoteService::DEFAULT_ROUTER_PORT;
+    constexpr unsigned short    DEFAULT_REMOTE_SERVICE_PORT     { NERemoteService::DEFAULT_ROUTER_PORT };
+    /**
+     * \brief   NEConnection::DEFAULT_RETRY_CONNECT_TIMEOUT
+     *          Default connect retry timer timeout value in milliseconds
+     **/
+    constexpr unsigned int      DEFAULT_RETRY_CONNECT_TIMEOUT   { Timer::TIMEOUT_500_MS };  // 500 ms
     /**
      * \brief   NEConnection::DEFAULT_REMOVE_SERVICE_ENABLED
      *          Message router enable / disable default flag. If true, by default it is enabled.
      *          The default values are used if failed to read and parse router configuration file.
      **/
-    const bool              DEFAULT_REMOVE_SERVICE_ENABLED  = true;
+    constexpr  bool              DEFAULT_REMOVE_SERVICE_ENABLED  { true };
 
     /**
      * \brief   NEConnection::CreateConnectRequest
@@ -274,5 +277,3 @@ namespace NEConnection
      **/
     AREG_API bool isMessageRegisterService( const RemoteMessage & msgRegisterService );
 }
-
-#endif  // AREG_IPC_NECONNECTION_HPP

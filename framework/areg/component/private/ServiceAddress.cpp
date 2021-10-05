@@ -1,11 +1,20 @@
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/component/private/ServiceAddress.hpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, Generic Service Address object
  *
  ************************************************************************/
 #include "areg/component/ServiceAddress.hpp"
+
 #include "areg/component/ProxyAddress.hpp"
 #include "areg/component/StubAddress.hpp"
 #include "areg/base/IEIOStream.hpp"
@@ -13,12 +22,14 @@
 #include "areg/base/NEMath.hpp"
 #include "areg/component/DispatcherThread.hpp"
 
+#include <utility>
+
 String ServiceAddress::convAddressToPath( const ServiceAddress & addService )
 {
     return addService.convToString();
 }
 
-ServiceAddress ServiceAddress::convPathToAddress( const char * pathService, const char ** out_nextPart /*= NULL */ )
+ServiceAddress ServiceAddress::convPathToAddress( const char * pathService, const char ** out_nextPart /*= nullptr */ )
 {
     ServiceAddress result;
     result.convFromString(pathService, out_nextPart);
@@ -27,10 +38,9 @@ ServiceAddress ServiceAddress::convPathToAddress( const char * pathService, cons
 
 ServiceAddress::ServiceAddress( void )
     : ServiceItem   ( )
-    , mRoleName     ( String::EmptyString )
+    , mRoleName     ( String::EmptyString.data(), 0 )
     , mMagicNum     ( NEMath::CHECKSUM_IGNORE )
 {
-    ; // do nothing
 }
 
 ServiceAddress::ServiceAddress( const char * serviceName
@@ -79,35 +89,36 @@ ServiceAddress::ServiceAddress( const IEInStream & stream )
 }
 
 ServiceAddress::ServiceAddress( const ServiceAddress & source )
-    : ServiceItem   ( static_cast<const ServiceItem >(source) )
+    : ServiceItem   ( static_cast<const ServiceItem &>(source) )
     , mRoleName     ( source.mRoleName )
     , mMagicNum     ( source.mMagicNum )
 {
-    ; // do nothing
 }
 
-ServiceAddress::~ServiceAddress(void)
+ServiceAddress::ServiceAddress( ServiceAddress && source ) noexcept
+    : ServiceItem   ( static_cast<ServiceItem &&>(source) )
+    , mRoleName     ( std::move(source.mRoleName) )
+    , mMagicNum     ( source.mMagicNum )
 {
-    ; // do nothing
 }
 
 String ServiceAddress::convToString(void) const
 {
     String result = ServiceItem::convToString();
-    result += NEUtilities::COMPONENT_PATH_SEPARATOR;
+    result += NECommon::COMPONENT_PATH_SEPARATOR.data();
     result += mRoleName;
 
     return result;
 }
 
-void ServiceAddress::convFromString(const char * pathService, const char** out_nextPart /*= NULL */)
+void ServiceAddress::convFromString(const char * pathService, const char** out_nextPart /*= nullptr */)
 {
     const char* strSource   = pathService;
     ServiceItem::convFromString(pathService, &strSource);
-    mRoleName   = String::getSubstring(strSource, NEUtilities::COMPONENT_PATH_SEPARATOR, &strSource);
+    mRoleName   = String::getSubstring(strSource, NECommon::COMPONENT_PATH_SEPARATOR.data(), &strSource);
     mMagicNum   = ServiceAddress::_magicNumber(*this);
 
-    if (out_nextPart != NULL)
+    if (out_nextPart != nullptr)
         *out_nextPart = strSource;
 }
 

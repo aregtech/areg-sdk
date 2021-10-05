@@ -83,12 +83,12 @@ It as well broadcasts own text message to all connected clients.</Description>
     </MethodList>
     <ConstantList>
         <Constant DataType="uint32" ID="23" Name="MessageMaxLen">
-            <Value>NECommonSettings::MaxlenMessage</Value>
+            <Value>NECommon::MaxlenMessage</Value>
             <Description>The maximum length of messages.</Description>
         </Constant>
     </ConstantList>
     <IncludeList>
-        <Location ID="24" Name="shared/NECommonSettings.hpp">
+        <Location ID="24" Name="generated/NECommon.hpp">
             <Description>The shared namespace to include</Description>
         </Location>
     </IncludeList>

@@ -1,10 +1,16 @@
-#ifndef MCROUTER_TCP_PRIVATE_SERVERCONNECTION_HPP
-#define MCROUTER_TCP_PRIVATE_SERVERCONNECTION_HPP
-
+#pragma once
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        mcrouter/tcp/private/ServerConnection.hpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform Server Connection class declaration.
  ************************************************************************/
 
@@ -15,7 +21,7 @@
 #include "areg/ipc/ServerConnectionBase.hpp"
 #include "areg/ipc/SocketConnectionBase.hpp"
 
-#include "areg/base/ESynchObjects.hpp"
+#include "areg/base/SynchObjects.hpp"
 #include "areg/base/SocketServer.hpp"
 #include "areg/base/SocketAccepted.hpp"
 #include "areg/base/TEHashMap.hpp"
@@ -26,17 +32,12 @@
 //////////////////////////////////////////////////////////////////////////
 /**
  * \brief   The Server Socket is used to accept connection from remote clients,
- *          send and receive data. Before accepting connections, 
- *          sending or receiving any data, the socket should be created, 
- *          set for listening and wait for incoming connection. 
- *          When connection from client is accepted, the server specifies
- *          unique cookie for accepted client. As soon as connection is
- *          accepted, the server can start to send and receive data.
- *          Connection accepting, sending and receiving data are running
- *          in blocking mode. For this reason, it makes sens to run all these
- *          functionalities in separate threads.
- *          Server socket is using only TCP/IP connection. All other types
- *          and protocols are out of scope of this class and are not considered.
+ *          send and receive data. When connection from client is accepted,
+ *          the server specifies unique cookie for accepted client. After
+ *          connection is accepted, the client starts to send and receive data.
+ *          Sending and receiving data are running in blocking mode. 
+ *          To synchronize communication, there are send and receive threads
+ *          are specified.
  **/
 class ServerConnection  : public    ServerConnectionBase
                         , private   SocketConnectionBase
@@ -50,7 +51,7 @@ public:
      *          Before sending or receiving data, the socket should be created
      *          and bound to socket address.
      **/
-    ServerConnection( void );
+    ServerConnection( void ) = default;
 
     /**
      * \brief   Creates instance of object with invalid socket object.
@@ -59,7 +60,7 @@ public:
      *          When instantiated, it will resolved passed host
      *          name and port number. If succeeded to resolve,
      *          it will set resolved IP-address and port number
-     *          as socket address. If passed hostName is NULL,
+     *          as socket address. If passed hostName is nullptr,
      *          it resolve connection for local host.
      * \param   hostName    Host name or IP-address of server.
      * \param   portNr      Port number of server.
@@ -72,12 +73,12 @@ public:
      *          and bound to host and port. Specified remoteAddress will be set as server address.
      * \param   remoteAddress   Address of server.
      **/
-    ServerConnection( const NESocket::InterlockedValue & serverAddress );
+    explicit ServerConnection( const NESocket::SocketAddress & serverAddress );
 
     /**
      * \brief   Destructor.
      **/
-    virtual ~ServerConnection( void );
+    virtual ~ServerConnection( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -178,8 +179,7 @@ public:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    ServerConnection( const ServerConnection & );
-    const ServerConnection & operator = ( const ServerConnection & );
+    DECLARE_NOCOPY_NOMOVE( ServerConnection );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -205,5 +205,3 @@ inline int ServerConnection::receiveMessage(RemoteMessage & out_message, ITEM_ID
 {
     return SocketConnectionBase::receiveMessage(out_message,getClientByCookie(clientCookie));
 }
-
-#endif  // MCROUTER_TCP_PRIVATE_SERVERCONNECTION_HPP

@@ -27,6 +27,9 @@
 class CentralApp : public CWinApp
 {
 public:
+    static CString  EmptyString;
+
+public:
     CentralApp();
 
     // Overrides

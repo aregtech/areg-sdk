@@ -1,43 +1,57 @@
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        mcrouter/tcp/private/ServerServiceEvent.cpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform Server Service Event
  ************************************************************************/
 #include "mcrouter/tcp/private/ServerServiceEvent.hpp"
+
+#include <utility>
 
 ServerServiceEventData::ServerServiceEventData(eServerServiceCommands cmdService)
     : mServiceCommand   ( cmdService )
     , mMessageData      ( )
 {
-    ; // do nothing
 }
 
 ServerServiceEventData::ServerServiceEventData(eServerServiceCommands cmdService, const RemoteMessage & msgService)
     : mServiceCommand   ( cmdService )
     , mMessageData      ( msgService )
 {
-    ; // do nothing
 }
 
 ServerServiceEventData::ServerServiceEventData(const ServerServiceEventData & source)
     : mServiceCommand   ( source.mServiceCommand )
     , mMessageData      ( source.mMessageData )
 {
-    ; // do nothing
 }
 
-ServerServiceEventData::~ServerServiceEventData(void)
+ServerServiceEventData::ServerServiceEventData( ServerServiceEventData && source ) noexcept
+    : mServiceCommand   ( std::move(source.mServiceCommand) )
+    , mMessageData      ( std::move(source.mMessageData) )
 {
-    ; // do nothing
 }
 
-const ServerServiceEventData & ServerServiceEventData::operator = (const ServerServiceEventData & source)
+ServerServiceEventData & ServerServiceEventData::operator = (const ServerServiceEventData & source)
 {
-    if ( static_cast<const ServerServiceEventData *>(this) != &source )
-    {
-        mServiceCommand = source.mServiceCommand;
-        mMessageData    = source.mMessageData;
-    }
+    mServiceCommand = source.mServiceCommand;
+    mMessageData    = source.mMessageData;
+
+    return (*this);
+}
+
+ServerServiceEventData & ServerServiceEventData::operator = ( ServerServiceEventData && source ) noexcept
+{
+    mServiceCommand = std::move( source.mServiceCommand );
+    mMessageData    = std::move( source.mMessageData );
+
     return (*this);
 }

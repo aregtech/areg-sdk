@@ -53,8 +53,8 @@ NERegistry::Model DirectChatService::GetModel( const NEDirectMessager::sParticip
 Component * DirectChatService::CreateComponent( const NERegistry::ComponentEntry & entry, ComponentThread & owner )
 {
     PageChat * page = reinterpret_cast<PageChat *>(entry.getComponentData().alignClsPtr.mElement);
-    ASSERT( page != NULL );
-    return ( page != NULL ? new DirectChatService(owner, entry, static_cast<ChatPrticipantHandler &>(*page) ) : NULL );
+    ASSERT( page != nullptr );
+    return ( page != nullptr ? new DirectChatService(owner, entry, static_cast<ChatPrticipantHandler &>(*page) ) : nullptr);
 }
 
 void DirectChatService::DeleteComponent( Component & compObject, const NERegistry::ComponentEntry & entry )
@@ -98,12 +98,12 @@ void DirectChatService::startupComponent( ComponentThread & comThread )
 void DirectChatService::shutdownComponent( ComponentThread & comThread )
 {
     TRACE_SCOPE( distrbutedapp_DirectChatService_ShutdownComponent );
-    mPaticipantsHandler.SetConnectionService( static_cast<DirectChatService *>(NULL) );
+    mPaticipantsHandler.SetConnectionService( nullptr );
 
     for ( int i = 0; i < mListClients.getSize(); ++ i )
     {
         DirectConnectionClient * client = mListClients[i];
-        if ( client != NULL )
+        if ( client != nullptr )
             delete client;
     }
     mListClients.removeAll();
@@ -150,7 +150,7 @@ void DirectChatService::requestMessageSend( const NEDirectMessager::sParticipant
     if ( chatParticipants.exist(participant, 0) )
     {
         broadcastMessageSent(participant, msgText, timeSent );
-        broadcastMessageTyped( participant, String::EmptyString );
+        broadcastMessageTyped( participant, String::EmptyString.data() );
     }
 }
 

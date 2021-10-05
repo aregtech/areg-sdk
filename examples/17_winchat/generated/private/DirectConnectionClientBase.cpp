@@ -3,14 +3,14 @@
 //////////////////////////////////////////////////////////////////////////
 /************************************************************************
  * (c) copyright    2021
+ *
+ * Generated at     30.09.2021  01:22:15 GMT+02:00 
  *                  Create by AREG SDK code generator tool from source DirectConnection.
- * Generated at     04.07.2021  04:30:02 GMT+02:00 
- ************************************************************************/
-
-/************************************************************************
- * \file            generated/private/DirectConnectionClientBase.cpp
+ *
+ * \file            generated/DirectConnectionClientBase.hpp
  * \ingroup         DirectConnection Service Interface
- * \brief           This is an automatic generated code of DirectConnection Service Interface Client base class implementation.
+ * \brief           This is an automatic generated code of DirectConnection
+ *                  Service Interface Client base class implementation.
  ************************************************************************/
 
 /************************************************************************
@@ -47,14 +47,13 @@ namespace NEDirectConnection
  * Constructor / Destructor
  ************************************************************************/
 
-DirectConnectionClientBase::DirectConnectionClientBase( const char * roleName, const char * ownerThread /*= static_cast<const char *>(NULL)*/ )
+DirectConnectionClientBase::DirectConnectionClientBase( const char * roleName, const char * ownerThread /*= nullptr*/ )
     : IEProxyListener   ( )
 
     , mIsConnected      ( false )
     , mCurrSequenceNr   ( 0 )
     , mProxy            ( DirectConnectionProxy::createProxy(roleName, static_cast<IEProxyListener &>(self()), ownerThread) )
 {
-    ; // do nothing
 }
 
 DirectConnectionClientBase::DirectConnectionClientBase( const char * roleName, DispatcherThread & ownerThread )
@@ -64,7 +63,6 @@ DirectConnectionClientBase::DirectConnectionClientBase( const char * roleName, D
     , mCurrSequenceNr   ( 0 )
     , mProxy            ( DirectConnectionProxy::createProxy(roleName, static_cast<IEProxyListener &>(self()), ownerThread) )
 {
-    ; // do nothing
 }
 
 DirectConnectionClientBase::DirectConnectionClientBase( const char* roleName, Component & owner )
@@ -74,16 +72,15 @@ DirectConnectionClientBase::DirectConnectionClientBase( const char* roleName, Co
     , mCurrSequenceNr   ( 0 )
     , mProxy            ( DirectConnectionProxy::createProxy(roleName, static_cast<IEProxyListener &>(self()), owner.getMasterThread()) )
 {
-    ; // do nothing
 }
 
 DirectConnectionClientBase::~DirectConnectionClientBase( void )
 {
-    if (mProxy != NULL)
+    if (mProxy != nullptr)
     {
         mProxy->clearAllNotifications( static_cast<IENotificationEventConsumer &>(self()) );
         mProxy->freeProxy( static_cast<IEProxyListener &>(self()) );
-        mProxy  = NULL;
+        mProxy  = nullptr;
     }
     
     mIsConnected= false;
@@ -96,14 +93,14 @@ DirectConnectionClientBase::~DirectConnectionClientBase( void )
 bool DirectConnectionClientBase::recreateProxy( void )
 {
     bool result         = false;
-    if (mProxy != NULL)
+    if (mProxy != nullptr)
     {
         String roleName   = mProxy->getProxyAddress().getRoleName();
         String threadName = mProxy->getProxyAddress().getThread();
         if ( roleName.isEmpty() == false )
         {
             DirectConnectionProxy * newProxy = DirectConnectionProxy::createProxy(roleName.getString(), static_cast<IEProxyListener &>(self()), threadName.getString());
-            if (newProxy != NULL)
+            if (newProxy != nullptr)
             {
                 mProxy->clearAllNotifications( static_cast<IENotificationEventConsumer &>(self()) );
                 mProxy->freeProxy (static_cast<IEProxyListener &>(self()) );
@@ -117,13 +114,13 @@ bool DirectConnectionClientBase::recreateProxy( void )
 
 DispatcherThread * DirectConnectionClientBase::getDispatcherThread( void )
 {
-    return ( mProxy != static_cast<DirectConnectionProxy *>(NULL) ? &(mProxy->getProxyDispatcherThread()) : static_cast<DispatcherThread *>(NULL) );
+    return ( mProxy != nullptr ? &(mProxy->getProxyDispatcherThread()) : nullptr );
 }
 
-DEF_TRACE_SCOPE(GENERATED_DirectConnectionClientBase_serviceConnected);
+DEF_TRACE_SCOPE(generated_DirectConnectionClientBase_serviceConnected);
 bool DirectConnectionClientBase::serviceConnected( bool isConnected, ProxyBase & proxy )
 {
-    TRACE_SCOPE(GENERATED_DirectConnectionClientBase_serviceConnected);
+    TRACE_SCOPE(generated_DirectConnectionClientBase_serviceConnected);
     
     bool result = false;
     if(mProxy == &proxy)
@@ -153,7 +150,7 @@ void DirectConnectionClientBase::notifyOn( NEDirectConnection::eMessageIDs msgId
  * Event processing
  ************************************************************************/
 
-DEF_TRACE_SCOPE(GENERATED_DirectConnectionClientBase_processNotificationEvent);
+DEF_TRACE_SCOPE(generated_DirectConnectionClientBase_processNotificationEvent);
 void DirectConnectionClientBase::processNotificationEvent( NotificationEvent & eventElem )
 {
     const NotificationEventData & data  = static_cast<const NotificationEvent &>(eventElem).getData();
@@ -163,28 +160,28 @@ void DirectConnectionClientBase::processNotificationEvent( NotificationEvent & e
 
     switch (result)
     {
-    case NEService::RESULT_REQUEST_BUSY:
-    case NEService::RESULT_REQUEST_ERROR:
-    case NEService::RESULT_REQUEST_CANCELED:
+    case NEService::eResultType::RequestBusy:       // fall through
+    case NEService::eResultType::RequestError:      // fall through
+    case NEService::eResultType::RequestCanceled:   // fall through
         {
         /************************************************************************
          * Trigger request error handling if request failed.
          ************************************************************************/
-            requestFailed(msgId, result);
+            DirectConnectionClientBase::requestFailed(msgId, result);
         }
         break;
 
-    case NEService::RESULT_INVALID:
+    case NEService::eResultType::RequestInvalid:
         {
         /************************************************************************
          * Trigger invalid response / broadcast handling. May happen when remove notification 
          ************************************************************************/
-            invalidResponse(msgId);
+            DirectConnectionClientBase::invalidResponse(msgId);
         }
         break;
 
-    case NEService::RESULT_DATA_OK:
-    case NEService::RESULT_DATA_INVALID:
+    case NEService::eResultType::DataOK:            // fall through
+    case NEService::eResultType::DataInvalid:
         {
             NEService::eDataStateType dataState;
             switch (msgId)
@@ -192,7 +189,7 @@ void DirectConnectionClientBase::processNotificationEvent( NotificationEvent & e
         /************************************************************************
          * Trigger attribute update processing
          ************************************************************************/
-            case NEDirectConnection::MSG_ID_InitiatedConnections:
+            case NEDirectConnection::eMessageIDs::MsgId_InitiatedConnections:
                 {
                     const NEDirectConnection::MapParticipants & InitiatedConnections = mProxy->getInitiatedConnections(dataState);
                     onInitiatedConnectionsUpdate(InitiatedConnections, dataState);
@@ -201,7 +198,7 @@ void DirectConnectionClientBase::processNotificationEvent( NotificationEvent & e
 
             default:
                 {
-                    TRACE_SCOPE(GENERATED_DirectConnectionClientBase_processNotificationEvent);
+                    TRACE_SCOPE(generated_DirectConnectionClientBase_processNotificationEvent);
                     TRACE_ERR("Client object DirectConnectionClientBase of proxy [ %s ] received unexpected Attribute update notification message ID [ %d ]."
                                 , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString()
                                 , msgId);
@@ -212,14 +209,14 @@ void DirectConnectionClientBase::processNotificationEvent( NotificationEvent & e
         }
         break;
 
-    case NEService::RESULT_OK:
+    case NEService::eResultType::RequestOK:
         {
             switch (msgId)
             {
         /************************************************************************
          * Trigger response processing
          ************************************************************************/
-            case NEDirectConnection::MSG_ID_responseConnectoinSetup:
+            case NEDirectConnection::eMessageIDs::MsgId_responseConnectoinSetup:
                 {
                     bool succeeded = mProxy->getParamsucceeded();
                     const NEDirectConnection::sParticipant & target = mProxy->getParamtarget();
@@ -229,7 +226,7 @@ void DirectConnectionClientBase::processNotificationEvent( NotificationEvent & e
                 }
                 break;
 
-            case NEDirectConnection::MSG_ID_responseAddParticipant:
+            case NEDirectConnection::eMessageIDs::MsgId_responseAddParticipant:
                 {
                     bool succeeded = mProxy->getParamsucceeded();
                     const NEDirectConnection::ListParticipants & listParticipants = mProxy->getParamlistParticipants();
@@ -237,7 +234,7 @@ void DirectConnectionClientBase::processNotificationEvent( NotificationEvent & e
                 }
                 break;
 
-            case NEDirectConnection::MSG_ID_responseRemoveParticipant:
+            case NEDirectConnection::eMessageIDs::MsgId_responseRemoveParticipant:
                 {
                     bool succeeded = mProxy->getParamsucceeded();
                     const NEDirectConnection::ListParticipants & listParticipants = mProxy->getParamlistParticipants();
@@ -250,7 +247,7 @@ void DirectConnectionClientBase::processNotificationEvent( NotificationEvent & e
          ************************************************************************/
             default:
                 {
-                    TRACE_SCOPE(GENERATED_DirectConnectionClientBase_processNotificationEvent);
+                    TRACE_SCOPE(generated_DirectConnectionClientBase_processNotificationEvent);
                     TRACE_ERR("Client object DirectConnectionClientBase of proxy [ %s ] received unexpected Response message ID [ %d ]."
                                 , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString()
                                 , msgId);
@@ -263,7 +260,7 @@ void DirectConnectionClientBase::processNotificationEvent( NotificationEvent & e
 
     default:
         {
-            TRACE_SCOPE(GENERATED_DirectConnectionClientBase_processNotificationEvent);
+            TRACE_SCOPE(generated_DirectConnectionClientBase_processNotificationEvent);
             TRACE_ERR("Client object DirectConnectionClientBase of proxy [ %s ] received unexpected Response result type [ %d ]."
                         , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString()
                         , static_cast<int>(result));
@@ -276,10 +273,10 @@ void DirectConnectionClientBase::processNotificationEvent( NotificationEvent & e
 /************************************************************************
  * Error handling calls
  ************************************************************************/
-DEF_TRACE_SCOPE(GENERATED_DirectConnectionClientBase_invalidResponse);
+DEF_TRACE_SCOPE(generated_DirectConnectionClientBase_invalidResponse);
 void DirectConnectionClientBase::invalidResponse( NEDirectConnection::eMessageIDs InvalidRespId )
 {
-    TRACE_SCOPE(GENERATED_DirectConnectionClientBase_invalidResponse);
+    TRACE_SCOPE(generated_DirectConnectionClientBase_invalidResponse);
     TRACE_ERR("The invalid response [ %s ] (value = [ %d ]) method of proxy [ %s ] client DirectConnectionClientBase is not implemented! Make error handling!"
                     , NEDirectConnection::getString(InvalidRespId)
                     , static_cast<unsigned int>(InvalidRespId)
@@ -288,10 +285,10 @@ void DirectConnectionClientBase::invalidResponse( NEDirectConnection::eMessageID
     ASSERT(false);
 }
 
-DEF_TRACE_SCOPE(GENERATED_DirectConnectionClientBase_invalidRequest);
+DEF_TRACE_SCOPE(generated_DirectConnectionClientBase_invalidRequest);
 void DirectConnectionClientBase::invalidRequest( NEDirectConnection::eMessageIDs InvalidReqId )
 {
-    TRACE_SCOPE(GENERATED_DirectConnectionClientBase_invalidRequest);
+    TRACE_SCOPE(generated_DirectConnectionClientBase_invalidRequest);
     TRACE_ERR("The invalid request [ %s ] (value = [ %d ]) method of proxy [ %s ] client DirectConnectionClientBase is not implemented! Make error handling!"
                     , NEDirectConnection::getString(InvalidReqId)
                     , static_cast<unsigned int>(InvalidReqId)
@@ -300,20 +297,20 @@ void DirectConnectionClientBase::invalidRequest( NEDirectConnection::eMessageIDs
     ASSERT(false);
 }
 
-DEF_TRACE_SCOPE(GENERATED_DirectConnectionClientBase_requestFailed);
+DEF_TRACE_SCOPE(generated_DirectConnectionClientBase_requestFailed);
 void DirectConnectionClientBase::requestFailed( NEDirectConnection::eMessageIDs FailureMsgId, NEService::eResultType FailureReason )
 {
-    TRACE_SCOPE(GENERATED_DirectConnectionClientBase_requestFailed);
+    TRACE_SCOPE(generated_DirectConnectionClientBase_requestFailed);
     TRACE_WARN("The request [ %s ] (value = [ %d ]) method of proxy [ %s ] client DirectConnectionClientBase failed with reason [ %s ]! Implemented error handling!"
                     , NEDirectConnection::getString(FailureMsgId)
                     , static_cast<unsigned int>(FailureMsgId)
                     , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString()
                     , NEService::getString(FailureReason) );
                     
-    unsigned int index = static_cast<unsigned int>(NEDirectConnection::MSG_ID_INVALID);
-    index = static_cast<unsigned int>( NEService::isResponseId(static_cast<unsigned int>(FailureMsgId)) ? NEDirectConnection::getRequestId(FailureMsgId) : FailureMsgId);
-    index = NEService::isRequestId(index)  ? GET_REQ_INDEX(index) : static_cast<unsigned int>(NEDirectConnection::MSG_ID_INVALID);
-    if ( index != static_cast<unsigned int>(NEDirectConnection::MSG_ID_INVALID) )
+    unsigned int index = static_cast<msg_id>(NEDirectConnection::eMessageIDs::MsgId_Invalid);
+    index = static_cast<msg_id>( NEService::isResponseId(static_cast<unsigned int>(FailureMsgId)) ? NEDirectConnection::getRequestId(FailureMsgId) : FailureMsgId);
+    index = NEService::isRequestId(index)  ? GET_REQ_INDEX(index) : static_cast<msg_id>(NEDirectConnection::eMessageIDs::MsgId_Invalid);
+    if ( index != static_cast<msg_id>(NEDirectConnection::eMessageIDs::MsgId_Invalid) && (index < NEDirectConnection::getInterfaceData().idRequestCount) )
     {
         (this->*NEDirectConnection::failureFunctions[index])( FailureReason );
     }
@@ -327,12 +324,12 @@ void DirectConnectionClientBase::requestFailed( NEDirectConnection::eMessageIDs 
  * Attribute notifications
  ************************************************************************/
 
-DEF_TRACE_SCOPE(GENERATED_DirectConnectionClientBase_onInitiatedConnectionsUpdate);
+DEF_TRACE_SCOPE(generated_DirectConnectionClientBase_onInitiatedConnectionsUpdate);
 void DirectConnectionClientBase::onInitiatedConnectionsUpdate( const NEDirectConnection::MapParticipants & /* InitiatedConnections */, NEService::eDataStateType /* state */ )
 {
-    TRACE_SCOPE(GENERATED_DirectConnectionClientBase_onInitiatedConnectionsUpdate);
+    TRACE_SCOPE(generated_DirectConnectionClientBase_onInitiatedConnectionsUpdate);
     TRACE_WARN("The attribute InitiatedConnections (value = %u) update method of proxy [ %s ] client DirectConnectionClientBase is not implemented!"
-                    , static_cast<unsigned int>(NEDirectConnection::MSG_ID_InitiatedConnections)
+                    , static_cast<unsigned int>(NEDirectConnection::eMessageIDs::MsgId_InitiatedConnections)
                     , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString());
 }
 
@@ -340,70 +337,70 @@ void DirectConnectionClientBase::onInitiatedConnectionsUpdate( const NEDirectCon
  * Request failure / Response and Broadcast notifications
  ************************************************************************/
  
-DEF_TRACE_SCOPE(GENERATED_DirectConnectionClientBase_requestConnectoinSetupFailed);
+DEF_TRACE_SCOPE(generated_DirectConnectionClientBase_requestConnectoinSetupFailed);
 void DirectConnectionClientBase::requestConnectoinSetupFailed( NEService::eResultType FailureReason )
 {
-    TRACE_SCOPE(GENERATED_DirectConnectionClientBase_requestConnectoinSetupFailed);
+    TRACE_SCOPE(generated_DirectConnectionClientBase_requestConnectoinSetupFailed);
     TRACE_WARN("The request requestConnectoinSetup (value = %u) method of proxy [ %s ] client DirectConnectionClientBase is failed with reason [ %s ]! Make error handling!"
-                    , static_cast<unsigned int>(NEDirectConnection::MSG_ID_requestConnectoinSetup)
+                    , static_cast<unsigned int>(NEDirectConnection::eMessageIDs::MsgId_requestConnectoinSetup)
                     , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString()
                     , NEService::getString(FailureReason));
 }
 
-DEF_TRACE_SCOPE(GENERATED_DirectConnectionClientBase_requestAddParticipantFailed);
+DEF_TRACE_SCOPE(generated_DirectConnectionClientBase_requestAddParticipantFailed);
 void DirectConnectionClientBase::requestAddParticipantFailed( NEService::eResultType FailureReason )
 {
-    TRACE_SCOPE(GENERATED_DirectConnectionClientBase_requestAddParticipantFailed);
+    TRACE_SCOPE(generated_DirectConnectionClientBase_requestAddParticipantFailed);
     TRACE_WARN("The request requestAddParticipant (value = %u) method of proxy [ %s ] client DirectConnectionClientBase is failed with reason [ %s ]! Make error handling!"
-                    , static_cast<unsigned int>(NEDirectConnection::MSG_ID_requestAddParticipant)
+                    , static_cast<unsigned int>(NEDirectConnection::eMessageIDs::MsgId_requestAddParticipant)
                     , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString()
                     , NEService::getString(FailureReason));
 }
 
-DEF_TRACE_SCOPE(GENERATED_DirectConnectionClientBase_requestRemoveParticipantFailed);
+DEF_TRACE_SCOPE(generated_DirectConnectionClientBase_requestRemoveParticipantFailed);
 void DirectConnectionClientBase::requestRemoveParticipantFailed( NEService::eResultType FailureReason )
 {
-    TRACE_SCOPE(GENERATED_DirectConnectionClientBase_requestRemoveParticipantFailed);
+    TRACE_SCOPE(generated_DirectConnectionClientBase_requestRemoveParticipantFailed);
     TRACE_WARN("The request requestRemoveParticipant (value = %u) method of proxy [ %s ] client DirectConnectionClientBase is failed with reason [ %s ]! Make error handling!"
-                    , static_cast<unsigned int>(NEDirectConnection::MSG_ID_requestRemoveParticipant)
+                    , static_cast<unsigned int>(NEDirectConnection::eMessageIDs::MsgId_requestRemoveParticipant)
                     , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString()
                     , NEService::getString(FailureReason));
 }
 
-DEF_TRACE_SCOPE(GENERATED_DirectConnectionClientBase_requestCloseConnectionFailed);
+DEF_TRACE_SCOPE(generated_DirectConnectionClientBase_requestCloseConnectionFailed);
 void DirectConnectionClientBase::requestCloseConnectionFailed( NEService::eResultType FailureReason )
 {
-    TRACE_SCOPE(GENERATED_DirectConnectionClientBase_requestCloseConnectionFailed);
+    TRACE_SCOPE(generated_DirectConnectionClientBase_requestCloseConnectionFailed);
     TRACE_WARN("The request requestCloseConnection (value = %u) method of proxy [ %s ] client DirectConnectionClientBase is failed with reason [ %s ]! Make error handling!"
-                    , static_cast<unsigned int>(NEDirectConnection::MSG_ID_requestCloseConnection)
+                    , static_cast<unsigned int>(NEDirectConnection::eMessageIDs::MsgId_requestCloseConnection)
                     , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString()
                     , NEService::getString(FailureReason));
 }
 
-DEF_TRACE_SCOPE(GENERATED_DirectConnectionClientBase_responseConnectoinSetup);
+DEF_TRACE_SCOPE(generated_DirectConnectionClientBase_responseConnectoinSetup);
 void DirectConnectionClientBase::responseConnectoinSetup( bool /* succeeded */, const NEDirectConnection::sParticipant & /* target */, const NEDirectConnection::sInitiator & /* initiator */, const NEDirectConnection::ListParticipants & /* listParticipants */ )
 {
-    TRACE_SCOPE(GENERATED_DirectConnectionClientBase_responseConnectoinSetup);
+    TRACE_SCOPE(generated_DirectConnectionClientBase_responseConnectoinSetup);
     TRACE_WARN("The response responseConnectoinSetup (value = %u) method of proxy [ %s ] client DirectConnectionClientBase is not implemented!"
-                    , static_cast<unsigned int>(NEDirectConnection::MSG_ID_responseConnectoinSetup)
+                    , static_cast<unsigned int>(NEDirectConnection::eMessageIDs::MsgId_responseConnectoinSetup)
                     , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString());
 }
 
-DEF_TRACE_SCOPE(GENERATED_DirectConnectionClientBase_responseAddParticipant);
+DEF_TRACE_SCOPE(generated_DirectConnectionClientBase_responseAddParticipant);
 void DirectConnectionClientBase::responseAddParticipant( bool /* succeeded */, const NEDirectConnection::ListParticipants & /* listParticipants */ )
 {
-    TRACE_SCOPE(GENERATED_DirectConnectionClientBase_responseAddParticipant);
+    TRACE_SCOPE(generated_DirectConnectionClientBase_responseAddParticipant);
     TRACE_WARN("The response responseAddParticipant (value = %u) method of proxy [ %s ] client DirectConnectionClientBase is not implemented!"
-                    , static_cast<unsigned int>(NEDirectConnection::MSG_ID_responseAddParticipant)
+                    , static_cast<unsigned int>(NEDirectConnection::eMessageIDs::MsgId_responseAddParticipant)
                     , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString());
 }
 
-DEF_TRACE_SCOPE(GENERATED_DirectConnectionClientBase_responseRemoveParticipant);
+DEF_TRACE_SCOPE(generated_DirectConnectionClientBase_responseRemoveParticipant);
 void DirectConnectionClientBase::responseRemoveParticipant( bool /* succeeded */, const NEDirectConnection::ListParticipants & /* listParticipants */ )
 {
-    TRACE_SCOPE(GENERATED_DirectConnectionClientBase_responseRemoveParticipant);
+    TRACE_SCOPE(generated_DirectConnectionClientBase_responseRemoveParticipant);
     TRACE_WARN("The response responseRemoveParticipant (value = %u) method of proxy [ %s ] client DirectConnectionClientBase is not implemented!"
-                    , static_cast<unsigned int>(NEDirectConnection::MSG_ID_responseRemoveParticipant)
+                    , static_cast<unsigned int>(NEDirectConnection::eMessageIDs::MsgId_responseRemoveParticipant)
                     , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString());
 }
 

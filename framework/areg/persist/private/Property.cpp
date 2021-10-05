@@ -1,53 +1,60 @@
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/persist/private/Property.cpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       Property object for persisting data
  ************************************************************************/
 #include "areg/persist/Property.hpp"
 #include "areg/persist/private/NEPersistence.hpp"
 #include "areg/base/NEUtilities.hpp"
 
-Property::Property(void)
-    : mComment  ( )
-    , mProperty ( )
-{
-    ; // do nothing
-}
+#include <utility>
 
-Property::Property(const char * keySet, const char * valueSet, const char * comment /*= NULL */)
-    : mComment  ( comment != NULL ? comment : "")
+Property::Property(const char * keySet, const char * valueSet, const char * comment /*= nullptr */)
+    : mComment  ( comment != nullptr ? comment : "")
     , mProperty ( PropertyKey(keySet), PropertyValue(valueSet) )
 {
-    ; // do nothing
 }
 
-Property::Property(const Property::Entry & newProperty, const char * comment /*= NULL */)
-    : mComment  ( comment != NULL ? comment : "")
+Property::Property(const Property::Entry & newProperty, const char * comment /*= nullptr */)
+    : mComment  ( comment != nullptr ? comment : "")
     , mProperty ( newProperty )
 {
-    ; // do nothing
 }
 
 Property::Property(const Property & source)
     : mComment  ( source.mComment )
     , mProperty ( source.mProperty )
 {
-    ; // do nothing
 }
 
-Property::~Property(void)
+Property::Property( Property && source ) noexcept
+    : mComment  ( std::move(source.mComment) )
+    , mProperty ( std::move(source.mProperty) )
 {
-    ; // do nothing
 }
 
-const Property & Property::operator = ( const Property & source )
+Property & Property::operator = ( const Property & source )
 {
-    if ( static_cast<const Property *>(this) != &source )
-    {
-        mComment    = source.mComment;
-        mProperty   = source.mProperty;
-    }
+    mComment    = source.mComment;
+    mProperty   = source.mProperty;
+
+    return (*this);
+}
+
+Property & Property::operator = ( Property && source ) noexcept
+{
+    mComment    = std::move(source.mComment);
+    mProperty   = std::move(source.mProperty);
+
     return (*this);
 }
 
@@ -56,7 +63,7 @@ bool Property::operator == ( const Property & other ) const
     return (this != &other ? mProperty == other.mProperty : true);
 }
 
-bool Property::operator!=(const Property & other) const
+bool Property::operator != (const Property & other) const
 {
     return (this != &other ? mProperty != other.mProperty : false);
 }
@@ -74,6 +81,11 @@ void Property::parseKey(const char * keySet)
 void Property::setKey(const PropertyKey & Key)
 {
     mProperty.mKey = Key;
+}
+
+void Property::setKey( PropertyKey && Key )
+{
+    mProperty.mKey = static_cast<PropertyKey &&>(Key);
 }
 
 const PropertyKey & Property::getKey(void) const
@@ -96,6 +108,11 @@ void Property::setValue(const PropertyValue & Value)
     mProperty.mValue = Value;
 }
 
+void Property::setValue( PropertyValue && Value )
+{
+    mProperty.mValue = static_cast<PropertyValue &&>(Value);
+}
+
 const PropertyValue & Property::getValue(void) const
 {
     return mProperty.mValue;
@@ -114,12 +131,18 @@ void Property::setComment(const char * comment)
 void Property::addComment(const char * comment)
 {
     if ( mComment.isEmpty() == false )
-        mComment += NEPersistence::SYNTAX_LINEEND;
+    {
+        mComment.append( NEPersistence::SYNTAX_LINEEND.data( ), static_cast<int>(NEPersistence::SYNTAX_LINEEND.length( )) );
+    }
+
     String temp(comment);
     // if does not begin with "# "
-    if ( (temp.isEmpty() == false) && (temp.compare(NEPersistence::SYNTAX_COMMENT) != 0) )
-        mComment += NEPersistence::SYNTAX_COMMENT;
-    mComment += temp;
+    if ( (temp.isEmpty() == false) && (temp.compare(NEPersistence::SYNTAX_COMMENT.data()) != NEMath::eCompare::Equal) )
+    {
+        mComment.append( NEPersistence::SYNTAX_COMMENT.data(), static_cast<int>(NEPersistence::SYNTAX_COMMENT.length()) );
+    }
+
+    mComment.append(temp.getString(), temp.getLength());
 }
 
 const char * Property::getComment(void) const
@@ -130,6 +153,11 @@ const char * Property::getComment(void) const
 void Property::setPropertyPair(const Property::Entry & newPair)
 {
     mProperty = newPair;
+}
+
+void Property::setPropertyPair( Property::Entry && newPair )
+{
+    mProperty = static_cast<Property::Entry &&>(newPair);
 }
 
 const Property::Entry & Property::getPropertyPair(void) const
@@ -146,21 +174,24 @@ bool Property::parseProperty(const char * strProperties)
 {
     if ( NEString::isEmpty<char>(strProperties) == false )
     {
-        String values         = strProperties != NULL ? strProperties : "";
-        NEString::CharPos pos   = values.findFirstOf(NEPersistence::SYNTAX_COMMENT);
-        if ( pos != NEString::InvalidPos)
+        String values         = strProperties != nullptr ? strProperties : "";
+        NEString::CharPos pos   = values.findFirstOf(NEPersistence::SYNTAX_COMMENT.data());
+
+        if ( pos != NEString::INVALID_POS)
         {
             addComment( strProperties + static_cast<int>(pos));
             values = values.substring(0, pos);
         }            
+        
         if ( values.isEmpty() == false )
         {
-            const char * value  = NULL;
-            String key        = String::getSubstring(values.getString(), NEPersistence::SYNTAX_EQUAL, &value);
+            const char * value  = nullptr;
+            String key        = String::getSubstring(values.getString(), NEPersistence::SYNTAX_EQUAL.data(), &value);
 
             mProperty.mKey.parseKey(key.getString());
             mProperty.mValue.parseValue(value);
         }
+
         if ( mProperty.mKey.isValid() == false )
         {
             mProperty.mKey.resetKey();
@@ -171,6 +202,7 @@ bool Property::parseProperty(const char * strProperties)
     {
         addComment("");
     }
+
     return isValid();
 }
 
@@ -182,17 +214,17 @@ String Property::convToString(void) const
     if ( (key.isEmpty() == false) && (value.isEmpty() == false) )
     {
         key += NEPersistence::SYNTAX_WHITESPACE_DELIMITER;
-        key += NEPersistence::SYNTAX_EQUAL;
+        key += NEPersistence::SYNTAX_EQUAL.data();
         key += NEPersistence::SYNTAX_WHITESPACE_DELIMITER;
         key += value;
     }
 
     if ( mComment.isEmpty() == false )
     {
-        if ((mComment.findFirstOf(NEPersistence::SYNTAX_LINEEND) != NEString::InvalidPos) || (mComment.getLength() >= 64))
+        if ((mComment.findFirstOf(NEPersistence::SYNTAX_LINEEND.data()) != NEString::INVALID_POS) || (mComment.getLength() >= 64))
         {
             result += mComment;
-            result += NEPersistence::SYNTAX_LINEEND;
+            result += NEPersistence::SYNTAX_LINEEND.data();
             result += key;
         }
     }
@@ -206,6 +238,7 @@ String Property::convToString(void) const
     {
         result = key;
     }
+
     return result;
 }
 

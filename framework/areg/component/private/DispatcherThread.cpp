@@ -1,7 +1,15 @@
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/component/private/DispatcherThread.cpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, Event Dispatcher class
  *
  ************************************************************************/
@@ -56,7 +64,7 @@ class AREG_API NullDispatcherThread    : public ComponentThread
 //////////////////////////////////////////////////////////////////////////
 private:
     NullDispatcherThread( void );
-
+    virtual ~NullDispatcherThread( void ) = default;
 //////////////////////////////////////////////////////////////////////////
 // Overrides to disable base functionalities.
 //////////////////////////////////////////////////////////////////////////
@@ -64,34 +72,33 @@ protected:
     //////////////////////////////////////////////////////////////////////////
     // Disable consumer registration functionalities
     //////////////////////////////////////////////////////////////////////////
-    virtual bool registerEventConsumer( const RuntimeClassID & whichClass, IEEventConsumer & whichConsumer );
-    virtual bool unregisterEventConsumer( const RuntimeClassID & whichClass, IEEventConsumer & whichConsumer );
-    virtual int  removeConsumer( IEEventConsumer & whichConsumer );
-    virtual bool hasRegisteredConsumer( const RuntimeClassID & whichClass ) const;
+    virtual bool registerEventConsumer( const RuntimeClassID & whichClass, IEEventConsumer & whichConsumer ) override;
+    virtual bool unregisterEventConsumer( const RuntimeClassID & whichClass, IEEventConsumer & whichConsumer ) override;
+    virtual int  removeConsumer( IEEventConsumer & whichConsumer ) override;
+    virtual bool hasRegisteredConsumer( const RuntimeClassID & whichClass ) const override;
 
     //////////////////////////////////////////////////////////////////////////
     // Disable post event
     //////////////////////////////////////////////////////////////////////////
-    virtual bool postEvent( Event & eventElem );
+    virtual bool postEvent( Event & eventElem ) override;
 
     //////////////////////////////////////////////////////////////////////////
     // Disable running function and return error on exit.
     //////////////////////////////////////////////////////////////////////////
-    virtual bool onThreadRegistered( Thread * threadObj );
-    virtual void onThreadRuns( void );
-    virtual int onThreadExit( void );
+    virtual bool onThreadRegistered( Thread * threadObj ) override;
+    virtual void onThreadRuns( void ) override;
+    virtual int onThreadExit( void ) override;
 
     //////////////////////////////////////////////////////////////////////////
     // Disable Thread locking
     //////////////////////////////////////////////////////////////////////////
-    virtual bool waitForDispatcherStart( unsigned int waitTimeout = IESynchObject::WAIT_INFINITE );
+    virtual bool waitForDispatcherStart( unsigned int waitTimeout = NECommon::WAIT_INFINITE ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    NullDispatcherThread( const NullDispatcherThread & /*src*/ );
-    const NullDispatcherThread & operator = ( const NullDispatcherThread & /*src*/ );
+    DECLARE_NOCOPY_NOMOVE( NullDispatcherThread );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -125,12 +132,10 @@ inline NullDispatcherThread::NullDispatcherThread( void )
 //////////////////////////////////////////////////////////////////////////
 // NullDispatcherThread class. Disable basic functionalities.
 //////////////////////////////////////////////////////////////////////////
-bool NullDispatcherThread::registerEventConsumer( const RuntimeClassID &    /* whichClass   */
-                                                , IEEventConsumer &         /* whichConsumer*/ )
+bool NullDispatcherThread::registerEventConsumer( const RuntimeClassID & /* whichClass*/, IEEventConsumer & /*whichConsumer*/ )
 {   return false;    }
 
-bool NullDispatcherThread::unregisterEventConsumer( const RuntimeClassID &  /* whichClass   */
-                                                  , IEEventConsumer &       /* whichConsumer*/ )
+bool NullDispatcherThread::unregisterEventConsumer( const RuntimeClassID & /*whichClass*/, IEEventConsumer & /* whichConsumer*/ )
 {   return false;    }
 
 int NullDispatcherThread::removeConsumer( IEEventConsumer & /* whichConsumer*/ )
@@ -161,10 +166,10 @@ void NullDispatcherThread::onThreadRuns( void )
 int NullDispatcherThread::onThreadExit( void )
 {
     ASSERT(false);
-    return IEThreadConsumer::EXIT_ERROR;
+    return static_cast<int>(IEThreadConsumer::eExitCodes::ExitError);
 }
 
-bool NullDispatcherThread::waitForDispatcherStart( unsigned int /* waitTimeout */ /*= IESynchObject::WAIT_INFINITE */ )
+bool NullDispatcherThread::waitForDispatcherStart( unsigned int /* waitTimeout */ /*= NECommon::WAIT_INFINITE */ )
 {
     return false;
 }
@@ -204,12 +209,6 @@ DispatcherThread::DispatcherThread (const char* threadName )
 
     , mEventStarted     ( true, false )
 {
-    ; // do nothing
-}
-
-DispatcherThread::~DispatcherThread( void )
-{
-    ; // do nothing
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -223,7 +222,7 @@ bool DispatcherThread::postEvent( Event& eventElem )
     return true;
 }
 
-Thread::eCompletionStatus DispatcherThread::destroyThread( unsigned int waitForStopMs /*= Thread::DO_NOT_WAIT*/ )
+Thread::eCompletionStatus DispatcherThread::destroyThread( unsigned int waitForStopMs /*= NECommon::DO_NOT_WAIT*/ )
 {
     TRACE_SCOPE( areg_component_private_DispatcherThread_destroyThread);
     TRACE_DBG("Destroying the thread the thread [ %s ] with ID [ %p ]. The current state is [ %s ]"
@@ -239,7 +238,7 @@ Thread::eCompletionStatus DispatcherThread::destroyThread( unsigned int waitForS
 
 DispatcherThread* DispatcherThread::getEventConsumerThread( const RuntimeClassID& whichClass )
 {
-    return (hasRegisteredConsumer(whichClass) ? this : NULL);
+    return (hasRegisteredConsumer(whichClass) ? this : nullptr);
 }
 
 void DispatcherThread::shutdownThread( void )
@@ -265,7 +264,7 @@ bool DispatcherThread::runDispatcher( void )
     return result;
 }
 
-bool DispatcherThread::waitForDispatcherStart( unsigned int waitTimeout /*= IESynchObject::WAIT_INFINITE */ )
+bool DispatcherThread::waitForDispatcherStart( unsigned int waitTimeout /*= NECommon::WAIT_INFINITE */ )
 {
     return mEventStarted.lock(waitTimeout);
 }
@@ -291,16 +290,16 @@ bool DispatcherThread::isExitEvent(const Event * checkEvent) const
 
 DispatcherThread * DispatcherThread::findEventConsumerThread( const RuntimeClassID & whichClass )
 {
-    DispatcherThread * result = NULL;
+    DispatcherThread * result = nullptr;
     Thread* dispThread = RUNTIME_CAST(Thread::getCurrentThread(), DispatcherThread);
-    result = dispThread != NULL ? static_cast<DispatcherThread *>(dispThread)->getEventConsumerThread(whichClass) : NULL;
+    result = dispThread != nullptr ? static_cast<DispatcherThread *>(dispThread)->getEventConsumerThread(whichClass) : nullptr;
 
-    ITEM_ID threadId = Thread::INVALID_THREAD_ID;
+    id_type threadId = Thread::INVALID_THREAD_ID;
     dispThread = Thread::getFirstThread(threadId);
-    while ((result == NULL) && (dispThread != NULL))
+    while ((result == nullptr) && (dispThread != nullptr))
     {
-        dispThread = dispThread != NULL ? RUNTIME_CAST(dispThread, DispatcherThread) : NULL;
-        result = dispThread != NULL ? static_cast<DispatcherThread *>(dispThread)->getEventConsumerThread(whichClass) : NULL;
+        dispThread = dispThread != nullptr ? RUNTIME_CAST(dispThread, DispatcherThread) : nullptr;
+        result = dispThread != nullptr ? static_cast<DispatcherThread *>(dispThread)->getEventConsumerThread(whichClass) : nullptr;
 
         dispThread = Thread::getNextThread(threadId);
     }

@@ -1,7 +1,15 @@
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/component/private/EventQueue.cpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, Event queue class
  *
  ************************************************************************/
@@ -25,12 +33,6 @@ EventQueue::EventQueue( IEQueueListener & eventListener, TEStack<Event *, Event 
     : mEventListener(eventListener)
     , mEventQueue   (eventQueue)
 {
-    ; // do nothing
-}
-
-EventQueue::~EventQueue( void )
-{
-    ; // the event queue should be emptied in derived objects
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -44,7 +46,7 @@ void EventQueue::pushEvent( Event& evendElem )
 Event* EventQueue::popEvent( void )
 {
     mEventQueue.lock();
-    Event* result = mEventQueue.isEmpty() == false ? mEventQueue.popFirst() : NULL;
+    Event* result = mEventQueue.isEmpty() == false ? mEventQueue.popFirst() : nullptr;
     if (mEventQueue.isEmpty())
     {
         mEventListener.signalEvent(0);
@@ -62,7 +64,7 @@ void EventQueue::removeAllEvents(void)
     while ( mEventQueue.isEmpty() == false )
     {
         Event * eventElem = mEventQueue.popFirst();
-        if ( eventElem != NULL && eventElem != exitEvent )
+        if ( eventElem != nullptr && eventElem != exitEvent )
             eventElem->destroy();
     }
     mEventListener.signalEvent( 0 );
@@ -90,7 +92,7 @@ int EventQueue::removeEvents( const RuntimeClassID & eventClassId )
         while ( mEventQueue.isEmpty() == false )
         {
             Event * elemEvent = mEventQueue.popFirst();
-            if ( elemEvent != NULL )
+            if ( elemEvent != nullptr )
             {
                 if ( elemEvent->getRuntimeClassId() == eventClassId )
                     elemEvent->destroy();
@@ -120,19 +122,19 @@ bool EventQueue::removePendingEvents( bool keepSpecials )
     while (mEventQueue.isEmpty() == false)
     {
         Event * eventElem = mEventQueue.popFirst();
-        if (eventElem != NULL)
+        if (eventElem != nullptr)
         {
-            ASSERT(exitEvent != NULL);
+            ASSERT(exitEvent != nullptr);
             if (eventElem == exitEvent)
             {
                 // OUTPUT_DBG("Skip removing exit event!");
                 specials.pushLast(eventElem);
-                eventElem = NULL;
+                eventElem = nullptr;
             }
             else if ( keepSpecials )
             {
                 ServiceResponseEvent* respEvent = RUNTIME_CAST(eventElem, ServiceResponseEvent);
-                if ( respEvent != NULL)
+                if ( respEvent != nullptr)
                 {
                     unsigned int respId = respEvent->getResponseId();
                     if ( NEService::isConnectNotifyId(respId) )
@@ -140,7 +142,7 @@ bool EventQueue::removePendingEvents( bool keepSpecials )
                         OUTPUT_DBG("Keep response event with response ID NEService::SI_NOTIFY_CONNECT for target proxy [ %s ]"
                                         , ProxyAddress::convAddressToPath(respEvent->getTargetProxy()).getString());
                         specials.pushLast(eventElem);
-                        eventElem = NULL;
+                        eventElem = nullptr;
                     }
                     else
                     {
@@ -150,7 +152,7 @@ bool EventQueue::removePendingEvents( bool keepSpecials )
             }
         }
 
-        if (eventElem != NULL)
+        if (eventElem != nullptr)
             eventElem->destroy();
     }
 
@@ -169,13 +171,17 @@ bool EventQueue::removePendingEvents( bool keepSpecials )
 ExternalEventQueue::ExternalEventQueue( IEQueueListener & eventListener )
     : EventQueue  ( eventListener, static_cast<TEStack<Event *, Event *> &>(self()) )
 {
-    ; // do nothing
 }
 
 ExternalEventQueue::~ExternalEventQueue(void)
 {
     removePendingEvents( false );
     removeAll();
+}
+
+inline ExternalEventQueue & ExternalEventQueue::self( void )
+{
+    return (*this);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -185,7 +191,6 @@ ExternalEventQueue::~ExternalEventQueue(void)
 InternalEventQueue::InternalEventQueue(void)
     : EventQueue  ( static_cast<IEQueueListener &>(self()), static_cast<TEStack<Event *, Event *> &>(self()) )
 {
-    ; // do nothing
 }
 
 InternalEventQueue::~InternalEventQueue(void)
@@ -196,5 +201,9 @@ InternalEventQueue::~InternalEventQueue(void)
 
 void InternalEventQueue::signalEvent(int /* eventCount */)
 {
-    ; // do nothing
+}
+
+inline InternalEventQueue & InternalEventQueue::self( void )
+{
+    return (*this);
 }

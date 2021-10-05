@@ -1,7 +1,15 @@
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/component/private/ProxyConnectEvent.cpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, Proxy Connection event class implementation.
  *
  ************************************************************************/
@@ -20,11 +28,13 @@ IMPLEMENT_RUNTIME_EVENT(ProxyConnectEvent, ServiceResponseEvent)
 // Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
 ProxyConnectEvent::ProxyConnectEvent( const ProxyAddress & target, const StubAddress & implAddress, NEService::eServiceConnection connectStatus )
-    : ServiceResponseEvent  ( target, NEService::RESULT_DATA_OK, NEService::SI_SERVICE_CONNECTION_NOTIFY, Event::EventLocalProxyConnect )
+    : ServiceResponseEvent  ( target
+                            , NEService::eResultType::DataOK
+                            , static_cast<unsigned int>(NEService::eFuncIdRange::ServiceNotifyConnection)
+                            , Event::eEventType::EventLocalProxyConnect )
     , mStubAddress          ( implAddress )
     , mConnectionStatus     ( connectStatus )
 {
-    ; // do nothing
 }
 
 ProxyConnectEvent::ProxyConnectEvent( const ProxyAddress & target, const ProxyConnectEvent & src )
@@ -32,20 +42,14 @@ ProxyConnectEvent::ProxyConnectEvent( const ProxyAddress & target, const ProxyCo
     , mStubAddress          ( src.mStubAddress )
     , mConnectionStatus     ( src.mConnectionStatus )
 {
-    ; // do nothing
 }
 
 ProxyConnectEvent::ProxyConnectEvent(const IEInStream & stream)
     : ServiceResponseEvent  ( stream )
     , mStubAddress          ( stream )
-    , mConnectionStatus     ( NEService::ServiceConnectionUnknown )
+    , mConnectionStatus     ( NEService::eServiceConnection::ServiceConnectionUnknown )
 {
      stream >> mConnectionStatus;
-}
-
-ProxyConnectEvent::~ProxyConnectEvent( void )
-{
-    ; // do nothing
 }
 
 const IEInStream & ProxyConnectEvent::readStream(const IEInStream & stream)

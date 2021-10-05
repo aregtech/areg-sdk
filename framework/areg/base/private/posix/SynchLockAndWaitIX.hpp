@@ -1,9 +1,16 @@
-#ifndef AREG_BASE_PRIVATE_POSIX_SYNCHLOCKANDWAITIX_HPP
-#define AREG_BASE_PRIVATE_POSIX_SYNCHLOCKANDWAITIX_HPP
+#pragma once
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/base/private/posix/SynchLockAndWaitIX.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, Lock and wait object for POSIX synchronization objects.
  *
  ************************************************************************/
@@ -13,7 +20,7 @@
   ************************************************************************/
 #include "areg/base/GEGlobal.h"
 
-#ifdef _POSIX
+#if defined(_POSIX) || defined(POSIX)
 
 #include "areg/base/NECommon.hpp"
 #include "areg/base/private/posix/NESynchTypesIX.hpp"
@@ -34,140 +41,6 @@ class SynchLockAndWaitIX;
 class SynchLockAndWaitIX;
 
 //////////////////////////////////////////////////////////////////////////
-// SynchWaitableMapIX class declaration
-//////////////////////////////////////////////////////////////////////////
-
-/**
- * \brief   Declaration of list helper object.
- **/
-typedef TEListImpl<const SynchLockAndWaitIX *>                                                                          ListLockAndWaitImpl;
-/**
- * \brief   The list of LockAndWait objects.
- **/
-typedef TELinkedList<SynchLockAndWaitIX *, const SynchLockAndWaitIX *, ListLockAndWaitImpl>                             ListLockAndWait;
-/**
- * \brief   Declaration of hash map helper object.
- **/
-typedef TEHashMapImpl<const IEWaitableBaseIX *, ListLockAndWait &>                                                      MapLockAndWaitImpl;
-/**
- * \brief   The hash map container of waitable object and LockAndWait lists.
- **/
-typedef TEHashMap<IEWaitableBaseIX *, ListLockAndWait, const IEWaitableBaseIX *, ListLockAndWait &, MapLockAndWaitImpl> MapLockAndWait;
-
-/**
- * \brief   The helper class of resource list map that contains helper functions implementation.
- **/
-class ResourceListMapImpl : public TEResourceListMapImpl<IEWaitableBaseIX *, SynchLockAndWaitIX, ListLockAndWait>
-{
-public:
-    /**
-     * \brief   Called when all resources are removed.
-     *          This function is called from RemoveAllResources() for every single
-     *          resource being unregistered.
-     * \param   Key     The Key value of resource.
-     * \param   List    The list of resource objects.
-     **/
-    inline void implCleanResourceList( IEWaitableBaseIX * & /* Key */, ListLockAndWait & List )
-    {
-        List.removeAll();
-    }
-
-    /**
-     * \brief   Called when need to add resource object to the list.
-     * \param   List        The list of resource objects.
-     * \param   Resource    The resource object to add to the list.
-     **/
-    inline void implAddResource( ListLockAndWait & List, SynchLockAndWaitIX * Resource )
-    {
-        List.pushLast(Resource);
-    }
-
-    /**
-     * \brief   Called when need to remove resource object from the list.
-     * \param   List        The list of resource objects.
-     * \param   Resource    The resource object to remove from the list.
-     **/
-    inline bool implRemoveResource( ListLockAndWait & List, SynchLockAndWaitIX * Resource )
-    {
-        return List.removeEntry( Resource );
-    }
-};
-
-//////////////////////////////////////////////////////////////////////////
-// SynchResourceMapIX class declaration
-//////////////////////////////////////////////////////////////////////////
-/**
- * \brief   The resource list map of waitable object where the keys are waitable objects
- *          and the resource objects are WaitAndLock objects in the list. The WaitAndLock
- *          objects in the entire map are not unique, but should be unique in the list.
- **/
-class SynchResourceMapIX : public TELockResourceListMap<  IEWaitableBaseIX *
-                                                        , SynchLockAndWaitIX
-                                                        , MapLockAndWait
-                                                        , ListLockAndWait
-                                                        , ResourceListMapImpl>
-{
-//////////////////////////////////////////////////////////////////////////
-// Internal statics and constants
-//////////////////////////////////////////////////////////////////////////
-public:
-    /**
-     * \brief   Gets the instance of resource map.
-     **/
-    static inline SynchResourceMapIX & getInstance( void );
-
-//////////////////////////////////////////////////////////////////////////
-// Constructor / Destructor.
-//////////////////////////////////////////////////////////////////////////
-private:
-    /**
-     * \brief   Constructor.
-     **/
-    SynchResourceMapIX( void );
-    /**
-     * \brief   Destructor.
-     **/
-    ~SynchResourceMapIX( void );
-
-//////////////////////////////////////////////////////////////////////////
-// Constructor / Destructor.
-//////////////////////////////////////////////////////////////////////////
-private:
-    /**
-     * \brief   The singleton instance of synchronization resource map.
-     */
-    static SynchResourceMapIX   _theSynchResourceMapIX;
-
-//////////////////////////////////////////////////////////////////////////
-// Forbidden calls
-//////////////////////////////////////////////////////////////////////////
-private:
-    SynchResourceMapIX( const SynchResourceMapIX & /*src*/ );
-    const SynchResourceMapIX & operator = ( const SynchResourceMapIX & /*src*/ );
-};
-
-//////////////////////////////////////////////////////////////////////////
-// The resource map for timer.
-//////////////////////////////////////////////////////////////////////////
-/**
- * \brief   Helper class of hash map basic methods implementation.
- **/
-typedef TEIdHashMapImpl< SynchLockAndWaitIX * >                                         ImplMapWaitID;
-/**
- * \brief   The resource map of waitable, where keys are ITEM_ID and the values are WaitAndLock objects
- **/
-typedef TEIdHashMap<SynchLockAndWaitIX *, SynchLockAndWaitIX *, ImplMapWaitID>          MapWaitID;
-/**
- * \brief   Helper object for resource map basic method implementations
- **/
-typedef TEResourceMapImpl<ITEM_ID, SynchLockAndWaitIX>                                  ImplWaitIDResource;
-/**
- * \brief   Resource map of waitable where the keys are ITEM_ID (thread ID) and the values are
- *          LockAndWait objects. It is used in the timer.
- **/
-typedef TELockResourceMap<ITEM_ID, SynchLockAndWaitIX, MapWaitID, ImplWaitIDResource>   MapWaitIDResource;
-
-//////////////////////////////////////////////////////////////////////////
 // SynchLockAndWaitIX class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
@@ -179,6 +52,93 @@ typedef TELockResourceMap<ITEM_ID, SynchLockAndWaitIX, MapWaitID, ImplWaitIDReso
  **/
 class SynchLockAndWaitIX
 {
+    /**
+     * \brief   Declaration of list helper object.
+     **/
+    using ImplListLockAndWait   = TEListImpl<const SynchLockAndWaitIX *>;
+    /**
+     * \brief   The list of LockAndWait objects.
+     **/
+    using ListLockAndWait       = TELinkedList<SynchLockAndWaitIX *, SynchLockAndWaitIX *, ImplListLockAndWait>;
+    /**
+     * \brief   Declaration of hash map helper object.
+     **/
+    using ImplMapLockAndWait    = TEPointerHashMapImpl<const IEWaitableBaseIX *, ListLockAndWait &>;
+    /**
+     * \brief   The hash map container of waitable object and LockAndWait lists.
+     **/
+    using MapLockAndWait        = TEHashMap<IEWaitableBaseIX *, ListLockAndWait, IEWaitableBaseIX *, ListLockAndWait &, ImplMapLockAndWait>;
+
+//////////////////////////////////////////////////////////////////////////
+// SynchWaitableMapIX class declaration
+//////////////////////////////////////////////////////////////////////////
+    /**
+     * \brief   The helper class of resource list map that contains helper functions implementation.
+     **/
+    class ImplResourceListMap : public TEResourceListMapImpl<IEWaitableBaseIX *, SynchLockAndWaitIX, ListLockAndWait>
+    {
+    public:
+        /**
+         * \brief   Called when all resources are removed.
+         *          This function is called from RemoveAllResources() for every single
+         *          resource being unregistered.
+         * \param   Key     The Key value of resource.
+         * \param   List    The list of resource objects.
+         **/
+        inline void implCleanResourceList( IEWaitableBaseIX * & /* Key */, ListLockAndWait & List )
+        {
+        	List.removeAll();
+        }
+
+        /**
+         * \brief   Called when need to add resource object to the list.
+         * \param   List        The list of resource objects.
+         * \param   Resource    The resource object to add to the list.
+         **/
+        inline void implAddResource( ListLockAndWait & List, SynchLockAndWaitIX * Resource )
+        {
+        	List.pushLast(Resource);
+        }
+
+        /**
+         * \brief   Called when need to remove resource object from the list.
+         * \param   List        The list of resource objects.
+         * \param   Resource    The resource object to remove from the list.
+         **/
+        inline bool implRemoveResource( ListLockAndWait & List, SynchLockAndWaitIX * Resource )
+        {
+        	return List.removeEntry( Resource );
+        }
+    };
+
+    /**
+     * \brief   The resource list map of waitable object where the keys are waitable objects
+     *          and the resource objects are WaitAndLock objects in the list. The WaitAndLock
+     *          objects in the entire map are not unique, but should be unique in the list.
+     **/
+    using SynchResourceMapIX = TELockResourceListMap<IEWaitableBaseIX *, SynchLockAndWaitIX, MapLockAndWait, ListLockAndWait, ImplResourceListMap>;
+
+//////////////////////////////////////////////////////////////////////////
+// The resource map for timer.
+//////////////////////////////////////////////////////////////////////////
+    /**
+     * \brief   Helper class of hash map basic methods implementation.
+     **/
+    using ImplMapWaitID     = TEHashMapImpl<id_type, SynchLockAndWaitIX * >;
+    /**
+     * \brief   The resource map of waitable, where keys are id_type and the values are WaitAndLock objects
+     **/
+    using MapWaitID         = TEIdHashMap<SynchLockAndWaitIX *, SynchLockAndWaitIX *, ImplMapWaitID>;
+    /**
+     * \brief   Helper object for resource map basic method implementations
+     **/
+    using ImplWaitIDResource= TEResourceMapImpl<id_type, SynchLockAndWaitIX>;
+    /**
+     * \brief   Resource map of waitable where the keys are id_type (thread ID) and the values are
+     *          LockAndWait objects. It is used in the timer.
+     **/
+    using MapWaitIDResource = TELockResourceMap<id_type, SynchLockAndWaitIX, MapWaitID, ImplWaitIDResource>;
+
 //////////////////////////////////////////////////////////////////////////
 // Friend classes
 //////////////////////////////////////////////////////////////////////////
@@ -193,17 +153,18 @@ private:
      * \brief   SynchLockAndWaitIX::eWaitType
      *          Describes the waiting type.
      **/
-    typedef enum E_WaitType
+    typedef enum class E_WaitType
     {
           WaitSingleObject      //!< Waits a single object
         , WaitMultipleObjects   //!< Waits for multiple object
+
     } eWaitType;
 
     /**
      * \brief   SynchLockAndWaitIX::eEventFired
      *          Describes the fired state of each event.
      **/
-    typedef enum E_EventFired
+    typedef enum class E_EventFired
     {
           EventFiredNone        //!< No event has been fired.
         , EventFiredOne         //!< Fired one event.
@@ -213,7 +174,7 @@ private:
     /**
      * \brief   The fixed array of waitable. The maximum size of array is NECommon::MAXIMUM_WAITING_OBJECTS
      **/
-    typedef TEFixedArray<IEWaitableBaseIX *, IEWaitableBaseIX *>  WaitingList;
+    using WaitingList   = TEFixedArray<IEWaitableBaseIX *, IEWaitableBaseIX *>;
 
 //////////////////////////////////////////////////////////////////////////
 // Public static methods.
@@ -228,7 +189,7 @@ public:
      *          For more details see the description of each waitable object.
      * \param   synchWait   The waitable object to check the signaled state.
      * \param   msTimeout   The timeout in milliseconds to wait until waitable is signaled.
-     *                      If IESynchObject::WAIT_INFINITE, it will wait until event is signaled or failed.
+     *                      If NECommon::WAIT_INFINITE, it will wait until event is signaled or failed.
      *                      Any other value indicates timeout to wait.
      * \return  It returns one of following values:
      *              - NESynchTypesIX::SynchObject0 if waitable was signaled;
@@ -236,7 +197,7 @@ public:
      *              - NESynchTypesIX::SynchWaitInterrupted if waiting was interrupted by such event like timer;
      *              - NESynchTypesIX::SynchObject0Error if error happened. For example, the waitable is invalidated.
      **/
-    static int waitForSingleObject( IEWaitableBaseIX & synchWait, unsigned int msTimeout = IESynchObject::WAIT_INFINITE );
+    static int waitForSingleObject( IEWaitableBaseIX & synchWait, unsigned int msTimeout = NECommon::WAIT_INFINITE );
 
     /**
      * \brief   Call to lock and wait the list of synchronization objects until one or all objects are signaled.
@@ -253,7 +214,7 @@ public:
      * \param   waitAll         If true, the call is locks the thread until all waitables in the list are signaled.
      *                          If false, any waitable in signaled state unlocks the thread.
      * \param   msTimeout       The timeout in milliseconds to wait until waitable is signaled.
-     *                          If IESynchObject::WAIT_INFINITE, it will wait until event is signaled or failed.
+     *                          If NECommon::WAIT_INFINITE, it will wait until event is signaled or failed.
      *                          Any other value indicates timeout to wait.
      * \return  It returns one of following values:
      *              - NESynchTypesIX::SynchObject0 + N if 'waitAll' flag is false and waitable was signaled, where 'N' is the index of waitable in the list.
@@ -262,7 +223,7 @@ public:
      *              - NESynchTypesIX::SynchWaitInterrupted if waiting was interrupted by such event like timer;
      *              - NESynchTypesIX::SynchObject0Error + N if error happened, where 'N' is the indes of failed waitalbe object. For example, the waitable is invalidated.
      **/
-    static int waitForMultipleObjects( IEWaitableBaseIX ** listWaitables, int count, bool waitAll = false, unsigned int msTimeout = IEBlockingSynchObject::WAIT_INFINITE);
+    static int waitForMultipleObjects( IEWaitableBaseIX ** listWaitables, int count, bool waitAll = false, unsigned int msTimeout = NECommon::WAIT_INFINITE);
 
     /**
      * \brief   Called by waitable object to indicate that it is in signaled state.
@@ -299,7 +260,7 @@ public:
      * \param   threadId    The ID of the thread that is going to break waiting.
      * \return  Returns true if operation succeeded. The operation can fail if thread is not locked.
      **/
-    static bool notifyAsynchSignal( ITEM_ID threadId );
+    static bool notifyAsynchSignal( id_type threadId );
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden constructor / destructor
@@ -461,27 +422,20 @@ private:
     WaitingList                             mWaitingList;
 
     /**
-     * \brief   Static list of waitables, where keys are ITEM_ID and values are waitables.
+     * \brief   Static list of waitables, where keys are id_type and values are waitables.
      **/
     static MapWaitIDResource                _mapWaitIdResource;
+    /**
+     * \brief   The singleton instance of synchronization resource map.
+     */
+    static SynchResourceMapIX   			_theSynchResourceMapIX;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls.
 //////////////////////////////////////////////////////////////////////////
 private:
-    SynchLockAndWaitIX( void );
-    SynchLockAndWaitIX( const SynchLockAndWaitIX & /*src*/ );
-    const SynchLockAndWaitIX & operator = (const SynchLockAndWaitIX & /*src*/ );
+    SynchLockAndWaitIX( void ) = delete;
+    DECLARE_NOCOPY_NOMOVE( SynchLockAndWaitIX );
 };
 
-//////////////////////////////////////////////////////////////////////////
-// SynchResourceMapIX class inline methods
-//////////////////////////////////////////////////////////////////////////
-
-inline SynchResourceMapIX & SynchResourceMapIX::getInstance( void )
-{
-    return SynchResourceMapIX::_theSynchResourceMapIX;
-}
-
-#endif  // _POSIX
-#endif  // AREG_BASE_PRIVATE_POSIX_SYNCHLOCKANDWAITIX_HPP
+#endif  // defined(_POSIX) || defined(POSIX)

@@ -1,6 +1,6 @@
 # ###########################################################################
-# This file is part of AREG IoT SDK
-# Copyright (c) Aregtech UG, 2017-2021
+# This file is part of AREG SDK
+# Copyright (c) 2017-2021, Aregtech UG
 # Contact: info[at]aregtech.com
 # ###########################################################################
 
@@ -8,7 +8,7 @@
 # These parameters already should be set either from command line or by extracting from other params
 # 
 # MakefileRoot  -- indicates the path of the root Makefile, should be extracted from $(abspath $(lastword $(MAKEFILE_LIST)))
-# Toolset       -- gcc, g++, etc., the default is g++
+# Toolset       -- gcc, g++, clang++13, etc., the default is g++
 # Config        -- 'Debug' or 'Release'. Parameters are either passed in the command line or extracted. The default is 'Release'
 # Platform      -- x86, x64, arm, etc. Parameters are either passed in the command line or extracted. The default is current system
 # OpSystem      -- Windows, Linux, Darvin, etc. Parameters are either passed in the command line, or extracted. The default is current system
@@ -25,6 +25,9 @@
 # Toolchain
 # ###########################################################################
 
+# Modify the 'Toolset' to change compiler
+# Example:
+# Toolset      := clang++-13
 Toolset      := g++
 CrossCompile :=
 
@@ -33,10 +36,15 @@ CrossCompile :=
 # ###########################################################################
 
 # taget settings
-areg   := static
+# Modify 'areg' to the compile target
+# Example:
+# areg   := static 
+areg   := shared
 bit    :=
-Config := Release
+# Modify the 'Config' to change the Configuration
+# Example:
 # Config := Debug
+Config := Release
 
 # host settings, can leave them blank in case host's OS is Linux.
 Platform :=
@@ -88,7 +96,7 @@ UserDefOutput   := product
 # ###########################################################################
 
 # The source code build relative path
-ProjBuildPath   := build/$(CrossCompile)$(Toolset)/$(OpSystem)-$(Platform)-$(Config)
+ProjBuildPath   := $(shell echo build/$(CrossCompile)$(Toolset)/$(OpSystem)-$(Platform)-$(Config) | tr '[:upper:]' '[:lower:]')
 
 # The project output directory
 ProjOutputDir   := $(AregRoot)/$(UserDefOutput)/$(ProjBuildPath)

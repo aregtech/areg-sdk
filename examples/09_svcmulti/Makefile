@@ -17,6 +17,9 @@ include $(09_svcmulti_BASE)/src/Makefile
 # define one target for each source file
 $(foreach cpp, $(09_svcmulti_SRC), $(eval $(call obj, $(cpp), $(09_svcmulti_OUTPUT_OBJ), 09_svcmulti_OBJS, $(09_svcmulti_CXXFLAGS))))
 
+DEPS = $(09_svcmulti_OBJS:%.o=%.d)
+-include $(DEPS)
+
 $(AREG_OUTPUT_BIN)/$(09_svcmulti_TARGET_BIN): $(areg_TARGET_PATH) $(09_svcmulti_OBJS)
 	@echo "Linking $(09_svcmulti_PROJECT_NAME) ..."
 	@mkdir -p $(dir $@)

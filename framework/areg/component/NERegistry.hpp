@@ -1,9 +1,16 @@
-#ifndef AREG_COMPONENT_NEREGISTRY_HPP
-#define AREG_COMPONENT_NEREGISTRY_HPP
+#pragma once
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/component/NERegistry.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, collection of Service Registry
  *              classes to initialize and load application objects.
  *
@@ -115,7 +122,7 @@ namespace NERegistry
          *          Creates invalid Service Entry and required by Array List object.
          *          Invalid Service Entry has name NERegistry::INVALID_SERVICE_ENTRY_NAME
          **/
-        ServiceEntry( void );
+        ServiceEntry( void ) = default;
 
         /**
          * \brief   Initialize service entry by given name and version numbers.
@@ -141,15 +148,21 @@ namespace NERegistry
         ServiceEntry( const char* serviceName, const Version & version );
 
         /**
-         * \brief   Copy constructor.
+         * \brief   Copies data from given source.
          * \param   src     The source of data to copy.
          **/
         ServiceEntry( const ServiceEntry & src );
 
         /**
+         * \brief   Moves data from given source.
+         * \param   src     The source of data to move.
+         **/
+        ServiceEntry( ServiceEntry && src ) noexcept;
+
+        /**
          * \brief   Destructor.
          **/
-        ~ServiceEntry( void );
+        ~ServiceEntry( void ) = default;
 
     //////////////////////////////////////////////////////////////////////////
     // NERegistry::ServiceEntry class, Operators
@@ -159,7 +172,13 @@ namespace NERegistry
          * \brief   Copies Service Entry data from given source.
          * \param   src     The source of data to copy
          **/
-        const NERegistry::ServiceEntry & operator = ( const NERegistry::ServiceEntry & src );
+        NERegistry::ServiceEntry & operator = ( const NERegistry::ServiceEntry & src );
+
+        /**
+         * \brief   Moves Service Entry data from given source.
+         * \param   src     The source of data to move.
+         **/
+        NERegistry::ServiceEntry & operator = ( NERegistry::ServiceEntry && src ) noexcept;
 
         /**
          * \brief   Checks the equality of two Service Entries and returns true if they are equal.
@@ -196,11 +215,13 @@ namespace NERegistry
     //////////////////////////////////////////////////////////////////////////
     // NERegistry::ServiceList class declaration
     //////////////////////////////////////////////////////////////////////////
+    //!< The base class of Servicelist.
+    using ServiceListBase   = TEArrayList<NERegistry::ServiceEntry, const NERegistry::ServiceEntry &>;
     /**
      * \brief   NERegistry::ServiceList, defines list of Service Entries. 
      *          It is a list of all implemented Service Interfaces in the Component.
      **/
-    class AREG_API ServiceList : public TEArrayList<NERegistry::ServiceEntry, const NERegistry::ServiceEntry &>
+    class AREG_API ServiceList : public ServiceListBase
     {
     //////////////////////////////////////////////////////////////////////////
     // NERegistry::ServiceList class, Constructors / Destructor
@@ -209,7 +230,7 @@ namespace NERegistry
         /**
          * \brief   Default constructor.
          **/
-        ServiceList( void );
+        ServiceList( void ) = default;
 
         /**
          * \brief   Creates Service List and adds specified Service Entry to the list as first element.
@@ -218,15 +239,21 @@ namespace NERegistry
         ServiceList( const NERegistry::ServiceEntry & entry );
 
         /**
-         * \brief   Copy constructor.
+         * \brief   Copies data from given source.
          * \param   src     The source of data to copy.
          **/
-        ServiceList( const NERegistry::ServiceList & src);
+        ServiceList( const NERegistry::ServiceList & src) = default;
+
+        /**
+         * \brief   Moves data from given source.
+         * \param   src     The source of data to move.
+         **/
+        ServiceList( NERegistry::ServiceList && src ) noexcept = default;
 
         /**
          * \brief   Destructor
          **/
-        virtual ~ServiceList( void );
+        ~ServiceList( void ) = default;
 
     //////////////////////////////////////////////////////////////////////////
     // NERegistry::ServiceList class, operator
@@ -236,7 +263,13 @@ namespace NERegistry
          * \brief   Copies Service Entries from given source of Service List.
          * \param   src     The source of Service List, containing Service Entries.
          **/
-        const NERegistry::ServiceList & operator = ( const NERegistry::ServiceList & src );
+        NERegistry::ServiceList & operator = ( const NERegistry::ServiceList & src ) = default;
+
+        /**
+         * \brief   Copies Service Entries from given source of Service List.
+         * \param   src     The source of Service List, containing Service Entries.
+         **/
+        NERegistry::ServiceList & operator = ( NERegistry::ServiceList && src ) noexcept = default;
 
     //////////////////////////////////////////////////////////////////////////
     // NERegistry::ServiceList class, Attributes and Operations
@@ -298,7 +331,7 @@ namespace NERegistry
         /**
          * \brief   Creates invalid Worker Thread Entry.
          **/
-        WorkerThreadEntry( void );
+        WorkerThreadEntry( void ) = default;
 
         /**
          * \brief   Initialize Worker Thread Entry by given name and specifying the name of Master Thread.
@@ -315,15 +348,21 @@ namespace NERegistry
         WorkerThreadEntry( const char * masterThreadName, const char* workerThreadName, const char * compRoleName, const char* compConsumerName );
 
         /**
-         * \brief   Copy constructor.
+         * \brief   Copies entries from given source.
          * \param   src     The source of data to copy.
          **/
         WorkerThreadEntry( const NERegistry::WorkerThreadEntry & src );
 
         /**
+         * \brief   Moves entries from given source.
+         * \param   src     The source of data to move.
+         **/
+        WorkerThreadEntry( NERegistry::WorkerThreadEntry && src ) noexcept;
+
+        /**
          * \brief   Destructor
          **/
-        ~WorkerThreadEntry( void );
+        ~WorkerThreadEntry( void ) = default;
 
     //////////////////////////////////////////////////////////////////////////
     // NERegistry::WorkerThreadEntry class, Operators
@@ -333,7 +372,13 @@ namespace NERegistry
          * \brief   Copies Worker Thread Entry data from given source. 
          * \param   src     The source of data to copy
          **/
-        const NERegistry::WorkerThreadEntry & operator = ( const NERegistry::WorkerThreadEntry & src );
+        NERegistry::WorkerThreadEntry & operator = ( const NERegistry::WorkerThreadEntry & src );
+
+        /**
+         * \brief   Moves Worker Thread Entry data from given source.
+         * \param   src     The source of data to move.
+         **/
+        NERegistry::WorkerThreadEntry & operator = ( NERegistry::WorkerThreadEntry && src ) noexcept;
 
         /**
          * \brief   Checks equality of two Worker Thread Entries and returns true if they are equal.
@@ -369,11 +414,14 @@ namespace NERegistry
     //////////////////////////////////////////////////////////////////////////
     // NERegistry::WorkerThreadList class declaration
     //////////////////////////////////////////////////////////////////////////
+    
+    //!< The worker thread list base class.
+    using WorkerThreadListBase = TEArrayList<NERegistry::WorkerThreadEntry, const NERegistry::WorkerThreadEntry&>;
     /**
      * \brief   NERegistry::WorkerThreadList. Defines list of Worker Thread Entries.
      *          It is a list of all Worker Threads binded with one Component.
      **/
-    class AREG_API WorkerThreadList    : public TEArrayList<NERegistry::WorkerThreadEntry, const NERegistry::WorkerThreadEntry&>
+    class AREG_API WorkerThreadList    : public WorkerThreadListBase
     {
     //////////////////////////////////////////////////////////////////////////
     // NERegistry::WorkerThreadList class, Constructors / Destructor
@@ -382,7 +430,7 @@ namespace NERegistry
         /**
          * \brief   Default constructor.
          **/
-        WorkerThreadList( void );
+        WorkerThreadList( void ) = default;
 
         /**
          * \brief   Creates Worker Thread List and adds specified Worker Thread Entry to the list as first element.
@@ -391,15 +439,21 @@ namespace NERegistry
         WorkerThreadList( const NERegistry::WorkerThreadEntry & entry );
 
         /**
-         * \brief   Copy constructor.
+         * \brief   Copies data from given source.
          * \param   src     The source of data to copy.
          **/
-        WorkerThreadList( const NERegistry::WorkerThreadList & src );
+        WorkerThreadList( const NERegistry::WorkerThreadList & src ) = default;
+
+        /**
+         * \brief   Moves data from given source.
+         * \param   src     The source of data to move.
+         **/
+        WorkerThreadList( NERegistry::WorkerThreadList && src ) noexcept = default;
 
         /**
          * \brief   Destructor
          **/
-        virtual ~WorkerThreadList( void );
+        ~WorkerThreadList( void ) = default;
 
     //////////////////////////////////////////////////////////////////////////
     // NERegistry::WorkerThreadList class, Operator
@@ -409,7 +463,13 @@ namespace NERegistry
          * \brief   Copies Worker Thread Entries from given source of Worker Thread List.
          * \param   src     The source of Worker Thread List, containing Worker Thread Entries.
          **/
-        const NERegistry::WorkerThreadList & operator = ( const NERegistry::WorkerThreadList & src );
+        NERegistry::WorkerThreadList & operator = ( const NERegistry::WorkerThreadList & src ) = default;
+
+        /**
+         * \brief   Copies Worker Thread Entries from given source of Worker Thread List.
+         * \param   src     The source of Worker Thread List, containing Worker Thread Entries.
+         **/
+        NERegistry::WorkerThreadList & operator = ( NERegistry::WorkerThreadList && src ) noexcept = default;
 
     //////////////////////////////////////////////////////////////////////////
     // NERegistry::WorkerThreadList class, Attributes and operations
@@ -474,24 +534,30 @@ namespace NERegistry
         /**
          * \brief   Creates empty Dependency Entry and required by Array List object
          **/
-        DependencyEntry( void );
+        DependencyEntry( void ) = default;
 
         /**
          * \brief   Sets the role name of dependent Component
          * \param   roleName    The Role Name of dependent Component to set.
          **/
-        DependencyEntry( const char* roleName );
+        explicit DependencyEntry( const char* roleName );
 
         /**
-         * \brief   Copy constructor.
+         * \brief   Copies data from given source.
          * \param   src     The source of data to copy.
          **/
         DependencyEntry( const NERegistry::DependencyEntry & src );
 
         /**
+         * \brief   Moves data from given source.
+         * \param   src     The source of data to move.
+         **/
+        DependencyEntry( NERegistry::DependencyEntry && src ) noexcept;
+
+        /**
          * \brief   Destructor
          **/
-        ~DependencyEntry( void );
+        ~DependencyEntry( void )= default;
 
     //////////////////////////////////////////////////////////////////////////
     // NERegistry::DependencyEntry class, Operators
@@ -500,9 +566,15 @@ namespace NERegistry
 
         /**
          * \brief   Copies  Dependency Entry  data from given source. 
-         * \param   src     The source of data to copy
+         * \param   src     The source of data to copy.
          **/
-        const NERegistry::DependencyEntry & operator = ( const DependencyEntry & src );
+        NERegistry::DependencyEntry & operator = ( const DependencyEntry & src );
+
+        /**
+         * \brief   Moves Dependency Entry  data from given source.
+         * \param   src     The source of data to move.
+         **/
+        NERegistry::DependencyEntry & operator = ( DependencyEntry && src ) noexcept;
 
         /**
          * \brief   Checks equality of two Dependency Entries and returns true if they are equal.
@@ -544,6 +616,9 @@ namespace NERegistry
     //////////////////////////////////////////////////////////////////////////
     // NERegistry::DependencyList class declaration
     //////////////////////////////////////////////////////////////////////////
+
+    //!< The base class of dependency list 
+    using DependencyListBase = TEArrayList<NERegistry::DependencyEntry, const NERegistry::DependencyEntry&>;
     /**
      * \brief   NERegistry::DependencyList, Defines list of Dependency Entries. 
      *          It is a list of all dependent Components. Can be empty, 
@@ -552,7 +627,7 @@ namespace NERegistry
      *          between Components. Every Dependency Entry is specifying
      *          client of specified Component.
      **/
-    class AREG_API DependencyList   : public TEArrayList<NERegistry::DependencyEntry, const NERegistry::DependencyEntry&>
+    class AREG_API DependencyList   : public DependencyListBase
     {
     //////////////////////////////////////////////////////////////////////////
     // NERegistry::DependencyList class, Constructors / Destructor
@@ -562,7 +637,7 @@ namespace NERegistry
         /**
          * \brief   Creates empty list of dependent services.
          **/
-        DependencyList( void );
+        DependencyList( void ) = default;
 
         /**
          * \brief   If passed entry is valid, creates a dependency list with one entry.
@@ -572,15 +647,21 @@ namespace NERegistry
         DependencyList( const NERegistry::DependencyEntry & entry );
 
         /**
-         * \brief   Copy constructor.
+         * \brief   Copies entries from given source.
          * \param   src     The source of data to copy.
          **/
-        DependencyList( const NERegistry::DependencyList & src );
+        DependencyList( const NERegistry::DependencyList & src ) = default;
+
+        /**
+         * \brief   Moves entries from given source.
+         * \param   src     The source of data to move.
+         **/
+        DependencyList( NERegistry::DependencyList && src ) noexcept = default;
 
         /**
          * \brief   Destructor
          **/
-        virtual ~DependencyList( void );
+        ~DependencyList( void ) = default;
 
     //////////////////////////////////////////////////////////////////////////
     // NERegistry::DependencyList class, Operator
@@ -590,7 +671,13 @@ namespace NERegistry
          * \brief   Copies Dependency Entries from given source of Dependency List.
          * \param   src     The source of Dependency List, containing Dependency Entries.
          **/
-        const NERegistry::DependencyList & operator = ( const NERegistry::DependencyList & src );
+        NERegistry::DependencyList & operator = ( const NERegistry::DependencyList & src ) = default;
+
+        /**
+         * \brief   Moves Dependency Entries from given source of Dependency List.
+         * \param   src     The source of Dependency List, containing Dependency Entries.
+         **/
+        NERegistry::DependencyList & operator = ( NERegistry::DependencyList && src ) noexcept = default;
 
     //////////////////////////////////////////////////////////////////////////
     // Operations
@@ -707,15 +794,21 @@ namespace NERegistry
                         , const NERegistry::WorkerThreadEntry & worker);
 
         /**
-         * \brief   Copy constructor.
+         * \brief   Copies data from given source.
          * \param   src     The source of data to copy.
          **/
         ComponentEntry( const NERegistry::ComponentEntry & src );
 
         /**
+         * \brief   Moves data from given source.
+         * \param   src     The source of data to move.
+         **/
+        ComponentEntry( NERegistry::ComponentEntry && src ) noexcept;
+
+        /**
          * \brief   Destructor
          **/
-        ~ComponentEntry( void );
+        ~ComponentEntry( void ) = default;
 
     //////////////////////////////////////////////////////////////////////////
     // NERegistry::ComponentEntry class, Operators
@@ -725,7 +818,13 @@ namespace NERegistry
          * \brief   Copies Component Entry data from given source.
          * \param   src     The source of data to copy
          **/
-        const NERegistry::ComponentEntry & operator = ( const NERegistry::ComponentEntry & src );
+        NERegistry::ComponentEntry & operator = ( const NERegistry::ComponentEntry & src );
+
+        /**
+         * \brief   Moves Component Entry data from given source.
+         * \param   src     The source of data to move.
+         **/
+        NERegistry::ComponentEntry & operator = ( NERegistry::ComponentEntry && src ) noexcept;
 
         /**
          * \brief   Checks equality of two Component Entries and returns true if they are equal.
@@ -933,7 +1032,7 @@ namespace NERegistry
 
         /**
          * \brief   Sets pointers to create and delete component methods to be called when instantiating component object.
-         *          If NULL, it clears existing pointers and no component is instantiated.
+         *          If nullptr, it clears existing pointers and no component is instantiated.
          * \param   fnCreate    The pointer to create component method.
          * \param   fnDelete    The pointer to delete component method.
          **/
@@ -996,6 +1095,9 @@ namespace NERegistry
     //////////////////////////////////////////////////////////////////////////
     // NERegistry::ComponentEntryList class declaration
     //////////////////////////////////////////////////////////////////////////
+
+    //!< The base class of component list.
+    using ComponentListBase = TEArrayList<NERegistry::ComponentEntry, const NERegistry::ComponentEntry&>;
     /**
      * \brief   NERegistry::ComponentList. Defines list of Component Entries.
      *          It is a list of all Components within one Thread.
@@ -1004,7 +1106,7 @@ namespace NERegistry
      *          If more than one Components are implementing same Service Interface,
      *          they should be listed in different list of different thread.
      **/
-    class AREG_API ComponentList   : public TEArrayList<NERegistry::ComponentEntry, const NERegistry::ComponentEntry&>
+    class AREG_API ComponentList   : public ComponentListBase
     {
     //////////////////////////////////////////////////////////////////////////
     // NERegistry::ComponentList class, Friend classes
@@ -1018,24 +1120,30 @@ namespace NERegistry
         /**
          * \brief   Creates empty list.
          **/
-        ComponentList( void );
+        ComponentList( void ) = default;
 
         /**
          * \brief   Creates Component List and adds specified Component Entry to the list as first element.
          * \param   entry   The Component Entry to set as first element in the list.
          **/
-        ComponentList(  const NERegistry::ComponentEntry & entry );
+        explicit ComponentList(  const NERegistry::ComponentEntry & entry );
 
         /**
-         * \brief   Copy constructor.
+         * \brief   Copies data from given source.
          * \param   src     The source of data to copy.
          **/
-        ComponentList( const NERegistry::ComponentList & src );
+        ComponentList( const NERegistry::ComponentList & src ) = default;
+
+        /**
+         * \brief   Moves data from given source.
+         * \param   src     The source of data to move.
+         **/
+        ComponentList( NERegistry::ComponentList && src ) noexcept = default;
 
         /**
          * \brief   Destructor
          **/
-        virtual ~ComponentList( void );
+        ~ComponentList( void ) = default;
 
     //////////////////////////////////////////////////////////////////////////
     // NERegistry::ComponentList class, Operators
@@ -1045,7 +1153,13 @@ namespace NERegistry
          * \brief   Copies Component Entries from given source of Component List.
          * \param   src     The source of Component List, containing Component Entries.
          **/
-        const NERegistry::ComponentList & operator = ( const NERegistry::ComponentList & src );
+        NERegistry::ComponentList & operator = ( const NERegistry::ComponentList & src ) = default;
+
+        /**
+         * \brief   Moves Component Entries from given source of Component List.
+         * \param   src     The source of Component List, containing Component Entries.
+         **/
+        NERegistry::ComponentList & operator = ( NERegistry::ComponentList && src ) noexcept = default;
 
     //////////////////////////////////////////////////////////////////////////
     // NERegistry::ComponentList class, Attributes and Operations
@@ -1121,13 +1235,13 @@ namespace NERegistry
         /**
          * \brief   Creates invalid Thread Entry.
          **/
-        ComponentThreadEntry( void );
+        ComponentThreadEntry( void ) = default;
 
         /**
          * \brief   Initialize Thread Entry with given Thread Name.
          * \param   threadName  The Thread Name to assign.
          **/
-        ComponentThreadEntry( const char* threadName );
+        explicit ComponentThreadEntry( const char* threadName );
 
         /**
          * \brief   Initialize Thread Entry with given Thread Name and given Component List.
@@ -1137,15 +1251,21 @@ namespace NERegistry
         ComponentThreadEntry( const char* threadName, const NERegistry::ComponentList & componentList );
 
         /**
-         * \brief   Copy constructor.
+         * \brief   Copies data from given source.
          * \param   src     The source of data to copy.
          **/
         ComponentThreadEntry( const NERegistry::ComponentThreadEntry & src );
 
         /**
+         * \brief   Moves data from given source.
+         * \param   src     The source of data to move.
+         **/
+        ComponentThreadEntry( NERegistry::ComponentThreadEntry && src ) noexcept;
+
+        /**
          * \brief   Destructor
          **/
-        virtual ~ComponentThreadEntry( void );
+        ~ComponentThreadEntry( void ) = default;
 
     //////////////////////////////////////////////////////////////////////////
     // NERegistry::ComponentThreadEntry class, Operators
@@ -1155,7 +1275,13 @@ namespace NERegistry
          * \brief   Copies Thread Entry data from given source.
          * \param   src     The source of data to copy
          **/
-        const NERegistry::ComponentThreadEntry & operator = ( const NERegistry::ComponentThreadEntry & src );
+        NERegistry::ComponentThreadEntry & operator = ( const NERegistry::ComponentThreadEntry & src );
+
+        /**
+         * \brief   Moves Thread Entry data from given source.
+         * \param   src     The source of data to move.
+         **/
+        NERegistry::ComponentThreadEntry & operator = ( NERegistry::ComponentThreadEntry && src ) noexcept;
 
         /**
          * \brief   Checks equality of two Thread Entries and returns true if they are equal.
@@ -1278,12 +1404,15 @@ namespace NERegistry
     //////////////////////////////////////////////////////////////////////////
     // NERegistry::ComponentThreadList class declaration
     //////////////////////////////////////////////////////////////////////////
+
+    //!< The base class of component thread list.
+    using ComponentThreadListBase = TEArrayList< NERegistry::ComponentThreadEntry, const NERegistry::ComponentThreadEntry & >;
     /**
      * \brief   NERegistry::ComponentThreadList. Defines list of Thread Entries in Model.
      *          All names of Thread should be unique. A Model has more than one
      *          Thread Entry.
      **/
-    class AREG_API ComponentThreadList  : public TEArrayList< NERegistry::ComponentThreadEntry, const NERegistry::ComponentThreadEntry & >
+    class AREG_API ComponentThreadList  : public ComponentThreadListBase
     {
     //////////////////////////////////////////////////////////////////////////
     // NERegistry::ComponentThreadList class, Friend classes
@@ -1298,24 +1427,30 @@ namespace NERegistry
         /**
          * \brief   Default constructor.
          **/
-        ComponentThreadList( void );
+        ComponentThreadList( void ) = default;
 
         /**
          * \brief   Creates Component Thread List and adds specified Thread Entry to the list as first element.
          * \param   entry   The Thread Entry to set as first element in the list.
          **/
-        ComponentThreadList( const NERegistry::ComponentThreadEntry & entry );
+        explicit ComponentThreadList( const NERegistry::ComponentThreadEntry & entry );
 
         /**
-         * \brief   Copy constructor.
+         * \brief   Copies entries from given source.
          * \param   src     The source of data to copy.
          **/
-        ComponentThreadList( const NERegistry::ComponentThreadList & src );
+        ComponentThreadList( const NERegistry::ComponentThreadList & src ) = default;
+
+        /**
+         * \brief   Moves entries from given source.
+         * \param   src     The source of data to move.
+         **/
+        ComponentThreadList( NERegistry::ComponentThreadList && src ) noexcept = default;
 
         /**
          * \brief   Destructor
          **/
-        virtual ~ComponentThreadList( void );
+        ~ComponentThreadList( void ) = default;
 
     //////////////////////////////////////////////////////////////////////////
     // NERegistry::ComponentThreadList class, Operators
@@ -1325,7 +1460,13 @@ namespace NERegistry
          * \brief   Copies Thread Entries from given source of Thread List.
          * \param   src     The source of Thread List, containing Thread Entries.
          **/
-        const NERegistry::ComponentThreadList & operator = ( const NERegistry::ComponentThreadList & src );
+        NERegistry::ComponentThreadList & operator = ( const NERegistry::ComponentThreadList & src ) = default;
+
+        /**
+         * \brief   Moves Thread Entries from given source of Thread List.
+         * \param   src     The source of Thread List, containing Thread Entries.
+         **/
+        NERegistry::ComponentThreadList & operator = ( NERegistry::ComponentThreadList && src ) noexcept = default;
 
     //////////////////////////////////////////////////////////////////////////
     // NERegistry::ComponentThreadList class, Attributes and Operations
@@ -1395,7 +1536,7 @@ namespace NERegistry
         /**
          * \brief   Initialize empty Model and sets given Name.
          **/
-        Model( const char* modelName );
+        explicit Model( const char* modelName );
 
         /**
          * \brief   Initialize empty Model and sets given Name.
@@ -1403,15 +1544,21 @@ namespace NERegistry
         Model( const char* modelName, const ComponentThreadList & threadList );
 
         /**
-         * \brief   Copy constructor.
+         * \brief   Copies model entries from given source.
          * \param   src     The source of data to copy.
          **/
         Model( const Model & src );
 
         /**
+         * \brief   Moves model entries from given source.
+         * \param   src     The source of data to move.
+         **/
+        Model( Model && src ) noexcept;
+
+        /**
          * \brief   Destructor
          **/
-        ~Model( void );
+        ~Model( void ) = default;
 
     //////////////////////////////////////////////////////////////////////////
     // NERegistry::Model class, Operators
@@ -1421,7 +1568,13 @@ namespace NERegistry
          * \brief   Copies Model data from given source, 
          * \param   src     The source of data to copy
          **/
-        const NERegistry::Model & operator = ( const NERegistry::Model & src );
+        NERegistry::Model & operator = ( const NERegistry::Model & src );
+
+        /**
+         * \brief   Moves Model data from given source,
+         * \param   src     The source of data to move.
+         **/
+        NERegistry::Model & operator = ( NERegistry::Model && src ) noexcept;
 
         /**
          * \brief   Checks equality of two Models and returns true if they are equal.
@@ -1637,5 +1790,3 @@ namespace NERegistry
     extern AREG_API const NERegistry::Model                   INVALID_MODEL;
 
 }
-
-#endif  // AREG_COMPONENT_NEREGISTRY_HPP

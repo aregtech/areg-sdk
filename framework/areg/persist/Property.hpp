@@ -1,9 +1,16 @@
-#ifndef AREG_PERSIST_PROPERTY_HPP
-#define AREG_PERSIST_PROPERTY_HPP
+#pragma once
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/persist/Property.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, Property object to persist data
  ************************************************************************/
 
@@ -31,7 +38,7 @@ public:
     /**
      * \brief   The definition of type Property, which is a pair of Key and Value
      **/
-    typedef TEProperty<PropertyKey, PropertyValue> Entry;
+    using Entry = TEProperty<PropertyKey, PropertyValue>;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / destructor
@@ -40,7 +47,7 @@ public:
     /**
      * \brief   Default constructor
      **/
-    Property( void );
+    Property( void ) = default;
 
     /**
      * \brief   Parses and initializes Key-Value and the comment data from given parameters.
@@ -48,22 +55,27 @@ public:
      * \param   valueSet    The Value as a string to parse.
      * \param   comment     The optional comment for the property.
      **/
-    Property( const char * keySet, const char * valueSet, const char * comment = NULL );
+    Property( const char * keySet, const char * valueSet, const char * comment = nullptr );
     /**
      * \brief   Initializes Key, value and the comment.
      * \param   newProperty The property as a key and value pair to set.
      * \param   comment     The optional comment for the property.
      **/
-    Property( const Property::Entry & newProperty, const char * comment = NULL );
+    Property( const Property::Entry & newProperty, const char * comment = nullptr );
     /**
      * \brief   Copies data from given source
      * \param   source  The source to copy data
      **/
     Property( const Property & source );
     /**
+     * \brief   Moves data from given source
+     * \param   source  The source to move data
+     **/
+    Property( Property && source ) noexcept;
+    /**
      * \brief   Destructor
      **/
-    virtual ~Property( void );
+    virtual ~Property( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
@@ -73,7 +85,13 @@ public:
      * \brief   Copies property data from given source
      * \param   source  The source to copy data.
      **/
-    const Property & operator = ( const Property & source );
+    Property & operator = ( const Property & source );
+
+    /**
+     * \brief   Moves property data from given source
+     * \param   source  The source to move data.
+     **/
+    Property & operator = ( Property && source ) noexcept;
 
     /**
      * \brief   Checks equality of two property objects.
@@ -112,6 +130,12 @@ public:
     void setKey( const PropertyKey & Key );
 
     /**
+     * \brief   Sets the key of property.
+     * \param   Key     The key value to set.
+     **/
+    void setKey( PropertyKey && Key );
+
+    /**
      * \brief   Returns Key value of the property
      **/
     const PropertyKey & getKey( void ) const;
@@ -133,6 +157,11 @@ public:
      * \brief   Sets Value of the property.
      **/
     void setValue( const PropertyValue & Value );
+
+    /**
+     * \brief   Sets Value of the property.
+     **/
+    void setValue( PropertyValue && Value );
 
     /**
      * \brief   Returns Value of the property
@@ -165,6 +194,12 @@ public:
      * \param   newPair The Key-Value pair to set
      **/
     void setPropertyPair( const Property::Entry & newPair );
+
+    /**
+     * \brief   Sets the Key-Value pair of the property.
+     * \param   newPair The Key-Value pair to set
+     **/
+    void setPropertyPair( Property::Entry && newPair );
 
     /**
      * \brief   Returns Key-Value pair of the property.
@@ -203,16 +238,17 @@ protected:
      * \brief   Comment of Property
      **/
     String              mComment;
+
 #if defined(_MSC_VER) && (_MSC_VER > 1200)
     #pragma warning(disable: 4251)
 #endif  // _MSC_VER
+
     /**
      * \brief   Key-Value pair of the Property
      **/
     Property::Entry     mProperty;
+
 #if defined(_MSC_VER) && (_MSC_VER > 1200)
     #pragma warning(default: 4251)
 #endif  // _MSC_VER
 };
-
-#endif  // AREG_PERSIST_PROPERTY_HPP

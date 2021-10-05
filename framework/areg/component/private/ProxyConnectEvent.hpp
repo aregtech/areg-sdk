@@ -1,9 +1,16 @@
-#ifndef AREG_COMPONENT_PRIVATE_PROXYCONNECTEVENT_HPP
-#define AREG_COMPONENT_PRIVATE_PROXYCONNECTEVENT_HPP
+#pragma once
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/component/private/ProxyConnectEvent.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, Proxy Connection event class declaration.
  *
  ************************************************************************/
@@ -69,7 +76,7 @@ public:
     /**
      * \brief   Destructor
      **/
-    virtual ~ProxyConnectEvent( void );
+    virtual ~ProxyConnectEvent( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes
@@ -97,14 +104,14 @@ protected:
      * \param   stream  The streaming object to read out event data
      * \return  Returns streaming object to read out data.
      **/
-    virtual const IEInStream & readStream( const IEInStream & stream );
+    virtual const IEInStream & readStream( const IEInStream & stream ) override;
 
     /**
      * \brief   Writes event data to streaming object
      * \param   stream  The streaming object to write event data.
      * \return  Returns streaming object to write event data.
      **/
-    virtual IEOutStream & writeStream( IEOutStream & stream ) const;
+    virtual IEOutStream & writeStream( IEOutStream & stream ) const override;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -124,9 +131,8 @@ private:
 // Forbidden method calls.
 //////////////////////////////////////////////////////////////////////////
 private:
-    ProxyConnectEvent( void );
-    ProxyConnectEvent(const ProxyConnectEvent &);
-    const ProxyConnectEvent& operator = (const ProxyConnectEvent &);
+    ProxyConnectEvent( void ) = delete;
+    DECLARE_NOCOPY_NOMOVE( ProxyConnectEvent );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -142,5 +148,3 @@ inline NEService::eServiceConnection ProxyConnectEvent::getConnectionStatus( voi
 {
     return mConnectionStatus;
 }
-
-#endif  // AREG_COMPONENT_PRIVATE_PROXYCONNECTEVENT_HPP

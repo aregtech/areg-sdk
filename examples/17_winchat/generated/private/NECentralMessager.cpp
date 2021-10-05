@@ -4,14 +4,14 @@
 
 /************************************************************************
  * (c) copyright    2021
+ *
+ * Generated at     30.09.2021  01:22:12 GMT+02:00 
  *                  Create by AREG SDK code generator tool from source CentralMessager.
- * Generated at     04.07.2021  04:29:59 GMT+02:00 
- ************************************************************************/
-
-/************************************************************************
- * \file            generated/private/NECentralMessager.cpp
+ *
+ * \file            generated/NECentralMessager.hpp
  * \ingroup         CentralMessager Service Interface
- * \brief           This is an automatic generated code of CentralMessager Service Interface Namespace implementation.
+ * \brief           This is an automatic generated code of CentralMessager
+ *                  Service Interface namespace implementation.
  ************************************************************************/
 
 /************************************************************************
@@ -29,40 +29,40 @@ const NEService::SInterfaceData & NECentralMessager::getInterfaceData( void )
     /************************************************************************
      * The list of requests
      ************************************************************************/
-    static const unsigned int _RequestList[] = 
+    static constexpr unsigned int _RequestList[] 
     {
-          static_cast<unsigned int>( NECentralMessager::MSG_ID_requestSendMessage         ) // requestSendMessage( const String & nickName, unsigned int cookie, const String & newMessage, const DateTime & dateTime )
-        , static_cast<unsigned int>( NECentralMessager::MSG_ID_requestKeyTyping           ) // requestKeyTyping( const String & nickName, unsigned int cookie, const String & newMessage )
+          static_cast<unsigned int>( NECentralMessager::eMessageIDs::MsgId_requestSendMessage         ) // requestSendMessage( const String & nickName, unsigned int cookie, const String & newMessage, const DateTime & dateTime )
+        , static_cast<unsigned int>( NECentralMessager::eMessageIDs::MsgId_requestKeyTyping           ) // requestKeyTyping( const String & nickName, unsigned int cookie, const String & newMessage )
     };
 
     /************************************************************************
      * The list of responses and broadcasts
      ************************************************************************/
-    static const unsigned int _ResponseList[] = 
+    static constexpr unsigned int _ResponseList[] 
     {
-          static_cast<unsigned int>( NECentralMessager::MSG_ID_broadcastSendMessage       ) // broadcastSendMessage( const String & nickName, unsigned int cookie, const String & newMessage, const DateTime & dateTime )
-        , static_cast<unsigned int>( NECentralMessager::MSG_ID_broadcastKeyTyping         ) // broadcastKeyTyping( const String & nickName, unsigned int cookie, const String & newMessage )
-        , static_cast<unsigned int>( NECentralMessager::MSG_ID_broadcastBroadcastMessage  ) // broadcastBroadcastMessage( const String & serverMessage, const DateTime & dateTime )
+          static_cast<unsigned int>( NECentralMessager::eMessageIDs::MsgId_broadcastSendMessage       ) // broadcastSendMessage( const String & nickName, unsigned int cookie, const String & newMessage, const DateTime & dateTime )
+        , static_cast<unsigned int>( NECentralMessager::eMessageIDs::MsgId_broadcastKeyTyping         ) // broadcastKeyTyping( const String & nickName, unsigned int cookie, const String & newMessage )
+        , static_cast<unsigned int>( NECentralMessager::eMessageIDs::MsgId_broadcastBroadcastMessage  ) // broadcastBroadcastMessage( const String & serverMessage, const DateTime & dateTime )
     };
 
     /************************************************************************
      * The list of attributes
      ************************************************************************/
-    const unsigned int * _AttributeList     = static_cast<const unsigned int *>(NULL);    /* There are no attributes. Set Invalid message ID */
+    constexpr unsigned int * _AttributeList { nullptr };    /* There are no attributes. Set Invalid message ID */
 
     /************************************************************************
      * The map of requests and responses
      ************************************************************************/
-    static const unsigned int _RequestToResponseMap[] = 
+    static constexpr unsigned int _RequestToResponseMap[] 
     {
-          static_cast<unsigned int>( NECentralMessager::MSG_ID_NO_PROCEED                 ) // requestSendMessage( const String & nickName, unsigned int cookie, const String & newMessage, const DateTime & dateTime )
-        , static_cast<unsigned int>( NECentralMessager::MSG_ID_NO_PROCEED                 ) // requestKeyTyping( const String & nickName, unsigned int cookie, const String & newMessage )
+          static_cast<unsigned int>( NECentralMessager::eMessageIDs::MsgId_NotProcessed               ) // requestSendMessage( const String & nickName, unsigned int cookie, const String & newMessage, const DateTime & dateTime )
+        , static_cast<unsigned int>( NECentralMessager::eMessageIDs::MsgId_NotProcessed               ) // requestKeyTyping( const String & nickName, unsigned int cookie, const String & newMessage )
     };
 
     /************************************************************************
      * Initialization of parameter entry validation map in responses and in broadcasts
      ************************************************************************/
-    static const unsigned int _ResponseParamStateMap[] = 
+    static constexpr unsigned int _ResponseParamStateMap[]
     {
     /************************************************************************
      * Responses
@@ -84,7 +84,7 @@ const NEService::SInterfaceData & NECentralMessager::getInterfaceData( void )
     {
           NECentralMessager::ServiceName
         , NECentralMessager::InterfaceVersion
-        , NEService::ServiceRemote
+        , NEService::eServiceType::ServicePublic
         , 2
         , 3
         , 0
@@ -100,16 +100,16 @@ const NEService::SInterfaceData & NECentralMessager::getInterfaceData( void )
 
 NECentralMessager::eMessageIDs NECentralMessager::getResponseId( NECentralMessager::eMessageIDs reqId )
 {
-    return NECentralMessager::MSG_ID_INVALID;
+    return NECentralMessager::eMessageIDs::MsgId_Invalid;
 }
 
 NECentralMessager::eMessageIDs NECentralMessager::getRequestId( NECentralMessager::eMessageIDs respId )
 {
     const NEService::SInterfaceData & sid = NECentralMessager::getInterfaceData();
-    NECentralMessager::eMessageIDs result = NECentralMessager::MSG_ID_INVALID;
-    for ( unsigned int i = 0; result == NECentralMessager::MSG_ID_INVALID && i < sid.idRequestCount; ++ i )
+    NECentralMessager::eMessageIDs result = NECentralMessager::eMessageIDs::MsgId_Invalid;
+    for ( unsigned int i = 0; (result == NECentralMessager::eMessageIDs::MsgId_Invalid) && (i < sid.idRequestCount); ++ i )
     {
-        result = sid.idRequestToResponseMap[i] == static_cast<unsigned int>(respId) ? static_cast<NECentralMessager::eMessageIDs>(sid.idRequestList[i]) : NECentralMessager::MSG_ID_INVALID;
+        result = sid.idRequestToResponseMap[i] == static_cast<msg_id>(respId) ? static_cast<NECentralMessager::eMessageIDs>(sid.idRequestList[i]) : NECentralMessager::eMessageIDs::MsgId_Invalid;
     }
     
     return result;

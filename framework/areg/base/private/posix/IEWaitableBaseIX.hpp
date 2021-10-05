@@ -1,9 +1,16 @@
-#ifndef AREG_BASE_PRIVATE_POSIX_IEWAITABLEBASEIX_HPP
-#define AREG_BASE_PRIVATE_POSIX_IEWAITABLEBASEIX_HPP
+#pragma once
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/base/private/posix/IEWaitableBaseIX.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, waitable base object.
  *
  ************************************************************************/
@@ -13,7 +20,7 @@
   ************************************************************************/
 #include "areg/base/GEGlobal.h"
 
-#ifdef _POSIX
+#if defined(_POSIX) || defined(POSIX)
 
 #include "areg/base/private/posix/MutexIX.hpp"
 
@@ -38,7 +45,7 @@ protected:
      * \brief   Protected instantiation constructor. Call to set the synchronization
      *          object type, recursive flag and the name.
      **/
-    IEWaitableBaseIX( NESynchTypesIX::eSynchObject synchType, bool isRecursive, const char* asciiName = NULL );
+    IEWaitableBaseIX( NESynchTypesIX::eSynchObject synchType, bool isRecursive, const char* asciiName = nullptr );
 
 public:
     /**
@@ -91,15 +98,12 @@ public:
 // Forbidden calls.
 //////////////////////////////////////////////////////////////////////////
 private:
-    IEWaitableBaseIX( void );
-    IEWaitableBaseIX( const IEWaitableBaseIX & /*src*/ );
-    const IEWaitableBaseIX & operator = ( const IEWaitableBaseIX & /*src*/ );
+    IEWaitableBaseIX( void ) = delete;
+    DECLARE_NOCOPY_NOMOVE( IEWaitableBaseIX );
 };
 
 //////////////////////////////////////////////////////////////////////////
 // IEWaitableBaseIX class inline implementation
 //////////////////////////////////////////////////////////////////////////
 
-#endif  // _POSIX
-
-#endif  // AREG_BASE_PRIVATE_POSIX_IEWAITABLEBASEIX_HPP
+#endif  // defined(_POSIX) || defined(POSIX)

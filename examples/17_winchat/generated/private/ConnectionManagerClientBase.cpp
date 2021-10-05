@@ -3,14 +3,14 @@
 //////////////////////////////////////////////////////////////////////////
 /************************************************************************
  * (c) copyright    2021
+ *
+ * Generated at     30.09.2021  01:22:14 GMT+02:00 
  *                  Create by AREG SDK code generator tool from source ConnectionManager.
- * Generated at     04.07.2021  04:30:00 GMT+02:00 
- ************************************************************************/
-
-/************************************************************************
- * \file            generated/private/ConnectionManagerClientBase.cpp
+ *
+ * \file            generated/ConnectionManagerClientBase.hpp
  * \ingroup         ConnectionManager Service Interface
- * \brief           This is an automatic generated code of ConnectionManager Service Interface Client base class implementation.
+ * \brief           This is an automatic generated code of ConnectionManager
+ *                  Service Interface Client base class implementation.
  ************************************************************************/
 
 /************************************************************************
@@ -46,14 +46,13 @@ namespace NEConnectionManager
  * Constructor / Destructor
  ************************************************************************/
 
-ConnectionManagerClientBase::ConnectionManagerClientBase( const char * roleName, const char * ownerThread /*= static_cast<const char *>(NULL)*/ )
+ConnectionManagerClientBase::ConnectionManagerClientBase( const char * roleName, const char * ownerThread /*= nullptr*/ )
     : IEProxyListener   ( )
 
     , mIsConnected      ( false )
     , mCurrSequenceNr   ( 0 )
     , mProxy            ( ConnectionManagerProxy::createProxy(roleName, static_cast<IEProxyListener &>(self()), ownerThread) )
 {
-    ; // do nothing
 }
 
 ConnectionManagerClientBase::ConnectionManagerClientBase( const char * roleName, DispatcherThread & ownerThread )
@@ -63,7 +62,6 @@ ConnectionManagerClientBase::ConnectionManagerClientBase( const char * roleName,
     , mCurrSequenceNr   ( 0 )
     , mProxy            ( ConnectionManagerProxy::createProxy(roleName, static_cast<IEProxyListener &>(self()), ownerThread) )
 {
-    ; // do nothing
 }
 
 ConnectionManagerClientBase::ConnectionManagerClientBase( const char* roleName, Component & owner )
@@ -73,16 +71,15 @@ ConnectionManagerClientBase::ConnectionManagerClientBase( const char* roleName, 
     , mCurrSequenceNr   ( 0 )
     , mProxy            ( ConnectionManagerProxy::createProxy(roleName, static_cast<IEProxyListener &>(self()), owner.getMasterThread()) )
 {
-    ; // do nothing
 }
 
 ConnectionManagerClientBase::~ConnectionManagerClientBase( void )
 {
-    if (mProxy != NULL)
+    if (mProxy != nullptr)
     {
         mProxy->clearAllNotifications( static_cast<IENotificationEventConsumer &>(self()) );
         mProxy->freeProxy( static_cast<IEProxyListener &>(self()) );
-        mProxy  = NULL;
+        mProxy  = nullptr;
     }
     
     mIsConnected= false;
@@ -95,14 +92,14 @@ ConnectionManagerClientBase::~ConnectionManagerClientBase( void )
 bool ConnectionManagerClientBase::recreateProxy( void )
 {
     bool result         = false;
-    if (mProxy != NULL)
+    if (mProxy != nullptr)
     {
         String roleName   = mProxy->getProxyAddress().getRoleName();
         String threadName = mProxy->getProxyAddress().getThread();
         if ( roleName.isEmpty() == false )
         {
             ConnectionManagerProxy * newProxy = ConnectionManagerProxy::createProxy(roleName.getString(), static_cast<IEProxyListener &>(self()), threadName.getString());
-            if (newProxy != NULL)
+            if (newProxy != nullptr)
             {
                 mProxy->clearAllNotifications( static_cast<IENotificationEventConsumer &>(self()) );
                 mProxy->freeProxy (static_cast<IEProxyListener &>(self()) );
@@ -116,13 +113,13 @@ bool ConnectionManagerClientBase::recreateProxy( void )
 
 DispatcherThread * ConnectionManagerClientBase::getDispatcherThread( void )
 {
-    return ( mProxy != static_cast<ConnectionManagerProxy *>(NULL) ? &(mProxy->getProxyDispatcherThread()) : static_cast<DispatcherThread *>(NULL) );
+    return ( mProxy != nullptr ? &(mProxy->getProxyDispatcherThread()) : nullptr );
 }
 
-DEF_TRACE_SCOPE(GENERATED_ConnectionManagerClientBase_serviceConnected);
+DEF_TRACE_SCOPE(generated_ConnectionManagerClientBase_serviceConnected);
 bool ConnectionManagerClientBase::serviceConnected( bool isConnected, ProxyBase & proxy )
 {
-    TRACE_SCOPE(GENERATED_ConnectionManagerClientBase_serviceConnected);
+    TRACE_SCOPE(generated_ConnectionManagerClientBase_serviceConnected);
     
     bool result = false;
     if(mProxy == &proxy)
@@ -152,7 +149,7 @@ void ConnectionManagerClientBase::notifyOn( NEConnectionManager::eMessageIDs msg
  * Event processing
  ************************************************************************/
 
-DEF_TRACE_SCOPE(GENERATED_ConnectionManagerClientBase_processNotificationEvent);
+DEF_TRACE_SCOPE(generated_ConnectionManagerClientBase_processNotificationEvent);
 void ConnectionManagerClientBase::processNotificationEvent( NotificationEvent & eventElem )
 {
     const NotificationEventData & data  = static_cast<const NotificationEvent &>(eventElem).getData();
@@ -162,28 +159,28 @@ void ConnectionManagerClientBase::processNotificationEvent( NotificationEvent & 
 
     switch (result)
     {
-    case NEService::RESULT_REQUEST_BUSY:
-    case NEService::RESULT_REQUEST_ERROR:
-    case NEService::RESULT_REQUEST_CANCELED:
+    case NEService::eResultType::RequestBusy:       // fall through
+    case NEService::eResultType::RequestError:      // fall through
+    case NEService::eResultType::RequestCanceled:   // fall through
         {
         /************************************************************************
          * Trigger request error handling if request failed.
          ************************************************************************/
-            requestFailed(msgId, result);
+            ConnectionManagerClientBase::requestFailed(msgId, result);
         }
         break;
 
-    case NEService::RESULT_INVALID:
+    case NEService::eResultType::RequestInvalid:
         {
         /************************************************************************
          * Trigger invalid response / broadcast handling. May happen when remove notification 
          ************************************************************************/
-            invalidResponse(msgId);
+            ConnectionManagerClientBase::invalidResponse(msgId);
         }
         break;
 
-    case NEService::RESULT_DATA_OK:
-    case NEService::RESULT_DATA_INVALID:
+    case NEService::eResultType::DataOK:            // fall through
+    case NEService::eResultType::DataInvalid:
         {
             NEService::eDataStateType dataState;
             switch (msgId)
@@ -191,7 +188,7 @@ void ConnectionManagerClientBase::processNotificationEvent( NotificationEvent & 
         /************************************************************************
          * Trigger attribute update processing
          ************************************************************************/
-            case NEConnectionManager::MSG_ID_ConnectionList:
+            case NEConnectionManager::eMessageIDs::MsgId_ConnectionList:
                 {
                     const NEConnectionManager::MapConnection & ConnectionList = mProxy->getConnectionList(dataState);
                     onConnectionListUpdate(ConnectionList, dataState);
@@ -200,7 +197,7 @@ void ConnectionManagerClientBase::processNotificationEvent( NotificationEvent & 
 
             default:
                 {
-                    TRACE_SCOPE(GENERATED_ConnectionManagerClientBase_processNotificationEvent);
+                    TRACE_SCOPE(generated_ConnectionManagerClientBase_processNotificationEvent);
                     TRACE_ERR("Client object ConnectionManagerClientBase of proxy [ %s ] received unexpected Attribute update notification message ID [ %d ]."
                                 , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString()
                                 , msgId);
@@ -211,14 +208,14 @@ void ConnectionManagerClientBase::processNotificationEvent( NotificationEvent & 
         }
         break;
 
-    case NEService::RESULT_OK:
+    case NEService::eResultType::RequestOK:
         {
             switch (msgId)
             {
         /************************************************************************
          * Trigger response processing
          ************************************************************************/
-            case NEConnectionManager::MSG_ID_responseConnect:
+            case NEConnectionManager::eMessageIDs::MsgId_responseConnect:
                 {
                     const String & nickName = mProxy->getParamnickName();
                     unsigned int cookie = mProxy->getParamcookie();
@@ -228,7 +225,7 @@ void ConnectionManagerClientBase::processNotificationEvent( NotificationEvent & 
                 }
                 break;
 
-            case NEConnectionManager::MSG_ID_responseRegisterConnection:
+            case NEConnectionManager::eMessageIDs::MsgId_responseRegisterConnection:
                 {
                     const NEConnectionManager::sConnection & connection = mProxy->getParamconnection();
                     const NEConnectionManager::ListConnection & connectionList = mProxy->getParamconnectionList();
@@ -240,21 +237,21 @@ void ConnectionManagerClientBase::processNotificationEvent( NotificationEvent & 
         /************************************************************************
          * Trigger broadcast processing
          ************************************************************************/
-            case NEConnectionManager::MSG_ID_broadcastConnectionUpdated:
+            case NEConnectionManager::eMessageIDs::MsgId_broadcastConnectionUpdated:
                 {
                     const NEConnectionManager::MapConnection & updatedList = mProxy->getParamupdatedList();
                     broadcastConnectionUpdated( updatedList );
                 }
                 break;
 
-            case NEConnectionManager::MSG_ID_broadcastClientConnected:
+            case NEConnectionManager::eMessageIDs::MsgId_broadcastClientConnected:
                 {
                     const NEConnectionManager::sConnection & clientConnected = mProxy->getParamclientConnected();
                     broadcastClientConnected( clientConnected );
                 }
                 break;
 
-            case NEConnectionManager::MSG_ID_broadcastClientDisconnected:
+            case NEConnectionManager::eMessageIDs::MsgId_broadcastClientDisconnected:
                 {
                     const NEConnectionManager::sConnection & clientLeft = mProxy->getParamclientLeft();
                     broadcastClientDisconnected( clientLeft );
@@ -263,7 +260,7 @@ void ConnectionManagerClientBase::processNotificationEvent( NotificationEvent & 
 
             default:
                 {
-                    TRACE_SCOPE(GENERATED_ConnectionManagerClientBase_processNotificationEvent);
+                    TRACE_SCOPE(generated_ConnectionManagerClientBase_processNotificationEvent);
                     TRACE_ERR("Client object ConnectionManagerClientBase of proxy [ %s ] received unexpected Response message ID [ %d ]."
                                 , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString()
                                 , msgId);
@@ -276,7 +273,7 @@ void ConnectionManagerClientBase::processNotificationEvent( NotificationEvent & 
 
     default:
         {
-            TRACE_SCOPE(GENERATED_ConnectionManagerClientBase_processNotificationEvent);
+            TRACE_SCOPE(generated_ConnectionManagerClientBase_processNotificationEvent);
             TRACE_ERR("Client object ConnectionManagerClientBase of proxy [ %s ] received unexpected Response result type [ %d ]."
                         , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString()
                         , static_cast<int>(result));
@@ -289,10 +286,10 @@ void ConnectionManagerClientBase::processNotificationEvent( NotificationEvent & 
 /************************************************************************
  * Error handling calls
  ************************************************************************/
-DEF_TRACE_SCOPE(GENERATED_ConnectionManagerClientBase_invalidResponse);
+DEF_TRACE_SCOPE(generated_ConnectionManagerClientBase_invalidResponse);
 void ConnectionManagerClientBase::invalidResponse( NEConnectionManager::eMessageIDs InvalidRespId )
 {
-    TRACE_SCOPE(GENERATED_ConnectionManagerClientBase_invalidResponse);
+    TRACE_SCOPE(generated_ConnectionManagerClientBase_invalidResponse);
     TRACE_ERR("The invalid response [ %s ] (value = [ %d ]) method of proxy [ %s ] client ConnectionManagerClientBase is not implemented! Make error handling!"
                     , NEConnectionManager::getString(InvalidRespId)
                     , static_cast<unsigned int>(InvalidRespId)
@@ -301,10 +298,10 @@ void ConnectionManagerClientBase::invalidResponse( NEConnectionManager::eMessage
     ASSERT(false);
 }
 
-DEF_TRACE_SCOPE(GENERATED_ConnectionManagerClientBase_invalidRequest);
+DEF_TRACE_SCOPE(generated_ConnectionManagerClientBase_invalidRequest);
 void ConnectionManagerClientBase::invalidRequest( NEConnectionManager::eMessageIDs InvalidReqId )
 {
-    TRACE_SCOPE(GENERATED_ConnectionManagerClientBase_invalidRequest);
+    TRACE_SCOPE(generated_ConnectionManagerClientBase_invalidRequest);
     TRACE_ERR("The invalid request [ %s ] (value = [ %d ]) method of proxy [ %s ] client ConnectionManagerClientBase is not implemented! Make error handling!"
                     , NEConnectionManager::getString(InvalidReqId)
                     , static_cast<unsigned int>(InvalidReqId)
@@ -313,20 +310,20 @@ void ConnectionManagerClientBase::invalidRequest( NEConnectionManager::eMessageI
     ASSERT(false);
 }
 
-DEF_TRACE_SCOPE(GENERATED_ConnectionManagerClientBase_requestFailed);
+DEF_TRACE_SCOPE(generated_ConnectionManagerClientBase_requestFailed);
 void ConnectionManagerClientBase::requestFailed( NEConnectionManager::eMessageIDs FailureMsgId, NEService::eResultType FailureReason )
 {
-    TRACE_SCOPE(GENERATED_ConnectionManagerClientBase_requestFailed);
+    TRACE_SCOPE(generated_ConnectionManagerClientBase_requestFailed);
     TRACE_WARN("The request [ %s ] (value = [ %d ]) method of proxy [ %s ] client ConnectionManagerClientBase failed with reason [ %s ]! Implemented error handling!"
                     , NEConnectionManager::getString(FailureMsgId)
                     , static_cast<unsigned int>(FailureMsgId)
                     , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString()
                     , NEService::getString(FailureReason) );
                     
-    unsigned int index = static_cast<unsigned int>(NEConnectionManager::MSG_ID_INVALID);
-    index = static_cast<unsigned int>( NEService::isResponseId(static_cast<unsigned int>(FailureMsgId)) ? NEConnectionManager::getRequestId(FailureMsgId) : FailureMsgId);
-    index = NEService::isRequestId(index)  ? GET_REQ_INDEX(index) : static_cast<unsigned int>(NEConnectionManager::MSG_ID_INVALID);
-    if ( index != static_cast<unsigned int>(NEConnectionManager::MSG_ID_INVALID) )
+    unsigned int index = static_cast<msg_id>(NEConnectionManager::eMessageIDs::MsgId_Invalid);
+    index = static_cast<msg_id>( NEService::isResponseId(static_cast<unsigned int>(FailureMsgId)) ? NEConnectionManager::getRequestId(FailureMsgId) : FailureMsgId);
+    index = NEService::isRequestId(index)  ? GET_REQ_INDEX(index) : static_cast<msg_id>(NEConnectionManager::eMessageIDs::MsgId_Invalid);
+    if ( index != static_cast<msg_id>(NEConnectionManager::eMessageIDs::MsgId_Invalid) && (index < NEConnectionManager::getInterfaceData().idRequestCount) )
     {
         (this->*NEConnectionManager::failureFunctions[index])( FailureReason );
     }
@@ -340,12 +337,12 @@ void ConnectionManagerClientBase::requestFailed( NEConnectionManager::eMessageID
  * Attribute notifications
  ************************************************************************/
 
-DEF_TRACE_SCOPE(GENERATED_ConnectionManagerClientBase_onConnectionListUpdate);
+DEF_TRACE_SCOPE(generated_ConnectionManagerClientBase_onConnectionListUpdate);
 void ConnectionManagerClientBase::onConnectionListUpdate( const NEConnectionManager::MapConnection & /* ConnectionList */, NEService::eDataStateType /* state */ )
 {
-    TRACE_SCOPE(GENERATED_ConnectionManagerClientBase_onConnectionListUpdate);
+    TRACE_SCOPE(generated_ConnectionManagerClientBase_onConnectionListUpdate);
     TRACE_WARN("The attribute ConnectionList (value = %u) update method of proxy [ %s ] client ConnectionManagerClientBase is not implemented!"
-                    , static_cast<unsigned int>(NEConnectionManager::MSG_ID_ConnectionList)
+                    , static_cast<unsigned int>(NEConnectionManager::eMessageIDs::MsgId_ConnectionList)
                     , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString());
 }
 
@@ -353,78 +350,78 @@ void ConnectionManagerClientBase::onConnectionListUpdate( const NEConnectionMana
  * Request failure / Response and Broadcast notifications
  ************************************************************************/
  
-DEF_TRACE_SCOPE(GENERATED_ConnectionManagerClientBase_requestConnetFailed);
+DEF_TRACE_SCOPE(generated_ConnectionManagerClientBase_requestConnetFailed);
 void ConnectionManagerClientBase::requestConnetFailed( NEService::eResultType FailureReason )
 {
-    TRACE_SCOPE(GENERATED_ConnectionManagerClientBase_requestConnetFailed);
+    TRACE_SCOPE(generated_ConnectionManagerClientBase_requestConnetFailed);
     TRACE_WARN("The request requestConnet (value = %u) method of proxy [ %s ] client ConnectionManagerClientBase is failed with reason [ %s ]! Make error handling!"
-                    , static_cast<unsigned int>(NEConnectionManager::MSG_ID_requestConnet)
+                    , static_cast<unsigned int>(NEConnectionManager::eMessageIDs::MsgId_requestConnet)
                     , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString()
                     , NEService::getString(FailureReason));
 }
 
-DEF_TRACE_SCOPE(GENERATED_ConnectionManagerClientBase_requestRegisterConnectionFailed);
+DEF_TRACE_SCOPE(generated_ConnectionManagerClientBase_requestRegisterConnectionFailed);
 void ConnectionManagerClientBase::requestRegisterConnectionFailed( NEService::eResultType FailureReason )
 {
-    TRACE_SCOPE(GENERATED_ConnectionManagerClientBase_requestRegisterConnectionFailed);
+    TRACE_SCOPE(generated_ConnectionManagerClientBase_requestRegisterConnectionFailed);
     TRACE_WARN("The request requestRegisterConnection (value = %u) method of proxy [ %s ] client ConnectionManagerClientBase is failed with reason [ %s ]! Make error handling!"
-                    , static_cast<unsigned int>(NEConnectionManager::MSG_ID_requestRegisterConnection)
+                    , static_cast<unsigned int>(NEConnectionManager::eMessageIDs::MsgId_requestRegisterConnection)
                     , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString()
                     , NEService::getString(FailureReason));
 }
 
-DEF_TRACE_SCOPE(GENERATED_ConnectionManagerClientBase_requestDiconnectFailed);
+DEF_TRACE_SCOPE(generated_ConnectionManagerClientBase_requestDiconnectFailed);
 void ConnectionManagerClientBase::requestDiconnectFailed( NEService::eResultType FailureReason )
 {
-    TRACE_SCOPE(GENERATED_ConnectionManagerClientBase_requestDiconnectFailed);
+    TRACE_SCOPE(generated_ConnectionManagerClientBase_requestDiconnectFailed);
     TRACE_WARN("The request requestDiconnect (value = %u) method of proxy [ %s ] client ConnectionManagerClientBase is failed with reason [ %s ]! Make error handling!"
-                    , static_cast<unsigned int>(NEConnectionManager::MSG_ID_requestDiconnect)
+                    , static_cast<unsigned int>(NEConnectionManager::eMessageIDs::MsgId_requestDiconnect)
                     , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString()
                     , NEService::getString(FailureReason));
 }
 
-DEF_TRACE_SCOPE(GENERATED_ConnectionManagerClientBase_responseConnect);
+DEF_TRACE_SCOPE(generated_ConnectionManagerClientBase_responseConnect);
 void ConnectionManagerClientBase::responseConnect( const String & /* nickName */, unsigned int /* cookie */, const DateTime & /* dateTime */, NEConnectionManager::eConnectionResult /* result */ )
 {
-    TRACE_SCOPE(GENERATED_ConnectionManagerClientBase_responseConnect);
+    TRACE_SCOPE(generated_ConnectionManagerClientBase_responseConnect);
     TRACE_WARN("The response responseConnect (value = %u) method of proxy [ %s ] client ConnectionManagerClientBase is not implemented!"
-                    , static_cast<unsigned int>(NEConnectionManager::MSG_ID_responseConnect)
+                    , static_cast<unsigned int>(NEConnectionManager::eMessageIDs::MsgId_responseConnect)
                     , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString());
 }
 
-DEF_TRACE_SCOPE(GENERATED_ConnectionManagerClientBase_responseRegisterConnection);
+DEF_TRACE_SCOPE(generated_ConnectionManagerClientBase_responseRegisterConnection);
 void ConnectionManagerClientBase::responseRegisterConnection( const NEConnectionManager::sConnection & /* connection */, const NEConnectionManager::ListConnection & /* connectionList */, bool /* success */ )
 {
-    TRACE_SCOPE(GENERATED_ConnectionManagerClientBase_responseRegisterConnection);
+    TRACE_SCOPE(generated_ConnectionManagerClientBase_responseRegisterConnection);
     TRACE_WARN("The response responseRegisterConnection (value = %u) method of proxy [ %s ] client ConnectionManagerClientBase is not implemented!"
-                    , static_cast<unsigned int>(NEConnectionManager::MSG_ID_responseRegisterConnection)
+                    , static_cast<unsigned int>(NEConnectionManager::eMessageIDs::MsgId_responseRegisterConnection)
                     , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString());
 }
 
-DEF_TRACE_SCOPE(GENERATED_ConnectionManagerClientBase_broadcastConnectionUpdated);
+DEF_TRACE_SCOPE(generated_ConnectionManagerClientBase_broadcastConnectionUpdated);
 void ConnectionManagerClientBase::broadcastConnectionUpdated( const NEConnectionManager::MapConnection & /* updatedList */ )
 {
-    TRACE_SCOPE(GENERATED_ConnectionManagerClientBase_broadcastConnectionUpdated);
+    TRACE_SCOPE(generated_ConnectionManagerClientBase_broadcastConnectionUpdated);
     TRACE_WARN("The broadcast broadcastConnectionUpdated (value = %u) method of proxy [ %s ] client ConnectionManagerClientBase is not implemented!"
-                    , static_cast<unsigned int>(NEConnectionManager::MSG_ID_broadcastConnectionUpdated)
+                    , static_cast<unsigned int>(NEConnectionManager::eMessageIDs::MsgId_broadcastConnectionUpdated)
                     , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString());
 }
 
-DEF_TRACE_SCOPE(GENERATED_ConnectionManagerClientBase_broadcastClientConnected);
+DEF_TRACE_SCOPE(generated_ConnectionManagerClientBase_broadcastClientConnected);
 void ConnectionManagerClientBase::broadcastClientConnected( const NEConnectionManager::sConnection & /* clientConnected */ )
 {
-    TRACE_SCOPE(GENERATED_ConnectionManagerClientBase_broadcastClientConnected);
+    TRACE_SCOPE(generated_ConnectionManagerClientBase_broadcastClientConnected);
     TRACE_WARN("The broadcast broadcastClientConnected (value = %u) method of proxy [ %s ] client ConnectionManagerClientBase is not implemented!"
-                    , static_cast<unsigned int>(NEConnectionManager::MSG_ID_broadcastClientConnected)
+                    , static_cast<unsigned int>(NEConnectionManager::eMessageIDs::MsgId_broadcastClientConnected)
                     , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString());
 }
 
-DEF_TRACE_SCOPE(GENERATED_ConnectionManagerClientBase_broadcastClientDisconnected);
+DEF_TRACE_SCOPE(generated_ConnectionManagerClientBase_broadcastClientDisconnected);
 void ConnectionManagerClientBase::broadcastClientDisconnected( const NEConnectionManager::sConnection & /* clientLeft */ )
 {
-    TRACE_SCOPE(GENERATED_ConnectionManagerClientBase_broadcastClientDisconnected);
+    TRACE_SCOPE(generated_ConnectionManagerClientBase_broadcastClientDisconnected);
     TRACE_WARN("The broadcast broadcastClientDisconnected (value = %u) method of proxy [ %s ] client ConnectionManagerClientBase is not implemented!"
-                    , static_cast<unsigned int>(NEConnectionManager::MSG_ID_broadcastClientDisconnected)
+                    , static_cast<unsigned int>(NEConnectionManager::eMessageIDs::MsgId_broadcastClientDisconnected)
                     , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString());
 }
 

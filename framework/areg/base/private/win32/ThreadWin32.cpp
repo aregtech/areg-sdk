@@ -1,7 +1,15 @@
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/base/private/win32/ThreadWin32.cpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, Thread class
  *              windows specific code
  *
@@ -15,20 +23,12 @@
 #include <processthreadsapi.h>
 
 /************************************************************************/
-// Thread class public constants, types and enum
-/************************************************************************/
-/**
- * \brief   Constant, wait until created thread did not start
- **/
-const unsigned int      Thread::WAIT_INFINITE             = static_cast<unsigned int>(INFINITE);
-
-/************************************************************************/
 // System specific thread routines
 /************************************************************************/
 void * Thread::_posixThreadRoutine( void * /*data*/ )
 {
     ASSERT(false);
-    return NULL;
+    return nullptr;
 }
 
 unsigned long Thread::_windowsThreadRoutine( void * data )
@@ -40,8 +40,13 @@ unsigned long Thread::_windowsThreadRoutine( void * data )
  * \brief   This function call is a recommendation from MSDN documentation.
  *          It is using undocumented way to set name of thread in native code.
  **/
-void Thread::_setThreadName(ITEM_ID threadId, const char* threadName)
+void Thread::_setThreadName( id_type threadId, const char* threadName)
 {
+    /**
+     * \brief   MS Exception value, used to set thread name.
+     **/
+    static constexpr unsigned int   SET_NAME_MS_VC_EXCEPTION    = 0x406D1388u;
+
 #pragma pack(push, 8)
     typedef struct tagTHREADNAME_INFO
     {
@@ -60,17 +65,17 @@ void Thread::_setThreadName(ITEM_ID threadId, const char* threadName)
 
     __try
     {
-        RaiseException( Thread::SET_NAME_MS_VC_EXCEPTION, 0, sizeof(info)/sizeof(ULONG_PTR), (ULONG_PTR*)&info );
+        RaiseException( SET_NAME_MS_VC_EXCEPTION, 0, sizeof(info)/sizeof(ULONG_PTR), (ULONG_PTR*)&info );
     }
     __except(EXCEPTION_CONTINUE_EXECUTION)
     {
-        ; // do nothing
+        // do nothing
     }
 }
 
 void Thread::_closeHandle(  THREADHANDLE handle )
 {
-    if (handle != NULL)
+    if (handle != nullptr)
         ::CloseHandle(static_cast<HANDLE>(handle));
 }
 
@@ -83,16 +88,16 @@ void Thread::sleep(unsigned int ms)
     ::Sleep(ms);
 }
 
-ITEM_ID Thread::getCurrentThreadId( void )
+id_type Thread::getCurrentThreadId( void )
 {
-    return static_cast<ITEM_ID>(::GetCurrentThreadId());
+    return static_cast<id_type>(::GetCurrentThreadId());
 }
 
-Thread::eCompletionStatus Thread::destroyThread(unsigned int waitForStopMs /* = Thread::DO_NOT_WAIT */)
+Thread::eCompletionStatus Thread::destroyThread(unsigned int waitForStopMs /* = NECommon::DO_NOT_WAIT */)
 {
-    mSynchObject.lock(IESynchObject::WAIT_INFINITE);
+    mSynchObject.lock(NECommon::WAIT_INFINITE);
 
-    Thread::eCompletionStatus result = Thread::ThreadInvalid;
+    Thread::eCompletionStatus result = Thread::eCompletionStatus::ThreadInvalid;
 
     THREADHANDLE handle = mThreadHandle;
     if (handle != Thread::INVALID_THREAD_HANDLE)
@@ -100,7 +105,7 @@ Thread::eCompletionStatus Thread::destroyThread(unsigned int waitForStopMs /* = 
         _unregisterThread();
         mSynchObject.unlock();  // unlock, to let thread complete exit task.
 
-        if ((waitForStopMs != Thread::DO_NOT_WAIT) && (mWaitForExit.lock(waitForStopMs) == false))
+        if ((waitForStopMs != NECommon::DO_NOT_WAIT) && (mWaitForExit.lock(waitForStopMs) == false))
         {
 #ifdef  _DEBUG
             //////////////////////////////////////////////////////////////////////////
@@ -118,23 +123,23 @@ Thread::eCompletionStatus Thread::destroyThread(unsigned int waitForStopMs /* = 
 
             // here we assume that it was requested to wait for thread exit, but it is still running
             // force to terminate thread and close handles due to waiting timeout expire
-            result = Thread::ThreadTerminated;
-            ::TerminateThread(static_cast<HANDLE>(handle), static_cast<DWORD>(IEThreadConsumer::EXIT_TERMINATED));
+            result = Thread::eCompletionStatus::ThreadTerminated;
+            ::TerminateThread(static_cast<HANDLE>(handle), static_cast<DWORD>(IEThreadConsumer::eExitCodes::ExitTerminated));
         }
         else
         {
             // The thread completed job normally
-            result = Thread::ThreadCompleted;
-            ASSERT (waitForStopMs != Thread::WAIT_INFINITE || isRunning() == false);
+            result = Thread::eCompletionStatus::ThreadCompleted;
+            ASSERT (waitForStopMs != NECommon::WAIT_INFINITE || isRunning() == false);
         }
 
-        mSynchObject.lock(IESynchObject::WAIT_INFINITE);
+        mSynchObject.lock(NECommon::WAIT_INFINITE);
         _cleanResources();
     }
     else
     {
         // The thread is not valid and not running, nothing to destroy
-        result = Thread::ThreadInvalid;
+        result = Thread::eCompletionStatus::ThreadInvalid;
     }
     mSynchObject.unlock(); // nothing to do, the thread is already destroyed
 
@@ -150,15 +155,15 @@ bool Thread::_createSystemThread( void )
         mWaitForExit.resetEvent( );
 
         unsigned long threadId  = 0;
-        HANDLE handle = ::CreateThread(NULL, 0, 
+        HANDLE handle = ::CreateThread( nullptr, 0,
                                        (LPTHREAD_START_ROUTINE)&Thread::_windowsThreadRoutine, 
                                        static_cast<void *>(this), 0 /*CREATE_SUSPENDED*/, &threadId);
-        if (handle != static_cast<HANDLE>(NULL))
+        if (handle != nullptr)
         {
             result          = true;
             mThreadHandle   = static_cast<THREADHANDLE>(handle);
             mThreadId       = threadId;
-            mThreadPriority = Thread::PriorityNormal;
+            mThreadPriority = Thread::eThreadPriority::PriorityNormal;
 
             if (_registerThread() == false)
             {
@@ -181,27 +186,27 @@ Thread::eThreadPriority Thread::setPriority( eThreadPriority newPriority )
         int Prio = MIN_INT_32;
         switch (newPriority)
         {
-        case Thread::PriorityLowest:
+        case Thread::eThreadPriority::PriorityLowest:
             Prio = THREAD_PRIORITY_LOWEST;
             break;
 
-        case Thread::PriorityLow:
+        case Thread::eThreadPriority::PriorityLow:
             Prio = THREAD_PRIORITY_BELOW_NORMAL;
             break;
 
-        case Thread::PriorityNormal:
+        case Thread::eThreadPriority::PriorityNormal:
             Prio = THREAD_PRIORITY_NORMAL;
             break;
 
-        case Thread::PriorityHigh:
+        case Thread::eThreadPriority::PriorityHigh:
             Prio = THREAD_PRIORITY_ABOVE_NORMAL;
             break;
 
-        case Thread::PriorityHighest:
+        case Thread::eThreadPriority::PriorityHighest:
             Prio = THREAD_PRIORITY_HIGHEST;
             break;
 
-        case Thread::PriorityUndefined:     // fall through
+        case Thread::eThreadPriority::PriorityUndefined:     // fall through
         default:
             break;  // do nothing, invalid priority value
         }

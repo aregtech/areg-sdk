@@ -1,9 +1,16 @@
-#ifndef AREG_BASE_TELINKEDLIST_HPP
-#define AREG_BASE_TELINKEDLIST_HPP
+#pragma once
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/base/TELinkedList.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, Linked List class template.
  *              The linked list contains list of values that can be
  *              accessed either by Position or by valid index.
@@ -18,29 +25,24 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
-#include "areg/base/ETemplateBase.hpp"
+#include "areg/base/TETemplateBase.hpp"
 #include "areg/base/IEIOStream.hpp"
 
 //////////////////////////////////////////////////////////////////////////
 // TELinkedList<VALUE, VALUE_TYPE, Implement> class template declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief       Linked List class template declaration. Derives private 
- *              class TemplateConstants to access defined constants.
- *              Accessing, Insert and Remove by Position operations
- *              are fast. Searching element and accessing by index
- *              are slower.
+ * \brief   Bi-direction Linked List class template access, where insert and 
+ *          remove by Position operations are fast. Searching and accessing by 
+ *          index are slower.
  *
- *              Blocks in Linked List are linked bi-directional, i.e.
- *              every Block contains information of next and previous
- *              Block. Linked List does not guaranty unique values,
- *              but it gives possibility to search element after
- *              certain Position.  The type VALUE in Linked List 
- *              should have at least default constructor and
- *              valid assigning operator. By default, VALUE_TYPE
- *              and VALUE are equal.
- *              The LinkedList object is not thread safe and data access 
- *              should be  synchronized manually.
+ *          Blocks in Linked List are linked bi-directional, where each Block
+ *          knows the address of next and previous blocks. Linked List does not 
+ *          guaranty unique values.  The type VALUE in Linked List should have 
+ *          at least default constructor and valid assigning operator.
+ *          By default, VALUE_TYPE and VALUE are equal.
+ * 
+ *          The Linked List is not thread safe and data access should be  synchronized manually.
  *
  * \tparam  VALUE       the type of stored items. Either should be 
  *                      primitive or should have default constructor 
@@ -50,8 +52,7 @@
  *                      type, which is converted from type VALUE.
  **/
 template <typename VALUE, typename VALUE_TYPE = VALUE, class Implement = TEListImpl<VALUE_TYPE>> 
-class TELinkedList  : protected Implement
-                    , protected TemplateConstants
+class TELinkedList
 {
 //////////////////////////////////////////////////////////////////////////
 // Internal objects and types declaration
@@ -59,9 +60,8 @@ class TELinkedList  : protected Implement
 protected:
     /**
      * \brief   Hidden / Protected class declaration.
-     *          The Block class contains information
-     *          of element in linked list -- value, pointers to next and previous
-     *          Block objects.
+     *          The Block class contains information of element in linked list -- 
+     *          value, pointers to next and previous Block objects.
      **/
     //////////////////////////////////////////////////////////////////////////
     // TELinkedList<VALUE, VALUE_TYPE, Implement>::Block class declaration
@@ -81,6 +81,14 @@ protected:
          **/
         Block(VALUE_TYPE value);
         /**
+         * \brief   Copies block from source
+         **/
+        Block( const Block & src );
+        /**
+         * \brief   Moves block from source
+         **/
+        Block( Block && src );
+        /**
          * \brief   Destructor.
          **/
         ~Block( void );
@@ -89,17 +97,17 @@ protected:
     //////////////////////////////////////////////////////////////////////////
     public:
         /**
-         * \brief   Pointer to next element Block. The next element of 'tail' is always NULL
+         * \brief   Pointer to next element Block. The next element of 'tail' is always nullptr
          **/
-        Block*    mNext;
+        Block * mNext;
         /**
-         * \brief   Pointer to previous element Block object. The previous element of 'head' is always NULL
+         * \brief   Pointer to previous element Block object. The previous element of 'head' is always nullptr
          **/
-        Block*    mPrev;
+        Block * mPrev;
         /**
          * \brief   Container of value.
          **/
-        VALUE       mValue;
+        VALUE   mValue;
     };
 
 //////////////////////////////////////////////////////////////////////////
@@ -118,6 +126,12 @@ public:
     TELinkedList( const TELinkedList<VALUE, VALUE_TYPE, Implement> & src );
     
     /**
+     * \brief   Move constructor.
+     * \param   src     The source to copy data.
+     **/
+    TELinkedList( TELinkedList<VALUE, VALUE_TYPE, Implement> && src ) noexcept;
+
+    /**
      * \brief   Destructor
      **/
     ~TELinkedList( void );
@@ -134,7 +148,13 @@ public:
      * \brief	Assigning operator, assigns elements of src to the Linked List
      * \param	src	Source Linked List to get elements.
      **/
-    const TELinkedList<VALUE, VALUE_TYPE, Implement> & operator = ( const TELinkedList<VALUE, VALUE_TYPE, Implement> & src );
+    TELinkedList<VALUE, VALUE_TYPE, Implement> & operator = ( const TELinkedList<VALUE, VALUE_TYPE, Implement> & src );
+
+    /**
+     * \brief	Move operator, moves elements of src to the Linked List
+     * \param	src	Source Linked List to get elements.
+     **/
+    TELinkedList<VALUE, VALUE_TYPE, Implement> & operator = ( TELinkedList<VALUE, VALUE_TYPE, Implement> && src ) noexcept;
 
     /**
      * \brief   Checks equality of 2 linked-list objects, and returns true if they are equal.
@@ -235,13 +255,13 @@ public:
 
     /**
      * \brief   Returns position of head element in Linked List container.
-     *          If Linked List is empty, function returns NULL (INVALID_POSITION)
+     *          If Linked List is empty, function returns nullptr (INVALID_POSITION)
      **/
     inline LISTPOS firstPosition( void ) const;
 
     /**
      * \brief   Returns position of tail element in Linked List container
-     *          If Linked List is empty, function returns NULL (INVALID_POSITION)
+     *          If Linked List is empty, function returns nullptr (INVALID_POSITION)
      **/
     inline LISTPOS lastPosition( void ) const;
 
@@ -263,7 +283,7 @@ public:
      *          Otherwise assertion is raised.
      * \param	in_out_NextPosition On input, this should be valid position of element in Linked List container.
      *                              On output, this contains position of next element in Linked List container
-     *                              or NULL (INVALID_POSITION) if passed position on input is position of tail element
+     *                              or nullptr (INVALID_POSITION) if passed position on input is position of tail element
      * \return	Returns value of element at the given position.
      **/
     inline VALUE_TYPE getNext( LISTPOS & in_out_NextPosition ) const;
@@ -272,7 +292,7 @@ public:
      * \brief	Returns position of next element in Linked List
      * \param	atPosition	Actual position to get the next position
      * \return	If element at given position has next element, returns position of next element in Linked List.
-     *          Otherwise it returns NULL
+     *          Otherwise it returns nullptr
      **/
     inline LISTPOS nextPosition( LISTPOS atPosition ) const;
 
@@ -282,7 +302,7 @@ public:
      *          Otherwise assertion is raised.
      * \param	in_out_PrevPosition On input, this should be valid position of element in Linked List container.
      *                              On output, this contains position of previous element in Linked List container
-     *                              or NULL (INVALID_POSITION) if passed position on input is position of head element
+     *                              or nullptr (INVALID_POSITION) if passed position on input is position of head element
      * \return	Returns value of element at the given position.
      **/
     inline VALUE_TYPE getPrev( LISTPOS & in_out_PrevPosition ) const;
@@ -291,7 +311,7 @@ public:
      * \brief	Returns position of previous element in Linked List
      * \param	atPosition	Actual position to get the previous position
      * \return	If element at given position has previous element, returns position of previous element in Linked List.
-     *          Otherwise it returns NULL
+     *          Otherwise it returns nullptr
      **/
     inline LISTPOS prevPosition( LISTPOS atPosition ) const;
 
@@ -337,7 +357,7 @@ public:
      *          Otherwise assertion is raised.
      * \param	in_out_NextPosition	On input, this should be valid position of element in Linked List container.
      *                              On output, this contains position of next element in Linked List container 
-     *                              or NULL (INVALID_POSITION) if passed position on input is position of tail element
+     *                              or nullptr (INVALID_POSITION) if passed position on input is position of tail element
      * \param   out_NextValue       If Linked List has next element, this contains value of next element.
      *                              Otherwise, the value is unchanged. Check function return value before using parameter
      * \return	Returns true if Linked List has next element. Before using out_value function return value
@@ -351,7 +371,7 @@ public:
      *          Otherwise assertion is raised.
      * \param	in_out_PrevPosition	On input, this should be valid position of element in Linked List container.
      *                              On output, this contains position of previous element in Linked List container
-     *                              or NULL (INVALID_POSITION) if passed position on input is position of head element
+     *                              or nullptr (INVALID_POSITION) if passed position on input is position of head element
      * \param   out_PrevValue       If Linked List has previous element, this contains value of previous element.
      *                              Otherwise, the value is unchanged. Check function return value before using parameter
      *                              value of this parameter.
@@ -438,13 +458,13 @@ public:
 
     /**
      * \brief	Searches and removes first match of given element from Linked List.
-     *          If 'searchAfter' is NULL, it will start searching element from head.
+     *          If 'searchAfter' is nullptr, it will start searching element from head.
      *          And returns true if element was found and successfully removed from Linked List.
      * \param	removeElement	Element to search and remove from Linked List
      * \param	searchAfter	    Position at which starts searching, the searching done by moving to next element
      * \return	Returns true if element was found and successfully removed from linked list.
      **/
-    bool removeEntry( VALUE_TYPE removeElement, LISTPOS searchAfter = NULL );
+    bool removeEntry( VALUE_TYPE removeElement, LISTPOS searchAfter = nullptr );
 
     /**
      * \brief	Searches position of element by given value. If searchAfter is valid, the searching will be started
@@ -454,15 +474,15 @@ public:
      *                      Otherwise searching will be started from position head element
      * \return	Returns true if element was found in Linked List
      **/
-    LISTPOS find( VALUE_TYPE searchValue, LISTPOS searchAfter = NULL ) const;
+    LISTPOS find( VALUE_TYPE searchValue, LISTPOS searchAfter = nullptr ) const;
 
     /**
      * \brief	Returns position of element by given index. The index of head element is 0.
      *          The index of last element (tail element) is GetSize() - 1.
-     *          If invalid index is passed, function returns NULL
+     *          If invalid index is passed, function returns nullptr
      * \param	index	The index of element in Linked List to get position
      * \return	Returns position of element if index is valid, i.e. more or equal to 0 and less than GetSize().
-     *          Otherwise returns NULL (INVALID_POSITION)
+     *          Otherwise returns nullptr (INVALID_POSITION)
      **/
     LISTPOS findIndex( int index ) const;
 
@@ -477,13 +497,13 @@ public:
     /**
      * \brief	Search element by given searchValue value starting at position searchAfter
      *          and returns valid index of found element. Otherwise it returns invalid 
-     *          index -1. If searchAfter is NULL, it will start searching from Head position.
+     *          index -1. If searchAfter is nullptr, it will start searching from Head position.
      * \param	searchValue	Value to search
-     * \param	startAfter	Position to start searching. If NULL, it starts searching
+     * \param	startAfter	Position to start searching. If nullptr, it starts searching
      *                      from Head position.
      * \return	Returns valid index of found element.
      **/
-    inline int makeIndex( VALUE_TYPE searchValue, LISTPOS startAfter /*= NULL */) const;
+    inline int makeIndex( VALUE_TYPE searchValue, LISTPOS startAfter /*= nullptr */) const;
 
 protected:
 
@@ -508,16 +528,20 @@ protected:
     int     mCount;
     /**
      * \brief   The Head element (position) of Linked List.
-     *          If Linked List is empty, this is NULL.
+     *          If Linked List is empty, this is nullptr.
      *          If it has only one element, Head is equal to Tail position
      **/
     Block * mHead;
     /**
      * \brief   The Tail element (position) of Linked List.
-     *          If Linked List is empty, this is NULL
+     *          If Linked List is empty, this is nullptr
      *          If it has only one element, Tails is equal to Head position.
      **/
     Block * mTail;
+    /**
+     * \brief   Instance of object that copares values.
+     **/
+    Implement   mImplement;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -529,52 +553,66 @@ protected:
 //////////////////////////////////////////////////////////////////////////
 template <typename VALUE, typename VALUE_TYPE /* = VALUE */, class Implement /* = TEListImpl<VALUE_TYPE> */>
 inline TELinkedList<VALUE, VALUE_TYPE, Implement>::Block::Block( void )
-    : mNext (NULL)
-    , mPrev (NULL)
+    : mNext (nullptr)
+    , mPrev (nullptr)
     , mValue( )
-{   ; }
+{
+}
 
 template <typename VALUE, typename VALUE_TYPE /* = VALUE */, class Implement /* = TEListImpl<VALUE_TYPE> */>
 inline TELinkedList<VALUE, VALUE_TYPE, Implement>::Block::Block(VALUE_TYPE value)
-    : mNext (NULL)
-    , mPrev (NULL)
-    , mValue((VALUE)value)
-{   ; }
+    : mNext (nullptr)
+    , mPrev (nullptr)
+    , mValue(value)
+{
+}
+
+template <typename VALUE, typename VALUE_TYPE /* = VALUE */, class Implement /* = TEListImpl<VALUE_TYPE> */>
+inline TELinkedList<VALUE, VALUE_TYPE, Implement>::Block::Block( const TELinkedList<VALUE, VALUE_TYPE, Implement>::Block & src )
+    : mNext ( src.mNext )
+    , mPrev ( src.mPrev )
+    , mValue( src.mValue)
+{
+}
 
 template <typename VALUE, typename VALUE_TYPE /* = VALUE */, class Implement /* = TEListImpl<VALUE_TYPE> */>
 inline TELinkedList<VALUE, VALUE_TYPE, Implement>::Block::~Block( void )
-{   ; }
-
+{
+}
 
 //////////////////////////////////////////////////////////////////////////
 // TELinkedList<VALUE, VALUE_TYPE, Implement> class template implementation
 //////////////////////////////////////////////////////////////////////////
 template <typename VALUE, typename VALUE_TYPE /* = VALUE */, class Implement /* = TEListImpl<VALUE_TYPE> */> 
 TELinkedList<VALUE, VALUE_TYPE, Implement>::TELinkedList( void )
-    : Implement             ( )
-    , TemplateConstants   ( )
-    
-    , mCount    (0)
-    , mHead     (NULL)
-    , mTail     (NULL)
+    : mCount    (0)
+    , mHead     (nullptr)
+    , mTail     (nullptr)
+    , mImplement( )
 {
-    ; // do nothing
 }
 
 template <typename VALUE, typename VALUE_TYPE /* = VALUE */, class Implement /* = TEListImpl<VALUE_TYPE> */>
 TELinkedList<VALUE, VALUE_TYPE, Implement>::TELinkedList(const TELinkedList<VALUE, VALUE_TYPE, Implement> & src)
-    : Implement             ( )
-    , TemplateConstants   ( )
-
-    , mCount(0)
-    , mHead (NULL)
-    , mTail (NULL)
+    : mCount    (0)
+    , mHead     (nullptr)
+    , mTail     (nullptr)
+    , mImplement( )
 {
     TELinkedList<VALUE, VALUE_TYPE, Implement>::Block * block = src.mHead;
-    for ( ; block != NULL; block = block->mNext)
+    for ( ; block != nullptr; block = block->mNext)
     {
         pushLast(block->mValue);
     }
+}
+
+template <typename VALUE, typename VALUE_TYPE /* = VALUE */, class Implement /* = TEListImpl<VALUE_TYPE> */>
+TELinkedList<VALUE, VALUE_TYPE, Implement>::TELinkedList( TELinkedList<VALUE, VALUE_TYPE, Implement> && src ) noexcept
+    : mCount    ( src.mCount )
+    , mHead     ( src.mHead )
+    , mTail     ( src.mTail )
+    , mImplement( )
+{
 }
 
 template <typename VALUE, typename VALUE_TYPE /* = VALUE */, class Implement /* = TEListImpl<VALUE_TYPE> */>
@@ -584,15 +622,34 @@ TELinkedList<VALUE, VALUE_TYPE, Implement>::~TELinkedList( void )
 }
 
 template <typename VALUE, typename VALUE_TYPE /* = VALUE */, class Implement /* = TEListImpl<VALUE_TYPE> */>
-const TELinkedList<VALUE, VALUE_TYPE, Implement> & TELinkedList<VALUE, VALUE_TYPE, Implement>::operator = (const TELinkedList<VALUE, VALUE_TYPE, Implement> & src)
+TELinkedList<VALUE, VALUE_TYPE, Implement> & TELinkedList<VALUE, VALUE_TYPE, Implement>::operator = (const TELinkedList<VALUE, VALUE_TYPE, Implement> & src)
 {
     if (this != &src)
     {
         removeAll();
         const TELinkedList<VALUE, VALUE_TYPE, Implement>::Block * block = src.mHead;
-        for ( ; block != NULL; block = block->mNext)
+        for ( ; block != nullptr; block = block->mNext)
             pushLast(block->mValue);
     }
+
+    return (*this);
+}
+
+template <typename VALUE, typename VALUE_TYPE /* = VALUE */, class Implement /* = TEListImpl<VALUE_TYPE> */>
+TELinkedList<VALUE, VALUE_TYPE, Implement> & TELinkedList<VALUE, VALUE_TYPE, Implement>::operator = ( TELinkedList<VALUE, VALUE_TYPE, Implement> && src ) noexcept
+{
+    if ( this != &src )
+    {
+        removeAll( );
+        mCount  = src.mCount;
+        mHead   = src.mHead;
+        mTail   = src.mTail;
+
+        src.mCount = 0;
+        src.mHead  = nullptr;
+        src.mTail  = nullptr;
+    }
+
     return (*this);
 }
 
@@ -619,9 +676,10 @@ bool TELinkedList<VALUE, VALUE_TYPE, Implement>::operator == (const TELinkedList
                     break;
                 }
             }
-            result = (thisBlock == otherBlock) && (thisBlock == NULL); // <== we reached end, items are equal?
+            result = (thisBlock == otherBlock) && (thisBlock == nullptr); // <== we reached end, items are equal?
         }
     }
+
     return result;
 }
 
@@ -651,6 +709,7 @@ bool TELinkedList<VALUE, VALUE_TYPE, Implement>::operator != (const TELinkedList
             result = (thisBlock != thisBlock); // <== this is possible only if we did not reach end-of-list
         }
     }
+
     return result;
 }
 
@@ -705,21 +764,21 @@ inline LISTPOS TELinkedList<VALUE, VALUE_TYPE, Implement>::lastPosition( void ) 
 template <typename VALUE, typename VALUE_TYPE /* = VALUE */, class Implement /* = TEListImpl<VALUE_TYPE> */>
 inline VALUE_TYPE TELinkedList<VALUE, VALUE_TYPE, Implement>::getFirstEntry( void ) const
 {
-    ASSERT(mHead != NULL);
+    ASSERT(mHead != nullptr);
     return static_cast<VALUE_TYPE>(mHead->mValue);
 }
 
 template <typename VALUE, typename VALUE_TYPE /* = VALUE */, class Implement /* = TEListImpl<VALUE_TYPE> */>
 inline VALUE_TYPE TELinkedList<VALUE, VALUE_TYPE, Implement>::getLastEntry( void ) const	
 {
-    ASSERT(mTail != NULL);
+    ASSERT(mTail != nullptr);
     return static_cast<VALUE_TYPE>(mTail->mValue);
 }
 
 template <typename VALUE, typename VALUE_TYPE /* = VALUE */, class Implement /* = TEListImpl<VALUE_TYPE> */>
 inline VALUE_TYPE TELinkedList<VALUE, VALUE_TYPE, Implement>::getNext(LISTPOS &in_out_NextPosition) const
 {
-    ASSERT(in_out_NextPosition != TemplateConstants::INVALID_POSITION && mCount != 0);
+    ASSERT(in_out_NextPosition != NECommon::INVALID_POSITION && mCount != 0);
     TELinkedList<VALUE, VALUE_TYPE, Implement>::Block * block = reinterpret_cast<TELinkedList<VALUE, VALUE_TYPE, Implement>::Block *>(in_out_NextPosition);
     in_out_NextPosition = static_cast<LISTPOS>(block->mNext);
     return static_cast<VALUE_TYPE>(block->mValue);
@@ -729,13 +788,13 @@ template <typename VALUE, typename VALUE_TYPE /* = VALUE */, class Implement /* 
 inline LISTPOS TELinkedList<VALUE, VALUE_TYPE, Implement>::nextPosition(LISTPOS atPosition) const
 {
     TELinkedList<VALUE, VALUE_TYPE, Implement>::Block * block = reinterpret_cast<TELinkedList<VALUE, VALUE_TYPE, Implement>::Block *>(atPosition);
-    return static_cast<LISTPOS>(block != NULL ? block->mNext : NULL);
+    return static_cast<LISTPOS>(block != nullptr ? block->mNext : nullptr);
 }
 
 template <typename VALUE, typename VALUE_TYPE /* = VALUE */, class Implement /* = TEListImpl<VALUE_TYPE> */>
 inline VALUE_TYPE TELinkedList<VALUE, VALUE_TYPE, Implement>::getPrev(LISTPOS & in_out_PrevPosition) const
 {
-    ASSERT(in_out_PrevPosition != TemplateConstants::INVALID_POSITION && mCount != 0);
+    ASSERT(in_out_PrevPosition != NECommon::INVALID_POSITION && mCount != 0);
     TELinkedList<VALUE, VALUE_TYPE, Implement>::Block * block = reinterpret_cast<TELinkedList<VALUE, VALUE_TYPE, Implement>::Block *>(in_out_PrevPosition);
     in_out_PrevPosition = static_cast<LISTPOS>(block->mPrev);
     return static_cast<VALUE_TYPE>(block->mValue);
@@ -745,13 +804,13 @@ template <typename VALUE, typename VALUE_TYPE /* = VALUE */, class Implement /* 
 inline LISTPOS TELinkedList<VALUE, VALUE_TYPE, Implement>::prevPosition(LISTPOS atPosition) const
 {
     TELinkedList<VALUE, VALUE_TYPE, Implement>::Block * block = reinterpret_cast<TELinkedList<VALUE, VALUE_TYPE, Implement>::Block *>(atPosition);
-    return static_cast<LISTPOS>(block != NULL ? block->mPrev : NULL);
+    return static_cast<LISTPOS>(block != nullptr ? block->mPrev : nullptr);
 }
 
 template <typename VALUE, typename VALUE_TYPE /* = VALUE */, class Implement /* = TEListImpl<VALUE_TYPE> */>
 inline VALUE_TYPE TELinkedList<VALUE, VALUE_TYPE, Implement>::getAt( LISTPOS atPosition ) const
 {
-    ASSERT(atPosition != TemplateConstants::INVALID_POSITION && mCount != 0);
+    ASSERT(atPosition != NECommon::INVALID_POSITION && mCount != 0);
     TELinkedList<VALUE, VALUE_TYPE, Implement>::Block * block = reinterpret_cast<TELinkedList<VALUE, VALUE_TYPE, Implement>::Block *>(atPosition);
     return static_cast<VALUE_TYPE>(block->mValue);
 }
@@ -759,7 +818,7 @@ inline VALUE_TYPE TELinkedList<VALUE, VALUE_TYPE, Implement>::getAt( LISTPOS atP
 template <typename VALUE, typename VALUE_TYPE /* = VALUE */, class Implement /* = TEListImpl<VALUE_TYPE> */>
 inline VALUE & TELinkedList<VALUE, VALUE_TYPE, Implement>::getAt(LISTPOS atPosition)
 {
-    ASSERT(atPosition != TemplateConstants::INVALID_POSITION && mCount != 0);
+    ASSERT(atPosition != NECommon::INVALID_POSITION && mCount != 0);
     TELinkedList<VALUE, VALUE_TYPE, Implement>::Block * block = reinterpret_cast<TELinkedList<VALUE, VALUE_TYPE, Implement>::Block *>(atPosition);
     return block->mValue;
 }
@@ -772,7 +831,7 @@ VALUE_TYPE TELinkedList<VALUE, VALUE_TYPE, Implement>::getAt(int index) const
     for (int i = 0; i < index; ++ i)
         block = block->mNext;
     
-    ASSERT(block != NULL);
+    ASSERT(block != nullptr);
     return static_cast<VALUE_TYPE>(block->mValue);
 }
 
@@ -784,38 +843,38 @@ VALUE & TELinkedList<VALUE, VALUE_TYPE, Implement>::getAt(int index)
     for (int i = 0; i < index; ++ i)
         block = block->mNext;
 
-    ASSERT(block != NULL);
+    ASSERT(block != nullptr);
     return block->mValue;
 }
 
 template <typename VALUE, typename VALUE_TYPE /* = VALUE */, class Implement /* = TEListImpl<VALUE_TYPE> */>
 bool TELinkedList<VALUE, VALUE_TYPE, Implement>::nextEntry(LISTPOS & in_out_NextPosition, VALUE & out_NextValue) const
 {
-    ASSERT(in_out_NextPosition != TemplateConstants::INVALID_POSITION && mCount != 0);
+    ASSERT(in_out_NextPosition != NECommon::INVALID_POSITION && mCount != 0);
     TELinkedList<VALUE, VALUE_TYPE, Implement>::Block * block = reinterpret_cast<TELinkedList<VALUE, VALUE_TYPE, Implement>::Block *>(in_out_NextPosition);
     in_out_NextPosition = static_cast<LISTPOS>(block->mNext);
-    if (in_out_NextPosition != TemplateConstants::INVALID_POSITION)
+    if (in_out_NextPosition != NECommon::INVALID_POSITION)
         out_NextValue = static_cast<VALUE>(block->mNext->mValue);
     
-    return (in_out_NextPosition != TemplateConstants::INVALID_POSITION);
+    return (in_out_NextPosition != NECommon::INVALID_POSITION);
 }
 
 template <typename VALUE, typename VALUE_TYPE /* = VALUE */, class Implement /* = TEListImpl<VALUE_TYPE> */>
 bool TELinkedList<VALUE, VALUE_TYPE, Implement>::prevEntry(LISTPOS &in_out_PrevPosition, VALUE & out_PrevValue) const
 {
-    ASSERT(in_out_PrevPosition != TemplateConstants::INVALID_POSITION && mCount != 0);
+    ASSERT(in_out_PrevPosition != NECommon::INVALID_POSITION && mCount != 0);
     TELinkedList<VALUE, VALUE_TYPE, Implement>::Block * block = reinterpret_cast<TELinkedList<VALUE, VALUE_TYPE, Implement>::Block *>(in_out_PrevPosition);
     in_out_PrevPosition = static_cast<LISTPOS>(block->mPrev);
-    if (in_out_PrevPosition != TemplateConstants::INVALID_POSITION)
+    if (in_out_PrevPosition != NECommon::INVALID_POSITION)
         out_PrevValue = static_cast<VALUE>(block->mValue);
 
-    return (in_out_PrevPosition != TemplateConstants::INVALID_POSITION);
+    return (in_out_PrevPosition != NECommon::INVALID_POSITION);
 }
 
 template <typename VALUE, typename VALUE_TYPE /* = VALUE */, class Implement /* = TEListImpl<VALUE_TYPE> */>
 VALUE TELinkedList<VALUE, VALUE_TYPE, Implement>::removeFirst( void )
 {
-    ASSERT(mHead != NULL && mCount != 0);
+    ASSERT(mHead != nullptr && mCount != 0);
 
     VALUE result                                    = mHead->mValue;
     TELinkedList<VALUE, VALUE_TYPE, Implement>::Block * block = mHead->mNext; 
@@ -825,20 +884,20 @@ VALUE TELinkedList<VALUE, VALUE_TYPE, Implement>::removeFirst( void )
 
     if (mCount == 0)	
     {
-        ASSERT(block == NULL);
-        mHead = mTail = NULL;
+        ASSERT(block == nullptr);
+        mHead = mTail = nullptr;
     }
     else if (mCount == 1) 
     {
         ASSERT(block == mTail);
         mHead        = mTail;
-        mHead->mPrev = NULL;
+        mHead->mPrev = nullptr;
     }
     else
     {
-        ASSERT(block != NULL);
+        ASSERT(block != nullptr);
         mHead        = block;
-        mHead->mPrev = NULL;
+        mHead->mPrev = nullptr;
     }
     return result;
 }
@@ -846,7 +905,7 @@ VALUE TELinkedList<VALUE, VALUE_TYPE, Implement>::removeFirst( void )
 template <typename VALUE, typename VALUE_TYPE /* = VALUE */, class Implement /* = TEListImpl<VALUE_TYPE> */>
 VALUE TELinkedList<VALUE, VALUE_TYPE, Implement>::removeLast( void )
 {
-    ASSERT(mTail != NULL && mCount != 0);
+    ASSERT(mTail != nullptr && mCount != 0);
 
     VALUE result                                    = mTail->mValue;
     TELinkedList<VALUE, VALUE_TYPE, Implement>::Block * block = mTail->mPrev;
@@ -856,20 +915,20 @@ VALUE TELinkedList<VALUE, VALUE_TYPE, Implement>::removeLast( void )
 
     if (mCount == 0)
     {
-        ASSERT(block == NULL);
-        mHead = mTail = NULL;
+        ASSERT(block == nullptr);
+        mHead = mTail = nullptr;
     }
     else if (mCount == 1)
     {
         ASSERT(block == mHead);
         mTail        = mHead;
-        mTail->mNext = NULL;
+        mTail->mNext = nullptr;
     }
     else
     {
-        ASSERT(block != NULL);
+        ASSERT(block != nullptr);
         mTail        = block;
-        mTail->mNext = NULL;
+        mTail->mNext = nullptr;
     }
     return result;
 }
@@ -879,11 +938,11 @@ template <typename VALUE, typename VALUE_TYPE /* = VALUE */, class Implement /* 
 LISTPOS TELinkedList<VALUE, VALUE_TYPE, Implement>::pushFirst(VALUE_TYPE newElement)
 {
     TELinkedList<VALUE, VALUE_TYPE, Implement>::Block * newBlock = DEBUG_NEW TELinkedList<VALUE, VALUE_TYPE, Implement>::Block(newElement);
-    if (newBlock != NULL)
+    if (newBlock != nullptr)
     {
         if (mCount == 0)
         {
-            ASSERT(mHead == NULL && mTail == NULL);
+            ASSERT(mHead == nullptr && mTail == nullptr);
             mHead = mTail = newBlock;
         }
         else if (mCount == 1)
@@ -909,11 +968,11 @@ template <typename VALUE, typename VALUE_TYPE /* = VALUE */, class Implement /* 
 LISTPOS TELinkedList<VALUE, VALUE_TYPE, Implement>::pushLast(VALUE_TYPE newElement)
 {
     TELinkedList<VALUE, VALUE_TYPE, Implement>::Block * newBlock  = DEBUG_NEW TELinkedList<VALUE, VALUE_TYPE, Implement>::Block(newElement);
-    if (newBlock != NULL)
+    if (newBlock != nullptr)
     {
         if (mCount == 0)
         {
-            ASSERT(mHead == NULL && mTail == NULL);
+            ASSERT(mHead == nullptr && mTail == nullptr);
             mHead = mTail = newBlock;
         }
         else if (mCount == 1)
@@ -939,10 +998,10 @@ LISTPOS TELinkedList<VALUE, VALUE_TYPE, Implement>::pushLast(VALUE_TYPE newEleme
 template <typename VALUE, typename VALUE_TYPE /* = VALUE */, class Implement /* = TEListImpl<VALUE_TYPE> */>
 LISTPOS TELinkedList<VALUE, VALUE_TYPE, Implement>::insertBefore(LISTPOS beforePosition, VALUE_TYPE newElement)
 {
-    ASSERT(beforePosition != TemplateConstants::INVALID_POSITION && mCount != 0);
+    ASSERT(beforePosition != NECommon::INVALID_POSITION && mCount != 0);
 
     TELinkedList<VALUE, VALUE_TYPE, Implement>::Block * newBlock = DEBUG_NEW TELinkedList<VALUE, VALUE_TYPE, Implement>::Block(newElement);
-    if (newBlock != NULL)
+    if (newBlock != nullptr)
     {
         TELinkedList<VALUE, VALUE_TYPE, Implement>::Block * block = reinterpret_cast<TELinkedList<VALUE, VALUE_TYPE, Implement>::Block *>(beforePosition);
         if (mCount == 1)
@@ -960,7 +1019,7 @@ LISTPOS TELinkedList<VALUE, VALUE_TYPE, Implement>::insertBefore(LISTPOS beforeP
         }
         else
         {
-            ASSERT(block->mPrev != NULL);
+            ASSERT(block->mPrev != nullptr);
             newBlock->mPrev         = block->mPrev;
             newBlock->mPrev->mNext  = newBlock;
             block->mPrev            = newBlock;
@@ -974,10 +1033,10 @@ LISTPOS TELinkedList<VALUE, VALUE_TYPE, Implement>::insertBefore(LISTPOS beforeP
 template <typename VALUE, typename VALUE_TYPE /* = VALUE */, class Implement /* = TEListImpl<VALUE_TYPE> */>
 LISTPOS TELinkedList<VALUE, VALUE_TYPE, Implement>::insertAfter(LISTPOS afterPosition, VALUE_TYPE newElement)
 {
-    ASSERT(afterPosition != TemplateConstants::INVALID_POSITION && mCount != 0);
+    ASSERT(afterPosition != NECommon::INVALID_POSITION && mCount != 0);
 
     TELinkedList<VALUE, VALUE_TYPE, Implement>::Block * newBlock  = DEBUG_NEW TELinkedList<VALUE, VALUE_TYPE, Implement>::Block(newElement);
-    if (newBlock != NULL)
+    if (newBlock != nullptr)
     {
         TELinkedList<VALUE, VALUE_TYPE, Implement>::Block * block = reinterpret_cast<TELinkedList<VALUE, VALUE_TYPE, Implement>::Block *>(afterPosition);
         if (mCount == 1)
@@ -995,7 +1054,7 @@ LISTPOS TELinkedList<VALUE, VALUE_TYPE, Implement>::insertAfter(LISTPOS afterPos
         }
         else
         {
-            ASSERT(block->mNext != NULL);
+            ASSERT(block->mNext != nullptr);
             newBlock->mNext         = block->mNext;
             newBlock->mNext->mPrev  = newBlock;
             block->mNext            = newBlock;
@@ -1010,10 +1069,10 @@ LISTPOS TELinkedList<VALUE, VALUE_TYPE, Implement>::insertAfter(LISTPOS afterPos
 template <typename VALUE, typename VALUE_TYPE /* = VALUE */, class Implement /* = TEListImpl<VALUE_TYPE> */>
 inline VALUE TELinkedList<VALUE, VALUE_TYPE, Implement>::setAt(LISTPOS atPosition, VALUE_TYPE newValue)
 {
-    ASSERT(atPosition != TemplateConstants::INVALID_POSITION && mCount != 0);
+    ASSERT(atPosition != NECommon::INVALID_POSITION && mCount != 0);
     TELinkedList<VALUE, VALUE_TYPE, Implement>::Block * block   = reinterpret_cast<TELinkedList<VALUE, VALUE_TYPE, Implement>::Block *>(atPosition);
     VALUE oldValue  = block->mValue;
-    block->mValue   = (VALUE)(newValue);
+    block->mValue   = newValue;
 
     return oldValue;
 }
@@ -1021,21 +1080,21 @@ inline VALUE TELinkedList<VALUE, VALUE_TYPE, Implement>::setAt(LISTPOS atPositio
 template <typename VALUE, typename VALUE_TYPE /* = VALUE */, class Implement /* = TEListImpl<VALUE_TYPE> */>
 void TELinkedList<VALUE, VALUE_TYPE, Implement>::removeAll( void )
 {
-    while (mHead != NULL)
+    while (mHead != nullptr)
     {
         TELinkedList<VALUE, VALUE_TYPE, Implement>::Block * block = mHead->mNext;
         delete mHead;
         mHead = block;
     }
 
-    mHead = mTail = static_cast<TELinkedList<VALUE, VALUE_TYPE, Implement>::Block *>(NULL);
+    mHead = mTail = nullptr;
     mCount = 0;
 }
 
 template <typename VALUE, typename VALUE_TYPE /* = VALUE */, class Implement /* = TEListImpl<VALUE_TYPE> */>
 VALUE TELinkedList<VALUE, VALUE_TYPE, Implement>::removeAt(LISTPOS atPosition)
 {
-    ASSERT(atPosition != TemplateConstants::INVALID_POSITION && mCount != 0);
+    ASSERT(atPosition != NECommon::INVALID_POSITION && mCount != 0);
     VALUE oldValue;
     removeAt(atPosition, oldValue);
     return oldValue;
@@ -1044,37 +1103,37 @@ VALUE TELinkedList<VALUE, VALUE_TYPE, Implement>::removeAt(LISTPOS atPosition)
 template <typename VALUE, typename VALUE_TYPE /* = VALUE */, class Implement /* = TEListImpl<VALUE_TYPE> */>
 void TELinkedList<VALUE, VALUE_TYPE, Implement>::removeAt(LISTPOS atPosition, VALUE &out_value)
 {
-    ASSERT(atPosition != TemplateConstants::INVALID_POSITION && mCount != 0);
+    ASSERT(atPosition != NECommon::INVALID_POSITION && mCount != 0);
 
     TELinkedList<VALUE, VALUE_TYPE, Implement>::Block * block = reinterpret_cast<TELinkedList<VALUE, VALUE_TYPE, Implement>::Block *>(atPosition);
     if (mCount == 1)
     {
         ASSERT((mHead == block) && (mTail == block));
-        mTail = mHead = NULL;
+        mTail = mHead = nullptr;
     }
     else if (mCount == 2)
     {
         ASSERT((mHead == block) || (mTail == block));
-        mHead = mTail = (block->mPrev != NULL ? block->mPrev : block->mNext);
+        mHead = mTail = (block->mPrev != nullptr ? block->mPrev : block->mNext);
 
-        ASSERT(mHead != NULL);
-        mHead->mPrev = mHead->mNext = mTail->mPrev = mTail->mNext = NULL;
+        ASSERT(mHead != nullptr);
+        mHead->mPrev = mHead->mNext = mTail->mPrev = mTail->mNext = nullptr;
     }
     else
     {
         if (block == mTail)
         {
-            block->mPrev->mNext = NULL;
+            block->mPrev->mNext = nullptr;
             mTail               = block->mPrev;
         }
         else if (mHead == block)
         {
-            block->mNext->mPrev = NULL;
+            block->mNext->mPrev = nullptr;
             mHead               = block->mNext;
         }
         else
         {
-            ASSERT(block->mNext != NULL && block->mPrev != NULL);
+            ASSERT(block->mNext != nullptr && block->mPrev != nullptr);
             block->mPrev->mNext = block->mNext;
             block->mNext->mPrev = block->mPrev;
         }
@@ -1086,20 +1145,20 @@ void TELinkedList<VALUE, VALUE_TYPE, Implement>::removeAt(LISTPOS atPosition, VA
 }
 
 template <typename VALUE, typename VALUE_TYPE /* = VALUE */, class Implement /* = TEListImpl<VALUE_TYPE> */>
-bool TELinkedList<VALUE, VALUE_TYPE, Implement>::removeEntry(VALUE_TYPE removeElement, LISTPOS searchAfter /*= NULL*/)
+bool TELinkedList<VALUE, VALUE_TYPE, Implement>::removeEntry(VALUE_TYPE removeElement, LISTPOS searchAfter /*= nullptr*/)
 {
     bool result = false;
     TELinkedList<VALUE, VALUE_TYPE, Implement>::Block * block = mHead;
-    if (searchAfter != TemplateConstants::INVALID_POSITION && mCount != 0)
+    if (searchAfter != NECommon::INVALID_POSITION && mCount != 0)
         block = static_cast<TELinkedList<VALUE, VALUE_TYPE, Implement>::Block *>(searchAfter)->mNext;
 
-    for ( ; block != NULL; block = block->mNext)
+    for ( ; block != nullptr; block = block->mNext)
     {
         if ( isEqualValues(removeElement, block->mValue) )
             break;
     }
 
-    if (block != NULL)
+    if (block != nullptr)
     {
         removeAt(static_cast<LISTPOS>(block));
         result = true;
@@ -1109,15 +1168,15 @@ bool TELinkedList<VALUE, VALUE_TYPE, Implement>::removeEntry(VALUE_TYPE removeEl
 }
 
 template <typename VALUE, typename VALUE_TYPE /* = VALUE */, class Implement /* = TEListImpl<VALUE_TYPE> */>
-LISTPOS TELinkedList<VALUE, VALUE_TYPE, Implement>::find(VALUE_TYPE searchValue, LISTPOS searchAfter /*= NULL*/) const
+LISTPOS TELinkedList<VALUE, VALUE_TYPE, Implement>::find(VALUE_TYPE searchValue, LISTPOS searchAfter /*= nullptr*/) const
 {	
     TELinkedList<VALUE, VALUE_TYPE, Implement>::Block * block   = mHead;
-    if ((searchAfter != TemplateConstants::INVALID_POSITION) && (mCount != 0))
+    if ((searchAfter != NECommon::INVALID_POSITION) && (mCount != 0))
     {
         block = static_cast<TELinkedList<VALUE, VALUE_TYPE, Implement>::Block *>(searchAfter)->mNext;
     }
 
-    for ( ; block != NULL; block = block->mNext)
+    for ( ; block != nullptr; block = block->mNext)
     {
         if ( isEqualValues(block->mValue, searchValue) )
             break;
@@ -1129,8 +1188,8 @@ LISTPOS TELinkedList<VALUE, VALUE_TYPE, Implement>::find(VALUE_TYPE searchValue,
 template <typename VALUE, typename VALUE_TYPE /* = VALUE */, class Implement /* = TEListImpl<VALUE_TYPE> */>
 LISTPOS TELinkedList<VALUE, VALUE_TYPE, Implement>::findIndex(int index) const
 {
-    TELinkedList<VALUE, VALUE_TYPE, Implement>::Block *block   = static_cast<TELinkedList<VALUE, VALUE_TYPE, Implement>::Block *>(index >= 0 && index < mCount? mHead : NULL);
-    if (block != NULL)
+    TELinkedList<VALUE, VALUE_TYPE, Implement>::Block *block   = static_cast<TELinkedList<VALUE, VALUE_TYPE, Implement>::Block *>(index >= 0 && index < mCount? mHead : nullptr);
+    if (block != nullptr)
     {
         for (int i = 0; i < index; ++ i)
             block = block->mNext;
@@ -1143,13 +1202,13 @@ template <typename VALUE, typename VALUE_TYPE /* = VALUE */, class Implement /* 
 int TELinkedList<VALUE, VALUE_TYPE, Implement>::makeIndex(LISTPOS atPosition) const
 {
     int result = -1;
-    if (mCount != 0 && atPosition != TemplateConstants::INVALID_POSITION)
+    if (mCount != 0 && atPosition != NECommon::INVALID_POSITION)
     {
         TELinkedList<VALUE, VALUE_TYPE, Implement>::Block * search = reinterpret_cast<TELinkedList<VALUE, VALUE_TYPE, Implement>::Block *>(atPosition);
         TELinkedList<VALUE, VALUE_TYPE, Implement>::Block * block  = mHead;
         for (result = 0; result < mCount; result ++)
         {
-            ASSERT(block != NULL);
+            ASSERT(block != nullptr);
             if (block == search)
                 break;
             block = block->mNext;
@@ -1160,7 +1219,7 @@ int TELinkedList<VALUE, VALUE_TYPE, Implement>::makeIndex(LISTPOS atPosition) co
 }
 
 template <typename VALUE, typename VALUE_TYPE /* = VALUE */, class Implement /* = TEListImpl<VALUE_TYPE> */>
-inline int TELinkedList<VALUE, VALUE_TYPE, Implement>::makeIndex(VALUE_TYPE searchValue, LISTPOS startAfter /*= NULL*/) const
+inline int TELinkedList<VALUE, VALUE_TYPE, Implement>::makeIndex(VALUE_TYPE searchValue, LISTPOS startAfter /*= nullptr*/) const
 {
     return makeIndex( static_cast<LISTPOS>(find(searchValue, startAfter)) );
 }
@@ -1168,7 +1227,7 @@ inline int TELinkedList<VALUE, VALUE_TYPE, Implement>::makeIndex(VALUE_TYPE sear
 template <typename VALUE, typename VALUE_TYPE /* = VALUE */, class Implement /* = TEListImpl<VALUE_TYPE> */>
 inline bool TELinkedList<VALUE, VALUE_TYPE, Implement>::isEqualValues(VALUE_TYPE value1, VALUE_TYPE value2) const
 {
-    return Implement::implEqualValues(value1, value2);
+    return mImplement.implEqualValues(value1, value2);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1198,10 +1257,8 @@ IEOutStream & operator << ( IEOutStream & stream, const TELinkedList<V, VT, Impl
     int size = output.getSize();
     stream << size;
     const typename TELinkedList<V, VT, Impl>::Block * block = output.mHead;
-    for ( ; block != NULL; block = block->mNext)
+    for ( ; block != nullptr; block = block->mNext)
         stream << block->mValue;
 
     return stream;
 }
-
-#endif  // AREG_BASE_TELINKEDLIST_HPP

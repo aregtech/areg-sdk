@@ -1,9 +1,16 @@
-#ifndef AREG_BASE_VERSION_HPP
-#define AREG_BASE_VERSION_HPP
+#pragma once
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/base/Version.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, Version class.
  *              This class contains version information such as
  *              Major number, Minor number and Patch number.
@@ -25,21 +32,15 @@ class IEOutStream;
 // Version class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   The version class contains following information as
- *          numeric values: Major number, Minor number and Patch number.
- *          Class is streamable, can be serialized to streaming object 
- *          and can be passed between different threads / processes.
- *          Basic operations are supported by version class.
- * 
+ * \brief   The version class contains major, minor, and the patch numbers.
+ *          The class is streamable, can be serialized to streaming object 
+ *          and can be passed between different threads and processes.
  **/
 class AREG_API Version
 {
 //////////////////////////////////////////////////////////////////////////
-// Internals and constants
+// types and constants
 //////////////////////////////////////////////////////////////////////////
-private:
-    static const char * const   _VERSION_SEPARATOR  /*= "."*/;  //!< The version separator as a string.
-
 public:
     /**
      * \brief   Version::INVALID_VERSION
@@ -71,6 +72,11 @@ public:
      **/
     Version(const Version & src);
     /**
+     * \brief   Move constructor.
+     * \param   src     The source to move data.
+     **/
+    Version( Version && src ) noexcept;
+    /**
      * \brief   Initialization constructor.
      *          Initializes data from streaming object.
      **/
@@ -78,77 +84,33 @@ public:
     /**
      * \brief   Destructor
      **/
-    ~Version( void );
-
-//////////////////////////////////////////////////////////////////////////
-// Attributes
-//////////////////////////////////////////////////////////////////////////
-public:
-    /**
-     * \brief   Return Major number of version.
-     **/
-    inline unsigned int getMajor( void ) const;
-    /**
-     * \brief   Returns Minor number of version
-     **/
-    inline unsigned int getMinor( void ) const;
-    /**
-     * \brief   Returns Patch number of version
-     **/
-    inline unsigned int getPatch( void ) const;
-
-    /**
-     * \brief   Returns true, if version object is not invalid.
-     *          The invalid version is equal to INVALID_VERSION.
-     **/
-    inline bool isValid( void ) const;
-
-    /**
-     * \brief   Returns true, if passed version object is 
-     *          compatible with existing version.
-     *          2 versions are compatible if Major numbers
-     *          are equal and the existing minor number is
-     *          more or equal to minor number of passed version.
-     * \param   version The version number to check compatibility.
-     **/
-    inline bool isCompatible(const Version & version) const;
-
-//////////////////////////////////////////////////////////////////////////
-// Operations
-//////////////////////////////////////////////////////////////////////////
-public:
-    /**
-     * \brief   Converts version object to string in format
-     *          "major.minor.patch", and returns string.
-     **/
-    String convToString( void ) const;
-
-    /**
-     * \brief   Retrieves version information from given string
-     *          The version information should be in following
-     *          format: "major.minor.patch"
-     **/
-    const Version & convFromString( const char * version );
+    ~Version( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
 //////////////////////////////////////////////////////////////////////////
+public:
 
     /**
-     * \brief   Assigning operator. Copies version information
-     *          from given source.
+     * \brief   Assigning operator, which copies version information from given source.
      **/
-    const Version & operator = ( const Version & src );
+    Version & operator = ( const Version & src );
+
+    /**
+     * \brief   Move operator, which moves version information from given source.
+     **/
+    Version & operator = ( Version && src ) noexcept;
+
+    /**
+     * \brief   Assigning operator. Sets version from string
+     * \brief   Move operator, which moves version information from given source.
+     **/
+    Version & operator = ( const char * version );
 
     /**
      * \brief   Assigning operator. Sets version from string
      **/
-    const Version & operator = ( const char * version );
-
-    /**
-     * \brief   Assigning operator. Sets version from string
-     **/
-    const Version & operator = ( const String & version );
+    Version & operator = ( const String & version );
 
     /**
      * \brief   Determines equality of two versions.
@@ -211,6 +173,56 @@ public:
     friend AREG_API IEOutStream & operator << (IEOutStream & stream, const Version & output);
 
 //////////////////////////////////////////////////////////////////////////
+// Attributes
+//////////////////////////////////////////////////////////////////////////
+public:
+    /**
+     * \brief   Return Major number of version.
+     **/
+    inline unsigned int getMajor( void ) const;
+    /**
+     * \brief   Returns Minor number of version
+     **/
+    inline unsigned int getMinor( void ) const;
+    /**
+     * \brief   Returns Patch number of version
+     **/
+    inline unsigned int getPatch( void ) const;
+
+    /**
+     * \brief   Returns true, if version object is not invalid.
+     *          The invalid version is equal to INVALID_VERSION.
+     **/
+    inline bool isValid( void ) const;
+
+    /**
+     * \brief   Returns true, if passed version object is 
+     *          compatible with existing version.
+     *          2 versions are compatible if Major numbers
+     *          are equal and the existing minor number is
+     *          more or equal to minor number of passed version.
+     * \param   version The version number to check compatibility.
+     **/
+    inline bool isCompatible(const Version & version) const;
+
+//////////////////////////////////////////////////////////////////////////
+// Operations
+//////////////////////////////////////////////////////////////////////////
+public:
+    /**
+     * \brief   Converts version object to string in format
+     *          "major.minor.patch", and returns string.
+     **/
+    String convToString( void ) const;
+
+    /**
+     * \brief   Retrieves version information from given string
+     *          The version information should be in following
+     *          format: "major.minor.patch"
+     **/
+    Version & convFromString( const char * version );
+
+//////////////////////////////////////////////////////////////////////////
 // Member variables.
 //////////////////////////////////////////////////////////////////////////
 private:
@@ -257,7 +269,7 @@ inline bool Version::isCompatible( const Version & version ) const
     return ((mMajor == version.mMajor)  && (mMinor >= version.mMinor));
 }
 
-inline const Version & Version::operator = ( const String & version )
+inline Version & Version::operator = ( const String & version )
 {
     return (*this) = version.getString();
 }
@@ -271,5 +283,3 @@ inline bool Version::operator != ( const Version &version ) const
 {
     return  (this != &version ? (mMajor != version.mMajor) || (mMinor != version.mMinor) || (mPatch != version.mPatch) : false);
 }
-
-#endif  // AREG_BASE_VERSION_HPP

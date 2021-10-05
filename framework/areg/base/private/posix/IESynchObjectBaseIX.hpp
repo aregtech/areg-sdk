@@ -1,9 +1,16 @@
-#ifndef AREG_BASE_PRIVATE_POSIX_IESYNCHOBJECTBASEIX_HPP
-#define AREG_BASE_PRIVATE_POSIX_IESYNCHOBJECTBASEIX_HPP
+#pragma once
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/base/private/posix/IESynchObjectBaseIX.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, POSIX based Synchronization object base.
  *
  ************************************************************************/
@@ -13,7 +20,7 @@
   ************************************************************************/
 #include "areg/base/GEGlobal.h"
 
-#ifdef _POSIX
+#if  defined(_POSIX) || defined(POSIX)
 
 #include "areg/base/private/posix/NESynchTypesIX.hpp"
 #include "areg/base/IESynchObject.hpp"
@@ -41,7 +48,7 @@ class IESynchObjectBaseIX
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   The length of synchronization object name, including null terminating symbol.
+     * \brief   The length of synchronization object name, including null-termination symbol.
      **/
     static const int    _MAX_NAME_LENGTH    = 32;
 
@@ -54,7 +61,7 @@ protected:
      * \param   synchType   The type of synchronization object.
      * \param   asciiName   The name of synchronization object.
      **/
-    IESynchObjectBaseIX( NESynchTypesIX::eSynchObject synchType, const char* asciiName = NULL );
+    IESynchObjectBaseIX( NESynchTypesIX::eSynchObject synchType, const char* asciiName = nullptr );
 
 //////////////////////////////////////////////////////////////////////////
 // Public destructor.
@@ -63,7 +70,7 @@ public:
     /**
      * \brief   Destructor.
      **/
-    virtual ~IESynchObjectBaseIX( void );
+    virtual ~IESynchObjectBaseIX( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations
@@ -114,12 +121,11 @@ protected:
     char                                mSynchName[_MAX_NAME_LENGTH];
 
 //////////////////////////////////////////////////////////////////////////
-// Hidden / forbidden calls.
+// Forbidden calls.
 //////////////////////////////////////////////////////////////////////////
 private:
-    IESynchObjectBaseIX( void );
-    IESynchObjectBaseIX( const IESynchObjectBaseIX & /*src*/ );
-    const IESynchObjectBaseIX & operator = ( const IESynchObjectBaseIX & /*src*/ );
+    IESynchObjectBaseIX( void ) = delete;
+    DECLARE_NOCOPY_NOMOVE( IESynchObjectBaseIX );
 };
 
 
@@ -136,5 +142,4 @@ inline const char * IESynchObjectBaseIX::getName( void ) const
     return mSynchName;
 }
 
-#endif // _POSIX
-#endif // AREG_BASE_PRIVATE_POSIX_IESYNCHOBJECTBASEIX_HPP
+#endif //  defined(_POSIX) || defined(POSIX)

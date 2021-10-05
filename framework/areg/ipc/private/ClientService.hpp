@@ -1,10 +1,16 @@
-#ifndef AREG_IPC_PRIVATE_CLIENTSERVICE_HPP
-#define AREG_IPC_PRIVATE_CLIENTSERVICE_HPP
-
+#pragma once
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/ipc/private/ClientService.hpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, Service Connection client declaration
  ************************************************************************/
 
@@ -25,7 +31,7 @@
 #include "areg/ipc/NERemoteService.hpp"
 #include "areg/component/Channel.hpp"
 #include "areg/component/Timer.hpp"
-#include "areg/base/ESynchObjects.hpp"
+#include "areg/base/SynchObjects.hpp"
 #include "areg/base/String.hpp"
 
 /************************************************************************
@@ -56,13 +62,13 @@ private:
     /**
      * \brief   Supported connection type. It is TCP/IP connection
      **/
-    static const NERemoteService::eServiceConnection   CONNECT_TYPE /*= NERemoteService::ConnectionTcpip*/;
+    static constexpr    NERemoteService::eServiceConnection   CONNECT_TYPE  = NERemoteService::eServiceConnection::ConnectionTcpip;
 
     /**
      * \brief   ClientService::eConnectionState
      *          Defines connection state values
      **/
-    typedef enum E_ConnectionState
+    typedef enum class E_ConnectionState
     {
           ConnectionStopped     //!< The connection is stopped, i.e. not connected.
         , ConnectionStarting    //!< The connection is initiated, but the status is not known.
@@ -111,13 +117,13 @@ public:
      * \brief   Call to configure remote service. The passed file name
      *          can be either absolute or relative path.
      *          The function will read configuration file and initialize settings.
-     *          If file path is NULL or empty, Remote Service will have default 
+     *          If file path is nullptr or empty, Remote Service will have default 
      *          configuration settings.
      * \param   configFile  Relative or absolute path of remote service configuration file.
-     *                      If NULL or empty, it will use default settings.
+     *                      If nullptr or empty, it will use default settings.
      * \return  Returns true if system could configure. Otherwise, it returns false.
      **/
-    virtual bool configureRemoteServicing( const char * configFile );
+    virtual bool configureRemoteServicing( const char * configFile ) override;
 
     /**
      * \brief   Call manually to set router service host name and port number.
@@ -126,33 +132,33 @@ public:
      * \param   hostName    IP-address or host name of routing service to connect.
      * \param   portNr      Port number of routing service to connect.
      **/
-    virtual void setRemoteServiceAddress( const char * hostName, unsigned short portNr );
+    virtual void setRemoteServiceAddress( const char * hostName, unsigned short portNr ) override;
 
     /**
      * \brief   Call to start thread for remote servicing. The host name and port number should be already set.
      * \return  Returns true if start service is triggered.
      **/
-    virtual bool startRemoteServicing( void );
+    virtual bool startRemoteServicing( void ) override;
 
     /**
      * \brief   Call to stop service. No more remote communication should be possible.
      **/
-    virtual void stopRemoteServicing( void );
+    virtual void stopRemoteServicing( void ) override;
 
     /**
      * \brief   Returns true, if remote service is started and ready to operate.
      **/
-    virtual bool isRemoteServicingStarted( void ) const;
+    virtual bool isRemoteServicingStarted( void ) const override;
 
     /**
      * \brief   Returns true if service is configured and ready to start
      **/
-    virtual bool isRemoteServicingConfigured( void ) const;
+    virtual bool isRemoteServicingConfigured( void ) const override;
 
     /**
      * \brief   Returns true if remote service is enabled.
      **/
-    virtual bool isRemoteServicingEnabled( void ) const;
+    virtual bool isRemoteServicingEnabled( void ) const override;
 
     /**
      * \brief   Enables or disables remote service.
@@ -160,7 +166,7 @@ public:
      *          remote service in case if it is already started.
      * \param   enable  If true, the service is enabled. Otherwise, it is disabled.
      **/
-    virtual void enableRemoteServicing( bool enable );
+    virtual void enableRemoteServicing( bool enable ) override;
 
     /**
      * \brief   Call to register remote service server stub object.
@@ -169,13 +175,13 @@ public:
      *                          The address contains service name and role name of service.
      * \return  Returns true if succeeded to start registration.
      **/
-    virtual bool registerService( const StubAddress & stubService );
+    virtual bool registerService( const StubAddress & stubService ) override;
 
     /**
      * \brief   Call to unregister previously registered server stub interface.
      * \param   stubService     The address of server stub service to unregister in system.
      **/
-    virtual void unregisterService( const StubAddress & stubService );
+    virtual void unregisterService( const StubAddress & stubService ) override;
 
     /**
      * \brief   Call to register client proxy of service. If system already has registered
@@ -185,13 +191,13 @@ public:
      * \param   proxyService    The address of client proxy to register in system.
      * \return  Returns true if registration process started with success. Otherwise, it returns false.
      **/
-    virtual bool registerServiceClient( const ProxyAddress & proxyService );
+    virtual bool registerServiceClient( const ProxyAddress & proxyService ) override;
 
     /**
      * \brief   Call to unregister previously registered client prosy service.
      * \param   proxyService    The address of client proxy to unregister from system.
      **/
-    virtual void unregisterServiceClient( const ProxyAddress & proxyService );
+    virtual void unregisterServiceClient( const ProxyAddress & proxyService ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -208,7 +214,7 @@ protected:
      *          Overwrite method to receive messages.
      * \param   timer   The timer object that is expired.
      **/
-    virtual void processTimer( Timer & timer );
+    virtual void processTimer( Timer & timer ) override;
 
 /************************************************************************/
 // TEEventConsumer<DATA_CLASS, DATA_CLASS_TYPE> interface overrides.
@@ -220,7 +226,7 @@ protected:
      *                  default constructor and assigning operator.
      *                  This object is not used for IPC.
      **/
-    virtual void processEvent( const ClientServiceEventData & data );
+    virtual void processEvent( const ClientServiceEventData & data ) override;
 
 /************************************************************************/
 // IERemoteServiceHandler interface overrides
@@ -230,20 +236,20 @@ protected:
      * \brief   Triggered, when failed to send message.
      * \param   msgFailed   The message, which failed to send.
      **/
-    virtual void failedSendMessage( const RemoteMessage & msgFailed );
+    virtual void failedSendMessage( const RemoteMessage & msgFailed ) override;
 
     /**
      * \brief   Triggered, when failed to receive message.
      * \param   whichSource Indicated the source, which failed.
      **/
-    virtual void failedReceiveMessage( SOCKETHANDLE whichSource );
+    virtual void failedReceiveMessage( SOCKETHANDLE whichSource ) override;
 
     /**
      * \brief   Triggered, when failed to process message, i.e. the target for message processing was not found.
      *          In case of request message processing, the source should receive error notification.
      * \param   msgUnprocessed  Unprocessed message data.
      **/
-    virtual void failedProcessMessage( const RemoteMessage & msgUnprocessed );
+    virtual void failedProcessMessage( const RemoteMessage & msgUnprocessed ) override;
 
     /**
      * \brief   Triggered, when need to process received message.
@@ -251,7 +257,7 @@ protected:
      * \param   addrHost    The address of remote host, which sent message.
      * \param   whichSource The socket handle, which received message.
      **/
-    virtual void processReceivedMessage( const RemoteMessage & msgReceived, const NESocket::InterlockedValue & addrHost, SOCKETHANDLE whichSource );
+    virtual void processReceivedMessage( const RemoteMessage & msgReceived, const NESocket::SocketAddress & addrHost, SOCKETHANDLE whichSource ) override;
 
 /************************************************************************/
 // DispatcherThread overrides
@@ -264,7 +270,7 @@ protected:
      *          Override if logic should be changed.
      * \return	Returns true if Exit Event is signaled.
      **/
-    virtual bool runDispatcher( void );
+    virtual bool runDispatcher( void ) override;
 
 /************************************************************************/
 // IEEventRouter interface overrides
@@ -279,7 +285,7 @@ protected:
      * \param	eventElem	Event object to post
      * \return	In this class it always returns true.
      **/
-    virtual bool postEvent( Event & eventElem );
+    virtual bool postEvent( Event & eventElem ) override;
 
 private:
 /************************************************************************/
@@ -290,7 +296,7 @@ private:
      * \brief   Triggered when the Stub receives remote request event to process.
      * \param   requestEvent        The remote request event to be processed.
      **/
-    virtual void processRemoteRequestEvent( RemoteRequestEvent & requestEvent );
+    virtual void processRemoteRequestEvent( RemoteRequestEvent & requestEvent ) override;
 
     /**
      * \brief   Triggered when the Stub receives remote notification request event to process.
@@ -298,7 +304,7 @@ private:
      *          sending attribute update notifications.
      * \param   requestNotifyEvent  The remote notification request event to be processed.
      **/
-    virtual void processRemoteNotifyRequestEvent( RemoteNotifyRequestEvent & requestNotifyEvent );
+    virtual void processRemoteNotifyRequestEvent( RemoteNotifyRequestEvent & requestNotifyEvent ) override;
 
     /**
      * \brief   Triggered when the Stub receives remote response request event to process.
@@ -306,7 +312,7 @@ private:
      *          to subscribe on information or response sent by Stub.
      * \param   requestNotifyEvent  The remote response request event to be processed.
      **/
-    virtual void processRemoteResponseEvent( RemoteResponseEvent & responseEvent );
+    virtual void processRemoteResponseEvent( RemoteResponseEvent & responseEvent ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden operations and attributes
@@ -390,15 +396,14 @@ private:
     /**
      * \brief   Data access synchronization object
      **/
-    mutable CriticalSection     mLock;
+    mutable ResourceLock        mLock;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    ClientService( void );
-    ClientService( const ClientService & );
-    const ClientService & operator = ( const ClientService & );
+    ClientService( void ) = delete;
+    DECLARE_NOCOPY_NOMOVE( ClientService );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -420,17 +425,15 @@ inline const char * ClientService::getString(ClientService::eConnectionState val
 {
     switch (val)
     {
-    case ClientService::ConnectionStopped:
+    case ClientService::eConnectionState::ConnectionStopped:
         return "ClientService::ConnectionStopped";
-    case ClientService::ConnectionStarting:
+    case ClientService::eConnectionState::ConnectionStarting:
         return "ClientService::ConnectionStarting";
-    case ClientService::ConnectionStarted:
+    case ClientService::eConnectionState::ConnectionStarted:
         return "ClientService::ConnectionStarted";
-    case ClientService::ConnectionStopping:
+    case ClientService::eConnectionState::ConnectionStopping:
         return "ClientService::ConnectionStopping";
     default:
         return "ERR: Invalid value of ClientService::eConnectionState type";
     }
 }
-
-#endif  // AREG_IPC_PRIVATE_CLIENTSERVICE_HPP

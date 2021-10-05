@@ -1,9 +1,16 @@
-#ifndef AREG_COMPONENT_STREAMABLEEVENT_HPP
-#define AREG_COMPONENT_STREAMABLEEVENT_HPP
+#pragma once
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/component/StreamableEvent.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, Streamable communication Event.
  *
  ************************************************************************/
@@ -44,7 +51,7 @@ protected:
      * \brief   Creates streamable event and defines event type.
      * \param   eventType   The type of event.
      **/
-    StreamableEvent( Event::eEventType eventType );
+    explicit StreamableEvent( Event::eEventType eventType );
 
     /**
      * \brief   Creates streamable event and initialize data
@@ -55,7 +62,7 @@ protected:
     /**
      * \brief   Destructor
      **/
-    virtual ~StreamableEvent( void );
+    virtual ~StreamableEvent( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -82,9 +89,6 @@ protected:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    StreamableEvent( void );
-    StreamableEvent( const StreamableEvent & /*src*/ );
-    const StreamableEvent & operator = ( const StreamableEvent & /*src*/ );
+    StreamableEvent( void ) = delete;
+    DECLARE_NOCOPY_NOMOVE( StreamableEvent );
 };
-
-#endif  // AREG_COMPONENT_PRIVATE_STREAMABLEEVENT_HPP

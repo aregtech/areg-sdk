@@ -1,9 +1,16 @@
-#ifndef AREG_TRACE_TRACEMESSAGE_HPP
-#define AREG_TRACE_TRACEMESSAGE_HPP
+#pragma once
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/trace/TraceMessage.hpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, Logging / tracing object to log messages.
  ************************************************************************/
 /************************************************************************
@@ -23,15 +30,18 @@ class LogMessage;
 // TraceMessage class declaration
 //////////////////////////////////////////////////////////////////////////////
 /**
- * \brief   The logging message (or trace message) is an object, which contains data to log.
- *          By the given Trace Scope, it determines the message log priorities
- *          and if Trace Scope has enabled certain message priority, the logger
- *          will create message longing object for further output on logging targets.
- *          The information of enabled logging priority is set on trace scope and
- *          the message, as well as message priority, is part of logging message.
- *          Before the logger generates output message, the scope should have certain
- *          priority enabled. And before the message is output of target (file, console or remote service),
- *          the logging should be started and the output targets should be initialized.
+ * \brief   The logging message (or trace message) is an object, which contains
+ *          data to log. The Trace Scope determines the message log priorities
+ *          and if the priority is enabled the system create message to log.
+ * 
+ *          The information of enabled logging priority is set in Trace Scope. 
+ *          The log message and the priority are part of TraceMessage object.
+ *          Bfore the message is generated to output, the system should start
+ *          logging service to specify the message output target (file,
+ *          console or remote service). Normally, the logging is tarted
+ *          at application startup. If logging did not start, the system
+ *          assumes that Trace Scopes are disabled and not activate and 
+ *          ignores to log message.
  **/
 class AREG_API TraceMessage
 {
@@ -164,7 +174,7 @@ public:
      * \param   msgPrio     The priority of message to check.
      * \return  Returns true if given priority is enabled. Otherwise, returns false.
      **/
-    inline bool isPrioEnabled( NETrace::eLogPriority msgPrio );
+    inline bool isPrioEnabled( NETrace::eLogPriority msgPrio ) const;
 
 //////////////////////////////////////////////////////////////////////////////
 // Hidden methods
@@ -183,7 +193,7 @@ private:
 // Member variables
 //////////////////////////////////////////////////////////////////////////////
 private:
-    const char *        mScopeName; //!< The name of logging scope
+    const String &      mScopeName; //!< The name of logging scope
     const unsigned int  mScopeId;   //!< The ID of logging scope
     const unsigned int& mScopePrio; //!< The logging priority enabled in scope.
 
@@ -191,9 +201,8 @@ private:
 // Forbidden methods
 //////////////////////////////////////////////////////////////////////////////
 private:
-    TraceMessage( void );
-    TraceMessage( const TraceMessage & /* src */ );
-    const TraceMessage & operator = ( const TraceMessage & /* src */ );
+    TraceMessage( void ) = delete;
+    DECLARE_NOCOPY_NOMOVE( TraceMessage );
 };
 
 //////////////////////////////////////////////////////////////////////////////
@@ -235,9 +244,7 @@ inline bool TraceMessage::isLogEnabled(void) const
     return (mScopePrio != static_cast<unsigned int>(NETrace::PrioNotset));
 }
 
-inline bool TraceMessage::isPrioEnabled(NETrace::eLogPriority msgPrio)
+inline bool TraceMessage::isPrioEnabled(NETrace::eLogPriority msgPrio) const
 {
     return (msgPrio == NETrace::PrioScope ? mScopePrio &  static_cast<unsigned int>(NETrace::PrioScope) : mScopePrio >= static_cast<unsigned int>(msgPrio)) ;
 }
-
-#endif  // AREG_TRACE_TRACEMESSAGE_HPP

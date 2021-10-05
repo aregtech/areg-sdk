@@ -1,7 +1,15 @@
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/component/private/ProxyBase.cpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, Proxy Base class implementation.
  *
  ************************************************************************/
@@ -54,11 +62,10 @@ ProxyBase::MapThreadProxyList   ProxyBase::_mapThreadProxies;
 // ProxyBase::Listener class, constructor / destructor
 //////////////////////////////////////////////////////////////////////////
 ProxyBase::Listener::Listener( void )
-    : mMessageId    (NEService::EMPTY_FUNCTION_ID)
+    : mMessageId    (static_cast<unsigned int>(NEService::eFuncIdRange::EmptyFunctionId))
     , mSequenceNr   (NEService::SEQUENCE_NUMBER_NOTIFY)
-    , mListener     (NULL)
+    , mListener     (nullptr)
 {
-    ; // do nothing
 }
 
 ProxyBase::Listener::Listener( const Listener & src )
@@ -66,23 +73,27 @@ ProxyBase::Listener::Listener( const Listener & src )
     , mSequenceNr   (src.mSequenceNr)
     , mListener     (src.mListener)
 {
-    ; // do nothing
+}
+
+ProxyBase::Listener::Listener( Listener && src ) noexcept
+    : mMessageId    ( src.mMessageId )
+    , mSequenceNr   ( src.mSequenceNr )
+    , mListener     ( src.mListener )
+{
 }
 
 ProxyBase::Listener::Listener( unsigned int msgId )
     : mMessageId    (msgId)
     , mSequenceNr   (NEService::SEQUENCE_NUMBER_NOTIFY)
-    , mListener     (NULL)
+    , mListener     (nullptr)
 {
-    ; // do nothing
 }
 
 ProxyBase::Listener::Listener( unsigned int msgId, unsigned int seqNr )
     : mMessageId    (msgId)
     , mSequenceNr   (seqNr)
-    , mListener     (NULL)
+    , mListener     (nullptr)
 {
-    ; // do nothing
 }
 
 ProxyBase::Listener::Listener( unsigned int msgId, unsigned int seqNr, IENotificationEventConsumer* caller )
@@ -90,20 +101,27 @@ ProxyBase::Listener::Listener( unsigned int msgId, unsigned int seqNr, IENotific
     , mSequenceNr   (seqNr)
     , mListener     (caller)
 {
-    ; // do nothing
 }
 
 //////////////////////////////////////////////////////////////////////////
 // ProxyBase::Listener class, operators
 //////////////////////////////////////////////////////////////////////////
-const ProxyBase::Listener& ProxyBase::Listener::operator = ( const ProxyBase::Listener& src )
+
+ProxyBase::Listener & ProxyBase::Listener::operator = ( const ProxyBase::Listener & src )
 {
-    if (static_cast<const ProxyBase::Listener *>(this) != &src)
-    {
-        mMessageId  = src.mMessageId;
-        mSequenceNr = src.mSequenceNr;
-        mListener   = src.mListener;
-    }
+    mMessageId  = src.mMessageId;
+    mSequenceNr = src.mSequenceNr;
+    mListener   = src.mListener;
+
+    return (*this);
+}
+
+ProxyBase::Listener & ProxyBase::Listener::operator = ( ProxyBase::Listener && src ) noexcept
+{
+    mMessageId  = src.mMessageId;
+    mSequenceNr = src.mSequenceNr;
+    mListener   = src.mListener;
+
     return (*this);
 }
 
@@ -116,88 +134,15 @@ bool ProxyBase::Listener::operator == ( const ProxyBase::Listener& other ) const
             result = true;
         else if (other.mSequenceNr == mSequenceNr && other.mListener == mListener)
             result = true;
-        else if (other.mSequenceNr == NEService::SEQUENCE_NUMBER_NOTIFY && other.mListener == NULL)
+        else if (other.mSequenceNr == NEService::SEQUENCE_NUMBER_NOTIFY && other.mListener == nullptr)
             result = true;
     }
+
     return result;
 }
 
 //////////////////////////////////////////////////////////////////////////
-// ProxyBase::ProxyListenerList class implementation
-//////////////////////////////////////////////////////////////////////////
-
-//////////////////////////////////////////////////////////////////////////
-// ProxyBase::ProxyListenerList class, constructor / destructor
-//////////////////////////////////////////////////////////////////////////
-ProxyBase::ProxyListenerList::ProxyListenerList( int capacity /*= 0*/ )
-    : TEArrayList<ProxyBase::Listener, const ProxyBase::Listener &>(capacity)
-{
-    ; // do nothing
-}
-
-ProxyBase::ProxyListenerList::~ProxyListenerList( void )
-{
-    ; // do nothing
-}
-
-//////////////////////////////////////////////////////////////////////////
-// ProxyBase::ProxyConnectList class implementation
-//////////////////////////////////////////////////////////////////////////
-
-//////////////////////////////////////////////////////////////////////////
-// ProxyBase::ProxyConnectList class, constructor / destructor
-//////////////////////////////////////////////////////////////////////////
-
-ProxyBase::ProxyConnectList::ProxyConnectList(void)
-    : TEArrayList<IEProxyListener *, IEProxyListener *>( )
-{
-
-}
-
-ProxyBase::ProxyConnectList::~ProxyConnectList(void)
-{
-
-}
-
-//////////////////////////////////////////////////////////////////////////
-// ProxyBase::ThreadProxyList class implementation
-//////////////////////////////////////////////////////////////////////////
-
-//////////////////////////////////////////////////////////////////////////
-// ProxyBase::ThreadProxyList class, constructor / destructor
-//////////////////////////////////////////////////////////////////////////
-
-ProxyBase::ThreadProxyList::ThreadProxyList( void )
-    : TEArrayList<ProxyBase *, ProxyBase *>( )
-{
-}
-
-ProxyBase::ThreadProxyList::ThreadProxyList( const ProxyBase::ThreadProxyList & src )
-    : TEArrayList<ProxyBase *, ProxyBase *>( static_cast<const TEArrayList<ProxyBase *, ProxyBase *> &>(src) )
-{
-}
-
-ProxyBase::ThreadProxyList::~ThreadProxyList( void )
-{
-}
-
-const ProxyBase::ThreadProxyList & ProxyBase::ThreadProxyList::operator = ( const ProxyBase::ThreadProxyList & src )
-{
-    TEArrayList<ProxyBase *, ProxyBase *>::operator = (static_cast<const TEArrayList<ProxyBase *, ProxyBase *> &>(src));
-
-    return (*this);
-}
-
-//////////////////////////////////////////////////////////////////////////
-// ProxyBase::ProxyMapImpl class implementation
-//////////////////////////////////////////////////////////////////////////
-
-//////////////////////////////////////////////////////////////////////////
-// ProxyBase::ProxyMapImpl class, constructor / destructor
-//////////////////////////////////////////////////////////////////////////
-
-//////////////////////////////////////////////////////////////////////////
-// ProxyBase::ProxyMapImpl class, Methods
+// ProxyBase::ImplProxyMap class implementation
 //////////////////////////////////////////////////////////////////////////
 
 //////////////////////////////////////////////////////////////////////////
@@ -207,21 +152,11 @@ const ProxyBase::ThreadProxyList & ProxyBase::ThreadProxyList::operator = ( cons
 IMPLEMENT_RUNTIME_EVENT(ProxyBase::ServiceAvailableEvent, ThreadEventBase)
 
 ProxyBase::ServiceAvailableEvent::ServiceAvailableEvent( IENotificationEventConsumer & consumer )
-    : ThreadEventBase   ( Event::EventExternal )
+    : ThreadEventBase   ( Event::eEventType::EventExternal )
     , mConsumer         ( consumer )
 {
-    ; // do nothing
 }
 
-ProxyBase::ServiceAvailableEvent::~ServiceAvailableEvent( void )
-{
-    ; // do nothing
-}
-
-IENotificationEventConsumer & ProxyBase::ServiceAvailableEvent::getConsumer( void ) const
-{
-    return mConsumer;
-}
 
 //////////////////////////////////////////////////////////////////////////
 // ProxyBase class implementation
@@ -234,7 +169,7 @@ ProxyBase * ProxyBase::findOrCreateProxy( const char * roleName
                                         , const NEService::SInterfaceData & serviceIfData
                                         , IEProxyListener & connect
                                         , FuncCreateProxy funcCreate
-                                        , const char * ownerThread /*= static_cast<const char *>(NULL)*/)
+                                        , const char * ownerThread /*= nullptr*/)
 {
     return ProxyBase::findOrCreateProxy(roleName, serviceIfData, connect, funcCreate, DispatcherThread::getDispatcherThread(ownerThread) );
 }
@@ -247,24 +182,26 @@ ProxyBase * ProxyBase::findOrCreateProxy( const char * roleName
 {
     TRACE_SCOPE(areg_component_ProxyBase_findOrCreateProxy);
 
-    ProxyBase*   proxy = NULL;
+    ProxyBase*   proxy = nullptr;
     if (ownerThread.isValid())
     {
         ProxyAddress Key(serviceIfData, roleName, ownerThread.getName().getString() );
         proxy = _mapRegisteredProxies.findResourceObject(Key);
-        if (proxy == NULL)
+        if (proxy == nullptr)
         {
             TRACE_DBG("No proxy [ %s ] found, creating one in thread [ %u ]", ProxyAddress::convAddressToPath(Key).getString(), ownerThread.getId());
             proxy = funcCreate(roleName, &ownerThread);
         }
 
-        if (proxy != NULL)
+        if (proxy != nullptr)
         {
             if (proxy->mListConnect.addUnique(&connect))
             {
                 TRACE_DBG("Add Service Connect notification for client [ %p ]", &connect);
 
-                static_cast<void>(proxy->addListener( static_cast<unsigned int>(NEService::SI_SERVICE_CONNECTION_NOTIFY), NEService::SEQUENCE_NUMBER_NOTIFY, static_cast<IENotificationEventConsumer *>(&connect) ));
+                static_cast<void>(proxy->addListener( static_cast<unsigned int>(NEService::eFuncIdRange::ServiceNotifyConnection)
+                                                    , NEService::SEQUENCE_NUMBER_NOTIFY
+                                                    , static_cast<IENotificationEventConsumer *>(&connect) ));
                 ++ proxy->mProxyInstCount;
                 proxy->mIsStopped = false;
 
@@ -292,7 +229,7 @@ ProxyBase * ProxyBase::findOrCreateProxy( const char * roleName
 int ProxyBase::findThreadProxies(DispatcherThread & ownerThread, TEArrayList<ProxyBase *, ProxyBase *> & OUT threadProxyList )
 {
     ThreadProxyList * proxyList = ProxyBase::_mapThreadProxies.findResource(ownerThread.getName());
-    int result = proxyList != NULL ? proxyList->getSize() : 0;
+    int result = proxyList != nullptr ? proxyList->getSize() : 0;
     if ( result > 0 )
     {
         threadProxyList = static_cast<const TEArrayList<ProxyBase *, ProxyBase *> &>(*proxyList);
@@ -305,12 +242,12 @@ RemoteResponseEvent * ProxyBase::createRequestFailureEvent(const ProxyAddress & 
 {
     TRACE_SCOPE(areg_component_ProxyBase_createRequestFailureEvent);
 
-    RemoteResponseEvent * result = NULL;
+    RemoteResponseEvent * result = nullptr;
 
     ProxyBase::_mapRegisteredProxies.lock();
     
     ProxyBase * proxy = ProxyBase::findProxyByAddress(target);
-    if (proxy != NULL)
+    if (proxy != nullptr)
     {
         result = proxy->createRemoteRequestFailedEvent(target, msgId, errCode, seqNr);
     }
@@ -324,11 +261,11 @@ RemoteResponseEvent * ProxyBase::createRequestFailureEvent(const ProxyAddress & 
 //////////////////////////////////////////////////////////////////////////
 // ProxyBase class, constructor / destructor
 //////////////////////////////////////////////////////////////////////////
-ProxyBase::ProxyBase(const char* roleName, const NEService::SInterfaceData & serviceIfData, DispatcherThread * ownerThread /*= static_cast<DispatcherThread *>(NULL)*/ )
+ProxyBase::ProxyBase(const char* roleName, const NEService::SInterfaceData & serviceIfData, DispatcherThread * ownerThread /*= nullptr*/ )
 
     : IEProxyEventConsumer  ( mProxyAddress )
     
-    , mProxyAddress     ( serviceIfData, roleName, (ownerThread != static_cast<DispatcherThread *>(NULL)) && (ownerThread->isValid()) ? ownerThread->getName().getString() : static_cast<const char *>(NULL) )
+    , mProxyAddress     ( serviceIfData, roleName, (ownerThread != nullptr) && (ownerThread->isValid()) ? ownerThread->getName().getString() : nullptr )
     , mStubAddress      ( StubAddress::INVALID_STUB_ADDRESS )
     , mSequenceCount    ( 0 )
     , mListenerList     ( static_cast<int>(serviceIfData.idAttributeCount + serviceIfData.idResponseCount) )
@@ -338,7 +275,7 @@ ProxyBase::ProxyBase(const char* roleName, const NEService::SInterfaceData & ser
 
     , mProxyData        ( serviceIfData )
 
-    , mDispatcherThread ( (ownerThread != static_cast<DispatcherThread *>(NULL)) && (ownerThread->isValid()) ? *ownerThread : DispatcherThread::getDispatcherThread( static_cast<const char *>(mProxyAddress.getThread())) )
+    , mDispatcherThread ( (ownerThread != nullptr) && (ownerThread->isValid()) ? *ownerThread : DispatcherThread::getDispatcherThread( static_cast<const char *>(mProxyAddress.getThread())) )
 
     , mProxyInstCount   ( 0 )
 {
@@ -377,7 +314,9 @@ void ProxyBase::freeProxy( IEProxyListener & connect )
         connect.serviceConnected(false, self());
     }
     
-    removeListener(NEService::SI_SERVICE_CONNECTION_NOTIFY, NEService::SEQUENCE_NUMBER_NOTIFY, static_cast<IENotificationEventConsumer *>(&connect));
+    removeListener( static_cast<unsigned int>(NEService::eFuncIdRange::ServiceNotifyConnection)
+                  , NEService::SEQUENCE_NUMBER_NOTIFY
+                  , static_cast<IENotificationEventConsumer *>(&connect));
 
     if (mProxyInstCount == 1)
     {
@@ -419,9 +358,9 @@ void ProxyBase::serviceConnectionUpdated( const StubAddress & server, const Chan
                     , NEService::getString(status)
                     , StubAddress::convAddressToPath(server).getString());
 
-        ASSERT(channel.getTarget() == server.getSource() || status != NEService::ServiceConnected);
+        ASSERT(channel.getTarget() == server.getSource() || status != NEService::eServiceConnection::ServiceConnected);
         mProxyAddress.setChannel(channel);
-        if ( status == NEService::ServiceConnected )
+        if ( status == NEService::eServiceConnection::ServiceConnected )
         {
             mIsConnected = true;
             mStubAddress = server;
@@ -442,9 +381,8 @@ void ProxyBase::serviceConnectionUpdated( const StubAddress & server, const Chan
             ProxyBase::Listener& listener = mListenerList[index];
             if ( NEService::isConnectNotifyId(listener.mMessageId) )
             {
-                ASSERT(listener.mListener != NULL);
+                ASSERT(listener.mListener != nullptr);
                 conListeners.add(listener);
-                // mListenerList.RemoveAt(index);
             }
         }
 
@@ -467,12 +405,6 @@ void ProxyBase::serviceConnectionUpdated( const StubAddress & server, const Chan
     }
 }
 
-bool ProxyBase::addListener(unsigned int msgId, unsigned int seqNr, IENotificationEventConsumer* caller)
-{
-    ProxyBase::Listener listener(msgId, seqNr, caller);
-    return mListenerList.addUnique(listener);
-}
-
 void ProxyBase::setNotification( unsigned int msgId, IENotificationEventConsumer* caller, bool alwaysNotify /*= false*/ )
 {
     if (isConnected())
@@ -486,21 +418,23 @@ void ProxyBase::setNotification( unsigned int msgId, IENotificationEventConsumer
             // the listener already exists
             if ( NEService::isAttributeId(msgId) )
             {
-                sendNotificationEvent(  msgId, mProxyData.getAttributeState(msgId) == NEService::DATA_OK ? NEService::RESULT_DATA_OK : NEService::RESULT_DATA_INVALID, NEService::SEQUENCE_NUMBER_NOTIFY, caller);
+                sendNotificationEvent( msgId
+                                     , mProxyData.getAttributeState(msgId) == NEService::eDataStateType::DataIsOK ? NEService::eResultType::DataOK : NEService::eResultType::DataInvalid
+                                     , NEService::SEQUENCE_NUMBER_NOTIFY, caller);
             }
-            else if ( NEService::isResponseId(msgId) && (mProxyData.getParamState(msgId) == NEService::DATA_OK) )
+            else if ( NEService::isResponseId(msgId) && (mProxyData.getParamState(msgId) == NEService::eDataStateType::DataIsOK) )
             {
-                sendNotificationEvent(  msgId, NEService::RESULT_OK, NEService::SEQUENCE_NUMBER_NOTIFY, caller);
+                sendNotificationEvent(  msgId, NEService::eResultType::RequestOK, NEService::SEQUENCE_NUMBER_NOTIFY, caller);
             }
             else
             {
-                ; // ignore
+                // ignore
             }
         }
     }
     else
     {
-        ; // ignore
+        // ignore
     }
 }
 
@@ -510,13 +444,8 @@ void ProxyBase::clearNotification( unsigned int msgId, IENotificationEventConsum
     if (hasNotificationListener(msgId) == false)
     {
         stopNotification(msgId);
-        mProxyData.setDataState(msgId, NEService::DATA_UNAVAILABLE);
+        mProxyData.setDataState(msgId, NEService::eDataStateType::DataIsUnavailable);
     }
-}
-
-void ProxyBase::setState( unsigned int msgId, NEService::eDataStateType newState )
-{
-    mProxyData.setDataState(msgId, newState);
 }
 
 void ProxyBase::unregisterListener( IENotificationEventConsumer *consumer )
@@ -537,7 +466,7 @@ void ProxyBase::unregisterListener( IENotificationEventConsumer *consumer )
             if (hasNotificationListener(msgId) == false)
             {
                 stopNotification(msgId);
-                mProxyData.setDataState(msgId, NEService::DATA_UNAVAILABLE);
+                mProxyData.setDataState(msgId, NEService::eDataStateType::DataIsUnavailable);
             }
         }
         else
@@ -588,9 +517,9 @@ void ProxyBase::sendNotificationEvent( unsigned int msgId, NEService::eResultTyp
 {
     NotificationEventData data(self(), resType, msgId, seqNr);
     NotificationEvent* eventElem = createNotificationEvent(data);
-    if (eventElem != NULL)
+    if (eventElem != nullptr)
     {
-        if (caller != NULL)
+        if (caller != nullptr)
         {
             eventElem->setEventConsumer(static_cast<IEEventConsumer *>(caller));
         }
@@ -612,7 +541,7 @@ void ProxyBase::processProxyEvent( ProxyEvent& /*eventElem*/ )
 void ProxyBase::processGenericEvent( Event& eventElem )
 {
     ProxyBase::ServiceAvailableEvent * serviceEvent = RUNTIME_CAST( &eventElem, ProxyBase::ServiceAvailableEvent );
-    if ( serviceEvent != NULL )
+    if ( serviceEvent != nullptr )
     {
         processServiceAvailableEvent( serviceEvent->getConsumer() );
     }
@@ -623,20 +552,10 @@ ProxyBase* ProxyBase::findProxyByAddress( const ProxyAddress& proxyAddress )
     return _mapRegisteredProxies.findResourceObject(proxyAddress);
 }
 
-void ProxyBase::registerForEvent( const RuntimeClassID& eventClass )
-{
-    Event::addListener(eventClass, static_cast<IEEventConsumer &>(self()), Thread::getCurrentThreadName());
-}
-
-void ProxyBase::unregisterForEvent( const RuntimeClassID& eventClass )
-{
-    Event::removeListener(eventClass, static_cast<IEEventConsumer &>(self()), Thread::getCurrentThreadName());
-}
-
 void ProxyBase::sendRequestEvent( unsigned int reqId, const EventDataStream& args, IENotificationEventConsumer *caller )
 {
     ServiceRequestEvent* evenElem = createRequestEvent(args, reqId);
-    if ( evenElem != NULL )
+    if ( evenElem != nullptr )
     {
         unsigned int respId = getProxyData().getResponseId(static_cast<unsigned int>(reqId));
         ASSERT(NEService::isResponseId(respId) || (respId == NEService::RESPONSE_ID_NONE));
@@ -654,13 +573,15 @@ void ProxyBase::sendRequestEvent( unsigned int reqId, const EventDataStream& arg
 void ProxyBase::sendNotificationRequestEvent( unsigned int msgId, NEService::eRequestType reqType )
 {
     ServiceRequestEvent* notifyEvent = createNotificationRequestEvent(msgId, reqType);
-    if (notifyEvent != NULL)
-        mProxyAddress.deliverServiceEvent(*notifyEvent);
+    if (notifyEvent != nullptr)
+    {
+        mProxyAddress.deliverServiceEvent( *notifyEvent );
+    }
 }
 
 void ProxyBase::sendServiceAvailableEvent( ProxyBase::ServiceAvailableEvent * eventInstance )
 {
-    if ( eventInstance != static_cast<ProxyBase::ServiceAvailableEvent *>(NULL) )
+    if ( eventInstance != nullptr )
     {
         eventInstance->addListener( self(), mDispatcherThread);
         eventInstance->setEventConsumer(this);
@@ -688,7 +609,7 @@ void ProxyBase::processServiceAvailableEvent( IENotificationEventConsumer & cons
 
 RemoteResponseEvent * ProxyBase::createRemoteResponseEvent(const IEInStream & /* stream */) const
 {
-    return static_cast<RemoteResponseEvent *>(NULL);
+    return nullptr;
 }
 
 RemoteResponseEvent * ProxyBase::createRemoteRequestFailedEvent(  const ProxyAddress &  /* addrProxy */
@@ -696,7 +617,7 @@ RemoteResponseEvent * ProxyBase::createRemoteRequestFailedEvent(  const ProxyAdd
                                                                 , NEService::eResultType/* reason */
                                                                 , unsigned int          /* seqNr */ ) const
 {
-    return static_cast<RemoteResponseEvent *>(NULL);
+    return nullptr;
 }
 
 void ProxyBase::stopProxy(void)
@@ -710,7 +631,7 @@ void ProxyBase::stopProxy(void)
         for (int i = 0 ; i < mListConnect.getSize(); ++ i)
         {
             IEProxyListener * listener = mListConnect.getAt(i);
-            ASSERT(listener != NULL);
+            ASSERT(listener != nullptr);
             listener->serviceConnected(false, *this);
         }
 

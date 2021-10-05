@@ -1,10 +1,16 @@
-#ifndef AREG_BASE_SOCKETSERVER_HPP
-#define AREG_BASE_SOCKETSERVER_HPP
-
+#pragma once
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/base/SocketServer.hpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform Server Socket class declaration.
  ************************************************************************/
 
@@ -45,7 +51,7 @@ public:
      *          or receiving data, the socket should be created
      *          and bound to socket address.
      **/
-    SocketServer( void );
+    SocketServer( void ) = default;
 
     /**
      * \brief   Initialization constructor. Creates instance of object
@@ -55,7 +61,7 @@ public:
      *          When instantiated, it will resolved passed host
      *          name and port number. If succeeded to resolve,
      *          it will set resolved IP-address and port number
-     *          as socket address. If passed hostName is NULL,
+     *          as socket address. If passed hostName is nullptr,
      *          it resolve connection for local host.
      * \param   hostName    Host name or IP-address of server.
      * \param   portNr      Port number of server.
@@ -70,12 +76,12 @@ public:
      *          Specified remoteAddress will be set as server address.
      * \param   remoteAddress   Address of server.
      **/
-    SocketServer( const NESocket::InterlockedValue & serverAddress );
+    SocketServer( const NESocket::SocketAddress & serverAddress );
 
     /**
      * \brief   Destructor.
      **/
-    virtual ~SocketServer( void );
+    virtual ~SocketServer( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -93,7 +99,7 @@ public:
      * \param   portNr      The valid port number to bind.
      * \return  Returns true if operation succeeded.
      **/
-    virtual bool createSocket( const char * hostName, unsigned short portNr );
+    virtual bool createSocket( const char * hostName, unsigned short portNr ) override;
 
     /**
      * \brief   Before listening and accepting connection from clients, 
@@ -102,7 +108,7 @@ public:
      *          Both, socket IP-address and port number should be already set.
      * \return  Returns true if operation succeeded.
      **/
-    virtual bool createSocket( void );
+    virtual bool createSocket( void ) override;
 
     /**
      * \brief   Call to place server socket in a state in which it is listening for an incoming connection.
@@ -133,14 +139,11 @@ public:
      *          out_addrNewAccepted parameter contains address of accepted socket. 
      *          If function fails, returns invalid socket handle.
      **/
-    virtual SOCKETHANDLE waitConnectionEvent(NESocket::InterlockedValue & out_addrNewAccepted, const SOCKETHANDLE * masterList, int entriesCount);
+    virtual SOCKETHANDLE waitConnectionEvent(NESocket::SocketAddress & out_addrNewAccepted, const SOCKETHANDLE * masterList, int entriesCount);
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    SocketServer( const SocketServer & /*src*/ );
-    const SocketServer & operator = ( const SocketServer & /*src*/ );
+    DECLARE_NOCOPY_NOMOVE( SocketServer );
 };
-
-#endif  // AREG_BASE_SOCKETSERVER_HPP

@@ -1,9 +1,16 @@
-#ifndef AREG_TRACE_PRIVATE_TRAPROPERTY_HPP
-#define AREG_TRACE_PRIVATE_TRAPROPERTY_HPP
+#pragma once
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/trace/private/TraceProperty.hpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, Trace Property value class. Used when reading or 
  *              saving configuration file
  ************************************************************************/
@@ -35,13 +42,12 @@ class TraceProperty
 //////////////////////////////////////////////////////////////////////////
 // Internal types and constants
 //////////////////////////////////////////////////////////////////////////
-private:
     /**
      * \brief   The definition of logging property.
      * \tparam  Key     The logging property key object
      * \tparam  Value   The logging property value object
      **/
-    typedef TEProperty<TracePropertyKey, TracePropertyValue>   Property;
+    using Property  = TEProperty<TracePropertyKey, TracePropertyValue>;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / destructor
@@ -50,7 +56,7 @@ public:
     /**
      * \brief   Default constructor. Creates empty property.
      **/
-    TraceProperty( void );
+    TraceProperty( void ) = default;
     /**
      * \brief   Creates property with specified key and value passed as a string.
      *          The parameters are parsed to initialize property data.
@@ -85,9 +91,14 @@ public:
      **/
     TraceProperty( const TraceProperty & source );
     /**
+     * \brief   Moves trance property data from given source.
+     * \param   source  The source to move data
+     **/
+    TraceProperty( TraceProperty && source ) noexcept;
+    /**
      * \brief   Destructor
      **/
-    ~TraceProperty( void );
+    ~TraceProperty( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
@@ -105,56 +116,62 @@ public:
      * \brief   Copies logging property from given source.
      * \param   source  The source of property to copy data.
      **/
-    const TraceProperty & operator = ( const TraceProperty & source );
+    TraceProperty & operator = ( const TraceProperty & source );
+
+    /**
+     * \brief   Moves logging property from given source.
+     * \param   source  The source of property to move data.
+     **/
+    TraceProperty & operator = ( TraceProperty && source ) noexcept;
 
     /**
      * \brief   Sets given string as a property value
      * \param   newValue    The property value as a string to set.
      **/
-    inline void operator = ( const char * newValue );
+    inline TraceProperty & operator = ( const char * newValue );
 
     /**
      * \brief   Sets given integer as a property value
      * \param   newValue    The property value as an integer to set.
      **/
-    inline void operator = ( unsigned int newValue );
+    inline TraceProperty & operator = ( unsigned int newValue );
 
     /**
      * \brief   Sets given logging priority as a property value
      * \param   newValue    The property value as a logging priority to set.
      **/
-    inline void operator = ( NETrace::eLogPriority newValue );
+    inline TraceProperty & operator = ( NETrace::eLogPriority newValue );
 
     /**
      * \brief   Sets given boolean as a property value
      * \param   newValue    The property value as a boolean to set.
      **/
-    inline void operator = ( bool newValue );
+    inline TraceProperty & operator = ( bool newValue );
 
     /**
      * \brief   Converts property to string, by converting Value field
      **/
-    inline operator const char * ( void ) const;
+    inline explicit operator const char * ( void ) const;
 
     /**
      * \brief   Converts property to string object, by converting Value field
      **/
-    inline operator const String & ( void ) const;
+    inline explicit operator const String & ( void ) const;
 
     /**
      * \brief   Converts property to integer, by converting Value field
      **/
-    inline operator unsigned int ( void ) const;
+    inline explicit operator unsigned int ( void ) const;
 
     /**
      * \brief   Converts property to NETrace::eLogPriority, by converting Value field
      **/
-    inline operator NETrace::eLogPriority ( void ) const;
+    inline explicit operator NETrace::eLogPriority ( void ) const;
 
     /**
      * \brief   Converts property to boolean, by converting Value field
      **/
-    inline operator bool ( void ) const;
+    inline explicit operator bool ( void ) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations
@@ -244,24 +261,28 @@ private:
 // TraceProperty class inline methods implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline void TraceProperty::operator = ( const char * newValue )
+inline TraceProperty & TraceProperty::operator = ( const char * newValue )
 {
     mProperty.mValue= newValue;
+    return (*this);
 }
 
-inline void TraceProperty::operator = ( unsigned int newValue )
+inline TraceProperty & TraceProperty::operator = ( unsigned int newValue )
 {
     mProperty.mValue= newValue;
+    return (*this);
 }
 
-inline void TraceProperty::operator = ( NETrace::eLogPriority newValue )
+inline TraceProperty & TraceProperty::operator = ( NETrace::eLogPriority newValue )
 {
     mProperty.mValue= newValue;
+    return (*this);
 }
 
-inline void TraceProperty::operator = ( bool newValue )
+inline TraceProperty & TraceProperty::operator = ( bool newValue )
 {
     mProperty.mValue= newValue;
+    return (*this);
 }
 
 inline TraceProperty::operator const char * ( void ) const
@@ -271,7 +292,7 @@ inline TraceProperty::operator const char * ( void ) const
 
 inline TraceProperty::operator const String & ( void ) const
 {
-    return mProperty.mValue;
+    return static_cast<const String &>(mProperty.mValue);
 }
 
 inline TraceProperty::operator unsigned int ( void ) const
@@ -313,5 +334,3 @@ inline bool TraceProperty::isValid(void) const
 {
     return (mProperty.mKey.isValidKey() && mProperty.mValue.isValid());
 }
-
-#endif  // AREG_TRACE_PRIVATE_TRAPROPERTY_HPP

@@ -1,7 +1,15 @@
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/component/private/StubBase.cpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, Stub Base implementation.
  *
  ************************************************************************/
@@ -15,26 +23,18 @@
 #include "areg/component/private/StubConnectEvent.hpp"
 
 //////////////////////////////////////////////////////////////////////////
-//
+// StubBase class implementation
 //////////////////////////////////////////////////////////////////////////
 
-const SessionID             StubBase::INVALID_SESSION_ID    = static_cast<SessionID>(~0);       /*0xFFFFFFFF*/
-const unsigned int          StubBase::INVALID_MESSAGE_ID    = static_cast<unsigned int>(NEService::INVALID_MESSAGE_ID);
+//////////////////////////////////////////////////////////////////////////
+// StubBase class statics
+//////////////////////////////////////////////////////////////////////////
+
 StubBase::MapStubResource   StubBase::_mapRegisteredStubs;
 
 //////////////////////////////////////////////////////////////////////////
-//
+// StubBase::Listener implementation
 //////////////////////////////////////////////////////////////////////////
-const StubBase::Listener& StubBase::Listener::operator = ( const StubBase::Listener& src )
-{
-    if (static_cast<const StubBase::Listener *>(this) != &src)
-    {
-        mMessageId  = src.mMessageId;
-        mSequenceNr = src.mSequenceNr;
-        mProxy      = src.mProxy;
-    }
-    return (*this);
-}
 
 bool StubBase::Listener::operator == ( const StubBase::Listener & other ) const
 {
@@ -57,21 +57,6 @@ bool StubBase::Listener::operator == ( const StubBase::Listener & other ) const
 //
 //////////////////////////////////////////////////////////////////////////
 
-StubBase::StubListenerList::StubListenerList( void )
-    : TELinkedList<StubBase::Listener, const StubBase::Listener &> ( )
-{
-    ; // do nothing
-}
-
-StubBase::StubListenerList::~StubListenerList( void )
-{
-    ; // do nothing
-}
-
-//////////////////////////////////////////////////////////////////////////
-//
-//////////////////////////////////////////////////////////////////////////
-
 
 //////////////////////////////////////////////////////////////////////////
 //
@@ -83,9 +68,9 @@ StubBase::StubBase( Component & masterComp, const NEService::SInterfaceData & si
     , mComponent            (masterComp)
     , mInterface            (siData)
     , mAddress              (siData, masterComp.getAddress().getRoleName(), masterComp.getAddress().getThreadAddress().getThreadName())
-    , mConnectionStatus     ( NEService::ServiceDisconnected )
+    , mConnectionStatus     ( NEService::eServiceConnection::ServiceDisconnected )
     , mListListener         ( )
-    , mCurrListener         (NULL)
+    , mCurrListener         (nullptr)
     , mSessionId            (0)
     , mMapSessions          ( )
 {
@@ -106,8 +91,8 @@ const StubAddress & StubBase::getAddress( void ) const
 bool StubBase::isBusy( unsigned int requestId ) const
 {
     bool result = false;
-    LISTPOS pos = mListListener.find(StubBase::Listener(requestId, NEService::SEQUENCE_NUMBER_ANY), NULL);
-    for ( ; result == false && pos != NULL; pos = mListListener.nextPosition(pos))
+    LISTPOS pos = mListListener.find(StubBase::Listener(requestId, NEService::SEQUENCE_NUMBER_ANY), nullptr);
+    for ( ; result == false && pos != nullptr; pos = mListListener.nextPosition(pos))
     {
         result = mListListener[pos].mSequenceNr != 0;
     }
@@ -119,12 +104,12 @@ SessionID StubBase::unblockCurrentRequest( void )
 {
     SessionID result = StubBase::INVALID_SESSION_ID;
     StubBase::Listener listener;
-    if ( mCurrListener != NULL )
+    if ( mCurrListener != nullptr )
     {
         mListListener.removeAt(mCurrListener, listener);
         result = ++ mSessionId;
         mMapSessions.setAt(result, listener);
-        mCurrListener   = NULL;
+        mCurrListener   = nullptr;
     }
     return result;
 }
@@ -139,15 +124,15 @@ void StubBase::prepareResponse( SessionID sessionId )
 void StubBase::prepareRequest( Listener & listener, unsigned int seqNr, unsigned int responseId )
 {
     listener.mMessageId = responseId;
-    listener.mSequenceNr= mListListener.find(listener, NULL) == NULL ? seqNr : static_cast<unsigned int>(-1 * static_cast<int>(seqNr));
+    listener.mSequenceNr= mListListener.find(listener, nullptr) == nullptr ? seqNr : static_cast<unsigned int>(-1 * static_cast<int>(seqNr));
     mCurrListener = mListListener.pushFirst(listener);
 }
 
 int StubBase::findListeners( unsigned int requestId, StubListenerList & out_listners ) const
 {
     StubBase::Listener listener(requestId, NEService::SEQUENCE_NUMBER_ANY);
-    LISTPOS pos = mListListener.find(listener, NULL);
-    while (pos != NULL)
+    LISTPOS pos = mListListener.find(listener, nullptr);
+    while (pos != nullptr)
     {
         out_listners.pushLast(mListListener[pos]);
         pos = mListListener.find(listener, pos);
@@ -158,7 +143,7 @@ int StubBase::findListeners( unsigned int requestId, StubListenerList & out_list
 void StubBase::clearAllListeners( const ProxyAddress & whichProxy, IntegerArray & removedIDs )
 {
     LISTPOS pos = mListListener.firstPosition();
-    while ( pos != NULL )
+    while ( pos != nullptr )
     {
         if (mListListener[pos].mProxy == whichProxy)
         {
@@ -176,7 +161,7 @@ void StubBase::clearAllListeners( const ProxyAddress & whichProxy, IntegerArray 
 void StubBase::clearAllListeners( const ProxyAddress & whichProxy )
 {
     LISTPOS pos = mListListener.firstPosition();
-    while ( pos != NULL )
+    while ( pos != nullptr )
     {
         if (mListListener[pos].mProxy == whichProxy)
         {
@@ -193,11 +178,11 @@ void StubBase::clearAllListeners( const ProxyAddress & whichProxy )
 
 void StubBase::sendResponseNotification( const StubListenerList & whichListeners, const ServiceResponseEvent& masterEvent )
 {
-    for( LISTPOS pos = whichListeners.firstPosition(); pos != NULL; pos = whichListeners.nextPosition(pos) )
+    for( LISTPOS pos = whichListeners.firstPosition(); pos != nullptr; pos = whichListeners.nextPosition(pos) )
     {
         const StubBase::Listener& listener = whichListeners[pos];
         ServiceResponseEvent* eventResp = masterEvent.cloneForTarget(listener.mProxy);
-        if (eventResp != NULL)
+        if (eventResp != nullptr)
         {
             if (static_cast<int>(listener.mSequenceNr) >= 0)
             {
@@ -209,7 +194,7 @@ void StubBase::sendResponseNotification( const StubListenerList & whichListeners
             {
                 eventResp->setSequenceNumber(static_cast<unsigned int>(-1 * static_cast<int>(listener.mSequenceNr)));
                 StubBase::Listener removed(masterEvent.getResponseId(), 0, listener.mProxy);
-                mListListener.removeEntry(removed, NULL);
+                mListListener.removeEntry(removed, nullptr);
             }
 
             sendServiceResponse(*eventResp);
@@ -219,11 +204,11 @@ void StubBase::sendResponseNotification( const StubListenerList & whichListeners
 
 void StubBase::sendErrorNotification( const StubListenerList & whichListeners, const ServiceResponseEvent & masterEvent )
 {
-    for( LISTPOS pos = whichListeners.firstPosition(); pos != NULL; pos = whichListeners.nextPosition(pos))
+    for( LISTPOS pos = whichListeners.firstPosition(); pos != nullptr; pos = whichListeners.nextPosition(pos))
     {
         const StubBase::Listener& listener = whichListeners[pos];
         ServiceResponseEvent* eventError = masterEvent.cloneForTarget(listener.mProxy);
-        if (eventError != NULL)
+        if (eventError != nullptr)
         {
             if (static_cast<int>(listener.mSequenceNr) >= 0)
             {
@@ -243,11 +228,11 @@ void StubBase::sendErrorNotification( const StubListenerList & whichListeners, c
 
 void StubBase::sendUpdateNotification( const StubListenerList & whichListeners, const ServiceResponseEvent & masterEvent ) const
 {
-    for (LISTPOS pos = whichListeners.firstPosition(); pos != NULL; pos = whichListeners.nextPosition(pos))
+    for (LISTPOS pos = whichListeners.firstPosition(); pos != nullptr; pos = whichListeners.nextPosition(pos))
     {
         const StubBase::Listener& listener = whichListeners[pos];
         ServiceResponseEvent* eventResp = masterEvent.cloneForTarget(listener.mProxy);
-        if (eventResp != NULL)
+        if (eventResp != nullptr)
             sendServiceResponse(*eventResp);
     }
 }
@@ -259,7 +244,7 @@ void StubBase::sendServiceResponse( ServiceResponseEvent & eventElem ) const
 
 void StubBase::cancelCurrentRequest( void )
 {
-    mCurrListener   = NULL;
+    mCurrListener   = nullptr;
 }
 
 ComponentThread & StubBase::getComponentThread( void ) const
@@ -293,9 +278,9 @@ void StubBase::errorAllRequests( void )
     const unsigned int* respIds = getResponseIds();
     const unsigned int* reqIds  = getRequestIds();
 
-    ASSERT(attrIds != NULL || numOfAttr == 0);
-    ASSERT(respIds != NULL || numOfResp == 0);
-    ASSERT(reqIds  != NULL || numOfReqs == 0);
+    ASSERT(attrIds != nullptr || numOfAttr == 0);
+    ASSERT(respIds != nullptr || numOfResp == 0);
+    ASSERT(reqIds  != nullptr || numOfReqs == 0);
 
     for ( i = 0; i < numOfAttr; ++ i )
         errorRequest(attrIds[i], false);
@@ -327,7 +312,7 @@ void StubBase::sendUpdateEvent( unsigned int msgId, const EventDataStream & data
     if (findListeners(msgId, listeners) > 0)
     {
         ResponseEvent* eventElem = createResponseEvent(listeners.getFirstEntry().mProxy, msgId, result, data);
-        if (eventElem != NULL)
+        if (eventElem != nullptr)
         {
             sendUpdateNotification(listeners, *eventElem);
             eventElem->destroy();
@@ -340,8 +325,8 @@ void StubBase::sendResponseEvent( unsigned int respId, const EventDataStream & d
     StubBase::StubListenerList listeners;
     if (findListeners(respId, listeners) > 0)
     {
-        ResponseEvent* eventElem = createResponseEvent(listeners.getFirstEntry().mProxy, respId, NEService::RESULT_OK, data);
-        if (eventElem != NULL)
+        ResponseEvent* eventElem = createResponseEvent(listeners.getFirstEntry().mProxy, respId, NEService::eResultType::RequestOK, data);
+        if (eventElem != nullptr)
         {
             sendResponseNotification(listeners, *eventElem);
             eventElem->destroy();
@@ -351,8 +336,8 @@ void StubBase::sendResponseEvent( unsigned int respId, const EventDataStream & d
 
 void StubBase::sendBusyRespone( const Listener & whichListener )
 {
-    ResponseEvent* eventElem = createResponseEvent(whichListener.mProxy, whichListener.mMessageId, NEService::RESULT_REQUEST_BUSY, EventDataStream::EmptyData);
-    if (eventElem != NULL)
+    ResponseEvent* eventElem = createResponseEvent(whichListener.mProxy, whichListener.mMessageId, NEService::eResultType::RequestBusy, EventDataStream::EmptyData);
+    if (eventElem != nullptr)
     {
         eventElem->setSequenceNumber(whichListener.mSequenceNr);
         sendServiceResponse(*eventElem);
@@ -382,7 +367,7 @@ bool StubBase::existNotificationListener( unsigned int msgId, const ProxyAddress
     if ( notifySource.isValid() )
     {
         LISTPOS pos = mListListener.firstPosition();
-        while ( (pos != NULL) && (result == false) )
+        while ( (pos != nullptr) && (result == false) )
         {
             const StubBase::Listener & listener = mListListener.getNext(pos);
             result = (NEService::SEQUENCE_NUMBER_NOTIFY == listener.mSequenceNr) &&
@@ -402,7 +387,7 @@ bool StubBase::addNotificationListener(unsigned int msgId, const ProxyAddress & 
     {
         bool hasEntry   = false;
         LISTPOS pos     = mListListener.firstPosition();
-        while ( (hasEntry == false) && (pos != NULL) )
+        while ( (hasEntry == false) && (pos != nullptr) )
         {
             const StubBase::Listener & listener = mListListener.getNext(pos);
             hasEntry = (NEService::SEQUENCE_NUMBER_NOTIFY == listener.mSequenceNr) &&
@@ -410,7 +395,7 @@ bool StubBase::addNotificationListener(unsigned int msgId, const ProxyAddress & 
                        (notifySource == listener.mProxy);
         }
 
-        result = ( (hasEntry == false) && (mListListener.pushLast( StubBase::Listener(msgId, NEService::SEQUENCE_NUMBER_NOTIFY, notifySource) ) != NULL));
+        result = ( (hasEntry == false) && (mListListener.pushLast( StubBase::Listener(msgId, NEService::SEQUENCE_NUMBER_NOTIFY, notifySource) ) != nullptr));
     }
 
     return result;
@@ -418,7 +403,7 @@ bool StubBase::addNotificationListener(unsigned int msgId, const ProxyAddress & 
 
 void StubBase::removeNotificationListener( unsigned int msgId, const ProxyAddress & notifySource )
 {
-    for ( LISTPOS pos = mListListener.firstPosition(); pos != NULL; pos = mListListener.nextPosition(pos) )
+    for ( LISTPOS pos = mListListener.firstPosition(); pos != nullptr; pos = mListListener.nextPosition(pos) )
     {
         const StubBase::Listener & listener = mListListener.getAt(pos);
         if ( NEService::SEQUENCE_NUMBER_NOTIFY == listener.mSequenceNr && msgId == listener.mMessageId && notifySource == listener.mProxy )
@@ -439,21 +424,21 @@ void StubBase::processClientConnectEvent( const ProxyAddress & proxyAddress, NES
 {
     switch ( connectionStatus )
     {
-    case NEService::ServiceConnected:
+    case NEService::eServiceConnection::ServiceConnected:
         clientConnected( proxyAddress, true );
         break;
 
-    case NEService::ServicePending:
+    case NEService::eServiceConnection::ServicePending:
         break;  // do nothing, the client connection is pending
 
-    case NEService::ServiceFailed:              // fall through
-    case NEService::ServiceRejected:            // fall through
-    case NEService::ServiceConnectionUnknown:   // fall through
+    case NEService::eServiceConnection::ServiceFailed:              // fall through
+    case NEService::eServiceConnection::ServiceRejected:            // fall through
+    case NEService::eServiceConnection::ServiceConnectionUnknown:
         ASSERT(false);  // unexpected here
         break;
 
-    case NEService::ServiceDisconnected:        // fall through
-    case NEService::ServiceShutdown:            // fall through
+    case NEService::eServiceConnection::ServiceDisconnected:        // fall through
+    case NEService::eServiceConnection::ServiceShutdown:            // fall through
     default:
         clientConnected( proxyAddress, false );
         break;
@@ -462,7 +447,7 @@ void StubBase::processClientConnectEvent( const ProxyAddress & proxyAddress, NES
 
 void StubBase::processStubRegisteredEvent(const StubAddress & stubTarget, NEService::eServiceConnection connectionStatus)
 {
-    if ( connectionStatus == NEService::ServiceConnected )
+    if ( connectionStatus == NEService::eServiceConnection::ServiceConnected )
     {
         ASSERT( stubTarget.isValid() );
         _mapRegisteredStubs.lock();
@@ -517,17 +502,17 @@ ResponseEvent * StubBase::createResponseEvent( const ProxyAddress &     /* proxy
                                              , NEService::eResultType   /* result */
                                              , const EventDataStream &  /* data */ ) const
 {
-    return static_cast<ResponseEvent *>(NULL);
+    return nullptr;
 }
 
 RemoteRequestEvent * StubBase::createRemoteRequestEvent( const IEInStream & /* stream */ ) const
 {
-    return static_cast<RemoteRequestEvent *>(NULL);
+    return nullptr;
 }
 
 RemoteNotifyRequestEvent * StubBase::createRemoteNotifyRequestEvent( const IEInStream & /* stream */ ) const
 {
-    return static_cast<RemoteNotifyRequestEvent *>(NULL);
+    return nullptr;
 }
 
 void StubBase::processStubEvent( StubEvent & /* eventElem */ )

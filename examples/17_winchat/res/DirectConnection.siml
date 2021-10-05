@@ -8,44 +8,44 @@ the role name is a nick name of a registered application.</Description>
     </Overview>
     <DataTypeList>
         <DataType ID="2" Name="sParticipant" Type="Imported">
-            <Namespace>NECommonSettings</Namespace>
-            <Location>shared/NECommonSettings.hpp</Location>
+            <Namespace>NECommon</Namespace>
+            <Location>generated/NECommon.hpp</Location>
         </DataType>
         <DataType ID="3" Name="sInitiator" Type="Imported">
-            <Namespace>NECommonSettings</Namespace>
-            <Location>shared/NECommonSettings.hpp</Location>
+            <Namespace>NECommon</Namespace>
+            <Location>generated/NECommon.hpp</Location>
         </DataType>
         <DataType ID="4" Name="ListParticipants" Type="Imported">
-            <Namespace>NECommonSettings</Namespace>
-            <Location>shared/NECommonSettings.hpp</Location>
+            <Namespace>NECommon</Namespace>
+            <Location>generated/NECommon.hpp</Location>
         </DataType>
         <DataType ID="5" Name="PairParticipants" Type="Imported">
-            <Namespace>NECommonSettings</Namespace>
-            <Location>shared/NECommonSettings.hpp</Location>
+            <Namespace>NECommon</Namespace>
+            <Location>generated/NECommon.hpp</Location>
         </DataType>
         <DataType ID="6" Name="MapParticipants" Type="Imported">
-            <Namespace>NECommonSettings</Namespace>
-            <Location>shared/NECommonSettings.hpp</Location>
+            <Namespace>NECommon</Namespace>
+            <Location>generated/NECommon.hpp</Location>
         </DataType>
         <DataType ID="41" Name="sParticipant" Type="DefinedType">
             <Description>Localizing Participant structure</Description>
             <Container>New Type</Container>
-            <BaseTypeValue>NECommonSettings::sParticipant</BaseTypeValue>
+            <BaseTypeValue>NECommon::sParticipant</BaseTypeValue>
         </DataType>
         <DataType ID="42" Name="sInitiator" Type="DefinedType">
             <Description>Localizing Initiator structure</Description>
             <Container>New Type</Container>
-            <BaseTypeValue>NECommonSettings::sInitiator</BaseTypeValue>
+            <BaseTypeValue>NECommon::sInitiator</BaseTypeValue>
         </DataType>
         <DataType ID="44" Name="ListParticipants" Type="DefinedType">
             <Description>Localizing the list of participants</Description>
             <Container>New Type</Container>
-            <BaseTypeValue>NECommonSettings::ListParticipants</BaseTypeValue>
+            <BaseTypeValue>NECommon::ListParticipants</BaseTypeValue>
         </DataType>
         <DataType ID="45" Name="MapParticipants" Type="DefinedType">
             <Description>Localizing the map of participants</Description>
             <Container>New Type</Container>
-            <BaseTypeValue>NECommonSettings::MapParticipants</BaseTypeValue>
+            <BaseTypeValue>NECommon::MapParticipants</BaseTypeValue>
         </DataType>
     </DataTypeList>
     <AttributeList>
@@ -137,11 +137,11 @@ the role name is a nick name of a registered application.</Description>
     </MethodList>
     <ConstantList>
         <Constant DataType="uint64" ID="36" Name="InvalidSession">
-            <Value>NECommonSettings::InvalidSession</Value>
+            <Value>NECommon::InvalidSession</Value>
             <Description>Indicates Invalid session</Description>
         </Constant>
         <Constant DataType="uint32" ID="37" Name="InvalidCookie">
-            <Value>NECommonSettings::InvalidCookie</Value>
+            <Value>NECommon::InvalidCookie</Value>
             <Description>Indicates Invalid cookie</Description>
         </Constant>
         <Constant DataType="String" ID="38" Name="ServicePrefixStub">
@@ -154,7 +154,7 @@ the role name is a nick name of a registered application.</Description>
         </Constant>
     </ConstantList>
     <IncludeList>
-        <Location ID="47" Name="shared/NECommonSettings.hpp">
+        <Location ID="47" Name="generated/NECommon.hpp">
             <Description>Shared data</Description>
         </Location>
     </IncludeList>

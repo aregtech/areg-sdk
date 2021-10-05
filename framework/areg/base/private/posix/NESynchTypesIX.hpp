@@ -1,9 +1,16 @@
-#ifndef AREG_BASE_PRIVATE_POSIX_NESYNCHTYPESIX_HPP
-#define AREG_BASE_PRIVATE_POSIX_NESYNCHTYPESIX_HPP
+#pragma once
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/base/private/posix/NESynchTypesIX.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, POSIX based Synchronization object base.
  *
  ************************************************************************/
@@ -13,7 +20,7 @@
   ************************************************************************/
 #include "areg/base/GEGlobal.h"
 
-#ifdef _POSIX
+#if defined(_POSIX) || defined(POSIX)
 
 #include "areg/base/NECommon.hpp"
 #include "areg/base/NEUtilities.hpp"
@@ -33,14 +40,14 @@ namespace NESynchTypesIX
      * \brief   NESynchTypesIX::POSIX_SUCCESS
      *          Indicates the success of POSIX function call.
      **/
-    const int   POSIX_SUCCESS                   = 0;
+    constexpr int   POSIX_SUCCESS       = 0;
 
     /**
      * \brief   NESynchTypesIX::eSynchObjectFired
      *          The valid indexes when synchronization event is fired in the waiting list
      *          or error happened.
      **/
-    typedef enum E_SynchObjectFired
+    typedef enum  E_SynchObjectFired : int
     {
         /**
          * \brief   Invalid synchronization object.
@@ -80,7 +87,7 @@ namespace NESynchTypesIX
      * \brief   NESynchTypesIX::eEventResetInfo
      *          The types of reset for event objects.
      **/
-    typedef enum    E_EventResetInfo
+    typedef enum  class  E_EventResetInfo
     {
           EventResetManual      //!< The event is reset manually.
         , EventResetAutomatic   //!< The event is reset automatically.
@@ -95,7 +102,7 @@ namespace NESynchTypesIX
      *          Event matching condition. Either there should be exact match,
      *          i.e. all events are fired, of any event in the list should be fired.
      **/
-    typedef enum E_MatchCondition
+    typedef enum class E_MatchCondition
     {
           MatchConditionExact   //!< The should be exact matchin condition, i.e. all event in the list should be fired.
         , MatchConditionAny     //!< Any event in the list should be fired to unlock the thread.
@@ -109,7 +116,7 @@ namespace NESynchTypesIX
      * \brief   NESynchTypesIX::eSynchObject
      *          Type of synchronization objects.
      **/
-    typedef enum E_SynchObject
+    typedef enum class E_SynchObject : unsigned int
     {
           SoUndefined       = (0 << 0) | 0  //!< No type, it is undefined and invalid.
         , SoWaitable        = (1 << 0) | 1  //!< Waitiable object
@@ -174,9 +181,9 @@ inline const char * NESynchTypesIX::getString(NESynchTypesIX::eEventResetInfo va
 {
     switch (val)
     {
-    case NESynchTypesIX::EventResetManual:
+    case NESynchTypesIX::eEventResetInfo::EventResetManual:
         return "NESynchTypesIX::EventResetManual";
-    case NESynchTypesIX::EventResetAutomatic:
+    case NESynchTypesIX::eEventResetInfo::EventResetAutomatic:
         return "NESynchTypesIX::EventResetAutomatic";
     default:
         return "ERR: Unexpected NESynchTypesIX::eEventResetInfo value!";
@@ -187,9 +194,9 @@ inline const char * NESynchTypesIX::getString(NESynchTypesIX::eMatchCondition va
 {
     switch (val)
     {
-    case NESynchTypesIX::MatchConditionExact:
+    case NESynchTypesIX::eMatchCondition::MatchConditionExact:
         return "NESynchTypesIX::MatchConditionExact";
-    case NESynchTypesIX::MatchConditionAny:
+    case NESynchTypesIX::eMatchCondition::MatchConditionAny:
         return "NESynchTypesIX::MatchConditionAny";
     default:
         return "ERR: Unexpected NESynchTypesIX::eMatchCondition value!";
@@ -200,27 +207,25 @@ inline const char * NESynchTypesIX::getString(NESynchTypesIX::eSynchObject val)
 {
     switch (val)
     {
-    case NESynchTypesIX::SoUndefined:
+    case NESynchTypesIX::eSynchObject::SoUndefined:
         return "NESynchTypesIX::SoUndefined";
-    case NESynchTypesIX::SoWaitable:
+    case NESynchTypesIX::eSynchObject::SoWaitable:
         return "NESynchTypesIX::SoWaitable";
-    case NESynchTypesIX::SoMutex:
+    case NESynchTypesIX::eSynchObject::SoMutex:
         return "NESynchTypesIX::SoMutex";
-    case NESynchTypesIX::SoSpinLock:
+    case NESynchTypesIX::eSynchObject::SoSpinLock:
         return "NESynchTypesIX::SoSpinLock";
-    case NESynchTypesIX::SoWaitMutex:
+    case NESynchTypesIX::eSynchObject::SoWaitMutex:
         return "NESynchTypesIX::SoWaitMutex";
-    case NESynchTypesIX::SoWaitEvent:
+    case NESynchTypesIX::eSynchObject::SoWaitEvent:
         return "NESynchTypesIX::SoWaitEvent";
-    case NESynchTypesIX::SoWaitSemaphore:
+    case NESynchTypesIX::eSynchObject::SoWaitSemaphore:
         return "NESynchTypesIX::SoWaitSemaphore";
-    case NESynchTypesIX::SoWaitTimer:
+    case NESynchTypesIX::eSynchObject::SoWaitTimer:
         return "NESynchTypesIX::SoWaitTimer";
     default:
         return "ERR: Unexpected NESynchTypesIX::eSynchObject value!";
     }
 }
 
-#endif // _POSIX
-
-#endif // AREG_BASE_PRIVATE_POSIX_NESYNCHTYPESIX_HPP
+#endif // defined(_POSIX) || defined(POSIX)

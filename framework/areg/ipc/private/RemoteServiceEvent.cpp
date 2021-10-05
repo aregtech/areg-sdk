@@ -1,40 +1,34 @@
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/ipc/private/RemoteServiceEvent.cpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, Send message events
  ************************************************************************/
 
 #include "areg/ipc/RemoteServiceEvent.hpp"
 
-
-SendMessageEventData::SendMessageEventData(void)
-    : mRemoteMessage    ( )
-{
-    ; // do nothing
-}
+#include <utility>
 
 SendMessageEventData::SendMessageEventData( const RemoteMessage & remoteMessage )
     : mRemoteMessage    ( remoteMessage )
 {
-    ; // do nothing
 }
 
-SendMessageEventData::SendMessageEventData(const SendMessageEventData & source)
-    : mRemoteMessage    ( source.mRemoteMessage )
+SendMessageEventData::SendMessageEventData( SendMessageEventData && source ) noexcept
+    : mRemoteMessage    ( std::move(source.mRemoteMessage) )
 {
-    ; // do nothing
 }
 
-SendMessageEventData::~SendMessageEventData(void)
+SendMessageEventData & SendMessageEventData::operator = ( SendMessageEventData && source ) noexcept
 {
-    ; // do nothing
-}
-
-const SendMessageEventData & SendMessageEventData::operator=(const SendMessageEventData & source)
-{
-    if ( static_cast<const SendMessageEventData *>(this) != &source )
-        mRemoteMessage  = source.mRemoteMessage;
-
+    mRemoteMessage  = std::move(source.mRemoteMessage);
     return (*this);
 }

@@ -2,6 +2,8 @@
     CONSOLE APPLICATION : 03_file Project Overview
 ========================================================================
 
-This project demonstrates usage of file objects. It creates text and binary files, it shows hoe files can be copied
-and the templates of paths can be resolved. It uses relative paths and file name templates like %time% 
-(set timestamp) or %appname% (the name of the process). In the areg framework file objects are also streaming objects.
+This project demonstrates use of file objects. It creates text and binary
+files, it shows how files can be copied, use of masks in file names,
+relative and full paths. For example, how the mask %time% (timestamp) or 
+%appname% (process name) can be used. In the areg framework file objects
+are also streaming objects.

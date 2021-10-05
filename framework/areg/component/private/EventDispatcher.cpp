@@ -1,7 +1,15 @@
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/component/private/EventDispatcher.cpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, Event Dispatcher class
  *
  ************************************************************************/
@@ -22,14 +30,13 @@ EventDispatcher::EventDispatcher( const char* name )
     , IEThreadConsumer      (  )
     , IEEventRouter         (  )
 
-    , mDispatcherThread     ( NULL )
+    , mDispatcherThread     ( nullptr )
 {
-    ; // do nothing
 }
 
 EventDispatcher::~EventDispatcher( void )
 {
-    mDispatcherThread   = NULL;
+    mDispatcherThread   = nullptr;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -38,7 +45,7 @@ EventDispatcher::~EventDispatcher( void )
 bool EventDispatcher::onThreadRegistered( Thread * threadObj )
 {
     mDispatcherThread = RUNTIME_CAST(threadObj, DispatcherThread);
-    ASSERT(mDispatcherThread != NULL);
+    ASSERT(mDispatcherThread != nullptr);
 
     EventDispatcherBase::removeAllEvents( );
     return EventDispatcherBase::mEventExit.resetEvent();
@@ -47,25 +54,25 @@ bool EventDispatcher::onThreadRegistered( Thread * threadObj )
 void EventDispatcher::onThreadUnregistering( void )
 {
     stopDispatcher();
-    mDispatcherThread   = NULL;
+    mDispatcherThread   = nullptr;
 }
 
 void EventDispatcher::onThreadRuns( void )
 {
-    ASSERT(mDispatcherThread != NULL);
+    ASSERT(mDispatcherThread != nullptr);
     startDispatcher();
 }
 
 int EventDispatcher::onThreadExit( void )
 {
     stopDispatcher( );
-    mDispatcherThread   = NULL;
-    return IEThreadConsumer::EXIT_NORMAL;
+    mDispatcherThread   = nullptr;
+    return static_cast<int>(IEThreadConsumer::eExitCodes::ExitNormal);
 }
 
 bool EventDispatcher::postEvent( Event& eventElem )
 {
-    bool result = mDispatcherThread != NULL ? queueEvent(eventElem) : false;
+    bool result = mDispatcherThread != nullptr ? queueEvent(eventElem) : false;
     if (result == false)
     {
         OUTPUT_ERR("Failed to queue event of type [ %s ], going to destroy", eventElem.getRuntimeClassName());

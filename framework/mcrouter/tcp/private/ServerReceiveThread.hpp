@@ -1,10 +1,16 @@
-#ifndef MCROUTER_TCP_PRIVATE_SERVERRECEIVETHREAD_HPP
-#define MCROUTER_TCP_PRIVATE_SERVERRECEIVETHREAD_HPP
-
+#pragma once
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        mcrouter/tcp/private/ServerReceiveThread.hpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform Receive Message Thread of Server socket.
  ************************************************************************/
 
@@ -43,7 +49,7 @@ public:
     /**
      * \brief   Destructor
      **/
-    virtual ~ServerReceiveThread( void );
+    virtual ~ServerReceiveThread( void ) = default;
 
 protected:
 /************************************************************************/
@@ -57,7 +63,7 @@ protected:
      *          Override if logic should be changed.
      * \return	Returns true if Exit Event is signaled.
      **/
-    virtual bool runDispatcher( void );
+    virtual bool runDispatcher( void ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -66,23 +72,20 @@ private:
     /**
      * \brief   The instance of remote servicing interface object
      **/
-    IERemoteServiceHandler &   mRemoteService;
+    IERemoteServiceHandler &    mRemoteService;
     /**
      * \brief   The instance of connection handler interface object
      **/
-    IEServerConnectionHandler& mConnectHandler;
+    IEServerConnectionHandler & mConnectHandler;
     /**
      * \brief   The instance of server connection object
      **/
-    ServerConnection &        mConnection;
+    ServerConnection &          mConnection;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    ServerReceiveThread( void );
-    ServerReceiveThread( const ServerReceiveThread & /*src*/ );
-    const ServerReceiveThread & operator = ( const ServerReceiveThread & /*src*/ );
+    ServerReceiveThread( void ) = delete;
+    DECLARE_NOCOPY_NOMOVE( ServerReceiveThread );
 };
-
-#endif  // MCROUTER_TCP_PRIVATE_SERVERRECEIVETHREAD_HPP

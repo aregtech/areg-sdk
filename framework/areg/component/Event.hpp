@@ -1,9 +1,16 @@
-#ifndef AREG_COMPONENT_EVENT_HPP
-#define AREG_COMPONENT_EVENT_HPP
+#pragma once
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/component/Event.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, Event Base class declaration.
  *              This event class is generic and base class for all kind
  *              of events in system. This should be used for communication,
@@ -30,11 +37,15 @@
 #define DECLARE_EVENT_STATIC_REGISTRATION(EventClass)                                                       \
     public:                                                                                                 \
         /*  Declare static function to add/register event consumer to start processing event.       */      \
-        static bool addListener(IEEventConsumer& eventConsumer, const char* whichThread = NULL);            \
+        static bool addListener(IEEventConsumer& eventConsumer, const char* whichThread = nullptr);         \
+        /*  Declare static function to add/register event consumer to start processing event.       */      \
+        static bool addListener(IEEventConsumer& eventConsumer, id_type whichThread);                       \
         /*  Declare static function to add/register event consumer to start processing event.       */      \
         static bool addListener(IEEventConsumer& eventConsumer, DispatcherThread & dispThread);             \
         /*  Declare static function to remove/unregister event consumer to stop processing event.   */      \
-        static bool removeListener(IEEventConsumer& eventConsumer, const char* whichThread = NULL);         \
+        static bool removeListener(IEEventConsumer& eventConsumer, const char* whichThread = nullptr);      \
+        /*  Declare static function to remove/unregister event consumer to stop processing event.   */      \
+        static bool removeListener(IEEventConsumer& eventConsumer, id_type whichThread);                    \
         /*  Declare static function to remove/unregister event consumer to stop processing event.   */      \
         static bool removeListener(IEEventConsumer& eventConsumer, DispatcherThread & dispThread);
 
@@ -45,17 +56,23 @@
  **/
 #define IMPLEMENT_EVENT_STATIC_REGISTRATION(EventClass)                                                     \
     /*  Implementation of adding / registering event consumer.                                  */          \
-    bool EventClass::addListener(IEEventConsumer& eventConsumer, const char* whichThread /*= NULL*/)        \
-    {   return Event::addListener(EventClass::_getClassId(), eventConsumer, whichThread);      }            \
+    bool EventClass::addListener(IEEventConsumer& eventConsumer, const char* whichThread /*= nullptr*/)     \
+    {   return Event::addListener(EventClass::_getClassId(), eventConsumer, whichThread);       }           \
+    /*  Implementation of adding / registering event consumer.                                  */          \
+    bool EventClass::addListener(IEEventConsumer& eventConsumer, id_type whichThread)                       \
+    {   return Event::addListener(EventClass::_getClassId(), eventConsumer, whichThread);       }           \
     /*  Implementation of adding / registering event consumer.                                  */          \
     bool EventClass::addListener(IEEventConsumer& eventConsumer, DispatcherThread & dispThread)             \
-    {   return Event::addListener(EventClass::_getClassId(), eventConsumer, dispThread);      }             \
+    {   return Event::addListener(EventClass::_getClassId(), eventConsumer, dispThread);        }           \
     /*  Implementation of removing / unregistering event consumer.                              */          \
-    bool EventClass::removeListener(IEEventConsumer& eventConsumer, const char* whichThread /*= NULL*/)     \
-    {   return Event::removeListener(EventClass::_getClassId(), eventConsumer, whichThread);   }            \
+    bool EventClass::removeListener(IEEventConsumer& eventConsumer, const char* whichThread /*= nullptr*/)  \
+    {   return Event::removeListener(EventClass::_getClassId(), eventConsumer, whichThread);    }           \
+    /*  Implementation of removing / unregistering event consumer.                              */          \
+    bool EventClass::removeListener(IEEventConsumer& eventConsumer, id_type whichThread)                    \
+    {   return Event::removeListener(EventClass::_getClassId(), eventConsumer, whichThread);    }           \
     /*  Implementation of removing / unregistering event consumer.                              */          \
     bool EventClass::removeListener(IEEventConsumer& eventConsumer, DispatcherThread & dispThread)          \
-    {   return Event::removeListener(EventClass::_getClassId(), eventConsumer, dispThread);   }
+    {   return Event::removeListener(EventClass::_getClassId(), eventConsumer, dispThread);     }
 
 
 /**
@@ -99,30 +116,24 @@ class Thread;
 // Event class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief       This is Generic Base Event class.
- *              All events are instances of Event class.
- *              Because of this, do not create event of Event type,
- *              because it will be forwarded to all registered consumers.
- *              Instead, use unique custom or specific Event classes.
+ * \brief   A generic Base Event class. All events are instances of Event
+ *          class. Use unique custom or specific Event classes.
  *
- * \details     On the request to send Event, events are forwarded to
- *              processing dispatcher thread and queued either in 
- *              internal or external queue, depending on event type,
- *              which is described in the class. The events should be
- *              created by using 'new' operator. and should stay valid
- *              until are not processed. The caller should not delete
- *              event object, they will be automatically destroyed after
- *              processing is finished.
- *              Before sending Event, there should be appropriate Event
- *              Consumer registered in the concrete dispatcher thread.
- *              If no consumer is registered, processing event will fail.
- *              To register consumer for specific Event, use addListener()
- *              function (see above in MACRO definition).
- *              To unregister consumer for specific Event, call removeListener()
- *              function (see above in MACRO definition).
- *              There are several predefined event objects are provided,
- *              if a customer event is needed, use custom event declaration
- *              mechanism, described in TEEvent.hpp file.
+ *          The events are forwarded to be processed in dispatcher thread
+ *          and depending on even type, they are queued either in internal
+ *          or external queue. The events are created dynamically in the heap
+ *          to remain valid as long until they are processed. After processing
+ *          the events are automatically destroied.
+ * 
+ *          Before sending Event to the target dispatcher thread, the thread
+ *          should have registered event consumer object which processes
+ *          the events. The event consumers are registered and unregistered in
+ *          the dispatcher thread by calling addListener() and removeListener()
+ *          methods. User DECLARE_RUNTIME_EVENT() and IMPLEMENT_RUNTIME_EVENT()
+ *          macros to have appropriate method definition in the event object.
+ * 
+ *          In addition, the system contains several predefined event objects,
+ *          which are used by the system.
  *
  **/
 class AREG_API Event   : public RuntimeObject
@@ -135,7 +146,7 @@ public:
      * \brief   Event::eEventType
      *          Event types.
      **/
-    typedef enum E_EventType
+    typedef enum class E_EventType  : unsigned int
     {
           EventUnknown              =    0  /*0x0000*/  //!< Unknown event type.      Bit set: 0000 0000 0000 0000
         
@@ -202,13 +213,26 @@ public:
      *          i.e. registers consumer for specified event class. 
      * \param	classId	        Runtime ID of event class.
      * \param	eventConsumer	Consumer to register.
-     * \param	whichThread	    Thread name to register. If this is NULL or empty,
+     * \param	whichThread	    The registered thread name to add the
+     *                          event consumer. If this is nullptr or empty,
      *                          it will use current thread for registering consumer.
      * \return	Returns true if successfully registered.
      *          Returns false, if failed or specified thread already had specified
      *          consumer registered for specified event class type.
      **/
     static bool addListener(const RuntimeClassID & classId, IEEventConsumer & eventConsumer, const char* whichThread);
+
+    /**
+     * \brief	Static method to add the listener to specified thread,
+     *          i.e. registers consumer for specified event class.
+     * \param	classId	        Runtime ID of event class.
+     * \param	eventConsumer	Consumer to register.
+     * \param	whichThread	    The valid registered thread ID to add listener.
+     * \return	Returns true if successfully registered.
+     *          Returns false, if failed or specified thread already had specified
+     *          consumer registered for specified event class type.
+     **/
+    static bool addListener( const RuntimeClassID & classId, IEEventConsumer & eventConsumer, id_type whichThread );
 
     /**
      * \brief	Static method to add the listener to specified thread, 
@@ -227,11 +251,21 @@ public:
      *          i.e. unregister consumer in specified thread.
      * \param	classId	        Runtime ID of event class.
      * \param	eventConsumer	Consumer to unregister.
-     * \param	whichThread	    Thread name to unregister. If this is NULL or empty,
+     * \param	whichThread	    Thread name to unregister. If this is nullptr or empty,
      *                          it will use current thread to unregister consumer.
      * \return	Returns true if successfully unregistered.
      **/
     static bool removeListener(const RuntimeClassID & classId, IEEventConsumer & eventConsumer, const char* whichThread);
+
+    /**
+     * \brief	Static method to remove listener from specified thread,
+     *          i.e. unregister consumer in specified thread.
+     * \param	classId	        Runtime ID of event class.
+     * \param	eventConsumer	Consumer to unregister.
+     * \param	whichThread	    The valid registered thread ID to remove listener.
+     * \return	Returns true if successfully unregistered.
+     **/
+    static bool removeListener( const RuntimeClassID & classId, IEEventConsumer & eventConsumer, id_type whichThread );
 
     /**
      * \brief	Static method to remove listener from specified thread,
@@ -277,7 +311,7 @@ public:
      *          Overwrite if there is any special action should be performed
      *          before destroying event object.
      **/
-    virtual void destroy( void );
+    virtual void destroy( void ) override;
 
     /**
      * \brief	Dispatch event itself. Overwrite function if needed.
@@ -287,7 +321,7 @@ public:
 
     /**
      * \brief   Delivers the event to target thread. If target thread
-     *          is NULL, it deliveres to current thread.
+     *          is nullptr, it deliveres to current thread.
      **/
     virtual void deliverEvent( void );
 
@@ -305,7 +339,7 @@ public:
 
     /**
      * \brief	Removes listener from target thread, i.e. unregisters consumer
-     *          from target thread. If target thread is NULL it will unregister
+     *          from target thread. If target thread is nullptr it will unregister
      *          consumer in current thread.
      * \param	eventConsumer	The consumer object to unregister for current
      *                          event class.
@@ -327,7 +361,7 @@ public:
      * \return  Returns true if dispatching thread found in system, the thread is
      *          running and ready to dispatch events.
      **/
-    bool registerForThread(ITEM_ID whichThread = 0);
+    bool registerForThread( id_type whichThread = 0);
 
     /**
      * \brief	Searches dispatcher thread by given name and sets as an event
@@ -339,10 +373,10 @@ public:
     bool registerForThread( const char* whichThread );
 
     /**
-     * \brief	Set or re-set target thread. If target thread is NULL,
+     * \brief	Set or re-set target thread. If target thread is nullptr,
      *          all events will be forwarded to current thread.
      * \param	dispatchThread	Target Dispatcher thread
-     * \return	Returns true if target thread is not NULL and ready
+     * \return	Returns true if target thread is not nullptr and ready
      *          to dispatch events.
      **/
     bool registerForThread( DispatcherThread * dispatchThread );
@@ -373,7 +407,7 @@ public:
 
     /**
      * \brief   Returns pointer of Event Consumer object.
-     *          If NULL, no Event Consumer is set and the Event cannot be processed.
+     *          If nullptr, no Event Consumer is set and the Event cannot be processed.
      **/
     inline IEEventConsumer * getEventConsumer( void );
     /**
@@ -381,6 +415,36 @@ public:
      * \param   consumer    The Event Consumer object, which should process event
      **/
     inline void setEventConsumer( IEEventConsumer * consumer );
+
+    /**
+     * \brief   Checks whether the given event type is internal or not.
+     * \param   eventType   The event type to check.
+     **/
+    inline static bool isInternal( Event::eEventType eventType );
+
+    /**
+     * \brief   Checks whether the given event type is external or not.
+     * \param   eventType   The event type to check.
+     **/
+    inline static bool isExternal( Event::eEventType eventType );
+
+    /**
+     * \brief   Checks whether the given event type is local or not.
+     * \param   eventType   The event type to check.
+     **/
+    inline static bool isLocal( Event::eEventType eventType );
+
+    /**
+     * \brief   Checks whether the given event type is remote or not.
+     * \param   eventType   The event type to check.
+     **/
+    inline static bool isRemote( Event::eEventType eventType );
+
+    /**
+     * \brief   Checks whether the given event type is developer custom or system predefined.
+     * \param   eventType   The event type to check.
+     **/
+    inline static bool isCustom( Event::eEventType eventType );
 
     /**
      * \brief   Returns true, if event is internal, i.e. should be queued in internal event queue
@@ -402,6 +466,11 @@ public:
      **/
     inline bool isRemote( void ) const;
 
+    /**
+     * \brief   Returns true, if event is developer custom to communicate with worker thread or system predefined.
+     **/
+    inline bool isCustom( void ) const;
+
 //////////////////////////////////////////////////////////////////////////
 // Protected members
 //////////////////////////////////////////////////////////////////////////
@@ -412,6 +481,15 @@ protected:
      *          current thread.
      **/
     EventDispatcher & getDispatcher( void ) const;
+
+//////////////////////////////////////////////////////////////////////////
+// Hidden methods.
+//////////////////////////////////////////////////////////////////////////
+private:
+    /**
+     * \brief   Returns reference to event object
+     **/
+    inline Event & self( void );
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables.
@@ -431,20 +509,10 @@ protected:
     DispatcherThread*   mTargetThread;
 
 //////////////////////////////////////////////////////////////////////////
-// Hidden methods.
-//////////////////////////////////////////////////////////////////////////
-private:
-    /**
-     * \brief   Returns reference to event object
-     **/
-    inline Event & self( void );
-
-//////////////////////////////////////////////////////////////////////////
 // Forbidden method calls.
 //////////////////////////////////////////////////////////////////////////
 private:
-    Event( const Event & /*src*/ );
-    const Event & operator = ( const Event & /*src*/ );
+    DECLARE_NOCOPY_NOMOVE( Event );
 };
 
 IMPLEMENT_STREAMABLE(Event::eEventType)
@@ -473,29 +541,54 @@ inline void Event::setEventConsumer( IEEventConsumer * consumer )
     mConsumer = consumer;
 }
 
+inline bool Event::isInternal( Event::eEventType eventType )
+{
+    return (static_cast<unsigned int>(eventType) & static_cast<unsigned int>(Event::eEventType::EventInternal)) != 0;
+}
+
+inline bool Event::isExternal( Event::eEventType eventType )
+{
+    return (static_cast<unsigned int>(eventType) & static_cast<unsigned int>(Event::eEventType::EventExternal)) != 0;
+}
+
+inline bool Event::isLocal( Event::eEventType eventType )
+{
+    return (static_cast<unsigned int>(eventType) & static_cast<unsigned int>(Event::eEventType::EventLocal)) != 0;
+}
+
+inline bool Event::isRemote( Event::eEventType eventType )
+{
+    return (static_cast<unsigned int>(eventType) & static_cast<unsigned int>(Event::eEventType::EventRemote)) != 0;
+}
+
+inline bool Event::isCustom( Event::eEventType eventType )
+{
+    return (static_cast<unsigned int>(eventType) & static_cast<unsigned int>(Event::eEventType::EventCustom)) != 0;
+}
+
 inline bool Event::isInternal(void) const
 {
-    return (mEventType & Event::EventInternal) != 0;
+    return Event::isInternal(mEventType);
 }
 
 inline bool Event::isExternal(void) const
 {
-    return (mEventType & Event::EventExternal) != 0;
+    return Event::isExternal( mEventType );
 }
 
 inline bool Event::isLocal(void) const
 {
-    return (mEventType & Event::EventLocal) != 0;
+    return Event::isLocal( mEventType );
 }
 
 inline bool Event::isRemote(void) const
 {
-    return (mEventType & Event::EventRemote) != 0;
+    return Event::isRemote( mEventType );
 }
 
-inline Event& Event::self( void )
+inline bool Event::isCustom( void ) const
 {
-    return (*this);
+    return Event::isCustom( mEventType );
 }
 
 inline const char* Event::getString(Event::eEventType eventType)
@@ -503,66 +596,64 @@ inline const char* Event::getString(Event::eEventType eventType)
 
     switch ( eventType )
     {
-    case Event::EventUnknown:
-        return "Event::EventUnknown";
+    case Event::eEventType::EventUnknown:
+        return "Event::eEventType::EventUnknown";
 
-    case Event::EventInternal:
-        return "Event::EventInternal";
-    case Event::EventExternal:
-        return "Event::EventExternal";
+    case Event::eEventType::EventInternal:
+        return "Event::eEventType::EventInternal";
+    case Event::eEventType::EventExternal:
+        return "Event::eEventType::EventExternal";
 
-    case Event::EventLocal:
-        return "Event::EventLocal";
-    case Event::EventRemote:
-        return "Event::EventRemote";
+    case Event::eEventType::EventLocal:
+        return "Event::eEventType::EventLocal";
+    case Event::eEventType::EventRemote:
+        return "Event::eEventType::EventRemote";
 
-    case Event::EventNotify:
-        return "Event::EventNotify";
-    case Event::EventToStub:
-        return "Event::EventToStub";
-    case Event::EventToProxy:
-        return "Event::EventToProxy";
-    case Event::EventConnect:
-        return "Event::EventConnect";
+    case Event::eEventType::EventNotify:
+        return "Event::eEventType::EventNotify";
+    case Event::eEventType::EventToStub:
+        return "Event::eEventType::EventToStub";
+    case Event::eEventType::EventToProxy:
+        return "Event::eEventType::EventToProxy";
+    case Event::eEventType::EventConnect:
+        return "Event::eEventType::EventConnect";
 
-    case Event::EventNotifyClient:
-        return "Event::EventNotifyClient";
+    case Event::eEventType::EventNotifyClient:
+        return "Event::eEventType::EventNotifyClient";
 
-    case Event::EventLocalServiceRequest:
-        return "Event::EventLocalServiceRequest";
-    case Event::EventRemoteServiceRequest:
-        return "Event::EventRemoteServiceRequest";
+    case Event::eEventType::EventLocalServiceRequest:
+        return "Event::eEventType::EventLocalServiceRequest";
+    case Event::eEventType::EventRemoteServiceRequest:
+        return "Event::eEventType::EventRemoteServiceRequest";
 
-    case Event::EventLocalNotifyRequest:
-        return "Event::EventLocalNotifyRequest";
-    case Event::EventRemoteNotifyRequest:
-        return "Event::EventRemoteNotifyRequest";
+    case Event::eEventType::EventLocalNotifyRequest:
+        return "Event::eEventType::EventLocalNotifyRequest";
+    case Event::eEventType::EventRemoteNotifyRequest:
+        return "Event::eEventType::EventRemoteNotifyRequest";
 
-    case Event::EventLocalServiceResponse:
-        return "Event::EventLocalServiceResponse";
-    case Event::EventRemoteServiceResponse:
-        return "Event::EventRemoteServiceResponse";
+    case Event::eEventType::EventLocalServiceResponse:
+        return "Event::eEventType::EventLocalServiceResponse";
+    case Event::eEventType::EventRemoteServiceResponse:
+        return "Event::eEventType::EventRemoteServiceResponse";
 
-    case Event::EventLocalStubConnect:
-        return "Event::EventLocalStubConnect";
-    case Event::EventRemoteStubConnect:
-        return "Event::EventRemoteStubConnect";
+    case Event::eEventType::EventLocalStubConnect:
+        return "Event::eEventType::EventLocalStubConnect";
+    case Event::eEventType::EventRemoteStubConnect:
+        return "Event::eEventType::EventRemoteStubConnect";
 
-    case Event::EventLocalProxyConnect:
-        return "Event::EventLocalProxyConnect";
-    case Event::EventRemoteProxyConnect:
-        return "Event::EventRemoteProxyConnect";
+    case Event::eEventType::EventLocalProxyConnect:
+        return "Event::eEventType::EventLocalProxyConnect";
+    case Event::eEventType::EventRemoteProxyConnect:
+        return "Event::eEventType::EventRemoteProxyConnect";
 
-    case Event::EventCustom:
-        return "Event::EventCustom";
-    case Event::EventCustomInternal:
-        return "Event::EventCustomInternal";
-    case Event::EventCustomExternal:
-        return "Event::EventCustomExternal";
+    case Event::eEventType::EventCustom:
+        return "Event::eEventType::EventCustom";
+    case Event::eEventType::EventCustomInternal:
+        return "Event::eEventType::EventCustomInternal";
+    case Event::eEventType::EventCustomExternal:
+        return "Event::eEventType::EventCustomExternal";
 
     default:
         return "ERR: Undefined Event::eEventType value!";    
     }
 }
-
-#endif  // AREG_COMPONENT_EVENT_HPP

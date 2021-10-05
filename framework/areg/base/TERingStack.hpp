@@ -1,9 +1,16 @@
-#ifndef AREG_BASE_TERINGSTACK_HPP
-#define AREG_BASE_TERINGSTACK_HPP
+#pragma once
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/base/TERingStack.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, FIFO Stack class templates.
  *              Blocking and non-blocking FIFO Stacks, used to queue
  *              elements in the Stack without searching elements, 
@@ -14,8 +21,8 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
-#include "areg/base/ESynchObjects.hpp"
-#include "areg/base/ETemplateBase.hpp"
+#include "areg/base/TETemplateBase.hpp"
+#include "areg/base/SynchObjects.hpp"
 
 #include "areg/base/IEIOStream.hpp"
 #include "areg/base/NEMemory.hpp"
@@ -23,90 +30,29 @@
 /************************************************************************
  * Hierarchies. Following class are declared.
  ************************************************************************/
-template <typename VALUE, typename VALUE_TYPE, class Implement> class TERingStack;
-    template <typename VALUE, typename VALUE_TYPE, class Implement> class TELockRingStack;
-    template <typename VALUE, typename VALUE_TYPE, class Implement> class TENolockRingStack;
-
-/************************************************************************
- * \brief   This file defines ring stack object. On the first step
- *          the stack allocates space equal to passed capacity parameter.
- *          In ring stack the position of start and end elements may
- *          start at any index. When ring is empty or full, the start
- *          and end positions are equal and only element count
- *          parameter determines whether stack is full or empty.
- *          Depending on overlapping value, the stack might change behavior
- *          when it is full. It might ignore adding new element,
- *          it might insert new element, but do not change capacity of stack,
- *          then the first entry in stack will be lost. Or it might resize 
- *          stack and add new element without loosing elements.
- *          Define overlapping type during initialization of stack.
- *          The overlapping type cannot be changed, regardless capacity
- *          might be changed on assigning or streaming operations.
- *          2 types of ring stack are defined -- locking and non-locking.
- *          The locking ring stack is thread safe and can be used in 
- *          multi-threading context. The non-locking should be used only within
- *          one thread context, it is not thread safe.
- ************************************************************************/
+template <typename VALUE, typename VALUE_TYPE, class Compare> class TERingStack;
+    template <typename VALUE, typename VALUE_TYPE, class Compare> class TELockRingStack;
+    template <typename VALUE, typename VALUE_TYPE, class Compare> class TENolockRingStack;
 
 //////////////////////////////////////////////////////////////////////////
-// Ring stack type definition
+// TEStack<VALUE, VALUE_TYPE, Compare> class template declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   Overlapping operations in ring stack.
- *          Overlapping of elements in ring stack means case, when stack is
- *          full, i.e. start and end positions match and number of elements
- *          in stack is equal to stack capacity. In this case, on next request
- *          to push element, the stack may change behavior, depending on
- *          overlapping action value.
- *          1.  StopOnOverlap   --  Do not enter any new element if ring stack is full.
- *          2.  ShiftOnOverlap  --  Do not change ring stack capacity if stack is full,
- *                                  but shift start position, i.e. through out
- *                                  the very first element from ring stack and set new element.
- *          3. ResizeOnOvelap   --  Always resize stack if it is full.
- *                                  This will set new capacity of stack twice bigger
- *                                  than it was before. If initial capacity was
- *                                  zero, after resize new capacity length will be 2.
- **/
-typedef enum E_OnRingOverlap
-{
-    /**
-     * \brief   Do not copy new element, if ring stack is full
-     **/
-      StopOnOverlap     = 0
-    /**
-     * \brief   Shifts start position, if ring stack is full and does not resize stack.
-     **/
-    , ShiftOnOverlap    = 1
-    /**
-     * \brief   Resize ring stack, if stack is full. No element is lost.
-     **/
-    , ResizeOnOvelap    = 2
-
-} eOnRingOverlap;
-
-//////////////////////////////////////////////////////////////////////////
-// TEStack<VALUE, VALUE_TYPE, Implement> class template declaration
-//////////////////////////////////////////////////////////////////////////
-/**
- * \brief       TERingStack<VALUE, VALUE_TYPE, Implement>
- *              Ring FIFO Stack base object to queue elements, insert and 
- *              access by push and pop operations. TCRingZStack requires
- *              instance of synchronization object to synchronize
- *              access of stack elements, capacity value and overlapping flag.
+ * \brief   Ring FIFO Stack base object to queue elements, insert and access 
+ *          by push and pop operations. RingStack requires instance of 
+ *          synchronization object to synchronize access of stack elements, 
+ *          capacity value and overlapping flag.
  * 
- * \details    	The Ring FIFO Stack is an array, the initialize size of array
- *              is equal to capacity parameter passed during initialization.
- *              The capacity might be changed depending on overlapping flag,
- *              passed during initialization of object. If ring stack is full,
- *              the capacity might remain unchanged and the new pushed element
- *              will be either inserted or not. Or the capacity or array might 
- *              be enlarged. In this case, new capacity will be twice more than
- *              it was before. When writing or reading position in Ring Stack
- *              reaches end of array, it starts from begging. In Ring Stack
- *              the start and end position might point at any index withing array,
- *              but they cannot be more than capacity value. If Ring Stack is empty
- *              or full, the start and end positions are having same value.
- *              The element count parameter indicates whether stack is full or empty.
+ *          The capacity might be changed depending on overlapping flag. 
+ *          If ring stack is full, whether the capacity remains same or not,
+ *          whether new element is pushed or not, depends on overlappin flag.
+ *          For more details of capacity flag see NECommon::eRingOverlap 
+ *          description. In Ring Stack the start and end position might point
+ *          any index withing stack, but they cannot be more than capacity value.
+ * 
+ *          Whether the ring stack is thread safe or not, depends on the
+ *          instance of synchronization object passed to ring stack. There
+ *          are 2 types of rings: Locking and Non-locking.
  *
  * \tparam  VALUE       The type of stored items. Either should be 
  *                      primitive or should have default constructor 
@@ -114,40 +60,27 @@ typedef enum E_OnRingOverlap
  *                      possible to convert to type VALUE_TYPE.
  * \tparam  VALUE_TYPE  By default same as VALUE, but can be any other
  *                      type, which is converted from type VALUE.
+ * \tparam  Compare     Contains implementation of method to compare 2 elements.
  **/
-template <typename VALUE, typename VALUE_TYPE = VALUE, class Implement = TEListImpl<VALUE_TYPE>>
-class TERingStack   : protected Implement
-                    , private   TemplateConstants
+template <typename VALUE, typename VALUE_TYPE = VALUE, class Compare = TEListImpl<VALUE_TYPE>>
+class TERingStack
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
-protected:
+public:
     /**
-     * \brief   Ring Stack initialization constructor.
-     *          Receives reference to synchronization object, initial capacity value
-     *          and the overlapping flag, used when ring stack is full and pushing 
-     *          new element is called. The overlapping flag cannot be changed.
-     *          The capacity is changed when resize() method is called.
-     *          It is declared as protected to prevent direct call.
-     *          Use TENolockRingStack or TELockRingStack objects instead.
+     * \brief   Ring Stack initialization. Gets instance of synchronization object,
+     *          initial capacity value and the overlapping flag, used when
+     *          ring stack is full and new element sould be pushed.
      * \param   synchObject     Reference to synchronization object.
      * \param   initCapacity    The initial capacity size of ring stack.
      * \param   onOverlap       Overlapping flag, used when ring stack is full and 
-     *                          pushing new element is required.
+     *                          it is required to insert new element.
+     * \see     TENolockRingStack, TELockRingStack.
      **/
-    TERingStack( IEResourceLock & synchObject, int initCapacity = 0, eOnRingOverlap onOverlap = StopOnOverlap );
+    explicit TERingStack( IEResourceLock & synchObject, int initCapacity = 0, NECommon::eRingOverlap onOverlap = NECommon::eRingOverlap::StopOnOverlap );
 
-    /**
-     * \brief   Copy constructor.
-     *          It is declared as protected to prevent direct call.
-     *          Use TENolockRingStack or TELockRingStack objects instead.
-     * \param   synchObject     The instance of synchronization object
-     * \param   source          The Ring Stack source, which contains elements
-     **/
-    TERingStack( IEResourceLock & synchObject, const TERingStack<VALUE, VALUE_TYPE, Implement> & source );
-
-public:
     /**
      * \brief   Destructor. Public
      **/
@@ -163,7 +96,7 @@ public:
      * \param   source  The source of ring stack entries to get entries.
      * \return  Returns ring stack object
      **/
-    const TERingStack<VALUE, VALUE_TYPE, Implement> & operator = ( const TERingStack<VALUE, VALUE_TYPE, Implement> & source );
+    TERingStack<VALUE, VALUE_TYPE, Compare> & operator = ( const TERingStack<VALUE, VALUE_TYPE, Compare> & source );
 
 /************************************************************************/
 // Friend global operators to make Stack streamable
@@ -293,7 +226,7 @@ public:
      * \return  Returns number of elements copied in to the stack. The number of copied elements and elements in stack
      *          might differ depending on overlapping flag.
      **/
-    int copy( const TERingStack<VALUE, VALUE_TYPE, Implement> & source );
+    int copy( const TERingStack<VALUE, VALUE_TYPE, Compare> & source );
 
     /**
      * \brief   Resizes the capacity of stack. The operation will copy saved elements if 
@@ -309,15 +242,15 @@ public:
 
     /**
      * \brief   Searches element in the stack starting at given position (index).
-     *          The given position should be valid or equal to TemplateConstants::START_INDEX
+     *          The given position should be valid or equal to NECommon::RING_START_POSITION
      *          to search at the beginning of stack.
      * \param   elem        The value to search in the stack.
      * \param   startAt     The starting position to search. It will start to search 
-     *                      from beginning if equal to TemplateConstants::START_INDEX.
+     *                      from beginning if equal to NECommon::RING_START_POSITION.
      * \return  If found element, returns valid position (index).
-     *          Otherwise, it returns TemplateConstants::INVALID_INDEX.
+     *          Otherwise, it returns NECommon::INVALID_INDEX.
      **/
-    int find(VALUE_TYPE elem, int startAt = TemplateConstants::START_INDEX) const;
+    int find(VALUE_TYPE elem, int startAt = NECommon::RING_START_POSITION) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Protected methods
@@ -347,7 +280,7 @@ protected:
     /**
      * \brief   The overlapping flag. Set when stack is initialized and cannot be changed anymore.
      **/
-    const eOnRingOverlap    mOnOverlap;
+    const NECommon::eRingOverlap    mOnOverlap;
 
     /**
      * \brief   The array of element in stack.
@@ -373,6 +306,10 @@ protected:
      * \brief   The index of tail element in array of stack
      **/
     int                     mLastPosition;
+    /**
+     * \brief   Instance of helper object to compare values
+     **/
+    Compare                 mHelper;
 
 //////////////////////////////////////////////////////////////////////////
 // private methods
@@ -389,57 +326,54 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    TERingStack( void );
-    TERingStack( const TERingStack<VALUE, VALUE_TYPE, Implement> & );
+    TERingStack( void ) = delete;
+    TERingStack( const TERingStack<VALUE, VALUE_TYPE, Compare> & /*src*/ ) = delete;
+    TERingStack( TERingStack<VALUE, VALUE_TYPE, Compare> && /*src*/ ) noexcept = delete;
+    TERingStack<VALUE, VALUE_TYPE, Compare> & operator = ( TERingStack<VALUE, VALUE_TYPE, Compare> && /*src*/ ) noexcept = delete;
 };
 
 //////////////////////////////////////////////////////////////////////////
-// TELockRingStack<VALUE, VALUE_TYPE, Implement> class template declaration
+// TELockRingStack<VALUE, VALUE_TYPE, Compare> class template declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief       Blocking FIFO ring stack class template declaration.
- *              In this class data access is synchronized.
+ * \brief       Thread safe FIFO ring stack class template declaration.
+ *              In this class data access is synchronized. Use this object 
+ *              if elements of ring stack are accessed by more than one thread.
  *
- * \details     This blocking class template contains instance of
- *              IEResourceLock to synchronize data access by more
- *              than one thread. Any other thread trying to access elements
- *              will be blocked.
- *              Use this object if elements of ring stack are accessed more than
- *              one thread.
- *
- * \tparam  VALUE       The type of stored items. Either should be
+ * \tparam  VALUE       The type of stored elements. Either should be
  *                      primitive or should have default constructor
  *                      and valid assigning operator. Also, should be
  *                      possible to convert to type VALUE_TYPE.
  * \tparam  VALUE_TYPE  By default same as VALUE, but can be any other
  *                      type, which is converted from type VALUE.
+ * \tparam  Compare     Contains implementation of method to compare 2 elements.
  **/
-template <typename VALUE, typename VALUE_TYPE = VALUE, class Implement = TEListImpl<VALUE_TYPE>> 
-class TELockRingStack  : public TERingStack<VALUE, VALUE_TYPE, Implement>
+template <typename VALUE, typename VALUE_TYPE = VALUE, class Compare = TEListImpl<VALUE_TYPE>> 
+class TELockRingStack  : public TERingStack<VALUE, VALUE_TYPE, Compare>
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Initialization constructor. Initialized locking ring stack,
-     *          sets initial capacity of stack and sets overlapping flag.
+     * \brief   Initialized locking ring stack, sets initial capacity of 
+     *          the stack and sets overlapping flag.
      * \param   initCapacity    The initial capacity size of ring stack.
      * \param   onOverlap       Overlapping flag, used when ring stack is full and 
      *                          pushing new element is required.
      **/
-    TELockRingStack( int initCapacity = 0, eOnRingOverlap onOverlap = StopOnOverlap );
+    explicit TELockRingStack( int initCapacity = 0, NECommon::eRingOverlap onOverlap = NECommon::eRingOverlap::StopOnOverlap );
 
     /**
      * \brief   Copy constructor.
      * \param   source  The source to copy data.
      **/
-    TELockRingStack( const TERingStack<VALUE, VALUE_TYPE, Implement> & source );
+    TELockRingStack( const TERingStack<VALUE, VALUE_TYPE, Compare> & source );
 
     /**
      * \brief   Destructor
      **/
-    ~TELockRingStack( void );
+    ~TELockRingStack( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
@@ -451,30 +385,32 @@ public:
      * \param   source  The source of ring stack entries to get entries.
      * \return  Returns ring stack object
      **/
-    inline const TELockRingStack<VALUE, VALUE_TYPE, Implement> & operator = ( const TERingStack<VALUE, VALUE_TYPE, Implement> & source );
+    inline TELockRingStack<VALUE, VALUE_TYPE, Compare> & operator = ( const TERingStack<VALUE, VALUE_TYPE, Compare> & source );
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
 //////////////////////////////////////////////////////////////////////////
 private:
     /**
-     * \brief   Instance of Critical Section to synchronize data access
+     * \brief   Instance of ResourceLock to synchronize data access
      **/
-    ResourceLock  mLock;
+    ResourceLock    mLock;
+
+//////////////////////////////////////////////////////////////////////////
+// Forbidden calls
+//////////////////////////////////////////////////////////////////////////
+private:
+    DECLARE_NOMOVE( TELockRingStack );
 };
 
 //////////////////////////////////////////////////////////////////////////
-// TENolockRingStack<VALUE, VALUE_TYPE, Implement> class template declaration
+// TENolockRingStack<VALUE, VALUE_TYPE, Compare> class template declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief       No blocking FIFO ring stack class template declaration.
- *              No data access synchronization is performed in this class.
- *
- * \details     This non-blocking class template contains instance of
- *              NolockSynchObject to imitate access synchronization. 
- *              No thread will be blocked accessing ring stack elements.
- *              Use this object if there is no need to synchronize
- *              element access.
+ * \brief   No blocking FIFO ring stack class template declaration.
+ *          No data access synchronization is performed in this class.
+ *          It is faster than blocking stack and not thread safe.
+ *          Use this ring stack if elements are accessed only by one thread.
  *
  * \tparam  VALUE       The type of stored items. Either should be
  *                      primitive or should have default constructor
@@ -482,30 +418,31 @@ private:
  *                      possible to convert to type VALUE_TYPE.
  * \tparam  VALUE_TYPE  By default same as VALUE, but can be any other
  *                      type, which is converted from type VALUE.
+ * \tparam  Compare     Contains implementation of method to compare 2 elements.
  **/
-template <typename VALUE, typename VALUE_TYPE = VALUE, class Implement = TEListImpl<VALUE_TYPE>> 
-class TENolockRingStack    : public TERingStack<VALUE, VALUE_TYPE, Implement>
+template <typename VALUE, typename VALUE_TYPE = VALUE, class Compare = TEListImpl<VALUE_TYPE>> 
+class TENolockRingStack    : public TERingStack<VALUE, VALUE_TYPE, Compare>
 {
 public:
     /**
-     * \brief   Initialization constructor. Initialized locking ring stack,
-     *          sets initial capacity of stack and sets overlapping flag.
+     * \brief   Initializes non-blocking ring stack, sets initial capacity of 
+     *          the stack and sets overlapping flag.
      * \param   initCapacity    The initial capacity size of ring stack.
      * \param   onOverlap       Overlapping flag, used when ring stack is full and 
      *                          pushing new element is required.
      **/
-    TENolockRingStack( int initCapacity = 0, eOnRingOverlap onOverlap = StopOnOverlap );
+    TENolockRingStack( int initCapacity = 0, NECommon::eRingOverlap onOverlap = NECommon::eRingOverlap::StopOnOverlap );
 
     /**
      * \brief   Copy constructor.
      * \param   source  The source to copy data.
      **/
-    TENolockRingStack( const TERingStack<VALUE, VALUE_TYPE, Implement> & source );
+    TENolockRingStack( const TERingStack<VALUE, VALUE_TYPE, Compare> & source );
 
     /**
      * \brief   Destructor
      **/
-    ~TENolockRingStack( void );
+    ~TENolockRingStack( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
@@ -517,7 +454,7 @@ public:
      * \param   source  The source of ring stack entries to get entries.
      * \return  Returns ring stack object
      **/
-    inline const TENolockRingStack<VALUE, VALUE_TYPE, Implement> & operator = ( const TERingStack<VALUE, VALUE_TYPE, Implement> & source );
+    inline TENolockRingStack<VALUE, VALUE_TYPE, Compare> & operator = ( const TERingStack<VALUE, VALUE_TYPE, Compare> & source );
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -527,6 +464,12 @@ private:
      * \brief   Synchronization object simulation.
      **/
     NolockSynchObject mNoLock;
+
+//////////////////////////////////////////////////////////////////////////
+// Forbidden calls
+//////////////////////////////////////////////////////////////////////////
+private:
+    DECLARE_NOMOVE( TENolockRingStack );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -534,71 +477,43 @@ private:
 //////////////////////////////////////////////////////////////////////////
 
 //////////////////////////////////////////////////////////////////////////
-// TERingStack<VALUE, VALUE_TYPE, Implement> class template implementation
+// TERingStack<VALUE, VALUE_TYPE, Compare> class template implementation
 //////////////////////////////////////////////////////////////////////////
-template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /*= TEListImpl<VALUE_TYPE>*/>
-TERingStack<VALUE, VALUE_TYPE, Implement>::TERingStack( IEResourceLock & synchObject, int initCapacity /*= 0*/, eOnRingOverlap onOverlap /*= StopOnOverlap*/ )
-    : Implement             ( )
-    , TemplateConstants   ( )
-    
-    , mSynchObject          ( synchObject )
-    , mOnOverlap            ( onOverlap )
-    , mStackList            ( NULL )
-    , mElemCount            ( 0 )
-    , mCapacity             ( 0 )
-    , mStartPosition        ( 0 )
-    , mLastPosition         ( 0 )
+template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Compare /*= TEListImpl<VALUE_TYPE>*/>
+TERingStack<VALUE, VALUE_TYPE, Compare>::TERingStack( IEResourceLock & synchObject, int initCapacity /*= 0*/, NECommon::eRingOverlap onOverlap /*= NECommon::eRingOverlap::StopOnOverlap*/ )
+    : mSynchObject  ( synchObject )
+    , mOnOverlap    ( onOverlap )
+    , mStackList    ( nullptr )
+    , mElemCount    ( 0 )
+    , mCapacity     ( 0 )
+    , mStartPosition( 0 )
+    , mLastPosition ( 0 )
+    , mHelper       ( )
 {
     if ( initCapacity > 0 )
     {
         mStackList  = reinterpret_cast<VALUE *>(DEBUG_NEW unsigned char [ initCapacity * sizeof(VALUE) ]);
-        mCapacity   = mStackList != NULL ? initCapacity : 0;
+        mCapacity   = mStackList != nullptr ? initCapacity : 0;
     }
 }
 
-template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /*= TEListImpl<VALUE_TYPE>*/>
-TERingStack<VALUE, VALUE_TYPE, Implement>::TERingStack( IEResourceLock & synchObject, const TERingStack<VALUE, VALUE_TYPE, Implement> & source )
-    : mSynchObject      ( synchObject )
-    , mOnOverlap        ( source.mOnOverlap )
-    , mStackList        ( NULL )
-    , mElemCount        ( 0 )
-    , mCapacity         ( 0 )
-    , mStartPosition    ( 0 )
-    , mLastPosition     ( 0 )
-{
-    if ( source.mCapacity > 0 )
-    {
-        mStackList  = reinterpret_cast<VALUE *>(DEBUG_NEW unsigned char [ source.mCapacity * sizeof(VALUE) ]);
-        mCapacity   = mStackList != NULL ? source.mCapacity : 0;
-
-        if ( mStackList != NULL )
-        {
-            NEMemory::constructElems<VALUE>(mStackList, source.mElemCount);
-            int pos = source.mStartPosition;
-            for ( mLastPosition = 0; mLastPosition < source.mElemCount; mLastPosition ++ )
-            {
-                mStackList[mLastPosition] = source.mStackList[pos];
-                pos = ( pos + 1 ) % source.mCapacity;
-            }
-            
-            mElemCount   = source.mElemCount;
-        }
-    }
-}
-
-template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /*= TEListImpl<VALUE_TYPE>*/>
-TERingStack<VALUE, VALUE_TYPE, Implement>::~TERingStack( void )
+template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Compare /*= TEListImpl<VALUE_TYPE>*/>
+TERingStack<VALUE, VALUE_TYPE, Compare>::~TERingStack( void )
 {
     _emptyStack();
 
-    if ( mStackList != NULL )
-        delete [] reinterpret_cast<unsigned char *>(mStackList);
+    if ( mStackList != nullptr )
+    {
+        delete[] reinterpret_cast<unsigned char *>(mStackList);
+    }
+
+    mStackList = nullptr;
 }
 
-template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /*= TEListImpl<VALUE_TYPE>*/>
-const TERingStack<VALUE, VALUE_TYPE, Implement> & TERingStack<VALUE, VALUE_TYPE, Implement>::operator = ( const TERingStack<VALUE, VALUE_TYPE, Implement> & source )
+template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Compare /*= TEListImpl<VALUE_TYPE>*/>
+TERingStack<VALUE, VALUE_TYPE, Compare> & TERingStack<VALUE, VALUE_TYPE, Compare>::operator = ( const TERingStack<VALUE, VALUE_TYPE, Compare> & source )
 {
-    if (static_cast<const TERingStack<VALUE, VALUE_TYPE, Implement> *>(this) != &source)
+    if (static_cast<const TERingStack<VALUE, VALUE_TYPE, Compare> *>(this) != &source)
     {
         Lock lock(mSynchObject);
 
@@ -606,7 +521,10 @@ const TERingStack<VALUE, VALUE_TYPE, Implement> & TERingStack<VALUE, VALUE_TYPE,
         source.lock();
 
         if ( mCapacity < source.mElemCount )
+        {
             resize( source.mElemCount );
+        }
+
         int pos = source.mStartPosition;
         for ( int i = 0; i < source.mElemCount; ++ i )
         {
@@ -619,54 +537,55 @@ const TERingStack<VALUE, VALUE_TYPE, Implement> & TERingStack<VALUE, VALUE_TYPE,
     return (*this);
 }
 
-template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /*= TEListImpl<VALUE_TYPE>*/>
-inline int TERingStack<VALUE, VALUE_TYPE, Implement>::getSize( void ) const
+template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Compare /*= TEListImpl<VALUE_TYPE>*/>
+inline int TERingStack<VALUE, VALUE_TYPE, Compare>::getSize( void ) const
 {
     Lock lock( mSynchObject );
     return mElemCount;
 }
 
-template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /*= TEListImpl<VALUE_TYPE>*/>
-inline bool TERingStack<VALUE, VALUE_TYPE, Implement>::isEmpty( void ) const
+template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Compare /*= TEListImpl<VALUE_TYPE>*/>
+inline bool TERingStack<VALUE, VALUE_TYPE, Compare>::isEmpty( void ) const
 {
     Lock lock( mSynchObject );
     return (mElemCount == 0);
 }
 
-template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /*= TEListImpl<VALUE_TYPE>*/>
-inline bool TERingStack<VALUE, VALUE_TYPE, Implement>::lock( void ) const
+template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Compare /*= TEListImpl<VALUE_TYPE>*/>
+inline bool TERingStack<VALUE, VALUE_TYPE, Compare>::lock( void ) const
 {
-    return mSynchObject.lock(IESynchObject::WAIT_INFINITE);
+    return mSynchObject.lock(NECommon::WAIT_INFINITE);
 }
 
-template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /*= TEListImpl<VALUE_TYPE>*/>
-inline bool TERingStack<VALUE, VALUE_TYPE, Implement>::unlock( void ) const
+template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Compare /*= TEListImpl<VALUE_TYPE>*/>
+inline bool TERingStack<VALUE, VALUE_TYPE, Compare>::unlock( void ) const
 {
     return mSynchObject.unlock();
 }
 
-template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /*= TEListImpl<VALUE_TYPE>*/>
-inline int TERingStack<VALUE, VALUE_TYPE, Implement>::capacity( void ) const
+template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Compare /*= TEListImpl<VALUE_TYPE>*/>
+inline int TERingStack<VALUE, VALUE_TYPE, Compare>::capacity( void ) const
 {
-    Lock lock(mSynchObject); return mCapacity;
+    Lock lock(mSynchObject);
+    return mCapacity;
 }
 
-template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /*= TEListImpl<VALUE_TYPE>*/>
-inline bool TERingStack<VALUE, VALUE_TYPE, Implement>::isFull( void ) const
+template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Compare /*= TEListImpl<VALUE_TYPE>*/>
+inline bool TERingStack<VALUE, VALUE_TYPE, Compare>::isFull( void ) const
 {
     Lock lock(mSynchObject);
     return (mElemCount == mCapacity);
 }
 
-template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /*= TEListImpl<VALUE_TYPE>*/>
-void TERingStack<VALUE, VALUE_TYPE, Implement>::removeAll( void )
+template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Compare /*= TEListImpl<VALUE_TYPE>*/>
+void TERingStack<VALUE, VALUE_TYPE, Compare>::removeAll( void )
 {
     Lock lock(mSynchObject);
     _emptyStack();
 }
 
-template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /*= TEListImpl<VALUE_TYPE>*/>
-int TERingStack<VALUE, VALUE_TYPE, Implement>::pushLast( VALUE_TYPE newElement )
+template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Compare /*= TEListImpl<VALUE_TYPE>*/>
+int TERingStack<VALUE, VALUE_TYPE, Compare>::pushLast( VALUE_TYPE newElement )
 {
     Lock lock(mSynchObject);
 
@@ -679,13 +598,13 @@ int TERingStack<VALUE, VALUE_TYPE, Implement>::pushLast( VALUE_TYPE newElement )
         NEMemory::constructElems<VALUE>(block, 1);
         *block = newElement;
         mLastPosition = (mLastPosition + 1) % mCapacity;
-        mElemCount ++;
+        ++ mElemCount;
     }
     else
     {
         switch ( mOnOverlap )
         {
-        case ShiftOnOverlap:
+        case NECommon::eRingOverlap::ShiftOnOverlap:
             ASSERT( mLastPosition == mStartPosition );
             if ( mCapacity > 0 )
             {
@@ -703,7 +622,7 @@ int TERingStack<VALUE, VALUE_TYPE, Implement>::pushLast( VALUE_TYPE newElement )
             }
             break;
 
-        case ResizeOnOvelap:
+        case NECommon::eRingOverlap::ResizeOnOvelap:
             if ( resize( (mCapacity > 0 ? mCapacity : 1) * 2 ) > (mElemCount + 1 ))
             {
                 ASSERT(mCapacity >= mElemCount + 1);
@@ -711,11 +630,11 @@ int TERingStack<VALUE, VALUE_TYPE, Implement>::pushLast( VALUE_TYPE newElement )
                 NEMemory::constructElems<VALUE>(block, 1);
                 *block = newElement;
                 mLastPosition = (mLastPosition + 1) % mCapacity;
-                mElemCount ++;
+                ++ mElemCount;
             }
             break;
 
-        case StopOnOverlap:
+        case NECommon::eRingOverlap::StopOnOverlap:
             OUTPUT_WARN("The new element is not set in Ring Stack, there is no more free space for new element");
             break;  // do nothing
 
@@ -729,8 +648,8 @@ int TERingStack<VALUE, VALUE_TYPE, Implement>::pushLast( VALUE_TYPE newElement )
     return mElemCount;
 }
 
-template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /*= TEListImpl<VALUE_TYPE>*/>
-int TERingStack<VALUE, VALUE_TYPE, Implement>::pushFirst( VALUE_TYPE newElement )
+template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Compare /*= TEListImpl<VALUE_TYPE>*/>
+int TERingStack<VALUE, VALUE_TYPE, Compare>::pushFirst( VALUE_TYPE newElement )
 {
     Lock lock(mSynchObject);
 
@@ -743,7 +662,7 @@ int TERingStack<VALUE, VALUE_TYPE, Implement>::pushFirst( VALUE_TYPE newElement 
         VALUE * block = mStackList + mStartPosition;
         NEMemory::constructElems<VALUE>(block, 1);
         *block = newElement;
-        mElemCount ++;
+        ++ mElemCount;
 
         ASSERT( mStartPosition != mLastPosition || mElemCount == mCapacity );
     }
@@ -751,7 +670,7 @@ int TERingStack<VALUE, VALUE_TYPE, Implement>::pushFirst( VALUE_TYPE newElement 
     {
         switch ( mOnOverlap )
         {
-        case ShiftOnOverlap:
+        case NECommon::eRingOverlap::ShiftOnOverlap:
             ASSERT( mLastPosition == mStartPosition );
             if ( mCapacity > 0 )
             {
@@ -769,7 +688,7 @@ int TERingStack<VALUE, VALUE_TYPE, Implement>::pushFirst( VALUE_TYPE newElement 
             }
             break;
 
-        case ResizeOnOvelap:
+        case NECommon::eRingOverlap::ResizeOnOvelap:
             if ( resize( (mCapacity > 0 ? mCapacity : 1) * 2 ) > (mElemCount + 1 ))
             {
                 ASSERT(mCapacity >= mElemCount + 1);
@@ -777,11 +696,11 @@ int TERingStack<VALUE, VALUE_TYPE, Implement>::pushFirst( VALUE_TYPE newElement 
                 VALUE * block = mStackList + mStartPosition;
                 NEMemory::constructElems<VALUE>(block, 1);
                 *block = newElement;
-                mElemCount ++;
+                ++ mElemCount;
             }
             break;
 
-        case StopOnOverlap:
+        case NECommon::eRingOverlap::StopOnOverlap:
             OUTPUT_WARN("The new element is not set in Ring Stack, there is no more free space for new element");
             break;  // do nothing
 
@@ -795,8 +714,8 @@ int TERingStack<VALUE, VALUE_TYPE, Implement>::pushFirst( VALUE_TYPE newElement 
     return mElemCount;
 }
 
-template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /*= TEListImpl<VALUE_TYPE>*/>
-VALUE TERingStack<VALUE, VALUE_TYPE, Implement>::popFirst( void )
+template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Compare /*= TEListImpl<VALUE_TYPE>*/>
+VALUE TERingStack<VALUE, VALUE_TYPE, Compare>::popFirst( void )
 {
     Lock lock(mSynchObject);
     ASSERT( isEmpty() == false );
@@ -810,8 +729,9 @@ VALUE TERingStack<VALUE, VALUE_TYPE, Implement>::popFirst( void )
         result = mStackList[mStartPosition];
         NEMemory::destroyElems<VALUE>( mStackList + mStartPosition, 1 );
         mStartPosition = (mStartPosition + 1) % mCapacity;
+        -- mElemCount;
 
-        ASSERT( mStartPosition != mLastPosition || mElemCount == 0 );
+        ASSERT( (mStartPosition != mLastPosition) || (mElemCount == 0) );
     }
     else
     {
@@ -820,12 +740,12 @@ VALUE TERingStack<VALUE, VALUE_TYPE, Implement>::popFirst( void )
     return result;
 }
 
-template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /*= TEListImpl<VALUE_TYPE>*/>
-int TERingStack<VALUE, VALUE_TYPE, Implement>::copy( const TERingStack<VALUE, VALUE_TYPE, Implement> & source )
+template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Compare /*= TEListImpl<VALUE_TYPE>*/>
+int TERingStack<VALUE, VALUE_TYPE, Compare>::copy( const TERingStack<VALUE, VALUE_TYPE, Compare> & source )
 {
     Lock lock(mSynchObject);
     int result = 0;
-    if ( static_cast<const TERingStack<VALUE, VALUE_TYPE, Implement> *>(this) != &source )
+    if ( static_cast<const TERingStack<VALUE, VALUE_TYPE, Compare> *>(this) != &source )
     {
         Lock lock2(source.mSynchObject);
 
@@ -839,14 +759,14 @@ int TERingStack<VALUE, VALUE_TYPE, Implement>::copy( const TERingStack<VALUE, VA
                 *block          = source.mStackList[srcStart];
                 mLastPosition   = (mLastPosition + 1) % mCapacity;
                 srcStart        = ( srcStart + 1 ) % source.mCapacity;
-                mElemCount ++;
+                ++ mElemCount;
             }
         }
         else
         {
             switch ( mOnOverlap )
             {
-            case ShiftOnOverlap:
+            case NECommon::eRingOverlap::ShiftOnOverlap:
                 ASSERT( mLastPosition == mStartPosition );
                 if ( mCapacity > 0 )
                 {
@@ -868,7 +788,7 @@ int TERingStack<VALUE, VALUE_TYPE, Implement>::copy( const TERingStack<VALUE, VA
                 }
                 break;
 
-            case ResizeOnOvelap:
+            case NECommon::eRingOverlap::ResizeOnOvelap:
                 if ( resize( (mCapacity > 0 ? mCapacity : 1) * 2 ) > (mElemCount + 1 ))
                 {
                     ASSERT(mCapacity >= mElemCount + 1);
@@ -879,12 +799,12 @@ int TERingStack<VALUE, VALUE_TYPE, Implement>::copy( const TERingStack<VALUE, VA
                         *block = source.mStackList[srcStart];
                         mLastPosition   = (mLastPosition + 1) % mCapacity;
                         srcStart        = ( srcStart + 1 ) % source.mCapacity;
-                        mElemCount ++;
+                        ++ mElemCount;
                     }
                 }
                 break;
 
-            case StopOnOverlap:
+            case NECommon::eRingOverlap::StopOnOverlap:
                 OUTPUT_WARN("The new element is not set in Ring Stack, there is no more free space for new element");
                 break;  // do nothing
 
@@ -903,19 +823,19 @@ int TERingStack<VALUE, VALUE_TYPE, Implement>::copy( const TERingStack<VALUE, VA
     return result;
 }
 
-template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /*= TEListImpl<VALUE_TYPE>*/>
-int TERingStack<VALUE, VALUE_TYPE, Implement>::resize( int newCapacity )
+template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Compare /*= TEListImpl<VALUE_TYPE>*/>
+int TERingStack<VALUE, VALUE_TYPE, Compare>::resize( int newCapacity )
 {
     Lock lock(mSynchObject);
 
     if ( newCapacity != mCapacity )
     {
-        VALUE * newList = newCapacity > 0 ? reinterpret_cast<VALUE *>( DEBUG_NEW unsigned char[ newCapacity ] ) : NULL;
+        VALUE * newList = newCapacity > 0 ? reinterpret_cast<VALUE *>( DEBUG_NEW unsigned char[ newCapacity ] ) : nullptr;
         int dstLast     = 0;
         int srcStart    = mStartPosition;
         int elemCount   = newCapacity > mElemCount ? mElemCount : newCapacity;
 
-        if ( newList != NULL )
+        if ( newList != nullptr )
         {
             NEMemory::constructElems(newList, elemCount);
             for ( int i = 0; i < elemCount; i ++ )
@@ -926,26 +846,28 @@ int TERingStack<VALUE, VALUE_TYPE, Implement>::resize( int newCapacity )
         }
 
         _emptyStack();
-        if ( mStackList != NULL )
-            delete [] reinterpret_cast<unsigned char *>(mStackList);
+        if ( mStackList != nullptr )
+        {
+            delete[] reinterpret_cast<unsigned char *>(mStackList);
+        }
 
         mStackList      = newList;
         mStartPosition  = 0;
         mLastPosition   = dstLast;
         mElemCount      = dstLast;
-        mCapacity       = newList != NULL ? newCapacity : 0;
+        mCapacity       = newList != nullptr ? newCapacity : 0;
     }
 
     return mCapacity;
 }
 
-template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /*= TEListImpl<VALUE_TYPE>*/>
-int TERingStack<VALUE, VALUE_TYPE, Implement>::find(VALUE_TYPE elem, int startAt /*= TemplateConstants::START_INDEX*/) const
+template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Compare /*= TEListImpl<VALUE_TYPE>*/>
+int TERingStack<VALUE, VALUE_TYPE, Compare>::find(VALUE_TYPE elem, int startAt /*= NECommon::RING_START_POSITION*/) const
 {
     Lock lock(mSynchObject);
 
-    int result = TemplateConstants::INVALID_INDEX;
-    int pos = startAt == TemplateConstants::START_INDEX ? mStartPosition : startAt + 1;
+    int result = NECommon::INVALID_INDEX;
+    int pos = startAt == NECommon::RING_START_POSITION ? mStartPosition : startAt + 1;
     if (pos <= mLastPosition)
     {
         while (pos <= mLastPosition)
@@ -959,7 +881,7 @@ int TERingStack<VALUE, VALUE_TYPE, Implement>::find(VALUE_TYPE elem, int startAt
             ++ pos;
         }
     }
-    else if (mOnOverlap == ShiftOnOverlap)
+    else if (mOnOverlap == NECommon::eRingOverlap::ShiftOnOverlap)
     {
         while (pos < mElemCount)
         {
@@ -972,7 +894,7 @@ int TERingStack<VALUE, VALUE_TYPE, Implement>::find(VALUE_TYPE elem, int startAt
             ++ pos;
         }
 
-        if (result == TemplateConstants::INVALID_INDEX)
+        if (result == NECommon::INVALID_INDEX)
         {
             pos = 0;
             while (pos <= mLastPosition)
@@ -991,18 +913,18 @@ int TERingStack<VALUE, VALUE_TYPE, Implement>::find(VALUE_TYPE elem, int startAt
     return result;
 }
 
-template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /*= TEListImpl<VALUE_TYPE>*/>
-inline bool TERingStack<VALUE, VALUE_TYPE, Implement>::isEqualValues(VALUE_TYPE Value1, VALUE_TYPE Value2) const
+template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Compare /*= TEListImpl<VALUE_TYPE>*/>
+inline bool TERingStack<VALUE, VALUE_TYPE, Compare>::isEqualValues(VALUE_TYPE Value1, VALUE_TYPE Value2) const
 {
-    return Implement::ImplEqualVales(Value1, Value2);
+    return mHelper.implEqualVales(Value1, Value2);
 }
 
-template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /*= TEListImpl<VALUE_TYPE>*/>
-void TERingStack<VALUE, VALUE_TYPE, Implement>::_emptyStack( void )
+template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Compare /*= TEListImpl<VALUE_TYPE>*/>
+void TERingStack<VALUE, VALUE_TYPE, Compare>::_emptyStack( void )
 {
     // do not delete stack, only remove elements and reset data.
     // keep capacity same
-    if ( mStackList != NULL )
+    if ( mStackList != nullptr )
     {
         for ( int i = 0; i < mElemCount; i ++ )
         {
@@ -1017,53 +939,55 @@ void TERingStack<VALUE, VALUE_TYPE, Implement>::_emptyStack( void )
 }
 
 //////////////////////////////////////////////////////////////////////////
-// TELockRingStack<VALUE, VALUE_TYPE, Implement> class template implementation
+// TELockRingStack<VALUE, VALUE_TYPE, Compare> class template implementation
 //////////////////////////////////////////////////////////////////////////
-template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /*= TEListImpl<VALUE_TYPE>*/>
-TELockRingStack<VALUE, VALUE_TYPE, Implement>::TELockRingStack( int initCapacity /*= 0*/, eOnRingOverlap onOverlap /*= StopOnOverlap*/ )
-    : TERingStack<VALUE, VALUE_TYPE, Implement>    ( mLock, initCapacity, onOverlap )
+template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Compare /*= TEListImpl<VALUE_TYPE>*/>
+TELockRingStack<VALUE, VALUE_TYPE, Compare>::TELockRingStack( int initCapacity /*= 0*/, NECommon::eRingOverlap onOverlap /*= NECommon::eRingOverlap::StopOnOverlap*/ )
+    : TERingStack<VALUE, VALUE_TYPE, Compare>    ( mLock, initCapacity, onOverlap )
     , mLock ( false )
-{   ;   }
+{
+}
 
-template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /*= TEListImpl<VALUE_TYPE>*/>
-TELockRingStack<VALUE, VALUE_TYPE, Implement>::TELockRingStack( const TERingStack<VALUE, VALUE_TYPE, Implement> & source )
-    : TERingStack<VALUE, VALUE_TYPE, Implement>    ( mLock, source )
+template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Compare /*= TEListImpl<VALUE_TYPE>*/>
+TELockRingStack<VALUE, VALUE_TYPE, Compare>::TELockRingStack( const TERingStack<VALUE, VALUE_TYPE, Compare> & source )
+    : TERingStack<VALUE, VALUE_TYPE, Compare>    ( mLock, source )
     , mLock ( false )
-{   ;   }
+{
+}
 
-template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /*= TEListImpl<VALUE_TYPE>*/>
-TELockRingStack<VALUE, VALUE_TYPE, Implement>::~TELockRingStack( void )
-{   ;   }
-
-template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /*= TEListImpl<VALUE_TYPE>*/>
-inline const TELockRingStack<VALUE, VALUE_TYPE, Implement> & TELockRingStack<VALUE, VALUE_TYPE, Implement>::operator = ( const TERingStack<VALUE, VALUE_TYPE, Implement> & source )
-{   static_cast<TERingStack<VALUE, VALUE_TYPE, Implement> &>(*this) = source; return (*this);     }
+template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Compare /*= TEListImpl<VALUE_TYPE>*/>
+inline TELockRingStack<VALUE, VALUE_TYPE, Compare> & TELockRingStack<VALUE, VALUE_TYPE, Compare>::operator = ( const TERingStack<VALUE, VALUE_TYPE, Compare> & source )
+{
+    static_cast<TERingStack<VALUE, VALUE_TYPE, Compare> &>(*this) = source;
+    return (*this);
+}
 
 //////////////////////////////////////////////////////////////////////////
-// TENolockRingStack<VALUE, VALUE_TYPE, Implement> class template implementation
+// TENolockRingStack<VALUE, VALUE_TYPE, Compare> class template implementation
 //////////////////////////////////////////////////////////////////////////
-template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /*= TEListImpl<VALUE_TYPE>*/>
-TENolockRingStack<VALUE, VALUE_TYPE, Implement>::TENolockRingStack( int initCapacity /*= 0*/, eOnRingOverlap onOverlap /*= StopOnOverlap*/ )
-    : TERingStack<VALUE, VALUE_TYPE, Implement>    ( mNoLock, initCapacity, onOverlap )
+template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Compare /*= TEListImpl<VALUE_TYPE>*/>
+TENolockRingStack<VALUE, VALUE_TYPE, Compare>::TENolockRingStack( int initCapacity /*= 0*/, NECommon::eRingOverlap onOverlap /*= NECommon::eRingOverlap::StopOnOverlap*/ )
+    : TERingStack<VALUE, VALUE_TYPE, Compare>    ( mNoLock, initCapacity, onOverlap )
     , mNoLock   ( )
-{   ;   }
+{
+}
 
-template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /*= TEListImpl<VALUE_TYPE>*/>
-TENolockRingStack<VALUE, VALUE_TYPE, Implement>::TENolockRingStack( const TERingStack<VALUE, VALUE_TYPE, Implement> & source )
-    : TERingStack<VALUE, VALUE_TYPE, Implement>    ( mNoLock, source )
+template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Compare /*= TEListImpl<VALUE_TYPE>*/>
+TENolockRingStack<VALUE, VALUE_TYPE, Compare>::TENolockRingStack( const TERingStack<VALUE, VALUE_TYPE, Compare> & source )
+    : TERingStack<VALUE, VALUE_TYPE, Compare>    ( mNoLock, source )
     , mNoLock   ( )
-{   ;   }
+{
+}
 
-template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /*= TEListImpl<VALUE_TYPE>*/>
-TENolockRingStack<VALUE, VALUE_TYPE, Implement>::~TENolockRingStack( void )
-{   ;   }
-
-template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /*= TEListImpl<VALUE_TYPE>*/>
-inline const TENolockRingStack<VALUE, VALUE_TYPE, Implement> & TENolockRingStack<VALUE, VALUE_TYPE, Implement>::operator = ( const TERingStack<VALUE, VALUE_TYPE, Implement> & source )
-{   static_cast<TERingStack<VALUE, VALUE_TYPE, Implement> &>(*this) = source; return (*this);     }
+template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Compare /*= TEListImpl<VALUE_TYPE>*/>
+inline TENolockRingStack<VALUE, VALUE_TYPE, Compare> & TENolockRingStack<VALUE, VALUE_TYPE, Compare>::operator = ( const TERingStack<VALUE, VALUE_TYPE, Compare> & source )
+{
+    static_cast<TERingStack<VALUE, VALUE_TYPE, Compare> &>(*this) = source;
+    return (*this);
+}
 
 //////////////////////////////////////////////////////////////////////////
-// TERingStack<VALUE, VALUE_TYPE, Implement> class template friend operators
+// TERingStack<VALUE, VALUE_TYPE, Compare> class template friend operators
 //////////////////////////////////////////////////////////////////////////
 
 template<typename V, typename VT, class Impl>
@@ -1104,5 +1028,3 @@ IEOutStream & operator << ( IEOutStream & stream, const TERingStack<V, VT, Impl>
 
     return stream;
 }
-
-#endif  // AREG_BASE_TERINGSTACK_HPP

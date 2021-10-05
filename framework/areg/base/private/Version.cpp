@@ -1,7 +1,15 @@
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/base/private/Version.cpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, Version class
  *
  ************************************************************************/
@@ -10,12 +18,12 @@
 
 #include "areg/base/IEIOStream.hpp"
 #include "areg/base/NEUtilities.hpp"
+#include "areg/base/NECommon.hpp"
 
 //////////////////////////////////////////////////////////////////////////
 // Version class implementation
 //////////////////////////////////////////////////////////////////////////
 
-const char * const   Version::_VERSION_SEPARATOR  = ".";  //!< The version separator as a string.
 /**
  * \brief   Invalid Version object. The invalid version contains following version numbers (0, 0, 0)
  **/
@@ -29,7 +37,6 @@ Version::Version( void )
     , mMinor    (0)
     , mPatch    (0)
 {
-    ; // do nothing
 }
 
 Version::Version( unsigned int major, unsigned int minor, unsigned int patch /*= 0*/ )
@@ -37,7 +44,6 @@ Version::Version( unsigned int major, unsigned int minor, unsigned int patch /*=
     , mMinor    (minor)
     , mPatch    (patch)
 {
-    ; // do nothing
 }
 
 Version::Version( const Version &src )
@@ -45,7 +51,13 @@ Version::Version( const Version &src )
     , mMinor    (src.mMinor)
     , mPatch    (src.mPatch)
 {
-    ; // do nothing
+}
+
+Version::Version( Version && src ) noexcept
+    : mMajor    ( src.mMajor )
+    , mMinor    ( src.mMinor )
+    , mPatch    ( src.mPatch )
+{
 }
 
 Version::Version(const IEInStream & stream)
@@ -66,25 +78,20 @@ Version::Version(const char * version)
     convFromString(version);
 }
 
-Version::~Version( void )
-{
-    ; // do nothing
-}
-
 //////////////////////////////////////////////////////////////////////////
 // Methods
 //////////////////////////////////////////////////////////////////////////
-const Version & Version::convFromString( const char * version )
+Version & Version::convFromString( const char * version )
 {
     mMajor  = 0;
     mMinor  = 0;
     mPatch  = 0;
 
     String temp(version), major, minor, patch;
-    NEString::CharPos pos = NEString::StartPos;
-    pos = temp.substring( major, _VERSION_SEPARATOR, pos );
-    pos = temp.substring( minor, _VERSION_SEPARATOR, pos );
-    pos = temp.substring( patch, _VERSION_SEPARATOR, pos );
+    NEString::CharPos pos = NEString::START_POS;
+    pos = temp.substring( major, NECommon::OBJECT_SEPARATOR, pos );
+    pos = temp.substring( minor, NECommon::OBJECT_SEPARATOR, pos );
+    pos = temp.substring( patch, NECommon::OBJECT_SEPARATOR, pos );
 
     mMajor  = major.convToUInt32();;
     mMinor  = minor.convToUInt32();
@@ -93,7 +100,7 @@ const Version & Version::convFromString( const char * version )
     return (*this);
 }
 
-const Version & Version::operator = ( const Version &src )
+Version & Version::operator = ( const Version &src )
 {
     if (this != &src)
     {
@@ -104,7 +111,19 @@ const Version & Version::operator = ( const Version &src )
     return (*this);
 }
 
-const Version & Version::operator = (const char * version)
+Version & Version::operator = ( Version && src ) noexcept
+{
+    if ( this != &src )
+    {
+        this->mMajor    = src.mMajor;
+        this->mMinor    = src.mMinor;
+        this->mPatch    = src.mPatch;
+    }
+
+    return (*this);
+}
+
+Version & Version::operator = (const char * version)
 {
     return convFromString( version );
 }
@@ -130,7 +149,7 @@ bool Version::operator > ( const Version & version ) const
 String Version::convToString( void ) const
 {
     String result;
-    return result.formatString("%d.%d.%d", mMajor, mMinor, mPatch);
+    return result.formatString("%d%c%d%c%d", mMajor, NECommon::OBJECT_SEPARATOR, mMinor, NECommon::OBJECT_SEPARATOR, mPatch);
 }
 
 //////////////////////////////////////////////////////////////////////////

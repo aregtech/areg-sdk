@@ -1,10 +1,16 @@
-#ifndef MCROUTER_TCP_PRIVATE_SERVERSERVICEEVENT_HPP
-#define MCROUTER_TCP_PRIVATE_SERVERSERVICEEVENT_HPP
-
+#pragma once
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        mcrouter/tcp/private/ServerServiceEvent.hpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform Server Service Event
  ************************************************************************/
 
@@ -31,7 +37,7 @@ public:
     /**
      * \brief   The list of commands for server connection service
      **/
-    typedef enum E_ServerServiceCommands
+    typedef enum class E_ServerServiceCommands
     {
           CMD_StartService          //!< Sent to start message router connection service
         , CMD_StopService           //!< Sent to stop message router connection service
@@ -52,7 +58,7 @@ public:
      * \brief   Initializes server connection service event data, sets command.
      * \param   cmdService  The command to set in event data.
      **/
-    ServerServiceEventData( ServerServiceEventData::eServerServiceCommands cmdService );
+    explicit ServerServiceEventData( ServerServiceEventData::eServerServiceCommands cmdService );
     /**
      * \brief   Initializes server connection service event data, sets command and message data buffer.
      * \param   cmdService  The command to set in event data.
@@ -65,9 +71,14 @@ public:
      **/
     ServerServiceEventData( const ServerServiceEventData & source );
     /**
+     * \brief   Moves the event data from given source.
+     * \param   source  The source to move data.
+     **/
+    ServerServiceEventData( ServerServiceEventData && source ) noexcept;
+    /**
      * \brief   Destructor.
      **/
-    ~ServerServiceEventData( void );
+    ~ServerServiceEventData( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operators and attributes
@@ -78,7 +89,13 @@ public:
      * \brief   Copies event data from given source.
      * \param   source      The source to copy data.
      **/
-    const ServerServiceEventData & operator = ( const ServerServiceEventData & source );
+    ServerServiceEventData & operator = ( const ServerServiceEventData & source );
+
+    /**
+     * \brief   Moves event data from given source.
+     * \param   source      The source to move data.
+     **/
+    ServerServiceEventData & operator = ( ServerServiceEventData && source ) noexcept;
 
     /**
      * \brief   Returns command saved in event data.
@@ -107,7 +124,7 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////////
 private:
-    ServerServiceEventData( void );
+    ServerServiceEventData( void ) = delete;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -134,17 +151,15 @@ inline const char * ServerServiceEventData::getString( ServerServiceEventData::e
 {
     switch ( cmdService )
     {
-    case ServerServiceEventData::CMD_StartService:
+    case ServerServiceEventData::eServerServiceCommands::CMD_StartService:
         return "ServerServiceEventData::CMD_StartService";
-    case ServerServiceEventData::CMD_StopService:
+    case ServerServiceEventData::eServerServiceCommands::CMD_StopService:
         return "ServerServiceEventData::CMD_StopService";
-    case ServerServiceEventData::CMD_ServiceSendMsg:
+    case ServerServiceEventData::eServerServiceCommands::CMD_ServiceSendMsg:
         return "ServerServiceEventData::CMD_ServiceSendMsg";
-    case ServerServiceEventData::CMD_ServiceReceivedMsg:
+    case ServerServiceEventData::eServerServiceCommands::CMD_ServiceReceivedMsg:
         return "ServerServiceEventData::CMD_ServiceReceivedMsg";
     default:
         return "ERR: Unexpected ServerServiceEventData::eServerServiceCommands value!!!";
     }
 }
-
-#endif  // MCROUTER_TCP_PRIVATE_SERVERSERVICEEVENT_HPP

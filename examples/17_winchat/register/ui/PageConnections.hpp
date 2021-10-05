@@ -35,7 +35,7 @@ public:
 public:
     void ServiceConnected( bool isConnected );
 
-    void OutputMessage( CString & nickName, CString & message, CString & dateStart, CString & dateEnd, LPARAM data );
+    void OutputMessage( CString nickName, CString message, CString dateStart, CString dateEnd, LPARAM data );
 
     void OnDefaultClicked( void );
 
@@ -64,7 +64,7 @@ private:
 
 private:
     CListCtrl   mCtrlList;
-    UINT        mLastItem;
+    INT         mLastItem;
     TypingList  mTypingList;
     // The message to broadcast
     CString     mTextBroadcast;

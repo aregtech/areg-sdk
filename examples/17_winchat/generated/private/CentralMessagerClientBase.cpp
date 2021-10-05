@@ -3,14 +3,14 @@
 //////////////////////////////////////////////////////////////////////////
 /************************************************************************
  * (c) copyright    2021
+ *
+ * Generated at     30.09.2021  01:22:12 GMT+02:00 
  *                  Create by AREG SDK code generator tool from source CentralMessager.
- * Generated at     04.07.2021  04:29:59 GMT+02:00 
- ************************************************************************/
-
-/************************************************************************
- * \file            generated/private/CentralMessagerClientBase.cpp
+ *
+ * \file            generated/CentralMessagerClientBase.hpp
  * \ingroup         CentralMessager Service Interface
- * \brief           This is an automatic generated code of CentralMessager Service Interface Client base class implementation.
+ * \brief           This is an automatic generated code of CentralMessager
+ *                  Service Interface Client base class implementation.
  ************************************************************************/
 
 /************************************************************************
@@ -45,14 +45,13 @@ namespace NECentralMessager
  * Constructor / Destructor
  ************************************************************************/
 
-CentralMessagerClientBase::CentralMessagerClientBase( const char * roleName, const char * ownerThread /*= static_cast<const char *>(NULL)*/ )
+CentralMessagerClientBase::CentralMessagerClientBase( const char * roleName, const char * ownerThread /*= nullptr*/ )
     : IEProxyListener   ( )
 
     , mIsConnected      ( false )
     , mCurrSequenceNr   ( 0 )
     , mProxy            ( CentralMessagerProxy::createProxy(roleName, static_cast<IEProxyListener &>(self()), ownerThread) )
 {
-    ; // do nothing
 }
 
 CentralMessagerClientBase::CentralMessagerClientBase( const char * roleName, DispatcherThread & ownerThread )
@@ -62,7 +61,6 @@ CentralMessagerClientBase::CentralMessagerClientBase( const char * roleName, Dis
     , mCurrSequenceNr   ( 0 )
     , mProxy            ( CentralMessagerProxy::createProxy(roleName, static_cast<IEProxyListener &>(self()), ownerThread) )
 {
-    ; // do nothing
 }
 
 CentralMessagerClientBase::CentralMessagerClientBase( const char* roleName, Component & owner )
@@ -72,16 +70,15 @@ CentralMessagerClientBase::CentralMessagerClientBase( const char* roleName, Comp
     , mCurrSequenceNr   ( 0 )
     , mProxy            ( CentralMessagerProxy::createProxy(roleName, static_cast<IEProxyListener &>(self()), owner.getMasterThread()) )
 {
-    ; // do nothing
 }
 
 CentralMessagerClientBase::~CentralMessagerClientBase( void )
 {
-    if (mProxy != NULL)
+    if (mProxy != nullptr)
     {
         mProxy->clearAllNotifications( static_cast<IENotificationEventConsumer &>(self()) );
         mProxy->freeProxy( static_cast<IEProxyListener &>(self()) );
-        mProxy  = NULL;
+        mProxy  = nullptr;
     }
     
     mIsConnected= false;
@@ -94,14 +91,14 @@ CentralMessagerClientBase::~CentralMessagerClientBase( void )
 bool CentralMessagerClientBase::recreateProxy( void )
 {
     bool result         = false;
-    if (mProxy != NULL)
+    if (mProxy != nullptr)
     {
         String roleName   = mProxy->getProxyAddress().getRoleName();
         String threadName = mProxy->getProxyAddress().getThread();
         if ( roleName.isEmpty() == false )
         {
             CentralMessagerProxy * newProxy = CentralMessagerProxy::createProxy(roleName.getString(), static_cast<IEProxyListener &>(self()), threadName.getString());
-            if (newProxy != NULL)
+            if (newProxy != nullptr)
             {
                 mProxy->clearAllNotifications( static_cast<IENotificationEventConsumer &>(self()) );
                 mProxy->freeProxy (static_cast<IEProxyListener &>(self()) );
@@ -115,13 +112,13 @@ bool CentralMessagerClientBase::recreateProxy( void )
 
 DispatcherThread * CentralMessagerClientBase::getDispatcherThread( void )
 {
-    return ( mProxy != static_cast<CentralMessagerProxy *>(NULL) ? &(mProxy->getProxyDispatcherThread()) : static_cast<DispatcherThread *>(NULL) );
+    return ( mProxy != nullptr ? &(mProxy->getProxyDispatcherThread()) : nullptr );
 }
 
-DEF_TRACE_SCOPE(GENERATED_CentralMessagerClientBase_serviceConnected);
+DEF_TRACE_SCOPE(generated_CentralMessagerClientBase_serviceConnected);
 bool CentralMessagerClientBase::serviceConnected( bool isConnected, ProxyBase & proxy )
 {
-    TRACE_SCOPE(GENERATED_CentralMessagerClientBase_serviceConnected);
+    TRACE_SCOPE(generated_CentralMessagerClientBase_serviceConnected);
     
     bool result = false;
     if(mProxy == &proxy)
@@ -151,7 +148,7 @@ void CentralMessagerClientBase::notifyOn( NECentralMessager::eMessageIDs msgId, 
  * Event processing
  ************************************************************************/
 
-DEF_TRACE_SCOPE(GENERATED_CentralMessagerClientBase_processNotificationEvent);
+DEF_TRACE_SCOPE(generated_CentralMessagerClientBase_processNotificationEvent);
 void CentralMessagerClientBase::processNotificationEvent( NotificationEvent & eventElem )
 {
     const NotificationEventData & data  = static_cast<const NotificationEvent &>(eventElem).getData();
@@ -161,31 +158,31 @@ void CentralMessagerClientBase::processNotificationEvent( NotificationEvent & ev
 
     switch (result)
     {
-    case NEService::RESULT_REQUEST_BUSY:
-    case NEService::RESULT_REQUEST_ERROR:
-    case NEService::RESULT_REQUEST_CANCELED:
+    case NEService::eResultType::RequestBusy:       // fall through
+    case NEService::eResultType::RequestError:      // fall through
+    case NEService::eResultType::RequestCanceled:   // fall through
         {
         /************************************************************************
          * Trigger request error handling if request failed.
          ************************************************************************/
-            requestFailed(msgId, result);
+            CentralMessagerClientBase::requestFailed(msgId, result);
         }
         break;
 
-    case NEService::RESULT_INVALID:
+    case NEService::eResultType::RequestInvalid:
         {
         /************************************************************************
          * Trigger invalid response / broadcast handling. May happen when remove notification 
          ************************************************************************/
-            invalidResponse(msgId);
+            CentralMessagerClientBase::invalidResponse(msgId);
         }
         break;
 
-    case NEService::RESULT_DATA_OK:
-    case NEService::RESULT_DATA_INVALID:
+    case NEService::eResultType::DataOK:            // fall through
+    case NEService::eResultType::DataInvalid:
         break;
 
-    case NEService::RESULT_OK:
+    case NEService::eResultType::RequestOK:
         {
             switch (msgId)
             {
@@ -195,7 +192,7 @@ void CentralMessagerClientBase::processNotificationEvent( NotificationEvent & ev
         /************************************************************************
          * Trigger broadcast processing
          ************************************************************************/
-            case NECentralMessager::MSG_ID_broadcastSendMessage:
+            case NECentralMessager::eMessageIDs::MsgId_broadcastSendMessage:
                 {
                     const String & nickName = mProxy->getParamnickName();
                     unsigned int cookie = mProxy->getParamcookie();
@@ -205,7 +202,7 @@ void CentralMessagerClientBase::processNotificationEvent( NotificationEvent & ev
                 }
                 break;
 
-            case NECentralMessager::MSG_ID_broadcastKeyTyping:
+            case NECentralMessager::eMessageIDs::MsgId_broadcastKeyTyping:
                 {
                     const String & nickName = mProxy->getParamnickName();
                     unsigned int cookie = mProxy->getParamcookie();
@@ -214,7 +211,7 @@ void CentralMessagerClientBase::processNotificationEvent( NotificationEvent & ev
                 }
                 break;
 
-            case NECentralMessager::MSG_ID_broadcastBroadcastMessage:
+            case NECentralMessager::eMessageIDs::MsgId_broadcastBroadcastMessage:
                 {
                     const String & serverMessage = mProxy->getParamserverMessage();
                     const DateTime & dateTime = mProxy->getParamdateTime();
@@ -224,7 +221,7 @@ void CentralMessagerClientBase::processNotificationEvent( NotificationEvent & ev
 
             default:
                 {
-                    TRACE_SCOPE(GENERATED_CentralMessagerClientBase_processNotificationEvent);
+                    TRACE_SCOPE(generated_CentralMessagerClientBase_processNotificationEvent);
                     TRACE_ERR("Client object CentralMessagerClientBase of proxy [ %s ] received unexpected Response message ID [ %d ]."
                                 , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString()
                                 , msgId);
@@ -237,7 +234,7 @@ void CentralMessagerClientBase::processNotificationEvent( NotificationEvent & ev
 
     default:
         {
-            TRACE_SCOPE(GENERATED_CentralMessagerClientBase_processNotificationEvent);
+            TRACE_SCOPE(generated_CentralMessagerClientBase_processNotificationEvent);
             TRACE_ERR("Client object CentralMessagerClientBase of proxy [ %s ] received unexpected Response result type [ %d ]."
                         , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString()
                         , static_cast<int>(result));
@@ -250,10 +247,10 @@ void CentralMessagerClientBase::processNotificationEvent( NotificationEvent & ev
 /************************************************************************
  * Error handling calls
  ************************************************************************/
-DEF_TRACE_SCOPE(GENERATED_CentralMessagerClientBase_invalidResponse);
+DEF_TRACE_SCOPE(generated_CentralMessagerClientBase_invalidResponse);
 void CentralMessagerClientBase::invalidResponse( NECentralMessager::eMessageIDs InvalidRespId )
 {
-    TRACE_SCOPE(GENERATED_CentralMessagerClientBase_invalidResponse);
+    TRACE_SCOPE(generated_CentralMessagerClientBase_invalidResponse);
     TRACE_ERR("The invalid response [ %s ] (value = [ %d ]) method of proxy [ %s ] client CentralMessagerClientBase is not implemented! Make error handling!"
                     , NECentralMessager::getString(InvalidRespId)
                     , static_cast<unsigned int>(InvalidRespId)
@@ -262,10 +259,10 @@ void CentralMessagerClientBase::invalidResponse( NECentralMessager::eMessageIDs 
     ASSERT(false);
 }
 
-DEF_TRACE_SCOPE(GENERATED_CentralMessagerClientBase_invalidRequest);
+DEF_TRACE_SCOPE(generated_CentralMessagerClientBase_invalidRequest);
 void CentralMessagerClientBase::invalidRequest( NECentralMessager::eMessageIDs InvalidReqId )
 {
-    TRACE_SCOPE(GENERATED_CentralMessagerClientBase_invalidRequest);
+    TRACE_SCOPE(generated_CentralMessagerClientBase_invalidRequest);
     TRACE_ERR("The invalid request [ %s ] (value = [ %d ]) method of proxy [ %s ] client CentralMessagerClientBase is not implemented! Make error handling!"
                     , NECentralMessager::getString(InvalidReqId)
                     , static_cast<unsigned int>(InvalidReqId)
@@ -274,20 +271,20 @@ void CentralMessagerClientBase::invalidRequest( NECentralMessager::eMessageIDs I
     ASSERT(false);
 }
 
-DEF_TRACE_SCOPE(GENERATED_CentralMessagerClientBase_requestFailed);
+DEF_TRACE_SCOPE(generated_CentralMessagerClientBase_requestFailed);
 void CentralMessagerClientBase::requestFailed( NECentralMessager::eMessageIDs FailureMsgId, NEService::eResultType FailureReason )
 {
-    TRACE_SCOPE(GENERATED_CentralMessagerClientBase_requestFailed);
+    TRACE_SCOPE(generated_CentralMessagerClientBase_requestFailed);
     TRACE_WARN("The request [ %s ] (value = [ %d ]) method of proxy [ %s ] client CentralMessagerClientBase failed with reason [ %s ]! Implemented error handling!"
                     , NECentralMessager::getString(FailureMsgId)
                     , static_cast<unsigned int>(FailureMsgId)
                     , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString()
                     , NEService::getString(FailureReason) );
                     
-    unsigned int index = static_cast<unsigned int>(NECentralMessager::MSG_ID_INVALID);
-    index = static_cast<unsigned int>( NEService::isResponseId(static_cast<unsigned int>(FailureMsgId)) ? NECentralMessager::getRequestId(FailureMsgId) : FailureMsgId);
-    index = NEService::isRequestId(index)  ? GET_REQ_INDEX(index) : static_cast<unsigned int>(NECentralMessager::MSG_ID_INVALID);
-    if ( index != static_cast<unsigned int>(NECentralMessager::MSG_ID_INVALID) )
+    unsigned int index = static_cast<msg_id>(NECentralMessager::eMessageIDs::MsgId_Invalid);
+    index = static_cast<msg_id>( NEService::isResponseId(static_cast<unsigned int>(FailureMsgId)) ? NECentralMessager::getRequestId(FailureMsgId) : FailureMsgId);
+    index = NEService::isRequestId(index)  ? GET_REQ_INDEX(index) : static_cast<msg_id>(NECentralMessager::eMessageIDs::MsgId_Invalid);
+    if ( index != static_cast<msg_id>(NECentralMessager::eMessageIDs::MsgId_Invalid) && (index < NECentralMessager::getInterfaceData().idRequestCount) )
     {
         (this->*NECentralMessager::failureFunctions[index])( FailureReason );
     }
@@ -305,50 +302,50 @@ void CentralMessagerClientBase::requestFailed( NECentralMessager::eMessageIDs Fa
  * Request failure / Response and Broadcast notifications
  ************************************************************************/
  
-DEF_TRACE_SCOPE(GENERATED_CentralMessagerClientBase_requestSendMessageFailed);
+DEF_TRACE_SCOPE(generated_CentralMessagerClientBase_requestSendMessageFailed);
 void CentralMessagerClientBase::requestSendMessageFailed( NEService::eResultType FailureReason )
 {
-    TRACE_SCOPE(GENERATED_CentralMessagerClientBase_requestSendMessageFailed);
+    TRACE_SCOPE(generated_CentralMessagerClientBase_requestSendMessageFailed);
     TRACE_WARN("The request requestSendMessage (value = %u) method of proxy [ %s ] client CentralMessagerClientBase is failed with reason [ %s ]! Make error handling!"
-                    , static_cast<unsigned int>(NECentralMessager::MSG_ID_requestSendMessage)
+                    , static_cast<unsigned int>(NECentralMessager::eMessageIDs::MsgId_requestSendMessage)
                     , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString()
                     , NEService::getString(FailureReason));
 }
 
-DEF_TRACE_SCOPE(GENERATED_CentralMessagerClientBase_requestKeyTypingFailed);
+DEF_TRACE_SCOPE(generated_CentralMessagerClientBase_requestKeyTypingFailed);
 void CentralMessagerClientBase::requestKeyTypingFailed( NEService::eResultType FailureReason )
 {
-    TRACE_SCOPE(GENERATED_CentralMessagerClientBase_requestKeyTypingFailed);
+    TRACE_SCOPE(generated_CentralMessagerClientBase_requestKeyTypingFailed);
     TRACE_WARN("The request requestKeyTyping (value = %u) method of proxy [ %s ] client CentralMessagerClientBase is failed with reason [ %s ]! Make error handling!"
-                    , static_cast<unsigned int>(NECentralMessager::MSG_ID_requestKeyTyping)
+                    , static_cast<unsigned int>(NECentralMessager::eMessageIDs::MsgId_requestKeyTyping)
                     , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString()
                     , NEService::getString(FailureReason));
 }
 
-DEF_TRACE_SCOPE(GENERATED_CentralMessagerClientBase_broadcastSendMessage);
+DEF_TRACE_SCOPE(generated_CentralMessagerClientBase_broadcastSendMessage);
 void CentralMessagerClientBase::broadcastSendMessage( const String & /* nickName */, unsigned int /* cookie */, const String & /* newMessage */, const DateTime & /* dateTime */ )
 {
-    TRACE_SCOPE(GENERATED_CentralMessagerClientBase_broadcastSendMessage);
+    TRACE_SCOPE(generated_CentralMessagerClientBase_broadcastSendMessage);
     TRACE_WARN("The broadcast broadcastSendMessage (value = %u) method of proxy [ %s ] client CentralMessagerClientBase is not implemented!"
-                    , static_cast<unsigned int>(NECentralMessager::MSG_ID_broadcastSendMessage)
+                    , static_cast<unsigned int>(NECentralMessager::eMessageIDs::MsgId_broadcastSendMessage)
                     , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString());
 }
 
-DEF_TRACE_SCOPE(GENERATED_CentralMessagerClientBase_broadcastKeyTyping);
+DEF_TRACE_SCOPE(generated_CentralMessagerClientBase_broadcastKeyTyping);
 void CentralMessagerClientBase::broadcastKeyTyping( const String & /* nickName */, unsigned int /* cookie */, const String & /* newMessage */ )
 {
-    TRACE_SCOPE(GENERATED_CentralMessagerClientBase_broadcastKeyTyping);
+    TRACE_SCOPE(generated_CentralMessagerClientBase_broadcastKeyTyping);
     TRACE_WARN("The broadcast broadcastKeyTyping (value = %u) method of proxy [ %s ] client CentralMessagerClientBase is not implemented!"
-                    , static_cast<unsigned int>(NECentralMessager::MSG_ID_broadcastKeyTyping)
+                    , static_cast<unsigned int>(NECentralMessager::eMessageIDs::MsgId_broadcastKeyTyping)
                     , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString());
 }
 
-DEF_TRACE_SCOPE(GENERATED_CentralMessagerClientBase_broadcastBroadcastMessage);
+DEF_TRACE_SCOPE(generated_CentralMessagerClientBase_broadcastBroadcastMessage);
 void CentralMessagerClientBase::broadcastBroadcastMessage( const String & /* serverMessage */, const DateTime & /* dateTime */ )
 {
-    TRACE_SCOPE(GENERATED_CentralMessagerClientBase_broadcastBroadcastMessage);
+    TRACE_SCOPE(generated_CentralMessagerClientBase_broadcastBroadcastMessage);
     TRACE_WARN("The broadcast broadcastBroadcastMessage (value = %u) method of proxy [ %s ] client CentralMessagerClientBase is not implemented!"
-                    , static_cast<unsigned int>(NECentralMessager::MSG_ID_broadcastBroadcastMessage)
+                    , static_cast<unsigned int>(NECentralMessager::eMessageIDs::MsgId_broadcastBroadcastMessage)
                     , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString());
 }
 

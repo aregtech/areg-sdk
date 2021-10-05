@@ -1,9 +1,16 @@
-#ifndef AREG_TRACE_GETRACE_H
-#define AREG_TRACE_GETRACE_H
+#pragma once
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/trace/GETrace.h
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       NETrace namespace contains , structures and types.
  *
  ************************************************************************/
@@ -25,24 +32,13 @@
  *          indicating whether the applications should be compiled with
  *          logging or not. If this is not defined or zero,
  *          logging functionalities will be ignored, unless developer 
- *          is not setting scopes and activating tracing manually.
+ *          is not explicitly setting scopes and manually activating tracing.
  *
- *          TRACE_DEBUG_OUTPUT is a global preprocessor definition
- *          indicating that the message outputs should be done on Debug
- *          output window.
- *          The TRACE_DEBUG_OUTPUT can be set only for Debug version.
- *          In release version this is reset.
- *
- *          If both preprocessor definitions are not defined or are zero,
- *          the application(s) will be compiled with no logging.
- *          To compile application(s) without logging, it is enough to
- *          set ENABLE_TRACES zero and not define TRACE_DEBUG_OUTPUT
- * 
  * \example     Start Logging:
  *              In this example, the application configures logging from default configuration file
  *              and start logging, to that the messages can be logged on target.
  *                  ...
- *              TRACER_START_LOGGING(NULL);
+ *              TRACER_START_LOGGING(nullptr);
  * 
  * \example     Logging:
  *              In this example, the application created scope, which are used to start output messages.
@@ -81,7 +77,7 @@
 
     /**
      * \brief   Use this macro to load configuration file and start tracer.
-     *          If config file name is NULL, it will load from default folder "./config/log.init"
+     *          If config file name is nullptr, it will load from default folder "./config/log.init"
      **/
     #define TRACER_START_LOGGING(configFile)            NETrace::startLogging((configFile))
 
@@ -264,5 +260,3 @@
     #define GLOBAL_FATAL(...)
 
 #endif  // (defined(ENABLE_TRACES) && defined(_ENABLE_TRACES))
-
-#endif  // AREG_TRACE_GETRACE_H

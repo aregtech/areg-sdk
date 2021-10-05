@@ -1,9 +1,16 @@
-#ifndef AREG_BASE_TESTACK_HPP
-#define AREG_BASE_TESTACK_HPP
+#pragma once
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/base/TEStack.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, FIFO Stack class templates.
  *              Blocking and non-blocking FIFO Stacks, used to queue
  *              elements in the Stack without searching elements, 
@@ -14,71 +21,38 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
-#include "areg/base/ESynchObjects.hpp"
-#include "areg/base/ETemplateBase.hpp"
+#include "areg/base/SynchObjects.hpp"
+#include "areg/base/TETemplateBase.hpp"
 
 #include "areg/base/IEIOStream.hpp"
+
+#include <utility>
+
 /************************************************************************
  * Hierarchies. Following class are declared.
  ************************************************************************/
-template <typename VALUE, typename VALUE_TYPE, class Implement> class TEStack;
-    template <typename VALUE, typename VALUE_TYPE, class Implement> class TELockStack;
-    template <typename VALUE, typename VALUE_TYPE, class Implement> class TENolockStack;
-
-/************************************************************************
- * \brief   In this file defined stack object. The stack is a Single
- *          Linked List, where Elements are pushed and popped according
- *          'first-in-first-out' (FIFO) mechanism, i.e. the first element
- *          is pushed, popped out first.
- *          There are 2 types of stacks -- locking (thread safe) and
- *          non-locking (no thread safe).
- *
- *          Following template classes are defined:
- *
- *              1.  TEStack<VALUE, VALUE_TYPE, Implement>,
- *                  which is a generic base stack object.
- *
- *              2.  TELockStack<VALUE, VALUE_TYPE, Implement>,
- *                  which is a thread safe stack and can be used when
- *                  multiple threads are accessing data in the stack.
- *
- *              3.  TENolockStack<VALUE, VALUE_TYPE, Implement>,
- *                  which is not thread safe stack and should be used
- *                  in objects where data is accessed only from single thread.
- *
- *      For more details, see description of every class.
- *
- ************************************************************************/
+template <typename VALUE, typename VALUE_TYPE, class Compare> class TEStack;
+    template <typename VALUE, typename VALUE_TYPE, class Compare> class TELockStack;
+    template <typename VALUE, typename VALUE_TYPE, class Compare> class TENolockStack;
 
 //////////////////////////////////////////////////////////////////////////
-// TEStack<VALUE, VALUE_TYPE, Implement> class template declaration
+// TEStack<VALUE, VALUE_TYPE, Compare> class template declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief       TEStack<VALUE, VALUE_TYPE, Implement>
- *              Simple FIFO Stack base object to queue elements, insert and 
- *              access by push and pop operations. TEStack requires
- *              instance of synchronization object to synchronize
- *              access of stack elements.
+ * \brief   Simple FIFO Stack base object to queue elements, insert and 
+ *          access by push and pop operations. TEStack requires instance 
+ *          of resource lock object to synchronize access of stack elements.
+ *          Whether the Stack is thread safe or not, depends on type of
+ *          synchronization object passed in stack.
  * 
- * \details     The FIFO Stack is a simple single linked object, where
- *              every Block has a link to next Block. Unlike Linked List,
- *              it is not possible to access elements by position or index,
- *              and walking in the stack is only in one direction. The fist
- *              pushed element will be popped out first.
- *              Instead of this object, use defined blocking and non-blocking
- *              stacks, depending whether it is needed to synchronize thread
- *              access in the stack.
- *
- * \tparam  VALUE       the type of stored items. Either should be 
- *                      primitive or should have default constructor 
- *                      and valid assigning operator. Also, should be 
- *                      possible to convert to type VALUE_TYPE.
- * \tparam  VALUE_TYPE  By default same as VALUE, but can be any other
- *                      type, which is converted from type VALUE.
+ * \tparam  VALUE       The type of stored items. Either should be primitive 
+ *                      or should have default constructor and valid assigning 
+ *                      operator. And should be possible to convert to type VALUE_TYPE.
+ * \tparam  VALUE_TYPE  By default same as VALUE.
+ * \tparam  Compare     A helper class to compare elements.
  **/
-template <typename VALUE, typename VALUE_TYPE = VALUE, class Implement = TEListImpl<VALUE_TYPE>>
-class TEStack   : protected Implement
-                , private   TemplateConstants
+template <typename VALUE, typename VALUE_TYPE = VALUE, class Compare = TEListImpl<VALUE_TYPE>>
+class TEStack
 {
 //////////////////////////////////////////////////////////////////////////
 // Internal types and constants.
@@ -89,7 +63,7 @@ protected:
      *          Contains value and link to the next block.
      **/
     //////////////////////////////////////////////////////////////////////////
-    // TEStack<VALUE, VALUE_TYPE, Implement>::Block class declaration
+    // TEStack<VALUE, VALUE_TYPE, Compare>::Block class declaration
     //////////////////////////////////////////////////////////////////////////
     class Block
     {
@@ -108,7 +82,7 @@ protected:
         /**
          * \brief   Destructor.
          **/
-        ~Block( void );
+        ~Block( void ) = default;
 
     //////////////////////////////////////////////////////////////////////////
     // Public member variables.
@@ -136,18 +110,22 @@ protected:
      *          Use TENolockStack or TELockStack objects instead.
      * \param   synchObject Reference to synchronization object.
      **/
-    TEStack( IEResourceLock & synchObject );
+    explicit TEStack( IEResourceLock & synchObject );
 
     /**
-     * \brief   Copy constructor.
-     *          It is declared as protected to prevent direct call.
-     *          Use TENolockStack or TELockStack objects instead.
+     * \brief   Initializes the resource lock object and copies elements from given source.
      * \param   synchObject     The instance of synchronization object
-     * \param   source          The Stack source, which contains elements
+     * \param   source          The Stack source, which contains elements to copy.
      **/
-    TEStack( IEResourceLock & synchObject, const TEStack<VALUE, VALUE_TYPE, Implement> & source );
+    TEStack( IEResourceLock & synchObject, const TEStack<VALUE, VALUE_TYPE, Compare> & source );
 
-public:
+    /**
+     * \brief   Initializes the resource lock object and move elements from given source.
+     * \param   synchObject     The instance of synchronization object
+     * \param   source          The Stack source, which contains elements to move.
+     **/
+    TEStack( IEResourceLock & synchObject, TEStack<VALUE, VALUE_TYPE, Compare> && source ) noexcept;
+
     /**
      * \brief   Destructor. Public
      **/
@@ -164,7 +142,16 @@ public:
      * \param   source  The instance of source to get stack entries.
      * \return  Returns stack object.
      **/
-    inline const TEStack<VALUE, VALUE_TYPE, Implement> & operator = ( const TEStack<VALUE, VALUE_TYPE, Implement> & source );
+    inline TEStack<VALUE, VALUE_TYPE, Compare> & operator = ( const TEStack<VALUE, VALUE_TYPE, Compare> & source );
+
+    /**
+     * \brief   Assigning operator. It is moves stack elements from given source
+     *          in the same order as they are created in the source stack.
+     *          If stack had entries, all entries will be lost and new entries will be created.
+     * \param   source  The instance of source to get stack entries.
+     * \return  Returns stack object.
+     **/
+    inline TEStack<VALUE, VALUE_TYPE, Compare> & operator = ( TEStack<VALUE, VALUE_TYPE, Compare> && source ) noexcept;
 
 public:
 /************************************************************************/
@@ -270,24 +257,33 @@ public:
 
     /**
      * \brief   Copies all elements from given source and returns the number of copied elements.
+     *          If Stack previousely had elements, they will be lost.
      * \param   source  The stack source to copy elements.
      * \return  Returns the number of copied elements.
      **/
-    int copy( const TEStack<VALUE, VALUE_TYPE, Implement> & source );
+    int copy( const TEStack<VALUE, VALUE_TYPE, Compare> & source );
+
+    /**
+     * \brief   Moves all elements from given source and returns the number of moved elements.
+     *          If Stack previousely had elements, they will be lost.
+     * \param   source  The stack source to copy elements.
+     * \return  Returns the number of copied elements.
+     **/
+    int move( TEStack<VALUE, VALUE_TYPE, Compare> && source ) noexcept;
 
     /**
      * \brief   Searches element in the stack starting at given position.
-     *          The given position should be valid or equal to TemplateConstants::START_POSITION
+     *          The given position should be valid or equal to NECommon::START_POSITION
      *          to search at the beginning of stack.
      * \param   elem        The value to search in the stack.
      * \param   startAt     The starting position to search. It will start to search 
-     *                      from beginning if equal to TemplateConstants::START_POSITION.
-     * \return  If found element, returns valid position. Otherwise, it returns TemplateConstants::INVALID_POSITION.
+     *                      from beginning if equal to NECommon::START_POSITION.
+     * \return  If found element, returns valid position. Otherwise, it returns NECommon::INVALID_POSITION.
      **/
-    STACKPOS find(VALUE_TYPE elem, STACKPOS startAt = TemplateConstants::START_POSITION) const;
+    STACKPOS find(VALUE_TYPE elem, STACKPOS startAt = NECommon::START_POSITION) const;
 
     /**
-     * \brief   Returns the first (head) position of the stack. Returns NULL if empty.
+     * \brief   Returns the first (head) position of the stack. Returns nullptr if empty.
      **/
     STACKPOS firstPosition( void ) const;
 
@@ -307,10 +303,10 @@ public:
 
     /**
      * \brief   Returns next valid position after given position value. 
-     *          Returns NULL if given position was last.
+     *          Returns nullptr if given position was last.
      * \param   pos     The position value to get next.
      * \return  If given position is not last in the stack, it returns next valid position value.
-     *          Otherwise, it returns NULL.
+     *          Otherwise, it returns nullptr.
      **/
     STACKPOS nextPosition( const STACKPOS pos ) const;
 
@@ -341,16 +337,21 @@ protected:
     /**
      * \brief   Head of stack. Element will be popped first
      **/
-    Block *       mHead;
+    Block *         mHead;
     /**
      * \brief   Tail of stack. Last element in stack.
      **/
-    Block *       mTail;
+    Block *         mTail;
 
     /**
      * \brief   The number of elements in the stack.
      **/
-    int             mElemCount;
+    int             mCount;
+
+    /**
+     * \brief   Instance of heper object to compare values.
+     **/
+    Compare         mHelper;
 
 //////////////////////////////////////////////////////////////////////////
 // private methods
@@ -366,32 +367,27 @@ private:
      * \brief   Copies elements from given source of stack.
      * \param   source  The source of elements to copy.
      **/
-    inline void _copyElements( const TEStack<VALUE, VALUE_TYPE, Implement> & source );
+    inline void _copyElements( const TEStack<VALUE, VALUE_TYPE, Compare> & source );
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden / Forbidden method calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    TEStack( void );
-    TEStack( const TEStack<VALUE, VALUE_TYPE, Implement> & /* source */ );
+    TEStack( void ) = delete;
+    TEStack( const TEStack<VALUE, VALUE_TYPE, Compare> & /* source */ ) = delete;
+    TEStack( TEStack<VALUE, VALUE_TYPE, Compare> && /* source */ ) = delete;
 };
 
 //////////////////////////////////////////////////////////////////////////
-// TELockStack<VALUE, VALUE_TYPE, Implement> class template declaration
+// TELockStack<VALUE, VALUE_TYPE, Compare> class template declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief       Blocking FIFO stack class template declaration.
- *              In this class data access is synchronized.
- *
- * \details     This blocking class template contains instance of
- *              IEResourceLock to synchronize data access by more
- *              than one thread. Any other thread trying to access elements
- *              will be blocked.
- *              Use this object if elements of stack are accessed more than
- *              one thread.
+ * \brief   Thread safe FIFO stack class template declaration, where accessing
+ *          data is synchronized by resource lock. Use this object if elements 
+ *          of stack are accessed by more than one thread.
  **/
-template <typename VALUE, typename VALUE_TYPE = VALUE, class Implement = TEListImpl<VALUE_TYPE>>
-class TELockStack  : public TEStack<VALUE, VALUE_TYPE, Implement>
+template <typename VALUE, typename VALUE_TYPE = VALUE, class Compare = TEListImpl<VALUE_TYPE>>
+class TELockStack  : public TEStack<VALUE, VALUE_TYPE, Compare>
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -403,15 +399,33 @@ public:
     TELockStack( void );
 
     /**
-     * \brief   Copy constructor.
+     * \brief   Copies data from given source.
      * \param   source  The source to copy data.
      **/
-    TELockStack( const TEStack<VALUE, VALUE_TYPE, Implement> & source );
+    explicit TELockStack( const TEStack<VALUE, VALUE_TYPE, Compare> & source );
+
+    /**
+     * \brief   Moves data from given source.
+     * \param   source  The source to move data.
+     **/
+    explicit TELockStack( TEStack<VALUE, VALUE_TYPE, Compare> && source ) noexcept;
+
+    /**
+     * \brief   Copies data from given source.
+     * \param   source  The source to copy data.
+     **/
+    TELockStack( const TELockStack<VALUE, VALUE_TYPE, Compare> & source );
+
+    /**
+     * \brief   Moves data from given source.
+     * \param   source  The source to move data.
+     **/
+    TELockStack( TELockStack<VALUE, VALUE_TYPE, Compare> && source ) noexcept;
 
     /**
      * \brief   Destructor
      **/
-    ~TELockStack( void );
+    ~TELockStack( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
@@ -419,13 +433,20 @@ public:
 public:
 
     /**
-     * \brief   Assigning operator. It is copying stack elements from given source
-     *          in the same order as they are created in the source stack.
-     *          If stack had entries, all entries will be lost and new entries will be created.
-     * \param   source  The instance of source to get stack entries.
+     * \brief   Copies entries from given sources. If stack had entries
+     *          all entries will be lost and new entries will be created.
+     * \param   source  The instance of source to copy stack entries.
      * \return  Returns stack object.
      **/
-    inline const TELockStack<VALUE, VALUE_TYPE, Implement> & operator = ( const TEStack<VALUE, VALUE_TYPE, Implement> & source );
+    inline TELockStack<VALUE, VALUE_TYPE, Compare> & operator = ( const TELockStack<VALUE, VALUE_TYPE, Compare> & source );
+
+    /**
+     * \brief   Moves entries from given sources. If stack had entries
+     *          all entries will be lost and new entries will be created.
+     * \param   source  The instance of source to move stack entries.
+     * \return  Returns stack object.
+     **/
+    inline TELockStack<VALUE, VALUE_TYPE, Compare> & operator = ( TELockStack<VALUE, VALUE_TYPE, Compare> && source ) noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -434,24 +455,19 @@ private:
     /**
      * \brief   Resource lock synchronization object.
      **/
-    ResourceLock   mLock;
+    mutable ResourceLock    mLock;
 };
 
 //////////////////////////////////////////////////////////////////////////
-// TENolockStack<VALUE, VALUE_TYPE, Implement> class template declaration
+// TENolockStack<VALUE, VALUE_TYPE, Compare> class template declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief       No blocking FIFO stack class template declaration.
- *              No data access synchronization is performed in this class.
- *
- * \details     This non-blocking class template contains instance of
- *              NolockSynchObject to imitate access synchronization. 
- *              No thread will be blocked accessing stack elements.
- *              Use this object if there is no need to synchronize
- *              element access.
+ * \brief   No thread safe FIFO stack class template declaration, where accessing
+ *          data is not synchronized. Use this object if elements of stack 
+ *          are accessed only by one thread.
  **/
-template <typename VALUE, typename VALUE_TYPE = VALUE, class Implement = TEListImpl<VALUE_TYPE>>
-class TENolockStack    : public TEStack<VALUE, VALUE_TYPE, Implement>
+template <typename VALUE, typename VALUE_TYPE = VALUE, class Compare = TEListImpl<VALUE_TYPE>>
+class TENolockStack    : public TEStack<VALUE, VALUE_TYPE, Compare>
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -463,15 +479,33 @@ public:
     TENolockStack( void );
 
     /**
-     * \brief   Copy constructor.
+     * \brief   Copies data from given source.
      * \param   source  The source to copy data.
      **/
-    TENolockStack( const TEStack<VALUE, VALUE_TYPE, Implement> & source );
+    explicit TENolockStack( const TEStack<VALUE, VALUE_TYPE, Compare> & source );
+
+    /**
+     * \brief   Moves data from given source.
+     * \param   source  The source to move data.
+     **/
+    explicit TENolockStack( TEStack<VALUE, VALUE_TYPE, Compare> && source ) noexcept;
+
+    /**
+     * \brief   Copies data from given source.
+     * \param   source  The source to copy data.
+     **/
+    TENolockStack( const TENolockStack<VALUE, VALUE_TYPE, Compare> & source );
+
+    /**
+     * \brief   Moves data from given source.
+     * \param   source  The source to move data.
+     **/
+    TENolockStack( TENolockStack<VALUE, VALUE_TYPE, Compare> && source ) noexcept;
 
     /**
      * \brief   Destructor
      **/
-    ~TENolockStack( void );
+    ~TENolockStack( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
@@ -479,13 +513,20 @@ public:
 public:
 
     /**
-     * \brief   Assigning operator. It is copying stack elements from given source
-     *          in the same order as they are created in the source stack.
-     *          If stack had entries, all entries will be lost and new entries will be created.
-     * \param   source  The instance of source to get stack entries.
+     * \brief   Copies entries from given sources. If stack had entries
+     *          all entries will be lost and new entries will be created.
+     * \param   source  The instance of source to copy stack entries.
      * \return  Returns stack object.
      **/
-    inline const TENolockStack<VALUE, VALUE_TYPE, Implement> & operator = ( const TEStack<VALUE, VALUE_TYPE, Implement> & source );
+    inline TENolockStack<VALUE, VALUE_TYPE, Compare> & operator = ( const TENolockStack<VALUE, VALUE_TYPE, Compare> & source );
+
+    /**
+     * \brief   Moves entries from given sources. If stack had entries
+     *          all entries will be lost and new entries will be created.
+     * \param   source  The instance of source to move stack entries.
+     * \return  Returns stack object.
+     **/
+    inline TENolockStack<VALUE, VALUE_TYPE, Compare> & operator = ( TENolockStack<VALUE, VALUE_TYPE, Compare> && source ) noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -494,7 +535,7 @@ private:
     /**
      * \brief   Synchronization object simulation.
      **/
-    NolockSynchObject mNoLock;
+    mutable NolockSynchObject mNoLock;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -502,177 +543,228 @@ private:
 //////////////////////////////////////////////////////////////////////////
 
 //////////////////////////////////////////////////////////////////////////
-// TEStack<VALUE, VALUE_TYPE, Implement>::Block class template implementation
-// TEStack<VALUE, VALUE_TYPE, Implement> internal class
+// TEStack<VALUE, VALUE_TYPE, Compare>::Block class template implementation
+// TEStack<VALUE, VALUE_TYPE, Compare> internal class
 //////////////////////////////////////////////////////////////////////////
 
-template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /*= TEListImpl<VALUE_TYPE>*/>
-inline TEStack<VALUE, VALUE_TYPE, Implement>::Block::Block( void ) 
-    : mNext (NULL   )
+template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Compare /*= TEListImpl<VALUE_TYPE>*/>
+inline TEStack<VALUE, VALUE_TYPE, Compare>::Block::Block( void ) 
+    : mNext (nullptr)
     , mValue(       )
-{   ;   }
-
-template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /*= TEListImpl<VALUE_TYPE>*/>
-inline TEStack<VALUE, VALUE_TYPE, Implement>::Block::Block( VALUE_TYPE newValue ) 
-    : mNext (NULL)
-    , mValue((VALUE)newValue)
-{   ;   }
-
-template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /*= TEListImpl<VALUE_TYPE>*/>
-inline TEStack<VALUE, VALUE_TYPE, Implement>::Block::~Block( void )
-{   mNext = NULL;   }
-
-//////////////////////////////////////////////////////////////////////////
-// TEStack<VALUE, VALUE_TYPE, Implement> class template implementation
-//////////////////////////////////////////////////////////////////////////
-template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /*= TEListImpl<VALUE_TYPE>*/>
-TEStack<VALUE, VALUE_TYPE, Implement>::TEStack( IEResourceLock & synchObject )
-    : Implement             ( )
-    , TemplateConstants   ( )
-    
-    , mSynchObject          ( synchObject )
-    , mHead                 ( NULL )
-    , mTail                 ( NULL )
-    , mElemCount            ( 0 )
 {
-    ; // do nothing
 }
 
-template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /*= TEListImpl<VALUE_TYPE>*/>
-TEStack<VALUE, VALUE_TYPE, Implement>::TEStack( IEResourceLock & synchObject, const TEStack<VALUE, VALUE_TYPE, Implement> & source )
-    : Implement             ( )
-    , TemplateConstants   ( )
+template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Compare /*= TEListImpl<VALUE_TYPE>*/>
+inline TEStack<VALUE, VALUE_TYPE, Compare>::Block::Block( VALUE_TYPE newValue ) 
+    : mNext (nullptr)
+    , mValue(newValue)
+{
+}
 
-    , mSynchObject          ( synchObject )
-    , mHead                 ( NULL )
-    , mTail                 ( NULL )
-    , mElemCount            ( 0 )
+//////////////////////////////////////////////////////////////////////////
+// TEStack<VALUE, VALUE_TYPE, Compare> class template implementation
+//////////////////////////////////////////////////////////////////////////
+template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Compare /*= TEListImpl<VALUE_TYPE>*/>
+TEStack<VALUE, VALUE_TYPE, Compare>::TEStack( IEResourceLock & synchObject )
+    : mSynchObject  ( synchObject )
+    , mHead         ( nullptr )
+    , mTail         ( nullptr )
+    , mCount        ( 0 )
+    , mHelper       ( )
+{
+}
+
+template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Compare /*= TEListImpl<VALUE_TYPE>*/>
+TEStack<VALUE, VALUE_TYPE, Compare>::TEStack( IEResourceLock & synchObject, const TEStack<VALUE, VALUE_TYPE, Compare> & source )
+    : mSynchObject  ( synchObject )
+    , mHead         ( nullptr )
+    , mTail         ( nullptr )
+    , mCount        ( 0 )
+    , mHelper       ( )
 {
     _copyElements(source);
 }
 
-template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /*= TEListImpl<VALUE_TYPE>*/>
-TEStack<VALUE, VALUE_TYPE, Implement>::~TEStack( void )
+template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Compare /*= TEListImpl<VALUE_TYPE>*/>
+TEStack<VALUE, VALUE_TYPE, Compare>::TEStack( IEResourceLock & synchObject, TEStack<VALUE, VALUE_TYPE, Compare> && source ) noexcept
+    : mSynchObject  ( synchObject )
+    , mHead         ( source.mHead )
+    , mTail         ( source.mTail )
+    , mCount        ( source.mCount )
+    , mHelper       ( )
 {
-    _cleanStack();
+    source.mHead    = nullptr;
+    source.mTail    = nullptr;
+    source.mCount   = 0;
 }
 
-template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /*= TEListImpl<VALUE_TYPE>*/>
-inline const TEStack<VALUE, VALUE_TYPE, Implement> & TEStack<VALUE, VALUE_TYPE, Implement>::operator = ( const TEStack<VALUE, VALUE_TYPE, Implement> & source )
-{   copy(source); return (*this);                       }
+template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Compare /*= TEListImpl<VALUE_TYPE>*/>
+TEStack<VALUE, VALUE_TYPE, Compare>::~TEStack( void )
+{
+    _cleanStack();
+    mSynchObject.unlock();
+}
 
-template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /*= TEListImpl<VALUE_TYPE>*/>
-inline int TEStack<VALUE, VALUE_TYPE, Implement>::getSize( void ) const
-{   Lock lock( mSynchObject ); return mElemCount;             }
+template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Compare /*= TEListImpl<VALUE_TYPE>*/>
+inline TEStack<VALUE, VALUE_TYPE, Compare> & TEStack<VALUE, VALUE_TYPE, Compare>::operator = ( const TEStack<VALUE, VALUE_TYPE, Compare> & source )
+{
+    copy(source);
+    return (*this);
+}
 
-template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /*= TEListImpl<VALUE_TYPE>*/>
-inline bool TEStack<VALUE, VALUE_TYPE, Implement>::isEmpty( void ) const
-{   Lock lock( mSynchObject ); return (mElemCount == 0);      }
+template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Compare /*= TEListImpl<VALUE_TYPE>*/>
+inline TEStack<VALUE, VALUE_TYPE, Compare> & TEStack<VALUE, VALUE_TYPE, Compare>::operator = ( TEStack<VALUE, VALUE_TYPE, Compare> && source ) noexcept
+{
+    move( static_cast<TEStack<VALUE, VALUE_TYPE, Compare> &&>(source) );
+    return (*this);
+}
 
-template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /*= TEListImpl<VALUE_TYPE>*/>
-inline bool TEStack<VALUE, VALUE_TYPE, Implement>::lock( void ) const
-{   return mSynchObject.lock(IESynchObject::WAIT_INFINITE);     }
-
-template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /*= TEListImpl<VALUE_TYPE>*/>
-inline bool TEStack<VALUE, VALUE_TYPE, Implement>::unlock( void ) const
-{   return mSynchObject.unlock();                               }
-
-template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /*= TEListImpl<VALUE_TYPE>*/>
-inline VALUE_TYPE TEStack<VALUE, VALUE_TYPE, Implement>::firstEntry( void ) const
-{   Lock lock(mSynchObject); ASSERT(mHead != static_cast<Block *>(NULL)); return mHead->mValue;   }
-
-template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /*= TEListImpl<VALUE_TYPE>*/>
-inline VALUE_TYPE TEStack<VALUE, VALUE_TYPE, Implement>::lastEntry( void ) const
-{   Lock lock(mSynchObject); ASSERT(mTail != static_cast<Block *>(NULL)); return mTail->mValue;   }
-
-template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /*= TEListImpl<VALUE_TYPE>*/>
-int TEStack<VALUE, VALUE_TYPE, Implement>::copy( const TEStack<VALUE, VALUE_TYPE, Implement> & source )
+template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Compare /*= TEListImpl<VALUE_TYPE>*/>
+inline int TEStack<VALUE, VALUE_TYPE, Compare>::getSize( void ) const
 {
     Lock lock( mSynchObject );
-    if (static_cast<const TEStack<VALUE, VALUE_TYPE, Implement> *>(this) != &source)
+    return mCount;
+}
+
+template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Compare /*= TEListImpl<VALUE_TYPE>*/>
+inline bool TEStack<VALUE, VALUE_TYPE, Compare>::isEmpty( void ) const
+{
+    Lock lock( mSynchObject );
+    return (mCount == 0);
+}
+
+template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Compare /*= TEListImpl<VALUE_TYPE>*/>
+inline bool TEStack<VALUE, VALUE_TYPE, Compare>::lock( void ) const
+{
+    return mSynchObject.lock(NECommon::WAIT_INFINITE);
+}
+
+template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Compare /*= TEListImpl<VALUE_TYPE>*/>
+inline bool TEStack<VALUE, VALUE_TYPE, Compare>::unlock( void ) const
+{
+    return mSynchObject.unlock();
+}
+
+template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Compare /*= TEListImpl<VALUE_TYPE>*/>
+inline VALUE_TYPE TEStack<VALUE, VALUE_TYPE, Compare>::firstEntry( void ) const
+{
+    Lock lock(mSynchObject);
+    ASSERT(mHead != nullptr);
+    return mHead->mValue;
+}
+
+template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Compare /*= TEListImpl<VALUE_TYPE>*/>
+inline VALUE_TYPE TEStack<VALUE, VALUE_TYPE, Compare>::lastEntry( void ) const
+{
+    Lock lock(mSynchObject);
+    ASSERT(mTail == nullptr);
+    return mTail->mValue;
+}
+
+template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Compare /*= TEListImpl<VALUE_TYPE>*/>
+int TEStack<VALUE, VALUE_TYPE, Compare>::copy( const TEStack<VALUE, VALUE_TYPE, Compare> & source )
+{
+    Lock lock( mSynchObject );
+
+    if (static_cast<const TEStack<VALUE, VALUE_TYPE, Compare> *>(this) != &source)
     {
-        Lock lockThis(mSynchObject);
         Lock lockSource(source.mSynchObject);
 
         _cleanStack();
         _copyElements(source);
     }
 
-    return mElemCount;
+    return mCount;
 }
 
-template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /*= TEListImpl<VALUE_TYPE>*/>
-int TEStack<VALUE, VALUE_TYPE, Implement>::pushLast( VALUE_TYPE newElement )
+template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Compare /*= TEListImpl<VALUE_TYPE>*/>
+int TEStack<VALUE, VALUE_TYPE, Compare>::move( TEStack<VALUE, VALUE_TYPE, Compare> && source ) noexcept
+{
+    ASSERT(this != &source);
+
+    Lock lock( mSynchObject );
+    Lock lockSource( source.mSynchObject );
+
+    std::swap( mHead, source.mHead );
+    std::swap( mTail, source.mTail );
+    std::swap( mCount, source.mCount );
+
+    return mCount;
+}
+
+template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Compare /*= TEListImpl<VALUE_TYPE>*/>
+int TEStack<VALUE, VALUE_TYPE, Compare>::pushLast( VALUE_TYPE newElement )
 {
     Lock lock(mSynchObject);
 
     Block * newBlock = DEBUG_NEW Block(newElement);
-    if (newBlock != NULL)
+    if (newBlock != nullptr)
     {
-        if ( mHead == NULL )
+        if ( mHead == nullptr )
         {
-            ASSERT(mTail        == NULL);
-            ASSERT(mElemCount   == 0);
-            mHead = mTail   = newBlock;
-        }
-        else
-        {
-            ASSERT(mTail        != NULL);
-            ASSERT(mElemCount   != 0);
-            mTail->mNext = newBlock;
-            mTail = newBlock;
-        }
-
-        ++ mElemCount;
-    }
-
-    return mElemCount;
-}
-
-template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /*= TEListImpl<VALUE_TYPE>*/>
-int TEStack<VALUE, VALUE_TYPE, Implement>::pushFirst( VALUE_TYPE newElement )
-{
-    Lock lock(mSynchObject);
-
-    Block* newBlock = DEBUG_NEW Block(newElement);
-    if (newBlock != NULL)
-    {
-        if ( mHead == NULL )
-        {
-            ASSERT(mTail        == NULL);
-            ASSERT(mElemCount   == 0);
+            ASSERT(mTail  == nullptr);
+            ASSERT(mCount == 0);
             mHead = mTail = newBlock;
         }
         else
         {
-            ASSERT(mTail        != NULL);
-            ASSERT(mElemCount   != 0);
+            ASSERT(mTail  != nullptr);
+            ASSERT(mCount != 0);
+            mTail->mNext = newBlock;
+            mTail = newBlock;
+        }
+
+        ++ mCount;
+    }
+
+    return mCount;
+}
+
+template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Compare /*= TEListImpl<VALUE_TYPE>*/>
+int TEStack<VALUE, VALUE_TYPE, Compare>::pushFirst( VALUE_TYPE newElement )
+{
+    Lock lock(mSynchObject);
+
+    Block* newBlock = DEBUG_NEW Block(newElement);
+    if (newBlock != nullptr)
+    {
+        if ( mHead == nullptr )
+        {
+            ASSERT(mTail  == nullptr);
+            ASSERT(mCount == 0);
+            mHead = mTail = newBlock;
+        }
+        else
+        {
+            ASSERT(mTail  != nullptr);
+            ASSERT(mCount != 0);
             newBlock->mNext = mHead;
             mHead = newBlock;
         }
 
-        ++ mElemCount;
+        ++ mCount;
     }
 
-    return mElemCount;
+    return mCount;
 }
 
-template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /*= TEListImpl<VALUE_TYPE>*/>
-VALUE TEStack<VALUE, VALUE_TYPE, Implement>::popFirst( void )
+template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Compare /*= TEListImpl<VALUE_TYPE>*/>
+VALUE TEStack<VALUE, VALUE_TYPE, Compare>::popFirst( void )
 {
     Lock lock(mSynchObject);
 
     VALUE result = VALUE();
 
-    if (mElemCount != 0 )
+    if (mCount != 0 )
     {
         Block* block = mHead;
         mHead = block->mNext;
-        -- mElemCount;
-        if ( mHead == NULL )
+        -- mCount;
+
+        if ( mHead == nullptr )
         {
-            ASSERT( mElemCount == 0 );
-            mTail = NULL;
+            ASSERT( mCount == 0 );
+            mTail = nullptr;
         }
 
         result = block->mValue;
@@ -682,165 +774,220 @@ VALUE TEStack<VALUE, VALUE_TYPE, Implement>::popFirst( void )
     return result;
 }
 
-template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /*= TEListImpl<VALUE_TYPE>*/>
-inline void TEStack<VALUE, VALUE_TYPE, Implement>::removeAll( void )
-{   Lock lock(mSynchObject); _cleanStack();           }
+template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Compare /*= TEListImpl<VALUE_TYPE>*/>
+inline void TEStack<VALUE, VALUE_TYPE, Compare>::removeAll( void )
+{
+    Lock lock(mSynchObject);
+    _cleanStack();
+}
 
 
-template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /*= TEListImpl<VALUE_TYPE>*/>
-STACKPOS TEStack<VALUE, VALUE_TYPE, Implement>::find(VALUE_TYPE elem, STACKPOS startAt /*= TemplateConstants::START_POSITION*/) const
+template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Compare /*= TEListImpl<VALUE_TYPE>*/>
+STACKPOS TEStack<VALUE, VALUE_TYPE, Compare>::find(VALUE_TYPE elem, STACKPOS startAt /*= NECommon::START_POSITION*/) const
 {
     Lock lock(mSynchObject);
 
-    STACKPOS result = static_cast<STACKPOS>(TemplateConstants::INVALID_POSITION);
-    Block * header = startAt == TemplateConstants::START_POSITION ? mHead : reinterpret_cast<Block *>(startAt)->mNext;
-    while (header != static_cast<Block *>(NULL))
+    STACKPOS result = static_cast<STACKPOS>(NECommon::INVALID_POSITION);
+    Block * head = startAt == NECommon::START_POSITION ? mHead : reinterpret_cast<Block *>(startAt)->mNext;
+    while ( head != nullptr)
     {
-        if (isEqualValues(elem, header->mValue))
+        if (isEqualValues(elem, head->mValue))
         {
-            result = static_cast<STACKPOS>(header);
+            result = static_cast<STACKPOS>(head);
             break;
         }
 
-        header = header->mNext;
+        head = head->mNext;
     }
 
     return result;
 }
 
-template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /*= TEListImpl<VALUE_TYPE>*/>
-inline STACKPOS TEStack<VALUE, VALUE_TYPE, Implement>::firstPosition( void ) const
+template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Compare /*= TEListImpl<VALUE_TYPE>*/>
+inline STACKPOS TEStack<VALUE, VALUE_TYPE, Compare>::firstPosition( void ) const
 {
     Lock lock(mSynchObject);
     return static_cast<STACKPOS>(mHead);
 }
 
-template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /*= TEListImpl<VALUE_TYPE>*/>
-inline VALUE_TYPE TEStack<VALUE, VALUE_TYPE, Implement>::getAt( const STACKPOS pos ) const
+template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Compare /*= TEListImpl<VALUE_TYPE>*/>
+inline VALUE_TYPE TEStack<VALUE, VALUE_TYPE, Compare>::getAt( const STACKPOS pos ) const
 {
     Lock lock(mSynchObject);
-    ASSERT(pos != NULL);
+    ASSERT(pos != nullptr);
     return reinterpret_cast<const Block *>(pos)->mValue;
 }
 
-template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /*= TEListImpl<VALUE_TYPE>*/>
-inline VALUE & TEStack<VALUE, VALUE_TYPE, Implement>::getAt( STACKPOS pos )
+template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Compare /*= TEListImpl<VALUE_TYPE>*/>
+inline VALUE & TEStack<VALUE, VALUE_TYPE, Compare>::getAt( STACKPOS pos )
 {
     Lock lock(mSynchObject);
-    ASSERT(pos != NULL);
+    ASSERT(pos != nullptr);
     return reinterpret_cast<Block *>(pos)->mValue;
 }
 
-template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /*= TEListImpl<VALUE_TYPE>*/>
-inline STACKPOS TEStack<VALUE, VALUE_TYPE, Implement>::nextPosition( const STACKPOS pos ) const
+template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Compare /*= TEListImpl<VALUE_TYPE>*/>
+inline STACKPOS TEStack<VALUE, VALUE_TYPE, Compare>::nextPosition( const STACKPOS pos ) const
 {
     Lock lock(mSynchObject);
-    return static_cast<STACKPOS>(pos != NULL ? reinterpret_cast<const Block *>(pos)->mNext : NULL);
+    return static_cast<STACKPOS>(pos != nullptr ? reinterpret_cast<const Block *>(pos)->mNext : nullptr);
 }
 
-template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /*= TEListImpl<VALUE_TYPE>*/>
-inline bool TEStack<VALUE, VALUE_TYPE, Implement>::isEqualValues(VALUE_TYPE Value1, VALUE_TYPE Value2) const
-{   return Implement::implEqualValues(Value1, Value2);      }
-
-template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /*= TEListImpl<VALUE_TYPE>*/>
-inline void TEStack<VALUE, VALUE_TYPE, Implement>::_cleanStack( void )
+template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Compare /*= TEListImpl<VALUE_TYPE>*/>
+inline bool TEStack<VALUE, VALUE_TYPE, Compare>::isEqualValues(VALUE_TYPE Value1, VALUE_TYPE Value2) const
 {
-    while (mHead != NULL)
+    return mHelper.implEqualValues(Value1, Value2);
+}
+
+template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Compare /*= TEListImpl<VALUE_TYPE>*/>
+inline void TEStack<VALUE, VALUE_TYPE, Compare>::_cleanStack( void )
+{
+    while (mHead != nullptr)
     {
         Block* block = mHead;
         mHead = block->mNext;
         delete block;
     }
 
-    mHead = mTail = NULL;
-    mElemCount = 0;
+    mHead = mTail = nullptr;
+    mCount = 0;
 }
 
-template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /*= TEListImpl<VALUE_TYPE>*/>
-inline void TEStack<VALUE, VALUE_TYPE, Implement>::_copyElements( const TEStack<VALUE, VALUE_TYPE, Implement> & source )
+template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Compare /*= TEListImpl<VALUE_TYPE>*/>
+inline void TEStack<VALUE, VALUE_TYPE, Compare>::_copyElements( const TEStack<VALUE, VALUE_TYPE, Compare> & source )
 {
-    for ( Block * srcBlock = source.mHead; srcBlock != NULL; srcBlock = srcBlock->mNext )
+    for ( Block * srcBlock = source.mHead; srcBlock != nullptr; srcBlock = srcBlock->mNext )
     {
         Block * newBlock = DEBUG_NEW Block( srcBlock->mValue );
-        if ( newBlock != NULL )
+        if ( newBlock != nullptr )
         {
-            if ( mHead == NULL )
+            if ( mHead == nullptr )
             {
-                ASSERT( mTail       == NULL );
-                ASSERT( mElemCount  == 0 );
+                ASSERT( mTail   == nullptr );
+                ASSERT( mCount  == 0 );
                 mHead = mTail = newBlock;
             }
             else
             {
-                ASSERT( mTail       != NULL );
-                ASSERT( mElemCount  != 0 );
+                ASSERT( mTail   != nullptr );
+                ASSERT( mCount  != 0 );
                 mTail->mNext = newBlock;
                 mTail = newBlock;
             }
 
-            ++ mElemCount;
+            ++ mCount;
         }
     }
 }
 
 //////////////////////////////////////////////////////////////////////////
-// TELockStack<VALUE, VALUE_TYPE, Implement> class template implementation
+// TELockStack<VALUE, VALUE_TYPE, Compare> class template implementation
 //////////////////////////////////////////////////////////////////////////
 
-template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /*= TEListImpl<VALUE_TYPE>*/>
-TELockStack<VALUE, VALUE_TYPE, Implement>::TELockStack( void )
-    : TEStack<VALUE, VALUE_TYPE, Implement>(mLock)
-    , mLock ( false )
-{   ;   }
-
-template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /*= TEListImpl<VALUE_TYPE>*/>
-TELockStack<VALUE, VALUE_TYPE, Implement>::TELockStack( const TEStack<VALUE, VALUE_TYPE, Implement> & source )
-    : TEStack<VALUE, VALUE_TYPE, Implement>( mLock, source )
-    , mLock ( false )
-{   ;   }
-
-template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /*= TEListImpl<VALUE_TYPE>*/>
-TELockStack<VALUE, VALUE_TYPE, Implement>::~TELockStack( void )
-{   ;   }
-
-template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /*= TEListImpl<VALUE_TYPE>*/>
-inline const TELockStack<VALUE, VALUE_TYPE, Implement> & TELockStack<VALUE, VALUE_TYPE, Implement>::operator = ( const TEStack<VALUE, VALUE_TYPE, Implement> & source )
-{   static_cast<TEStack<VALUE, VALUE_TYPE, Implement> &>(*this) = source; return (*this);     }
-
-//////////////////////////////////////////////////////////////////////////
-// TENolockStack<VALUE, VALUE_TYPE, Implement> class template implementation
-//////////////////////////////////////////////////////////////////////////
-
-template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /*= TEListImpl<VALUE_TYPE>*/>
-TENolockStack<VALUE, VALUE_TYPE, Implement>::TENolockStack( void )
-    : TEStack<VALUE, VALUE_TYPE, Implement>(mNoLock)
-
-    , mNoLock   ( )
+template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Compare /*= TEListImpl<VALUE_TYPE>*/>
+TELockStack<VALUE, VALUE_TYPE, Compare>::TELockStack( void )
+    : TEStack<VALUE, VALUE_TYPE, Compare>(mLock)
+    , mLock ( )
 {
 }
 
-template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /*= TEListImpl<VALUE_TYPE>*/>
-TENolockStack<VALUE, VALUE_TYPE, Implement>::TENolockStack( const TEStack<VALUE, VALUE_TYPE, Implement> & source )
-    : TEStack<VALUE, VALUE_TYPE, Implement>( mNoLock, source )
-    
-    , mNoLock   ( )
+template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Compare /*= TEListImpl<VALUE_TYPE>*/>
+TELockStack<VALUE, VALUE_TYPE, Compare>::TELockStack( const TEStack<VALUE, VALUE_TYPE, Compare> & source )
+    : TEStack<VALUE, VALUE_TYPE, Compare>( mLock, source )
+    , mLock ( )
 {
 }
 
-template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /*= TEListImpl<VALUE_TYPE>*/>
-TENolockStack<VALUE, VALUE_TYPE, Implement>::~TENolockStack( void )
+template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Compare /*= TEListImpl<VALUE_TYPE>*/>
+TELockStack<VALUE, VALUE_TYPE, Compare>::TELockStack( TEStack<VALUE, VALUE_TYPE, Compare> && source ) noexcept
+    : TEStack<VALUE, VALUE_TYPE, Compare>( mLock, static_cast<TEStack<VALUE, VALUE_TYPE, Compare> &&>(source) )
+    , mLock ( )
 {
 }
 
-template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /*= TEListImpl<VALUE_TYPE>*/>
-inline const TENolockStack<VALUE, VALUE_TYPE, Implement> & TENolockStack<VALUE, VALUE_TYPE, Implement>::operator = ( const TEStack<VALUE, VALUE_TYPE, Implement> & source )
+template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Compare /*= TEListImpl<VALUE_TYPE>*/>
+TELockStack<VALUE, VALUE_TYPE, Compare>::TELockStack( const TELockStack<VALUE, VALUE_TYPE, Compare> & source )
+    : TEStack<VALUE, VALUE_TYPE, Compare>( mLock, source )
+    , mLock ( )
 {
-    static_cast<TEStack<VALUE, VALUE_TYPE, Implement> &>(*this) = source;
+}
+
+template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Compare /*= TEListImpl<VALUE_TYPE>*/>
+TELockStack<VALUE, VALUE_TYPE, Compare>::TELockStack( TELockStack<VALUE, VALUE_TYPE, Compare> && source ) noexcept
+    : TEStack<VALUE, VALUE_TYPE, Compare>( mLock, static_cast<TEStack<VALUE, VALUE_TYPE, Compare> &&>(source) )
+    , mLock ( )
+{
+}
+
+template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Compare /*= TEListImpl<VALUE_TYPE>*/>
+inline TELockStack<VALUE, VALUE_TYPE, Compare> & TELockStack<VALUE, VALUE_TYPE, Compare>::operator = ( const TELockStack<VALUE, VALUE_TYPE, Compare> & source )
+{
+    static_cast<TEStack<VALUE, VALUE_TYPE, Compare> &>(*this) = source;
+    return (*this);
+}
+
+template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Compare /*= TEListImpl<VALUE_TYPE>*/>
+inline TELockStack<VALUE, VALUE_TYPE, Compare> & TELockStack<VALUE, VALUE_TYPE, Compare>::operator = ( TELockStack<VALUE, VALUE_TYPE, Compare> && source ) noexcept
+{
+    static_cast<TEStack<VALUE, VALUE_TYPE, Compare> &>(*this) = static_cast<TEStack<VALUE, VALUE_TYPE, Compare> &&>(source);
     return (*this);
 }
 
 //////////////////////////////////////////////////////////////////////////
-// TEStack<VALUE, VALUE_TYPE, Implement> friend operators implementation
+// TENolockStack<VALUE, VALUE_TYPE, Compare> class template implementation
+//////////////////////////////////////////////////////////////////////////
+
+template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Compare /*= TEListImpl<VALUE_TYPE>*/>
+TENolockStack<VALUE, VALUE_TYPE, Compare>::TENolockStack( void )
+    : TEStack<VALUE, VALUE_TYPE, Compare>(mNoLock)
+    , mNoLock   ( )
+{
+}
+
+template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Compare /*= TEListImpl<VALUE_TYPE>*/>
+TENolockStack<VALUE, VALUE_TYPE, Compare>::TENolockStack( const TEStack<VALUE, VALUE_TYPE, Compare> & source )
+    : TEStack<VALUE, VALUE_TYPE, Compare>( mNoLock, source )
+    , mNoLock   ( )
+{
+}
+
+template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Compare /*= TEListImpl<VALUE_TYPE>*/>
+TENolockStack<VALUE, VALUE_TYPE, Compare>::TENolockStack( TEStack<VALUE, VALUE_TYPE, Compare> && source ) noexcept
+    : TEStack<VALUE, VALUE_TYPE, Compare>( mNoLock, static_cast<TEStack<VALUE, VALUE_TYPE, Compare> &&>(source) )
+    , mNoLock   ( )
+{
+}
+
+template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Compare /*= TEListImpl<VALUE_TYPE>*/>
+TENolockStack<VALUE, VALUE_TYPE, Compare>::TENolockStack( const TENolockStack<VALUE, VALUE_TYPE, Compare> & source )
+    : TEStack<VALUE, VALUE_TYPE, Compare>( mNoLock, source )
+    , mNoLock   ( )
+{
+}
+
+template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Compare /*= TEListImpl<VALUE_TYPE>*/>
+TENolockStack<VALUE, VALUE_TYPE, Compare>::TENolockStack( TENolockStack<VALUE, VALUE_TYPE, Compare> && source ) noexcept
+    : TEStack<VALUE, VALUE_TYPE, Compare>( mNoLock, static_cast<TEStack<VALUE, VALUE_TYPE, Compare> &&>(source) )
+    , mNoLock   ( )
+{
+}
+
+template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Compare /*= TEListImpl<VALUE_TYPE>*/>
+inline TENolockStack<VALUE, VALUE_TYPE, Compare> & TENolockStack<VALUE, VALUE_TYPE, Compare>::operator = ( const TENolockStack<VALUE, VALUE_TYPE, Compare> & source )
+{
+    static_cast<TEStack<VALUE, VALUE_TYPE, Compare> &>(*this) = source;
+    return (*this);
+}
+
+template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Compare /*= TEListImpl<VALUE_TYPE>*/>
+inline TENolockStack<VALUE, VALUE_TYPE, Compare> & TENolockStack<VALUE, VALUE_TYPE, Compare>::operator = ( TENolockStack<VALUE, VALUE_TYPE, Compare> && source ) noexcept
+{
+    static_cast<TEStack<VALUE, VALUE_TYPE, Compare> &>(*this) = static_cast<TEStack<VALUE, VALUE_TYPE, Compare> &&>(source);
+    return (*this);
+}
+
+//////////////////////////////////////////////////////////////////////////
+// TEStack<VALUE, VALUE_TYPE, Compare> friend operators implementation
 //////////////////////////////////////////////////////////////////////////
 template<typename V, typename VT, class Impl>
 const IEInStream & operator >> ( const IEInStream & stream, TEStack<V, VT, Impl> & input )
@@ -868,10 +1015,8 @@ IEOutStream & operator << ( IEOutStream & stream, const TEStack<V, VT, Impl> & o
     int size = output.getSize();
     stream << size;
     class TEStack<V, VT, Impl>::Block* block = output.mHead;
-    for ( ; block != NULL; block = block->mNext)
+    for ( ; block != nullptr; block = block->mNext)
         stream << block->mValue;
 
     return stream;
 }
-
-#endif  // AREG_BASE_TESTACK_HPP

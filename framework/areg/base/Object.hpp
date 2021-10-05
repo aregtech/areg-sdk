@@ -1,9 +1,16 @@
-#ifndef AREG_BASE_OBJECT_HPP
-#define AREG_BASE_OBJECT_HPP
+#pragma once
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/base/Object.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform Generic Object class
  *
  ************************************************************************/
@@ -37,13 +44,13 @@ public:
     /**
      * \brief   Default constructor
      **/
-    Object( void );
+    Object( void ) = default;
 
     /**
      * \brief   Store pointer as object data.
      * \param   objData     The pointer to store in object.
      **/
-    Object( void* objData );
+    explicit Object( void* objData );
 
     /**
      * \brief   Copy data from given source.
@@ -52,9 +59,15 @@ public:
     Object( const Object & src );
 
     /**
+     * \brief   Moves data from given source.
+     * \param   src     The source to move data.
+     **/
+    Object( Object && src ) noexcept;
+
+    /**
      * \brief   Destructor.
      **/
-    virtual ~Object( void );
+    virtual ~Object( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes / Operations
@@ -67,12 +80,12 @@ public:
      * \brief   Call to clone object
      * \return  Pointer to cloned object
      **/
-    virtual IEGenericObject* clone( void ) const;
+    virtual IEGenericObject* clone( void ) const override;
 
     /**
      * \brief   Destroys created (cloned) object
      **/
-    virtual void destroy( void );
+    virtual void destroy( void ) override;
 
     /**
      * \brief   Checks if object data is similar.
@@ -83,7 +96,7 @@ public:
      * \param   other   Pointer to an object to compare
      * \return  Returns 'true' if 2 objects are equal
      **/
-    virtual bool isEqual( const IEGenericObject * other ) const;
+    virtual bool isEqual( const IEGenericObject * other ) const override;
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
@@ -94,22 +107,27 @@ public:
 /************************************************************************/
     /**
      * \brief   Assignment operator.
-     * \param   src     Reference to a source object
-     * \return  Reference to the object
+     * \param   src     Source to copy data
      **/
-    const Object & operator = ( const Object & src );
+    Object & operator = ( const Object & src );
 
     /**
-     * \brief   Checks whether 2 objects are equal
-     * \param   other   Reference to an object to compare
-     * \return  Returns 'true' if 2 objects are equal
+     * \brief   Move operator.
+     * \param   src     Source to move data
+     **/
+    Object & operator = ( Object && src ) noexcept;
+
+    /**
+     * \brief   Checks whether 2 objects are equal.
+     * \param   other   Reference to an object to compare.
+     * \return  Returns 'true' if 2 objects are equal.
      **/
     bool operator == ( const Object& other ) const;
 
     /**
-     * \brief   Checks whether 2 objects are equal
-     * \param   other   Reference to an object to compare
-     * \return  Returns 'true' if 2 objects are not equal
+     * \brief   Checks whether 2 objects are not equal.
+     * \param   other   Reference to an object to compare.
+     * \return  Returns 'true' if 2 objects are not equal.
      **/
     bool operator != ( const Object & other ) const;
 
@@ -117,7 +135,7 @@ public:
      * \brief   Operator to get integer value of object, mainly used in map
      * \return  Integer value of object.
      **/
-    operator unsigned int ( void ) const;
+    explicit operator unsigned int ( void ) const;
 
 /************************************************************************
  * new operator
@@ -125,14 +143,14 @@ public:
     /**
      * \brief   Overloaded new() operator
      * \param   size    Size of the memory block to allocate
-     * \return  pointer to a memory block of size 'size' or NULL if an allocation error occurred
+     * \return  Valid pointer to a memory block of size 'size' or nullptr in case of error.
      **/
     void * operator new( size_t size );
 
     /**
      * \brief   Overloaded array new operator
      * \param   size    Size of the memory block to allocate
-     * \return  Pointer to a memory block of size 'size' or NULL if an allocation error occurred
+     * \return  Pointer to a memory block of size 'size' or nullptr in case of error.
      **/
     void * operator new [ ] ( size_t size );
 
@@ -160,7 +178,7 @@ public:
      * \param   block   Not used. Block type. Always passed 1 as a normal block.
      * \param   file    Ignored in non-debug version. Source code file name, normally __FILE__
      * \param   line    Ignored in non-debug version. Source code line number, normally __LINE__
-     * \return  Pointer to a memory block of size 'size' or NULL if an allocation error occurred
+     * \return  Pointer to a memory block of size 'size' or nullptr in case of error.
      **/
     void * operator new( size_t size, int /*block*/, const char * file, int line );
 
@@ -172,7 +190,7 @@ public:
      * \param   block   Not used. Block type. Always passed 1 as a normal block.
      * \param   file    Ignored in non-debug version. Source code file name, normally __FILE__
      * \param   line    Ignored in non-debug version. Source code line number, normally __LINE__
-     * \return  Pointer to a memory block of size 'size' or NULL if an allocation error occurred
+     * \return  Pointer to a memory block of size 'size' or nullptr in case of error.
      **/
     void * operator new [ ] ( size_t size, int /*block*/, const char * file, int line );
 
@@ -209,16 +227,16 @@ public:
      * \param   ptr     Pointer to the memory block to delete
      * \param   size    Not used.
      **/
-    void operator delete [] (void* ptr, size_t /*size*/);
+    void operator delete [ ] (void* ptr, size_t /*size*/);
 
     /**
-     * \brief	Overloaded delete[] operator
+     * \brief	Overloaded delete [] operator
      * \param	ptr	Pointer to the memory block to delete
      **/
     void operator delete [ ] ( void * ptr, int, const char *, int );
 
 //////////////////////////////////////////////////////////////////////////
-// Private functions
+// Hidden functions
 //////////////////////////////////////////////////////////////////////////
 private:
     /**
@@ -230,7 +248,3 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // Object class inline functions
 //////////////////////////////////////////////////////////////////////////
-inline const Object& Object::self( void ) const
-{   return (*this); }
-
-#endif  // AREG_BASE_OBJECT_HPP

@@ -1,10 +1,8 @@
 areg_SRC += \
 	$(areg_BASE)/base/private/BufferPosition.cpp \
 	$(areg_BASE)/base/private/BufferStreamBase.cpp \
+	$(areg_BASE)/base/private/Containers.cpp \
 	$(areg_BASE)/base/private/DateTime.cpp \
-	$(areg_BASE)/base/private/EContainers.cpp \
-	$(areg_BASE)/base/private/ESynchObjects.cpp \
-	$(areg_BASE)/base/private/ETemplateBase.cpp \
 	$(areg_BASE)/base/private/File.cpp \
 	$(areg_BASE)/base/private/FileBase.cpp \
 	$(areg_BASE)/base/private/FileBuffer.cpp \
@@ -16,7 +14,6 @@ areg_SRC += \
 	$(areg_BASE)/base/private/IESynchObject.cpp \
 	$(areg_BASE)/base/private/IEThreadConsumer.cpp \
 	$(areg_BASE)/base/private/Identifier.cpp \
-	$(areg_BASE)/base/private/NEBasicShape.cpp \
 	$(areg_BASE)/base/private/NECommon.cpp \
 	$(areg_BASE)/base/private/NEDebug.cpp \
 	$(areg_BASE)/base/private/NEMath.cpp \
@@ -26,7 +23,6 @@ areg_SRC += \
 	$(areg_BASE)/base/private/NEUtilities.cpp \
 	$(areg_BASE)/base/private/Object.cpp \
 	$(areg_BASE)/base/private/Process.cpp \
-	$(areg_BASE)/base/private/RawBuffer.cpp \
 	$(areg_BASE)/base/private/ReadConverter.cpp \
 	$(areg_BASE)/base/private/RemoteMessage.cpp \
 	$(areg_BASE)/base/private/RuntimeBase.cpp \
@@ -37,8 +33,8 @@ areg_SRC += \
 	$(areg_BASE)/base/private/SocketAccepted.cpp \
 	$(areg_BASE)/base/private/SocketClient.cpp \
 	$(areg_BASE)/base/private/SocketServer.cpp \
-	$(areg_BASE)/base/private/SocketTemp.cpp \
 	$(areg_BASE)/base/private/String.cpp \
+	$(areg_BASE)/base/private/SynchObjects.cpp \
 	$(areg_BASE)/base/private/Thread.cpp \
 	$(areg_BASE)/base/private/ThreadAddress.cpp \
 	$(areg_BASE)/base/private/ThreadLocalStorage.cpp \
@@ -46,7 +42,6 @@ areg_SRC += \
 	$(areg_BASE)/base/private/WideString.cpp \
 	$(areg_BASE)/base/private/WriteConverter.cpp \
 	$(areg_BASE)/base/private/posix/CriticalSectionIX.cpp \
-	$(areg_BASE)/base/private/posix/ESynchObjectsPosix.cpp \
 	$(areg_BASE)/base/private/posix/FilePosix.cpp \
 	$(areg_BASE)/base/private/posix/IESynchObjectBaseIX.cpp \
 	$(areg_BASE)/base/private/posix/IEWaitableBaseIX.cpp \
@@ -55,16 +50,19 @@ areg_SRC += \
 	$(areg_BASE)/base/private/posix/NESocketPosix.cpp \
 	$(areg_BASE)/base/private/posix/NEUtilitiesPosix.cpp \
 	$(areg_BASE)/base/private/posix/ProcessPosix.cpp \
+	$(areg_BASE)/base/private/posix/SpinLockIX.cpp \
 	$(areg_BASE)/base/private/posix/SynchLockAndWaitIX.cpp \
+	$(areg_BASE)/base/private/posix/SynchObjectsPosix.cpp \
 	$(areg_BASE)/base/private/posix/ThreadPosix.cpp \
 	$(areg_BASE)/base/private/posix/WaitableEventIX.cpp \
 	$(areg_BASE)/base/private/posix/WaitableMutexIX.cpp \
 	$(areg_BASE)/base/private/posix/WaitableSemaphoreIX.cpp \
 	$(areg_BASE)/base/private/posix/WaitableTimerIX.cpp \
-	$(areg_BASE)/base/private/win32/ESynchObjectsWin32.cpp \
 	$(areg_BASE)/base/private/win32/FileWin32.cpp \
 	$(areg_BASE)/base/private/win32/NEDebugWin32.cpp \
 	$(areg_BASE)/base/private/win32/NESocketWin32.cpp \
 	$(areg_BASE)/base/private/win32/NEUtilitiesWin32.cpp \
 	$(areg_BASE)/base/private/win32/ProcessWin32.cpp \
+	$(areg_BASE)/base/private/win32/SpinLockWin32.cpp \
+	$(areg_BASE)/base/private/win32/SynchObjectsWin32.cpp \
 	$(areg_BASE)/base/private/win32/ThreadWin32.cpp \

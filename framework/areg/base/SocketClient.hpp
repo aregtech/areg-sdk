@@ -1,10 +1,16 @@
-#ifndef AREG_BASE_SOCKETCLIENT_HPP
-#define AREG_BASE_SOCKETCLIENT_HPP
-
+#pragma once
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/base/SocketClient.hpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform Client Socket class declaration
  ************************************************************************/
 
@@ -37,7 +43,7 @@ public:
      *          or receiving data, the socket should be created
      *          and connected to remote host.
      **/
-    SocketClient( void );
+    SocketClient( void ) = default;
 
     /**
      * \brief   Initialization constructor. Creates instance of object
@@ -47,7 +53,7 @@ public:
      *          When instantiated, it will resolved passed host
      *          name and port number. If succeeded to resolve,
      *          it will set resolved IP-address and port number
-     *          as socket address. If passed hostName is NULL,
+     *          as socket address. If passed hostName is nullptr,
      *          it resolve connection for local host.
      * \param   hostName    Host name or IP-address of remote server to connect.
      * \param   portNr      Port number of remote server to connect.
@@ -62,12 +68,12 @@ public:
      *          Specified remoteAddress will be set as remote server address to connect.
      * \param   remoteAddress   Address of remote host to connect.
      **/
-    SocketClient( const NESocket::InterlockedValue & remoteAddress );
+    SocketClient( const NESocket::SocketAddress & remoteAddress );
 
     /**
      * \brief   Destructor.
      **/
-    virtual ~SocketClient( void );
+    virtual ~SocketClient( void ) = default;
 
 public:
 /************************************************************************/
@@ -82,7 +88,7 @@ public:
      * \param   portNr      The valid port number to connect.
      * \return  Returns true if operation succeeded.
      **/
-    virtual bool createSocket( const char * hostName, unsigned short portNr );
+    virtual bool createSocket( const char * hostName, unsigned short portNr ) override;
 
     /**
      * \brief   Before sending or receiving any data from remote host,
@@ -91,14 +97,11 @@ public:
      *          and port number should be already set in socket address.
      * \return  Returns true if operation succeeded.
      **/
-    virtual bool createSocket( void );
+    virtual bool createSocket( void ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    SocketClient( const SocketClient & /*src*/ );
-    const SocketClient & operator = ( const SocketClient & /*src*/ );
+    DECLARE_NOCOPY_NOMOVE( SocketClient );
 };
-
-#endif  // AREG_BASE_SOCKETCLIENT_HPP

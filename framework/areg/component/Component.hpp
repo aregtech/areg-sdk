@@ -1,9 +1,16 @@
-#ifndef AREG_COMPONENT_COMPONENT_HPP
-#define AREG_COMPONENT_COMPONENT_HPP
+#pragma once
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/component/Component.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, Component class declaration.
  *              To receive messages, all service interface objects
  *              should be grouped in component. Use this class as a base
@@ -32,28 +39,19 @@ class StubBase;
 // Component class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief       This is base class to define application component.
- *              The component object should know its master (holder) 
- *              thread and have unique role name within single application.
- *              Same component can be instantiated more than one time,
- *              but ti should differ by role name.
- * 
- *              Define component whenever is a need to define one or
- *              more Clients and Stubs as a component. Components are
- *              required by dispatcher to know how to deliver events.
- *              Components have Address. If same component object is
- *              instantiated more than one time, they should differ by
- *              role name. This ensures having unique addresses.
- *              Component contains binder with its worker threads to
- *              ensure that communication between threads are not out
- *              of component scope. Component class is a runtime object
- *              and it is Worker Thread Consumer to provide possibility to
- *              set and remove certain listeners of certain events.
- *              If component is defined in model and exists in registry
- *              service, it will be automatically instantiated when its
- *              thread starts to run. 
- *              For more details of model designing see NERegistry
- *
+ * \brief   The component object is a container of services and service client
+ *          objects. Each component can contain one or more services and 
+ *          service clients objects. Each component has only one thread owner
+ *          and may have no or many worker threads. If a component contains
+ *          service objects, then it is servicing component and the role of
+ *          of component is the provided service name. The service name
+ *          (or role name) and service interface name have different meaning
+ *          and developers should not mix them. If a service interface object
+ *          with the same service interface name can be instantiated several times,
+ *          each component must have unique name within their visibility and
+ *          accessibility scope, i.e. in case of proveded public service the
+ *          name should be unique within network, and in case of provided local
+ *          service, the role name shooud be unique within local process.
  **/
 class AREG_API Component   : public    RuntimeObject
 {
@@ -61,15 +59,15 @@ class AREG_API Component   : public    RuntimeObject
 // Predefined types. Fol local use
 //////////////////////////////////////////////////////////////////////////
     //!< The basic operations of hash-map.
-    typedef TEIntegerHashMapImpl<Component *>                                                       IntegerHashMapImpl;
+    using ImplIntegerHashMap	= TEHashMapImpl<unsigned int, Component *>;
     //!< The basic operations of resource-map.
-    typedef TEResourceMapImpl<unsigned int, Component>                                              ImplComponentResource;
+    using ImplComponentResource = TEResourceMapImpl<unsigned int, Component>;
     /**
      * \brief   The integer hash-map to store components where the keys are the calculated number of the component.
      * \tparam  Component           The saved values are Component objects
-     * \tparam  IntegerHashMapImpl  The implementation of hash-map basic operations.
+     * \tparam  ImplIntegerHashMap	The implementation of hash-map basic operations.
      **/
-    typedef TEIntegerHashMap<Component *, Component *, IntegerHashMapImpl>                          MaComponentContainer;
+    using MaComponentContainer  = TEIntegerHashMap<Component *, Component *, ImplIntegerHashMap>;
     /**
      * \brief   Component::MapComponentResource
      *          The Resource Map of instantiated components.
@@ -79,13 +77,13 @@ class AREG_API Component   : public    RuntimeObject
      * \tparam  MapComponentResource    The implementation of basic resource+map operations.
      * \tparam  TEStringHashMap<Component *, Component *>  The type of Hash Map, it is string-to-pointer hash map
      **/
-    typedef TELockResourceMap<unsigned int, Component, MaComponentContainer, ImplComponentResource> MapComponentResource;
+    using MapComponentResource  = TELockResourceMap<unsigned int, Component, MaComponentContainer, ImplComponentResource>;
     /**
      * \brief   Component::ListServers
      *          The list of addresses of Servers.
      * \tparam  StubBase  The pointer to base class of Stub objects.
      **/
-    typedef TELinkedList<StubBase*, StubBase*>                                                  ListServers;
+    using ListServers           = TELinkedList<StubBase*, StubBase*>;
 
 //////////////////////////////////////////////////////////////////////////
 // Declare as runtime object
@@ -127,14 +125,14 @@ public:
      * \brief	Find and return component by specified role name
      * \param	roleName	The role name of registered component to search
      * \return	If found, returns pointer to component object.
-     *          Otherwise returns NULL.
+     *          Otherwise returns nullptr.
      **/
     static Component * findComponentByName(const char * roleName);
 
     /**
      * \brief	Find and return component by specified component number
      * \param	magicNum	The calculated component number to search
-     * \return	If found, returns pointer to component object. Otherwise, returns NULL.
+     * \return	If found, returns pointer to component object. Otherwise, returns nullptr.
      **/
     static Component * findComponentByNumber(unsigned int magicNum);
 
@@ -149,7 +147,7 @@ public:
      * \brief	Find component in registries by given component address.
      * \param	comAddress  The address of component to look up.
      * \return	If found, returns pointer to registered component.
-     *          Otherwise returns NULL.
+     *          Otherwise returns nullptr.
      **/
     static Component * findComponentByAddress(const ComponentAddress & comAddress);
 
@@ -175,7 +173,7 @@ public:
      * \param	roleName	    Role Name of component, which should be
      *                          unique within one process.
      **/
-    Component( const char * roleName );
+    explicit Component( const char * roleName );
 
     /**
      * \brief   Destructor.
@@ -354,6 +352,7 @@ private:
 #if defined(_MSC_VER) && (_MSC_VER > 1200)
     #pragma warning(disable: 4251)
 #endif  // _MSC_VER
+
     /**
      * \brief   List of registered server services
      **/
@@ -362,6 +361,7 @@ private:
      * \brief   Static Resource map of created in system component.
      **/
     static  Component::MapComponentResource _mapComponentResource;
+
 #if defined(_MSC_VER) && (_MSC_VER > 1200)
     #pragma warning(default: 4251)
 #endif  // _MSC_VER
@@ -369,8 +369,8 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
-    Component( const Component & /*src*/ );
-    const Component & operator = ( const Component & /*src*/ );
+private:
+    DECLARE_NOCOPY_NOMOVE( Component );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -411,5 +411,3 @@ inline Component& Component::self( void )
 {
     return (*this);
 }
-
-#endif  // AREG_COMPONENT_COMPONENT_HPP

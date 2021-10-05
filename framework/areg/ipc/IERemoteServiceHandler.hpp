@@ -1,9 +1,16 @@
-#ifndef AREG_IPC_IEREMOTESERVICEHANDLER_HPP
-#define AREG_IPC_IEREMOTESERVICEHANDLER_HPP
+#pragma once
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/ipc/IERemoteServiceHandler.hpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, Interface of remote Service Handler
  ************************************************************************/
 
@@ -16,7 +23,7 @@
  * Dependencies
  ************************************************************************/
 namespace NESocket{
-    class InterlockedValue;
+    class SocketAddress;
 }
 class RemoteMessage;
 
@@ -76,14 +83,11 @@ public:
      * \param   addrHost    The address of remote host, which sent message.
      * \param   whichSource The socket handle, which received message.
      **/
-    virtual void processReceivedMessage( const RemoteMessage & msgReceived, const NESocket::InterlockedValue & addrHost, SOCKETHANDLE whichSource ) = 0;
+    virtual void processReceivedMessage( const RemoteMessage & msgReceived, const NESocket::SocketAddress & addrHost, SOCKETHANDLE whichSource ) = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    IERemoteServiceHandler( const IERemoteServiceHandler & /*src*/ );
-    const IERemoteServiceHandler & operator = ( const IERemoteServiceHandler & /*src*/ );
+    DECLARE_NOCOPY_NOMOVE( IERemoteServiceHandler );
 };
-
-#endif  // AREG_IPC_IEREMOTESERVICEHANDLER_HPP

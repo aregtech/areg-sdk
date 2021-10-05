@@ -65,13 +65,13 @@ bool DistributedDialog::PostServiceMessage( NEDistributedApp::eWndCommands cmd, 
 {
     bool result = false;
     DistributedDialog * dlg = DistributedDialog::GetDialog();
-    if ( (dlg != NULL) && (::IsWindow(dlg->GetSafeHwnd()) == TRUE) ) 
+    if ( (dlg != nullptr) && (::IsWindow(dlg->GetSafeHwnd()) == TRUE) )
         result = (::PostMessage( dlg->GetSafeHwnd(), static_cast<UINT>(cmd), wParam, lParam) == TRUE);
     return result;
 }
 
 DistributedDialog::DistributedDialog( )
-    : CPropertySheet    (DistributedDialog::TITLE, NULL)
+    : CPropertySheet    (DistributedDialog::TITLE, nullptr )
     , ConnectionHandler( )
 
     , mPageSetup        ( static_cast<ConnectionHandler &>(self()) )
@@ -137,7 +137,7 @@ BOOL DistributedDialog::OnInitDialog()
     ASSERT(IDM_ABOUTBOX < 0xF000);
 
     CMenu* pSysMenu = GetSystemMenu(FALSE);
-    if (pSysMenu != NULL)
+    if (pSysMenu != nullptr )
     {
         BOOL bNameValid;
         CString strAboutMenu;
@@ -160,7 +160,7 @@ BOOL DistributedDialog::OnInitDialog()
     mCaption = mCaptionInit;
     SetTitle(mCaption);
 
-    Application::initApplication( true, true, true, false );
+    Application::initApplication( true, true, false, true );
 
     SetActivePage(&mPageConnections);
     SetActivePage(&mPageMessaging);
@@ -168,7 +168,7 @@ BOOL DistributedDialog::OnInitDialog()
 
     CButton * btnOk = reinterpret_cast<CButton *>(GetDlgItem( IDOK ));
     CButton * btnCancel = reinterpret_cast<CButton *>(GetDlgItem( IDCANCEL ));
-    if ( (btnOk != NULL) && (btnCancel != NULL) )
+    if ( (btnOk != nullptr) && (btnCancel != nullptr) )
     {
         btnOk->ShowWindow( TRUE );
         UINT style = btnOk->GetButtonStyle( );
@@ -248,9 +248,9 @@ LRESULT DistributedDialog::OnCmdServiceStartup( WPARAM wParam, LPARAM lParam )
     }
     else if ( (wParam == 0) && (lParam == 0))
     {
-        mPageMessaging.OnServiceStartup( false, NULL );
-        mPageSetup.OnServiceStartup( false, NULL);
-        mPageConnections.OnServiceStartup( false, NULL);
+        mPageMessaging.OnServiceStartup( false, nullptr );
+        mPageSetup.OnServiceStartup( false, nullptr );
+        mPageConnections.OnServiceStartup( false, nullptr );
     }
 
     return 0;
@@ -267,9 +267,9 @@ LRESULT DistributedDialog::OnCmdServiceNetwork( WPARAM wParam, LPARAM lParam )
     }
     else if ( (wParam == 0) && (lParam == 0) )
     {
-        mPageMessaging.OnServiceNetwork( false, NULL );
-        mPageSetup.OnServiceNetwork( false, NULL );
-        mPageConnections.OnServiceNetwork( false, NULL);
+        mPageMessaging.OnServiceNetwork( false, nullptr );
+        mPageSetup.OnServiceNetwork( false, nullptr );
+        mPageConnections.OnServiceNetwork( false, nullptr );
     }
 
     return 0;
@@ -356,7 +356,7 @@ LRESULT DistributedDialog::OnCmdClientRegistration( WPARAM wParam, LPARAM lParam
 LRESULT DistributedDialog::OnCmdAddConnection( WPARAM wParam, LPARAM lParam )
 {
     NEConnectionManager::sConnection * data = reinterpret_cast<NEConnectionManager::sConnection *>(lParam);
-    if ( data != static_cast<NEConnectionManager::sConnection *>(NULL) )
+    if ( data != nullptr )
     {
         mPageSetup.OnAddConnection( *data );
         mPageConnections.OnAddConnection( *data );
@@ -371,7 +371,7 @@ LRESULT DistributedDialog::OnCmdAddConnection( WPARAM wParam, LPARAM lParam )
 LRESULT DistributedDialog::OnCmdRemoveConnection( WPARAM wParam, LPARAM lParam )
 {
     NEConnectionManager::sConnection * data = reinterpret_cast<NEConnectionManager::sConnection *>(lParam);
-    if ( data != static_cast<NEConnectionManager::sConnection *>(NULL) )
+    if ( data != nullptr )
     {
         mPageMessaging.OnRemoveConnection( *data );
         mPageSetup.OnRemoveConnection( *data );
@@ -409,9 +409,9 @@ LRESULT DistributedDialog::OnCmdDisconnectTriggered( WPARAM wParam, LPARAM lPara
 LRESULT DistributedDialog::OnCmdChatClosed( WPARAM wParam, LPARAM lParam )
 {
     PageChat * pageChat = reinterpret_cast<PageChat *>(lParam);
-    if ( pageChat != NULL )
+    if ( pageChat != nullptr )
     {
-        for ( MAPPOS pos = mMapChatPages.firstPosition( ); pos != NULL; pos = mMapChatPages.nextPosition( pos ) )
+        for ( MAPPOS pos = mMapChatPages.firstPosition( ); pos != nullptr; pos = mMapChatPages.nextPosition( pos ) )
         {
             PageChat * page = mMapChatPages.getPosition( pos );
             if ( page == pageChat )
@@ -431,7 +431,7 @@ LRESULT DistributedDialog::OnCmdChatClosed( WPARAM wParam, LPARAM lParam )
 LRESULT DistributedDialog::OnCmdSendMessage( WPARAM wParam, LPARAM lParam )
 {
     NECommon::sMessageData * data = reinterpret_cast<NECommon::sMessageData *>(lParam);
-    if ( data != NULL )
+    if ( data != nullptr )
     {
         if ( wParam != static_cast<WPARAM>(NECommon::InvalidCookie) )
             mPageMessaging.OnSendMessage( static_cast<uint32_t>(wParam), *data );
@@ -443,7 +443,7 @@ LRESULT DistributedDialog::OnCmdSendMessage( WPARAM wParam, LPARAM lParam )
 LRESULT DistributedDialog::OnCmdTypeMessage( WPARAM wParam, LPARAM lParam )
 {
     NECommon::sMessageData * data = reinterpret_cast<NECommon::sMessageData *>(lParam);
-    if ( data != NULL )
+    if ( data != nullptr )
     {
         if ( wParam != static_cast<WPARAM>(NECommon::InvalidCookie) )
             mPageMessaging.OnTypeMessage( static_cast<uint32_t>(wParam), *data );
@@ -455,10 +455,10 @@ LRESULT DistributedDialog::OnCmdTypeMessage( WPARAM wParam, LPARAM lParam )
 bool DistributedDialog::OutputMessage( NEDistributedApp::eWndCommands cmd, void * sender, NECommon::sMessageData * data )
 {
     bool result = false;
-    if ( data != NULL )
+    if ( data != nullptr )
     {
         CWnd * mainFrame = theApp.GetMainWnd( );
-        if ( mainFrame != NULL )
+        if ( mainFrame != nullptr )
         {
             HWND hWnd = static_cast<DistributedDialog *>(mainFrame)->mPageMessaging.GetSafeHwnd();
             if ( ::IsWindow(hWnd) )
@@ -489,9 +489,9 @@ PageChat * DistributedDialog::AddChatPage( const NEDirectConnection::sInitiator 
 
     String serviceName    = NEDistributedApp::getDirectMessagingRole( owner.nickName, owner.cookie, owner.sessionId, isInitiator );
     PageChat * chatPage   = new PageChat( serviceName, initiator, listParties, owner, isInitiator );
-    if ( chatPage != NULL )
+    if ( chatPage != nullptr )
     {
-        ASSERT(mMapChatPages.find(serviceName) == static_cast<MAPPOS>(NULL) );
+        ASSERT(mMapChatPages.find(serviceName) == nullptr );
         mMapChatPages.setAt( serviceName, chatPage );
 
         AddPage( chatPage );
@@ -511,39 +511,39 @@ DistributedDialog * DistributedDialog::GetDialog( void )
 void DistributedDialog::DefaultCaption( void )
 {
     DistributedDialog * dlg = DistributedDialog::GetDialog();
-    if ( dlg != NULL )
+    if ( dlg != nullptr )
         dlg->SetTitle(dlg->mCaption);
 }
 
 void DistributedDialog::ChangeCaption( LPCTSTR newCaption )
 {
     DistributedDialog * dlg = DistributedDialog::GetDialog( );
-    if ( (newCaption != NULL) && (dlg != NULL) )
+    if ( (newCaption != nullptr) && (dlg != nullptr) )
         dlg->SetTitle( newCaption );
 }
 
 bool DistributedDialog::RemoveChatPage( const String & connectName )
 {
     MAPPOS pos = mMapChatPages.find(connectName);
-    if ( pos != NULL )
+    if ( pos != nullptr )
     {
         PageChat * chatPage = mMapChatPages.getPosition(pos);
-        if ( chatPage != NULL )
+        if ( chatPage != nullptr )
         {
             RemovePage(chatPage);
             delete chatPage;
         }
         mMapChatPages.removePosition(pos);
     }
-    return (pos != NULL);
+    return (pos != nullptr);
 }
 
 void DistributedDialog::RemoveAllChatPages( void )
 {
-    for ( MAPPOS pos = mMapChatPages.firstPosition(); pos != NULL; pos = mMapChatPages.nextPosition(pos) )
+    for ( MAPPOS pos = mMapChatPages.firstPosition(); pos != nullptr; pos = mMapChatPages.nextPosition(pos) )
     {
         PageChat * chatPage = mMapChatPages.getPosition( pos );
-        if ( chatPage != NULL )
+        if ( chatPage != nullptr )
         {
             RemovePage( chatPage );
             delete chatPage;
@@ -557,11 +557,11 @@ LRESULT DistributedDialog::OnCmdSetDirectConnection( WPARAM wParam, LPARAM lPara
     NEDirectConnection::sInitiator      * initiator     = reinterpret_cast<NEDirectConnection::sInitiator *>( wParam );
     NEDirectConnection::ListParticipants* listParties   = reinterpret_cast<NEDirectConnection::ListParticipants *>( lParam );
 
-    if ( (initiator != NULL) && (listParties != NULL) )
+    if ( (initiator != nullptr) && (listParties != nullptr) )
         AddChatPage(*initiator, *listParties, false);
-    if ( initiator != NULL)
+    if ( initiator != nullptr)
         delete initiator;
-    if ( listParties != NULL)
+    if ( listParties != nullptr)
         delete listParties;
 
     return 0;
@@ -589,7 +589,7 @@ void DistributedDialog::OnRedirectOK( void )
     }
 
     CButton * btnOk = reinterpret_cast<CButton *>(GetDlgItem( IDOK ));
-    if ( btnOk != NULL )
+    if ( btnOk != nullptr )
     {
         btnOk->ShowWindow( TRUE );
         btnOk->SetFocus( );

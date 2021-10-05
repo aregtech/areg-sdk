@@ -1,9 +1,16 @@
-#ifndef AREG_COMPONENT_RESPONSEEVENTS_HPP
-#define AREG_COMPONENT_RESPONSEEVENTS_HPP
+#pragma once
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/component/ResponseEvents.hpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, Generic Local and Remote Request 
  *              Event object for local and remote communication
  ************************************************************************/
@@ -80,7 +87,7 @@ protected:
      *                      message validation flag.
      * \param	respId	    The ID of response. Can also be update ID.
      * \param   seqNr       The call sequence number.
-     * \param	name	    Optional. Name for event data. Can be NULL.
+     * \param	name	    Optional. Name for event data. Can be nullptr.
      **/
     ResponseEvent( const EventDataStream & args
                  , const ProxyAddress & proxyTarget
@@ -88,7 +95,7 @@ protected:
                  , unsigned int respId
                  , Event::eEventType eventType
                  , unsigned int seqNr = NEService::SEQUENCE_NUMBER_NOTIFY
-                 , const char* name = NULL );
+                 , const char* name = nullptr );
 
     /**
      * \brief	Clones existing information, except target Proxy address to send same message to different Proxies.
@@ -106,7 +113,7 @@ protected:
     /**
      * \brief   Destructor.
      **/
-    virtual ~ResponseEvent( void );
+    virtual ~ResponseEvent( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes.
@@ -152,14 +159,14 @@ protected:
      * \param   stream  The streaming object to read out event data
      * \return  Returns streaming object to read out data.
      **/
-    virtual const IEInStream & readStream( const IEInStream & stream );
+    virtual const IEInStream & readStream( const IEInStream & stream ) override;
 
     /**
      * \brief   Writes event data to streaming object
      * \param   stream  The streaming object to write event data.
      * \return  Returns streaming object to write event data.
      **/
-    virtual IEOutStream & writeStream( IEOutStream & stream ) const;
+    virtual IEOutStream & writeStream( IEOutStream & stream ) const override;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -174,9 +181,8 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    ResponseEvent( void );
-    ResponseEvent( const ResponseEvent & /*src*/ );
-    const ResponseEvent & operator = ( const ResponseEvent & /*src*/ );
+    ResponseEvent( void ) = delete;
+    DECLARE_NOCOPY_NOMOVE( ResponseEvent );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -222,14 +228,14 @@ protected:
      *                      message validation flag.
      * \param	respId	    The ID of response. Can also be update ID.
      * \param   seqNr       The call sequence number.
-     * \param	name	    Optional. Name for event data. Can be NULL.
+     * \param	name	    Optional. Name for event data. Can be nullptr.
      **/
     LocalResponseEvent( const EventDataStream & args
                       , const ProxyAddress & proxyTarget
                       , NEService::eResultType result
                       , unsigned int respId
                       , unsigned int seqNr = NEService::SEQUENCE_NUMBER_NOTIFY
-                      , const char* name = NULL);
+                      , const char* name = nullptr);
 
     /**
      * \brief	Clones existing information, except target Proxy address to send same message to different Proxies.
@@ -247,15 +253,14 @@ protected:
     /**
      * \brief   Destructor.
      **/
-    virtual ~LocalResponseEvent( void );
+    virtual ~LocalResponseEvent( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    LocalResponseEvent( void );
-    LocalResponseEvent( const LocalResponseEvent & /*src*/ );
-    const LocalResponseEvent & operator = ( const LocalResponseEvent & /*src*/ );
+    LocalResponseEvent( void ) = delete;
+    DECLARE_NOCOPY_NOMOVE( LocalResponseEvent );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -302,14 +307,14 @@ protected:
      *                      message validation flag.
      * \param	respId	    The ID of response. Can also be update ID.
      * \param   seqNr       The call sequence number.
-     * \param	name	    Optional. Name for event data. Can be NULL.
+     * \param	name	    Optional. Name for event data. Can be nullptr.
      **/
     RemoteResponseEvent( const EventDataStream & args
                        , const ProxyAddress & proxyTarget
                        , NEService::eResultType result
                        , unsigned int respId
                        , unsigned int seqNr = NEService::SEQUENCE_NUMBER_NOTIFY
-                       , const char* name = NULL);
+                       , const char* name = nullptr);
 
     /**
      * \brief	Clones existing information, except target Proxy address to send same message to different Proxies.
@@ -327,7 +332,7 @@ protected:
     /**
      * \brief   Destructor.
      **/
-    virtual ~RemoteResponseEvent( void );
+    virtual ~RemoteResponseEvent( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////////
 // Protected operations
@@ -349,9 +354,8 @@ protected:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    RemoteResponseEvent( void );
-    RemoteResponseEvent( const RemoteResponseEvent & /*src*/ );
-    const RemoteResponseEvent & operator = ( const RemoteResponseEvent & /*src*/ );
+    RemoteResponseEvent( void ) = delete;
+    DECLARE_NOCOPY_NOMOVE( RemoteResponseEvent );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -396,5 +400,3 @@ inline const Channel & RemoteResponseEvent::getTargetChannel( void ) const
 {
     return mTargetProxyAddress.getChannel();
 }
-
-#endif  // AREG_COMPONENT_RESPONSEEVENTS_HPP

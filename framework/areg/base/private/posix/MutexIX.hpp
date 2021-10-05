@@ -1,9 +1,16 @@
-#ifndef AREG_BASE_PRIVATE_POSIX_MUTEXIX_HPP
-#define AREG_BASE_PRIVATE_POSIX_MUTEXIX_HPP
+#pragma once
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/base/private/posix/MutexIX.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, POSIX Mutex wrapper class.
  *
  ************************************************************************/
@@ -13,7 +20,8 @@
   ************************************************************************/
 #include "areg/base/GEGlobal.h"
 
-#ifdef _POSIX
+#if defined(_POSIX) || defined(POSIX)
+
 #include "areg/base/private/posix/IESynchObjectBaseIX.hpp"
 #include <pthread.h>
 
@@ -47,7 +55,7 @@ public:
      *                      owning thread can unlock the object.
      * \param   asciiName   The name of synchronization object.
      **/
-    MutexIX(bool initLocked = false, const char* asciiName = NULL);
+    explicit MutexIX(bool initLocked = false, const char* asciiName = nullptr);
 
     /**
      * \brief   Destructor.
@@ -69,7 +77,7 @@ protected:
      *                          locked the object.
      * \param   asciiName       The name of synchronization object.
      **/
-    MutexIX( NESynchTypesIX::eSynchObject synchType, bool isRecursive, const char * asciiName = NULL );
+    MutexIX( NESynchTypesIX::eSynchObject synchType, bool isRecursive, const char * asciiName = nullptr );
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations
@@ -87,15 +95,15 @@ public:
      *          If timeout specified, it will be locked until either object
      *          is not released or timeout expired.
      * \param   msTimeout   The timeout is milliseconds to stay locked.
-     *                      If specified IESynchObject::DO_NOT_WAIT the
+     *                      If specified NECommon::DO_NOT_WAIT the
      *                      function returned immediately independent whether
      *                      it is locked or not. If timeout specified
-     *                      IESynchObject::WAIT_INFINITE it will remain
+     *                      NECommon::WAIT_INFINITE it will remain
      *                      blocked until object is not released.
      * \return  Returns true if succeeded to lock the object. Returns false
      *          if either failed to lock or the timeout expired.
      **/
-    bool lock(unsigned int msTimeout = IESynchObject::WAIT_INFINITE) const;
+    bool lock(unsigned int msTimeout = NECommon::WAIT_INFINITE) const;
 
     /**
      * \brief   This function returns immediately without blocking.
@@ -118,13 +126,13 @@ public:
     /**
      * \brief   Returns true if synchronization object is valid.
      **/
-    virtual bool isValid( void ) const;
+    virtual bool isValid( void ) const override;
 
     /**
      * \brief   Triggered when synchronization object is going to be deleted.
      *          This should free all resources.
      **/
-    virtual void freeResources( void );
+    virtual void freeResources( void ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // MutexIX class implementation
@@ -167,8 +175,7 @@ protected:
 // Forbidden calls.
 //////////////////////////////////////////////////////////////////////////
 private:
-    MutexIX( const MutexIX & );
-    const MutexIX & operator = ( const MutexIX & );
+    DECLARE_NOCOPY_NOMOVE( MutexIX );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -210,12 +217,12 @@ public:
      *          or returns when timeout expired.
      * \param   msTimeout   Timeout in milliseconds to wait when requesting mutex
      *                      mutex ownership. If value is equal to
-     *                      IESynchObject::WAIT_INFINITE the thread will be locked until
+     *                      NECommon::WAIT_INFINITE the thread will be locked until
      *                      does not get the ownership.
      * \return  Returns true if succeeded to take mutex ownership.
      *          Otherwise, if timeout expired or error happened, it returns false.
      **/
-    inline bool lock( unsigned int msTimeout = IESynchObject::WAIT_INFINITE ) const;
+    inline bool lock( unsigned int msTimeout = NECommon::WAIT_INFINITE ) const;
 
     /**
      * \brief   Call to unlock mutex to let other threads to take the ownership.
@@ -240,9 +247,8 @@ private:
 // Forbidden calls.
 //////////////////////////////////////////////////////////////////////////
 private:
-    ObjectLockIX( void );
-    ObjectLockIX( const ObjectLockIX & /*src*/ );
-    const ObjectLockIX & operator = ( const ObjectLockIX & /*src*/ );
+    ObjectLockIX( void ) = delete;
+    DECLARE_NOCOPY_NOMOVE( ObjectLockIX );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -255,7 +261,7 @@ inline ObjectLockIX::ObjectLockIX( const MutexIX & mutex, bool autoLock /*= true
 {
     if (autoLock)
     {
-        mMutex.lock(IESynchObject::WAIT_INFINITE);
+        mMutex.lock(NECommon::WAIT_INFINITE);
     }
 }
 
@@ -267,7 +273,7 @@ inline ObjectLockIX::~ObjectLockIX( void )
     }
 }
 
-inline bool ObjectLockIX::lock( unsigned int msTimeout /*= IESynchObject::WAIT_INFINITE*/ ) const
+inline bool ObjectLockIX::lock( unsigned int msTimeout /*= NECommon::WAIT_INFINITE*/ ) const
 {
     return mMutex.lock(msTimeout);
 }
@@ -277,6 +283,4 @@ inline void ObjectLockIX::unlock( void ) const
     mMutex.unlock();
 }
 
-#endif  // _POSIX
-
-#endif  // AREG_BASE_PRIVATE_POSIX_MUTEXIX_HPP
+#endif  // defined(_POSIX) || defined(POSIX)

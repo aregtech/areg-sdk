@@ -1,10 +1,16 @@
-#ifndef AREG_BASE_SOCKET_HPP
-#define AREG_BASE_SOCKET_HPP
-
+#pragma once
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/base/Socket.hpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform base class of socket.
  ************************************************************************/
 
@@ -16,6 +22,7 @@
 #include "areg/base/String.hpp"
 #include "areg/base/NEMemory.hpp"
 #include "areg/base/NESocket.hpp"
+#include <memory>
 
 /************************************************************************
  * Dependencies
@@ -55,7 +62,7 @@ protected:
      * \param   hSocket         Socket descriptor to set
      * \param   sockAddress     Socket address to set
      **/
-    Socket( const SOCKETHANDLE hSocket, const NESocket::InterlockedValue & sockAddress );
+    Socket( const SOCKETHANDLE hSocket, const NESocket::SocketAddress & sockAddress );
 
     /**
      * \brief   Copy constructor.
@@ -64,10 +71,28 @@ protected:
     Socket( const Socket & source );
 
     /**
+     * \brief   Move constructor.
+     * \param   source  The source to copy data.
+     **/
+    Socket( Socket && source ) noexcept;
+
+    /**
      * \brief   Destructor. Invalidates socket object, decrease reference counter,
      *          and if reference counter is reaching zero, close socket.
      **/
     virtual ~Socket( void );
+
+    /**
+     *  \brief	Assignes socket data taken from given source.
+     *  \param	src		The source of socket data.
+     **/
+    Socket & operator = ( const Socket & src );
+
+    /**
+     *  \brief	Moves socket data taken from given source.
+     *  \param	src		The source of socket data.
+     **/
+    Socket & operator = ( Socket && src ) noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -189,14 +214,14 @@ public:
     /**
      * \brief   Return Socket Address object.
      **/
-    inline const NESocket::InterlockedValue & getAddress( void ) const;
+    inline const NESocket::SocketAddress & getAddress( void ) const;
 
     /**
      * \brief   Sets socket address. The address should be either invalid
      *          or already resolved with IP-address.
      * \param   newAddress  The new address to set.
      **/
-    inline void setAddress( const NESocket::InterlockedValue & newAddress );
+    inline void setAddress( const NESocket::SocketAddress & newAddress );
 
     /**
      * \brief   Sets Socket Address. If hostName is not IP-address, it will 
@@ -230,12 +255,7 @@ protected:
      * \param   hSocket     The Socket Handle to take close action.
      *                      In the moment when it is called, the member socket handle is already invalidated.
      **/
-    virtual void closeSocketHandle( SOCKETHANDLE hSocket );
-
-    /**
-     * \brief   Increases lock counter
-     **/
-    void increaseLock( void );
+	void closeSocketHandle( SOCKETHANDLE hSocket );
 
     /**
      * \brief   Decreases lock counter and if it is zero, the calls method to close socket.
@@ -246,26 +266,24 @@ protected:
 // Member variables
 //////////////////////////////////////////////////////////////////////////
 protected:
+#if defined(_MSC_VER) && (_MSC_VER > 1200)
+    #pragma warning(disable: 4251)
+#endif  // _MSC_VER
+    
     /**
-     * \brief   Socket descriptor
+     * \brief   Pointer to socket descriptor. Also used as reference counter
+     *          to close socket automatically if there is no more socket object holds the socket.
      **/
-    SOCKETHANDLE                mSocket;
-    /**
-     * \brief   Pointer to socket lock count object.
-     *          Used to close socket automatically when lock count is zero.
-     **/
-    unsigned int  *             mLockCount;
+    std::shared_ptr<SOCKETHANDLE>   mSocket;
+
+#if defined(_MSC_VER) && (_MSC_VER > 1200)
+    #pragma warning(default: 4251)
+#endif  // _MSC_VER
 
     /**
      * \brief   The address of socket
      **/
-    NESocket::InterlockedValue  mAddress;
-
-//////////////////////////////////////////////////////////////////////////
-// Forbidden calls
-//////////////////////////////////////////////////////////////////////////
-private:
-    const Socket & operator = ( const Socket & /*src*/ );
+    NESocket::SocketAddress mAddress;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -274,42 +292,40 @@ private:
 
 inline SOCKETHANDLE Socket::getHandle( void ) const
 {
-    return mSocket;
+    return (mSocket.get() != nullptr ? *mSocket : NESocket::InvalidSocketHandle);
 }
 
-inline const NESocket::InterlockedValue & Socket::getAddress( void ) const
+inline const NESocket::SocketAddress & Socket::getAddress( void ) const
 {
     return mAddress;
 }
 
-inline void Socket::setAddress( const NESocket::InterlockedValue & newAddress )
+inline void Socket::setAddress( const NESocket::SocketAddress & newAddress )
 {
     mAddress = newAddress;
 }
 
 inline bool Socket::isValid( void ) const
 {
-    return (mSocket != NESocket::InvalidSocketHandle);
+    return (mSocket.get() != nullptr) && (*mSocket != NESocket::InvalidSocketHandle);
 }
 
 inline bool Socket::isAlive(void) const
 {
-    return NESocket::isSocketAlive(mSocket);
+    return (mSocket.get() != nullptr) && NESocket::isSocketAlive(*mSocket);
 }
 
 inline int Socket::pendindRead(void) const
 {
-    return NESocket::pendingRead(mSocket);
+    return (mSocket.get() != nullptr) && NESocket::pendingRead(*mSocket);
 }
 
 inline bool Socket::disableSend( void ) const
 {
-    return NESocket::disableSend(mSocket);
+    return (mSocket.get() != nullptr) && NESocket::disableSend(*mSocket);
 }
 
 inline bool Socket::disableReceive( void ) const
 {
-    return NESocket::disableReceive(mSocket);
+    return (mSocket.get() != nullptr) && NESocket::disableReceive(*mSocket);
 }
-
-#endif  // AREG_BASE_SOCKET_HPP

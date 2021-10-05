@@ -1,7 +1,15 @@
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/component/private/IERemoteEventConsumer.cpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, Remote Event consumer to dispatch remote events.
  *
  ************************************************************************/
@@ -9,36 +17,26 @@
 #include "areg/component/RequestEvents.hpp"
 #include "areg/component/ResponseEvents.hpp"
 
-IERemoteEventConsumer::IERemoteEventConsumer(void)
-{
-
-}
-
-IERemoteEventConsumer::~IERemoteEventConsumer(void)
-{
-
-}
-
 void IERemoteEventConsumer::startEventProcessing(Event & eventElem)
 {
-    if ( (eventElem.getEventType() & Event::EventRemote) != 0 )
+    if ( Event::isRemote(eventElem.getEventType()) )
     {
         RemoteRequestEvent * requestEvent = RUNTIME_CAST(&eventElem, RemoteRequestEvent);
-        if ( requestEvent != NULL )
+        if ( requestEvent != nullptr )
         {
             processRemoteRequestEvent(*requestEvent);
         }
         else
         {
             RemoteResponseEvent * responseEvent = RUNTIME_CAST(&eventElem, RemoteResponseEvent);
-            if ( responseEvent != NULL )
+            if ( responseEvent != nullptr )
             {
                 processRemoteResponseEvent(*responseEvent);
             }
             else
             {
                 RemoteNotifyRequestEvent * requestNotifyEvent = RUNTIME_CAST(&eventElem, RemoteNotifyRequestEvent);
-                if ( requestNotifyEvent != NULL )
+                if ( requestNotifyEvent != nullptr )
                     processRemoteNotifyRequestEvent(*requestNotifyEvent);
             }
         }

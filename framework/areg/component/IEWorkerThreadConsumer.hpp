@@ -1,9 +1,16 @@
-#ifndef AREG_COMPONENT_IEWORKERTHREADCONSUMER_HPP
-#define AREG_COMPONENT_IEWORKERTHREADCONSUMER_HPP
+#pragma once
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/component/IEWorkerThreadConsumer.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, Worker Thread Consumer.
  *              This object is required by every worker thread to
  *              trigger register / unregister methods when thread
@@ -27,21 +34,16 @@ class WorkerThread;
 // IEWorkerThreadConsumer class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief       Worker Thread Consumer is required by Worker Thread when
- *              it starts and stops running. Pass object to worker thread
- *              to register and register event listeners and start receiving
- *              events from component thread.
+ * \brief   Worker Thread Consumer is required by Worker Thread when it 
+ *          starts and stops running. Pass object to worker thread to 
+ *          register and unregister event listeners and start receiving
+ *          events from component thread.
  * 
- * \details     If an object is an instance of Worker Thread Consumer,
- *              it will get register / unregister calls to notify
- *              Thread Start / Stop. Set listeners in register method to
- *              be able to receive notification messages. Every consumer
- *              should have name. This is done because if a component has
- *              binded several worker threads, it should be able to
- *              differentiate and assign appropriate consumer depending
- *              on name. The consumer name is also part of 
- *              Worker Thread Entry object. For details, see NERegistry
- *              namespace.
+ *          If an object is an instance of Worker Thread Consumer, it will 
+ *          get register / unregister calls to notify Thread Start / Stop.
+ *          Set listeners in register method to be able to receive notification
+ *          messages. Each consumer should have name to differentiat the
+ *          consumers if a component has more than one worker thread.
  **/
 class AREG_API IEWorkerThreadConsumer
 {
@@ -53,13 +55,13 @@ protected:
      * \brief   Creates consumer object and sets name.
      * \param   consumerName    The name of consumer bind to worker thread.
      **/
-    IEWorkerThreadConsumer( const char* const consumerName );
+    explicit IEWorkerThreadConsumer( const char* const consumerName );
 
 public:
     /**
      * \brief   Destructor
      **/
-    virtual ~IEWorkerThreadConsumer( void );
+    virtual ~IEWorkerThreadConsumer( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes
@@ -70,7 +72,7 @@ public:
      *          Is required if component contains few worker threads
      *          and needs few consumers for every single worker thread.
      **/
-    inline const char * getConsumerName( void ) const;
+    inline const String & getConsumerName( void ) const;
 
     /**
      * \brief   Compares passed name with the name of consumer
@@ -78,7 +80,7 @@ public:
      * \param   consumerName    The name to check.
      * \return  Returns true if passed name is the name of consumer.
      **/
-    inline bool isConsumerName( const char* consumerName ) const;
+    inline bool isEqualName( const char* consumerName ) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Override operations
@@ -118,22 +120,19 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    IEWorkerThreadConsumer( void );
-    IEWorkerThreadConsumer(const IEWorkerThreadConsumer & /*src*/ );
-    const IEWorkerThreadConsumer& operator = (const IEWorkerThreadConsumer & /*src*/ );
+    IEWorkerThreadConsumer( void ) = delete;
+    DECLARE_NOCOPY_NOMOVE( IEWorkerThreadConsumer );
 };
 
 //////////////////////////////////////////////////////////////////////////
 // IEWorkerThreadConsumer class inline function implementation
 //////////////////////////////////////////////////////////////////////////
-inline const char* IEWorkerThreadConsumer::getConsumerName( void ) const
+inline const String & IEWorkerThreadConsumer::getConsumerName( void ) const
 {
-    return static_cast<const char *>(mConsumerName);
+    return mConsumerName;
 }
 
-inline bool IEWorkerThreadConsumer::isConsumerName( const char * consumerName ) const
+inline bool IEWorkerThreadConsumer::isEqualName( const char * consumerName ) const
 {
-    return ((consumerName != NULL) && (mConsumerName == consumerName));
+    return ((consumerName != nullptr) && (mConsumerName == consumerName));
 }
-
-#endif  // AREG_COMPONENT_IEWORKERTHREADCONSUMER_HPP

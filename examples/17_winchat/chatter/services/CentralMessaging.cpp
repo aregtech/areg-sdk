@@ -60,8 +60,8 @@ void CentralMessaging::broadcastSendMessage( const String & nickName, unsigned i
     {
         ASSERT(nickName != mConnectionHandler.GetNickName());
 
-        NECommon::sMessageData * data = DEBUG_NEW NECommon::sMessageData;
-        if ( data != NULL )
+        NECommon::sMessageData * data = NECommon::newData();
+        if ( data != nullptr )
         {
             NEString::copyString<TCHAR, char>( data->nickName, NECommon::MAXLEN_NICKNAME, nickName.getString() );
             NEString::copyString<TCHAR, char>( data->message, NECommon::MAXLEN_MESSAGE, newMessage.getString( ) );
@@ -81,8 +81,8 @@ void CentralMessaging::broadcastKeyTyping( const String & nickName, unsigned int
     {
         ASSERT( nickName != mConnectionHandler.GetNickName( ) );
 
-        NECommon::sMessageData * data = DEBUG_NEW NECommon::sMessageData;
-        if ( data != NULL )
+        NECommon::sMessageData * data = NECommon::newData( );
+        if ( data != nullptr )
         {
             NEString::copyString<TCHAR, char>( data->nickName, NECommon::MAXLEN_NICKNAME, nickName.getString( ) );
             NEString::copyString<TCHAR, char>( data->message, NECommon::MAXLEN_MESSAGE, newMessage.getString( ) );
@@ -99,8 +99,8 @@ void CentralMessaging::broadcastBroadcastMessage( const String & serverMessage, 
 {
     TRACE_SCOPE( distrbutedapp_CentralMessaging_broadcastBroadcastMessage );
 
-    NECommon::sMessageData * data = DEBUG_NEW NECommon::sMessageData;
-    if ( data != NULL )
+    NECommon::sMessageData * data = NECommon::newData( );
+    if ( data != nullptr )
     {
         NEString::copyString<TCHAR, TCHAR>( data->nickName, NECommon::MAXLEN_NICKNAME, NECommon::SERVER_NAME );
         NEString::copyString<TCHAR, char>( data->message, NECommon::MAXLEN_MESSAGE, serverMessage.getString( ) );

@@ -1,5 +1,4 @@
-#ifndef  AREG_EXAMPLES_16_PUBFSM_GENERATED_SRC_NECOMMON_HPP
-#define  AREG_EXAMPLES_16_PUBFSM_GENERATED_SRC_NECOMMON_HPP
+#pragma once
 
 /************************************************************************
  * \file            generated/src/NECommon.hpp
@@ -17,9 +16,9 @@
 namespace NECommon
 {
 
-    const char * const  ServiceLightController      = "LightController";
+    constexpr char  ServiceLightController[]    { "LightController" };
 
-    const char * const  SerivceLightClient          = "LightUser";
+    constexpr char  SerivceLightClient[]        { "LightUser" };
 
     inline const char * getName(NETrafficController::eVehicleTrafficLight value);
 
@@ -30,16 +29,16 @@ inline const char * NECommon::getName(NETrafficController::eVehicleTrafficLight 
 {
     switch (value)
     {
-    case NETrafficController::VehicleLightsInit:
+    case NETrafficController::eVehicleTrafficLight::VehicleLightsInit:
         return "Blink YELLOW";
-    case NETrafficController::VehicleLightRed:
+    case NETrafficController::eVehicleTrafficLight::VehicleLightRed:
         return "RED";
-    case NETrafficController::VehicleLightYellow:
+    case NETrafficController::eVehicleTrafficLight::VehicleLightYellow:
         return "YELLOW";
-    case NETrafficController::VehicleLightGreen:
+    case NETrafficController::eVehicleTrafficLight::VehicleLightGreen:
         return "GREEN";
 
-    case NETrafficController::VhicleLightOFF:
+    case NETrafficController::eVehicleTrafficLight::VehicleLightOFF:
     default:
         return "OFF";
     }
@@ -49,14 +48,12 @@ inline const char * NECommon::getName(NETrafficController::ePedestrianTrafficLig
 {
     switch (value)
     {
-    case NETrafficController::PedestrianLightRed:
+    case NETrafficController::ePedestrianTrafficLight::PedestrianLightRed:
         return "RED";
-    case NETrafficController::PedestrianLightGreen:
+    case NETrafficController::ePedestrianTrafficLight::PedestrianLightGreen:
         return "GREEN";
-    case NETrafficController::PedestrianLightOFF:
+    case NETrafficController::ePedestrianTrafficLight::PedestrianLightOFF:
     default:
         return "OFF";
     }
 }
-
-#endif  // AREG_EXAMPLES_16_PUBFSM_GENERATED_SRC_NECOMMON_HPP

@@ -61,7 +61,7 @@ END_MESSAGE_MAP()
 
 
 CentralDialog::CentralDialog( )
-    : CPropertySheet    (CentralDialog::TITLE, NULL)
+    : CPropertySheet    (CentralDialog::TITLE, nullptr)
 
     , mPageSetupNetwork ( )
     , mPageConnections  ( )
@@ -79,7 +79,7 @@ bool CentralDialog::StartConnection( const String & ipAddress, unsigned short po
     bool result = false;
     CentralDialog * dlg = static_cast<CentralDialog *>(theApp.GetMainWnd());
 
-    if ( dlg != NULL )
+    if ( dlg != nullptr )
     {
         if ( Application::startMessageRouting(ipAddress, portNr) )
         {
@@ -100,7 +100,8 @@ bool CentralDialog::StartConnection( const String & ipAddress, unsigned short po
             {
                 message     = _T("Failed to start servicing ...");
             }
-            dlg->mPageConnections.OutputMessage(nickName, message, dateStart, CString(), 0 );
+
+            dlg->mPageConnections.OutputMessage(nickName, message, dateStart, CentralApp::EmptyString, 0 );
         }
     }
 
@@ -136,7 +137,7 @@ BOOL CentralDialog::OnInitDialog()
     ASSERT(IDM_ABOUTBOX < 0xF000);
 
     CMenu* pSysMenu = GetSystemMenu(FALSE);
-    if (pSysMenu != NULL)
+    if (pSysMenu != nullptr)
     {
         pSysMenu->AppendMenu( MF_STRING, SC_MINIMIZE, _T( "Minimize" ) );
         pSysMenu->AppendMenu( MF_STRING, SC_RESTORE, _T( "Restore" ) );
@@ -158,14 +159,14 @@ BOOL CentralDialog::OnInitDialog()
     SetIcon(m_hIcon, TRUE);			// Set big icon
     SetIcon(m_hIcon, FALSE);		// Set small icon
 
-    Application::initApplication( true, true, true, false );
+    Application::initApplication( true, true, false, true );
 
     SetActivePage(&mPageConnections);
     SetActivePage(&mPageSetupNetwork);
 
     CButton * btnOk     = reinterpret_cast<CButton *>(GetDlgItem( IDOK ));
     CButton * btnCancel = reinterpret_cast<CButton *>(GetDlgItem( IDCANCEL ));
-    if ( (btnOk != NULL) && (btnCancel != NULL) )
+    if ( (btnOk != nullptr) && (btnCancel != nullptr) )
     {
         btnOk->ShowWindow( TRUE);
         UINT style = btnOk->GetButtonStyle( );
@@ -250,7 +251,7 @@ void CentralDialog::OnRedirectOK( void )
     }
 
     CButton * btnOk = reinterpret_cast<CButton *>(GetDlgItem( IDOK ));
-    if ( btnOk != NULL )
+    if ( btnOk != nullptr )
     {
         btnOk->ShowWindow( TRUE );
         btnOk->SetFocus();

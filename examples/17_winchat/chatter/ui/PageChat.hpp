@@ -68,7 +68,7 @@ public:
 private:
     void setHeaders( void );
     void setTabTitle( const String & title );
-    void outputMessage( CString nickName, CString message, CString dateStart, CString dateEnd, uint32_t cookie, bool removeType = true);
+    void outputMessage(CString nickName, CString message, CString dateStart, CString dateEnd, uint32_t cookie, bool removeType = true);
     void outputTyping(CString nickName, CString message, uint32_t cookie );
     void removeTyping(CString nickName, uint32_t cookie);
     bool isActivePage( void );
@@ -91,7 +91,7 @@ private:
     // Flag, indicating whether the chat was initiated by other or current participant
     const bool          mIsChatInitiator;
     // The last item output in the list control
-    UINT                mLastItem;
+    INT                 mLastItem;
     CString             mTitle;
     BOOL                mEditEnabled;
     // If enabled, makes autotype

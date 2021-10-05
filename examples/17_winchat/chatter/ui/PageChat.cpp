@@ -107,7 +107,7 @@ BOOL PageChat::OnInitDialog( )
 
     SetChatWindow( GetSafeHwnd() );
     setHeaders( );
-    srand(static_cast<unsigned int>(time(NULL)));
+    srand(static_cast<unsigned int>(time(nullptr)));
 
     const NEDirectConnection::sInitiator & initiator    = GetInitiator();
     const NEDirectConnection::ListParticipants & parties= GetParticipantList();
@@ -153,7 +153,7 @@ BOOL PageChat::OnInitDialog( )
 void PageChat::OnClickedCheckChatMessages( )
 {
     DirectMessagingClient * client = this->GetChatClient( );
-    if ( client != NULL )
+    if ( client != nullptr )
     {
         UpdateData( TRUE );
         client->notifyOnBroadcastMessageSent( mIsChatMessage ? true : false );
@@ -164,7 +164,7 @@ void PageChat::OnClickedCheckChatMessages( )
 void PageChat::OnClickedCheckChatTyping( )
 {
     DirectMessagingClient * client = this->GetChatClient( );
-    if ( client != NULL )
+    if ( client != nullptr )
     {
         UpdateData( TRUE );
         client->notifyOnBroadcastMessageTyped( mIsChatTyping  ? true : false );
@@ -191,7 +191,7 @@ void PageChat::OnUpdateEditChat( )
 void PageChat::OnClickedButtonChatSend( )
 {
     DirectMessagingClient * client = this->GetChatClient( );
-    if ( client != NULL )
+    if ( client != nullptr )
     {
         UpdateData( TRUE );
         client->requestMessageSend( GetConnectionOwner( ), String( mChatMsg.GetString( ) ), DateTime::getNow() );
@@ -205,15 +205,15 @@ void PageChat::OnClickedButtonChatSend( )
 void PageChat::OnDestroy( )
 {
     DirectMessagingClient * client = this->GetChatClient( );
-    if ( client != NULL )
+    if ( client != nullptr )
     {
         client->clearAllNotifications();
         client->requestChatLeave( GetConnectionOwner( ), DateTime::getNow() );
     }
 
 
-    SetChatWindow( static_cast<HWND>(NULL) );
-    SetChatClient( static_cast<DirectMessagingClient *>(NULL) );
+    SetChatWindow( nullptr );
+    SetChatClient( nullptr );
 
     const NEDirectConnection::sInitiator & initiator = GetInitiator();
     String modelName = NEDistributedApp::PREFIX_MODEL + GetServiceName();
@@ -228,14 +228,14 @@ void PageChat::OnDestroy( )
 void PageChat::OnClickedButtonCloseChat( )
 {
     DirectMessagingClient * client = this->GetChatClient( );
-    if ( client != NULL )
+    if ( client != nullptr )
     {
         client->clearAllNotifications();
         client->requestChatLeave( GetConnectionOwner( ), DateTime::getNow() );
     }
 
-    SetChatWindow( static_cast<HWND>(NULL) );
-    SetChatClient( static_cast<DirectMessagingClient *>(NULL) );
+    SetChatWindow( nullptr );
+    SetChatClient( nullptr );
 
     const NEDirectConnection::sInitiator & initiator = GetInitiator();
     String modelName = NEDistributedApp::PREFIX_MODEL + GetServiceName();
@@ -298,7 +298,7 @@ void PageChat::setHeaders( void )
     {
         CString str( HEADER_TITILES[i] );
         LVCOLUMN lv;
-        NEMemory::zeroData<LVCOLUMN>( lv );
+        NEMemory::zeroElement<LVCOLUMN>( lv );
         lv.mask         = LVCF_FMT | LVCF_SUBITEM | LVCF_TEXT | LVCF_WIDTH;
         lv.fmt          = LVCFMT_LEFT;
         lv.cx           = i == 0 ? width1 : width2;
@@ -309,7 +309,12 @@ void PageChat::setHeaders( void )
     }
 }
 
-void PageChat::outputMessage( CString nickName, CString message, CString dateStart, CString dateEnd, uint32_t cookie, bool removeType /* = true */ )
+void PageChat::outputMessage( CString nickName
+                            , CString message
+                            , CString dateStart
+                            , CString dateEnd
+                            , uint32_t cookie
+                            , bool removeType /* = true */ )
 {
     if (message.IsEmpty())
         return;
@@ -318,7 +323,7 @@ void PageChat::outputMessage( CString nickName, CString message, CString dateSta
         removeTyping(nickName, cookie);
 
     LVITEM lv;
-    NEMemory::zeroData<LVITEM>( lv );
+    NEMemory::zeroElement<LVITEM>( lv );
 
     // Column nickname
     lv.mask     = LVIF_TEXT | LVIF_PARAM;
@@ -355,7 +360,7 @@ void PageChat::outputTyping(CString nickName, CString message, uint32_t cookie )
         if ( pos == mCtrlList.GetItemCount() )
         {
             LVITEM lv;
-            NEMemory::zeroData<LVITEM>( lv );
+            NEMemory::zeroElement<LVITEM>( lv );
 
             // Column nickname
             lv.mask     = LVIF_TEXT | LVIF_PARAM;
@@ -401,7 +406,7 @@ void PageChat::setTabTitle( const String & title )
     DistributedDialog * dlg = DistributedDialog::GetDialog( );
     CTabCtrl * tab = dlg->GetTabControl( );
     dlg->GetPageIndex( this );
-    ASSERT( tab != NULL );
+    ASSERT( tab != nullptr );
     TC_ITEM ti;
     ti.mask = TCIF_TEXT;
     ti.pszText = tabTitle.GetBuffer( );
@@ -411,7 +416,7 @@ void PageChat::setTabTitle( const String & title )
 LRESULT PageChat::OnCmdChatMessage( WPARAM wParam, LPARAM lParam )
 {
     NECommon::sMessageData * data = reinterpret_cast<NECommon::sMessageData *>(lParam);
-    if ( data != NULL )
+    if ( data != nullptr )
     {
         outputMessage( CString( data->nickName )
                      , CString( data->message )
@@ -429,7 +434,7 @@ LRESULT PageChat::OnCmdChatMessage( WPARAM wParam, LPARAM lParam )
 LRESULT PageChat::OnCmdChatTyping( WPARAM wParam, LPARAM lParam )
 {
     NECommon::sMessageData * data = reinterpret_cast<NECommon::sMessageData *>(lParam);
-    if ( data != NULL )
+    if ( data != nullptr )
     {
         outputTyping(CString( data->nickName ), CString( data->message ), static_cast<uint32_t>(data->dataSave));
         delete data;
@@ -440,7 +445,7 @@ LRESULT PageChat::OnCmdChatTyping( WPARAM wParam, LPARAM lParam )
 LRESULT PageChat::OnCmdChatJoined( WPARAM wParam, LPARAM lParam )
 {
     DirectMessagingClient * client = GetChatClient( );
-    if ( (wParam == 1) && (client != NULL) )
+    if ( (wParam == 1) && (client != nullptr) )
     {
         UpdateData(TRUE);
         client->notifyOnBroadcastMessageSent( mIsChatMessage ? true : false );
@@ -466,7 +471,7 @@ void PageChat::removeTyping( CString nickName, uint32_t cookie )
 bool PageChat::isActivePage( void )
 {
     CPropertySheet * sheet = GetParentSheet();
-    return ( sheet != NULL ? sheet->GetActivePage() == static_cast<const CPropertyPage *>(this) : false);
+    return ( sheet != nullptr ? sheet->GetActivePage() == static_cast<const CPropertyPage *>(this) : false);
 }
 
 void PageChat::OnDefaultClicked( void )
@@ -478,7 +483,7 @@ void PageChat::OnDefaultClicked( void )
 void PageChat::sendType(void)
 {
     DirectMessagingClient* client = this->GetChatClient();
-    if (client != NULL)
+    if (client != nullptr)
     {
         client->requestMessageType(GetConnectionOwner(), String(mChatMsg.GetString()));
     }
@@ -489,7 +494,7 @@ void PageChat::sendMessage(void)
     if ((mEditEnabled == TRUE) && (mChatMsg.IsEmpty() == FALSE))
     {
         CButton* btnSend = reinterpret_cast<CButton*>(GetDlgItem(IDC_BUTTON_CHAT_SEND));
-        if (btnSend != NULL)
+        if (btnSend != nullptr)
         {
             SendMessage(WM_COMMAND, MAKEWPARAM(IDC_BUTTON_CHAT_SEND, BN_CLICKED), reinterpret_cast<LPARAM>(btnSend->GetSafeHwnd()));
         }
@@ -502,8 +507,8 @@ void PageChat::startTimer(void)
         KillTimer(mTimerId);
 
     mDoAutotype = TRUE;
-    mTimerId = static_cast<UINT_PTR>(time(NULL));
-    SetTimer(mTimerId, mTimerValue, NULL);
+    mTimerId = static_cast<UINT_PTR>(time(nullptr));
+    SetTimer(mTimerId, mTimerValue, nullptr);
 }
 
 void PageChat::stopTimer(void)
@@ -566,7 +571,7 @@ void PageChat::OnEnChangeChatTimer()
     if (mDoAutotype && oldTimer != mTimerValue)
     {
         KillTimer(mTimerId);
-        SetTimer(mTimerId, mTimerValue, NULL);
+        SetTimer(mTimerId, mTimerValue, nullptr);
     }
 }
 
@@ -586,7 +591,7 @@ void PageChat::OnDeltaposChatTimerSpin(NMHDR* pNMHDR, LRESULT* pResult)
     if (mDoAutotype && oldTimer != mTimerValue)
     {
         KillTimer(mTimerId);
-        SetTimer(mTimerId, mTimerValue, NULL);
+        SetTimer(mTimerId, mTimerValue, nullptr);
     }
 
     *pResult = 0;

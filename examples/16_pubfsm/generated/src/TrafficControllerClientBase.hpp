@@ -1,18 +1,18 @@
 //////////////////////////////////////////////////////////////////////////
 // Begin generate generated/src/TrafficControllerClientBase.hpp file
 //////////////////////////////////////////////////////////////////////////
-#ifndef  GENERATED_SRC_TRAFFICCONTROLLERCLIENTBASE_HPP
-#define  GENERATED_SRC_TRAFFICCONTROLLERCLIENTBASE_HPP
-/************************************************************************
- * (c) copyright    2021
- *                  Create by AREG SDK code generator tool from source TrafficController.
- * Generated at     15.08.2021  00:03:05 GMT+02:00 
- ************************************************************************/
+#pragma once
 
 /************************************************************************
+ * (c) copyright    2021
+ *
+ * Generated at     30.09.2021  01:22:14 GMT+02:00 
+ *                  Create by AREG SDK code generator tool from source TrafficController.
+ *
  * \file            generated/src/TrafficControllerClientBase.hpp
  * \ingroup         TrafficController Service Interface
- * \brief           This is an automatic generated code of TrafficController Service Interface Client base class declaration.
+ * \brief           This is an automatic generated code of TrafficController
+ *                  Service Interface Client base class declaration.
  ************************************************************************/
 
 /************************************************************************
@@ -52,9 +52,9 @@ protected:
      *          Specifies used service and owner thread.
      * \param   roleName    The role name assigned to TrafficController servicing component object.
      * \param   ownerThread The name of component owner thread to dispatch messages.
-     *                      If NULL, all messages are dispatched in current component thread.
+     *                      If nullptr, all messages are dispatched in current component thread.
      **/
-    TrafficControllerClientBase( const char* roleName, const char * ownerThread = static_cast<const char *>(NULL) );
+    TrafficControllerClientBase( const char* roleName, const char * ownerThread = nullptr );
 
     /**
      * \brief   Initialize TrafficController Service Interface client object.
@@ -271,7 +271,7 @@ protected:
      *          i.e. if passed Proxy address is equal to the Proxy object that client has.
      *          If Proxy objects are not equal, it should return false;
      **/
-    virtual bool serviceConnected( bool isConnected, ProxyBase & proxy );
+    virtual bool serviceConnected( bool isConnected, ProxyBase & proxy ) override;
 
 /************************************************************************/
 // TrafficControllerClientBase Error Handling overrides
@@ -300,7 +300,7 @@ protected:
 
     /**
      * \brief  Returns pointer to client dispatcher thread where the messages are dispatched.
-     *         The function can return NULL if Proxy was not instantiated yet.
+     *         The function can return nullptr if Proxy was not instantiated yet.
      **/
     DispatcherThread * getDispatcherThread( void );
      
@@ -348,7 +348,7 @@ private:
      * \brief   Is processing notification event calls.
      * \param   eventElem   Notification Event object to process
      **/
-    virtual void processNotificationEvent( NotificationEvent & eventElem );
+    virtual void processNotificationEvent( NotificationEvent & eventElem ) override;
     
 /************************************************************************/
 // TrafficControllerClientBase hidden methods
@@ -389,9 +389,8 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    TrafficControllerClientBase( void );
-    TrafficControllerClientBase( const TrafficControllerClientBase & /* src */ );
-    const TrafficControllerClientBase & operator = ( const TrafficControllerClientBase & /* src */ );
+    TrafficControllerClientBase( void ) = delete;
+    DECLARE_NOCOPY_NOMOVE( TrafficControllerClientBase );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -410,31 +409,31 @@ inline unsigned int TrafficControllerClientBase::getCurrentSequenceNr( void ) co
 
 inline void TrafficControllerClientBase::clearAllNotifications( void )
 {
-    ASSERT(mProxy != NULL);
+    ASSERT(mProxy != nullptr);
     mProxy->clearAllNotifications(static_cast<IENotificationEventConsumer &>(self()));
 }
 
 inline bool TrafficControllerClientBase::isConnected( void ) const
 {
-    ASSERT(mProxy != NULL);
+    ASSERT(mProxy != nullptr);
     return mIsConnected;
 }
 
 inline bool TrafficControllerClientBase::isNotificationAssigned( NETrafficController::eMessageIDs msgId ) const
 {
-    ASSERT(mProxy != NULL);
+    ASSERT(mProxy != nullptr);
     return mProxy->hasNotificationListener(static_cast<unsigned int>(msgId));
 }
 
 inline const String & TrafficControllerClientBase::getServiceName( void ) const
 {
-    ASSERT(mProxy != NULL);
+    ASSERT(mProxy != nullptr);
     return mProxy->getProxyAddress().getServiceName();
 }
     
 inline const Version & TrafficControllerClientBase::getServiceVersion( void ) const
 {
-    ASSERT(mProxy != NULL);
+    ASSERT(mProxy != nullptr);
     return mProxy->getProxyAddress().getServiceVersion();
 }
 
@@ -444,34 +443,34 @@ inline const Version & TrafficControllerClientBase::getServiceVersion( void ) co
 
 inline bool TrafficControllerClientBase::isTrafficSouthNorthValid( void ) const
 {
-    ASSERT(mProxy != NULL);
+    ASSERT(mProxy != nullptr);
    return mProxy->isTrafficSouthNorthValid( );
 }
 inline const NETrafficController::sTrafficLight & TrafficControllerClientBase::getTrafficSouthNorth( NEService::eDataStateType & state ) const
 {
-    ASSERT(mProxy != NULL);
+    ASSERT(mProxy != nullptr);
     return mProxy->getTrafficSouthNorth( state );
 }
 
 inline void TrafficControllerClientBase::notifyOnTrafficSouthNorthUpdate( bool notify /* = true */ )
 {
-    TrafficControllerClientBase::notifyOn( NETrafficController::MSG_ID_TrafficSouthNorth, notify, false );
+    TrafficControllerClientBase::notifyOn( NETrafficController::eMessageIDs::MsgId_TrafficSouthNorth, notify, false );
 }
 
 inline bool TrafficControllerClientBase::isTrafficEastWestValid( void ) const
 {
-    ASSERT(mProxy != NULL);
+    ASSERT(mProxy != nullptr);
    return mProxy->isTrafficEastWestValid( );
 }
 inline const NETrafficController::sTrafficLight & TrafficControllerClientBase::getTrafficEastWest( NEService::eDataStateType & state ) const
 {
-    ASSERT(mProxy != NULL);
+    ASSERT(mProxy != nullptr);
     return mProxy->getTrafficEastWest( state );
 }
 
 inline void TrafficControllerClientBase::notifyOnTrafficEastWestUpdate( bool notify /* = true */ )
 {
-    TrafficControllerClientBase::notifyOn( NETrafficController::MSG_ID_TrafficEastWest, notify, false );
+    TrafficControllerClientBase::notifyOn( NETrafficController::eMessageIDs::MsgId_TrafficEastWest, notify, false );
 }
 
 /************************************************************************
@@ -480,12 +479,12 @@ inline void TrafficControllerClientBase::notifyOnTrafficEastWestUpdate( bool not
 
 inline void TrafficControllerClientBase::notifyOnBroadcastSouthNorth( bool notify /* = true */ )
 {
-    TrafficControllerClientBase::notifyOn(NETrafficController::MSG_ID_broadcastSouthNorth, notify, false);
+    TrafficControllerClientBase::notifyOn(NETrafficController::eMessageIDs::MsgId_broadcastSouthNorth, notify, false);
 }
 
 inline void TrafficControllerClientBase::notifyOnBroadcastEastWest( bool notify /* = true */ )
 {
-    TrafficControllerClientBase::notifyOn(NETrafficController::MSG_ID_broadcastEastWest, notify, false);
+    TrafficControllerClientBase::notifyOn(NETrafficController::eMessageIDs::MsgId_broadcastEastWest, notify, false);
 }
 
 inline const TrafficControllerProxy * TrafficControllerClientBase::getProxy( void ) const
@@ -495,11 +494,9 @@ inline const TrafficControllerProxy * TrafficControllerClientBase::getProxy( voi
 
 inline const String & TrafficControllerClientBase::getServiceRole( void ) const
 {
-    ASSERT(mProxy != NULL);
+    ASSERT(mProxy != nullptr);
     return mProxy->getProxyAddress().getRoleName();
 }
-
-#endif   // GENERATED_SRC_TRAFFICCONTROLLERCLIENTBASE_HPP
 
 //////////////////////////////////////////////////////////////////////////
 // End generate generated/src/TrafficControllerClientBase.hpp file

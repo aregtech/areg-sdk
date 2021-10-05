@@ -1,9 +1,16 @@
-#ifndef AREG_BASE_SHAREDBUFFER_HPP
-#define AREG_BASE_SHAREDBUFFER_HPP
+#pragma once
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/base/SharedBuffer.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, Shared Buffer class
  *              This Buffer is used for Read and Write of data and
  *              it might be shared between different threads and objects.
@@ -60,7 +67,7 @@ public:
      * \param   blockSize   The size of minimum block size to increase on resize.
      *                      It is aligned to NEMemory::BLOCK_SIZE (minimum size)
      **/
-    SharedBuffer(unsigned int blockSize = NEMemory::BLOCK_SIZE);
+    explicit SharedBuffer(unsigned int blockSize = NEMemory::BLOCK_SIZE);
 
     /**
      * \brief   Constructor to reserve space for byte buffer object
@@ -87,17 +94,8 @@ public:
      * \param   blockSize   The size of minimum block size to increase on resize.
      *                      It is aligned to NEMemory::BLOCK_SIZE (minimum size)
      **/
-    SharedBuffer( const char * textString, unsigned int blockSize = NEMemory::BLOCK_SIZE );
-    SharedBuffer( const wchar_t * textString, unsigned int blockSize = NEMemory::BLOCK_SIZE );
-
-    /**
-     * \brief	Initialization constructor. 
-     *          It will not copy data, it will increase the reference counter by 1
-     *          to prevent any other object deleting shared buffer object.
-     *          The shared buffer should not be invalid. Otherwise it will be ignored.
-     * \param	buffer	The reference to byte buffer object to share
-     **/
-    SharedBuffer(NEMemory::sByteBuffer& buffer);
+    explicit SharedBuffer( const char * textString, unsigned int blockSize = NEMemory::BLOCK_SIZE );
+    explicit SharedBuffer( const wchar_t * textString, unsigned int blockSize = NEMemory::BLOCK_SIZE );
 
     /**
      * \brief	Copy constructor. It does not copy data from src, it will refer to the same shared
@@ -108,9 +106,15 @@ public:
     SharedBuffer(const SharedBuffer& src);
 
     /**
+     * \brief	Moves data from given source.
+     * \param	src	    The source of shared buffer to mvoe data.
+     **/
+    SharedBuffer( SharedBuffer && src ) noexcept;
+
+    /**
      * \brief   Destructor
      **/
-    virtual ~SharedBuffer( void );
+    virtual ~SharedBuffer( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
@@ -137,7 +141,13 @@ public:
      *          object instance to delete buffer
      * \param	src	    Reference to source object
      **/
-    const SharedBuffer & operator = (const SharedBuffer & src);
+    SharedBuffer & operator = (const SharedBuffer & src);
+
+    /**
+     * \brief	Moves shared buffer data from given source.
+     * \param	src	    The source to move data.
+     **/
+    SharedBuffer & operator = ( SharedBuffer && src ) noexcept;
 
 /************************************************************************/
 // Friend global operators to stream Shared Buffer
@@ -183,9 +193,9 @@ public:
 
     /**
      * \brief   Returns the pointer to the data buffer at current position.
-     *          If position is invalid (IECursorPosition::INVALID_CURSOR_POSITION), it will return NULL
+     *          If position is invalid (IECursorPosition::INVALID_CURSOR_POSITION), it will return nullptr
      *          If it is a start position (IECursorPosition::START_CURSOR_POSITION), it will return pointer to complete buffer
-     *          If it is an end of position, it will return NULL
+     *          If it is an end of position, it will return nullptr
      *          In other cases it will return (GetBuffer() + GetCursorPosition())
      **/
     const unsigned char* getBufferAtCurrentPosition( void ) const;
@@ -204,46 +214,22 @@ public:
 /************************************************************************/
 
     /**
-     * \brief   Adding reference in the byte buffer reference counter.
-     *          This is valid only in case of shared buffer.
-     *          In case of raw buffer, the reference counter should not be changed.
-     *          The reference counter prevents that the byte buffer is deleted / freed
-     *          by any other object. For example, if buffer structure is attached to 
-     *          byte buffer object instance, until reference counter is not reaching
-     *          to zero, it should not be deleted, since it might be used by other class
-     *          The reference counter of invalid buffer should not be changed at all.
-     *          To check buffer validation, call function isValid()
-     **/
-    virtual void addReference( void );
-
-    /**
-     * \brief   Remove reference in the byte buffer reference counter.
-     *          This is valid only in case of shared buffer.
-     *          In case of raw buffer, the reference counter should not be changed.
-     *          If reference counter reaches zero, the buffer is not valid anymore 
-     *          and should be invalidated / deleted. The buffer of Invalid Buffer object
-     *          should not be deleted / freed at all. To check buffer validation,
-     *          call function isValid().
-     **/
-    virtual void removeReference( void );
-
-    /**
      * \brief   Returns true if buffer is shared between several byte buffer instances.
      **/
-    virtual bool isShared( void ) const;
+    virtual bool isShared( void ) const final;
 
     /**
      * \brief   Returns true if buffer can be shared.
      *          The Raw Buffer object should return false.
      *          The Shared Buffer object should return true.
      **/
-    virtual bool canShare( void ) const;
+    virtual bool canShare( void ) const final;
 
     /**
      * \brief   Invalidates the buffer. Removes reference, assigns to invalid buffer,
      *          invalidates writing and reading positions.
      **/
-    virtual void invalidate( void );
+    virtual void invalidate( void ) override;
 
 protected:
 /************************************************************************/
@@ -252,41 +238,17 @@ protected:
     /**
      * \brief   Returns the offset value from the beginning of byte buffer, which should be set
      **/
-    virtual unsigned int getDataOffset( void ) const;
+    virtual unsigned int getDataOffset( void ) const override;
 
     /**
      * \brief   Returns the size of data byte structure to allocate.
      **/
-    virtual unsigned int getHeaderSize( void ) const;
+    virtual unsigned int getHeaderSize( void ) const override;
 
     /**
      * \brief   Returns the size to align the buffer. By default it is sizeof(NEMemory::uAlign)
      **/
-    virtual unsigned int getAlignedSize( void ) const;
-
-/************************************************************************/
-// BufferStreamBase interface
-/************************************************************************/
-
-    /**
-     * \brief	Returns true if binary data of 2 buffers are equal
-     * \param	other	The streaming buffer object to compare data.
-     * \return	Returns true if binary values of data in 2 buffers are equal.
-     **/
-    virtual bool isEqual(const BufferStreamBase &other) const;
-
-//////////////////////////////////////////////////////////////////////////
-// Operations
-//////////////////////////////////////////////////////////////////////////
-protected:
-    /**
-     * \brief   Increase reference counter of buffer lock.
-     **/
-    void increaseLock( void );
-    /**
-     * \brief   Decrease reference counter of buffer lock
-     **/
-    void decreaseLock( void );
+    virtual unsigned int getAlignedSize( void ) const override;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -338,11 +300,6 @@ inline unsigned int SharedBuffer::getBlockSize(void) const
     return mBlockSize;
 }
 
-inline SharedBuffer& SharedBuffer::self( void )
-{
-    return (*this);
-}
-
 /************************************************************************/
 // Friend streamable operators
 /************************************************************************/
@@ -354,14 +311,17 @@ inline const IEInStream & operator >> (const IEInStream & stream, SharedBuffer &
         stream.read(input);
         input.moveToBegin();
     }
+
     return stream;
 }
 
 inline IEOutStream & operator << (IEOutStream & stream, const SharedBuffer & output)
 {
     if ( static_cast<const IEOutStream *>(&stream) != static_cast<const IEOutStream *>(&output) )
-        stream.write(output);
+    {
+        stream.write( output );
+        output.moveToBegin();
+    }
+
     return stream;
 }
-
-#endif  // AREG_BASE_SHAREDBUFFER_HPP

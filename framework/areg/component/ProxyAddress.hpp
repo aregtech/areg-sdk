@@ -1,9 +1,16 @@
-#ifndef AREG_COMPONENT_PROXYADDRESS_HPP
-#define AREG_COMPONENT_PROXYADDRESS_HPP
+#pragma once
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/component/ProxyAddress.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, Proxy Address class.
  *              Every Proxy is reached by unique address, which is a 
  *              part of Proxy object.
@@ -16,6 +23,8 @@
 #include "areg/component/NEService.hpp"
 #include "areg/component/ServiceAddress.hpp"
 #include "areg/component/Channel.hpp"
+
+#include <utility>
 
 /************************************************************************
  * Dependencies
@@ -30,39 +39,12 @@ class ServiceResponseEvent;
 // ProxyAddress class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief       Every Proxy contains Proxy Address. The Proxy Address is
- *              needed to identify Proxy. The proxy address is unique and
- *              contains thread address, connected component role name and
- *              the name of service interface.
- * 
- * \details     Proxies are requiring unique identification mechanism.
- *              The Proxy Address provides this identification.
- *              Since one thread can have only one instance of certain
- *              Proxy object, this unique identification ensures
- *              having several instances of same proxy class in different
- *              threads. The proxy address is needed when Stub / Server is
- *              sending response messages.
- *
+ * \brief   Every Proxy contains Proxy Address. The Proxy Address is needed
+ *          to identify Proxy. The proxy address is unique and contains 
+ *          information of thread, connected component, and the service interface.
  **/
 class AREG_API ProxyAddress   : public    ServiceAddress
 {
-//////////////////////////////////////////////////////////////////////////
-// Predefined constants
-//////////////////////////////////////////////////////////////////////////
-private:
-    /**
-     * \brief   ProxyAddress::INVALID_PROXY_NAME
-     *          The name of invalid proxy.
-     *          Do not use as Proxy / Service name.
-     **/
-    static const char * const   INVALID_PROXY_NAME      /*= "INVALID_PROXY"*/;
-
-    /**
-     * \brief   ProxyAddress::EXTENTION_PROXY
-     *          Extension, used in the path to convert Proxy Address to string object.
-     **/
-    static const char * const   EXTENTION_PROXY         /*= "proxy"*/;
-
 public:
     /**
      * \brief   ProxyAddress::INVALID_PROXY_ADDRESS
@@ -89,12 +71,12 @@ public:
     /**
      * \brief	Pars proxy path string and retrieves proxy address data from path.
      * \param	pathProxy	    The proxy path as a string.
-     * \param	out_nextPart	If not a NULL, on output this will contain remaining
+     * \param	out_nextPart	If not a nullptr, on output this will contain remaining
      *                          part after getting proxy path. On output usually
-     *                          should be NULL.
+     *                          should be nullptr.
      * \return	Proxy address object.
      **/
-    static ProxyAddress convPathToAddress(const char * pathProxy, const char** out_nextPart = NULL);
+    static ProxyAddress convPathToAddress(const char * pathProxy, const char** out_nextPart = nullptr);
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
@@ -115,7 +97,7 @@ public:
      * \param   roleName        Assigned role name of Proxy
      * \param   threadName      The name of thread where Proxy should act. If null, it is processed in current thread.
      **/
-    ProxyAddress( const char * serviceName, const Version & serviceVersion, NEService::eServiceType serviceType, const char * roleName, const char * threadName = NULL );
+    ProxyAddress( const char * serviceName, const Version & serviceVersion, NEService::eServiceType serviceType, const char * roleName, const char * threadName = nullptr );
     /**
      * \brief	Creates Proxy address according required connected component role name,
      *          service name and thread address of Proxy.
@@ -123,7 +105,7 @@ public:
      * \param   roleName        Assigned role name of Proxy
      * \param   threadName      The name of thread where Proxy should act. If null, it is processed in current thread.
      **/
-    ProxyAddress( const ServiceItem & service, const char * roleName, const char * threadName = NULL );
+    ProxyAddress( const ServiceItem & service, const char * roleName, const char * threadName = nullptr );
     /**
      * \brief	Creates Proxy address according required connected component role name,
      *          service name and thread address of Proxy.
@@ -131,13 +113,19 @@ public:
      * \param   roleName        Assigned role name of Proxy
      * \param   threadName      The name of thread where Proxy should act. If null, it is processed in current thread.
      **/
-    ProxyAddress( const NEService::SInterfaceData & siData, const char * roleName, const char * threadName = NULL );
+    ProxyAddress( const NEService::SInterfaceData & siData, const char * roleName, const char * threadName = nullptr );
 
     /**
      * \brief   Copy constructor.
      * \param   source  The source of data to copy.
      **/
     ProxyAddress( const ProxyAddress & source );
+
+    /**
+     * \brief   Move constructor.
+     * \param   source  The source of data to move.
+     **/
+    ProxyAddress( ProxyAddress && source ) noexcept;
 
     /**
      * \brief   Initialize proxy address from streaming object.
@@ -147,7 +135,7 @@ public:
     /**
      * \brief   Destructor.
      **/
-    virtual ~ProxyAddress( void );
+    virtual ~ProxyAddress( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
@@ -161,7 +149,13 @@ public:
      * \brief   Copies proxy address from given source.
      * \param   source  The source of Proxy address to copy
      **/
-    inline const ProxyAddress & operator = ( const ProxyAddress & source );
+    inline ProxyAddress & operator = ( const ProxyAddress & source );
+
+    /**
+     * \brief   Moves proxy address from given source.
+     * \param   source  The source of Proxy address to move.
+     **/
+    inline ProxyAddress & operator = ( ProxyAddress && source ) noexcept;
 
     /**
      * \brief   Checks equality of 2 proxy address objects. Returns true if 2 proxy addresses are equal.
@@ -184,7 +178,7 @@ public:
     /**
      * \brief   Converts ProxyAddress object to 32-bit unsigned int value.
      **/
-    inline operator unsigned int ( void ) const;
+    inline explicit operator unsigned int ( void ) const;
 
 /************************************************************************/
 // Friend global operators for streaming
@@ -307,11 +301,11 @@ public:
     /**
      * \brief	Parses proxy path string and retrieves proxy address data from path.
      * \param	pathProxy	    The proxy path as a string.
-     * \param	out_nextPart	If not a NULL, on output this will contain remaining
+     * \param	out_nextPart	If not a nullptr, on output this will contain remaining
      *                          part after getting proxy path. On output usually
-     *                          should be NULL.
+     *                          should be nullptr.
      **/
-    void convFromString(const char * pathProxy, const char** out_nextPart = NULL);
+    void convFromString(const char * pathProxy, const char** out_nextPart = nullptr);
 
 protected:
     /**
@@ -367,13 +361,26 @@ inline bool ProxyAddress::operator == ( const StubAddress & addrStub ) const
     return isStubCompatible(addrStub);
 }
 
-inline const ProxyAddress & ProxyAddress::operator = ( const ProxyAddress & source )
+inline ProxyAddress & ProxyAddress::operator = ( const ProxyAddress & source )
 {
     if (this != &source)
     {
         static_cast<ServiceAddress &>(*this) = static_cast<const ServiceAddress &>(source);
         mThreadName = source.mThreadName;
         mChannel    = source.mChannel;
+        mMagicNum   = source.mMagicNum;
+    }
+
+    return (*this);
+}
+
+inline ProxyAddress & ProxyAddress::operator = ( ProxyAddress && source )noexcept
+{
+    if ( this != &source )
+    {
+        static_cast<ServiceAddress &>(*this) = static_cast<ServiceAddress &&>(source);
+        mThreadName = std::move(source.mThreadName);
+        mChannel    = std::move(source.mChannel);
         mMagicNum   = source.mMagicNum;
     }
 
@@ -449,5 +456,3 @@ inline void ProxyAddress::setTarget( ITEM_ID target )
 {
     return mChannel.setTarget(target);
 }
-
-#endif  // AREG_COMPONENT_PROXYADDRESS_HPP

@@ -1,15 +1,24 @@
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/base/private/posix/ThreadWin.cpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, Thread class
  *              windows specific code
  *
  ************************************************************************/
 #include "areg/base/Thread.hpp"
-#include "areg/base/IEThreadConsumer.hpp"
 
-#ifdef  _POSIX
+#if defined(_POSIX) || defined(POSIX)
+
+#include "areg/base/IEThreadConsumer.hpp"
 
 #ifndef _POSIX_PRIORITY_SCHEDULING
     #define _POSIX_PRIORITY_SCHEDULING
@@ -24,20 +33,17 @@
 #include <sys/unistd.h>
 #include <sys/types.h>
 
-//!< POSIX thread structure
-typedef struct S_PosixThread
+namespace 
 {
-    pthread_t       pthreadId;      //!< The POSIX thread ID
-    pthread_attr_t  pthreadAttr;    //!< The POSIX thread attribute
-} sPosixThread;
 
-  /************************************************************************/
-// Thread class public constants, types and enum
-/************************************************************************/
-/**
- * \brief   Constant, wait until created thread did not start
- **/
-const unsigned int      Thread::WAIT_INFINITE             = static_cast<unsigned int>(~0);
+    //!< POSIX thread structure
+    typedef struct S_PosixThread
+    {
+        pthread_t       pthreadId;      //!< The POSIX thread ID
+        pthread_attr_t  pthreadAttr;    //!< The POSIX thread attribute
+    } sPosixThread;
+
+} // namespace
 
 /************************************************************************/
 // System specific thread routines
@@ -49,8 +55,8 @@ void * Thread::_posixThreadRoutine( void * data )
 
     Thread::_defaultThreadFunction(data);
 
-    pthread_setcancelstate(oldState, NULL);
-    return NULL;
+    pthread_setcancelstate(oldState, nullptr);
+    return nullptr;
 }
 
 unsigned long Thread::_windowsThreadRoutine( void * /* data */ )
@@ -65,14 +71,14 @@ unsigned long Thread::_windowsThreadRoutine( void * /* data */ )
  **/
 #if ((__GLIBC__ > 2) || ((__GLIBC__ == 2) && (__GLIBC_MINOR__ >= 12)))
 
-void Thread::_setThreadName(ITEM_ID threadId, const char* threadName)
+void Thread::_setThreadName( id_type threadId, const char* threadName)
 {
-    pthread_setname_np(threadId, threadName != NULL ? threadName : "");
+    pthread_setname_np(threadId, threadName != nullptr ? threadName : "");
 }
 
 #else// !((__GLIBC__ > 2) || ((__GLIBC__ == 2) && (__GLIBC_MINOR__ >= 12)))
 
-void Thread::_setThreadName(ITEM_ID /*threadId*/, const char* /*threadName*/)
+void Thread::_setThreadName( id_type /*threadId*/, const char* /*threadName*/)
 {
 }
 
@@ -80,7 +86,7 @@ void Thread::_setThreadName(ITEM_ID /*threadId*/, const char* /*threadName*/)
 
 void Thread::_closeHandle(  THREADHANDLE handle )
 {
-    if (handle != NULL)
+    if (handle != nullptr)
     {
         sPosixThread *pthread = reinterpret_cast<sPosixThread *>(handle);
         pthread_attr_destroy(&pthread->pthreadAttr);
@@ -104,18 +110,18 @@ void Thread::sleep(unsigned int ms)
     struct timespec ts;
     ts.tv_sec   = ms / 1000;
     ts.tv_nsec  = (ms % 1000) * 1000000 + 1;
-    nanosleep(&ts, NULL);
+    nanosleep(&ts, nullptr);
 }
 
-ITEM_ID Thread::getCurrentThreadId( void )
+id_type Thread::getCurrentThreadId( void )
 {
-    return  static_cast<ITEM_ID>( pthread_self() );
+    return  static_cast<id_type>( pthread_self() );
 }
 
-Thread::eCompletionStatus Thread::destroyThread(unsigned int waitForStopMs /* = Thread::DO_NOT_WAIT */)
+Thread::eCompletionStatus Thread::destroyThread(unsigned int waitForStopMs /* = NECommon::DO_NOT_WAIT */)
 {
     // Initially, the thread is not valid and not running, nothing to destroy
-    Thread::eCompletionStatus result = Thread::ThreadInvalid;
+    Thread::eCompletionStatus result = Thread::eCompletionStatus::ThreadInvalid;
     pthread_t threadId  = static_cast<pthread_t>(Thread::INVALID_THREAD_ID);
 
     do
@@ -123,7 +129,7 @@ Thread::eCompletionStatus Thread::destroyThread(unsigned int waitForStopMs /* = 
         Lock lock(mSynchObject);
         if (mThreadHandle == Thread::INVALID_THREAD_HANDLE)
         {
-            return Thread::ThreadInvalid;
+            return Thread::eCompletionStatus::ThreadInvalid;
         }
 
         threadId = static_cast<pthread_t>(mThreadId);
@@ -131,20 +137,20 @@ Thread::eCompletionStatus Thread::destroyThread(unsigned int waitForStopMs /* = 
 
     } while(false);
 
-    if ((waitForStopMs != Thread::DO_NOT_WAIT) && (mWaitForExit.lock(waitForStopMs) == false))
+    if ((waitForStopMs != NECommon::DO_NOT_WAIT) && (mWaitForExit.lock(waitForStopMs) == false))
     {
         // here we assume that it was requested to wait for thread exit, but it is still running
         // force to terminate thread and close handles due to waiting timeout expire
         OUTPUT_DBG("The thread [ %s ] should be terminated", mThreadAddress.getThreadName().getString());
-        result = Thread::ThreadTerminated;
+        result = Thread::eCompletionStatus::ThreadTerminated;
         pthread_cancel(threadId);
     }
     else
     {
         // The thread completed job normally
         OUTPUT_DBG("The thread [ %s ] completed job", mThreadAddress.getThreadName().getString());
-        result = Thread::ThreadCompleted;
-        ASSERT (waitForStopMs != Thread::WAIT_INFINITE || isRunning() == false);
+        result = Thread::eCompletionStatus::ThreadCompleted;
+        ASSERT (waitForStopMs != NECommon::WAIT_INFINITE || isRunning() == false);
     }
 
     do
@@ -163,7 +169,7 @@ bool Thread::_createSystemThread( void )
     if ((_isValidNoLock() == false) && (mThreadAddress.getThreadName().isEmpty() == false))
     {
         sPosixThread * handle = new sPosixThread;
-        if ( handle != NULL)
+        if ( handle != nullptr)
         {
             mWaitForRun.resetEvent();
             mWaitForExit.resetEvent( );
@@ -174,8 +180,8 @@ bool Thread::_createSystemThread( void )
             {
                 result          = true;
                 mThreadHandle   = static_cast<THREADHANDLE>(handle);
-                mThreadId       = static_cast<ITEM_ID>(handle->pthreadId);
-                mThreadPriority = Thread::PriorityNormal;
+                mThreadId       = static_cast<id_type>(handle->pthreadId);
+                mThreadPriority = Thread::eThreadPriority::PriorityNormal;
 
                 if (_registerThread() == false)
                 {
@@ -213,23 +219,23 @@ Thread::eThreadPriority Thread::setPriority( eThreadPriority newPriority )
         pthread_t threadId  = static_cast<pthread_t>(mThreadId);
         switch (newPriority)
         {
-        case Thread::PriorityLowest:
+        case Thread::eThreadPriority::PriorityLowest:
             schedPrio  = minPriority;
             break;
 
-        case Thread::PriorityLow:
+        case Thread::eThreadPriority::PriorityLow:
             schedPrio  = minPriority + 1 * deltaPrio;
             break;
 
-        case Thread::PriorityNormal:
+        case Thread::eThreadPriority::PriorityNormal:
             schedPrio  = minPriority + 2 * deltaPrio;
             break;
 
-        case Thread::PriorityHigh:
+        case Thread::eThreadPriority::PriorityHigh:
             schedPrio  = minPriority + 3 * deltaPrio;
             break;
 
-        case Thread::PriorityHighest:
+        case Thread::eThreadPriority::PriorityHighest:
             schedPrio  = maxPriority;
             break;
 
@@ -259,4 +265,4 @@ Thread::eThreadPriority Thread::setPriority( eThreadPriority newPriority )
     return oldPrio;
 }
 
-#endif  // _POSIX
+#endif  // defined(_POSIX) || defined(POSIX)

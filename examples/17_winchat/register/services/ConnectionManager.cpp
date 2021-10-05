@@ -34,12 +34,12 @@ BEGIN_MODEL(NECommon::MODEL_NAME_CENTRAL_SERVER)
 
 END_MODEL(NECommon::MODEL_NAME_CENTRAL_SERVER)
 
-ConnectionManager *   ConnectionManager::sService   = NULL;
+ConnectionManager *   ConnectionManager::sService   = nullptr;
 
 Component * ConnectionManager::CreateComponent( const NERegistry::ComponentEntry & entry, ComponentThread & owner )
 {
     TRACE_SCOPE( centralapp_ConnectionManager_CreateComponent );
-    return new ConnectionManager( owner, entry.mRoleName.getBuffer(), entry.getComponentData() );
+    return new ConnectionManager( owner, entry.mRoleName.getString(), entry.getComponentData() );
 }
 
 void ConnectionManager::DeleteComponent( Component & compObject, const NERegistry::ComponentEntry & entry )
@@ -66,7 +66,7 @@ ConnectionManager::ConnectionManager( ComponentThread & masterThread, const char
 
 ConnectionManager::~ConnectionManager( void )
 {
-    ConnectionManager::sService = NULL;
+    ConnectionManager::sService = nullptr;
     mWnd    =   0;
 }
 
@@ -99,24 +99,24 @@ void ConnectionManager::requestConnet( const String & nickName, const DateTime &
             if ( FindConnection(nickName, connection) == false )
             {
                 TRACE_DBG( "The connection [ %s ] at time [ %s ] can be registered with recommended cookie [ %u ]", static_cast<const char *>(nickName), static_cast<const char *>(connection.connectedTime.formatTime( )), mCookies + 1 );
-                responseConnect(nickName, getNextCookie(), dateTime, NEConnectionManager::ConnectionAccepted);
+                responseConnect(nickName, getNextCookie(), dateTime, NEConnectionManager::eConnectionResult::ConnectionAccepted);
             }
             else
             {
                 TRACE_WARN( "There is already connected client [ %s ], which was accepted at [ %s ]", static_cast<const char *>(nickName), static_cast<const char *>(connection.connectedTime.formatTime( )) );
-                responseConnect( nickName, NEConnectionManager::InvalidCookie, dateTime, NEConnectionManager::ConnectionClientExist );
+                responseConnect( nickName, NEConnectionManager::InvalidCookie, dateTime, NEConnectionManager::eConnectionResult::ConnectionClientExist );
             }
         }
         else
         {
             TRACE_WARN( "The name [ %s ] is reserved by system and cannot be registered", static_cast<const char *>(nickName) );
-            responseConnect( nickName, NEConnectionManager::InvalidCookie, dateTime, NEConnectionManager::ConnectionNameReserved );
+            responseConnect( nickName, NEConnectionManager::InvalidCookie, dateTime, NEConnectionManager::eConnectionResult::ConnectionNameReserved );
         }
     }
     else
     {
         TRACE_ERR("The requested to connect client name [ %s ] cannot be empty or invalid characters, it should be valid name.", static_cast<const char *>(nickName));
-        responseConnect( nickName, NEConnectionManager::InvalidCookie, dateTime, NEConnectionManager::InvalidClient );
+        responseConnect( nickName, NEConnectionManager::InvalidCookie, dateTime, NEConnectionManager::eConnectionResult::InvalidClient );
     }
 }
 
@@ -140,7 +140,7 @@ void ConnectionManager::requestRegisterConnection( const String & nickName, unsi
                 NEConnectionManager::MapConnection & mapConnections = getConnectionList( );
                 listConnections.resize(mapConnections.getSize( ));
                 int count = 0;
-                for ( MAPPOS pos = mapConnections.firstPosition(); pos != NULL; pos = mapConnections.nextPosition( pos ) )
+                for ( MAPPOS pos = mapConnections.firstPosition(); pos != nullptr; pos = mapConnections.nextPosition( pos ) )
                 {
                     const NEConnectionManager::sConnection & entry = mapConnections.getPosition( pos );
                     ASSERT(connection != entry);
@@ -162,10 +162,10 @@ void ConnectionManager::requestRegisterConnection( const String & nickName, unsi
                 HWND hWnd = MAKE_HWND( mWnd );
                 if ( ::IsWindow( hWnd ) )
                 {
-                    NECommon::sMessageData * data = ::IsWindow( hWnd ) ? DEBUG_NEW NECommon::sMessageData : NULL;
-                    if ( data != NULL )
+                    NECommon::sMessageData * data = ::IsWindow( hWnd ) ? NECommon::newData( ) : nullptr;
+                    if ( data != nullptr )
                     {
-                        NEString::copyString<TCHAR, char>( data->nickName, NEConnectionManager::NicknameMaxLen, connection.nickName.getBuffer( ) );
+                        NEString::copyString<TCHAR, char>( data->nickName, NEConnectionManager::NicknameMaxLen, connection.nickName.getString( ) );
                         data->dataSave      = connection.cookie;
                         data->timeSend      = connection.connectTime;
                         data->timeReceived  = connection.connectedTime;
@@ -217,10 +217,10 @@ void ConnectionManager::requestDiconnect( const String & nickName, unsigned int 
             notifyConnectionListUpdated( );
 
             HWND hWnd = MAKE_HWND( mWnd );
-            NECommon::sMessageData * data = ::IsWindow( hWnd ) ? DEBUG_NEW NECommon::sMessageData : NULL;
-            if ( data != NULL )
+            NECommon::sMessageData * data = ::IsWindow( hWnd ) ? NECommon::newData( ) : nullptr;
+            if ( data != nullptr )
             {
-                NEString::copyString<TCHAR, char>( data->nickName, NEConnectionManager::NicknameMaxLen, connection.nickName.getBuffer( ) );
+                NEString::copyString<TCHAR, char>( data->nickName, NEConnectionManager::NicknameMaxLen, connection.nickName.getString( ) );
                 data->dataSave      = connection.cookie;
                 data->timeSend      = connection.connectTime;
                 data->timeReceived  = connection.connectedTime;
@@ -257,18 +257,18 @@ void ConnectionManager::requestSendMessage( const String & nickName, unsigned in
                     , static_cast<const char *>(newMessage)
                     , static_cast<const char *>(dateTime.formatTime()) );
         broadcastSendMessage(connection.nickName, cookie, newMessage, dateTime);
-        broadcastKeyTyping( connection.nickName, cookie, String::EmptyString );
+        broadcastKeyTyping( connection.nickName, cookie, String::EmptyString.data() );
 
         HWND hWnd = MAKE_HWND( mWnd );
-        NECommon::sMessageData * data = ::IsWindow( hWnd ) ? DEBUG_NEW NECommon::sMessageData : NULL;
-        if ( data != NULL )
+        NECommon::sMessageData * data = ::IsWindow( hWnd ) ? NECommon::newData( ) : nullptr;
+        if ( data != nullptr )
         {
-            NEString::copyString<TCHAR, char>( data->nickName, NEConnectionManager::NicknameMaxLen, connection.nickName.getBuffer( ) );
+            NEString::copyString<TCHAR, char>( data->nickName, NEConnectionManager::NicknameMaxLen, connection.nickName.getString( ) );
             data->dataSave      = connection.cookie;
             data->timeSend      = dateTime;
             data->timeReceived  = DateTime::getNow();
             data->message[0]    = static_cast<TCHAR>(NEString::EndOfString);
-            NEString::copyString<TCHAR, char>( data->message, NECentralMessager::MessageMaxLen, newMessage.getBuffer() );
+            NEString::copyString<TCHAR, char>( data->message, NECentralMessager::MessageMaxLen, newMessage.getString() );
 
             ::PostMessage( hWnd, NECentralApp::CmdSendMessage, 0, reinterpret_cast<LPARAM>(data) );
         }
@@ -292,15 +292,15 @@ void ConnectionManager::requestKeyTyping( const String & nickName, unsigned int 
         broadcastKeyTyping( connection.nickName, cookie, newMessage );
 
         HWND hWnd = MAKE_HWND( mWnd );
-        NECommon::sMessageData * data = ::IsWindow( hWnd ) ? DEBUG_NEW NECommon::sMessageData : NULL;
-        if ( data != NULL )
+        NECommon::sMessageData * data = ::IsWindow( hWnd ) ? NECommon::newData( ) : nullptr;
+        if ( data != nullptr )
         {
-            NEString::copyString<TCHAR, char>( data->nickName, NEConnectionManager::NicknameMaxLen, connection.nickName.getBuffer( ) );
+            NEString::copyString<TCHAR, char>( data->nickName, NEConnectionManager::NicknameMaxLen, connection.nickName.getString( ) );
             data->dataSave      = connection.cookie;
             data->timeSend      = connection.connectTime;
             data->timeReceived  = connection.connectedTime;
             data->message[0]    = static_cast<TCHAR>(NEString::EndOfString);
-            NEString::copyString<TCHAR, char>( data->message, NECentralMessager::MessageMaxLen, newMessage.getBuffer() );
+            NEString::copyString<TCHAR, char>( data->message, NECentralMessager::MessageMaxLen, newMessage.getString() );
 
             ::PostMessage( hWnd, NECentralApp::CmdTypeMessage, 0, reinterpret_cast<LPARAM>(data) );
         }
@@ -315,7 +315,7 @@ bool ConnectionManager::FindConnection( const String & nickName, NEConnectionMan
 {
     bool result = false;
     const NEConnectionManager::MapConnection & mapClients = getConnectionList();
-    for ( MAPPOS pos = mapClients.firstPosition(); (result == false) && (pos != NULL); pos = mapClients.nextPosition(pos) )
+    for ( MAPPOS pos = mapClients.firstPosition(); (result == false) && (pos != nullptr); pos = mapClients.nextPosition(pos) )
     {
         const NEConnectionManager::sConnection & temp = mapClients.valueAtPosition(pos);
         if ( nickName == temp.nickName )
@@ -342,7 +342,7 @@ bool ConnectionManager::IsReservedNickname( const String & nickName ) const
 inline bool ConnectionManager::connectionExist( uint32_t cookie ) const
 {
     const NEConnectionManager::MapConnection & mapConnections = getConnectionList( );
-    return (mapConnections.find(cookie) != static_cast<MAPPOS>(NULL));
+    return (mapConnections.find(cookie) != nullptr);
 }
 
 inline uint32_t ConnectionManager::getNextCookie( void )

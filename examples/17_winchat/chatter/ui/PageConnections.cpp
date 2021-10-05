@@ -31,7 +31,7 @@ PageConnections::PageConnections(ConnectionHandler & handlerConnection)
 	: CPropertyPage(PageConnections::IDD)
 
     , mCtrlConnections      ( )
-    , mClientConnections    ( NULL )
+    , mClientConnections    ( nullptr )
     , mDirectConnectModel   ( )
     , mDirectConnectService ( )
     , mConnectionHandler    ( handlerConnection )
@@ -65,9 +65,9 @@ void PageConnections::OnServiceStartup( bool isStarted, Component * owner )
 
 void PageConnections::OnServiceNetwork( bool isConnected, DispatcherThread * ownerThread )
 {
-    if ( isConnected && (ownerThread != NULL) )
+    if ( isConnected && (ownerThread != nullptr) )
     {
-        if ( mConnectionHandler.IsValid( ) && (mConnectionHandler.GetRegistered( ) == false) && (mClientConnections == NULL) )
+        if ( mConnectionHandler.IsValid( ) && (mConnectionHandler.GetRegistered( ) == false) && (mClientConnections == nullptr) )
         {
             mClientConnections = DEBUG_NEW ConnectionList( NECommon::COMP_NAME_CENTRAL_SERVER, *ownerThread, mConnectionHandler );
         }
@@ -76,7 +76,7 @@ void PageConnections::OnServiceNetwork( bool isConnected, DispatcherThread * own
 
 void PageConnections::OnServiceConnection( bool isConnected, DispatcherThread * ownerThread )
 {
-    if ( isConnected && (ownerThread != NULL) )
+    if ( isConnected && (ownerThread != nullptr) )
     {
         ASSERT( mConnectionHandler.IsValid( ) && (mConnectionHandler.GetRegistered( ) == false) );
         const DateTime & dateTime = mConnectionHandler.GetTimeConnect();
@@ -86,9 +86,9 @@ void PageConnections::OnServiceConnection( bool isConnected, DispatcherThread * 
     }
     else
     {
-        if ( mClientConnections != NULL )
+        if ( mClientConnections != nullptr )
             delete mClientConnections;
-        mClientConnections = NULL;
+        mClientConnections = nullptr;
     }
 }
 
@@ -96,7 +96,7 @@ void PageConnections::OnClientConnection( bool isConnected, DispatcherThread *di
 {
     if ( isConnected )
     {
-        if ( mClientConnections == NULL )
+        if ( mClientConnections == nullptr )
         {
             ASSERT( mConnectionHandler.IsValid() == true );
             ASSERT( mConnectionHandler.GetRegistered() == false );
@@ -105,7 +105,7 @@ void PageConnections::OnClientConnection( bool isConnected, DispatcherThread *di
     }
     else
     {
-        if ( mClientConnections != NULL )
+        if ( mClientConnections != nullptr )
         {
             mClientConnections->notifyOnBroadcastClientConnected( false );
             mClientConnections->notifyOnBroadcastClientDisconnected( false );
@@ -118,7 +118,7 @@ void PageConnections::OnClientRegistration( bool isRegistered, DispatcherThread 
     TRACE_SCOPE( distrbutedapp_ui_PageConnections_OnClientRegistration );
     if ( isRegistered )
     {
-        ASSERT(mClientConnections != NULL);
+        ASSERT(mClientConnections != nullptr);
         const String & nickname   = mConnectionHandler.GetNickName();
         const uint32_t cookie       = mConnectionHandler.GetCookie();
 
@@ -223,12 +223,12 @@ inline void PageConnections::addConnection( const NEConnectionManager::sConnecti
     {
         TRACE_DBG( "Adding new connection of nickName [ %s ] and cookie [ %u ]", connection.nickName.getString( ), connection.cookie );
         int pos = mCtrlConnections.GetItemCount( );
-        CString nickName( connection.nickName );
+        CString nickName( connection.nickName.getString() );
         CString timeConnect( DateTime( connection.connectTime ).formatTime( ).getBuffer( ) );
         uint32_t cookie = connection.cookie;
 
         LVITEM lv;
-        NEMemory::zeroData<LVITEM>( lv );
+        NEMemory::zeroElement<LVITEM>( lv );
 
         // Column nickname
         lv.mask = LVIF_TEXT | LVIF_PARAM;
@@ -282,7 +282,7 @@ inline int PageConnections::getSelectedConnections( NEDirectConnection::sInitiat
 
             outListParticipants.setAt(count ++, participant);
 
-        } while (pos != NULL);
+        } while (pos != nullptr);
     }
     return count;
 }
@@ -298,7 +298,7 @@ inline void PageConnections::setHeaders( void )
     {
         CString str( HEADER_TITILES[i] );
         LVCOLUMN lv;
-        NEMemory::zeroData<LVCOLUMN>( lv );
+        NEMemory::zeroElement<LVCOLUMN>( lv );
         lv.mask = LVCF_FMT | LVCF_SUBITEM | LVCF_TEXT | LVCF_WIDTH;
         lv.fmt = LVCFMT_LEFT;
         lv.cx = width;
@@ -311,15 +311,15 @@ inline void PageConnections::setHeaders( void )
 
 inline bool PageConnections::isServiceConnected( void ) const
 {
-    return (mClientConnections != NULL ? mClientConnections->isConnected( ) : false);
+    return (mClientConnections != nullptr ? mClientConnections->isConnected( ) : false);
 }
 
 inline void PageConnections::cleanService( void )
 {
-    if ( mClientConnections != NULL )
+    if ( mClientConnections != nullptr )
     {
         delete mClientConnections;
-        mClientConnections = NULL;
+        mClientConnections = nullptr;
     }
     if ( mDirectConnectModel.isEmpty( ) == false )
     {
@@ -330,7 +330,7 @@ inline void PageConnections::cleanService( void )
 
 inline int PageConnections::findConnection( const NEConnectionManager::sConnection & connection ) const
 {
-    int result = NECommon::InvalidIndex;
+    int result = NECommon::INVALID_INDEX;
     for ( int i = 0; i < mCtrlConnections.GetItemCount(); ++ i )
     {
         if ( mCtrlConnections.GetItemData(i) == connection.cookie )
@@ -349,7 +349,7 @@ inline int PageConnections::findConnection( const NEConnectionManager::sConnecti
 inline void PageConnections::removeConnection( const NEConnectionManager::sConnection & connection )
 {
     int pos = findConnection(connection);
-    if ( pos != NECommon::InvalidIndex )
+    if ( pos != NECommon::INVALID_INDEX )
     {
         mCtrlConnections.EnsureVisible( pos, FALSE );
         mCtrlConnections.DeleteItem( pos );
@@ -403,7 +403,7 @@ inline bool PageConnections::loadModel( const String & nickName, const uint32_t 
 void PageConnections::OnDefaultClicked( void )
 {
     CButton * btnSend = reinterpret_cast<CButton *>(GetDlgItem( IDC_BUTTON_INITIATE_CHAT ));
-    if ( btnSend != NULL )
+    if ( btnSend != nullptr )
     {
         PostMessage( WM_COMMAND, MAKEWPARAM( IDC_BUTTON_INITIATE_CHAT, BN_CLICKED ), reinterpret_cast<LPARAM>(btnSend->GetSafeHwnd( )) );
     }

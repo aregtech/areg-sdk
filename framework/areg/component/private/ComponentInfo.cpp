@@ -1,7 +1,15 @@
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/component/private/ComponentInfo.cpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, Component Info class implementation.
  *
  ************************************************************************/
@@ -11,7 +19,7 @@
 #include "areg/component/WorkerThread.hpp"
 
 //////////////////////////////////////////////////////////////////////////
-// ComponentInfo::_WorkerThreadMapImpl class implementation
+// ComponentInfo::_ImplWorkerThreadMap class implementation
 //////////////////////////////////////////////////////////////////////////
 
 //////////////////////////////////////////////////////////////////////////
@@ -33,12 +41,6 @@ ComponentInfo::ComponentInfo( ComponentThread& masterThread, const char* roleNam
     , mMasterThread     (masterThread)
     , mWorkerThreadMap  ( )
 {
-    ; // do nothing
-}
-
-ComponentInfo::~ComponentInfo( void )
-{
-    ; // do nothing
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -46,7 +48,7 @@ ComponentInfo::~ComponentInfo( void )
 //////////////////////////////////////////////////////////////////////////
 DispatcherThread * ComponentInfo::findEventConsumer( const RuntimeClassID& whichClass ) const
 {
-    DispatcherThread * result = NULL;
+    DispatcherThread * result = nullptr;
 
     // firs check master thread.
     if (mMasterThread.hasRegisteredConsumer(whichClass))
@@ -60,7 +62,7 @@ DispatcherThread * ComponentInfo::findEventConsumer( const RuntimeClassID& which
 
         ThreadAddress Key;
         DispatcherThread * dispThread = static_cast<DispatcherThread *>(mWorkerThreadMap.resourceFirstKey(Key));
-        while (result == NULL && dispThread != NULL)
+        while (result == nullptr && dispThread != nullptr)
         {
             if (dispThread->hasRegisteredConsumer(whichClass))
                 result = dispThread;

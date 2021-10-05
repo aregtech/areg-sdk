@@ -1,10 +1,16 @@
-#ifndef AREG_IPC_SERVERCONNECTION_HPP
-#define AREG_IPC_SERVERCONNECTION_HPP
-
+#pragma once
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/ipc/private/ServerConnectionBase.hpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform Server Connection class declaration.
  ************************************************************************/
 
@@ -13,7 +19,7 @@
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
 
-#include "areg/base/ESynchObjects.hpp"
+#include "areg/base/SynchObjects.hpp"
 #include "areg/base/SocketServer.hpp"
 #include "areg/base/SocketAccepted.hpp"
 #include "areg/base/TEHashMap.hpp"
@@ -46,30 +52,30 @@ protected:
     /**
      * \brief   The container of accepted socket objects where the keys are socket handle.
      **/
-    typedef TEHashMapImpl<const SOCKETHANDLE, const SocketAccepted &>                                                     MapSocketToObjectImpl;
-    typedef TEHashMap<SOCKETHANDLE, SocketAccepted, const SOCKETHANDLE, const SocketAccepted &, MapSocketToObjectImpl>  MapSocketToObject;
+    using ImplMapSocketToObject	= TEHashMapImpl<const SOCKETHANDLE, const SocketAccepted &>;
+    using MapSocketToObject 	= TEHashMap<SOCKETHANDLE, SocketAccepted, const SOCKETHANDLE, const SocketAccepted &, ImplMapSocketToObject>;
 
     /**
      * \brief   The container of socket handles where the keys are cookie values.
      **/
-    typedef TEHashMapImpl<ITEM_ID, SOCKETHANDLE>                                                MapCookieToSocketImpl;
-    typedef TEHashMap<ITEM_ID, SOCKETHANDLE, ITEM_ID, SOCKETHANDLE, MapCookieToSocketImpl>      MapCookieToSocket;
+    using ImplMapCookieToSocket	= TEHashMapImpl<ITEM_ID, SOCKETHANDLE>;
+    using MapCookieToSocket		= TEHashMap<ITEM_ID, SOCKETHANDLE, ITEM_ID, SOCKETHANDLE, ImplMapCookieToSocket>;
 
     /**
      * \brief   The container of cookie values where the keys are socket handles.
      **/
-    typedef TEHashMapImpl<SOCKETHANDLE, ITEM_ID>                                                MapSocketToCookieImpl;
-    typedef TEHashMap<SOCKETHANDLE, ITEM_ID, SOCKETHANDLE, ITEM_ID, MapSocketToCookieImpl>      MapSocketToCookie;
+    using ImplMapSocketToCookie	= TEHashMapImpl<SOCKETHANDLE, ITEM_ID>;
+    using MapSocketToCookie		= TEHashMap<SOCKETHANDLE, ITEM_ID, SOCKETHANDLE, ITEM_ID, ImplMapSocketToCookie>;
 
     /**
      * \brief   The list of accepted sockets.
      **/
-    typedef TEArrayList<SOCKETHANDLE, const SOCKETHANDLE>                                       ListSockets;
+    using ListSockets			= TEArrayList<SOCKETHANDLE, const SOCKETHANDLE>;
 
     /**
      * \brief   The size of master list to listen sockets for incoming messages.
      **/
-    static const int        MASTER_LIST_SIZE        /*= 64*/;
+    static constexpr int    MASTER_LIST_SIZE        = 64;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
@@ -89,7 +95,7 @@ public:
      *          When instantiated, it will resolved passed host
      *          name and port number. If succeeded to resolve,
      *          it will set resolved IP-address and port number
-     *          as socket address. If passed hostName is NULL,
+     *          as socket address. If passed hostName is nullptr,
      *          it resolve connection for local host.
      * \param   hostName    Host name or IP-address of server.
      * \param   portNr      Port number of server.
@@ -102,7 +108,7 @@ public:
      *          and bound to host and port. Specified remoteAddress will be set as server address.
      * \param   remoteAddress   Address of server.
      **/
-    ServerConnectionBase( const NESocket::InterlockedValue & serverAddress );
+    ServerConnectionBase( const NESocket::SocketAddress & serverAddress );
 
     /**
      * \brief   Destructor.
@@ -117,7 +123,7 @@ public:
     /**
      * \brief   Return Socket Address object.
      **/
-    inline const NESocket::InterlockedValue & getAddress( void ) const;
+    inline const NESocket::SocketAddress & getAddress( void ) const;
 
     /**
      * \brief   Sets Socket Address. If hostName is not IP-address, it will 
@@ -137,7 +143,7 @@ public:
      *          or already resolved with IP-address.
      * \param   newAddress  The new address to set.
      **/
-    inline void setAddress( const NESocket::InterlockedValue & newAddress );
+    inline void setAddress( const NESocket::SocketAddress & newAddress );
 
     /**
      * \brief   Returns true if existing socket descriptor is valid.
@@ -247,7 +253,7 @@ public:
      *          out_addrNewAccepted parameter contains address of accepted socket. 
      *          If function fails, returns invalid socket handle.
      **/
-    SOCKETHANDLE waitForConnectionEvent(NESocket::InterlockedValue & out_addrNewAccepted);
+    SOCKETHANDLE waitForConnectionEvent(NESocket::SocketAddress & out_addrNewAccepted);
 
     /**
      * \brief   Call to accept connection. Nothing will happen if connection was already accepted.
@@ -320,13 +326,12 @@ protected:
     /**
      * \brief   Synchronization object for data sharing
      **/
-    mutable ResourceLock   mLock;
+    mutable ResourceLock    mLock;
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    ServerConnectionBase( const ServerConnectionBase & );
-    const ServerConnectionBase & operator = ( const ServerConnectionBase & );
+    DECLARE_NOCOPY_NOMOVE( ServerConnectionBase );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -339,13 +344,13 @@ inline bool ServerConnectionBase::setAddress(const char * hostName, unsigned sho
     return mServerSocket.setAddress(hostName, portNr, true);
 }
 
-inline void ServerConnectionBase::setAddress( const NESocket::InterlockedValue & newAddress )
+inline void ServerConnectionBase::setAddress( const NESocket::SocketAddress & newAddress )
 {
     Lock lock(mLock);
     mServerSocket.setAddress(newAddress);
 }
 
-inline const NESocket::InterlockedValue & ServerConnectionBase::getAddress( void ) const
+inline const NESocket::SocketAddress & ServerConnectionBase::getAddress( void ) const
 {
     Lock lock(mLock);
     return mServerSocket.getAddress();
@@ -366,7 +371,7 @@ inline SOCKETHANDLE ServerConnectionBase::getSocketHandle( void ) const
 inline bool ServerConnectionBase::isConnectionAccepted( SOCKETHANDLE connection ) const
 {
     Lock lock(mLock);
-    return (mAcceptedConnections.find(connection) != NULL);
+    return (mAcceptedConnections.find(connection) != nullptr);
 }
 
 inline ITEM_ID ServerConnectionBase::getCookie(const SocketAccepted & clientSocket) const
@@ -379,21 +384,21 @@ inline ITEM_ID ServerConnectionBase::getCookie(SOCKETHANDLE socketHandle) const
     Lock lock( mLock );
 
     MAPPOS pos = mSocketToCookie.find( socketHandle );
-    return ( pos != NULL ? mSocketToCookie.valueAtPosition(pos) : NEService::COOKIE_UNKNOWN );
+    return ( pos != nullptr ? mSocketToCookie.valueAtPosition(pos) : NEService::COOKIE_UNKNOWN );
 }
 
 inline SocketAccepted ServerConnectionBase::getClientByCookie(ITEM_ID clientCookie) const
 {
     Lock lock( mLock );
     MAPPOS pos = mCookieToSocket.find(clientCookie);
-    return (pos != NULL ? getClientByHandle( mCookieToSocket.valueAtPosition(pos) ) : SocketAccepted());
+    return (pos != nullptr ? getClientByHandle( mCookieToSocket.valueAtPosition(pos) ) : SocketAccepted());
 }
 
 inline SocketAccepted ServerConnectionBase::getClientByHandle(SOCKETHANDLE clientSocket) const
 {
     Lock lock( mLock );
     MAPPOS pos = mAcceptedConnections.find(clientSocket);
-    return (pos != NULL ? mAcceptedConnections.getAt(clientSocket) : SocketAccepted());
+    return (pos != nullptr ? mAcceptedConnections.getAt(clientSocket) : SocketAccepted());
 }
 
 inline bool ServerConnectionBase::disableSend( const SocketAccepted & clientConnection )
@@ -405,5 +410,3 @@ inline bool ServerConnectionBase::disableReceive( const SocketAccepted & clientC
 {
     return clientConnection.disableReceive();
 }
-
-#endif  // AREG_IPC_SERVERCONNECTION_HPP

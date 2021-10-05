@@ -1,9 +1,16 @@
-#ifndef MCROUTER_TCP_PRIVATE_SERVICESTUB_HPP
-#define MCROUTER_TCP_PRIVATE_SERVICESTUB_HPP
+#pragma once
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        mcrouter/tcp/private/ServiceStub.hpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform Stub Service object
  ************************************************************************/
 
@@ -39,24 +46,42 @@ public:
      * \brief   Initializes Stub address of remote service
      * \param   addrStub    The Stub address to set.
      **/
-    ServiceStub( const StubAddress & addrStub );
-    
+    explicit ServiceStub( const StubAddress & addrStub );
+
+    /**
+     * \brief   Initializes Stub address of remote service
+     * \param   addrStub    The Stub address to set.
+     **/
+    ServiceStub( StubAddress && addrStub ) noexcept;
+
     /**
      * \brief   Extracts relevant data from given Proxy address and initializes Stub service object.
      * \param   addrProxy   The Proxy address to extract information.
      **/
-    ServiceStub( const ProxyAddress & addrProxy );
-    
+    explicit ServiceStub( const ProxyAddress & addrProxy );
+
+    /**
+     * \brief   Extracts relevant data from given Proxy address and initializes Stub service object.
+     * \param   addrProxy   The Proxy address to extract information.
+     **/
+    explicit ServiceStub( ProxyAddress && addrProxy ) noexcept;
+
     /**
      * \brief   Copies Stub service data from given source.
      * \param   stubService     The source of Stub service object to copy data.
      **/
     ServiceStub( const ServiceStub & stubService );
-    
+
+    /**
+     * \brief   Copies Stub service data from given source.
+     * \param   stubService     The source of Stub service object to copy data.
+     **/
+    ServiceStub( ServiceStub && stubService ) noexcept;
+
     /**
      * \brief   Destructor
      **/
-    ~ServiceStub( void );
+    ~ServiceStub( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
@@ -67,19 +92,37 @@ public:
      * \brief   Copies Stub address data from given source
      * \param   addrStub    The Stub address data to copy
      **/
-    const ServiceStub & operator = ( const StubAddress & addrStub );
+    ServiceStub & operator = ( const StubAddress & addrStub );
+
+    /**
+     * \brief   Moves Stub address data from given source.
+     * \param   addrStub    The Stub address data to move.
+     **/
+    ServiceStub & operator = ( StubAddress && addrStub ) noexcept;
 
     /**
      * \brief   Creates and copies Stub address data out of Proxy address.
      * \param   addrProxy   The Proxy address to generate Stub address information
      **/
-    const ServiceStub & operator = ( const ProxyAddress & addrProxy );
+    ServiceStub & operator = ( const ProxyAddress & addrProxy );
+
+    /**
+     * \brief   Creates and moves Stub address data out of Proxy address.
+     * \param   addrProxy   The Proxy address to generate Stub address information
+     **/
+    ServiceStub & operator = ( ProxyAddress && addrProxy ) noexcept;
 
     /**
      * \brief   Copies data from given source
      * \param   stubService The source of Stub service to copy data.
      **/
-    const ServiceStub & operator = ( const ServiceStub & stubService );
+    ServiceStub & operator = ( const ServiceStub & stubService );
+
+    /**
+     * \brief   Moves data from given source
+     * \param   stubService The source of Stub service to move data.
+     **/
+    ServiceStub & operator = ( ServiceStub && stubService ) noexcept;
 
     /**
      * \brief   Checks equality of address set in Service and given Stub address
@@ -103,7 +146,7 @@ public:
     /**
      * \brief   Coverts data of Stub service object into 32-bit integer value.
      **/
-    operator unsigned int ( void ) const;
+    explicit operator unsigned int ( void ) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations and attributes
@@ -144,7 +187,7 @@ public:
      * \param   addrStub        The address of remote Stub to set.
      * \param   connectStatus   The connection status to set.
      **/
-    void setService( const StubAddress & addrStub, NEService::eServiceConnection connectStatus = NEService::ServiceConnected );
+    void setService( const StubAddress & addrStub, NEService::eServiceConnection connectStatus = NEService::eServiceConnection::ServiceConnected );
 
 private:
     /**
@@ -163,12 +206,12 @@ private:
 
 inline bool ServiceStub::isConnected( void ) const
 {
-    return ( mConnectStatus == NEService::ServiceConnected );
+    return ( mConnectStatus == NEService::eServiceConnection::ServiceConnected );
 }
 
 inline bool ServiceStub::isWaiting( void ) const
 {
-    return ( mConnectStatus == NEService::ServicePending );
+    return ( mConnectStatus == NEService::eServiceConnection::ServicePending );
 }
 
 inline NEService::eServiceConnection ServiceStub::getServiceStatus( void ) const
@@ -180,5 +223,3 @@ inline const StubAddress & ServiceStub::getServiceAddress( void ) const
 {
     return mStubAddress;
 }
-
-#endif  // MCROUTER_TCP_PRIVATE_SERVICESTUB_HPP

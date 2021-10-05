@@ -1,9 +1,16 @@
-#ifndef AREG_PERSIST_PROPERTYVALUE_HPP
-#define AREG_PERSIST_PROPERTYVALUE_HPP
+#pragma once
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/persist/PropertyValue.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, Property Value object to persist data.
  ************************************************************************/
 
@@ -30,36 +37,46 @@ public:
     /**
      * \brief   Default constructor
      **/
-    PropertyValue( void );
+    PropertyValue( void ) = default;
     /**
      * \brief   Initializes Value from string.
-     * \param   strValue    The Value as a string to parse.
+     * \param   value    The Value as a string to parse.
      **/
-    PropertyValue( const char * strValue );
+    explicit PropertyValue( const char * value );
     /**
      * \brief   Initializes Value from 32-bit unsigned integer.
-     * \param   strValue    The Value as 32-bit unsigned integer to set.
+     * \param   value    The Value as 32-bit unsigned integer to set.
      **/
-    PropertyValue( unsigned int intValue );
+    explicit PropertyValue( unsigned int intValue );
     /**
      * \brief   Initializes Value from digit with floating point.
-     * \param   strValue    The Value as a digit with floating point to set.
+     * \param   value    The Value as a digit with floating point to set.
      **/
-    PropertyValue( double dValue );
+    explicit PropertyValue( double dValue );
     /**
      * \brief   Initializes Value from list of identifiers.
-     * \param   strValue    The Value as a list of identifiers to set.
+     * \param   value    The Value as a list of identifiers to set.
      **/
-    PropertyValue( const TEArrayList<Identifier, const Identifier &> idList );
+    explicit PropertyValue( const TEArrayList<Identifier, const Identifier &> idList );
+    /**
+     * \brief   Copies value from given source
+     * \param   value   The source to copy value
+     **/
+    explicit PropertyValue( const String & value );
     /**
      * \brief   Copies data from given source
      * \param   source  The source to copy data
      **/
     PropertyValue( const PropertyValue & source );
     /**
+     * \brief   Moves data from given source
+     * \param   source  The source to move data
+     **/
+    PropertyValue( PropertyValue && source ) noexcept;
+    /**
      * \brief   Destructor
      **/
-    ~PropertyValue( void );
+    ~PropertyValue( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
@@ -69,31 +86,37 @@ public:
      * \brief   Copies property Value from given source
      * \param   source  The source to copy data.
      **/
-    const PropertyValue & operator = ( const PropertyValue & source );
+    PropertyValue & operator = ( const PropertyValue & source );
+
+    /**
+     * \brief   Moves property Value from given source
+     * \param   source  The source to move data.
+     **/
+    PropertyValue & operator = ( PropertyValue && source ) noexcept;
 
     /**
      * \brief   Copies property Value from given source as a string
-     * \param   strValue    The source as string to parse and copy data.
+     * \param   value   The source as string to parse and copy data.
      **/
-    const PropertyValue & operator = ( const String & strValue );
+    PropertyValue & operator = ( const String & value );
 
     /**
      * \brief   Copies property Value from given source as a 32-bit unsigned integer
      * \param   intValue    The data to convert.
      **/
-    const PropertyValue & operator = ( unsigned int intValue );
+    PropertyValue & operator = ( unsigned int intValue );
 
     /**
      * \brief   Copies property Value from given source as a digit with floating point
      * \param   dValue      The data to convert.
      **/
-    const PropertyValue & operator = ( double dValue );
+    PropertyValue & operator = ( double dValue );
 
     /**
      * \brief   Copies property Value from given source as a list of identifiers
      * \param   idList      The data to convert.
      **/
-    const PropertyValue & operator = ( const TEArrayList<Identifier, const Identifier &> idList );
+    PropertyValue & operator = ( const TEArrayList<Identifier, const Identifier &> & idList );
 
     /**
      * \brief   Checks equality of two Value objects.
@@ -120,9 +143,21 @@ public:
 
     /**
      * \brief   Sets data of Value
-     * \param   strValue    The value as string to set
+     * \param   value    The value as string to set
      **/
-    void setValue( const char * strValue );
+    void setValue( const char * value );
+
+    /**
+     * \brief   Sets data of Value
+     * \param   value    The value as string to set
+     **/
+    void setValue( const String & value );
+
+    /**
+     * \brief   Sets data of Value
+     * \param   value    The value as string to set
+     **/
+    void setValue( String && value );
 
     /**
      * \brief   Returns value as a string
@@ -131,21 +166,21 @@ public:
 
     /**
      * \brief   Sets value as a string
-     * \param   strValue    The value as a string to set
+     * \param   value    The value as a string to set
      **/
-    void setString( const char * strValue );
+    void setString( const char * value );
 
     /**
      * \brief   Returns value as a 32-bit unsigned integer
      **/
-    unsigned int getInteger( NEString::eRadix radix = NEString::RadixDecimal ) const;
+    unsigned int getInteger( NEString::eRadix radix = NEString::eRadix::RadixDecimal ) const;
 
     /**
      * \brief   Converts and sets value as a 32-bit unsigned integer
      * \param   intValue    The value as a 32-bit unsigned integer to convert and set
      * \param   radix       The conversion criteria of integer. By default, the passed integer is converted as a decimal.
      **/
-    void setInteger( unsigned int intValue, NEString::eRadix radix = NEString::RadixDecimal );
+    void setInteger( unsigned int intValue, NEString::eRadix radix = NEString::eRadix::RadixDecimal );
 
     /**
      * \brief   Returns value as a digit with floating point
@@ -173,9 +208,21 @@ public:
 
     /**
      * \brief   Parses given string, extracts Value data.
-     * \param   strValue    The string, which contains data for Value.
+     * \param   value    The string, which contains data for Value.
      **/
-    void parseValue( const char * strValue );
+    void parseValue( const char * value );
+
+    /**
+     * \brief   Parses given string, extracts Value data.
+     * \param   value    The string, which contains data for Value.
+     **/
+    void parseValue( const String & value );
+
+    /**
+     * \brief   Parses given string, extracts Value data.
+     * \param   value    The string, which contains data for Value.
+     **/
+    void parseValue( String && value );
 
     /**
      * \brief   Resets and invalidates Value
@@ -196,5 +243,3 @@ private:
      **/
     String mValue;
 };
-
-#endif  // AREG_PERSIST_PROPERTYVALUE_HPP

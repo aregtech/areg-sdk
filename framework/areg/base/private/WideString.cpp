@@ -1,7 +1,15 @@
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/base/private/WideString.cpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, String Class to handle basic
  *              null-terminated string operations.
  ************************************************************************/
@@ -35,12 +43,16 @@
 
 static const wchar_t _FormatRadixBinary[] = { L'0', L'1', L'\0' };
 
+//////////////////////////////////////////////////////////////////////////
+// String class implementation
+//////////////////////////////////////////////////////////////////////////
+
 template<typename DigitType>
 static inline int32_t _formatBinary( WideString & result, DigitType number )
 {
     wchar_t buffer[_MAX_BINARY_BUFFER];
     wchar_t * dst  = buffer;
-    DigitType base = static_cast<DigitType>(NEString::RadixBinary);
+    DigitType base = static_cast<DigitType>(NEString::eRadix::RadixBinary);
     bool isNegative = number < 0;
 
     number = MACRO_ABS( number );
@@ -171,26 +183,24 @@ AREG_API IEOutStream & operator << (IEOutStream & stream, const WideString & out
 }
 
 //////////////////////////////////////////////////////////////////////////
-// WideString class implementation
-//////////////////////////////////////////////////////////////////////////
-const wchar_t * const   WideString::EmptyString   = L"";
-const wchar_t * const   WideString::BOOLEAN_TRUE  = L"true";
-const wchar_t * const   WideString::BOOLEAN_FALSE = L"false";
-const WideString        WideString::InvalidString;
-
-//////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
 WideString::WideString(const String & source)
-    : TEString<wchar_t>(NULL_STRING_W, source.getLength(), NEString::EncodeWide)
+    : TEString<wchar_t>(NULL_STRING_W, source.getLength())
 {
-    NEString::copyString<wchar_t, char>(getDataString(), source.getString(), NEString::StartPos, source.getLength());
+    NEString::copyString<wchar_t, char>(getDataString(), source.getString(), NEString::START_POS, source.getLength());
+#ifdef DEBUG
+    mString = mData != nullptr ? mData->strBuffer : nullptr;
+#endif // DEBUG
 }
 
 WideString::WideString( const IEInStream & stream )
-    : TEString<wchar_t>( NEString::EncodeWide )
+    : TEString<wchar_t>( )
 {
     readStream(stream);
+#ifdef DEBUG
+    mString = mData != nullptr ? mData->strBuffer : nullptr;
+#endif // DEBUG
 }
 
 WideString::~WideString( void )
@@ -200,71 +210,87 @@ WideString::~WideString( void )
 //////////////////////////////////////////////////////////////////////////
 // operators / operations
 //////////////////////////////////////////////////////////////////////////
-const WideString & WideString::operator = (const WideString & strSource)
+WideString & WideString::operator = (const WideString & src)
 {
-    if (this != &strSource)
+    if (this != &src)
     {
         release();
-        if ( strSource.isEmpty() == false)
+        if ( src.isEmpty() == false)
         {
-            mData = NEString::initString<wchar_t, wchar_t>(strSource.getString(), strSource.getLength(), NEString::EncodeWide);
+            mData = NEString::initString<wchar_t, wchar_t>(src.getString(), src.getLength());
         }
 
 #ifdef DEBUG
-        mString = mData->strBuffer;
+        mString = mData != nullptr ? mData->strBuffer : nullptr;
 #endif // DEBUG
     }
 
     return (*this);
 }
 
-const WideString & WideString::operator = (const wchar_t * strSource)
+WideString & WideString::operator = ( WideString && src ) noexcept
 {
-    if (getString() != strSource)
+    if ( this != &src )
+    {
+        release( );
+        mData = src.mData;
+        src.mData = nullptr;
+
+#ifdef DEBUG
+        mString = mData != nullptr ? mData->strBuffer : nullptr;
+#endif // DEBUG
+    }
+
+    return (*this);
+}
+
+WideString & WideString::operator = (const wchar_t * src)
+{
+    if (getString() != src)
     {
         NEString::SString<wchar_t> * temp = mData;
-        mData = NEString::initString<wchar_t, wchar_t>( strSource, NEString::CountAll, NEString::EncodeAscii );
+        mData = NEString::initString<wchar_t, wchar_t>( src, NEString::COUNT_ALL );
         NEString::releaseSpace<wchar_t>(temp);
 
 #ifdef DEBUG
-        mString = mData->strBuffer;
+        mString = mData != nullptr ? mData->strBuffer : nullptr;
 #endif // DEBUG
     }
 
     return (*this);
 }
 
-const WideString & WideString::operator = (wchar_t chSource)
+WideString & WideString::operator = (wchar_t chSource)
 {
     release( );
-    mData = NEString::initString<wchar_t, wchar_t>( &chSource, 1, NEString::EncodeWide );
+    mData = NEString::initString<wchar_t, wchar_t>( &chSource, 1 );
 
 #ifdef DEBUG
-    mString = mData->strBuffer;
+    mString = mData != nullptr ? mData->strBuffer : nullptr;
 #endif // DEBUG
 
     return (*this);
 }
 
-const WideString & WideString::operator = ( const char * strSource )
+WideString & WideString::operator = ( const char * src )
 {
     release( );
-    mData = NEString::initString<wchar_t, char>( strSource, NEString::CountAll, NEString::EncodeWide );
+    mData = NEString::initString<wchar_t, char>( src, NEString::COUNT_ALL );
 
 #ifdef DEBUG
-    mString = mData->strBuffer;
+    mString = mData != nullptr ? mData->strBuffer : nullptr;
 #endif // DEBUG
 
     return (*this);
 }
 
-const WideString & WideString::operator = (const String & strSource)
+WideString & WideString::operator = (const String & src)
 {
     release();
-    mData = NEString::initString<wchar_t, char>(strSource.getString(), strSource.getLength(), NEString::EncodeWide);
+    mData = NEString::initString<wchar_t, char>(src.getString(), src.getLength());
 
 #ifdef DEBUG
-    mString = mData->strBuffer;
+    mString = mData != nullptr ? mData->strBuffer : nullptr;
 #endif // DEBUG
 
     return (*this);
@@ -275,38 +301,46 @@ bool WideString::operator == (const String & other) const
     return (NEString::compareFast<wchar_t, char>( getString( ), other.getString( ) ) == 0);
 }
 
-WideString & WideString::operator += (const WideString & strSource)
+WideString & WideString::operator += (const WideString & src)
 {
-    append(strSource.getString(), strSource.getLength());
+    append(src.getString(), src.getLength());
     return (*this);
 }
 
-WideString & WideString::operator += (const wchar_t * strSource)
+WideString & WideString::operator += (const wchar_t * src)
 {
-    append( strSource, NEString::getStringLength<wchar_t>( strSource ) );
+    append( src, NEString::getStringLength<wchar_t>( src ) );
     return (*this);
 }
 
-WideString & WideString::operator += (const char * strSource)
+WideString & WideString::operator += (const char * src)
 {
-    NEString::CharCount charCount = NEString::getStringLength<char>( strSource );
+    NEString::CharCount charCount = NEString::getStringLength<char>( src );
     resize( getLength( ) + charCount );
     if ( isValid( ) )
     {
-        NEString::appendString<wchar_t, char>( *mData, strSource, charCount );
+        NEString::appendString<wchar_t, char>( *mData, src, charCount );
     }
+
+#ifdef DEBUG
+    mString = mData != nullptr ? mData->strBuffer : nullptr;
+#endif // DEBUG
 
     return (*this);
 }
 
-WideString & WideString::operator += (const String & strSource)
+WideString & WideString::operator += (const String & src)
 {
-    NEString::CharCount charCount = strSource.getLength();
+    NEString::CharCount charCount = src.getLength();
     resize(getLength() + charCount);
     if (isValid())
     {
-        NEString::appendString<wchar_t, char>(*mData, strSource.getString(), charCount);
+        NEString::appendString<wchar_t, char>(*mData, src.getString(), charCount);
     }
+
+#ifdef DEBUG
+    mString = mData != nullptr ? mData->strBuffer : nullptr;
+#endif // DEBUG
 
     return (*this);
 }
@@ -317,16 +351,18 @@ WideString & WideString::operator += (wchar_t chSource)
     return (*this);
 }
 
-WideString WideString::getSubstring(const wchar_t * strSource, const wchar_t * strPhrase, const wchar_t ** out_next /*= static_cast<const wchar_t **>(NULL) */)
+WideString WideString::getSubstring(const wchar_t * src, const wchar_t * strPhrase, const wchar_t ** out_next /*= nullptr */)
 {
     WideString result;
-    if ( out_next != static_cast<const wchar_t **>(NULL))
-        *out_next = NULL_STRING_W;
-
-    if (NEString::isEmpty<wchar_t>(strSource) == false)
+    if ( out_next != nullptr )
     {
-        NEString::CharPos pos = NEString::findFirstOf<wchar_t>(strPhrase, strSource, NEString::StartPos, out_next);
-        result.copy(strSource, pos != NEString::InvalidPos ? pos : NEString::CountAll);
+        *out_next = NULL_STRING_W;
+    }
+
+    if (NEString::isEmpty<wchar_t>(src) == false)
+    {
+        NEString::CharPos pos = NEString::findFirstOf<wchar_t>(strPhrase, src, NEString::START_POS, out_next);
+        result.copy(src, pos != NEString::INVALID_POS ? pos : NEString::COUNT_ALL);
     }
 
     return result;
@@ -354,85 +390,99 @@ WideString::operator unsigned int (void) const
     return (isValid() ? NEMath::crc32Calculate(getString()) : NEMath::CHECKSUM_IGNORE);
 }
 
-int32_t WideString::makeInt32( const wchar_t * strDigit, NEString::eRadix radix /*= NEString::RadixDecimal*/, const wchar_t ** end /*= static_cast<const wchar_t **>(NULL)*/ )
+int32_t WideString::makeInt32( const wchar_t * strDigit, NEString::eRadix radix /*= NEString::RadixDecimal*/, const wchar_t ** end /*= nullptr*/ )
 {
-    wchar_t * temp = static_cast<wchar_t *>(NULL);
+    wchar_t * temp = nullptr;
     int result = static_cast<int>(NEString::isEmpty<wchar_t>(strDigit) == false ? wcstol( strDigit, &temp, static_cast<int>(radix) ) : 0);
-    if (end != static_cast<const wchar_t **>(NULL))
-        *end = temp != static_cast<wchar_t *>(NULL) ? temp : strDigit;
+    if (end != nullptr)
+    {
+        *end = temp != nullptr ? temp : strDigit;
+    }
 
     return result;
 }
 
-uint32_t WideString::makeUInt32( const wchar_t * strDigit, NEString::eRadix radix /*= NEString::RadixDecimal*/, const wchar_t ** end /*= static_cast<const wchar_t **>(NULL)*/ )
+uint32_t WideString::makeUInt32( const wchar_t * strDigit, NEString::eRadix radix /*= NEString::RadixDecimal*/, const wchar_t ** end /*= nullptr*/ )
 {
-    wchar_t * temp = static_cast<wchar_t *>(NULL);
+    wchar_t * temp = nullptr;
     unsigned int result = static_cast<unsigned int>(NEString::isEmpty<wchar_t>(strDigit) == false ? wcstoul(strDigit, &temp, static_cast<int>(radix)) : 0);
-    if (end != static_cast<const wchar_t **>(NULL))
-        *end = temp != static_cast<wchar_t *>(NULL) ? temp : strDigit;
+    if (end != nullptr)
+    {
+        *end = temp != nullptr ? temp : strDigit;
+    }
 
     return result;
 }
 
-int64_t WideString::makeInt64( const wchar_t * strDigit, NEString::eRadix radix /*= NEString::RadixDecimal*/, const wchar_t ** end /*= static_cast<const wchar_t **>(NULL)*/ )
+int64_t WideString::makeInt64( const wchar_t * strDigit, NEString::eRadix radix /*= NEString::RadixDecimal*/, const wchar_t ** end /*= nullptr*/ )
 {
-    wchar_t * temp = static_cast<wchar_t *>(NULL);
+    wchar_t * temp = nullptr;
     long long int result = static_cast<long long int>(NEString::isEmpty<wchar_t>(strDigit) == false ? wcstoll(strDigit, &temp, static_cast<int>(radix)) : 0);
-    if (end != static_cast<const wchar_t **>(NULL))
-        *end = temp != static_cast<wchar_t *>(NULL) ? temp : strDigit;
+    if (end != nullptr)
+    {
+        *end = temp != nullptr ? temp : strDigit;
+    }
 
     return result;
 }
 
-uint64_t WideString::makeUInt64(const wchar_t * strDigit, NEString::eRadix radix /*= NEString::RadixDecimal*/, const wchar_t ** end /*= static_cast<const wchar_t **>(NULL)*/)
+uint64_t WideString::makeUInt64(const wchar_t * strDigit, NEString::eRadix radix /*= NEString::RadixDecimal*/, const wchar_t ** end /*= nullptr*/)
 {
-    wchar_t * temp = static_cast<wchar_t *>(NULL);
+    wchar_t * temp = nullptr;
     uint64_t result = static_cast<uint64_t>(NEString::isEmpty<wchar_t>(strDigit) == false ? wcstoull(strDigit, &temp, static_cast<int>(radix)) : 0);
-    if (end != static_cast<const wchar_t **>(NULL))
-        *end = temp != static_cast<wchar_t *>(NULL) ? temp : strDigit;
+    if (end != nullptr)
+    {
+        *end = temp != nullptr ? temp : strDigit;
+    }
 
     return result;
 }
 
-float WideString::makeFloat(const wchar_t * strDigit, const wchar_t ** end /*= static_cast<const wchar_t **>(NULL)*/ )
+float WideString::makeFloat(const wchar_t * strDigit, const wchar_t ** end /*= nullptr*/ )
 {
-    wchar_t * temp = static_cast<wchar_t *>(NULL);
+    wchar_t * temp = nullptr;
     float result = static_cast<float>(NEString::isEmpty<wchar_t>(strDigit) == false ? wcstof(strDigit, &temp) : 0);
-    if (end != static_cast<const wchar_t **>(NULL))
-        *end = temp != static_cast<wchar_t *>(NULL) ? temp : strDigit;
+    if (end != nullptr)
+    {
+        *end = temp != nullptr ? temp : strDigit;
+    }
 
     return result;
 }
 
-double WideString::makeDouble(const wchar_t * strDigit, const wchar_t ** end /*= static_cast<const wchar_t **>(NULL)*/ )
+double WideString::makeDouble(const wchar_t * strDigit, const wchar_t ** end /*= nullptr*/ )
 {
-    wchar_t * temp = static_cast<wchar_t *>(NULL);
+    wchar_t * temp = nullptr;
     double result = static_cast<double>(NEString::isEmpty<wchar_t>(strDigit) == false ? wcstod(strDigit, &temp) : 0);
-    if (end != static_cast<const wchar_t **>(NULL))
-        *end = temp != static_cast<wchar_t *>(NULL) ? temp : strDigit;
+    if (end != nullptr)
+    {
+        *end = temp != nullptr ? temp : strDigit;
+    }
 
     return result;
 }
 
-bool WideString::makeBool( const wchar_t * strBoolean, const wchar_t ** end /*= static_cast<const wchar_t **>(NULL)*/ )
+bool WideString::makeBool( const wchar_t * strBoolean, const wchar_t ** end /*= nullptr*/ )
 {
     bool result = false;
     int lenSkip = 0;
-    int lenTrue = NEString::getStringLength<wchar_t>(BOOLEAN_TRUE);
-    int lenFalse= NEString::getStringLength<wchar_t>(BOOLEAN_FALSE);
-    if ( NEString::compareStrings<wchar_t, wchar_t>(strBoolean, BOOLEAN_TRUE, lenTrue, false ) == 0 )
+    int lenTrue = static_cast<int>(BOOLEAN_TRUE.length());
+    int lenFalse= static_cast<int>(BOOLEAN_FALSE.length());
+    if ( NEString::compareStrings<wchar_t, wchar_t>(strBoolean, BOOLEAN_TRUE.data(), lenTrue, false) == 0)
     {
         result = true;
         lenSkip= lenTrue;
     }
-    else if ( NEString::compareStrings<wchar_t, wchar_t>( strBoolean, BOOLEAN_FALSE, lenFalse, false ) == 0 )
+    else if ( NEString::compareStrings<wchar_t, wchar_t>(strBoolean, BOOLEAN_FALSE.data(), lenFalse, false) == 0)
     {
         result = false;
         lenSkip= lenFalse;
     }
 
-    if ( end != static_cast<const wchar_t **>(NULL) )
+    if ( end != nullptr )
+    {
         *end = (strBoolean + lenSkip);
+    }
 
     return result;
 }
@@ -443,26 +493,26 @@ WideString WideString::int32ToString(int32_t number, NEString::eRadix radix /*= 
 
     switch ( radix )
     {
-    case NEString::RadixBinary:
+    case NEString::eRadix::RadixBinary:
         _formatBinary<int32_t>( result, number );
         break;
 
-    case NEString::RadixOctal:
+    case NEString::eRadix::RadixOctal:
         if ( number < 0)
             _formatDigit<int32_t, 24>( result, L"-%0.11o", -1 * number );
         else
             _formatDigit<int32_t, 24>( result, L"%0.11o", number );
         break;
 
-    case NEString::RadixHexadecimal:
+    case NEString::eRadix::RadixHexadecimal:
         if ( number < 0 )
             _formatDigit<int32_t, 24>( result, L"-0x%.8X", -1 * number );
         else
             _formatDigit<int32_t, 24>( result, L"0x%.8X", number );
         break;
 
-    case NEString::RadixDecimal:    // fall through
-    case NEString::RadixAutomatic:  // fall through
+    case NEString::eRadix::RadixDecimal:    // fall through
+    case NEString::eRadix::RadixAutomatic:  // fall through
     default:
         _formatDigit<int32_t, 24>( result, L"%d", number );
         break;
@@ -476,20 +526,20 @@ WideString WideString::uint32ToString(uint32_t number, NEString::eRadix radix /*
 
     switch ( radix )
     {
-    case NEString::RadixBinary:
+    case NEString::eRadix::RadixBinary:
         _formatBinary<uint32_t>(result, number);
         break;
 
-    case NEString::RadixOctal:
+    case NEString::eRadix::RadixOctal:
         _formatDigit<uint32_t, 24>(result, L"%0.11o", number);
         break;
 
-    case NEString::RadixHexadecimal:
+    case NEString::eRadix::RadixHexadecimal:
         _formatDigit<uint32_t, 24>(result, L"0x%.8X", number);
         break;
 
-    case NEString::RadixDecimal:    // fall through
-    case NEString::RadixAutomatic:  // fall through
+    case NEString::eRadix::RadixDecimal:    // fall through
+    case NEString::eRadix::RadixAutomatic:  // fall through
     default:
         _formatDigit<uint32_t, 24>( result, L"%u", number );
         break;
@@ -503,26 +553,26 @@ WideString WideString::int64ToString(int64_t number, NEString::eRadix radix /*= 
 
     switch (radix)
     {
-    case NEString::RadixBinary:
+    case NEString::eRadix::RadixBinary:
         _formatBinary<int64_t>(result, number);
         break;
 
-    case NEString::RadixOctal:
+    case NEString::eRadix::RadixOctal:
         if (number < 0)
             _formatDigit<int64_t, 32>(result, L"-%0.22llo", -1 * number);
         else
             _formatDigit<int64_t, 32>(result, L"%0.22llo", number);
         break;
 
-    case NEString::RadixHexadecimal:
+    case NEString::eRadix::RadixHexadecimal:
         if (number < 0)
             _formatDigit<int64_t, 32>(result, L"-0x%.16llX", -1 * number);
         else
             _formatDigit<int64_t, 32>(result, L"0x%.16llX", number);
         break;
 
-    case NEString::RadixDecimal:    // fall through
-    case NEString::RadixAutomatic:  // fall through
+    case NEString::eRadix::RadixDecimal:    // fall through
+    case NEString::eRadix::RadixAutomatic:  // fall through
     default:
         _formatDigit<int64_t, 32>(result, L"%lld", number);
         break;
@@ -536,20 +586,20 @@ WideString WideString::uint64ToString(uint64_t number, NEString::eRadix radix /*
 
     switch ( radix )
     {
-    case NEString::RadixBinary:
+    case NEString::eRadix::RadixBinary:
         _formatBinary<uint64_t>( result, number );
         break;
 
-    case NEString::RadixOctal:
+    case NEString::eRadix::RadixOctal:
         _formatDigit<uint64_t, 32>( result, L"%.22llo", number );
         break;
 
-    case NEString::RadixHexadecimal:
+    case NEString::eRadix::RadixHexadecimal:
         _formatDigit<uint64_t, 32>( result, L"0x%.16llX", number );
         break;
 
-    case NEString::RadixDecimal:    // fall through
-    case NEString::RadixAutomatic:  // fall through
+    case NEString::eRadix::RadixDecimal:    // fall through
+    case NEString::eRadix::RadixAutomatic:  // fall through
     default:
         _formatDigit<uint64_t, 32>( result, L"%llu", number );
         break;
@@ -573,7 +623,8 @@ WideString WideString::doubleToString(double number)
 
 WideString WideString::boolToString( bool value )
 {
-    return WideString( value ? BOOLEAN_TRUE : BOOLEAN_FALSE );
+    return (value ? WideString(BOOLEAN_TRUE.data(),  static_cast<int>(BOOLEAN_TRUE.length() )) : 
+                    WideString(BOOLEAN_FALSE.data(), static_cast<int>(BOOLEAN_FALSE.length())) );
 }
 
 int WideString::formatString( wchar_t * strDst, int count, const wchar_t * format, ... )
@@ -605,7 +656,7 @@ const WideString & WideString::formatString(const wchar_t * format, ...)
 const WideString & WideString::formatList(const wchar_t * format, va_list argptr)
 {
     clear();
-    if (format != static_cast<const wchar_t *>(NULL))
+    if (format != nullptr)
     {
         if ( _formatStringList<_MIN_BUF_SIZE>( self( ), format, argptr ) < 0 )
         {

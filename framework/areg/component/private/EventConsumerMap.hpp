@@ -1,9 +1,16 @@
-#ifndef AREG_COMPONENT_PRIVATE_EVENTCONSUMERMAP_HPP
-#define AREG_COMPONENT_PRIVATE_EVENTCONSUMERMAP_HPP
+#pragma once
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/component/private/EventConsumerMap.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, Event Consumer Resources Object declaration.
  *              This Resource Map object contains information of Event Consumers
  *
@@ -13,14 +20,13 @@
  * Includes
  ************************************************************************/
 #include "areg/base/TERuntimeResourceMap.hpp"
-#include "areg/base/EContainers.hpp"
+#include "areg/base/Containers.hpp"
 #include "areg/base/TEResourceMap.hpp"
 
 /************************************************************************
  * Declared classes
  ************************************************************************/
 class EventConsumerList;
-class EventConsumerMap;
 
 /************************************************************************
  * Dependencies
@@ -38,7 +44,9 @@ class IEEventConsumer;
 //////////////////////////////////////////////////////////////////////////
 // EventConsumerList class declaration
 //////////////////////////////////////////////////////////////////////////
-typedef TEListImpl<IEEventConsumer *>       ImplEventConsumerList;
+using ImplEventConsumerList = TEListImpl<IEEventConsumer *>;
+using EventConsumerListBase	= TELinkedList<IEEventConsumer *, IEEventConsumer *, ImplEventConsumerList>;
+
 /**
  * \brief   Event Consumer List is a helper class containing 
  *          Event Consumer objects. It is used in Dispatcher, when 
@@ -46,7 +54,7 @@ typedef TEListImpl<IEEventConsumer *>       ImplEventConsumerList;
  *          to dispatch certain Event Object.
  *          For use, see implementation of EventDispatcherBase class
  **/
-class AREG_API EventConsumerList   : public TELinkedList<IEEventConsumer *, IEEventConsumer *, ImplEventConsumerList>
+class EventConsumerList   : public EventConsumerListBase
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -55,12 +63,17 @@ public:
     /**
      * \brief   Default Constructor. Initializes empty list
      **/
-    EventConsumerList( void );
+    EventConsumerList( void ) = default;
     /**
      * \brief   Copy constructor.
      * \param   src     The source of data to copy.
      **/
-    EventConsumerList(const EventConsumerList &src);
+    EventConsumerList(const EventConsumerList & src) = default;
+    /**
+     * \brief   Move constructor.
+     * \param   src     The source of data to move.
+     **/
+    EventConsumerList( EventConsumerList && src ) noexcept = default;
     /**
      * \brief   Destructor
      **/
@@ -74,7 +87,13 @@ public:
      * \brief   Assigns entries from given source.
      * \param   src     THe source of event consumer list.
      */
-    inline const EventConsumerList & operator = (const EventConsumerList & src );
+    inline EventConsumerList & operator = (const EventConsumerList & src ) = default;
+
+    /**
+     * \brief   Assigns entries from given source.
+     * \param   src     THe source of event consumer list.
+     */
+    inline EventConsumerList & operator = ( EventConsumerList && src ) noexcept = default;
 
     /**
      * \brief   Adds Event Consumer object to the list. Returns true, 
@@ -117,7 +136,7 @@ public:
 // EventConsumerMap class declaration
 //////////////////////////////////////////////////////////////////////////
 
-class AREG_API EventConsumerMapImpl   : public TEResourceMapImpl<RuntimeClassID, EventConsumerList>
+class ImplEventConsumerMap	: public TEResourceMapImpl<RuntimeClassID, EventConsumerList>
 {
 public:
     /**
@@ -135,29 +154,7 @@ public:
  *          It is used in Dispatcher, when a Consumer is registered for Event.
  *          For use, see implementation of EventDispatcherBase class
  **/
-class AREG_API EventConsumerMap    : public TELockRuntimeResourceMap<EventConsumerList, EventConsumerMapImpl>
-{
-//////////////////////////////////////////////////////////////////////////
-// Constructor / Destructor
-//////////////////////////////////////////////////////////////////////////
-public:
-    /**
-     * \brief   Default Constructor. Initializes empty map.
-     **/
-    EventConsumerMap( void );
-
-    /**
-     * \brief   Destructor
-     **/
-    virtual ~EventConsumerMap( void );
-
-//////////////////////////////////////////////////////////////////////////
-// Forbidden method calls.
-//////////////////////////////////////////////////////////////////////////
-private:
-    EventConsumerMap(const EventConsumerMap &);
-    const EventConsumerMap& operator = (const EventConsumerMap &);
-};
+using EventConsumerMap  = TELockRuntimeResourceMap<EventConsumerList, ImplEventConsumerMap>;
 
 //////////////////////////////////////////////////////////////////////////
 // Inline functions implementation
@@ -166,19 +163,7 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // EventConsumerList class inline functions
 //////////////////////////////////////////////////////////////////////////
-inline const EventConsumerList & EventConsumerList::operator = (const EventConsumerList & src )
-{
-    static_cast<TELinkedList<IEEventConsumer *, IEEventConsumer *, ImplEventConsumerList> &>(*this) = static_cast<const TELinkedList<IEEventConsumer *, IEEventConsumer *, ImplEventConsumerList> &>(src);
-    return (*this);
-}
-
 inline bool EventConsumerList::existConsumer( IEEventConsumer & whichConsumer ) const
 {
-    return (TELinkedList<IEEventConsumer *, IEEventConsumer *, ImplEventConsumerList>::find( &whichConsumer, NULL) != NULL);
+    return (EventConsumerListBase::find( &whichConsumer, nullptr) != nullptr);
 }
-
-//////////////////////////////////////////////////////////////////////////
-// EventConsumerMap class inline functions
-//////////////////////////////////////////////////////////////////////////
-
-#endif  // AREG_COMPONENT_PRIVATE_EVENTCONSUMERMAP_HPP

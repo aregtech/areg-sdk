@@ -1,70 +1,21 @@
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/base/private/ThreadLocalStorage.cpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, Thread Local Storage class.
  *              Should be initialized when thread starts running.
  *
  ************************************************************************/
 #include "areg/base/ThreadLocalStorage.hpp"
 #include "areg/base/Thread.hpp"
-
-//////////////////////////////////////////////////////////////////////////
-// ThreadLocalStorage::StorageItem class implementation
-//////////////////////////////////////////////////////////////////////////
-
-//////////////////////////////////////////////////////////////////////////
-// ThreadLocalStorage::StorageItem class constructors / destructor
-//////////////////////////////////////////////////////////////////////////
-ThreadLocalStorage::StorageItem::StorageItem( void )
-    : TEPair<String, NEMemory::uAlign, const String&, NEMemory::uAlign, ImplStorageItem>   ( )
-{
-    ; // do nothing
-}
-
-ThreadLocalStorage::StorageItem::StorageItem( const String & Key, NEMemory::uAlign Value )
-    : TEPair<String, NEMemory::uAlign, const String &, NEMemory::uAlign, ImplStorageItem> (Key, Value)
-{
-    ; // do nothing
-}
-
-ThreadLocalStorage::StorageItem::StorageItem( const ThreadLocalStorage::StorageItem & src )
-    : TEPair<String, NEMemory::uAlign, const String &, NEMemory::uAlign, ImplStorageItem> ( static_cast< const TEPair<String, NEMemory::uAlign, const String&, NEMemory::uAlign, ImplStorageItem> &>(src) )
-{
-    ; // do nothing
-}
-
-ThreadLocalStorage::StorageItem::~StorageItem( void )
-{
-    ; // do nothing
-}
-
-//////////////////////////////////////////////////////////////////////////
-// ThreadLocalStorage::StorageItem class operator
-//////////////////////////////////////////////////////////////////////////
-const ThreadLocalStorage::StorageItem & ThreadLocalStorage::StorageItem::operator = ( const ThreadLocalStorage::StorageItem & src )
-{
-    static_cast< TEPair<String, NEMemory::uAlign, const String &, NEMemory::uAlign, ImplStorageItem> &>(*this) = static_cast<const TEPair<String, NEMemory::uAlign, const String &, NEMemory::uAlign, ImplStorageItem> &>(src);
-    return (*this);
-}
-
-//////////////////////////////////////////////////////////////////////////
-// ThreadLocalStorage::StorageList class implementation
-//////////////////////////////////////////////////////////////////////////
-
-//////////////////////////////////////////////////////////////////////////
-// ThreadLocalStorage::StorageList class constructor / destructor
-//////////////////////////////////////////////////////////////////////////
-ThreadLocalStorage::StorageList::StorageList( void )
-    : TELinkedList<ThreadLocalStorage::StorageItem, const ThreadLocalStorage::StorageItem &, ImplStorageList>( )
-{
-    ; // do nothing
-}
-
-ThreadLocalStorage::StorageList::~StorageList( void )
-{
-    ; // do nothing
-}
 
 //////////////////////////////////////////////////////////////////////////
 // ThreadLocalStorage class implementation
@@ -77,7 +28,6 @@ ThreadLocalStorage::ThreadLocalStorage(Thread & owningThread)
     : mStorageList  ( )
     , mOwningThread (owningThread)
 {
-    ; // do nothing
 }
 
 ThreadLocalStorage::~ThreadLocalStorage( void )
@@ -93,7 +43,7 @@ NEMemory::uAlign ThreadLocalStorage::getStorageItem( const char * Key ) const
     NEMemory::uAlign result = NEMemory::InvalidElement;
 
     LISTPOS pos = mStorageList.firstPosition();
-    for ( ; pos != NULL; pos = mStorageList.nextPosition(pos))
+    for ( ; pos != nullptr; pos = mStorageList.nextPosition(pos))
     {
         if (mStorageList.getAt(pos).mKey == Key)
         {
@@ -142,7 +92,7 @@ NEMemory::uAlign ThreadLocalStorage::removeStoragteItem( const char * Key )
 {
     NEMemory::uAlign result = {0};
     LISTPOS pos = mStorageList.firstPosition();
-    for ( ; pos != NULL; pos = mStorageList.nextPosition(pos))
+    for ( ; pos != nullptr; pos = mStorageList.nextPosition(pos))
     {
         if (mStorageList.getAt(pos).mKey == Key)
         {
@@ -150,21 +100,23 @@ NEMemory::uAlign ThreadLocalStorage::removeStoragteItem( const char * Key )
             break;
         }
     }
+
     return result;
 }
 
 bool ThreadLocalStorage::existKey( const char* Key ) const
 {
     LISTPOS pos = mStorageList.firstPosition();
-    for ( ; pos != NULL; pos = mStorageList.nextPosition(pos))
+    for ( ; pos != nullptr; pos = mStorageList.nextPosition(pos))
     {
         if (mStorageList.getAt(pos).mKey == Key)
             break;
     }
-    return (pos != static_cast<LISTPOS>(NULL));
+
+    return (pos != nullptr);
 }
 
-const char* ThreadLocalStorage::getName( void ) const
+const String & ThreadLocalStorage::getName( void ) const
 {
-    return mOwningThread.getName().getString();
+    return mOwningThread.getName();
 }

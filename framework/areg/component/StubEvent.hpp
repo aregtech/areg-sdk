@@ -1,9 +1,16 @@
-#ifndef AREG_COMPONENT_STUBEVENT_HPP
-#define AREG_COMPONENT_STUBEVENT_HPP
+#pragma once
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/component/StubEvent.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, Component Event and 
  *              Component Event Consumer class.
  *              Component Event is a base class for all kind of Request and
@@ -57,16 +64,10 @@ class StubConnectEvent;
 // StubEvent class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief       Component Event class is a base class for all kind of
- *              Request events and events are processed on Stub / Server
- *              side.
- * 
- * \details     Component Events cannot be used for internal event.
- *              By default it is marked as Service Internal, which means
- *              that the communication is possible between 
- *              Service Interfaces internal within single application.
- *              No other communication mechanism currently supported.
- *
+ * \brief   StubEvent class is a base class for all kind of Request events
+ *          processed on Stub side. StubEvent cannot be used for internal event.
+ *          By default it is marked as Service Internal to communicate with
+ *          ServiceManager.
  **/
 class AREG_API StubEvent  : public StreamableEvent
 {
@@ -103,7 +104,7 @@ protected:
     /**
      * \brief   Destructor.
      **/
-    virtual ~StubEvent( void );
+    virtual ~StubEvent( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -114,9 +115,9 @@ public:
 /************************************************************************/
     /**
      * \brief   Sends the event to target thread. If target thread
-     *          is NULL, it searches event target thread, registered in system.
+     *          is nullptr, it searches event target thread, registered in system.
      **/
-    virtual void deliverEvent( void );
+    virtual void deliverEvent( void ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes
@@ -138,13 +139,13 @@ protected:
      * \brief   Initialize component address from reading stream
      * \param   stream  The reading stream to read out data
      **/
-    virtual const IEInStream & readStream( const IEInStream & stream );
+    virtual const IEInStream & readStream( const IEInStream & stream ) override;
 
     /**
      * \brief   Write component address to stream.
      * \param   stream  The writing stream to write in data
      **/
-    virtual IEOutStream & writeStream( IEOutStream & stream ) const;
+    virtual IEOutStream & writeStream( IEOutStream & stream ) const override;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -159,29 +160,19 @@ protected:
 // Forbidden calls.
 //////////////////////////////////////////////////////////////////////////
 private:
-    StubEvent( void );
-    StubEvent( const StubEvent & /*src*/ );
-    const StubEvent & operator = ( const StubEvent & /*src*/ );
+    StubEvent( void ) = delete;
+    DECLARE_NOCOPY_NOMOVE( StubEvent );
 };
 
 //////////////////////////////////////////////////////////////////////////
 // IEStubEventConsumer class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief       Stub / Server objects, are instances of IEStubEventConsumer
- *              to receive and process component events.
- * 
- * \details     When the dispatcher is dispatching events, it will look for
- *              registered consumer (in this case Stub / Server). All Server
- *              objects are automatically assigned for events, which runtime
- *              class ID is Component Event type. The dispatcher will
- *              forward component event to registered Server to start
- *              event processing. Depending on event message ID, either
- *              request, or attribute, or generic event processing
- *              function will be triggered. All Stub / Server objects
- *              should override processing functions to dispatch message
- *              ID and start processing request. 
- *
+ * \brief   All Stub (service provider) objects are instances of 
+ *          IEStubEventConsumer to receive and process component events.
+ *          IEStubEventConsumer is registered at component thread as a
+ *          consumer of Stub specific events. It is extended in StubBase
+ *          class, which is a base class for all Stub objects.
  **/
 class AREG_API IEStubEventConsumer  : public ThreadEventConsumerBase
 {
@@ -193,12 +184,12 @@ protected:
      * \brief   Default constructor
      * \param   stubAddress The address of stub object, which is handling consumer
      **/
-    IEStubEventConsumer( const StubAddress & stubAddress );
+    explicit IEStubEventConsumer( const StubAddress & stubAddress );
 
     /**
      * \brief   Destructor
      **/
-    virtual ~IEStubEventConsumer( void );
+    virtual ~IEStubEventConsumer( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides, event processing functions.
@@ -253,15 +244,14 @@ protected:
     virtual void processStubRegisteredEvent( const StubAddress & stubTarget, NEService::eServiceConnection connectionStatus ) = 0;
 
     /**
-     * \brief   This function is triggered when object is
-     *          adding listener and triggered by dispatcher
-     *          to indicate whether consumer registered or
-     *          not.
+     * \brief   This function is triggered when object is adding listener
+     *          and triggered by dispatcher to indicate whether consumer
+     *          registered or not.
      * \param isRegistered  On adding listener, this parameter
      *                      should be true. On removing -- false.
      *                      Otherwise there was an error adding listener.
      **/
-    virtual void consumerRegistered( bool isRegistered );
+    virtual void consumerRegistered( bool isRegistered ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
@@ -277,7 +267,7 @@ private:
      *          dispatcher.
      * \param   eventElem   Event object to start processing.
      **/
-    virtual void startEventProcessing( Event & eventElem );
+    virtual void startEventProcessing( Event & eventElem ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden operations
@@ -312,9 +302,8 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    IEStubEventConsumer( void );
-    IEStubEventConsumer( const IEStubEventConsumer & /*src*/ );
-    const IEStubEventConsumer & operator = ( const IEStubEventConsumer & /*src*/ );
+    IEStubEventConsumer( void ) = delete;
+    DECLARE_NOCOPY_NOMOVE( IEStubEventConsumer );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -329,5 +318,3 @@ inline const StubAddress & StubEvent::getTargetStub( void ) const
 {
     return mTargetStubAddress;
 }
-
-#endif  // AREG_COMPONENT_STUBEVENT_HPP

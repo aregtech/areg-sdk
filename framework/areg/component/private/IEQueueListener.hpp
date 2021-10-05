@@ -1,9 +1,16 @@
-#ifndef AREG_COMPONENT_PRIVATE_IEQUEUELISTENER_HPP
-#define AREG_COMPONENT_PRIVATE_IEQUEUELISTENER_HPP
+#pragma once
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/component/private/IEQueueListener.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, Event Queue Listener interface
  *              Implement class to react on signal method, which is triggered
  *              from event queue every time when new event is pushed in the
@@ -39,11 +46,11 @@ protected:
     /**
      * \brief   Protected default constructor.
      **/
-    IEQueueListener( void );
+    IEQueueListener( void ) = default;
     /**
      * \brief   Destructor.
      **/
-    virtual ~IEQueueListener( void );
+    virtual ~IEQueueListener( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Override operations.
@@ -66,8 +73,5 @@ public:
 // Hidden / Forbidden method calls.
 //////////////////////////////////////////////////////////////////////////
 private:
-    IEQueueListener(const IEQueueListener & /*src*/ );
-    const IEQueueListener & operator = (const IEQueueListener & /*src*/ );
+    DECLARE_NOCOPY_NOMOVE( IEQueueListener );
 };
-
-#endif  // AREG_COMPONENT_PRIVATE_IEQUEUELISTENER_HPP

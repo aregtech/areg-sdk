@@ -1,10 +1,16 @@
-#ifndef AREG_COMPONENT_PRIVATE_IEEVENTDISPATCHER_HPP
-#define AREG_COMPONENT_PRIVATE_IEEVENTDISPATCHER_HPP
-
+#pragma once
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/component/private/IEEventDispatcher.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, Event Dispatcher interface.
  *              The Event Dispatcher should implement these methods to
  *              start dispatching events.
@@ -46,12 +52,12 @@ protected:
      * \brief   Default constructor
      *          Protected, cannot be instantiated.
      **/
-    IEEventDispatcher( void );
+    IEEventDispatcher( void ) = default;
 
     /**
      * \brief   Destructor
      **/
-    virtual ~IEEventDispatcher( void );
+    virtual ~IEEventDispatcher( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Override operations.
@@ -155,8 +161,5 @@ protected:
 // Hidden / Forbidden method calls.
 //////////////////////////////////////////////////////////////////////////
 private:
-    IEEventDispatcher( const IEEventDispatcher & /*src*/ );
-    const IEEventDispatcher & operator = ( const IEEventDispatcher & /*src*/ );
+    DECLARE_NOCOPY_NOMOVE( IEEventDispatcher );
 };
-
-#endif  // AREG_COMPONENT_PRIVATE_IEEVENTDISPATCHER_HPP

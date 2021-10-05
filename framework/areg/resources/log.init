@@ -148,21 +148,15 @@
 log.version                 = 1.0.0
 log.enable                  = true
 # log.file                    = %appdata%/logs/trace_%time%.log
-log.file                    = ./logs/trace_%time%.log
+log.file                    = ./logs/%appname%_%time%.log
 log.append                  = false
 log.layout.enter            = %d: [ %t  %x.%z: Enter --> ]%n
 log.layout.message          = %d: [ %t  %p >>> ] %m%n
 log.layout.exit             = %d: [ %t  %x.%z: Exit <-- ]%n
-log.debug                   = true
+log.debug                   = false
 
 # log.enable.mcrouter       = true
 # log.file.mcrouter         = ./logs/%appname%_%time%.log
-
-# log.enable.register       = true
-# log.file.register         = ./logs/%appname%_%time%.log
-
-# log.enable.edge           = true
-# log.file.edge             = ./logs/%appname%_%time%.log
 
 connection.port.LastTest[mcrouter]  = localhost
 connection.host.LastTest[mcrouter]  = 8181
@@ -175,6 +169,3 @@ connection.port.LastTest[trace]     = 8080
 
 scope.mcrouter.*    = DEBUG | SCOPE ;
 scope.*				= DEBUG | SCOPE ;
-
-# scope.register.*    = DEBUG | SCOPE ;
-# scope.edge.*        = DEBUG | SCOPE ;

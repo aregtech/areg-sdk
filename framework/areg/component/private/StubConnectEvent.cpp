@@ -1,7 +1,15 @@
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/component/private/StubConnectEvent.cpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, Stub Connection event class declaration.
  *
  ************************************************************************/
@@ -13,29 +21,30 @@
 IMPLEMENT_RUNTIME_EVENT(StubConnectEvent, ServiceRequestEvent)
 
 StubConnectEvent::StubConnectEvent(const StubAddress & stubTarget, NEService::eServiceConnection connectStatus)
-    : ServiceRequestEvent   ( ProxyAddress::INVALID_PROXY_ADDRESS, stubTarget, NEService::SI_SERVICE_CONNECTION_NOTIFY, NEService::REQUEST_CONNECTION, Event::EventLocalStubConnect)
+    : ServiceRequestEvent   ( ProxyAddress::INVALID_PROXY_ADDRESS
+                            , stubTarget
+                            , static_cast<unsigned int>(NEService::eFuncIdRange::ServiceNotifyConnection)
+                            , NEService::eRequestType::ServiceConnection
+                            , Event::eEventType::EventLocalStubConnect)
     , mConnectionStatus     ( connectStatus )
 {
-    ; // do nothing
 }
 
 StubConnectEvent::StubConnectEvent(const ProxyAddress & proxyClient, const StubAddress & stubTarget, NEService::eServiceConnection connectStatus)
-    : ServiceRequestEvent   ( proxyClient, stubTarget, NEService::SI_SERVICE_CONNECTION_NOTIFY, NEService::REQUEST_CLIENT_CONNECTION, Event::EventLocalStubConnect)
+    : ServiceRequestEvent   ( proxyClient
+                            , stubTarget
+                            , static_cast<unsigned int>(NEService::eFuncIdRange::ServiceNotifyConnection)
+                            , NEService::eRequestType::ClientConnection
+                            , Event::eEventType::EventLocalStubConnect)
     , mConnectionStatus     ( connectStatus )
 {
-    ; // do nothing
 }
 
 StubConnectEvent::StubConnectEvent( const IEInStream & stream )
     : ServiceRequestEvent   ( stream )
-    ,  mConnectionStatus    ( NEService::ServiceConnectionUnknown )
+    ,  mConnectionStatus    ( NEService::eServiceConnection::ServiceConnectionUnknown )
 {
     stream >> mConnectionStatus;
-}
-
-StubConnectEvent::~StubConnectEvent(void)
-{
-    ; // do nothing
 }
 
 const IEInStream & StubConnectEvent::readStream(const IEInStream & stream)

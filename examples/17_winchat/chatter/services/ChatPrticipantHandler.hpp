@@ -5,7 +5,7 @@
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
 #include "areg/base/String.hpp"
-#include "areg/base/ESynchObjects.hpp"
+#include "areg/base/SynchObjects.hpp"
 #include "generated/NECommon.hpp"
 
 #include <windows.h>
@@ -117,7 +117,7 @@ private:
 
 inline bool ChatPrticipantHandler::IsValid( void ) const
 {
-    return (mWndChat != NULL) && (mConnectionService != NULL);
+    return (mWndChat != nullptr) && (mConnectionService != nullptr);
 }
 
 inline void ChatPrticipantHandler::SetConnectionData( const String & serviceName, const NECommon::sInitiator & initiator, const NECommon::ListParticipants & listParticipants )

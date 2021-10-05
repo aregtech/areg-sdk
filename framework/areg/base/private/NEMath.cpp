@@ -1,7 +1,15 @@
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/base/private/NEMath.cpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, Basic Math functionalities implementation.
  *              Functions in this namespace are global
  *
@@ -14,7 +22,7 @@
  * \brief   32-bit CRC (Cyclic Redundancy Check) lookup table (polynomial = 0x04C11DB7) with size 1024 bytes (256 x 4).
  *          CRC polynomial: X^32+X^26+X^23+X^22+X^16+X^12+X^11+X^10+X^8+X^7+X^5+X^4+X^2+X+1
  **/
-static const unsigned char _crc32LookupTable[] = {
+static constexpr unsigned char _crc32LookupTable[] = {
     0x00, 0x00, 0x00, 0x00, 0x96, 0x30, 0x07, 0x77, 
     0x2C, 0x61, 0x0E, 0xEE, 0xBA, 0x51, 0x09, 0x99, 
     0x19, 0xC4, 0x6D, 0x07, 0x8F, 0xF4, 0x6A, 0x70, 
@@ -145,13 +153,19 @@ static const unsigned char _crc32LookupTable[] = {
     0x1B, 0xDF, 0x05, 0x5A, 0x8D, 0xEF, 0x02, 0x2D, 
 };
 
-const NEMath::S_LargeInteger & NEMath::sLargeInteger::operator =  ( const NEMath::S_LargeInteger & src )
+NEMath::S_LargeInteger & NEMath::sLargeInteger::operator =  ( const NEMath::S_LargeInteger & src )
 {
-    if ( static_cast<const NEMath::sLargeInteger *>(this) != &src )
-    {
-        hiBits  = src.hiBits;
-        loBits  = src.loBits;
-    }
+    hiBits  = src.hiBits;
+    loBits  = src.loBits;
+
+    return (*this);
+}
+
+NEMath::S_LargeInteger & NEMath::sLargeInteger::operator =  ( NEMath::S_LargeInteger && src ) noexcept
+{
+    hiBits  = src.hiBits;
+    loBits  = src.loBits;
+
     return (*this);
 }
 
@@ -183,7 +197,7 @@ AREG_API unsigned int NEMath::crc32Calculate( const unsigned char* data, int siz
 AREG_API unsigned int NEMath::crc32Calculate( const char * strData )
 {
     unsigned int result = static_cast<unsigned int>(~0);   // initialize
-    if ( strData != NULL )
+    if ( strData != nullptr )
     {
         const unsigned int* crc32Tab = reinterpret_cast<const unsigned int *>(::_crc32LookupTable);   // get converted lookup table
         for ( ; *strData != static_cast<char>('\0'); ++ strData )
@@ -195,7 +209,7 @@ AREG_API unsigned int NEMath::crc32Calculate( const char * strData )
 AREG_API unsigned int NEMath::crc32Calculate( const wchar_t * strData )
 {
     unsigned int result = static_cast<unsigned int>(~0);   // initialize
-    if ( strData != NULL )
+    if ( strData != nullptr )
     {
         const unsigned int* crc32Tab = reinterpret_cast<const unsigned int *>(::_crc32LookupTable);   // get converted lookup table
         for ( ; *strData != static_cast<wchar_t>('\0'); ++ strData )
@@ -225,7 +239,7 @@ AREG_API unsigned int NEMath::crc32Init( void )
 AREG_API unsigned int NEMath::crc32Start( unsigned int crcInit, const unsigned char* data, int size )
 {
     unsigned int result = crcInit;
-    if ( data != NULL && size > 0)
+    if ( data != nullptr && size > 0)
     {
         const unsigned int* crc32Table = reinterpret_cast<const unsigned int *>(::_crc32LookupTable);  // get converted lookup table
         for ( ; size > 0; -- size, ++ data )
@@ -258,7 +272,7 @@ AREG_API unsigned int NEMath::crc32Start( unsigned int crcInit, const unsigned c
 AREG_API unsigned int NEMath::crc32Start(unsigned int crcInit, const char * data)
 {
     unsigned int result = crcInit;
-    if ( data != NULL && *data != '\0')
+    if ( data != nullptr && *data != '\0')
     {
         const unsigned int* crc32Table = reinterpret_cast<const unsigned int *>(::_crc32LookupTable);  // get converted lookup table
         for ( ; *data != '\0'; ++ data )

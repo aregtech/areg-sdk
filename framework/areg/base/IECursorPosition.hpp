@@ -1,12 +1,17 @@
-#ifndef AREG_BASE_IECURSORPOSITION_HPP
-#define AREG_BASE_IECURSORPOSITION_HPP
+#pragma once
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/base/IECursorPosition.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, Cursor Position interface.
- *              This is pure virtual class interface. It contains
- *              main Read / Write cursor position functionalities.
  *
  ************************************************************************/
 /************************************************************************
@@ -14,37 +19,31 @@
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
 
-/**
- * \brief       Pure virtual class. This is bases class to support
- *              cursor positioning during read / write operations.
- * 
- * \details     The class contains defined constants as cursor position.
- *              Also has defined functions such as getting and setting
- *              cursor position. Shared and Raw Buffer, File object
- *              and Ring Buffers have different logics of cursor 
- *              positioning. All of these classes either should
- *              provide individual logic or contain instance of object
- *              supporting read / write cursor positioning functions.
- *
- **/
-//////////////////////////////////////////////////////////////////////////
-// IECursorPosition class declaration
-//////////////////////////////////////////////////////////////////////////
+ //////////////////////////////////////////////////////////////////////////
+ // IECursorPosition class declaration
+ //////////////////////////////////////////////////////////////////////////
+ /**
+  * \brief   This is bases class to support cursor positioning when read / write.
+  *          The class contains defined constants as cursor position and basic operations
+  *          Shared and Raw Buffer, File object and Ring Buffers have different logics 
+  *          of cursor position, and they should provide on logic.
+  **/
 class AREG_API IECursorPosition
 {
 //////////////////////////////////////////////////////////////////////////
 // Defined constants and types
 //////////////////////////////////////////////////////////////////////////
 public:
+
     /**
      * \brief   IECursorPosition::eCursorPosition
      *          Cursor positions, required during moving cursor position back or forward
      **/
-    typedef enum E_CursorPosition
+    typedef enum class E_CursorPosition : int8_t
     {
-          POSITION_BEGIN    = 0 //!< Set cursor position relative to begging of streaming data
-        , POSITION_CURRENT      //!< Set cursor position relative to current position in streaming data
-        , POSITION_END          //!< Set cursor position relative to end of streaming data
+          PositionBegin     = 0 //!< Set cursor position relative to begging of streaming data
+        , PositionCurrent       //!< Set cursor position relative to current position in streaming data
+        , PositionEnd           //!< Set cursor position relative to end of streaming data
 
     } eCursorPosition;
 
@@ -52,13 +51,13 @@ public:
      * \brief   IECursorPosition::INVALID_CURSOR_POSITION
      *          Indicator of invalid position of cursor
      **/
-    static const unsigned int INVALID_CURSOR_POSITION      /*= static_cast<unsigned int>(INVALID_SET_FILE_POINTER)*/;
+    static constexpr unsigned int INVALID_CURSOR_POSITION   { static_cast<unsigned int>(~0) };
 
     /**
      * \brief   IECursorPosition::START_CURSOR_POSITION
      *          Indicator of cursor start position
      **/
-    static const unsigned int START_CURSOR_POSITION         /*= static_cast<unsigned int>(0)*/;
+    static constexpr unsigned int START_CURSOR_POSITION     { static_cast<unsigned int>(0) };
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / destructor
@@ -67,11 +66,11 @@ protected:
     /**
      * \brief   Protected constructor
      **/
-    IECursorPosition( void );
+    IECursorPosition( void ) = default;
     /**
      * \brief   Destructor
      **/
-    virtual ~IECursorPosition( void );
+    virtual ~IECursorPosition( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -95,9 +94,9 @@ public:
      *
      * \param	offset	The offset in bytes to move. Positive value means moving forward. Negative value means moving back.
      * \param	startAt	Specifies the starting position of pointer and should have one of values:
-     *                  IECursorPosition::POSITION_BEGIN   -- position from the beginning of data
-     *                  IECursorPosition::POSITION_CURRENT -- position from current pointer position
-     *                  IECursorPosition::POSITION_END     -- position from the end of file
+     *                  IECursorPosition::eCursorPosition::PositionBegin   -- position from the beginning of data
+     *                  IECursorPosition::eCursorPosition::PositionCurrent -- position from current pointer position
+     *                  IECursorPosition::eCursorPosition::PositionEnd     -- position from the end of file
      *
      * \return	If succeeds, returns the current position of pointer in bytes or value INVALID_CURSOR_POSITION if fails.
      **/
@@ -130,8 +129,7 @@ protected:
 // Hidden / Disabled methods
 //////////////////////////////////////////////////////////////////////////
 private:
-    IECursorPosition( const IECursorPosition & /*src*/ );
-    const IECursorPosition & operator = ( const IECursorPosition & /*src*/ );
+    DECLARE_NOCOPY_NOMOVE( IECursorPosition );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -145,12 +143,10 @@ inline bool IECursorPosition::isPositionValid( void ) const
 
 inline bool IECursorPosition::moveToBegin( void ) const
 {
-    return (setPosition(0, IECursorPosition::POSITION_BEGIN) != IECursorPosition::INVALID_CURSOR_POSITION);
+    return (setPosition(0, IECursorPosition::eCursorPosition::PositionBegin) != IECursorPosition::INVALID_CURSOR_POSITION);
 }
 
 inline bool IECursorPosition::moveToEnd( void ) const
 {
-    return (setPosition(0, IECursorPosition::POSITION_END)   != IECursorPosition::INVALID_CURSOR_POSITION);
+    return (setPosition(0, IECursorPosition::eCursorPosition::PositionEnd)   != IECursorPosition::INVALID_CURSOR_POSITION);
 }
-
-#endif  // AREG_BASE_IECURSORPOSITION_HPP

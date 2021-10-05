@@ -1,7 +1,15 @@
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/component/private/EventDispatcherBase.cpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, Event Dispatcher Base class
  *
  ************************************************************************/
@@ -22,7 +30,7 @@ EventDispatcherBase::EventDispatcherBase(const char* name )
     : IEEventDispatcher( )
     , IEQueueListener  ( )
 
-    , mDispatcherName   ( name != NULL ? name : "" )
+    , mDispatcherName   ( name != nullptr ? name : "" )
     , mExternaEvents    ( static_cast<IEQueueListener &>(self()) )
     , mInternalEvents   ( )
     , mConsumerMap      ( )
@@ -88,9 +96,9 @@ bool EventDispatcherBase::queueEvent( Event& eventElem )
     {
         result = true;
         Event::eEventType eventType = eventElem.getEventType();
-        if ( (eventType & Event::EventInternal) != 0 )
+        if ( Event::isInternal(eventType) )
             mInternalEvents.pushEvent(eventElem);
-        else if ( (eventType & Event::EventExternal) != 0 )
+        else if ( Event::isExternal(eventType) )
             mExternaEvents.pushEvent(eventElem);
         else
             result = false;
@@ -110,11 +118,11 @@ bool EventDispatcherBase::registerEventConsumer( const RuntimeClassID& whichClas
                 , isReady() ? "Ready" : "Not ready");
 
     EventConsumerList* listConsumers = mConsumerMap.findResourceObject(whichClass);
-    if (listConsumers == NULL)
+    if (listConsumers == nullptr)
     {
         OUTPUT_DBG("[ %s ] dispatcher: Did not find consumer list for event [ %s ], creating new", mDispatcherName.getString(), whichClass.getName());
         listConsumers   = DEBUG_NEW EventConsumerList();
-        if (listConsumers != NULL)
+        if (listConsumers != nullptr)
             mConsumerMap.registerResourceObject(whichClass, listConsumers);
     }
     else
@@ -122,7 +130,7 @@ bool EventDispatcherBase::registerEventConsumer( const RuntimeClassID& whichClas
         OUTPUT_DBG("[ %s ] dispatcher: Fount consumer list for event [ %s ]", mDispatcherName.getString(), whichClass.getName());
     }
 
-    if ( listConsumers != NULL && listConsumers->existConsumer(whichConsumer) == false )
+    if ( listConsumers != nullptr && listConsumers->existConsumer(whichConsumer) == false )
     {
         OUTPUT_DBG("[ %s ] dispatcher: Add new consumer. There are [ %d ] registered consumers for event [ %s ]. There are [ %d ] Consumer Lists in map", mDispatcherName.getString(), listConsumers->getSize(), whichClass.getName(), mConsumerMap.getSize());
         result = listConsumers->addConsumer(whichConsumer);
@@ -143,7 +151,7 @@ bool EventDispatcherBase::unregisterEventConsumer( const RuntimeClassID & whichC
                 , whichClass.getName());
 
     EventConsumerList* listConsumers = mConsumerMap.findResourceObject(whichClass);
-    if (listConsumers != NULL)
+    if (listConsumers != nullptr)
     {
         OUTPUT_DBG("[ %s ] dispatcher: Found Consumer List for event class [ %s ], going to remove consumer. Number of consumers in list [ %d ]", mDispatcherName.getString(), whichClass.getName(), listConsumers->getSize());
         result = listConsumers->removeConsumer(whichConsumer);
@@ -179,10 +187,10 @@ int EventDispatcherBase::removeConsumer( IEEventConsumer & whichConsumer )
     int result = 0;
     TELinkedList<RuntimeClassID, const RuntimeClassID &> removedList;
     RuntimeClassID     Key(RuntimeClassID::createEmptyClassID());
-    EventConsumerList* Value = NULL;
+    EventConsumerList* Value = nullptr;
 
     Value = mConsumerMap.resourceFirstKey(Key);
-    while (Value != NULL)
+    while (Value != nullptr)
     {
         OUTPUT_DBG("[ %s ] dispatcher: Found registered event entry [ %s ] for consumer [ %p ]", mDispatcherName.getString(), Key.getName(), static_cast<void *>(&whichConsumer));
         ASSERT(Value->isEmpty() == false);
@@ -202,9 +210,9 @@ int EventDispatcherBase::removeConsumer( IEEventConsumer & whichConsumer )
     {
         Key     = removedList.removeLast();
         Value   = mConsumerMap.unregisterResourceObject(Key);
-        ASSERT(Value != NULL);
+        ASSERT(Value != nullptr);
         delete Value;
-        Value = NULL;
+        Value = nullptr;
 
         OUTPUT_WARN("[ %s ] dispatcher: Unregistered and deleted Consumer List of event entry [ %s ]. There are still [ %d ] Consumer Lists in map", mDispatcherName.getString(), Key.getName(), mConsumerMap.getSize());
     }
@@ -218,22 +226,22 @@ bool EventDispatcherBase::runDispatcher( void )
     IESynchObject* syncObjects[2] = {&mEventExit, &mEventQueue};
     MultiLock multiLock(syncObjects, 2, false);
 
-    int whichEvent  = static_cast<int>(EVENT_ERROR);
+    int whichEvent  = static_cast<int>(EventDispatcherBase::eEventOrder::EventError);
     const ExitEvent& exitEvent = ExitEvent::getExitEvent();
 
     readyForEvents(true);
 
     do 
     {
-        whichEvent = multiLock.lock(IESynchObject::WAIT_INFINITE, false);
-        Event* eventElem = whichEvent == static_cast<int>(EVENT_QUEUE) ? pickEvent() : NULL;
+        whichEvent = multiLock.lock(NECommon::WAIT_INFINITE, false);
+        Event* eventElem = whichEvent == static_cast<int>(EventDispatcherBase::eEventOrder::EventQueue) ? pickEvent() : nullptr;
         if ( static_cast<const Event *>(eventElem) != static_cast<const Event *>(&exitEvent) )
         {
-            if ( whichEvent == static_cast<int>(EVENT_QUEUE) )
+            if ( whichEvent == static_cast<int>(EventDispatcherBase::eEventOrder::EventQueue) )
             {
-                if (eventElem == NULL)
+                if (eventElem == nullptr)
                 {
-                    OUTPUT_WARN("The event object is NULL. Ignoring and waiting for lock.");
+                    OUTPUT_WARN("The event object is nullptr. Ignoring and waiting for lock.");
                     continue;
                 }
 
@@ -251,12 +259,14 @@ bool EventDispatcherBase::runDispatcher( void )
                     // needed for notifications. For example in case of Proxy.
                     // But before popping internal event from stack, check whether
                     // there is no request to exit thread.
-                    eventElem = NULL;
-                    int eventLock = multiLock.lock(IESynchObject::DO_NOT_WAIT);
-                    if ( eventLock == MultiLock::LOCK_INDEX_TIMEOUT ||  eventLock == static_cast<int>(EVENT_QUEUE) )
-                        eventElem = static_cast<EventQueue &>(mInternalEvents).isEmpty() == false ? mInternalEvents.popEvent() : NULL;
+                    eventElem = nullptr;
+                    int eventLock = multiLock.lock(NECommon::DO_NOT_WAIT);
+                    if ( eventLock == MultiLock::LOCK_INDEX_TIMEOUT ||  eventLock == static_cast<int>(EventDispatcherBase::eEventOrder::EventQueue) )
+                    {
+                        eventElem = static_cast<EventQueue &>(mInternalEvents).isEmpty() == false ? mInternalEvents.popEvent() : nullptr;
+                    }
 
-                } while (eventElem != NULL);
+                } while (eventElem != nullptr);
             }
             else
             {
@@ -265,10 +275,10 @@ bool EventDispatcherBase::runDispatcher( void )
         }
         else
         {
-            whichEvent = static_cast<int>(EVENT_EXIT);
+            whichEvent = static_cast<int>(EventDispatcherBase::eEventOrder::EventExit);
             OUTPUT_WARN("Received exit event. Going to exit [ %s ] dispatcher", static_cast<const char *>(mDispatcherName.getString()));
         }
-    } while (whichEvent == static_cast<int>(EVENT_QUEUE));
+    } while (whichEvent == static_cast<int>(EventDispatcherBase::eEventOrder::EventQueue));
 
     readyForEvents(false);
     mHasStarted = false;
@@ -277,7 +287,7 @@ bool EventDispatcherBase::runDispatcher( void )
 
     OUTPUT_WARN("The Dispatcher [ %s ] completed job and stopping running.", mDispatcherName.getString());
 
-    return (whichEvent == static_cast<int>(EVENT_EXIT));
+    return (whichEvent == static_cast<int>(EventDispatcherBase::eEventOrder::EventExit));
 }
 
 void EventDispatcherBase::readyForEvents( bool /* isReady */ )
@@ -290,12 +300,12 @@ Event* EventDispatcherBase::pickEvent( void )
 }
 bool EventDispatcherBase::prepareDispatchEvent( Event* eventElem )
 {
-    return (eventElem != NULL);
+    return (eventElem != nullptr);
 }
 
 void EventDispatcherBase::postDispatchEvent( Event* eventElem )
 {
-    if (eventElem != NULL)
+    if (eventElem != nullptr)
         eventElem->destroy();
 }
 
@@ -303,7 +313,7 @@ bool EventDispatcherBase::dispatchEvent( Event& eventElem )
 {
     EventConsumerList processingList;
     IEEventConsumer* consumer = eventElem.getEventConsumer();
-    if ( consumer != NULL)
+    if ( consumer != nullptr)
     {
         processingList.pushFirst(consumer);
     }
@@ -313,7 +323,7 @@ bool EventDispatcherBase::dispatchEvent( Event& eventElem )
         mConsumerMap.lock();
 
         EventConsumerList* listConsumers = mConsumerMap.findResourceObject(eventElem.getRuntimeClassId());
-        if (listConsumers != NULL)
+        if (listConsumers != nullptr)
             processingList = *listConsumers;
 
         // Unlock resource as soon as possible. Otherwise we may block other threads
@@ -322,11 +332,11 @@ bool EventDispatcherBase::dispatchEvent( Event& eventElem )
     }
 
     LISTPOS pos = processingList.firstPosition();
-    while (pos != NULL)
+    while (pos != nullptr)
     {
         consumer = processingList.getNext(pos);
         eventElem.dispatchSelf(consumer);
-        consumer = NULL;
+        consumer = nullptr;
     }
 
     return (processingList.isEmpty() == false);

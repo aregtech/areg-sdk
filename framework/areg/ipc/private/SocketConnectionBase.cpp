@@ -1,7 +1,15 @@
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/ipc/private/SocketConnectionBase.cpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform Connection base class declaration.
  ************************************************************************/
 
@@ -11,40 +19,31 @@
 #include "areg/base/NEMemory.hpp"
 
 #include "areg/trace/GETrace.h"
+
 DEF_TRACE_SCOPE(areg_ipc_SocketConnectionBase_sendMessage);
 DEF_TRACE_SCOPE(areg_ipc_SocketConnectionBase_receiveMessage);
-
-SocketConnectionBase::SocketConnectionBase( void )
-{
-    ; // do nothing
-}
-
-SocketConnectionBase::~SocketConnectionBase( void )
-{
-
-}
 
 int SocketConnectionBase::sendMessage(const RemoteMessage & in_message, const Socket & clientSocket) const
 {
     TRACE_SCOPE(areg_ipc_SocketConnectionBase_sendMessage);
 
     int result = -1;
-    const NEMemory::sRemoteMessageHeader & buffer = reinterpret_cast<const NEMemory::sRemoteMessageHeader &>( in_message.getByteBuffer() );
-
-    TRACE_DBG("Sending message with ID [ %p ] from source [ %p ] to target [ %p ] via client socket [ %u ] to address [ %s : %d ]. Buffer length [ %u ], used data [ %u ], data lengt [ %u ], checksum [ %u ]"
-                    , static_cast<id_type>(in_message.getMessageId())
-                    , static_cast<id_type>(in_message.getSource())
-                    , static_cast<id_type>(in_message.getTarget())
-                    , static_cast<unsigned int>(clientSocket.getHandle())
-                    , clientSocket.getAddress().getHostAddress().getString()
-                    , clientSocket.getAddress().getHostPort()
-                    , buffer.rbhBufHeader.biBufSize
-                    , buffer.rbhBufHeader.biUsed
-                    , buffer.rbhBufHeader.biLength
-                    , buffer.rbhChecksum);
-
-    if ( clientSocket.isValid() )
+    if ( in_message.isValid() && clientSocket.isValid() )
     {
+        const NEMemory::sRemoteMessageHeader & buffer = reinterpret_cast<const NEMemory::sRemoteMessageHeader &>( *in_message.getByteBuffer() );
+
+        TRACE_DBG("Sending message with ID [ %p ] from source [ %p ] to target [ %p ] via client socket [ %u ] to address [ %s : %d ]. Buffer length [ %u ], used data [ %u ], data lengt [ %u ], checksum [ %u ]"
+                        , static_cast<id_type>(in_message.getMessageId())
+                        , static_cast<id_type>(in_message.getSource())
+                        , static_cast<id_type>(in_message.getTarget())
+                        , static_cast<unsigned int>(clientSocket.getHandle())
+                        , clientSocket.getAddress().getHostAddress().getString()
+                        , clientSocket.getAddress().getHostPort()
+                        , buffer.rbhBufHeader.biBufSize
+                        , buffer.rbhBufHeader.biUsed
+                        , buffer.rbhBufHeader.biLength
+                        , buffer.rbhChecksum);
+
         TRACE_DBG("Sending message [ %p ] of [ %d ] bytes of header data, follow data is [ ] bytes."
                             , in_message.getMessageId()
                             , sizeof(NEMemory::sRemoteMessageHeader)
@@ -59,6 +58,10 @@ int SocketConnectionBase::sendMessage(const RemoteMessage & in_message, const So
         }
 
         TRACE_DBG("Sent [ %d ] bytes of data. The remote buffer size is [ %u ], checksum [ %u ]", result, buffer.rbhBufHeader.biBufSize, buffer.rbhChecksum);
+    }
+    else
+    {
+        TRACE_ERR("Either socket is invalid or the remote buffer to send");
     }
 
     return result;
@@ -89,9 +92,8 @@ int SocketConnectionBase::receiveMessage(RemoteMessage & out_message, const Sock
 
             result = sizeof(NEMemory::sRemoteMessageHeader);
             unsigned char * buffer = out_message.initMessage( msgHeader );
-            if ( buffer != NULL && msgHeader.rbhBufHeader.biUsed > 0)
+            if ( (buffer != nullptr) && (msgHeader.rbhBufHeader.biUsed > 0))
             {
-                ASSERT(msgHeader.rbhBufHeader.biLength <= out_message.getSizeAvailable());
                 ASSERT(msgHeader.rbhBufHeader.biLength >= msgHeader.rbhBufHeader.biUsed);
 
                 // receive aligned length of data.

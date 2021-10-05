@@ -1,10 +1,16 @@
-#ifndef AREG_IPC_PRIVATE_CLIENTCONNECTION_HPP
-#define AREG_IPC_PRIVATE_CLIENTCONNECTION_HPP
-
+#pragma once
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/ipc/private/ClientConnection.hpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform Client Connection class declaration
  ************************************************************************/
 
@@ -43,9 +49,9 @@ public:
      * \brief   Creates instance of object with invalid socket object. Before sending
      *          or receiving data, the socket should be created and connected to remote host.
      *          When instantiated, it resolves host name and port number. If succeeded to resolve,
-     *          it sets resolved IP-address and port number as socket address. If passed hostName is NULL,
+     *          it sets resolved IP-address and port number as socket address. If passed hostName is nullptr,
      *          it resolve connection for localhost.
-     * \param   hostName    Host name or IP-address of remote server to connect. If NULL, the connection
+     * \param   hostName    Host name or IP-address of remote server to connect. If nullptr, the connection
      *                      is setup for localhost.
      * \param   portNr      Port number of remote server to connect, should not be invalid port.
      **/
@@ -57,7 +63,7 @@ public:
      *          Specified remoteAddress is a remote server address to connect.
      * \param   remoteAddress   Address of remote host to connect.
      **/
-    ClientConnection( const NESocket::InterlockedValue & remoteAddress );
+    ClientConnection( const NESocket::SocketAddress & remoteAddress );
 
     /**
      * \brief   Destructor.
@@ -86,7 +92,7 @@ public:
     /**
      * \brief   Return Socket Address object.
      **/
-    const NESocket::InterlockedValue & getAddress( void ) const;
+    const NESocket::SocketAddress & getAddress( void ) const;
 
     /**
      * \brief   Sets Socket Address. If hostName is not IP-address, it will 
@@ -106,7 +112,7 @@ public:
      *          or already resolved with IP-address.
      * \param   newAddress  The new address to set.
      **/
-    void setAddress( const NESocket::InterlockedValue & newAddress );
+    void setAddress( const NESocket::SocketAddress & newAddress );
 
     /**
      * \brief   Returns true if existing socket descriptor is valid.
@@ -225,19 +231,18 @@ private:
     /**
      * \brief   The client connection socket
      **/
-    SocketClient  mClientSocket;
+    SocketClient    mClientSocket;
 
     /**
      * \brief   Client connection cookie
      **/
-    ITEM_ID     mCookie;
+    ITEM_ID         mCookie;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    ClientConnection( const ClientConnection & /*src*/ );
-    const ClientConnection & operator = ( const ClientConnection & /*src*/ );
+    DECLARE_NOCOPY_NOMOVE( ClientConnection );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -259,12 +264,12 @@ inline void ClientConnection::setCookie( ITEM_ID newCookie )
     mCookie = newCookie;
 }
 
-inline const NESocket::InterlockedValue & ClientConnection::getAddress( void ) const
+inline const NESocket::SocketAddress & ClientConnection::getAddress( void ) const
 {
     return mClientSocket.getAddress();
 }
 
-inline void ClientConnection::setAddress( const NESocket::InterlockedValue & newAddress )
+inline void ClientConnection::setAddress( const NESocket::SocketAddress & newAddress )
 {
     mClientSocket.setAddress(newAddress);
 }
@@ -298,5 +303,3 @@ inline int ClientConnection::receiveMessage(RemoteMessage & out_message) const
 {
     return SocketConnectionBase::receiveMessage(out_message, mClientSocket);
 }
-
-#endif  // AREG_IPC_PRIVATE_CLIENTCONNECTION_HPP

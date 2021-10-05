@@ -1,9 +1,16 @@
-#ifndef AREG_COMPONENT_CHANNEL_HPP
-#define AREG_COMPONENT_CHANNEL_HPP
+#pragma once
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/component/Channel.hpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, channel object. Responsible to deliver
  *              events to target. The Target object is either in the same
  *              process or in the remote PC.
@@ -35,13 +42,6 @@ public:
      **/
     static const Channel    INVALID_CHANNEL;                //!< Invalid channel
 
-private:
-    /**
-     * \brief   Channel::_CHANNEL_SEPARATOR
-     *          Channel separator character. Used to create string out of channel data.
-     **/
-    static const char       _CHANNEL_SEPARATOR  /*= '.'*/;  //!< Channel data separator symbol
-
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
@@ -58,7 +58,7 @@ public:
      * \param   target  The channel communication target ID set by system.
      * \param   cookie  The ID assigned by system.
      **/
-    Channel( ITEM_ID source, ITEM_ID target = NEService::TARGET_UNKNOWN, ITEM_ID cookie = NEService::COOKIE_UNKNOWN );
+    explicit Channel( ITEM_ID source, ITEM_ID target = NEService::TARGET_UNKNOWN, ITEM_ID cookie = NEService::COOKIE_UNKNOWN );
 
     /**
      * \brief   Copy constructor.
@@ -67,9 +67,15 @@ public:
     Channel( const Channel & source );
 
     /**
+     * \brief   Move constructor.
+     * \param   source  The source of data to move.
+     **/
+    Channel( Channel && source ) noexcept;
+
+    /**
      * \brief   Destructor
      **/
-    ~Channel( void );
+    ~Channel( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
@@ -79,7 +85,13 @@ public:
      * \brief   Copies channel data from given source
      * \param   source  The source of data to copy.
      **/
-    const Channel & operator = ( const Channel & source );
+    Channel & operator = ( const Channel & source );
+
+    /**
+     * \brief   Moves channel data from given source
+     * \param   source  The source of data to move.
+     **/
+    Channel & operator = ( Channel && source ) noexcept;
 
     /**
      * \brief   Checks equality of 2 channels and returns true if they are equal.
@@ -98,7 +110,7 @@ public:
     /**
      * \brief   Converts channel object to 32-bit unsigned integer value.
      **/
-    inline operator ITEM_ID ( void ) const;
+    inline explicit operator ITEM_ID ( void ) const;
 
 /************************************************************************/
 // Friend global operators for streaming
@@ -178,6 +190,7 @@ public:
      **/
     const Channel & convFromString( const char * channel );
 
+
 //////////////////////////////////////////////////////////////////////////
 // Hidden members
 //////////////////////////////////////////////////////////////////////////
@@ -256,5 +269,3 @@ inline void Channel::invalidate( void )
     mTarget = NEService::TARGET_UNKNOWN;
     mCookie = NEService::COOKIE_UNKNOWN;
 }
-
-#endif  // AREG_COMPONENT_CHANNEL_HPP

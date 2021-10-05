@@ -1,10 +1,16 @@
-#ifndef MCROUTER_TCP_PRIVATE_LISTSERVICEPROXIES_HPP
-#define MCROUTER_TCP_PRIVATE_LISTSERVICEPROXIES_HPP
-
+#pragma once
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        mcrouter/tcp/private/ListServiceProxies.hpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform Proxy Service object, list of proxies
  ************************************************************************/
 
@@ -20,13 +26,14 @@
  ************************************************************************/
 class ServiceStub;
 
+using ListServiceProxiesBase = TELinkedList<ServiceProxy, const ServiceProxy &>;
 //////////////////////////////////////////////////////////////////////////
 // ListServiceProxies class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
  * \brief   The list of remote service proxies registered in network.
  **/
-class ListServiceProxies  : public TELinkedList<ServiceProxy, const ServiceProxy &>
+class ListServiceProxies  : public ListServiceProxiesBase
 {
 //////////////////////////////////////////////////////////////////////////
 // The internal constants and types
@@ -44,18 +51,24 @@ public:
     /**
      * \brief   Default constructor. Creates empty proxy list
      **/
-    ListServiceProxies( void );
+    ListServiceProxies( void ) = default;
 
     /**
      * \brief   Copies the list of proxies from the given source.
      * \param   source  The source of proxy list to copy
      **/
-    ListServiceProxies( const ListServiceProxies & source );
+    ListServiceProxies( const ListServiceProxies & source ) = default;
+
+    /**
+     * \brief   Moves the list of proxies from the given source.
+     * \param   source  The source of proxy list to move.
+     **/
+    ListServiceProxies( ListServiceProxies && source ) noexcept = default;
 
     /**
      * \brief   Destructor
      **/
-    ~ListServiceProxies( void );
+    ~ListServiceProxies( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operators, operations and attributes
@@ -65,7 +78,13 @@ public:
      * \brief   Empties existing list and copies all entries from given source.
      * \param   source  The source of proxy list to copy
      **/
-    const ListServiceProxies & operator = ( const ListServiceProxies & source );
+    ListServiceProxies & operator = ( const ListServiceProxies & source ) = default;
+
+    /**
+     * \brief   Empties existing list and moves all entries from given source.
+     * \param   source  The source of proxy list to move.
+     **/
+    ListServiceProxies & operator = ( ListServiceProxies && source ) noexcept = default;
 
     /**
      * \brief   Returns true if specified proxy is already registered in the list.
@@ -80,7 +99,7 @@ public:
     const ServiceProxy & getService( const ProxyAddress & addrProxy ) const;
     
     /**
-     * \brief   Returns existing service proxy entry. Returns NULL, if specified proxy address
+     * \brief   Returns existing service proxy entry. Returns nullptr, if specified proxy address
      *          is not registered.
      **/
     ServiceProxy * getService( const ProxyAddress & addrProxy );
@@ -165,7 +184,7 @@ private:
      * \brief   Search in list the service proxy entry, which proxy is equal to 
      *          given proxy address.
      * \param   addrProxy   Address of proxy to search
-     * \return  Returns valid position value if entry found. Otherwise, returns NULL.
+     * \return  Returns valid position value if entry found. Otherwise, returns nullptr.
      **/
     LISTPOS _findProxy( const ProxyAddress & addrProxy ) const;
 };
@@ -176,7 +195,5 @@ private:
 
 inline bool ListServiceProxies::isServiceRegistered( const ProxyAddress & addrProxy ) const
 {
-    return ( _findProxy(addrProxy) != NULL );
+    return ( _findProxy(addrProxy) != nullptr );
 }
-
-#endif  // MCROUTER_TCP_PRIVATE_LISTSERVICEPROXIES_HPP

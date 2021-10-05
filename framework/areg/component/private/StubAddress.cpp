@@ -1,7 +1,15 @@
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/component/private/StubAddress.cpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, Stub Address implementation.
  *
  ************************************************************************/
@@ -14,6 +22,26 @@
 #include "areg/base/IEIOStream.hpp"
 #include "areg/base/NEUtilities.hpp"
 
+#include <string_view>
+
+namespace
+{
+/************************************************************************/
+// Hidden constants
+/************************************************************************/
+
+    /**
+     * \brief   The invalid service interface name (invalid stub name)
+     *          None of service interfaces should contain this name.
+     **/
+    constexpr std::string_view  INVALID_STUB_NAME   { "INVALID_STUB" };
+
+    /**
+     * \brief   Extension to add to Stub path.
+     **/
+    constexpr std::string_view  EXTENTION_STUB      { "stub" };
+}
+
 //////////////////////////////////////////////////////////////////////////
 // ProxyAddress class implementation
 //////////////////////////////////////////////////////////////////////////
@@ -21,14 +49,6 @@
 //////////////////////////////////////////////////////////////////////////
 // Predefined constants and statics
 //////////////////////////////////////////////////////////////////////////
-/**
- * \brief   The invalid service interface name (invalid stub name). None of service interfaces should contain this name.
- **/
-const char * const  StubAddress::INVALID_STUB_NAME    = "INVALID_STUB";
-/**
- * \brief   Extension to add to Stub path.
- **/
-const char * const  StubAddress::EXTENTION_STUB       = "stub";
 /**
  * \brief   Predefined Invalid Stub address.
  **/
@@ -42,7 +62,7 @@ String StubAddress::convAddressToPath( const StubAddress & stubAddress )
     return stubAddress.convToString();
 }
 
-StubAddress StubAddress::convPathToAddress( const char* pathStub, const char** out_nextPart /*= NULL*/ )
+StubAddress StubAddress::convPathToAddress( const char* pathStub, const char** out_nextPart /*= nullptr*/ )
 {
     StubAddress result(StubAddress::INVALID_STUB_ADDRESS);
     result.convFromString(pathStub, out_nextPart);
@@ -53,19 +73,18 @@ StubAddress StubAddress::convPathToAddress( const char* pathStub, const char** o
 // Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
 StubAddress::StubAddress( void )
-    : ServiceAddress( ServiceItem(), StubAddress::INVALID_STUB_NAME )
+    : ServiceAddress( ServiceItem(), INVALID_STUB_NAME.data() )
     , mThreadName   ( ThreadAddress::INVALID_THREAD_ADDRESS.getThreadName() )
     , mChannel      ( )
     , mMagicNum     ( NEMath::CHECKSUM_IGNORE )
 {
-    ; // do nothing
 }
 
 StubAddress::StubAddress( const char * serviceName
                         , const Version & serviceVersion
                         , NEService::eServiceType serviceType
                         , const char * roleName
-                        , const char * threadName   /*= NULL*/ )
+                        , const char * threadName   /*= nullptr*/ )
     : ServiceAddress( serviceName, serviceVersion, serviceType, roleName )
     , mThreadName   ( threadName )
     , mChannel      ( )
@@ -78,7 +97,7 @@ StubAddress::StubAddress( const char * serviceName
     mMagicNum = StubAddress::_magicNumber(*this);
 }
 
-StubAddress::StubAddress(const ServiceItem & service, const char * roleName, const char * threadName /*= NULL */)
+StubAddress::StubAddress(const ServiceItem & service, const char * roleName, const char * threadName /*= nullptr */)
     : ServiceAddress( service, roleName )
     , mThreadName   ( threadName )
     , mChannel      ( )
@@ -91,9 +110,9 @@ StubAddress::StubAddress(const ServiceItem & service, const char * roleName, con
     mMagicNum = StubAddress::_magicNumber(*this);
 }
 
-StubAddress::StubAddress(const NEService::SInterfaceData & siData, const char * roleName, const char * threadName /*= NULL */)
+StubAddress::StubAddress(const NEService::SInterfaceData & siData, const char * roleName, const char * threadName /*= nullptr */)
     : ServiceAddress( siData.idServiceName, siData.idVersion, siData.idServiceType, roleName )
-    , mThreadName   ( String::EmptyString )
+    , mThreadName   ( String::EmptyString.data(), 0 )
     , mChannel      ( )
     , mMagicNum     ( NEMath::CHECKSUM_IGNORE )
 {
@@ -110,7 +129,14 @@ StubAddress::StubAddress( const StubAddress & source )
     , mChannel      ( source.mChannel )
     , mMagicNum     ( source.mMagicNum )
 {
-    ; // do nothing
+}
+
+StubAddress::StubAddress( StubAddress && source ) noexcept
+    : ServiceAddress( static_cast<ServiceAddress &&>(source) )
+    , mThreadName   ( std::move(source.mThreadName) )
+    , mChannel      ( std::move(source.mChannel) )
+    , mMagicNum     ( source.mMagicNum )
+{
 }
 
 StubAddress::StubAddress( const IEInStream & stream )
@@ -127,11 +153,6 @@ StubAddress::StubAddress( const IEInStream & stream )
     mMagicNum = StubAddress::_magicNumber(*this);
 }
 
-StubAddress::~StubAddress( void )
-{
-    ; // do nothing
-}
-
 bool StubAddress::isProxyCompatible(const ProxyAddress & proxyAddress) const
 {
     if ( isValid() && proxyAddress.isValid() )
@@ -142,9 +163,9 @@ bool StubAddress::isProxyCompatible(const ProxyAddress & proxyAddress) const
 
 void StubAddress::setThread(const char * threadName)
 {
-    Thread * thread = threadName == NULL ? Thread::getCurrentThread() : Thread::findThreadByName(threadName);
+    Thread * thread = threadName == nullptr ? Thread::getCurrentThread() : Thread::findThreadByName(threadName);
     DispatcherThread * dispatcher = RUNTIME_CAST( thread, DispatcherThread);
-    if ( (dispatcher != NULL) && dispatcher->isValid())
+    if ( (dispatcher != nullptr) && dispatcher->isValid())
     {
         mThreadName = dispatcher->getAddress().getThreadName();
         mMagicNum   = StubAddress::_magicNumber(*this);
@@ -163,9 +184,9 @@ bool StubAddress::deliverServiceEvent( ServiceRequestEvent & serviceEvent ) cons
     ITEM_ID target = mChannel.getSource();
     if ( target != NEService::TARGET_UNKNOWN )
     {
-        Thread * thread = Thread::findThreadById(target);
-        DispatcherThread * dispatcher = thread != NULL ? RUNTIME_CAST(thread, DispatcherThread) : NULL;
-        if ( dispatcher != NULL )
+        Thread * thread = Thread::findThreadById(static_cast<id_type>(target));
+        DispatcherThread * dispatcher = thread != nullptr ? RUNTIME_CAST(thread, DispatcherThread) : nullptr;
+        if ( dispatcher != nullptr )
         {
             result = serviceEvent.registerForThread(dispatcher);
             serviceEvent.deliverEvent();
@@ -196,30 +217,30 @@ String StubAddress::convToString(void) const
 {
     String result = "";
 
-    result += EXTENTION_STUB;
-    result += NEUtilities::COMPONENT_PATH_SEPARATOR;
+    result += EXTENTION_STUB.data();
+    result += NECommon::COMPONENT_PATH_SEPARATOR.data();
     result += ServiceAddress::convToString( );
-    result += NEUtilities::COMPONENT_PATH_SEPARATOR;
+    result += NECommon::COMPONENT_PATH_SEPARATOR.data();
     result += mThreadName;
-    result += NEUtilities::COMPONENT_PATH_SEPARATOR;
+    result += NECommon::COMPONENT_PATH_SEPARATOR.data();
     result += mChannel.convToString();
 
     return result;
 }
 
-void StubAddress::convFromString(const char* pathStub, const char** out_nextPart /*= NULL*/)
+void StubAddress::convFromString(const char* pathStub, const char** out_nextPart /*= nullptr*/)
 {
     const char* strSource = pathStub;
-    if ( String::getSubstring(strSource, NEUtilities::COMPONENT_PATH_SEPARATOR, &strSource) == StubAddress::EXTENTION_STUB )
+    if ( String::getSubstring(strSource, NECommon::COMPONENT_PATH_SEPARATOR.data(), &strSource) == EXTENTION_STUB.data() )
     {
         ServiceAddress::convFromString(strSource, &strSource);
-        mThreadName  = String::getSubstring(strSource, NEUtilities::COMPONENT_PATH_SEPARATOR, &strSource);
-        mChannel.convFromString( String::getSubstring(strSource, NEUtilities::COMPONENT_PATH_SEPARATOR, &strSource).getString() );
+        mThreadName  = String::getSubstring(strSource, NECommon::COMPONENT_PATH_SEPARATOR.data(), &strSource);
+        mChannel.convFromString( String::getSubstring(strSource, NECommon::COMPONENT_PATH_SEPARATOR.data(), &strSource).getString() );
 
         mMagicNum   = StubAddress::_magicNumber(*this);
     }
 
-    if (out_nextPart != NULL)
+    if (out_nextPart != nullptr)
         *out_nextPart = strSource;
 }
 

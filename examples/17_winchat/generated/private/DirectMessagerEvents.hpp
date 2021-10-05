@@ -1,18 +1,19 @@
 //////////////////////////////////////////////////////////////////////////
 // Begin generate generated/private/DirectMessagerEvents.hpp file
 //////////////////////////////////////////////////////////////////////////
-#ifndef  GENERATED_PRIVATE_DIRECTMESSAGEREVENTS_HPP
-#define  GENERATED_PRIVATE_DIRECTMESSAGEREVENTS_HPP
-/************************************************************************
- * (c) copyright    2021
- *                  Create by AREG SDK code generator tool from source DirectMessager.
- * Generated at     04.07.2021  04:30:03 GMT+02:00 
- ************************************************************************/
+
+#pragma once
 
 /************************************************************************
+ * (c) copyright    2021
+ *
+ * Generated at     30.09.2021  01:22:16 GMT+02:00 
+ *                  Create by AREG SDK code generator tool from source DirectMessager.
+ *
  * \file            generated/private/DirectMessagerEvents.hpp
  * \ingroup         DirectMessager Service Interface
- * \brief           This is an automatic generated code of DirectMessager Service Interface Event classes declaration.
+ * \brief           This is an automatic generated code of DirectMessager
+ *                  Service Interface event classes declaration.
  ************************************************************************/
 
 /************************************************************************
@@ -93,15 +94,14 @@ public:
     /**
      * \brief   Destructor.
      **/
-    virtual ~DirectMessagerRequestEvent( void );
+    virtual ~DirectMessagerRequestEvent( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    DirectMessagerRequestEvent( void );
-    DirectMessagerRequestEvent( const DirectMessagerRequestEvent & /* src */ );
-    const DirectMessagerRequestEvent & operator = ( const DirectMessagerRequestEvent & /* src */ );
+    DirectMessagerRequestEvent( void ) = delete;
+    DECLARE_NOCOPY_NOMOVE( DirectMessagerRequestEvent );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -138,15 +138,14 @@ public:
     /**
      * \brief   Destructor.
      **/
-    virtual ~DirectMessagerNotifyRequestEvent( void );
+    virtual ~DirectMessagerNotifyRequestEvent( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    DirectMessagerNotifyRequestEvent( void );
-    DirectMessagerNotifyRequestEvent( const DirectMessagerNotifyRequestEvent & /* src */ );
-    const DirectMessagerNotifyRequestEvent & operator = ( const DirectMessagerNotifyRequestEvent & /* src */ );
+    DirectMessagerNotifyRequestEvent( void ) = delete;
+    DECLARE_NOCOPY_NOMOVE( DirectMessagerNotifyRequestEvent );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -197,7 +196,7 @@ public:
     /**
      * \brief   Destructor
      **/
-    virtual ~DirectMessagerResponseEvent( void );
+    virtual ~DirectMessagerResponseEvent( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -216,15 +215,14 @@ public:
      * \return  Cloned service response event object, which contains specified
      *          target proxy address.
      **/
-    virtual ServiceResponseEvent * cloneForTarget( const ProxyAddress & target ) const;
+    virtual ServiceResponseEvent * cloneForTarget( const ProxyAddress & target ) const override;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    DirectMessagerResponseEvent( void );
-    DirectMessagerResponseEvent( const DirectMessagerResponseEvent & /* src */ );
-    const DirectMessagerResponseEvent & operator = ( const DirectMessagerResponseEvent & /* src */ );
+    DirectMessagerResponseEvent( void ) = delete;
+    DECLARE_NOCOPY_NOMOVE( DirectMessagerResponseEvent );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -249,24 +247,21 @@ public:
      * \brief   Initialization constructor. Copies notification event data
      * \param   data    The notification event data to copy
      **/
-    DirectMessagerNotificationEvent( const NotificationEventData & data );
+    explicit DirectMessagerNotificationEvent( const NotificationEventData & data );
 
 protected:
     /**
      * \brief   Destructor. Protected
      **/
-    virtual ~DirectMessagerNotificationEvent( void );
+    virtual ~DirectMessagerNotificationEvent( void ) = default;
     
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    DirectMessagerNotificationEvent( void );
-    DirectMessagerNotificationEvent( const DirectMessagerNotificationEvent & /* src */ );
-    const DirectMessagerNotificationEvent & operator = ( const DirectMessagerNotificationEvent & /* src */ );
+    DirectMessagerNotificationEvent( void ) = delete;
+    DECLARE_NOCOPY_NOMOVE( DirectMessagerNotificationEvent );
 };
-
-#endif   // GENERATED_PRIVATE_DIRECTMESSAGEREVENTS_HPP
 
 //////////////////////////////////////////////////////////////////////////
 // End generate generated/private/DirectMessagerEvents.hpp file

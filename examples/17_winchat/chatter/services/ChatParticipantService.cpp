@@ -10,8 +10,8 @@
 Component * ChatParticipantService::CreateComponent( const NERegistry::ComponentEntry & entry, ComponentThread & owner )
 {
     PageChat * page = reinterpret_cast<PageChat *>(entry.getComponentData( ).alignClsPtr.mElement);
-    ASSERT( page != NULL );
-    return (page != NULL ? new ChatParticipantService( owner, entry, static_cast<ChatPrticipantHandler &>(*page) ) : NULL);
+    ASSERT( page != nullptr );
+    return (page != nullptr ? new ChatParticipantService( owner, entry, static_cast<ChatPrticipantHandler &>(*page) ) : nullptr);
 }
 
 void ChatParticipantService::DeleteComponent( Component & compObject, const NERegistry::ComponentEntry & entry )

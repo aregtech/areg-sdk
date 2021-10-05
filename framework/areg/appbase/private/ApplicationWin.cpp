@@ -1,7 +1,7 @@
 /************************************************************************
  * \file        areg/appbase/private/ApplicationWin.cpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, Windows OS specific Application methods implementation
  *              Windows apecifix API calls.
  ************************************************************************/
@@ -11,6 +11,12 @@
 
 #include <windows.h>
 
+void Application::setupHandlers( void )
+{
+    Application & theApp = Application::getInstance();
+    theApp.mSetup = true;
+}
+
 /**
  * \brief   Windows OS specific implementation of method.
  **/
@@ -19,12 +25,12 @@ bool Application::_startRouterService( void )
     bool result = false;
 
     DWORD rights = SC_MANAGER_CONNECT | SC_MANAGER_ENUMERATE_SERVICE | SC_MANAGER_QUERY_LOCK_STATUS | STANDARD_RIGHTS_READ;
-    SC_HANDLE SeMHandle = ::OpenSCManager( NULL, NULL, rights );
-    if ( SeMHandle != NULL )
+    SC_HANDLE SeMHandle = ::OpenSCManager( nullptr, nullptr, rights );
+    if ( SeMHandle != nullptr )
     {
         rights = SERVICE_PAUSE_CONTINUE | SERVICE_QUERY_STATUS | SERVICE_START | SERVICE_STOP;
         SC_HANDLE SvcHandle = ::OpenService( SeMHandle, NEApplication::ROUTER_SERVICE_NAME_WIDE, rights );
-        if ( SvcHandle != NULL )
+        if ( SvcHandle != nullptr )
         {
             SERVICE_STATUS serviceStatus = { 0 };
             if ( ::QueryServiceStatus( SvcHandle, &serviceStatus ) )
@@ -47,7 +53,7 @@ bool Application::_startRouterService( void )
                     /*service not running*/
                 case SERVICE_STOP_PENDING:
                 case SERVICE_STOPPED:
-                    result = ::StartService( SvcHandle, 0, NULL ) != FALSE;
+                    result = ::StartService( SvcHandle, 0, nullptr ) != FALSE;
                     break;
 
                     /*in all other cases*/

@@ -4,14 +4,14 @@
 
 /************************************************************************
  * (c) copyright    2021
+ *
+ * Generated at     30.09.2021  01:22:12 GMT+02:00 
  *                  Create by AREG SDK code generator tool from source PowerManager.
- * Generated at     15.08.2021  00:03:03 GMT+02:00 
- ************************************************************************/
-
-/************************************************************************
- * \file            generated/src/private/PowerManagerEvents.cpp
+ *
+ * \file            generated/src/private/PowerManagerEvents.hpp
  * \ingroup         PowerManager Service Interface
- * \brief           This is an automatic generated code of PowerManager Service Interface Event classes implementation.
+ * \brief           This is an automatic generated code of PowerManager
+ *                  Service Interface event classes implementation.
  ************************************************************************/
 
 /************************************************************************
@@ -38,20 +38,13 @@ IMPLEMENT_RUNTIME_EVENT( PowerManagerRequestEvent, LocalRequestEvent )
 PowerManagerRequestEvent::PowerManagerRequestEvent( const ProxyAddress & fromSource, const StubAddress & toTarget, unsigned int reqId )
     : LocalRequestEvent( fromSource, toTarget, reqId )
 {
-    ; // do nothing
 }
 
 PowerManagerRequestEvent::PowerManagerRequestEvent( const EventDataStream & args, const ProxyAddress & fromSource, const StubAddress & toTarget, unsigned int reqId )
     : LocalRequestEvent( args, fromSource, toTarget, reqId, NEPowerManager::getString( static_cast<NEPowerManager::eMessageIDs>(reqId) ) )
 {
-    ; // do nothing
 }
 
-
-PowerManagerRequestEvent::~PowerManagerRequestEvent( void )
-{
-    ; // do nothing
-}
 
 //////////////////////////////////////////////////////////////////////////
 // PowerManagerNotifyRequestEvent class implementation
@@ -70,14 +63,8 @@ IMPLEMENT_RUNTIME_EVENT( PowerManagerNotifyRequestEvent, LocalNotifyRequestEvent
 PowerManagerNotifyRequestEvent::PowerManagerNotifyRequestEvent( const ProxyAddress & fromProxy, const StubAddress & toStub, unsigned int msgId, NEService::eRequestType reqType )
     : LocalNotifyRequestEvent( fromProxy, toStub, msgId, reqType )
 {
-    ; // do nothing
 }
 
-
-PowerManagerNotifyRequestEvent::~PowerManagerNotifyRequestEvent( void )
-{
-    ; // do nothing
-}
 
 //////////////////////////////////////////////////////////////////////////
 // PowerManagerResponseEvent class implementation
@@ -96,25 +83,18 @@ IMPLEMENT_RUNTIME_EVENT( PowerManagerResponseEvent, LocalResponseEvent )
 PowerManagerResponseEvent::PowerManagerResponseEvent( const ProxyAddress & proxyTarget, NEService::eResultType result, unsigned int responseId, unsigned int seqNr /* = NEService::SEQUENCE_NUMBER_NOTIFY */ )
     : LocalResponseEvent( proxyTarget, result, responseId, seqNr )
 {
-    ; // do nothing
 }
 
 PowerManagerResponseEvent::PowerManagerResponseEvent( const EventDataStream & args, const ProxyAddress & proxyTarget, NEService::eResultType result, unsigned int responseId, unsigned int seqNr /* = NEService::SEQUENCE_NUMBER_NOTIFY */ )
     : LocalResponseEvent( args, proxyTarget, result, responseId, seqNr, NEPowerManager::getString(static_cast<NEPowerManager::eMessageIDs>(responseId)) )
 {
-    ; // do nothing
 }
 
 PowerManagerResponseEvent::PowerManagerResponseEvent( const ProxyAddress & proxyTarget, const LocalResponseEvent & source )
     : LocalResponseEvent( proxyTarget, source )
 {
-    ; // do nothing
 }
 
-PowerManagerResponseEvent::~PowerManagerResponseEvent( void )
-{
-    ; // do nothing
-}
 
 //////////////////////////////////////////////////////////////////////////
 // PowerManagerResponseEvent class, Methods
@@ -142,12 +122,6 @@ IMPLEMENT_RUNTIME_EVENT( PowerManagerNotificationEvent, NotificationEvent )
 PowerManagerNotificationEvent::PowerManagerNotificationEvent( const NotificationEventData & data )
     : NotificationEvent   ( data )
 {
-    ; // do nothing
-}
-
-PowerManagerNotificationEvent::~PowerManagerNotificationEvent( void )
-{
-    ; // do nothing
 }
 
 //////////////////////////////////////////////////////////////////////////

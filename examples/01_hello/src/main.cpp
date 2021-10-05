@@ -2,14 +2,17 @@
 // Name        : main.cpp
 // Author      : Artak Avetyan
 // Version     :
-// Copyright   : Aregtech (c) 2021
-// Description : Hello World in C++, Ansi-style
+// Copyright   : 2021, Aregtech 
+// Description : This project demonstrates creation of a simple thread to 
+//               output "Hello World!" message on console.
 //============================================================================
 
 #include "areg/base/GEGlobal.h"
 #include "areg/base/Thread.hpp"
 #include "areg/base/IEThreadConsumer.hpp"
+
 #include <iostream>
+#include <string_view>
 
 #ifdef WINDOWS
     #pragma comment(lib, "areg.lib")
@@ -30,7 +33,7 @@ class HelloThread   : public    Thread
     /**
      * \brief   The thread name;
      */
-    static const char * THREAD_NAME /* = "HelloThread" */;
+    static constexpr std::string_view THREAD_NAME { "HelloThread" };
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -38,7 +41,7 @@ class HelloThread   : public    Thread
 public:
     HelloThread( void );
 
-    virtual ~HelloThread( void );
+    virtual ~HelloThread( void ) = default;
 
 protected:
 
@@ -53,7 +56,7 @@ protected:
      *          the thread will complete work. To restart thread running,
      *          createThread() method should be called again.
      **/
-    virtual void onThreadRuns( void );
+    virtual void onThreadRuns( void ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden calls
@@ -65,15 +68,10 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // HelloThread implementation
 //////////////////////////////////////////////////////////////////////////
-const char * HelloThread::THREAD_NAME   = "HelloThread";
 
 HelloThread::HelloThread( void )
-    : Thread            ( self(), HelloThread::THREAD_NAME )
+    : Thread            ( self(), HelloThread::THREAD_NAME.data() )
     , IEThreadConsumer  ( )
-{
-}
-
-HelloThread::~HelloThread( void )
 {
 }
 
@@ -100,9 +98,9 @@ int main()
     // declare thread object.
     HelloThread aThread;
     // create and start thread, wait until it is started.
-    aThread.createThread(Thread::WAIT_INFINITE);
+    aThread.createThread(NECommon::WAIT_INFINITE);
     // stop and destroy thread, clean resources. Wait until thread ends.
-    aThread.destroyThread(Thread::WAIT_INFINITE);
+    aThread.destroyThread(NECommon::WAIT_INFINITE);
 
 	return 0;
 }

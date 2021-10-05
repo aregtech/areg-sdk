@@ -4,14 +4,14 @@
 
 /************************************************************************
  * (c) copyright    2021
+ *
+ * Generated at     30.09.2021  01:22:16 GMT+02:00 
  *                  Create by AREG SDK code generator tool from source DirectMessager.
- * Generated at     04.07.2021  04:30:03 GMT+02:00 
- ************************************************************************/
-
-/************************************************************************
- * \file            generated/private/DirectMessagerEvents.cpp
+ *
+ * \file            generated/private/DirectMessagerEvents.hpp
  * \ingroup         DirectMessager Service Interface
- * \brief           This is an automatic generated code of DirectMessager Service Interface Event classes implementation.
+ * \brief           This is an automatic generated code of DirectMessager
+ *                  Service Interface event classes implementation.
  ************************************************************************/
 
 /************************************************************************
@@ -38,25 +38,17 @@ IMPLEMENT_RUNTIME_EVENT( DirectMessagerRequestEvent, RemoteRequestEvent )
 DirectMessagerRequestEvent::DirectMessagerRequestEvent( const ProxyAddress & fromSource, const StubAddress & toTarget, unsigned int reqId )
     : RemoteRequestEvent( fromSource, toTarget, reqId )
 {
-    ; // do nothing
 }
 
 DirectMessagerRequestEvent::DirectMessagerRequestEvent( const EventDataStream & args, const ProxyAddress & fromSource, const StubAddress & toTarget, unsigned int reqId )
     : RemoteRequestEvent( args, fromSource, toTarget, reqId, NEDirectMessager::getString( static_cast<NEDirectMessager::eMessageIDs>(reqId) ) )
 {
-    ; // do nothing
 }
 
 DirectMessagerRequestEvent::DirectMessagerRequestEvent( const IEInStream & stream )
     : RemoteRequestEvent( stream )
 {
-    ; // do nothing
 }    
-
-DirectMessagerRequestEvent::~DirectMessagerRequestEvent( void )
-{
-    ; // do nothing
-}
 
 //////////////////////////////////////////////////////////////////////////
 // DirectMessagerNotifyRequestEvent class implementation
@@ -75,19 +67,12 @@ IMPLEMENT_RUNTIME_EVENT( DirectMessagerNotifyRequestEvent, RemoteNotifyRequestEv
 DirectMessagerNotifyRequestEvent::DirectMessagerNotifyRequestEvent( const ProxyAddress & fromProxy, const StubAddress & toStub, unsigned int msgId, NEService::eRequestType reqType )
     : RemoteNotifyRequestEvent( fromProxy, toStub, msgId, reqType )
 {
-    ; // do nothing
 }
 
 DirectMessagerNotifyRequestEvent::DirectMessagerNotifyRequestEvent( const IEInStream & stream )
     : RemoteNotifyRequestEvent( stream )
 {
-    ; // do nothing
 }    
-
-DirectMessagerNotifyRequestEvent::~DirectMessagerNotifyRequestEvent( void )
-{
-    ; // do nothing
-}
 
 //////////////////////////////////////////////////////////////////////////
 // DirectMessagerResponseEvent class implementation
@@ -106,30 +91,22 @@ IMPLEMENT_RUNTIME_EVENT( DirectMessagerResponseEvent, RemoteResponseEvent )
 DirectMessagerResponseEvent::DirectMessagerResponseEvent( const ProxyAddress & proxyTarget, NEService::eResultType result, unsigned int responseId, unsigned int seqNr /* = NEService::SEQUENCE_NUMBER_NOTIFY */ )
     : RemoteResponseEvent( proxyTarget, result, responseId, seqNr )
 {
-    ; // do nothing
 }
 
 DirectMessagerResponseEvent::DirectMessagerResponseEvent( const EventDataStream & args, const ProxyAddress & proxyTarget, NEService::eResultType result, unsigned int responseId, unsigned int seqNr /* = NEService::SEQUENCE_NUMBER_NOTIFY */ )
     : RemoteResponseEvent( args, proxyTarget, result, responseId, seqNr, NEDirectMessager::getString(static_cast<NEDirectMessager::eMessageIDs>(responseId)) )
 {
-    ; // do nothing
 }
 
 DirectMessagerResponseEvent::DirectMessagerResponseEvent( const ProxyAddress & proxyTarget, const RemoteResponseEvent & source )
     : RemoteResponseEvent( proxyTarget, source )
 {
-    ; // do nothing
 }
 
 DirectMessagerResponseEvent::DirectMessagerResponseEvent( const IEInStream & stream )
     : RemoteResponseEvent( stream )
 {
-    ; // do nothing
 }    
-DirectMessagerResponseEvent::~DirectMessagerResponseEvent( void )
-{
-    ; // do nothing
-}
 
 //////////////////////////////////////////////////////////////////////////
 // DirectMessagerResponseEvent class, Methods
@@ -157,12 +134,6 @@ IMPLEMENT_RUNTIME_EVENT( DirectMessagerNotificationEvent, NotificationEvent )
 DirectMessagerNotificationEvent::DirectMessagerNotificationEvent( const NotificationEventData & data )
     : NotificationEvent   ( data )
 {
-    ; // do nothing
-}
-
-DirectMessagerNotificationEvent::~DirectMessagerNotificationEvent( void )
-{
-    ; // do nothing
 }
 
 //////////////////////////////////////////////////////////////////////////

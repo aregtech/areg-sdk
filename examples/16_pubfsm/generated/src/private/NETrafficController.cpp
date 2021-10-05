@@ -4,14 +4,14 @@
 
 /************************************************************************
  * (c) copyright    2021
+ *
+ * Generated at     30.09.2021  01:22:14 GMT+02:00 
  *                  Create by AREG SDK code generator tool from source TrafficController.
- * Generated at     15.08.2021  00:03:05 GMT+02:00 
- ************************************************************************/
-
-/************************************************************************
- * \file            generated/src/private/NETrafficController.cpp
+ *
+ * \file            generated/src/NETrafficController.hpp
  * \ingroup         TrafficController Service Interface
- * \brief           This is an automatic generated code of TrafficController Service Interface Namespace implementation.
+ * \brief           This is an automatic generated code of TrafficController
+ *                  Service Interface namespace implementation.
  ************************************************************************/
 
 /************************************************************************
@@ -29,35 +29,35 @@ const NEService::SInterfaceData & NETrafficController::getInterfaceData( void )
     /************************************************************************
      * The list of requests
      ************************************************************************/
-    const unsigned int * _RequestList       = static_cast<const unsigned int *>(NULL); /* There are no requests. Set Invalid message ID */
+    constexpr unsigned int * _RequestList   { nullptr }; /* There are no requests. Set Invalid message ID */
 
     /************************************************************************
      * The list of responses and broadcasts
      ************************************************************************/
-    static const unsigned int _ResponseList[] = 
+    static constexpr unsigned int _ResponseList[] 
     {
-          static_cast<unsigned int>( NETrafficController::MSG_ID_broadcastSouthNorth  ) // broadcastSouthNorth( NETrafficController::eVehicleTrafficLight LightVehicle, NETrafficController::ePedestrianTrafficLight LightPedestrian )
-        , static_cast<unsigned int>( NETrafficController::MSG_ID_broadcastEastWest   ) // broadcastEastWest( NETrafficController::eVehicleTrafficLight LightVehicle, NETrafficController::ePedestrianTrafficLight LightPedestrian )
+          static_cast<unsigned int>( NETrafficController::eMessageIDs::MsgId_broadcastSouthNorth  ) // broadcastSouthNorth( NETrafficController::eVehicleTrafficLight LightVehicle, NETrafficController::ePedestrianTrafficLight LightPedestrian )
+        , static_cast<unsigned int>( NETrafficController::eMessageIDs::MsgId_broadcastEastWest    ) // broadcastEastWest( NETrafficController::eVehicleTrafficLight LightVehicle, NETrafficController::ePedestrianTrafficLight LightPedestrian )
     };
 
     /************************************************************************
      * The list of attributes
      ************************************************************************/
-    static const unsigned int _AttributeList[] = 
+    static constexpr unsigned int _AttributeList[] 
     {
-          static_cast<unsigned int>( NETrafficController::MSG_ID_TrafficSouthNorth   ) // NETrafficController::sTrafficLight mTrafficSouthNorth;
-        , static_cast<unsigned int>( NETrafficController::MSG_ID_TrafficEastWest     ) // NETrafficController::sTrafficLight mTrafficEastWest;
+          static_cast<unsigned int>( NETrafficController::eMessageIDs::MsgId_TrafficSouthNorth    ) // NETrafficController::sTrafficLight mTrafficSouthNorth;
+        , static_cast<unsigned int>( NETrafficController::eMessageIDs::MsgId_TrafficEastWest      ) // NETrafficController::sTrafficLight mTrafficEastWest;
     };
 
     /************************************************************************
      * The map of requests and responses
      ************************************************************************/
-    const unsigned int * _RequestToResponseMap  = static_cast<const unsigned int *>(NULL); // The request list is empty
+    constexpr unsigned int * _RequestToResponseMap  { nullptr }; // The request list is empty
 
     /************************************************************************
      * Initialization of parameter entry validation map in responses and in broadcasts
      ************************************************************************/
-    static const unsigned int _ResponseParamStateMap[] = 
+    static constexpr unsigned int _ResponseParamStateMap[]
     {
     /************************************************************************
      * Responses
@@ -78,7 +78,7 @@ const NEService::SInterfaceData & NETrafficController::getInterfaceData( void )
     {
           NETrafficController::ServiceName
         , NETrafficController::InterfaceVersion
-        , NEService::ServiceRemote
+        , NEService::eServiceType::ServicePublic
         , 0
         , 2
         , 2
@@ -94,12 +94,12 @@ const NEService::SInterfaceData & NETrafficController::getInterfaceData( void )
 
 NETrafficController::eMessageIDs NETrafficController::getResponseId( NETrafficController::eMessageIDs reqId )
 {
-    return NETrafficController::MSG_ID_INVALID;
+    return NETrafficController::eMessageIDs::MsgId_Invalid;
 }
 
 NETrafficController::eMessageIDs NETrafficController::getRequestId( NETrafficController::eMessageIDs respId )
 {
-    return NETrafficController::MSG_ID_INVALID;
+    return NETrafficController::eMessageIDs::MsgId_Invalid;
 }
 
 //////////////////////////////////////////////////////////////////////////

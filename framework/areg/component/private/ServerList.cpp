@@ -1,7 +1,15 @@
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/component/private/ServerList.cpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, Server List class implementation
  *
  ************************************************************************/
@@ -22,20 +30,6 @@ DEF_TRACE_SCOPE(areg_component_private_ServerList_registerServer);
 DEF_TRACE_SCOPE(areg_component_private_ServerList_unregisterServer);
 
 //////////////////////////////////////////////////////////////////////////
-// Constructor / Destructor
-//////////////////////////////////////////////////////////////////////////
-ServerList::ServerList( void )
-    : TEHashMap<ServerInfo, ClientList, const ServerInfo &, const ClientList &, ServerListImpl>( )
-{
-    ; // do nothing
-}
-
-ServerList::~ServerList( void )
-{
-    ; // do nothing
-}
-
-//////////////////////////////////////////////////////////////////////////
 // Methods.
 //////////////////////////////////////////////////////////////////////////
 MAPPOS ServerList::findServer(const ServerInfo & server) const
@@ -53,7 +47,7 @@ MAPPOS ServerList::findServer( const StubAddress & whichServer ) const
     const unsigned int hash = getHashKey(server);
     ServiceBlock** block    = &mHashTable[hash % mHashTableSize];
 
-    for ( ; *block != NULL; block = &(*block)->mNext)
+    for ( ; *block != nullptr; block = &(*block)->mNext)
     {
         if ( hash == (*block)->mHash )
         {
@@ -64,7 +58,7 @@ MAPPOS ServerList::findServer( const StubAddress & whichServer ) const
         }
     }
 
-    TRACE_DBG("[ %s ] server [ %s ] in the list", (*block ) != NULL ? "FOUND" : "DIDNOT FIND", StubAddress::convAddressToPath(whichServer).getString());
+    TRACE_DBG("[ %s ] server [ %s ] in the list", (*block ) != nullptr ? "FOUND" : "DID NOT FIND", StubAddress::convAddressToPath(whichServer).getString());
 
     return (*block);
 }
@@ -76,7 +70,7 @@ MAPPOS ServerList::findServer( const ProxyAddress & whichClient ) const
     const unsigned int hash = getHashKey(server);
     ServiceBlock** block    = &mHashTable[hash % mHashTableSize];
 
-    for ( ; *block != NULL; block = &(*block)->mNext)
+    for ( ; *block != nullptr; block = &(*block)->mNext)
     {
         if ( hash == (*block)->mHash )
         {
@@ -95,13 +89,13 @@ const ServerInfo & ServerList::registerClient( const ProxyAddress & whichClient,
     TRACE_SCOPE(areg_component_private_ServerList_registerClient);
 
     MAPPOS pos  = findServer( whichClient );
-    if ( pos == NULL )
+    if ( pos == nullptr )
     {
         TRACE_DBG("No service for client [ %s ], crate new entry.", ProxyAddress::convAddressToPath(whichClient).getString());
         pos = setAt( ServerInfo( whichClient ), ClientList( ), false );
     }
 
-    ASSERT(pos != NULL);
+    ASSERT(pos != nullptr);
     ServiceBlock* block = static_cast<ServiceBlock *>(pos);
     out_client = block->mValue.registerClient(whichClient, block->mKey);
     TRACE_DBG("There are [ %d ] registered clients for service [ %s ]", block->mValue.getSize(), StubAddress::convAddressToPath(block->mKey.getAddress()).getString());
@@ -116,7 +110,7 @@ ServerInfo ServerList::unregisterClient( const ProxyAddress & whichClient, Clien
 
     ServerInfo result;
     MAPPOS pos = findServer(whichClient);
-    if ( pos != NULL )
+    if ( pos != nullptr )
     {
         ServiceBlock* block = static_cast<ServiceBlock *>(pos);
         block->mValue.unregisterClient(whichClient, out_client);
@@ -152,16 +146,16 @@ const ServerInfo & ServerList::registerServer( const StubAddress & addrStub, Cli
 
     ServerInfo server(addrStub);
     MAPPOS pos  = findServer(addrStub);
-    if ( pos == NULL )
+    if ( pos == nullptr )
     {
         TRACE_DBG("There are still no clients for service [ %s ], create new entry", StubAddress::convAddressToPath(addrStub).getString());
         pos = setAt( server, ClientList(), false);
     }
 
-    ASSERT(pos != NULL);
+    ASSERT(pos != nullptr);
     ServiceBlock* block = static_cast<ServiceBlock *>(pos);
     block->mKey = server;
-    block->mKey.setConnectionStatus( addrStub.getSource() != NEService::SOURCE_UNKNOWN ? NEService::ServiceConnected : NEService::ServicePending );
+    block->mKey.setConnectionStatus( addrStub.getSource() != NEService::SOURCE_UNKNOWN ? NEService::eServiceConnection::ServiceConnected : NEService::eServiceConnection::ServicePending );
     block->mValue.serverAvailable(block->mKey, out_clinetList);
 
     TRACE_DBG("The [ %s ] service [ %s ] is with status [ %s ]. [ %d ] clients are going to be notified."
@@ -181,7 +175,7 @@ ServerInfo ServerList::unregisterServer( const StubAddress & whichServer, Client
 
     MAPPOS pos = find(result);
     ServiceBlock* block = static_cast<ServiceBlock *>(pos);
-    if (block != NULL)
+    if (block != nullptr)
     {
         result = block->mKey;
         block->mValue.serverUnavailable(out_clinetList);
@@ -209,25 +203,25 @@ NEService::eServiceConnection ServerList::getServerState(const StubAddress & whi
 {
     MAPPOS pos = findServer(whichServer);
     ServiceBlock* block = static_cast<ServiceBlock *>(pos);
-    return (block != NULL ? block->mKey.getConnectionStatus() : NEService::ServiceConnectionUnknown);
+    return (block != nullptr ? block->mKey.getConnectionStatus() : NEService::eServiceConnection::ServiceConnectionUnknown);
 }
 
 const ClientList & ServerList::getClientList(const StubAddress & whichServer) const
 {
     MAPPOS pos = findServer(whichServer);
     ServiceBlock* block = static_cast<ServiceBlock *>(pos);
-    ASSERT(block != NULL);
+    ASSERT(block != nullptr);
     return block->mValue;
 }
 
 bool ServerList::isServerRegistered(const StubAddress & server) const
 {
-    return find(ServerInfo(server)) != NULL;
+    return find(ServerInfo(server)) != nullptr;
 }
 
 const ServerInfo * ServerList::findClientServer(const ProxyAddress & whichClient) const
 {
     MAPPOS pos = findServer( whichClient );
     ServiceBlock* block = static_cast<ServiceBlock *>(pos);
-    return ( block != NULL ? &block->mKey : NULL );
+    return ( block != nullptr ? &block->mKey : nullptr );
 }

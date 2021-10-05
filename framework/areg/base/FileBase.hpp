@@ -1,11 +1,17 @@
-#ifndef AREG_BASE_FILEBASE_HPP
-#define AREG_BASE_FILEBASE_HPP
+#pragma once
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/base/FileBase.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
- * \brief       Pure virtual base class of File object. File open, close read, write and other functions
- *              should be overwritten. Used by memory file, normal file and memory mapped file classes.
+ * \author      Artak Avetyan
+ * \brief       Base class of file objects.
  *
  ************************************************************************/
 /************************************************************************
@@ -19,6 +25,8 @@
 #include "areg/base/private/ReadConverter.hpp"
 #include "areg/base/private/WriteConverter.hpp"
 
+#include <string_view>
+
 class String;
 class WideString;
 class IEByteBuffer;
@@ -27,55 +35,55 @@ class IEByteBuffer;
 // FileBase class declaration.
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief       Pure virtual class to perform basic and common file functionalities.
- *              The classes derived from this class should support data streaming, i.e.
- *              should support read / write, as well as should contain read / write position.
- *              objects to move pointer.
- *              Before performing any read and write operations, the file object should be opened.
- *              Otherwise the operation will fail. For details see function comments.
+ * \brief   Pure virtual class to perform file basic and common functionalities.
+ *          The classes derived from this class should support data streaming, i.e.
+ *          should support read / write, as well as should contain read / write position.
+ *          objects to move pointer.
+ *          Before performing any read and write operations, the file object should be opened.
+ *          Otherwise the operation will fail. For details see function comments.
+ * 
+ *          Some use of File Open Mode:
+ *
+ *          1. FO_MODE_INVALID      - Invalid mode. No operation should be performed. Prevent caller setting this mode;
+ *
+ *          2. FO_MODE_READ         - File opened for reading. By default, all files should be opened with this flag.
+ *
+ *          3. FO_MODE_WRITE        - File opened for writing and reading. If flag is missed, the write functionality will be disabled.
+ *
+ *          4. FO_MODE_BINARY       - File opened in binary mode. All data will be read and written as binary data.
+ *                                    For strings, the null-terminate symbol will be also written / read.
+ *
+ *          5. FO_MODE_TEXT         - File opened int text mode. All data will be written as plain text, 
+ *                                    until does not match null-terminate symbol.
  *              
- *              Some use of File Open Mode:
+ *          6. FO_MODE_SHARE_READ   - File is opened in share read mode. The other File object is able to read.
+ *                                    This flag makes sense for FS File object. For memory file it does not make sense,
+ *                                    since buffer pointer may change address and File object is not able to control 
+ *                                    memory access by other functionality.
  *
- *              1. FO_MODE_INVALID      - Invalid mode. No operation should be performed. Prevent caller setting this mode;
- *              
- *              2. FO_MODE_READ         - File opened for reading. By default, all files should be opened with this flag.
+ *          7. FO_MODE_SHARE_WRITE  - File is opened in share write and read modes. The other File object is able to write and read data.
+ *                                    This flag makes sense for FS File object. For memory file it does not make sense,
+ *                                    since buffer pointer may change address and File object is not able to control 
+ *                                    memory access by other functionality.
+ *    
+ *          8. FO_MODE_CREATE       - If file does not exist, the new file will be created. The size will set zero
+ *                                    If FO_MODE_EXIST flag is set, will try to open existing file, otherwise creates new file.
  *
- *              3. FO_MODE_WRITE        - File opened for writing and reading. If flag is missed, the write functionality will be disabled.
+ *          9. FO_MODE_EXIST        - Opens only existing file. Opening might fail if file does not exist and 'FO_MODE_CREATE' flag is not set.
+ *                                    If FO_MODE_CREATE flag is set and file does not exist, it will create new file.
+ *                                    If FO_MODE_TRUNCATE flag is set, opens file for read/write and sets initial size of file to zero.
  *
- *              4. FO_MODE_BINARY       - File opened in binary mode. All data will be read and written as binary data.
- *                                        For strings, the null-terminate symbol will be also written / read.
+ *         10. FO_MODE_TRUNCATE     - Opens file in read and write mode, sets initial size of file to zero. 
+ *                                    Ignored in mode FO_MODE_ATTACH.
+ *                                    Can be used with combination FO_MODE_CREATE and FO_MODE_EXIST.
  *
- *              5. FO_MODE_TEXT         - File opened int text mode. All data will be written as plain text, 
- *                                        until does not match null-terminate symbol.
- *              
- *              6. FO_MODE_SHARE_READ   - File is opened in share read mode. The other File object is able to read.
- *                                        This flag makes sense for FS File object. For memory file it does not make sense,
- *                                        since buffer pointer may change address and File object is not able to control 
- *                                        memory access by other functionality.
+ *         11. FO_MODE_ATTACH       - Will use existing file handle / memory buffer pointer only in read mode. 
+ *                                    On close neither handle, nor buffer pointer will be closed / deleted.
  *
- *              7. FO_MODE_SHARE_WRITE  - File is opened in share write and read modes. The other File object is able to write and read data.
- *                                        This flag makes sense for FS File object. For memory file it does not make sense,
- *                                        since buffer pointer may change address and File object is not able to control 
- *                                        memory access by other functionality.
- *              
- *              8. FO_MODE_CREATE       - If file does not exist, the new file will be created. The size will set zero
- *                                        If FO_MODE_EXIST flag is set, will try to open existing file, otherwise creates new file.
- *              
- *              9. FO_MODE_EXIST        - Opens only existing file. Opening might fail if file does not exist and 'FO_MODE_CREATE' flag is not set.
- *                                        If FO_MODE_CREATE flag is set and file does not exist, it will create new file.
- *                                        If FO_MODE_TRUNCATE flag is set, opens file for read/write and sets initial size of file to zero.
- *              
- *             10. FO_MODE_TRUNCATE     - Opens file in read and write mode, sets initial size of file to zero. 
- *                                        Ignored in mode FO_MODE_ATTACH.
- *                                        Can be used with combination FO_MODE_CREATE and FO_MODE_EXIST.
+ *         12. FO_MODE_DETACH       - Will open file / memory buffer for read and write access.
+ *                                    On close neither handle, nor buffer pointer will be closed / deleted.
  *
- *             11. FO_MODE_ATTACH       - Will use existing file handle / memory buffer pointer only in read mode. 
- *                                        On close neither handle, nor buffer pointer will be closed / deleted.
- *             
- *             12. FO_MODE_DETACH       - Will open file / memory buffer for read and write access.
- *                                        On close neither handle, nor buffer pointer will be closed / deleted.
- *
- *             12. FO_MODE_FOR_DELETE - Will force to delete on close even if buffer is attached or marked as detached.
+ *         13. FO_MODE_FOR_DELETE - Will force to delete on close even if buffer is attached or marked as detached.
  *
  **/
 class AREG_API FileBase : public IEIOStream
@@ -88,7 +96,7 @@ protected:
     /**
      * \brief   File open bits specifying opening mode, access rights and attributes
      **/
-    typedef enum E_FileOpenBits
+    typedef enum E_FileOpenBits : unsigned int
     {
           FOB_INVALID       = 0     //!< 0000000000000000 <= invalid
         , FOB_READ          = 1     //!< 0000000000000001 <= read bit
@@ -112,7 +120,7 @@ public:
     /**
      * \brief   File opening modes.
      **/
-    typedef enum E_FileOpenMode
+    typedef enum E_FileOpenMode : unsigned int
     {
           FO_MODE_INVALID       = (FOB_INVALID)                                                     //!< 0000000000000000 <= invalid mode
 
@@ -136,33 +144,30 @@ public:
 //////////////////////////////////////////////////////////////////////////
 // defined constants
 //////////////////////////////////////////////////////////////////////////
+#if defined(_MSC_VER) && (_MSC_VER > 1200)
+    #pragma warning(disable: 4251)
+#endif  // _MSC_VER
 
     /**
      * \brief   File::TIMESTAMP_FILE_MASK
      *          Mask used in file name to set timestamp
      **/
-    static const char * const   FILE_MASK_TIMESTAMP /*= "%time%"*/;
-
-    /**
-     * \brief   The length of FILE_MASK_TIMESTAMP string.
-     **/
-    static const int            FILE_MASK_TIMESTAMP_LEN;
+    static constexpr std::string_view   FILE_MASK_TIMESTAMP { "%time%" };
 
     /**
      * \brief   File::TIMESTAMP_FORMAT
      *          Default timestamp format, used as yyyy_mm_dd_hh_mm_ss_ms
      **/
-    static const char * const   TIMESTAMP_FORMAT   /*= "%04d_%02d_%02d_%02d_%02d_%02d_%03d"*/; // yyyy_mm_dd_hh_mm_ss_ms
+    static constexpr std::string_view   TIMESTAMP_FORMAT    { "%04d_%02d_%02d_%02d_%02d_%02d_%03d" };
 
     /**
      * \brief   The name of application to add in file name or path
      **/
-    static const char * const   FILE_MASK_APPNAME   /*= "%appname%"*/;
+    static constexpr std::string_view   FILE_MASK_APPNAME   { "%appname%" };
 
-    /**
-     * \brief   The length of FILE_MASK_APPNAME string.
-     **/
-    static const int            FILE_MASK_APPNAME_LEN;
+#if defined(_MSC_VER) && (_MSC_VER > 1200)
+    #pragma warning(default: 4251)
+#endif  // _MSC_VER
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -173,11 +178,10 @@ protected:
      **/
     FileBase( void );
 
-public:
     /**
      * \brief   Destructor.
      **/
-    virtual ~FileBase( void );
+    virtual ~FileBase( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
@@ -255,11 +259,11 @@ public:
     inline IEOutStream & getWriteStream( void );
 
     /**
-     * \brief   Returns the name of file object set by user. This can be either short name or normalized full path. 
-     *          Can be NULL for buffered file.
+     * \brief   Returns the name of file object set by user. This can be either short name
+     *          or normalized full path. Can be empty string for buffered file.
      * \return  Returns the given name of file.
      **/
-    inline const char* getName( void ) const;
+    inline const String & getName( void ) const;
 
     /**
      * \brief   Returns the file open mode (bits)
@@ -382,7 +386,7 @@ public:
      * \param	length	The length of data to write
      * \return	Returns the size of written data in bytes.
      **/
-    int writeInvert(const unsigned char* buffer, unsigned int length);
+    int writeInvert( const unsigned char * buffer, int unsigned length );
 
     /**
      * \brief	Call to set new size of file object and returns the current position of pointer.
@@ -405,55 +409,49 @@ public:
      * \brief   Reads boolean value and if succeeds, returns true.
      *          If fails, this will not change the current file pointer position
      **/
-    inline bool readBool(bool & outValue) const;
+    inline bool readBool(bool & OUT outValue) const;
 
     /**
      * \brief   Reads 1 byte of data, covert to char and if succeeds, returns true.
      *          If fails, this will not change the current file pointer position
      **/
-    inline bool readChar(char & outValue) const;
+    inline bool readChar(char & OUT outValue) const;
 
     /**
      * \brief   Reads 2 bytes of data, covert to wide char and if succeeds, returns true.
      *          If fails, this will not change the current file pointer position
      **/
-    inline bool readChar(wchar_t & outValue) const;
+    inline bool readChar(wchar_t & OUT outValue) const;
 
     /**
      * \brief   Reads 2 bytes of data, covert to short integer and if succeeds, returns true.
      *          If fails, this will not change the current file pointer position
      **/
-    inline bool readShort(short & outValue) const;
+    inline bool readShort(short & OUT outValue) const;
 
     /**
      * \brief   Reads 4 bytes of data, covert to integer and if succeeds, returns true.
      *          If fails, this will not change the current file pointer position
      **/
-    inline bool readInt(int & outValue) const;
-
-    /**
-     * \brief   Reads 4 bytes of data, covert to long integer and if succeeds, returns true.
-     *          If fails, this will not change the current file pointer position
-     **/
-    inline bool readLong(long & outValue) const;
+    inline bool readInt(int & OUT outValue) const;
 
     /**
      * \brief   Reads 8 bytes of data, covert to large integer and if succeeds, returns true.
      *          If fails, this will not change the current file pointer position
      **/
-    inline bool readLarge(int64_t & outValue) const;
+    inline bool readLarge(int64_t & OUT outValue) const;
 
     /**
      * \brief   Reads 2 bytes of data, covert to floating value and if succeeds, returns true.
      *          If fails, this will not change the current file pointer position
      **/
-    inline bool readFloat(float & outValue) const;
+    inline bool readFloat(float & OUT outValue) const;
 
     /**
      * \brief   Reads 4 bytes of data, covert to double floating value and if succeeds, returns true.
      *          If fails, this will not change the current file pointer position
      **/
-    inline bool readDouble(double & outValue) const;
+    inline bool readDouble(double & OUT outValue) const;
 
     /**
      * \brief   Write 1 byte of char data and if succeeds, returns true.
@@ -484,12 +482,6 @@ public:
      *          If fails, this will not change the current file pointer position
      **/
     inline bool writeInt(int inValue);
-
-    /**
-     * \brief   Write 4 bytes of long integer data and if succeeds, returns true.
-     *          If fails, this will not change the current file pointer position
-     **/
-    inline bool writeLong(long inValue);
 
     /**
      * \brief   Write 8 bytes of large integer data and if succeeds, returns true.
@@ -604,94 +596,6 @@ public:
 // Override methods
 //////////////////////////////////////////////////////////////////////////
 /************************************************************************/
-// IEInStream interface overrides
-/************************************************************************/
-
-    /**
-     * \brief   Reads data from input stream object, copies into give Byte Buffer object
-     *          and returns the size of copied data. Overwrite this method if copy behavior
-     *          changed for certain buffer. For other buffers it should have simple behavior
-     *          as copying to raw buffer
-     * \param   buffer  The instance of Byte Buffer object to stream data from Input Stream object
-     * \return	Returns the size in bytes of copied data
-     **/
-    virtual unsigned int read( IEByteBuffer & buffer ) const;
-
-    /**
-     * \brief   Reads string data from Input Stream object and copies into given ASCII String.
-     *          Overwrite method if need to change behavior of streaming string.
-     * \param   asciiString     The buffer of ASCII String to stream data from Input Stream object.
-     * \return  Returns the size in bytes of copied string data.
-     **/
-    virtual unsigned int read( String & asciiString ) const;
-
-    /**
-     * \brief   Reads string data from Input Stream object and copies into given Wide String.
-     *          Overwrite method if need to change behavior of streaming string.
-     * \param   wideString      The buffer of Wide String to stream data from Input Stream object.
-     * \return  Returns the size in bytes of copied string data.
-     **/
-    virtual unsigned int read( WideString & wideString ) const;
-
-/************************************************************************/
-// IEOutStream interface overrides
-/************************************************************************/
-    /**
-     * \brief	Writes Binary data from Byte Buffer object to Output Stream object
-     *          and returns the size of written data. Overwrite this method if need 
-     *          to change behavior of streaming buffer.
-     * \param	buffer	The instance of Byte Buffer object containing data to stream to Output Stream.
-     * \return	Returns the size in bytes of written data
-     **/
-    virtual unsigned int write( const IEByteBuffer & buffer );
-
-    /**
-     * \brief   Writes string data from given ASCII String object to output stream object.
-     *          Overwrite method if need to change behavior of streaming string.
-     * \param   asciiString     The buffer of String containing data to stream to Output Stream.
-     * \return  Returns the size in bytes of copied string data.
-     **/
-    virtual unsigned int write( const String & asciiString );
-
-    /**
-     * \brief   Writes string data from given wide-char String object to output stream object.
-     *          Overwrite method if need to change behavior of streaming string.
-     * \param   wideString  The buffer of String containing data to stream to Output Stream.
-     * \return  Returns the size in bytes of copied string data.
-     **/
-    virtual unsigned int write( const WideString & wideString );
-
-    /**
-     * \brief   Clears the buffers for the file and causes all buffered data 
-     *          to be written to the file.
-     **/
-    virtual void flush( void );
-
-/************************************************************************/
-// IEIOStream pure virtual
-/************************************************************************/
-
-    /**
-     * \brief	Reads data from input stream object, copies into given buffer and
-     *          returns the size of copied data
-     * \param	buffer	The pointer to buffer to copy data from input object
-     * \param	size	The size in bytes of available buffer
-     * \return	Returns the size in bytes of copied data
-     **/
-    virtual unsigned int read( unsigned char * buffer, unsigned int size ) const = 0;
-
-    /**
-     * \brief	Write data to output stream object from given buffer
-     *          and returns the size of written data. In this class 
-     *          writes data into opened file.
-     * \param	buffer	The pointer to buffer to read data and 
-     *          copy to output stream object
-     * \param	size	The size in bytes of data buffer
-     * \return	Returns the size in bytes of written data
-     **/
-    virtual unsigned int write( const unsigned char* buffer, unsigned int size ) = 0;
-
-/************************************************************************/
 // FileBase class overrides
 /************************************************************************/
     /**
@@ -707,7 +611,7 @@ public:
     virtual bool open( void ) = 0;
 
     /**
-     * \brief	Opens the file object. For memory buffered file the file name can be NULL.
+     * \brief	Opens the file object. For memory buffered file the file name can be nullptr.
      *          Any other name for memory buffered file object will have only symbolic meaning
      *          and will be ignored during open operation.
      *          For file system file object the file name should contain one of paths:
@@ -776,6 +680,94 @@ public:
      **/
     virtual bool truncate( void ) = 0;
 
+/************************************************************************/
+// IEIOStream pure virtual
+/************************************************************************/
+
+    /**
+     * \brief	Reads data from input stream object, copies into given buffer and
+     *          returns the size of copied data
+     * \param	buffer	The pointer to buffer to copy data from input object
+     * \param	size	The size in bytes of available buffer
+     * \return	Returns the size in bytes of copied data
+     **/
+    virtual unsigned int read( unsigned char * buffer, unsigned int size ) const override = 0;
+
+    /**
+     * \brief	Write data to output stream object from given buffer
+     *          and returns the size of written data. In this class 
+     *          writes data into opened file.
+     * \param	buffer	The pointer to buffer to read data and 
+     *          copy to output stream object
+     * \param	size	The size in bytes of data buffer
+     * \return	Returns the size in bytes of written data
+     **/
+    virtual unsigned int write( const unsigned char* buffer, unsigned int size ) override = 0;
+
+/************************************************************************/
+// IEInStream interface overrides
+/************************************************************************/
+
+    /**
+     * \brief   Reads data from input stream object, copies into give Byte Buffer object
+     *          and returns the size of copied data. Overwrite this method if copy behavior
+     *          changed for certain buffer. For other buffers it should have simple behavior
+     *          as copying to raw buffer
+     * \param   buffer  The instance of Byte Buffer object to stream data from Input Stream object
+     * \return	Returns the size in bytes of copied data
+     **/
+    virtual unsigned int read( IEByteBuffer & buffer ) const override;
+
+    /**
+     * \brief   Reads string data from Input Stream object and copies into given ASCII String.
+     *          Overwrite method if need to change behavior of streaming string.
+     * \param   asciiString     The buffer of ASCII String to stream data from Input Stream object.
+     * \return  Returns the size in bytes of copied string data.
+     **/
+    virtual unsigned int read( String & asciiString ) const override;
+
+    /**
+     * \brief   Reads string data from Input Stream object and copies into given Wide String.
+     *          Overwrite method if need to change behavior of streaming string.
+     * \param   wideString      The buffer of Wide String to stream data from Input Stream object.
+     * \return  Returns the size in bytes of copied string data.
+     **/
+    virtual unsigned int read( WideString & wideString ) const override;
+
+/************************************************************************/
+// IEOutStream interface overrides
+/************************************************************************/
+    /**
+     * \brief	Writes Binary data from Byte Buffer object to Output Stream object
+     *          and returns the size of written data. Overwrite this method if need 
+     *          to change behavior of streaming buffer.
+     * \param	buffer	The instance of Byte Buffer object containing data to stream to Output Stream.
+     * \return	Returns the size in bytes of written data
+     **/
+    virtual unsigned int write( const IEByteBuffer & buffer ) override;
+
+    /**
+     * \brief   Writes string data from given ASCII String object to output stream object.
+     *          Overwrite method if need to change behavior of streaming string.
+     * \param   asciiString     The buffer of String containing data to stream to Output Stream.
+     * \return  Returns the size in bytes of copied string data.
+     **/
+    virtual unsigned int write( const String & asciiString ) override;
+
+    /**
+     * \brief   Writes string data from given wide-char String object to output stream object.
+     *          Overwrite method if need to change behavior of streaming string.
+     * \param   wideString  The buffer of String containing data to stream to Output Stream.
+     * \return  Returns the size in bytes of copied string data.
+     **/
+    virtual unsigned int write( const WideString & wideString ) override;
+
+    /**
+     * \brief   Clears the buffers for the file and causes all buffered data 
+     *          to be written to the file.
+     **/
+    virtual void flush( void ) override;
+
 protected:
 
     /**
@@ -792,12 +784,13 @@ protected:
      * \brief   Resets cursor pointer and moves to the begin of data.
      *          Implement the function if stream has pointer reset mechanism
      **/
-    virtual void resetCursor( void ) const;
+    virtual void resetCursor( void ) const override;
 
     /**
      * \brief   Normalizes the name, replace special masks such as timestamp or process name in the give name.
+     * \param[out]  name    On output, contains normalized name of file.
      **/
-    static void normalizeName( String & name );
+    static void normalizeName( String & OUT name );
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -837,85 +830,17 @@ private:
     inline FileBase & self( void );
     inline const FileBase & self( void ) const;
 
-    /**
-     * \brief   Reads the string from file.
-     * \param   file        The instance of file.
-     * \param   buffer      The buffer to copy the string. On output, 
-     *                      the string contains null-terminated character at the end.
-     * \param   elemCount   Number of characters to write in string buffer.
-     * \return  Returns the number of characters that has been written in the buffer.
-     **/
-    template<typename CharType> 
-    friend int _readString(const FileBase & file, CharType * buffer, int elemCount);
-
-    /**
-     * \brief   Reads the line of string from file.
-     * \param   file        The instance of file.
-     * \param   buffer      The buffer to copy the string. On output, 
-     *                      the string contains null-terminated character at the end.
-     * \param   elemCount   Number of characters to write in buffer.
-     * \return  Returns the number of characters that has been written in the buffer.
-     **/
-    template<typename CharType>
-    friend int _readLine(const FileBase & file, CharType * buffer, int elemCount);
-
-    /**
-     * \brief   Writes the string into the file. If file is opened in binary mode,
-     *          it writes the null-terminated character as well. Otherwise (if in text mode),
-     *          it writes the string without null-terminated character.
-     * \param   file    The instance of file to write string.
-     * \param   buffer  The string to write to file.
-     * \param   strLen  The length of the string. Pass -1 to calculate the length.
-     * \return  Returns true if succeeded to write string.
-     **/
-    template<typename CharType>
-    friend bool _writeString(FileBase & file, const CharType * buffer, int strLen);
-
-    /**
-     * \brief   Writes the line of string into the file. It will add new-line symbol at the end.
-     *          If file is opened in binary mode, it writes the null-terminated character as well. 
-     *          Otherwise (if in text mode), it writes the string without null-terminated character.
-     * \param   file    The instance of file to write string.
-     * \param   buffer  The string to write to file.
-     * \return  Returns true if succeeded to write string.
-     **/
-    template<typename CharType>
-    friend bool _writeLine(FileBase & file, const CharType * buffer );
-
-    /**
-     * \brief   Reads the string from file.
-     * \param   file        The instance of file.
-     * \param   outValue    The instance of string (String or WideString) copy the data. 
-     *                      On output, the string contains null-terminated character at the end.
-     * \param   elemCount   Number of characters to write in string.
-     * \return  Returns the number of characters that has been written in the string.
-     **/
-    template<typename CharType, class ClassType>
-    friend int _readString(const FileBase & file, ClassType & outValue);
-
-    /**
-     * \brief   Reads the string from file.
-     * \param   file        The instance of file.
-     * \param   outValue    The instance of string (String or WideString) copy the data. 
-     *                      On output, the string contains null-terminated character at the end.
-     * \param   elemCount   Number of characters to write in string.
-     * \return  Returns the number of characters that has been written in the string.
-     **/
-    template<typename CharType, class ClassType>
-    friend int _readLine(const FileBase & file, ClassType & outValue);
-
 //////////////////////////////////////////////////////////////////////////
-// Forbidden functions / methods call
+// Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    FileBase(const FileBase & /*src*/ );
-    const FileBase & operator = (const FileBase & /*src*/ );
+    DECLARE_NOCOPY_NOMOVE( FileBase );
 };
 
 //////////////////////////////////////////////////////////////////////////
 // FileBase class inline functions
 //////////////////////////////////////////////////////////////////////////
-inline FileBase& FileBase::self( void )
+inline FileBase & FileBase::self( void )
 {
     return (*this);
 }
@@ -925,9 +850,9 @@ inline const FileBase & FileBase::self( void ) const
     return (*this);
 }
 
-inline const char* FileBase::getName( void ) const
+inline const String & FileBase::getName( void ) const
 {
-    return static_cast<const char *>(mFileName);
+    return mFileName;
 }
 
 inline unsigned int FileBase::getMode( void ) const
@@ -1047,11 +972,6 @@ inline bool FileBase::readInt( int &outValue ) const
     return mReadConvert.getInt(outValue);
 }
 
-inline bool FileBase::readLong( long &outValue ) const
-{
-    return mReadConvert.getLong(outValue);
-}
-
 inline bool FileBase::readLarge( int64_t &outValue ) const
 {
     return mReadConvert.getInt64(outValue);
@@ -1090,11 +1010,6 @@ inline bool FileBase::writeShort( short inValue )
 inline bool FileBase::writeInt( int inValue )
 {
     return mWriteConvert.setInt(inValue);
-}
-
-inline bool FileBase::writeLong( long inValue )
-{
-    return mWriteConvert.setLong(inValue);   
 }
 
 inline bool FileBase::writeLarge( int64_t inValue )
@@ -1147,6 +1062,3 @@ inline const FileBase & operator >> ( const FileBase & stream, WideString & OUT 
     stream.read(wide);
     return stream;
 }
-
-
-#endif  // AREG_BASE_FILEBASE_HPP

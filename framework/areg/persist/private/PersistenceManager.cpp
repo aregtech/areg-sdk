@@ -1,7 +1,15 @@
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/persist/private/PersistenceManager.cpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       Data persistency manager
  ************************************************************************/
 #include "areg/persist/private/PersistenceManager.hpp"
@@ -19,7 +27,6 @@ PersistenceManager::PersistenceManager(void)
     : mMapReadOnly  ( )
     , mMapWritable  ( )
 {
-    ; // nothing
 }
 
 PersistenceManager::~PersistenceManager(void)
@@ -31,7 +38,7 @@ PersistenceManager::~PersistenceManager(void)
 bool PersistenceManager::parseReadable(const char * filePath)
 {
     mMapReadOnly.removeAll();
-    mFileReadOnly = NEString::isEmpty<char>(filePath) == false ? File::getFileFullPath(filePath) : "";
+    mFileReadOnly = NEString::isEmpty<char>(filePath) == false ? File::getFileFullPath(filePath) : String("");
     if ( mFileReadOnly.isEmpty() == false )
     {
         File fileConfig( static_cast<const char *>(mFileReadOnly), FileBase::FO_MODE_EXIST | FileBase::FO_MODE_READ | FileBase::FO_MODE_TEXT | FileBase::FO_MODE_SHARE_READ );
@@ -67,7 +74,7 @@ bool PersistenceManager::parseReadable(const char * filePath)
 bool PersistenceManager::parseWritable(const char * filePath)
 {
     mMapWritable.removeAll();
-    mFileWritable = NEString::isEmpty<char>(filePath) == false ? File::getFileFullPath(filePath) : "";
+    mFileWritable = NEString::isEmpty<char>(filePath) == false ? File::getFileFullPath(filePath) : String("");
     if ( mFileReadOnly.isEmpty() == false )
     {
         File fileConfig( static_cast<const char *>(mFileReadOnly), FileBase::FO_MODE_EXIST | FileBase::FO_MODE_READ | FileBase::FO_MODE_TEXT | FileBase::FO_MODE_SHARE_READ );

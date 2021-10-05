@@ -1,15 +1,19 @@
-#ifndef AREG_BASE_REMOTEMESSAGE_HPP
-#define AREG_BASE_REMOTEMESSAGE_HPP
+#pragma once
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/base/RemoteMessage.hpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       Remote Shared Buffer class. This Buffer is used for 
  *              Read and Write of data during remote communication
- *              between different processes running either on same or 
- *              different hosts. The Data in buffer within same process
- *              remains valid until  the number of references to the 
- *              buffer is more than zero.
+ *              between connected nodes.
  *
  ************************************************************************/
 /************************************************************************
@@ -43,7 +47,7 @@ public:
      * \param   blockSize   The size of minimum block size to increase on resize.
      *                      It is aligned to NEMemory::BLOCK_SIZE (minimum size)
      **/
-    RemoteMessage(unsigned int blockSize = NEMemory::BLOCK_SIZE);
+    explicit RemoteMessage(unsigned int blockSize = NEMemory::BLOCK_SIZE);
 
     /**
      * \brief   Constructor to reserve space for byte buffer object.
@@ -51,7 +55,7 @@ public:
      * \param   blockSize   The size of minimum block size to increase on resize.
      *                      It is aligned to NEMemory::BLOCK_SIZE (minimum size)
      **/
-    RemoteMessage( unsigned int reserveSize, unsigned int blockSize = NEMemory::BLOCK_SIZE);
+    RemoteMessage( unsigned int reserveSize, unsigned int blockSize );
 
     /**
      * \brief	Initializes and writes given data into byte buffer.
@@ -63,25 +67,23 @@ public:
     RemoteMessage(const unsigned char * buffer, unsigned int size, unsigned int blockSize = NEMemory::BLOCK_SIZE);
 
     /**
-     * \brief	It will not copy data, it will increase the reference counter by 1
-     *          to prevent any other object deleting shared buffer object.
-     *          The shared buffer should not be invalid. Otherwise it will be ignored.
-     * \param	remoteMessage   The reference to remote message object to share
-     **/
-    RemoteMessage(NEMemory::sRemoteMessage & remoteMessage );
-
-    /**
      * \brief	It does not make hard copy of data from given source, it will refer to the same shared
      *          byte buffer object and will increase reference counter by one to prevent any other
      *          shared buffer object deleting used data
      * \param	src     The source of shared buffer object instance.
      **/
-    RemoteMessage( const RemoteMessage & src );
+    RemoteMessage( const RemoteMessage & src ) = default;
+
+    /**
+     * \brief	Move the data from given source.
+     * \param	src     The source of of data.
+     **/
+    RemoteMessage( RemoteMessage && src ) noexcept = default;
 
     /**
      * \brief   Destructor.
      **/
-    virtual ~RemoteMessage( void );
+    virtual ~RemoteMessage( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////////
 // Attributes
@@ -91,11 +93,17 @@ public:
      * \brief	Assigning operator, it does not copy source data, it increases
      *          byte buffer reference counter by one to prevent other shared
      *          object instance to delete buffer
-     * \param	src	    Reference to source object
+     * \param	src	    Reference to source remote buffer data.
      **/
-    const RemoteMessage & operator = ( const RemoteMessage & src );
+    RemoteMessage & operator = ( const RemoteMessage & src ) = default;
 
-/************************************************************************/
+    /**
+     * \brief	Move operator. Moves data from given source.
+     * \param	src	    The source of data.
+     **/
+    RemoteMessage & operator = ( RemoteMessage && src ) noexcept = default;
+
+    /************************************************************************/
 // Friend global operators to stream Shared Buffer
 /************************************************************************/
 
@@ -125,7 +133,7 @@ public:
     /**
      * \brief   Returns remote message structure data
      **/
-    inline const NEMemory::sRemoteMessage & getRemoteMessage( void ) const;
+    inline const NEMemory::sRemoteMessage * getRemoteMessage( void ) const;
 
     /**
      * \brief   Returns checksum value of Remote Buffer.
@@ -227,26 +235,29 @@ protected:
      *          If needed, it will copy existing binary data to passed buffer.
      *          The function is called from child classes when new byte buffer
      *          is created and the existing data should be passed to new buffer.
-     * \param	newBuffer	The buffer to initialize. If NULL, the buffer object. 
-     * \param	bufLength	The length of entire buffer, i.e. length of complete byte buffer.
+     * \param	newBuffer	The buffer to initialize. 
+     * \param	bufLength	The length in bytes of the entire buffer object.
      * \param	makeCopy	If 'true' it will make copy of existing buffer
      * \return	Returns the current writing position in initialized buffer.
      *          If buffer is invalid, it will return INVALID_CURSOR_POSITION.
      *          If no data is copied, it will return position at the beginning of buffer.
      *          If data is copied, will return the position of written data.
      **/
-    virtual unsigned int initBuffer(unsigned char * newBuffer, unsigned int bufLength, bool makeCopy) const;
+    virtual unsigned int initBuffer(unsigned char * newBuffer, unsigned int bufLength, bool makeCopy) const override;
 
     /**
      * \brief   Returns the offset value from the beginning of byte buffer, which should be set
      **/
-    virtual unsigned int getDataOffset( void ) const;
+    virtual unsigned int getDataOffset( void ) const override;
 
     /**
      * \brief   Returns the size of data byte structure to allocate.
      **/
-    virtual unsigned int getHeaderSize( void ) const;
+    virtual unsigned int getHeaderSize( void ) const override;
 
+//////////////////////////////////////////////////////////////////////////
+// Hidden methods
+//////////////////////////////////////////////////////////////////////////
 private:
     /**
      * \brief   Returns converted instance of Remote Message header.
@@ -271,27 +282,29 @@ private:
 //////////////////////////////////////////////////////////////////////////
 inline const NEMemory::sRemoteMessageHeader & RemoteMessage::_getHeader( void ) const
 {
-    return reinterpret_cast<const NEMemory::sRemoteMessageHeader &>(getByteBuffer());
+    return reinterpret_cast<const NEMemory::sRemoteMessageHeader &>(*getByteBuffer());
 }
 
 inline NEMemory::sRemoteMessageHeader & RemoteMessage::_getHeader( void )
 {
-    return reinterpret_cast<NEMemory::sRemoteMessageHeader &>(getByteBuffer());
+    ASSERT(mByteBuffer.get() != nullptr);
+    return reinterpret_cast<NEMemory::sRemoteMessageHeader &>(*(mByteBuffer.get()));
 }
 
 inline const NEMemory::sRemoteMessage & RemoteMessage::_getRemoteMessage( void ) const
 {
-    return reinterpret_cast<const NEMemory::sRemoteMessage &>(getByteBuffer());
+    return reinterpret_cast<const NEMemory::sRemoteMessage &>(*getByteBuffer());
 }
 
 inline NEMemory::sRemoteMessage & RemoteMessage::_getRemoteMessage( void )
 {
-    return reinterpret_cast<NEMemory::sRemoteMessage &>(getByteBuffer());
+    ASSERT( mByteBuffer.get( ) != nullptr );
+    return reinterpret_cast<NEMemory::sRemoteMessage &>(*mByteBuffer.get());
 }
 
-inline const NEMemory::sRemoteMessage & RemoteMessage::getRemoteMessage( void ) const
+inline const NEMemory::sRemoteMessage * RemoteMessage::getRemoteMessage( void ) const
 {
-    return reinterpret_cast<const NEMemory::sRemoteMessage &>(getByteBuffer());
+    return reinterpret_cast<const NEMemory::sRemoteMessage *>(getByteBuffer());
 }
 
 inline unsigned int RemoteMessage::getChecksum( void ) const
@@ -374,9 +387,9 @@ inline const IEInStream & operator >> (const IEInStream & stream, RemoteMessage 
 inline IEOutStream & operator << (IEOutStream & stream, const RemoteMessage & output)
 {
     if ( (static_cast<const IEOutStream *>(&stream)) != (static_cast<const IEOutStream *>(&output)) )
-        stream.write(output);
+    {
+        stream.write( output );
+    }
     
     return stream;
 }
-
-#endif  // AREG_BASE_REMOTEMESSAGE_HPP

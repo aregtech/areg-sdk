@@ -1,7 +1,15 @@
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/component/private/NotificationEvent.cpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, Generic Notification event.
  *
  ************************************************************************/
@@ -22,7 +30,6 @@ NotificationEventData::NotificationEventData( const ProxyBase & proxy, NEService
     , mNotifyId     (notifyId)
     , mSequenceNr   (seqNr)
 {
-    ; // do nothing
 }
 
 NotificationEventData::NotificationEventData( const NotificationEventData& src )
@@ -31,12 +38,43 @@ NotificationEventData::NotificationEventData( const NotificationEventData& src )
     , mNotifyId     (src.mNotifyId)
     , mSequenceNr   (src.mSequenceNr)
 {
-    ; // do nothing
 }
 
-NotificationEventData::~NotificationEventData( void )
+NotificationEventData::NotificationEventData( NotificationEventData && src ) noexcept
+    : mProxy        ( src.mProxy )
+    , mNotifyType   ( src.mNotifyType )
+    , mNotifyId     ( src.mNotifyId )
+    , mSequenceNr   ( src.mSequenceNr )
 {
-    ; // do nothing
+    src.mProxy = nullptr;
+}
+
+NotificationEventData & NotificationEventData::operator = ( const NotificationEventData & src )
+{
+    if ( this != &src )
+    {
+        mProxy      = src.mProxy;
+        mNotifyType = src.mNotifyType;
+        mNotifyId   = src.mNotifyId;
+        mSequenceNr = src.mSequenceNr;
+    }
+
+    return (*this);
+}
+
+NotificationEventData & NotificationEventData::operator = ( NotificationEventData && src ) noexcept
+{
+    if ( this != &src )
+    {
+        mProxy      = src.mProxy;
+        mNotifyType = src.mNotifyType;
+        mNotifyId   = src.mNotifyId;
+        mSequenceNr = src.mSequenceNr;
+
+        src.mProxy  = nullptr;
+    }
+
+    return (*this);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -51,12 +89,12 @@ IMPLEMENT_RUNTIME_EVENT(NotificationEvent, ThreadEventBase)
 //////////////////////////////////////////////////////////////////////////
 // NotificationEvent class, static methods
 //////////////////////////////////////////////////////////////////////////
-void NotificationEvent::sendEvent( const NotificationEventData& data, IENotificationEventConsumer* caller /*= NULL*/ )
+void NotificationEvent::sendEvent( const NotificationEventData& data, IENotificationEventConsumer* caller /*= nullptr*/ )
 {
     NotificationEvent* eventElem = DEBUG_NEW NotificationEvent(data);
-    if (eventElem != NULL)
+    if (eventElem != nullptr)
     {
-        if (caller != NULL)
+        if (caller != nullptr)
             eventElem->setEventConsumer(static_cast<IEEventConsumer *>(caller));
         static_cast<Event *>(eventElem)->deliverEvent();
     }
@@ -66,15 +104,10 @@ void NotificationEvent::sendEvent( const NotificationEventData& data, IENotifica
 // NotificationEvent class, constructor / destructor
 //////////////////////////////////////////////////////////////////////////
 NotificationEvent::NotificationEvent( const NotificationEventData& data )
-    : ThreadEventBase (Event::EventNotifyClient)
+    : ThreadEventBase (Event::eEventType::EventNotifyClient)
     , mData             (data)
 {
     setTargetThread();
-}
-
-NotificationEvent::~NotificationEvent( void )
-{
-    ; // do nothing
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -83,7 +116,7 @@ NotificationEvent::~NotificationEvent( void )
 void NotificationEvent::setTargetThread( void )
 {
     const ProxyBase * proxy = mData.getProxy();
-    DispatcherThread& dispThread = proxy != NULL ? proxy->getProxyDispatcherThread() : DispatcherThread::getCurrentDispatcherThread();
+    DispatcherThread& dispThread = proxy != nullptr ? proxy->getProxyDispatcherThread() : DispatcherThread::getCurrentDispatcherThread();
     ASSERT(dispThread.isValid());
     registerForThread(&dispThread);
 }
@@ -93,26 +126,12 @@ void NotificationEvent::setTargetThread( void )
 //////////////////////////////////////////////////////////////////////////
 
 //////////////////////////////////////////////////////////////////////////
-// IENotificationEventConsumer class, constructor / destructor
-//////////////////////////////////////////////////////////////////////////
-IENotificationEventConsumer::IENotificationEventConsumer( void )
-    : ThreadEventConsumerBase ( )
-{
-    ; // do nothing
-}
-
-IENotificationEventConsumer::~IENotificationEventConsumer( void )
-{
-    ; // do nothing
-}
-
-//////////////////////////////////////////////////////////////////////////
 // IENotificationEventConsumer class, methods
 //////////////////////////////////////////////////////////////////////////
 void IENotificationEventConsumer::startEventProcessing( Event& eventElem )
 {
     NotificationEvent* eventNotify = RUNTIME_CAST(&eventElem, NotificationEvent);
-    if (eventNotify != NULL)
+    if (eventNotify != nullptr)
     {
         processNotificationEvent(*eventNotify);
     }

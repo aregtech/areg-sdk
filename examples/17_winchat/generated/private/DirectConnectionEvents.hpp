@@ -1,18 +1,19 @@
 //////////////////////////////////////////////////////////////////////////
 // Begin generate generated/private/DirectConnectionEvents.hpp file
 //////////////////////////////////////////////////////////////////////////
-#ifndef  GENERATED_PRIVATE_DIRECTCONNECTIONEVENTS_HPP
-#define  GENERATED_PRIVATE_DIRECTCONNECTIONEVENTS_HPP
-/************************************************************************
- * (c) copyright    2021
- *                  Create by AREG SDK code generator tool from source DirectConnection.
- * Generated at     04.07.2021  04:30:02 GMT+02:00 
- ************************************************************************/
+
+#pragma once
 
 /************************************************************************
+ * (c) copyright    2021
+ *
+ * Generated at     30.09.2021  01:22:15 GMT+02:00 
+ *                  Create by AREG SDK code generator tool from source DirectConnection.
+ *
  * \file            generated/private/DirectConnectionEvents.hpp
  * \ingroup         DirectConnection Service Interface
- * \brief           This is an automatic generated code of DirectConnection Service Interface Event classes declaration.
+ * \brief           This is an automatic generated code of DirectConnection
+ *                  Service Interface event classes declaration.
  ************************************************************************/
 
 /************************************************************************
@@ -93,15 +94,14 @@ public:
     /**
      * \brief   Destructor.
      **/
-    virtual ~DirectConnectionRequestEvent( void );
+    virtual ~DirectConnectionRequestEvent( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    DirectConnectionRequestEvent( void );
-    DirectConnectionRequestEvent( const DirectConnectionRequestEvent & /* src */ );
-    const DirectConnectionRequestEvent & operator = ( const DirectConnectionRequestEvent & /* src */ );
+    DirectConnectionRequestEvent( void ) = delete;
+    DECLARE_NOCOPY_NOMOVE( DirectConnectionRequestEvent );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -138,15 +138,14 @@ public:
     /**
      * \brief   Destructor.
      **/
-    virtual ~DirectConnectionNotifyRequestEvent( void );
+    virtual ~DirectConnectionNotifyRequestEvent( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    DirectConnectionNotifyRequestEvent( void );
-    DirectConnectionNotifyRequestEvent( const DirectConnectionNotifyRequestEvent & /* src */ );
-    const DirectConnectionNotifyRequestEvent & operator = ( const DirectConnectionNotifyRequestEvent & /* src */ );
+    DirectConnectionNotifyRequestEvent( void ) = delete;
+    DECLARE_NOCOPY_NOMOVE( DirectConnectionNotifyRequestEvent );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -197,7 +196,7 @@ public:
     /**
      * \brief   Destructor
      **/
-    virtual ~DirectConnectionResponseEvent( void );
+    virtual ~DirectConnectionResponseEvent( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -216,15 +215,14 @@ public:
      * \return  Cloned service response event object, which contains specified
      *          target proxy address.
      **/
-    virtual ServiceResponseEvent * cloneForTarget( const ProxyAddress & target ) const;
+    virtual ServiceResponseEvent * cloneForTarget( const ProxyAddress & target ) const override;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    DirectConnectionResponseEvent( void );
-    DirectConnectionResponseEvent( const DirectConnectionResponseEvent & /* src */ );
-    const DirectConnectionResponseEvent & operator = ( const DirectConnectionResponseEvent & /* src */ );
+    DirectConnectionResponseEvent( void ) = delete;
+    DECLARE_NOCOPY_NOMOVE( DirectConnectionResponseEvent );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -249,24 +247,21 @@ public:
      * \brief   Initialization constructor. Copies notification event data
      * \param   data    The notification event data to copy
      **/
-    DirectConnectionNotificationEvent( const NotificationEventData & data );
+    explicit DirectConnectionNotificationEvent( const NotificationEventData & data );
 
 protected:
     /**
      * \brief   Destructor. Protected
      **/
-    virtual ~DirectConnectionNotificationEvent( void );
+    virtual ~DirectConnectionNotificationEvent( void ) = default;
     
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    DirectConnectionNotificationEvent( void );
-    DirectConnectionNotificationEvent( const DirectConnectionNotificationEvent & /* src */ );
-    const DirectConnectionNotificationEvent & operator = ( const DirectConnectionNotificationEvent & /* src */ );
+    DirectConnectionNotificationEvent( void ) = delete;
+    DECLARE_NOCOPY_NOMOVE( DirectConnectionNotificationEvent );
 };
-
-#endif   // GENERATED_PRIVATE_DIRECTCONNECTIONEVENTS_HPP
 
 //////////////////////////////////////////////////////////////////////////
 // End generate generated/private/DirectConnectionEvents.hpp file

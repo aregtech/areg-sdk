@@ -1,7 +1,7 @@
 /************************************************************************
  * \file        areg/trace/private/TraceProperty.cpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, Trace Property value class. Used when reading or 
  *              saving configuration file
  ************************************************************************/
@@ -10,13 +10,6 @@
 #include "areg/trace/private/NELogConfig.hpp"
 #include "areg/base/File.hpp"
 #include "areg/base/NEUtilities.hpp"
-
-TraceProperty::TraceProperty( void )
-    : mProperty ( )
-    , mComment  ( )
-{
-    ; // do nothing
-}
 
 TraceProperty::TraceProperty( const char * Key, const char * Value )
     : mProperty ( )
@@ -54,21 +47,27 @@ TraceProperty::TraceProperty( const TraceProperty & source )
     : mProperty ( source.mProperty )
     , mComment  ( source.mComment )
 {
-    ; // do nothing
 }
 
-TraceProperty::~TraceProperty( void )
+TraceProperty::TraceProperty( TraceProperty && source ) noexcept
+    : mProperty ( std::move(source.mProperty) )
+    , mComment  ( std::move(source.mComment) )
 {
-    ; // do nothing
 }
 
-const TraceProperty & TraceProperty::operator = ( const TraceProperty & source )
+TraceProperty & TraceProperty::operator = ( const TraceProperty & source )
 {
-    if ( static_cast<const TraceProperty *>(this) != &source )
-    {
-        mProperty   = source.mProperty;
-        mComment    = source.mComment;
-    }
+    mProperty   = source.mProperty;
+    mComment    = source.mComment;
+
+    return (*this);
+}
+
+TraceProperty & TraceProperty::operator = ( TraceProperty && source ) noexcept
+{
+    mProperty   = std::move(source.mProperty);
+    mComment    = std::move( source.mComment);
+
     return (*this);
 }
 
@@ -99,10 +98,10 @@ bool TraceProperty::readProperty( const File & fileConfig )
 
 void TraceProperty::clearProperty( bool clearComment /* = true */ )
 {
-    mProperty.mKey  = String::EmptyString;
-    mProperty.mValue= String::EmptyString;
+    mProperty.mKey  = String::EmptyString.data();
+    mProperty.mValue= String::EmptyString.data();
     if ( clearComment )
-        mComment = String::EmptyString;
+        mComment = String::EmptyString.data();
 }
 
 bool TraceProperty::parseProperty( const char * logSetting )
@@ -120,7 +119,7 @@ bool TraceProperty::parseProperty( const char * logSetting )
 bool TraceProperty::parseProperty( String & line)
 {
     NEString::CharPos posComment  = line.findFirstOf(NELogConfig::SYNTAX_COMMENT);
-    if (posComment != NEString::InvalidPos)
+    if (posComment != NEString::INVALID_POS)
     {
         mComment   += line.substring(posComment);
         mComment   += NELogConfig::SYNTAX_LINEEND;
@@ -128,10 +127,10 @@ bool TraceProperty::parseProperty( String & line)
     }
 
     NEString::CharPos posEqual    = line.findFirstOf(NELogConfig::SYNTAX_EQUAL);
-    if ( (posEqual != NEString::InvalidPos) && ((posComment == NEString::InvalidPos) || (posEqual < posComment))  )
+    if ( (posEqual != NEString::INVALID_POS) && ((posComment == NEString::INVALID_POS) || (posEqual < posComment))  )
     {
-        mProperty.mKey  = line.substring(NEString::StartPos, posEqual).getString();
-        mProperty.mValue= line.substring( posEqual + 1, posComment != NEString::InvalidPos ? posComment - posEqual : NEString::EndPos).getString();
+        mProperty.mKey  = line.substring(NEString::START_POS, posEqual).getString();
+        mProperty.mValue= line.substring( posEqual + 1, posComment != NEString::INVALID_POS ? posComment - posEqual : NEString::END_POS).getString();
     }
     return isValid();
 }

@@ -1,7 +1,15 @@
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/base/private/Thread.cpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, Thread class
  *              platform independent code
  *
@@ -10,41 +18,28 @@
 #include "areg/base/IEThreadConsumer.hpp"
 #include "areg/base/ThreadLocalStorage.hpp"
 
-//////////////////////////////////////////////////////////////////////////
-// Thread class constants definition
-//////////////////////////////////////////////////////////////////////////
-
-/************************************************************************/
-// Thread class public constants, types and enum
-/************************************************************************/
-/**
- * \brief   Invalid thread ID.
- **/
-const ITEM_ID           Thread::INVALID_THREAD_ID           = static_cast<unsigned int>(0);    /*0x00000000*/
-
-/************************************************************************/
-// Thread class private constants, types and enum
-/************************************************************************/
-/**
- * \brief   Thread invalid handle
- **/
-THREADHANDLE const  Thread::INVALID_THREAD_HANDLE       = static_cast<THREADHANDLE>(NULL);
+namespace
+{
 /**
  * \brief   Internal thread naming prefix. Used to generate unique thread name.
  **/
-const char* const   Thread::DEFAULT_THREAD_PREFIX       = static_cast<const char *>("_AREG_Thread_");
-/**
- * \brief   Identified Current Thread. Used for Local Storage
- **/
-Thread* const       Thread::CURRENT_THREAD              = reinterpret_cast<Thread *>(~0); /*0xFFFFFFFF*/
+constexpr std::string_view   DEFAULT_THREAD_PREFIX   { "_AREG_thread_" };
+
 /**
  * \brief   The name of entry in Thread Local Storage to save pointer of Thread Consumer.
  **/
-const char* const   Thread::STORAGE_THREAD_CONSUMER     = "ThreadConsumer";
+constexpr std::string_view   STORAGE_THREAD_CONSUMER { "ThreadConsumer" };
+
+}
+
+//////////////////////////////////////////////////////////////////////////
+// Thread class constants definition
+//////////////////////////////////////////////////////////////////////////
 /**
- * \brief   MS Exception value, used to set thread name.
+ * \brief   Identified Current Thread. Used for Local Storage
  **/
-const unsigned int  Thread::SET_NAME_MS_VC_EXCEPTION    = static_cast<unsigned int>(0x406D1388);
+Thread* const        Thread::CURRENT_THREAD         = reinterpret_cast<Thread *>(~0);
+
 
 /************************************************************************/
 // Thread class
@@ -72,8 +67,8 @@ Thread::MapThreadIDResource           Thread::_mapThreadId;
 unsigned long Thread::_defaultThreadFunction(void* data)
 {
     Thread* threadObj = reinterpret_cast<Thread *>(data);
-    IEThreadConsumer::eExitCodes result= IEThreadConsumer::EXIT_NO_PARAM;
-    if (threadObj != NULL)
+    IEThreadConsumer::eExitCodes result= IEThreadConsumer::eExitCodes::ExitNoParam;
+    if (threadObj != nullptr)
     {
         do 
         {
@@ -90,7 +85,7 @@ unsigned long Thread::_defaultThreadFunction(void* data)
         result = static_cast<IEThreadConsumer::eExitCodes>( threadObj->_threadEntry() );
 
         // delete thread local storage.
-        Thread::_getThreadLocalStorage(static_cast<Thread *>(NULL));
+        Thread::_getThreadLocalStorage(nullptr);
 
         OUTPUT_DBG("Thread [ %s ] completed job with code [ %s ]", static_cast<const char *>(threadObj->getName()), IEThreadConsumer::getString(result));
 
@@ -111,19 +106,19 @@ unsigned long Thread::_defaultThreadFunction(void* data)
 /************************************************************************/
 ThreadLocalStorage* Thread::_getThreadLocalStorage( Thread* ownThread /*= Thread::CURRENT_THREAD*/ )
 {
-    static __THREAD_LOCAL ThreadLocalStorage* _localStorage = NULL;
+    static __THREAD_LOCAL ThreadLocalStorage* _localStorage = nullptr;
     if ( ownThread == Thread::CURRENT_THREAD )
     {
         // do nothing, the static local storage item is already instantiated
-        ASSERT( _localStorage != NULL );
+        ASSERT( _localStorage != nullptr );
     }
-    else if ( ownThread != NULL )
+    else if ( ownThread != nullptr )
     {
         // called only once, when thread starts.
         // at that moment the thread local storage object 
         // is not initialized and instantiated yet,
         // and it should be instantiated
-        ASSERT(_localStorage == NULL);
+        ASSERT(_localStorage == nullptr );
         _localStorage = DEBUG_NEW ThreadLocalStorage( *ownThread );
     }
     else
@@ -131,11 +126,11 @@ ThreadLocalStorage* Thread::_getThreadLocalStorage( Thread* ownThread /*= Thread
         // called when thread exists
         // the local storage elements should be removed and
         // the object should be deleted.
-        ASSERT(ownThread == NULL);
-        ASSERT(_localStorage != NULL);
+        ASSERT(ownThread == nullptr );
+        ASSERT(_localStorage != nullptr );
         _localStorage->removeAll();
         delete _localStorage;
-        _localStorage = NULL;
+        _localStorage = nullptr;
     }
 
     return _localStorage;
@@ -145,14 +140,14 @@ ThreadLocalStorage* Thread::_getThreadLocalStorage( Thread* ownThread /*= Thread
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
-Thread::Thread(IEThreadConsumer &threadConsumer, const char* threadName /* = NULL */)
+Thread::Thread(IEThreadConsumer &threadConsumer, const char* threadName /* = nullptr */)
     : RuntimeObject   ( )
 
     , mThreadConsumer   (threadConsumer)
     , mThreadHandle     (Thread::INVALID_THREAD_HANDLE)
     , mThreadId         (Thread::INVALID_THREAD_ID)
-    , mThreadAddress    (NEString::isEmpty<char>(threadName) == false ? threadName : NEUtilities::generateName(Thread::DEFAULT_THREAD_PREFIX).getString())
-    , mThreadPriority   (Thread::PriorityUndefined)
+    , mThreadAddress    (NEString::isEmpty<char>(threadName) == false ? threadName : NEUtilities::generateName(DEFAULT_THREAD_PREFIX.data()).getString())
+    , mThreadPriority   (Thread::eThreadPriority::PriorityUndefined)
     , mIsRunning        ( false )
 
     , mSynchObject      ( )
@@ -178,10 +173,10 @@ ThreadLocalStorage & Thread::getCurrentThreadStorage( void )
 
 void Thread::switchThread( void )
 {
-    Thread::sleep(Thread::WAIT_SWITCH);
+    Thread::sleep( NECommon::WAIT_SWITCH );
 }
 
-bool Thread::createThread(unsigned int waitForStartMs /* = Thread::DO_NOT_WAIT */)
+bool Thread::createThread(unsigned int waitForStartMs /* = NECommon::DO_NOT_WAIT */)
 {
     bool result = false;
 
@@ -193,7 +188,7 @@ bool Thread::createThread(unsigned int waitForStartMs /* = Thread::DO_NOT_WAIT *
 
     if ( result )
     {
-        if (waitForStartMs != Thread::DO_NOT_WAIT)
+        if (waitForStartMs != NECommon::DO_NOT_WAIT)
         {
             mWaitForRun.lock(waitForStartMs);
         }
@@ -209,12 +204,12 @@ bool Thread::createThread(unsigned int waitForStartMs /* = Thread::DO_NOT_WAIT *
 
 void Thread::shutdownThread( void )
 {
-    destroyThread(Thread::WAIT_INFINITE);
+    destroyThread(NECommon::WAIT_INFINITE);
 }
 
-bool Thread::completionWait( unsigned int waitForCompleteMs /*= Thread::WAIT_INFINITE*/ )
+bool Thread::completionWait( unsigned int waitForCompleteMs /*= NECommon::WAIT_INFINITE*/ )
 {
-    mSynchObject.lock(IESynchObject::WAIT_INFINITE);
+    mSynchObject.lock(NECommon::WAIT_INFINITE);
 
     bool result = false;
     THREADHANDLE  handle = mThreadHandle;
@@ -222,7 +217,7 @@ bool Thread::completionWait( unsigned int waitForCompleteMs /*= Thread::WAIT_INF
     {
         mSynchObject.unlock();  // unlock, to let thread complete exit task.
 
-        result = (waitForCompleteMs == Thread::DO_NOT_WAIT) || mWaitForExit.lock(waitForCompleteMs) ;
+        result = (waitForCompleteMs == NECommon::DO_NOT_WAIT) || mWaitForExit.lock(waitForCompleteMs) ;
     }
     else
     {
@@ -239,30 +234,30 @@ bool Thread::onPreRunThread( void )
 
 void Thread::onPostExitThread( void )
 {
-    ;   // mWaitForRun.ResetEvent();
 }
 
-const char * Thread::getThreadName( ITEM_ID threadId )
+const String & Thread::getThreadName( id_type threadId )
 {
+    static String emptyString;
     Thread* threadObj = Thread::findThreadById( threadId);
-    return (threadObj != NULL ? threadObj->getName().getString() : String::EmptyString);
+    return (threadObj != nullptr ? threadObj->getName() : emptyString);
 }
 
-const ThreadAddress & Thread::getThreadAddress( ITEM_ID threadId )
+const ThreadAddress & Thread::getThreadAddress( id_type threadId )
 {
     Thread* threadObj = Thread::findThreadById( threadId);
-    return (threadObj != NULL ? threadObj->getAddress() : ThreadAddress::INVALID_THREAD_ADDRESS);
+    return (threadObj != nullptr ? threadObj->getAddress() : ThreadAddress::INVALID_THREAD_ADDRESS);
 }
 
 int Thread::_threadEntry( void )
 {
-    int result = IEThreadConsumer::EXIT_TERMINATED;
+    IEThreadConsumer::eExitCodes result = IEThreadConsumer::eExitCodes::ExitTerminated;
 
-    if (Thread::_findThreadByHandle(mThreadHandle) != NULL)
+    if (Thread::_findThreadByHandle(mThreadHandle) != nullptr )
     {
-        Thread::getCurrentThreadStorage().setStorageItem(Thread::STORAGE_THREAD_CONSUMER, (void *)&mThreadConsumer);
+        Thread::getCurrentThreadStorage().setStorageItem(STORAGE_THREAD_CONSUMER.data(), (void *)&mThreadConsumer);
 
-        result = IEThreadConsumer::EXIT_ERROR;
+        result = IEThreadConsumer::eExitCodes::ExitError;
 
         _setRunning(true);
 
@@ -273,17 +268,17 @@ int Thread::_threadEntry( void )
 
         _setRunning(false);
 
-        result = mThreadConsumer.onThreadExit();
+        result = static_cast<IEThreadConsumer::eExitCodes>(mThreadConsumer.onThreadExit());
         onPostExitThread();
 
-        Thread::getCurrentThreadStorage().removeStoragteItem(Thread::STORAGE_THREAD_CONSUMER);
+        Thread::getCurrentThreadStorage().removeStoragteItem(STORAGE_THREAD_CONSUMER.data());
     }
     else
     {
         ; // do nothing
     }
 
-    return result;
+    return static_cast<int>(result);
 }
 
 void Thread::_cleanResources( void )
@@ -293,7 +288,7 @@ void Thread::_cleanResources( void )
     mThreadHandle   = INVALID_THREAD_HANDLE;
     mThreadId       = INVALID_THREAD_ID;
     mIsRunning      = false;
-    mThreadPriority = Thread::PriorityUndefined;
+    mThreadPriority = Thread::eThreadPriority::PriorityUndefined;
 
     Thread::_closeHandle(handle);
 }
@@ -335,25 +330,25 @@ void Thread::_unregisterThread( void )
 
 IEThreadConsumer& Thread::getCurrentThreadConsumer( void )
 {
-    ASSERT(getCurrentThread() != NULL);
+    ASSERT(getCurrentThread() != nullptr );
     ThreadLocalStorage& localStorage = Thread::getCurrentThreadStorage();
-    IEThreadConsumer* consumer = reinterpret_cast<IEThreadConsumer *>(localStorage.getStorageItem(Thread::STORAGE_THREAD_CONSUMER).alignPtr.mElement);
-    ASSERT(consumer != NULL);
+    IEThreadConsumer* consumer = reinterpret_cast<IEThreadConsumer *>(localStorage.getStorageItem(STORAGE_THREAD_CONSUMER.data()).alignPtr.mElement);
+    ASSERT(consumer != nullptr );
     return (*consumer);
 }
 
 Thread::eThreadPriority Thread::getPriority( void ) const
 {
     Lock  lock(mSynchObject);
-    return (isValid() ? mThreadPriority : Thread::PriorityUndefined);
+    return (isValid() ? mThreadPriority : Thread::eThreadPriority::PriorityUndefined);
 }
 
-Thread * Thread::getFirstThread(ITEM_ID & OUT threadId)
+Thread * Thread::getFirstThread( id_type & OUT threadId)
 {
     return _mapThreadId.resourceFirstKey(threadId);
 }
 
-Thread * Thread::getNextThread(ITEM_ID & IN OUT threadId)
+Thread * Thread::getNextThread( id_type & IN OUT threadId)
 {
     return _mapThreadId.resourceNextKey(threadId);
 }
@@ -378,7 +373,7 @@ void Thread::dumpThreads( void )
             OUTPUT_WARN("The thread with name [ %s ] is still registered in resource!", static_cast<const char *>(threadName.getString()));
             threadObj = Thread::_mapThreadName.resourceNextKey(threadName);
 
-        } while (threadObj != NULL);
+        } while (threadObj != nullptr );
     }
 
     Thread::_mapThreadName.unlock();

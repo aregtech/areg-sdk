@@ -1,43 +1,45 @@
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/trace/private/FileLogger.cpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       File Logger object to log message into the file
  ************************************************************************/
 #include "areg/trace/private/FileLogger.hpp"
 
-#include "areg/trace/private/IETraceConfiguration.hpp"
+#include "areg/trace/private/LogConfiguration.hpp"
 #include "areg/trace/private/TraceProperty.hpp"
 #include "areg/base/Process.hpp"
 #include "areg/base/DateTime.hpp"
 
-FileLogger::FileLogger( IETraceConfiguration & tracerConfig )
+FileLogger::FileLogger( LogConfiguration & tracerConfig )
     : LoggerBase( tracerConfig )
 
     , mLogFile          ( )
 {
-    ; // do nothing
-}
-
-FileLogger::~FileLogger(void)
-{
-    ; // do nothing
 }
 
 bool FileLogger::openLogger( void )
 {
     if ( mLogFile.isOpened() == false )
     {
-        const IETraceConfiguration & traceConfig = getTraceConfiguration();
-        ASSERT( static_cast<bool>(traceConfig.propertyStatus().getValue()) );
-        const TraceProperty & prop = traceConfig.propertyLogFile();
+        const LogConfiguration & traceConfig = getTraceConfiguration();
+        ASSERT( static_cast<bool>(traceConfig.getStatus().getValue()) );
+        const TraceProperty & prop = traceConfig.getLogFile();
         if ( prop.isValid() )
         {
             String fileName = File::normalizePath( static_cast<const char *>(prop.getValue()) );
             // fileName = File::NormalizeFilePath( fileName );
             if ( fileName.isEmpty() == false )
             {
-                bool newFile      = static_cast<bool>(traceConfig.propertyAppendData()) == false;
+                bool newFile      = static_cast<bool>(traceConfig.getAppendData()) == false;
                 unsigned int mode = File::FO_MODE_WRITE | File::FO_MODE_READ | File::FO_MODE_SHARE_READ | File::FO_MODE_SHARE_WRITE | File::FO_MODE_TEXT;
 
                 if ( File::existFile(fileName) )
@@ -49,7 +51,7 @@ bool FileLogger::openLogger( void )
                     
                     Process & curProcess = Process::getInstance();
                     NETrace::sLogMessage logMsgHello;
-                    NEMemory::zeroData<NETrace::sLogMessage>( logMsgHello );
+                    NEMemory::zeroElement<NETrace::sLogMessage>( logMsgHello );
 
                     logMsgHello.lmHeader.logLength      = sizeof(NETrace::sLogMessage);
                     logMsgHello.lmHeader.logType        = NETrace::LogMessage;
@@ -57,13 +59,13 @@ bool FileLogger::openLogger( void )
 
                     logMsgHello.lmTrace.traceThreadId   = 0;
                     logMsgHello.lmTrace.traceScopeId    = 0;
-                    logMsgHello.lmTrace.traceTimestamp  = DateTime::getNow();
+                    logMsgHello.lmTrace.traceTimestamp  = static_cast<TIME64>(DateTime::getNow());
                     logMsgHello.lmTrace.traceMessagePrio= NETrace::PrioIgnoreLayout;
                     String::formatString( logMsgHello.lmTrace.traceMessage
                                         , NETrace::LOG_MESSAGE_BUFFER_SIZE
-                                        , LoggerBase::FOMAT_MESSAGE_HELLO
+                                        , LoggerBase::FOMAT_MESSAGE_HELLO.data()
                                         , Process::getString(curProcess.getEnvironment())
-                                        , curProcess.getFullPath()
+                                        , curProcess.getFullPath().getString()
                                         , curProcess.getId());
 
                     logMessage(logMsgHello);
@@ -89,7 +91,7 @@ void FileLogger::closeLogger(void)
     {
         Process & curProcess = Process::getInstance();
         NETrace::sLogMessage logMsgHello;
-        NEMemory::zeroData<NETrace::sLogMessage>( logMsgHello );
+        NEMemory::zeroElement<NETrace::sLogMessage>( logMsgHello );
 
         logMsgHello.lmHeader.logLength      = sizeof(NETrace::sLogMessage);
         logMsgHello.lmHeader.logType        = NETrace::LogMessage;
@@ -97,13 +99,13 @@ void FileLogger::closeLogger(void)
 
         logMsgHello.lmTrace.traceThreadId   = 0;
         logMsgHello.lmTrace.traceScopeId    = 0;
-        logMsgHello.lmTrace.traceTimestamp  = DateTime::getNow();
+        logMsgHello.lmTrace.traceTimestamp  = static_cast<TIME64>(DateTime::getNow());
         logMsgHello.lmTrace.traceMessagePrio= NETrace::PrioIgnoreLayout;
         String::formatString( logMsgHello.lmTrace.traceMessage
                             , NETrace::LOG_MESSAGE_BUFFER_SIZE
-                            , LoggerBase::FORMAT_MESSAGE_BYE
+                            , LoggerBase::FORMAT_MESSAGE_BYE.data()
                             , Process::getString(curProcess.getEnvironment())
-                            , curProcess.getFullPath()
+                            , curProcess.getFullPath().getString()
                             , curProcess.getId());
 
         logMessage(logMsgHello);
@@ -118,8 +120,6 @@ bool FileLogger::logMessage( const NETrace::sLogMessage & logMessage )
     bool result = false;
     if ( mLogFile.isOpened() )
     {
-        // mLogFile.moveToBegin();
-
         switch (logMessage.lmHeader.logType)
         {
         case NETrace::LogMessage:
@@ -143,6 +143,7 @@ bool FileLogger::logMessage( const NETrace::sLogMessage & logMessage )
             break;
         }
     }
+
     return result;
 }
 

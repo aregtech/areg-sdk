@@ -1,18 +1,18 @@
 //////////////////////////////////////////////////////////////////////////
 // Begin generate generated/src/PowerManagerClientBase.hpp file
 //////////////////////////////////////////////////////////////////////////
-#ifndef  GENERATED_SRC_POWERMANAGERCLIENTBASE_HPP
-#define  GENERATED_SRC_POWERMANAGERCLIENTBASE_HPP
-/************************************************************************
- * (c) copyright    2021
- *                  Create by AREG SDK code generator tool from source PowerManager.
- * Generated at     15.08.2021  00:03:03 GMT+02:00 
- ************************************************************************/
+#pragma once
 
 /************************************************************************
+ * (c) copyright    2021
+ *
+ * Generated at     30.09.2021  01:22:12 GMT+02:00 
+ *                  Create by AREG SDK code generator tool from source PowerManager.
+ *
  * \file            generated/src/PowerManagerClientBase.hpp
  * \ingroup         PowerManager Service Interface
- * \brief           This is an automatic generated code of PowerManager Service Interface Client base class declaration.
+ * \brief           This is an automatic generated code of PowerManager
+ *                  Service Interface Client base class declaration.
  ************************************************************************/
 
 /************************************************************************
@@ -52,9 +52,9 @@ protected:
      *          Specifies used service and owner thread.
      * \param   roleName    The role name assigned to PowerManager servicing component object.
      * \param   ownerThread The name of component owner thread to dispatch messages.
-     *                      If NULL, all messages are dispatched in current component thread.
+     *                      If nullptr, all messages are dispatched in current component thread.
      **/
-    PowerManagerClientBase( const char* roleName, const char * ownerThread = static_cast<const char *>(NULL) );
+    PowerManagerClientBase( const char* roleName, const char * ownerThread = nullptr );
 
     /**
      * \brief   Initialize PowerManager Service Interface client object.
@@ -298,7 +298,7 @@ protected:
      *          i.e. if passed Proxy address is equal to the Proxy object that client has.
      *          If Proxy objects are not equal, it should return false;
      **/
-    virtual bool serviceConnected( bool isConnected, ProxyBase & proxy );
+    virtual bool serviceConnected( bool isConnected, ProxyBase & proxy ) override;
 
 /************************************************************************/
 // PowerManagerClientBase Error Handling overrides
@@ -327,7 +327,7 @@ protected:
 
     /**
      * \brief  Returns pointer to client dispatcher thread where the messages are dispatched.
-     *         The function can return NULL if Proxy was not instantiated yet.
+     *         The function can return nullptr if Proxy was not instantiated yet.
      **/
     DispatcherThread * getDispatcherThread( void );
      
@@ -375,7 +375,7 @@ private:
      * \brief   Is processing notification event calls.
      * \param   eventElem   Notification Event object to process
      **/
-    virtual void processNotificationEvent( NotificationEvent & eventElem );
+    virtual void processNotificationEvent( NotificationEvent & eventElem ) override;
     
 /************************************************************************/
 // PowerManagerClientBase hidden methods
@@ -416,9 +416,8 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    PowerManagerClientBase( void );
-    PowerManagerClientBase( const PowerManagerClientBase & /* src */ );
-    const PowerManagerClientBase & operator = ( const PowerManagerClientBase & /* src */ );
+    PowerManagerClientBase( void ) = delete;
+    DECLARE_NOCOPY_NOMOVE( PowerManagerClientBase );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -437,31 +436,31 @@ inline unsigned int PowerManagerClientBase::getCurrentSequenceNr( void ) const
 
 inline void PowerManagerClientBase::clearAllNotifications( void )
 {
-    ASSERT(mProxy != NULL);
+    ASSERT(mProxy != nullptr);
     mProxy->clearAllNotifications(static_cast<IENotificationEventConsumer &>(self()));
 }
 
 inline bool PowerManagerClientBase::isConnected( void ) const
 {
-    ASSERT(mProxy != NULL);
+    ASSERT(mProxy != nullptr);
     return mIsConnected;
 }
 
 inline bool PowerManagerClientBase::isNotificationAssigned( NEPowerManager::eMessageIDs msgId ) const
 {
-    ASSERT(mProxy != NULL);
+    ASSERT(mProxy != nullptr);
     return mProxy->hasNotificationListener(static_cast<unsigned int>(msgId));
 }
 
 inline const String & PowerManagerClientBase::getServiceName( void ) const
 {
-    ASSERT(mProxy != NULL);
+    ASSERT(mProxy != nullptr);
     return mProxy->getProxyAddress().getServiceName();
 }
     
 inline const Version & PowerManagerClientBase::getServiceVersion( void ) const
 {
-    ASSERT(mProxy != NULL);
+    ASSERT(mProxy != nullptr);
     return mProxy->getProxyAddress().getServiceVersion();
 }
 
@@ -471,18 +470,18 @@ inline const Version & PowerManagerClientBase::getServiceVersion( void ) const
 
 inline bool PowerManagerClientBase::isLightsPowerStateValid( void ) const
 {
-    ASSERT(mProxy != NULL);
+    ASSERT(mProxy != nullptr);
    return mProxy->isLightsPowerStateValid( );
 }
 inline NEPowerManager::ePoweredState PowerManagerClientBase::getLightsPowerState( NEService::eDataStateType & state ) const
 {
-    ASSERT(mProxy != NULL);
+    ASSERT(mProxy != nullptr);
     return mProxy->getLightsPowerState( state );
 }
 
 inline void PowerManagerClientBase::notifyOnLightsPowerStateUpdate( bool notify /* = true */ )
 {
-    PowerManagerClientBase::notifyOn( NEPowerManager::MSG_ID_LightsPowerState, notify, false );
+    PowerManagerClientBase::notifyOn( NEPowerManager::eMessageIDs::MsgId_LightsPowerState, notify, false );
 }
 
 /************************************************************************
@@ -491,25 +490,25 @@ inline void PowerManagerClientBase::notifyOnLightsPowerStateUpdate( bool notify 
 
 inline void PowerManagerClientBase::requestPowerOn( void )
 {
-    ASSERT(mProxy != NULL);
+    ASSERT(mProxy != nullptr);
     mProxy->requestPowerOn(  );
 }
 
 inline void PowerManagerClientBase::requestPowerOff( void )
 {
-    ASSERT(mProxy != NULL);
+    ASSERT(mProxy != nullptr);
     mProxy->requestPowerOff(  );
 }
 
 inline unsigned int PowerManagerClientBase::requestStartTrafficLight( void )
 {
-    ASSERT(mProxy != NULL);
+    ASSERT(mProxy != nullptr);
     return mProxy->requestStartTrafficLight( static_cast<IENotificationEventConsumer &>(self()) );
 }
 
 inline unsigned int PowerManagerClientBase::requestStopTrafficLight( void )
 {
-    ASSERT(mProxy != NULL);
+    ASSERT(mProxy != nullptr);
     return mProxy->requestStopTrafficLight( static_cast<IENotificationEventConsumer &>(self()) );
 }
 
@@ -519,12 +518,12 @@ inline unsigned int PowerManagerClientBase::requestStopTrafficLight( void )
 
 inline void PowerManagerClientBase::notifyOnResponseStartTrafficLight( bool notify /* = true */ )
 {
-    PowerManagerClientBase::notifyOn(NEPowerManager::MSG_ID_responseStartTrafficLight, notify, false);
+    PowerManagerClientBase::notifyOn(NEPowerManager::eMessageIDs::MsgId_responseStartTrafficLight, notify, false);
 }
 
 inline void PowerManagerClientBase::notifyOnResponseStopTrafficLight( bool notify /* = true */ )
 {
-    PowerManagerClientBase::notifyOn(NEPowerManager::MSG_ID_responseStopTrafficLight, notify, false);
+    PowerManagerClientBase::notifyOn(NEPowerManager::eMessageIDs::MsgId_responseStopTrafficLight, notify, false);
 }
 
 inline const PowerManagerProxy * PowerManagerClientBase::getProxy( void ) const
@@ -534,11 +533,9 @@ inline const PowerManagerProxy * PowerManagerClientBase::getProxy( void ) const
 
 inline const String & PowerManagerClientBase::getServiceRole( void ) const
 {
-    ASSERT(mProxy != NULL);
+    ASSERT(mProxy != nullptr);
     return mProxy->getProxyAddress().getRoleName();
 }
-
-#endif   // GENERATED_SRC_POWERMANAGERCLIENTBASE_HPP
 
 //////////////////////////////////////////////////////////////////////////
 // End generate generated/src/PowerManagerClientBase.hpp file

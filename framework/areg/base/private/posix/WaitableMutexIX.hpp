@@ -1,9 +1,16 @@
-#ifndef AREG_BASE_PRIVATE_POSIX_WAITABLEMUTEXIX_HPP
-#define AREG_BASE_PRIVATE_POSIX_WAITABLEMUTEXIX_HPP
+#pragma once
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/base/private/posix/WaitableMutexIX.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, POSIX Waitable Event class.
  *
  ************************************************************************/
@@ -13,7 +20,8 @@
   ************************************************************************/
 #include "areg/base/GEGlobal.h"
 
-#ifdef _POSIX
+#if defined(_POSIX) || defined(POSIX)
+
 #include "areg/base/private/posix/IEWaitableBaseIX.hpp"
 
 //////////////////////////////////////////////////////////////////////////
@@ -50,12 +58,12 @@ public:
      *                      is ignored by the system.
      * \param   asciiName   The name of synchronization Event.
      **/
-    WaitableMutexIX(bool initOwned = false, const char * asciiName = NULL);
+    explicit WaitableMutexIX(bool initOwned = false, const char * asciiName = nullptr);
 
     /**
      * \brief   Destructor.
      **/
-    virtual ~WaitableMutexIX( void );
+    virtual ~WaitableMutexIX( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations.
@@ -87,10 +95,10 @@ public:
     /**
      * \brief   Returns true if the object is signaled. Otherwise, returns false.
      * \param   contextThread   The ID of thread where locking happened.
-     *                          The mutex is signaled if owner thread is NULL or the thread context
+     *                          The mutex is signaled if owner thread is nullptr or the thread context
      *                          and owner threads are same.
      **/
-    virtual bool checkSignaled( pthread_t contextThread ) const;
+    virtual bool checkSignaled( pthread_t contextThread ) const override;
 
     /**
      * \brief   This callback is triggered when a waiting thread is released to continue to run.
@@ -100,7 +108,7 @@ public:
      *          new owner thread. Only signaled waitable Mutex can assign thread ownership.
      *          Returns false, if waitable Mutex already has ownership and cannot take new.
      **/
-    virtual bool notifyRequestOwnership( pthread_t ownerThread );
+    virtual bool notifyRequestOwnership( pthread_t ownerThread ) override;
 
     /**
      * \brief   This callback is triggered to when a system needs to know whether waitable
@@ -109,7 +117,7 @@ public:
      *          signals only one thread, when waitable Event can signal multiple threads.
      * \return  Waitable Mutex always returns false.
      **/
-    virtual bool checkCanSignalMultipleThreads( void ) const;
+    virtual bool checkCanSignalMultipleThreads( void ) const override;
 
     /**
      * \brief   This callback is called to notify the object the amount of
@@ -119,7 +127,7 @@ public:
      *                      object is in signaled state. 0 means that no thread
      *                      was released by the object.
      **/
-    virtual void notifyReleasedThreads( int numThreads );
+    virtual void notifyReleasedThreads( int numThreads ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables.
@@ -139,8 +147,7 @@ private:
 // Forbidden calls.
 //////////////////////////////////////////////////////////////////////////
 private:
-    WaitableMutexIX( const WaitableMutexIX & /*src*/ );
-    const WaitableMutexIX & operator = ( const WaitableMutexIX & /*src*/);
+    DECLARE_NOCOPY_NOMOVE( WaitableMutexIX );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -153,5 +160,4 @@ inline pthread_t WaitableMutexIX::getOwningThreadId(void) const
     return mOwnerThread;
 }
 
-#endif  // _POSIX
-#endif  // AREG_BASE_PRIVATE_POSIX_WAITABLEMUTEXIX_HPP
+#endif  // defined(_POSIX) || defined(POSIX)

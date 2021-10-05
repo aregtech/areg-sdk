@@ -3,9 +3,16 @@
 // Author      : Artak Avetyan
 // Version     :
 // Copyright   : Aregtech (c) 2021
-// Description : Hello World in C++, Ansi-style
-//               This code example demonstrates timer processing in
-//               own thread.
+// Description : This project demonstrates use of timers. The demo initializes,
+//               starts and stops multiple timers processed in different 
+//               threads. The timers require the start of Timer Manager (timer 
+//               service). The timers are automatically dispatched in the timer
+//               owner thread.
+//
+//               Following timers are used:
+//                  - one time timer  ( it runs only once )
+//                  - periodic timer  ( it runs certain amount of times )
+//                  - continues timer ( it runs continuously until stopped ).
 //============================================================================
 
 #include "areg/base/GEGlobal.h"
@@ -21,7 +28,7 @@
     #pragma comment(lib, "areg.lib")
 #endif // WINDOWS
 
-const unsigned int TIMEOUT_APPLICATION  = Timer::TIMEOUT_1_SEC * 30;
+constexpr unsigned int TIMEOUT_APPLICATION  = Timer::TIMEOUT_1_SEC * 5;
 
 //////////////////////////////////////////////////////////////////////////
 // TimerDispatcher class declaration
@@ -37,18 +44,18 @@ const unsigned int TIMEOUT_APPLICATION  = Timer::TIMEOUT_1_SEC * 30;
 class TimerDispatcher   : public    DispatcherThread
                         , private   IETimerConsumer
 {
-    static const unsigned int TIMEOUT_ONE_TIME;         //!< The timeout in milliseconds of one time timer
-    static const unsigned int TIMEOUT_PERIODIC_TIME;    //!< The timeout in milliseconds of periodic timer
-    static const unsigned int TIMEOUT_CONTINUOUS_TIME;  //!< The timeout in milliseconds of continues timer
+    static constexpr unsigned int TIMEOUT_ONE_TIME          = Timer::TIMEOUT_1_MS * 500;//!< The timeout in milliseconds of one time timer
+    static constexpr unsigned int TIMEOUT_PERIODIC_TIME     = Timer::TIMEOUT_1_MS * 80; //!< The timeout in milliseconds of periodic timer
+    static constexpr unsigned int TIMEOUT_CONTINUOUS_TIME   = Timer::TIMEOUT_1_MS * 50; //!< The timeout in milliseconds of continues timer
 
 public:
 
 /************************************************************************/
 // Constructor and destructor.
 /************************************************************************/
-    TimerDispatcher( const char * threadName );
+    explicit TimerDispatcher( const char * threadName );
 
-    virtual ~TimerDispatcher( void );
+    virtual ~TimerDispatcher( void ) = default;
 
 /************************************************************************/
 // operations
@@ -75,7 +82,7 @@ protected:
      *          Overwrite method to receive messages.
      * \param   timer   The timer object that is expired.
      **/
-    virtual void processTimer( Timer & timer );
+    virtual void processTimer( Timer & timer ) override;
 
     /**
      * \brief	Posts event and delivers to its target.
@@ -86,7 +93,7 @@ protected:
      * \param	eventElem	Event object to post
      * \return	In this class it always returns true.
      **/
-    virtual bool postEvent( Event & eventElem );
+    virtual bool postEvent( Event & eventElem ) override;
 
 private:
     Timer   mOneTime;       //!< One time timer
@@ -101,9 +108,6 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // TimerDispatcher class implementation
 //////////////////////////////////////////////////////////////////////////
-const unsigned int TimerDispatcher::TIMEOUT_ONE_TIME        = Timer::TIMEOUT_1_MS * 500;
-const unsigned int TimerDispatcher::TIMEOUT_PERIODIC_TIME   = Timer::TIMEOUT_1_MS * 80;
-const unsigned int TimerDispatcher::TIMEOUT_CONTINUOUS_TIME = Timer::TIMEOUT_1_MS * 50;
 
 // Define TimerDispatcher trace scopes to make logging
 // Trace scopes must be defined before they are used.
@@ -123,10 +127,6 @@ TimerDispatcher::TimerDispatcher( const char * threadName )
 {
     TRACE_SCOPE(main_TimerDispatcher_TimerDispatcher);
     TRACE_DBG("Instantiated timer dispatcher");
-}
-
-TimerDispatcher::~TimerDispatcher( void )
-{
 }
 
 inline TimerDispatcher & TimerDispatcher::self( void )
@@ -241,7 +241,7 @@ static void startTimerThread( TimerDispatcher & aThread )
     TRACE_SCOPE(main_startTimerThread);
 
     // create and start thread, wait until it is started.
-    aThread.createThread(Thread::WAIT_INFINITE);
+    aThread.createThread(NECommon::WAIT_INFINITE);
     TRACE_DBG("[ %s ] to create thread [ %s ]", aThread.isValid() ? "SUCCEEDED" : "FAILED", aThread.getName().getString());
 
     TRACE_DBG("Triggering timers....");
@@ -261,7 +261,7 @@ static void stopTimerThread( TimerDispatcher & aThread )
 
     TRACE_DBG("Comleted demo, going to stop and exit dispatcher thread [ %s ]", aThread.getName().getString());
     aThread.triggerExitEvent();
-    aThread.completionWait(Thread::WAIT_INFINITE);
+    aThread.completionWait(NECommon::WAIT_INFINITE);
 
     TRACE_WARN("The [ %s ] thread has completed job...", aThread.getName().getString());
 }
@@ -275,7 +275,7 @@ int main()
     printf("Initializing timer for testing...\n");
     // Start tracing. Use default configuration file, which is "./config/log.init"
     // If not existing, force to start tracer.
-    Application::startTracer(NULL, true);
+    Application::startTracer( nullptr, true);
     
     do 
     {
@@ -308,7 +308,7 @@ int main()
 
         // Sleep for a while, let timers run
         TRACE_INFO("Main thread sleeping to let timers run..");
-        Thread::sleep(Thread::WAIT_1_SECOND * 30);
+        Thread::sleep(TIMEOUT_APPLICATION);
         TRACE_INFO("Main thread resumed to stop timers...");
 
         // Stop timer threads.

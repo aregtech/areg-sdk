@@ -118,6 +118,9 @@
     <ClCompile Include="mcrouter\tcp\private\ServiceStub.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="mcrouter\app\private\NEMulticastRouterSettings.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="mcrouter\resources\mcrouter.rc">

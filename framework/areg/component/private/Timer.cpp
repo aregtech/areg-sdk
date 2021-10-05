@@ -1,7 +1,15 @@
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/component/Timer.cpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, Timer class.
  *              Use to fire timer.
  *
@@ -24,32 +32,6 @@ DEF_TRACE_SCOPE(areg_component_Timer_startTimer);
 // Predefined constants
 //////////////////////////////////////////////////////////////////////////
 
-const unsigned int  Timer::INVALID_TIMEOUT          = static_cast<unsigned int>(0);
-
-/**
- * \brief   This value is used to set continues Timer, which will not stop, until it is not requested to be stopped manually.
- **/
-const unsigned int  Timer::CONTINUOUSLY             = static_cast<unsigned int>(-1);   /*0xFFFFFFFF*/
-/**
- * \brief   Default number of maximum queued number of timer events in dispatcher thread.
- **/
-const int           Timer::DEFAULT_MAXIMUM_QUEUE    = static_cast<int>(5);             /*0x00000005*/
-/**
- * \brief   Defined to ignore number of maximum queued timer events in dispatcher thread.
- **/
-const int           Timer::IGNORE_TIMER_QUEUE      = static_cast<int>(0);             /*0x00000000*/
-
-const unsigned int  Timer::TIMEOUT_1_MS            = 1;
-
-const unsigned int  Timer::TIMEOUT_100_MS          = (Timer::TIMEOUT_1_MS * 100);
-
-const unsigned int  Timer::TIMEOUT_500_MS          = (Timer::TIMEOUT_100_MS * 5);
-
-const unsigned int  Timer::TIMEOUT_1_SEC           = (Timer::TIMEOUT_1_MS * 1000);
-
-const unsigned int  Timer::TIMEOUT_1_MIN           = (Timer::TIMEOUT_1_SEC * 60);
-
-
 unsigned int Timer::getTickCount( void )
 {
     return static_cast<unsigned int>(DateTime::getSystemTickCount());
@@ -58,7 +40,7 @@ unsigned int Timer::getTickCount( void )
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
-Timer::Timer(IETimerConsumer& timerConsumer, const char* timerName /*= NULL*/, int maxQueued /*= Timer::DEFAULT_MAXIMUM_QUEUE*/)
+Timer::Timer(IETimerConsumer& timerConsumer, const char* timerName /*= nullptr*/, int maxQueued /*= Timer::DEFAULT_MAXIMUM_QUEUE*/)
     : mConsumer         (timerConsumer)
     , mName             (NEUtilities::generateName(timerName))
     , mTimeoutInMs      (Timer::INVALID_TIMEOUT)
@@ -68,16 +50,10 @@ Timer::Timer(IETimerConsumer& timerConsumer, const char* timerName /*= NULL*/, i
 
     , mCurrentQueued    (0)
     , mMaxQueued        (maxQueued > 0 ? maxQueued : Timer::IGNORE_TIMER_QUEUE)
-    , mDispatchThread   (NULL)
+    , mDispatchThread   (nullptr)
     , mStarted          (false)
     , mLock             ( )
 {
-    ; // do nothing
-}
-
-Timer::~Timer( void )
-{
-    ; // do nothing
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -109,9 +85,9 @@ bool Timer::startTimer(unsigned int timeoutInMs, DispatcherThread & whichThread,
     mCurrentQueued  = 0;
 
     mStarted        = TimerManager::startTimer(self(), whichThread);
-    mDispatchThread = mStarted && whichThread.isValid() ? &whichThread : NULL;
+    mDispatchThread = mStarted && whichThread.isValid() ? &whichThread : nullptr;
 
-    return (mDispatchThread != NULL);
+    return (mDispatchThread != nullptr);
 }
 
 void Timer::stopTimer( void )
@@ -121,7 +97,7 @@ void Timer::stopTimer( void )
     TimerManager::stopTimer(self());
 
     mStarted        = false;
-    mDispatchThread = NULL;
+    mDispatchThread = nullptr;
     mCurrentQueued  = 0;
     mTimeoutInMs    = Timer::INVALID_TIMEOUT;
     mEventsCount    = 0;
@@ -155,7 +131,7 @@ void Timer::queueTimer( void )
 
     if ( mMaxQueued != Timer::IGNORE_TIMER_QUEUE && mEventsCount > static_cast<unsigned int>(mMaxQueued) )
     {
-        if (mDispatchThread != NULL)
+        if (mDispatchThread != nullptr)
         {
             if ((++ mCurrentQueued > mMaxQueued) && mStarted)
             {
@@ -173,7 +149,7 @@ void Timer::unqueueTimer( void )
 
     if ( mMaxQueued != Timer::IGNORE_TIMER_QUEUE && mEventsCount > static_cast<unsigned int>(mMaxQueued) )
     {
-        if (mDispatchThread != NULL)
+        if (mDispatchThread != nullptr)
         {
            if ((-- mCurrentQueued < mMaxQueued) && (mStarted == false))
            {

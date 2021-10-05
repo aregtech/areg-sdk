@@ -1,18 +1,18 @@
 //////////////////////////////////////////////////////////////////////////
 // Begin generate generated/DirectConnectionClientBase.hpp file
 //////////////////////////////////////////////////////////////////////////
-#ifndef  GENERATED_DIRECTCONNECTIONCLIENTBASE_HPP
-#define  GENERATED_DIRECTCONNECTIONCLIENTBASE_HPP
-/************************************************************************
- * (c) copyright    2021
- *                  Create by AREG SDK code generator tool from source DirectConnection.
- * Generated at     04.07.2021  04:30:02 GMT+02:00 
- ************************************************************************/
+#pragma once
 
 /************************************************************************
+ * (c) copyright    2021
+ *
+ * Generated at     30.09.2021  01:22:15 GMT+02:00 
+ *                  Create by AREG SDK code generator tool from source DirectConnection.
+ *
  * \file            generated/DirectConnectionClientBase.hpp
  * \ingroup         DirectConnection Service Interface
- * \brief           This is an automatic generated code of DirectConnection Service Interface Client base class declaration.
+ * \brief           This is an automatic generated code of DirectConnection
+ *                  Service Interface Client base class declaration.
  ************************************************************************/
 
 /************************************************************************
@@ -55,9 +55,9 @@ protected:
      *          Specifies used service and owner thread.
      * \param   roleName    The role name assigned to DirectConnection servicing component object.
      * \param   ownerThread The name of component owner thread to dispatch messages.
-     *                      If NULL, all messages are dispatched in current component thread.
+     *                      If nullptr, all messages are dispatched in current component thread.
      **/
-    DirectConnectionClientBase( const char* roleName, const char * ownerThread = static_cast<const char *>(NULL) );
+    DirectConnectionClientBase( const char* roleName, const char * ownerThread = nullptr );
 
     /**
      * \brief   Initialize DirectConnection Service Interface client object.
@@ -330,7 +330,7 @@ protected:
      *          i.e. if passed Proxy address is equal to the Proxy object that client has.
      *          If Proxy objects are not equal, it should return false;
      **/
-    virtual bool serviceConnected( bool isConnected, ProxyBase & proxy );
+    virtual bool serviceConnected( bool isConnected, ProxyBase & proxy ) override;
 
 /************************************************************************/
 // DirectConnectionClientBase Error Handling overrides
@@ -359,7 +359,7 @@ protected:
 
     /**
      * \brief  Returns pointer to client dispatcher thread where the messages are dispatched.
-     *         The function can return NULL if Proxy was not instantiated yet.
+     *         The function can return nullptr if Proxy was not instantiated yet.
      **/
     DispatcherThread * getDispatcherThread( void );
      
@@ -407,7 +407,7 @@ private:
      * \brief   Is processing notification event calls.
      * \param   eventElem   Notification Event object to process
      **/
-    virtual void processNotificationEvent( NotificationEvent & eventElem );
+    virtual void processNotificationEvent( NotificationEvent & eventElem ) override;
     
 /************************************************************************/
 // DirectConnectionClientBase hidden methods
@@ -448,9 +448,8 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    DirectConnectionClientBase( void );
-    DirectConnectionClientBase( const DirectConnectionClientBase & /* src */ );
-    const DirectConnectionClientBase & operator = ( const DirectConnectionClientBase & /* src */ );
+    DirectConnectionClientBase( void ) = delete;
+    DECLARE_NOCOPY_NOMOVE( DirectConnectionClientBase );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -469,31 +468,31 @@ inline unsigned int DirectConnectionClientBase::getCurrentSequenceNr( void ) con
 
 inline void DirectConnectionClientBase::clearAllNotifications( void )
 {
-    ASSERT(mProxy != NULL);
+    ASSERT(mProxy != nullptr);
     mProxy->clearAllNotifications(static_cast<IENotificationEventConsumer &>(self()));
 }
 
 inline bool DirectConnectionClientBase::isConnected( void ) const
 {
-    ASSERT(mProxy != NULL);
+    ASSERT(mProxy != nullptr);
     return mIsConnected;
 }
 
 inline bool DirectConnectionClientBase::isNotificationAssigned( NEDirectConnection::eMessageIDs msgId ) const
 {
-    ASSERT(mProxy != NULL);
+    ASSERT(mProxy != nullptr);
     return mProxy->hasNotificationListener(static_cast<unsigned int>(msgId));
 }
 
 inline const String & DirectConnectionClientBase::getServiceName( void ) const
 {
-    ASSERT(mProxy != NULL);
+    ASSERT(mProxy != nullptr);
     return mProxy->getProxyAddress().getServiceName();
 }
     
 inline const Version & DirectConnectionClientBase::getServiceVersion( void ) const
 {
-    ASSERT(mProxy != NULL);
+    ASSERT(mProxy != nullptr);
     return mProxy->getProxyAddress().getServiceVersion();
 }
 
@@ -503,18 +502,18 @@ inline const Version & DirectConnectionClientBase::getServiceVersion( void ) con
 
 inline bool DirectConnectionClientBase::isInitiatedConnectionsValid( void ) const
 {
-    ASSERT(mProxy != NULL);
+    ASSERT(mProxy != nullptr);
    return mProxy->isInitiatedConnectionsValid( );
 }
 inline const NEDirectConnection::MapParticipants & DirectConnectionClientBase::getInitiatedConnections( NEService::eDataStateType & state ) const
 {
-    ASSERT(mProxy != NULL);
+    ASSERT(mProxy != nullptr);
     return mProxy->getInitiatedConnections( state );
 }
 
 inline void DirectConnectionClientBase::notifyOnInitiatedConnectionsUpdate( bool notify /* = true */ )
 {
-    notifyOn( NEDirectConnection::MSG_ID_InitiatedConnections, notify, false );
+    DirectConnectionClientBase::notifyOn( NEDirectConnection::eMessageIDs::MsgId_InitiatedConnections, notify, false );
 }
 
 /************************************************************************
@@ -523,25 +522,25 @@ inline void DirectConnectionClientBase::notifyOnInitiatedConnectionsUpdate( bool
 
 inline unsigned int DirectConnectionClientBase::requestConnectoinSetup( const NEDirectConnection::sInitiator & initiator, const NEDirectConnection::ListParticipants & listParticipants )
 {
-    ASSERT(mProxy != NULL);
+    ASSERT(mProxy != nullptr);
     return mProxy->requestConnectoinSetup( static_cast<IENotificationEventConsumer &>(self()), initiator, listParticipants );
 }
 
 inline unsigned int DirectConnectionClientBase::requestAddParticipant( const NEDirectConnection::sInitiator & initiator, const NEDirectConnection::ListParticipants & listParticipants )
 {
-    ASSERT(mProxy != NULL);
+    ASSERT(mProxy != nullptr);
     return mProxy->requestAddParticipant( static_cast<IENotificationEventConsumer &>(self()), initiator, listParticipants );
 }
 
 inline unsigned int DirectConnectionClientBase::requestRemoveParticipant( const NEDirectConnection::sInitiator & initiator, const NEDirectConnection::ListParticipants & listParticipants )
 {
-    ASSERT(mProxy != NULL);
+    ASSERT(mProxy != nullptr);
     return mProxy->requestRemoveParticipant( static_cast<IENotificationEventConsumer &>(self()), initiator, listParticipants );
 }
 
 inline void DirectConnectionClientBase::requestCloseConnection( const NEDirectConnection::sInitiator & initiator )
 {
-    ASSERT(mProxy != NULL);
+    ASSERT(mProxy != nullptr);
     mProxy->requestCloseConnection( initiator );
 }
 
@@ -551,17 +550,17 @@ inline void DirectConnectionClientBase::requestCloseConnection( const NEDirectCo
 
 inline void DirectConnectionClientBase::notifyOnResponseConnectoinSetup( bool notify /* = true */ )
 {
-    notifyOn(NEDirectConnection::MSG_ID_responseConnectoinSetup, notify, false);
+    DirectConnectionClientBase::notifyOn(NEDirectConnection::eMessageIDs::MsgId_responseConnectoinSetup, notify, false);
 }
 
 inline void DirectConnectionClientBase::notifyOnResponseAddParticipant( bool notify /* = true */ )
 {
-    notifyOn(NEDirectConnection::MSG_ID_responseAddParticipant, notify, false);
+    DirectConnectionClientBase::notifyOn(NEDirectConnection::eMessageIDs::MsgId_responseAddParticipant, notify, false);
 }
 
 inline void DirectConnectionClientBase::notifyOnResponseRemoveParticipant( bool notify /* = true */ )
 {
-    notifyOn(NEDirectConnection::MSG_ID_responseRemoveParticipant, notify, false);
+    DirectConnectionClientBase::notifyOn(NEDirectConnection::eMessageIDs::MsgId_responseRemoveParticipant, notify, false);
 }
 
 inline const DirectConnectionProxy * DirectConnectionClientBase::getProxy( void ) const
@@ -571,11 +570,9 @@ inline const DirectConnectionProxy * DirectConnectionClientBase::getProxy( void 
 
 inline const String & DirectConnectionClientBase::getServiceRole( void ) const
 {
-    ASSERT(mProxy != NULL);
+    ASSERT(mProxy != nullptr);
     return mProxy->getProxyAddress().getRoleName();
 }
-
-#endif   // GENERATED_DIRECTCONNECTIONCLIENTBASE_HPP
 
 //////////////////////////////////////////////////////////////////////////
 // End generate generated/DirectConnectionClientBase.hpp file

@@ -1,7 +1,15 @@
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        mcrouter/tcp/private/ServerReceiveThread.cpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform Receive Message Thread of Server socket.
  ************************************************************************/
 #include "mcrouter/tcp/private/ServerReceiveThread.hpp"
@@ -14,20 +22,15 @@
 #include "areg/base/SocketAccepted.hpp"
 
 #include "areg/trace/GETrace.h"
+
 DEF_TRACE_SCOPE(areg_ipc_private_ServerReceiveThread_runDispatcher);
 
 ServerReceiveThread::ServerReceiveThread( IEServerConnectionHandler & connectHandler, IERemoteServiceHandler & remoteService, ServerConnection & connection )
-    : DispatcherThread  ( NEConnection::SERVER_RECEIVE_MESSAGE_THREAD )
+    : DispatcherThread  ( NEConnection::SERVER_RECEIVE_MESSAGE_THREAD.data( ) )
     , mRemoteService    ( remoteService )
     , mConnectHandler   ( connectHandler )
     , mConnection       ( connection )
 {
-    ; // do nothing
-}
-
-ServerReceiveThread::~ServerReceiveThread(void)
-{
-    ; // do nothing
 }
 
 bool ServerReceiveThread::runDispatcher(void)
@@ -37,7 +40,7 @@ bool ServerReceiveThread::runDispatcher(void)
 
     mEventStarted.setEvent();
 
-    int whichEvent  = static_cast<int>(EVENT_ERROR);
+    int whichEvent  = static_cast<int>(EventDispatcherBase::eEventOrder::EventError);
     if ( mConnection.serverListen( NESocket::MAXIMUM_LISTEN_QUEUE_SIZE) )
     {
         IESynchObject* syncObjects[2] = {&mEventExit, &mEventQueue};
@@ -46,11 +49,11 @@ bool ServerReceiveThread::runDispatcher(void)
         RemoteMessage msgReceived;
         do 
         {
-            whichEvent = multiLock.lock(IESynchObject::DO_NOT_WAIT, false);
+            whichEvent = multiLock.lock(NECommon::DO_NOT_WAIT, false);
             if ( whichEvent == MultiLock::LOCK_INDEX_TIMEOUT )
             {
-                whichEvent = static_cast<int>(EVENT_QUEUE); // escape quit
-                NESocket::InterlockedValue addrAccepted;
+                whichEvent = static_cast<int>(EventDispatcherBase::eEventOrder::EventQueue); // escape quit
+                NESocket::SocketAddress addrAccepted;
                 SOCKETHANDLE hSocket = mConnection.waitForConnectionEvent(addrAccepted);
                 if ( hSocket != NESocket::InvalidSocketHandle )
                 {
@@ -88,7 +91,7 @@ bool ServerReceiveThread::runDispatcher(void)
                         }
                     }
 
-                    const NESocket::InterlockedValue & addSocket = clientSocket.getAddress();
+                    const NESocket::SocketAddress& addSocket = clientSocket.getAddress();
                     if ( mConnection.receiveMessage(msgReceived, clientSocket) > 0 )
                     {
                         TRACE_DBG("Received message [ %p ] from source [ %p ], client [ %s : %d ]"
@@ -118,11 +121,11 @@ bool ServerReceiveThread::runDispatcher(void)
             }
             else
             {
-                Event * eventElem = whichEvent == static_cast<int>(EVENT_QUEUE) ? pickEvent() : NULL;
-                whichEvent = isExitEvent(eventElem) || (whichEvent == static_cast<int>(EVENT_EXIT)) ? static_cast<int>(EVENT_EXIT) : whichEvent;
+                Event * eventElem = whichEvent == static_cast<int>(EventDispatcherBase::eEventOrder::EventQueue) ? pickEvent() : nullptr;
+                whichEvent = isExitEvent(eventElem) ? static_cast<int>(EventDispatcherBase::eEventOrder::EventExit) : whichEvent;
             }
 
-        } while (whichEvent == static_cast<int>(EVENT_QUEUE));
+        } while (whichEvent == static_cast<int>(EventDispatcherBase::eEventOrder::EventQueue));
     }
 
     mHasStarted = false;
@@ -131,5 +134,5 @@ bool ServerReceiveThread::runDispatcher(void)
     mEventStarted.resetEvent();
 
     TRACE_DBG("Dispatcher [ %s ] completed job and stopping running.", mDispatcherName.getString());
-    return (whichEvent == static_cast<int>(EVENT_EXIT));
+    return (whichEvent == static_cast<int>(EventDispatcherBase::eEventOrder::EventExit));
 }

@@ -1,9 +1,16 @@
-#ifndef AREG_COMPONENT_REQUESTEVENTS_HPP
-#define AREG_COMPONENT_REQUESTEVENTS_HPP
+#pragma once
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/component/RequestEvents.hpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, Generic Local and Remote Request 
  *              Event object for local and remote communication
  ************************************************************************/
@@ -89,14 +96,14 @@ protected:
      * \param	reqId	    The ID of request.
      * \param   eventType   The type of event. It should be either 
      *                      local request or remote request type.
-     * \param	name	    Optional. Name for event data. Can be NULL.
+     * \param	name	    Optional. Name for event data. Can be nullptr.
      **/
     RequestEvent( const EventDataStream & args
                 , const ProxyAddress & fromSource
                 , const StubAddress & toTarget
                 , unsigned int reqId
                 , Event::eEventType eventType
-                , const char* name = NULL);
+                , const char* name = nullptr);
 
     /**
      * \brief   Initializes object data from streaming object.
@@ -107,7 +114,7 @@ protected:
     /**
      * \brief   Destructor.
      **/
-    virtual ~RequestEvent( void );
+    virtual ~RequestEvent( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes
@@ -153,14 +160,14 @@ protected:
      * \param   stream  The streaming object to read out event data
      * \return  Returns streaming object to read out data.
      **/
-    virtual const IEInStream & readStream( const IEInStream & stream );
+    virtual const IEInStream & readStream( const IEInStream & stream ) override;
 
     /**
      * \brief   Writes event data to streaming object
      * \param   stream  The streaming object to write event data.
      * \return  Returns streaming object to write event data.
      **/
-    virtual IEOutStream & writeStream( IEOutStream & stream ) const;
+    virtual IEOutStream & writeStream( IEOutStream & stream ) const override;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -175,9 +182,8 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    RequestEvent( void );
-    RequestEvent( const RequestEvent & /*src*/ );
-    const RequestEvent & operator = ( const RequestEvent & /*src*/ );
+    RequestEvent( void ) = delete;
+    DECLARE_NOCOPY_NOMOVE( RequestEvent );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -218,13 +224,13 @@ protected:
      * \param	fromSource	The address of Proxy source.
      * \param	toTarget	The address of Stub target.
      * \param	reqId	    The ID of request.
-     * \param	name	    Optional. Name for event data. Can be NULL.
+     * \param	name	    Optional. Name for event data. Can be nullptr.
      **/
     LocalRequestEvent( const EventDataStream & args
                      , const ProxyAddress & fromSource
                      , const StubAddress & toTarget
                      , unsigned int reqId
-                     , const char* name = NULL);
+                     , const char* name = nullptr);
 
     /**
      * \brief   Initializes object data from streaming object.
@@ -235,15 +241,14 @@ protected:
     /**
      * \brief   Destructor.
      **/
-    virtual ~LocalRequestEvent( void );
+    virtual ~LocalRequestEvent( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    LocalRequestEvent( void );
-    LocalRequestEvent( const LocalRequestEvent & /*src*/ );
-    const LocalRequestEvent & operator = ( const LocalRequestEvent & /*src*/ );
+    LocalRequestEvent( void ) = delete;
+    DECLARE_NOCOPY_NOMOVE( LocalRequestEvent );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -285,13 +290,13 @@ protected:
      * \param	fromSource	The address of Proxy source.
      * \param	toTarget	The address of Stub target.
      * \param	reqId	    The ID of request.
-     * \param	name	    Optional. Name for event data. Can be NULL.
+     * \param	name	    Optional. Name for event data. Can be nullptr.
      **/
     RemoteRequestEvent( const EventDataStream & args
                       , const ProxyAddress & fromSource
                       , const StubAddress & toTarget
                       , unsigned int reqId
-                      , const char* name = NULL);
+                      , const char* name = nullptr);
 
 
     /**
@@ -303,7 +308,7 @@ protected:
     /**
      * \brief   Destructor.
      **/
-    virtual ~RemoteRequestEvent( void );
+    virtual ~RemoteRequestEvent( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////////
 // Protected operations
@@ -335,9 +340,8 @@ protected:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    RemoteRequestEvent( void );
-    RemoteRequestEvent( const RemoteRequestEvent & /*src*/ );
-    const RemoteRequestEvent & operator = ( const RemoteRequestEvent & /*src*/ );
+    RemoteRequestEvent( void ) = delete;
+    DECLARE_NOCOPY_NOMOVE( RemoteRequestEvent );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -382,15 +386,14 @@ protected:
     /**
      * \brief   Destructor.
      **/
-    virtual ~NotifyRequestEvent( void );
+    virtual ~NotifyRequestEvent( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    NotifyRequestEvent( void );
-    NotifyRequestEvent( const NotifyRequestEvent & /*src*/ );
-    const NotifyRequestEvent & operator = ( const NotifyRequestEvent & /*src*/ );
+    NotifyRequestEvent( void ) = delete;
+    DECLARE_NOCOPY_NOMOVE( NotifyRequestEvent );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -433,15 +436,14 @@ protected:
     /**
      * \brief   Destructor.
      **/
-    virtual ~LocalNotifyRequestEvent( void );
+    virtual ~LocalNotifyRequestEvent( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    LocalNotifyRequestEvent( void );
-    LocalNotifyRequestEvent( const LocalNotifyRequestEvent & /*src*/ );
-    const LocalNotifyRequestEvent & operator = ( const LocalNotifyRequestEvent & /*src*/ );
+    LocalNotifyRequestEvent( void ) = delete;
+    DECLARE_NOCOPY_NOMOVE( LocalNotifyRequestEvent );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -485,7 +487,7 @@ protected:
     /**
      * \brief   Destructor.
      **/
-    virtual ~RemoteNotifyRequestEvent( void );
+    virtual ~RemoteNotifyRequestEvent( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////////
 // Protected operations
@@ -518,9 +520,8 @@ protected:
 // Forbidden calls.
 //////////////////////////////////////////////////////////////////////////
 private:
-    RemoteNotifyRequestEvent( void );
-    RemoteNotifyRequestEvent( const RemoteNotifyRequestEvent & /*src*/ );
-    const RemoteNotifyRequestEvent & operator = ( const RemoteNotifyRequestEvent & /*src*/ );
+    RemoteNotifyRequestEvent( void ) = delete;
+    DECLARE_NOCOPY_NOMOVE( RemoteNotifyRequestEvent );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -599,5 +600,3 @@ inline const Channel & RemoteNotifyRequestEvent::getSourceChannel( void ) const
 {
     return mProxySource.getChannel();
 }
-
-#endif  // AREG_COMPONENT_REQUESTEVENTS_HPP

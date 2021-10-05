@@ -1,9 +1,16 @@
-#ifndef AREG_COMPONENT_IETIMERCONSUMER_HPP
-#define AREG_COMPONENT_IETIMERCONSUMER_HPP
+#pragma once
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/component/IETimerConsumer.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, Timer Event Consumer.
  *
  ************************************************************************/
@@ -27,25 +34,11 @@ class TimerEventData;
 class DispatcherThread;
 
 /**
- * \brief       The timer Event is triggered when the system timer is
- *              expired. See details in Timer. The time processing
- *              function of IETimerConsumer object is triggered in
- *              same thread where the Timer object was requested to be started.
+ * \brief   The timer Event is triggered when a Timer is expired and it should
+ *          be processed in dispatcher thread.
  * 
- * \details     Every time where the Timer is started, the relative expired
- *              time ("up to now") and the event count is sent. When the
- *              Timer is fired, the method ProcessTimer() of IETimerConsumer
- *              instance is triggered in the same thread where the timer
- *              was requested to start and fired timer object is passes as parameter.
- *              The Timer will be fired and the caller will receive processing
- *              request as long, until 'event count' time set in timer
- *              or until the Timer is not manually stopped. The Timer,
- *              which event count is equal to Timer::CONTINUOUSLY will
- *              run until is not manually stopped. If event count of Timer
- *              is zero, it will not start. For more details see Timer.
- *
+ *          For details of setting up and starting the timer, see Timer class. 
  * \see Timer
- *
  **/
 
 //////////////////////////////////////////////////////////////////////////
@@ -65,11 +58,11 @@ protected:
     /**
      * \brief   Constructor
      **/
-    IETimerConsumer( void );
+    IETimerConsumer( void ) = default;
     /**
      * \brief   Destructor
      **/
-    virtual ~IETimerConsumer( void );
+    virtual ~IETimerConsumer( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -91,23 +84,22 @@ protected:
 // Hidden overrides
 //////////////////////////////////////////////////////////////////////////
 private:
+
     /**
      * \brief   Automatically triggered when event is dispatched by thread.
      * \param   data    The Timer Event Data object containing Timer object.
      **/
-    virtual void processEvent( const TimerEventData & data);
+    virtual void processEvent( const TimerEventData & data) override;
+
     /**
      * \brief	Triggered when dispatcher starts to dispatch Timer Event.
      * \param	eventElem   The instance of TimerEvent. Otherwise, it is ignored.
      **/
-    virtual void startEventProcessing( Event & eventElem);
+    virtual void startEventProcessing( Event & eventElem) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    IETimerConsumer(const IETimerConsumer & /*src*/ );
-    const IETimerConsumer& operator = (const IETimerConsumer & /*src*/ );
+    DECLARE_NOCOPY_NOMOVE( IETimerConsumer );
 };
-
-#endif  // AREG_COMPONENT_IETIMERCONSUMER_HPP

@@ -5,22 +5,22 @@
     </Overview>
     <DataTypeList>
         <DataType ID="2" Name="sParticipant" Type="Imported">
-            <Namespace>NECommonSettings</Namespace>
-            <Location>shared/NECommonSettings.hpp</Location>
+            <Namespace>NECommon</Namespace>
+            <Location>generated/NECommon.hpp</Location>
         </DataType>
         <DataType ID="3" Name="ListParticipants" Type="Imported">
-            <Namespace>NECommonSettings</Namespace>
-            <Location>shared/NECommonSettings.hpp</Location>
+            <Namespace>NECommon</Namespace>
+            <Location>generated/NECommon.hpp</Location>
         </DataType>
         <DataType ID="4" Name="sParticipant" Type="DefinedType">
             <Description>The imported structure of participant</Description>
             <Container>New Type</Container>
-            <BaseTypeValue>NECommonSettings::sParticipant</BaseTypeValue>
+            <BaseTypeValue>NECommon::sParticipant</BaseTypeValue>
         </DataType>
         <DataType ID="5" Name="ListParticipants" Type="DefinedType">
             <Description>Imported list of participants.</Description>
             <Container>New Type</Container>
-            <BaseTypeValue>NECommonSettings::ListParticipants</BaseTypeValue>
+            <BaseTypeValue>NECommon::ListParticipants</BaseTypeValue>
         </DataType>
     </DataTypeList>
     <AttributeList>
@@ -29,7 +29,7 @@
         </Attribute>
     </AttributeList>
     <MethodList>
-        <Method ID="7" MethodType="Request" Name="ChatJoin" Response="ChatJoin">
+        <Method ID="7" MethodType="request" Name="ChatJoin" Response="ChatJoin">
             <Description>Request to join chat. The participant should be in the list of connections</Description>
             <ParamList>
                 <Parameter DataType="sParticipant" ID="8" Name="participant">
@@ -40,7 +40,7 @@
                 </Parameter>
             </ParamList>
         </Method>
-        <Method ID="10" MethodType="Response" Name="ChatJoin">
+        <Method ID="10" MethodType="response" Name="ChatJoin">
             <Description>Response to join chat</Description>
             <ParamList>
                 <Parameter DataType="bool" ID="11" Name="succeed">
@@ -57,7 +57,7 @@
                 </Parameter>
             </ParamList>
         </Method>
-        <Method ID="15" MethodType="Request" Name="MessageSend">
+        <Method ID="15" MethodType="request" Name="MessageSend">
             <Description>Request to send a message, has no response</Description>
             <ParamList>
                 <Parameter DataType="sParticipant" ID="16" Name="sender">
@@ -71,7 +71,7 @@
                 </Parameter>
             </ParamList>
         </Method>
-        <Method ID="19" MethodType="Request" Name="MessageType">
+        <Method ID="19" MethodType="request" Name="MessageType">
             <Description>The request to send message while typing a text. Has no response.</Description>
             <ParamList>
                 <Parameter DataType="sParticipant" ID="20" Name="participant">
@@ -82,7 +82,7 @@
                 </Parameter>
             </ParamList>
         </Method>
-        <Method ID="22" MethodType="Request" Name="ChatLeave">
+        <Method ID="22" MethodType="request" Name="ChatLeave">
             <Description>The request to leave chat-room. Has no response.</Description>
             <ParamList>
                 <Parameter DataType="sParticipant" ID="23" Name="participant">
@@ -93,7 +93,7 @@
                 </Parameter>
             </ParamList>
         </Method>
-        <Method ID="25" MethodType="Broadcast" Name="MessageSent">
+        <Method ID="25" MethodType="broadcast" Name="MessageSent">
             <Description>Informs all connected servicing clients that the message is sent.</Description>
             <ParamList>
                 <Parameter DataType="sParticipant" ID="26" Name="sender">
@@ -107,7 +107,7 @@
                 </Parameter>
             </ParamList>
         </Method>
-        <Method ID="29" MethodType="Broadcast" Name="MessageTyped">
+        <Method ID="29" MethodType="broadcast" Name="MessageTyped">
             <Description>Informs all connected servicing client that the text was typed.</Description>
             <ParamList>
                 <Parameter DataType="sParticipant" ID="30" Name="participant">
@@ -118,7 +118,7 @@
                 </Parameter>
             </ParamList>
         </Method>
-        <Method ID="32" MethodType="Broadcast" Name="ParticipantJoined">
+        <Method ID="32" MethodType="broadcast" Name="ParticipantJoined">
             <Description>Informs new participant joined chat-room</Description>
             <ParamList>
                 <Parameter DataType="sParticipant" ID="33" Name="participant">
@@ -129,7 +129,7 @@
                 </Parameter>
             </ParamList>
         </Method>
-        <Method ID="35" MethodType="Broadcast" Name="ParticipantLeft">
+        <Method ID="35" MethodType="broadcast" Name="ParticipantLeft">
             <Description>Informs that a participant left chat-room.</Description>
             <ParamList>
                 <Parameter DataType="sParticipant" ID="36" Name="participant">
@@ -140,26 +140,26 @@
                 </Parameter>
             </ParamList>
         </Method>
-        <Method ID="38" MethodType="Broadcast" Name="ChatClosed">
+        <Method ID="38" MethodType="broadcast" Name="ChatClosed">
             <Description>Informs all service connected clients that the chat-room is closed. Message will be impossible.</Description>
         </Method>
     </MethodList>
     <ConstantList>
         <Constant DataType="uint32" ID="40" Name="MessageMaxLen">
-            <Value>NECommonSettings::MaxlenMessage</Value>
+            <Value>NECommon::MaxlenMessage</Value>
             <Description>The maximum length of a message.</Description>
         </Constant>
         <Constant DataType="uint64" ID="41" Name="InvalidSession">
-            <Value>NECommonSettings::InvalidSession</Value>
+            <Value>NECommon::InvalidSession</Value>
             <Description>Identifies invalid session value.</Description>
         </Constant>
         <Constant DataType="uint32" ID="42" Name="InvalidCookie">
-            <Value>NECommonSettings::InvalidCookie</Value>
+            <Value>NECommon::InvalidCookie</Value>
             <Description>Identifies the invalid cookie.</Description>
         </Constant>
     </ConstantList>
     <IncludeList>
-        <Location ID="39" Name="shared/NECommonSettings.hpp">
+        <Location ID="39" Name="generated/NECommon.hpp">
             <Description>Shared data</Description>
         </Location>
     </IncludeList>

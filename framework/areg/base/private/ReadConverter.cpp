@@ -1,7 +1,15 @@
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/base/private/ReadConverter.cpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, Read converter helper object
  *              Reads data from readable streaming object and converts
  *              data to basic types.
@@ -26,73 +34,61 @@ ReadConverter::ReadConverter( IEInStream & readStream, IECursorPosition & readPo
     : mReadStream   (readStream)
     , mReadPosition (readPosition)
 {
-    ; // do nothing
-}
-
-ReadConverter::~ReadConverter( void )
-{
-    ; // do nothing
 }
 
 //////////////////////////////////////////////////////////////////////////
 // Methods
 //////////////////////////////////////////////////////////////////////////
 
-bool ReadConverter::getBool( bool & out_value ) const
+bool ReadConverter::getBool( bool & OUT out_value ) const
 {
-    static const unsigned int size = sizeof(bool);
+    static constexpr unsigned int size = sizeof(bool);
     return (mReadStream.read(reinterpret_cast<unsigned char *>(&out_value), size) == size);
 }
 
-bool ReadConverter::getChar( char & out_value ) const
+bool ReadConverter::getChar( char & OUT out_value ) const
 {
-    static const unsigned int size = sizeof(char);
+    static constexpr unsigned int size = sizeof(char);
     return (mReadStream.read(reinterpret_cast<unsigned char *>(&out_value), size) == size);
 }
 
-bool ReadConverter::getChar( wchar_t & out_value ) const
+bool ReadConverter::getChar( wchar_t & OUT out_value ) const
 {
-    static const unsigned int size = sizeof(wchar_t);
+    static constexpr unsigned int size = sizeof(wchar_t);
     return (mReadStream.read(reinterpret_cast<unsigned char *>(&out_value), size) == size);
 }
 
-bool ReadConverter::getShort( short & out_value ) const
+bool ReadConverter::getShort( short & OUT out_value ) const
 {
-    static const unsigned int size = sizeof(short);
+    static constexpr unsigned int size = sizeof(short);
     return (mReadStream.read(reinterpret_cast<unsigned char *>(&out_value), size) == size);
 }
 
-bool ReadConverter::getInt( int & out_value ) const
+bool ReadConverter::getInt( int & OUT out_value ) const
 {
-    static const unsigned int size = sizeof(int);
+    static constexpr unsigned int size = sizeof(int);
     return (mReadStream.read(reinterpret_cast<unsigned char *>(&out_value), size) == size);
 }
 
-bool ReadConverter::getLong(long & out_value) const
+bool ReadConverter::getInt64( int64_t & OUT out_value ) const
 {
-    static const unsigned int size = sizeof(long);
+    static constexpr unsigned int size = sizeof(int64_t);
     return (mReadStream.read(reinterpret_cast<unsigned char *>(&out_value), size) == size);
 }
 
-bool ReadConverter::getInt64( int64_t & out_value ) const
+bool ReadConverter::getFloat( float & OUT out_value ) const
 {
-    static const unsigned int size = sizeof(int64_t);
+    static constexpr unsigned int size = sizeof(float);
     return (mReadStream.read(reinterpret_cast<unsigned char *>(&out_value), size) == size);
 }
 
-bool ReadConverter::getFloat( float & out_value ) const
+bool ReadConverter::getDouble( double & OUT out_value ) const
 {
-    static const unsigned int size = sizeof(float);
+    static constexpr unsigned int size = sizeof(double);
     return (mReadStream.read(reinterpret_cast<unsigned char *>(&out_value), size) == size);
 }
 
-bool ReadConverter::getDouble( double & out_value ) const
-{
-    static const unsigned int size = sizeof(double);
-    return (mReadStream.read(reinterpret_cast<unsigned char *>(&out_value), size) == size);
-}
-
-bool ReadConverter::getString( String & out_value ) const
+bool ReadConverter::getString( String & OUT out_value ) const
 {
     bool result = false;
     char ch     = static_cast<char>('\0');
@@ -108,7 +104,7 @@ bool ReadConverter::getString( String & out_value ) const
     return result;
 }
 
-bool ReadConverter::getString( WideString & out_value ) const
+bool ReadConverter::getString( WideString & OUT out_value ) const
 {
     bool result = false;
     wchar_t ch  = static_cast<wchar_t>('\0');
@@ -126,7 +122,7 @@ bool ReadConverter::getString( WideString & out_value ) const
     return result;
 }
 
-bool ReadConverter::readLine( String & out_value ) const
+bool ReadConverter::readLine( String & OUT out_value ) const
 {
     bool result = false;
     char ch     = static_cast<char>('\0');
@@ -137,7 +133,7 @@ bool ReadConverter::readLine( String & out_value ) const
         {
             if (getChar(ch) && (NEString::isCarriageReturn<char>(ch) == false) && (NEString::isEndOfString<char>(ch) == false))
             {
-                mReadPosition.setPosition(-1 * static_cast<int>(sizeof(char)), IECursorPosition::POSITION_CURRENT);
+                mReadPosition.setPosition(-1 * static_cast<int>(sizeof(char)), IECursorPosition::eCursorPosition::PositionCurrent);
             }
 
             break;
@@ -149,7 +145,7 @@ bool ReadConverter::readLine( String & out_value ) const
     return result;
 }
 
-bool ReadConverter::readLine( WideString & out_value ) const
+bool ReadConverter::readLine( WideString & OUT out_value ) const
 {
     bool result = false;
     wchar_t ch  = static_cast<wchar_t>('\0');
@@ -160,7 +156,7 @@ bool ReadConverter::readLine( WideString & out_value ) const
         {
             if ( getChar( ch ) && (NEString::isCarriageReturn<wchar_t>( ch ) == false) && (NEString::isEndOfString<wchar_t>( ch ) == false) )
             {
-                mReadPosition.setPosition(-1 * static_cast<int>(sizeof(wchar_t)), IECursorPosition::POSITION_CURRENT);
+                mReadPosition.setPosition(-1 * static_cast<int>(sizeof(wchar_t)), IECursorPosition::eCursorPosition::PositionCurrent);
             }
 
             break;

@@ -24,7 +24,7 @@
         <DataType ID="7" Name="eVehicleTrafficLight" Type="Enumerate" Values="default">
             <Description>The states of vehicle traffic states.</Description>
             <FieldList>
-                <EnumEntry ID="8" Name="VhicleLightOFF">
+                <EnumEntry ID="8" Name="VehicleLightOFF">
                     <Value/>
                     <Description>The vehicle lights are OFF.</Description>
                 </EnumEntry>
@@ -67,14 +67,15 @@
             <Description>Describes the direction of traffic and the states of lights for vehicle and pedestrians.</Description>
             <FieldList>
                 <Field DataType="eTrafficDirection" ID="29" Name="trafficDirection">
-                    <Value IsDefault="true">DirectionUndefiend</Value>
+                    <Value IsDefault="true">eTrafficDirection::DirectionUndefiend</Value>
+                    <Description>The traffic direction</Description>
                 </Field>
                 <Field DataType="eVehicleTrafficLight" ID="30" Name="lightVehicle">
-                    <Value IsDefault="true">VhicleLightOFF</Value>
+                    <Value IsDefault="true">eVehicleTrafficLight::VehicleLightOFF</Value>
                     <Description>The state of vehicle lights.</Description>
                 </Field>
                 <Field DataType="ePedestrianTrafficLight" ID="31" Name="lightPedestrian">
-                    <Value IsDefault="true">PedestrianLightOFF</Value>
+                    <Value IsDefault="true">ePedestrianTrafficLight::PedestrianLightOFF</Value>
                     <Description>Describes the state of pedestrian lights.</Description>
                 </Field>
             </FieldList>

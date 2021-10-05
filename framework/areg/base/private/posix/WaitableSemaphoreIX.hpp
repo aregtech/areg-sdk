@@ -1,9 +1,16 @@
-#ifndef AREG_BASE_PRIVATE_POSIX_WAITABLESEMAPHOREIX_HPP
-#define AREG_BASE_PRIVATE_POSIX_WAITABLESEMAPHOREIX_HPP
+#pragma once
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/base/private/posix/WaitableSemaphoreIX.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, POSIX Waitable Semaphore class.
  *
  ************************************************************************/
@@ -13,7 +20,8 @@
   ************************************************************************/
 #include "areg/base/GEGlobal.h"
 
-#ifdef _POSIX
+#if defined(_POSIX) || defined(POSIX)
+
 #include "areg/base/private/posix/IEWaitableBaseIX.hpp"
 
 //////////////////////////////////////////////////////////////////////////
@@ -46,12 +54,12 @@ public:
      * \param   initCount   The initial count of semaphore.
      * \param   asciiName   The name of semaphore.
      **/
-    WaitableSemaphoreIX( int maxCount, int initCount = 0, const char * asciiName = NULL );
+    explicit WaitableSemaphoreIX( int maxCount, int initCount = 0, const char * asciiName = nullptr );
 
     /**
      * \brief   Destructor.
      **/
-    virtual ~WaitableSemaphoreIX( void );
+    virtual ~WaitableSemaphoreIX( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations.
@@ -85,7 +93,7 @@ public:
      * \brief   Returns true if the object is signaled. Otherwise, returns false.
      * \param   contextThread   The thread ID where the lock and wait is checked.
      **/
-    virtual bool checkSignaled( pthread_t contextThread ) const;
+    virtual bool checkSignaled( pthread_t contextThread ) const override;
 
     /**
      * \brief   This call is triggered by the system when a thread completed waiting and released by semaphore.
@@ -94,18 +102,18 @@ public:
      * \param   ownerThread     The ID of POSIX thread that requests to take ownership.
      * \return  In case of sSemaphores this always returns true.
      **/
-    virtual bool notifyRequestOwnership( pthread_t ownerThread );
+    virtual bool notifyRequestOwnership( pthread_t ownerThread ) override;
 
     /**
      * \brief   This method returns true if the count is more than one. Otherwise, it returns false.
      **/
-    virtual bool checkCanSignalMultipleThreads( void ) const;
+    virtual bool checkCanSignalMultipleThreads( void ) const override;
 
     /**
      * \brief   This callback is called to notify waitable the amount of threads that where released.
      * \param   numThreads  The amount of threads that where released.
      **/
-    virtual void notifyReleasedThreads( int numThreads );
+    virtual void notifyReleasedThreads( int numThreads ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables.
@@ -122,11 +130,11 @@ private:
     int         mCurCount;
 
 //////////////////////////////////////////////////////////////////////////
-// Hidden / Forbidden calls.
+// Forbidden calls.
 //////////////////////////////////////////////////////////////////////////
-    WaitableSemaphoreIX( void );
-    WaitableSemaphoreIX( const WaitableSemaphoreIX & /*src*/ );
-    const WaitableSemaphoreIX & operator = ( const WaitableSemaphoreIX & /*src*/ );
+private:
+    WaitableSemaphoreIX( void ) = delete;
+    DECLARE_NOCOPY_NOMOVE( WaitableSemaphoreIX );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -143,5 +151,4 @@ inline int WaitableSemaphoreIX::getCurrentCount(void) const
     ObjectLockIX lock(*this); return mCurCount;
 }
 
-#endif  // _POSIX
-#endif  // AREG_BASE_PRIVATE_POSIX_WAITABLESEMAPHOREIX_HPP
+#endif  // defined(_POSIX) || defined(POSIX)

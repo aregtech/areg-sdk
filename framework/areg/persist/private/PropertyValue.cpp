@@ -1,41 +1,53 @@
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/persist/private/PropertyValue.cpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       Property Key object to persist application data.
  ************************************************************************/
 #include "areg/persist/PropertyValue.hpp"
 #include "areg/persist/private/NEPersistence.hpp"
 #include "areg/base/NEUtilities.hpp"
 
-PropertyValue::PropertyValue(void)
-    : mValue    ( )
-{
-    ; // do nothing
-}
+#include <utility>
 
 PropertyValue::PropertyValue(const PropertyValue & source)
     : mValue    ( source.mValue )
 {
-    ; // do nothing
 }
 
-PropertyValue::PropertyValue( const char * strValue )
+PropertyValue::PropertyValue( PropertyValue && source ) noexcept
+    : mValue    ( std::move( source.mValue ) )
+{
+}
+
+PropertyValue::PropertyValue( const String & value )
     : mValue    ( )
 {
-    parseValue(strValue);
+    parseValue( static_cast<const String &>(value) );
+}
+
+PropertyValue::PropertyValue( const char * value )
+    : mValue    ( )
+{
+    parseValue(value);
 }
 
 PropertyValue::PropertyValue(unsigned int intValue)
-    : mValue    ( String::uint32ToString(intValue, NEString::RadixDecimal) )
+    : mValue    ( String::uint32ToString(intValue, NEString::eRadix::RadixDecimal) )
 {
-    ; // do nothing
 }
 
 PropertyValue::PropertyValue(double dValue)
     : mValue( String::doubleToString( dValue ) )
 {
-    ; // do nothing
 }
 
 PropertyValue::PropertyValue(const TEArrayList<Identifier, const Identifier &> idList)
@@ -44,36 +56,37 @@ PropertyValue::PropertyValue(const TEArrayList<Identifier, const Identifier &> i
     setIndentifier(idList);
 }
 
-PropertyValue::~PropertyValue(void)
-{
-    ; // do nothing
-}
-
-const PropertyValue & PropertyValue::operator = ( const PropertyValue & source )
+PropertyValue & PropertyValue::operator = ( const PropertyValue & source )
 {
     mValue  = source.mValue;
     return (*this);
 }
 
-const PropertyValue & PropertyValue::operator = ( const String & strValue )
+PropertyValue & PropertyValue::operator = ( PropertyValue && source ) noexcept
 {
-    parseValue(strValue);
+    mValue  = std::move(source.mValue);
     return (*this);
 }
 
-const PropertyValue & PropertyValue::operator = (unsigned int intValue)
+PropertyValue & PropertyValue::operator = ( const String & value )
+{
+    parseValue(value);
+    return (*this);
+}
+
+PropertyValue & PropertyValue::operator = (unsigned int intValue)
 {
     mValue.convFromUInt32(intValue);
     return (*this);
 }
 
-const PropertyValue & PropertyValue::operator = (double dValue)
+PropertyValue & PropertyValue::operator = (double dValue)
 {
     mValue.convFromDouble(dValue);
     return (*this);
 }
 
-const PropertyValue & PropertyValue::operator = (const TEArrayList<Identifier, const Identifier &> idList)
+PropertyValue & PropertyValue::operator = (const TEArrayList<Identifier, const Identifier &> & idList)
 {
     setIndentifier(idList);
     return (*this);
@@ -81,12 +94,12 @@ const PropertyValue & PropertyValue::operator = (const TEArrayList<Identifier, c
 
 bool PropertyValue::operator == ( const PropertyValue & other ) const
 {
-    return (this != &other ? mValue == other.mValue : true );
+    return (mValue == other.mValue);
 }
 
 bool PropertyValue::operator != ( const PropertyValue & other ) const
 {
-    return (this != &other ? mValue != other.mValue : false );
+    return (mValue != other.mValue);
 }
 
 const String & PropertyValue::getValue(void) const
@@ -94,9 +107,19 @@ const String & PropertyValue::getValue(void) const
     return mValue;
 }
 
-void PropertyValue::setValue( const char * strValue )
+void PropertyValue::setValue( const char * value )
 {
-    parseValue(strValue);
+    parseValue(value);
+}
+
+void PropertyValue::setValue( const String & value )
+{
+    parseValue( static_cast<const String &>(value) );
+}
+
+void PropertyValue::setValue( String && value )
+{
+    parseValue( static_cast<String &&>(value) );
 }
 
 const char * PropertyValue::getString(void) const
@@ -126,16 +149,16 @@ unsigned int PropertyValue::getIndetifier( const TEArrayList<Identifier, const I
         {
             const char * idName = idList[i].getName();
             
-            if ( temp.compare(idName, NEString::StartPos, NEString::CountAll, false) == 0 )
+            if ( temp.compare(idName, NEString::START_POS, NEString::COUNT_ALL, false) == NEMath::eCompare::Equal )
             {
                 // found identifier
                 result |= idList[i].getValue();
-                temp = temp.substring(NEString::StartPos, NEString::getStringLength<char>(idName));
+                temp = temp.substring(NEString::START_POS, NEString::getStringLength<char>(idName));
                 if ( temp.isEmpty() == false )
                 {
-                    const char * next = NULL;
+                    const char * next = nullptr;
                     String::getSubstring(temp.getString(), _or, &next);
-                    temp = next != NULL ? next : "";
+                    temp = next != nullptr ? next : "";
                     temp.trimAll();
                     i = -1; // reset, to search next identifier value again or stop loop if temp is empty.
                 }
@@ -145,9 +168,9 @@ unsigned int PropertyValue::getIndetifier( const TEArrayList<Identifier, const I
     return result;
 }
 
-void PropertyValue::setString(const char * strValue)
+void PropertyValue::setString(const char * value)
 {
-    parseValue( strValue );
+    parseValue( value );
 }
 
 void PropertyValue::setInteger(unsigned int intValue, NEString::eRadix radix /*= NEString::RadixDecimal*/ )
@@ -175,13 +198,31 @@ void PropertyValue::setIndentifier(const TEArrayList<Identifier, const Identifie
     }
 }
 
-void PropertyValue::parseValue(const char * strValue)
+void PropertyValue::parseValue(const char * value)
 {
-    mValue  = strValue;
+    mValue  = value;
     mValue.trimAll();
     int len = mValue.getLength();
     for ( ; mValue[len - 1] == NEPersistence::SYNTAX_END_COMMAND && len > 0; -- len)
         mValue = mValue.substring(0, len - 1);
+}
+
+void PropertyValue::parseValue( const String & value )
+{
+    mValue  = value;
+    mValue.trimAll( );
+    int len = mValue.getLength( );
+    for ( ; mValue[len - 1] == NEPersistence::SYNTAX_END_COMMAND && len > 0; -- len )
+        mValue = mValue.substring( 0, len - 1 );
+}
+
+void PropertyValue::parseValue( String && value )
+{
+    mValue  = static_cast<String &&>(value);
+    mValue.trimAll( );
+    int len = mValue.getLength( );
+    for ( ; mValue[len - 1] == NEPersistence::SYNTAX_END_COMMAND && len > 0; -- len )
+        mValue = mValue.substring( 0, len - 1 );
 }
 
 void PropertyValue::resetValue(void)

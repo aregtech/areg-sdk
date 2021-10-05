@@ -1,7 +1,15 @@
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        mcrouter/tcp/private/ServerConnection.cpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform Server Connection class declaration.
  ************************************************************************/
 #include "mcrouter/tcp/private/ServerConnection.hpp"
@@ -9,25 +17,15 @@
 #include "areg/component/NEService.hpp"
 #include "areg/base/RemoteMessage.hpp"
 
-ServerConnection::ServerConnection( void )
-    : ServerConnectionBase  ( )
-    , SocketConnectionBase  ( )
-{
-}
-
 ServerConnection::ServerConnection(const char * hostName, unsigned short portNr)
-    : ServerConnectionBase  ( )
+    : ServerConnectionBase  ( hostName, portNr)
     , SocketConnectionBase  ( )
 {
 }
 
-ServerConnection::ServerConnection(const NESocket::InterlockedValue & serverAddress)
-    : ServerConnectionBase  ( )
+ServerConnection::ServerConnection(const NESocket::SocketAddress & serverAddress)
+    : ServerConnectionBase  ( serverAddress )
     , SocketConnectionBase  ( )
-{
-}
-
-ServerConnection::~ServerConnection(void)
 {
 }
 
@@ -43,14 +41,14 @@ void ServerConnection::closeAllConnections(void)
 {
     Lock lock( mLock );
     RemoteMessage msgBeyClient;
-    if ( msgBeyClient.initMessage( NEConnection::MessageByeClient.rbHeader ) != NULL )
+    if ( msgBeyClient.initMessage( NEConnection::MessageByeClient.rbHeader ) != nullptr )
     {
         msgBeyClient.setSequenceNr( NEService::SEQUENCE_NUMBER_ANY );
         msgBeyClient.setSource( NEService::COOKIE_ROUTER );
         msgBeyClient.bufferCompletionFix();
     }
 
-    for ( MAPPOS pos = mAcceptedConnections.firstPosition(); pos != NULL; pos = mAcceptedConnections.nextPosition(pos) )
+    for ( MAPPOS pos = mAcceptedConnections.firstPosition(); pos != nullptr; pos = mAcceptedConnections.nextPosition(pos) )
     {
         SocketAccepted clientConnection = mAcceptedConnections.valueAtPosition(pos);
         msgBeyClient.setTarget( getCookie(clientConnection) );
@@ -62,5 +60,5 @@ void ServerConnection::closeAllConnections(void)
     mSocketToCookie.removeAll();
     mAcceptedConnections.removeAll();
 
-    mCookieGenerator    = static_cast<ITEM_ID>(NEService::CookieFirstValid);
+    mCookieGenerator    = static_cast<ITEM_ID>(NEService::eCookies::CookieFirstValid);
 }

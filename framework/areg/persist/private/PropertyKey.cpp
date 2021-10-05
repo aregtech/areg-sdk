@@ -1,7 +1,15 @@
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/persist/private/PropertyKey.cpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       Property Key object to persist application data.
  ************************************************************************/
 #include "areg/persist/PropertyKey.hpp"
@@ -9,14 +17,7 @@
 #include "areg/base/NEUtilities.hpp"
 #include "areg/base/NEMath.hpp"
 
-PropertyKey::PropertyKey ( void )
-    : mSection  ( )
-    , mProperty ( )
-    , mModule   ( )
-    , mPosition ( )
-{
-    ; // do nothing
-}
+#include <utility>
 
 PropertyKey::PropertyKey( const PropertyKey & source )
     : mSection  ( source.mSection )
@@ -24,7 +25,14 @@ PropertyKey::PropertyKey( const PropertyKey & source )
     , mModule   ( source.mModule )
     , mPosition ( source.mPosition )
 {
-    ; // do nothing
+}
+
+PropertyKey::PropertyKey( PropertyKey && source ) noexcept
+    : mSection  ( std::move(source.mSection)   )
+    , mProperty ( std::move(source.mProperty)  )
+    , mModule   ( std::move(source.mModule)    )
+    , mPosition ( std::move(source.mPosition)  )
+{
 }
 
 PropertyKey::PropertyKey( const String & key )
@@ -36,12 +44,7 @@ PropertyKey::PropertyKey( const String & key )
     parseKey( key );
 }
 
-PropertyKey::~PropertyKey( void )
-{
-    ; // do nothing
-}
-
-const PropertyKey & PropertyKey::operator = ( const PropertyKey & source )
+PropertyKey & PropertyKey::operator = ( const PropertyKey & source )
 {
     if ( static_cast<const PropertyKey *>(this) != &source )
     {
@@ -50,10 +53,21 @@ const PropertyKey & PropertyKey::operator = ( const PropertyKey & source )
         mModule     = source.mModule;
         mPosition   = source.mPosition;
     }
+
     return (*this);
 }
 
-const PropertyKey & PropertyKey::operator = ( const String & params )
+PropertyKey & PropertyKey::operator = ( PropertyKey && source ) noexcept
+{
+    mSection    = std::move(source.mSection);
+    mProperty   = std::move(source.mProperty);
+    mModule     = std::move(source.mModule);
+    mPosition   = std::move(source.mPosition);
+
+    return (*this);
+}
+
+PropertyKey & PropertyKey::operator = ( const String & params )
 {
     parseKey(params);
     return (*this);
@@ -99,23 +113,23 @@ bool PropertyKey::parseKey( const String & key )
     if ( temp.isEmpty() == false )
     {
         NEString::CharPos pos   = temp.findFirstOf( NEPersistence::SYNTAX_OBJECT_SEPARATOR );
-        NEString::CharPos oldPos= NEString::StartPos;
-        if ( pos != NEString::InvalidPos )
+        NEString::CharPos oldPos= NEString::START_POS;
+        if ( pos != NEString::INVALID_POS )
         {
             mSection    = temp.substring(oldPos, pos - oldPos);
             oldPos      = pos + 1;
             pos         = temp.findFirstOf( NEPersistence::SYNTAX_OBJECT_SEPARATOR, oldPos );
-            if ( pos != NEString::InvalidPos )
+            if ( pos != NEString::INVALID_POS )
             {
                 mProperty   = temp.substring(oldPos, pos - oldPos);
                 oldPos      = pos + 1;
                 pos         = temp.findFirstOf( NEPersistence::SYNTAX_OBJECT_SEPARATOR, oldPos );
-                if ( pos != NEString::InvalidPos )
+                if ( pos != NEString::INVALID_POS )
                 {
                     mModule     = temp.substring(oldPos, pos - oldPos);
                     oldPos      = pos + 1;
                     pos         = temp.findFirstOf( NEPersistence::SYNTAX_OBJECT_SEPARATOR, oldPos );
-                    mPosition   = pos != NEString::InvalidPos ? temp.substring( oldPos, pos - oldPos ) : temp.substring(oldPos);
+                    mPosition   = pos != NEString::INVALID_POS ? temp.substring( oldPos, pos - oldPos ) : temp.substring(oldPos);
                 }
                 else
                 {
@@ -153,12 +167,12 @@ String PropertyKey::convToString(void) const
     return result;
 }
 
-void PropertyKey::setValues(const char * section, const char * property, const char * module /*= NULL*/, const char * position /*= NULL*/)
+void PropertyKey::setValues(const char * section, const char * property, const char * module /*= nullptr*/, const char * position /*= nullptr*/)
 {
-    mSection    = section != NULL ? section  : "";
-    mProperty   = property!= NULL ? property : "";
-    mModule     = module  != NULL ? module   : "";
-    mPosition   = position!= NULL ? position : "";
+    mSection    = section != nullptr ? section  : "";
+    mProperty   = property!= nullptr ? property : "";
+    mModule     = module  != nullptr ? module   : "";
+    mPosition   = position!= nullptr ? position : "";
 }
 
 const String & PropertyKey::getSection(void) const

@@ -1,16 +1,15 @@
 /************************************************************************
- * Copyright    (C) 2018-2021, Artak Avetyan (mailto:artak@aregtech.com).
- *              All rights reserved.
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
  *
- *              This program is distributed to companies and individuals
- *              with opened sources. Optionally, the binaries can be
- *              distributed as well. 
- *
- ************************************************************************/
-/************************************************************************
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/appbase/private/Application.cpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, Singleton application object,
  *              which is responsible to initialize and start components
  ************************************************************************/
@@ -32,23 +31,18 @@
 Application Application::_theApplication;
 
 Application::Application(void)
-    : mStartTracer  ( false )
+    : mSetup        ( false )
+    , mStartTracer  ( false )
     , mConfigTracer ( )
     , mStartService ( false )
     , mStartTimer   ( false )
     , mStartRouting ( false )
     , mConfigService( )
-    , mAppState     ( Application::AppStateStopped )
+    , mAppState     ( Application::eAppState::AppStateStopped )
     , mAppQuit      (false, false)
     , mLock         ( )
     , mStorage      ( )
 {
-    ; // do nothing
-}
-
-Application::~Application(void)
-{
-    ; // do nothing
 }
 
 void Application::initApplication(  bool startTracing   /*= true */
@@ -59,15 +53,16 @@ void Application::initApplication(  bool startTracing   /*= true */
                                   , const char * fileRouterConfig/*= NEApplication::DEFAULT_ROUTER_CONFIG_FILE */)
 {
     OUTPUT_DBG("Going to initialize application");
-    Application::_setAppState(Application::AppStateInitializing);
+    Application::_setAppState(Application::eAppState::AppStateInitializing);
 
-    Application::setWorkingDirectory( NULL_STRING );
+    Application::setupHandlers();
+    Application::setWorkingDirectory( nullptr );
     startTimer = startTimer == false ? startServicing : startTimer;
 
     if (startTracing)
     {
         Application::startTracer(fileTraceConfig, NEString::isEmpty<char>(fileTraceConfig));
-        OUTPUT_DBG("Requested to start tracer with config file [ %s ]", fileTraceConfig != NULL_STRING ? fileTraceConfig : "");
+        OUTPUT_DBG("Requested to start tracer with config file [ %s ]", fileTraceConfig != nullptr ? fileTraceConfig : "");
     }
     else if (NEString::isEmpty<char>(fileTraceConfig) == false)
     {
@@ -100,12 +95,12 @@ void Application::initApplication(  bool startTracing   /*= true */
 
 void Application::releaseApplication(void)
 {
-    Application::_setAppState(Application::AppStateReleasing);
+    Application::_setAppState(Application::eAppState::AppStateReleasing);
 
     Application & theApp  = Application::getInstance();
 
     TimerManager::stopTimerManager();
-    ComponentLoader::unloadComponentModel( NULL );
+    ComponentLoader::unloadComponentModel( nullptr );
     ServiceManager::_stopServiceManager(); // the message routing client is automatically stopped.
     NETrace::stopLogging();
 
@@ -113,18 +108,18 @@ void Application::releaseApplication(void)
     theApp.mStartService    = false;
     theApp.mStartTimer      = false;
     theApp.mStartRouting    = false;
-    theApp.mConfigTracer    = String::EmptyString;
-    theApp.mConfigService   = String::EmptyString;
+    theApp.mConfigTracer    = String::EmptyString.data();
+    theApp.mConfigService   = String::EmptyString.data();
 
-    Application::_setAppState(Application::AppStateStopped);
+    Application::_setAppState(Application::eAppState::AppStateStopped);
 }
 
-bool Application::loadModel(const char * modelName /*= NULL */)
+bool Application::loadModel(const char * modelName /*= nullptr */)
 {
     return ComponentLoader::loadComponentModel( modelName );
 }
 
-void Application::unloadModel(const char * modelName /*= NULL */)
+void Application::unloadModel(const char * modelName /*= nullptr */)
 {
     ComponentLoader::unloadComponentModel(modelName);
 }
@@ -134,9 +129,9 @@ bool Application::isModelLoaded(const char * modelName)
     return ComponentLoader::isModelLoaded(modelName);
 }
 
-void Application::setWorkingDirectory( const char * dirPath /*= NULL_STRING*/ )
+void Application::setWorkingDirectory( const char * dirPath /*= nullptr*/ )
 {
-    const char * path = NEString::isEmpty<char>(dirPath) ? Process::getInstance().getPath() : dirPath;
+    const char * path = NEString::isEmpty<char>(dirPath) ? Process::getInstance().getPath().getString() : dirPath;
 
 #ifdef _DEBUG
     
@@ -156,11 +151,11 @@ void Application::setWorkingDirectory( const char * dirPath /*= NULL_STRING*/ )
 #endif // _DEBUG
 }
 
-bool Application::tracerConfig( const char * configFile /*= NULL_STRING*/ )
+bool Application::tracerConfig( const char * configFile /*= nullptr*/ )
 {
     bool result = false;
     Application & theApp  = Application::getInstance( );
-    const char * config     = NEString::isEmpty<char>(configFile) ? configFile : NEApplication::DEFAULT_TRACING_CONFIG_FILE;
+    const char * config     = NEString::isEmpty<char>(configFile) ? NEApplication::DEFAULT_TRACING_CONFIG_FILE.data() : configFile;
 
     OUTPUT_DBG("Requested to start tracer configuration [ %s ]", config);
 
@@ -180,11 +175,11 @@ bool Application::tracerConfig( const char * configFile /*= NULL_STRING*/ )
     return result;
 }
 
-bool Application::startTracer(const char * configFile /*= NULL_STRING*/, bool force /*= false*/ )
+bool Application::startTracer(const char * configFile /*= nullptr*/, bool force /*= false*/ )
 {
     bool result = false;
     Application & theApp  = Application::getInstance( );
-    const char * config     = NEString::isEmpty<char>(configFile) ? NEApplication::DEFAULT_TRACING_CONFIG_FILE : configFile;
+    const char * config     = NEString::isEmpty<char>(configFile) ? NEApplication::DEFAULT_TRACING_CONFIG_FILE.data() : configFile;
 
     OUTPUT_DBG("Requested to start tracer with config file [ %s ], forcing [ %s ]", config, force ? "TRUE" : "FALSE");
 
@@ -247,19 +242,19 @@ bool Application::isTracerConfigured(void)
 
 void Application::stopServiceManager( void )
 {
-    Application::_setAppState(Application::AppStateReleasing);
+    Application::_setAppState(Application::eAppState::AppStateReleasing);
     
     if ( ServiceManager::isServiceManagerStarted() )
     {
         ServiceManager::_stopServiceManager();
     }
     
-    Application::_setAppState(Application::AppStateStopped);
+    Application::_setAppState(Application::eAppState::AppStateStopped);
 }
 
 bool Application::startServiceManager( void )
 {
-    Application::_setAppState(Application::AppStateInitializing);
+    Application::_setAppState(Application::eAppState::AppStateInitializing);
 
     bool result = false;
     Application & theApp  = Application::getInstance( );
@@ -270,7 +265,7 @@ bool Application::startServiceManager( void )
             Application::startTimerManager();
             result = true;
             theApp.mStartService = true;
-            Application::_setAppState(Application::AppStateReady);
+            Application::_setAppState(Application::eAppState::AppStateReady);
         }
         else
         {
@@ -280,7 +275,7 @@ bool Application::startServiceManager( void )
     else
     {
         result = true;
-        Application::_setAppState(Application::AppStateReady);
+        Application::_setAppState(Application::eAppState::AppStateReady);
 
         OUTPUT_INFO("The service manager has been started, ignoring to start service manager");
         ASSERT( theApp.mStartService );
@@ -322,11 +317,11 @@ void Application::stopTimerManager(void)
     TimerManager::stopTimerManager();
 }
 
-bool Application::startMessageRouting(const char * configFile /*= NULL_STRING*/ )
+bool Application::startMessageRouting(const char * configFile /*= nullptr*/ )
 {
     bool result = false;
     Application & theApp  = Application::getInstance( );
-    const char * config     = NEString::isEmpty<char>(configFile) ? NEApplication::DEFAULT_ROUTER_CONFIG_FILE : configFile;
+    const char * config     = NEString::isEmpty<char>(configFile) ? NEApplication::DEFAULT_ROUTER_CONFIG_FILE.data() : configFile;
 
     if (Application::isServiceManagerStarted())
     {
@@ -357,11 +352,11 @@ bool Application::startMessageRouting(const char * configFile /*= NULL_STRING*/ 
     return result;
 }
 
-bool Application::configMessageRouting( const char * configFile /*= NULL_STRING*/ )
+bool Application::configMessageRouting( const char * configFile /*= nullptr*/ )
 {
     bool result = false;
     Application & theApp  = Application::getInstance( );
-    const char * config     = NEString::isEmpty<char>(configFile) ? NEApplication::DEFAULT_ROUTER_CONFIG_FILE : configFile;
+    const char * config     = NEString::isEmpty<char>(configFile) ? NEApplication::DEFAULT_ROUTER_CONFIG_FILE.data() : configFile;
 
     if ( ServiceManager::_isRoutingServiceStarted( ) == false )
     {
@@ -449,7 +444,7 @@ bool Application::isElementStored( const String & elemName )
 {
     Application & theApp = Application::getInstance();
     Lock lock(theApp.mLock);
-    return (theApp.mStorage.find(elemName) != NULL);
+    return (theApp.mStorage.find(elemName) != nullptr);
 }
 
 NEMemory::uAlign Application::storeElement( const String & elemName, NEMemory::uAlign elem )
@@ -459,7 +454,7 @@ NEMemory::uAlign Application::storeElement( const String & elemName, NEMemory::u
 
     MAPPOS pos = theApp.mStorage.find(elemName);
     NEMemory::uAlign result = NEMemory::InvalidElement;
-    if ( pos != NULL )
+    if ( pos != nullptr )
     {
         result = theApp.mStorage.valueAtPosition(pos);
         theApp.mStorage.removePosition(pos);
@@ -474,10 +469,10 @@ NEMemory::uAlign Application::getStoredElement( const String & elemName )
     Lock lock( theApp.mLock );
 
     MAPPOS pos = theApp.mStorage.find( elemName );
-    return (pos != NULL ? theApp.mStorage.valueAtPosition( pos ) : NEMemory::InvalidElement);
+    return (pos != nullptr ? theApp.mStorage.valueAtPosition( pos ) : NEMemory::InvalidElement);
 }
 
-bool Application::waitAppQuit(unsigned int waitTimeout /*= IESynchObject::WAIT_INFINITE*/)
+bool Application::waitAppQuit(unsigned int waitTimeout /*= NECommon::WAIT_INFINITE*/)
 {
     Application & theApp = Application::getInstance( );
     return theApp.mAppQuit.lock(waitTimeout);
@@ -492,7 +487,7 @@ void Application::signalAppQuit(void)
 bool Application::isServicingReady(void)
 {
     Application & theApp = Application::getInstance();
-    return (theApp.mAppState == Application::AppStateReady);
+    return (theApp.mAppState == Application::eAppState::AppStateReady);
 }
 
 bool Application::_setAppState(eAppState newState)
@@ -501,34 +496,34 @@ bool Application::_setAppState(eAppState newState)
     Application & theApp = Application::getInstance();
     switch (theApp.mAppState)
     {
-    case Application::AppStateStopped:
-        if (newState == Application::AppStateInitializing)
+    case Application::eAppState::AppStateStopped:
+        if (newState == Application::eAppState::AppStateInitializing)
         {
-            theApp.mAppState = Application::AppStateInitializing;
+            theApp.mAppState = Application::eAppState::AppStateInitializing;
             result = true;
         }
         break;
 
-    case Application::AppStateInitializing:
-        if (newState == Application::AppStateReady)
+    case Application::eAppState::AppStateInitializing:
+        if (newState == Application::eAppState::AppStateReady)
         {
-            theApp.mAppState = Application::AppStateReady;
+            theApp.mAppState = Application::eAppState::AppStateReady;
             result = true;
         }
         break;
 
-    case Application::AppStateReady:
-        if (newState == Application::AppStateReleasing)
+    case Application::eAppState::AppStateReady:
+        if (newState == Application::eAppState::AppStateReleasing)
         {
-            theApp.mAppState = Application::AppStateReleasing;
+            theApp.mAppState = Application::eAppState::AppStateReleasing;
             result = true;
         }
         break;
 
-    case Application::AppStateReleasing:
-        if (newState == Application::AppStateStopped)
+    case Application::eAppState::AppStateReleasing:
+        if (newState == Application::eAppState::AppStateStopped)
         {
-            theApp.mAppState = Application::AppStateStopped;
+            theApp.mAppState = Application::eAppState::AppStateStopped;
             result = true;
         }
         break;

@@ -1,18 +1,19 @@
 //////////////////////////////////////////////////////////////////////////
 // Begin generate generated/src/private/TrafficControllerEvents.hpp file
 //////////////////////////////////////////////////////////////////////////
-#ifndef  GENERATED_SRC_PRIVATE_TRAFFICCONTROLLEREVENTS_HPP
-#define  GENERATED_SRC_PRIVATE_TRAFFICCONTROLLEREVENTS_HPP
-/************************************************************************
- * (c) copyright    2021
- *                  Create by AREG SDK code generator tool from source TrafficController.
- * Generated at     15.08.2021  00:03:05 GMT+02:00 
- ************************************************************************/
+
+#pragma once
 
 /************************************************************************
+ * (c) copyright    2021
+ *
+ * Generated at     30.09.2021  01:22:14 GMT+02:00 
+ *                  Create by AREG SDK code generator tool from source TrafficController.
+ *
  * \file            generated/src/private/TrafficControllerEvents.hpp
  * \ingroup         TrafficController Service Interface
- * \brief           This is an automatic generated code of TrafficController Service Interface Event classes declaration.
+ * \brief           This is an automatic generated code of TrafficController
+ *                  Service Interface event classes declaration.
  ************************************************************************/
 
 /************************************************************************
@@ -93,15 +94,14 @@ public:
     /**
      * \brief   Destructor.
      **/
-    virtual ~TrafficControllerRequestEvent( void );
+    virtual ~TrafficControllerRequestEvent( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    TrafficControllerRequestEvent( void );
-    TrafficControllerRequestEvent( const TrafficControllerRequestEvent & /* src */ );
-    const TrafficControllerRequestEvent & operator = ( const TrafficControllerRequestEvent & /* src */ );
+    TrafficControllerRequestEvent( void ) = delete;
+    DECLARE_NOCOPY_NOMOVE( TrafficControllerRequestEvent );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -138,15 +138,14 @@ public:
     /**
      * \brief   Destructor.
      **/
-    virtual ~TrafficControllerNotifyRequestEvent( void );
+    virtual ~TrafficControllerNotifyRequestEvent( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    TrafficControllerNotifyRequestEvent( void );
-    TrafficControllerNotifyRequestEvent( const TrafficControllerNotifyRequestEvent & /* src */ );
-    const TrafficControllerNotifyRequestEvent & operator = ( const TrafficControllerNotifyRequestEvent & /* src */ );
+    TrafficControllerNotifyRequestEvent( void ) = delete;
+    DECLARE_NOCOPY_NOMOVE( TrafficControllerNotifyRequestEvent );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -197,7 +196,7 @@ public:
     /**
      * \brief   Destructor
      **/
-    virtual ~TrafficControllerResponseEvent( void );
+    virtual ~TrafficControllerResponseEvent( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -216,15 +215,14 @@ public:
      * \return  Cloned service response event object, which contains specified
      *          target proxy address.
      **/
-    virtual ServiceResponseEvent * cloneForTarget( const ProxyAddress & target ) const;
+    virtual ServiceResponseEvent * cloneForTarget( const ProxyAddress & target ) const override;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    TrafficControllerResponseEvent( void );
-    TrafficControllerResponseEvent( const TrafficControllerResponseEvent & /* src */ );
-    const TrafficControllerResponseEvent & operator = ( const TrafficControllerResponseEvent & /* src */ );
+    TrafficControllerResponseEvent( void ) = delete;
+    DECLARE_NOCOPY_NOMOVE( TrafficControllerResponseEvent );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -249,24 +247,21 @@ public:
      * \brief   Initialization constructor. Copies notification event data
      * \param   data    The notification event data to copy
      **/
-    TrafficControllerNotificationEvent( const NotificationEventData & data );
+    explicit TrafficControllerNotificationEvent( const NotificationEventData & data );
 
 protected:
     /**
      * \brief   Destructor. Protected
      **/
-    virtual ~TrafficControllerNotificationEvent( void );
+    virtual ~TrafficControllerNotificationEvent( void ) = default;
     
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    TrafficControllerNotificationEvent( void );
-    TrafficControllerNotificationEvent( const TrafficControllerNotificationEvent & /* src */ );
-    const TrafficControllerNotificationEvent & operator = ( const TrafficControllerNotificationEvent & /* src */ );
+    TrafficControllerNotificationEvent( void ) = delete;
+    DECLARE_NOCOPY_NOMOVE( TrafficControllerNotificationEvent );
 };
-
-#endif   // GENERATED_SRC_PRIVATE_TRAFFICCONTROLLEREVENTS_HPP
 
 //////////////////////////////////////////////////////////////////////////
 // End generate generated/src/private/TrafficControllerEvents.hpp file

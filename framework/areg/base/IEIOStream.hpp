@@ -1,9 +1,16 @@
-#ifndef AREG_BASE_IEIOSTREAM_HPP
-#define AREG_BASE_IEIOSTREAM_HPP
+#pragma once
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/base/IEIOStream.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, Input / Output stream interfaces
  *              Following interfaces are defined:
  *              IEInStream     - is an interface of stream to read data from.
@@ -101,17 +108,8 @@ class IEByteBuffer;
 // IEInStream class declaration: to read data from
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief       Pure virtual class to support data input streaming.
- *              This class supports read functionality to retrieve
- *              and instantiate data.
- * 
- * \details     Data streaming objects are used to transfer data between
- *              different threads and processes. The mechanism of data transfer
- *              depends on every individual streaming class implementation.
- *              Other classes, which are supporting serialization and can be
- *              instantiated by data streaming object, should overwrite
- *              read from stream operator (operator >> (const IEInStream& stream,...);
- *
+ * \brief   This class is an interface and implementations of basic functions
+ *          to support read from the data stream.
  **/
 class AREG_API IEInStream
 {
@@ -122,20 +120,19 @@ protected:
     /**
      * \brief   Protected constructor
      **/
-    IEInStream( void );
+    IEInStream( void ) = default;
 
-public:
     /**
      * \brief   Destructor
      **/
-    virtual ~IEInStream( void );
+    virtual ~IEInStream( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
 //////////////////////////////////////////////////////////////////////////
 public:
 /************************************************************************/
-// IEOutStream interface data read overrides
+// IEInStream interface data read overrides
 /************************************************************************/
     /**
      * \brief   Reads and returns 8-bit value from buffer
@@ -167,54 +164,55 @@ public:
 
     /**
      * \brief	Reads data from input stream object, copies into given buffer and
-     *          returns the size of copied data
-     * \param	buffer	The pointer to buffer to copy data from input object
-     * \param	size	The size in bytes of available buffer
-     * \return	Returns the size in bytes of copied data
+     *          returns the size in bytes of copied data.
+     * \param	buffer	The pointer to buffer to copy data.
+     * \param	size	The size in bytes of available buffer.
+     * \return	Returns the size in bytes of copied data.
      **/
     virtual unsigned int read( unsigned char * buffer, unsigned int size ) const = 0;
 
     /**
-     * \brief   Reads data from input stream object, copies into give Byte Buffer object
-     *          and returns the size of copied data. Overwrite this method if copy behavior
-     *          changed for certain buffer. For other buffers it should have simple behavior
-     *          as copying to raw buffer
-     * \param   buffer  The instance of Byte Buffer object to stream data from Input Stream object
-     * \return	Returns the size in bytes of copied data
+     * \brief   Reads data from input stream object, copies into given Byte Buffer object
+     *          and returns the size in bytes of copied data.
+     * \param   buffer  The instance of Byte Buffer object to copy data.
+     * \return	Returns the size in bytes of copied data.
      **/
     virtual unsigned int read( IEByteBuffer & buffer ) const = 0;
 
     /**
-     * \brief   Reads string data from Input Stream object and copies into given ASCII String.
-     *          Overwrite method if need to change behavior of streaming string.
-     * \param   asciiString     The buffer of ASCII String to stream data from Input Stream object.
+     * \brief   Reads string data from input stream object, copies into given string object
+     *          and returns the size in bytes of copied data.
+     * \param   ascii   The instance of ASCII string object to copy data.
      * \return  Returns the size in bytes of copied string data.
      **/
-    virtual unsigned int read( String & asciiString ) const = 0;
+    virtual unsigned int read( String & ascii ) const = 0;
 
     /**
-     * \brief   Reads string data from Input Stream object and copies into given Wide String.
-     *          Overwrite method if need to change behavior of streaming string.
-     * \param   wideString      The buffer of Wide String to stream data from Input Stream object.
+     * \brief   Reads string data from input stream object, copies into given wide-string object
+     *          and returns the size in bytes of copied data.
+     * \param   ascii   The instance of wide-string object to copy data.
      * \return  Returns the size in bytes of copied string data.
      **/
     virtual unsigned int read( WideString & wideString ) const = 0;
 
     /**
-     * \brief   Resets cursor pointer and moves to the begin of data.
-     *          Implement the function if stream has pointer reset mechanism
+     * \brief   Resets cursor position and moves to the begin of data.
      **/
     virtual void resetCursor( void ) const = 0;
 
 protected:
     /**
-     * \brief	Returns size in bytes of available data that can be read, 
-     *          i.e. remaining readable size.
-     *          No necessarily that this size is equal to size of streamable buffer.
-     *          For example, if the size of buffer is 'n' and 'x' bytes of data was
-     *          already read from stream, the available readable size is 'n - x'.
+     * \brief	Returns size in bytes of available data that can read, 
+     *          i.e. remaining readable size. The returns value is less or equal to
+     *          the size of streamable buffer.
      **/
     virtual unsigned int getSizeReadable( void ) const = 0;
+
+//////////////////////////////////////////////////////////////////////////
+// Forbidden calls
+//////////////////////////////////////////////////////////////////////////
+private:
+    DECLARE_NOCOPY_NOMOVE( IEInStream );
 }; 
 
 
@@ -222,16 +220,8 @@ protected:
 // IEOutStream class declaration: to write data to
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief       Pure virtual class to support data output streaming.
- *              This class supports write functionality to serialize data.
- * 
- * \details     Data streaming objects are used to transfer data between
- *              different threads and processes. The mechanism of data transfer
- *              depends on every individual streaming class implementation.
- *              Other classes, which are supporting serialization and can
- *              transfer data by streaming object, should overwrite
- *              write to stream operator (operator << (IEOutStream& stream,...);
- *
+ * \brief   This class is an interface and implementations of basic functions
+ *          to support write to the data stream.
  **/
 class AREG_API IEOutStream
 {
@@ -242,13 +232,12 @@ protected:
     /**
      * \brief   Protected constructor
      **/
-    IEOutStream( void );
+    IEOutStream( void ) = default;
 
-public:
     /**
      * \brief   Destructor
      **/
-    virtual ~IEOutStream( void );
+    virtual ~IEOutStream( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -259,28 +248,28 @@ public:
 /************************************************************************/
     /**
      * \brief   Writes given 8-bit value into the stream and returns true if operation succeeded.
-     * \param   value8Bit       The 8-bit value to write into the stream.
+     * \param   value8Bit   The 8-bit value to write into the stream.
      * \return  Returns true if operation succeeded.
      **/
     virtual bool write8Bits( uint8_t value8Bit );
 
     /**
      * \brief   Writes given 16-bit value into the stream and returns true if operation succeeded.
-     * \param   value8Bit       The 16-bit value to write into the stream.
+     * \param   value8Bit   The 16-bit value to write into the stream.
      * \return  Returns true if operation succeeded.
      **/
     virtual bool write16Bits( uint16_t value16Bit );
 
     /**
      * \brief   Writes given 32-bit value into the stream and returns true if operation succeeded.
-     * \param   value8Bit       The 32-bit value to write into the stream.
+     * \param   value8Bit   The 32-bit value to write into the stream.
      * \return  Returns true if operation succeeded.
      **/
     virtual bool write32Bits( uint32_t value32Bit );
 
     /**
      * \brief   Writes given 64-bit value into the stream and returns true if operation succeeded.
-     * \param   value8Bit       The 64-bit value to write into the stream.
+     * \param   value8Bit   The 64-bit value to write into the stream.
      * \return  Returns true if operation succeeded.
      **/
     virtual bool write64Bits( uint64_t value64Bit );
@@ -293,56 +282,56 @@ public:
 // IEOutStream interface overrides
 /************************************************************************/
 
-    /**
-     * \brief	Write data to output stream object from given buffer
-     *          and returns the size of written data
-     * \param	buffer	The pointer to buffer to read data and 
-     *          copy to output stream object
-     * \param	size	The size in bytes of data buffer
-     * \return	Returns the size in bytes of written data
-     **/
+     /**
+      * \brief	Writes data to output stream object from given buffer and 
+      *         returns the size in bytes of written data.
+      * \param	buffer	The pointer to buffer as a data sourse.
+      * \param	size	The size in bytes of data buffer.
+      * \return	Returns the size in bytes of written data.
+      **/
     virtual unsigned int write( const unsigned char * buffer, unsigned int size ) = 0;
 
-    /**
-     * \brief	Writes Binary data from Byte Buffer object to Output Stream object
-     *          and returns the size of written data. Overwrite this method if need 
-     *          to change behavior of streaming buffer.
-     * \param	buffer	The instance of Byte Buffer object containing data to stream to Output Stream.
-     * \return	Returns the size in bytes of written data
-     **/
+     /**
+      * \brief	Writes data to output stream object from given byte-buffer object and
+      *         returns the size in bytes of written data.
+      * \param	buffer	The instance of byte-buffer object as a data source.
+      * \return	Returns the size in bytes of written data.
+      **/
     virtual unsigned int write( const IEByteBuffer & buffer ) = 0;
 
-    /**
-     * \brief   Writes string data from given ASCII String object to output stream object.
-     *          Overwrite method if need to change behavior of streaming string.
-     * \param   asciiString     The buffer of String containing data to stream to Output Stream.
-     * \return  Returns the size in bytes of copied string data.
-     **/
-    virtual unsigned int write( const String & asciiString )  = 0;
+     /**
+      * \brief	Writes data to output stream object from given ASCII-string object and
+      *         returns the size in bytes of written data.
+      * \param	ascii	The instance of ASCII-strin object as a data source.
+      * \return	Returns the size in bytes of written data.
+      **/
+    virtual unsigned int write( const String & ascii )  = 0;
 
     /**
-     * \brief   Writes string data from given wide-char String object to output stream object.
-     *          Overwrite method if need to change behavior of streaming string.
-     * \param   wideString  The buffer of String containing data to stream to Output Stream.
-     * \return  Returns the size in bytes of copied string data.
+     * \brief	Writes data to output stream object from given wide-string object and
+     *         returns the size in bytes of written data.
+     * \param	ascii	The instance of wide-strin object as a data source.
+     * \return	Returns the size in bytes of written data.
      **/
     virtual unsigned int write( const WideString & wideString ) = 0;
 
     /**
      * \brief	Flushes cached data to output stream object.
-     *          Implement the function if device has caching mechanism
      **/
     virtual void flush( void ) = 0;
 
 protected:
     /**
-     * \brief	Returns size in bytes of available space that can be written, 
+     * \brief	Returns the size in bytes of available space in the stream to write data, 
      *          i.e. remaining writable size.
-     *          No necessarily that this size is equal to size of streamable buffer.
-     *          For example, if the size of buffer is 'n' and 'x' bytes of data was
-     *          already written to stream, the available writable size is 'n - x'.
      **/
     virtual unsigned int getSizeWritable( void ) const = 0;
+
+//////////////////////////////////////////////////////////////////////////
+// Forbidden calls
+//////////////////////////////////////////////////////////////////////////
+private:
+    DECLARE_NOCOPY_NOMOVE( IEOutStream );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -350,10 +339,6 @@ protected:
 //////////////////////////////////////////////////////////////////////////
 /**
  * \brief       Input and Output streaming interface. 
- * 
- * \details     Classes implementing this interface are supporting
- *              data input and output functionalities.
- *
  **/
 class AREG_API IEIOStream  : public IEInStream
                            , public IEOutStream
@@ -362,29 +347,30 @@ protected:
     /**
      * \brief   Protected constructor
      **/
-    IEIOStream( void );
+    IEIOStream( void ) = default;
 
 public:
     /**
      * \brief   Destructor
      **/
-    virtual ~IEIOStream( void );
+    virtual ~IEIOStream( void ) = default;
+
 public:
 /************************************************************************
  * \brief   Support streaming of primitives
  ************************************************************************/
-    DECLARE_STREAMABLE(bool)                //!< Declare primitive type bool as streamable
-    DECLARE_STREAMABLE(char)                //!< Declare primitive type char as streamable
-    DECLARE_STREAMABLE(wchar_t)             //!< Declare primitive type wchar_t as streamable
-    DECLARE_STREAMABLE(unsigned char)       //!< Declare primitive type unsigned char as streamable
-    DECLARE_STREAMABLE(short)               //!< Declare primitive type short as streamable
-    DECLARE_STREAMABLE(unsigned short)      //!< Declare primitive type unsigned short as streamable
-    DECLARE_STREAMABLE(int)                 //!< Declare primitive type int as streamable
-    DECLARE_STREAMABLE(unsigned int)        //!< Declare primitive type unsigned int as streamable
-    DECLARE_STREAMABLE(int64_t)             //!< Declare primitive type int64_t as streamable
-    DECLARE_STREAMABLE(uint64_t)            //!< Declare primitive type uint64_t as streamable
-    DECLARE_STREAMABLE(float)               //!< Declare primitive type float as streamable
-    DECLARE_STREAMABLE(double)              //!< Declare primitive type double as streamable
+    DECLARE_STREAMABLE(bool)            //!< Declare primitive type bool as streamable
+    DECLARE_STREAMABLE(char)            //!< Declare primitive type char as streamable
+    DECLARE_STREAMABLE(wchar_t)         //!< Declare primitive type wchar_t as streamable
+    DECLARE_STREAMABLE(unsigned char)   //!< Declare primitive type unsigned char as streamable
+    DECLARE_STREAMABLE(short)           //!< Declare primitive type short as streamable
+    DECLARE_STREAMABLE(unsigned short)  //!< Declare primitive type unsigned short as streamable
+    DECLARE_STREAMABLE(int)             //!< Declare primitive type int as streamable
+    DECLARE_STREAMABLE(unsigned int)    //!< Declare primitive type unsigned int as streamable
+    DECLARE_STREAMABLE(int64_t)         //!< Declare primitive type int64_t as streamable
+    DECLARE_STREAMABLE(uint64_t)        //!< Declare primitive type uint64_t as streamable
+    DECLARE_STREAMABLE(float)           //!< Declare primitive type float as streamable
+    DECLARE_STREAMABLE(double)          //!< Declare primitive type double as streamable
 
     /**
      * \brief   Writes an ASCII string to the stream
@@ -395,6 +381,12 @@ public:
      * \brief   Writes an wide string to the stream
      **/
     friend inline IEOutStream & operator << (IEOutStream & stream, const wchar_t * output);
+
+//////////////////////////////////////////////////////////////////////////
+// Forbidden calls
+//////////////////////////////////////////////////////////////////////////
+private:
+    DECLARE_NOCOPY_NOMOVE( IEIOStream );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -419,13 +411,15 @@ IMPLEMENT_STREAMABLE(double)
 
 inline IEOutStream & operator << (IEOutStream & stream, const char * output)
 {
-    if (output != static_cast<const char *>(NULL))
+    if (output != nullptr)
     {
-        unsigned int single = static_cast<unsigned int>(sizeof(char));
+        constexpr unsigned int single = static_cast<unsigned int>(sizeof(char));
         unsigned int length = 0;
         const char * src = output;
         while (*src ++ != '\0')
+        {
             ++ length;
+        }
         
         stream.write(reinterpret_cast<const unsigned char *>(output), (length + 1) * single);
     }
@@ -435,18 +429,18 @@ inline IEOutStream & operator << (IEOutStream & stream, const char * output)
 
 inline IEOutStream & operator << (IEOutStream & stream, const wchar_t * output)
 {
-    if (output != static_cast<const wchar_t *>(NULL))
+    if (output != nullptr)
     {
-        unsigned int single = static_cast<unsigned int>(sizeof(wchar_t));
+        constexpr unsigned int single = static_cast<unsigned int>(sizeof(wchar_t));
         unsigned int length = 0;
         const wchar_t * src = output;
         while (*src ++ != L'\0')
+        {
             ++ length;
+        }
 
         stream.write(reinterpret_cast<const unsigned char *>(output), (length + 1) * single);
     }
 
     return stream;
 }
-
-#endif  // AREG_BASE_IEIOSTREAM_HPP

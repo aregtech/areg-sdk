@@ -1,10 +1,16 @@
-#ifndef MCROUTER_TCP_PRIVATE_IESERVERCONNECTIONHANDLER_HPP
-#define MCROUTER_TCP_PRIVATE_IESERVERCONNECTIONHANDLER_HPP
-
+#pragma once
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        mcrouter/tcp/private/IEServerConnectionHandler.hpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, Interface of server connection handler
  ************************************************************************/
 
@@ -35,11 +41,11 @@ protected:
     /**
      * \brief   Default constructor
      **/
-    IEServerConnectionHandler( void );
+    IEServerConnectionHandler( void ) = default;
     /**
      * \brief   Destructor
      **/
-    virtual ~IEServerConnectionHandler( void );
+    virtual ~IEServerConnectionHandler( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -71,8 +77,5 @@ public:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    IEServerConnectionHandler( const IEServerConnectionHandler & /*src*/ );
-    const IEServerConnectionHandler & operator = ( const IEServerConnectionHandler & /*src*/ );
+    DECLARE_NOCOPY_NOMOVE( IEServerConnectionHandler );
 };
-
-#endif  // MCROUTER_TCP_PRIVATE_IESERVERCONNECTIONHANDLER_HPP

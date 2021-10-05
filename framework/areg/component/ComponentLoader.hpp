@@ -1,9 +1,16 @@
-#ifndef AREG_COMPONENT_COMPONENTLOADER_HPP
-#define AREG_COMPONENT_COMPONENTLOADER_HPP
+#pragma once
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/component/ComponentLoader.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, Component Loader class.
  *              This is singleton configuration object, which should be 
  *              used to model application.
@@ -14,7 +21,7 @@
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
 #include "areg/component/NERegistry.hpp"
-#include "areg/base/ESynchObjects.hpp"
+#include "areg/base/SynchObjects.hpp"
 
 /************************************************************************
  * \brief   Predefined MACRO to model threads, components and services.
@@ -300,19 +307,19 @@ public:
      *          designed and the unique name should be set.
      * \param   newModel    The new model to add to model loader
      **/
-    ModelDataCreator( const NERegistry::Model & newModel );
+    explicit ModelDataCreator( const NERegistry::Model & newModel );
+    
     /**
      * \brief   Destructor.
      **/
-    ~ModelDataCreator( void );
+    ~ModelDataCreator( ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden methods.
 //////////////////////////////////////////////////////////////////////////
 private:
-    ModelDataCreator( void );
-    ModelDataCreator( const ModelDataCreator & );
-    const ModelDataCreator & operator = ( const ModelDataCreator & );
+    ModelDataCreator( ) = delete;
+    DECLARE_NOCOPY_NOMOVE( ModelDataCreator );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -349,7 +356,7 @@ private:
      * \brief   ComponentLoader::ModelList
      *          Linked List of Model objects
      **/
-    typedef TEArrayList<NERegistry::Model, const NERegistry::Model &> ModelList;
+    using ModelList     = TEArrayList<NERegistry::Model, const NERegistry::Model &>;
 
 //////////////////////////////////////////////////////////////////////////
 // Static members
@@ -364,33 +371,33 @@ public:
 
     /**
      * \brief   Call to start instantiating registered objects in the specified model.
-     *          If specified modelName is NULL, the function will load all Models,
+     *          If specified modelName is nullptr, the function will load all Models,
      *          which are not loaded. If name is specified, it will search in Model list
      *          model with specified name and if found, it will load Model.
      *          The function returns true, if Model is either already loaded or 
      *          loading Model completed with success.
      *          The function returns false, if there is no Model with specified name
      *          or failed loading mode.
-     * \param   modelName   The name of model to load. If NULL, it will load all
+     * \param   modelName   The name of model to load. If nullptr, it will load all
      *                      models, which are not loaded yet.
      * \return  Returns true if model is loaded with success.
      **/
-    static bool loadComponentModel( const char * modelName = NULL );
+    static bool loadComponentModel( const char * modelName = nullptr );
 
     /**
      * \brief   Call to shutdown and destroy instantiated objects of mode, and make cleanups.
-     * \param   modelName   The name of model to unload. If NULL, it will unloaded
+     * \param   modelName   The name of model to unload. If nullptr, it will unloaded
      *                      all previously loaded models.
      **/
-    static void unloadComponentModel( const char * modelName = NULL );
+    static void unloadComponentModel( const char * modelName = nullptr );
 
     /**
      * \brief   This call unloads components of specified mode and remove model
-     *          from model list. If NULL is passed, all components and models are removed
-     * \param   modelName   The name of model to unload and remove. If NULL, it will unloaded
+     *          from model list. If nullptr is passed, all components and models are removed
+     * \param   modelName   The name of model to unload and remove. If nullptr, it will unloaded
      *                      all previously loaded models and all models will be removed.
      **/
-    static void removeComponentModel( const char * modelName = NULL );
+    static void removeComponentModel( const char * modelName = nullptr );
 
     /**
      * \brief   Adds new model to the model list. The name of the new model, names of threads and
@@ -414,17 +421,17 @@ public:
     static const NERegistry::ComponentList & getComponentList( const char * threadName );
 
     /**
-     * \brief	Returns registered component entry object of
+     * \brief   Returns registered component entry object of
      *          specified thread name and having specified role name
-     * \param	roleName	The role name of registered component to lookup
-     * \param	threadName	The name of registered thread.
+     * \param   roleName    The role name of registered component to lookup
+     * \param   threadName  The name of registered thread.
      **/
     static const NERegistry::ComponentEntry & findComponentEntry(const char * roleName, const char* threadName);
 
     /**
-     * \brief	Returns registered component entry object having specified role name.
+     * \brief   Returns registered component entry object having specified role name.
      *          The component is searched in the complete Model list.
-     * \param	roleName	The role name of registered component to lookup
+     * \param   roleName    The role name of registered component to lookup
      **/
     static const NERegistry::ComponentEntry & findComponentEntry(const char * roleName);
 
@@ -475,15 +482,15 @@ protected:
     /**
      * \brief   Loads threads and components of specified model.
      *          It will start registered threads, which will load registered components.
-     *          If modelName is NULL or empty, it will load all Models.
-     *          If modelName is not NULL and not empty, it will search for Model with
+     *          If modelName is nullptr or empty, it will load all Models.
+     *          If modelName is not nullptr and not empty, it will search for Model with
      *          specified name and will start registered threads.
      *          Function returns when all threads are started with success.
-     * \param   modelName   The name of Model to load. If NULL or empty string,
+     * \param   modelName   The name of Model to load. If nullptr or empty string,
      *                      it loads all models, which are not loaded yet.
      * \return  Returns true if components are loaded with success.
      **/
-    bool loadModel( const char * modelName = NULL );
+    bool loadModel( const char * modelName = nullptr );
 
     /**
      * \brief   Loads specified Model. It will start all registered in Model threads,
@@ -491,21 +498,21 @@ protected:
      * \param   whichModel  The Model object to load.
      * \return  Returns true if specified mode is loaded with success.
      **/
-    bool loadModel( NERegistry::Model & whichModel );
+    bool loadModel( NERegistry::Model & whichModel ) const;
     /**
      * \brief   Unloads Model with specified name, deletes components and stops threads.
-     *          If modelName is not NULL and not empty, it will unload
+     *          If modelName is not nullptr and not empty, it will unload
      *          model with specified name.
-     *          If modelName is NULL or empty, it will unload all models.
-     * \param   modelName   The name of model to unload. If NULL, it will unload all models
+     *          If modelName is nullptr or empty, it will unload all models.
+     * \param   modelName   The name of model to unload. If nullptr, it will unload all models
      **/
-    void unloadModel( const char * modelName = NULL );
+    void unloadModel( const char * modelName = nullptr );
 
     /**
      * \brief   Unloads specified Model, deletes components and stops threads.
      * \param   whichModel  The Model object, which should be unloaded.
      **/
-    void unloadModel( NERegistry::Model & whichModel );
+    void unloadModel( NERegistry::Model & whichModel ) const;
 
     /**
      * \brief   Searches in registries model by name. If found, returns valid pointer. Otherwise, returns null.
@@ -542,7 +549,7 @@ private:
      *                          Every element contains unique name of thread, 
      *                          which can be found in the system.
      **/
-    void shutdownThreads( const NERegistry::ComponentThreadList & whichThreads );
+    void shutdownThreads( const NERegistry::ComponentThreadList & whichThreads ) const;
 
     /**
      * \brief   The call of this function will suspend current thread and
@@ -551,13 +558,13 @@ private:
      *          destroy threads
      * \param   whichThreads    The list of registered thread to wait for completion.
      **/
-    void waitThreadsCompletion( const NERegistry::ComponentThreadList & whichThreads );
+    void waitThreadsCompletion( const NERegistry::ComponentThreadList & whichThreads ) const;
 
     /**
      * \brief   The call of this function will destroy all registered in the list
      *          threads and wait until all threads complete job and exit.
      **/
-    void destroyThreads( const NERegistry::ComponentThreadList & whichThreads );
+    void destroyThreads( const NERegistry::ComponentThreadList & whichThreads ) const;
 
     /**
      * \brief   Adds new Model object to the list.  All models should have
@@ -585,10 +592,12 @@ private:
 #if defined(_MSC_VER) && (_MSC_VER > 1200)
     #pragma warning(disable: 4251)
 #endif  // _MSC_VER
+
     /**
      * \brief   The list of models
      **/
     ModelList       mModelList;
+
 #if defined(_MSC_VER) && (_MSC_VER > 1200)
     #pragma warning(default: 4251)
 #endif  // _MSC_VER
@@ -601,18 +610,15 @@ private:
     /**
      * \brief   Synchronization object
      **/
-    ResourceLock  mLock;
+    mutable ResourceLock    mLock;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    ComponentLoader( const ComponentLoader & /*src*/ );
-    const ComponentLoader & operator = ( ComponentLoader & /*src*/ );
+    DECLARE_NOCOPY_NOMOVE( ComponentLoader );
 };
 
 //////////////////////////////////////////////////////////////////////////
 // ComponentLoader class inline function implementation
 //////////////////////////////////////////////////////////////////////////
-
-#endif  // AREG_COMPONENT_COMPONENTLOADER_HPP

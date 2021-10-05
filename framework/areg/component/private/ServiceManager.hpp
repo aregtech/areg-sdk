@@ -1,9 +1,16 @@
-#ifndef AREG_COMPONENT_PRIVATE_SERVICEMANAGER_HPP
-#define AREG_COMPONENT_PRIVATE_SERVICEMANAGER_HPP
+#pragma once
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/component/private/ServiceManager.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, Service Manager declaration.
  *
  ************************************************************************/
@@ -16,7 +23,7 @@
 #include "areg/component/DispatcherThread.hpp"
 #include "areg/component/private/ServiceManagerEvents.hpp"
 
-#include "areg/base/ESynchObjects.hpp"
+#include "areg/base/SynchObjects.hpp"
 #include "areg/component/private/ServerList.hpp"
 #include "areg/ipc/private/ClientService.hpp"
 #include "areg/ipc/IERemoteServiceConsumer.hpp"
@@ -33,36 +40,27 @@ class ServiceResponseEvent;
 // ServiceManager class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   Service Manager is a singleton module instantiated
- *          on System Startup and shutting down on System Shutdown.
- *          The Service Manager is running in separate Dispatcher Thread,
- *          which is processing Servicing Events. The Service Manager
- *          Events are sent by Stub Server or by Proxy client objects
- *          every time when Stub and/or Proxy are connected and/or disconnected.
- *          The Service Manager is a module responsible to provide
- *          handshake between Server and connected Client components.
- *          Every Proxy client object and every Stub server of Service Interface 
- *          on startup are requesting registration at Service Manager.
- *          When the requested Stub of Server Interface is available in
- *          the System, Service Manager is sending connection Events
- *          to both objects, providing connection address information.
- *          Once Proxy client received connection available message from
- *          Service Manager, Proxy will know the target Stub address and
- *          can send request to be processed on Stub server instance.
- *          When Stub Server is shutting down, Service Manager receives
- *          appropriate information from Server side and sends all relevant
- *          Proxy clients server disconnected message to stop sending requests.
- *          Similar notification messages are received by Stub server object
- *          every time when Proxy client is connecting or disconnecting
- *          to the Service.
+ * \brief   Service Manager is a singleton module, which should be instantiated
+ *          and run on System Startup. The service manager is responsible
+ *          for service regustration and automated service disconvery.
+ * 
+ *          All system proxies and serviers are automatically registered at
+ *          Service Manager. As soon as a service server is available, the
+ *          Service Manager generates appropriate events and automatically
+ *          sends notifications to proxies to notify service availability, 
+ *          and sends connection event to notify servers new client connection.
+ *          When server or client is disconnected, Service Manager generates
+ *          appropriate event to notify disconnect event. The proxies can send
+ *          requests and subscribe to data update as long as the server remains
+ *          connected. No message is sent to the server if it is not available yet.
+ *          So that, each proxy / client first should wait for connected event, then
+ *          start triggering tasks on the server side.
+ * 
  *          Service Manager as well is starting the Timer Service, which provides
- *          possibility to start and stop timers, and the Service Manager shuts down
- *          the Timer Service when the application is shutting down the Service Manager.
- *          The Service Manager start and stop are managed from
- *          Component Loader module, when the system is requested
- *          to load and run, or shutdown and stop registered components.
- *          Service Manager is starting before first Component Thread
- *          is started and shutdown, when last Component Thread is stopped.
+ *          possibility to start and stop timers.
+ * 
+ *          To start application Service Manager, use Application::initialize() method,
+ *          which should be called before any model is loaded.
  **/
 class ServiceManager    : private   DispatcherThread
                         , private   IEServiceManagerEventConsumer
@@ -73,16 +71,6 @@ class ServiceManager    : private   DispatcherThread
 // Declare Runtime
 //////////////////////////////////////////////////////////////////////////
     DECLARE_RUNTIME(ServiceManager)
-
-//////////////////////////////////////////////////////////////////////////
-// Predefined constants
-//////////////////////////////////////////////////////////////////////////
-private:
-    /**
-     * \brief   ServiceManager::SERVICE_MANAGER_THREAD_NAME
-     *          Predefined Service Manager Thread name.
-     **/
-    static const char* const    SERVICE_MANAGER_THREAD_NAME /*= "_AREG_SERVICE_MANAGER_THREAD_"*/;
 
 //////////////////////////////////////////////////////////////////////////
 // Static public methods to access globally
@@ -185,28 +173,28 @@ private:
 /************************************************************************/
 
     /**
-     * \brief   Call to configure router client. If passed NULL, it will use
+     * \brief   Call to configure router client. If passed nullptr, it will use
      *          default router configuration file. This call will not start client
      *          automatically. To start router client, call _routingServiceStart()
      *          manually.
      * \param   configFile  The configuration file of router client.
-     *                      If NULL, it will load default configuration file.
+     *                      If nullptr, it will load default configuration file.
      * \return  Returns true if succeeded to load configuration file.
      *          Otherwise, it returns false.
      * \see     _routingServiceStart
      **/
-    static bool _routingServiceConfigure( const char * configFile = NULL );
+    static bool _routingServiceConfigure( const char * configFile = nullptr );
 
     /**
      * \brief   Call to start the client part of remove Routing Service.
-     * \param   configFile  If not NULL, the router will be first configured.
-     *                      If NULL and router was not configured, it will use
+     * \param   configFile  If not nullptr, the router will be first configured.
+     *                      If nullptr and router was not configured, it will use
      *                      default configuration file.
-     *                      If NULL and router was configured, it will ignore configuration.
+     *                      If nullptr and router was configured, it will ignore configuration.
      * \return  Returns true if succeeded to start router client.
      * \see     _routingServiceConfigure, _routingServiceStop
      **/
-    static bool _routingServiceStart( const char * configFile = NULL );
+    static bool _routingServiceStart( const char * configFile = nullptr );
 
 
     /**
@@ -263,7 +251,7 @@ private:
      *                  default constructor and assigning operator.
      *                  This object is not used for IPC.
      **/
-    virtual void processEvent( const ServiceManagerEventData & data );
+    virtual void processEvent( const ServiceManagerEventData & data ) override;
 
 /************************************************************************/
 // IEEventRouter Interface overrides.
@@ -275,7 +263,7 @@ private:
      * \return	Returns true if target was found and the event
      *          delivered with success. Otherwise it returns false.
      **/
-    virtual bool postEvent( Event & eventElem );
+    virtual bool postEvent( Event & eventElem ) override;
 
     /**
      * \brief	Triggered when dispatcher starts running. 
@@ -284,7 +272,7 @@ private:
      *          Override if logic should be changed.
      * \return	Returns true if Exit Event is signaled.
      **/
-    virtual bool runDispatcher( void );
+    virtual bool runDispatcher( void ) override;
 
 /************************************************************************/
 // IERemoteServiceConsumer
@@ -297,19 +285,19 @@ private:
      * \param   out_listStubs   On output this will contain list of remote stub addresses connected with specified cookie value.
      * \param   out_lisProxies  On output this will contain list of remote proxy addresses connected with specified cookie value.
      **/
-    virtual void getServiceList( ITEM_ID cookie, TEArrayList<StubAddress, const StubAddress &> & OUT out_listStubs, TEArrayList<ProxyAddress, const ProxyAddress &> & OUT out_lisProxies ) const;
+    virtual void getServiceList( ITEM_ID cookie, TEArrayList<StubAddress, const StubAddress &> & OUT out_listStubs, TEArrayList<ProxyAddress, const ProxyAddress &> & OUT out_lisProxies ) const override;
 
     /**
      * \brief   Registers remote stub in the current process.
      * \param   stub    The address of remote stub server to register
      **/
-    virtual void registerRemoteStub( const StubAddress & stub );
+    virtual void registerRemoteStub( const StubAddress & stub ) override;
 
     /**
      * \brief   Registers remote proxy in the current process.
      * \param   proxy   The address of remote proxy client to register
      **/
-    virtual void registerRemoteProxy( const ProxyAddress & proxy );
+    virtual void registerRemoteProxy( const ProxyAddress & proxy ) override;
 
     /**
      * \brief   Unregisters remote stub in the current process.
@@ -317,7 +305,7 @@ private:
      * \param   cookie  The cookie that has initiated unregister message.
      *                  The parameter is ignored if 'NEService::COOKIE_ANY'.
      **/
-    virtual void unregisterRemoteStub( const StubAddress & stub, ITEM_ID cookie = NEService::COOKIE_ANY );
+    virtual void unregisterRemoteStub( const StubAddress & stub, ITEM_ID cookie = NEService::COOKIE_ANY ) override;
 
     /**
      * \brief   Unregisters remote proxy in the current process.
@@ -325,20 +313,20 @@ private:
      * \param   cookie  The cookie that has initiated unregister message.
      *                  The parameter is ignored if 'NEService::COOKIE_ANY'.
      **/
-    virtual void unregisterRemoteProxy( const ProxyAddress & proxy, ITEM_ID cookie = NEService::COOKIE_ANY );
+    virtual void unregisterRemoteProxy( const ProxyAddress & proxy, ITEM_ID cookie = NEService::COOKIE_ANY ) override;
 
     /**
      * \brief   Triggered when remote service has been started and there is a
      *          connection established with service.
      * \param   channel     The connection channel of remote Routing Service.
      **/
-    virtual void remoteServiceStarted( const Channel & channel );
+    virtual void remoteServiceStarted( const Channel & channel ) override;
 
     /**
      * \brief   Triggered when connection with remote service has been stopped.
      * \param   channel     The connection channel of remote Routing Service.
      **/
-    virtual void remoteServiceStopped( const Channel & channel );
+    virtual void remoteServiceStopped( const Channel & channel ) override;
 
     /**
      * \brief   Triggered when connection with remote Routing Service is lost.
@@ -346,7 +334,7 @@ private:
      *          receive data, and there was not stop connection triggered.
      * \param   channel     The connection channel of remote Routing Service.
      **/
-    virtual void remoteServiceConnectionLost( const Channel & channel );
+    virtual void remoteServiceConnectionLost( const Channel & channel ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Private static methods
@@ -367,7 +355,7 @@ private:
     /**
      * \brief   Destructor
      **/
-    ~ServiceManager( void );
+    virtual ~ServiceManager( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations and attributes
@@ -490,8 +478,7 @@ private:
 // Forbidden method calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    ServiceManager( const ServiceManager & /*src*/ );
-    const ServiceManager & operator = ( const ServiceManager & /*src*/ );
+    DECLARE_NOCOPY_NOMOVE( ServiceManager );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -502,5 +489,3 @@ inline ServiceManager & ServiceManager::self( void )
 {
     return (*this);
 }
-
-#endif  // AREG_COMPONENT_PRIVATE_SERVICEMANAGER_HPP

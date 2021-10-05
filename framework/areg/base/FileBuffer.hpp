@@ -1,9 +1,16 @@
-#ifndef AREG_BASE_FILEBUFFER_HPP
-#define AREG_BASE_FILEBUFFER_HPP
+#pragma once
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/base/FileBuffer.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, Memory Shared Buffer File object.
  *              This class behaves as a File object. All write and read
  *              operations are performed on the buffer in memory.
@@ -17,24 +24,19 @@
 #include "areg/base/SharedBuffer.hpp"
 #include "areg/base/NEMemory.hpp"
 
-/**
- * \brief   Memory Buffer File object. All read and write  operations are performed
- *          on the buffer located in memory. The class contains Shared Buffer object
- *          to minimize data copy operations when passesbe increasing reference count
- *              of byte buffer structure. The class supports all main
- *              operations for file access, using access modes. 
- *              For more details about file access modes, see description
- *              in class FileBase. For read-only operations, class
- *              has special attach mode, where the byte buffer is attached
- *              and only reading operation is allowed.
- *              This class also used a base class for data streaming 
- *              between threads.
- *
- **/
-
 //////////////////////////////////////////////////////////////////////////
 // FileBuffer class declaration
 //////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   Memory Buffer File object. All read and write  operations are performed
+ *          on the buffer located in memory. The class contains Shared Buffer object
+ *          to minimize data copy operations. The class supports all main
+ *          operations for file access, using access modes. For more details about 
+ *          file access modes, see description in class FileBase. For read-only operations,
+ *          class has special attach mode, where the byte buffer is attached and only 
+ *          reading operation is allowed. This class also used a base class for data streaming 
+ *          between threads.
+ **/
 class AREG_API FileBuffer   : public    FileBase      // derive all basic functionalities of file operations
 {
 //////////////////////////////////////////////////////////////////////////
@@ -48,7 +50,7 @@ public:
      *          to the size of NEMemory::BLOCK_SIZE. In case of read-only mode
      *          no buffer will be allocated and passed shared buffer will be used.
      **/
-    static const unsigned int   BLOCK_SIZE  /*= 4 * NEMemory::BLOCK_SIZE*/;
+    static constexpr unsigned int   BLOCK_SIZE  { 4 * NEMemory::BLOCK_SIZE };
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -60,41 +62,28 @@ public:
      * \param	mode	    The file open mode. By default file object is opened with write permission and in binary mode
      * \param	blockSize	The block size to increase. By default the block size is BLOCK_SIZE (64 bytes)
      **/
-    FileBuffer( unsigned int mode      = (FileBase::FO_MODE_WRITE | FileBase::FO_MODE_BINARY)
-              , const char*  name      = NULL
-              , unsigned int blockSize = BLOCK_SIZE);
+    explicit FileBuffer( unsigned int mode      = (FileBase::FO_MODE_WRITE | FileBase::FO_MODE_BINARY)
+                       , const char*  name      = nullptr
+                       , unsigned int blockSize = BLOCK_SIZE);
 
     /**
      * \brief	Constructor to set by default attached mode
-     * \param	buffer	The reference to buffer to attach. 
-     *                  If not invalid buffer (NEMemory::InvalidBuffer),
-     *                  the default file open mode will be FO_MODE_ATTACH
-     * \param	name	The name of file object. Can be NULL
+     * \param	buffer	The referenced object to shared bufferto attach. 
+     * \param	name	The name of file object. Can be nullptr.
      **/
-    FileBuffer(NEMemory::sByteBuffer & buffer, const char * name = NULL);
+    FileBuffer(SharedBuffer & sharedBuffer, const char * name = nullptr);
 
     /**
      * \brief	Constructor to set by default attached mode
-     * \param	buffer	The reference to buffer to attach. 
-     *                  If not invalid buffer (NEMemory::InvalidBuffer),
-     *                  the default file open mode will be FO_MODE_ATTACH
-     * \param	name	The name of file object. Can be NULL
+     * \param	buffer	The referenced object to shared bufferto attach.
+     * \param	name	The name of file object. Can be nullptr.
      **/
-    FileBuffer(SharedBuffer & sharedBuffer, const char * name = NULL);
-
-    /**
-     * \brief	Constructor to set by default attached mode
-     * \param	buffer	The reference to buffer to attach. 
-     *                  If not invalid buffer (NEMemory::InvalidBuffer),
-     *                  the default file open mode will be FO_MODE_ATTACH
-     * \param	name	The name of file object. Can be NULL
-     **/
-    FileBuffer(const SharedBuffer & sharedBuffer, const char* name = NULL);
+    FileBuffer(const SharedBuffer & sharedBuffer, const char* name = nullptr);
 
     /**
      * \brief   Destructor
      **/
-    virtual ~FileBuffer( void );
+    virtual ~FileBuffer( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
@@ -137,14 +126,14 @@ public:
 
     /**
      * \brief	If file object was opened and the the size is not zero (i.e. data was written / read) 
-     *          it returns the pointer of buffer. Otherwise it will return NULL.
+     *          it returns the pointer of buffer. Otherwise it will return nullptr.
      **/
-    inline const unsigned char* getDataBuffer( void ) const;
+    inline const unsigned char * getDataBuffer( void ) const;
 
     /**
      * \brief   Returns reference to shared buffer object (for read only purpose)
      **/
-    inline const SharedBuffer& getSharedBuffer( void ) const;
+    inline const SharedBuffer & getSharedBuffer( void ) const;
 
     /**
      * \brief	Inserts data to file buffer and returns the size of written data.
@@ -171,10 +160,10 @@ public:
      *
      * \return  Returns true if file object was opened with success.
      **/
-    virtual bool open( void );
+    virtual bool open( void ) override;
 
     /**
-     * \brief	Opens the file object. For memory buffered file the file name can be NULL.
+     * \brief	Opens the file object. For memory buffered file the file name can be nullptr.
      *          Any other name for memory buffered file object will have only symbolic meaning
      *          and will be ignored during open operation.
      *          For file system file object the file name should contain one of paths:
@@ -194,7 +183,7 @@ public:
      *
      * \return	Returns true if file was opened with success.
      **/
-    virtual bool open(const char* fileName, unsigned int mode);
+    virtual bool open(const char * fileName, unsigned int mode) override;
 
     /**
      * \brief   Call to close file object.
@@ -204,23 +193,23 @@ public:
      *          If FO_MODE_CREATE_TEMP is set, file object is always deleted on close.
      *          If FO_FOR_DELETE is set, file object is deleted only for memory buffered file even if file was opened with attach mode.
      **/
-    virtual void close( void );
+    virtual void close( void ) override;
 
     /**
      * \brief	Delete opened file. This will force to delete file object even if it is attached memory buffered file
      * \return	Returns true if succeeded.
      **/
-    virtual bool remove( void );
+    virtual bool remove( void ) override;
 
     /**
      * \brief	If succeeds, returns the current valid length of file data. otherwise returns INVALID_SIZE value.
      **/
-    virtual unsigned int getLength( void ) const;
+    virtual unsigned int getLength( void ) const override;
 
     /**
      * \brief   Returns the current open status of file object. If file is opened, returns true
      **/
-    virtual bool isOpened( void ) const;
+    virtual bool isOpened( void ) const override;
 
     /**
      * \brief	Call to set new size of file object and returns the current position of pointer.
@@ -233,12 +222,12 @@ public:
      *
      * \return  If succeeds, returns the current position of file pointer. Otherwise it returns value INVALID_POINTER_POSITION.
      **/
-    virtual unsigned int reserve(int newSize);
+    virtual unsigned int reserve(int newSize) override;
 
     /**
      * \brief   Purge file object data, sets the size zero and if succeeds, returns true.
      **/
-    virtual bool truncate( void );
+    virtual bool truncate( void ) override;
 
 /************************************************************************/
 // IEInStream interface overrides
@@ -252,7 +241,7 @@ public:
      * \param   buffer  The instance of Byte Buffer object to stream data from Input Stream object
      * \return	Returns the size in bytes of copied data
      **/
-    virtual unsigned int read( IEByteBuffer & buffer ) const;
+    virtual unsigned int read( IEByteBuffer & buffer ) const override;
 
     /**
      * \brief   Reads string data from Input Stream object and copies into given ASCII String.
@@ -260,7 +249,7 @@ public:
      * \param   asciiString     The buffer of ASCII String to stream data from Input Stream object.
      * \return  Returns the size in bytes of copied string data.
      **/
-    virtual unsigned int read( String & asciiString ) const;
+    virtual unsigned int read( String & asciiString ) const override;
 
     /**
      * \brief   Reads string data from Input Stream object and copies into given Wide String.
@@ -268,7 +257,7 @@ public:
      * \param   wideString      The buffer of Wide String to stream data from Input Stream object.
      * \return  Returns the size in bytes of copied string data.
      **/
-    virtual unsigned int read( WideString & wideString ) const;
+    virtual unsigned int read( WideString & wideString ) const override;
 
     /**
      * \brief	Reads data from input stream object, copies into given buffer and
@@ -277,7 +266,7 @@ public:
      * \param	size	The size in bytes of available buffer
      * \return	Returns the size in bytes of copied data
      **/
-    virtual unsigned int read( unsigned char * buffer, unsigned int size ) const;
+    virtual unsigned int read( unsigned char * buffer, unsigned int size ) const override;
 
 /************************************************************************/
 // IEOutStream interface overrides
@@ -289,7 +278,7 @@ public:
      * \param	buffer	The instance of Byte Buffer object containing data to stream to Output Stream.
      * \return	Returns the size in bytes of written data
      **/
-    virtual unsigned int write( const IEByteBuffer & buffer );
+    virtual unsigned int write( const IEByteBuffer & buffer ) override;
 
     /**
      * \brief   Writes string data from given ASCII String object to output stream object.
@@ -297,7 +286,7 @@ public:
      * \param   asciiString     The buffer of String containing data to stream to Output Stream.
      * \return  Returns the size in bytes of copied string data.
      **/
-    virtual unsigned int write( const String & asciiString );
+    virtual unsigned int write( const String & asciiString ) override;
 
     /**
      * \brief   Writes string data from given wide-char String object to output stream object.
@@ -305,7 +294,7 @@ public:
      * \param   wideString  The buffer of String containing data to stream to Output Stream.
      * \return  Returns the size in bytes of copied string data.
      **/
-    virtual unsigned int write( const WideString & wideString );
+    virtual unsigned int write( const WideString & wideString ) override;
 
     /**
      * \brief	Write data to output stream object from given buffer
@@ -316,7 +305,7 @@ public:
      * \param	size	The size in bytes of data buffer
      * \return	Returns the size in bytes of written data
      **/
-    virtual unsigned int write( const unsigned char* buffer, unsigned int size );
+    virtual unsigned int write( const unsigned char * buffer, unsigned int size ) override;
 
 /************************************************************************/
 // IECursorPosition interface overrides
@@ -325,24 +314,24 @@ public:
      * \brief	Sets the file pointer position and returns current position. 
      *          The positive value of offset means move pointer forward.
      *          The negative value of offset means move pointer back.
-     *          For memory buffered file the pointer cannot move more than IECursorPosition::POSITION_END.
+     *          For memory buffered file the pointer cannot move more than IECursorPosition::eCursorPosition::PositionEnd.
      *
      * \param	offset	The offset in bytes to move. Positive value means moving forward. Negative value means moving back.
      * \param	startAt	Specifies the starting position of pointer and should have one of values:
-     *                  IECursorPosition::POSITION_BEGIN   -- position from beginning of file
-     *                  IECursorPosition::POSITION_CURRENT -- from current pointer position
-     *                  IECursorPosition::POSITION_END     -- from end of file
+     *                  IECursorPosition::eCursorPosition::PositionBegin   -- position from beginning of file
+     *                  IECursorPosition::eCursorPosition::PositionCurrent -- from current pointer position
+     *                  IECursorPosition::eCursorPosition::PositionEnd     -- from end of file
      *
      * \return	If succeeds, returns the current position of pointer in bytes or value INVALID_POINTER_POSITION if fails.
      **/
-    virtual unsigned int setPosition(int offset, IECursorPosition::eCursorPosition startAt) const;
+    virtual unsigned int setPosition(int offset, IECursorPosition::eCursorPosition startAt) const override;
 
     /**
      * \brief	If succeeds, returns the current position of pointer in bytes or value INVALID_POINTER_POSITION if fails.
      *          Before calling function, the file object should be opened.
      * \return	If succeeds, returns the current position of pointer in bytes or value INVALID_POINTER_POSITION if fails.
      **/
-    virtual unsigned int getPosition( void ) const;
+    virtual unsigned int getPosition( void ) const override;
 
 protected:
 /************************************************************************/
@@ -357,7 +346,7 @@ protected:
      *          For example, if the size of buffer is 'n' and 'x' bytes of data was
      *          already read from stream, the available readable size is 'n - x'.
      **/
-    virtual unsigned int getSizeReadable( void ) const;
+    virtual unsigned int getSizeReadable( void ) const override;
 
     /**
      * \brief	Returns size in bytes of available space that can be written, 
@@ -366,7 +355,7 @@ protected:
      *          For example, if the size of buffer is 'n' and 'x' bytes of data was
      *          already written to stream, the available writable size is 'n - x'.
      **/
-    virtual unsigned int getSizeWritable( void ) const;
+    virtual unsigned int getSizeWritable( void ) const override;
 
 /************************************************************************/
 // Other overrides
@@ -376,7 +365,7 @@ protected:
      * \param	mode	Integer value of bitwise OR operation of eFileOpenMode values
      * \return	Returns normalized value.
      **/
-    virtual unsigned int normalizeMode(unsigned int mode) const;
+    virtual unsigned int normalizeMode(unsigned int mode) const override;
 
 //////////////////////////////////////////////////////////////////////////
 // Private functions
@@ -401,23 +390,22 @@ private:
     bool            mIsOpened;
 
 //////////////////////////////////////////////////////////////////////////
-// Forbidden functions / methods call
+// Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    FileBuffer(const FileBuffer &);
-    const FileBuffer& operator = (const FileBuffer &);
+    DECLARE_NOCOPY_NOMOVE( FileBuffer );
 };
 
 //////////////////////////////////////////////////////////////////////////
 // FileBuffer class inline functions implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline const unsigned char* FileBuffer::getDataBuffer( void ) const
+inline const unsigned char * FileBuffer::getDataBuffer( void ) const
 {
-    return (isOpened() ? mSharedBuffer.getBuffer() : NULL);
+    return (isOpened() ? mSharedBuffer.getBuffer() : nullptr);
 }
 
-inline const SharedBuffer& FileBuffer::getSharedBuffer( void ) const
+inline const SharedBuffer & FileBuffer::getSharedBuffer( void ) const
 {
     return mSharedBuffer;
 }
@@ -441,5 +429,3 @@ inline IEOutStream & operator << ( IEOutStream & stream, const FileBuffer & outp
 {
     return (stream << static_cast<const SharedBuffer &>(output.mSharedBuffer));
 }
-
-#endif  // AREG_BASE_FILEBUFFER_HPP

@@ -1,8 +1,15 @@
-
 /************************************************************************
- * \file        mcrouter/private/app/MulticastRouterWin32.cpp
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \file        mcrouter/private/app/MulticastRouterPosix.cpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       Router, Multicast Router Service process
  ************************************************************************/
 #include "mcrouter/app/MulticastRouter.hpp"
@@ -17,9 +24,7 @@
 #include "areg/appbase/Application.hpp"
 #include "areg/appbase/NEApplication.hpp"
 #include "areg/trace/GETrace.h"
-#include <signal.h>
 
-DEF_TRACE_SCOPE(mcrouter_app_MulticastRouterPosix_handleSignalBrokenPipe);
 DEF_TRACE_SCOPE(mcrouter_app_MulticastRouterPosix_setState);
 
 //////////////////////////////////////////////////////////////////////////
@@ -28,56 +33,29 @@ DEF_TRACE_SCOPE(mcrouter_app_MulticastRouterPosix_setState);
 
 void GServiceMain( int argc, char ** argv );
 
-inline static bool _isEqual( const char * strLeft, const char * strRight )
-{
-    return (NEString::compareStrings<char, char>(strLeft, strRight, NEString::CountAll, false) == 0);
-}
-
-static void handleSignalBrokenPipe(int s)
-{
-    TRACE_SCOPE(mcrouter_app_MulticastRouterPosix_handleSignalBrokenPipe);
-    TRACE_WARN("Caught SIGPIPE signal.");
-}
-
 int main(int argc, char* argv[], char* envp[])
 {
     int result      = 0;
     MulticastRouter & router = MulticastRouter::getInstance();
-    router.setCurrentCommand( MulticastRouter::CMD_Console );
+    router.setCurrentCommand( NEMulticastRouterSettings::parseOption( argc > 1 ?  argv[1] : nullptr ) );
 
-    if ( argc > 1 )
+    switch ( router.getCurrentCommand() )
     {
-        const char * cmd = argv[1];
-
-        if ( _isEqual( cmd, NEMulticastRouterSettings::ServiceCommandInstall) )
-            router.setCurrentCommand( MulticastRouter::CMD_Install );
-        else if ( _isEqual(cmd, NEMulticastRouterSettings::ServiceCommandUninstall) )
-            router.setCurrentCommand( MulticastRouter::CMD_Uninstall );
-        else if ( _isEqual(cmd, NEMulticastRouterSettings::ServiceCommandConsole) )
-            router.setCurrentCommand( MulticastRouter::CMD_Console );
-        else if ( _isEqual(cmd, NEMulticastRouterSettings::ServiceCommandService) )
-            router.setCurrentCommand(MulticastRouter::CMD_Service);
-    }
-
-    signal(SIGPIPE, &handleSignalBrokenPipe);
-
-    switch ( MulticastRouter::getInstance().getCurrentCommand() )
-    {
-    case MulticastRouter::CMD_Install:
-        result = MulticastRouter::getInstance().serviceInstall() ? 0 : -2;
+    case NEMulticastRouterSettings::eServiceCommand::CMD_Install:
+        result = router.serviceInstall() ? 0 : -2;
         break;
 
-    case MulticastRouter::CMD_Uninstall:
-        MulticastRouter::getInstance().serviceUninstall();
+    case NEMulticastRouterSettings::eServiceCommand::CMD_Uninstall:
+        router.serviceUninstall();
         break;
 
-    case MulticastRouter::CMD_Console:
+    case NEMulticastRouterSettings::eServiceCommand::CMD_Console:
         ::GServiceMain(argc, argv);
-        MulticastRouter::getInstance().serviceStop();
+        router.serviceStop();
         break;
 
-    case MulticastRouter::CMD_Service:
-        // result = ::StartServiceCtrlDispatcher(gServiceTable) ? 0 : -1;
+    case NEMulticastRouterSettings::eServiceCommand::CMD_Service:
+        // result = ::StartServiceCtrlDispatcher(_serviceTable) ? 0 : -1;
         break;
 
     default:
@@ -91,9 +69,9 @@ int main(int argc, char* argv[], char* envp[])
 void GServiceMain( int argc, char ** argv )
 {
     MulticastRouter & router = MulticastRouter::getInstance();
-    router.setState(NEMulticastRouterSettings::RouterStarting);
+    router.setState(NEMulticastRouterSettings::eRouterState::RouterStarting);
     router.serviceMain( static_cast<int>(argc), argv);
-    router.setState( NEMulticastRouterSettings::RouterStopped );
+    router.setState( NEMulticastRouterSettings::eRouterState::RouterStopped );
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -116,8 +94,8 @@ bool MulticastRouter::_registerService( void )
 
 void MulticastRouter::_freeResources( void )
 {
-    mSvcHandle = NULL;
-    mSeMHandle = NULL;
+    mSvcHandle = nullptr;
+    mSeMHandle = nullptr;
 }
 
 bool MulticastRouter::_openService(void)
@@ -147,25 +125,25 @@ bool MulticastRouter::setState( NEMulticastRouterSettings::eRouterState newState
     {
         switch ( newState )
         {
-        case NEMulticastRouterSettings::RouterStopped:
+        case NEMulticastRouterSettings::eRouterState::RouterStopped:
             break;
 
-        case NEMulticastRouterSettings::RouterStarting:
+        case NEMulticastRouterSettings::eRouterState::RouterStarting:
             break;
 
-        case NEMulticastRouterSettings::RouterStopping:
+        case NEMulticastRouterSettings::eRouterState::RouterStopping:
             break;
 
-        case NEMulticastRouterSettings::RouterRunning:
+        case NEMulticastRouterSettings::eRouterState::RouterRunning:
             break;
 
-        case NEMulticastRouterSettings::RouterContinuing:
+        case NEMulticastRouterSettings::eRouterState::RouterContinuing:
             break;
 
-        case NEMulticastRouterSettings::RouterPausing:
+        case NEMulticastRouterSettings::eRouterState::RouterPausing:
             break;
 
-        case NEMulticastRouterSettings::RouterPaused:
+        case NEMulticastRouterSettings::eRouterState::RouterPaused:
             break;
 
         default:

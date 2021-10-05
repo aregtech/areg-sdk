@@ -1,7 +1,15 @@
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/trace/private/TracePropertyValue.cpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       Trace Property value class. Used when reading or 
  *              saving configuration file
  ************************************************************************/
@@ -10,19 +18,21 @@
 #include "areg/trace/private/NELogConfig.hpp"
 #include "areg/base/NEUtilities.hpp"
 
+#include <utility>
+
 inline void TracePropertyValue::_setValue( const char * newValue )
 {
-    mValue = newValue != NULL ? newValue : "";
+    mValue = newValue != nullptr ? newValue : "";
     NEString::CharPos pos = mValue.findFirstOf(NELogConfig::SYNTAX_END_COMMAND_DELIMITER);
-    if ( pos != NEString::InvalidPos )
+    if ( pos != NEString::INVALID_POS )
         mValue  = mValue.substring(0, pos);
     
     mValue.trimAll();
 
     String prio = mValue;
     mPriority   = static_cast<unsigned int>(NETrace::PrioNotset);
-    pos         = mValue.findFirstOf(NELogConfig::SYNTAX_LOGICAL_OR);
-    if ( pos != NEString::InvalidPos )
+    pos         = mValue.findFirstOf(NELogConfig::SYNTAX_LOGICAL_OR.data());
+    if ( pos != NEString::INVALID_POS )
     {
         prio = mValue.substring(0, pos);
         prio.trimAll();
@@ -39,22 +49,21 @@ inline void TracePropertyValue::_setValue( const char * newValue )
 }
 
 
-TracePropertyValue::TracePropertyValue(void)
-    : mValue    ( String::EmptyString )
+TracePropertyValue::TracePropertyValue( void )
+    : mValue    ( String::EmptyString.data(), 0 )
     , mPriority ( static_cast<unsigned int>(NETrace::PrioNotset) )
 {
-    ; // do nothing
 }
 
 TracePropertyValue::TracePropertyValue( const char * initValue )
-    : mValue    ( String::EmptyString )
+    : mValue    ( String::EmptyString.data(), 0 )
     , mPriority ( static_cast<unsigned int>(NETrace::PrioNotset) )
 {
     _setValue(initValue);
 }
 
 TracePropertyValue::TracePropertyValue( const String & initValue )
-    : mValue    ( String::EmptyString )
+    : mValue    ( String::EmptyString.data( ), 0 )
     , mPriority ( static_cast<unsigned int>(NETrace::PrioNotset) )
 {
     _setValue( initValue.getString() );
@@ -64,93 +73,59 @@ TracePropertyValue::TracePropertyValue( const TracePropertyValue & source )
     : mValue    ( source.mValue )
     , mPriority ( source.mPriority )
 {
-    ; // do nothing
 }
 
-TracePropertyValue::~TracePropertyValue(void)
+TracePropertyValue::TracePropertyValue( TracePropertyValue && source ) noexcept
+    : mValue    ( std::move(source.mValue) )
+    , mPriority ( std::move(source.mPriority) )
 {
-    ; // do nothing
 }
 
-const TracePropertyValue & TracePropertyValue::operator = ( const TracePropertyValue & source )
+TracePropertyValue & TracePropertyValue::operator = ( bool newValue )
 {
-    if ( static_cast<const TracePropertyValue *>(this) != &source )
-        mValue  = source.mValue;
+    mValue = newValue ? NELogConfig::SYNTAX_TRUE.data( ) : NELogConfig::SYNTAX_FALSE.data( );
     return (*this);
-}
-
-void TracePropertyValue::operator = ( const String & newValue )
-{
-    _setValue(newValue.getString());
-}
-
-void TracePropertyValue::operator = ( const char * newValue )
-{
-    _setValue(newValue);
-}
-
-void TracePropertyValue::operator = ( unsigned int newValue )
-{
-    mValue = String::uint32ToString(newValue, NEString::RadixDecimal);
-}
-
-void TracePropertyValue::operator = ( NETrace::eLogPriority newValue )
-{
-    mValue  = NETrace::convToString(newValue);
-}
-
-void TracePropertyValue::operator = ( bool newValue )
-{
-    mValue = newValue ? NELogConfig::SYNTAX_TRUE : NELogConfig::SYNTAX_FALSE;
-}
-
-TracePropertyValue::operator const char * ( void ) const
-{
-    return static_cast<const char *>(mValue);
-}
-
-TracePropertyValue::operator const String & ( void ) const
-{
-    return mValue;
 }
 
 TracePropertyValue::operator unsigned int ( void ) const
 {
-    return static_cast<unsigned int>( mValue.isEmpty() == false ? mValue.convToUInt32(NEString::RadixDecimal) : NELogConfig::DEFAULT_INTEGER_VALUE );
-}
-
-TracePropertyValue::operator NETrace::eLogPriority ( void ) const
-{
-    return static_cast<NETrace::eLogPriority>(mPriority);
+    return static_cast<unsigned int>(mValue.isEmpty( ) == false ? mValue.convToUInt32( NEString::eRadix::RadixDecimal ) : NELogConfig::DEFAULT_INTEGER_VALUE);
 }
 
 TracePropertyValue::operator bool ( void ) const
 {
-    return ( mValue.isEmpty() == false ? mValue.compare(NELogConfig::SYNTAX_TRUE, NEString::StartPos, NEString::EndPos, false) == 0 : NELogConfig::DEFAULT_BOOLEAN_VALUE );
+    if ( mValue.isEmpty( ) == false )
+    {
+        return mValue.compare( NELogConfig::SYNTAX_TRUE.data( ), NEString::START_POS, NEString::END_POS, false ) == NEMath::eCompare::Equal;
+    }
+    else
+    {
+        return NELogConfig::DEFAULT_BOOLEAN_VALUE;
+    }
 }
 
 TracePropertyValue::operator unsigned char ( void ) const
 {
-    return (mValue.isEmpty() == false ? static_cast<unsigned char>(mValue.getAt(NEString::StartPos)) : static_cast<unsigned char>(NELogConfig::DEFAULT_INTEGER_VALUE));
+    return (mValue.isEmpty( ) == false ? static_cast<unsigned char>(mValue.getAt( NEString::START_POS )) : static_cast<unsigned char>(NELogConfig::DEFAULT_INTEGER_VALUE));
 }
 
 TracePropertyValue::operator float ( void ) const
 {
-    return (mValue.isEmpty() == false ? mValue.convToFloat() : static_cast<float>(NELogConfig::DEFAULT_INTEGER_VALUE));
+    return (mValue.isEmpty( ) == false ? mValue.convToFloat( ) : static_cast<float>(NELogConfig::DEFAULT_INTEGER_VALUE));
 }
 
-
-void TracePropertyValue::operator += ( NETrace::eLogPriority newValue )
+TracePropertyValue & TracePropertyValue::operator += ( NETrace::eLogPriority newValue )
 {
     int prioInt     = static_cast<NETrace::eLogPriority>(*this);
     String prioStr= NETrace::convToString(newValue);
     if ( prioInt == NETrace::PrioNotset )
-        _setValue( prioStr.getString() );
+    {
+        _setValue( prioStr.getString( ) );
+    }
     else if (( newValue != NETrace::PrioNotset) && (prioInt & static_cast<int>(newValue)) == 0 )
-        _setValue( (mValue + NELogConfig::SYNTAX_LOGICAL_OR + prioStr).getString());
-}
+    {
+        _setValue( (mValue + NELogConfig::SYNTAX_LOGICAL_OR.data( ) + prioStr).getString( ) );
+    }
 
-bool TracePropertyValue::operator == ( const TracePropertyValue & other ) const
-{
-    return ( this != &other ? mValue == other.mValue : true );
+    return (*this);
 }

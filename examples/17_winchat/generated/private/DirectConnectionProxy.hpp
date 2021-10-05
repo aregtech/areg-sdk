@@ -1,18 +1,18 @@
 //////////////////////////////////////////////////////////////////////////
 // Begin generate generated/private/DirectConnectionProxy.hpp file
 //////////////////////////////////////////////////////////////////////////
-#ifndef  GENERATED_PRIVATE_DIRECTCONNECTIONPROXY_HPP
-#define  GENERATED_PRIVATE_DIRECTCONNECTIONPROXY_HPP
-/************************************************************************
- * (c) copyright    2021
- *                  Create by AREG SDK code generator tool from source DirectConnection.
- * Generated at     04.07.2021  04:30:02 GMT+02:00 
- ************************************************************************/
+#pragma once
 
 /************************************************************************
+ * (c) copyright    2021
+ *
+ * Generated at     30.09.2021  01:22:15 GMT+02:00 
+ *                  Create by AREG SDK code generator tool from source DirectConnection.
+ *
  * \file            generated/private/DirectConnectionProxy.hpp
  * \ingroup         DirectConnection Service Interface
- * \brief           This is an automatic generated code of DirectConnection Service Interface Proxy class declaration.
+ * \brief           This is an automatic generated code of DirectConnection
+ *                  Service Interface Proxy class declaration.
  ************************************************************************/
 
 /************************************************************************
@@ -68,18 +68,17 @@ private:
         /**
          * \brief   Sets event consumer object to deliver notification.
          **/
-        DirectConnectionServiceAvailableEvent( IENotificationEventConsumer & consumer );
+        explicit DirectConnectionServiceAvailableEvent( IENotificationEventConsumer & consumer );
         /**
          * \brief   Destructor
          **/
-        virtual ~DirectConnectionServiceAvailableEvent( void );
+        virtual ~DirectConnectionServiceAvailableEvent( void ) = default;
     //////////////////////////////////////////////////////////////////////////
     // Forbidden calls
     //////////////////////////////////////////////////////////////////////////
     private:
-        DirectConnectionServiceAvailableEvent( void );
-        DirectConnectionServiceAvailableEvent( const DirectConnectionServiceAvailableEvent & /*src*/ );
-        const DirectConnectionServiceAvailableEvent & operator = ( const DirectConnectionServiceAvailableEvent & /*src*/ );
+        DirectConnectionServiceAvailableEvent( void ) = delete;
+        DECLARE_NOCOPY_NOMOVE( DirectConnectionServiceAvailableEvent );
     };
 //////////////////////////////////////////////////////////////////////////
 // DirectConnectionProxy predefined constants and static members.
@@ -101,10 +100,10 @@ public:
      * \param   roleName        The role name of stub component object
      * \param   connectListener The reference to connection listener
      * \param   ownerThread     The name of thread instance to dispatch messages.
-     *                          If NULL, current dispatching thread is used to dispatch messages.
+     *                          If nullptr, current dispatching thread is used to dispatch messages.
      * \return  Returns pointer to instantiated proxy object.
      **/
-    static DirectConnectionProxy * createProxy( const char * roleName, IEProxyListener & connectListener, const char * ownerThread = static_cast<const char *>(NULL) );
+    static DirectConnectionProxy * createProxy( const char * roleName, IEProxyListener & connectListener, const char * ownerThread = nullptr );
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor. Protected
@@ -115,9 +114,9 @@ protected:
      *          Do not create proxy object directly, instead use CreateProxy function.
      * \param   roleName    The role name of proxy, i.e. role name of server component object.
      * \param   ownerThread The instance of thread to dispatch messages.
-     *                      If NULL, current dispatching thread is used to dispatch messages.
+     *                      If nullptr, current dispatching thread is used to dispatch messages.
      **/
-    DirectConnectionProxy( const char * roleName, DispatcherThread * ownerThread = static_cast<DispatcherThread *>(NULL) );
+    explicit DirectConnectionProxy( const char * roleName, DispatcherThread * ownerThread = nullptr );
     /**
      * \brief   Destructor
      **/
@@ -270,7 +269,7 @@ protected:
      *                      Contains response message and information
      *                      sent by Stub
      **/
-    virtual void processResponseEvent( ServiceResponseEvent & eventElem );
+    virtual void processResponseEvent( ServiceResponseEvent & eventElem ) override;
     /**
      * \brief   Method derived from IEProxyEventConsumer interface.
      *          Triggered when on server side a certain Attribute 
@@ -279,7 +278,7 @@ protected:
      *                      Contains new updated value of Attribute
      *                      and validation flag.
      **/
-    virtual void processAttributeEvent( ServiceResponseEvent & eventElem );
+    virtual void processAttributeEvent( ServiceResponseEvent & eventElem ) override;
 
 /************************************************************************/
 // ProxyBase interface overrides.
@@ -293,7 +292,7 @@ protected:
      *                  notification information.
      * \return  Returns new created notification event object.
      **/
-    virtual NotificationEvent * createNotificationEvent( const NotificationEventData & data ) const;
+    virtual NotificationEvent * createNotificationEvent( const NotificationEventData & data ) const override;
 
     /**
      * \brief   Create Request event to send to Stub object. 
@@ -302,7 +301,7 @@ protected:
      * \param   reqId   The ID of request call.
      * \return  Return pointer of valid Request event.
      **/
-    virtual ServiceRequestEvent * createRequestEvent( const EventDataStream & args, unsigned int reqId );
+    virtual ServiceRequestEvent * createRequestEvent( const EventDataStream & args, unsigned int reqId ) override;
 
     /**
      * \brief   Creates event requesting to receive update notification events.
@@ -312,16 +311,16 @@ protected:
      * \param   reqType     The type of request.
      * \return  Returns valid pointer of created service request event object.
      **/
-    virtual ServiceRequestEvent * createNotificationRequestEvent( unsigned int msgId, NEService::eRequestType reqType );
+    virtual ServiceRequestEvent * createNotificationRequestEvent( unsigned int msgId, NEService::eRequestType reqType ) override;
 
     /**
      * \brief   Overwrite method to create response event from streaming object for 
      *          further dispatching by proxy.
      * \param   stream  Streaming object, which contains event data.
      * \return  If operation succeeds, returns valid pointer to Service Response event object.
-     *          Otherwise, it returns NULL.
+     *          Otherwise, it returns nullptr.
      **/
-    virtual RemoteResponseEvent * createRemoteResponseEvent( const IEInStream & stream ) const;
+    virtual RemoteResponseEvent * createRemoteResponseEvent( const IEInStream & stream ) const override;
 
     /**
      * \brief   Overwrite method to create error remote response event.
@@ -331,26 +330,26 @@ protected:
      * \param   reason      Failure reason set by system
      * \param   seqNr       The sequence number of processing message.
      **/
-    virtual RemoteResponseEvent * createRemoteRequestFailedEvent( const ProxyAddress & addrProxy, unsigned int msgId, NEService::eResultType reason, unsigned int seqNr ) const;
+    virtual RemoteResponseEvent * createRemoteRequestFailedEvent( const ProxyAddress & addrProxy, unsigned int msgId, NEService::eResultType reason, unsigned int seqNr ) const override;
 
     /**
      * \brief   Overwrite this method to create service available event to new instantiated clients.
      * \param   consumer    The instance of consumer, which receives service available event.
      * \return  If succeeds, returns valid pointer to service available event object.
      **/
-    virtual ProxyBase::ServiceAvailableEvent * createServiceAvailableEvent( IENotificationEventConsumer & consumer );
+    virtual ProxyBase::ServiceAvailableEvent * createServiceAvailableEvent( IENotificationEventConsumer & consumer ) override;
 
     /**
      * \brief   Called to register all servicing listeners. It is called when proxy is instantiated.
      *          Overwrite method to add service event listeners.
      **/
-    virtual void registerServiceListeners( void );
+    virtual void registerServiceListeners( void ) override;
 
     /**
      * \brief   Called to unregister all servicing listeners. It is called when proxy is freed.
      *          Overwrite method to remove service event listeners.
      **/
-    virtual void unregisterServiceListeners( void );
+    virtual void unregisterServiceListeners( void ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -430,10 +429,17 @@ private:
      * \brief   Create proxy object.
      * \param   roleName    The server component role name
      * \param   ownerThread The instance of thread to dispatch messages.
-     *                      If NULL, current dispatching thread is used to dispatch messages.
+     *                      If nullptr, current dispatching thread is used to dispatch messages.
      * \return  Pointer to instantiated proxy object.
      **/
-    static ProxyBase * _createProxy( const char * roleName, DispatcherThread * ownerThread = static_cast<DispatcherThread *>(NULL) );
+    static ProxyBase * _createProxy( const char * roleName, DispatcherThread * ownerThread = nullptr );
+
+//////////////////////////////////////////////////////////////////////////
+// Forbidden calls.
+//////////////////////////////////////////////////////////////////////////
+private:
+    DirectConnectionProxy( void ) = delete;
+    DECLARE_NOCOPY_NOMOVE( DirectConnectionProxy );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -474,12 +480,12 @@ inline DirectConnectionProxy & DirectConnectionProxy::self( void )
 
 inline bool DirectConnectionProxy::isInitiatedConnectionsValid( void ) const
 {
-    return (getProxyData().getAttributeState(NEDirectConnection::MSG_ID_InitiatedConnections) == NEService::DATA_OK);
+    return (getProxyData().getAttributeState( static_cast<msg_id>(NEDirectConnection::eMessageIDs::MsgId_InitiatedConnections) ) == NEService::eDataStateType::DataIsOK);
 }
 
 inline const NEDirectConnection::MapParticipants & DirectConnectionProxy::getInitiatedConnections( NEService::eDataStateType & state ) const
 {
-    state = getProxyData().getAttributeState(NEDirectConnection::MSG_ID_InitiatedConnections);
+    state = getProxyData().getAttributeState( static_cast<msg_id>(NEDirectConnection::eMessageIDs::MsgId_InitiatedConnections) );
     return mInitiatedConnections;
 }
 
@@ -507,7 +513,6 @@ inline const NEDirectConnection::ListParticipants & DirectConnectionProxy::getPa
     return mParamlistParticipants;
 }
 
-#endif   // GENERATED_PRIVATE_DIRECTCONNECTIONPROXY_HPP
 
 //////////////////////////////////////////////////////////////////////////
 // End generate generated/private/DirectConnectionProxy.hpp file

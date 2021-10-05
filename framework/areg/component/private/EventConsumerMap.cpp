@@ -1,7 +1,15 @@
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/component/private/EventConsumerMap.cpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, Event Consumer Map class implementation
  *
  ************************************************************************/
@@ -16,17 +24,6 @@
 //////////////////////////////////////////////////////////////////////////
 // EventConsumerList class, Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
-EventConsumerList::EventConsumerList( void )
-    : TELinkedList<IEEventConsumer *, IEEventConsumer *, ImplEventConsumerList> ( )
-{
-    ; // do nothing
-}
-
-EventConsumerList::EventConsumerList( const EventConsumerList &src )
-    : TELinkedList<IEEventConsumer *, IEEventConsumer *, ImplEventConsumerList> ( static_cast<const TELinkedList<IEEventConsumer *, IEEventConsumer *, ImplEventConsumerList> &>(src) )
-{
-    ; // do nothing
-}
 
 EventConsumerList::~EventConsumerList( void )
 {
@@ -39,7 +36,7 @@ EventConsumerList::~EventConsumerList( void )
 bool EventConsumerList::addConsumer( IEEventConsumer& whichConsumer )
 {
     bool result = false;
-    if (TELinkedList<IEEventConsumer *, IEEventConsumer *, ImplEventConsumerList>::pushLast(&whichConsumer) != NULL)
+    if (EventConsumerListBase::pushLast(&whichConsumer) != nullptr)
     {
         result = true;
         whichConsumer.consumerRegistered(true);
@@ -51,7 +48,7 @@ bool EventConsumerList::addConsumer( IEEventConsumer& whichConsumer )
 bool EventConsumerList::removeConsumer( IEEventConsumer& whichConsumer )
 {
     bool result = false;
-    if ( TELinkedList<IEEventConsumer *, IEEventConsumer *, ImplEventConsumerList>::removeEntry(&whichConsumer, NULL) )
+    if ( EventConsumerListBase::removeEntry(&whichConsumer, nullptr) )
     {
         result = true;
         whichConsumer.consumerRegistered(false);
@@ -62,52 +59,35 @@ bool EventConsumerList::removeConsumer( IEEventConsumer& whichConsumer )
 
 void EventConsumerList::removeAllConsumers( void )
 {
-    while (TELinkedList<IEEventConsumer *, IEEventConsumer *, ImplEventConsumerList>::isEmpty() == false)
+    while (EventConsumerListBase::isEmpty() == false)
     {
-        IEEventConsumer *consumer = TELinkedList<IEEventConsumer *, IEEventConsumer *, ImplEventConsumerList>::removeFirst();
-        ASSERT(consumer != NULL);
+        IEEventConsumer *consumer = EventConsumerListBase::removeFirst();
+        ASSERT(consumer != nullptr);
         consumer->consumerRegistered(false);
     }
     
-    TELinkedList<IEEventConsumer *, IEEventConsumer *, ImplEventConsumerList>::removeAll();
+    EventConsumerListBase::removeAll();
 }
 
 //////////////////////////////////////////////////////////////////////////
-// EventConsumerMapImpl class implementation
+// ImplEventConsumerMap class implementation
 //////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////
-// EventConsumerMapImpl class, methods
+// ImplEventConsumerMap class, methods
 //////////////////////////////////////////////////////////////////////////
 #if defined(DEBUG) && defined(OUTPUT_DEBUG_LEVEL) && (OUTPUT_DEBUG_LEVEL >= OUTPUT_DEBUG_LEVEL_DEBUG)
-void EventConsumerMapImpl::implCleanResource( RuntimeClassID & Key, EventConsumerList * Resource )
+void ImplEventConsumerMap::implCleanResource( RuntimeClassID & Key, EventConsumerList * Resource )
 {
     OUTPUT_DBG("Resource [ %s ]: Removing all consumers and deleting resource at address [ %p ]", Key.getName(), Resource);
-    ASSERT(Resource != NULL);
+    ASSERT(Resource != nullptr);
     Resource->removeAllConsumers();
     delete Resource;
 }
 
 #else
-void EventConsumerMapImpl::implCleanResource( RuntimeClassID & /*Key*/, EventConsumerList * Resource )
+void ImplEventConsumerMap::implCleanResource( RuntimeClassID & /*Key*/, EventConsumerList * Resource )
 {
     Resource->removeAllConsumers();
     delete Resource;
 }
 #endif
-
-//////////////////////////////////////////////////////////////////////////
-// EventConsumerMap class implementation
-//////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////
-// EventConsumerMap class, Constructor / Destructor
-//////////////////////////////////////////////////////////////////////////
-EventConsumerMap::EventConsumerMap( void )
-    : TELockRuntimeResourceMap<EventConsumerList, EventConsumerMapImpl> ( )
-{
-    ; // do nothing
-}
-
-EventConsumerMap::~EventConsumerMap( void )
-{
-    ; // do nothing
-}

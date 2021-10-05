@@ -1,9 +1,16 @@
-#ifndef AREG_COMPONENT_PRIVATE_TIMERMANAGINGEVENT_HPP
-#define AREG_COMPONENT_PRIVATE_TIMERMANAGINGEVENT_HPP
+#pragma once
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/component/private/TimerManagingEvent.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform. Event Class to manage Timer
  *
  ************************************************************************/
@@ -13,6 +20,8 @@
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
 #include "areg/component/TEEvent.hpp"
+
+#include <utility>
 
 /************************************************************************
  * Declared classes
@@ -61,14 +70,14 @@ public:
      * \brief   TimerManagingEventData::eTimerAction
      *          The actions to perform on Timer Manager side
      **/
-    typedef enum E_TimerAction
+    typedef enum class E_TimerAction : uint8_t
     {
-          TimerIgnore       //!< Ignore event, do nothing
-        , TimerStart        //!< Start specified timer
-        , TimerStop         //!< Stop specified timer
-        , TimerCancel       //!< Cancel specified timer
-        , TimerExpired      //!< Timer is expired
-
+          TimerIgnore   //!< Ignore event, do nothing
+        , TimerStart    //!< Start specified timer
+        , TimerStop     //!< Stop specified timer
+        , TimerCancel   //!< Cancel specified timer
+        , TimerExpired  //!< Timer is expired
+        , TimerRemove   //!< Removes registered timer.
     } eTimerAction;
 
     /**
@@ -92,9 +101,10 @@ public:
      *          Creates data object, sets timer object and defines action.
      *          The action should not be TimerManagingEventData::TimerIgnore
      * \param   action  One of defined actions to perform. It should not be TimerManagingEventData::TimerIgnore
-     * \param   timer   The Timer object to set in Event Data.
+     * \param   timer   The Timer object to set in Event Data. Can be nullptr if not used.
+     * \param	handle	Timer system timer handle. Can be nullptr if not used.
      **/
-    inline TimerManagingEventData( TimerManagingEventData::eTimerAction action, Timer * timer );
+    inline TimerManagingEventData( TimerManagingEventData::eTimerAction action, Timer * timer, TIMERHANDLE handle );
 
     /**
      * \brief   Copy constructor.
@@ -103,19 +113,31 @@ public:
     inline TimerManagingEventData( const TimerManagingEventData & src );
 
     /**
+     * \brief   Move constructor.
+     * \param   src     The source of data to move.
+     **/
+    inline TimerManagingEventData( TimerManagingEventData && src ) noexcept;
+
+    /**
      * \brief   Destructor
      **/
-    inline ~TimerManagingEventData( void );
+    ~TimerManagingEventData( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Assigning operator. Copies Event Data from given source.
+     * \brief   Copies Event Data from given source.
      * \param   src     The source of Event Data to copy
      **/
-    const TimerManagingEventData & operator = ( const TimerManagingEventData & src );
+    inline TimerManagingEventData & operator = ( const TimerManagingEventData & src );
+
+    /**
+     * \brief   Moves Event Data from given source.
+     * \param   src     The source of Event Data to move
+     **/
+    inline TimerManagingEventData & operator = ( TimerManagingEventData && src ) noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes
@@ -132,6 +154,11 @@ public:
      **/
     inline Timer * getTimer( void ) const;
 
+    /**
+     * \brief   Returns handle associated with the timer.
+     **/
+    inline TIMERHANDLE getHandle( void ) const;
+
 //////////////////////////////////////////////////////////////////////////
 // Member variables
 //////////////////////////////////////////////////////////////////////////
@@ -144,6 +171,10 @@ private:
      * \brief   The Timer object of Event Data
      **/
     Timer *         mTimer;
+    /**
+     * \brief   The system Timer handler. 
+     **/
+    TIMERHANDLE     mHandle;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -163,26 +194,55 @@ DECLARE_EVENT(TimerManagingEventData, TimerManagingEvent, IETimerManagingEventCo
 // TimerManagingEventData class inline functions declaration
 //////////////////////////////////////////////////////////////////////////
 inline TimerManagingEventData::TimerManagingEventData( void )
-    : mAction   (TimerManagingEventData::TimerIgnore)
-    , mTimer    (NULL)
+    : mAction   (TimerManagingEventData::eTimerAction::TimerIgnore)
+    , mTimer    (nullptr)
+    , mHandle    (nullptr)
 {
 }
 
-inline TimerManagingEventData::TimerManagingEventData( TimerManagingEventData::eTimerAction action, Timer * timer )
+inline TimerManagingEventData::TimerManagingEventData( TimerManagingEventData::eTimerAction action, Timer * timer, TIMERHANDLE handle )
     : mAction   (action)
     , mTimer    (timer)
+    , mHandle   (handle)
 {
-    ASSERT(action != TimerManagingEventData::TimerIgnore);
+    ASSERT(action != TimerManagingEventData::eTimerAction::TimerIgnore);
 }
 
 inline TimerManagingEventData::TimerManagingEventData( const TimerManagingEventData &src )
     : mAction   (src.mAction)
     , mTimer    (src.mTimer)
+    , mHandle   (src.mHandle)
 {
 }
 
-inline TimerManagingEventData::~TimerManagingEventData( void )
+inline TimerManagingEventData::TimerManagingEventData( TimerManagingEventData && src ) noexcept
+    : mAction   (std::move(src.mAction))
+    , mTimer    (std::move(src.mTimer))
+    , mHandle   (std::move(src.mHandle))
 {
+}
+
+inline TimerManagingEventData & TimerManagingEventData::operator = ( const TimerManagingEventData & src )
+{
+    mAction = src.mAction;
+    mTimer  = src.mTimer;
+    mHandle = src.mHandle;
+    
+    return (*this);
+}
+
+inline TimerManagingEventData & TimerManagingEventData::operator = ( TimerManagingEventData && src ) noexcept
+{
+    mAction = std::move(src.mAction);
+    mTimer  = std::move(src.mTimer);
+    mHandle = std::move(src.mHandle);
+
+    return (*this);
+}
+
+inline TIMERHANDLE TimerManagingEventData::getHandle( void ) const
+{
+    return mHandle;
 }
 
 inline Timer* TimerManagingEventData::getTimer( void ) const
@@ -199,13 +259,12 @@ inline const char * TimerManagingEventData::getString( TimerManagingEventData::e
 {
     switch ( timerAction )
     {
-    CASE_MAKE_STRING(TimerManagingEventData::TimerIgnore);
-    CASE_MAKE_STRING(TimerManagingEventData::TimerStart);
-    CASE_MAKE_STRING(TimerManagingEventData::TimerStop);
-    CASE_MAKE_STRING(TimerManagingEventData::TimerCancel);
-    CASE_MAKE_STRING(TimerManagingEventData::TimerExpired);
+    CASE_MAKE_STRING(TimerManagingEventData::eTimerAction::TimerIgnore);
+    CASE_MAKE_STRING(TimerManagingEventData::eTimerAction::TimerStart);
+    CASE_MAKE_STRING(TimerManagingEventData::eTimerAction::TimerStop);
+    CASE_MAKE_STRING(TimerManagingEventData::eTimerAction::TimerCancel);
+    CASE_MAKE_STRING(TimerManagingEventData::eTimerAction::TimerExpired);
+    CASE_MAKE_STRING(TimerManagingEventData::eTimerAction::TimerRemove);
     CASE_DEFAULT("ERR: Undefined TimerManagingEventData::eTimerAction value!");
     }
 }
-
-#endif  // AREG_COMPONENT_PRIVATE_TIMERMANAGINGEVENT_HPP

@@ -1,5 +1,4 @@
-#ifndef GENERATED_NECOMMON_HPP
-#define GENERATED_NECOMMON_HPP
+#pragma once
 
 /************************************************************************
  * \file            generated/NECommon.hpp
@@ -12,6 +11,7 @@
 #include "areg/base/String.hpp"
 #include "areg/base/TEArrayList.hpp"
 #include "areg/base/TEHashMap.hpp"
+#include "areg/base/NEMemory.hpp"
 #include <tchar.h>
 
 namespace NECommon
@@ -29,7 +29,7 @@ namespace NECommon
 
     typedef struct S_ChatParticipant
     {
-        String    nickName;
+        String      nickName;
         uint32_t    cookie;
 
     } sChatParticipant;
@@ -50,6 +50,11 @@ namespace NECommon
         uint64_t    timeSend;
         uint64_t    timeReceived;
     } sMessageData;
+
+    /**
+     * \brief cretaes new message data.
+     **/
+    inline NECommon::sMessageData * newData();
 
     inline void getWidths( int widthTotal, int columns, int & width1, int & width2 );
 
@@ -347,7 +352,7 @@ inline bool NECommon::sConnection::operator != ( const NECommon::sConnection & o
  **/
  inline NECommon::sConnection::operator size_t ( void ) const
  {
-    return  ( static_cast<size_t>( cookie ) + static_cast<size_t>( nickName ) );
+    return  ( static_cast<size_t>( cookie ) + static_cast<unsigned int>( nickName ) );
  }
 /**
  * \brief   Streaming operator. Reads and instantiates NECommon::sConnection structure field entries from stream.
@@ -444,7 +449,7 @@ inline bool NECommon::sParticipant::operator != ( const NECommon::sParticipant &
  **/
  inline NECommon::sParticipant::operator size_t ( void ) const
  {
-    return  ( static_cast<size_t>( sessionId ) + static_cast<size_t>( cookie ) + static_cast<size_t>( nickName ) );
+    return  ( static_cast<size_t>( sessionId ) + static_cast<size_t>( cookie ) + static_cast<unsigned int>( nickName ) );
  }
 /**
  * \brief   Streaming operator. Reads and instantiates NECommon::sParticipant structure field entries from stream.
@@ -473,4 +478,13 @@ inline IEOutStream & operator << ( IEOutStream & stream, const NECommon::sPartic
     return stream;
 }
 
-#endif  // GENERATED_NECOMMONSETTINGS_HPP
+inline NECommon::sMessageData * NECommon::newData( )
+{
+    NECommon::sMessageData * result = DEBUG_NEW NECommon::sMessageData;
+    if ( result != nullptr )
+    {
+        NEMemory::memZero(reinterpret_cast<void *>(result), sizeof( NECommon::sMessageData ));
+    }
+
+    return result;
+}

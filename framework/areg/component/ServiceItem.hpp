@@ -1,9 +1,16 @@
-#ifndef AREG_COMPONENT_SERVICEITEM_HPP
-#define AREG_COMPONENT_SERVICEITEM_HPP
+#pragma once
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/component/ServiceItem.hpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, Service Item object
  ************************************************************************/
 /************************************************************************
@@ -14,6 +21,8 @@
 #include "areg/base/Version.hpp"
 #include "areg/base/NEUtilities.hpp"
 #include "areg/component/NEService.hpp"
+
+#include <string_view>
 
 /************************************************************************
  * Dependencies
@@ -34,7 +43,16 @@ class AREG_API ServiceItem
 // Local types and constants
 //////////////////////////////////////////////////////////////////////////
 protected:
-    static const char * const       INVALID_SERVICE         /*= "INVALID_SERVICE"*/;
+#if defined(_MSC_VER) && (_MSC_VER > 1200)
+    #pragma warning(disable: 4251)
+#endif  // _MSC_VER
+
+    //!< The name of invalid service.
+    static constexpr std::string_view   INVALID_SERVICE         { "INVALID_SERVICE" };
+
+#if defined(_MSC_VER) && (_MSC_VER > 1200)
+    #pragma warning(default: 4251)
+#endif  // _MSC_VER
 
 //////////////////////////////////////////////////////////////////////////
 // Local types and constants
@@ -51,10 +69,10 @@ public:
     /**
      * \brief   Converts given service item path as a string to service item object.
      * \param   pathService     The path of service item as a string.
-     * \param   out_nextPart    If not NULL, on output this parameter points to next part of part after service item.
+     * \param   out_nextPart    If not nullptr, on output this parameter points to next part of part after service item.
      * \return  Returns generated service address object.
      **/
-    static ServiceItem convPathToAddress(  const char* pathService, const char** out_nextPart = NULL );
+    static ServiceItem convPathToAddress(  const char* pathService, const char** out_nextPart = nullptr );
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / destructor
@@ -69,7 +87,7 @@ public:
      * \brief   Creates service item, sets service name.
      * \param   serviceName     The service name to set.
      **/
-    ServiceItem( const char * serviceName );
+    explicit ServiceItem( const char * serviceName );
 
     /**
      * \brief   Creates service item, sets service name, version and type.
@@ -92,9 +110,15 @@ public:
     ServiceItem( const ServiceItem & source );
 
     /**
+     * \brief   Move constructor.
+     * \param   source  The source of data to move.
+     **/
+    ServiceItem( ServiceItem && source ) noexcept;
+
+    /**
      * \brief   Destructor
      **/
-    virtual ~ServiceItem( void );
+    virtual ~ServiceItem( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
@@ -104,7 +128,13 @@ public:
      * \brief   Copies data from given source.
      * \param   source      The source of data to copy
      **/
-    inline const ServiceItem & operator = ( const ServiceItem & source );
+    inline ServiceItem & operator = ( const ServiceItem & source );
+
+    /**
+     * \brief   Moves data from given source.
+     * \param   source      The source of data to move.
+     **/
+    inline ServiceItem & operator = ( ServiceItem && source ) noexcept;
 
     /**
      * \brief   Checks equality of 2 service item and returns true if they are equal.
@@ -121,7 +151,7 @@ public:
     /**
      * \brief   Converts service item to 32-bit unsigned integer value.
      **/
-    inline operator unsigned int ( void ) const;
+    inline explicit operator unsigned int ( void ) const;
 
 /************************************************************************/
 // Friend global operators for streaming
@@ -184,7 +214,7 @@ public:
     /**
      * \brief   Returns true if service is remote
      **/
-    inline bool isServiceRemote( void ) const;
+    inline bool isServicePublic( void ) const;
 
     /**
      * \brief   Checks whether given service item is compatible.
@@ -200,9 +230,9 @@ public:
     /**
      * \brief   Converts given service item path as a string to service item object.
      * \param   pathService     The path of service item as a string.
-     * \param   out_nextPart    If not NULL, on output this parameter points to next part of part after service item.
+     * \param   out_nextPart    If not nullptr, on output this parameter points to next part of part after service item.
      **/
-    void convFromString(  const char* pathService, const char** out_nextPart = NULL );
+    void convFromString(  const char* pathService, const char** out_nextPart = nullptr );
 
 protected:
     /**
@@ -278,12 +308,12 @@ inline NEService::eServiceType ServiceItem::getServiceType( void ) const
 inline void ServiceItem::setServiceType( NEService::eServiceType serviceType )
 {
     mServiceType = serviceType;
-    mMagicNum    = serviceType != NEService::ServiceInvalid ? ServiceItem::_magicNumber(*this) : NEMath::CHECKSUM_IGNORE;
+    mMagicNum    = serviceType != NEService::eServiceType::ServiceInvalid ? ServiceItem::_magicNumber(*this) : NEMath::CHECKSUM_IGNORE;
 }
 
-inline bool ServiceItem::isServiceRemote(void) const
+inline bool ServiceItem::isServicePublic(void) const
 {
-    return (mServiceType == NEService::ServiceRemote);
+    return (mServiceType == NEService::eServiceType::ServicePublic);
 }
 
 inline bool ServiceItem::isValid( void ) const
@@ -293,18 +323,31 @@ inline bool ServiceItem::isValid( void ) const
 
 inline bool ServiceItem::isValidated(void) const
 {
-    return (mServiceName.isEmpty()  == false                        ) && 
-           (mServiceName            != ServiceItem::INVALID_SERVICE ) && 
-           (mServiceVersion         != Version::INVALID_VERSION     ) && 
-           (mServiceType            != NEService::ServiceInvalid    );
+    return (mServiceName.isEmpty()  == false                                    ) && 
+           (mServiceName            != ServiceItem::INVALID_SERVICE.data()      ) && 
+           (mServiceVersion         != Version::INVALID_VERSION                 ) && 
+           (mServiceType            != NEService::eServiceType::ServiceInvalid  );
 }
 
-inline const ServiceItem & ServiceItem::operator = ( const ServiceItem & source )
+inline ServiceItem & ServiceItem::operator = ( const ServiceItem & source )
 {
-    if ( static_cast<const ServiceItem *>(this) != &source )
+    if ( this != &source )
     {
         mServiceName    = source.mServiceName;
         mServiceVersion = source.mServiceVersion;
+        mServiceType    = source.mServiceType;
+        mMagicNum       = source.mMagicNum;
+    }
+
+    return (*this);
+}
+
+inline ServiceItem & ServiceItem::operator = ( ServiceItem && source ) noexcept
+{
+    if ( this != &source )
+    {
+        mServiceName    = std::move(source.mServiceName);
+        mServiceVersion = std::move(source.mServiceVersion);
         mServiceType    = source.mServiceType;
         mMagicNum       = source.mMagicNum;
     }
@@ -331,5 +374,3 @@ inline bool ServiceItem::isServiceCompatible( const ServiceItem & other ) const
 {
     return ((mMagicNum == other.mMagicNum) && mServiceVersion.isCompatible(other.mServiceVersion));
 }
-
-#endif  // AREG_COMPONENT_SERVICEITEM_HPP

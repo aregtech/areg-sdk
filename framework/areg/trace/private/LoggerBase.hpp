@@ -1,9 +1,16 @@
-#ifndef AREG_TRACE_PRIVATE_LOGGERBASE_HPP
-#define AREG_TRACE_PRIVATE_LOGGERBASE_HPP
+#pragma once
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/trace/private/LoggerBase.hpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, Logger base object
  ************************************************************************/
 
@@ -14,10 +21,12 @@
 #include "areg/trace/NETrace.hpp"
 #include "areg/trace/private/LayoutManager.hpp"
 
+#include <string_view>
+
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class IETraceConfiguration;
+class LogConfiguration;
 
 //////////////////////////////////////////////////////////////////////////
 // LoggerBase class declaration
@@ -39,11 +48,11 @@ protected:
     /**
      * \brief   The format of logger begin ('hello' message) to display in console
      **/
-    static const char * const  FOMAT_MESSAGE_HELLO      /*= "Starting logging of process [ %s ] with ID [ %d ]"*/;
+    static constexpr std::string_view   FOMAT_MESSAGE_HELLO     { "Starting logging of [ %s ] process [ %s ] with ID [ %d ]\n" };
     /**
      * \brief   The format of logger end ('bey' message) to display in console
      **/
-    static const char * const  FORMAT_MESSAGE_BYE       /*= "Completed logging of process [ %s ] with ID [ %d ]"*/;
+    static constexpr std::string_view   FORMAT_MESSAGE_BYE      { "Completed logging of [ %s ] process [ %s ] with ID [ %d ]\n" };
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -59,13 +68,12 @@ protected:
      *                          required by logger during initialization (open)
      *                          and when outputs message.
      **/
-    LoggerBase( IETraceConfiguration & tracerConfig );
+    LoggerBase( LogConfiguration & tracerConfig );
 
-public:
     /**
      * \brief   Destructor
      **/
-    virtual ~LoggerBase( void );
+    virtual ~LoggerBase( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Override operations and attribute
@@ -122,7 +130,7 @@ public:
     /**
      * \brief   Return instance of trace configuration object.
      **/
-    inline const IETraceConfiguration & getTraceConfiguration( void ) const;
+    inline const LogConfiguration & getTraceConfiguration( void ) const;
 
     /**
      * \return  Returns the layout object to output messages.
@@ -161,33 +169,32 @@ private:
     /**
      * \brief   The instance of tracer configurations object.
      **/
-    IETraceConfiguration &  mTracerConfiguration;
+    LogConfiguration &  mTracerConfiguration;
     /**
      * \brief   Message layouts to create messages
      **/
-    LayoutManager           mLayoutsMessage;
+    LayoutManager       mLayoutsMessage;
     /**
      * \brief   Message layouts to create "Enter scope" message
      **/
-    LayoutManager           mLayoutsScopeEnter;
+    LayoutManager       mLayoutsScopeEnter;
     /**
      * \brief   Message layouts to create "Exit scope" message
      **/
-    LayoutManager           mLayoutsScopeExit;
+    LayoutManager       mLayoutsScopeExit;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden / Forbidden calls.
 //////////////////////////////////////////////////////////////////////////
 private:
-    LoggerBase( void );
-    LoggerBase( const LoggerBase & );
-    const LoggerBase & operator = ( const LoggerBase & );
+    LoggerBase( void ) = delete;
+    DECLARE_NOCOPY_NOMOVE( LoggerBase );
 };
 
 //////////////////////////////////////////////////////////////////////////
 // LoggerBase class inline methods
 //////////////////////////////////////////////////////////////////////////
-inline const IETraceConfiguration & LoggerBase::getTraceConfiguration( void ) const
+inline const LogConfiguration & LoggerBase::getTraceConfiguration( void ) const
 {
     return mTracerConfiguration;
 }
@@ -206,5 +213,3 @@ inline const LayoutManager & LoggerBase::getLayoutExitScope(void) const
 {
     return mLayoutsScopeExit;
 }
-
-#endif  // AREG_TRACE_PRIVATE_LOGGERBASE_HPP

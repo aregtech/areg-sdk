@@ -1,9 +1,16 @@
-#ifndef AREG_BASE_TERUNTIMERESOURCEMAP_HPP
-#define AREG_BASE_TERUNTIMERESOURCEMAP_HPP
+#pragma once
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/base/TERuntimeResourceMap.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, Blocking and Non-blockind
  *              Runtime Resource Object container.
  *
@@ -17,10 +24,11 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
+#include "areg/base/GEGlobal.h"
 #include "areg/base/TEHashMap.hpp"
 #include "areg/base/RuntimeClassID.hpp"
 #include "areg/base/TEResourceMap.hpp"
-#include "areg/base/ESynchObjects.hpp"
+#include "areg/base/SynchObjects.hpp"
 
 /************************************************************************
  * Hierarchies and list of declared classes
@@ -32,64 +40,26 @@
                 template <class RUNTIME_DELEGATE, class Implement> class TENolockRuntimeResourceMap;
                 template <class RUNTIME_DELEGATE, class Implement> class TELockRuntimeResourceMap;
 
-/************************************************************************
- * \brief   In this file there are defined Blocking and Non-Blocking resource maps.
- *          Both classes are instances of TERuntimeHashMap class template.
- *          For details, see descriptions bellow.
- * 
- *          TELockRuntimeResourceMap class template is thread safe template and
- *          data access is synchronized. It can be used in cases, when data is accessed
- *          and modified from different threads.
- * 
- *          TELockRuntimeResourceMap class template is not thread safe template and
- *          data access is not synchronized. Do not use in case, where data is accessed
- *          and modified from different threads.
- *
- *          As an example of using runtime resource map, see consumer registration map
- *          declared in EventConsumerMap.
- *
- ************************************************************************/
-
 //////////////////////////////////////////////////////////////////////////
 // TERuntimeHashMapImpl<RUNTIME_DELEGATE> class template declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   TERuntimeHashMapImpl<RUNTIME_DELEGATE> class template is an
- *          implementation of hash key, key and value comparing methods
- *          required by hash map object. This is a specific and customized
- *          implementation methods used by TERuntimeHashMap<RUNTIME_DELEGATE>
- *          class template to hold runtime object information.
+ * \brief   An hash map class template helpter object used to call methods
+ *          to get hash-value, and compare key and value elements.
  **/
 template <typename RUNTIME_DELEGATE>
-class TERuntimeHashMapImpl : public TEHashMapImpl<const RuntimeClassID &, RUNTIME_DELEGATE *>
+class TERuntimeHashMapImpl  : public TEHashMapImpl<const RuntimeClassID &, const RUNTIME_DELEGATE *>
 {
-public:
-    /**
-     * \brief   Called to calculate the 32-bit hash key value.
-     * \ param  Key     The object to calculate 32-bit hash key.
-     * \return  Returns 32-bit hash key value.
-     **/
-    inline unsigned int implHashKey( const RuntimeClassID & Key ) const
-    {
-        return static_cast<unsigned int>(Key);
-    }
 };
 
 //////////////////////////////////////////////////////////////////////////
 // TERuntimeHashMap<RUNTIME_DELEGATE, Implement> class template declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief       TERuntimeHashMap<RUNTIME_DELEGATE> class template is a 
- *              container of Runtime objects. As a Key it uses 
- *              Runtime Class ID, which means that it will store 2 
- *              Runtime Objects with same Class ID values.
+ * \brief   A hash map class template to track run-time objects accessed by 
+ *          key, which are Runtime Class ID, and the sotred values are 
+ *          run-time objects.
  * 
- * \details     This class is used as a base class for blocking
- *              and non-blocking Runtime Resource Maps. Do not instantiate
- *              This class directly, instead use either 
- *              TENolockRuntimeResourceMap or TELockRuntimeResourceMap
- *              class templates.
- *              
  * \tparam  RUNTIME_DELEGATE    The type of runtime object to store in runtime resource map.
  **/
 template <typename RUNTIME_DELEGATE>
@@ -102,35 +72,32 @@ public:
     /**
      * \brief   Default constructor.
      **/
-    TERuntimeHashMap( void );
+    TERuntimeHashMap( void ) = default;
     /**
      * \brief   Destructor.
      **/
-    ~TERuntimeHashMap( void );
+    ~TERuntimeHashMap( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden / Forbidden method calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    TERuntimeHashMap(const TERuntimeHashMap<RUNTIME_DELEGATE> & /*src*/);
-    const TERuntimeHashMap<RUNTIME_DELEGATE> & operator = (const TERuntimeHashMap<RUNTIME_DELEGATE> & /*src*/);
+    TERuntimeHashMap(const TERuntimeHashMap<RUNTIME_DELEGATE> & /*src*/) = delete;
+    TERuntimeHashMap<RUNTIME_DELEGATE> & operator = (const TERuntimeHashMap<RUNTIME_DELEGATE> & /*src*/) = delete;
+    TERuntimeHashMap( TERuntimeHashMap<RUNTIME_DELEGATE> && /*src*/ ) noexcept = delete;
+    TERuntimeHashMap<RUNTIME_DELEGATE> & operator = ( TERuntimeHashMap<RUNTIME_DELEGATE> && /*src*/ ) noexcept = delete;
 };
 
 //////////////////////////////////////////////////////////////////////////
 // TERuntimeResourceMap<RUNTIME_DELEGATE, Implement> class template declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief       Runtime Resource Map is a Base class of blocking and 
- *              non-blocking resource maps. To instantiate class,
- *              pass defined Locking Synchronization object
- * 
- * \details     This class inherits from TEResourceMap, which is getting
- *              defined above TERuntimeHashMap as a type in type list.
- *              By this, it will get inheritance from TERuntimeHashMap.
- *              The only public constructor requires instantiated
- *              synchronization object. Bellow are defined locking and
- *              non-locking defined objects using critical section object
- *              and non-locking synchronization object.
+ * \brief   A run-time object resource map base class template to track run-time objects
+ *          accessed by key, which are Runtime Class ID, and the stored values are 
+ *          run-time object. Whether the resource map is thread safe or not, depends
+ *          on instance of resourse lock object passed in constructor. If a resource map
+ *          is used only within one thread context, pass no locking synchronization object,
+ *          which is faster. Otherwise, pass one of instances of resource lock.
  *
  * \tparam  RUNTIME_DELEGATE    The type of runtime object to store in runtime resource map.
  * \tparam  Implement           The implementation of resource clean call.
@@ -141,7 +108,7 @@ class TERuntimeResourceMap : public TEResourceMap<RuntimeClassID, RUNTIME_DELEGA
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
-public:
+protected:
     /**
      * \brief   Initialization constructor. The only public available.
      *          Requires instance of synchronization object.
@@ -152,31 +119,27 @@ public:
     /**
      * \brief   Destructor.
      **/
-    ~TERuntimeResourceMap( void );
+    ~TERuntimeResourceMap( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden / Forbidden method calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    TERuntimeResourceMap( void );
-    TERuntimeResourceMap(const TERuntimeResourceMap<RUNTIME_DELEGATE, Implement> & /*src*/);
-    const TERuntimeResourceMap<RUNTIME_DELEGATE, Implement> & operator = (const TERuntimeResourceMap<RUNTIME_DELEGATE, Implement> & /*src*/);
+    TERuntimeResourceMap( void ) = delete;
+    TERuntimeResourceMap(const TERuntimeResourceMap<RUNTIME_DELEGATE, Implement> & /*src*/) = delete;
+    TERuntimeResourceMap<RUNTIME_DELEGATE, Implement> & operator = (const TERuntimeResourceMap<RUNTIME_DELEGATE, Implement> & /*src*/) = delete;
+    TERuntimeResourceMap( TERuntimeResourceMap<RUNTIME_DELEGATE, Implement> && /*src*/ ) noexcept = delete;
+    TERuntimeResourceMap<RUNTIME_DELEGATE, Implement> & operator = ( TERuntimeResourceMap<RUNTIME_DELEGATE, Implement> && /*src*/ ) noexcept = delete;
 };
 
 //////////////////////////////////////////////////////////////////////////
 // TENolockRuntimeResourceMap<RUNTIME_DELEGATE, Implement> class template declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief       Non-blocking class template. It inherits 
- *              TERuntimeResourceMap class template and contains instance
- *              of NolockSynchObject to pass to TERuntimeResourceMap.
- *              By this, any access to resource will not be blocked.
- *              Avoid using it if resources are accessed by more than one
- *              thread.
- * 
- * \details     Use instance of non-locking class if there is no need to
- *              synchronize resource access. The instance of
- *              NolockSynchObject does not block thread
+ * \brief   Non thread-safe resource map class template to track run-time objects
+ *          accessed by their key, which are Runtime Class ID, and the stored
+ *          elements are run-time object. Use this object if resources are modified
+ *          and accessed only within one thread context.
  *
  * \tparam  RUNTIME_DELEGATE    The type of runtime object to store in runtime resource map.
  * \tparam  Implement           The implementation of resource clean call.
@@ -195,7 +158,7 @@ public:
     /**
      * \brief   Destructor.
      **/
-    ~TENolockRuntimeResourceMap( void );
+    ~TENolockRuntimeResourceMap( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -211,57 +174,61 @@ private:
 // Hidden / Forbidden method calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    TENolockRuntimeResourceMap(const TENolockRuntimeResourceMap<RUNTIME_DELEGATE, Implement> & /*src*/);
-    const TENolockRuntimeResourceMap<RUNTIME_DELEGATE, Implement> & operator = (const TENolockRuntimeResourceMap<RUNTIME_DELEGATE, Implement> &);
+    TENolockRuntimeResourceMap(const TENolockRuntimeResourceMap<RUNTIME_DELEGATE, Implement> & /*src*/) = delete;
+    TENolockRuntimeResourceMap<RUNTIME_DELEGATE, Implement> & operator = (const TENolockRuntimeResourceMap<RUNTIME_DELEGATE, Implement> & /*src*/) = delete;
+    TENolockRuntimeResourceMap( TENolockRuntimeResourceMap<RUNTIME_DELEGATE, Implement> && /*src*/ ) noexcept = delete;
+    TENolockRuntimeResourceMap<RUNTIME_DELEGATE, Implement> & operator = ( TENolockRuntimeResourceMap<RUNTIME_DELEGATE, Implement> && /*src*/) noexcept = delete;
 };
 
 //////////////////////////////////////////////////////////////////////////
 // TELockRuntimeResourceMap<RUNTIME_DELEGATE, class Implement> class template declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief       Blocking class template. It inherits TERuntimeResourceMap 
- *              class template and contains instance of IEResourceLock
- *              to pass to TERuntimeResourceMap. By this, any access to 
- *              resource will be synchronized to ensure that only one thread
- *              has access permission within one unit-time.
- *              Use it if resources are accessed by more than one thread.
- * 
- * \details     Use instance of locking class if there is a need to
- *              synchronize resource access. The instance of
- *              IEResourceLock excludes concurrent thread access to resources.
+ * \brief   Thread-safe resource map class template to track run-time objects
+ *          accessed by their key, which are Runtime Class ID, and the stored
+ *          elements are run-time object. Use this object if resources are modified
+ *          and accessed within multiple thread context.
  *
  * \tparam      RUNTIME_DELEGATE    The type of runtime object to store in runtime resource map.
  **/
 template <class RUNTIME_DELEGATE, class Implement>
 class TELockRuntimeResourceMap   : public TERuntimeResourceMap<RUNTIME_DELEGATE, Implement>
 {
+//////////////////////////////////////////////////////////////////////////
+// Constructor / Destructor
+//////////////////////////////////////////////////////////////////////////
 public:
+    /**
+     * \brief   Default constructor.
+     **/
     TELockRuntimeResourceMap( void );
-    ~TELockRuntimeResourceMap( void );
+    /**
+     * \brief   Destructor.
+     **/
+    ~TELockRuntimeResourceMap( void ) = default;
 
+//////////////////////////////////////////////////////////////////////////
+// Member variables
+//////////////////////////////////////////////////////////////////////////
 private:
-    ResourceLock   mLock;
+    /**
+     * \brief   Resource lock object to synchronize data access.
+     **/
+    ResourceLock    mLock;
 
+//////////////////////////////////////////////////////////////////////////
+// Forbidden calls.
+//////////////////////////////////////////////////////////////////////////
 private:
-    TELockRuntimeResourceMap(const TELockRuntimeResourceMap<RUNTIME_DELEGATE, Implement> & /*src*/);
-    const TELockRuntimeResourceMap<RUNTIME_DELEGATE, Implement> & operator = (const TELockRuntimeResourceMap<RUNTIME_DELEGATE, Implement> & /*src*/);
+    TELockRuntimeResourceMap(const TELockRuntimeResourceMap<RUNTIME_DELEGATE, Implement> & /*src*/) = delete;
+    TELockRuntimeResourceMap<RUNTIME_DELEGATE, Implement> & operator = (const TELockRuntimeResourceMap<RUNTIME_DELEGATE, Implement> & /*src*/) = delete;
+    TELockRuntimeResourceMap( TELockRuntimeResourceMap<RUNTIME_DELEGATE, Implement> && /*src*/ ) noexcept = delete;
+    TELockRuntimeResourceMap<RUNTIME_DELEGATE, Implement> & operator = ( TELockRuntimeResourceMap<RUNTIME_DELEGATE, Implement> && /*src*/ ) noexcept = delete;
 };
 
 //////////////////////////////////////////////////////////////////////////
 // TERuntimeHashMap<RUNTIME_DELEGATE> class template implementation
 //////////////////////////////////////////////////////////////////////////
-template <typename RUNTIME_DELEGATE>
-TERuntimeHashMap<RUNTIME_DELEGATE>::TERuntimeHashMap( void )
-    : TEHashMap<RuntimeClassID, RUNTIME_DELEGATE *, const RuntimeClassID &, RUNTIME_DELEGATE *, TERuntimeHashMapImpl<RUNTIME_DELEGATE>>  ( )
-{
-
-}
-
-template <typename RUNTIME_DELEGATE>
-TERuntimeHashMap<RUNTIME_DELEGATE>::~TERuntimeHashMap( void )
-{
-
-}
 
 //////////////////////////////////////////////////////////////////////////
 // TERuntimeResourceMap<RUNTIME_DELEGATE, Implement> class template implementation
@@ -270,13 +237,6 @@ template <class RUNTIME_DELEGATE, class Implement>
 TERuntimeResourceMap<RUNTIME_DELEGATE, Implement>::TERuntimeResourceMap( IEResourceLock& synchObject )
     : TEResourceMap<RuntimeClassID, RUNTIME_DELEGATE, TERuntimeHashMap<RUNTIME_DELEGATE>, Implement> (synchObject)
 {
-    ; // do nothing
-}
-
-template <class RUNTIME_DELEGATE, class Implement>
-TERuntimeResourceMap<RUNTIME_DELEGATE, Implement>::~TERuntimeResourceMap( void )
-{
-    ; // do nothing
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -288,13 +248,6 @@ TENolockRuntimeResourceMap<RUNTIME_DELEGATE, Implement>::TENolockRuntimeResource
     
     , mNoLock   ( )
 {
-    ; // do nothing
-}
-
-template <class RUNTIME_DELEGATE, class Implement>
-TENolockRuntimeResourceMap<RUNTIME_DELEGATE, Implement>::~TENolockRuntimeResourceMap( void )
-{
-    ; // do nothing
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -304,15 +257,6 @@ template <class RUNTIME_DELEGATE, class Implement>
 TELockRuntimeResourceMap<RUNTIME_DELEGATE, Implement>::TELockRuntimeResourceMap( void )
     : TERuntimeResourceMap<RUNTIME_DELEGATE, Implement>   (static_cast<IEResourceLock &>(mLock))
     
-    , mLock ( false )
+    , mLock ( )
 {
-    ; // do nothing
 }
-
-template <class RUNTIME_DELEGATE, class Implement>
-TELockRuntimeResourceMap<RUNTIME_DELEGATE, Implement>::~TELockRuntimeResourceMap( void )
-{
-    ; // do nothing
-}
-
-#endif  // AREG_BASE_TERUNTIMERESOURCEMAP_HPP

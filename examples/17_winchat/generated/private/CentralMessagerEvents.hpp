@@ -1,18 +1,19 @@
 //////////////////////////////////////////////////////////////////////////
 // Begin generate generated/private/CentralMessagerEvents.hpp file
 //////////////////////////////////////////////////////////////////////////
-#ifndef  GENERATED_PRIVATE_CENTRALMESSAGEREVENTS_HPP
-#define  GENERATED_PRIVATE_CENTRALMESSAGEREVENTS_HPP
-/************************************************************************
- * (c) copyright    2021
- *                  Create by AREG SDK code generator tool from source CentralMessager.
- * Generated at     04.07.2021  04:29:59 GMT+02:00 
- ************************************************************************/
+
+#pragma once
 
 /************************************************************************
+ * (c) copyright    2021
+ *
+ * Generated at     30.09.2021  01:22:12 GMT+02:00 
+ *                  Create by AREG SDK code generator tool from source CentralMessager.
+ *
  * \file            generated/private/CentralMessagerEvents.hpp
  * \ingroup         CentralMessager Service Interface
- * \brief           This is an automatic generated code of CentralMessager Service Interface Event classes declaration.
+ * \brief           This is an automatic generated code of CentralMessager
+ *                  Service Interface event classes declaration.
  ************************************************************************/
 
 /************************************************************************
@@ -93,15 +94,14 @@ public:
     /**
      * \brief   Destructor.
      **/
-    virtual ~CentralMessagerRequestEvent( void );
+    virtual ~CentralMessagerRequestEvent( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    CentralMessagerRequestEvent( void );
-    CentralMessagerRequestEvent( const CentralMessagerRequestEvent & /* src */ );
-    const CentralMessagerRequestEvent & operator = ( const CentralMessagerRequestEvent & /* src */ );
+    CentralMessagerRequestEvent( void ) = delete;
+    DECLARE_NOCOPY_NOMOVE( CentralMessagerRequestEvent );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -138,15 +138,14 @@ public:
     /**
      * \brief   Destructor.
      **/
-    virtual ~CentralMessagerNotifyRequestEvent( void );
+    virtual ~CentralMessagerNotifyRequestEvent( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    CentralMessagerNotifyRequestEvent( void );
-    CentralMessagerNotifyRequestEvent( const CentralMessagerNotifyRequestEvent & /* src */ );
-    const CentralMessagerNotifyRequestEvent & operator = ( const CentralMessagerNotifyRequestEvent & /* src */ );
+    CentralMessagerNotifyRequestEvent( void ) = delete;
+    DECLARE_NOCOPY_NOMOVE( CentralMessagerNotifyRequestEvent );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -197,7 +196,7 @@ public:
     /**
      * \brief   Destructor
      **/
-    virtual ~CentralMessagerResponseEvent( void );
+    virtual ~CentralMessagerResponseEvent( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -216,15 +215,14 @@ public:
      * \return  Cloned service response event object, which contains specified
      *          target proxy address.
      **/
-    virtual ServiceResponseEvent * cloneForTarget( const ProxyAddress & target ) const;
+    virtual ServiceResponseEvent * cloneForTarget( const ProxyAddress & target ) const override;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    CentralMessagerResponseEvent( void );
-    CentralMessagerResponseEvent( const CentralMessagerResponseEvent & /* src */ );
-    const CentralMessagerResponseEvent & operator = ( const CentralMessagerResponseEvent & /* src */ );
+    CentralMessagerResponseEvent( void ) = delete;
+    DECLARE_NOCOPY_NOMOVE( CentralMessagerResponseEvent );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -249,24 +247,21 @@ public:
      * \brief   Initialization constructor. Copies notification event data
      * \param   data    The notification event data to copy
      **/
-    CentralMessagerNotificationEvent( const NotificationEventData & data );
+    explicit CentralMessagerNotificationEvent( const NotificationEventData & data );
 
 protected:
     /**
      * \brief   Destructor. Protected
      **/
-    virtual ~CentralMessagerNotificationEvent( void );
+    virtual ~CentralMessagerNotificationEvent( void ) = default;
     
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    CentralMessagerNotificationEvent( void );
-    CentralMessagerNotificationEvent( const CentralMessagerNotificationEvent & /* src */ );
-    const CentralMessagerNotificationEvent & operator = ( const CentralMessagerNotificationEvent & /* src */ );
+    CentralMessagerNotificationEvent( void ) = delete;
+    DECLARE_NOCOPY_NOMOVE( CentralMessagerNotificationEvent );
 };
-
-#endif   // GENERATED_PRIVATE_CENTRALMESSAGEREVENTS_HPP
 
 //////////////////////////////////////////////////////////////////////////
 // End generate generated/private/CentralMessagerEvents.hpp file

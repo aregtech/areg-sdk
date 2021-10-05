@@ -1,7 +1,15 @@
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/component/private/ServerInfo.cpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, 
  *
  ************************************************************************/
@@ -17,21 +25,27 @@
 //////////////////////////////////////////////////////////////////////////
 ServerInfo::ServerInfo( void )
     : mServerAddress( StubAddress::INVALID_STUB_ADDRESS )
-    , mServerState  ( NEService::ServiceConnectionUnknown )
+    , mServerState  ( NEService::eServiceConnection::ServiceConnectionUnknown )
 {
-    ; // do nothing
 }
 
 ServerInfo::ServerInfo( const StubAddress & server )
     : mServerAddress( server )
     , mServerState  (  )
 {
-    setConnectionStatus( NEService::ServiceConnected );
+    setConnectionStatus( NEService::eServiceConnection::ServiceConnected );
+}
+
+ServerInfo::ServerInfo( StubAddress && server )
+    : mServerAddress( server )
+    , mServerState  ( )
+{
+    setConnectionStatus( NEService::eServiceConnection::ServiceConnected );
 }
 
 ServerInfo::ServerInfo( const ProxyAddress & proxy )
     : mServerAddress( proxy.getServiceName(), proxy.getServiceVersion(), proxy.getServiceType(), proxy.getRoleName(), "" )
-    , mServerState  ( NEService::ServicePending )
+    , mServerState  ( NEService::eServiceConnection::ServicePending )
 {
     mServerAddress.invalidateChannel();
 }
@@ -40,35 +54,62 @@ ServerInfo::ServerInfo( const ServerInfo & src )
     : mServerAddress( src.mServerAddress )
     , mServerState  ( src.mServerState )
 {
-    ; // do nothing
 }
 
-ServerInfo::~ServerInfo( void )
+ServerInfo::ServerInfo( ServerInfo && src ) noexcept
+    : mServerAddress( std::move(src.mServerAddress) )
+    , mServerState  ( std::move(src.mServerState) )
 {
-    ; // do nothing
 }
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
 //////////////////////////////////////////////////////////////////////////
-const ServerInfo & ServerInfo::operator = ( const ServerInfo & src )
+ServerInfo & ServerInfo::operator = ( const ServerInfo & src )
 {
     mServerAddress  = src.mServerAddress;
     mServerState    = src.mServerState;
+
     return (*this);
 }
 
-const ServerInfo & ServerInfo::operator = ( const StubAddress & server )
+ServerInfo & ServerInfo::operator = ( ServerInfo && src ) noexcept
+{
+    mServerAddress  = std::move(src.mServerAddress);
+    mServerState    = std::move(src.mServerState);
+    
+    return (*this);
+}
+
+ServerInfo & ServerInfo::operator = ( const StubAddress & server )
 {
     mServerAddress  = server;
-    setConnectionStatus( NEService::ServiceConnected );
+    setConnectionStatus( NEService::eServiceConnection::ServiceConnected );
+    
     return (*this);
 }
 
-const ServerInfo & ServerInfo::operator = (const ServiceAddress & addService)
+ServerInfo & ServerInfo::operator = ( StubAddress && server ) noexcept
+{
+    mServerAddress  = std::move(server);
+    setConnectionStatus( NEService::eServiceConnection::ServiceConnected );
+    
+    return (*this);
+}
+
+ServerInfo & ServerInfo::operator = (const ServiceAddress & addService)
 {
     mServerAddress = addService;
-    setConnectionStatus( NEService::ServicePending );
+    setConnectionStatus( NEService::eServiceConnection::ServicePending );
+
+    return (*this);
+}
+
+ServerInfo & ServerInfo::operator = ( ServiceAddress && addService ) noexcept
+{
+    mServerAddress = std::move( addService );
+    setConnectionStatus( NEService::eServiceConnection::ServicePending );
+
     return (*this);
 }
 
@@ -98,7 +139,7 @@ void ServerInfo::setConnectionStatus(NEService::eServiceConnection newConnection
     if ( mServerAddress.getSource() != NEService::SOURCE_UNKNOWN )
         mServerState = newConnection;
     else if ( static_cast<const ServiceItem &>(mServerAddress).isValid() )
-        mServerState = NEService::ServicePending;
+        mServerState = NEService::eServiceConnection::ServicePending;
     else
-        mServerState = NEService::ServiceConnectionUnknown;
+        mServerState = NEService::eServiceConnection::ServiceConnectionUnknown;
 }

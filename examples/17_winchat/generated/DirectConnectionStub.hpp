@@ -1,18 +1,18 @@
 //////////////////////////////////////////////////////////////////////////
 // Begin generate generated/DirectConnectionStub.hpp file
 //////////////////////////////////////////////////////////////////////////
-#ifndef  GENERATED_DIRECTCONNECTIONSTUB_HPP
-#define  GENERATED_DIRECTCONNECTIONSTUB_HPP
-/************************************************************************
- * (c) copyright    2021
- *                  Create by AREG SDK code generator tool from source DirectConnection.
- * Generated at     04.07.2021  04:30:02 GMT+02:00 
- ************************************************************************/
+#pragma once
 
 /************************************************************************
+ * (c) copyright    2021
+ *
+ * Generated at     30.09.2021  01:22:15 GMT+02:00 
+ *                  Create by AREG SDK code generator tool from source DirectConnection.
+ *
  * \file            generated/DirectConnectionStub.hpp
  * \ingroup         DirectConnection Service Interface
- * \brief           This is an automatic generated code of DirectConnection Service Interface Stub class declaration.
+ * \brief           This is an automatic generated code of DirectConnection
+ *                  Service Interface Stub class declaration.
  ************************************************************************/
 
 /************************************************************************
@@ -50,11 +50,11 @@ protected:
      * \param   masterComp  The master component object, which is initializing service Stub.
      * \note    Before constructor is called, the instance of Component must be already initialized.
      **/
-    DirectConnectionStub( Component & masterComp );
+    explicit DirectConnectionStub( Component & masterComp );
     /**
      * \brief   Destructor.
      **/
-    virtual ~DirectConnectionStub( void );
+    virtual ~DirectConnectionStub( void ) = default;
     
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -62,7 +62,8 @@ protected:
 public:
     /**
      * \brief   Unlocks and cancels all requests, excepts those which were manually unlocked.
-     *          This call will send cancel error message (NEService::RESULT_REQUEST_CANCELED) to all clients waiting for response.
+     *          This call will send cancel error message (NEService::eResultType::RequestCanceled)
+     *          to all clients waiting for response.
      **/
     void unlockAllRequests( void );
 
@@ -206,13 +207,14 @@ public:
      *
      * \param   msgId   The attribute message ID to notify clients.
      **/
-    virtual void sendNotification( unsigned int msgId );
+    virtual void sendNotification( unsigned int msgId ) override;
 
     /**
      * \brief   Sends error message to clients.
-     *          If message ID is a request, it should send result NEService::RESULT_REQUEST_ERROR or NEService::RESULT_REQUEST_CANCELED, depending on msgCancel flag.
-     *          If message ID is a response, it should send result NEService::RESULT_INVALID.
-     *          If message ID is an attribute, it should send result NEService::RESULT_DATA_INVALID
+     *          If message ID is a request, it should send result NEService::eResultType::RequestError
+     *          or NEService::eResultType::RequestCanceled, depending on msgCancel flag.
+     *          If message ID is a response, it should send result NEService::eResultType::RequestInvalid.
+     *          If message ID is an attribute, it should send result NEService::eResultType::DataInvalid
      *          and invalidate attribute data value.
      *
      * \param   msgId       The message ID to send error message
@@ -220,7 +222,7 @@ public:
      *                      This parameter has sense only for request IDs.
      *                      It is ignored for response and attributes IDs.
      **/
-    virtual void errorRequest( unsigned int msgId, bool msgCancel );
+    virtual void errorRequest( unsigned int msgId, bool msgCancel ) override;
 
 protected:
 /************************************************************************/
@@ -234,7 +236,7 @@ protected:
      * \param   holder  The holder component of service interface of Stub,
      *                  which started up.
      **/
-    virtual void startupServiceInterface( Component & holder );
+    virtual void startupServiceInterface( Component & holder ) override;
 
     /**
      * \brief   This function is triggered by Component when shuts down.
@@ -242,7 +244,7 @@ protected:
      * \param   holder  The holder component of service interface of Stub,
      *                  which shuts down.
      **/
-    virtual void shutdownServiceIntrface ( Component & holder );
+    virtual void shutdownServiceIntrface ( Component & holder ) override;
 
 /************************************************************************/
 // StubBase overrides. Protected methods 
@@ -256,25 +258,25 @@ protected:
      * \param   data    The buffer of data to send to client. Can be Invalid buffer.
      * \return  Returns valid pointer to Response event object
      **/
-    virtual ResponseEvent * createResponseEvent( const ProxyAddress & proxy, unsigned int msgId, NEService::eResultType result, const EventDataStream & data ) const;
+    virtual ResponseEvent * createResponseEvent( const ProxyAddress & proxy, unsigned int msgId, NEService::eResultType result, const EventDataStream & data ) const override;
 
     /**
      * \brief   Overwrite method to create remote service request event from streaming object for 
      *          further dispatching by stub.
      * \param   stream  Streaming object, which contains event data.
      * \return  If operation succeeds, returns valid pointer to Service Request event object.
-     *          Otherwise, it returns NULL.
+     *          Otherwise, it returns nullptr.
      **/
-    virtual RemoteRequestEvent * createRemoteRequestEvent( const IEInStream & stream ) const;
+    virtual RemoteRequestEvent * createRemoteRequestEvent( const IEInStream & stream ) const override;
 
     /**
      * \brief   Overwrite method to create remote notify request event from streaming object for 
      *          further dispatching by stub.
      * \param   stream  Streaming object, which contains event data.
      * \return  If operation succeeds, returns valid pointer to Service Request event object.
-     *          Otherwise, it returns NULL.
+     *          Otherwise, it returns nullptr.
      **/
-    virtual RemoteNotifyRequestEvent * createRemoteNotifyRequestEvent( const IEInStream & stream ) const;
+    virtual RemoteNotifyRequestEvent * createRemoteNotifyRequestEvent( const IEInStream & stream ) const override;
 
 private:
 /************************************************************************/
@@ -287,7 +289,7 @@ private:
      * \param   eventElem   Service Request Event object, contains request
      *                      call ID and parameters.
      **/
-    virtual void processRequestEvent( ServiceRequestEvent & eventElem );
+    virtual void processRequestEvent( ServiceRequestEvent & eventElem ) override;
 
     /**
      * \brief   Triggered to process attribute update notification event.
@@ -295,7 +297,7 @@ private:
      *          process notification request of attribute update.
      * \param   eventElem   Service Request Event object, contains attribute ID.
      **/
-    virtual void processAttributeEvent( ServiceRequestEvent & eventElem );
+    virtual void processAttributeEvent( ServiceRequestEvent & eventElem ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden function calls
@@ -328,9 +330,8 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    DirectConnectionStub( void );
-    DirectConnectionStub( const DirectConnectionStub & /* src */ );
-    const DirectConnectionStub & operator = ( const DirectConnectionStub & /* src */ );
+    DirectConnectionStub( void ) = delete;
+    DECLARE_NOCOPY_NOMOVE( DirectConnectionStub );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -348,17 +349,17 @@ inline DirectConnectionStub & DirectConnectionStub::self( void )
  
 inline bool DirectConnectionStub::isInitiatedConnectionsValid( void ) const
 {
-    return (mInitiatedConnectionsState  == NEService::DATA_OK);
+    return (mInitiatedConnectionsState  == NEService::eDataStateType::DataIsOK);
 }
 
 inline void DirectConnectionStub::invalidateInitiatedConnections( void )
 {
-    errorRequest( static_cast<unsigned int>(NEDirectConnection::MSG_ID_InitiatedConnections), false );
+    errorRequest( static_cast<msg_id>(NEDirectConnection::eMessageIDs::MsgId_InitiatedConnections), false );
 }
 
 inline void DirectConnectionStub::notifyInitiatedConnectionsUpdated( void )
 {
-    sendNotification( NEDirectConnection::MSG_ID_InitiatedConnections );
+    sendNotification( static_cast<msg_id>(NEDirectConnection::eMessageIDs::MsgId_InitiatedConnections) );
 }
 
 inline const NEDirectConnection::MapParticipants & DirectConnectionStub::getInitiatedConnections( void ) const
@@ -374,8 +375,6 @@ inline NEDirectConnection::MapParticipants & DirectConnectionStub::getInitiatedC
 //////////////////////////////////////////////////////////////////////////
 // DirectConnectionStub class declaration End
 //////////////////////////////////////////////////////////////////////////
-
-#endif   // GENERATED_DIRECTCONNECTIONSTUB_HPP
 
 //////////////////////////////////////////////////////////////////////////
 // End generate generated/DirectConnectionStub.hpp file

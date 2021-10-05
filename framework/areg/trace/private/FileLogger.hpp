@@ -1,9 +1,16 @@
-#ifndef AREG_TRACE_PRIVATE_FILELOGGER_HPP
-#define AREG_TRACE_PRIVATE_FILELOGGER_HPP
+#pragma once
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/trace/private/FileLogger.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, File Logger object to log message into the file
  ************************************************************************/
 
@@ -39,12 +46,12 @@ public:
      *                          required by logger during initialization (open)
      *                          and when outputs message.
      **/
-    FileLogger( IETraceConfiguration & tracerConfig );
+    FileLogger( LogConfiguration & tracerConfig );
 
     /**
      * \brief   Destructor
      **/
-    virtual ~FileLogger( void );
+    virtual ~FileLogger( void )= default;
 
 //////////////////////////////////////////////////////////////////////////
 // Override operations and attribute
@@ -63,28 +70,28 @@ public:
      *          Before any message is logger, the logger should be opened.
      * \return  Returns true if logger succeeded initialization (open).
      **/
-    virtual bool openLogger( void );
+    virtual bool openLogger( void ) override;
 
     /**
      * \brief   Called to close logger and stop logging.
      **/
-    virtual void closeLogger( void );
+    virtual void closeLogger( void ) override;
 
     /**
      * \brief   Called when message should be logged.
      *          Every logger should implement method to process logger specific logging.
      **/
-    virtual bool logMessage( const NETrace::sLogMessage & logMessage );
+    virtual bool logMessage( const NETrace::sLogMessage & logMessage ) override;
 
     /**
      * \brief   Call to flush logs, if they are queued. Some loggers might ignore this.
      **/
-    virtual void flushLogs( void );
+    virtual void flushLogs( void ) override;
 
     /**
      * \brief   Returns true if logger is initialized (opened).
      **/
-    virtual bool isLoggerOpened( void ) const;
+    virtual bool isLoggerOpened( void ) const override;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -99,9 +106,6 @@ private:
 // Hidden / Forbidden calls.
 //////////////////////////////////////////////////////////////////////////
 private:
-    FileLogger( void );
-    FileLogger( const FileLogger & );
-    const FileLogger & operator = ( const FileLogger & );
+    FileLogger( void ) = delete;
+    DECLARE_NOCOPY_NOMOVE( FileLogger );
 };
-
-#endif  // AREG_TRACE_PRIVATE_FILELOGGER_HPP

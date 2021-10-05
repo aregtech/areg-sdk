@@ -1,9 +1,16 @@
-#ifndef AREG_COMPONENT_PRIVATE_TIMERINFO_HPP
-#define AREG_COMPONENT_PRIVATE_TIMERINFO_HPP
+#pragma once
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/component/private/TimerInfo.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform. Timer Info class.
  *              Stores timer, timer state and timer fire information.
  *
@@ -12,8 +19,7 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
-#include "areg/base/TEHashMap.hpp"
-#include "areg/base/TELinkedList.hpp"
+#include "areg/base/Containers.hpp"
 #include "areg/component/Timer.hpp"
 
 
@@ -67,7 +73,7 @@ public:
      * \brief   TimerInfo::eTimerState
      *          Timer states
      **/
-    typedef enum E_TimerState
+    typedef enum class E_TimerState
     {
           TimerInvalid  = -1    //!< Invalid state
         , TimerIdle             //!< Timer is idle
@@ -87,25 +93,30 @@ public:
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
+     * \brief   Default constructor. Required by Timer Table object
+     **/
+    TimerInfo( void );
+    /**
      * \brief   Initializing Timer information
      * \param   timer           The valid timer object
      * \param   timerHandle     The valid timer handle
      * \param   ownThreadId     The timer owning dispatcher thread ID.
      **/
-    TimerInfo( Timer & timer, TIMERHANDLE timerHandle, ITEM_ID ownThreadId);
-    /**
-     * \brief   Default constructor. Required by Timer Table object
-     **/
-    TimerInfo( void );
+    TimerInfo( Timer & timer, TIMERHANDLE timerHandle, id_type ownThreadId);
     /**
      * \brief   Copy constructor.
      * \param   src     The source of data to copy.
      **/
     TimerInfo( const TimerInfo & src );
     /**
+     * \brief   Copy constructor.
+     * \param   src     The source of data to copy.
+     **/
+    TimerInfo( TimerInfo && src ) noexcept;
+    /**
      * \brief   Destructor
      **/
-    ~TimerInfo( void );
+    ~TimerInfo( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
@@ -114,7 +125,12 @@ public:
     /**
      * \brief   Copies Timer information from given source.
      **/
-    const TimerInfo & operator = ( const TimerInfo & src );
+    TimerInfo & operator = ( const TimerInfo & src );
+
+    /**
+     * \brief   Moves Timer information from given source.
+     **/
+    TimerInfo & operator = ( TimerInfo && src ) noexcept;
 
     /**
      * \brief   Checks equality of 2 timer objects and returns true, if equal. 
@@ -140,7 +156,7 @@ public:
     /**
      * \brief   Returns the owning dispatcher thread ID
      **/
-    inline ITEM_ID getOwnerThreadId( void ) const;
+    inline id_type getOwnerThreadId( void ) const;
 
     /**
      * \brief   Returns first starting time. The value is system dependent.
@@ -215,7 +231,7 @@ private:
     /**
      * \brief   The ID of dispatcher thread started timer
      **/
-    ITEM_ID         mOwnThreadId;
+    id_type         mOwnThreadId;
 
     /**
      * \brief   First starting time. The value is system dependent.
@@ -262,9 +278,14 @@ public:
      **/
     inline ExpiredTimerInfo( const ExpiredTimerInfo & src );
     /**
+     * \brief   Move constructor.
+     * \param   src     The source of data to move.
+     **/
+    inline ExpiredTimerInfo( ExpiredTimerInfo && src ) noexcept;
+    /**
      * \brief   Destructor
      **/
-    inline ~ExpiredTimerInfo( void );
+    inline ~ExpiredTimerInfo( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
@@ -273,7 +294,12 @@ public:
     /**
      * \brief   Copies data from given source.
      **/
-    const ExpiredTimerInfo & operator = ( const ExpiredTimerInfo & src );
+    ExpiredTimerInfo & operator = ( const ExpiredTimerInfo & src );
+
+    /**
+     * \brief   Moves data from given source.
+     **/
+    ExpiredTimerInfo & operator = ( ExpiredTimerInfo && src ) noexcept;
 
     /**
      * \brief   Checks equality of objects and returns true if they are equal.
@@ -305,30 +331,7 @@ public:
 /**
  * \brief   Overrides methods required by Time Table hash map object.
  **/
-class AREG_API TimerTableImpl : public TEHashMapImpl<const Timer *, const TimerInfo &>
-{
-public:
-    /**
-     * \brief   Called to calculate the 32-bit hash key value.
-     * \ param  Key     The object to calculate 32-bit hash key.
-     * \return  Returns 32-bit hash key value.
-     **/
-    inline unsigned int implHashKey( const Timer * Key ) const
-    {
-        return MACRO_PTR2INT32( Key );
-    }
-
-    /**
-     * \brief   Compares 2 keys, returns true if they are equal.
-     * \param   Value1  The key of right-side object to compare.
-     * \param   Value2  The key of left-side object to compare.
-     * \return  Returns true if 2 keys are equal.
-     **/
-    inline bool implEqualKeys(const Timer * Key1, const Timer * Key2) const
-    {
-        return (Key1 == Key2);
-    }
-};
+using ImplTimerTable    = TEPointerHashMapImpl<const Timer *, const TimerInfo &>;
 
 /**
  * \brief   Timer Table Hash Map contains list of registered timers. 
@@ -337,7 +340,7 @@ public:
  *          no longer active (i.e. no more needed to be fired).
  *          The Continuous timers are remaining active until they are not stopped.
  **/
-class MapTimerTable    : private TEHashMap<Timer *, TimerInfo, const Timer *, const TimerInfo &, TimerTableImpl>
+class MapTimerTable    : private TEHashMap<Timer *, TimerInfo, const Timer *, const TimerInfo &, ImplTimerTable>
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -346,12 +349,12 @@ public:
     /**
      * \brief   Constructor
      **/
-    MapTimerTable( void );
+    MapTimerTable( void ) = default;
 
     /**
      * \brief   Destructor.
      **/
-    ~MapTimerTable( void );
+    ~MapTimerTable( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations.
@@ -387,10 +390,10 @@ public:
 
     /**
      * \brief   Searches specified timer pointer as a key. If the entry in hash map exists
-     *          returns valid TimerInfo pointer. Otherwise, returns NULL.
+     *          returns valid TimerInfo pointer. Otherwise, returns nullptr.
      * \param   key     The pointer to timer object to search.
      * \return  Returns valid pointer to TimerInfor if specified Timer key exists in the map.
-     *          Otherwise, returns NULL.
+     *          Otherwise, returns nullptr.
      **/
     inline TimerInfo * findObject( const Timer * key );
 
@@ -441,7 +444,7 @@ public:
      *          to Timer and unregistered TimerInfor objects.
      * \param   key     On output this contains the pointer to unregistered Timer.
      * \param   object  On output this contains the unregistered Timer information saved in the map.
-     * \return  Returns true if succeeded to unregister first entry. Returns NULL, if there are
+     * \return  Returns true if succeeded to unregister first entry. Returns nullptr, if there are
      *          no more entries in the list.
      **/
     bool unregisterFirstObject( Timer * & OUT key, TimerInfo & OUT object );
@@ -457,8 +460,7 @@ public:
 // Hidden / Forbidden methods
 //////////////////////////////////////////////////////////////////////////
 private:
-    MapTimerTable( const MapTimerTable & /*src*/ );
-    const MapTimerTable & operator = ( MapTimerTable & /*src*/ );
+    DECLARE_NOCOPY_NOMOVE( MapTimerTable );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -478,11 +480,11 @@ public:
     /**
      * \brief   Default constructor.
      **/
-    ExpiredTimers( void );
+    ExpiredTimers( void ) = default;
     /**
      * \brief   Destructor
      **/
-    ~ExpiredTimers( void );
+    ~ExpiredTimers( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -519,11 +521,11 @@ public:
      *          valid position if found. The starts starts either from beginning
      *          of the list from specified position.
      * \param   whichTimer      The pointer to timer object to search in the list.
-     * \param   searchAfter     If NULL, searches from beginning of the list.
+     * \param   searchAfter     If nullptr, searches from beginning of the list.
      *                          Otherwise, searches from specified valid position.
-     * \return  Returns valid position if found an entry. Otherwise, returns NULL.
+     * \return  Returns valid position if found an entry. Otherwise, returns nullptr.
      **/
-    LISTPOS findTimer(Timer * whichTimer, LISTPOS searchAfter = NULL);
+    LISTPOS findTimer(Timer * whichTimer, LISTPOS searchAfter = nullptr);
 
     /**
      * \brief   Removes all matches of specified timer in the list. The expired timer list
@@ -538,8 +540,7 @@ public:
 // Forbidden calls.
 //////////////////////////////////////////////////////////////////////////
 private:
-    ExpiredTimers( const ExpiredTimers & /*src*/ );
-    const ExpiredTimers & operator = ( const ExpiredTimers & /*src*/ );
+    DECLARE_NOCOPY_NOMOVE( ExpiredTimers );
 };
 
 /************************************************************************
@@ -552,26 +553,26 @@ private:
 
 inline bool MapTimerTable::isEmpty(void) const
 {
-    return TEHashMap<Timer *, TimerInfo, const Timer *, const TimerInfo &, TimerTableImpl>::isEmpty();
+    return TEHashMap<Timer *, TimerInfo, const Timer *, const TimerInfo &, ImplTimerTable>::isEmpty();
 }
 
 inline int MapTimerTable::getSize(void) const
 {
-    return TEHashMap<Timer *, TimerInfo, const Timer *, const TimerInfo &, TimerTableImpl>::getSize();
+    return TEHashMap<Timer *, TimerInfo, const Timer *, const TimerInfo &, ImplTimerTable>::getSize();
 }
 
 inline bool MapTimerTable::keyExists(const Timer * key) const
 {
-    TEHashMap<Timer *, TimerInfo, const Timer *, const TimerInfo &, TimerTableImpl>::Block** block = blockAt(key);
-    return (block != NULL) && (*block != NULL);
+    TEHashMap<Timer *, TimerInfo, const Timer *, const TimerInfo &, ImplTimerTable>::Block** block = blockAtRef(key);
+    return (block != nullptr) && (*block != nullptr);
 }
 
 inline bool MapTimerTable::findObject(const Timer * key, TimerInfo & OUT object) const
 {
     bool result = false;
 
-    TEHashMap<Timer *, TimerInfo, const Timer *, const TimerInfo &, TimerTableImpl>::Block** block = blockAt(key);
-    if ( (block != NULL) && (*block != NULL) )
+    TEHashMap<Timer *, TimerInfo, const Timer *, const TimerInfo &, ImplTimerTable>::Block** block = blockAtRef(key);
+    if ( (block != nullptr) && (*block != nullptr) )
     {
         object = (*block)->mValue;
         result = true;
@@ -582,9 +583,9 @@ inline bool MapTimerTable::findObject(const Timer * key, TimerInfo & OUT object)
 
 inline TimerInfo * MapTimerTable::findObject(const Timer * key)
 {
-    TimerInfo * result = NULL;
-    TEHashMap<Timer *, TimerInfo, const Timer *, const TimerInfo &, TimerTableImpl>::Block** block = blockAt(key);
-    if ( (block != NULL) && (*block != NULL) )
+    TimerInfo * result = nullptr;
+    TEHashMap<Timer *, TimerInfo, const Timer *, const TimerInfo &, ImplTimerTable>::Block** block = blockAtRef(key);
+    if ( (block != nullptr) && (*block != nullptr) )
     {
         result = &((*block)->mValue);
     }
@@ -594,7 +595,7 @@ inline TimerInfo * MapTimerTable::findObject(const Timer * key)
 
 inline void MapTimerTable::removeAll(void)
 {
-    TEHashMap<Timer *, TimerInfo, const Timer *, const TimerInfo &, TimerTableImpl>::removeAll();
+    TEHashMap<Timer *, TimerInfo, const Timer *, const TimerInfo &, ImplTimerTable>::removeAll();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -650,7 +651,7 @@ inline const uint64_t& TimerInfo::getExprirationTime( void ) const
     return mExpiredAt;
 }
 
-inline ITEM_ID TimerInfo::getOwnerThreadId( void ) const
+inline id_type TimerInfo::getOwnerThreadId( void ) const
 {
     return mOwnThreadId;
 }
@@ -662,13 +663,13 @@ inline TimerInfo::eTimerState TimerInfo::getTimerState( void ) const
 
 inline bool TimerInfo::isTimerActive( void ) const
 {
-    return ((mTimerState != TimerInfo::TimerIdle) && mTimer->isActive());
+    return ((mTimerState != TimerInfo::eTimerState::TimerIdle) && mTimer->isActive());
 }
 
 inline bool TimerInfo::canStartTimer( void )
 {
-    ASSERT(mTimer != NULL);
-    return ((mTimerState == TimerInfo::TimerIdle) && mTimer->timerIsStarting());
+    ASSERT(mTimer != nullptr);
+    return ((mTimerState == TimerInfo::eTimerState::TimerIdle) && mTimer->timerIsStarting());
 }
 
 inline bool TimerInfo::resetActiveTimer( void )
@@ -676,7 +677,7 @@ inline bool TimerInfo::resetActiveTimer( void )
     bool result = false;
     if (isTimerActive())
     {
-        mTimerState = TimerInfo::TimerPending;
+        mTimerState = TimerInfo::eTimerState::TimerPending;
         result      = true;
     }
 
@@ -687,10 +688,10 @@ inline const char* TimerInfo::getString( TimerInfo::eTimerState timerState )
 {
     switch (timerState)
     {
-        CASE_MAKE_STRING(TimerInfo::TimerInvalid);
-        CASE_MAKE_STRING(TimerInfo::TimerIdle);
-        CASE_MAKE_STRING(TimerInfo::TimerPending);
-        CASE_MAKE_STRING(TimerInfo::TimerExpired);
+        CASE_MAKE_STRING(TimerInfo::eTimerState::TimerInvalid);
+        CASE_MAKE_STRING(TimerInfo::eTimerState::TimerIdle);
+        CASE_MAKE_STRING(TimerInfo::eTimerState::TimerPending);
+        CASE_MAKE_STRING(TimerInfo::eTimerState::TimerExpired);
         CASE_DEFAULT("ERR: Undefined TimerInfo::eTimerState value!");
     }
 }
@@ -700,33 +701,34 @@ inline const char* TimerInfo::getString( TimerInfo::eTimerState timerState )
 //////////////////////////////////////////////////////////////////////////
 
 inline ExpiredTimerInfo::ExpiredTimerInfo( void )
-    : mTimer    ( NULL )
+    : mTimer    ( nullptr )
     , mLowValue ( 0 )
     , mHighValue( 0 )
-{   ;   }
+{
+}
 
 inline ExpiredTimerInfo::ExpiredTimerInfo( Timer *timer, unsigned int highValue, unsigned int lowValue )
     : mTimer    ( timer     )
     , mLowValue ( lowValue  )
     , mHighValue( highValue )
-{   ;   }
+{
+}
 
 inline ExpiredTimerInfo::ExpiredTimerInfo( const ExpiredTimerInfo & src )
     : mTimer    ( src.mTimer    )
     , mLowValue ( src.mLowValue )
     , mHighValue( src.mHighValue)
-{   ;   }
-
-inline ExpiredTimerInfo::~ExpiredTimerInfo( void )
 {
-    mTimer      = NULL;
-    mLowValue   = 0;
-    mHighValue  = 0;
+}
+
+inline ExpiredTimerInfo::ExpiredTimerInfo( ExpiredTimerInfo && src ) noexcept
+    : mTimer    ( src.mTimer )
+    , mLowValue ( src.mLowValue )
+    , mHighValue( src.mHighValue )
+{
 }
 
 inline bool ExpiredTimerInfo::operator == ( const ExpiredTimerInfo & other ) const
 {
     return (mTimer == other.mTimer);
 }
-
-#endif  // AREG_COMPONENT_PRIVATE_TIMERINFO_HPP

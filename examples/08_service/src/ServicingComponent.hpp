@@ -1,9 +1,9 @@
-#ifndef AREG_EXAMPLES_08_SERVICE_SERVICINGCOMPONENT_HPP
-#define AREG_EXAMPLES_08_SERVICE_SERVICINGCOMPONENT_HPP
+#pragma once
+
 /************************************************************************
  * \file        src/ServicingComponent.hpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework examples
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       Collection of AREG SDK examples.
  *              This file contains simple implementation of servicing component
  *              without requests
@@ -33,8 +33,8 @@ class ServicingComponent    : public    Component
 // Constants
 //////////////////////////////////////////////////////////////////////////
 private:
-    static const unsigned int   TIMER_TIMEOUT   = 150;   //!< Timer timeout in milliseconds
-    static const int            TIMER_EVENTS    =  50;   //!< Fired timer count.
+    static const unsigned int   TIMER_TIMEOUT   =  Timer::TIMEOUT_100_MS;   //!< Timer timeout in milliseconds
+    static const int            TIMER_EVENTS    =  10;   					//!< Fired timer count.
 
 //////////////////////////////////////////////////////////////////////////
 // Static methods
@@ -71,7 +71,7 @@ protected:
     /**
      * \brief   Destructor.
      **/
-    virtual ~ServicingComponent(void);
+    virtual ~ServicingComponent(void) = default;
 
 /************************************************************************/
 // CEStubBase overrides. Triggered by Component on startup.
@@ -84,7 +84,7 @@ protected:
      * \param   holder  The holder component of service interface of Stub,
      *                  which started up.
      **/
-    virtual void startupServiceInterface( Component & holder );
+    virtual void startupServiceInterface( Component & holder ) override;
 
     /**
      * \brief   This function is triggered by Component when shuts down.
@@ -92,7 +92,7 @@ protected:
      * \param   holder  The holder component of service interface of Stub,
      *                  which shuts down.
      **/
-    virtual void shutdownServiceIntrface ( Component & holder );
+    virtual void shutdownServiceIntrface ( Component & holder ) override;
 
 /************************************************************************/
 // IETimerConsumer interface overrides.
@@ -104,7 +104,7 @@ protected:
      *          Overwrite method to receive messages.
      * \param   timer   The timer object that is expired.
      **/
-    virtual void processTimer( Timer & timer );
+    virtual void processTimer( Timer & timer ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // These methods must exist, but can have empty body
@@ -123,13 +123,13 @@ protected:
      *
      * \param   msgId   The attribute message ID to notify clients.
      **/
-    virtual void sendNotification( unsigned int msgId );
+    virtual void sendNotification( unsigned int msgId ) override;
 
     /**
      * \brief   Sends error message to clients.
-     *          If message ID is a request, it should send result NEService::RESULT_REQUEST_ERROR or NEService::RESULT_REQUEST_CANCELED, depending on msgCancel flag.
-     *          If message ID is a response, it should send result NEService::RESULT_INVALID.
-     *          If message ID is an attribute, it should send result NEService::RESULT_DATA_INVALID
+     *          If message ID is a request, it should send result NEService::RequestError or NEService::RequestCanceled, depending on msgCancel flag.
+     *          If message ID is a response, it should send result NEService::Invalid.
+     *          If message ID is an attribute, it should send result NEService::ResultDataInvalid
      *          and invalidate attribute data value.
      *
      *          Overwrite to implement method
@@ -139,7 +139,7 @@ protected:
      *                      This parameter has sense only for request IDs.
      *                      It is ignored for response and attributes IDs.
      **/
-    virtual void errorRequest( unsigned int msgId, bool msgCancel );
+    virtual void errorRequest( unsigned int msgId, bool msgCancel ) override;
 
 /************************************************************************/
 // IEStubEventConsumer interface overrides.
@@ -151,7 +151,7 @@ protected:
      * \param   eventElem   Service Request Event object, contains request
      *                      call ID and parameters.
      **/
-    virtual void processRequestEvent( ServiceRequestEvent & eventElem );
+    virtual void processRequestEvent( ServiceRequestEvent & eventElem ) override;
     
     /**
      * \brief   Triggered to process attribute update notification event.
@@ -159,7 +159,7 @@ protected:
      *          process notification request of attribute update.
      * \param   eventElem   Service Request Event object, contains attribute ID.
      **/
-    virtual void processAttributeEvent( ServiceRequestEvent & eventElem );
+    virtual void processAttributeEvent( ServiceRequestEvent & eventElem ) override;
 
 private:
     Timer   mTimer; //!< The timer to run in component thread.
@@ -171,9 +171,8 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
-    ServicingComponent( void );
-    ServicingComponent( const ServicingComponent & /*src*/);
-    const ServicingComponent & operator = ( const ServicingComponent & /*src*/ );
+    ServicingComponent( void ) = delete;
+    DECLARE_NOCOPY_NOMOVE( ServicingComponent );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -181,6 +180,3 @@ private:
 //////////////////////////////////////////////////////////////////////////
 inline ServicingComponent & ServicingComponent::self( void )
 {   return (*this);     }
-
-
-#endif // AREG_EXAMPLES_08_SERVICE_SERVICINGCOMPONENT_HPP

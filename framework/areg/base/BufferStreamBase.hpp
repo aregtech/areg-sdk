@@ -1,13 +1,17 @@
-#ifndef AREG_BASE_BUFFERSTREAMBASE_HPP
-#define AREG_BASE_BUFFERSTREAMBASE_HPP
-
+#pragma once
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/base/BufferStreamBase.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform base class of streaming buffer.
- *              This is pure virtual class and cannot be instantiated directly.
- *              Use one of child classes to instantiate object.
  *
  ************************************************************************/
 
@@ -30,16 +34,12 @@ class IECursorPosition;
 // BufferStreamBase class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief       Base class of streaming buffer. It is pure virtual.
- * 
- * \details     This is base class for data streaming into the binary buffer.
+ * \brief       Base class of streaming buffer for data streaming into the binary buffer.
  *              This class is pure virtual and cannot be instantiated directly.
- *              Instead use one of child classes.
  *              The streaming buffer is used to transfer data between threads
- *              and processes. Depending on child class behavior, it will
- *              automatically either append data starting from current
- *              writing position, or it will write data from beginning
- *              of buffer. For more details see child classes.
+ *              and processes. Depending on child class behavior, it either appends
+ *              data starting from current writing position, or writes data from the 
+ *              beginning of buffer.
  *
  **/
 class AREG_API BufferStreamBase : public    IEByteBuffer
@@ -50,26 +50,41 @@ class AREG_API BufferStreamBase : public    IEByteBuffer
 //////////////////////////////////////////////////////////////////////////
 protected:
     /**
-     * \brief	Initialization constructor. Requires instantiated write and
-     *          read position objects.
-     * \param	readPosition	Read position object
-     * \param	writePosition	Write position object
+     * \brief	Requires intances of byte-buffer, write and read position objects.
+     * \param	readPosition	Read position object.
+     * \param	writePosition	Write position object.
      **/
-    BufferStreamBase( NEMemory::sByteBuffer & byteBuffer, IECursorPosition & readPosition, IECursorPosition & writePosition );
+    BufferStreamBase( IECursorPosition & readPosition, IECursorPosition & writePosition );
     /**
      * \brief	Destructor
      **/
-    virtual ~BufferStreamBase( void );
-
-//////////////////////////////////////////////////////////////////////////
-// operators
-//////////////////////////////////////////////////////////////////////////
-public:
+    virtual ~BufferStreamBase( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
 //////////////////////////////////////////////////////////////////////////
 public:
+
+/************************************************************************/
+// BufferStreamBase interface
+/************************************************************************/
+    /**
+     * \brief   Inserts buffer of data at the given position and returns
+     *          size of inserted data
+     * \param   buffer  The pointer to data buffer to insert
+     * \param   size    The size of data buffer
+     * \param   atPos   The position to insert data. If position is
+     *                      not valid, it will add at the end
+     * \return  Returns size in bytes of written data.
+     **/
+    virtual unsigned int insertAt(const unsigned char* buffer, unsigned int size, unsigned int atPos);
+
+    /**
+     * \brief	Returns true if binary data of 2 buffers are equal
+     * \param	other	The streaming buffer object to compare data.
+     * \return	Returns true if binary values of data in 2 buffers are equal.
+     **/
+    virtual bool isEqual(const BufferStreamBase &other) const;
 
 /************************************************************************/
 // IEOutStream interface overrides
@@ -84,7 +99,7 @@ public:
      * \param	size	The size in bytes of data buffer
      * \return	Returns the size in bytes of written data
      **/
-    virtual unsigned int write( const unsigned char* buffer, unsigned int size );
+    virtual unsigned int write( const unsigned char* buffer, unsigned int size ) override;
 
     /**
      * \brief	Writes Binary data from Byte Buffer object to Output Stream object
@@ -93,7 +108,7 @@ public:
      * \param	buffer	The instance of Byte Buffer object containing data to stream to Output Stream.
      * \return	Returns the size in bytes of written data
      **/
-    virtual unsigned int write( const IEByteBuffer & buffer );
+    virtual unsigned int write( const IEByteBuffer & buffer ) override;
 
     /**
      * \brief   Writes string data from given ASCII String object to output stream object.
@@ -101,7 +116,7 @@ public:
      * \param   asciiString     The buffer of String containing data to stream to Output Stream.
      * \return  Returns the size in bytes of copied string data.
      **/
-    virtual unsigned int write( const String & asciiString );
+    virtual unsigned int write( const String & asciiString ) override;
 
     /**
      * \brief   Writes string data from given wide-char String object to output stream object.
@@ -109,7 +124,7 @@ public:
      * \param   wideString  The buffer of String containing data to stream to Output Stream.
      * \return  Returns the size in bytes of copied string data.
      **/
-    virtual unsigned int write( const WideString & wideString );
+    virtual unsigned int write( const WideString & wideString ) override;
 
 /************************************************************************/
 // IEInStream interface overrides
@@ -123,7 +138,7 @@ public:
      * \param	size	The size in bytes of available buffer
      * \return	Returns the size in bytes of copied data
      **/
-    virtual unsigned int read( unsigned char* buffer, unsigned int size ) const;
+    virtual unsigned int read( unsigned char* buffer, unsigned int size ) const override;
 
     /**
      * \brief   Reads data from input stream object, copies into give Byte Buffer object
@@ -133,7 +148,7 @@ public:
      * \param   buffer  The instance of Byte Buffer object to stream data from Input Stream object
      * \return	Returns the size in bytes of copied data
      **/
-    virtual unsigned int read( IEByteBuffer & buffer ) const;
+    virtual unsigned int read( IEByteBuffer & buffer ) const override;
 
     /**
      * \brief   Reads string data from Input Stream object and copies into given ASCII String.
@@ -141,7 +156,7 @@ public:
      * \param   asciiString     The buffer of ASCII String to stream data from Input Stream object.
      * \return  Returns the size in bytes of copied string data.
      **/
-    virtual unsigned int read( String & asciiString ) const;
+    virtual unsigned int read( String & asciiString ) const override;
 
     /**
      * \brief   Reads string data from Input Stream object and copies into given Wide String.
@@ -149,18 +164,7 @@ public:
      * \param   wideString      The buffer of Wide String to stream data from Input Stream object.
      * \return  Returns the size in bytes of copied string data.
      **/
-    virtual unsigned int read( WideString & wideString ) const;
-
-    /**
-     * \brief   Inserts buffer of data at the given position and returns
-     *          size of inserted data
-     * \param   buffer  The pointer to data buffer to insert
-     * \param   size    The size of data buffer
-     * \param   atPos   The position to insert data. If position is
-     *                      not valid, it will add at the end
-     * \return  Returns size in bytes of written data.
-     **/
-    virtual unsigned int insertAt(const unsigned char* buffer, unsigned int size, unsigned int atPos);
+    virtual unsigned int read( WideString & wideString ) const override;
 
 /************************************************************************/
 // IEByteBuffer overrides
@@ -182,7 +186,7 @@ public:
      * \param	copy    If true and the existing buffer is valid, it will copy data
      * \return	Returns the size available to use (i.e. remaining space).
      **/
-    virtual unsigned int resize(unsigned int size, bool copy);
+    virtual unsigned int resize(unsigned int size, bool copy) override;
 
 protected:
 /************************************************************************/
@@ -195,7 +199,7 @@ protected:
      *          For example, if the size of buffer is 'n' and 'x' bytes of data was
      *          already read from stream, the available readable size is 'n - x'.
      **/
-    virtual unsigned int getSizeReadable( void ) const;
+    virtual unsigned int getSizeReadable( void ) const override;
 
     /**
      * \brief	Returns size in bytes of available space that can be written, 
@@ -204,29 +208,19 @@ protected:
      *          For example, if the size of buffer is 'n' and 'x' bytes of data was
      *          already written to stream, the available writable size is 'n - x'.
      **/
-    virtual unsigned int getSizeWritable( void ) const;
+    virtual unsigned int getSizeWritable( void ) const override;
 
     /**
      * \brief	Flushes cached data to output stream object.
      *          Implement the function if device has caching mechanism
      **/
-    virtual void flush( void );
+    virtual void flush( void ) override;
 
     /**
      * \brief   Resets cursor pointer and moves to the begin of data.
      *          Implement the function if stream has pointer reset mechanism
      **/
-    virtual void resetCursor( void ) const;
-
-/************************************************************************/
-// BufferStreamBase interface
-/************************************************************************/
-    /**
-     * \brief	Returns true if binary data of 2 buffers are equal
-     * \param	other	The streaming buffer object to compare data.
-     * \return	Returns true if binary values of data in 2 buffers are equal.
-     **/
-    virtual bool isEqual(const BufferStreamBase &other) const;
+    virtual void resetCursor( void ) const override;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -250,13 +244,13 @@ protected:
 
     /**
      * \brief   Returns pointer to the buffer at current read position.
-     *          Returns NULL if buffer is not valid or read position is at the end of buffer.
+     *          Returns nullptr if buffer is not valid or read position is at the end of buffer.
      **/
     const unsigned char * getBufferToRead( void ) const;
 
     /**
      * \brief   Returns pointer to the buffer at current write position.
-     *          Returns NULL if buffer is not valid or read position is at the end of buffer.
+     *          Returns nullptr if buffer is not valid or read position is at the end of buffer.
      **/
     unsigned char * getBufferToWrite( void );
 
@@ -274,24 +268,9 @@ private:
     IECursorPosition &  mWritePosition;
 
 //////////////////////////////////////////////////////////////////////////
-// Local member functions
-//////////////////////////////////////////////////////////////////////////
-private:
-    inline BufferStreamBase & self( void );
-
-//////////////////////////////////////////////////////////////////////////
 // Hidden / forbidden function calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    BufferStreamBase( void );
-    BufferStreamBase( const BufferStreamBase & /*src*/ );
-    const BufferStreamBase & operator = ( const BufferStreamBase & /*src*/ );
+    BufferStreamBase( void ) = delete;
+    DECLARE_NOCOPY_NOMOVE( BufferStreamBase );
 };
-
-//////////////////////////////////////////////////////////////////////////
-// inline functions of BufferStreamBase class.
-//////////////////////////////////////////////////////////////////////////
-inline BufferStreamBase & BufferStreamBase::self( void )
-{   return (*this); }
-
-#endif  // AREG_BASE_BUFFERSTREAMBASE_HPP

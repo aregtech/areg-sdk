@@ -1,7 +1,7 @@
 /************************************************************************
  * \file        mcrouter/tcp/private/ServerService.cpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, Service Connection server declaration
  ************************************************************************/
 #include "mcrouter/tcp/ServerService.hpp"
@@ -30,11 +30,9 @@ DEF_TRACE_SCOPE(mcrouter_tcp_private_ServerService_stopConnection);
 DEF_TRACE_SCOPE(mcrouter_tcp_private_ServerService_failedSendMessage);
 DEF_TRACE_SCOPE(mcrouter_tcp_private_ServerService_failedReceiveMessage);
 
-const NERemoteService::eServiceConnection   ServerService::CONNECT_TYPE   = NERemoteService::ConnectionTcpip;
-
 ServerService::ServerService( void )
     : IERemoteService               ( )
-    , DispatcherThread              ( NEConnection::SERVER_DISPATCH_MESSAGE_THREAD )
+    , DispatcherThread              ( NEConnection::SERVER_DISPATCH_MESSAGE_THREAD.data( ) )
     , IEServerConnectionHandler     ( )
     , IERemoteServiceConsumer       ( )
     , IERemoteServiceHandler        ( )
@@ -42,7 +40,7 @@ ServerService::ServerService( void )
     , IETimerConsumer               ( )
 
     , mServerConnection ( )
-    , mTimerConnect     ( static_cast<IETimerConsumer &>(self()), NEConnection::SERVER_CONNECT_TIMER_NAME)
+    , mTimerConnect     ( static_cast<IETimerConsumer &>(self()), NEConnection::SERVER_CONNECT_TIMER_NAME.data( ) )
     , mThreadSend       ( static_cast<IERemoteServiceHandler &>(self()), mServerConnection )
     , mThreadReceive    ( static_cast<IEServerConnectionHandler &>(self()), static_cast<IERemoteServiceHandler &>(self()), mServerConnection )
     , mServiceRegistry  ( )
@@ -53,11 +51,6 @@ ServerService::ServerService( void )
     , mLock             ( )
 {
 
-}
-
-ServerService::~ServerService(void)
-{
-    ; // do nothing
 }
 
 bool ServerService::configureRemoteServicing(const char * configFile)
@@ -75,7 +68,7 @@ bool ServerService::configureRemoteServicing(const char * configFile)
     else
     {
         mIsServiceEnabled       = NEConnection::DEFAULT_REMOVE_SERVICE_ENABLED;
-        return mServerConnection.setAddress( NEConnection::DEFAULT_REMOTE_SERVICE_HOST, NEConnection::DEFAULT_REMOTE_SERVICE_PORT );
+        return mServerConnection.setAddress( NEConnection::DEFAULT_REMOTE_SERVICE_HOST.data( ), NEConnection::DEFAULT_REMOTE_SERVICE_PORT );
     }
 }
 
@@ -92,9 +85,11 @@ bool ServerService::startRemoteServicing(void)
     bool result = true;
     if ( mServerConnection.isValid() == false && isRunning() == false )
     {
-        if ( createThread( Thread::WAIT_INFINITE ) && waitForDispatcherStart(IESynchObject::WAIT_INFINITE) )
+        if ( createThread( NECommon::WAIT_INFINITE ) && waitForDispatcherStart(NECommon::WAIT_INFINITE) )
         {
-            result = ServerServiceEvent::sendEvent( ServerServiceEventData( ServerServiceEventData::CMD_StartService ), static_cast<IEServerServiceEventConsumer &>(self( )), static_cast<DispatcherThread &>(self( )) );
+            result = ServerServiceEvent::sendEvent( ServerServiceEventData( ServerServiceEventData::eServerServiceCommands::CMD_StartService )
+                                                  , static_cast<IEServerServiceEventConsumer &>(self( ))
+                                                  , static_cast<DispatcherThread &>(self( )) );
         }
 
         TRACE_DBG( "Created remote servicing thread with [ %s ]", result ? "SUCCESS" : "FAIL" );
@@ -114,11 +109,13 @@ void ServerService::stopRemoteServicing(void)
     TRACE_SCOPE(mcrouter_tcp_private_ServerService_stopRemoteServicing);
     if ( isRunning() )
     {
-        ServerServiceEvent::sendEvent( ServerServiceEventData(ServerServiceEventData::CMD_StopService), static_cast<IEServerServiceEventConsumer &>(self()), static_cast<DispatcherThread &>(self()) );
+        ServerServiceEvent::sendEvent( ServerServiceEventData(ServerServiceEventData::eServerServiceCommands::CMD_StopService)
+                                     , static_cast<IEServerServiceEventConsumer &>(self())
+                                     , static_cast<DispatcherThread &>(self()) );
+        
         DispatcherThread::triggerExitEvent();
-        completionWait(Thread::WAIT_INFINITE);
-
-        destroyThread( Thread::DO_NOT_WAIT );
+        completionWait(NECommon::WAIT_INFINITE);
+        destroyThread( NECommon::DO_NOT_WAIT );
     }
 }
 
@@ -185,8 +182,8 @@ void ServerService::connectionLost( SocketAccepted & clientSocket )
     TRACE_SCOPE(mcrouter_tcp_private_ServerService_connectionLost);
     ITEM_ID cookie = mServerConnection.getCookie(clientSocket);
 
-    TRACE_WARN("Client lost connection: cookie [ %p ], socket [ %d ], host [ %s : %d ], closing connection"
-                , static_cast<id_type>(cookie)
+    TRACE_WARN("Client lost connection: cookie [ %u ], socket [ %d ], host [ %s : %d ], closing connection"
+                , static_cast<uint32_t>(cookie)
                 , clientSocket.getHandle()
                 , clientSocket.getAddress().getHostAddress().getString()
                 , clientSocket.getAddress().getHostPort());
@@ -195,7 +192,9 @@ void ServerService::connectionLost( SocketAccepted & clientSocket )
     if ( cookie != NEService::COOKIE_UNKNOWN )
     {
         RemoteMessage msgDisconnect = NEConnection::createDisconnectRequest(cookie);
-        ServerServiceEvent::sendEvent( ServerServiceEventData(ServerServiceEventData::CMD_ServiceReceivedMsg, msgDisconnect), static_cast<IEServerServiceEventConsumer &>(self()), static_cast<DispatcherThread &>(self()) );
+        ServerServiceEvent::sendEvent( ServerServiceEventData(ServerServiceEventData::eServerServiceCommands::CMD_ServiceReceivedMsg, msgDisconnect)
+                                     , static_cast<IEServerServiceEventConsumer &>(self())
+                                     , static_cast<DispatcherThread &>(self()) );
     }
 }
 
@@ -215,47 +214,47 @@ void ServerService::processEvent(const ServerServiceEventData & data)
 
     switch ( data.getCommand() )
     {
-    case ServerServiceEventData::CMD_StartService:
+    case ServerServiceEventData::eServerServiceCommands::CMD_StartService:
         {
             Lock lock( mLock );
             startConnection();
         }
         break;
 
-    case ServerServiceEventData::CMD_StopService:
+    case ServerServiceEventData::eServerServiceCommands::CMD_StopService:
         {
             Lock lock(mLock);
             stopConnection();
         }
-        mThreadReceive.completionWait( Thread::WAIT_INFINITE );
-        mThreadSend.completionWait( Thread::WAIT_INFINITE );
-        mThreadReceive.destroyThread( Thread::DO_NOT_WAIT );
-        mThreadSend.destroyThread( Thread::DO_NOT_WAIT );
+        mThreadReceive.completionWait( NECommon::WAIT_INFINITE );
+        mThreadSend.completionWait( NECommon::WAIT_INFINITE );
+        mThreadReceive.destroyThread( NECommon::DO_NOT_WAIT );
+        mThreadSend.destroyThread( NECommon::DO_NOT_WAIT );
         break;
 
-    case ServerServiceEventData::CMD_ServiceReceivedMsg:
+    case ServerServiceEventData::eServerServiceCommands::CMD_ServiceReceivedMsg:
         {
             const RemoteMessage & msgReceived = data.getMessage();
             ASSERT( msgReceived.isValid() );
             NEService::eFuncIdRange msgId = static_cast<NEService::eFuncIdRange>( msgReceived.getMessageId() );
             ITEM_ID source= static_cast<ITEM_ID>(msgReceived.getSource());
 
-            TRACE_DBG("Processing received valid message [ %s ] ( ID = %p )from source [ %p ] to target [ %p ]"
+            TRACE_DBG("Processing received valid message [ %s ] of id [ 0x%X ] from source [ %u ] to target [ %u ]"
                             , NEService::getString(msgId)
-                            , static_cast<id_type>(msgId)
-                            , static_cast<id_type>(source)
-                            , static_cast<id_type>(msgReceived.getTarget()));
+                            , static_cast<uint32_t>(msgId)
+                            , static_cast<uint32_t>(source)
+                            , static_cast<uint32_t>(msgReceived.getTarget()));
 
             switch( msgId )
             {
-            case NEService::SI_ROUTER_REGISTER:
+            case NEService::eFuncIdRange::ServiceRouterRegister:
                 {
                     NEService::eServiceRequestType reqType;
                     msgReceived >> reqType;
                     TRACE_DBG("Routing service received registration request message [ %s ]", NEService::getString(reqType));
                     switch ( reqType )
                     {
-                    case NEService::SERVICE_REQUEST_REGISTER_STUB:
+                    case NEService::eServiceRequestType::RegisterStub:
                         {
                             StubAddress stubService(msgReceived);
                             stubService.setSource(source);
@@ -263,7 +262,7 @@ void ServerService::processEvent(const ServerServiceEventData & data)
                         }
                         break;
 
-                    case NEService::SERVICE_REQUEST_REGISTER_CLIENT:
+                    case NEService::eServiceRequestType::RegisterClient:
                         {
                             ProxyAddress proxyService(msgReceived);
                             proxyService.setSource(source);
@@ -271,7 +270,7 @@ void ServerService::processEvent(const ServerServiceEventData & data)
                         }
                         break;
 
-                    case NEService::SERVICE_REQUEST_UNREGISTER_STUB:
+                    case NEService::eServiceRequestType::UnregisterStub:
                         {
                             StubAddress stubService(msgReceived);
                             stubService.setSource(source);
@@ -279,7 +278,7 @@ void ServerService::processEvent(const ServerServiceEventData & data)
                         }
                         break;
 
-                    case NEService::SERVICE_REQUEST_UNREGISTER_CLIENT:
+                    case NEService::eServiceRequestType::UnregisterClient:
                         {
                             ProxyAddress proxyService(msgReceived);
                             proxyService.setSource(source);
@@ -294,7 +293,7 @@ void ServerService::processEvent(const ServerServiceEventData & data)
                 }
                 break;
 
-            case NEService::SI_ROUTER_DISCONNECT:
+            case NEService::eFuncIdRange::ServiceRouterDisconnect:
                 {
                     ITEM_ID cookie = NEService::COOKIE_UNKNOWN;
                     msgReceived >> cookie;
@@ -318,30 +317,34 @@ void ServerService::processEvent(const ServerServiceEventData & data)
                 }
                 break;
 
-            case NEService::SI_REGISTER_ID_LAST:            // fall through
-            case NEService::SI_ROUTER_QUERY:                // fall through
-            case NEService::SI_ROUTER_CONNECT:              // fall through
-            case NEService::SI_SERVICE_CONNECTION_REQUEST:  // fall through
-            case NEService::SI_NOTIFY_VERSION:              // fall through
-            case NEService::SI_REQUEST_VERSION:             // fall through
-            case NEService::SI_REGISTER_ID_FIRST:           // fall through
-            case NEService::COMPONENT_MAKE_CLEANUP:         // fall through
-            case NEService::SI_ROUTER_REGISTER_NOTIFY:      // fall through
-            case NEService::SI_ROUTER_NOTIFY:               // fall through
+            case NEService::eFuncIdRange::ServiceLastId:
+            case NEService::eFuncIdRange::ServiceRouterQuery:
+            case NEService::eFuncIdRange::ServiceRouterConnect:
+            case NEService::eFuncIdRange::ServiceRequestConnection:
+            case NEService::eFuncIdRange::ServiceNotifyVersion:
+            case NEService::eFuncIdRange::ServiceRequestVersion:
+            case NEService::eFuncIdRange::ServiceRequestRegister:
+            case NEService::eFuncIdRange::ComponentCleanup:
+            case NEService::eFuncIdRange::ServiceRouterNotifyRegister:
+            case NEService::eFuncIdRange::ServiceRouterNotify:
                 break;
 
-            case NEService::SI_SERVICE_CONNECTION_NOTIFY:   // fall through
-            case NEService::ATTRIBUTE_ID_LAST:              // fall through
-            case NEService::ATTRIBUTE_ID_FIRST:             // fall through
-            case NEService::RESPONSE_ID_LAST:               // fall through
-            case NEService::RESPONSE_ID_FIRST:              // fall through
-            case NEService::REQUEST_ID_LAST:                // fall through
-            case NEService::REQUEST_ID_FIRST:               // fall through
-            case NEService::EMPTY_FUNCTION_ID:              // fall through
+            case NEService::eFuncIdRange::ServiceNotifyConnection:
+            case NEService::eFuncIdRange::AttributeLastId:
+            case NEService::eFuncIdRange::AttributeFirstId:
+            case NEService::eFuncIdRange::ResponseLastId:
+            case NEService::eFuncIdRange::ResponseFirstId:
+            case NEService::eFuncIdRange::RequestLastId:
+            case NEService::eFuncIdRange::RequestFirstId:
+            case NEService::eFuncIdRange::EmptyFunctionId:
             default:
-                if ( NEService::isExecutableId(msgId) || NEService::isConnectNotifyId(msgId) )
+                if ( NEService::isExecutableId(static_cast<uint32_t>(msgId)) || NEService::isConnectNotifyId( static_cast<uint32_t>(msgId)) )
                 {
-                    TRACE_DBG("Message [ %u ] is executable, going to forward to target [ %u ], received from source [ %u ]", msgId, msgReceived.getTarget(), source);
+                    TRACE_DBG("Message [ %u ] is executable, going to forward to target [ %u ], received from source [ %u ]"
+                               , static_cast<uint32_t>(msgId)
+                               , msgReceived.getTarget()
+                               , source);
+                    
                     if ( msgReceived.getTarget() != NEService::TARGET_UNKNOWN )
                     {
                         SendMessageEvent::sendEvent( SendMessageEventData(msgReceived), static_cast<IESendMessageEventConsumer &>(mThreadSend), static_cast<DispatcherThread &>(mThreadSend));
@@ -349,36 +352,38 @@ void ServerService::processEvent(const ServerServiceEventData & data)
                 }
                 else
                 {
-                    TRACE_ERR("Message [ %u ] is not executable, ignoring to forward to target [ %p ] from source [ %p ]"
-                                    , msgId
-                                    , static_cast<id_type>(msgReceived.getTarget())
-                                    , static_cast<id_type>(source));
-                    ASSERT(false);  // do nothing
+                    TRACE_ERR("Message [ %u ] is not executable, ignoring to forward to target [ %u ] from source [ %u ]"
+                                    , static_cast<uint32_t>(msgId)
+                                    , static_cast<uint32_t>(msgReceived.getTarget())
+                                    , static_cast<uint32_t>(source));
+                    ASSERT(false);
                 }
                 break;
             }
         }
         break;
 
-    case ServerServiceEventData::CMD_ServiceSendMsg:
+    case ServerServiceEventData::eServerServiceCommands::CMD_ServiceSendMsg:
         {
             const RemoteMessage & msgSend = data.getMessage();
             NEService::eFuncIdRange msgId = static_cast<NEService::eFuncIdRange>( msgSend.getMessageId() );
-            TRACE_DBG("Sending message [ %s ] ( ID = %p ) is going to send to target [ %p ] from source [ %p ]"
+            TRACE_DBG("Sending message [ %s ] of id [ 0x%X ] is going to send to target [ %u ] from source [ %u ]"
                             , NEService::getString(msgId)
-                            , static_cast<id_type>(msgId)
-                            , static_cast<id_type>(msgSend.getTarget())
-                            , static_cast<id_type>(msgSend.getSource()));
+                            , static_cast<uint32_t>(msgId)
+                            , static_cast<uint32_t>(msgSend.getTarget())
+                            , static_cast<uint32_t>(msgSend.getSource()));
 
-            if ( NEService::isExecutableId(msgId) )
+            if ( NEService::isExecutableId( static_cast<uint32_t>(msgId)) )
             {
                 if ( msgSend.getTarget() != NEService::TARGET_UNKNOWN )
-                    SendMessageEvent::sendEvent( SendMessageEventData(msgSend), static_cast<IESendMessageEventConsumer &>(mThreadSend), static_cast<DispatcherThread &>(mThreadSend));
+                    SendMessageEvent::sendEvent( SendMessageEventData(msgSend)
+                                               , static_cast<IESendMessageEventConsumer &>(mThreadSend)
+                                               , static_cast<DispatcherThread &>(mThreadSend));
             }
             else
             {
-                TRACE_ERR("The message [ %u ] is neither executable, nor router notification. Ignoring sending message", msgId);
-                ASSERT(false); // do nothing
+                TRACE_ERR("The message [ %u ] is neither executable, nor router notification. Ignoring sending message", static_cast<uint32_t>(msgId));
+                ASSERT(false);
             }
         }
         break;
@@ -389,16 +394,10 @@ void ServerService::processEvent(const ServerServiceEventData & data)
     }
 }
 
-bool ServerService::canAcceptConnection(const NESocket::InterlockedValue & addrConnect) const
+bool ServerService::canAcceptConnection(const NESocket::SocketAddress & addrConnect) const
 {
     Lock lock(mLock);
-
-    bool result = true;
-    if ( mWhiteList.isEmpty() == false )
-        result = isAddressInWhiteList(addrConnect);
-    else if ( mBlackList.isEmpty() == false )
-        result = isAddressInBlackList(addrConnect) == false;
-    return result;
+    return (isAddressInBlackList( addrConnect ) == false);
 }
 
 bool ServerService::startConnection(void)
@@ -419,12 +418,12 @@ bool ServerService::startConnection(void)
 
     if ( mServerConnection.createSocket() )
     {
-        TRACE_DBG("Created socket [ %d ], going to create send-receive threads", mServerConnection.getSocketHandle());
+        TRACE_DBG("Created socket [ %d ], going to create send-receive threads", static_cast<uint32_t>(mServerConnection.getSocketHandle()));
 
-        if ( mThreadReceive.createThread( Thread::WAIT_INFINITE ) && mThreadSend.createThread( Thread::WAIT_INFINITE ) )
+        if ( mThreadReceive.createThread( NECommon::WAIT_INFINITE ) && mThreadSend.createThread( NECommon::WAIT_INFINITE ) )
         {
-            VERIFY( mThreadReceive.waitForDispatcherStart( IESynchObject::WAIT_INFINITE ) );
-            VERIFY( mThreadSend.waitForDispatcherStart( IESynchObject::WAIT_INFINITE ) );
+            VERIFY( mThreadReceive.waitForDispatcherStart( NECommon::WAIT_INFINITE ) );
+            VERIFY( mThreadSend.waitForDispatcherStart( NECommon::WAIT_INFINITE ) );
             result = true;
 
             TRACE_DBG("The threads are created. Ready to send-receive messages.");
@@ -455,20 +454,24 @@ void ServerService::stopConnection(void)
     TRACE_WARN("Stopping remote servicing connection");
 
     mThreadReceive.triggerExitEvent();
-    mThreadReceive.destroyThread( Thread::DO_NOT_WAIT );
+    mThreadReceive.destroyThread( NECommon::DO_NOT_WAIT );
 
     TEArrayList<StubAddress, const StubAddress &> stubList;
     TEArrayList<ProxyAddress, const ProxyAddress &> proxyList;
     getServiceList(NEService::COOKIE_ANY, stubList, proxyList);
 
     for ( int i = 0; i < stubList.getSize(); ++ i )
-        unregisterRemoteStub(stubList[i], NEService::COOKIE_ANY);
+    {
+        unregisterRemoteStub( stubList[i], NEService::COOKIE_ANY );
+    }
 
     for ( int i = 0; i < proxyList.getSize(); ++ i )
+    {
         unregisterRemoteProxy( proxyList[i], NEService::COOKIE_ANY );
+    }
 
     mThreadSend.triggerExitEvent();
-    mThreadSend.destroyThread( Thread::WAIT_INFINITE );
+    mThreadSend.destroyThread( NECommon::WAIT_INFINITE );
 
     mServerConnection.closeSocket();
 }
@@ -481,14 +484,14 @@ void ServerService::getServiceList(ITEM_ID cookie, TEArrayList<StubAddress, cons
 void ServerService::registerRemoteStub(const StubAddress & stub)
 {
     TRACE_SCOPE(mcrouter_tcp_private_ServerService_registerRemoteStub);
-    ASSERT(stub.isServiceRemote());
+    ASSERT(stub.isServicePublic());
 
     TRACE_DBG("Going to register remote stub [ %s ]", StubAddress::convAddressToPath(stub).getString());
-    if ( mServiceRegistry.getServiceStatus(stub) != NEService::ServiceConnected )
+    if ( mServiceRegistry.getServiceStatus(stub) != NEService::eServiceConnection::ServiceConnected )
     {
         ListServiceProxies listProxies;
         const ServiceStub & stubService = mServiceRegistry.registerServiceStub(stub, listProxies);
-        if ( stubService.getServiceStatus() == NEService::ServiceConnected && listProxies.isEmpty() == false )
+        if ( stubService.getServiceStatus() == NEService::eServiceConnection::ServiceConnected && listProxies.isEmpty() == false )
         {
             TRACE_DBG("Stub [ %s ] is connected, sending notification messages to [ %d ] waiting proxies"
                         , StubAddress::convAddressToPath(stubService.getServiceAddress()).getString()
@@ -496,38 +499,38 @@ void ServerService::registerRemoteStub(const StubAddress & stub)
             
             TEArrayList<ITEM_ID> sendList;
 
-            for ( LISTPOS pos = listProxies.firstPosition(); pos != NULL; pos = listProxies.nextPosition(pos) )
+            for ( LISTPOS pos = listProxies.firstPosition(); pos != nullptr; pos = listProxies.nextPosition(pos) )
             {
                 const ServiceProxy & proxyService = listProxies.getAt(pos);
                 const ProxyAddress & addrProxy    = proxyService.getServiceAddress();
-                if ( (proxyService.getServiceStatus() == NEService::ServiceConnected) && (addrProxy.getSource() != stub.getSource()) )
+                if ( (proxyService.getServiceStatus() == NEService::eServiceConnection::ServiceConnected) && (addrProxy.getSource() != stub.getSource()) )
                 {
                     RemoteMessage msgRegisterProxy = NEConnection::createServiceClientRegisteredNotification(addrProxy, stub.getSource());
                     SendMessageEvent::sendEvent( SendMessageEventData(msgRegisterProxy), static_cast<IESendMessageEventConsumer &>(mThreadSend), static_cast<DispatcherThread &>(mThreadSend));
-                    TRACE_DBG("Send to stub [ %s ] the proxy [ %s ] registration notification. Send message [ %s ] (ID = [ %u ] ) from source [ %u ] to target [ %u ]"
+                    TRACE_DBG("Send to stub [ %s ] the proxy [ %s ] registration notification. Send message [ %s ] of id [ 0x%X ] from source [ %u ] to target [ %u ]"
                                 , stub.convToString().getString()
                                 , addrProxy.convToString().getString()
                                 , NEService::getString( static_cast<NEService::eFuncIdRange>(msgRegisterProxy.getMessageId()))
-                                , static_cast<unsigned int>(msgRegisterProxy.getMessageId())
-                                , static_cast<unsigned int>(msgRegisterProxy.getSource())
-                                , static_cast<unsigned int>(msgRegisterProxy.getTarget()));
+                                , static_cast<uint32_t>(msgRegisterProxy.getMessageId())
+                                , static_cast<uint32_t>(msgRegisterProxy.getSource())
+                                , static_cast<uint32_t>(msgRegisterProxy.getTarget()));
 
                     if ( sendList.addUnique(addrProxy.getSource()) )
                     {
                         RemoteMessage msgRegisterStub  = NEConnection::createServiceRegisteredNotification(stub, addrProxy.getSource());
                         SendMessageEvent::sendEvent( SendMessageEventData(msgRegisterStub), static_cast<IESendMessageEventConsumer &>(mThreadSend), static_cast<DispatcherThread &>(mThreadSend));
-                        TRACE_DBG("Send to proxy [ %s ] the stub [ %s ] registration notification. Send message [ %s ] (ID = [ %u ] ) from source [ %u ] to target [ %u ]"
+                        TRACE_DBG("Send to proxy [ %s ] the stub [ %s ] registration notification. Send message [ %s ] of id [ 0x%X ] from source [ %u ] to target [ %u ]"
                                     , addrProxy.convToString().getString()
                                     , stub.convToString().getString()
                                     , NEService::getString( static_cast<NEService::eFuncIdRange>(msgRegisterStub.getMessageId()))
-                                    , static_cast<unsigned int>(msgRegisterStub.getMessageId())
-                                    , static_cast<unsigned int>(msgRegisterStub.getSource())
-                                    , static_cast<unsigned int>(msgRegisterStub.getTarget()));
+                                    , static_cast<uint32_t>(msgRegisterStub.getMessageId())
+                                    , static_cast<uint32_t>(msgRegisterStub.getSource())
+                                    , static_cast<uint32_t>(msgRegisterStub.getTarget()));
                     }
                     else
                     {
                         // ignore, it already has registered stub
-                        TRACE_DBG("Ignoring sending stub registration message to target [ %p ], target already notified", addrProxy.getSource());
+                        TRACE_DBG("Ignoring sending stub registration message to target [ %u ], target already notified", static_cast<uint32_t>(addrProxy.getSource()));
                     }
                 }
                 else
@@ -557,7 +560,7 @@ void ServerService::registerRemoteStub(const StubAddress & stub)
 void ServerService::registerRemoteProxy(const ProxyAddress & proxy)
 {
     TRACE_SCOPE(mcrouter_tcp_private_ServerService_registerRemoteProxy);
-    if ( mServiceRegistry.getServiceStatus(proxy) != NEService::ServiceConnected )
+    if ( mServiceRegistry.getServiceStatus(proxy) != NEService::eServiceConnection::ServiceConnected )
     {
         ServiceProxy proxyService;
         const ServiceStub & stubService   = mServiceRegistry.registerServiceProxy(proxy, proxyService);
@@ -568,27 +571,29 @@ void ServerService::registerRemoteProxy(const ProxyAddress & proxy)
                     , StubAddress::convAddressToPath(addrStub).getString()
                     , NEService::getString( proxyService.getServiceStatus()));
 
-        if ( (proxyService.getServiceStatus() == NEService::ServiceConnected) && (proxy.getSource() != addrStub.getSource()) )
+        if ( (proxyService.getServiceStatus() == NEService::eServiceConnection::ServiceConnected) && (proxy.getSource() != addrStub.getSource()) )
         {
             RemoteMessage msgRegisterProxy = NEConnection::createServiceClientRegisteredNotification(proxy, addrStub.getSource());
             SendMessageEvent::sendEvent( SendMessageEventData(msgRegisterProxy), static_cast<IESendMessageEventConsumer &>(mThreadSend), static_cast<DispatcherThread &>(mThreadSend));
-            TRACE_DBG("Send to stub [ %s ] the proxy [ %s ] registration notification. Send message [ %s ] (ID = [ %u ] ) from source [ %u ] to target [ %u ]"
+            
+            TRACE_DBG("Send to stub [ %s ] the proxy [ %s ] registration notification. Send message [ %s ] of id [ 0x%X ] from source [ %u ] to target [ %u ]"
                         , addrStub.convToString().getString()
                         , proxy.convToString().getString()
                         , NEService::getString( static_cast<NEService::eFuncIdRange>(msgRegisterProxy.getMessageId()))
-                        , static_cast<unsigned int>(msgRegisterProxy.getMessageId())
-                        , static_cast<unsigned int>(msgRegisterProxy.getSource())
-                        , static_cast<unsigned int>(msgRegisterProxy.getTarget()));
+                        , static_cast<uint32_t>(msgRegisterProxy.getMessageId())
+                        , static_cast<uint32_t>(msgRegisterProxy.getSource())
+                        , static_cast<uint32_t>(msgRegisterProxy.getTarget()));
 
             RemoteMessage msgRegisterStub  = NEConnection::createServiceRegisteredNotification(addrStub, proxy.getSource());
             SendMessageEvent::sendEvent( SendMessageEventData(msgRegisterStub), static_cast<IESendMessageEventConsumer &>(mThreadSend), static_cast<DispatcherThread &>(mThreadSend));
-            TRACE_DBG("Send to proxy [ %s ] the stub [ %s ] registration notification. Send message [ %s ] (ID = [ %u ] ) from source [ %u ] to target [ %u ]"
+            
+            TRACE_DBG("Send to proxy [ %s ] the stub [ %s ] registration notification. Send message [ %s ] of id [ 0x%X ] from source [ %u ] to target [ %u ]"
                         , proxy.convToString().getString()
                         , addrStub.convToString().getString()
                         , NEService::getString( static_cast<NEService::eFuncIdRange>(msgRegisterStub.getMessageId()))
-                        , static_cast<unsigned int>(msgRegisterStub.getMessageId())
-                        , static_cast<unsigned int>(msgRegisterStub.getSource())
-                        , static_cast<unsigned int>(msgRegisterStub.getTarget()));
+                        , static_cast<uint32_t>(msgRegisterStub.getMessageId())
+                        , static_cast<uint32_t>(msgRegisterStub.getSource())
+                        , static_cast<uint32_t>(msgRegisterStub.getTarget()));
         }
         else
         {
@@ -607,7 +612,7 @@ void ServerService::registerRemoteProxy(const ProxyAddress & proxy)
 void ServerService::unregisterRemoteStub(const StubAddress & stub, ITEM_ID cookie /*= NEService::COOKIE_ANY*/ )
 {
     TRACE_SCOPE(mcrouter_tcp_private_ServerService_unregisterRemoteStub);
-    if ( mServiceRegistry.getServiceStatus(stub) == NEService::ServiceConnected )
+    if ( mServiceRegistry.getServiceStatus(stub) == NEService::eServiceConnection::ServiceConnected )
     {
         ListServiceProxies listProxies;
         mServiceRegistry.unregisterServiceStub(stub, listProxies);
@@ -618,7 +623,7 @@ void ServerService::unregisterRemoteStub(const StubAddress & stub, ITEM_ID cooki
         TRACE_DBG("Filter sources [ %u ] of proxy list", static_cast<unsigned int>(cookie));
 
         TEArrayList<ITEM_ID> sendList;
-        for ( LISTPOS pos = listProxies.firstPosition(); pos != NULL; pos = listProxies.nextPosition(pos) )
+        for ( LISTPOS pos = listProxies.firstPosition(); pos != nullptr; pos = listProxies.nextPosition(pos) )
         {
             const ServiceProxy & proxyService = listProxies.getAt(pos);
             const ProxyAddress & addrProxy    = proxyService.getServiceAddress();
@@ -665,7 +670,7 @@ void ServerService::unregisterRemoteProxy(const ProxyAddress & proxy, ITEM_ID co
 
     RemoteMessage msgRegisterProxy;
     ServiceProxy svcProxy;
-    const ServiceStub * svcStub     = NULL;
+    const ServiceStub * svcStub     = nullptr;
     
     if (proxy.getSource() == cookie)
     {
@@ -676,10 +681,10 @@ void ServerService::unregisterRemoteProxy(const ProxyAddress & proxy, ITEM_ID co
         svcStub = &mServiceRegistry.disconnectProxy(proxy);
     }
 
-    ASSERT(svcStub != NULL);
+    ASSERT(svcStub != nullptr);
     const StubAddress & addrStub    = svcStub->getServiceAddress();
 
-    if ((svcStub->getServiceStatus() == NEService::ServiceConnected) && (proxy.getSource() != addrStub.getSource()))
+    if ((svcStub->getServiceStatus() == NEService::eServiceConnection::ServiceConnected) && (proxy.getSource() != addrStub.getSource()))
     {
         msgRegisterProxy = NEConnection::createServiceClientUnregisteredNotification(proxy, addrStub.getSource());
         SendMessageEvent::sendEvent( SendMessageEventData(msgRegisterProxy), static_cast<IESendMessageEventConsumer &>(mThreadSend), static_cast<DispatcherThread &>(mThreadSend));
@@ -715,9 +720,9 @@ void ServerService::failedSendMessage(const RemoteMessage & msgFailed)
     
     ITEM_ID cookie = msgFailed.getTarget();
     SocketAccepted client = mServerConnection.getClientByCookie( cookie );
-    TRACE_WARN("Failed to send message to [ %s ] client [ %p ], probably the connection is lost, closing connection"
+    TRACE_WARN("Failed to send message to [ %s ] client [ %d ], probably the connection is lost, closing connection"
                     , client.isValid() ? "VALID" : "INVALID"
-                    , client.getHandle());
+                    , static_cast<int32_t>(client.getHandle()));
     if (client.isValid())
     {
         connectionLost(client);
@@ -729,10 +734,10 @@ void ServerService::failedReceiveMessage(SOCKETHANDLE whichSource)
     TRACE_SCOPE(mcrouter_tcp_private_ServerService_failedReceiveMessage);
 
     SocketAccepted client = mServerConnection.getClientByHandle(whichSource);
-    TRACE_WARN("Failed to receive message from [ %s ] client [ %p ], probably the connection with socket [ %p ] is lost, closing connection"
+    TRACE_WARN("Failed to receive message from [ %s ] client [ %d ], probably the connection with socket [ %d ] is lost, closing connection"
                         , client.isValid() ? "VALID" : "INVALID"
-                        , client.getHandle()
-                        , whichSource);
+                        , static_cast<int32_t>(client.getHandle())
+                        , static_cast<int32_t>(whichSource));
 
     if (client.isValid())
     {
@@ -745,7 +750,7 @@ void ServerService::failedProcessMessage(const RemoteMessage & /* msgUnprocessed
 
 }
 
-void ServerService::processReceivedMessage(const RemoteMessage & msgReceived, const NESocket::InterlockedValue & addrHost, SOCKETHANDLE whichSource)
+void ServerService::processReceivedMessage(const RemoteMessage & msgReceived, const NESocket::SocketAddress & addrHost, SOCKETHANDLE whichSource)
 {
     TRACE_SCOPE(mcrouter_tcp_private_ServerService_processReceivedMessage);
     if ( msgReceived.isValid() )
@@ -755,55 +760,59 @@ void ServerService::processReceivedMessage(const RemoteMessage & msgReceived, co
         ITEM_ID target = static_cast<ITEM_ID>(msgReceived.getTarget());
         NEService::eFuncIdRange msgId  = static_cast<NEService::eFuncIdRange>( msgReceived.getMessageId() );
 
-        TRACE_DBG("Received message [ %s ] ( ID = %p ) from source [ %p ] ( connection cookie = %p ) of client host [ %s : %d ] for target [ %p ]"
+        TRACE_DBG("Received message [ %s ] of id [ 0x%X ] from source [ %u ] ( connection cookie = %u ) of client host [ %s : %d ] for target [ %u ]"
                         , NEService::getString(msgId)
-                        , static_cast<id_type>(msgId)
-                        , static_cast<id_type>(source)
-                        , static_cast<id_type>(cookie)
+                        , static_cast<uint32_t>(msgId)
+                        , static_cast<uint32_t>(source)
+                        , static_cast<uint32_t>(cookie)
                         , addrHost.getHostAddress().getString()
                         , static_cast<int>(addrHost.getHostPort())
                         , static_cast<id_type>(target));
 
-        if ( (source > NEService::COOKIE_ROUTER) && NEService::isExecutableId(msgId) )
+        if ( (source > NEService::COOKIE_ROUTER) && NEService::isExecutableId(static_cast<uint32_t>(msgId)) )
         {
-            TRACE_DBG("Forwarding message [ %p ] to send to target [ %p ]", static_cast<id_type>(msgId), static_cast<id_type>(target));
+            TRACE_DBG("Forwarding message [ 0x%X ] to send to target [ %u ]", static_cast<uint32_t>(msgId), static_cast<uint32_t>(target));
             if ( target != NEService::TARGET_UNKNOWN )
             {
                 SendMessageEvent::sendEvent( SendMessageEventData(msgReceived), static_cast<IESendMessageEventConsumer &>(mThreadSend), static_cast<DispatcherThread &>(mThreadSend));
             }
         }
-        else if ( (source == cookie) && (msgId != NEService::SI_ROUTER_CONNECT) )
+        else if ( (source == cookie) && (msgId != NEService::eFuncIdRange::ServiceRouterConnect) )
         {
-            TRACE_DBG("Going to process received message [ %p ]", static_cast<id_type>(msgId));
-            ServerServiceEvent::sendEvent( ServerServiceEventData(ServerServiceEventData::CMD_ServiceReceivedMsg, msgReceived), static_cast<IEServerServiceEventConsumer &>(self()), static_cast<DispatcherThread &>(self()) );
+            TRACE_DBG("Going to process received message [ 0x%X ]", static_cast<uint32_t>(msgId));
+            ServerServiceEvent::sendEvent( ServerServiceEventData( ServerServiceEventData::eServerServiceCommands::CMD_ServiceReceivedMsg
+                                                                 , msgReceived), static_cast<IEServerServiceEventConsumer &>(self())
+                                                                 , static_cast<DispatcherThread &>(self()) );
         }
-        else if ( (source == NEService::SOURCE_UNKNOWN) && (msgId == NEService::SI_ROUTER_CONNECT) )
+        else if ( (source == NEService::SOURCE_UNKNOWN) && (msgId == NEService::eFuncIdRange::ServiceRouterConnect) )
         {
             RemoteMessage msgConnect = NEConnection::createConnectNotify(cookie);
-            TRACE_DBG("Received request connect message, sending response [ %s ] ( ID = %p ), to new target [ %p ], connection socket [ %p ], checksum [ %u ]"
+            TRACE_DBG("Received request connect message, sending response [ %s ] of id [ 0x%X ], to new target [ %u ], connection socket [ %u ], checksum [ %u ]"
                         , NEService::getString( static_cast<NEService::eFuncIdRange>(msgConnect.getMessageId()))
-                        , static_cast<id_type>(msgConnect.getMessageId())
-                        , static_cast<id_type>(msgConnect.getTarget())
-                        , static_cast<id_type>(whichSource)
+                        , static_cast<uint32_t>(msgConnect.getMessageId())
+                        , static_cast<uint32_t>(msgConnect.getTarget())
+                        , static_cast<uint32_t>(whichSource)
                         , msgConnect.getChecksum());
 
             if ( msgConnect.isValid() )
             {
-                SendMessageEvent::sendEvent( msgConnect, static_cast<IESendMessageEventConsumer &>(mThreadSend), static_cast<DispatcherThread &>(mThreadSend));
+                SendMessageEvent::sendEvent( SendMessageEventData(msgConnect)
+                                           , static_cast<IESendMessageEventConsumer &>(mThreadSend)
+                                           , static_cast<DispatcherThread &>(mThreadSend));
             }
         }
         else
         {
-            TRACE_WARN("Ignoring to process message [ %s ] ( ID = %p ) from source [ %p ]"
+            TRACE_WARN("Ignoring to process message [ %s ] of id [ 0x%X ] from source [ %u ]"
                         , NEService::getString(msgId)
-                        , static_cast<id_type>(msgId)
-                        , static_cast<id_type>(source));
+                        , static_cast<uint32_t>(msgId)
+                        , static_cast<uint32_t>(source));
             ASSERT(false);
         }
     }
     else
     {
-        TRACE_WARN("Received invalid message from source [ %p ], ignoring to process", static_cast<id_type>(msgReceived.getSource()));
+        TRACE_WARN("Received invalid message from source [ %u ], ignoring to process", static_cast<uint32_t>(msgReceived.getSource()));
     }
 }
 

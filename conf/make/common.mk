@@ -8,20 +8,20 @@ AREG_AR         = $(CrossCompile)ar
 AREG_OS         = $(OpSystem)
 AREG_STATIC_LIB =
 
-ifeq ($(areg), shared)
-AREG_BINARY = shared
-else
-AREG_BINARY = static
-endif
-
 include $(MAKEFILE_CONFIG_DIR)/user.mk
 
-CXXFLAGS := -g -pthread -std=c++11
+ifeq ($(areg), static)
+AREG_BINARY = static
+else
+AREG_BINARY = shared
+endif
+
+CXXFLAGS := -g -pthread -std=c++17
 LDFLAGS  := -lm -lstdc++ -lrt -pthread
 
 #TODO fix the warnings reported by clang first
-ifeq ($(Toolset), clang)
-CXXFLAGS += -Werror $(UserDefines)
+ifeq ($(findstring clang,$(Toolset)),clang)
+CXXFLAGS += -Werror $(UserDefines) -stdlib=libc++
 else
 CXXFLAGS += -Wall -Werror $(UserDefines)
 endif
@@ -69,10 +69,25 @@ endif
 endif
 
 define AREG_HELP_MSG
-Usage:
-	A placeholder for help message
+Usage: make [target] [areg=<static|shared>] [Config=<Release|Debug>] [Toolset=<toolset>] [CrossCompile=<cross-toolchain>] ...
+    target:
+        all:            Build all the project. This is the default target.
+        framework:      Build areg framework including areg library and mcrouter.
+        examples:       Build areg library and examples.
+        clean:          Clean build directory
+        help:           Show this help message
+
+    options:
+        areg:           Areg library type (shared or static). Default is shared.
+        Config:         Release or Debug build.
+        Toolset:        compiler to use, current supported ones is g++/gcc/clang. Default is g++.
+        CrossCompile:   Cross compiler prefix. I.e: use arm-linux-gnueabihf- for arm32
+        bit:            bitness of the target binary, supported for x86_64's compilers only for now.
+
+    More options can be set directly in conf/make/user.mk
 endef
 export AREG_HELP_MSG
+
 help:
 	@echo "$$AREG_HELP_MSG"
 
@@ -82,7 +97,7 @@ define obj
 $(2)/$(patsubst %.cpp,%.$(OBJ_EXT), $(notdir $(1))): ${1}
 	@echo Compiling $$@
 	@mkdir -p $(2)
-	$(AREG_TOOLCHAIN) -c $(CXXFLAGS) ${4} $(AREG_INCLUDES) $$< -o $$@
+	$(AREG_TOOLCHAIN) -c $(CXXFLAGS) ${4} $(AREG_INCLUDES) -MMD $$< -o $$@
 
 # add to list of objects
 ${3} += $(2)/$(patsubst %.cpp,%.$(OBJ_EXT), $(notdir $(1)))

@@ -1,7 +1,15 @@
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/base/File.cpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, File object
  *              common parts
  ************************************************************************/
@@ -15,23 +23,11 @@
 #include "areg/base/DateTime.hpp"
 #include "areg/base/NEUtilities.hpp"
 #include "areg/base/NEString.hpp"
-#include "areg/base/EContainers.hpp"
+#include "areg/base/Containers.hpp"
 
 //////////////////////////////////////////////////////////////////////////
 // File class implementation
 //////////////////////////////////////////////////////////////////////////
-
-//////////////////////////////////////////////////////////////////////////
-// defined constants
-//////////////////////////////////////////////////////////////////////////
-const char * const  File::SPEACIAL_MASKS[]      = {"%home%", "%personal", "%appdata%", "%temp%"};
-const int           File::LEN_SPECIAL_MASKS     = MACRO_ARRAYLEN(SPEACIAL_MASKS);
-const char * const  File::TEMP_FILE_PREFIX      = "_areg";
-const char          File::EXTENSION_SEPARATOR   = '.';
-const char          File::UNIX_SEPARATOR        = '/';
-const char          File::DOS_SEPARATOR         = '\\';
-const char          File::DIR_CURRENT[]         = {'.', '\0'};
-const char          File::DIR_PARENT[]          = {'.', '.', '\0'};
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / destructor
@@ -40,7 +36,6 @@ File::File( void )
     : FileBase    ( )
     , mFileHandle   (File::INVALID_HANDLE)
 {
-    ; // do nothing
 }
 
 File::File(const char* fileName, unsigned int mode /* = (FileBase::FO_MODE_WRITE | FileBase::FO_MODE_BINARY) */)
@@ -120,7 +115,7 @@ bool File::remove( void )
 
     mFileHandle = File::INVALID_HANDLE;
     mFileMode   = FileBase::FO_MODE_INVALID;
-    mFileName   = String::EmptyString;
+    mFileName   = String::EmptyString.data();
 
     return result;
 }
@@ -164,10 +159,10 @@ inline bool File::_nameHasParentFolder(const char * filePath, bool skipSep)
 
 String File::genTempFileName()
 {
-    return genTempFileName(NULL, true, true);
+    return genTempFileName(nullptr, true, true);
 }
 
-const char * File::getExecutableDir(void)
+const String & File::getExecutableDir(void)
 {
     return Process::getInstance().getPath();
 }
@@ -180,8 +175,8 @@ String File::getFileNameWithExtension( const char* filePath )
         int len = NEString::getStringLength<char>(filePath);
         if (filePath[len - 1] != File::PATH_SEPARATOR)
         {
-            NEString::CharPos pos = NEString::findLastOf<char>(File::PATH_SEPARATOR, filePath, NEString::EndPos, NULL);
-            if (pos != NEString::InvalidPos)
+            NEString::CharPos pos = NEString::findLastOf<char>(File::PATH_SEPARATOR, filePath, NEString::END_POS, nullptr);
+            if (pos != NEString::INVALID_POS)
                 result = filePath + pos + 1;
         }
     }
@@ -193,8 +188,8 @@ String File::getFileName( const char* filePath )
 {
     String result;
     String fileName = File::getFileNameWithExtension(filePath);
-    NEString::CharPos pos = fileName.findLastOf(File::EXTENSION_SEPARATOR, NEString::EndPos, true);
-    if (pos != NEString::InvalidPos && NEString::isAlphanumeric<char>(fileName.getAt(pos + 1)) )
+    NEString::CharPos pos = fileName.findLastOf(File::EXTENSION_SEPARATOR, NEString::END_POS, true);
+    if (pos != NEString::INVALID_POS && NEString::isAlphanumeric<char>(fileName.getAt(pos + 1)) )
     {
         result = fileName.substring( 0, pos );
     }
@@ -206,10 +201,10 @@ String File::getFileExtension( const char* filePath )
 {
     String result;
     String fileName = File::getFileNameWithExtension(filePath);
-    NEString::CharPos pos = fileName.findLastOf(File::EXTENSION_SEPARATOR, NEString::EndPos, true);
-    if (pos != NEString::InvalidPos && NEString::isAlphanumeric<char>(fileName.getAt(pos + 1)) )
+    NEString::CharPos pos = fileName.findLastOf(File::EXTENSION_SEPARATOR, NEString::END_POS, true);
+    if (pos != NEString::INVALID_POS && NEString::isAlphanumeric<char>(fileName.getAt(pos + 1)) )
     {
-        result = fileName.substring( pos, NEString::CountAll );
+        result = fileName.substring( pos, NEString::COUNT_ALL );
     }
 
     return result;
@@ -217,8 +212,8 @@ String File::getFileExtension( const char* filePath )
 
 String File::getFileDirectory(const char* filePath)
 {
-    NEString::CharPos pos = NEString::isEmpty<char>(filePath) ? NEString::InvalidPos : NEString::findLastOf<char>(File::PATH_SEPARATOR, filePath, NEString::EndPos, NULL);
-    return (pos > 0 ? String(filePath, pos) : String(String::EmptyString));
+    NEString::CharPos pos = NEString::isEmpty<char>(filePath) ? NEString::INVALID_POS : NEString::findLastOf<char>(File::PATH_SEPARATOR, filePath, NEString::END_POS, nullptr);
+    return (pos > 0 ? String(filePath, pos) : String(String::EmptyString.data(), 0));
 }
 
 bool File::createDirCascaded( const char* dirPath )
@@ -227,7 +222,7 @@ bool File::createDirCascaded( const char* dirPath )
     if ( NEString::isEmpty<char>(dirPath) == false )
     {
         char * buffer = DEBUG_NEW char[ static_cast<unsigned int>(File::MAXIMUM_PATH + 1) ];
-        if ( buffer != NULL )
+        if ( buffer != nullptr )
         {
             const char * src    = dirPath;
             char *       dst    = buffer;
@@ -264,7 +259,7 @@ String File::normalizePath( const char * fileName )
     
     String result;
     StringList list;
-    if (fileName != NULL)
+    if (fileName != nullptr)
     {
         if ( File::_nameHasCurrentFolder(fileName, false) || _nameHasParentFolder(fileName, false) )
         {
@@ -278,7 +273,7 @@ String File::normalizePath( const char * fileName )
         {
             for ( int i = 0; i < File::LEN_SPECIAL_MASKS; ++ i )
             {
-                if (NEString::stringStartsWith<char>(fileName, SPEACIAL_MASKS[i], false))
+                if (NEString::stringStartsWith<char>(fileName, SPEACIAL_MASKS[i].data(), false))
                 {
                     String special = File::getSpecialDir(static_cast<File::eSpecialFolder>(i));
                     File::splitPath(special.getString(), list);
@@ -300,7 +295,7 @@ String File::normalizePath( const char * fileName )
     File::splitPath(fileName, list);
 
     bool isInvalid  = false;
-    for (LISTPOS pos = list.firstPosition(); pos != NULL; )
+    for (LISTPOS pos = list.firstPosition(); pos != nullptr; )
     {
         const String & node = list.getAt(pos);
         if (File::_nameHasParentFolder(node, true))
@@ -308,7 +303,7 @@ String File::normalizePath( const char * fileName )
             LISTPOS next = list.nextPosition(pos);
             LISTPOS prev = list.prevPosition(pos);
             list.removeAt(pos);
-            if (prev != NULL)
+            if (prev != nullptr)
             {
                 list.removeAt(prev);
             }
@@ -346,7 +341,7 @@ String File::normalizePath( const char * fileName )
 #endif // !WINDOWS
 
     result += first;
-    for (LISTPOS pos = list.firstPosition(); pos != NULL; pos = list.nextPosition(pos))
+    for (LISTPOS pos = list.firstPosition(); pos != nullptr; pos = list.nextPosition(pos))
     {
         result += File::PATH_SEPARATOR;
         result += list.getAt(pos);
@@ -357,16 +352,16 @@ String File::normalizePath( const char * fileName )
     return result;
 }
 
-bool File::findParent(const char * filePath, const char ** nextPos, const char * lastPos /*= NULL*/)
+bool File::findParent(const char * filePath, const char ** nextPos, const char * lastPos /*= nullptr*/)
 {
     bool result = false;
     if ( NEString::isEmpty<char>(filePath) == false)
     {
         int length = 0;
-        if (nextPos != NULL)
-            *nextPos = NULL;
+        if (nextPos != nullptr)
+            *nextPos = nullptr;
         
-        if (lastPos != NULL)
+        if (lastPos != nullptr)
         {
             length = lastPos == filePath ? 0 : static_cast<int>(lastPos - filePath - 1);
         }
@@ -379,11 +374,11 @@ bool File::findParent(const char * filePath, const char ** nextPos, const char *
 
         if (length != 0)
         {
-            int pos = NEString::findLastOf(File::PATH_SEPARATOR, filePath, NEString::EndPos, nextPos);
+            int pos = NEString::findLastOf(File::PATH_SEPARATOR, filePath, NEString::END_POS, nextPos);
             if ((pos > 0) && (pos < length))
             {
                 result = true;
-                if (nextPos != NULL)
+                if (nextPos != nullptr)
                     *nextPos = filePath + pos;
             }
         }
@@ -395,7 +390,7 @@ bool File::findParent(const char * filePath, const char ** nextPos, const char *
 String File::getParentDir(const char * filePath)
 {
     String result;
-    const char * end = NULL;
+    const char * end = nullptr;
     if (File::findParent(filePath, &end))
     {
         result.copy(filePath, static_cast<NEString::CharCount>(end - filePath));

@@ -4,14 +4,14 @@
 
 /************************************************************************
  * (c) copyright    2021
+ *
+ * Generated at     30.09.2021  01:22:12 GMT+02:00 
  *                  Create by AREG SDK code generator tool from source CentralMessager.
- * Generated at     04.07.2021  04:29:59 GMT+02:00 
- ************************************************************************/
-
-/************************************************************************
- * \file            generated/private/CentralMessagerProxy.cpp
+ *
+ * \file            generated/private/CentralMessagerProxy.hpp
  * \ingroup         CentralMessager Service Interface
- * \brief           This is an automatic generated code of CentralMessager Service Interface Proxy class implementation.
+ * \brief           This is an automatic generated code of CentralMessager
+ *                  Service Interface Proxy class implementation.
  ************************************************************************/
 
 /************************************************************************
@@ -32,12 +32,6 @@ IMPLEMENT_RUNTIME_EVENT(CentralMessagerProxy::CentralMessagerServiceAvailableEve
 CentralMessagerProxy::CentralMessagerServiceAvailableEvent::CentralMessagerServiceAvailableEvent( IENotificationEventConsumer & consumer )
     : ProxyBase::ServiceAvailableEvent  ( consumer )
 {
-    ; // do nothing
-}
-
-CentralMessagerProxy::CentralMessagerServiceAvailableEvent::~CentralMessagerServiceAvailableEvent( void )
-{
-    ; // do nothing
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -48,7 +42,7 @@ CentralMessagerProxy::CentralMessagerServiceAvailableEvent::~CentralMessagerServ
 // static function implementation
 //////////////////////////////////////////////////////////////////////////
 
-ProxyBase * CentralMessagerProxy::_createProxy( const char * roleName, DispatcherThread * ownerThread /*= static_cast<DispatcherThread *>(NULL)*/ )
+ProxyBase * CentralMessagerProxy::_createProxy( const char * roleName, DispatcherThread * ownerThread /*= nullptr*/ )
 {
     return DEBUG_NEW CentralMessagerProxy(roleName, ownerThread);
 }
@@ -62,7 +56,7 @@ CentralMessagerProxy * CentralMessagerProxy::createProxy( const char * roleName,
                                                                       , ownerThread) );
 }
 
-CentralMessagerProxy * CentralMessagerProxy::createProxy( const char * roleName, IEProxyListener & connectListener, const char * ownerThread /*= static_cast<const char *>(NULL)*/ )
+CentralMessagerProxy * CentralMessagerProxy::createProxy( const char * roleName, IEProxyListener & connectListener, const char * ownerThread /*= nullptr*/ )
 {
     return static_cast<CentralMessagerProxy *>(ProxyBase::findOrCreateProxy( roleName
                                                                       , NECentralMessager::getInterfaceData()
@@ -74,7 +68,7 @@ CentralMessagerProxy * CentralMessagerProxy::createProxy( const char * roleName,
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
-CentralMessagerProxy::CentralMessagerProxy( const char * roleName, DispatcherThread * ownerThread /*= static_cast<DispatcherThread *>(NULL)*/ )
+CentralMessagerProxy::CentralMessagerProxy( const char * roleName, DispatcherThread * ownerThread /*= nullptr*/ )
     : ProxyBase(roleName, NECentralMessager::getInterfaceData(), ownerThread)
 
 /************************************************************************
@@ -90,12 +84,10 @@ CentralMessagerProxy::CentralMessagerProxy( const char * roleName, DispatcherThr
     , mParamdateTime      (  )
     , mParamserverMessage (  )
 {
-    ; // do nothing
 }
 
 CentralMessagerProxy::~CentralMessagerProxy( void )
 {
-    ; // do nothing
 }
 
 /************************************************************************
@@ -151,24 +143,24 @@ void CentralMessagerProxy::unregisterServiceListeners( void )
  
 void CentralMessagerProxy::requestSendMessage( const String & nickName, unsigned int cookie, const String & newMessage, const DateTime & dateTime )
 {
-    static const NECentralMessager::eMessageIDs msgId = NECentralMessager::MSG_ID_requestSendMessage;
-    EventDataStream args(EventDataStream::EventDataExternal);
+    static const NECentralMessager::eMessageIDs msgId = NECentralMessager::eMessageIDs::MsgId_requestSendMessage;
+    EventDataStream args(EventDataStream::eEventData::EventDataExternal);
     IEOutStream & stream = args.getStreamForWrite();
     stream << nickName;
     stream << cookie;
     stream << newMessage;
     stream << dateTime;
-    sendRequestEvent( static_cast<unsigned int>(msgId), args, NULL );
+    sendRequestEvent( static_cast<unsigned int>(msgId), args, nullptr );
 }
 void CentralMessagerProxy::requestKeyTyping( const String & nickName, unsigned int cookie, const String & newMessage )
 {
-    static const NECentralMessager::eMessageIDs msgId = NECentralMessager::MSG_ID_requestKeyTyping;
-    EventDataStream args(EventDataStream::EventDataExternal);
+    static const NECentralMessager::eMessageIDs msgId = NECentralMessager::eMessageIDs::MsgId_requestKeyTyping;
+    EventDataStream args(EventDataStream::eEventData::EventDataExternal);
     IEOutStream & stream = args.getStreamForWrite();
     stream << nickName;
     stream << cookie;
     stream << newMessage;
-    sendRequestEvent( static_cast<unsigned int>(msgId), args, NULL );
+    sendRequestEvent( static_cast<unsigned int>(msgId), args, nullptr );
 }
 /************************************************************************
  * Event processing.
@@ -181,7 +173,7 @@ void CentralMessagerProxy::requestKeyTyping( const String & nickName, unsigned i
 void CentralMessagerProxy::processResponseEvent( ServiceResponseEvent & eventElem )
 {
     CentralMessagerResponseEvent * eventResp = RUNTIME_CAST( &eventElem, CentralMessagerResponseEvent );
-    if (eventResp != NULL)
+    if (eventResp != nullptr)
         processResponse( *eventResp );
     else
         processProxyEvent( eventElem );
@@ -190,7 +182,7 @@ void CentralMessagerProxy::processResponseEvent( ServiceResponseEvent & eventEle
 void CentralMessagerProxy::processAttributeEvent( ServiceResponseEvent & eventElem )
 {
     CentralMessagerResponseEvent * eventResp = RUNTIME_CAST( &eventElem, CentralMessagerResponseEvent );
-    if (eventResp != NULL)
+    if (eventResp != nullptr)
         processResponse( *eventResp );
     else
         processProxyEvent( eventElem );
@@ -200,7 +192,7 @@ void CentralMessagerProxy::processAttributeEvent( ServiceResponseEvent & eventEl
  * Internal helper functions.
  ************************************************************************/
 
-DEF_TRACE_SCOPE(GENERATED_private_CentralMessagerProxy_updateData);
+DEF_TRACE_SCOPE(generated_private_CentralMessagerProxy_updateData);
 void CentralMessagerProxy::updateData( CentralMessagerResponseEvent & eventElem, NECentralMessager::eMessageIDs respId )
 {
     const IEInStream & stream = static_cast<const CentralMessagerResponseEvent &>(eventElem).getData().getReadStream();
@@ -213,20 +205,20 @@ void CentralMessagerProxy::updateData( CentralMessagerResponseEvent & eventElem,
     /************************************************************************
      * Update Broadcast parameters
      ************************************************************************/
-    case NECentralMessager::MSG_ID_broadcastSendMessage:
+    case NECentralMessager::eMessageIDs::MsgId_broadcastSendMessage:
         stream >> mParamnickName;
         stream >> mParamcookie;
         stream >> mParamnewMessage;
         stream >> mParamdateTime;
         break;
 
-    case NECentralMessager::MSG_ID_broadcastKeyTyping:
+    case NECentralMessager::eMessageIDs::MsgId_broadcastKeyTyping:
         stream >> mParamnickName;
         stream >> mParamcookie;
         stream >> mParamnewMessage;
         break;
 
-    case NECentralMessager::MSG_ID_broadcastBroadcastMessage:
+    case NECentralMessager::eMessageIDs::MsgId_broadcastBroadcastMessage:
         stream >> mParamserverMessage;
         stream >> mParamdateTime;
         break;
@@ -236,7 +228,7 @@ void CentralMessagerProxy::updateData( CentralMessagerResponseEvent & eventElem,
      ************************************************************************/
     default:
         {
-            TRACE_SCOPE(GENERATED_private_CentralMessagerProxy_updateData);
+            TRACE_SCOPE(generated_private_CentralMessagerProxy_updateData);
             TRACE_ERR("Unexpected response message ID [ %d ] received in proxy [ %s ]!"
                         , static_cast<int>(respId)
                         , ProxyAddress::convAddressToPath(getProxyAddress()).getString());
@@ -256,25 +248,28 @@ void CentralMessagerProxy::processResponse( CentralMessagerResponseEvent & evenE
 
     switch (resultType)
     {
-    case NEService::RESULT_DATA_INVALID:
-    case NEService::RESULT_INVALID:
+    case NEService::eResultType::DataInvalid:   // fall through
+    case NEService::eResultType::RequestInvalid:
         break;  // do nothing
 
-    case NEService::RESULT_REQUEST_ERROR:
-    case NEService::RESULT_REQUEST_BUSY:
-    case NEService::RESULT_REQUEST_CANCELED:
-        respId      = static_cast<NECentralMessager::eMessageIDs>( mProxyData.getResponseId(static_cast<unsigned int>(respId)) );
-        setStates   = respId != NECentralMessager::MSG_ID_NO_PROCEED;
+    case NEService::eResultType::RequestError:  // fall through
+    case NEService::eResultType::RequestBusy:   // fall through
+    case NEService::eResultType::RequestCanceled:
+        respId      = static_cast<NECentralMessager::eMessageIDs>( mProxyData.getResponseId(static_cast<msg_id>(respId)) );
+        setStates   = respId != NECentralMessager::eMessageIDs::MsgId_NotProcessed;
         break;
 
-    case NEService::RESULT_MESSAGE_UNDELIVERED:
-        if ( NEService::isRequestId(respId) )
-            respId  = static_cast<NECentralMessager::eMessageIDs>( mProxyData.getResponseId(static_cast<unsigned int>(respId)) );
-        setStates   = respId != NECentralMessager::MSG_ID_NO_PROCEED;            
+    case NEService::eResultType::MessageUndelivered:
+        if ( NEService::isRequestId( static_cast<msg_id>(respId) ) )
+        {
+            respId  = static_cast<NECentralMessager::eMessageIDs>( mProxyData.getResponseId(static_cast<msg_id>(respId)) );
+        }
+        
+        setStates   = respId != NECentralMessager::eMessageIDs::MsgId_NotProcessed;            
         break;
 
-    case NEService::RESULT_OK:
-    case NEService::RESULT_DATA_OK:
+    case NEService::eResultType::RequestOK:     // fall through
+    case NEService::eResultType::DataOK:
         dataValid   = true;
         break;
 
@@ -284,11 +279,16 @@ void CentralMessagerProxy::processResponse( CentralMessagerResponseEvent & evenE
     }
 
     if (dataValid == true)
+    {
         updateData(evenElem, respId);
+    }
+       
     if (setStates == true)
-        setState(static_cast<unsigned int>(respId), dataValid ? NEService::DATA_OK : NEService::DATA_INVALID);
-
-    notifyListeners(static_cast<unsigned int>(respId), resultType, evenElem.getSequenceNumber());
+    {
+        setState(static_cast<msg_id>(respId), dataValid ? NEService::eDataStateType::DataIsOK : NEService::eDataStateType::DataIsInvalid);
+    }
+    
+    notifyListeners(static_cast<msg_id>(respId), resultType, evenElem.getSequenceNumber());
 }
 
 //////////////////////////////////////////////////////////////////////////

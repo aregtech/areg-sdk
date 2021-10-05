@@ -108,8 +108,8 @@ void DirectMessagingClient::broadcastChatClosed( void )
 
 void DirectMessagingClient::updateChatOutput( const NEDistributedApp::eWndCommands cmdSend, const NEDirectMessager::sParticipant & participant, const String & msgText, const DateTime & dateStart, const DateTime & dateEnd )
 {
-    NECommon::sMessageData * data = new NECommon::sMessageData;
-    if ( data != NULL )
+    NECommon::sMessageData * data = NECommon::newData( );
+    if ( data != nullptr )
     {
         String nickName;
         if ( mParticipantsHandler.GetConnectionOwner() == participant )

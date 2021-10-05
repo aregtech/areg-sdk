@@ -1,9 +1,16 @@
-#ifndef AREG_COMPONENT_IEREMOTEEVENTCONSUMER_HPP
-#define AREG_COMPONENT_IEREMOTEEVENTCONSUMER_HPP
+#pragma once
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/component/IERemoteEventConsumer.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, Remote Event consumer to dispatch remote events.
  *
  ************************************************************************/
@@ -34,11 +41,11 @@ protected:
     /**
      * \brief   Default constructor. Protected
      **/
-    IERemoteEventConsumer( void );
+    IERemoteEventConsumer( void ) = default;
     /**
      * \brief   Destructor.
      **/
-    virtual ~IERemoteEventConsumer( void );
+    virtual ~IERemoteEventConsumer( void ) = default;
 
 public:
 /************************************************************************/
@@ -83,14 +90,11 @@ private:
      *                      processing. As soon as event is finished processing
      *                      it will be destroyed.
      **/
-    virtual void startEventProcessing( Event & eventElem ) ;
+    virtual void startEventProcessing( Event & eventElem ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    IERemoteEventConsumer( const IERemoteEventConsumer & /*src*/ );
-    const IERemoteEventConsumer & operator = ( const IERemoteEventConsumer & /*src*/ );
+    DECLARE_NOCOPY_NOMOVE( IERemoteEventConsumer );
 };
-
-#endif  // AREG_COMPONENT_IEREMOTEEVENTCONSUMER_HPP

@@ -3,8 +3,7 @@
 // Begin generate TrafficLightFSM.hpp file
 //////////////////////////////////////////////////////////////////////////
 
-#ifndef  GENERATED_SRC_PRIVATE_TRAFFICLIGHTFSM_HPP
-#define  GENERATED_SRC_PRIVATE_TRAFFICLIGHTFSM_HPP
+#pragma once
 
 /************************************************************************
  * (c) copyright    2021
@@ -113,7 +112,7 @@ public:
      * \brief   Initialize State Machine. Call before calling any trigger.
      * \param   masterThread    The pointer of master thread to process internal events and timers.
      **/
-    void initFSM( DispatcherThread * masterThread = NULL );
+    void initFSM( DispatcherThread * masterThread = nullptr );
 
     /**
      * \brief   Release State Machine. Call when complete working with FSM.
@@ -188,7 +187,7 @@ protected:
      * \brief   Process State Machine timers
      * \remark  The method is not thread safe.
      **/
-    virtual void processTimer( Timer & timer );
+    virtual void processTimer( Timer & timer ) override;
     
 private:
 /************************************************************************/
@@ -268,7 +267,7 @@ protected:
      * \param   data    The Event Data object passed to event when fired.
      * \remark  The method is not thread safe.
      **/
-    virtual void processEvent( const NETrafficLightFSM::FsmEventData & data );
+    virtual void processEvent( const NETrafficLightFSM::FsmEventData & data ) override;
 
 private:
 /************************************************************************/
@@ -338,7 +337,7 @@ private:
     const char * const          mInstanceName;    
    
     /**
-     * \brief   The master thread where event and timers should be processed. If NULL, the current dispatcher value will be used
+     * \brief   The master thread where event and timers should be processed. If nullptr, the current dispatcher value will be used
      **/
     DispatcherThread *          mMasterThread;
     /**
@@ -424,7 +423,7 @@ inline const bool TrafficLightFSM::isTimerActive( const NETrafficLightFSM::eFsmT
  **/
 inline void TrafficLightFSM::sendEvent( const NETrafficLightFSM::eFsmEventValue & eventValue )
 {
-    if (mMasterThread != NULL)
+    if (mMasterThread != nullptr )
         NETrafficLightFSM::FsmEvent::sendEvent(NETrafficLightFSM::FsmEventData( eventValue ), static_cast<NETrafficLightFSM::IEFsmEventConsumer &>(self()), *mMasterThread);
     else
         NETrafficLightFSM::FsmEvent::sendEvent(NETrafficLightFSM::FsmEventData( eventValue ), static_cast<NETrafficLightFSM::IEFsmEventConsumer &>(self()));
@@ -482,8 +481,6 @@ inline  const char* const TrafficLightFSM::getString( const TrafficLightFSM::eSt
 
    }
 }
-
-#endif  // GENERATED_SRC_PRIVATE_TRAFFICLIGHTFSM_HPP
 
 //////////////////////////////////////////////////////////////////////////
 // End generate TrafficLightFSM.hpp file

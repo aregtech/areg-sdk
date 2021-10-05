@@ -1,12 +1,17 @@
-#ifndef AREG_BASE_IETHREADCONSUMER_HPP
-#define AREG_BASE_IETHREADCONSUMER_HPP
+#pragma once
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/base/IEThreadConsumer.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, Thread Consumer interface class.
- *              Implement methods to be able to be triggered by
- *              thread class on certain events.
  *
  ************************************************************************/
 /************************************************************************
@@ -23,26 +28,14 @@ class Thread;
 // IEThreadConsumer class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief       The Thread Consumer class required by Thread object
- *              to trigger functions on certain events. The reference
- *              to object should be passed to Thread object. Every
- *              thread object has one thread consumer.
- * 
- * \details     There is no need to re-implement running and exit functions
- *              in thread class. Instead, the Consumer class can be created
- *              and the thread object will trigger functions by reaching
- *              certain stage. For example, when Thread object is created
- *              it will trigger Created() method of consumer and when
- *              it is resumed and running, it will trigger Run() function
- *              of consumer. Developers need to implement pure virtual
- *              methods to react on certain events of thread.
- *              As soon as Consumer exits Run() function, the thread
- *              will exit. If thread needs to run in loop, implement
- *              loop mechanism in Run() method as well as implement
- *              mechanism to exit from loop. The trigger to notify
- *              system requirement to exit thread is a call of
- *              Destroying() method.
- *
+ * \brief   The Thread Consumer class is required by Thread object
+ *          to trigger functions on certain events. For example,
+ *          when the system thread is created and registered in the
+ *          the system, the consumer gets notification onThreadRegistered(),
+ *          when thread is ready for cyclic run, onRun() method
+ *          of the consumer is triggered. All functionalities of the
+ *          thread should be written in the consumer object.
+ *          For more details see description of the methods.
  **/
 class AREG_API IEThreadConsumer
 {
@@ -54,12 +47,12 @@ public:
      * \brief   IEThreadConsumer::eExitCodes
      *          Defines thread exit codes.
      **/
-    typedef enum E_ExitCodes
+    typedef enum class E_ExitCodes  : int8_t
     {
-          EXIT_NO_PARAM     = -2    //!< Thread failed running, it had no parameter
-        , EXIT_TERMINATED   = -1    //!< Thread is abnormally terminated
-        , EXIT_NORMAL       = 0     //!< Thread normally completed execution
-        , EXIT_ERROR                //!< Thread exits with generic error
+          ExitNoParam       = -2    //!< Thread failed running, it had no parameter
+        , ExitTerminated    = -1    //!< Thread is abnormally terminated
+        , ExitNormal        =  0    //!< Thread normally completed execution
+        , ExitError         =  1    //!< Thread exits with generic error
 
     } eExitCodes;
 
@@ -75,13 +68,12 @@ protected:
     /**
      * \brief   Protected default constructor
      **/
-    IEThreadConsumer( void );
+    IEThreadConsumer( void ) = default;
 
-public:
     /**
      * \brief   Destructor
      **/
-    virtual ~IEThreadConsumer( void );
+    virtual ~IEThreadConsumer( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Callbacks
@@ -127,8 +119,7 @@ public:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    IEThreadConsumer( const IEThreadConsumer & /*src*/ );
-    const IEThreadConsumer & operator = ( const IEThreadConsumer & /*src*/ );
+    DECLARE_NOCOPY_NOMOVE( IEThreadConsumer );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -139,17 +130,15 @@ inline const char * IEThreadConsumer::getString(IEThreadConsumer::eExitCodes cod
 {
     switch (code)
     {
-    case IEThreadConsumer::EXIT_NO_PARAM:
-        return "IEThreadConsumer::EXIT_NO_PARAM";
-    case IEThreadConsumer::EXIT_TERMINATED:
-        return "IEThreadConsumer::EXIT_TERMINATED";
-    case IEThreadConsumer::EXIT_NORMAL:
-        return "IEThreadConsumer::EXIT_NORMAL";
-    case IEThreadConsumer::EXIT_ERROR:
-        return "IEThreadConsumer::EXIT_ERROR";
+    case IEThreadConsumer::eExitCodes::ExitNoParam:
+        return "IEThreadConsumer::ExitNoParam";
+    case IEThreadConsumer::eExitCodes::ExitTerminated:
+        return "IEThreadConsumer::ExitTerminated";
+    case IEThreadConsumer::eExitCodes::ExitNormal:
+        return "IEThreadConsumer::ExitNormal";
+    case IEThreadConsumer::eExitCodes::ExitError:
+        return "IEThreadConsumer::ExitError";
     default:
         return "ERR: Unexpected value of type IEThreadConsumer::eExitCodes";
     }
 }
-
-#endif  // AREG_BASE_IETHREADCONSUMER_HPP

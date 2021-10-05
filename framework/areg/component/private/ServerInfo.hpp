@@ -1,9 +1,16 @@
-#ifndef AREG_COMPONENT_PRIVATE_SERVERINFO_HPP
-#define AREG_COMPONENT_PRIVATE_SERVERINFO_HPP
+#pragma once
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/component/private/ServerInfo.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, Server Info class declaration
  *
  ************************************************************************/
@@ -48,14 +55,22 @@ public:
      *          and sets state to Registered if specified server address is valid.
      * \param   server  The address of Stub server
      **/
-    ServerInfo( const StubAddress & server );
+    explicit ServerInfo( const StubAddress & server );
+
+    /**
+     * \brief   Initialization constructor.
+     *          Creates Server Info object, copies given address
+     *          and sets state to Registered if specified server address is valid.
+     * \param   server  The address of Stub server
+     **/
+    explicit ServerInfo( StubAddress && server );
 
     /**
      * \brief   Initialization constructor.
      *          Creates Server Info object, copies server address data from proxy address.
      * \param   proxy   The Proxy address to extract data of Stub address
      **/
-    ServerInfo( const ProxyAddress & proxy );
+    explicit ServerInfo( const ProxyAddress & proxy );
 
     /**
      * \brief   Copy constructor.
@@ -64,33 +79,59 @@ public:
     ServerInfo( const ServerInfo & src );
 
     /**
+     * \brief   Move constructor.
+     * \param   src     The source of data to move.
+     **/
+    ServerInfo( ServerInfo && src ) noexcept;
+
+    /**
      * \brief   Destructor
      **/
-    ~ServerInfo( void );
+    ~ServerInfo( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Assigning operator. Copies Server Info data from given source.
+     * \brief   Copies Server Info data from given source.
      * \param   src     The source of Server Info to copy data.
      **/
-    const ServerInfo & operator = ( const ServerInfo & src );
+    ServerInfo & operator = ( const ServerInfo & src );
+
+    /**
+     * \brief   Moves Server Info data from given source.
+     * \param   src     The source of Server Info to move data.
+     **/
+    ServerInfo & operator = ( ServerInfo && src ) noexcept;
 
     /**
      * \brief   Sets the Stub server address without changing any other information and sets Server Info state to Connected
      *          if specified Stub address is valid. Otherwise, it will set state Undefined.
      * \param   server  The stub address to set.
      **/
-    const ServerInfo & operator = ( const StubAddress & server );
+    ServerInfo & operator = ( const StubAddress & server );
+
+    /**
+     * \brief   Sets the Stub server address without changing any other information and sets Server Info state to Connected
+     *          if specified Stub address is valid. Otherwise, it will set state Undefined.
+     * \param   server  The stub address to set.
+     **/
+    ServerInfo & operator = ( StubAddress && server ) noexcept;
 
     /**
      * \brief   Sets the Stub server address without changing any other information and sets Server Info state to Pending
      *          if specified Stub address is valid. Otherwise, it will set state Undefined.
      * \param   addService  Service address.
      **/
-    const ServerInfo & operator = ( const ServiceAddress & addService );
+    ServerInfo & operator = ( const ServiceAddress & addService );
+
+    /**
+     * \brief   Sets the Stub server address without changing any other information and sets Server Info state to Pending
+     *          if specified Stub address is valid. Otherwise, it will set state Undefined.
+     * \param   addService  Service address.
+     **/
+    ServerInfo & operator = ( ServiceAddress && addService ) noexcept;
 
     /**
      * \brief   Returns true, if 2 Server Info objects are equal. Otherwise returns false.
@@ -115,7 +156,7 @@ public:
      * \brief   Converts Server Info object to unsigned integer.
      *          The conversion is done based on Service Info conversion mechanism.
      **/
-    operator unsigned int ( void ) const;
+    explicit operator unsigned int ( void ) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes
@@ -179,12 +220,10 @@ inline NEService::eServiceConnection ServerInfo::getConnectionStatus( void ) con
 
 inline bool ServerInfo::isConnected( void ) const
 {
-    return mServerState == NEService::ServiceConnected;
+    return mServerState == NEService::eServiceConnection::ServiceConnected;
 }
 
 inline bool ServerInfo::isWaiting( void ) const
 {
-    return mServerState == NEService::ServicePending;
+    return mServerState == NEService::eServiceConnection::ServicePending;
 }
-
-#endif  // AREG_COMPONENT_PRIVATE_SERVERINFO_HPP

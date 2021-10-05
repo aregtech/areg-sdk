@@ -1,7 +1,15 @@
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/component/private/ComponentThread.cpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, Component Thread.
  *
  ************************************************************************/
@@ -27,15 +35,25 @@ IMPLEMENT_RUNTIME(ComponentThread, DispatcherThread)
 Component* ComponentThread::getCurrentComponent( void )
 {
     ComponentThread* comThread = ComponentThread::_getCurrentComponentThread();
-    return (comThread != NULL ? comThread->mCurrentComponent : NULL);
+    return (comThread != nullptr ? comThread->mCurrentComponent : nullptr);
 }
 
 bool ComponentThread::setCurrentComponent( Component* curComponent )
 {
     ComponentThread* comThread = ComponentThread::_getCurrentComponentThread();
-    if (comThread != NULL)
+    if (comThread != nullptr)
         comThread->mCurrentComponent = curComponent;
-    return (comThread != NULL);
+    return (comThread != nullptr);
+}
+
+inline ComponentThread & ComponentThread::self( void )
+{
+    return (*this);
+}
+
+inline ComponentThread* ComponentThread::_getCurrentComponentThread( void )
+{
+    return RUNTIME_CAST( &(DispatcherThread::getCurrentDispatcherThread( )), ComponentThread );
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -44,13 +62,8 @@ bool ComponentThread::setCurrentComponent( Component* curComponent )
 ComponentThread::ComponentThread( const char* threadName )
     : DispatcherThread    ( threadName )
 
-    , mCurrentComponent     ( NULL )
+    , mCurrentComponent     ( nullptr )
     , mListComponent        ( )
-{
-    ; // do nothing
-}
-
-ComponentThread::~ComponentThread( void )
 {
     ; // do nothing
 }
@@ -85,10 +98,10 @@ int ComponentThread::createComponents( void )
         for (int i = 0; i < comList.getSize(); ++ i)
         {
             const NERegistry::ComponentEntry& entry = comList[i];
-            if (entry.isValid() && entry.mFuncCreate != NULL)
+            if (entry.isValid() && entry.mFuncCreate != nullptr)
             {
                 Component *comObj = Component::loadComponent(entry, self());
-                if (comObj != NULL)
+                if (comObj != nullptr)
                 {
                     OUTPUT_DBG("Component [ %s ] in thread [ %s ] has been created...", comObj->getRoleName().getString(), getName().getString());
                     mListComponent.pushLast(comObj);
@@ -96,7 +109,7 @@ int ComponentThread::createComponents( void )
                 }
                 else
                 {
-                    OUTPUT_ERR("Failed creating component [ %s ] in UNKNOWN NULL thread");
+                    OUTPUT_ERR("Failed creating component [ %s ] in UNKNOWN nullptr thread");
                 }
             }
         }
@@ -110,11 +123,11 @@ void ComponentThread::destroyComponents( void )
     while (mListComponent.isEmpty() == false)
     {
         Component* comObj = mListComponent.removeLast();
-        if (comObj != NULL)
+        if (comObj != nullptr)
         {
             OUTPUT_DBG("Destroying component [ %s ] in thread [ %s ]...", comObj->getRoleName().getString(), getName().getString());
             const NERegistry::ComponentEntry& entry = ComponentLoader::findComponentEntry(comObj->getRoleName(), getName());
-            if (entry.isValid() && entry.mFuncDelete != NULL)
+            if (entry.isValid() && entry.mFuncDelete != nullptr)
             {
                 Component::unloadComponent(*comObj, entry);
             }
@@ -130,10 +143,10 @@ void ComponentThread::startComponents( void )
 {
     OUTPUT_DBG("Starting components in thread [ %s ].", getName().getString());
     LISTPOS pos = mListComponent.lastPosition();
-    while (pos != NULL)
+    while (pos != nullptr)
     {
         Component* comObj = mListComponent.getPrev(pos);
-        ASSERT(comObj != NULL);
+        ASSERT(comObj != nullptr);
         comObj->startupComponent(self());
         OUTPUT_DBG("Component [ %s ] in thread [ %s ] has been started...", comObj->getRoleName().getString(), getName().getString());
     }
@@ -148,15 +161,15 @@ void ComponentThread::shutdownComponents( void )
     for ( int i = 0; i < proxyList.getSize(); ++ i)
     {
         ProxyBase * proxy = proxyList.getAt(i);
-        ASSERT(proxy != NULL);
+        ASSERT(proxy != nullptr);
         proxy->stopProxy();
     }
 
     LISTPOS pos = mListComponent.firstPosition();
-    while (pos != NULL)
+    while (pos != nullptr)
     {
         Component* comObj = mListComponent.getNext(pos);
-        ASSERT(comObj != NULL);
+        ASSERT(comObj != nullptr);
         comObj->shutdownComponent(self());
         OUTPUT_DBG("Shutdown component [ %s ] in thread [ %s ]...", comObj->getRoleName().getString(), getName().getString());
     }
@@ -164,14 +177,14 @@ void ComponentThread::shutdownComponents( void )
 
 DispatcherThread* ComponentThread::getEventConsumerThread( const RuntimeClassID& whichClass )
 {
-    DispatcherThread* result = hasRegisteredConsumer(whichClass) ? static_cast<DispatcherThread *>(this) : NULL;
-    if (result == NULL)
+    DispatcherThread* result = hasRegisteredConsumer(whichClass) ? static_cast<DispatcherThread *>(this) : nullptr;
+    if (result == nullptr)
     {
         LISTPOS pos = mListComponent.firstPosition();
-        while (pos != NULL && result == NULL)
+        while (pos != nullptr && result == nullptr)
         {
             Component* comObj = mListComponent.getNext(pos);
-            ASSERT(comObj != NULL);
+            ASSERT(comObj != nullptr);
             result = comObj->findEventConsumer(whichClass);
         }
     }
@@ -181,23 +194,23 @@ DispatcherThread* ComponentThread::getEventConsumerThread( const RuntimeClassID&
 void ComponentThread::shutdownThread( void )
 {
     LISTPOS pos = mListComponent.firstPosition();
-    while (pos != NULL)
+    while (pos != nullptr)
     {
         Component* comObj = mListComponent.getNext(pos);
-        ASSERT(comObj != NULL);
+        ASSERT(comObj != nullptr);
         comObj->notifyComponentShutdown(self());
         OUTPUT_DBG("The component [ %s ] is notified thread [ %s ] is going to shutdown!", comObj->getRoleName().getString(), getName().getString());
     }
     DispatcherThread::shutdownThread();
 }
 
-bool ComponentThread::completionWait( unsigned int waitForCompleteMs /*= Thread::WAIT_INFINITE */ )
+bool ComponentThread::completionWait( unsigned int waitForCompleteMs /*= NECommon::WAIT_INFINITE */ )
 {
     LISTPOS pos = mListComponent.firstPosition();
-    while ( pos != NULL )
+    while ( pos != nullptr )
     {
         Component* comObj = mListComponent.getNext(pos);
-        ASSERT(comObj != NULL);
+        ASSERT(comObj != nullptr);
         comObj->waitComponentCompletion(waitForCompleteMs);
     }
 

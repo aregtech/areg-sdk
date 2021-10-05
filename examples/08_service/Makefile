@@ -17,6 +17,9 @@ include $(08_service_BASE)/src/Makefile
 # define one target for each source file
 $(foreach cpp, $(08_service_SRC), $(eval $(call obj, $(cpp), $(08_service_OUTPUT_OBJ), 08_service_OBJS, $(08_service_CXXFLAGS))))
 
+DEPS = $(08_service_OBJS:%.o=%.d)
+-include $(DEPS)
+
 $(AREG_OUTPUT_BIN)/$(08_service_TARGET_BIN): $(areg_TARGET_PATH) $(08_service_OBJS)
 	@echo "Linking $(08_service_PROJECT_NAME) ..."
 	@mkdir -p $(dir $@)

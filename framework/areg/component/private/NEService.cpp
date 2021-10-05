@@ -1,7 +1,15 @@
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/component/private/NEService.cpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, classes of NEService namespace.
  *
  ************************************************************************/
@@ -12,36 +20,26 @@
 // class NEService::StateArray implementation
 //////////////////////////////////////////////////////////////////////////
 NEService::StateArray::StateArray( int size /*= 0*/ )
-    : TEFixedArray<NEService::eDataStateType, NEService::eDataStateType>(size)
+    : StateArrayBase(size)
 {
     resetStates();
 }
 
-NEService::StateArray::StateArray( const StateArray& src )
-    : TEFixedArray<NEService::eDataStateType, NEService::eDataStateType>(static_cast<const TEFixedArray<NEService::eDataStateType, NEService::eDataStateType> &>(src))
-{
-    ; // do nothing
-}
-
 NEService::StateArray::StateArray( unsigned char* thisBuffer, int elemCount )
-    : TEFixedArray<NEService::eDataStateType, NEService::eDataStateType>()
+    : StateArrayBase( )
 {
     this->mValueList    = reinterpret_cast<NEService::eDataStateType *>(thisBuffer + sizeof(NEService::StateArray));
     this->mElemCount    = elemCount;
     resetStates();
 }
 
-NEService::StateArray::~StateArray( void )
-{
-    ; // do nothing
-}
-
 //////////////////////////////////////////////////////////////////////////
 // class NEService::ParameterArray implementation
 //////////////////////////////////////////////////////////////////////////
+
 NEService::ParameterArray::ParameterArray( const NEService::SInterfaceData& ifData )
     : mElemCount (0)
-    , mParamList(NULL)
+    , mParamList(nullptr)
 {
     construct(ifData.idResponseParamCountMap, static_cast<int>(ifData.idResponseCount));
 }
@@ -51,17 +49,46 @@ NEService::ParameterArray::ParameterArray( const unsigned int* paramCountMap, in
     construct(paramCountMap, count);
 }
 
+NEService::ParameterArray::ParameterArray( NEService::ParameterArray && src ) noexcept
+    : mElemCount    ( std::move(src.mElemCount) )
+    , mParamList    ( std::move(src.mParamList) )
+{
+    src.mElemCount = 0;
+    src.mParamList = nullptr;
+}
+
 NEService::ParameterArray::~ParameterArray( void )
 {
-    if (mParamList != NULL)
-        delete [] reinterpret_cast <unsigned char *>(mParamList);
-    mParamList= NULL;
+    if (mParamList != nullptr)
+    {
+        delete[] reinterpret_cast <unsigned char *>(mParamList);
+    }
+
+    mParamList= nullptr;
     mElemCount = 0;
+}
+
+NEService::ParameterArray & NEService::ParameterArray::operator = ( NEService::ParameterArray && src) noexcept
+{
+    if ( this != &src )
+    {
+        if ( mParamList != nullptr )
+        {
+            delete[] reinterpret_cast <unsigned char *>(mParamList);
+        }
+
+        mElemCount  = src.mElemCount;
+        mParamList  = src.mParamList;
+        src.mElemCount = 0;
+        src.mParamList = nullptr;
+    }
+
+    return (*this);
 }
 
 void NEService::ParameterArray::construct( const unsigned int * params, int count )
 {
-    if ( (params != static_cast<const unsigned int *>(NULL)) && (count > 0) )
+    if ( (params != nullptr) && (count > 0) )
     {
         unsigned int single		= static_cast<unsigned int>(sizeof(NEService::StateArray *));
         // count pointers to state array
@@ -79,7 +106,7 @@ void NEService::ParameterArray::construct( const unsigned int * params, int coun
         size += countParamSpace(params, count);
 
         unsigned char* buffer = DEBUG_NEW unsigned char[size];
-        if (buffer != NULL)
+        if (buffer != nullptr)
         {
             // set element count
             mElemCount = count;
@@ -145,7 +172,7 @@ void NEService::ParameterArray::resetParamState( int whichParam )
 // class NEService::ProxyData implementation
 //////////////////////////////////////////////////////////////////////////
 NEService::ProxyData::ProxyData( const NEService::SInterfaceData& ifData )
-    : mImplVersion  (NEService::DATA_UNAVAILABLE)
+    : mImplVersion  (NEService::eDataStateType::DataIsUnavailable)
     , mIfData       (ifData)
     , mAttrState    (static_cast<int>(ifData.idAttributeCount))
     , mParamState   (ifData)
@@ -160,7 +187,7 @@ NEService::ProxyData::~ProxyData( void )
 
 void NEService::ProxyData::resetStates( void )
 {
-    mImplVersion    = NEService::DATA_UNAVAILABLE;
+    mImplVersion    = NEService::eDataStateType::DataIsUnavailable;
     mAttrState.resetStates();
     mParamState.resetAllStates();
 }
@@ -187,7 +214,7 @@ void NEService::ProxyData::setDataState( unsigned int msgId, NEService::eDataSta
 
 NEService::eDataStateType NEService::ProxyData::getDataState( unsigned int msgId ) const
 {
-    NEService::eDataStateType result = NEService::DATA_UNEXPECTED_ERROR;
+    NEService::eDataStateType result = NEService::eDataStateType::DataUnexpectedError;
     if (NEService::isAttributeId(msgId))
         result = getAttributeState(msgId);
     else if (NEService::isResponseId(msgId))
@@ -218,15 +245,15 @@ AREG_API NEService::SInterfaceData & NEService::getEmptyInterface(void)
     {
           NEService::EmptyServiceName
         , NEService::EmptyServiceVersion
-        , NEService::ServiceLocal
+        , NEService::eServiceType::ServicePublic
         , 0
         , 0
         , 0
-        , static_cast<const unsigned int *>(NULL)
-        , static_cast<const unsigned int *>(NULL)
-        , static_cast<const unsigned int *>(NULL)
-        , static_cast<const unsigned int *>(NULL)
-        , static_cast<const unsigned int *>(NULL)
+        , nullptr
+        , nullptr
+        , nullptr
+        , nullptr
+        , nullptr
     };
 
     return _InterfaceData;

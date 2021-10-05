@@ -4,14 +4,14 @@
 
 /************************************************************************
  * (c) copyright    2021
+ *
+ * Generated at     30.09.2021  01:22:15 GMT+02:00 
  *                  Create by AREG SDK code generator tool from source DirectConnection.
- * Generated at     04.07.2021  04:30:02 GMT+02:00 
- ************************************************************************/
-
-/************************************************************************
- * \file            generated/private/DirectConnectionEvents.cpp
+ *
+ * \file            generated/private/DirectConnectionEvents.hpp
  * \ingroup         DirectConnection Service Interface
- * \brief           This is an automatic generated code of DirectConnection Service Interface Event classes implementation.
+ * \brief           This is an automatic generated code of DirectConnection
+ *                  Service Interface event classes implementation.
  ************************************************************************/
 
 /************************************************************************
@@ -38,25 +38,17 @@ IMPLEMENT_RUNTIME_EVENT( DirectConnectionRequestEvent, RemoteRequestEvent )
 DirectConnectionRequestEvent::DirectConnectionRequestEvent( const ProxyAddress & fromSource, const StubAddress & toTarget, unsigned int reqId )
     : RemoteRequestEvent( fromSource, toTarget, reqId )
 {
-    ; // do nothing
 }
 
 DirectConnectionRequestEvent::DirectConnectionRequestEvent( const EventDataStream & args, const ProxyAddress & fromSource, const StubAddress & toTarget, unsigned int reqId )
     : RemoteRequestEvent( args, fromSource, toTarget, reqId, NEDirectConnection::getString( static_cast<NEDirectConnection::eMessageIDs>(reqId) ) )
 {
-    ; // do nothing
 }
 
 DirectConnectionRequestEvent::DirectConnectionRequestEvent( const IEInStream & stream )
     : RemoteRequestEvent( stream )
 {
-    ; // do nothing
 }    
-
-DirectConnectionRequestEvent::~DirectConnectionRequestEvent( void )
-{
-    ; // do nothing
-}
 
 //////////////////////////////////////////////////////////////////////////
 // DirectConnectionNotifyRequestEvent class implementation
@@ -75,19 +67,12 @@ IMPLEMENT_RUNTIME_EVENT( DirectConnectionNotifyRequestEvent, RemoteNotifyRequest
 DirectConnectionNotifyRequestEvent::DirectConnectionNotifyRequestEvent( const ProxyAddress & fromProxy, const StubAddress & toStub, unsigned int msgId, NEService::eRequestType reqType )
     : RemoteNotifyRequestEvent( fromProxy, toStub, msgId, reqType )
 {
-    ; // do nothing
 }
 
 DirectConnectionNotifyRequestEvent::DirectConnectionNotifyRequestEvent( const IEInStream & stream )
     : RemoteNotifyRequestEvent( stream )
 {
-    ; // do nothing
 }    
-
-DirectConnectionNotifyRequestEvent::~DirectConnectionNotifyRequestEvent( void )
-{
-    ; // do nothing
-}
 
 //////////////////////////////////////////////////////////////////////////
 // DirectConnectionResponseEvent class implementation
@@ -106,30 +91,22 @@ IMPLEMENT_RUNTIME_EVENT( DirectConnectionResponseEvent, RemoteResponseEvent )
 DirectConnectionResponseEvent::DirectConnectionResponseEvent( const ProxyAddress & proxyTarget, NEService::eResultType result, unsigned int responseId, unsigned int seqNr /* = NEService::SEQUENCE_NUMBER_NOTIFY */ )
     : RemoteResponseEvent( proxyTarget, result, responseId, seqNr )
 {
-    ; // do nothing
 }
 
 DirectConnectionResponseEvent::DirectConnectionResponseEvent( const EventDataStream & args, const ProxyAddress & proxyTarget, NEService::eResultType result, unsigned int responseId, unsigned int seqNr /* = NEService::SEQUENCE_NUMBER_NOTIFY */ )
     : RemoteResponseEvent( args, proxyTarget, result, responseId, seqNr, NEDirectConnection::getString(static_cast<NEDirectConnection::eMessageIDs>(responseId)) )
 {
-    ; // do nothing
 }
 
 DirectConnectionResponseEvent::DirectConnectionResponseEvent( const ProxyAddress & proxyTarget, const RemoteResponseEvent & source )
     : RemoteResponseEvent( proxyTarget, source )
 {
-    ; // do nothing
 }
 
 DirectConnectionResponseEvent::DirectConnectionResponseEvent( const IEInStream & stream )
     : RemoteResponseEvent( stream )
 {
-    ; // do nothing
 }    
-DirectConnectionResponseEvent::~DirectConnectionResponseEvent( void )
-{
-    ; // do nothing
-}
 
 //////////////////////////////////////////////////////////////////////////
 // DirectConnectionResponseEvent class, Methods
@@ -157,12 +134,6 @@ IMPLEMENT_RUNTIME_EVENT( DirectConnectionNotificationEvent, NotificationEvent )
 DirectConnectionNotificationEvent::DirectConnectionNotificationEvent( const NotificationEventData & data )
     : NotificationEvent   ( data )
 {
-    ; // do nothing
-}
-
-DirectConnectionNotificationEvent::~DirectConnectionNotificationEvent( void )
-{
-    ; // do nothing
 }
 
 //////////////////////////////////////////////////////////////////////////

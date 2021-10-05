@@ -20,10 +20,10 @@
 #include "chatter/ui/PageConnections.hpp"
 #include "chatter/NEDistributedApp.hpp"
 #include "chatter/services/ConnectionHandler.hpp"
-#include "areg/base/TEHashMap.hpp"
+#include "areg/base/Containers.hpp"
 
 class PageChat;
-typedef TEHashMap<String, PageChat *, const String &, PageChat *>   MapChatPages;
+typedef TEStringHashMap<PageChat *, PageChat *>   MapChatPages;
 
 class DistributedDialog : public CPropertySheet
                         , public ConnectionHandler

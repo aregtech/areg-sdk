@@ -3,12 +3,18 @@
 // Author      : Artak Avetyan
 // Version     :
 // Copyright   : Aregtech (c) 2021
-// Description : Hello World in C++, Ansi-style
+// Description : This project demonstrates how to instantiate multiple 
+//               instances of the same service differing by names. It is an
+//               extension of 08_service, uses empty services and instantiates
+//               2 identical services with different names.
+//
+//               The same local service can be instantiate more than once if 
+//               instances differ by name and run in different threads.
 //============================================================================
 
 #include "areg/base/GEGlobal.h"
 #include "areg/appbase/Application.hpp"
-#include "areg/base/ESynchObjects.hpp"
+#include "areg/base/SynchObjects.hpp"
 #include "areg/component/ComponentLoader.hpp"
 #include "areg/trace/GETrace.h"
 #include "src/ServicingComponent.hpp"
@@ -26,7 +32,7 @@
  *          timer to run and exit application after certain time.
  **/
 
-static const char * _modelName = "TestModel";  //!< The name of model
+constexpr char const _modelName[] { "TestModel" };  //!< The name of model
 
 //////////////////////////////////////////////////////////////////////////
 //
@@ -40,7 +46,7 @@ static const char * _modelName = "TestModel";  //!< The name of model
 BEGIN_MODEL(_modelName)
 
     // define component thread
-    BEGIN_REGISTER_THREAD( "ServiceThread1" )
+    BEGIN_REGISTER_THREAD( "TestServiceThread1" )
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
         BEGIN_REGISTER_COMPONENT( "TestService1", ServicingComponent )
             // register dummy 'empty service'. In this example we demonstrate simple initialization
@@ -48,7 +54,7 @@ BEGIN_MODEL(_modelName)
         // end of component description
         END_REGISTER_COMPONENT( "TestService1" )
     // end of thread description
-    END_REGISTER_THREAD( "ServiceThread1" )
+    END_REGISTER_THREAD( "TestServiceThread1" )
 
     //////////////////////////////////////////////////////////////////////////
     //
@@ -61,7 +67,7 @@ BEGIN_MODEL(_modelName)
     //////////////////////////////////////////////////////////////////////////
 
     // define component thread
-    BEGIN_REGISTER_THREAD( "Test_ServiceThread2" )
+    BEGIN_REGISTER_THREAD( "TestServiceThread2" )
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
         BEGIN_REGISTER_COMPONENT( "TestService2", ServicingComponent )
             // register dummy 'empty service'. In this example we demonstrate simple initialization
@@ -69,7 +75,7 @@ BEGIN_MODEL(_modelName)
         // end of component description
         END_REGISTER_COMPONENT( "TestService2" )
     // end of thread description
-    END_REGISTER_THREAD( "Test_ServiceThread2" )
+    END_REGISTER_THREAD( "TestServiceThread2" )
 
 // end of model description
 END_MODEL(_modelName)
@@ -87,9 +93,9 @@ int main()
     printf("Testing multiple empty servicing components in multiple threads...\n");
 
     // force to start logging with default settings
-    TRACER_CONFIGURE_AND_START(NULL);
+    TRACER_CONFIGURE_AND_START( nullptr );
     // Initialize application, enable logging, servicing and the timer.
-    Application::initApplication(true, true, false, true, NULL, NULL);
+    Application::initApplication(true, true, false, true, nullptr, nullptr );
 
     do 
     {
@@ -102,7 +108,7 @@ int main()
         TRACE_DBG("Servicing model is loaded");
         
         // wait until 'gExit' event is signaled
-        Application::waitAppQuit(IESynchObject::WAIT_INFINITE);
+        Application::waitAppQuit(NECommon::WAIT_INFINITE);
 
         // stop and unload components
         Application::unloadModel(_modelName);

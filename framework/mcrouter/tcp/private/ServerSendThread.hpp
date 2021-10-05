@@ -1,10 +1,16 @@
-#ifndef MCROUTER_TCP_PRIVATE_SERVERSENDTHREAD_HPP
-#define MCROUTER_TCP_PRIVATE_SERVERSENDTHREAD_HPP
-
+#pragma once
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        mcrouter/tcp/private/ServerSendThread.hpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform Server Send Message Thread
  ************************************************************************/
 
@@ -44,7 +50,7 @@ public:
     /**
      * \brief   Destructor
      **/
-    virtual ~ServerSendThread( void );
+    virtual ~ServerSendThread( void ) = default;
 
 protected:
 /************************************************************************/
@@ -58,7 +64,7 @@ protected:
      *          Override if logic should be changed.
      * \return	Returns true if Exit Event is signaled.
      **/
-    virtual bool runDispatcher( void );
+    virtual bool runDispatcher( void ) override;
 
 /************************************************************************/
 // IEEventRouter interface overrides
@@ -73,7 +79,7 @@ protected:
      * \param	eventElem	Event object to post
      * \return	In this class it always returns true.
      **/
-    virtual bool postEvent( Event & eventElem );
+    virtual bool postEvent( Event & eventElem ) override;
 
 private:
 /************************************************************************/
@@ -86,22 +92,26 @@ private:
      *                  default constructor and assigning operator.
      *                  This object is not used for IPC.
      **/
-    virtual void processEvent( const SendMessageEventData & data );
+    virtual void processEvent( const SendMessageEventData & data ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
 //////////////////////////////////////////////////////////////////////////
 private:
+    /**
+     * \brief   The instance of remote servicing interface object
+     **/
     IERemoteServiceHandler &    mRemoteService;
-    ServerConnection &        mConnection;
+    /**
+     * \brief   The instance of server connection object
+     **/
+    ServerConnection &          mConnection;
+
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    ServerSendThread( void );
-    ServerSendThread( const ServerSendThread & /*src*/ );
-    const ServerSendThread & operator = ( const ServerSendThread & /*src*/ );
+    ServerSendThread( void ) = delete;
+    DECLARE_NOCOPY_NOMOVE( ServerSendThread );
 };
-
-#endif  // MCROUTER_TCP_PRIVATE_SERVERSENDTHREAD_HPP

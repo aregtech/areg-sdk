@@ -1,7 +1,15 @@
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/base/private/RuntimeClassID.cpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, Runtime Class ID
  *              This class contains information of Runtime Class ID.
  *              Every Runtime Class contains class ID to identify and
@@ -12,27 +20,32 @@
 #include "areg/base/NEString.hpp"
 #include "areg/base/NEMath.hpp"
 
+#include <string_view>
+
+namespace
+{
+    /**
+     * \brief   RuntimeClassID::BAD_CLASS_ID
+     *          Bad Class ID. Defined as constant. Used to indicate invalid class ID name.
+     **/
+    constexpr std::string_view BAD_CLASS_ID { "_BAD_RUNTIME_CLASS_ID_" };
+}
+
 //////////////////////////////////////////////////////////////////////////
 // RuntimeClassID class implementation
 //////////////////////////////////////////////////////////////////////////
 
 //////////////////////////////////////////////////////////////////////////
-// Internal types and constants
-//////////////////////////////////////////////////////////////////////////
-const char* const RuntimeClassID::BAD_CLASS_ID = "_BAD_RUNTIME_CLASS_ID_";
-
-//////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
 RuntimeClassID::RuntimeClassID( void )
-    : mClassName(BAD_CLASS_ID)
+    : mClassName(BAD_CLASS_ID.data(), static_cast<int>(BAD_CLASS_ID.length()))
     , mMagicNum (NEMath::CHECKSUM_IGNORE)
 {
-    ; // do nothing
 }
 
 RuntimeClassID::RuntimeClassID( const char * className )
-    : mClassName(BAD_CLASS_ID)
+    : mClassName( BAD_CLASS_ID.data( ), static_cast<int>(BAD_CLASS_ID.length( )) )
     , mMagicNum (NEMath::CHECKSUM_IGNORE)
 {
     if (NEString::isEmpty<char>(className) == false)
@@ -49,9 +62,11 @@ RuntimeClassID::RuntimeClassID( const RuntimeClassID & src )
     ASSERT(src.mClassName.isEmpty() == false);
 }
 
-RuntimeClassID::~RuntimeClassID( void )
+RuntimeClassID::RuntimeClassID( RuntimeClassID && src ) noexcept
+    : mClassName( std::move(src.mClassName) )
+    , mMagicNum ( src.mMagicNum )
 {
-    ; // do nothing
+    ASSERT( src.mClassName.isEmpty( ) == false );
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -60,10 +75,10 @@ RuntimeClassID::~RuntimeClassID( void )
 
 void RuntimeClassID::setName( const char* className )
 {
-    if (NEString::isEmpty<char>(className))
+    if ( NEString::isEmpty<char>(className) || (BAD_CLASS_ID == className) )
     {
-        mClassName  = RuntimeClassID::BAD_CLASS_ID;
-        mMagicNum      = NEMath::CHECKSUM_IGNORE;
+        mClassName  = BAD_CLASS_ID.data();
+        mMagicNum   = NEMath::CHECKSUM_IGNORE;
     }
     else
     {

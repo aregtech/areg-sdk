@@ -3,14 +3,14 @@
 //////////////////////////////////////////////////////////////////////////
 /************************************************************************
  * (c) copyright    2021
+ *
+ * Generated at     30.09.2021  01:22:12 GMT+02:00 
  *                  Create by AREG SDK code generator tool from source CentralMessager.
- * Generated at     04.07.2021  04:29:59 GMT+02:00 
- ************************************************************************/
-
-/************************************************************************
- * \file            generated/private/CentralMessagerStub.cpp
+ *
+ * \file            generated/CentralMessagerStub.hpp
  * \ingroup         CentralMessager Service Interface
- * \brief           This is an automatic generated code of CentralMessager Service Interface Stub class implementation.
+ * \brief           This is an automatic generated code of CentralMessager
+ *                  Service Interface Stub class implementation.
  ************************************************************************/
 
 /************************************************************************
@@ -34,12 +34,6 @@ CentralMessagerStub::CentralMessagerStub( Component & masterComp )
     : StubBase    ( masterComp, NECentralMessager::getInterfaceData() )
     
 {
-    ; // do nothing
-}
-
-CentralMessagerStub::~CentralMessagerStub( void )
-{
-    ; // do nothing
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -55,10 +49,10 @@ void CentralMessagerStub::unlockAllRequests( void )
 // Overrides
 //////////////////////////////////////////////////////////////////////////
 
-DEF_TRACE_SCOPE(GENERATED_CentralMessagerStub_startupServiceInterface);
+DEF_TRACE_SCOPE(generated_CentralMessagerStub_startupServiceInterface);
 void CentralMessagerStub::startupServiceInterface( Component & holder )
 {
-    TRACE_SCOPE(GENERATED_CentralMessagerStub_startupServiceInterface);
+    TRACE_SCOPE(generated_CentralMessagerStub_startupServiceInterface);
     
     CentralMessagerRequestEvent::addListener( static_cast<IEEventConsumer &>(self()), Thread::getCurrentThreadName() );
     CentralMessagerNotifyRequestEvent::addListener( static_cast<IEEventConsumer &>(self()), Thread::getCurrentThreadName() );
@@ -67,10 +61,10 @@ void CentralMessagerStub::startupServiceInterface( Component & holder )
     TRACE_DBG("The Stub Service [ %s ] of component with role name [ %s ] has been started and is available ...", mAddress.getServiceName().getString(), mAddress.getRoleName().getString());
 }
 
-DEF_TRACE_SCOPE(GENERATED_CentralMessagerStub_shutdownServiceIntrface);
+DEF_TRACE_SCOPE(generated_CentralMessagerStub_shutdownServiceIntrface);
 void CentralMessagerStub::shutdownServiceIntrface( Component & holder )
 {
-    TRACE_SCOPE(GENERATED_CentralMessagerStub_shutdownServiceIntrface);
+    TRACE_SCOPE(generated_CentralMessagerStub_shutdownServiceIntrface);
     TRACE_DBG("The Stub Service [ %s ] of component with role name [ %s ] is shutting down and not available anymore ...", mAddress.getServiceName().getString(), mAddress.getRoleName().getString());
     
     CentralMessagerRequestEvent::removeListener( static_cast<IEEventConsumer &>(self()), Thread::getCurrentThreadName() );
@@ -93,20 +87,20 @@ RemoteNotifyRequestEvent * CentralMessagerStub::createRemoteNotifyRequestEvent( 
     return static_cast<RemoteNotifyRequestEvent *>( DEBUG_NEW CentralMessagerNotifyRequestEvent(stream) );
 }
 
-DEF_TRACE_SCOPE(GENERATED_CentralMessagerStub_sendNotification);
+DEF_TRACE_SCOPE(generated_CentralMessagerStub_sendNotification);
 void CentralMessagerStub::sendNotification( unsigned int msgId )
 {
-    TRACE_SCOPE(GENERATED_CentralMessagerStub_sendNotification);
+    TRACE_SCOPE(generated_CentralMessagerStub_sendNotification);
     TRACE_ERR("The Service Interface has no attribute. Unexpected attribute ID [ %d ] requested to send by Stub [ %s ].", msgId, StubAddress::convAddressToPath(mAddress).getString());
     ASSERT(false);
 }
 
 
-DEF_TRACE_SCOPE(GENERATED_CentralMessagerStub_errorRequest);
+DEF_TRACE_SCOPE(generated_CentralMessagerStub_errorRequest);
 void CentralMessagerStub::errorRequest( unsigned int msgId, bool msgCancel )
 {
-    NEService::eResultType result = NEService::RESULT_NOT_PROCESSED;
-    unsigned int listenerId = static_cast<unsigned int>(msgId);
+    NEService::eResultType result = NEService::eResultType::NotProcessed;
+    msg_id listenerId = msgId;
     
     switch ( static_cast<NECentralMessager::eMessageIDs>(msgId) )
     {
@@ -119,19 +113,19 @@ void CentralMessagerStub::errorRequest( unsigned int msgId, bool msgCancel )
 /************************************************************************
  * Broadcast errors
  ************************************************************************/
-    case NECentralMessager::MSG_ID_broadcastSendMessage:
-    case NECentralMessager::MSG_ID_broadcastKeyTyping:
-    case NECentralMessager::MSG_ID_broadcastBroadcastMessage:
-        result = NEService::RESULT_INVALID;
+    case NECentralMessager::eMessageIDs::MsgId_broadcastSendMessage:
+    case NECentralMessager::eMessageIDs::MsgId_broadcastKeyTyping:
+    case NECentralMessager::eMessageIDs::MsgId_broadcastBroadcastMessage:
+        result = NEService::eResultType::DataInvalid;
         break;
 
 /************************************************************************
  * Request errors
  ************************************************************************/
-    case NECentralMessager::MSG_ID_requestSendMessage:
-    case NECentralMessager::MSG_ID_requestKeyTyping:
-        listenerId = NECentralMessager::getResponseId(static_cast< NECentralMessager::eMessageIDs>(msgId));
-        result = msgCancel ? NEService::RESULT_REQUEST_CANCELED : NEService::RESULT_REQUEST_ERROR;
+    case NECentralMessager::eMessageIDs::MsgId_requestSendMessage:
+    case NECentralMessager::eMessageIDs::MsgId_requestKeyTyping:
+        listenerId = static_cast<msg_id>(NECentralMessager::getResponseId(static_cast< NECentralMessager::eMessageIDs>(msgId)));
+        result = msgCancel ? NEService::eResultType::RequestCanceled : NEService::eResultType::RequestError;
         break;
 
     default:
@@ -143,7 +137,7 @@ void CentralMessagerStub::errorRequest( unsigned int msgId, bool msgCancel )
     StubBase::StubListenerList listeners;
     if ( findListeners(listenerId, listeners) > 0 )
     {
-        TRACE_SCOPE(GENERATED_CentralMessagerStub_errorRequest);
+        TRACE_SCOPE(generated_CentralMessagerStub_errorRequest);
         TRACE_WARN(" >>> The message [ %s ] of Stub [ %s ] is responding with error [ %s ], sending message [ %s ] to [ %d ] targets... <<<"
                         , NECentralMessager::getString( static_cast<NECentralMessager::eMessageIDs>(msgId) )
                         , StubAddress::convAddressToPath(mAddress).getString()
@@ -169,56 +163,56 @@ void CentralMessagerStub::errorRequest( unsigned int msgId, bool msgCancel )
 
 void CentralMessagerStub::broadcastSendMessage( const String & nickName, unsigned int cookie, const String & newMessage, const DateTime & dateTime )
 {
-    static const NECentralMessager::eMessageIDs msgId = NECentralMessager::MSG_ID_broadcastSendMessage;
-    EventDataStream args(EventDataStream::EventDataExternal);
+    static const NECentralMessager::eMessageIDs msgId = NECentralMessager::eMessageIDs::MsgId_broadcastSendMessage;
+    EventDataStream args(EventDataStream::eEventData::EventDataExternal);
     IEOutStream & stream = args.getStreamForWrite();
     stream << nickName;
     stream << cookie;
     stream << newMessage;
     stream << dateTime;
-    sendResponseEvent( msgId, args );
+    sendResponseEvent( static_cast<msg_id>(msgId), args );
 }
 
 void CentralMessagerStub::broadcastKeyTyping( const String & nickName, unsigned int cookie, const String & newMessage )
 {
-    static const NECentralMessager::eMessageIDs msgId = NECentralMessager::MSG_ID_broadcastKeyTyping;
-    EventDataStream args(EventDataStream::EventDataExternal);
+    static const NECentralMessager::eMessageIDs msgId = NECentralMessager::eMessageIDs::MsgId_broadcastKeyTyping;
+    EventDataStream args(EventDataStream::eEventData::EventDataExternal);
     IEOutStream & stream = args.getStreamForWrite();
     stream << nickName;
     stream << cookie;
     stream << newMessage;
-    sendResponseEvent( msgId, args );
+    sendResponseEvent( static_cast<msg_id>(msgId), args );
 }
 
 void CentralMessagerStub::broadcastBroadcastMessage( const String & serverMessage, const DateTime & dateTime )
 {
-    static const NECentralMessager::eMessageIDs msgId = NECentralMessager::MSG_ID_broadcastBroadcastMessage;
-    EventDataStream args(EventDataStream::EventDataExternal);
+    static const NECentralMessager::eMessageIDs msgId = NECentralMessager::eMessageIDs::MsgId_broadcastBroadcastMessage;
+    EventDataStream args(EventDataStream::eEventData::EventDataExternal);
     IEOutStream & stream = args.getStreamForWrite();
     stream << serverMessage;
     stream << dateTime;
-    sendResponseEvent( msgId, args );
+    sendResponseEvent( static_cast<msg_id>(msgId), args );
 }
 
 /************************************************************************
  * Process messages
  ************************************************************************/
 
-DEF_TRACE_SCOPE(GENERATED_CentralMessagerStub_processRequestEvent);
+DEF_TRACE_SCOPE(generated_CentralMessagerStub_processRequestEvent);
 void CentralMessagerStub::processRequestEvent( ServiceRequestEvent & eventElem )
 {
     ASSERT( NEService::isRequestId(eventElem.getRequestId()) );
     CentralMessagerRequestEvent * reqEvent = RUNTIME_CAST(&eventElem, CentralMessagerRequestEvent);
 
-    if ( (reqEvent != static_cast<CentralMessagerRequestEvent *>(NULL)) && (reqEvent->getRequestType() == NEService::REQUEST_CALL) )
+    if ( (reqEvent != nullptr) && (reqEvent->getRequestType() == NEService::eRequestType::CallFunction) )
     {
-        unsigned int reqId          = reqEvent->getRequestId();
+        msg_id reqId = static_cast<msg_id>(reqEvent->getRequestId());
         const IEInStream & stream  = static_cast<const CentralMessagerRequestEvent *>(reqEvent)->getData().getReadStream();
         StubBase::Listener listener( reqId, 0, reqEvent->getEventSource() );
 
         switch ( static_cast<NECentralMessager::eMessageIDs>(reqId) )
         {
-        case NECentralMessager::MSG_ID_requestSendMessage:
+        case NECentralMessager::eMessageIDs::MsgId_requestSendMessage:
             if ( true )
             {
                 String          nickName;
@@ -233,7 +227,7 @@ void CentralMessagerStub::processRequestEvent( ServiceRequestEvent & eventElem )
             }
             break;
             
-        case NECentralMessager::MSG_ID_requestKeyTyping:
+        case NECentralMessager::eMessageIDs::MsgId_requestKeyTyping:
             if ( true )
             {
                 String          nickName;
@@ -248,7 +242,7 @@ void CentralMessagerStub::processRequestEvent( ServiceRequestEvent & eventElem )
             
         default:
             {
-                TRACE_SCOPE(GENERATED_CentralMessagerStub_processRequestEvent);
+                TRACE_SCOPE(generated_CentralMessagerStub_processRequestEvent);
                 TRACE_ERR("Unexpected request ID [ %d ] to process in Stub [ %s ]!", reqId, StubAddress::convAddressToPath(mAddress).getString());
                 ASSERT(false);
             }
@@ -259,11 +253,11 @@ void CentralMessagerStub::processRequestEvent( ServiceRequestEvent & eventElem )
     cancelCurrentRequest();
 }
 
-DEF_TRACE_SCOPE(GENERATED_CentralMessagerStub_processAttributeEvent);
+DEF_TRACE_SCOPE(generated_CentralMessagerStub_processAttributeEvent);
 void CentralMessagerStub::processAttributeEvent( ServiceRequestEvent & eventElem )
 {
     const NEService::eRequestType reqType = eventElem.getRequestType();
-    if (reqType == NEService::REQUEST_REMOVE_ALL_NOTIFY)
+    if (reqType == NEService::eRequestType::RemoveAllNotify)
     {
         IntegerArray removedIds;
         StubBase::clearAllListeners(eventElem.getEventSource(), removedIds);
@@ -271,27 +265,27 @@ void CentralMessagerStub::processAttributeEvent( ServiceRequestEvent & eventElem
     else
     {
         NECentralMessager::eMessageIDs updId  = static_cast<NECentralMessager::eMessageIDs>(eventElem.getRequestId());
-        if (reqType == NEService::REQUEST_STOP_NOTIFY)
+        if (reqType == NEService::eRequestType::StopNotify)
         {
-            removeNotificationListener( static_cast<unsigned int>(updId), eventElem.getEventSource() );
+            removeNotificationListener( static_cast<msg_id>(updId), eventElem.getEventSource() );
         }
-        else if (reqType == NEService::REQUEST_START_NOTIFY)
+        else if (reqType == NEService::eRequestType::StartNotify)
         {
 #ifdef  _DEBUG
-            if (addNotificationListener( static_cast<unsigned int>(updId), eventElem.getEventSource() ) == false )
+            if (addNotificationListener( static_cast<msg_id>(updId), eventElem.getEventSource() ) == false )
             {
-                TRACE_SCOPE(GENERATED_CentralMessagerStub_processAttributeEvent);
+                TRACE_SCOPE(generated_CentralMessagerStub_processAttributeEvent);
                 TRACE_WARN("The notification request of message ID [ %s ] of sources [ %s ] is already registered. Ignoring start notification registration request."
                             , NECentralMessager::getString(updId)
                             , ProxyAddress::convAddressToPath(eventElem.getEventSource()).getString());
             }
 #else   // _DEBUG
-            addNotificationListener( static_cast<unsigned int>(updId), eventElem.getEventSource() );
+            addNotificationListener( static_cast<msg_id>(updId), eventElem.getEventSource() );
 #endif  // _DEBUG
 #ifdef  _DEBUG
-            if ( NEService::isResponseId(static_cast<unsigned int>(updId)) == false )
+            if ( NEService::isResponseId(static_cast<msg_id>(updId)) == false )
             {
-                TRACE_SCOPE(GENERATED_CentralMessagerStub_processAttributeEvent);
+                TRACE_SCOPE(generated_CentralMessagerStub_processAttributeEvent);
                 TRACE_ERR("Unexpected notification request of attribute ID [ %d ] received in Stub [ %s ]!", updId, StubAddress::convAddressToPath(getAddress()).getString());
                 ASSERT(false);
             }

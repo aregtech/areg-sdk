@@ -1,14 +1,20 @@
-#ifndef AREG_BASE_IEBYTEBUFFER_HPP
-#define AREG_BASE_IEBYTEBUFFER_HPP
+#pragma once
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/base/IEByteBuffer.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, Byte Buffer interface.
  *              This is base class for classes supporting functionalities
  *              to control binary (Byte) buffer. Following classes are
- *              derived from this class: RawBuffer, SharedBuffer,
- *              FileBuffer
+ *              derived from this class: SharedBuffer, FileBuffer, etc.
  *
  ************************************************************************/
 /************************************************************************
@@ -18,46 +24,62 @@
 #include "areg/base/NEMemory.hpp"
 #include "areg/base/IECursorPosition.hpp"
 
+#include <memory>
+
 //////////////////////////////////////////////////////////////////////////
 // IEByteBuffer pure virtual class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief       This is base pure virtual class to support 
- *              binary (Byte) buffer basic functionalities. 
- *              All derived classes should overwrite pure virtual functions
- * 
- * \details     Byte Buffer is defined in namespace NEMemory (NEMemory::sByteBuffer).
- *              This class is an interface of basic functionalities.
- *              For more information about basic functionalities
- *              see description of functions
- *
+ * \brief   Binary (Byte) buffer bases class as a container of binary data.
  **/
 class AREG_API IEByteBuffer
 {
+    friend class BufferStreamBase;
+
 //////////////////////////////////////////////////////////////////////////
 // Defined static constants and types
 //////////////////////////////////////////////////////////////////////////
 protected:
+
+    /**
+     * \brief   Shared pointer deleter.
+     **/
+    using ByteBufferDeleter = NEMemory::BufferDeleter<NEMemory::sByteBuffer>;
+
     /**
      * \brief   IEByteBuffer::MAX_BUF_LENGTH
      *          Maximum length of byte buffer. It is defined as 1 Mb.
      **/
-    static const unsigned int   MAX_BUF_LENGTH  /*= static_cast<unsigned int>(67108864)*/;  /*0x04000000*/
+    static constexpr unsigned int   MAX_BUF_LENGTH  { 0x04000000u };
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 protected:
     /**
-     * \brief   Protected default constructor
+     * \brief   Protected default constructor.
+     **/
+    IEByteBuffer( void );
+
+    /**
+     * \brief   Initializes byte-buffer from given source
      **/
     IEByteBuffer( NEMemory::sByteBuffer & byteBuffer );
+
+    /**
+     * \brief   Moves byte-buffer from given source
+     **/
+    IEByteBuffer( IEByteBuffer && src ) noexcept;
 
 public:
     /**
      * \brief   Destructor 
      **/
-    virtual ~IEByteBuffer( void );
+    virtual ~IEByteBuffer( void ) = default;
+
+    /**
+     * \brief   Moves data from given source
+     **/
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations
@@ -66,37 +88,6 @@ public:
 /************************************************************************/
 // IEByteBuffer overrides
 /************************************************************************/
-
-    /**
-     * \brief   Adding reference in the byte buffer reference counter.
-     *          This is valid only in case of shared buffer.
-     *          In case of raw buffer, the reference counter should not be changed.
-     *          The reference counter prevents that the byte buffer is deleted / freed
-     *          by any other object. For example, if buffer structure is attached to 
-     *          byte buffer object instance, until reference counter is not reaching
-     *          to zero, it should not be deleted, since it might be used by other class
-     *          The reference counter of invalid buffer should not be changed at all.
-     *          To check buffer validation, call function isValid()
-     **/
-    virtual void addReference( void ) = 0;
-
-    /**
-     * \brief   Remove reference in the byte buffer reference counter.
-     *          This is valid only in case of shared buffer.
-     *          In case of raw buffer, the reference counter should not be changed.
-     *          If reference counter reaches zero, the buffer is not valid anymore 
-     *          and should be invalidated / deleted. The buffer of Invalid Buffer object
-     *          should not be deleted / freed at all. To check buffer validation,
-     *          call function isValid().
-     **/
-    virtual void removeReference( void ) = 0;
-
-    /**
-     * \brief   Invalidates the buffer. Removes reference, assigns to invalid buffer,
-     *          invalidates writing and reading positions.
-     **/
-    virtual void invalidate( void ) = 0;
-
     /**
      * \brief   Returns true if buffer is shared between several byte buffer instances.
      **/
@@ -109,9 +100,11 @@ public:
      **/
     virtual bool canShare( void ) const = 0;
 
-/************************************************************************/
-// IEByteBuffer Attributes and operations
-/************************************************************************/
+    /**
+     * \brief   Invalidates the buffer. Removes reference, assigns to invalid buffer,
+     *          invalidates writing and reading positions.
+     **/
+    virtual void invalidate( void );
 
     /**
      * \brief	Reserves space for byte buffer structure, if needed, 
@@ -132,41 +125,38 @@ public:
      **/
     virtual unsigned int resize(unsigned int size, bool copy);
 
-    /**
-     * \brief   Returns reference to the byte buffer.
-     **/
-    const NEMemory::sByteBuffer & getByteBuffer( void)  const;
+/************************************************************************/
+// IEByteBuffer Attributes and operations
+/************************************************************************/
 
     /**
-     * \brief   Returns reference to the byte buffer.
+     * \brief   Returns pointer to the byte buffer.
      **/
-    NEMemory::sByteBuffer & getByteBuffer( void );
+    inline const NEMemory::sByteBuffer * getByteBuffer( void)  const;
 
     /**
      * \brief   Returns true if buffer is either empty or is invalid.
      **/
-    bool isEmpty( void ) const;
+    inline bool isEmpty( void ) const;
 
     /**
      * \brief   Returns the use
      **/
-    unsigned int getSizeUsed( void ) const;
+    inline unsigned int getSizeUsed( void ) const;
     
     /**
      * \brief   Returns the constant pointer to the data buffer of byte buffer
      **/
-    const unsigned char * getBuffer( void ) const;
+    inline const unsigned char * getBuffer( void ) const;
 
     /**
      * \brief   Returns pointer to the data buffer of byte buffer
      **/
-    unsigned char * getBuffer( void );
+    inline unsigned char * getBuffer( void );
 
     /**
      * \brief   Checks whether the buffer is valid or not.
-     *          Byte buffer is invalid if it is equal to NEMemory::InvalidBuffer
      *          No read / write should be performed on invalid buffer.
-     *          The memory used by invalid buffer should not be freed / deleted.
      **/
     inline bool isValid( void ) const;
     
@@ -186,6 +176,11 @@ public:
 // Protected internal members
 //////////////////////////////////////////////////////////////////////////
 protected:
+
+    /**
+     * \brief   Returns pointer to the byte buffer.
+     **/
+    inline NEMemory::sByteBuffer * getByteBuffer( void );
 
     /**
      * \brief	Sets the used size value in byte buffer object.
@@ -216,7 +211,7 @@ protected:
      *          If needed, it will copy existing binary data to passed buffer.
      *          The function is called from child classes when new byte buffer
      *          is created and the existing data should be passed to new buffer.
-     * \param	newBuffer	The buffer to initialize. If NULL, the buffer object. 
+     * \param	newBuffer	The buffer to initialize. If nullptr, the buffer object. 
      * \param	bufLength	The length of entire buffer, i.e. length of complete byte buffer.
      * \param	makeCopy	If 'true' it will make copy of existing buffer
      * \return	Returns the current writing position in initialized buffer.
@@ -247,38 +242,38 @@ protected:
 // Member variables
 //////////////////////////////////////////////////////////////////////////
 
+#if defined(_MSC_VER) && (_MSC_VER > 1200)
+    #pragma warning(disable: 4251)
+#endif  // _MSC_VER
+
     /**
-     * \brief   Pointer to Byte Buffer structure. Must not be NULL. When invalidated, points to NEMemory::InvalidBuffer object.
+     * \brief   Pointer to Byte Buffer structure.
      **/
-    mutable NEMemory::sByteBuffer * mByteBuffer;
+    mutable std::shared_ptr<NEMemory::sByteBuffer> mByteBuffer;
+
+#if defined(_MSC_VER) && (_MSC_VER > 1200)
+    #pragma warning(default: 4251)
+#endif  // _MSC_VER
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    IEByteBuffer( void );
-    IEByteBuffer( const IEByteBuffer & /*src*/ );
-    const IEByteBuffer & operator = ( const IEByteBuffer & /*src*/ );
+    DECLARE_NOCOPY( IEByteBuffer );
 };
 
 //////////////////////////////////////////////////////////////////////////
 // IEByteBuffer class inline function implementation
 //////////////////////////////////////////////////////////////////////////
-#ifndef IS_BUFFER_NULL
-    #define IS_BUFFER_NULL(buf)     ((buf) == static_cast<NEMemory::sByteBuffer *>(NULL))
-#endif // !IS_BUFFER_NULL
 
-
-inline const NEMemory::sByteBuffer & IEByteBuffer::getByteBuffer(void) const
+inline const NEMemory::sByteBuffer * IEByteBuffer::getByteBuffer(void) const
 {
-    ASSERT( !IS_BUFFER_NULL(mByteBuffer) );
-    return (*mByteBuffer);
+    return mByteBuffer.get();
 }
 
-inline NEMemory::sByteBuffer & IEByteBuffer::getByteBuffer(void)
+inline NEMemory::sByteBuffer * IEByteBuffer::getByteBuffer( void )
 {
-    ASSERT( !IS_BUFFER_NULL(mByteBuffer) );
-    return (*mByteBuffer);
+    return mByteBuffer.get( );
 }
 
 inline bool IEByteBuffer::isEmpty( void ) const
@@ -293,45 +288,43 @@ inline unsigned int IEByteBuffer::getSizeUsed( void ) const
 
 inline const unsigned char* IEByteBuffer::getBuffer( void ) const
 {
-    return NEMemory::getBufferDataRead(mByteBuffer);
+    return NEMemory::getBufferDataRead(mByteBuffer.get());
 }
 
 inline unsigned char* IEByteBuffer::getBuffer( void )
 {
-    return NEMemory::getBufferDataWrite(mByteBuffer);
+    return NEMemory::getBufferDataWrite(mByteBuffer.get());
 }
 
 inline bool IEByteBuffer::isValid( void ) const
 {
-    return NEMemory::isBufferValid(mByteBuffer);
+    return (mByteBuffer.get() != nullptr);
 }
 
 inline unsigned int IEByteBuffer::getSizeAvailable( void ) const
 {
-    ASSERT( !IS_BUFFER_NULL(mByteBuffer) );
     return (isValid() ? mByteBuffer->bufHeader.biLength : 0);
 }
 
 inline NEMemory::eBufferType IEByteBuffer::getType( void ) const
 {
-    ASSERT( !IS_BUFFER_NULL(mByteBuffer) );
-    return mByteBuffer->bufHeader.biBufType;
+    return (isValid() ? mByteBuffer->bufHeader.biBufType : NEMemory::eBufferType::BufferUnknown);
 }
 
 inline void IEByteBuffer::setSizeUsed(unsigned int newSize)
 {
     if (isValid() && newSize <= getSizeAvailable())
+    {
         mByteBuffer->bufHeader.biUsed = newSize;
+    }
 }
 
-const unsigned char * IEByteBuffer::getEndOfBuffer(void) const
+inline const unsigned char * IEByteBuffer::getEndOfBuffer(void) const
 {
-    return (isValid() ? NEMemory::getBufferDataRead(mByteBuffer) + mByteBuffer->bufHeader.biUsed : NULL);    
+    return (isValid() ? NEMemory::getBufferDataRead(mByteBuffer.get()) + mByteBuffer->bufHeader.biUsed : nullptr);    
 }
 
-unsigned char * IEByteBuffer::getEndOfBuffer(void)
+inline unsigned char * IEByteBuffer::getEndOfBuffer(void)
 {
-    return (isValid() ? NEMemory::getBufferDataWrite(mByteBuffer) + mByteBuffer->bufHeader.biUsed : NULL);    
+    return (isValid() ? NEMemory::getBufferDataWrite(mByteBuffer.get()) + mByteBuffer->bufHeader.biUsed : nullptr);
 }
-
-#endif  // AREG_BASE_IEBYTEBUFFER_HPP

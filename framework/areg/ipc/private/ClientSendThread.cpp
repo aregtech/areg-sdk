@@ -1,7 +1,15 @@
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/ipc/private/ClientSendThread.cpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform Send Message Thread
  ************************************************************************/
 #include "areg/ipc/private/ClientSendThread.hpp"
@@ -11,25 +19,25 @@
 #include "areg/ipc/IERemoteServiceHandler.hpp"
 
 #include "areg/trace/GETrace.h"
+
 DEF_TRACE_SCOPE(areg_ipc_private_ClientSendThread_runDispatcher);
 
 ClientSendThread::ClientSendThread( IERemoteServiceHandler & remoteService, ClientConnection & connection )
-    : DispatcherThread  ( NEConnection::CLIENT_SEND_MESSAGE_THREAD )
+    : DispatcherThread  ( NEConnection::CLIENT_SEND_MESSAGE_THREAD.data() )
     , mRemoteService    ( remoteService )
     , mConnection       ( connection )
 {
-    ; // do nothing
 }
 
 ClientSendThread::~ClientSendThread(void)
 {
-    ; // do nothing
 }
 
 bool ClientSendThread::runDispatcher(void)
 {
     TRACE_SCOPE(areg_ipc_private_ClientSendThread_runDispatcher);
     TRACE_DBG("Starting client service dispatcher thread [ %s ]", getName().getString());
+
     SendMessageEvent::addListener( static_cast<IESendMessageEventConsumer &>(*this), static_cast<DispatcherThread &>(*this));
 
     bool result = DispatcherThread::runDispatcher();
@@ -53,5 +61,5 @@ void ClientSendThread::processEvent( const SendMessageEventData & data )
 
 bool ClientSendThread::postEvent(Event & eventElem)
 {
-    return ( RUNTIME_CAST(&eventElem, SendMessageEvent) != NULL ? EventDispatcher::postEvent(eventElem) : false );
+    return ( RUNTIME_CAST(&eventElem, SendMessageEvent) != nullptr ? EventDispatcher::postEvent(eventElem) : false );
 }

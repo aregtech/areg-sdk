@@ -1,9 +1,16 @@
-#ifndef AREG_IPC_IEREMOTESERVICE_HPP
-#define AREG_IPC_IEREMOTESERVICE_HPP
+#pragma once
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/ipc/IERemoteService.hpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, Remote Service Interface
  ************************************************************************/
 
@@ -59,10 +66,10 @@ public:
      * \brief   Call to configure remote service. The passed file name
      *          can be either absolute or relative path.
      *          The function will read configuration file and initialize settings.
-     *          If file path is NULL or empty, Remote Service will have default 
+     *          If file path is nullptr or empty, Remote Service will have default 
      *          configuration settings.
      * \param   configFile  Relative or absolute path of remote service configuration file.
-     *                      If NULL or empty, it will use default settings.
+     *                      If nullptr or empty, it will use default settings.
      * \return  Returns true if system could configure. Otherwise, it returns false.
      **/
     virtual bool configureRemoteServicing( const char * configFile ) = 0;
@@ -145,8 +152,5 @@ public:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    IERemoteService( const IERemoteService & /*src*/ );
-    const IERemoteService & operator = ( const IERemoteService & /*src*/ );
+    DECLARE_NOCOPY_NOMOVE( IERemoteService );
 };
-
-#endif  // AREG_IPC_IEREMOTESERVICE_HPP

@@ -32,15 +32,15 @@ bool ConnectionHandler::IsValid(void) const
 bool ConnectionHandler::AddConnection(const NECommon::sConnection & newConnection)
 {
     Lock lock(mLock);
-    int pos = NECommon::InvalidIndex;
+    int pos = NECommon::INVALID_INDEX;
     
     if (newConnection.nickName != mNickName)
     {
         findConnection(newConnection);
-        if ( pos == NECommon::InvalidIndex )
+        if ( pos == NECommon::INVALID_INDEX )
             mListConnections.add(newConnection);
     }
-    return (pos == NECommon::InvalidIndex);
+    return (pos == NECommon::INVALID_INDEX);
 }
 
 int ConnectionHandler::AddConnections(const NECommon::ListConnections & listConnections)
@@ -52,7 +52,7 @@ int ConnectionHandler::AddConnections(const NECommon::ListConnections & listConn
         const NECommon::sConnection & entry = listConnections.getAt(i);
         if (entry.nickName != mNickName)
         {
-            if (findConnection(entry) == NECommon::InvalidIndex)
+            if (findConnection(entry) == NECommon::INVALID_INDEX)
             {
                 mListConnections.add(entry);
                 ++ result;
@@ -66,20 +66,20 @@ bool ConnectionHandler::RemoveConnection(const NECommon::sConnection & connectio
 {
     Lock lock(mLock);
     int pos = findConnection(connection);
-    if ( pos != NECommon::InvalidIndex )
+    if ( pos != NECommon::INVALID_INDEX )
         mListConnections.removeAt(pos);
-    return (pos != NECommon::InvalidIndex);
+    return (pos != NECommon::INVALID_INDEX);
 }
 
 bool ConnectionHandler::ConnectionExist(const NECommon::sConnection & connection)
 {
     Lock lock(mLock);
-    return ( findConnection(connection) != NECommon::InvalidIndex);
+    return ( findConnection(connection) != NECommon::INVALID_INDEX);
 }
 
 int ConnectionHandler::findConnection(const NECommon::sConnection & connection) const
 {
-    int result = NECommon::InvalidIndex;
+    int result = NECommon::INVALID_INDEX;
     for (int i = 0; i < mListConnections.getSize(); ++i)
     {
         const NECommon::sConnection & entry = mListConnections.getAt(i);

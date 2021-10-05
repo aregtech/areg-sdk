@@ -1,9 +1,16 @@
-#ifndef AREG_BASE_THREAD_HPP
-#define AREG_BASE_THREAD_HPP
+#pragma once
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/base/Thread.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, Thread class
  *              Base class for all kind of threads. Use this class or
  *              any derived class if need to access class object
@@ -17,10 +24,13 @@
 #include "areg/base/GEGlobal.h"
 #include "areg/base/RuntimeObject.hpp"
 
+#include "areg/base/NECommon.hpp"
 #include "areg/base/ThreadAddress.hpp"
-#include "areg/base/EContainers.hpp"
+#include "areg/base/Containers.hpp"
 #include "areg/base/TEResourceMap.hpp"
 #include "areg/base/String.hpp"
+
+#include <string_view>
 
 /************************************************************************
  * Dependencies
@@ -28,55 +38,26 @@
 class ThreadLocalStorage;
 class IEThreadConsumer;
 class IEInStream;
+class String;
 
-/**
- * \brief       This is base class for all kinds of threads.
- *              Use this class of any of derived class if there is need
- *              to access thread object by unique name, ID or handle.
- *              The class creates and destroys thread and support
- *              other basic functionalities. The thread class is
- *              an instance of Runtime Object and the Runtime type
- *              can be checked at any time.
- *              To instantiate the class the reference to
- *              IEThreadConsumer should be passed to trigger
- *              Run() and Exit() functions. All threads should have
- *              unique name. If the name of thread is not passed,
- *              it will be automatically generated.
- *              Every thread contains Thread Address and the instances
- *              of threads can be accessed by referring to Thread Address.
- *              The thread address is unique within system. It contains
- *              process ID and thread name information.
- * 
- * \details     Every thread has Address and the thread address is unique
- *              within system. It contains Process ID and the unique within
- *              process thread name. Creating and Destroying thread 
- *              supports waiting functionality. The calling thread
- *              will wait as long, until either new created thread 
- *              is running or timeout expired.
- *              The thread consumer object reference should be passed in
- *              the constructor of thread object to trigger appropriate.
- *              For more details about Thread Consumer see IEThreadConsumer
- *              interface description.
- *              Thread Objects are runtime object instances. If system
- *              supports different types of threads (dispatcher thread,
- *              worker thread, etc.) their types can be checked by runtime
- *              information.
- *              When thread is started, it initializes local storage.
- *              In thread local storage can be saved any instantiated element
- *              by its name. The local storage is deleted when thread exists.
- *              Any element, which is instantiated and saved in local storage
- *              by pointer, should be deleted before thread exists.
- *              The local storage is valid and accessible only within
- *              thread context. Which means that it is impossible to
- *              access local storage from another thread.
- *              For more information of using thread local storage
- *              see ThreadLocalStorage interface.
- *
- * \see         IEThreadConsumer, ThreadLocalStorage
- **/
 //////////////////////////////////////////////////////////////////////////
 // Thread class declaration
 //////////////////////////////////////////////////////////////////////////
+
+/**
+ * \brief   A base class of all thread objects running int the system.
+ *          Use this or derived classes to keep tracking of instantiated and running thread
+ *          that can be accessed by ID, unique names or handles. The class creates (starts) 
+ *          and destroys (stops) thread. To implement the cyclic runs, the object requires
+ *          instance of thread consumer (IEThreadConsumer). It as well provides the possibility
+ *          to save thread specific storage to store objects that are not accessible outside
+ *          of the thread context.
+ * 
+ *          The derived objects are Dispather, Worker and Component threads that are able
+ *          to receive and process thread specific events.
+ *
+ * \see     IEThreadConsumer, ThreadLocalStorage, DispatcherThread, WorkerThread, ComponentThread
+ **/
 class AREG_API Thread  : public RuntimeObject
 {
 /************************************************************************/
@@ -95,7 +76,7 @@ public:
      * \brief   Thread::eCompletionStatus
      *          Thread Completion status used as return value on destroy thread
      **/
-    typedef enum E_CompletionStatus
+    typedef enum class E_CompletionStatus : int
     {
           ThreadTerminated  = -1    //!< The thread was terminate because waiting timeout expired
         , ThreadCompleted   = 0     //!< The thread was valid and normally completed
@@ -108,7 +89,7 @@ public:
      *          By default, the thread is created by Normal priority.
      *          Increase or decrease thread priority if need.
      **/
-    typedef enum E_ThreadPriority
+    typedef enum class E_ThreadPriority : int
     {
           PriorityUndefined = MIN_INT_32    //!< Undefined priority. If thread is created and not valid
         , PriorityLowest    = -2            //!< Lowest priority level
@@ -124,70 +105,10 @@ public:
     inline static const char * getString( Thread::eThreadPriority threadPriority );
 
     /**
-     * \brief   Thread::DO_NOT_WAIT
-     *          Constant, indicating do not wait for thread start
-     **/
-    static const unsigned int   DO_NOT_WAIT                 = static_cast<unsigned int>(0);                 /*0x00000000*/
-    /**
-     * \brief   Thread::WAIT_SWITCH
-     *          Constant, used to switch the thread. Minimum waiting time.
-     **/
-    static const unsigned int   WAIT_SWITCH                 = static_cast<unsigned int>(1);
-    /**
-     * \brief   Thread::WAIT_1_MILLISECOND
-     *          Constant, wait for 1 millisecond of created thread startup
-     **/
-    static const unsigned int   WAIT_1_MILLISECOND          = static_cast<unsigned int>(1);
-    /**
-     * \brief   Thread::WAIT_5_MILLISECONDS
-     *          Constant, wait for 5 milliseconds of created thread startup
-     **/
-    static const unsigned int   WAIT_5_MILLISECONDS         = static_cast<unsigned int>(5);
-    /**
-     * \brief   Thread::WAIT_10_MILLISECONDS
-     *          Constant, wait for 10 milliseconds of created thread startup
-     **/
-    static const unsigned int   WAIT_10_MILLISECONDS       = static_cast<unsigned int>(10);
-    /**
-     * \brief   Thread::WAIT_50_MILLISECONDS
-     *          Constant, wait for 10 milliseconds of created thread startup
-     **/
-    static const unsigned int   WAIT_50_MILLISECONDS        = static_cast<unsigned int>(50);
-    /**
-     * \brief   Thread::WAIT_100_MILLISECONDS
-     *          Constant, wait for 100 milliseconds of created thread startup
-     **/
-    static const unsigned int   WAIT_100_MILLISECONDS       = static_cast<unsigned int>(100);
-    /**
-     * \brief   Thread::WAIT_500_MILLISECONDS
-     *          Constant, wait for 500 milliseconds of created thread startup
-     **/
-    static const unsigned int   WAIT_500_MILLISECONDS       = static_cast<unsigned int>(500);
-    /**
-     * \brief   Thread::WAIT_1_SECOND
-     *          Constant, wait for 1 second of created thread startup
-     **/
-    static const unsigned int   WAIT_1_SECOND               = static_cast<unsigned int>(1 * 1000);
-    /**
-     * \brief   Thread::WAIT_5_SECONDS
-     *          Constant, wait for 5 seconds of created thread startup
-     **/
-    static const unsigned int   WAIT_5_SECONDS              = static_cast<unsigned int>(5 * 1000);
-    /**
-     * \brief   Thread::WAIT_10_SECONDS
-     *          Constant, wait for 10 seconds of created thread startup
-     **/
-    static const unsigned int   WAIT_10_SECONDS             = static_cast<unsigned int>(10 * 1000);
-    /**
-     * \brief   Thread::WAIT_INFINITE
-     *          Constant, wait until created thread did not start
-     **/
-    static const unsigned int   WAIT_INFINITE               /*= INFINITE*/; // 0xFFFFFFFF
-    /**
      * \brief   Thread::INVALID_THREAD_ID
      *          Invalid thread ID.
      **/
-    static const ITEM_ID        INVALID_THREAD_ID           /*= 0*/;
+    static constexpr id_type            INVALID_THREAD_ID           = static_cast<unsigned int>(0u);
 
 private:
 /************************************************************************/
@@ -197,31 +118,13 @@ private:
      * \brief   Thread::INVALID_THREAD_HANDLE
      *          Thread invalid handle
      **/
-    static THREADHANDLE const       INVALID_THREAD_HANDLE   /*= static_cast<void *>(NULL)*/;
-
-    /**
-     * \brief   Thread::DEFAULT_THREAD_PREFIX
-     *          Internal thread naming prefix. Used to generate unique thread name.
-     **/
-    static const char * const       DEFAULT_THREAD_PREFIX   /*= "_AREG_GThread_"*/;
+    static constexpr THREADHANDLE       INVALID_THREAD_HANDLE       = nullptr;
 
     /**
      * \brief   Thread::CURRENT_THREAD
      *          Identified Current Thread. Used for Local Storage
      **/
-    static Thread * const         CURRENT_THREAD          /*= reinterpret_cast<Thread *>(-1)*/; /*0xFFFFFFFF*/
-
-    /**
-     * \brief   Thread::STORAGE_THREAD_CONSUMER
-     *          The name of entry in Thread Local Storage to save pointer of Thread Consumer.
-     **/
-    static const char * const       STORAGE_THREAD_CONSUMER /*= "ThreadConsumer"*/;
-
-    /**
-     * \brief   Thread::SET_NAME_MS_VC_EXCEPTION
-     *          MS Exception value, used to set thread name.
-     **/
-    static const unsigned int       SET_NAME_MS_VC_EXCEPTION/*= 0x406D1388*/;
+    static Thread * const               CURRENT_THREAD          /*= reinterpret_cast<Thread *>(~0)*/;
 
 //////////////////////////////////////////////////////////////////////////
 // Declare Thread as runtime object
@@ -233,19 +136,18 @@ private:
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief	Initialize Thread object, indicate thread consumer and
-     *          pass thread name, set after creating.
-     * \param	threadConsumer	Reference to thread consumer interface
-     * \param	threadName	    Thread name to set immediately after create
-     *                          Thread name can be useful during debugging.
-     *                          If no thread name is passed, the unique
-     *                          name will be generated by system.
+     * \brief	Initialize Thread object, sets the instance of thread consumer
+     *          and optional thread name.
+     * \param	threadConsumer	The valid instance of thread consumer object.
+     * \param	threadName	    The thread name to set and track in the system.
+     *                          It should be unique name to be able to track.
+     *                          If nullptr or the name is duplicated, the system will not
+     *                          be able to track the thread by name.
      **/
-    Thread( IEThreadConsumer & threadConsumer, const char * threadName = NULL);
+    Thread( IEThreadConsumer & threadConsumer, const char * threadName = nullptr);
 
     /**
-     * \brief	Destructor. 
-     *          Ensures that thread handle is closed before destroying object
+     * \brief	Free thread resources and ensures that thread handle is closed.
      **/
     virtual ~Thread( void );
 
@@ -260,56 +162,50 @@ public:
     /**
      * \brief	Creates and Starts thread, if it was not created before.
      *          If thread was already created, no action will be performed.
-     *          After creating thread, current calling thread may be blocked
-     *          until new created thread did not resume. The waiting timeout
-     *          is specified in waitForStartMs.
-     * \param	waitForStartMs	Waiting time out in milliseconds until new
-     *                          created thread starts running.
-     *                          If DO_NOT_WAIT, current thread will not be
-     *                          blocked and will continue execution.
-     *                          if WAIT_INFINITE, current thread will be blocked
-     *                          as long, until new created thread did not resume
+     * \param	waitForStartMs	Waiting time out in milliseconds until thread
+     *                          is created and running.
+     *                          -   Set DO_NOT_WAIT to escape waiting. The function
+     *                              returns immediately when thread is created and
+     *                              gives no guarantie that it already runs.
+     *                          -   Set WAIT_INFINITE to ensure that thread is running.
+     *                          -   Set any other value in milliseconds to specify waiting time
+     *                              until thread starts running or timeout expires.
      * \return	Returns true if new thread is successfully created and started.
      **/
-    virtual bool createThread( unsigned int waitForStartMs = Thread::DO_NOT_WAIT );
+    virtual bool createThread( unsigned int waitForStartMs = NECommon::DO_NOT_WAIT );
 
     /**
-     * \brief	Destroys thread and free resources. Once thread is destroyed,
+     * \brief	Destroys thread and frees resources. Once thread is destroyed,
      *          it can be re-created again. The calling thread (current thread)
-     *          may be blocked until target thread is not destroyed.
-     * \param	waitForStopMs	Waiting time out in milliseconds until
-     *                          target thread is not finished running.
-     *                          If DO_NOT_WAIT, calling thread (current thread)
-     *                          will not be blocked and will not wait until target
-     *                          thread finished running. It will immediately
-     *                          close thread handle and free resources.
-     *                          If WAIT_INFINITE, calling (current) thread will wait
-     *                          until target thread completes running.
-     *                          Any other value may cause thread termination if 
-     *                          waiting time is expired and the target thread still runs.
+     *          may be blocked until target thread is destroyed.
+     * \param	waitForStopMs	Waiting time out in milliseconds until target thread is finis run.
+     *                          -   Set DO_NOT_WAIT to trigger exit thread and immediately return
+     *                              without waiting for thread to complete job.
+     *                          -   Set WAIT_INFINITE to wait until thread completes job and exit.
+     *                          -   Set any other value in milliseconds to specify waiting time
+     *                              until thread completes the job or timeout expires.
      * \return	Returns the thread completion status. The following statuses are defined:
      *              Thread::ThreadTerminated  -- The waiting timeout expired and thread was terminated;
      *              Thread::ThreadCompleted   -- The thread was valid and completed normally;
      *              Thread::ThreadInvalid     -- The thread was not valid and was not running, nothing was done.
      **/
-    virtual Thread::eCompletionStatus destroyThread( unsigned int waitForStopMs = Thread::DO_NOT_WAIT );
+    virtual Thread::eCompletionStatus destroyThread( unsigned int waitForStopMs = NECommon::DO_NOT_WAIT );
 
     /**
-     * \brief   In this object, it calls destroyThread with infinite timeout.
-     *          In each thread class the shutdown procedure may differ. For more details see description in each class
-     *          derived from Thread.
+     * \brief   It calls destroyThread() with infinite timeout. In each thread class the shutdown procedure may differ.
+     *          For more details see description in each class derived from Thread.
      **/
     virtual void shutdownThread( void );
 
     /**
      * \brief   Wait for thread completion. It will neither sent exit message, nor terminate thread.
-     *          The function waits as long, until the thread is not completed.
-     *          It will return true if thread has been completed or waiting timeout is Thread::DO_NOT_WAIT.
-     *          If thread exists normally, it will return true.
-     * \param   waitForCompleteMs   The timeout to wait for completion.
-     * \return  Returns true if either thread completed or the waiting timeout is Thread::DO_NOT_WAIT.
+     *          The function waits as long, until the thread is completed or timeout is expired.
+     *          It will return true if thread has been completed and exits normally, or the waiting 
+     *          timeout is NECommon::DO_NOT_WAIT.
+     * \param   waitForCompleteMs   The timeout in milliseconds to wait for completion.
+     * \return  Returns true if either thread completed or the waiting timeout is NECommon::DO_NOT_WAIT.
      **/
-    virtual bool completionWait( unsigned int waitForCompleteMs = Thread::WAIT_INFINITE );
+    virtual bool completionWait( unsigned int waitForCompleteMs = NECommon::WAIT_INFINITE );
 
 /************************************************************************
  * Attributes
@@ -321,16 +217,15 @@ public:
     inline bool isRunning( void ) const;
 
     /**
-     * \brief   Returns true if thread is valid. 
-     *          The valid thread has valid handle, valid thread ID,
-     *          but no need that valid thread is running.
+     * \brief   Returns true if thread is valid. The valid thread has valid handle, valid thread ID.
+     *          The valid thread no necessarily is running.
      **/
     inline bool isValid( void ) const;
 
     /**
      * \brief   Returns thread ID
      **/
-    inline ITEM_ID getId( void ) const;
+    inline id_type getId( void ) const;
 
     /**
      * \brief   Returns thread name
@@ -361,7 +256,7 @@ public:
 
     /**
      * \brief   Returns thread current priority level. By default, thread is created with Normal priority level
-     *          If thread is not created, returns Timer::UndefinedPriority.
+     *          If thread is not created, returns Thread::UndefinedPriority.
      *          If thread is created, returns following values:
      *              - Thread::PriorityLowest  -- The lowest priority level
      *              - Thread::PriorityLow     -- Priority below Normal and above Lowest
@@ -377,26 +272,26 @@ public:
 
     /**
      * \brief	Search by thread name and return pointer the thread object.
-     *          If name could not find, returns NULL
+     *          If name could not find, returns nullptr
      * \param	threadName	The unique name of thread to search
-     * \return	If not NULL, the thread object was found.
+     * \return	If not nullptr, the thread object was found.
      **/
     inline static Thread * findThreadByName( const char * threadName) ;
 
     /**
      * \brief	Search by thread ID and return pointer the thread object.
-     *          If ID could not find, returns NULL
+     *          If ID could not find, returns nullptr
      * \param	threadID    The unique ID of thread to search
-     * \return	If not NULL, the thread object was found.
+     * \return	If not nullptr, the thread object was found.
      **/
-    inline static Thread * findThreadById( ITEM_ID threadId );
+    inline static Thread * findThreadById( id_type threadId );
 
     /**
      * \brief	Search by thread context and return pointer the thread object.
-     *          If Context could not find, returns NULL
+     *          If Context could not find, returns nullptr
      * \param	threadContext   The unique Context of thread.
      *                          It contains Process and Thread IDs information
-     * \return	If not NULL, the thread object was found.
+     * \return	If not nullptr, the thread object was found.
      **/
     inline static Thread * findThreadByAddress( const ThreadAddress & threadAddres );
 
@@ -407,7 +302,7 @@ public:
      * \return	If found, returns valid thread address object.
      *          Otherwise returns invalid thread address.
      **/
-    inline static const ThreadAddress & findThreadAddressById( ITEM_ID threadId );
+    inline static const ThreadAddress & findThreadAddressById( id_type threadId );
 
     /**
      * \brief   Lookup Thread by thread name and returns Thread Address object,
@@ -434,7 +329,7 @@ public:
     /**
      * \brief   Return the ID of current thread.
      **/
-    static ITEM_ID getCurrentThreadId( void );
+    static id_type getCurrentThreadId( void );
 
     /**
      * \brief   Returns the thread object of current thread.
@@ -446,7 +341,7 @@ public:
      * \brief   Returns the name of current thread.
      *          If Thread is not registered, returns empty string.
      **/
-    static inline const char * getCurrentThreadName( void );
+    static inline const String & getCurrentThreadName( void );
 
     /**
      * \brief   Returns the address of current thread.
@@ -468,13 +363,13 @@ public:
      * \brief   Returns the name of thread by specified ID. 
      *          If Thread is not registered, returns empty string.
      **/
-    static const char * getThreadName( ITEM_ID threadId );
+    static const String & getThreadName( id_type threadId );
 
     /**
      * \brief   Returns the address of thread by specified ID. 
      *          If Thread is not registered, returns invalid address.
      **/
-    static const ThreadAddress & getThreadAddress( ITEM_ID threadId );
+    static const ThreadAddress & getThreadAddress( id_type threadId );
 
 /************************************************************************/
 // Thread debugging function
@@ -516,7 +411,7 @@ protected:
      * \param   threadId    If method succeeds, on output is valid thread ID.
      * \return  If succeed, returns pointer to valid thread object.
      **/
-    static Thread * getFirstThread( ITEM_ID & OUT threadId );
+    static Thread * getFirstThread( id_type & OUT threadId );
 
     /**
      * \brief   Returns the next thread element resource map.
@@ -524,7 +419,7 @@ protected:
      *                      If method succeeds, on output is valid thread ID.
      * \return  If succeed, returns pointer to valid thread object.
      **/
-    static Thread * getNextThread( ITEM_ID & IN OUT threadId );
+    static Thread * getNextThread( id_type & IN OUT threadId );
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -542,7 +437,7 @@ protected:
     /**
      * \brief   The ID of thread.
      **/
-    ITEM_ID                 mThreadId;
+    id_type                 mThreadId;
     /**
      * \brief   Thread address, containing process ID and thread ID info
      **/
@@ -558,7 +453,7 @@ protected:
     /**
      * \brief   Object to synchronize data access
      **/
-    mutable CriticalSection mSynchObject;
+    mutable ResourceLock    mSynchObject;
     /**
      * \brief   Synchronization Event object, signaled when new created thread starts running
      **/
@@ -613,7 +508,7 @@ private:
      * \brief   POSIX specific thread routine.
      *          This calls _defaultThreadFunction.
      * \param   data    Pointer to the thread object.
-     * \return  Returns NULL.
+     * \return  Returns nullptr.
      **/
     static void * _posixThreadRoutine( void * data);
 
@@ -638,18 +533,18 @@ private:
      * \param	threadName	The name to set.
      * \return	
      **/
-    static void _setThreadName(ITEM_ID threadId, const char* threadName);
+    static void _setThreadName( id_type threadId, const char* threadName);
 
     /**
      * \brief   Creates new, returns current or deletes existing Local Thread Storage
-     *          object, depending on ownThread parameter. If ownThread is NULL, deletes
+     *          object, depending on ownThread parameter. If ownThread is nullptr, deletes
      *          Thread Local Storage. If ownThread is a valid pointer and not equal to
      *          Thread::CURRENT_THREAD, creates new storage, otherwise returns existing.
      *          This function is initialized in Thread Procedure (_defaultThreadFunction)
      *          and deleted on exit from thread procedure.
      * \param   ownThread   The Thread Object owning local storage.
      *                      a) if Thread::CURRENT_THREAD,  returns existing local storage;
-     *                      b) if NULL, deletes existing local storage (created before);
+     *                      b) if nullptr, deletes existing local storage (created before);
      *                      c) if pointer of valid Thread Object, creates local storage 
      *                          (called in Thread Procedure).
      *                      Use only with Thread::CURRENT_THREAD
@@ -659,20 +554,20 @@ private:
 
     /**
      * \brief	Search by thread handle and return pointer the thread object.
-     *          If handle could not find, returns NULL
+     *          If handle could not find, returns nullptr
      * \param	threadHandle    The unique handle of thread to search
-     * \return	If not NULL, the thread object was found.
+     * \return	If not nullptr, the thread object was found.
      **/
     inline static Thread * _findThreadByHandle( THREADHANDLE threadHandle );
 
     /**
      * \brief   Searches in resources make thread by ID.
-     *          Returns thread handle, if found. Otherwise, returns NULL.
+     *          Returns thread handle, if found. Otherwise, returns nullptr.
      * \param   threadId    The ID of thread to search.
-     * \return  If not NULL, the handle of valid thread returned.
+     * \return  If not nullptr, the handle of valid thread returned.
      *          Otherwise, the thread is invalid, meaning not exists, not created or already closed.
      **/
-    inline static THREADHANDLE _findThreadHandleById(ITEM_ID threadId);
+    inline static THREADHANDLE _findThreadHandleById( id_type threadId);
 
     /**
      * \brief   System depended call. Closes the handle object of thread.
@@ -688,25 +583,25 @@ private:
      * \brief   Thread resource mapping by thread ID.
      *          The unique thread ID is set when thread is created
      **/
-    typedef TEIdHashMapImpl<Thread *>                                                   ImplMapThreadID;
-    typedef TEIdHashMap<Thread *, Thread *, ImplMapThreadID>                            MapThreadID;
-    typedef TEResourceMapImpl<ITEM_ID, Thread>                                          ImplThreadIDResource;
-    typedef TELockResourceMap<ITEM_ID, Thread, MapThreadID,ImplThreadIDResource>        MapThreadIDResource;
+    using   ImplMapThreadID         = TEHashMapImpl<id_type, Thread *>;
+    using   MapThreadID             = TEIdHashMap<Thread *, Thread *, ImplMapThreadID>;
+    using   ImplThreadIDResource    = TEResourceMapImpl<id_type, Thread>;
+    typedef TELockResourceMap<id_type, Thread, MapThreadID,ImplThreadIDResource>        MapThreadIDResource;
     /**
      * \brief   Thread resource mapping by thread handle. 
      *          The unique thread handle can be used to access thread object.
      **/
-    typedef TEPointerHashMapImpl<Thread *>                                              ImplMapThreadHandle;
-    typedef TEPointerHashMap<Thread *, Thread *, ImplMapThreadHandle>                   MapThreadHandle;
-    typedef TEResourceMapImpl<void *, Thread>                                           ImplThreadHandleResource;
-    typedef TELockResourceMap<void *, Thread, MapThreadHandle,ImplThreadHandleResource> MapThreadHandleResource;
+    using   ImplMapThreadHandle     = TEPointerHashMapImpl<void *, Thread *>;
+    using   MapThreadPoiters        = TEPointerHashMap<Thread *, Thread *, ImplMapThreadHandle>;
+    using   ImplThreadHandleResource= TEResourceMapImpl<void *, Thread>;
+    typedef TELockResourceMap<void *, Thread, MapThreadPoiters,ImplThreadHandleResource> MapThreadHandleResource;
     /**
      * \brief   Thread resource mapping by thread name. 
      *          The unique thread name can be used to access thread object.
      **/
-    typedef TEStringHashMapImpl<Thread *>                                               ImplMapThreadName;
-    typedef TEStringHashMap<Thread *, Thread *, ImplMapThreadName>                      MapThreadName;
-    typedef TEResourceMapImpl<String, Thread>                                           ImplThreadNameResource;
+    using   ImplMapThreadName       = TEHashMapImpl<const String &, Thread *>;
+    using   MapThreadName           = TEStringHashMap<Thread *, Thread *, ImplMapThreadName>;
+    using   ImplThreadNameResource  = TEResourceMapImpl<String, Thread>;
     typedef TELockResourceMap<String, Thread, MapThreadName, ImplThreadNameResource>    MapThreadNameResource;
 
 /************************************************************************/
@@ -726,9 +621,8 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    Thread( void );
-    Thread( const Thread & /*src*/ );
-    const Thread & operator = ( const Thread & /*src*/ );
+    Thread( void ) = delete;
+    DECLARE_NOCOPY_NOMOVE( Thread );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -740,10 +634,10 @@ inline Thread* Thread::_findThreadByHandle(THREADHANDLE threadHandle)
     return Thread::_mapThreadhHandle.findResourceObject(threadHandle);
 }
 
-inline THREADHANDLE Thread::_findThreadHandleById(ITEM_ID threadId)
+inline THREADHANDLE Thread::_findThreadHandleById( id_type threadId)
 {
     Thread * result = Thread::_mapThreadId.findResourceObject(threadId);
-    return (result != NULL ? result->mThreadHandle : NULL);
+    return (result != nullptr ? result->mThreadHandle : nullptr);
 }
 
 inline bool Thread::_isValidNoLock( void ) const
@@ -763,7 +657,7 @@ inline bool Thread::isValid( void ) const
     return _isValidNoLock();
 }
 
-inline ITEM_ID Thread::getId( void ) const
+inline id_type Thread::getId( void ) const
 {
     Lock lock(mSynchObject);
     return mThreadId;
@@ -783,10 +677,10 @@ inline const ThreadAddress & Thread::getAddress( void ) const
 
 inline Thread* Thread::findThreadByName(const char* threadName)
 {
-    return (threadName != NULL ? Thread::_mapThreadName.findResourceObject(threadName) : NULL);
+    return (threadName != nullptr ? Thread::_mapThreadName.findResourceObject(threadName) : nullptr);
 }
 
-inline Thread* Thread::findThreadById(ITEM_ID threadId)
+inline Thread* Thread::findThreadById( id_type threadId)
 {
     return Thread::_mapThreadId.findResourceObject(threadId);
 }
@@ -796,16 +690,16 @@ inline Thread* Thread::findThreadByAddress(const ThreadAddress& threadAddress)
     return Thread::findThreadByName(threadAddress.getThreadName());
 }
 
-inline const ThreadAddress & Thread::findThreadAddressById(ITEM_ID threadId)
+inline const ThreadAddress & Thread::findThreadAddressById( id_type threadId)
 {
     Thread* threadObj = Thread::findThreadById(threadId);
-    return (threadObj != NULL ? threadObj->getAddress() : ThreadAddress::INVALID_THREAD_ADDRESS);
+    return (threadObj != nullptr ? threadObj->getAddress() : ThreadAddress::INVALID_THREAD_ADDRESS);
 }
 
 inline const ThreadAddress& Thread::findThreadAddressByName(const char* threadName)
 {
     Thread* threadObj = Thread::findThreadByName(threadName);
-    return (threadObj != NULL ? threadObj->getAddress() : ThreadAddress::INVALID_THREAD_ADDRESS);
+    return (threadObj != nullptr ? threadObj->getAddress() : ThreadAddress::INVALID_THREAD_ADDRESS);
 }
 
 inline void Thread::_setRunning( bool isRunning )
@@ -819,7 +713,7 @@ inline Thread * Thread::getCurrentThread( void )
     return Thread::findThreadById(Thread::getCurrentThreadId());
 }
 
-inline const char * Thread::getCurrentThreadName( void )
+inline const String & Thread::getCurrentThreadName( void )
 {
     return Thread::getThreadName( Thread::getCurrentThreadId() );
 }
@@ -833,21 +727,19 @@ inline const char * Thread::getString( Thread::eThreadPriority threadPriority )
 {
     switch ( threadPriority )
     {
-    case Thread::PriorityUndefined:
+    case Thread::eThreadPriority::PriorityUndefined:
         return "Thread::PriorityUndefined";
-    case Thread::PriorityLowest:
+    case Thread::eThreadPriority::PriorityLowest:
         return "Thread::PriorityLowest";
-    case Thread::PriorityLow:
+    case Thread::eThreadPriority::PriorityLow:
         return "Thread::PriorityLow";
-    case Thread::PriorityNormal:
+    case Thread::eThreadPriority::PriorityNormal:
         return "Thread::PriorityNormal";
-    case Thread::PriorityHigh:
+    case Thread::eThreadPriority::PriorityHigh:
         return "Thread::PriorityHigh";
-    case Thread::PriorityHighest:
+    case Thread::eThreadPriority::PriorityHighest:
         return "Thread::PriorityHighest";
     default:
         return "ERR: Invalid Thread::eThreadPriority value!";
     }
 }
-
-#endif  // AREG_BASE_THREAD_HPP

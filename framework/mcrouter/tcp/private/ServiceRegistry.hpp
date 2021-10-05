@@ -1,9 +1,16 @@
-#ifndef MCROUTER_TCP_PRIVATE_SERVICEREGISTRY_HPP
-#define MCROUTER_TCP_PRIVATE_SERVICEREGISTRY_HPP
+#pragma once
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        mcrouter/tcp/private/ServiceRegistry.hpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform Service Manager
  ************************************************************************/
 
@@ -22,7 +29,7 @@
 /**
  * \brief   Service registry map helper class.
  **/
-class ServiceRegistryImpl    : public TEHashMapImpl<const ServiceStub &, const ListServiceProxies &>
+class ImplServiceRegistry  : public TEHashMapImpl<const ServiceStub &, const ListServiceProxies &>
 {
 public:
     /**
@@ -36,28 +43,30 @@ public:
     }
 };
 
+using ServiceRegistryBase = TEHashMap<ServiceStub, ListServiceProxies, const ServiceStub &, const ListServiceProxies &, ImplServiceRegistry>;
+
 /**
  * \brief   The remote services registration map, which is a map of stub and list of connected proxies.
  **/
-class ServiceRegistry  : public TEHashMap<ServiceStub, ListServiceProxies, const ServiceStub &, const ListServiceProxies &, ServiceRegistryImpl>
+class ServiceRegistry   : public ServiceRegistryBase
 {
 //////////////////////////////////////////////////////////////////////////
 // Predefined types and constants
 //////////////////////////////////////////////////////////////////////////
     /**
-     * \brief   ServiceMap::ServiceBlock
+     * \brief   ServiceRegistry::ServiceBlock
      *          Defines Block class of Hash Map as ServiceBlock. Defined to short syntax.
      **/
-    typedef TEHashMap<ServiceStub, ListServiceProxies, const ServiceStub &, const ListServiceProxies &, ServiceRegistryImpl>::Block ServiceBlock;
+    using ServiceBlock = ServiceRegistryBase::Block;
 
     /**
-     * \brief   ServiceMap::InvalidStubService
+     * \brief   ServiceRegistry::InvalidStubService
      *          Defines invalid stub service
      **/
     static const ServiceStub          InvalidStubService;
 
     /**
-     * \brief   ServiceMap::EmptyProxiesList
+     * \brief   ServiceRegistry::EmptyProxiesList
      *          Defines empty list of remote connected proxies.
      **/
     static const ListServiceProxies   EmptyProxiesList;
@@ -69,11 +78,11 @@ public:
     /**
      * \brief   Default constructor
      **/
-    ServiceRegistry( void );
+    ServiceRegistry( void ) = default;
     /**
      * \brief   Destructor
      **/
-    ~ServiceRegistry( void );
+    ~ServiceRegistry( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations
@@ -204,7 +213,7 @@ private:
      * \brief   Searches the entry of registered servicing by given address of service.
      * \param   addrService     The address of remote service.
      * \return  Returns valid position value if could find an entry matching given servicing address.
-     *          Otherwise, returns NULL.
+     *          Otherwise, returns nullptr.
      **/
     MAPPOS findService( const ServiceAddress & addrService ) const;
 
@@ -212,8 +221,5 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    ServiceRegistry( const ServiceRegistry & /*src*/ );
-    const ServiceRegistry & operator = ( const ServiceRegistry & /*src*/ );
+    DECLARE_NOCOPY_NOMOVE( ServiceRegistry );
 };
-
-#endif  // MCROUTER_TCP_PRIVATE_SERVICEREGISTRY_HPP

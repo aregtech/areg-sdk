@@ -31,6 +31,9 @@ mcrouter: $(AREG_OUTPUT_BIN)/$(mcrouter_TARGET_BIN)
 # define one target for each source file
 $(foreach cpp, $(mcrouter_SRC), $(eval $(call obj, $(cpp), $(mcrouter_OUTPUT_OBJ), mcrouter_OBJS, $(mcrouter_CXXFLAGS))))
 
+DEPS = $(mcrouter_OBJS:%.o=%.d)
+-include $(DEPS)
+
 $(AREG_OUTPUT_BIN)/$(mcrouter_TARGET_BIN): $(areg_TARGET_PATH) $(mcrouter_OBJS)
 	@echo "Linking mcrouter ..."
 	@mkdir -p $(dir $@)

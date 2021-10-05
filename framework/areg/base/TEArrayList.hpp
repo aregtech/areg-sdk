@@ -1,9 +1,16 @@
-#ifndef AREG_BASE_TEARRAYLIST_HPP
-#define AREG_BASE_TEARRAYLIST_HPP
+#pragma once
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/base/TEArrayList.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, Array List class template
  *              This class template defines array of elements.
  *              It allows to store elements in array, making general
@@ -14,35 +21,39 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
-#include "areg/base/ETemplateBase.hpp"
 
+#include "areg/base/TETemplateBase.hpp"
+
+#include "areg/base/NECommon.hpp"
 #include "areg/base/NEMemory.hpp"
 #include "areg/base/IEIOStream.hpp"
+
+#include <utility>
 
 //////////////////////////////////////////////////////////////////////////
 // TEArrayList<VALUE, VALUE_TYPE, Implement> class template declaration
 //////////////////////////////////////////////////////////////////////////
 
 /**
- * \brief       Array List has general functionalities to access, insert, move, find
- *              and copy elements. By default, the VALUE_TYPE is equal to VALUE.
- *              Derives private class TemplateConstants to have static members.
- *              For performance issue, it is recommended to pass capacity value
- *              in constructor to define initial reserved space for array.
- *              This capacity value will also define the initial growing size
- *              of array. By default, the minimum growing size of array is
- *              TemplateConstants::ARRAY_DEFAULT_MIN_GROW and cannot be more
- *              than TemplateConstants::ARRAY_DEFAULT_MAX_GROW.
- *              The VALUE types should have at least default constructor
- *              and valid public available assigning operator.
- *              The elements of array can be fast accessed  for read and change 
- *              by valid index value. If the index of array element to modify 
- *              is out of valid scope, use add() function to add new element 
- *              at the end.
- *              The ArryList object is not thread safe and data access should be 
- *              synchronized manually.
+ * \brief   Array List has general functionalities to access, insert, move, find
+ *          and copy elements. By default, the VALUE_TYPE is equal to VALUE.
+ * 
+ *          For performance issue, it is recommended to pass capacity value
+ *          in constructor to define initial reserved space for array.
+ *          This capacity value will also define the initial growing size
+ *          array. By default, the minimum growing size of array is
+ *          NECommon::ARRAY_DEFAULT_MIN_GROW and cannot be more
+ *          than NECommon::ARRAY_DEFAULT_MAX_GROW.
+ *          The VALUE types should have at least default constructor
+ *          and valid public available assigning operator.
+ *          The elements of array can be fast accessed  for read and change 
+ *          by valid index value. If the index of array element to modify 
+ *          is out of valid scope, use add() function to add new element 
+ *          at the end.
+ *          The ArryList object is not thread safe and data access should be 
+ *          synchronized manually.
  *
- * \tparam  VALUE       the type of stored items. Either should be 
+ * \tparam  VALUE       The type of stored items. Either should be 
  *                      primitive or should have default constructor 
  *                      and valid assigning operator. Also, should be 
  *                      possible to convert to type VALUE_TYPE.
@@ -52,8 +63,7 @@
  * \tparam  Implement   The implementation of value equality function used by array list.
  **/
 template<typename VALUE, typename VALUE_TYPE = VALUE, class Implement = TEListImpl<VALUE_TYPE>>
-class TEArrayList   : protected Implement
-                    , protected TemplateConstants
+class TEArrayList
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -63,16 +73,22 @@ public:
      * \brief   Default constructor
      * \param   capacity    Initial reserved space of array. By default the initial reserved space is zero.
      * \param   increase    The number to increase elements every time when need to reallocate new space
-     *                      By default the increase value is TemplateConstants::ARRAY_DEFAULT_INCREASE (-1),
-     *                      which means that elements will grow by TemplateConstants::ARRAY_DEFAULT_MIN_GROW (4)
+     *                      By default the increase value is NECommon::ARRAY_DEFAULT_INCREASE (-1),
+     *                      which means that elements will grow by NECommon::ARRAY_DEFAULT_MIN_GROW (4)
      **/
-    TEArrayList( int capacity = 0, int increase = TemplateConstants::ARRAY_DEFAULT_INCREASE );
+    TEArrayList( int capacity = 0, int increase = NECommon::ARRAY_DEFAULT_INCREASE );
 
     /**
      * \brief   Copy constructor.
      * \param   src     The source to copy data.
      **/
     TEArrayList( const TEArrayList<VALUE, VALUE_TYPE, Implement> & src );
+
+    /**
+     * \brief   Move constructor.
+     * \param   src     The source to move data.
+     **/
+    TEArrayList( TEArrayList<VALUE, VALUE_TYPE, Implement> && src ) noexcept;
 
     /**
      * \brief   Destructor
@@ -110,6 +126,15 @@ public:
      * \param   src     The source of list of values.
      **/
     inline TEArrayList<VALUE, VALUE_TYPE, Implement> & operator = ( const TEArrayList<VALUE, VALUE_TYPE, Implement> & src );
+
+    /**
+     * \brief   Move operator. Movesall values from given source.
+     *          If Array previously had values, they will be removed and new values
+     *          from source Array will be set in the same sequence as they are
+     *          present in the source.
+     * \param   src     The source of list of values.
+     **/
+    inline TEArrayList<VALUE, VALUE_TYPE, Implement> & operator = ( TEArrayList<VALUE, VALUE_TYPE, Implement> && src ) noexcept;
 
     /**
      * \brief   Checks equality of 2 hash-map objects, and returns true if they are equal.
@@ -245,6 +270,13 @@ public:
     int copy( const TEArrayList<VALUE, VALUE_TYPE, Implement> & src );
 
     /**
+     * \brief	Moves all entries from given source. On output, the source is empty.
+     * \param	src	    The source of array elements
+     * \return	Returns actual size of array.
+     **/
+    int move( TEArrayList<VALUE, VALUE_TYPE, Implement> && src ) noexcept;
+
+    /**
      * \brief   If needed, shifts existing entries of array and
      *          inserts new element to the position specified by index.
      *          If elemCount is more than one, it will repeat operation starting by 
@@ -310,9 +342,8 @@ public:
     inline bool validateIndex( int index );
 
     /**
-     * \brief	Sets new size of array. 
-     *          If size is zero, all elements will be removed.
-     *          Otherwise the size of array is set and if was not empty, 
+     * \brief	Sets new size of array. If size is zero, all elements are removed.
+     *          Otherwise, the size of array is set and if was not empty, 
      *          existing elements are copied or truncated, depending
      *          whether new size is more or less than the existing size of array.
      * \param	newSize	    New size to set. If zero, array is emptied.
@@ -320,7 +351,7 @@ public:
      * \return  Returns the number of element created by resizing array. The number of created elements
      *          might be less or equal to maximum size, but cannot be more.
      **/
-    inline int resize( int newSize, int increaseBy = TemplateConstants::ARRAY_DEFAULT_INCREASE );
+    inline int resize( int newSize, int increaseBy = NECommon::ARRAY_DEFAULT_INCREASE );
 
 //////////////////////////////////////////////////////////////////////////
 // Protected operations
@@ -345,7 +376,7 @@ protected:
      * \return  Returns the number of element created by resizing array. The number of created elements
      *          might be less or equal to maximum size, but cannot be more.
      **/
-    int setSize( int elemCount, int increaseBy = TemplateConstants::ARRAY_DEFAULT_INCREASE );
+    int setSize( int elemCount, int increaseBy = NECommon::ARRAY_DEFAULT_INCREASE );
 
     /**
      * \brief   Called when comparing 2 values of element.
@@ -378,19 +409,23 @@ protected:
     /**
      * \brief   Number of entries to reserve by increasing procedure.
      **/
-    int     mIncreaseBy;
+    int         mIncreaseBy;
     /**
      * \brief   Maximum size of array
      **/
-    int     mMaxElems;
+    int         mMaxElems;
     /**
      * \brief   Number of valid entries in array
      **/
-    int     mElemCount;
+    int         mElemCount;
     /**
      * \brief   The list elements / array
      **/
-    VALUE * mValueList;
+    VALUE *     mValueList;
+    /**
+     * \brief   Instance of object that copares values.
+     **/
+    Implement   mImplement;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -402,29 +437,38 @@ protected:
 //////////////////////////////////////////////////////////////////////////
 
 template<typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /* = TEListImpl<VALUE_TYPE> */>
-TEArrayList<VALUE, VALUE_TYPE, Implement>::TEArrayList(int capacity /*= 0*/, int increase /*= TemplateConstants::ARRAY_DEFAULT_INCREASE*/)
-    : Implement                             ( )
-    , TemplateConstants                   ( )
-
-    , mIncreaseBy   ( TemplateConstants::ARRAY_DEFAULT_MIN_GROW )
+TEArrayList<VALUE, VALUE_TYPE, Implement>::TEArrayList(int capacity /*= 0*/, int increase /*= NECommon::ARRAY_DEFAULT_INCREASE*/)
+    : mIncreaseBy   ( NECommon::ARRAY_DEFAULT_MIN_GROW )
     , mMaxElems     ( 0 )
     , mElemCount    ( 0 )
-    , mValueList    ( NULL )
+    , mValueList    ( nullptr )
+    , mImplement    ( )
 {
     setSize(capacity, increase);
 }
 
 template<typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /* = TEListImpl<VALUE_TYPE> */>
 TEArrayList<VALUE, VALUE_TYPE, Implement>::TEArrayList( const TEArrayList<VALUE, VALUE_TYPE, Implement> & src )
-    : Implement                         ( )
-    , TemplateConstants               ( )
-
-    , mIncreaseBy   ( TemplateConstants::ARRAY_DEFAULT_MIN_GROW )
+    : mIncreaseBy   ( NECommon::ARRAY_DEFAULT_MIN_GROW )
     , mMaxElems     ( 0 )
     , mElemCount    ( 0 )
-    , mValueList    ( NULL )
+    , mValueList    ( nullptr )
+    , mImplement    ( )
 {
     copy(src);
+}
+
+template<typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /* = TEListImpl<VALUE_TYPE> */>
+TEArrayList<VALUE, VALUE_TYPE, Implement>::TEArrayList( TEArrayList<VALUE, VALUE_TYPE, Implement> && src ) noexcept
+    : mIncreaseBy   ( src.mIncreaseBy )
+    , mMaxElems     ( src.mMaxElems   )
+    , mElemCount    ( src.mElemCount  )
+    , mValueList    ( src.mValueList  )
+    , mImplement    ( )
+{
+    src.mValueList  = nullptr;
+    src.mElemCount  = 0;
+    src.mMaxElems   = 0;
 }
 
 template<typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /* = TEListImpl<VALUE_TYPE> */>
@@ -432,7 +476,7 @@ TEArrayList<VALUE, VALUE_TYPE, Implement>::~TEArrayList( void )
 {
     removeAll( );
 
-    mValueList  = NULL;
+    mValueList  = nullptr;
     mMaxElems   = 0;
     mElemCount  = 0;
 }
@@ -454,7 +498,7 @@ void TEArrayList<VALUE, VALUE_TYPE, Implement>::freeExtra( void )
 {
     if (mElemCount != mMaxElems)
     {
-        VALUE* newValues = NULL;
+        VALUE* newValues = nullptr;
         if (mElemCount != 0)
         {
             newValues = reinterpret_cast<VALUE *>( new unsigned char[mElemCount * sizeof(VALUE)]);
@@ -498,7 +542,7 @@ template<typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /* = T
 inline void TEArrayList<VALUE, VALUE_TYPE, Implement>::setAt(int index, VALUE_TYPE newElement)
 {
     if (isValidIndex(index))
-        mValueList[index] = (VALUE)(newElement);
+        mValueList[index] = newElement;
     else if (index >= mElemCount )
         add(newElement);
 #ifdef _DEBUG
@@ -518,7 +562,7 @@ inline bool TEArrayList<VALUE, VALUE_TYPE, Implement>::validateIndex(int index)
 }
 
 template<typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /* = TEListImpl<VALUE_TYPE> */>
-inline int TEArrayList<VALUE, VALUE_TYPE, Implement>::resize( int newSize, int increaseBy /*= TemplateConstants::ARRAY_DEFAULT_INCREASE */ )
+inline int TEArrayList<VALUE, VALUE_TYPE, Implement>::resize( int newSize, int increaseBy /*= NECommon::ARRAY_DEFAULT_INCREASE */ )
 {
     mElemCount = setSize(newSize, increaseBy);
     return mElemCount;
@@ -575,11 +619,11 @@ template<typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /* = T
 int TEArrayList<VALUE, VALUE_TYPE, Implement>::copy(const TEArrayList<VALUE, VALUE_TYPE, Implement>& src)
 {
     ASSERT(this != &src);
-    if (mValueList != NULL)
+    if (mValueList != nullptr )
     {
         destruct(mValueList, mElemCount);
         delete [] reinterpret_cast<unsigned char *>(mValueList);
-        mValueList= NULL;
+        mValueList= nullptr;
         mElemCount= 0;
         mMaxElems = 0;
     }
@@ -587,6 +631,18 @@ int TEArrayList<VALUE, VALUE_TYPE, Implement>::copy(const TEArrayList<VALUE, VAL
     setSize(src.mElemCount, -1);
     NEMemory::copyElems<VALUE, VALUE>(mValueList, src.mValueList, src.mElemCount);
     mElemCount = src.mElemCount;
+    return mElemCount;
+}
+
+template<typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /* = TEListImpl<VALUE_TYPE> */>
+int TEArrayList<VALUE, VALUE_TYPE, Implement>::move( TEArrayList<VALUE, VALUE_TYPE, Implement> && src ) noexcept
+{
+    ASSERT( this != &src );
+
+    std::swap(mValueList, src.mValueList);
+    std::swap(mElemCount, src.mElemCount);
+    std::swap(mMaxElems, src.mMaxElems);
+
     return mElemCount;
 }
 
@@ -603,7 +659,7 @@ inline VALUE_TYPE TEArrayList<VALUE, VALUE_TYPE, Implement>::operator [] (int in
 }
 
 template<typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /* = TEListImpl<VALUE_TYPE> */>
-TEArrayList<VALUE, VALUE_TYPE, Implement>& TEArrayList<VALUE, VALUE_TYPE, Implement>::operator = ( const TEArrayList<VALUE, VALUE_TYPE, Implement>& src )
+TEArrayList<VALUE, VALUE_TYPE, Implement> & TEArrayList<VALUE, VALUE_TYPE, Implement>::operator = ( const TEArrayList<VALUE, VALUE_TYPE, Implement>& src )
 {
     if (static_cast<const TEArrayList<VALUE, VALUE_TYPE, Implement> *>(this) != &src)
     {
@@ -611,6 +667,29 @@ TEArrayList<VALUE, VALUE_TYPE, Implement>& TEArrayList<VALUE, VALUE_TYPE, Implem
         mIncreaseBy   = src.mIncreaseBy;
         copy(src);
     }
+    return (*this);
+}
+
+template<typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /* = TEListImpl<VALUE_TYPE> */>
+TEArrayList<VALUE, VALUE_TYPE, Implement> & TEArrayList<VALUE, VALUE_TYPE, Implement>::operator = ( TEArrayList<VALUE, VALUE_TYPE, Implement> && src ) noexcept
+{
+    if ( static_cast<TEArrayList<VALUE, VALUE_TYPE, Implement> *>(this) != &src )
+    {
+        if ( mValueList != nullptr )
+        {
+            destruct( mValueList, mElemCount );
+            delete[] reinterpret_cast<unsigned char *>(mValueList);
+        }
+
+        mIncreaseBy = src.mIncreaseBy;
+        mValueList  = src.mValueList;
+        mElemCount  = src.mElemCount;
+        mMaxElems   = src.mMaxElems;
+        src.mValueList  = nullptr;
+        src.mElemCount  = 0;
+        src.mMaxElems   = 0;
+    }
+
     return (*this);
 }
 
@@ -625,7 +704,9 @@ bool TEArrayList<VALUE, VALUE_TYPE, Implement>::operator == ( const TEArrayList<
         {
             result = true;
             for (int i = 0; result && (i < mElemCount); ++ i)
+            {
                 result = isEqualValues( mValueList[i], other.mValueList[i] );
+            }
         }
     }
     return result;
@@ -640,11 +721,13 @@ bool TEArrayList<VALUE, VALUE_TYPE, Implement>::operator != (const TEArrayList<V
         result = true;
         if ( mElemCount == other.mElemCount )
         {
-            result = false;
-            for ( int i = 0; (result == false) && (i < mElemCount); ++ i )
+            for ( int i = 0; result && (i < mElemCount); ++ i )
+            {
                 result = isEqualValues( mValueList[i], other.mValueList[i] ) == false;
+            }
         }
     }
+
     return result;
 }
 
@@ -695,6 +778,7 @@ inline int TEArrayList<VALUE, VALUE_TYPE, Implement>::find( VALUE_TYPE elemSearc
         if ( isEqualValues(mValueList[result], elemSearch) )
             break;
     }
+
     return (result < mElemCount ? result : -1);
 }
 
@@ -744,22 +828,22 @@ void TEArrayList<VALUE, VALUE_TYPE, Implement>::shift(int startAt, int placeCoun
 }
 
 template<typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /* = TEListImpl<VALUE_TYPE> */>
-int TEArrayList<VALUE, VALUE_TYPE, Implement>::setSize(int elemCount, int increaseBy /*= TemplateConstants::ARRAY_DEFAULT_INCREASE*/)
+int TEArrayList<VALUE, VALUE_TYPE, Implement>::setSize(int elemCount, int increaseBy /*= NECommon::ARRAY_DEFAULT_INCREASE*/)
 {
     int result = -1;
-    mIncreaseBy = increaseBy != TemplateConstants::ARRAY_DEFAULT_INCREASE && increaseBy > 0 ? MACRO_MAX(TemplateConstants::ARRAY_DEFAULT_MIN_GROW, increaseBy) : mIncreaseBy;
-    mIncreaseBy = MACRO_MIN(TemplateConstants::ARRAY_DEFAULT_MAX_GROW, mIncreaseBy);
+    mIncreaseBy = increaseBy != NECommon::ARRAY_DEFAULT_INCREASE && increaseBy > 0 ? MACRO_MAX( NECommon::ARRAY_DEFAULT_MIN_GROW, increaseBy) : mIncreaseBy;
+    mIncreaseBy = MACRO_MIN( NECommon::ARRAY_DEFAULT_MAX_GROW, mIncreaseBy);
 
     if (elemCount == 0)
     {
-        if (mValueList != NULL)
+        if (mValueList != nullptr)
         {
             destruct(mValueList, mElemCount);
             delete [] reinterpret_cast<unsigned char *>(mValueList);
         }
-        mValueList  = static_cast<VALUE *>(NULL);
-        mElemCount = mMaxElems = 0;
-        result = 0;
+        mValueList  = nullptr;
+        mElemCount  = mMaxElems = 0;
+        result      = 0;
     }
     else if (elemCount <= mMaxElems)
     {
@@ -772,25 +856,26 @@ int TEArrayList<VALUE, VALUE_TYPE, Implement>::setSize(int elemCount, int increa
     }
     else
     {
-        ASSERT(mValueList != static_cast<VALUE *>(NULL) || mElemCount == 0);
+        ASSERT( (mValueList != nullptr) || (mElemCount == 0) );
         int grow = mIncreaseBy == 0 ? mElemCount / 8 : mIncreaseBy;
-        grow = MACRO_MAX(grow, TemplateConstants::ARRAY_DEFAULT_MIN_GROW);
-        grow = MACRO_MIN(grow, TemplateConstants::ARRAY_DEFAULT_MAX_GROW);
+        grow = MACRO_MAX(grow, NECommon::ARRAY_DEFAULT_MIN_GROW);
+        grow = MACRO_MIN(grow, NECommon::ARRAY_DEFAULT_MAX_GROW);
         int newMax   = MACRO_MAX(elemCount, mMaxElems + grow);
-        ASSERT(newMax >= mMaxElems && elemCount > mElemCount);
+        ASSERT((newMax >= mMaxElems) && (elemCount > mElemCount));
 
         int single = static_cast<int>(sizeof(VALUE));
         VALUE* newValues = reinterpret_cast<VALUE *>( DEBUG_NEW unsigned char[static_cast<unsigned int>(newMax * single)] );
-        if (newValues != NULL)
+        if (newValues != nullptr)
         {
             ASSERT(elemCount <= newMax);
             construct(newValues, elemCount);
             NEMemory::copyElems<VALUE, VALUE>(newValues, mValueList, mElemCount);
-            if (mValueList != NULL)
+            if (mValueList != nullptr)
             {
                 destruct(mValueList, mElemCount);
                 delete [] reinterpret_cast<unsigned char *>(mValueList);
             }
+
             mValueList	= newValues;
             mMaxElems	= newMax;
             result      = elemCount;
@@ -818,7 +903,7 @@ inline void TEArrayList<VALUE, VALUE_TYPE, Implement>::destruct(VALUE *valueList
 template<typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /* = TEListImpl<VALUE_TYPE> */>
 inline bool TEArrayList<VALUE, VALUE_TYPE, Implement>::isEqualValues(VALUE_TYPE value1, VALUE_TYPE value2) const
 {
-    return Implement::implEqualValues(value1, value2);
+    return mImplement.implEqualValues(value1, value2);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -829,8 +914,10 @@ template <typename V, typename VT, class Impl>
 const IEInStream & operator >> ( const IEInStream & stream, TEArrayList<V, VT, Impl> & input )
 {
     int size = 0;
-    input.setSize( size );
     stream >> size;
+    input.removeAll();
+    input.setSize( size );
+    input.mElemCount = size;
 
     for ( int i = 0; i < size; ++ i )
     {
@@ -851,5 +938,3 @@ IEOutStream & operator << ( IEOutStream& stream, const TEArrayList<V, VT, Impl>&
 
     return stream;
 }
-
-#endif  // AREG_BASE_TEARRAYLIST_HPP

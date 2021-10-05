@@ -1,7 +1,15 @@
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/base/private/IESynchObject.cpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, Base Synchronization object interface.
  *
  ************************************************************************/
@@ -16,43 +24,14 @@
 //////////////////////////////////////////////////////////////////////////
 
 //////////////////////////////////////////////////////////////////////////
-// IESynchObject class, constants
-//////////////////////////////////////////////////////////////////////////
-
-/**
- * \brief   Constant, define infinite waiting time
- **/
-const unsigned int  IESynchObject::WAIT_INFINITE    = static_cast<unsigned int>(~0);
-
-/**
- * \brief   Constant, define infinite waiting time
- **/
-const unsigned int  IESynchObject::DO_NOT_WAIT      = static_cast<unsigned int>(0);
-
-/**
- * \brief   Waiting time 500 milliseconds
- **/
-const unsigned int  IESynchObject::WAIT_1_MS        = static_cast<unsigned int>(1);
-
-/**
- * \brief   Waiting time 1 second
- **/
-const unsigned int  IESynchObject::WAIT_1_SEC       = static_cast<unsigned int>(1000);
-
-/**
- * \brief   Waiting time 1 second
- **/
-const unsigned int  IESynchObject::WAIT_1_MIN       = static_cast<unsigned int>(60000);
-
-//////////////////////////////////////////////////////////////////////////
 // IESynchObject class, Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 
 IESynchObject::IESynchObject(IESynchObject::eSyncObject synchObjectType)
-    : mSynchObjectType  (synchObjectType)
-    , mSynchObject      (NULL)
+    : mSynchObject      ( nullptr )
+    , mSynchObjectType  (synchObjectType)
 {
-    ASSERT(synchObjectType != SO_UNKNOWN);  // do nothing
+    ASSERT( mSynchObjectType != IESynchObject::eSyncObject::SoUnknown );
 }
 
 IESynchObject::~IESynchObject( void )
@@ -61,26 +40,8 @@ IESynchObject::~IESynchObject( void )
 }
 
 //////////////////////////////////////////////////////////////////////////
-// IESynchObject class, Operators
-//////////////////////////////////////////////////////////////////////////
-IESynchObject::operator void* ()
-{
-    return mSynchObject;
-}
-
-//////////////////////////////////////////////////////////////////////////
 // IESynchObject class, Methods
 //////////////////////////////////////////////////////////////////////////
-void* IESynchObject::getHandle( void ) const
-{
-    return mSynchObject;
-}
-
-IESynchObject::eSyncObject IESynchObject::getObjectType( void ) const
-{
-    return mSynchObjectType;
-}
-
 bool IESynchObject::lock(unsigned int /*timeout*/ /*= WAIT_INFINITE */)
 {
     return false;
@@ -90,4 +51,3 @@ bool IESynchObject::unlock(void)
 {
     return false;
 }
-

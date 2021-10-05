@@ -97,10 +97,10 @@ BOOL DistrbutedApp::InitInstance()
             TRACE(traceAppMsg, 0, "Warning: if you are using MFC controls on the dialog, you cannot #define _AFX_NO_MFC_CONTROLS_IN_DIALOGS.\n");
         }
     } while ( false );
-    m_pMainWnd = NULL;
+    m_pMainWnd = nullptr;
 
     // Delete the shell manager created above.
-    if (pShellManager != NULL)
+    if (pShellManager != nullptr )
     {
         delete pShellManager;
     }

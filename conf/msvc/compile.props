@@ -2,70 +2,6 @@
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <!-- Project configurations and compiler settings -->
   <ItemGroup Label="ProjectConfigurations">
-    <ProjectConfiguration Include="dbg_vc110|Win32">
-      <Configuration>dbg_vc110</Configuration>
-      <Platform>Win32</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="dbg_vc110|x64">
-      <Configuration>dbg_vc110</Configuration>
-      <Platform>x64</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="rls_vc110|Win32">
-      <Configuration>rls_vc110</Configuration>
-      <Platform>Win32</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="rls_vc110|x64">
-      <Configuration>rls_vc110</Configuration>
-      <Platform>x64</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="dbg_vc120|Win32">
-      <Configuration>dbg_vc120</Configuration>
-      <Platform>Win32</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="dbg_vc120|x64">
-      <Configuration>dbg_vc120</Configuration>
-      <Platform>x64</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="rls_vc120|Win32">
-      <Configuration>rls_vc120</Configuration>
-      <Platform>Win32</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="rls_vc120|x64">
-      <Configuration>rls_vc120</Configuration>
-      <Platform>x64</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="dbg_vc140|Win32">
-      <Configuration>dbg_vc140</Configuration>
-      <Platform>Win32</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="dbg_vc140|x64">
-      <Configuration>dbg_vc140</Configuration>
-      <Platform>x64</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="rls_vc140|Win32">
-      <Configuration>rls_vc140</Configuration>
-      <Platform>Win32</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="rls_vc140|x64">
-      <Configuration>rls_vc140</Configuration>
-      <Platform>x64</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="dbg_vc141|Win32">
-      <Configuration>dbg_vc141</Configuration>
-      <Platform>Win32</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="dbg_vc141|x64">
-      <Configuration>dbg_vc141</Configuration>
-      <Platform>x64</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="rls_vc141|Win32">
-      <Configuration>rls_vc141</Configuration>
-      <Platform>Win32</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="rls_vc141|x64">
-      <Configuration>rls_vc141</Configuration>
-      <Platform>x64</Platform>
-    </ProjectConfiguration>
     <ProjectConfiguration Include="dbg_vc142|Win32">
       <Configuration>dbg_vc142</Configuration>
       <Platform>Win32</Platform>
@@ -84,37 +20,12 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="UserMacros">
-    <ConfigShortName Condition="'$(Configuration)'=='dbg_vc100'">Debug</ConfigShortName>
-    <ConfigShortName Condition="'$(Configuration)'=='dbg_vc110'">Debug</ConfigShortName>
-    <ConfigShortName Condition="'$(Configuration)'=='dbg_vc120'">Debug</ConfigShortName>
-    <ConfigShortName Condition="'$(Configuration)'=='dbg_vc140'">Debug</ConfigShortName>
-    <ConfigShortName Condition="'$(Configuration)'=='dbg_vc141'">Debug</ConfigShortName>
     <ConfigShortName Condition="'$(Configuration)'=='dbg_vc142'">Debug</ConfigShortName>
-    <ConfigShortName Condition="'$(Configuration)'=='rls_vc100'">Release</ConfigShortName>
-    <ConfigShortName Condition="'$(Configuration)'=='rls_vc110'">Release</ConfigShortName>
-    <ConfigShortName Condition="'$(Configuration)'=='rls_vc120'">Release</ConfigShortName>
-    <ConfigShortName Condition="'$(Configuration)'=='rls_vc140'">Release</ConfigShortName>
-    <ConfigShortName Condition="'$(Configuration)'=='rls_vc141'">Release</ConfigShortName>
     <ConfigShortName Condition="'$(Configuration)'=='rls_vc142'">Release</ConfigShortName>
-    <VCCompilerVersion Condition="'$(Configuration)'=='dbg_vc100'">v100</VCCompilerVersion>
-    <VCCompilerVersion Condition="'$(Configuration)'=='rls_vc100'">v100</VCCompilerVersion>
-    <VCCompilerVersion Condition="'$(Configuration)'=='dbg_vc110'">v110</VCCompilerVersion>
-    <VCCompilerVersion Condition="'$(Configuration)'=='rls_vc110'">v110</VCCompilerVersion>
-    <VCCompilerVersion Condition="'$(Configuration)'=='dbg_vc120'">v120</VCCompilerVersion>
-    <VCCompilerVersion Condition="'$(Configuration)'=='rls_vc120'">v120</VCCompilerVersion>
-    <VCCompilerVersion Condition="'$(Configuration)'=='dbg_vc140'">v140</VCCompilerVersion>
-    <VCCompilerVersion Condition="'$(Configuration)'=='rls_vc140'">v140</VCCompilerVersion>
-    <VCCompilerVersion Condition="'$(Configuration)'=='dbg_vc141'">v141</VCCompilerVersion>
-    <VCCompilerVersion Condition="'$(Configuration)'=='rls_vc141'">v141</VCCompilerVersion>
     <VCCompilerVersion Condition="'$(Configuration)'=='dbg_vc142'">v142</VCCompilerVersion>
     <VCCompilerVersion Condition="'$(Configuration)'=='rls_vc142'">v142</VCCompilerVersion>
   </PropertyGroup>
   <PropertyGroup Label="Globals">
-    <PlatformToolset Condition="'$(VCCompilerVersion)'=='v100'">v100</PlatformToolset>
-    <PlatformToolset Condition="'$(VCCompilerVersion)'=='v110'">v110</PlatformToolset>
-    <PlatformToolset Condition="'$(VCCompilerVersion)'=='v120'">v120</PlatformToolset>
-    <PlatformToolset Condition="'$(VCCompilerVersion)'=='v140'">v140</PlatformToolset>
-    <PlatformToolset Condition="'$(VCCompilerVersion)'=='v141'">v141</PlatformToolset>
     <PlatformToolset Condition="'$(VCCompilerVersion)'=='v142'">v142</PlatformToolset>
   </PropertyGroup>
   <!-- Import User settings -->

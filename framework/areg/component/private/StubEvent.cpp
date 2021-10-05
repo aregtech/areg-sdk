@@ -1,7 +1,15 @@
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/component/private/StubEvent.cpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, Component Thread.
  *
  ************************************************************************/
@@ -30,19 +38,12 @@ StubEvent::StubEvent( const StubAddress& toTarget, Event::eEventType eventType )
     : StreamableEvent   (eventType)
     , mTargetStubAddress(toTarget)
 {
-    ; // do nothing
 }
 
 StubEvent::StubEvent( const IEInStream & stream  )
     : StreamableEvent   (stream)
     , mTargetStubAddress(stream)
 {
-    ; // do nothing
-}
-
-StubEvent::~StubEvent( void )
-{
-    ; // do nothing
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -64,13 +65,13 @@ IEOutStream & StubEvent::writeStream( IEOutStream & stream ) const
 
 void StubEvent::deliverEvent( void )
 {
-    if ( mTargetThread == NULL )
+    if ( mTargetThread == nullptr )
     {
         Thread * thread = Thread::findThreadByName( mTargetStubAddress.getThread() );
-        registerForThread( thread != NULL ? RUNTIME_CAST(thread, DispatcherThread) : NULL );
+        registerForThread( thread != nullptr ? RUNTIME_CAST(thread, DispatcherThread) : nullptr );
     }
 
-    if ( mTargetThread != NULL )
+    if ( mTargetThread != nullptr )
     {
         StreamableEvent::deliverEvent();
     }
@@ -91,12 +92,6 @@ IEStubEventConsumer::IEStubEventConsumer( const StubAddress & stubAddress )
     : ThreadEventConsumerBase   ( )
     , mStubAddress              ( stubAddress )
 {
-    ; // do nothing
-}
-
-IEStubEventConsumer::~IEStubEventConsumer( void )
-{
-    ; // do nothing
 }
 
 inline void IEStubEventConsumer::localProcessRequestEvent( RequestEvent & requestEvent )
@@ -109,7 +104,7 @@ inline void IEStubEventConsumer::localProcessRequestEvent( RequestEvent & reques
     else
         processStubEvent( static_cast<StubEvent &>(requestEvent));
 
-    ComponentThread::setCurrentComponent(NULL);
+    ComponentThread::setCurrentComponent(nullptr);
 }
 
 inline void IEStubEventConsumer::localProcessNotifyRequestEvent( NotifyRequestEvent & notifyRequest )
@@ -127,14 +122,14 @@ inline void IEStubEventConsumer::localProcessNotifyRequestEvent( NotifyRequestEv
         processStubEvent( static_cast<StubEvent &>(notifyRequest) );
     }
 
-    ComponentThread::setCurrentComponent(NULL);
+    ComponentThread::setCurrentComponent(nullptr);
 }
 
 inline void IEStubEventConsumer::localProcessConnectEvent( StubConnectEvent & notifyConnect )
 {
-    if ( notifyConnect.getRequestId() == static_cast<unsigned int>(NEService::SI_SERVICE_CONNECTION_NOTIFY) )
+    if ( notifyConnect.getRequestId() == static_cast<unsigned int>(NEService::eFuncIdRange::ServiceNotifyConnection) )
     {
-        if ( notifyConnect.getRequestType() == NEService::REQUEST_CONNECTION)
+        if ( notifyConnect.getRequestType() == NEService::eRequestType::ServiceConnection )
             processStubRegisteredEvent( notifyConnect.getTargetStub(), notifyConnect.getConnectionStatus() );
         else
             processClientConnectEvent( notifyConnect.getEventSource(), notifyConnect.getConnectionStatus() );
@@ -151,26 +146,26 @@ inline void IEStubEventConsumer::localProcessConnectEvent( StubConnectEvent & no
 void IEStubEventConsumer::startEventProcessing( Event & eventElem )
 {
     StubEvent* stubEvent = RUNTIME_CAST(&eventElem, StubEvent);
-    if ( stubEvent != NULL )
+    if ( stubEvent != nullptr )
     {
         if ( stubEvent->getTargetStub() == mStubAddress )
         {
             RequestEvent* reqEvent = RUNTIME_CAST(stubEvent, RequestEvent);
-            if (reqEvent != NULL)
+            if (reqEvent != nullptr)
             {
                 localProcessRequestEvent(*reqEvent);
             }
             else
             {
                 NotifyRequestEvent * notifyRequest = RUNTIME_CAST(stubEvent, NotifyRequestEvent);
-                if ( notifyRequest != NULL )
+                if ( notifyRequest != nullptr )
                 {
                     localProcessNotifyRequestEvent(*notifyRequest);
                 }
                 else
                 {
                     StubConnectEvent * stubConnectEvent = RUNTIME_CAST(stubEvent, StubConnectEvent);
-                    if ( stubConnectEvent != NULL )
+                    if ( stubConnectEvent != nullptr )
                         localProcessConnectEvent(*stubConnectEvent);
                     else
                         processStubEvent(*stubEvent);

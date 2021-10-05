@@ -1,9 +1,16 @@
-#ifndef AREG_COMPONENT_PRIVATE_TIMERMANAGER_HPP
-#define AREG_COMPONENT_PRIVATE_TIMERMANAGER_HPP
+#pragma once
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/component/private/TimerManager.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, The System Timer Manager.
  *              Controlling, triggering and stopping timer.
  *
@@ -16,8 +23,11 @@
 #include "areg/component/DispatcherThread.hpp"
 #include "areg/component/private/TimerManagingEvent.hpp"
 
-#include "areg/base/ESynchObjects.hpp"
+#include "areg/base/SynchObjects.hpp"
+#include "areg/base/TEResourceMap.hpp"
 #include "areg/component/private/TimerInfo.hpp"
+
+#include <string_view>
 
 /************************************************************************
  * Dependencies
@@ -35,9 +45,9 @@ class DispatcherThread;
  *              only once on the first request until it is not requested
  *              to be stopped.
  * 
- * \details     When the timer is requested to be started, 
- *              the timer Manager generates Timer Managing event object
- *              and places in the queue of timer thread. If the timer thread
+ *          When the timer is requested to be started, 
+ *          the timer Manager generates Timer Managing event object
+ *          and places in the queue of timer thread. If the timer thread
  *              is resumed because it received timer managing event, it 
  *              forwards to Timer Manager, which creates system timer.
  *              If timer thread is resumed because one of timers is
@@ -63,7 +73,11 @@ private:
      * \brief   TimerManager::TIMER_THREAD_NAME
      *          Timer Manager thread name
      **/
-    static const char * const   TIMER_THREAD_NAME       /*= "_AREG_TIMER_THREAD_NAME_"*/;
+    static constexpr std::string_view TIMER_THREAD_NAME { "_AREG_TIMER_THREAD_NAME_" };
+
+    using ImplHandleHashMap = TEPointerHashMapImpl<TIMERHANDLE, Timer*>;
+    using MapTimerResource  = TEHashMap<TIMERHANDLE, Timer*, TIMERHANDLE, Timer*, ImplHandleHashMap>;
+    using TimerResource     = TELockResourceMap<TIMERHANDLE, Timer, MapTimerResource>;
 
 //////////////////////////////////////////////////////////////////////////
 // Static members
@@ -163,7 +177,7 @@ private:
     /**
      * \brief   Destructor
      **/
-    ~TimerManager( void );
+    virtual ~TimerManager( void );
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides.
@@ -177,7 +191,7 @@ protected:
      * \brief   Automatically triggered when event is dispatched by timer thread
      * \param   data    The data object passed in event.
      **/
-    virtual void processEvent( const TimerManagingEventData & data);
+    virtual void processEvent( const TimerManagingEventData & data) override;
 
 /************************************************************************/
 // DispatcherThread overrides
@@ -189,7 +203,7 @@ protected:
      * \return	Returns true if target was found and the event
      *          delivered with success. Otherwise it returns false.
      **/
-    virtual bool postEvent( Event & eventElem );
+    virtual bool postEvent( Event & eventElem ) override;
 
     /**
      * \brief	Triggered when dispatcher starts running. 
@@ -198,13 +212,13 @@ protected:
      *          Override if logic should be changed.
      * \return	Returns true if Exit Event is signaled.
      **/
-    virtual bool runDispatcher( void );
+    virtual bool runDispatcher( void ) override;
 
     /**
      * \brief   Triggered before dispatcher starts to dispatch events and when event dispatching just finished.
      * \param   hasStarted  The flag to indicate whether the dispatcher is ready for events.
      **/
-    virtual void readyForEvents( bool isReady );
+    virtual void readyForEvents( bool isReady ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden operations. Called from Timer Thread.
@@ -240,7 +254,7 @@ private:
      * \param   whichThreadId   The dispatcher thread, where the timer event should be dispatched.
      * \return  Returns true if succeeded to register timer in the map.
      **/
-    bool _registerTimer( Timer & timer, ITEM_ID whichThreadId );
+    bool _registerTimer( Timer & timer, id_type whichThreadId );
 
     /**
      * \brief   Unregisters timer manager in the timer resource map.
@@ -296,8 +310,8 @@ private:
 
     /**
      * \brief   Creates waitable timer object. This method is operating system specific.
-     * \param   timerName   The Name of timer to create. If NULL, no name is set for waitable timer.
-     * \return  Returns the handle of created waitable timer or NULL if failed.
+     * \param   timerName   The Name of timer to create. If nullptr, no name is set for waitable timer.
+     * \return  Returns the handle of created waitable timer or nullptr if failed.
      **/
     static TIMERHANDLE _createWaitableTimer( const char * timerName );
 
@@ -313,7 +327,7 @@ private:
      * \param   timerInfo   The timer information object
      * \return  Returns true if system timer started with success.
      **/
-    static bool _startSystemTimer( TimerInfo & timerInfo, MapTimerTable & timerTable );
+    static bool _createSystemTimer( TimerInfo & timerInfo, MapTimerTable & timerTable );
 
     /**
      * \brief   Stops previously started waitable timer.
@@ -334,6 +348,10 @@ private:
      **/
     ExpiredTimers   mExpiredTimers;
     /**
+     * \brief   Timer resource handler; 
+     **/
+    TimerResource	mTimerResource;
+    /**
      * \brief   Synchronization object.
      **/
     mutable Mutex   mLock;
@@ -342,8 +360,7 @@ private:
 //  Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    TimerManager( const TimerManager & /*src*/ );
-    const TimerManager & operator = ( const TimerManager & /*src*/ );
+    DECLARE_NOCOPY_NOMOVE( TimerManager );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -354,5 +371,3 @@ inline TimerManager& TimerManager::self( void )
 {
     return (*this);
 }
-
-#endif  // AREG_COMPONENT_PRIVATE_TIMERMANAGER_HPP

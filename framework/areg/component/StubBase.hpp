@@ -1,9 +1,16 @@
-#ifndef AREG_COMPONENT_STUBBASE_HPP
-#define AREG_COMPONENT_STUBBASE_HPP
+#pragma once
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/component/StubBase.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, Stub Base class.
  *              This is Base class of all Stub objects. Derive class and
  *              implement pure virtual methods.
@@ -19,10 +26,12 @@
 #include "areg/component/StubAddress.hpp"
 #include "areg/component/NEService.hpp"
 
+#include <utility>
+
 /************************************************************************
  * Definition of Session ID. Used when unblocking request
  ************************************************************************/
-typedef unsigned int    SessionID;
+using SessionID = unsigned int;
 
 /************************************************************************
  * Dependencies
@@ -39,16 +48,10 @@ class Component;
 // StubBase class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief       This is pure virtual base class for all Stub objects 
- *              derived from Component Event Consumer interface. 
- *              Overwrite pure virtual methods to instantiate Stub objects
- * 
- * \details     In this class it is provided main basic logic of 
- *              asynchronous communication. It keeps track of requests,
- *              contains list of update notification listeners and has.
- *              The full logic of Service Interface implementation should
- *              be done in every Stub object separately.
- *
+ * \brief   A Stub (or service implementation) base class to extend for
+ *          every service implementation object. Here it is provided
+ *          main basic logic of asynchronous communication. It keeps 
+ *          track of requests and contains list of listeners
  **/
 class AREG_API StubBase    : public IEStubEventConsumer
 {
@@ -64,12 +67,12 @@ private:
     /**
      * \brief   Constant. Defines Invalid Session ID
      **/
-    static const SessionID  INVALID_SESSION_ID  /* = static_cast<SessionID>(~0)*/;
+    static constexpr SessionID      INVALID_SESSION_ID  = static_cast<SessionID>(~0);
 
     /**
      * \brief   Constant. Defines Invalid Message ID
      */
-    static const unsigned int INVALID_MESSAGE_ID /* = NEService::INVALID_MESSAGE_ID */;
+    static constexpr unsigned int   INVALID_MESSAGE_ID  = static_cast<unsigned int>(NEService::INVALID_MESSAGE_ID);
 
 protected:
     //////////////////////////////////////////////////////////////////////////
@@ -112,10 +115,16 @@ protected:
         inline Listener(unsigned int reqId, unsigned int seqId, const ProxyAddress & proxy);
 
         /**
-         * \brief   Copy constructor.
+         * \brief   Copies listener data from given source.
          * \param   src     The source of data to copy.
          **/
         inline Listener(const StubBase::Listener & src);
+
+        /**
+         * \brief   Moves listener data from given source.
+         * \param   src     The source of data to move.
+         **/
+        inline Listener(StubBase::Listener && src) noexcept;
 
     //////////////////////////////////////////////////////////////////////////
     // Operators
@@ -123,9 +132,14 @@ protected:
     public:
 
         /**
-         * \brief   Assigning operator. Copies listener data from given source.
+         * \brief   Copies listener data from given source.
          **/
-        const StubBase::Listener & operator = (const StubBase::Listener& src);
+        StubBase::Listener & operator = (const StubBase::Listener & src);
+
+        /**
+         * \brief   Moves listener data from given source.
+         **/
+        StubBase::Listener & operator = ( StubBase::Listener && src ) noexcept;
 
         /**
          * \brief   Comparing operator, compares 2 listener objects.
@@ -161,22 +175,7 @@ protected:
     /**
      * \brief   StubBase::StubListenerList class defines list of pending listeners.
      **/
-    class AREG_API StubListenerList    : public TELinkedList<StubBase::Listener, const StubBase::Listener &>
-    {
-    //////////////////////////////////////////////////////////////////////////
-    // Constructor / Destructor
-    //////////////////////////////////////////////////////////////////////////
-    public:
-        /**
-         * \brief   Default constructor.
-         **/
-        StubListenerList( void );
-
-        /**
-         * \brief   Destructor
-         **/
-        virtual ~StubListenerList( void );
-    };
+    using StubListenerList  = TELinkedList<StubBase::Listener, const StubBase::Listener &>;
 
     //////////////////////////////////////////////////////////////////////////
     // StubBase session tracking
@@ -184,11 +183,11 @@ protected:
     /**
      * \brief   Stub Session map helper class.
      **/
-    typedef TEIntegerHashMapImpl<const StubBase::Listener &>                                        ImplStubSessionMap;
+    using ImplStubSessionMap= TEHashMapImpl<unsigned int, const StubBase::Listener &>;
     /**
      * \brief   StubBase::StubSessionMap class defines list of Session IDs and unblocked requests.
      **/
-    typedef TEIntegerHashMap<StubBase::Listener, const StubBase::Listener &, ImplStubSessionMap>    MapStubSession;
+    using MapStubSession     = TEIntegerHashMap<StubBase::Listener, const StubBase::Listener &, ImplStubSessionMap>;
 
     //////////////////////////////////////////////////////////////////////////
     // StubBase resource tracking
@@ -196,19 +195,9 @@ protected:
     /**
      * \brief   Stub resource hash map helper class.
      **/
-    class AREG_API StubMapImpl    : public TEHashMapImpl<const StubAddress &, StubBase *>
+    class ImplStubMap	: public TEHashMapImpl<const StubAddress &, StubBase *>
     {
     public:
-        /**
-         * \brief   Called to calculate the 32-bit hash key value.
-         * \ param  Key     The object to calculate 32-bit hash key.
-         * \return  Returns 32-bit hash key value.
-         **/
-        inline unsigned int implHashKey( const StubAddress & Key ) const
-        {
-            return static_cast<unsigned int>(Key);
-        }
-
         /**
          * \brief   Compares 2 keys, returns true if they are equal.
          * \param   Value1  The key of right-side object to compare.
@@ -221,15 +210,15 @@ protected:
         }
     };
 
-    typedef TEHashMap<StubAddress, StubBase*, const StubAddress&, StubBase*, StubMapImpl>   MapStub;
+    using MapStub           = TEHashMap<StubAddress, StubBase*, const StubAddress&, StubBase*, ImplStubMap>;
     /**
      * \brief   Stub resource helper definition.
      **/
-    typedef TEResourceMapImpl<StubAddress, StubBase>                                        ImplStubResource;
+    using ImplStubResource  = TEResourceMapImpl<StubAddress, StubBase>;
     /**
      * \brief   Resource Map definition.
      **/
-    typedef TELockResourceMap<StubAddress, StubBase, MapStub, ImplStubResource>             MapStubResource;
+    using MapStubResource   = TELockResourceMap<StubAddress, StubBase, MapStub, ImplStubResource>;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -279,7 +268,7 @@ public:
      *          found, returns valid pointer of stub object.
      * \param   address     The Address of Stub object.
      * \return  If found, returns valid pointer of Stub object.
-     *          Otherwise returns NULL.
+     *          Otherwise returns nullptr.
      **/
     static StubBase * findStubByAddress(const StubAddress& address);
 
@@ -352,9 +341,9 @@ public:
 
     /**
      * \brief   Sends error message to clients.
-     *          If message ID is a request, it should send result NEService::RESULT_REQUEST_ERROR or NEService::RESULT_REQUEST_CANCELED, depending on msgCancel flag.
-     *          If message ID is a response, it should send result NEService::RESULT_INVALID.
-     *          If message ID is an attribute, it should send result NEService::RESULT_DATA_INVALID
+     *          If message ID is a request, it should send result NEService::RequestError or NEService::RequestCanceled, depending on msgCancel flag.
+     *          If message ID is a response, it should send result NEService::RequestInvalid.
+     *          If message ID is an attribute, it should send result NEService::ResultDataInvalid
      *          and invalidate attribute data value.
      *
      *          Overwrite to implement method
@@ -386,7 +375,7 @@ protected:
      *          further dispatching by stub.
      * \param   stream  Streaming object, which contains event data.
      * \return  If operation succeeds, returns valid pointer to Service Request event object.
-     *          Otherwise, it returns NULL.
+     *          Otherwise, it returns nullptr.
      **/
     virtual RemoteRequestEvent * createRemoteRequestEvent( const IEInStream & stream ) const;
 
@@ -395,7 +384,7 @@ protected:
      *          further dispatching by stub.
      * \param   stream  Streaming object, which contains event data.
      * \return  If operation succeeds, returns valid pointer to Service Request event object.
-     *          Otherwise, it returns NULL.
+     *          Otherwise, it returns nullptr.
      **/
     virtual RemoteNotifyRequestEvent * createRemoteNotifyRequestEvent( const IEInStream & stream ) const;
 
@@ -409,7 +398,7 @@ protected:
      * \param   eventElem   Service Request Event object, contains request
      *                      call ID and parameters.
      **/
-    virtual void processRequestEvent( ServiceRequestEvent & eventElem ) = 0;
+    virtual void processRequestEvent( ServiceRequestEvent & eventElem ) override = 0;
     
     /**
      * \brief   Triggered to process attribute update notification event.
@@ -417,7 +406,7 @@ protected:
      *          process notification request of attribute update.
      * \param   eventElem   Service Request Event object, contains attribute ID.
      **/
-    virtual void processAttributeEvent( ServiceRequestEvent & eventElem ) = 0;
+    virtual void processAttributeEvent( ServiceRequestEvent & eventElem ) override = 0;
 
     /**
      * \brief   Triggered by system when stub is registered in service. The connection status indicated
@@ -425,25 +414,25 @@ protected:
      * \param   stubTarget          The address of registered Stub
      * \param   connectionStatus    Stub registration status.
      **/
-    virtual void processStubRegisteredEvent( const StubAddress & stubTarget, NEService::eServiceConnection connectionStatus );
+    virtual void processStubRegisteredEvent( const StubAddress & stubTarget, NEService::eServiceConnection connectionStatus ) override;
 
     /**
      * \brief   Send by system when client is requested connect / disconnect
      * \param   proxyAddress        The address of source proxy
      * \param   connectionStatus    Connection status of specified client
      **/
-    virtual void processClientConnectEvent( const ProxyAddress & proxyAddress, NEService::eServiceConnection connectionStatus );
+    virtual void processClientConnectEvent( const ProxyAddress & proxyAddress, NEService::eServiceConnection connectionStatus ) override;
 
     /**
      * \brief   Triggered to process generic stub event.
      *          Usually should not be triggered.
      **/
-    virtual void processStubEvent( StubEvent & eventElem );
+    virtual void processStubEvent( StubEvent & eventElem ) override;
 
     /**
      * \brief   Triggered to process generic event. Usually is not triggered.
      **/
-    virtual void processGenericEvent(Event & eventElem);
+    virtual void processGenericEvent(Event & eventElem) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations. Protected.
@@ -683,14 +672,21 @@ protected:
      **/
     NEService::eServiceConnection       mConnectionStatus;
 
+#if defined(_MSC_VER) && (_MSC_VER > 1200)
+    #pragma warning(disable: 4251)
+#endif  // _MSC_VER
     /**
      * \brief   The list of listeners
      **/
     StubBase::StubListenerList          mListListener;
 
+#if defined(_MSC_VER) && (_MSC_VER > 1200)
+    #pragma warning(default: 4251)
+#endif  // _MSC_VER
+
 private:
     /**
-     * \brief   The position of current listener, which is processing. When canceled, it sets NULL.
+     * \brief   The position of current listener, which is processing. When canceled, it sets nullptr.
      **/
     LISTPOS                             mCurrListener;
 
@@ -706,7 +702,7 @@ private:
     /**
      * \brief   Session map object, contains list of unblock requests
      **/
-    StubBase::MapStubSession            mMapSessions;
+    MapStubSession                  mMapSessions;
 
     /**
      * \brief   Stub object resource map.
@@ -729,9 +725,8 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    StubBase( void );
-    StubBase(const StubBase & /*src*/ );
-    const StubBase& operator = (const StubBase & /*src*/);
+    StubBase( void ) = delete;
+    DECLARE_NOCOPY_NOMOVE( StubBase );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -746,24 +741,64 @@ private:
 //////////////////////////////////////////////////////////////////////////
 
 inline StubBase::Listener::Listener( void )
-    : mMessageId(0), mSequenceNr(0), mProxy(ProxyAddress::INVALID_PROXY_ADDRESS)
-{   ;   }
+    : mMessageId ( 0 )
+    , mSequenceNr( 0 )
+    , mProxy     ( ProxyAddress::INVALID_PROXY_ADDRESS )
+{
+}
 
 inline StubBase::Listener::Listener( unsigned int reqId )
-    : mMessageId(reqId), mSequenceNr(0), mProxy(ProxyAddress::INVALID_PROXY_ADDRESS)
-{   ;   }
+    : mMessageId ( reqId )
+    , mSequenceNr( 0 )
+    , mProxy     ( ProxyAddress::INVALID_PROXY_ADDRESS )
+{
+}
 
 inline StubBase::Listener::Listener( unsigned int reqId, unsigned int seqId )
-    : mMessageId(reqId), mSequenceNr(seqId), mProxy(ProxyAddress::INVALID_PROXY_ADDRESS)
-{   ;   }
+    : mMessageId ( reqId )
+    , mSequenceNr( seqId )
+    , mProxy     ( ProxyAddress::INVALID_PROXY_ADDRESS )
+{
+}
 
 inline StubBase::Listener::Listener( unsigned int reqId, unsigned int seqId, const ProxyAddress& proxy )
-    : mMessageId(reqId), mSequenceNr(seqId), mProxy(proxy)
-{   ;   }
+    : mMessageId ( reqId )
+    , mSequenceNr( seqId )
+    , mProxy     ( proxy )
+{
+}
 
 inline StubBase::Listener::Listener( const StubBase::Listener& src )
-    : mMessageId(src.mMessageId), mSequenceNr(src.mSequenceNr), mProxy(src.mProxy)
-{   ;   }
+    : mMessageId ( src.mMessageId )
+    , mSequenceNr( src.mSequenceNr)
+    , mProxy     ( src.mProxy )
+{
+}
+
+inline StubBase::Listener::Listener( StubBase::Listener && src ) noexcept
+    : mMessageId ( src.mMessageId )
+    , mSequenceNr( src.mSequenceNr )
+    , mProxy     ( std::move(src.mProxy) )
+{
+}
+
+inline StubBase::Listener& StubBase::Listener::operator = ( const StubBase::Listener& src )
+{
+    mMessageId  = src.mMessageId;
+    mSequenceNr = src.mSequenceNr;
+    mProxy      = src.mProxy;
+
+    return (*this);
+}
+
+inline StubBase::Listener& StubBase::Listener::operator = ( StubBase::Listener && src ) noexcept
+{
+    mMessageId  = src.mMessageId;
+    mSequenceNr = src.mSequenceNr;
+    mProxy      = std::move(src.mProxy);
+    
+    return (*this);
+}
 
 /************************************************************************
  * StubBase class
@@ -776,5 +811,3 @@ inline StubBase & StubBase::self( void )
 {
     return (*this);
 }
-
-#endif  // AREG_COMPONENT_STUBBASE_HPP

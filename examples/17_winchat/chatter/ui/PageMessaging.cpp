@@ -28,7 +28,7 @@ PageMessaging::PageMessaging( ConnectionHandler & handlerConnection )
     , mIsKeytype        ( TRUE )
     , mIsMessages       ( TRUE )
     , mCtrlList         ( )
-    , mCentralMessage   ( static_cast<CentralMessaging *>(NULL) )
+    , mCentralMessage   ( nullptr )
     , mLastItem         ( 0 )
     , mTextMsg          ( _T( "" ) )
     , mConnectionHandler( handlerConnection )
@@ -66,10 +66,10 @@ void PageMessaging::OnClientRegistration( bool isRegistered, DispatcherThread * 
 {
     if ( isRegistered )
     {
-        if ( (mCentralMessage == NULL) && (dispThread != NULL) )
+        if ( (mCentralMessage == nullptr) && (dispThread != nullptr) )
         {
             mCentralMessage = DEBUG_NEW CentralMessaging( NECommon::COMP_NAME_CENTRAL_SERVER, *dispThread, mConnectionHandler);
-            if ( mCentralMessage != NULL )
+            if ( mCentralMessage != nullptr )
             {
                 UpdateData( TRUE );
                 mCentralMessage->ReceiveBroadcasting(mIsBroadcast ? true : false);
@@ -135,7 +135,7 @@ void PageMessaging::setHeaders( void )
     {
         CString str( HEADER_TITILES[i] );
         LVCOLUMN lv;
-        NEMemory::zeroData<LVCOLUMN>( lv );
+        NEMemory::zeroElement<LVCOLUMN>( lv );
         lv.mask         = LVCF_FMT | LVCF_SUBITEM | LVCF_TEXT | LVCF_WIDTH;
         lv.fmt          = LVCFMT_LEFT;
         lv.cx           = i == 0 ? width1 : width2;
@@ -148,17 +148,17 @@ void PageMessaging::setHeaders( void )
 
 bool PageMessaging::isServiceConnected(void) const
 {
-    return ( (mCentralMessage                           != NULL ) && 
+    return ( (mCentralMessage                           != nullptr ) && 
              (mCentralMessage->isConnected()            == true ) );
 }
 
 void PageMessaging::cleanService(void)
 {
-    if (mCentralMessage != NULL)
+    if (mCentralMessage != nullptr)
     {
         mCentralMessage->clearAllNotifications();
         delete mCentralMessage;
-        mCentralMessage = NULL;
+        mCentralMessage = nullptr;
     }
 }
 
@@ -211,10 +211,10 @@ BOOL PageMessaging::OnInitDialog( )
 void PageMessaging::OnClickedButtonSend( )
 {
     UpdateData( TRUE );
-    if ( mCentralMessage != NULL)
+    if ( mCentralMessage != nullptr)
     {
         DateTime dateTime = DateTime::getNow();
-        outputMessage( CString( mConnectionHandler.GetNickName().getBuffer() )
+        outputMessage( CString( mConnectionHandler.GetNickName().getString() )
                      , mTextMsg
                      , CString( dateTime.formatTime().getString())
                      , CString( "..." )
@@ -321,7 +321,7 @@ void PageMessaging::OnSendMessage( uint32_t cookie, NECommon::sMessageData & dat
 LRESULT PageMessaging::OnOutputMessage( WPARAM wParam, LPARAM lParam )
 {
     NECommon::sMessageData * data = reinterpret_cast<NECommon::sMessageData *>(lParam);
-    if ( data != NULL)
+    if ( data != nullptr)
     {
         outputMessage( data->nickName, data->message, data->timeSend, data->timeReceived, static_cast<uint32_t>(data->dataSave) );
         delete data;
@@ -329,12 +329,12 @@ LRESULT PageMessaging::OnOutputMessage( WPARAM wParam, LPARAM lParam )
     return 0;
 }
 
-void PageMessaging::outputMessage( CString & nickName, CString & message, CString & dateStart, CString & dateEnd, uint32_t cookie )
+void PageMessaging::outputMessage( CString nickName, CString message, CString dateStart, CString dateEnd, uint32_t cookie )
 {
     removeTyping(nickName, cookie);
 
     LVITEM lv;
-    NEMemory::zeroData<LVITEM>( lv );
+    NEMemory::zeroElement<LVITEM>( lv );
 
     // Column nickname
     lv.mask     = LVIF_TEXT | LVIF_PARAM;
@@ -368,12 +368,12 @@ void PageMessaging::outputMessage( const String & nickname, const String & messa
 {
     outputMessage( CString(nickname.getString())
                  , CString(message.getString())
-                 , CString( begin.isValid() ? begin.formatTime().getString() : String::EmptyString )
-                 , CString( end.isValid()   ? end.formatTime().getString()   : String::EmptyString )
+                 , CString( begin.isValid() ? begin.formatTime().getString() : String::EmptyString.data() )
+                 , CString( end.isValid()   ? end.formatTime().getString()   : String::EmptyString.data() )
                  , cookie );
 }
 
-void PageMessaging::outputTyping( CString & nickName, CString & message, uint32_t cookie )
+void PageMessaging::outputTyping( CString nickName, CString message, uint32_t cookie )
 {
     if ( message.IsEmpty() == false )
     {
@@ -386,7 +386,7 @@ void PageMessaging::outputTyping( CString & nickName, CString & message, uint32_
         if ( pos == mCtrlList.GetItemCount() )
         {
             LVITEM lv;
-            NEMemory::zeroData<LVITEM>( lv );
+            NEMemory::zeroElement<LVITEM>( lv );
 
             // Column nickname
             lv.mask     = LVIF_TEXT | LVIF_PARAM;
@@ -436,7 +436,7 @@ void PageMessaging::OnDefaultClicked( void )
     if ( (mSendEnabled == TRUE) && (mTextMsg.IsEmpty() == FALSE) )
     {
         CButton * btnSend = reinterpret_cast<CButton *>(GetDlgItem( IDC_BUTTON_SEND ));
-        if ( btnSend != NULL )
+        if ( btnSend != nullptr )
         {
             PostMessage( WM_COMMAND, MAKEWPARAM( IDC_BUTTON_SEND, BN_CLICKED ), reinterpret_cast<LPARAM>(btnSend->GetSafeHwnd( )) );
         }

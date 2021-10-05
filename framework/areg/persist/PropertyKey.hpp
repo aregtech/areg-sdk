@@ -1,9 +1,16 @@
-#ifndef AREG_PERSIST_PROPERTYKEY_HPP
-#define AREG_PERSIST_PROPERTYKEY_HPP
+#pragma once
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/persist/PropertyKey.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, Property Key object to persist data.
  ************************************************************************/
 
@@ -35,21 +42,26 @@ public:
     /**
      * \brief   Default constructor
      **/
-    PropertyKey( void );
+    PropertyKey( void ) = default;
     /**
      * \brief   Parses and initializes Key.
      * \param   key     The Key as a string to parse.
      **/
-    PropertyKey( const String & key );
+    explicit PropertyKey( const String & key );
     /**
      * \brief   Copies data from given source
      * \param   source  The source to copy data
      **/
     PropertyKey( const PropertyKey & source );
     /**
+     * \brief   Moves data from given source
+     * \param   source  The source to move data
+     **/
+    PropertyKey( PropertyKey && source ) noexcept;
+    /**
      * \brief   Destructor
      **/
-    ~PropertyKey( void );
+    ~PropertyKey( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
@@ -59,13 +71,19 @@ public:
      * \brief   Copies property Key from given source
      * \param   source  The source to copy data.
      **/
-    const PropertyKey & operator = ( const PropertyKey & source );
+    PropertyKey & operator = ( const PropertyKey & source );
+
+    /**
+     * \brief   Moves property Key from given source
+     * \param   source  The source to move data.
+     **/
+    PropertyKey & operator = ( PropertyKey && source ) noexcept;
 
     /**
      * \brief   Copies property Key from given source as a string
      * \param   source  The source as string to parse and copy data.
      **/
-    const PropertyKey & operator = ( const String & params );
+    PropertyKey & operator = ( const String & params );
 
     /**
      * \brief   Checks equality of two Key objects.
@@ -84,7 +102,7 @@ public:
     /**
      * \brief   Converts and returns 32-bit integer value of Key object.
      **/
-    operator unsigned int ( void ) const;
+    explicit operator unsigned int ( void ) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations and properties
@@ -105,7 +123,7 @@ public:
      * \param   module      The module value of Key
      * \param   property    The position value of Key
      **/
-    void setValues( const char * section, const char * property, const char * module = NULL, const char * position = NULL);
+    void setValues( const char * section, const char * property, const char * module = nullptr, const char * position = nullptr);
 
     /**
      * \brief   Returns section part of the Key
@@ -176,5 +194,3 @@ private:
      **/
     String  mPosition;     // pos 4
 };
-
-#endif  // AREG_PERSIST_PROPERTYKEY_HPP

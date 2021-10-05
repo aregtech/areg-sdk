@@ -5,16 +5,16 @@
     </Overview>
     <DataTypeList>
         <DataType ID="3" Name="sConnection" Type="Imported">
-            <Namespace>NECommonSettings</Namespace>
-            <Location>shared/NECommonSettings.hpp</Location>
+            <Namespace>NECommon</Namespace>
+            <Location>generated/NECommon.hpp</Location>
         </DataType>
         <DataType ID="4" Name="ListConnections" Type="Imported">
-            <Namespace>NECommonSettings</Namespace>
-            <Location>shared/NECommonSettings.hpp</Location>
+            <Namespace>NECommon</Namespace>
+            <Location>generated/NECommon.hpp</Location>
         </DataType>
         <DataType ID="5" Name="MapConnections" Type="Imported">
-            <Namespace>NECommonSettings</Namespace>
-            <Location>shared/NECommonSettings.hpp</Location>
+            <Namespace>NECommon</Namespace>
+            <Location>generated/NECommon.hpp</Location>
         </DataType>
         <DataType ID="15" Name="eConnectionResult" Type="Enumerate" Values="default">
             <Description>The result of connection</Description>
@@ -44,17 +44,17 @@
         <DataType ID="48" Name="sConnection" Type="DefinedType">
             <Description>The connection structure.</Description>
             <Container>New Type</Container>
-            <BaseTypeValue>NECommonSettings::sConnection</BaseTypeValue>
+            <BaseTypeValue>NECommon::sConnection</BaseTypeValue>
         </DataType>
         <DataType ID="49" Name="ListConnection" Type="DefinedType">
             <Description>List of connections.</Description>
             <Container>New Type</Container>
-            <BaseTypeValue>NECommonSettings::ListConnections</BaseTypeValue>
+            <BaseTypeValue>NECommon::ListConnections</BaseTypeValue>
         </DataType>
         <DataType ID="50" Name="MapConnection" Type="DefinedType">
             <Description>Map of connections.</Description>
             <Container>New Type</Container>
-            <BaseTypeValue>NECommonSettings::MapConnections</BaseTypeValue>
+            <BaseTypeValue>NECommon::MapConnections</BaseTypeValue>
         </DataType>
     </DataTypeList>
     <AttributeList>
@@ -163,16 +163,16 @@
     </MethodList>
     <ConstantList>
         <Constant DataType="uint32" ID="46" Name="InvalidCookie">
-            <Value>NECommonSettings::InvalidCookie</Value>
+            <Value>NECommon::InvalidCookie</Value>
             <Description>Indicates invalid cookie value</Description>
         </Constant>
         <Constant DataType="uint32" ID="47" Name="NicknameMaxLen">
-            <Value>NECommonSettings::MaxlenNickname</Value>
+            <Value>NECommon::MaxlenNickname</Value>
             <Description>The maximum length of nick name to register.</Description>
         </Constant>
     </ConstantList>
     <IncludeList>
-        <Location ID="59" Name="shared/NECommonSettings.hpp">
+        <Location ID="59" Name="generated/NECommon.hpp">
             <Description>Shared data.</Description>
         </Location>
     </IncludeList>

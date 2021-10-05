@@ -1,7 +1,7 @@
 /************************************************************************
  * \file        mcrouter/app/private/MulticastRouter.cpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       Router, Multicast Router Service process common part
  ************************************************************************/
 
@@ -10,7 +10,6 @@
 #include "areg/base/File.hpp"
 #include "areg/base/Process.hpp"
 #include "areg/base/String.hpp"
-#include "areg/base/WideString.hpp"
 #include "areg/appbase/Application.hpp"
 #include "areg/appbase/NEApplication.hpp"
 #include "areg/trace/GETrace.h"
@@ -40,13 +39,12 @@ MulticastRouter & MulticastRouter::getInstance(void)
 }
 
 MulticastRouter::MulticastRouter( void )
-    : mRouterState  ( NEMulticastRouterSettings::RouterStopped )
-    , mServiceCmd   ( MulticastRouter::CMD_Undefined )
+    : mRouterState  ( NEMulticastRouterSettings::eRouterState::RouterStopped )
+    , mServiceCmd   ( NEMulticastRouterSettings::eServiceCommand::CMD_Undefined )
     , mServiceServer( )
-    , mSvcHandle    ( NULL )
-    , mSeMHandle    ( NULL )
+    , mSvcHandle    ( nullptr )
+    , mSeMHandle    ( nullptr )
 {
-    ; // do nothing
 }
 
 MulticastRouter::~MulticastRouter( void )
@@ -56,7 +54,7 @@ MulticastRouter::~MulticastRouter( void )
 
 void MulticastRouter::serviceMain( int argc, char ** argv )
 {
-    Application::initApplication(true, false, false, true, NEApplication::DEFAULT_TRACING_CONFIG_FILE, NULL);
+    Application::initApplication(true, false, false, true, NEApplication::DEFAULT_TRACING_CONFIG_FILE.data(), nullptr );
 
     do 
     {
@@ -68,13 +66,13 @@ void MulticastRouter::serviceMain( int argc, char ** argv )
             TRACE_DBG("... Command argument [ %d ]: [ %s ]", i, argv[i]);
 #endif  // DEBUG
 
-        if ( _registerService() || mServiceCmd == MulticastRouter::CMD_Console )
+        if ( _registerService() || mServiceCmd == NEMulticastRouterSettings::eServiceCommand::CMD_Console )
         {
             TRACE_DBG("Starting service");
             serviceStart();
         }
 
-        if ( mServiceCmd == MulticastRouter::CMD_Console )
+        if ( mServiceCmd == NEMulticastRouterSettings::eServiceCommand::CMD_Console )
         {
             printf("Type \'quit\' or \'q\' to quit message router ...: ");
             const char quit = static_cast<int>('q' );
@@ -93,7 +91,7 @@ void MulticastRouter::serviceMain( int argc, char ** argv )
             Application::signalAppQuit();
         }
 
-        Application::waitAppQuit(IESynchObject::WAIT_INFINITE);
+        Application::waitAppQuit(NECommon::WAIT_INFINITE);
 
         serviceStop();
 
@@ -107,11 +105,11 @@ void MulticastRouter::serviceMain( int argc, char ** argv )
 bool MulticastRouter::serviceStart(void)
 {
     TRACE_SCOPE(mcrouter_app_MulticastRouter_serviceStart);
-    TRACE_DBG("Starting service [ %s ]", NEMulticastRouterSettings::ServiceNameA);
+    TRACE_DBG("Starting service [ %s ]", NEMulticastRouterSettings::SERVICE_NAME_ASCII);
     bool result = false;
-    if (  mServiceServer.configureRemoteServicing( NEApplication::DEFAULT_ROUTER_CONFIG_FILE ) && mServiceServer.startRemoteServicing() )
+    if (  mServiceServer.configureRemoteServicing( NEApplication::DEFAULT_ROUTER_CONFIG_FILE.data() ) && mServiceServer.startRemoteServicing() )
     {
-        result = setState(NEMulticastRouterSettings::RouterRunning);
+        result = setState(NEMulticastRouterSettings::eRouterState::RouterRunning);
     }
     else
     {
@@ -124,8 +122,8 @@ bool MulticastRouter::serviceStart(void)
 void MulticastRouter::serviceStop(void)
 {
     TRACE_SCOPE(mcrouter_app_MulticastRouter_serviceStop);
-    TRACE_WARN("Stopping service [ %s ]", NEMulticastRouterSettings::ServiceNameA);
-    setState(NEMulticastRouterSettings::RouterStopping);
+    TRACE_WARN("Stopping service [ %s ]", NEMulticastRouterSettings::SERVICE_NAME_ASCII);
+    setState(NEMulticastRouterSettings::eRouterState::RouterStopping);
     mServiceServer.stopRemoteServicing();
     Application::signalAppQuit();
 }
@@ -135,9 +133,9 @@ void MulticastRouter::servicePause(void)
     TRACE_SCOPE(mcrouter_app_MulticastRouter_servicePause);
     TRACE_DBG("Pausing Router service");
 
-    setState( NEMulticastRouterSettings::RouterPausing );
+    setState( NEMulticastRouterSettings::eRouterState::RouterPausing );
     mServiceServer.stopRemoteServicing();
-    setState( NEMulticastRouterSettings::RouterPaused );
+    setState( NEMulticastRouterSettings::eRouterState::RouterPaused );
 }
 
 bool MulticastRouter::serviceContinue(void)
@@ -146,11 +144,11 @@ bool MulticastRouter::serviceContinue(void)
     TRACE_DBG("Continueing Router service");
 
     bool result = false;
-    setState( NEMulticastRouterSettings::RouterContinuing );
+    setState( NEMulticastRouterSettings::eRouterState::RouterContinuing );
     if ( mServiceServer.isRemoteServicingConfigured() && mServiceServer.startRemoteServicing() )
     {
         result = true;
-        setState( NEMulticastRouterSettings::RouterRunning );
+        setState( NEMulticastRouterSettings::eRouterState::RouterRunning );
     }
     else
     {

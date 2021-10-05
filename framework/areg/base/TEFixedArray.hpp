@@ -1,9 +1,16 @@
-#ifndef AREG_BASE_TEFIXEDARRAY_HPP
-#define AREG_BASE_TEFIXEDARRAY_HPP
+#pragma once
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/base/TEFixedArray.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, Fixed Array class template.
  *              This class template is an Array of fixed size. 
  *              It cannot resized by adding new element. It resizes by 
@@ -14,7 +21,7 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
-#include "areg/base/ETemplateBase.hpp"
+#include "areg/base/TETemplateBase.hpp"
 
 #include "areg/base/NEMemory.hpp"
 #include "areg/base/IEIOStream.hpp"
@@ -23,19 +30,16 @@
 // TEFixedArray<VALUE, VALUE_TYPE, Implement> class template declaration.
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief	    Fixed Array has general functionalities to access and copy
- *              elements by valid index. Fixed Array is similar to 
- *              TEArrayList<VALUE, VALUE_TYPE> except that it does not 
- *              support insert or remove element(s), it will not 
- *              change initial size until Array object is not assigned 
- *              from other source. In this case old value will be discarded 
- *              and new values will be set. The type VALUE should have
- *              at least default constructor and applicable assigning operator.
- *              By default VALUE_TYPE is equal to type VALUE.
- *              The index to access array element must be valid.
- *              The FixedArray object is not thread safe and data access 
- *              should be  synchronized manually.
- *              For use example, see example bellow.
+ * \brief   Fixed Array has general functionalities to access and copy elements 
+ *          by valid index. Fixed Array is similar to TEArrayList<VALUE, VALUE_TYPE> 
+ *          except that it does not support insert or remove element(s) and does not
+ *          change the initial size of, unless it is not assigned or moved from 
+ *          another source
+ *
+ *          The type VALUE should have at least default constructor and applicable 
+ *          assigning operator. By default VALUE_TYPE is equal to type VALUE.
+ *          The FixedArray object is not thread safe and data access should be 
+ *          synchronized manually. For use example, see example bellow.
  *
  * \tparam  VALUE       The type of stored items. Either should be 
  *                      primitive or should have default constructor 
@@ -72,8 +76,7 @@
  *
  **/
 template<typename VALUE, typename VALUE_TYPE = VALUE, class Implement = TEListImpl<VALUE_TYPE>>
-class TEFixedArray  : protected Implement
-                    , protected TemplateConstants
+class TEFixedArray
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
@@ -83,15 +86,21 @@ public:
      * \brief	Constructor. Can be used as a default constructor.
      *          Creates Fixed Array with initial size. If the initial
      *          is zero, no element can be accessed. To change the size,
-     *          use assigning operator to copy elements from source array.
+     *          use assigning or move operators to copy or move elements 
+     *          from source array.
      * \param	elemCount	The initial size of array.
      **/
-    TEFixedArray( int elemCount = 0);
+    explicit TEFixedArray( int elemCount = 0);
     /**
      * \brief   Copy constructor.
      * \param   src     The source to copy data.
      **/
     TEFixedArray( const TEFixedArray<VALUE, VALUE_TYPE, Implement> & src );
+    /**
+     * \brief   Move constructor.
+     * \param   src     The source to move data.
+     **/
+    TEFixedArray( TEFixedArray<VALUE, VALUE_TYPE, Implement> && src ) noexcept;
     /**
      * \brief   Destructor.
      **/
@@ -110,7 +119,13 @@ public:
      *          The previous buffer will be freed and the size will be changed.
      * \param	src	    Source of Array to copy data.
      **/
-    const TEFixedArray<VALUE, VALUE_TYPE, Implement> & operator = ( const TEFixedArray<VALUE, VALUE_TYPE, Implement> & src);
+    TEFixedArray<VALUE, VALUE_TYPE, Implement> & operator = ( const TEFixedArray<VALUE, VALUE_TYPE, Implement> & src);
+    /**
+     * \brief	Move operator. Moves elements from given source.
+     *          The previous buffer is freed and the size is changed.
+     * \param	src	    Source of Array to copy data.
+     **/
+    TEFixedArray<VALUE, VALUE_TYPE, Implement> & operator = ( TEFixedArray<VALUE, VALUE_TYPE, Implement> && src ) noexcept;
     /**
      * \brief   Checks equality of 2 hash-map objects, and returns true if they are equal.
      *          There should be possible to compare VALUE type entries of array.
@@ -248,12 +263,15 @@ protected:
     /**
      * \brief   Pointer to array of elements
      **/
-    VALUE * mValueList;
+    VALUE *     mValueList;
     /**
      * \brief   The size of array
      **/
-    int     mElemCount;
-
+    int         mElemCount;
+    /**
+     * \brief   Instance of object that copares values.
+     **/
+    Implement   mImplement;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -266,23 +284,29 @@ protected:
 
 template<typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /* = TEListImpl<VALUE_TYPE> */>
 TEFixedArray<VALUE, VALUE_TYPE, Implement>::TEFixedArray( int elemCount /*= 0*/ )
-    : Implement         ( )
-    , TemplateConstants ( )
-
-    , mValueList( elemCount > 0 ? DEBUG_NEW VALUE[static_cast<unsigned int>(elemCount)] : NULL )
-    , mElemCount( mValueList != NULL ? elemCount : 0 )
+    : mValueList( elemCount > 0 ? DEBUG_NEW VALUE[static_cast<unsigned int>(elemCount)] : nullptr )
+    , mElemCount( mValueList != nullptr ? elemCount : 0 )
+    , mImplement( )
 {
 }
 
 template<typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /* = TEListImpl<VALUE_TYPE> */>
 TEFixedArray<VALUE, VALUE_TYPE, Implement>::TEFixedArray( const TEFixedArray<VALUE, VALUE_TYPE, Implement>& src )
-    : Implement         ( )
-    , TemplateConstants ( )
-
-    , mValueList( src.mElemCount > 0 ? DEBUG_NEW VALUE[static_cast<unsigned int>(src.mElemCount)] : NULL )
-    , mElemCount( mValueList != NULL ? src.mElemCount : 0 )
+    : mValueList( src.mElemCount > 0 ? DEBUG_NEW VALUE[static_cast<unsigned int>(src.mElemCount)] : nullptr )
+    , mElemCount( mValueList != nullptr ? src.mElemCount : 0 )
+    , mImplement( )
 {
     NEMemory::copyElems<VALUE, VALUE>(mValueList, src.mValueList, mElemCount);
+}
+
+template<typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /* = TEListImpl<VALUE_TYPE> */>
+TEFixedArray<VALUE, VALUE_TYPE, Implement>::TEFixedArray( TEFixedArray<VALUE, VALUE_TYPE, Implement> && src ) noexcept
+    : mValueList( src.mValueList )
+    , mElemCount( src.mElemCount )
+    , mImplement( )
+{
+    src.mValueList  = nullptr;
+    src.mElemCount  = 0;
 }
 
 template<typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /* = TEListImpl<VALUE_TYPE> */>
@@ -292,19 +316,38 @@ TEFixedArray<VALUE, VALUE_TYPE, Implement>::~TEFixedArray( void )
 }
 
 template<typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /* = TEListImpl<VALUE_TYPE> */>
-const TEFixedArray<VALUE, VALUE_TYPE, Implement> & TEFixedArray<VALUE, VALUE_TYPE, Implement>::operator = ( const TEFixedArray<VALUE, VALUE_TYPE, Implement>& src )
+TEFixedArray<VALUE, VALUE_TYPE, Implement> & TEFixedArray<VALUE, VALUE_TYPE, Implement>::operator = ( const TEFixedArray<VALUE, VALUE_TYPE, Implement>& src )
 {
     if (static_cast<const TEFixedArray<VALUE, VALUE_TYPE, Implement> *>(this) != &src)
     {
         if (mElemCount != src.getSize())
         {
             removeAll();
-            mValueList    = src.getSize() > 0 ? DEBUG_NEW VALUE[static_cast<unsigned int>(src.getSize())] : NULL;
-            mElemCount    = mValueList != NULL ? src.getSize() : 0;
+            mValueList    = src.getSize() > 0 ? DEBUG_NEW VALUE[static_cast<unsigned int>(src.getSize())] : nullptr;
+            mElemCount    = mValueList != nullptr ? src.getSize() : 0;
         }
 
         for (int i = 0; i < mElemCount; ++ i)
             mValueList[i] = src.getAt(i);
+    }
+
+    return (*this);
+}
+
+template<typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /* = TEListImpl<VALUE_TYPE> */>
+TEFixedArray<VALUE, VALUE_TYPE, Implement> & TEFixedArray<VALUE, VALUE_TYPE, Implement>::operator = ( TEFixedArray<VALUE, VALUE_TYPE, Implement> && src ) noexcept
+{
+    if ( static_cast<const TEFixedArray<VALUE, VALUE_TYPE, Implement> *>(this) != &src )
+    {
+        if ( mValueList != nullptr )
+        {
+            delete [] mValueList;
+        }
+
+        mValueList  = src.mValueList;
+        mElemCount  = src.mElemCount;
+        src.mValueList  = nullptr;
+        src.mElemCount  = 0;
     }
 
     return (*this);
@@ -322,7 +365,9 @@ bool TEFixedArray<VALUE, VALUE_TYPE, Implement>::operator == ( const TEFixedArra
         {
             result = true;
             for (int i = 0; result && (i < mElemCount); ++ i)
-                result = isEqualValues(mValueList[i], other.mValueList[i]);
+            {
+                result = isEqualValues( mValueList[i], other.mValueList[i] );
+            }
         }
     }
 
@@ -339,9 +384,10 @@ bool TEFixedArray<VALUE, VALUE_TYPE, Implement>::operator != (const TEFixedArray
         result = true;
         if ( mElemCount == other.getSize( ) )
         {
-            result = false;
-            for ( int i = 0; (result == false) && (i < mElemCount); ++ i )
+            for ( int i = 0; result && (i < mElemCount); ++ i )
+            {
                 result = isEqualValues( mValueList[i], other.mValueList[i] ) == false;
+            }
         }
     }
     
@@ -414,28 +460,28 @@ inline bool TEFixedArray<VALUE, VALUE_TYPE, Implement>::isValidIndex( int whichI
 template<typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /* = TEListImpl<VALUE_TYPE> */>
 inline bool TEFixedArray<VALUE, VALUE_TYPE, Implement>::isEqualValues(VALUE_TYPE value1, VALUE_TYPE value2) const
 {
-    return Implement::implEqualValues(value1, value2);
+    return mImplement.implEqualValues(value1, value2);
 }
 
 template<typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /* = TEListImpl<VALUE_TYPE> */>
 inline void TEFixedArray<VALUE, VALUE_TYPE, Implement>::removeAll( void )
 {
-    if (mValueList != NULL)
+    if (mValueList != nullptr)
         delete [] mValueList;
 
-    mValueList  = NULL;
+    mValueList  = nullptr;
     mElemCount  = 0;
 }
 
 template<typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /*= TEListImpl<VALUE_TYPE>*/>
 void TEFixedArray<VALUE, VALUE_TYPE, Implement>::resize(int newLength)
 {
-    VALUE * newList = newLength != 0 ? DEBUG_NEW VALUE[static_cast<unsigned int>(newLength)] : NULL;
+    VALUE * newList = newLength != 0 ? DEBUG_NEW VALUE[static_cast<unsigned int>(newLength)] : nullptr;
     int count = MACRO_MIN(newLength, mElemCount);
     for (int i = 0; i < count; ++ i)
         newList[i] = mValueList[i];
     
-    if (mValueList != NULL)
+    if (mValueList != nullptr )
         delete [] mValueList;
 
     mValueList  = newList;
@@ -452,8 +498,7 @@ const IEInStream & operator >> ( const IEInStream & stream, TEFixedArray<V, VT, 
     int size = 0;
     stream >> size;
     input.removeAll();
-    input.mValueList= size != 0 ? DEBUG_NEW V[size] : NULL;
-    input.mElemCount     = input.mValueList != NULL ? size : 0;
+    input.resize(size);
 
     for ( int i = 0; i < input.mElemCount; ++ i )
     {
@@ -474,5 +519,3 @@ IEOutStream & operator << ( IEOutStream & stream, const TEFixedArray<V, VT, Impl
 
     return stream;
 }
-
-#endif  // AREG_BASE_TEFIXEDARRAY_HPP

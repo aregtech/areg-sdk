@@ -1,18 +1,19 @@
 //////////////////////////////////////////////////////////////////////////
 // Begin generate generated/private/ConnectionManagerEvents.hpp file
 //////////////////////////////////////////////////////////////////////////
-#ifndef  GENERATED_PRIVATE_CONNECTIONMANAGEREVENTS_HPP
-#define  GENERATED_PRIVATE_CONNECTIONMANAGEREVENTS_HPP
-/************************************************************************
- * (c) copyright    2021
- *                  Create by AREG SDK code generator tool from source ConnectionManager.
- * Generated at     04.07.2021  04:30:00 GMT+02:00 
- ************************************************************************/
+
+#pragma once
 
 /************************************************************************
+ * (c) copyright    2021
+ *
+ * Generated at     30.09.2021  01:22:14 GMT+02:00 
+ *                  Create by AREG SDK code generator tool from source ConnectionManager.
+ *
  * \file            generated/private/ConnectionManagerEvents.hpp
  * \ingroup         ConnectionManager Service Interface
- * \brief           This is an automatic generated code of ConnectionManager Service Interface Event classes declaration.
+ * \brief           This is an automatic generated code of ConnectionManager
+ *                  Service Interface event classes declaration.
  ************************************************************************/
 
 /************************************************************************
@@ -93,15 +94,14 @@ public:
     /**
      * \brief   Destructor.
      **/
-    virtual ~ConnectionManagerRequestEvent( void );
+    virtual ~ConnectionManagerRequestEvent( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    ConnectionManagerRequestEvent( void );
-    ConnectionManagerRequestEvent( const ConnectionManagerRequestEvent & /* src */ );
-    const ConnectionManagerRequestEvent & operator = ( const ConnectionManagerRequestEvent & /* src */ );
+    ConnectionManagerRequestEvent( void ) = delete;
+    DECLARE_NOCOPY_NOMOVE( ConnectionManagerRequestEvent );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -138,15 +138,14 @@ public:
     /**
      * \brief   Destructor.
      **/
-    virtual ~ConnectionManagerNotifyRequestEvent( void );
+    virtual ~ConnectionManagerNotifyRequestEvent( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    ConnectionManagerNotifyRequestEvent( void );
-    ConnectionManagerNotifyRequestEvent( const ConnectionManagerNotifyRequestEvent & /* src */ );
-    const ConnectionManagerNotifyRequestEvent & operator = ( const ConnectionManagerNotifyRequestEvent & /* src */ );
+    ConnectionManagerNotifyRequestEvent( void ) = delete;
+    DECLARE_NOCOPY_NOMOVE( ConnectionManagerNotifyRequestEvent );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -197,7 +196,7 @@ public:
     /**
      * \brief   Destructor
      **/
-    virtual ~ConnectionManagerResponseEvent( void );
+    virtual ~ConnectionManagerResponseEvent( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -216,15 +215,14 @@ public:
      * \return  Cloned service response event object, which contains specified
      *          target proxy address.
      **/
-    virtual ServiceResponseEvent * cloneForTarget( const ProxyAddress & target ) const;
+    virtual ServiceResponseEvent * cloneForTarget( const ProxyAddress & target ) const override;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    ConnectionManagerResponseEvent( void );
-    ConnectionManagerResponseEvent( const ConnectionManagerResponseEvent & /* src */ );
-    const ConnectionManagerResponseEvent & operator = ( const ConnectionManagerResponseEvent & /* src */ );
+    ConnectionManagerResponseEvent( void ) = delete;
+    DECLARE_NOCOPY_NOMOVE( ConnectionManagerResponseEvent );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -249,24 +247,21 @@ public:
      * \brief   Initialization constructor. Copies notification event data
      * \param   data    The notification event data to copy
      **/
-    ConnectionManagerNotificationEvent( const NotificationEventData & data );
+    explicit ConnectionManagerNotificationEvent( const NotificationEventData & data );
 
 protected:
     /**
      * \brief   Destructor. Protected
      **/
-    virtual ~ConnectionManagerNotificationEvent( void );
+    virtual ~ConnectionManagerNotificationEvent( void ) = default;
     
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    ConnectionManagerNotificationEvent( void );
-    ConnectionManagerNotificationEvent( const ConnectionManagerNotificationEvent & /* src */ );
-    const ConnectionManagerNotificationEvent & operator = ( const ConnectionManagerNotificationEvent & /* src */ );
+    ConnectionManagerNotificationEvent( void ) = delete;
+    DECLARE_NOCOPY_NOMOVE( ConnectionManagerNotificationEvent );
 };
-
-#endif   // GENERATED_PRIVATE_CONNECTIONMANAGEREVENTS_HPP
 
 //////////////////////////////////////////////////////////////////////////
 // End generate generated/private/ConnectionManagerEvents.hpp file

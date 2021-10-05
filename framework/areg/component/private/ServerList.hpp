@@ -1,9 +1,16 @@
-#ifndef AREG_COMPONENT_PRIVATE_SERVERLIST_HPP
-#define AREG_COMPONENT_PRIVATE_SERVERLIST_HPP
+#pragma once
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/component/private/ServerList.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, Server List declaration
  *
  ************************************************************************/
@@ -23,24 +30,12 @@ class StubAddress;
 class ProxyAddress;
 
 //////////////////////////////////////////////////////////////////////////
-// ServerList class declaration
+// ServerList declaration
 //////////////////////////////////////////////////////////////////////////
 /**
  * \brief   Server List helper class.
  **/
-class ServerListImpl  : public TEHashMapImpl<const ServerInfo &, const ClientList &>
-{
-public:
-    /**
-     * \brief   Called to calculate the 32-bit hash key value.
-     * \ param  Key     The object to calculate 32-bit hash key.
-     * \return  Returns 32-bit hash key value.
-     **/
-    inline unsigned int ImplGetHashKey( const ServerInfo & Key ) const
-    {
-        return static_cast<unsigned int>(Key);
-    }
-};
+using ImplServerList    = TEHashMapImpl<const ServerInfo &, const ClientList &>;
 
 /**
  * \brief   Server List is a Hash Map class containing information
@@ -51,7 +46,7 @@ public:
  *          The controlling of server and connected clients done via
  *          registration of client(s).
  **/
-class ServerList  : public TEHashMap<ServerInfo, ClientList, const ServerInfo &, const ClientList &, ServerListImpl>
+class ServerList  : public TEHashMap<ServerInfo, ClientList, const ServerInfo &, const ClientList &, ImplServerList>
 {
 //////////////////////////////////////////////////////////////////////////
 // Predefined types and constants
@@ -60,20 +55,20 @@ class ServerList  : public TEHashMap<ServerInfo, ClientList, const ServerInfo &,
      * \brief   ServerList::ServiceBlock
      *          Define Block class of Hash Map as ServiceBlock. Defined to short syntax.
      **/
-    typedef TEHashMap<ServerInfo, ClientList, const ServerInfo &, const ClientList &, ServerListImpl>::Block  ServiceBlock;
+    using ServiceBlock  = TEHashMap<ServerInfo, ClientList, const ServerInfo &, const ClientList &, ImplServerList>::Block;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Default Constructor. Creates empty Server List.
+     * \brief   Creates empty Server List.
      **/
-    ServerList( void );
+    ServerList( void ) = default;
     /**
      * \brief   Destructor
      **/
-    ~ServerList( void );
+    ~ServerList( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -193,12 +188,9 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    ServerList( const ServerList & /*src*/);
-    const ServerList & operator = ( const ServerList & /*src*/);
+    DECLARE_NOCOPY_NOMOVE( ServerList );
 };
 
 //////////////////////////////////////////////////////////////////////////
 // ServerList class inline functions
 //////////////////////////////////////////////////////////////////////////
-
-#endif  // AREG_COMPONENT_PRIVATE_SERVERLIST_HPP

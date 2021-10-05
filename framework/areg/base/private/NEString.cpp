@@ -1,7 +1,15 @@
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/base/private/NEString.cpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, Debugging utilities
  *
  ************************************************************************/
@@ -16,21 +24,21 @@
 // Defines
 // No special meaning, only short meanings
 /************************************************************************/
-#define DUMMY       static_cast<unsigned short>(NEString::CD_Undefined                              )   /* Dummy */
-#define EOFS        static_cast<unsigned short>(NEString::CD_EOfS                                   )   /* End of string, null-termination */
-#define EOFL        static_cast<unsigned short>(NEString::CD_EndOfLine  | NEString::CD_WhiteSpace   )   /* End of line, regardless only '\n' is defining, but using to make binary buffer readable */
-#define DEOL        static_cast<unsigned short>(NEString::CD_CarReturn                              )   /* DOS End of Line, used only for carriage return */
-#define SPACE       static_cast<unsigned short>(NEString::CD_WhiteSpace | NEString::CD_Delimiter    )   /* White space, used for trimming, as we as syntax separator */
-#define CTRL        static_cast<unsigned short>(NEString::CD_Control    | NEString::CD_WhiteSpace   )   /* Control key value, also used to specify white space in conversion of binary buffer to readable */
-#define PRINT       static_cast<unsigned short>(NEString::CD_Printable                              )   /* All printable characters, symbols and numbers, which may change text, including tab and whitespace */
-#define NUMBER      static_cast<unsigned short>(NEString::CD_Number     | NEString::CD_Printable    )   /* All numbers */
-#define SYMBOL      static_cast<unsigned short>(NEString::CD_Symbol     | NEString::CD_Printable    )   /* All symbols */
-#define LETTER      static_cast<unsigned short>(NEString::CD_Letter     | NEString::CD_Printable    )   /* All letters */
+#define DUMMY       static_cast<unsigned short>(NEString::eCharDefs::CD_Undefined                              )   /* Dummy */
+#define EOFS        static_cast<unsigned short>(NEString::eCharDefs::CD_EOfS                                   )   /* End of string, null-termination */
+#define EOFL        static_cast<unsigned short>(NEString::eCharDefs::CD_EndOfLine  | NEString::eCharDefs::CD_WhiteSpace   )   /* End of line, regardless only '\n' is defining, but using to make binary buffer readable */
+#define DEOL        static_cast<unsigned short>(NEString::eCharDefs::CD_CarReturn                              )   /* DOS End of Line, used only for carriage return */
+#define SPACE       static_cast<unsigned short>(NEString::eCharDefs::CD_WhiteSpace | NEString::eCharDefs::CD_Delimiter    )   /* White space, used for trimming, as we as syntax separator */
+#define CTRL        static_cast<unsigned short>(NEString::eCharDefs::CD_Control    | NEString::eCharDefs::CD_WhiteSpace   )   /* Control key value, also used to specify white space in conversion of binary buffer to readable */
+#define PRINT       static_cast<unsigned short>(NEString::eCharDefs::CD_Printable                              )   /* All printable characters, symbols and numbers, which may change text, including tab and whitespace */
+#define NUMBER      static_cast<unsigned short>(NEString::eCharDefs::CD_Number     | NEString::eCharDefs::CD_Printable    )   /* All numbers */
+#define SYMBOL      static_cast<unsigned short>(NEString::eCharDefs::CD_Symbol     | NEString::eCharDefs::CD_Printable    )   /* All symbols */
+#define LETTER      static_cast<unsigned short>(NEString::eCharDefs::CD_Letter     | NEString::eCharDefs::CD_Printable    )   /* All letters */
 
 // ISO 8859-1
-static const unsigned short  ASCII_ISO8859_1_Table[]  =
+static constexpr unsigned short  ASCII_ISO8859_1_Table[]  =
 {
-    /*   0 -   0 */   EOFS  | EOFL                                                                                  //   NULL, end of string
+    /*   0 -   0 */   EOFS  | EOFL                                                                                  //   '\0', end of string
     /*   1 -   4 */ , EOFL  | CTRL          , EOFL  | CTRL          , EOFL  | CTRL          , EOFL  | CTRL          //    1 == SOH  ,   2 == STX    ,   3 == ETX    ,   4 == EOT
     /*   5 -   8 */ , EOFL  | CTRL          , EOFL  | CTRL          , EOFL  | CTRL          , EOFL  | CTRL          //    5 == ENQ  ,   6 == ACK    ,   7 == BEL    ,   8 == '\b'
     /*   9 -  12 */ , PRINT | CTRL | SPACE  , EOFL  | CTRL | PRINT  , PRINT | CTRL          , EOFL  | CTRL          //    9 == '\t' ,  10 == '\n'   ,  11 == '\v'   ,  12 == '\f'
@@ -98,9 +106,9 @@ static const unsigned short  ASCII_ISO8859_1_Table[]  =
 };
 
 // ISO 8859-1
-static const unsigned char  ASCII_ISO8859_1_Table_lower[]  =
+static constexpr unsigned char  ASCII_ISO8859_1_Table_lower[]  =
 {
-    /*   0 -   0 */     0                                                                                           //   NULL, end of string
+    /*   0 -   0 */     0                                                                                           //   '\0', end of string
     /*   1 -   4 */ ,   1                   ,   2                   ,   3                   ,   4                   //    1 == SOH  ,   2 == STX    ,   3 == ETX    ,   4 == EOT
     /*   5 -   8 */ ,   5                   ,   6                   ,   7                   ,   8                   //    5 == ENQ  ,   6 == ACK    ,   7 == BEL    ,   8 == '\b'
     /*   9 -  12 */ ,   9                   ,  10                   ,  11                   ,  12                   //    9 == '\t' ,  10 == '\n'   ,  11 == '\v'   ,  12 == '\f'
@@ -168,9 +176,9 @@ static const unsigned char  ASCII_ISO8859_1_Table_lower[]  =
 };
 
 // ISO 8859-1
-static const unsigned char  ASCII_ISO8859_1_Table_upper[]  =
+static constexpr unsigned char  ASCII_ISO8859_1_Table_upper[]  =
 {
-    /*   0 -   0 */     0                                                                                           //   NULL, end of string
+    /*   0 -   0 */     0                                                                                           //   '\0', end of string
     /*   1 -   4 */ ,   1                   ,   2                   ,   3                   ,   4                   //    1 == SOH  ,   2 == STX    ,   3 == ETX    ,   4 == EOT
     /*   5 -   8 */ ,   5                   ,   6                   ,   7                   ,   8                   //    5 == ENQ  ,   6 == ACK    ,   7 == BEL    ,   8 == '\b'
     /*   9 -  12 */ ,   9                   ,  10                   ,  11                   ,  12                   //    9 == '\t' ,  10 == '\n'   ,  11 == '\v'   ,  12 == '\f'
@@ -238,9 +246,9 @@ static const unsigned char  ASCII_ISO8859_1_Table_upper[]  =
 };
 
 // Invalid String definitions
-AREG_API NEString::SString8   NEString::BadString8  = { NEString::EncodeInvalid, 0, 0, {static_cast<int>('\0')}};
-AREG_API NEString::SString16  NEString::BadString16 = { NEString::EncodeInvalid, 0, 0, {static_cast<int>('\0')}};
-AREG_API NEString::SString32  NEString::BadString32 = { NEString::EncodeInvalid, 0, 0, {static_cast<int>('\0')}};
+AREG_API NEString::SString8   NEString::BadString8  { 0, 0, {static_cast<int>('\0')}};
+AREG_API NEString::SString16  NEString::BadString16 { 0, 0, {static_cast<int>('\0')}};
+AREG_API NEString::SString32  NEString::BadString32 { 0, 0, {static_cast<int>('\0')}};
 
 /************************************************************************/
 // NEString namespace global method implementation

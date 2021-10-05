@@ -1,9 +1,16 @@
-#ifndef AREG_COMPONENT_PRIVATE_COMPONENTINFO_HPP
-#define AREG_COMPONENT_PRIVATE_COMPONENTINFO_HPP
+#pragma once
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/component/private/ComponentInfo.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, Component Info class declaration.
  *              Contains information of threads binded with component.
  *
@@ -45,19 +52,7 @@ private:
     /**
      * \brief   Helper class for worker thread map.
      **/
-    class AREG_API _WorkerThreadMapImpl   : public TEHashMapImpl<const ThreadAddress &, WorkerThread *>
-    {
-    public:
-        /**
-         * \brief   Called to calculate the 32-bit hash key value.
-         * \ param  Key     The object to calculate 32-bit hash key.
-         * \return  Returns 32-bit hash key value.
-         **/
-        inline unsigned int implHashKey(const ThreadAddress & Key) const
-        {
-            return static_cast<unsigned int>(Key);
-        }
-    };
+    using _ImplWorkerThreadMap  = TEHashMapImpl<const ThreadAddress &, WorkerThread *>;
 
     //////////////////////////////////////////////////////////////////////////
     // ComponentInfo::_WorkerThreadMap type declaration
@@ -66,7 +61,7 @@ private:
      * \brief   The Hash Map object to save information of threads
      *          saved in specified Component Info object.
      **/
-    typedef TEHashMap<ThreadAddress, WorkerThread*, const ThreadAddress &, WorkerThread*, _WorkerThreadMapImpl>   _WorkerThreadMap;
+    using _WorkerThreadMap  = TEHashMap<ThreadAddress, WorkerThread*, const ThreadAddress &, WorkerThread*, _ImplWorkerThreadMap>;
 
     /**
      * \brief   Resource mapping object type. 
@@ -74,7 +69,7 @@ private:
      *          As a value, it saves pointers of Worker Thread object
      *          As a Hash Map used ComponentInfo::_WorkerThreadMap object
      **/
-    typedef TELockResourceMap<ThreadAddress, WorkerThread, _WorkerThreadMap, TEResourceMapImpl<ThreadAddress, WorkerThread>>     MapWorkerThread;
+    using MapWorkerThread   = TELockResourceMap<ThreadAddress, WorkerThread, _WorkerThreadMap, TEResourceMapImpl<ThreadAddress, WorkerThread>>;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -93,7 +88,7 @@ public:
     /**
      * \brief   Destructor
      **/
-    ~ComponentInfo( void );
+    ~ComponentInfo( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes
@@ -162,10 +157,10 @@ public:
      * \brief   Looks up for Worker Thread by specified unique Thread address.
      *          If there is registered thread with specified address,
      *          it returns pointer of valid Worker Thread object.
-     *          Otherwise, it returns NULL.
+     *          Otherwise, it returns nullptr.
      * \param   threadAddress   The unique Worker Thread address to search.
      * \return  Returns pointer of valid Worker Thread if there is registered
-     *          Worker Thread with specified unique address. Otherwise, returns NULL.
+     *          Worker Thread with specified unique address. Otherwise, returns nullptr.
      **/
     inline WorkerThread * findWorkerThread( const ThreadAddress & threadAddress ) const;
 
@@ -173,10 +168,10 @@ public:
      * \brief   Looks up for Worker Thread by specified unique Thread name.
      *          If there is registered thread with specified name,
      *          it returns pointer of valid Worker Thread object.
-     *          Otherwise, it returns NULL.
+     *          Otherwise, it returns nullptr.
      * \param   threadName  The unique Worker Thread name to search.
      * \return  Returns pointer of valid Worker Thread if there is registered
-     *          Worker Thread with specified unique name. Otherwise, returns NULL.
+     *          Worker Thread with specified unique name. Otherwise, returns nullptr.
      **/
     inline WorkerThread * findWorkerThread( const char* threadName ) const;
 
@@ -186,10 +181,10 @@ public:
      *          is extracted from, then search is provided by extracted thread address.
      *          If there is registered thread with extracted address,
      *          it returns pointer of valid Worker Thread object.
-     *          Otherwise, it returns NULL.
+     *          Otherwise, it returns nullptr.
      * \param   componentPath   The unique path of Component, containing Worker Thread address.
      * \return  Returns pointer of valid Worker Thread if there is registered
-     *          Worker Thread with extracted unique address. Otherwise, returns NULL.
+     *          Worker Thread with extracted unique address. Otherwise, returns nullptr.
      **/
     inline WorkerThread * findThreadByPath( const char* componentPath ) const;
 
@@ -197,11 +192,11 @@ public:
      * \brief   By specified Event Consumer runtime class ID object, looks up for registered
      *          Event Consumer in the Component Thread and in all Worker Threads.
      *          Returns pointer of valid Dispatcher Thread, where the Event Consumer is registered.
-     *          Returns NULL if could not find Event Consumer.
+     *          Returns nullptr if could not find Event Consumer.
      * \param   whichClass  The runtime class ID of Event Consumer object
      * \return  Returns valid pointer of Dispatcher Thread, where the Event Consumer is registered.
      *          If there is no such Event Consumer registered in Component Thread and in Worker Threads,
-     *          it returns NULL.
+     *          it returns nullptr.
      **/
     DispatcherThread * findEventConsumer( const RuntimeClassID & whichClass ) const;
 
@@ -209,14 +204,14 @@ public:
      * \brief   Returns pointer of first Worker Thread. On output, out_threadAddress
      *          parameter will contain address of first valid thread, or invalid address
      *          ThreadAddress::INVALID_THREAD_ADDRESS, if Component Info
-     *          has no registered Worker Thread, and the function returns NULL.
+     *          has no registered Worker Thread, and the function returns nullptr.
      * \param   out_threadAddress   On output, if Component Info has registered
      *                              Worker Thread, it will contain valid address.
      *                              Otherwise, it will contain invalid address
      *                              ThreadAddress::INVALID_THREAD_ADDRESS
      * \return  If Component has Worker Threads, it will return valid pointer and the
      *          Worker Thread object will have address specified in out_threadAddress.
-     *          If Component has no Worker Thread, it will return NULL.
+     *          If Component has no Worker Thread, it will return nullptr.
      **/
     inline WorkerThread * getFirstWorkerThread( ThreadAddress & out_threadAddress );
 
@@ -232,7 +227,7 @@ public:
      *                                  ThreadAddress::INVALID_THREAD_ADDRESS
      * \return  If there is next worker thread, the function will return valid pointer of
      *          next Worker Thread object and the address of thread is equal to address
-     *          in int_out_threadAddress parameter on output. Otherwise, it returns NULL.
+     *          in int_out_threadAddress parameter on output. Otherwise, it returns nullptr.
      **/
     inline WorkerThread * getNextWorkerThread( ThreadAddress & int_out_threadAddress );
 
@@ -265,9 +260,8 @@ private:
 // Hidden / Forbidden methods
 //////////////////////////////////////////////////////////////////////////
 private:
-    ComponentInfo( void );
-    ComponentInfo( const ComponentInfo & );
-    const ComponentInfo & operator = ( const ComponentInfo & );
+    ComponentInfo( void ) = delete;
+    DECLARE_NOCOPY_NOMOVE( ComponentInfo );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -302,7 +296,7 @@ inline WorkerThread* ComponentInfo::findWorkerThread( const ThreadAddress& threa
 inline WorkerThread* ComponentInfo::findWorkerThread( const char* threadName ) const
 {
     Thread* targetThread = Thread::findThreadByName(threadName);
-    return (targetThread != NULL ? findWorkerThread(targetThread->getAddress()) : static_cast<WorkerThread *>(NULL));
+    return (targetThread != nullptr ? findWorkerThread(targetThread->getAddress()) : nullptr);
 }
 
 inline WorkerThread* ComponentInfo::findThreadByPath( const char* componentPath ) const
@@ -325,5 +319,3 @@ inline bool ComponentInfo::hasWorkerThreads( void ) const
 {
     return (mWorkerThreadMap.isEmpty() == false);
 }
-
-#endif  // AREG_COMPONENT_PRIVATE_COMPONENTINFO_HPP

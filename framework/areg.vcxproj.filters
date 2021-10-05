@@ -36,9 +36,6 @@
     <ClCompile Include="areg\base\private\IEThreadConsumer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\base\private\NEBasicShape.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="areg\base\private\NECommon.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -105,10 +102,7 @@
     <ClCompile Include="areg\persist\private\NEPersistence.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\trace\private\ELayouts.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="areg\trace\private\IETraceConfiguration.cpp">
+    <ClCompile Include="areg\trace\private\Layouts.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="areg\trace\private\NELogConfig.cpp">
@@ -123,9 +117,6 @@
     <ClCompile Include="areg\base\private\NESocket.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\base\private\ETemplateBase.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="areg\base\private\posix\IEWaitableBaseIX.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -136,9 +127,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="areg\base\private\posix\NEUtilitiesPosix.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="areg\base\private\win32\NEDebugWin32.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="areg\base\private\win32\NESocketWin32.cpp">
@@ -234,9 +222,6 @@
     <ClCompile Include="areg\base\private\Version.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\base\private\WideString.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="areg\base\private\WriteConverter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -255,13 +240,7 @@
     <ClCompile Include="areg\base\private\SocketServer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\base\private\SocketTemp.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="areg\base\private\String.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="areg\base\private\RawBuffer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="areg\base\private\RuntimeBase.cpp">
@@ -282,16 +261,16 @@
     <ClCompile Include="areg\base\private\RemoteMessage.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\base\private\ESynchObjects.cpp">
+    <ClCompile Include="areg\base\private\SynchObjects.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\base\private\EContainers.cpp">
+    <ClCompile Include="areg\base\private\Containers.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\base\private\win32\ESynchObjectsWin32.cpp">
+    <ClCompile Include="areg\base\private\win32\SynchObjectsWin32.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\base\private\posix\ESynchObjectsPosix.cpp">
+    <ClCompile Include="areg\base\private\posix\SynchObjectsPosix.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="areg\component\private\posix\TimerManagerPosix.cpp">
@@ -471,9 +450,6 @@
     <ClCompile Include="areg\persist\private\PropertyKey.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\persist\private\PropertyMap.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="areg\persist\private\PropertyValue.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -519,6 +495,24 @@
     <ClCompile Include="areg\ipc\private\ServerConnectionBase.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="areg\base\private\win32\SpinLockWin32.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="areg\base\private\posix\SpinLockIX.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="areg\appbase\private\NEApplication.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="areg\base\private\WideString.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="areg\base\private\win32\NEDebugWin32.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="areg\trace\private\LogConfiguration.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="system\windows\GEWindows.h">
@@ -536,10 +530,10 @@
     <ClInclude Include="areg\base\private\NEDebug.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\base\EContainers.hpp">
+    <ClInclude Include="areg\base\Containers.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\base\ESynchObjects.hpp">
+    <ClInclude Include="areg\base\SynchObjects.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\base\GEGlobal.h">
@@ -567,9 +561,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\base\IEThreadConsumer.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="areg\base\NEBasicShape.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\base\NECommon.hpp">
@@ -668,10 +659,7 @@
     <ClInclude Include="areg\persist\private\NEPersistence.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\trace\private\ELayouts.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="areg\trace\private\IETraceConfiguration.hpp">
+    <ClInclude Include="areg\trace\private\Layouts.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\trace\private\NELogConfig.hpp">
@@ -692,7 +680,7 @@
     <ClInclude Include="areg\base\IESynchObject.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\base\ETemplateBase.hpp">
+    <ClInclude Include="areg\base\TETemplateBase.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\base\private\posix\IEWaitableBaseIX.hpp">
@@ -773,13 +761,7 @@
     <ClInclude Include="areg\base\Process.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\base\SocketTemp.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="areg\base\ThreadAddress.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="areg\base\RawBuffer.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\base\SocketServer.hpp">
@@ -810,9 +792,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\base\Version.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="areg\base\WideString.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\component\private\posix\TimerPosix.hpp">
@@ -971,9 +950,6 @@
     <ClInclude Include="areg\persist\private\PersistenceManager.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\persist\private\PropertyMap.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="areg\persist\Property.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -1038,6 +1014,18 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\ipc\private\ClientService.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="areg\base\private\win32\SpinLockWin32.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="areg\base\private\posix\SpinLockIX.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="areg\base\WideString.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="areg\trace\private\LogConfiguration.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

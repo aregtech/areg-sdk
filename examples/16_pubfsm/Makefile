@@ -6,9 +6,9 @@
 
 # 'generated' have to be first
 include $(16_pubfsm_BASE)/generated/Makefile
-include $(16_pubfsm_BASE)/ipcfsmsvc/Makefile
-include $(16_pubfsm_BASE)/ipcfsmclient/Makefile
+include $(16_pubfsm_BASE)/pubservice/Makefile
+include $(16_pubfsm_BASE)/pubclient/Makefile
 
-16_pubfsm: $(AREG_OUTPUT_BIN)/$(16_ipcfsmsvc_TARGET_BIN) $(AREG_OUTPUT_BIN)/$(16_ipcfsmclient_TARGET_BIN)
+16_pubfsm: $(AREG_OUTPUT_BIN)/$(16_pubservice_TARGET_BIN) $(AREG_OUTPUT_BIN)/$(16_pubclient_TARGET_BIN)
 
 .PHONY: 16_pubfsm

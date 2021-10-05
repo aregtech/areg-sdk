@@ -3,14 +3,14 @@
 //////////////////////////////////////////////////////////////////////////
 /************************************************************************
  * (c) copyright    2021
+ *
+ * Generated at     30.09.2021  01:22:12 GMT+02:00 
  *                  Create by AREG SDK code generator tool from source PowerManager.
- * Generated at     15.08.2021  00:03:03 GMT+02:00 
- ************************************************************************/
-
-/************************************************************************
- * \file            generated/src/private/PowerManagerClientBase.cpp
+ *
+ * \file            generated/src/PowerManagerClientBase.hpp
  * \ingroup         PowerManager Service Interface
- * \brief           This is an automatic generated code of PowerManager Service Interface Client base class implementation.
+ * \brief           This is an automatic generated code of PowerManager
+ *                  Service Interface Client base class implementation.
  ************************************************************************/
 
 /************************************************************************
@@ -47,14 +47,13 @@ namespace NEPowerManager
  * Constructor / Destructor
  ************************************************************************/
 
-PowerManagerClientBase::PowerManagerClientBase( const char * roleName, const char * ownerThread /*= static_cast<const char *>(NULL)*/ )
+PowerManagerClientBase::PowerManagerClientBase( const char * roleName, const char * ownerThread /*= nullptr*/ )
     : IEProxyListener   ( )
 
     , mIsConnected      ( false )
     , mCurrSequenceNr   ( 0 )
     , mProxy            ( PowerManagerProxy::createProxy(roleName, static_cast<IEProxyListener &>(self()), ownerThread) )
 {
-    ; // do nothing
 }
 
 PowerManagerClientBase::PowerManagerClientBase( const char * roleName, DispatcherThread & ownerThread )
@@ -64,7 +63,6 @@ PowerManagerClientBase::PowerManagerClientBase( const char * roleName, Dispatche
     , mCurrSequenceNr   ( 0 )
     , mProxy            ( PowerManagerProxy::createProxy(roleName, static_cast<IEProxyListener &>(self()), ownerThread) )
 {
-    ; // do nothing
 }
 
 PowerManagerClientBase::PowerManagerClientBase( const char* roleName, Component & owner )
@@ -74,16 +72,15 @@ PowerManagerClientBase::PowerManagerClientBase( const char* roleName, Component 
     , mCurrSequenceNr   ( 0 )
     , mProxy            ( PowerManagerProxy::createProxy(roleName, static_cast<IEProxyListener &>(self()), owner.getMasterThread()) )
 {
-    ; // do nothing
 }
 
 PowerManagerClientBase::~PowerManagerClientBase( void )
 {
-    if (mProxy != NULL)
+    if (mProxy != nullptr)
     {
         mProxy->clearAllNotifications( static_cast<IENotificationEventConsumer &>(self()) );
         mProxy->freeProxy( static_cast<IEProxyListener &>(self()) );
-        mProxy  = NULL;
+        mProxy  = nullptr;
     }
     
     mIsConnected= false;
@@ -96,14 +93,14 @@ PowerManagerClientBase::~PowerManagerClientBase( void )
 bool PowerManagerClientBase::recreateProxy( void )
 {
     bool result         = false;
-    if (mProxy != NULL)
+    if (mProxy != nullptr)
     {
         String roleName   = mProxy->getProxyAddress().getRoleName();
         String threadName = mProxy->getProxyAddress().getThread();
         if ( roleName.isEmpty() == false )
         {
             PowerManagerProxy * newProxy = PowerManagerProxy::createProxy(roleName.getString(), static_cast<IEProxyListener &>(self()), threadName.getString());
-            if (newProxy != NULL)
+            if (newProxy != nullptr)
             {
                 mProxy->clearAllNotifications( static_cast<IENotificationEventConsumer &>(self()) );
                 mProxy->freeProxy (static_cast<IEProxyListener &>(self()) );
@@ -117,7 +114,7 @@ bool PowerManagerClientBase::recreateProxy( void )
 
 DispatcherThread * PowerManagerClientBase::getDispatcherThread( void )
 {
-    return ( mProxy != static_cast<PowerManagerProxy *>(NULL) ? &(mProxy->getProxyDispatcherThread()) : static_cast<DispatcherThread *>(NULL) );
+    return ( mProxy != nullptr ? &(mProxy->getProxyDispatcherThread()) : nullptr );
 }
 
 DEF_TRACE_SCOPE(generated_src_PowerManagerClientBase_serviceConnected);
@@ -163,9 +160,9 @@ void PowerManagerClientBase::processNotificationEvent( NotificationEvent & event
 
     switch (result)
     {
-    case NEService::RESULT_REQUEST_BUSY:
-    case NEService::RESULT_REQUEST_ERROR:
-    case NEService::RESULT_REQUEST_CANCELED:
+    case NEService::eResultType::RequestBusy:       // fall through
+    case NEService::eResultType::RequestError:      // fall through
+    case NEService::eResultType::RequestCanceled:   // fall through
         {
         /************************************************************************
          * Trigger request error handling if request failed.
@@ -174,7 +171,7 @@ void PowerManagerClientBase::processNotificationEvent( NotificationEvent & event
         }
         break;
 
-    case NEService::RESULT_INVALID:
+    case NEService::eResultType::RequestInvalid:
         {
         /************************************************************************
          * Trigger invalid response / broadcast handling. May happen when remove notification 
@@ -183,8 +180,8 @@ void PowerManagerClientBase::processNotificationEvent( NotificationEvent & event
         }
         break;
 
-    case NEService::RESULT_DATA_OK:
-    case NEService::RESULT_DATA_INVALID:
+    case NEService::eResultType::DataOK:            // fall through
+    case NEService::eResultType::DataInvalid:
         {
             NEService::eDataStateType dataState;
             switch (msgId)
@@ -192,7 +189,7 @@ void PowerManagerClientBase::processNotificationEvent( NotificationEvent & event
         /************************************************************************
          * Trigger attribute update processing
          ************************************************************************/
-            case NEPowerManager::MSG_ID_LightsPowerState:
+            case NEPowerManager::eMessageIDs::MsgId_LightsPowerState:
                 {
                     NEPowerManager::ePoweredState LightsPowerState = mProxy->getLightsPowerState(dataState);
                     onLightsPowerStateUpdate(LightsPowerState, dataState);
@@ -212,21 +209,21 @@ void PowerManagerClientBase::processNotificationEvent( NotificationEvent & event
         }
         break;
 
-    case NEService::RESULT_OK:
+    case NEService::eResultType::RequestOK:
         {
             switch (msgId)
             {
         /************************************************************************
          * Trigger response processing
          ************************************************************************/
-            case NEPowerManager::MSG_ID_responseStartTrafficLight:
+            case NEPowerManager::eMessageIDs::MsgId_responseStartTrafficLight:
                 {
                     bool Success = mProxy->getParamSuccess();
                     responseStartTrafficLight( Success );
                 }
                 break;
 
-            case NEPowerManager::MSG_ID_responseStopTrafficLight:
+            case NEPowerManager::eMessageIDs::MsgId_responseStopTrafficLight:
                 {
                     bool Success = mProxy->getParamSuccess();
                     responseStopTrafficLight( Success );
@@ -298,10 +295,10 @@ void PowerManagerClientBase::requestFailed( NEPowerManager::eMessageIDs FailureM
                     , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString()
                     , NEService::getString(FailureReason) );
                     
-    unsigned int index = static_cast<unsigned int>(NEPowerManager::MSG_ID_INVALID);
-    index = static_cast<unsigned int>( NEService::isResponseId(static_cast<unsigned int>(FailureMsgId)) ? NEPowerManager::getRequestId(FailureMsgId) : FailureMsgId);
-    index = NEService::isRequestId(index)  ? GET_REQ_INDEX(index) : static_cast<unsigned int>(NEPowerManager::MSG_ID_INVALID);
-    if ( index != static_cast<unsigned int>(NEPowerManager::MSG_ID_INVALID) )
+    unsigned int index = static_cast<msg_id>(NEPowerManager::eMessageIDs::MsgId_Invalid);
+    index = static_cast<msg_id>( NEService::isResponseId(static_cast<unsigned int>(FailureMsgId)) ? NEPowerManager::getRequestId(FailureMsgId) : FailureMsgId);
+    index = NEService::isRequestId(index)  ? GET_REQ_INDEX(index) : static_cast<msg_id>(NEPowerManager::eMessageIDs::MsgId_Invalid);
+    if ( index != static_cast<msg_id>(NEPowerManager::eMessageIDs::MsgId_Invalid) && (index < NEPowerManager::getInterfaceData().idRequestCount) )
     {
         (this->*NEPowerManager::failureFunctions[index])( FailureReason );
     }
@@ -320,7 +317,7 @@ void PowerManagerClientBase::onLightsPowerStateUpdate( NEPowerManager::ePoweredS
 {
     TRACE_SCOPE(generated_src_PowerManagerClientBase_onLightsPowerStateUpdate);
     TRACE_WARN("The attribute LightsPowerState (value = %u) update method of proxy [ %s ] client PowerManagerClientBase is not implemented!"
-                    , static_cast<unsigned int>(NEPowerManager::MSG_ID_LightsPowerState)
+                    , static_cast<unsigned int>(NEPowerManager::eMessageIDs::MsgId_LightsPowerState)
                     , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString());
 }
 
@@ -333,7 +330,7 @@ void PowerManagerClientBase::requestPowerOnFailed( NEService::eResultType Failur
 {
     TRACE_SCOPE(generated_src_PowerManagerClientBase_requestPowerOnFailed);
     TRACE_WARN("The request requestPowerOn (value = %u) method of proxy [ %s ] client PowerManagerClientBase is failed with reason [ %s ]! Make error handling!"
-                    , static_cast<unsigned int>(NEPowerManager::MSG_ID_requestPowerOn)
+                    , static_cast<unsigned int>(NEPowerManager::eMessageIDs::MsgId_requestPowerOn)
                     , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString()
                     , NEService::getString(FailureReason));
 }
@@ -343,7 +340,7 @@ void PowerManagerClientBase::requestPowerOffFailed( NEService::eResultType Failu
 {
     TRACE_SCOPE(generated_src_PowerManagerClientBase_requestPowerOffFailed);
     TRACE_WARN("The request requestPowerOff (value = %u) method of proxy [ %s ] client PowerManagerClientBase is failed with reason [ %s ]! Make error handling!"
-                    , static_cast<unsigned int>(NEPowerManager::MSG_ID_requestPowerOff)
+                    , static_cast<unsigned int>(NEPowerManager::eMessageIDs::MsgId_requestPowerOff)
                     , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString()
                     , NEService::getString(FailureReason));
 }
@@ -353,7 +350,7 @@ void PowerManagerClientBase::requestStartTrafficLightFailed( NEService::eResultT
 {
     TRACE_SCOPE(generated_src_PowerManagerClientBase_requestStartTrafficLightFailed);
     TRACE_WARN("The request requestStartTrafficLight (value = %u) method of proxy [ %s ] client PowerManagerClientBase is failed with reason [ %s ]! Make error handling!"
-                    , static_cast<unsigned int>(NEPowerManager::MSG_ID_requestStartTrafficLight)
+                    , static_cast<unsigned int>(NEPowerManager::eMessageIDs::MsgId_requestStartTrafficLight)
                     , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString()
                     , NEService::getString(FailureReason));
 }
@@ -363,7 +360,7 @@ void PowerManagerClientBase::requestStopTrafficLightFailed( NEService::eResultTy
 {
     TRACE_SCOPE(generated_src_PowerManagerClientBase_requestStopTrafficLightFailed);
     TRACE_WARN("The request requestStopTrafficLight (value = %u) method of proxy [ %s ] client PowerManagerClientBase is failed with reason [ %s ]! Make error handling!"
-                    , static_cast<unsigned int>(NEPowerManager::MSG_ID_requestStopTrafficLight)
+                    , static_cast<unsigned int>(NEPowerManager::eMessageIDs::MsgId_requestStopTrafficLight)
                     , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString()
                     , NEService::getString(FailureReason));
 }
@@ -373,7 +370,7 @@ void PowerManagerClientBase::responseStartTrafficLight( bool /* Success */ )
 {
     TRACE_SCOPE(generated_src_PowerManagerClientBase_responseStartTrafficLight);
     TRACE_WARN("The response responseStartTrafficLight (value = %u) method of proxy [ %s ] client PowerManagerClientBase is not implemented!"
-                    , static_cast<unsigned int>(NEPowerManager::MSG_ID_responseStartTrafficLight)
+                    , static_cast<unsigned int>(NEPowerManager::eMessageIDs::MsgId_responseStartTrafficLight)
                     , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString());
 }
 
@@ -382,7 +379,7 @@ void PowerManagerClientBase::responseStopTrafficLight( bool /* Success */ )
 {
     TRACE_SCOPE(generated_src_PowerManagerClientBase_responseStopTrafficLight);
     TRACE_WARN("The response responseStopTrafficLight (value = %u) method of proxy [ %s ] client PowerManagerClientBase is not implemented!"
-                    , static_cast<unsigned int>(NEPowerManager::MSG_ID_responseStopTrafficLight)
+                    , static_cast<unsigned int>(NEPowerManager::eMessageIDs::MsgId_responseStopTrafficLight)
                     , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString());
 }
 

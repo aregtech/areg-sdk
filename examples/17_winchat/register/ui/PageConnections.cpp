@@ -51,10 +51,10 @@ void PageConnections::ServiceConnected( bool isConnected )
 {
 }
 
-void PageConnections::OutputMessage( CString & nickName, CString & message, CString & dateStart, CString & dateEnd, LPARAM data )
+void PageConnections::OutputMessage( CString nickName, CString message, CString dateStart, CString dateEnd, LPARAM data )
 {
     LVITEM lv;
-    NEMemory::zeroData<LVITEM>(lv);
+    NEMemory::zeroElement<LVITEM>(lv);
 
     // Column nickname
     lv.mask         = LVIF_TEXT | LVIF_PARAM;
@@ -104,8 +104,8 @@ END_MESSAGE_MAP( )
 void PageConnections::OnClickedButtonBroadcast()
 {
     UpdateData(TRUE);
-    ConnectionManager * service = !mTextBroadcast.IsEmpty() ? ConnectionManager::getService( ) : static_cast<ConnectionManager *>(NULL);
-    if ( service != static_cast<ConnectionManager *>(NULL) )
+    ConnectionManager * service = !mTextBroadcast.IsEmpty() ? ConnectionManager::getService( ) : nullptr;
+    if ( service != nullptr )
     {
         DateTime timestamp = DateTime::getNow();
         String msg( mTextBroadcast.GetString() );
@@ -113,8 +113,8 @@ void PageConnections::OnClickedButtonBroadcast()
 
         OutputMessage(   CString(NECommon::SERVER_NAME)
                        , mTextBroadcast
-                       ,  CString( timestamp.formatTime( ).getBuffer( ) )
-                       , CString()
+                       , CString( timestamp.formatTime( ).getString( ) )
+                       , CentralApp::EmptyString
                        , NEConnectionManager::InvalidCookie );
 
         mTextBroadcast = _T("");
@@ -162,7 +162,7 @@ void PageConnections::setHeaders( void )
     {
         CString str( HEADER_TITILES[i] );
         LVCOLUMN lv;
-        NEMemory::zeroData<LVCOLUMN>(lv);
+        NEMemory::zeroElement<LVCOLUMN>(lv);
         lv.mask         = LVCF_FMT | LVCF_SUBITEM | LVCF_TEXT | LVCF_WIDTH;
         lv.fmt          = LVCFMT_LEFT;
         lv.cx           = i == 0 ? width1 : width2;
@@ -184,7 +184,7 @@ BOOL PageConnections::OnInitDialog( )
     CPropertyPage::OnInitDialog( );
 
     CButton * btnSend = reinterpret_cast<CButton *>(GetDlgItem( IDC_BUTTON_BROADCAST ));
-    if (btnSend != NULL )
+    if (btnSend != nullptr )
         btnSend->SetFocus();
 
     setHeaders();
@@ -198,14 +198,14 @@ BOOL PageConnections::OnInitDialog( )
 LRESULT PageConnections::OnCmdRegistered( WPARAM wParam, LPARAM lParam )
 {
     NECommon::sMessageData * data = reinterpret_cast<NECommon::sMessageData *>(lParam);
-    if ( data != NULL )
+    if ( data != nullptr )
     {
         ++ mRegistered;
 
         OutputMessage(   CString(data->nickName)
                        , CString(_T("New registration ..."))
-                       , CString( DateTime(data->timeSend).formatTime().getBuffer() )
-                       , CString( DateTime(data->timeReceived).formatTime().getBuffer() )
+                       , CString( DateTime(data->timeSend).formatTime().getString() )
+                       , CString( DateTime(data->timeReceived).formatTime().getString() )
                        , static_cast<LPARAM>(data->dataSave) );
 
         delete data;
@@ -215,8 +215,8 @@ LRESULT PageConnections::OnCmdRegistered( WPARAM wParam, LPARAM lParam )
 
 int PageConnections::findInTyping( unsigned int cookie )
 {
-    int result = NECommon::InvalidIndex;
-    for ( int i = 0; (result == NECommon::InvalidIndex) && (i < mTypingList.getSize( )); ++ i )
+    int result = NECommon::INVALID_INDEX;
+    for ( int i = 0; (result == NECommon::INVALID_INDEX) && (i < mTypingList.getSize( )); ++ i )
     {
         if ( cookie == mTypingList[i]->dataSave )
             result = i;
@@ -227,7 +227,7 @@ int PageConnections::findInTyping( unsigned int cookie )
 LRESULT PageConnections::OnCmdUnregistered( WPARAM wParam, LPARAM lParam )
 {
     NECommon::sMessageData * data = reinterpret_cast<NECommon::sMessageData *>(lParam);
-    if ( data != NULL )
+    if ( data != nullptr )
     {
         if ( mRegistered != 0 )
             -- mRegistered;
@@ -244,8 +244,8 @@ LRESULT PageConnections::OnCmdUnregistered( WPARAM wParam, LPARAM lParam )
 
         OutputMessage(   CString(data->nickName)
                        , CString(_T("Disconnected ..."))
-                       , CString( DateTime(data->timeSend).formatTime().getBuffer() )
-                       , CString( DateTime(data->timeReceived).formatTime().getBuffer() )
+                       , CString( DateTime(data->timeSend).formatTime().getString() )
+                       , CString( DateTime(data->timeReceived).formatTime().getString() )
                        , static_cast<LPARAM>(NECommon::InvalidCookie) );
 
         delete data;
@@ -256,10 +256,10 @@ LRESULT PageConnections::OnCmdUnregistered( WPARAM wParam, LPARAM lParam )
 LRESULT PageConnections::OnCmdSendMessage( WPARAM wParam, LPARAM lParam )
 {
     NECommon::sMessageData * data = reinterpret_cast<NECommon::sMessageData *>(lParam);
-    if ( data != NULL )
+    if ( data != nullptr )
     {
         int rmIndex = findInTyping( static_cast<uint32_t>(data->dataSave) );
-        if ( rmIndex != NECommon::InvalidIndex )
+        if ( rmIndex != NECommon::INVALID_INDEX )
         {
             NECommon::sMessageData *temp = mTypingList.getAt(rmIndex);
             mTypingList.removeAt( rmIndex, 1 );
@@ -278,8 +278,8 @@ LRESULT PageConnections::OnCmdSendMessage( WPARAM wParam, LPARAM lParam )
 
         OutputMessage(   CString(data->nickName)
                        , CString(data->message)
-                       , CString( DateTime(data->timeSend).formatTime().getBuffer() )
-                       , CString( DateTime(data->timeReceived).formatTime().getBuffer() )
+                       , CString( DateTime(data->timeSend).formatTime().getString() )
+                       , CString( DateTime(data->timeReceived).formatTime().getString() )
                        , static_cast<LPARAM>(NECommon::InvalidCookie) );
 
         delete data;
@@ -290,11 +290,11 @@ LRESULT PageConnections::OnCmdSendMessage( WPARAM wParam, LPARAM lParam )
 LRESULT PageConnections::OnCmdTypeMessage( WPARAM wParam, LPARAM lParam )
 {
     NECommon::sMessageData * data = reinterpret_cast<NECommon::sMessageData *>(lParam);
-    bool isEmpty = data != NULL ? NEString::isEmpty<TCHAR>( data->message ) : true;
-    if ( data != NULL )
+    bool isEmpty = data != nullptr ? NEString::isEmpty<TCHAR>( data->message ) : true;
+    if ( data != nullptr )
     {
         int rmIndex = findInTyping( static_cast<uint32_t>(data->dataSave) );
-        if ( rmIndex != NECommon::InvalidIndex )
+        if ( rmIndex != NECommon::INVALID_INDEX )
         {
             NECommon::sMessageData *temp = mTypingList.getAt( rmIndex );
             if ( isEmpty )
@@ -325,7 +325,7 @@ LRESULT PageConnections::OnCmdTypeMessage( WPARAM wParam, LPARAM lParam )
             mTypingList.add(data);
 
             LVITEM lv;
-            NEMemory::zeroData<LVITEM>( lv );
+            NEMemory::zeroElement<LVITEM>( lv );
 
             // Column nickname
             lv.mask         = LVIF_TEXT | LVIF_PARAM;
@@ -347,7 +347,7 @@ LRESULT PageConnections::OnCmdTypeMessage( WPARAM wParam, LPARAM lParam )
 void PageConnections::OnDefaultClicked( void )
 {
     CButton * btnSend   = reinterpret_cast<CButton *>( GetDlgItem( IDC_BUTTON_BROADCAST ) );
-    if ( btnSend != NULL )
+    if ( btnSend != nullptr )
     {
         PostMessage( WM_COMMAND, MAKEWPARAM( IDC_BUTTON_BROADCAST, BN_CLICKED ), reinterpret_cast<LPARAM>(btnSend->GetSafeHwnd( )) );
     }

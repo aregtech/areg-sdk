@@ -1,9 +1,16 @@
-#ifndef AREG_TRACE_NETRACE_HPP
-#define AREG_TRACE_NETRACE_HPP
+#pragma once
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/trace/NETrace.hpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, NETrace namespace contains constants, structures and types.
  ************************************************************************/
 /************************************************************************
@@ -11,6 +18,8 @@
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
 #include "areg/base/IEIOStream.hpp"
+
+#include <string_view>
 
 /************************************************************************
  * Dependencies
@@ -31,7 +40,7 @@ namespace NETrace
      * \brief   NETrace::eLogPriority
      *          Log priority definition set when logging message
      **/
-    typedef enum E_LogPriority
+    typedef enum E_LogPriority : unsigned int
     {
           PrioNotset        = 0x00  //!< No priority is set,        bit set:    0000 0000
         , PrioScope         = 0x01  //!< Output scopes priority,    bit set:    0000 0001
@@ -78,19 +87,19 @@ namespace NETrace
      *          Flag, indicating whether there is any priority set to output message.
      *          The log has priority if one of first 5 bits are set.
      **/
-    const unsigned int      HAS_MESSAGE_PRIORITY    = 0x1F; // 63, bit set 0001 1111
+    constexpr unsigned int  HAS_MESSAGE_PRIORITY    = 0x1F; // 63, bit set 0001 1111
 
     /**
      * \brief   NETrace::TRACE_SCOPE_ID_NONE
      *          Constant, defines no scope ID. It is used to output message without scope
      **/
-    const unsigned int      TRACE_SCOPE_ID_NONE     = 0;
+    constexpr unsigned int  TRACE_SCOPE_ID_NONE     = 0;
 
     /**
      * \brief   NETrace::eLogType
      *          The logging type IDs. Should be set when sending log message
      **/
-    typedef enum E_LogType
+    typedef enum E_LogType : unsigned int
     {
           LogUndefined  = 0x00  //!< Undefined log message
         , LogCommand    = 0x96  //!< Log message contains command
@@ -102,37 +111,41 @@ namespace NETrace
     /**
      * \brief   The string value of no priority
      **/
-    extern AREG_API const char * const      PRIO_NOTSET_STR     /*= "NOTSET"*/;
+    constexpr std::string_view  PRIO_NOTSET_STR    { "NOTSET" };
     /**
      * \brief   The string value of scope priority
      **/
-    extern AREG_API const char * const      PRIO_SCOPE_STR      /*= "SCOPE"*/;
+    constexpr std::string_view  PRIO_SCOPE_STR      { "SCOPE" };
     /**
      * \brief   The string value of fatal error priority
      **/
-    extern AREG_API const char * const      PRIO_FATAL_STR      /*= "FATAL"*/;
+    constexpr std::string_view  PRIO_FATAL_STR      { "FATAL" };
     /**
      * \brief   The string value of error priority
      **/
-    extern AREG_API const char * const      PRIO_ERROR_STR      /*= "ERROR"*/;
+    constexpr std::string_view  PRIO_ERROR_STR      { "ERROR" };
     /**
      * \brief   The string value of warning priority
      **/
-    extern AREG_API const char * const      PRIO_WARNING_STR    /*= "WARNING"*/;
+    constexpr std::string_view  PRIO_WARNING_STR    { "WARNING" };
     /**
      * \brief   The string value of information priority
      **/
-    extern AREG_API const char * const      PRIO_INFO_STR       /*= "INFO"*/;
+    constexpr std::string_view  PRIO_INFO_STR       { "INFO" };
     /**
      * \brief   The string value of debug priority
      **/
-    extern AREG_API const char * const      PRIO_DEBUG_STR      /*= "DEBUG"*/;
+    constexpr std::string_view  PRIO_DEBUG_STR      { "DEBUG" };
+    /**
+     * \brief   No priority string
+     **/
+    constexpr std::string_view  PRIO_NO_PRIO        { "" };
 
     /**
      * \brief   NETrace::LOG_MESSAGE_BUFFER_SIZE
      *          The maximum size of text in log message
      **/
-    const unsigned int      LOG_MESSAGE_BUFFER_SIZE     = 512;
+    constexpr unsigned int      LOG_MESSAGE_BUFFER_SIZE     = 512;
 
     /**
      * \brief   NETrace::sLogHeader
@@ -140,6 +153,8 @@ namespace NETrace
      **/
     typedef struct AREG_API S_LogHeader
     {
+        DECLARE_NOMOVE( S_LogHeader );
+
         /**
          * \brief   Initializes structure data and sets logging type.
          * \param   logType The type of log message.
@@ -154,7 +169,7 @@ namespace NETrace
          * \brief   Copies data from given source.
          * \param   src     The source to copy data.
          **/
-        void operator = ( const NETrace::S_LogHeader & src );
+        S_LogHeader & operator = ( const NETrace::S_LogHeader & src );
 
         unsigned int        logLength;      //!< The length in bytes of complete log object
         NETrace::eLogType   logType;        //!< The type of log message
@@ -167,6 +182,8 @@ namespace NETrace
      **/
     typedef struct S_LogData
     {
+        DECLARE_NOMOVE( S_LogData );
+
         /**
          * \brief   Initializes empty log tracing object with no data to output.
          **/
@@ -175,9 +192,9 @@ namespace NETrace
          * \brief   Initializes log tracing object, sets scope ID, priority and optional message.
          * \param   scopeId     The ID scope, which is calculated from name.
          * \param   msgPrio     The priority of output message.
-         * \param   message     The message to output. Can be NULL or empty.
+         * \param   message     The message to output. Can be nullptr or empty.
          **/
-        S_LogData( unsigned int scopeId, NETrace::eLogPriority msgPrio, const char * message = NULL );
+        S_LogData( unsigned int scopeId, NETrace::eLogPriority msgPrio, const char * message, unsigned int msgLen );
         /**
          * \brief   Copies log tracing data from given source.
          * \param   src     The source of data to copy.
@@ -187,13 +204,14 @@ namespace NETrace
          * \brief   Copies data from given source.
          * \param   src     The source of data to copy.
          **/
-        void operator = ( const S_LogData & src );
+        S_LogData  & operator = ( const S_LogData & src );
 
         ITEM_ID                 traceThreadId;      //!< The ID of thread, which is logging
         unsigned int            traceScopeId;       //!< The ID of trace scope, which is logging
         TIME64                  traceTimestamp;     //!< The timestamp of trace message
         NETrace::eLogPriority   traceMessagePrio;   //!< The message priority to output
-        char                    traceMessage[LOG_MESSAGE_BUFFER_SIZE + 1];  //!< The message text to output, with maximum NETrace::LOG_MESSAGE_BUFFER_SIZE characters
+        unsigned int            traceMessageLen;    //!< The actual length ot the message
+        char                    traceMessage[LOG_MESSAGE_BUFFER_SIZE];  //!< The message text to output, with maximum NETrace::LOG_MESSAGE_BUFFER_SIZE characters
     } sLogData;
 
     /**
@@ -202,6 +220,8 @@ namespace NETrace
      **/
     typedef struct S_LogMessage
     {
+        DECLARE_NOMOVE( S_LogMessage );
+
         /**
          * \brief   Initializes logging message object of undefined type
          **/
@@ -218,7 +238,7 @@ namespace NETrace
          * \param   mstPrio     The priority of logging message.
          * \param   message     The message text to output on target. Can be empty.
          **/
-        S_LogMessage( NETrace::eLogType logType, unsigned int scopeId, NETrace::eLogPriority msgPrio, const char * message = NULL );
+        S_LogMessage( NETrace::eLogType logType, unsigned int scopeId, NETrace::eLogPriority msgPrio, const char * message, unsigned int msgLen);
         /**
          * \brief   Copies data from given source.
          * \param   src     The source to copy data.
@@ -228,7 +248,7 @@ namespace NETrace
          * \brief   Copies data from given source.
          * \param   src     The source to copy data.
          **/
-        void operator = ( const S_LogMessage & src );
+        S_LogMessage & operator = ( const S_LogMessage & src );
 
         NETrace::sLogHeader lmHeader;   //!< The logging message header.
         NETrace::sLogData   lmTrace;    //!< The logging message data with text to output on target.
@@ -237,20 +257,20 @@ namespace NETrace
     /**
      * \brief   Configures logging data from given logging file.
      * \param   fileConfig  The relative or absolute path of logging file.
-     *                      If empty or null, the system default path will be taken.
+     *                      If empty or nullptr, the system default path will be taken.
      * \return  Returns true if succeeded to open file and configure logging.
      **/
     AREG_API bool configureLoging( const char * fileConfig );
 
     /**
-     * \brief   Start logging. If specified file is not NULL, it configures logging first, then starts logging.
+     * \brief   Start logging. If specified file is not nullptr, it configures logging first, then starts logging.
      * \param   fileConfig  The relative or absolute path to logging configuration file.
-     *                      If not NULL, the system configures logging then starts logging.
-     *                      If NULL and logging was not configured, the system configures logging using default configuration path.
-     *                      If NULL and logging was configured, the system immediately starts logging.
+     *                      If not nullptr, the system configures logging then starts logging.
+     *                      If nullptr and logging was not configured, the system configures logging using default configuration path.
+     *                      If nullptr and logging was configured, the system immediately starts logging.
      * \return  Returns true if succeeded to configure and start logging.
      **/
-    AREG_API bool startLogging( const char * fileConfig = NULL );
+    AREG_API bool startLogging( const char * fileConfig = nullptr );
 
     /**
      * \brief   Sets default configuration values and forces to start logging.
@@ -261,15 +281,15 @@ namespace NETrace
     /**
      * \brief   Loads configuration values from specified configuration file and force to start logging, i.e. enables logging.
      *          If configuration file does not exit, it sets default configuration values for logging.
-     *          If configuration file is NULL or empty, it tries to load configuration values from default configuration file.
-     * \param   fileConfig  If not NULL and file exist, loads configuration data from file, enables and starts logging.
-     *                      If NULL or empty, and default configuration file exist, loads configuration data from default file,
+     *          If configuration file is nullptr or empty, it tries to load configuration values from default configuration file.
+     * \param   fileConfig  If not nullptr and file exist, loads configuration data from file, enables and starts logging.
+     *                      If nullptr or empty, and default configuration file exist, loads configuration data from default file,
      *                      enables and starts logging.
      *                      If neither specified, nor default configuration file exist, it sets logging default values and start logging.
      * \param   configFile
      * \return  Returns true if succeeded to start logging.
      **/
-    AREG_API bool configAndStart( const char * fileConfig = NULL );
+    AREG_API bool configAndStart( const char * fileConfig = nullptr );
 
     /**
      * \brief   Stops logging. No message will be logged anymore
@@ -316,8 +336,6 @@ namespace NETrace
 //////////////////////////////////////////////////////////////////////////////
 IMPLEMENT_STREAMABLE(NETrace::eLogPriority)
 IMPLEMENT_STREAMABLE(NETrace::eLogType)
-IMPLEMENT_STREAMABLE(NETrace::sLogHeader)
-IMPLEMENT_STREAMABLE(NETrace::sLogData)
 IMPLEMENT_STREAMABLE(NETrace::sLogMessage)
 
 //////////////////////////////////////////////////////////////////////////////
@@ -328,30 +346,28 @@ inline const char * NETrace::getString( NETrace::eLogPriority prio )
 {
     switch ( prio )
     {
-    case NETrace::PrioNotset:
+    case NETrace::eLogPriority::PrioNotset:
         return "NETrace::PrioNotset";
-    case NETrace::PrioFatal:
+    case NETrace::eLogPriority::PrioFatal:
         return "NETrace::PrioFatal";
-    case NETrace::PrioError:
+    case NETrace::eLogPriority::PrioError:
         return "NETrace::PrioError";
-    case NETrace::PrioWarning:
+    case NETrace::eLogPriority::PrioWarning:
         return "NETrace::PrioWarning";
-    case NETrace::PrioInfo:
+    case NETrace::eLogPriority::PrioInfo:
         return "NETrace::PrioInfo";
-    case NETrace::PrioDebug:
+    case NETrace::eLogPriority::PrioDebug:
         return "NETrace::PrioDebug";
-    case NETrace::PrioScope:
+    case NETrace::eLogPriority::PrioScope:
         return "NETrace::PrioScope";
-    case NETrace::PrioIgnore:
+    case NETrace::eLogPriority::PrioIgnore:
         return "NETrace::PrioIgnore";
-    case NETrace::PrioIgnoreLayout:
+    case NETrace::eLogPriority::PrioIgnoreLayout:
         return "NETrace::PrioIgnoreLayout";
-    case NETrace::PrioAny:
+    case NETrace::eLogPriority::PrioAny:
         return "NETrace::PrioAny";
     default:
         ASSERT(false);
         return "ERR: Unexpected NETrace::eLogPrior value";
     }
 }
-
-#endif  // AREG_TRACE_NETRACE_HPP

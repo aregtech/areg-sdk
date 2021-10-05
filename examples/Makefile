@@ -15,18 +15,18 @@ include $(AREG_EXAMPLES)/06_threads/Makefile
 include $(AREG_EXAMPLES)/07_synch/Makefile
 include $(AREG_EXAMPLES)/08_service/Makefile
 include $(AREG_EXAMPLES)/09_svcmulti/Makefile
-include $(AREG_EXAMPLES)/10_locsvchello/Makefile
-include $(AREG_EXAMPLES)/11_locsvcmix/Makefile
-include $(AREG_EXAMPLES)/12_pubsvchello/Makefile
-include $(AREG_EXAMPLES)/13_pubsvcmix/Makefile
-include $(AREG_EXAMPLES)/14_pubsvclight/Makefile
-include $(AREG_EXAMPLES)/15_pubsvcworker/Makefile
+include $(AREG_EXAMPLES)/10_locsvc/Makefile
+include $(AREG_EXAMPLES)/11_locmesh/Makefile
+include $(AREG_EXAMPLES)/12_pubsvc/Makefile
+include $(AREG_EXAMPLES)/13_pubmesh/Makefile
+include $(AREG_EXAMPLES)/14_pubtraffic/Makefile
+include $(AREG_EXAMPLES)/15_pubworker/Makefile
 include $(AREG_EXAMPLES)/16_pubfsm/Makefile
 
 examples: 01_hello 02_buffer 03_file 04_trace 05_timer \
 	06_threads 07_synch 08_service 09_svcmulti \
-	10_locsvchello 11_locsvcmix 12_pubsvchello \
-	13_pubsvcmix 14_pubsvclight 15_pubsvcworker \
+	10_locsvc 11_locmesh 12_pubsvc \
+	13_pubmesh 14_pubtraffic 15_pubworker \
 	16_pubfsm
 
 .PHONY: examples

@@ -3,8 +3,7 @@
 // Begin generate IETrafficLightActionHandler.hpp file
 //////////////////////////////////////////////////////////////////////////
 
-#ifndef  GENERATED_SRC_PRIVATE_IETRAFFICLIGHTACTIONHANDLER_HPP
-#define  GENERATED_SRC_PRIVATE_IETRAFFICLIGHTACTIONHANDLER_HPP
+#pragma once
 
 /************************************************************************
  * (c) copyright    2021
@@ -46,13 +45,12 @@ protected:
    /**
     * \brief   IETrafficLightActionHandler constructor is hidden from direct call
     **/
-   IETrafficLightActionHandler( void );
+   IETrafficLightActionHandler( void ) = default;
 
-public:   
    /**
     * \brief   IETrafficLightActionHandler destructor
     **/
-   virtual ~IETrafficLightActionHandler( void );
+   virtual ~IETrafficLightActionHandler( void ) = default;
    
 
 //////////////////////////////////////////////////////////////////////////
@@ -100,9 +98,12 @@ public:
     **/
    virtual void actionPedestrianGreen( bool isEastWest ) = 0;
 
+//////////////////////////////////////////////////////////////////////////
+// Forbidden calls.
+//////////////////////////////////////////////////////////////////////////
+private:
+    DECLARE_NOCOPY_NOMOVE( IETrafficLightActionHandler );
 };
-
-#endif  // GENERATED_SRC_PRIVATE_IETRAFFICLIGHTACTIONHANDLER_HPP
 
 //////////////////////////////////////////////////////////////////////////
 // End generate IETrafficLightActionHandler.hpp file

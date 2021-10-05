@@ -1,9 +1,16 @@
-#ifndef AREG_PERSIST_PRIVATE_PERSISTENMANAGER_HPP
-#define AREG_PERSIST_PRIVATE_PERSISTENMANAGER_HPP
+#pragma once
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/persist/private/PersistenceManager.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, Persistence manager to save and read data
  ************************************************************************/
 
@@ -12,7 +19,7 @@
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
 #include "areg/persist/Property.hpp"
-#include "areg/base/EContainers.hpp"
+#include "areg/base/Containers.hpp"
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -30,8 +37,8 @@ class PersistenceManager
     /**
      * \brief   The map of saved properties.
      **/
-    typedef TEIntegerHashMapImpl<const Property &>                      DataMapImpl;
-    typedef TEIntegerHashMap<Property, const Property &, DataMapImpl>   DataMap;
+    using ImplDataMap	= TEHashMapImpl<unsigned int, const Property &>;
+    using DataMap       = TEIntegerHashMap<Property, const Property &, ImplDataMap>;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden constructor / destructor
@@ -110,8 +117,5 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    PersistenceManager( const PersistenceManager & /*src*/ );
-    const PersistenceManager & operator = ( const PersistenceManager & /*src*/ );
+    DECLARE_NOCOPY_NOMOVE( PersistenceManager );
 };
-
-#endif  // AREG_PERSIST_PRIVATE_PERSISTENMANAGER_HPP

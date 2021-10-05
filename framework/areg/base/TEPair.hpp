@@ -1,9 +1,16 @@
-#ifndef AREG_BASE_TEPAIR_HPP
-#define AREG_BASE_TEPAIR_HPP
+#pragma once
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/base/TEPair.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, Pair class template.
  *              Pair is binding 2 parameter, which can be of
  *              different types.
@@ -14,7 +21,7 @@
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
 
-#include "areg/base/ETemplateBase.hpp"
+#include "areg/base/TETemplateBase.hpp"
 #include "areg/base/IEIOStream.hpp"
 
 //////////////////////////////////////////////////////////////////////////
@@ -22,7 +29,7 @@
 //////////////////////////////////////////////////////////////////////////
 /**
  * \brief       Pair is a class contains 2 parameters, which are binded.
- *              One value symbolically call Key, another -- Value.
+ *              One value symbolically is called Key, another -- Value.
  *              The typical use of Pair is in hash-map, where a values
  *              are stored and accessed by keys.
  *
@@ -42,8 +49,7 @@
  *                      to compare keys or values.
  **/
 template <typename KEY, typename VALUE, typename KEY_TYPE = KEY, typename VALUE_TYPE = VALUE, class Implement = TEPairImpl<KEY_TYPE, VALUE_TYPE>>
-class TEPair    : protected Implement
-                , protected TemplateConstants
+class TEPair
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -69,6 +75,12 @@ public:
     TEPair(const TEPair<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement> & src);
 
     /**
+     * \brief   Move constructor.
+     * \param   src     The source to move data.
+     **/
+    TEPair( TEPair<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement> && src ) noexcept;
+
+    /**
      * \brief   Destructor
      **/
     ~TEPair( void );
@@ -82,12 +94,18 @@ public:
 /************************************************************************/
 
     /**
-     * \brief	Assigning operator. Assigns values from source, 
-     *          copy Key and Value.
+     * \brief	Assigning operator. Assigns values from source, copy Key and Value.
      * \param	src	    Source object to get information
      * \return	Returns reference to result Pair object.
      **/
-    inline const TEPair<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement> & operator = (const TEPair<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement> & src);
+    inline TEPair<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement> & operator = (const TEPair<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement> & src);
+
+    /**
+     * \brief	Assigning operator. Assigns values from source, copy Key and Value.
+     * \param	src	    Source object to get information
+     * \return	Returns reference to result Pair object.
+     **/
+    inline TEPair<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement> & operator = ( TEPair<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement> && src ) noexcept;
 
     /**
      * \brief	Checks equality of 2 pair objects, and returns true if they are equal.
@@ -159,6 +177,10 @@ public:
      * \brief   Value of Pair object
      **/
     VALUE   mValue;
+    /**
+     * \brief   Instance of object that copares keys and values.
+     **/
+    Implement   mImplement;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -171,45 +193,55 @@ public:
 
 template <typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename VALUE_TYPE /*= VALUE*/, class Implement /* = TEPairImpl<KEY_TYPE, VALUE_TYPE>*/ >
 TEPair<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::TEPair( void )
-    : Implement             ( )
-    , TemplateConstants   ( )
-    
-    , mKey  ( )
-    , mValue( )
+    : mKey      ( )
+    , mValue    ( )
+    , mImplement( )
 {
-    ; // do nothing
 }
 
 template <typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename VALUE_TYPE /*= VALUE*/, class Implement /* = TEPairImpl<KEY_TYPE, VALUE_TYPE>*/ >
 TEPair<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::TEPair( KEY_TYPE Key, VALUE_TYPE Value )
-    : Implement             ( )
-    , TemplateConstants   ( )
-
-    , mKey  (Key)
-    , mValue(Value)
+    : mKey      (Key)
+    , mValue    (Value)
+    , mImplement( )
 {
-    ; // do nothing
 }
 
 template <typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename VALUE_TYPE /*= VALUE*/, class Implement /* = TEPairImpl<KEY_TYPE, VALUE_TYPE>*/ >
 TEPair<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::TEPair( const TEPair<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>& src )
-    : Implement             ( )
-    , TemplateConstants   ( )
-
-    , mKey  (src.mKey)
-    , mValue(src.mValue)
+    : mKey      (src.mKey)
+    , mValue    (src.mValue)
+    , mImplement( )
 {
-    ; // do nothing
+}
+
+template <typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename VALUE_TYPE /*= VALUE*/, class Implement /* = TEPairImpl<KEY_TYPE, VALUE_TYPE>*/ >
+TEPair<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::TEPair( TEPair<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement> && src ) noexcept
+    : mKey      ( src.mKey )
+    , mValue    ( src.mValue )
+    , mImplement( )
+{
 }
 
 template <typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename VALUE_TYPE /*= VALUE*/, class Implement /* = TEPairImpl<KEY_TYPE, VALUE_TYPE>*/ >
 TEPair<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::~TEPair( void )
 {
-    ; // do nothing
 }
 
 template <typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename VALUE_TYPE /*= VALUE*/, class Implement /* = TEPairImpl<KEY_TYPE, VALUE_TYPE>*/ >
-inline const TEPair<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>& TEPair<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::operator = ( const TEPair<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>& src )
+inline TEPair<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement> & TEPair<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::operator = ( const TEPair<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>& src )
+{
+    if (static_cast<const TEPair<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement> *>(this) != &src)
+    {
+        this->mKey      = src.mKey;
+        this->mValue    = src.mValue;
+    }
+
+    return (*this);
+}
+
+template <typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename VALUE_TYPE /*= VALUE*/, class Implement /* = TEPairImpl<KEY_TYPE, VALUE_TYPE>*/ >
+inline TEPair<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement> & TEPair<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::operator = ( TEPair<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement> && src ) noexcept
 {
     if (static_cast<const TEPair<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement> *>(this) != &src)
     {
@@ -222,22 +254,26 @@ inline const TEPair<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>& TEPair<KEY, VA
 
 template <typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename VALUE_TYPE /*= VALUE*/, class Implement /* = TEPairImpl<KEY_TYPE, VALUE_TYPE>*/ >
 inline bool TEPair<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::operator == ( const TEPair<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>& other ) const
-{   return (this != &other ? isEqualKeys(mKey, other.mKey) && isEqualValues(mValue, other.mValue) : true);      }
+{
+    return (this != &other ? isEqualKeys(mKey, other.mKey) && isEqualValues(mValue, other.mValue) : true);
+}
 
 template <typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename VALUE_TYPE /*= VALUE*/, class Implement /* = TEPairImpl<KEY_TYPE, VALUE_TYPE>*/ >
 inline bool TEPair<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::operator!=( const TEPair<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>& other ) const
-{   return (this != &other ? !isEqualKeys(mKey, other.mKey) || !isEqualValues(mValue, other.mValue) : false);   }
+{
+    return (this != &other ? !isEqualKeys(mKey, other.mKey) || !isEqualValues(mValue, other.mValue) : false);
+}
 
 template <typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename VALUE_TYPE /*= VALUE*/, class Implement /* = TEPairImpl<KEY_TYPE, VALUE_TYPE>*/ >
 inline bool TEPair<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::isEqualValues(VALUE_TYPE value1, VALUE_TYPE value2) const
 {
-    return Implement::implEqualValues(value1, value2);
+    return mImplement.implEqualValues(value1, value2);
 }
 
 template <typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename VALUE_TYPE /*= VALUE*/, class Implement /* = TEPairImpl<KEY_TYPE, VALUE_TYPE>*/ >
 inline bool TEPair<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::isEqualKeys(KEY_TYPE key1, KEY_TYPE key2) const
 {
-    return Implement::implEqualKeys(key1, key2);
+    return mImplement.implEqualKeys(key1, key2);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -259,5 +295,3 @@ IEOutStream & operator << ( IEOutStream& stream, const  TEPair<K, V, KT, VT, Imp
     stream << output.mValue;
     return stream;
 }
-
-#endif  // AREG_BASE_TEPAIR_HPP

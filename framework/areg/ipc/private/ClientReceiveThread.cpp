@@ -1,7 +1,15 @@
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/ipc/private/ClientReceiveThread.cpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform Receive Message Thread
  ************************************************************************/
 #include "areg/ipc/private/ClientReceiveThread.hpp"
@@ -11,20 +19,19 @@
 #include "areg/ipc/IERemoteServiceHandler.hpp"
 
 #include "areg/trace/GETrace.h"
+
 DEF_TRACE_SCOPE(areg_ipc_private_ClientReceiveThread_runDispatcher);
 
 ClientReceiveThread::ClientReceiveThread( IERemoteServiceHandler & remoteService, ClientConnection & connection )
-    : DispatcherThread( NEConnection::CLIENT_RECEIVE_MESSAGE_THREAD )
+    : DispatcherThread  ( NEConnection::CLIENT_RECEIVE_MESSAGE_THREAD.data() )
 
     , mRemoteService    ( remoteService )
     , mConnection       ( connection )
 {
-    ; // do nothing
 }
 
 ClientReceiveThread::~ClientReceiveThread( void )
 {
-    ; // do nothing
 }
 
 bool ClientReceiveThread::runDispatcher(void)
@@ -37,13 +44,13 @@ bool ClientReceiveThread::runDispatcher(void)
     MultiLock multiLock(syncObjects, 2, false);
 
     RemoteMessage msgReceived;
-    int whichEvent  = static_cast<int>(EVENT_ERROR);
+    int whichEvent  = static_cast<int>(EventDispatcherBase::eEventOrder::EventError);
     do 
     {
-        whichEvent = multiLock.lock(IESynchObject::DO_NOT_WAIT, false);
+        whichEvent = multiLock.lock(NECommon::DO_NOT_WAIT, false);
         if ( whichEvent == MultiLock::LOCK_INDEX_TIMEOUT )
         {
-            whichEvent = static_cast<int>(EVENT_QUEUE); // escape quit
+            whichEvent = static_cast<int>(EventDispatcherBase::eEventOrder::EventQueue); // escape quit
             if ( mConnection.receiveMessage(msgReceived) <= 0 )
             {
                 msgReceived.invalidate();
@@ -56,11 +63,11 @@ bool ClientReceiveThread::runDispatcher(void)
         }
         else
         {
-            Event * eventElem = whichEvent == static_cast<int>(EVENT_QUEUE) ? pickEvent() : NULL;
-            whichEvent = isExitEvent(eventElem) || (whichEvent == static_cast<int>(EVENT_EXIT)) ? static_cast<int>(EVENT_EXIT) : whichEvent;
+            Event * eventElem = whichEvent == static_cast<int>(EventDispatcherBase::eEventOrder::EventQueue) ? pickEvent() : nullptr;
+            whichEvent = isExitEvent(eventElem) ? static_cast<int>(EventDispatcherBase::eEventOrder::EventExit) : whichEvent;
         }
 
-    } while (whichEvent == static_cast<int>(EVENT_QUEUE));
+    } while (whichEvent == static_cast<int>(EventDispatcherBase::eEventOrder::EventQueue));
 
     mHasStarted = false;
     removeAllEvents( );
@@ -69,6 +76,8 @@ bool ClientReceiveThread::runDispatcher(void)
 
     mEventStarted.resetEvent();
 
-    TRACE_DBG("Exiting client service dispatcher thread [ %s ] with result [ %s ]", getName().getString(), whichEvent == static_cast<int>(EVENT_EXIT) ? "SUCCESS" : "FAILURE");
-    return (whichEvent == static_cast<int>(EVENT_EXIT));
+    TRACE_DBG("Exiting client service dispatcher thread [ %s ] with result [ %s ]", getName().getString()
+               , whichEvent == static_cast<int>(EventDispatcherBase::eEventOrder::EventExit) ? "SUCCESS" : "FAILURE");
+
+    return (whichEvent == static_cast<int>(EventDispatcherBase::eEventOrder::EventExit));
 }

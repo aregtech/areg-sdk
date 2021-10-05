@@ -3,7 +3,9 @@
 // Author      : Artak Avetyan
 // Version     :
 // Copyright   : Aregtech (c) 2021
-// Description : Hello World in C++, Ansi-style
+// Description : This project demonstrates how to create custom event 
+//               dispatching and simple threads.As events to dispatch, the 
+//               demo uses timers and timer events.
 //============================================================================
 
 #include "areg/base/GEGlobal.h"
@@ -16,6 +18,9 @@
 #include "areg/component/Event.hpp"
 #include "areg/component/Timer.hpp"
 #include "areg/trace/GETrace.h"
+
+#include <string_view>
+
 
 #ifdef WINDOWS
     #pragma comment(lib, "areg.lib")
@@ -36,7 +41,7 @@ class HelloThread   : public    Thread
     /**
      * \brief   The thread name;
      */
-    static const char * THREAD_NAME /* = "HelloThread" */;
+    static constexpr std::string_view THREAD_NAME { "HelloThread" };
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -44,7 +49,7 @@ class HelloThread   : public    Thread
 public:
     HelloThread( void );
 
-    virtual ~HelloThread( void );
+    virtual ~HelloThread( void ) = default;
 
 protected:
 
@@ -59,7 +64,7 @@ protected:
      *          the thread will complete work. To restart thread running,
      *          createThread() method should be called again.
      **/
-    virtual void onThreadRuns( void );
+    virtual void onThreadRuns( void ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden calls
@@ -71,22 +76,16 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // HelloThread implementation
 //////////////////////////////////////////////////////////////////////////
-const char * HelloThread::THREAD_NAME   = "HelloThread";
-
 
 DEF_TRACE_SCOPE(main_HelloThread_HelloThread);
 DEF_TRACE_SCOPE(main_HelloThread_onThreadRuns);
 
 HelloThread::HelloThread( void )
-    : Thread            ( self(), HelloThread::THREAD_NAME )
+    : Thread            ( self(), HelloThread::THREAD_NAME.data() )
     , IEThreadConsumer  ( )
 {
     TRACE_SCOPE(main_HelloThread_HelloThread);
-    TRACE_DBG("Initialized thread [ %s ]", HelloThread::THREAD_NAME);
-}
-
-HelloThread::~HelloThread( void )
-{
+    TRACE_DBG("Initialized thread [ %s ]", HelloThread::THREAD_NAME.data());
 }
 
 inline HelloThread & HelloThread::self( void )
@@ -99,10 +98,9 @@ void HelloThread::onThreadRuns( void )
     TRACE_SCOPE(main_HelloThread_onThreadRuns);
 
     TRACE_INFO("The thread [ %s ] runs, going to output message", getName().getString());
-    TRACE_INFO("!!!Hello World!!!");
-    TRACE_INFO("!!!Hello Tracing!!!");
+    TRACE_INFO("!!!Hello World!!! !!!Hello Tracing!!!");
 
-    Thread::sleep(Thread::WAIT_500_MILLISECONDS);
+    Thread::sleep( NECommon::WAIT_500_MILLISECONDS);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -119,7 +117,11 @@ void HelloThread::onThreadRuns( void )
 class HelloDispatcher   : public    DispatcherThread
                         , private   IETimerConsumer
 {
-    static const char * THREAD_NAME     /*= "Hello Thread"*/;
+    /**
+     * \brief   Thread name.
+     **/
+    static constexpr std::string_view THREAD_NAME { "HelloThread" };
+
 public:
 
 /************************************************************************/
@@ -127,7 +129,7 @@ public:
 /************************************************************************/
     HelloDispatcher( void );
 
-    virtual ~HelloDispatcher( void );
+    virtual ~HelloDispatcher( void ) = default;
 
 protected:
 /************************************************************************/
@@ -138,7 +140,7 @@ protected:
      * \brief   Triggered before dispatcher starts to dispatch events and when event dispatching just finished.
      * \param   hasStarted  The flag to indicate whether the dispatcher is ready for events.
      **/
-    virtual void readyForEvents( bool isReady );
+    virtual void readyForEvents( bool isReady ) override;
 
 /************************************************************************/
 // IEEventRouter interface overrides
@@ -152,7 +154,7 @@ protected:
      * \return  Returns true if at least one consumer processed event.
      *          Otherwise it returns false.
      **/
-    virtual bool dispatchEvent( Event & eventElem );
+    virtual bool dispatchEvent( Event & eventElem ) override;
 
     /**
      * \brief   Posts event. Push event in internal or external
@@ -162,7 +164,7 @@ protected:
      * \param   eventElem   The event object to push in the queue.
      * \return  Returns true if successfully pushed event in the queue.
      **/
-    virtual bool postEvent( Event & eventElem );
+    virtual bool postEvent( Event & eventElem ) override;
 
 /************************************************************************/
 // IETimerConsumer interface overrides.
@@ -174,7 +176,7 @@ protected:
      *          Overwrite method to receive messages.
      * \param   timer   The timer object that is expired.
      **/
-    virtual void processTimer( Timer & timer );
+    virtual void processTimer( Timer & timer ) override;
 
 private:
     inline HelloDispatcher & self( void );  // wrapper of this pointer.
@@ -184,7 +186,6 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // HelloDispatcher class implementation
 //////////////////////////////////////////////////////////////////////////
-const char * HelloDispatcher::THREAD_NAME     = "Hello Thread";
 
 // Define HelloDispatcher trace scopes to make logging
 // Trace scopes must be defined before they are used.
@@ -193,17 +194,13 @@ DEF_TRACE_SCOPE(main_HelloDispatcher_readyForEvents );
 DEF_TRACE_SCOPE(main_HelloDispatcher_postEvent);
 
 HelloDispatcher::HelloDispatcher( void )
-    : DispatcherThread  (HelloDispatcher::THREAD_NAME)
+    : DispatcherThread  (HelloDispatcher::THREAD_NAME.data())
     , IETimerConsumer   ( )
 
     , mTimer            ( static_cast<IETimerConsumer &>(self()), "aTimerName")
 {
     TRACE_SCOPE(main_HelloDispatcher_HelloDispatcher);
     TRACE_DBG("Instantiated hello dispatcher");
-}
-
-HelloDispatcher::~HelloDispatcher( void )
-{
 }
 
 void HelloDispatcher::readyForEvents(bool isReady )
@@ -257,7 +254,7 @@ int main()
     // To change the configuration and use dynamic logging, use macro TRACER_START_LOGGING
     // and specify the logging configuration file, where you can change logging format,
     // filter logging priority and scopes.
-    TRACER_CONFIGURE_AND_START(NULL);
+    TRACER_CONFIGURE_AND_START( nullptr );
 
     do
     {
@@ -274,24 +271,24 @@ int main()
         HelloThread helloThread;
 
         // create and start thread, wait until it is started.
-        helloThread.createThread(Thread::WAIT_INFINITE);
+        helloThread.createThread(NECommon::WAIT_INFINITE);
         TRACE_DBG("[ %s ] to create thread [ %s ]", helloThread.isValid() ? "SUCCEEDED" : "FAILED", helloThread.getName().getString());
 
         TRACE_DBG("Starting Hello Dispatcher");
         HelloDispatcher helloDispatcher;
         // create and start thread, wait until it is started.
-        helloDispatcher.createThread(Thread::WAIT_INFINITE);
+        helloDispatcher.createThread(NECommon::WAIT_INFINITE);
         TRACE_DBG("[ %s ] to create thread [ %s ]", helloDispatcher.isValid() ? "SUCCEEDED" : "FAILED", helloDispatcher.getName().getString());
 
         TRACE_DBG("Main thread sleep");
-        Thread::sleep(Thread::WAIT_1_SECOND);
+        Thread::sleep( NECommon::WAIT_1_SECOND);
 
         // stop and destroy thread, clean resources. Wait until thread ends.
         TRACE_INFO("Going to stop and destroy [ %s ] thread.", helloDispatcher.getName().getString());
-        helloDispatcher.destroyThread(Thread::WAIT_INFINITE);
+        helloDispatcher.destroyThread(NECommon::WAIT_INFINITE);
 
         TRACE_INFO("Going to stop and destroy [ %s ] thread.", helloThread.getName().getString());
-        helloThread.destroyThread(Thread::WAIT_INFINITE);
+        helloThread.destroyThread(NECommon::WAIT_INFINITE);
 
     } while (false);
 

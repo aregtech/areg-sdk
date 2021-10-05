@@ -1,7 +1,15 @@
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/base/private/posix/WaitableTimerIX.cpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, POSIX Waitable Timer class.
  *
  ************************************************************************/
@@ -12,7 +20,8 @@
 
 #include "areg/base/private/posix/WaitableTimerIX.hpp"
 
-#ifdef  _POSIX
+#if defined(_POSIX) || defined(POSIX)
+
 #include "areg/base/NEMemory.hpp"
 #include "areg/base/Thread.hpp"
 #include "areg/base/private/posix/NESynchTypesIX.hpp"
@@ -25,23 +34,23 @@ void WaitableTimerIX::_posixTimerRoutine(union sigval si)
     WaitableTimerIX *timer = reinterpret_cast<WaitableTimerIX *>(si.sival_ptr);
 
     OUTPUT_DBG("Fired waitable timer [ %p ], processing in thread [ %p ]", timer, reinterpret_cast<id_type>(pthread_self()));
-    if ( timer != NULL )
+    if ( timer != nullptr )
     {
         timer->_timerExpired();
     }
 }
 
 
-WaitableTimerIX::WaitableTimerIX(bool isAutoReset /*= false*/, bool isSignaled /*= true*/, const char * name /*= NULL*/)
-    : IEWaitableBaseIX  ( NESynchTypesIX::SoWaitTimer, false, name )
+WaitableTimerIX::WaitableTimerIX(bool isAutoReset /*= false*/, bool isSignaled /*= true*/, const char * name /*= nullptr*/)
+    : IEWaitableBaseIX  ( NESynchTypesIX::eSynchObject::SoWaitTimer, false, name )
 
-    , mResetInfo        ( isAutoReset ? NESynchTypesIX::EventResetAutomatic : NESynchTypesIX::EventResetManual )
+    , mResetInfo        ( isAutoReset ? NESynchTypesIX::eEventResetInfo::EventResetAutomatic : NESynchTypesIX::eEventResetInfo::EventResetManual )
     , mTimerId          ( static_cast<timer_t>(0) )
     , mTimeout          ( 0 )
     , mIsSignaled       ( isSignaled )
     , mFiredCount       ( 0 )
     , mDueTime          ( )
-    , mThreadId     ( Thread::INVALID_THREAD_ID )
+    , mThreadId         ( Thread::INVALID_THREAD_ID )
 {
 
 }
@@ -60,16 +69,16 @@ bool WaitableTimerIX::setTimer(unsigned int msTimeout, bool isPeriodic)
     if (msTimeout != 0)
     {
         struct sigevent sigEvent;
-        NEMemory::zeroBuffer(static_cast<void *>(&sigEvent), sizeof(struct sigevent));
+        NEMemory::memZero(static_cast<void *>(&sigEvent), sizeof(struct sigevent));
         sigEvent.sigev_notify           = SIGEV_THREAD;
         sigEvent.sigev_value.sival_ptr  = static_cast<void *>(this);
         sigEvent.sigev_notify_function  = &WaitableTimerIX::_posixTimerRoutine;
-        sigEvent.sigev_notify_attributes= NULL;
+        sigEvent.sigev_notify_attributes= nullptr;
 
         if (RETURNED_OK == timer_create(CLOCK_REALTIME, &sigEvent, &mTimerId))
         {
             struct itimerspec interval;
-            NEMemory::zeroBuffer(static_cast<void *>(&interval), sizeof(struct itimerspec));
+            NEMemory::memZero(static_cast<void *>(&interval), sizeof(struct itimerspec));
             NESynchTypesIX::convTimeout(interval.it_value, msTimeout);
             if ( isPeriodic )
             {
@@ -83,7 +92,7 @@ bool WaitableTimerIX::setTimer(unsigned int msTimeout, bool isPeriodic)
             mIsSignaled     = false;
             mThreadId       = Thread::getCurrentThreadId();
             result          = true;
-            if ( RETURNED_OK != timer_settime(mTimerId, 0, &interval, NULL) )
+            if ( RETURNED_OK != timer_settime(mTimerId, 0, &interval, nullptr) )
             {
                 result = false;
                 _resetTimer();
@@ -163,7 +172,7 @@ bool WaitableTimerIX::checkCanSignalMultipleThreads(void) const
 void WaitableTimerIX::notifyReleasedThreads(int /* numThreads */)
 {
     ObjectLockIX lock(*this);
-    if (mResetInfo == NESynchTypesIX::EventResetAutomatic)
+    if (mResetInfo == NESynchTypesIX::eEventResetInfo::EventResetAutomatic)
     {
         OUTPUT_DBG("Automatically resets waitable timer [ %s ] state to unsignaled.", getName());
         mIsSignaled = false;
@@ -173,24 +182,24 @@ void WaitableTimerIX::notifyReleasedThreads(int /* numThreads */)
 inline void WaitableTimerIX::_resetTimer( void )
 {
     _stopTimer();
-    if (mTimerId != static_cast<timer_t>(NULL))
+    if (mTimerId != nullptr)
     {
         timer_delete(mTimerId);
     }
 
-    mTimerId    = static_cast<timer_t>(NULL);
+    mTimerId    = nullptr;
     mThreadId   = 0;
 }
 
 inline void WaitableTimerIX::_stopTimer( void )
 {
-    if ((mTimerId != static_cast<timer_t>(NULL)) && (mTimeout != 0))
+    if ((mTimerId != nullptr) && (mTimeout != 0))
     {
         mDueTime.tv_sec = 0;
         mDueTime.tv_nsec= 0;
         itimerspec cancelSpec;
-        NEMemory::zeroBuffer(static_cast<void *>(&cancelSpec), sizeof(itimerspec));
-        timer_settime(mTimerId, 0, &cancelSpec, NULL);
+        NEMemory::memZero(static_cast<void *>(&cancelSpec), sizeof(itimerspec));
+        timer_settime(mTimerId, 0, &cancelSpec, nullptr);
     }
 
     mTimeout    = 0;
@@ -232,4 +241,4 @@ inline void WaitableTimerIX::_timerExpired(void)
     }
 }
 
-#endif  // !_POSIX
+#endif  // defined(_POSIX) || defined(POSIX)

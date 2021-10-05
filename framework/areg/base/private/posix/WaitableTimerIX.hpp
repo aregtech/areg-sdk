@@ -1,9 +1,16 @@
-#ifndef AREG_BASE_PRIVATE_POSIX_WAITABLETIMERIX_HPP
-#define AREG_BASE_PRIVATE_POSIX_WAITABLETIMERIX_HPP
+#pragma once
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/base/private/posix/WaitableTimerIX.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, POSIX Waitable Timer class.
  *
  ************************************************************************/
@@ -13,7 +20,8 @@
   ************************************************************************/
 #include "areg/base/GEGlobal.h"
 
-#ifdef _POSIX
+#if defined(_POSIX) || defined(POSIX)
+
 #include "areg/base/private/posix/IEWaitableBaseIX.hpp"
 #include <time.h>
 
@@ -47,7 +55,7 @@ public:
      * \param   isSignaled      Indicates the initial signaled state.
      * \param   name            The name of waitable timer. Plays no role for POSIX timers.
      **/
-    WaitableTimerIX( bool isAutoReset = false, bool isSignaled = true, const char * name = NULL);
+    explicit WaitableTimerIX( bool isAutoReset = false, bool isSignaled = true, const char * name = nullptr);
     /**
      * \brief   Destructor.
      */
@@ -85,7 +93,7 @@ public:
     /**
      * \brief   Returns true if synchronization object is valid.
      **/
-    virtual bool isValid( void ) const;
+    virtual bool isValid( void ) const override;
 
 //////////////////////////////////////////////////////////////////////////
 // Protected calls
@@ -99,14 +107,14 @@ protected:
      * \brief   Returns true if the object is signaled. Otherwise, returns false.
      * param    contextThread   The thread ID where lock and check happened.
      **/
-    virtual bool checkSignaled( pthread_t contextThread ) const;
+    virtual bool checkSignaled( pthread_t contextThread ) const override;
 
     /**
      * \brief   This callback is triggered when a waiting thread is released to continue to run.
      * \param   ownerThread     Indicates the POSIX thread ID that completed to wait.
      * \return  Returns true if waitable successfully has taken thread ownership.
      **/
-    virtual bool notifyRequestOwnership( pthread_t ownerThread );
+    virtual bool notifyRequestOwnership( pthread_t ownerThread ) override;
 
     /**
      * \brief   This callback is triggered to when a system needs to know whether waitable
@@ -114,7 +122,7 @@ protected:
      *          multiple threads can get waitable signaled state. For example, waitable Mutex 
      *          signals only one thread, when waitable Event can signal multiple threads.
      **/
-    virtual bool checkCanSignalMultipleThreads( void ) const;
+    virtual bool checkCanSignalMultipleThreads( void ) const override;
 
     /**
      * \brief   This callback is called to notify the object the amount of
@@ -123,7 +131,7 @@ protected:
      *                      object is in signaled state. 0 means that no thread
      *                      was released by the object.
      **/
-    virtual void notifyReleasedThreads( int numThreads );
+    virtual void notifyReleasedThreads( int numThreads ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -156,7 +164,7 @@ protected:
     /**
      * \brief   The ID of thread that triggered the timer. Used to notify the asynchronous call when waitable timer expired.
      **/
-    ITEM_ID         mThreadId;
+    id_type         mThreadId;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
@@ -179,10 +187,7 @@ private:
 // Forbidden calls.
 //////////////////////////////////////////////////////////////////////////
 private:
-    WaitableTimerIX( const WaitableTimerIX & /*src*/ );
-    const WaitableTimerIX & operator = ( const WaitableTimerIX & /*src*/ );
+    DECLARE_NOCOPY_NOMOVE( WaitableTimerIX );
 };
 
-#endif  // _POSIX
-
-#endif  // AREG_BASE_PRIVATE_POSIX_WAITABLETIMERIX_HPP
+#endif  // defined(_POSIX) || defined(POSIX)

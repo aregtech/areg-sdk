@@ -1,9 +1,16 @@
-#ifndef AREG_BASE_TERESOURCEMAP_HPP
-#define AREG_BASE_TERESOURCEMAP_HPP
+#pragma once
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/base/TEResourceMap.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, Resource Container Map class template.
  *              Use to store resources associated by their Key. 
  *              Here are defined 2 types of resource map: locking and
@@ -13,65 +20,61 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/ETemplateBase.hpp"
-#include "areg/base/EContainers.hpp"
-#include "areg/base/ESynchObjects.hpp"
+#include "areg/base/TETemplateBase.hpp"
+#include "areg/base/Containers.hpp"
+#include "areg/base/SynchObjects.hpp"
 
 /************************************************************************
  * Hierarchies. Following class are declared.
  ************************************************************************/
 // HashMap 
-    template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Implement> class TEResourceMap;
-        template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Implement> class TELockResourceMap;
-        template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Implement> class TENolockResourceMap;
+    template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Deleter> class TEResourceMap;
+        template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Deleter> class TELockResourceMap;
+        template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Deleter> class TENolockResourceMap;
 
 /************************************************************************
  * \brief   This file contains declarations of following class templates:
  *
- *              1.  TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Implement>,
+ *              1.  TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>,
  *                  which is a generic resource mapping class template;
  *
- *              2.  TENolockResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Implement>,
+ *              2.  TENolockResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>,
  *                  which is a resource mapping class template, but no thread safe;
  *
- *              3.  TELockResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Implement>,
+ *              3.  TELockResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>,
  *                  which is a resource mapping class template, but thread safe.
  *
  *          For more information, see descriptions bellow
  ************************************************************************/
 
 //////////////////////////////////////////////////////////////////////////
-// TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Implement> class template declaration
+// TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter> class template declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief       TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Implement>
- *              This class is Hash Map container, used to keep control over 
- *              registered resources. The resource can be any type of object.
- *              Every registered resource should have unique Key to ensure
- *              accessing resource by referring to unique Key.
- *              The resource objects are stored by their pointer values,
- *              which means that Resource should be allocated in memory and
- *              be valid as long, as they are store in Resource Map.
+ * \brief   This class is Hash Map container, used to keep control over 
+ *          registered resources. The resource can be any type of object.
+ *          Every registered resource should have unique Key to ensure
+ *          accessing resource referring to unique Key.
+ *          
+ *          The resource objects are stored as pointers, which means that 
+ *          Resource should be allocated in memory and be valid as long, 
+ *          as they are store in Resource Map. By default, the resources
+ *          are freed by calling delete operator. If a special action is
+ *          required when delete resource, pass your custom Deleter class 
+ *          in the template parameter list that has the implementation
+ *          of appropriate clean method.
  * 
- * \details     To instantiate Resource Map, the Hash Map class 
- *              should be specified, as well as the synchronization object. 
- *              As a HashMap class type one of predefined Hash Map containers 
- *              can be used, or define own. The reason of passing HashMap as 
- *              class type, to have Hash Key value calculation 
- *              for every type of resource map to store unique Key.
- *              This class is a container for registered resources.
- *              Use blocking and non-blocking hash map instead of this class.
- *              See description bellow.
- *
  * \tparam  RESOURCE_KEY    The type of Key to access resource element
  * \tparam  RESOURCE_OBJECT The type of resource objects. Pointer of
  *                          this defined types will be used and resource map.
  * \tparam  HashMap         HashMap class to inherit, which has possibility
  *                          to calculate Hash value from RESOURCE_KEY type.
+ * \tparam Deleter          The name of class that contains implementation 
+ *                          of resourse clean method.
  **/
-template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Implement = TEResourceMapImpl<RESOURCE_KEY, RESOURCE_OBJECT>>
+template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Deleter = TEResourceMapImpl<RESOURCE_KEY, RESOURCE_OBJECT>>
 class TEResourceMap     : protected HashMap
-                        , protected Implement
+                        , protected Deleter
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -80,12 +83,12 @@ public:
     /**
      * \brief   Default Constructor
      **/
-    TEResourceMap( IEResourceLock & synchObject );
+    explicit TEResourceMap( IEResourceLock & synchObject );
 
     /**
      * \brief   Destructor
      **/
-    ~TEResourceMap( void );
+    ~TEResourceMap( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -137,7 +140,7 @@ public:
      *          to unregistered resource object.
      * \param	Key	    Unique Key of resource that was previously registered.
      * \return	If succeeded, returns pointer to unregistered resource.
-     *          Otherwise returns NULL
+     *          Otherwise, returns nullptr.
      **/
     inline RESOURCE_OBJECT * unregisterResourceObject(const RESOURCE_KEY & Key);
 
@@ -146,7 +149,7 @@ public:
      *          and if found, return pointer to registered resource
      * \param	Key	    The unique Key of resource
      * \return	If could find Resource in Resource Map by unique Key,
-     *          returns pointer to resource. Otherwise returns NULL.
+     *          returns pointer to resource. Otherwise returns nullptr.
      **/
     inline RESOURCE_OBJECT * findResourceObject( const RESOURCE_KEY & Key ) const;
 
@@ -251,31 +254,31 @@ private:
 // Hidden / Forbidden methods
 //////////////////////////////////////////////////////////////////////////
 private:
-    TEResourceMap( void );
-    TEResourceMap( const TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Implement> & );
-    const TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Implement> & operator = ( const TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Implement> & );
+    TEResourceMap( void ) = delete;
+    TEResourceMap( const TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter> & /*src*/) = delete;
+    TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter> & operator = ( const TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter> & /*src*/ ) = delete;
+    TEResourceMap( TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter> && /*src*/ ) noexcept = delete;
+    TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter> & operator = ( TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter> && /*src*/ ) noexcept = delete;
 };
 
 
 //////////////////////////////////////////////////////////////////////////
-// TENolockResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Implement> class template declaration
+// TENolockResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter> class template declaration
 //////////////////////////////////////////////////////////////////////////
 
 /**
- * \brief       TENolockResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Implement>
- *              Non-blocking Resource Map. It is not synchronizing
- *              thread access. Use instance of this class template
- *              if there is no need to control thread access. It inherits from 
- *              TEResourceMap and contains instance of NoLockSynchObject, 
- *              which is not synchronizing thread access.
+ * \brief       Non-blocking Resource Map. It is not thread safe. Use instance 
+ *              of this class if there is no need to control thread access.
  * \tparam  RESOURCE_KEY    The type of Key to access resource element
  * \tparam  RESOURCE_OBJECT The type of resource objects. Pointer of
  *                          this defined types will be used and resource map.
  * \tparam  HashMap         HashMap class to inherit, which has possibility
  *                          to calculate Hash value from RESOURCE_KEY type.
+ * \tparam Deleter          The name of class that contains implementation
+ *                          of resourse clean method.
  **/
-template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Implement>
-class TENolockResourceMap  : public TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Implement>
+template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Deleter>
+class TENolockResourceMap  : public TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -288,7 +291,7 @@ public:
     /**
      * \brief   Destructor
      **/
-    ~TENolockResourceMap( void );
+    ~TENolockResourceMap( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables.
@@ -303,27 +306,26 @@ private:
 // Hidden / Forbidden methods
 //////////////////////////////////////////////////////////////////////////
 private:
-    TENolockResourceMap(const TENolockResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Implement> &);
-    const TENolockResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Implement>& operator = (const TENolockResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Implement> &);
+    DECLARE_NOCOPY_NOMOVE( TENolockResourceMap );
 };
 
 //////////////////////////////////////////////////////////////////////////
-// TELockResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Implement> class template declaration
+// TELockResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter> class template declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief       Blocking Resource Map. It is synchronizing thread access. 
+ * \brief       Blocking Resource Map. It is thread safe and synchronizes thread access. 
  *              Use instance of this class template if resources are accessed
- *              by more than one thread. It inherits from TEResourceMap and contains
- *              instance of IEResourceLock object to synchronize thread
- *              access
+ *              by more than one thread.
  * \tparam  RESOURCE_KEY    The type of Key to access resource element
  * \tparam  RESOURCE_OBJECT The type of resource objects. Pointer of
  *                          this defined types will be used and resource map.
  * \tparam  HashMap         HashMap class to inherit, which has possibility
  *                          to calculate Hash value from RESOURCE_KEY type.
+ * \tparam Deleter          The name of class that contains implementation
+ *                          of resourse clean method.
  **/
-template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Implement = TEResourceMapImpl<RESOURCE_KEY, RESOURCE_OBJECT>>
-class TELockResourceMap    : public TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Implement>
+template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Deleter = TEResourceMapImpl<RESOURCE_KEY, RESOURCE_OBJECT>>
+class TELockResourceMap    : public TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -336,23 +338,22 @@ public:
     /**
      * \brief   Destructor
      **/
-    ~TELockResourceMap( void );
+    ~TELockResourceMap( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables.
 //////////////////////////////////////////////////////////////////////////
 private:
     /**
-     * \brief   Instance of Critical Section to synchronize thread access.
+     * \brief   Instance of ResourceLock to synchronize thread access.
      **/
-    ResourceLock   mLock;
+    ResourceLock    mLock;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden / Forbidden methods
 //////////////////////////////////////////////////////////////////////////
 private:
-    TELockResourceMap(const TELockResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Implement> &);
-    const TELockResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Implement>& operator = (const TELockResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Implement> &);
+    DECLARE_NOCOPY_NOMOVE( TELockResourceMap );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -360,99 +361,92 @@ private:
 //////////////////////////////////////////////////////////////////////////
 
 //////////////////////////////////////////////////////////////////////////
-// TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Implement> class template implementation
+// TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter> class template implementation
 //////////////////////////////////////////////////////////////////////////
 
-template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Implement>
-TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Implement>::TEResourceMap( IEResourceLock & synchObject )
+template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Deleter>
+TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::TEResourceMap( IEResourceLock & synchObject )
     : HashMap   ( )
-    , Implement ( )
+    , Deleter ( )
     , mSynchObj (synchObject)
 {
-    ; // do nothing
 }
 
-template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Implement>
-TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Implement>::~TEResourceMap( void )
-{
-    ; // do nothing
-}
-
-template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Implement>
-inline bool TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Implement>::registerResourceObject(const RESOURCE_KEY & Key, RESOURCE_OBJECT * resource)
+template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Deleter>
+inline bool TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::registerResourceObject(const RESOURCE_KEY & Key, RESOURCE_OBJECT * resource)
 {
     Lock lock(mSynchObj);
 
-    RESOURCE_OBJECT* existing = NULL;
-    return ( HashMap::find(Key, existing) ? resource == existing : HashMap::setAt(Key, resource, false) != NULL);
+    RESOURCE_OBJECT* existing = nullptr;
+    return ( HashMap::find(Key, existing) ? resource == existing : HashMap::setAt(Key, resource, false) != nullptr);
 }
 
-template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Implement>
-inline RESOURCE_OBJECT * TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Implement>::unregisterResourceObject(const RESOURCE_KEY & Key)
+template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Deleter>
+inline RESOURCE_OBJECT * TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::unregisterResourceObject(const RESOURCE_KEY & Key)
 {
     Lock lock(mSynchObj);
 
-    RESOURCE_OBJECT* result = NULL;
+    RESOURCE_OBJECT* result = nullptr;
     HashMap::removeAt(Key, result);
     return result;
 }
 
-template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Implement>
-inline RESOURCE_OBJECT* TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Implement>::findResourceObject(const RESOURCE_KEY & Key) const
+template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Deleter>
+inline RESOURCE_OBJECT* TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::findResourceObject(const RESOURCE_KEY & Key) const
 {
     Lock lock(mSynchObj);
 
-    RESOURCE_OBJECT* result = NULL;
+    RESOURCE_OBJECT* result = nullptr;
     HashMap::find(Key, result);
     return result;
 }
 
-template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Implement>
-inline bool TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Implement>::existResource(const RESOURCE_KEY & Key) const
+template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Deleter>
+inline bool TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::existResource(const RESOURCE_KEY & Key) const
 {
     Lock lock(mSynchObj);
-    return (HashMap::find(Key) != NULL);
+    return (HashMap::find(Key) != nullptr);
 }
 
-template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Implement>
-inline void TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Implement>::lock( void ) const
+template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Deleter>
+inline void TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::lock( void ) const
 {
-    mSynchObj.lock(IESynchObject::WAIT_INFINITE);
+    mSynchObj.lock(NECommon::WAIT_INFINITE);
 }
 
-template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Implement>
-inline void TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Implement>::unlock( void ) const
+template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Deleter>
+inline void TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::unlock( void ) const
 {
     mSynchObj.unlock( );
 }
 
-template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Implement>
-inline bool TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Implement>::tryLock( void ) const
+template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Deleter>
+inline bool TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::tryLock( void ) const
 {
     return mSynchObj.tryLock( );
 }
 
-template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Implement>
-inline int TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Implement>::getSize( void ) const
+template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Deleter>
+inline int TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::getSize( void ) const
 {
     Lock lock(mSynchObj);
     return HashMap::getSize();
 }
 
-template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Implement>
-inline bool TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Implement>::isEmpty( void ) const
+template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Deleter>
+inline bool TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::isEmpty( void ) const
 {
     Lock lock(mSynchObj);
     return HashMap::isEmpty();
 }
 
-template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Implement>
-inline bool TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Implement>::removeResourceObject( RESOURCE_OBJECT * resource )
+template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Deleter>
+inline bool TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::removeResourceObject( RESOURCE_OBJECT * resource )
 {
     Lock lock(mSynchObj);
 
     bool removed = false;
-    for ( MAPPOS pos = HashMap::firstPosition(); pos != NULL; pos = HashMap::nextPosition(pos))
+    for ( MAPPOS pos = HashMap::firstPosition(); pos != nullptr; pos = HashMap::nextPosition(pos))
     {
         if ( resource == HashMap::valueAtPosition(pos) )
         {
@@ -465,15 +459,15 @@ inline bool TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Implement>::re
     return removed;
 }
 
-template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Implement>
-inline void TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Implement>::removeAllResources( void )
+template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Deleter>
+inline void TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::removeAllResources( void )
 {
     Lock lock(mSynchObj);
 
-    for ( MAPPOS pos = HashMap::firstPosition(); pos != NULL; pos = HashMap::nextPosition(pos))
+    for ( MAPPOS pos = HashMap::firstPosition(); pos != nullptr; pos = HashMap::nextPosition(pos))
     {
         typename HashMap::Block * block = HashMap::blockAt(pos);
-        if (block != NULL)
+        if (block != nullptr)
         {
             cleanResourceEntry(block->mKey, block->mValue);
         }
@@ -482,27 +476,27 @@ inline void TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Implement>::re
     HashMap::removeAll();
 }
 
-template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Implement>
-inline bool TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Implement>::removeResourceFirstElement( TEPair<RESOURCE_KEY, RESOURCE_OBJECT *> out_FirstElement )
+template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Deleter>
+inline bool TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::removeResourceFirstElement( TEPair<RESOURCE_KEY, RESOURCE_OBJECT *> out_FirstElement )
 {
     Lock lock(mSynchObj);
     MAPPOS pos = HashMap::firstPosition();
-    if (pos != NULL)
+    if (pos != nullptr)
     {
         HashMap::removePosition(pos, out_FirstElement.mKey, out_FirstElement.mValue);
     }
 
-    return (pos != NULL);
+    return (pos != nullptr);
 }
 
-template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Implement>
-inline RESOURCE_OBJECT* TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Implement>::resourceFirstKey( RESOURCE_KEY & out_FirstKey ) const
+template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Deleter>
+inline RESOURCE_OBJECT* TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::resourceFirstKey( RESOURCE_KEY & out_FirstKey ) const
 {
     Lock lock(mSynchObj);
 
-    RESOURCE_OBJECT * result = NULL;
+    RESOURCE_OBJECT * result = nullptr;
     MAPPOS pos = HashMap::firstPosition();
-    if (pos != NULL)
+    if (pos != nullptr)
     {
         HashMap::getAtPosition(pos, out_FirstKey, result);
     }
@@ -510,59 +504,43 @@ inline RESOURCE_OBJECT* TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Im
     return result;
 }
 
-template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Implement>
-inline RESOURCE_OBJECT* TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Implement>::resourceNextKey( RESOURCE_KEY & in_out_NextKey ) const
+template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Deleter>
+inline RESOURCE_OBJECT* TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::resourceNextKey( RESOURCE_KEY & in_out_NextKey ) const
 {
     Lock lock(mSynchObj);
 
-    RESOURCE_OBJECT * result = NULL;
+    RESOURCE_OBJECT * result = nullptr;
     MAPPOS pos = HashMap::find(in_out_NextKey);
-    if (pos != NULL && HashMap::nextEntry(pos, in_out_NextKey, result) == false)
-        result = NULL;
+    if (pos != nullptr && HashMap::nextEntry(pos, in_out_NextKey, result) == false)
+        result = nullptr;
 
     return result;
 }
 
-template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Implement>
-inline void TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Implement>::cleanResourceEntry( RESOURCE_KEY & Key, RESOURCE_OBJECT * Resource )
+template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Deleter>
+inline void TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::cleanResourceEntry( RESOURCE_KEY & Key, RESOURCE_OBJECT * Resource )
 {
-    Implement::implCleanResource(Key, Resource);
+    Deleter::implCleanResource(Key, Resource);
 }
 
 //////////////////////////////////////////////////////////////////////////
 // TENolockResourceMap class template implementation
 //////////////////////////////////////////////////////////////////////////
-template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Implement>
-TENolockResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Implement>::TENolockResourceMap( void )
-    : TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Implement>    (static_cast<IEResourceLock &>(mNoLock))
+template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Deleter>
+TENolockResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::TENolockResourceMap( void )
+    : TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>    (static_cast<IEResourceLock &>(mNoLock))
 
     , mNoLock   ()
 {
-    ; // do nothing
-}
-
-template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Implement>
-TENolockResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Implement>::~TENolockResourceMap( void )
-{
-    ; // do nothing
 }
 
 //////////////////////////////////////////////////////////////////////////
 // TELockResourceMap class template implementation
 //////////////////////////////////////////////////////////////////////////
-template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Implement>
-TELockResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Implement>::TELockResourceMap( void )
-    : TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Implement>    (static_cast<IEResourceLock &>(mLock))
+template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Deleter>
+TELockResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::TELockResourceMap( void )
+    : TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>    (static_cast<IEResourceLock &>(mLock))
 
-    , mLock ( false )
+    , mLock ( )
 {
-    ; // do nothing
 }
-
-template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Implement>
-TELockResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Implement>::~TELockResourceMap( void )
-{
-    ; // do nothing
-}
-
-#endif  // AREG_BASE_TERESOURCEMAP_HPP

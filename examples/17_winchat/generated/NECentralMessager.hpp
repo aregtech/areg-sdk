@@ -1,19 +1,18 @@
 //////////////////////////////////////////////////////////////////////////
 // Begin generate generated/NECentralMessager.hpp file
 //////////////////////////////////////////////////////////////////////////
-#ifndef  GENERATED_NECENTRALMESSAGER_HPP
-#define  GENERATED_NECENTRALMESSAGER_HPP
+#pragma once
 
 /************************************************************************
  * (c) copyright    2021
+ *
+ * Generated at     30.09.2021  01:22:12 GMT+02:00 
  *                  Create by AREG SDK code generator tool from source CentralMessager.
- * Generated at     04.07.2021  04:29:59 GMT+02:00 
- ************************************************************************/
-
-/************************************************************************
+ *
  * \file            generated/NECentralMessager.hpp
  * \ingroup         CentralMessager Service Interface
- * \brief           This is an automatic generated code of CentralMessager Service Interface Namespace declaration.
+ * \brief           This is an automatic generated code of CentralMessager
+ *                  Service Interface namespace declaration.
  ************************************************************************/
 
 /************************************************************************
@@ -34,6 +33,8 @@
 #include "areg/base/IEIOStream.hpp"
 #include "areg/base/Version.hpp"
 #include "areg/component/NEService.hpp"
+
+#include <utility>
 
 /************************************************************************
  * Dependencies
@@ -63,7 +64,7 @@ namespace   NECentralMessager
      * \brief   Service Interface Name
      *          NECentralMessager::ServiceName
      **/
-    const char * const    ServiceName         = "CentralMessager";
+    constexpr char        ServiceName[]       { "CentralMessager" };
     /**
      * \brief   Implemented Version
      *          NECentralMessager::InterfaceVersion
@@ -74,7 +75,7 @@ namespace   NECentralMessager
      * \brief   The maximum length of messages.
      *          NECentralMessager::MessageMaxLen
      **/
-    const unsigned int    MessageMaxLen       = NECommon::MaxlenMessage;
+    constexpr unsigned int    MessageMaxLen       = NECommon::MaxlenMessage;
 
 /************************************************************************/
 // Service Interface data types
@@ -88,21 +89,21 @@ namespace   NECentralMessager
      * \brief   NECentralMessager::eMessageIDs
      *          CentralMessager Service interface defined message IDs
      **/
-    typedef enum E_MessageIDs
+    enum class eMessageIDs : msg_id
     {
     /************************************************************************
      * Request IDs
      ************************************************************************/
         /**
-         * \brief   Request ID: MSG_ID_requestSendMessage
+         * \brief   Request ID: MsgId_requestSendMessage
          *          Request to sends message that all clients can see.
          **/
-          MSG_ID_requestSendMessage           = NEService::REQUEST_ID_FIRST     // void requestSendMessage( const String & nickName, unsigned int cookie, const String & newMessage, const DateTime & dateTime );
+          MsgId_requestSendMessage        = NEService::REQUEST_ID_FIRST     // void requestSendMessage( const String & nickName, unsigned int cookie, const String & newMessage, const DateTime & dateTime );
         /**
-         * \brief   Request ID: MSG_ID_requestKeyTyping
+         * \brief   Request ID: MsgId_requestKeyTyping
          *          Sent each time when typing a key
          **/
-        , MSG_ID_requestKeyTyping                                               // void requestKeyTyping( const String & nickName, unsigned int cookie, const String & newMessage );
+        , MsgId_requestKeyTyping                                            // void requestKeyTyping( const String & nickName, unsigned int cookie, const String & newMessage );
      
     /************************************************************************
      * Response IDs
@@ -111,20 +112,20 @@ namespace   NECentralMessager
      * Broadcast IDs
      ************************************************************************/
         /**
-         * \brief   Broadcast ID: MSG_ID_broadcastSendMessage
+         * \brief   Broadcast ID: MsgId_broadcastSendMessage
          *          The response, sent by connection manager to notify the message typing update
          **/
-        , MSG_ID_broadcastSendMessage         = NEService::RESPONSE_ID_FIRST    // void broadcastSendMessage( const String & nickName, unsigned int cookie, const String & newMessage, const DateTime & dateTime );
+        , MsgId_broadcastSendMessage      = NEService::RESPONSE_ID_FIRST    // void broadcastSendMessage( const String & nickName, unsigned int cookie, const String & newMessage, const DateTime & dateTime );
         /**
-         * \brief   Broadcast ID: MSG_ID_broadcastKeyTyping
+         * \brief   Broadcast ID: MsgId_broadcastKeyTyping
          *          Sent each time when a client is typing a key
          **/
-        , MSG_ID_broadcastKeyTyping                                             // void broadcastKeyTyping( const String & nickName, unsigned int cookie, const String & newMessage );
+        , MsgId_broadcastKeyTyping                                          // void broadcastKeyTyping( const String & nickName, unsigned int cookie, const String & newMessage );
         /**
-         * \brief   Broadcast ID: MSG_ID_broadcastBroadcastMessage
+         * \brief   Broadcast ID: MsgId_broadcastBroadcastMessage
          *          Server broadcasts a message to all clients.
          **/
-        , MSG_ID_broadcastBroadcastMessage                                      // void broadcastBroadcastMessage( const String & serverMessage, const DateTime & dateTime );
+        , MsgId_broadcastBroadcastMessage                                   // void broadcastBroadcastMessage( const String & serverMessage, const DateTime & dateTime );
      
     /************************************************************************
      * Attributes IDs
@@ -136,13 +137,13 @@ namespace   NECentralMessager
         /**
          * \brief   ID of empty function
          **/
-        , MSG_ID_NO_PROCEED                   = NEService::RESPONSE_ID_NONE    
+        , MsgId_NotProcessed              = NEService::INVALID_MESSAGE_ID  
         /**
          * \brief   ID of invalid call
          **/
-        , MSG_ID_INVALID                      = NEService::INVALID_MESSAGE_ID  
+        , MsgId_Invalid                   = NEService::RESPONSE_ID_NONE    
      
-    } eMessageIDs;
+    };
     /**
      * \brief   Returns string value of NECentralMessager::eMessageIDs
      **/
@@ -185,22 +186,22 @@ inline const char * NECentralMessager::getString( NECentralMessager::eMessageIDs
 {
     switch ( msgId )
     {
-    case    NECentralMessager::MSG_ID_requestSendMessage:
-        return "NECentralMessager::MSG_ID_requestSendMessage";
-    case    NECentralMessager::MSG_ID_requestKeyTyping:
-        return "NECentralMessager::MSG_ID_requestKeyTyping";
-    case    NECentralMessager::MSG_ID_broadcastSendMessage:
-        return "NECentralMessager::MSG_ID_broadcastSendMessage";
-    case    NECentralMessager::MSG_ID_broadcastKeyTyping:
-        return "NECentralMessager::MSG_ID_broadcastKeyTyping";
-    case    NECentralMessager::MSG_ID_broadcastBroadcastMessage:
-        return "NECentralMessager::MSG_ID_broadcastBroadcastMessage";
+    case    NECentralMessager::eMessageIDs::MsgId_requestSendMessage:
+        return "NECentralMessager::eMessageIDs::MsgId_requestSendMessage";
+    case    NECentralMessager::eMessageIDs::MsgId_requestKeyTyping:
+        return "NECentralMessager::eMessageIDs::MsgId_requestKeyTyping";
+    case    NECentralMessager::eMessageIDs::MsgId_broadcastSendMessage:
+        return "NECentralMessager::eMessageIDs::MsgId_broadcastSendMessage";
+    case    NECentralMessager::eMessageIDs::MsgId_broadcastKeyTyping:
+        return "NECentralMessager::eMessageIDs::MsgId_broadcastKeyTyping";
+    case    NECentralMessager::eMessageIDs::MsgId_broadcastBroadcastMessage:
+        return "NECentralMessager::eMessageIDs::MsgId_broadcastBroadcastMessage";
 
-    case NECentralMessager::MSG_ID_NO_PROCEED:
-        return "NECentralMessager::MSG_ID_NO_PROCEED";
+    case NECentralMessager::eMessageIDs::MsgId_NotProcessed:
+        return "NECentralMessager::eMessageIDs::MsgId_NotProcessed";
         
-    case NECentralMessager::MSG_ID_INVALID:
-        return "NECentralMessager::MSG_ID_INVALID";
+    case NECentralMessager::eMessageIDs::MsgId_Invalid:
+        return "NECentralMessager::eMessageIDs::MsgId_Invalid";
     default:
         ASSERT(false);
         return "ERROR: Undefined NECentralMessager::eMessageIDs value!";
@@ -210,8 +211,6 @@ inline const char * NECentralMessager::getString( NECentralMessager::eMessageIDs
 //////////////////////////////////////////////////////////////////////////
 // NECentralMessager namespace declaration End
 //////////////////////////////////////////////////////////////////////////
-
-#endif   // GENERATED_NECENTRALMESSAGER_HPP
 
 //////////////////////////////////////////////////////////////////////////
 // End generate generated/NECentralMessager.hpp file

@@ -1,18 +1,18 @@
 //////////////////////////////////////////////////////////////////////////
 // Begin generate generated/CentralMessagerClientBase.hpp file
 //////////////////////////////////////////////////////////////////////////
-#ifndef  GENERATED_CENTRALMESSAGERCLIENTBASE_HPP
-#define  GENERATED_CENTRALMESSAGERCLIENTBASE_HPP
-/************************************************************************
- * (c) copyright    2021
- *                  Create by AREG SDK code generator tool from source CentralMessager.
- * Generated at     04.07.2021  04:29:59 GMT+02:00 
- ************************************************************************/
+#pragma once
 
 /************************************************************************
+ * (c) copyright    2021
+ *
+ * Generated at     30.09.2021  01:22:12 GMT+02:00 
+ *                  Create by AREG SDK code generator tool from source CentralMessager.
+ *
  * \file            generated/CentralMessagerClientBase.hpp
  * \ingroup         CentralMessager Service Interface
- * \brief           This is an automatic generated code of CentralMessager Service Interface Client base class declaration.
+ * \brief           This is an automatic generated code of CentralMessager
+ *                  Service Interface Client base class declaration.
  ************************************************************************/
 
 /************************************************************************
@@ -55,9 +55,9 @@ protected:
      *          Specifies used service and owner thread.
      * \param   roleName    The role name assigned to CentralMessager servicing component object.
      * \param   ownerThread The name of component owner thread to dispatch messages.
-     *                      If NULL, all messages are dispatched in current component thread.
+     *                      If nullptr, all messages are dispatched in current component thread.
      **/
-    CentralMessagerClientBase( const char* roleName, const char * ownerThread = static_cast<const char *>(NULL) );
+    CentralMessagerClientBase( const char* roleName, const char * ownerThread = nullptr );
 
     /**
      * \brief   Initialize CentralMessager Service Interface client object.
@@ -256,7 +256,7 @@ protected:
      *          i.e. if passed Proxy address is equal to the Proxy object that client has.
      *          If Proxy objects are not equal, it should return false;
      **/
-    virtual bool serviceConnected( bool isConnected, ProxyBase & proxy );
+    virtual bool serviceConnected( bool isConnected, ProxyBase & proxy ) override;
 
 /************************************************************************/
 // CentralMessagerClientBase Error Handling overrides
@@ -285,7 +285,7 @@ protected:
 
     /**
      * \brief  Returns pointer to client dispatcher thread where the messages are dispatched.
-     *         The function can return NULL if Proxy was not instantiated yet.
+     *         The function can return nullptr if Proxy was not instantiated yet.
      **/
     DispatcherThread * getDispatcherThread( void );
      
@@ -333,7 +333,7 @@ private:
      * \brief   Is processing notification event calls.
      * \param   eventElem   Notification Event object to process
      **/
-    virtual void processNotificationEvent( NotificationEvent & eventElem );
+    virtual void processNotificationEvent( NotificationEvent & eventElem ) override;
     
 /************************************************************************/
 // CentralMessagerClientBase hidden methods
@@ -374,9 +374,8 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    CentralMessagerClientBase( void );
-    CentralMessagerClientBase( const CentralMessagerClientBase & /* src */ );
-    const CentralMessagerClientBase & operator = ( const CentralMessagerClientBase & /* src */ );
+    CentralMessagerClientBase( void ) = delete;
+    DECLARE_NOCOPY_NOMOVE( CentralMessagerClientBase );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -395,31 +394,31 @@ inline unsigned int CentralMessagerClientBase::getCurrentSequenceNr( void ) cons
 
 inline void CentralMessagerClientBase::clearAllNotifications( void )
 {
-    ASSERT(mProxy != NULL);
+    ASSERT(mProxy != nullptr);
     mProxy->clearAllNotifications(static_cast<IENotificationEventConsumer &>(self()));
 }
 
 inline bool CentralMessagerClientBase::isConnected( void ) const
 {
-    ASSERT(mProxy != NULL);
+    ASSERT(mProxy != nullptr);
     return mIsConnected;
 }
 
 inline bool CentralMessagerClientBase::isNotificationAssigned( NECentralMessager::eMessageIDs msgId ) const
 {
-    ASSERT(mProxy != NULL);
+    ASSERT(mProxy != nullptr);
     return mProxy->hasNotificationListener(static_cast<unsigned int>(msgId));
 }
 
 inline const String & CentralMessagerClientBase::getServiceName( void ) const
 {
-    ASSERT(mProxy != NULL);
+    ASSERT(mProxy != nullptr);
     return mProxy->getProxyAddress().getServiceName();
 }
     
 inline const Version & CentralMessagerClientBase::getServiceVersion( void ) const
 {
-    ASSERT(mProxy != NULL);
+    ASSERT(mProxy != nullptr);
     return mProxy->getProxyAddress().getServiceVersion();
 }
 
@@ -429,13 +428,13 @@ inline const Version & CentralMessagerClientBase::getServiceVersion( void ) cons
 
 inline void CentralMessagerClientBase::requestSendMessage( const String & nickName, unsigned int cookie, const String & newMessage, const DateTime & dateTime )
 {
-    ASSERT(mProxy != NULL);
+    ASSERT(mProxy != nullptr);
     mProxy->requestSendMessage( nickName, cookie, newMessage, dateTime );
 }
 
 inline void CentralMessagerClientBase::requestKeyTyping( const String & nickName, unsigned int cookie, const String & newMessage )
 {
-    ASSERT(mProxy != NULL);
+    ASSERT(mProxy != nullptr);
     mProxy->requestKeyTyping( nickName, cookie, newMessage );
 }
 
@@ -445,17 +444,17 @@ inline void CentralMessagerClientBase::requestKeyTyping( const String & nickName
 
 inline void CentralMessagerClientBase::notifyOnBroadcastSendMessage( bool notify /* = true */ )
 {
-    notifyOn(NECentralMessager::MSG_ID_broadcastSendMessage, notify, false);
+    CentralMessagerClientBase::notifyOn(NECentralMessager::eMessageIDs::MsgId_broadcastSendMessage, notify, false);
 }
 
 inline void CentralMessagerClientBase::notifyOnBroadcastKeyTyping( bool notify /* = true */ )
 {
-    notifyOn(NECentralMessager::MSG_ID_broadcastKeyTyping, notify, false);
+    CentralMessagerClientBase::notifyOn(NECentralMessager::eMessageIDs::MsgId_broadcastKeyTyping, notify, false);
 }
 
 inline void CentralMessagerClientBase::notifyOnBroadcastBroadcastMessage( bool notify /* = true */ )
 {
-    notifyOn(NECentralMessager::MSG_ID_broadcastBroadcastMessage, notify, false);
+    CentralMessagerClientBase::notifyOn(NECentralMessager::eMessageIDs::MsgId_broadcastBroadcastMessage, notify, false);
 }
 
 inline const CentralMessagerProxy * CentralMessagerClientBase::getProxy( void ) const
@@ -465,11 +464,9 @@ inline const CentralMessagerProxy * CentralMessagerClientBase::getProxy( void ) 
 
 inline const String & CentralMessagerClientBase::getServiceRole( void ) const
 {
-    ASSERT(mProxy != NULL);
+    ASSERT(mProxy != nullptr);
     return mProxy->getProxyAddress().getRoleName();
 }
-
-#endif   // GENERATED_CENTRALMESSAGERCLIENTBASE_HPP
 
 //////////////////////////////////////////////////////////////////////////
 // End generate generated/CentralMessagerClientBase.hpp file

@@ -1,9 +1,16 @@
-#ifndef AREG_BASE_NEMATH_HPP
-#define AREG_BASE_NEMATH_HPP
+#pragma once
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/base/NEMath.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, Basic Math functionalities.
  *              Functions in this namespace are global
  *
@@ -16,10 +23,6 @@
 
 /**
  * \brief       Basic Math functions, helper classes and CRC
- * 
- * \details     To support functionalities of different types of variables
- *              functions are defined and implemented as templates.
- *
  **/
 namespace NEMath
 {
@@ -30,11 +33,11 @@ namespace NEMath
      * \brief   The enumeration of digit signs
      *          NEMath::eDigitSign
      **/
-    typedef enum E_DigitSign
+    typedef enum class E_DigitSign : int8_t
     {
           SignNegative  = -1    //!< The sign is negative
-        , SignUndefined = 0     //!< The sign is undefined.<br>By default, undefined is considered as positive.
-        , SignPositive  = 1     //!< The sign is positive
+        , SignUndefined =  0    //!< The sign is undefined.<br>By default, undefined is considered as positive.
+        , SignPositive  =  1    //!< The sign is positive
     } eDigitSign;
 
     /**
@@ -47,11 +50,11 @@ namespace NEMath
     /**
      * \brief   The enum defines comparing results
      **/
-    typedef enum E_CompareResult
+    typedef enum class E_CompareResult : int8_t
     {
-          CompSmaller   = -1    //!< Comparing result is smaller
-        , CompEqual     =  0    //!< Comparing result is equal
-        , CompGreater   =  1    //!< Comparing result is greater
+          Smaller   = -1    //!< Comparing result is smaller
+        , Equal     =  0    //!< Comparing result is equal
+        , Bigger    =  1    //!< Comparing result is greater
     } eCompare;
 
 /************************************************************************/
@@ -62,13 +65,13 @@ namespace NEMath
      * \brief   NEMath::NUMBER_PI
      *          PI number constant.
      **/
-    const double        NUMBER_PI           = M_PI;
+    constexpr double        NUMBER_PI           { M_PI };
 
     /**
      * \brief   NEMath::CHECKSUM_IGNORE
      *          No checksum is set, ignore.
      **/
-    const unsigned int  CHECKSUM_IGNORE     = static_cast<unsigned int>(0);
+    constexpr unsigned int  CHECKSUM_IGNORE     { 0u };
 
 /************************************************************************/
 // NEMath namespace structures
@@ -133,6 +136,12 @@ namespace NEMath
          **/
         inline S_LargeInteger( const NEMath::S_LargeInteger & src );
 
+        /**
+         * \brief   Move constructor.
+         * \param   src     The source to move data.
+         **/
+        inline S_LargeInteger( NEMath::S_LargeInteger && src ) noexcept;
+
     //////////////////////////////////////////////////////////////////////////
     // Operators
     //////////////////////////////////////////////////////////////////////////
@@ -155,13 +164,18 @@ namespace NEMath
          *          taken from given Large Number source.
          * \param   src     The source of Large Number to take high and low 32-bit values.
          **/
-        const NEMath::S_LargeInteger & operator = ( const NEMath::S_LargeInteger & src );
+        NEMath::S_LargeInteger & operator = ( const NEMath::S_LargeInteger & src );
+        /**
+         * \brief   Move operator, assigns high and low 32-bit values from given source.
+         * \param   src     The source of Large Number to take high and low 32-bit values.
+         **/
+        NEMath::S_LargeInteger & operator = ( NEMath::S_LargeInteger && src ) noexcept;
         /**
          * \brief   Assigning operator, assigns high and low 32-bit values
          *          taken from given 64-bit integer source.
          * \param   src     The source of 64-bit integers value to take high and low 32-bit values.
          **/
-        inline const NEMath::S_LargeInteger & operator = ( uint64_t src );
+        inline NEMath::S_LargeInteger & operator = ( uint64_t src );
 
         /**
          * \brief   Sums 2 Large Number values. 2 values will be added as 2 64-bit integer
@@ -425,9 +439,10 @@ namespace NEMath
      *          is that it works only for digits.
      * \param   number  The number to get absolute value
      * \return  Returns absolute value of digit.
+     * \tparam  Any primitive type
      **/
-    template<typename DigitType>
-    inline DigitType makeAbsolute( DigitType number );
+    template<typename Digit>
+    inline Digit makeAbsolute( Digit number );
 
 }
 //////////////////////////////////////////////////////////////////////////
@@ -458,10 +473,10 @@ inline NEMath::eDigitSign NEMath::getSign( const Type & val )
     return static_cast<eDigitSign>(MACRO_SIGN_OF(val));
 }
 
-template<typename DigitType>
-inline DigitType NEMath::makeAbsolute( DigitType number )
+template<typename Digit>
+inline Digit NEMath::makeAbsolute( Digit number )
 {
-    DigitType mask = number >> (sizeof( DigitType ) * 8 - 1);
+    Digit mask = number >> (sizeof( Digit ) * 8 - 1);
     return ((number + mask) ^ mask);
 }
 
@@ -469,11 +484,11 @@ inline char NEMath::getChar(NEMath::eDigitSign sign)
 {
     switch (sign)
     {
-    case NEMath::SignNegative:
+    case NEMath::eDigitSign::SignNegative:
         return '-';
-    case NEMath::SignPositive:
+    case NEMath::eDigitSign::SignPositive:
         return '+';
-    case NEMath::SignUndefined: // fall through
+    case NEMath::eDigitSign::SignUndefined: // fall through
     default:
         return '\0';
     }
@@ -485,26 +500,35 @@ inline char NEMath::getChar(NEMath::eDigitSign sign)
 
 inline NEMath::S_LargeInteger::S_LargeInteger( void )
     : hiBits ( 0 ), loBits ( 0 ) 
-{   ;   }
+{
+}
 
 inline NEMath::S_LargeInteger::S_LargeInteger( uint32_t hi, uint32_t lo )
     : hiBits ( hi ), loBits ( lo ) 
-{   ;   }
+{
+}
 
 inline NEMath::S_LargeInteger::S_LargeInteger( uint64_t num )
     : hiBits ( MACRO_64_HI_BYTE32(num) ), loBits ( MACRO_64_LO_BYTE32(num) ) 
-{   ;   }
+{
+}
 
 inline NEMath::S_LargeInteger::S_LargeInteger( const NEMath::S_LargeInteger & src )
     : hiBits ( src.hiBits ), loBits ( src.loBits ) 
-{   ;   }
+{
+}
+
+inline NEMath::S_LargeInteger::S_LargeInteger( NEMath::S_LargeInteger && src ) noexcept
+    : hiBits ( src.hiBits ), loBits ( src.loBits )
+{
+}
 
 inline NEMath::S_LargeInteger::operator uint64_t ( void ) const
 {
     return MACRO_MAKE_64(hiBits, loBits);
 }
 
-inline const NEMath::S_LargeInteger & NEMath::sLargeInteger::operator = ( const uint64_t src )
+inline NEMath::S_LargeInteger & NEMath::sLargeInteger::operator = ( const uint64_t src )
 {
     hiBits  = MACRO_64_HI_BYTE32(src); loBits  = MACRO_64_LO_BYTE32(src); return (*this);
 }
@@ -573,5 +597,3 @@ inline bool NEMath::sLargeInteger::operator != ( uint64_t other ) const
 // NEMath::sLargeInteger declare global operators to make streamable
 /************************************************************************/
 IMPLEMENT_STREAMABLE(NEMath::S_LargeInteger)
-
-#endif  // AREG_BASE_NEMATH_HPP

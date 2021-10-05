@@ -1,9 +1,16 @@
-#ifndef AREG_COMPONENT_WORKERTHREAD_HPP
-#define AREG_COMPONENT_WORKERTHREAD_HPP
+#pragma once
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/component/WorkerThread.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, Worker Thread class.
  *              Use to create component related Worker Thread .
  *
@@ -83,7 +90,7 @@ public:
     /**
      * \brief   Destructor
      **/
-    virtual ~WorkerThread( void );
+    virtual ~WorkerThread( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes
@@ -113,7 +120,7 @@ public:
      *          destroyed.
      * \param   eventElem   The event object to post.
      **/
-    virtual bool postEvent( Event & eventElem );
+    virtual bool postEvent( Event & eventElem ) override;
 
 protected:
 /************************************************************************/
@@ -126,7 +133,7 @@ protected:
      *          Override if logic should be changed.
      * \return	Returns true if Exit Event is signaled.
      **/
-    virtual bool runDispatcher( void );
+    virtual bool runDispatcher( void ) override;
 
 /************************************************************************/
 // Dispatcher Thread overrides
@@ -139,9 +146,9 @@ protected:
      *          in worker thread list of binded component. 
      * \param   whichClass  The runtime class ID to search registered component
      * \return  If found, returns valid pointer of dispatching thread. 
-     *          Otherwise returns NULL
+     *          Otherwise returns nullptr
      **/
-    virtual DispatcherThread * getEventConsumerThread( const RuntimeClassID & whichClass );
+    virtual DispatcherThread * getEventConsumerThread( const RuntimeClassID & whichClass ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -170,9 +177,8 @@ private:
 // Forbidden calls.
 //////////////////////////////////////////////////////////////////////////
 private:
-    WorkerThread( void );
-    WorkerThread(const WorkerThread & /*src*/ );
-    const WorkerThread& operator = (const WorkerThread & /*src*/ );
+    WorkerThread( void ) = delete;
+    DECLARE_NOCOPY_NOMOVE( WorkerThread );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -188,5 +194,3 @@ inline WorkerThread& WorkerThread::self( void )
 {
     return (*this);
 }
-
-#endif  // AREG_COMPONENT_WORKERTHREAD_HPP

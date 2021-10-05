@@ -1,9 +1,16 @@
-#ifndef AREG_COMPONENT_PRIVATE_CLIENTINFO_HPP
-#define AREG_COMPONENT_PRIVATE_CLIENTINFO_HPP
+#pragma once
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/component/private/ClientInfo.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, Client Info class declaration
  *
  ************************************************************************/
@@ -47,16 +54,26 @@ public:
      * \brief   Initializes object and sets client Proxy address value.
      * \param   client  The Proxy address of the client
      **/
-    ClientInfo( const ProxyAddress & client );
+    explicit ClientInfo( const ProxyAddress & client );
     /**
-     * \brief   Initializes data by copying values from given source.
+     * \brief   Initializes object and sets client Proxy address value.
+     * \param   client  The Proxy address of the client
+     **/
+    explicit ClientInfo( ProxyAddress && client ) noexcept;
+    /**
+     * \brief   Copies values from given source.
      * \param   src     The source of data to copy.
      **/
     ClientInfo( const ClientInfo & src );
     /**
+     * \brief   Moves values from given source.
+     * \param   src     The source of data to move.
+     **/
+    ClientInfo( ClientInfo && src ) noexcept;
+    /**
      * \brief   Destructor
      **/
-    virtual ~ClientInfo( void );
+    ~ClientInfo( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
@@ -66,13 +83,24 @@ public:
      * \brief   Copies Client Info data from given source.
      * \param   src     The source of Client Info to get data.
      **/
-    const ClientInfo & operator = ( const ClientInfo & src );
+    ClientInfo & operator = ( const ClientInfo & src );
+    /**
+     * \brief   Moves Client Info data from given source.
+     * \param   src     The source of Client Info to get data.
+     **/
+    ClientInfo & operator = ( ClientInfo && src ) noexcept;
     /**
      * \brief   Copies passed client Proxy address, if Service Info
      *          object is valid, it sets client in Waiting state
      * \param   client  The source of proxy address to extract data.
      **/
-    const ClientInfo & operator = ( const ProxyAddress & client );
+    ClientInfo & operator = ( const ProxyAddress & client );
+    /**
+     * \brief   Moves passed client Proxy address, if Service Info
+     *          object is valid, it sets client in Waiting state
+     * \param   client  The source of proxy address to extract data.
+     **/
+    ClientInfo & operator = ( ProxyAddress && client ) noexcept;
 
     /**
      * \brief   Checks equality of 2 Client Info objects. 2 objects are equal if
@@ -104,7 +132,7 @@ public:
     /**
      * \brief   Operator to covert client info to 32-bit unsigned integer.
      **/
-    operator unsigned int ( void ) const;
+    explicit operator unsigned int ( void ) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations
@@ -183,12 +211,10 @@ inline const ProxyAddress & ClientInfo::getAddress( void ) const
 
 inline bool ClientInfo::isWaitingConnection( void ) const
 {
-    return (mClientState == NEService::ServicePending);
+    return (mClientState == NEService::eServiceConnection::ServicePending);
 }
 
 inline bool ClientInfo::isConnected( void ) const
 {
-    return (mClientState == NEService::ServiceConnected);
+    return (mClientState == NEService::eServiceConnection::ServiceConnected);
 }
-
-#endif  // AREG_COMPONENT_PRIVATE_CLIENTINFO_HPP

@@ -3,14 +3,14 @@
 //////////////////////////////////////////////////////////////////////////
 /************************************************************************
  * (c) copyright    2021
+ *
+ * Generated at     30.09.2021  01:22:16 GMT+02:00 
  *                  Create by AREG SDK code generator tool from source DirectMessager.
- * Generated at     04.07.2021  04:30:03 GMT+02:00 
- ************************************************************************/
-
-/************************************************************************
- * \file            generated/private/DirectMessagerStub.cpp
+ *
+ * \file            generated/DirectMessagerStub.hpp
  * \ingroup         DirectMessager Service Interface
- * \brief           This is an automatic generated code of DirectMessager Service Interface Stub class implementation.
+ * \brief           This is an automatic generated code of DirectMessager
+ *                  Service Interface Stub class implementation.
  ************************************************************************/
 
 /************************************************************************
@@ -34,15 +34,9 @@ DirectMessagerStub::DirectMessagerStub( Component & masterComp )
     : StubBase    ( masterComp, NEDirectMessager::getInterfaceData() )
     
     , mChatParticipants       (  )
-    , mChatParticipantsState  ( NEService::DATA_UNAVAILABLE )
+    , mChatParticipantsState  ( NEService::eDataStateType::DataIsUnavailable )
     
 {
-    ; // do nothing
-}
-
-DirectMessagerStub::~DirectMessagerStub( void )
-{
-    ; // do nothing
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -58,10 +52,10 @@ void DirectMessagerStub::unlockAllRequests( void )
 // Overrides
 //////////////////////////////////////////////////////////////////////////
 
-DEF_TRACE_SCOPE(GENERATED_DirectMessagerStub_startupServiceInterface);
+DEF_TRACE_SCOPE(generated_DirectMessagerStub_startupServiceInterface);
 void DirectMessagerStub::startupServiceInterface( Component & holder )
 {
-    TRACE_SCOPE(GENERATED_DirectMessagerStub_startupServiceInterface);
+    TRACE_SCOPE(generated_DirectMessagerStub_startupServiceInterface);
     
     DirectMessagerRequestEvent::addListener( static_cast<IEEventConsumer &>(self()), Thread::getCurrentThreadName() );
     DirectMessagerNotifyRequestEvent::addListener( static_cast<IEEventConsumer &>(self()), Thread::getCurrentThreadName() );
@@ -70,10 +64,10 @@ void DirectMessagerStub::startupServiceInterface( Component & holder )
     TRACE_DBG("The Stub Service [ %s ] of component with role name [ %s ] has been started and is available ...", mAddress.getServiceName().getString(), mAddress.getRoleName().getString());
 }
 
-DEF_TRACE_SCOPE(GENERATED_DirectMessagerStub_shutdownServiceIntrface);
+DEF_TRACE_SCOPE(generated_DirectMessagerStub_shutdownServiceIntrface);
 void DirectMessagerStub::shutdownServiceIntrface( Component & holder )
 {
-    TRACE_SCOPE(GENERATED_DirectMessagerStub_shutdownServiceIntrface);
+    TRACE_SCOPE(generated_DirectMessagerStub_shutdownServiceIntrface);
     TRACE_DBG("The Stub Service [ %s ] of component with role name [ %s ] is shutting down and not available anymore ...", mAddress.getServiceName().getString(), mAddress.getRoleName().getString());
     
     DirectMessagerRequestEvent::removeListener( static_cast<IEEventConsumer &>(self()), Thread::getCurrentThreadName() );
@@ -96,23 +90,23 @@ RemoteNotifyRequestEvent * DirectMessagerStub::createRemoteNotifyRequestEvent( c
     return static_cast<RemoteNotifyRequestEvent *>( DEBUG_NEW DirectMessagerNotifyRequestEvent(stream) );
 }
 
-DEF_TRACE_SCOPE(GENERATED_DirectMessagerStub_sendNotification);
+DEF_TRACE_SCOPE(generated_DirectMessagerStub_sendNotification);
 void DirectMessagerStub::sendNotification( unsigned int msgId )
 {
-    EventDataStream args(EventDataStream::EventDataExternal);
+    EventDataStream args(EventDataStream::eEventData::EventDataExternal);
     IEOutStream & stream = args.getStreamForWrite();
 
     switch ( static_cast<NEDirectMessager::eMessageIDs>(msgId) )
     {
-    case NEDirectMessager::MSG_ID_ChatParticipants:
-        mChatParticipantsState = NEService::DATA_OK;
+    case NEDirectMessager::eMessageIDs::MsgId_ChatParticipants:
+        mChatParticipantsState = NEService::eDataStateType::DataIsOK;
         stream << mChatParticipants;
-        sendUpdateEvent(msgId, args, NEService::RESULT_DATA_OK);
+        sendUpdateEvent(msgId, args, NEService::eResultType::DataOK);
         break;
 
     default:
         {
-            TRACE_SCOPE(GENERATED_DirectMessagerStub_sendNotification);
+            TRACE_SCOPE(generated_DirectMessagerStub_sendNotification);
             TRACE_ERR("Unexpected attribute ID [ %d ] requested to send by Stub [ %s ].", msgId, StubAddress::convAddressToPath(mAddress).getString());
             ASSERT(false);
         }
@@ -120,46 +114,46 @@ void DirectMessagerStub::sendNotification( unsigned int msgId )
     }
 }
 
-DEF_TRACE_SCOPE(GENERATED_DirectMessagerStub_errorRequest);
+DEF_TRACE_SCOPE(generated_DirectMessagerStub_errorRequest);
 void DirectMessagerStub::errorRequest( unsigned int msgId, bool msgCancel )
 {
-    NEService::eResultType result = NEService::RESULT_NOT_PROCESSED;
-    unsigned int listenerId = static_cast<unsigned int>(msgId);
+    NEService::eResultType result = NEService::eResultType::NotProcessed;
+    msg_id listenerId = msgId;
     
     switch ( static_cast<NEDirectMessager::eMessageIDs>(msgId) )
     {
 /************************************************************************
  * Attribute errors
  ************************************************************************/
-    case NEDirectMessager::MSG_ID_ChatParticipants:
-        mChatParticipantsState = NEService::DATA_INVALID;
-        result = NEService::RESULT_DATA_INVALID;
+    case NEDirectMessager::eMessageIDs::MsgId_ChatParticipants:
+        mChatParticipantsState = NEService::eDataStateType::DataIsInvalid;
+        result = NEService::eResultType::DataInvalid;
         break;
 
 /************************************************************************
  * Response errors
  ************************************************************************/
-    case NEDirectMessager::MSG_ID_responseChatJoin:
+    case NEDirectMessager::eMessageIDs::MsgId_responseChatJoin:
 /************************************************************************
  * Broadcast errors
  ************************************************************************/
-    case NEDirectMessager::MSG_ID_broadcastMessageSent:
-    case NEDirectMessager::MSG_ID_broadcastMessageTyped:
-    case NEDirectMessager::MSG_ID_broadcastParticipantJoined:
-    case NEDirectMessager::MSG_ID_broadcastParticipantLeft:
-    case NEDirectMessager::MSG_ID_broadcastChatClosed:
-        result = NEService::RESULT_INVALID;
+    case NEDirectMessager::eMessageIDs::MsgId_broadcastMessageSent:
+    case NEDirectMessager::eMessageIDs::MsgId_broadcastMessageTyped:
+    case NEDirectMessager::eMessageIDs::MsgId_broadcastParticipantJoined:
+    case NEDirectMessager::eMessageIDs::MsgId_broadcastParticipantLeft:
+    case NEDirectMessager::eMessageIDs::MsgId_broadcastChatClosed:
+        result = NEService::eResultType::DataInvalid;
         break;
 
 /************************************************************************
  * Request errors
  ************************************************************************/
-    case NEDirectMessager::MSG_ID_requestChatJoin:
-    case NEDirectMessager::MSG_ID_requestMessageSend:
-    case NEDirectMessager::MSG_ID_requestMessageType:
-    case NEDirectMessager::MSG_ID_requestChatLeave:
-        listenerId = NEDirectMessager::getResponseId(static_cast< NEDirectMessager::eMessageIDs>(msgId));
-        result = msgCancel ? NEService::RESULT_REQUEST_CANCELED : NEService::RESULT_REQUEST_ERROR;
+    case NEDirectMessager::eMessageIDs::MsgId_requestChatJoin:
+    case NEDirectMessager::eMessageIDs::MsgId_requestMessageSend:
+    case NEDirectMessager::eMessageIDs::MsgId_requestMessageType:
+    case NEDirectMessager::eMessageIDs::MsgId_requestChatLeave:
+        listenerId = static_cast<msg_id>(NEDirectMessager::getResponseId(static_cast< NEDirectMessager::eMessageIDs>(msgId)));
+        result = msgCancel ? NEService::eResultType::RequestCanceled : NEService::eResultType::RequestError;
         break;
 
     default:
@@ -171,7 +165,7 @@ void DirectMessagerStub::errorRequest( unsigned int msgId, bool msgCancel )
     StubBase::StubListenerList listeners;
     if ( findListeners(listenerId, listeners) > 0 )
     {
-        TRACE_SCOPE(GENERATED_DirectMessagerStub_errorRequest);
+        TRACE_SCOPE(generated_DirectMessagerStub_errorRequest);
         TRACE_WARN(" >>> The message [ %s ] of Stub [ %s ] is responding with error [ %s ], sending message [ %s ] to [ %d ] targets... <<<"
                         , NEDirectMessager::getString( static_cast<NEDirectMessager::eMessageIDs>(msgId) )
                         , StubAddress::convAddressToPath(mAddress).getString()
@@ -189,10 +183,10 @@ void DirectMessagerStub::errorRequest( unsigned int msgId, bool msgCancel )
 
 void DirectMessagerStub::setChatParticipants( const NEDirectMessager::ListParticipants & newValue )
 {
-    if ( (mChatParticipantsState != NEService::DATA_OK) || (mChatParticipants != newValue) )
+    if ( (mChatParticipantsState != NEService::eDataStateType::DataIsOK) || (mChatParticipants != newValue) )
     {
         mChatParticipants = newValue;
-        sendNotification( NEDirectMessager::MSG_ID_ChatParticipants );
+        sendNotification( static_cast<msg_id>(NEDirectMessager::eMessageIDs::MsgId_ChatParticipants) );
     }
 }
 
@@ -202,14 +196,14 @@ void DirectMessagerStub::setChatParticipants( const NEDirectMessager::ListPartic
 
 void DirectMessagerStub::responseChatJoin( bool succeed, const NEDirectMessager::ListParticipants & listParticipant, const DateTime & timeConnect, const DateTime & timeConnected )
 {
-    static const NEDirectMessager::eMessageIDs msgId = NEDirectMessager::MSG_ID_responseChatJoin;
-    EventDataStream args(EventDataStream::EventDataExternal);
+    static const NEDirectMessager::eMessageIDs msgId = NEDirectMessager::eMessageIDs::MsgId_responseChatJoin;
+    EventDataStream args(EventDataStream::eEventData::EventDataExternal);
     IEOutStream & stream = args.getStreamForWrite();
     stream << succeed;
     stream << listParticipant;
     stream << timeConnect;
     stream << timeConnected;
-    sendResponseEvent( msgId, args );
+    sendResponseEvent( static_cast<msg_id>(msgId), args );
 }
 
 /************************************************************************
@@ -218,72 +212,72 @@ void DirectMessagerStub::responseChatJoin( bool succeed, const NEDirectMessager:
 
 void DirectMessagerStub::broadcastMessageSent( const NEDirectMessager::sParticipant & sender, const String & msgText, const DateTime & timeSent )
 {
-    static const NEDirectMessager::eMessageIDs msgId = NEDirectMessager::MSG_ID_broadcastMessageSent;
-    EventDataStream args(EventDataStream::EventDataExternal);
+    static const NEDirectMessager::eMessageIDs msgId = NEDirectMessager::eMessageIDs::MsgId_broadcastMessageSent;
+    EventDataStream args(EventDataStream::eEventData::EventDataExternal);
     IEOutStream & stream = args.getStreamForWrite();
     stream << sender;
     stream << msgText;
     stream << timeSent;
-    sendResponseEvent( msgId, args );
+    sendResponseEvent( static_cast<msg_id>(msgId), args );
 }
 
 void DirectMessagerStub::broadcastMessageTyped( const NEDirectMessager::sParticipant & participant, const String & msgText )
 {
-    static const NEDirectMessager::eMessageIDs msgId = NEDirectMessager::MSG_ID_broadcastMessageTyped;
-    EventDataStream args(EventDataStream::EventDataExternal);
+    static const NEDirectMessager::eMessageIDs msgId = NEDirectMessager::eMessageIDs::MsgId_broadcastMessageTyped;
+    EventDataStream args(EventDataStream::eEventData::EventDataExternal);
     IEOutStream & stream = args.getStreamForWrite();
     stream << participant;
     stream << msgText;
-    sendResponseEvent( msgId, args );
+    sendResponseEvent( static_cast<msg_id>(msgId), args );
 }
 
 void DirectMessagerStub::broadcastParticipantJoined( const NEDirectMessager::sParticipant & participant, const DateTime & timeJoined )
 {
-    static const NEDirectMessager::eMessageIDs msgId = NEDirectMessager::MSG_ID_broadcastParticipantJoined;
-    EventDataStream args(EventDataStream::EventDataExternal);
+    static const NEDirectMessager::eMessageIDs msgId = NEDirectMessager::eMessageIDs::MsgId_broadcastParticipantJoined;
+    EventDataStream args(EventDataStream::eEventData::EventDataExternal);
     IEOutStream & stream = args.getStreamForWrite();
     stream << participant;
     stream << timeJoined;
-    sendResponseEvent( msgId, args );
+    sendResponseEvent( static_cast<msg_id>(msgId), args );
 }
 
 void DirectMessagerStub::broadcastParticipantLeft( const NEDirectMessager::sParticipant & participant, const DateTime & timeLeft )
 {
-    static const NEDirectMessager::eMessageIDs msgId = NEDirectMessager::MSG_ID_broadcastParticipantLeft;
-    EventDataStream args(EventDataStream::EventDataExternal);
+    static const NEDirectMessager::eMessageIDs msgId = NEDirectMessager::eMessageIDs::MsgId_broadcastParticipantLeft;
+    EventDataStream args(EventDataStream::eEventData::EventDataExternal);
     IEOutStream & stream = args.getStreamForWrite();
     stream << participant;
     stream << timeLeft;
-    sendResponseEvent( msgId, args );
+    sendResponseEvent( static_cast<msg_id>(msgId), args );
 }
 
 void DirectMessagerStub::broadcastChatClosed( void )
 {
-    static const NEDirectMessager::eMessageIDs msgId = NEDirectMessager::MSG_ID_broadcastChatClosed;
-    sendResponseEvent( msgId, EventDataStream::EmptyData );
+    static const NEDirectMessager::eMessageIDs msgId = NEDirectMessager::eMessageIDs::MsgId_broadcastChatClosed;
+    sendResponseEvent( static_cast<msg_id>(msgId), EventDataStream::EmptyData );
 }
 
 /************************************************************************
  * Process messages
  ************************************************************************/
 
-DEF_TRACE_SCOPE(GENERATED_DirectMessagerStub_processRequestEvent);
+DEF_TRACE_SCOPE(generated_DirectMessagerStub_processRequestEvent);
 void DirectMessagerStub::processRequestEvent( ServiceRequestEvent & eventElem )
 {
     ASSERT( NEService::isRequestId(eventElem.getRequestId()) );
     DirectMessagerRequestEvent * reqEvent = RUNTIME_CAST(&eventElem, DirectMessagerRequestEvent);
 
-    if ( (reqEvent != static_cast<DirectMessagerRequestEvent *>(NULL)) && (reqEvent->getRequestType() == NEService::REQUEST_CALL) )
+    if ( (reqEvent != nullptr) && (reqEvent->getRequestType() == NEService::eRequestType::CallFunction) )
     {
-        unsigned int reqId          = reqEvent->getRequestId();
+        msg_id reqId = static_cast<msg_id>(reqEvent->getRequestId());
         const IEInStream & stream  = static_cast<const DirectMessagerRequestEvent *>(reqEvent)->getData().getReadStream();
         StubBase::Listener listener( reqId, 0, reqEvent->getEventSource() );
         NEDirectMessager::eMessageIDs respId = NEDirectMessager::getResponseId(static_cast<NEDirectMessager::eMessageIDs>(reqId));
 
         switch ( static_cast<NEDirectMessager::eMessageIDs>(reqId) )
         {
-        case NEDirectMessager::MSG_ID_requestChatJoin:
-            if ( canExecuteRequest(listener, respId, reqEvent->getSequenceNumber()) )
+        case NEDirectMessager::eMessageIDs::MsgId_requestChatJoin:
+            if ( canExecuteRequest(listener, static_cast<msg_id>(respId), reqEvent->getSequenceNumber()) )
             {
                 NEDirectMessager::sParticipant  participant;
                 DateTime                        timeConnect;
@@ -293,7 +287,7 @@ void DirectMessagerStub::processRequestEvent( ServiceRequestEvent & eventElem )
             }
             break;
             
-        case NEDirectMessager::MSG_ID_requestMessageSend:
+        case NEDirectMessager::eMessageIDs::MsgId_requestMessageSend:
             if ( true )
             {
                 NEDirectMessager::sParticipant  sender;
@@ -306,7 +300,7 @@ void DirectMessagerStub::processRequestEvent( ServiceRequestEvent & eventElem )
             }
             break;
             
-        case NEDirectMessager::MSG_ID_requestMessageType:
+        case NEDirectMessager::eMessageIDs::MsgId_requestMessageType:
             if ( true )
             {
                 NEDirectMessager::sParticipant  participant;
@@ -317,7 +311,7 @@ void DirectMessagerStub::processRequestEvent( ServiceRequestEvent & eventElem )
             }
             break;
             
-        case NEDirectMessager::MSG_ID_requestChatLeave:
+        case NEDirectMessager::eMessageIDs::MsgId_requestChatLeave:
             if ( true )
             {
                 NEDirectMessager::sParticipant  participant;
@@ -330,7 +324,7 @@ void DirectMessagerStub::processRequestEvent( ServiceRequestEvent & eventElem )
             
         default:
             {
-                TRACE_SCOPE(GENERATED_DirectMessagerStub_processRequestEvent);
+                TRACE_SCOPE(generated_DirectMessagerStub_processRequestEvent);
                 TRACE_ERR("Unexpected request ID [ %d ] to process in Stub [ %s ]!", reqId, StubAddress::convAddressToPath(mAddress).getString());
                 ASSERT(false);
             }
@@ -341,11 +335,11 @@ void DirectMessagerStub::processRequestEvent( ServiceRequestEvent & eventElem )
     cancelCurrentRequest();
 }
 
-DEF_TRACE_SCOPE(GENERATED_DirectMessagerStub_processAttributeEvent);
+DEF_TRACE_SCOPE(generated_DirectMessagerStub_processAttributeEvent);
 void DirectMessagerStub::processAttributeEvent( ServiceRequestEvent & eventElem )
 {
     const NEService::eRequestType reqType = eventElem.getRequestType();
-    if (reqType == NEService::REQUEST_REMOVE_ALL_NOTIFY)
+    if (reqType == NEService::eRequestType::RemoveAllNotify)
     {
         IntegerArray removedIds;
         StubBase::clearAllListeners(eventElem.getEventSource(), removedIds);
@@ -353,52 +347,52 @@ void DirectMessagerStub::processAttributeEvent( ServiceRequestEvent & eventElem 
     else
     {
         NEDirectMessager::eMessageIDs updId  = static_cast<NEDirectMessager::eMessageIDs>(eventElem.getRequestId());
-        if (reqType == NEService::REQUEST_STOP_NOTIFY)
+        if (reqType == NEService::eRequestType::StopNotify)
         {
-            removeNotificationListener( static_cast<unsigned int>(updId), eventElem.getEventSource() );
+            removeNotificationListener( static_cast<msg_id>(updId), eventElem.getEventSource() );
         }
-        else if (reqType == NEService::REQUEST_START_NOTIFY)
+        else if (reqType == NEService::eRequestType::StartNotify)
         {
 #ifdef  _DEBUG
-            if (addNotificationListener( static_cast<unsigned int>(updId), eventElem.getEventSource() ) == false )
+            if (addNotificationListener( static_cast<msg_id>(updId), eventElem.getEventSource() ) == false )
             {
-                TRACE_SCOPE(GENERATED_DirectMessagerStub_processAttributeEvent);
+                TRACE_SCOPE(generated_DirectMessagerStub_processAttributeEvent);
                 TRACE_WARN("The notification request of message ID [ %s ] of sources [ %s ] is already registered. Ignoring start notification registration request."
                             , NEDirectMessager::getString(updId)
                             , ProxyAddress::convAddressToPath(eventElem.getEventSource()).getString());
             }
 #else   // _DEBUG
-            addNotificationListener( static_cast<unsigned int>(updId), eventElem.getEventSource() );
+            addNotificationListener( static_cast<msg_id>(updId), eventElem.getEventSource() );
 #endif  // _DEBUG
-            EventDataStream args(EventDataStream::EventDataExternal);
-            NEService::eResultType validUpdate = NEService::RESULT_DATA_OK;
+            EventDataStream args(EventDataStream::eEventData::EventDataExternal);
+            NEService::eResultType validUpdate = NEService::eResultType::DataOK;
             IEOutStream & stream               = args.getStreamForWrite();
 
             switch (updId)
             {
-            case NEDirectMessager::MSG_ID_ChatParticipants:
-                if ( mChatParticipantsState == NEService::DATA_OK )
+            case NEDirectMessager::eMessageIDs::MsgId_ChatParticipants:
+                if ( mChatParticipantsState == NEService::eDataStateType::DataIsOK )
                     stream << mChatParticipants;
                 else
-                    validUpdate = NEService::RESULT_DATA_INVALID;
+                    validUpdate = NEService::eResultType::DataInvalid;
                 break;
 
             default:
 #ifdef  _DEBUG
-                if ( NEService::isResponseId(static_cast<unsigned int>(updId)) == false )
+                if ( NEService::isResponseId(static_cast<msg_id>(updId)) == false )
                 {
-                    TRACE_SCOPE(GENERATED_DirectMessagerStub_processAttributeEvent);
+                    TRACE_SCOPE(generated_DirectMessagerStub_processAttributeEvent);
                     TRACE_ERR("Unexpected notification request of attribute ID [ %d ] received in Stub [ %s ]!", updId, StubAddress::convAddressToPath(getAddress()).getString());
                     ASSERT(false);
                 }
 #endif // _DEBUG
-                validUpdate = NEService::RESULT_DATA_INVALID;
-                updId       = NEDirectMessager::MSG_ID_NO_PROCEED;
+                validUpdate = NEService::eResultType::DataInvalid;
+                updId       = NEDirectMessager::eMessageIDs::MsgId_NotProcessed;
                 break;
             }
 
-            if (updId != NEDirectMessager::MSG_ID_NO_PROCEED)
-                sendUpdateEvent( static_cast<unsigned int>(updId), args, validUpdate );
+            if (updId != NEDirectMessager::eMessageIDs::MsgId_NotProcessed)
+                sendUpdateEvent( static_cast<msg_id>(updId), args, validUpdate );
         }
     }
 }

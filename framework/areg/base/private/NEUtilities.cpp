@@ -1,17 +1,27 @@
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/base/private/NEUtilities.cpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform Switches
  *
  ************************************************************************/
 
 #include "areg/base/NEUtilities.hpp"
-#include "areg/base/ESynchObjects.hpp"
+#include "areg/base/SynchObjects.hpp"
 #include "areg/base/String.hpp"
 #include "areg/base/WideString.hpp"
+#include "areg/base/NECommon.hpp"
 
 #include <time.h>
+#include <string>
 
 
 /************************************************************************/
@@ -24,15 +34,15 @@ namespace NEUtilities
 
     NEMath::eCompare compareLargeIntegers( const NEMath::uLargeInteger & lsh, const NEMath::uLargeInteger & rhs )
     {
-        NEMath::eCompare result = NEMath::CompEqual;
+        NEMath::eCompare result = NEMath::eCompare::Equal;
         if ( lsh.u.highPart < rhs.u.highPart )
-            result = NEMath::CompSmaller;
+            result = NEMath::eCompare::Smaller;
         else if ( lsh.u.highPart > rhs.u.highPart )
-            result = NEMath::CompGreater;
+            result = NEMath::eCompare::Bigger;
         else if ( lsh.u.lowPart < rhs.u.lowPart )
-            result = NEMath::CompSmaller;
+            result = NEMath::eCompare::Smaller;
         else if ( lsh.u.lowPart > rhs.u.lowPart )
-            result = NEMath::CompGreater;
+            result = NEMath::eCompare::Bigger;
 
         return result;
     }
@@ -65,7 +75,7 @@ AREG_API void NEUtilities::convToTm(const sSystemTime & sysTime, tm & out_time)
     }
     else
     {
-        NEMemory::zeroData<tm>(out_time);
+        NEMemory::zeroElement<tm>(out_time);
     }
 }
 
@@ -76,7 +86,7 @@ AREG_API void NEUtilities::makeTmLocal( struct tm & IN OUT utcTime )
     localtime_s( &utcTime, &_timer );
 #else   // _WIN32
     struct tm * temp = localtime( &_timer );
-    if ( temp != NULL )
+    if ( temp != nullptr )
         NEMemory::memCopy( &utcTime, static_cast<unsigned int>(sizeof(tm)), temp, static_cast<unsigned int>(sizeof(tm)) );
 #endif  // _WIN32
 }
@@ -132,20 +142,20 @@ AREG_API uint64_t NEUtilities::convToTime( const NEUtilities::sFileTime & fileTi
 
 AREG_API String NEUtilities::createComponentItemName( const char * componentName, const char* itemName )
 {
-    String result = componentName != NULL ? componentName : "";
-    if ((result.isEmpty() == false) && (NEString::isEmpty<char>(itemName) == false))
+    std::string result = componentName != nullptr ? componentName : "";
+    if ((result.empty() == false) && (NEString::isEmpty<char>(itemName) == false))
     {
-        result += NEUtilities::COMPONENT_ITEM_SEPARATOR;
+        result += NECommon::COMPONENT_ITEM_SEPARATOR;
         result += itemName;
 
-        if (result.getLength() > NEUtilities::MAX_GENERATED_NAME_BUFFER_SIZE)
-            result = result.substring(0, NEUtilities::MAX_GENERATED_NAME_BUFFER_SIZE);
+        if (result.length() > NEUtilities::MAX_GENERATED_NAME_BUFFER_SIZE)
+            result = result.substr(0, NEUtilities::MAX_GENERATED_NAME_BUFFER_SIZE);
     }
     else
     {
         result    = "";
     }
-    return result;
+    return String(result.c_str());
 }
 
 AREG_API String NEUtilities::generateName( const char* prefix )
@@ -157,7 +167,7 @@ AREG_API String NEUtilities::generateName( const char* prefix )
 
 AREG_API const char * NEUtilities::generateName(const char * prefix, char * out_buffer, int length)
 {
-    return NEUtilities::generateName(prefix, out_buffer, length, NEUtilities::DEFAULT_SPECIAL_CHAR);
+    return NEUtilities::generateName(prefix, out_buffer, length, NECommon::DEFAULT_SPECIAL_CHAR.data());
 }
 
 AREG_API const char * NEUtilities::generateName(const char * prefix, char * out_buffer, int length, const char * specChar)
@@ -167,6 +177,7 @@ AREG_API const char * NEUtilities::generateName(const char * prefix, char * out_
 
 AREG_API unsigned int NEUtilities::generateUniqueId( void )
 {
-    static InterlockedValue _id(static_cast<unsigned int>(0));
-    return _id.increment();
+    static std::atomic_uint _id(0u);
+    static_assert( std::atomic_uint::is_always_lock_free );
+    return ++ _id;
 }

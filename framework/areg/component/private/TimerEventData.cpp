@@ -1,7 +1,15 @@
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/component/private/TimerEventData.cpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, Timer Event Data class.
  *
  ************************************************************************/
@@ -22,20 +30,20 @@ IMPLEMENT_RUNTIME(TimerEvent, TimerEventBase)
 // TimerEvent class, constructor / destructor
 //////////////////////////////////////////////////////////////////////////
 TimerEvent::TimerEvent( const TimerEventData & data )
-    : TimerEventBase(Event::EventCustomExternal, data)
+    : TimerEventBase(Event::eEventType::EventCustomExternal, data)
 {
-    if (mData.mTimer != NULL)
+    if (mData.mTimer != nullptr)
         mData.mTimer->queueTimer();
 }
 
 TimerEvent::TimerEvent( Timer &timer )
-    : TimerEventBase(Event::EventCustomExternal, TimerEventData(timer))
+    : TimerEventBase(Event::eEventType::EventCustomExternal, TimerEventData(timer))
 {
     timer.queueTimer();
 }
 
 TimerEvent::TimerEvent(Timer & timer, DispatcherThread & target)
-    : TimerEventBase(Event::EventCustomExternal, TimerEventData(timer))
+    : TimerEventBase(Event::eEventType::EventCustomExternal, TimerEventData(timer))
 {
     ASSERT(target.isRunning());
 
@@ -46,15 +54,15 @@ TimerEvent::TimerEvent(Timer & timer, DispatcherThread & target)
 
 TimerEvent::~TimerEvent( void )
 {
-    if (mData.mTimer != NULL)
+    if (mData.mTimer != nullptr)
         mData.mTimer->unqueueTimer();
-    mData.mTimer = NULL;
+    mData.mTimer = nullptr;
 }
 
 //////////////////////////////////////////////////////////////////////////
 // TimerEvent class, static methods
 //////////////////////////////////////////////////////////////////////////
-bool TimerEvent::sendEvent( Timer & timer, ITEM_ID dispatchThreadId )
+bool TimerEvent::sendEvent( Timer & timer, id_type dispatchThreadId )
 {
     return TimerEvent::sendEvent(timer, DispatcherThread::getDispatcherThread(dispatchThreadId));
 }
@@ -65,7 +73,7 @@ bool TimerEvent::sendEvent(Timer & timer, DispatcherThread & dispatchThread)
     if ( dispatchThread.isRunning() )
     {
         TimerEvent* timerEvent = DEBUG_NEW TimerEvent(timer, dispatchThread);
-        if (timerEvent != NULL)
+        if (timerEvent != nullptr)
         {
             static_cast<Event *>(timerEvent)->deliverEvent();
             result = true;

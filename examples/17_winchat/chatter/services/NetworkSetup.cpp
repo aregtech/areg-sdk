@@ -24,7 +24,7 @@ NetworkSetup::~NetworkSetup( )
 void NetworkSetup::responseConnect( const String & nickName, unsigned int cookie, const DateTime & dateTime, NEConnectionManager::eConnectionResult result )
 {
     DateTime timeConnected = DateTime::getNow();
-    if (result == NEConnectionManager::ConnectionAccepted)
+    if (result == NEConnectionManager::eConnectionResult::ConnectionAccepted)
     {
         mConnectionHandler.SetNickName(nickName);
         mConnectionHandler.SetConnectCookie(cookie);
@@ -40,7 +40,7 @@ void NetworkSetup::responseConnect( const String & nickName, unsigned int cookie
         mConnectionHandler.SetTimeConnected(DateTime());
     }
     mConnectionHandler.SetRegistered( false );
-    bool isConnected = result == NEConnectionManager::ConnectionAccepted;
+    bool isConnected = result == NEConnectionManager::eConnectionResult::ConnectionAccepted;
     DispatcherThread *dispThread = getDispatcherThread();
     DistributedDialog::PostServiceMessage( NEDistributedApp::CmdClientConnection, isConnected ? 1 : 0, reinterpret_cast<LPARAM>(dispThread) );
 }

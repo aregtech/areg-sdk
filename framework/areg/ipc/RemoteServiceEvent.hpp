@@ -1,10 +1,16 @@
-#ifndef AREG_IPC_REMOTESERVICEEVENT_HPP
-#define AREG_IPC_REMOTESERVICEEVENT_HPP
-
+#pragma once
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/ipc/RemoteServiceEvent.hpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, Send message events
  ************************************************************************/
 
@@ -36,18 +42,24 @@ public:
      *                          The message should already contain information and instructions
      *                          for remote process.
      **/
-    SendMessageEventData( const RemoteMessage & remoteMessage );
+    explicit SendMessageEventData( const RemoteMessage & remoteMessage );
 
     /**
      * \brief   Copies remote message data from given source.
      * \param   source  The source, which contains remote message.
      **/
-    SendMessageEventData( const SendMessageEventData & source );
+    SendMessageEventData( const SendMessageEventData & source ) = default;
+
+    /**
+     * \brief   Moves remote message data from given source.
+     * \param   source  The source, which contains remote message.
+     **/
+    SendMessageEventData( SendMessageEventData && source ) noexcept;
 
     /**
      * \brief   Destructor
      **/
-    ~SendMessageEventData( void );
+    ~SendMessageEventData( void )= default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operators and attributes
@@ -57,7 +69,13 @@ public:
      * \brief   Empties existing message buffer and copies remote message data from given source.
      * \param   source  The source, which contains remote message.
      **/
-    const SendMessageEventData & operator = ( const SendMessageEventData & source );
+    SendMessageEventData & operator = ( const SendMessageEventData & source );
+
+    /**
+     * \brief   Empties existing message buffer and moves remote message data from given source.
+     * \param   source  The source, which contains remote message.
+     **/
+    SendMessageEventData & operator = ( SendMessageEventData && source ) noexcept;
 
     /**
      * \brief   Returns instance of remote message.
@@ -77,7 +95,7 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    SendMessageEventData( void );
+    SendMessageEventData( void ) = delete;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -94,5 +112,3 @@ inline const RemoteMessage & SendMessageEventData::getRemoteMessage( void ) cons
 {
     return mRemoteMessage;
 }
-
-#endif  // AREG_IPC_REMOTESERVICEEVENT_HPP

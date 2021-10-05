@@ -1,9 +1,16 @@
-#ifndef AREG_BASE_IESYNCHOBJECT_HPP
-#define AREG_BASE_IESYNCHOBJECT_HPP
+#pragma once
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/base/IESynchObject.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, Base Synchronization object interface.
  *
  ************************************************************************/
@@ -11,6 +18,7 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
+#include "areg/base/NECommon.hpp"
 
 //////////////////////////////////////////////////////////////////////////
 // IESynchObject class declaration
@@ -28,48 +36,18 @@ public:
     /**
      * \brief   Type of supported Synchronization objects
      **/
-    typedef enum E_SyncObject
+    typedef enum class E_SyncObject : short
     {
-          SO_UNKNOWN    = -1    //!< Unknown type of synchronization object
-        , SO_MUTEX      =  0    //!< Synchronization object is a Mutex
-        , SO_EVENT              //!< Synchronization object is an Event
-        , SO_SEMAPHORE          //!< Synchronization object is a Semaphore
-        , SO_TIMER              //!< Synchronization object is a Waiting Timer
-        , SO_CRITICAL           //!< Synchronization object is a Critical Section
-        , SO_RES_LOCK           //!< Simple synchronization object to lock resource access. Cannot be used to wait event.
-        , SO_NOLOCK             //!< Empty / Dummy Synchronization object, no real locking operations are supported
+          SoUnknown     = -1    //!< Unknown type of synchronization object.
+        , SoMutex       =  0    //!< Synchronization object is a Mutex.
+        , SoEvent               //!< Synchronization object is an Event.
+        , SoSemaphore           //!< Synchronization object is a Semaphore.
+        , SoCritical            //!< Synchronization object is a Critical Section
+        , SoSpinlock            //!< Synchronization object is a Spin-Lock.
+        , SoReslock             //!< A synchronization object to use to access resources.
+        , SoNolock              //!< Empty / Dummy Synchronization object, no real locking operations are supported
+        , SoTimer               //!< Synchronization object is a Waiting Timer.
     } eSyncObject;
-
-    /**
-     * \brief   IESynchObject::WAIT_INFINITE
-     *          Infinitive timeout waiting time -1 / 0xFFFFFFFF
-     *          until a certain waiting event did not happen
-     **/
-    static const unsigned int   WAIT_INFINITE       /* = 0xFFFFFFFF*/;
-
-    /**
-     * \brief   IESynchObject::DO_NOT_WAIT
-     *          Do not wait for certain waiting event
-     **/
-    static const unsigned int   DO_NOT_WAIT         /* = 0x00000000 */;
-
-    /**
-     * \brief   IESynchObject::WAIT_1_MS
-     *          Waiting time 1 millisecond, the minimum waiting time.
-     **/
-    static const unsigned int   WAIT_1_MS           /* = 1 */;
-
-    /**
-     * \brief   IESynchObject::WAIT_1_SEC
-     *          Waiting time 1 second
-     **/
-    static const unsigned int   WAIT_1_SEC          /* = 1000 */;
-
-    /**
-     * \brief   IESynchObject::WAIT_1_MIN
-     *          Waiting time 1 minute
-     **/
-    static const unsigned int   WAIT_1_MIN          /* = 60000 */;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -81,7 +59,7 @@ protected:
      *          overwritten pure virtual functions.
      * \param	synchObjectType	Type of synchronization object
      **/
-    IESynchObject( IESynchObject::eSyncObject synchObjectType );
+    explicit IESynchObject( IESynchObject::eSyncObject synchObjectType );
 
 public:
     /**
@@ -97,7 +75,7 @@ public:
     /**
      * \brief   Converts Synchronization object instance to void pointer
      **/
-    operator void * (void);
+    inline operator SYNCHANDLE (void);
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes
@@ -107,12 +85,12 @@ public:
      * \brief   Returns the synchronization object
      *          Handle value.
      **/
-    void * getHandle( void ) const;
+    inline SYNCHANDLE getHandle( void ) const;
 
     /**
      * \brief   Returns type of synchronization object
      **/
-    IESynchObject::eSyncObject getObjectType( void ) const;
+    inline IESynchObject::eSyncObject getObjectType( void ) const;
 
     /**
      * \brief   Returns true if a synchronization object is valid.
@@ -120,8 +98,7 @@ public:
     inline bool isValid( void ) const;
 
 //////////////////////////////////////////////////////////////////////////
-// Operations
-// Pure virtual functions to overwrite
+// Overrides
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
@@ -136,7 +113,7 @@ public:
      *                      own synchronization object
      * \return	If thread successfully owns object, returns true. Otherwise returns false.
      **/
-    virtual bool lock( unsigned int timeout = IESynchObject::WAIT_INFINITE );
+    virtual bool lock( unsigned int timeout = NECommon::WAIT_INFINITE );
 
     /**
      * \brief   Unlocks / Release current thread ownership of synchronization object
@@ -158,22 +135,21 @@ private:
 //////////////////////////////////////////////////////////////////////////
 protected:
     /**
-     * \brief   Synchronization object type
-     **/
-    const IESynchObject::eSyncObject   mSynchObjectType;
-
-    /**
      * \brief   Handle to synchronization object
      **/
-    void *  mSynchObject;
+    SYNCHANDLE                          mSynchObject;
+
+    /**
+     * \brief   Synchronization object type
+     **/
+    const IESynchObject::eSyncObject    mSynchObjectType;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden / forbidden function calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    IESynchObject( void );
-    IESynchObject( const IESynchObject & /*src*/ );
-    const IESynchObject & operator = ( const IESynchObject & /*src*/ );
+    IESynchObject( void ) = delete;
+    DECLARE_NOCOPY_NOMOVE( IESynchObject );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -183,9 +159,22 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // IESynchObject class inline functions
 //////////////////////////////////////////////////////////////////////////
-inline bool IESynchObject::isValid( void ) const
+inline IESynchObject::operator SYNCHANDLE ( void )
 {
-    return (mSynchObjectType == IESynchObject::SO_NOLOCK) || (mSynchObject != static_cast<void *>(NULL));
+    return mSynchObject;
 }
 
-#endif  // AREG_BASE_IESYNCHOBJECT_HPP
+inline SYNCHANDLE IESynchObject::getHandle( void ) const
+{
+    return mSynchObject;
+}
+
+inline IESynchObject::eSyncObject IESynchObject::getObjectType( void ) const
+{
+    return mSynchObjectType;
+}
+
+inline bool IESynchObject::isValid( void ) const
+{
+    return (mSynchObjectType == IESynchObject::eSyncObject::SoNolock) || (mSynchObject != nullptr);
+}

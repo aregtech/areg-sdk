@@ -1,9 +1,16 @@
-#ifndef AREG_BASE_PRIVATE_POSIX_WAITABLEEVENTIX_HPP
-#define AREG_BASE_PRIVATE_POSIX_WAITABLEEVENTIX_HPP
+#pragma once
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/base/private/posix/WaitableEventIX.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit
- * \author      Artak Avetyan (mailto:artak@aregtech.com)
+ * \author      Artak Avetyan
  * \brief       AREG Platform, POSIX Waitable Event class.
  *
  ************************************************************************/
@@ -13,7 +20,7 @@
   ************************************************************************/
 #include "areg/base/GEGlobal.h"
 
-#ifdef _POSIX
+#if defined(_POSIX) || defined(POSIX)
 
 #include "areg/base/private/posix/IEWaitableBaseIX.hpp"
 
@@ -63,12 +70,12 @@ public:
      *                                          are released and the signal state is changed.
      * \param   asciiName       The name of synchronization Event.
      **/
-    WaitableEventIX(bool isInitSignaled = false, bool isAutoReset = false, const char * asciiName = NULL);
+    WaitableEventIX(bool isInitSignaled, bool isAutoReset, const char * asciiName = nullptr);
 
     /**
      * \brief   Destructor.
      **/
-    virtual ~WaitableEventIX( void );
+    virtual ~WaitableEventIX( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations.
@@ -121,7 +128,7 @@ public:
      *                          This parameter not used for waitable event.
      * \return  Returns true if the object is signaled. Otherwise, returns false.
      **/
-    virtual bool checkSignaled( pthread_t contextThread ) const;
+    virtual bool checkSignaled( pthread_t contextThread ) const override;
 
     /**
      * \brief   This callback is triggered when a waiting thread is released to continue to run.
@@ -129,7 +136,7 @@ public:
      * \param   ownerThread     Indicates the POSIX thread ID that completed to wait.
      * \return  Waitable Event always returns true.
      **/
-    virtual bool notifyRequestOwnership( pthread_t ownerThread );
+    virtual bool notifyRequestOwnership( pthread_t ownerThread ) override;
 
     /**
      * \brief   This callback is triggered to when a system needs to know whether waitable
@@ -137,7 +144,7 @@ public:
      *          multiple threads can get waitable signaled state. For example, waitable Mutex 
      *          signals only one thread, when waitable Event can signal multiple threads.
      **/
-    virtual bool checkCanSignalMultipleThreads( void ) const;
+    virtual bool checkCanSignalMultipleThreads( void ) const override;
 
     /**
      * \brief   This callback is called to notify the object the amount of
@@ -146,7 +153,7 @@ public:
      *                      object is in signaled state. 0 means that no thread
      *                      was released by the object.
      **/
-    virtual void notifyReleasedThreads( int numThreads );
+    virtual void notifyReleasedThreads( int numThreads ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables.
@@ -165,8 +172,8 @@ private:
 // Forbidden calls.
 //////////////////////////////////////////////////////////////////////////
 private:
-    WaitableEventIX( const WaitableEventIX & /*src*/ );
-    const WaitableEventIX & operator = ( const WaitableEventIX & /*src*/);
+    WaitableEventIX( void ) = delete;
+    DECLARE_NOCOPY_NOMOVE( WaitableEventIX );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -179,6 +186,4 @@ inline NESynchTypesIX::eEventResetInfo WaitableEventIX::getResetInfo( void ) con
     return mEventReset;
 }
 
-#endif  // _POSIX
-
-#endif  // AREG_BASE_PRIVATE_POSIX_WAITABLEEVENTIX_HPP
+#endif  // defined(_POSIX) || defined(POSIX)
