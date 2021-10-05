@@ -694,7 +694,7 @@ const WideString & WideString::formatList(const wchar_t * format, va_list argptr
     return self( );
 }
 
-inline int WideString::setString( const unsigned char * buffer )
+int WideString::setString( const unsigned char * buffer )
 {
     int result = 0;
 
