@@ -2,10 +2,6 @@
 *.opensdf
 *.suo
 *.sdf
-.metadata
-.vs
-.vscode
-.github
 *.user
 *.o
 *.obj
@@ -13,26 +9,31 @@
 *.stackdump
 *.d
 
+.metadata
+.vs
+.vscode
+.github/*
+.github/workflows/*
 product/*
 tools/*.zip
 
-/Debug
-/Release
-/framework/areg/Debug
-/framework/areg/Release
-/framework/areg/.settings
-/framework/areg/.gitignore
+Debug
+Release
+framework/areg/Debug
+framework/areg/Release
+framework/areg/.settings
+framework/areg/.gitignore
 
-/framework/mcrouter/Debug
-/framework/mcrouter/Release
-/framework/mcrouter/.settings
-/framework/mcrouter/.gitignore
+framework/mcrouter/Debug
+framework/mcrouter/Release
+framework/mcrouter/.settings
+framework/mcrouter/.gitignore
 
-/examples/*/.gitignore
-/examples/*/.settings
-/examples/*/Debug
-/examples/*/Release
-/examples/*/*/.gitignore
-/examples/*/*/.settings
-/examples/*/*/Debug
-/examples/*/*/Release
+examples/*/.gitignore
+examples/*/.settings
+examples/*/Debug
+examples/*/Release
+examples/*/*/.gitignore
+examples/*/*/.settings
+examples/*/*/Debug
+examples/*/*/Release
