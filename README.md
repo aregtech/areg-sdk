@@ -1,4 +1,5 @@
 # AREG SDK to simplify multiprocessing programming
+![cpp compilation](https://github.com/aregtech/areg-sdk/actions/workflows/c-cpp.yml/badge.svg) ![cpp compilation](https://github.com/aregtech/areg-sdk/actions/workflows/codeql-analysis.yml/badge.svg)
 
 **_Bring your product to live service enabled_**
 
@@ -53,3 +54,10 @@ We provide various [examples](./examples/) to demonstrate features of the framew
 AREG SDK is dual-licensed under free open source (Apache version 2 license) and commercial licenses that gives the commercial support, full rights to create and distribute software without open source license obligations. For licensing details see [LICENSE](./LICENSE.txt) document.
  
 For commercial license, support or additional information, please visit [Aregtech](https://www.aregtech.com/) web site or contact _info[at]aregtech.com_.
+
+## Inspire us!
+
+Did you like the project? Please share the project with your connections on [![Twitter](https://img.shields.io/twitter/url?label=Twitter&style=social&url=https%3A%2F%2Fgithub.com%2Faregtech%2Fareg-sdk)](https://twitter.com/intent/tweet?text=Wow:&url=https%3A%2F%2Fgithub.com%2Faregtech%2Fareg-sdk) and [![Star us](https://img.shields.io/github/stars/aregtech/areg-sdk.svg?style=social&label=Star%20us)](https://github.com/aregtech/areg-sdk/) on GitHub to inspire us! You can as well become a distributor or suggest features.
+
+[![Follow us](https://img.shields.io/twitter/follow/aregtech.svg?style=social)](https://twitter.com/intent/follow?screen_name=aregtech) [![Follow us](https://img.shields.io/badge/LinkedIn-Follow%20us-blue)](https://www.linkedin.com/company/aregtech/)
+
