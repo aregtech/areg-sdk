@@ -1,5 +1,5 @@
 # AREG SDK to simplify multiprocessing programming
-![cpp compilation](https://github.com/aregtech/areg-sdk/actions/workflows/c-cpp.yml/badge.svg) ![cpp compilation](https://github.com/aregtech/areg-sdk/actions/workflows/codeql-analysis.yml/badge.svg)
+![GitHub release (latest by date)](https://img.shields.io/github/v/release/aregtech/areg-sdk) ![cpp compilation](https://github.com/aregtech/areg-sdk/actions/workflows/c-cpp.yml/badge.svg) ![msbuild](https://github.com/aregtech/areg-sdk/actions/workflows/msbuild.yml/badge.svg) ![codeql](https://github.com/aregtech/areg-sdk/actions/workflows/codeql-analysis.yml/badge.svg) [![GitHub Super-Linter](https://github.com/aregtech/areg-sdk/actions/workflows/linter.yml/badge.svg)](https://github.com/marketplace/actions/super-linter)
 
 **_Bring your product to live service enabled_**
 
