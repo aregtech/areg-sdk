@@ -21,7 +21,7 @@
   </tr>
 </table>
 
-<h4>Please make sure you <img src="https://img.shields.io/github/stars/aregtech/areg-sdk.svg?style=social&label=Stared%20us"/> on GitHub to inspire.</h4>
+> Please make sure you ![Star us](https://img.shields.io/github/stars/aregtech/areg-sdk.svg?style=social&label=Stared%20us) on GitHub to inspire.</h4>
 
 ## Introduction
 
