@@ -1,3 +1,4 @@
+<!-- markdownlint-disable -->
 # AREG SDK to simplify multiprocessing programming
 ![cpp compilation](https://github.com/aregtech/areg-sdk/actions/workflows/c-cpp.yml/badge.svg) ![msbuild](https://github.com/aregtech/areg-sdk/actions/workflows/msbuild.yml/badge.svg) ![codeql](https://github.com/aregtech/areg-sdk/actions/workflows/codeql-analysis.yml/badge.svg) [![GitHub Super-Linter](https://github.com/aregtech/areg-sdk/actions/workflows/linter.yml/badge.svg)](https://github.com/marketplace/actions/super-linter) <!-- markdownlint-disable MD013 -->
 
@@ -63,3 +64,4 @@ Did you like the project? Please share the project with your connections on [![T
 
 [![Follow us](https://img.shields.io/twitter/follow/aregtech.svg?style=social)](https://twitter.com/intent/follow?screen_name=aregtech) [![Follow us](https://img.shields.io/badge/LinkedIn-Follow%20us-blue)](https://www.linkedin.com/company/aregtech/)
 
+<!-- markdownlint-enable -->
