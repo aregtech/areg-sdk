@@ -42,7 +42,7 @@ Compile AREG SDK sources and examples using following tools:
 * **On Linux or Windows**: import projects in _Eclipse_ to compile with POSIX.
 * **On Windows**: open areg-sdk.sln file in _MS Visual Studio_ to compile with Win32.
 * **On Linux**: in the terminal call “_make_” as shown below to compile with POSIX.
-```
+```shell
 $ make [all] [framework] [examples]
 ```
 For detailed instructions to load and/or compile projects see [HOWTO](./docs/HOWTO.md) document.
