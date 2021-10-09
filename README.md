@@ -2,7 +2,7 @@
 <a name="logo" href="https://www.aregtech.com"><img align="center" src="/docs/img/logo-aregtech.png" alt="areg-sdk home" style="width:85%;height:85%"></a>
   <br><br>AREG SDK
 </h1>
-<h3 align="center">is made with ❤️.</h3>
+<h3 align="center">is made with ❤️</h3>
 
 <!-- markdownlint-disable -->
 ## Project status
