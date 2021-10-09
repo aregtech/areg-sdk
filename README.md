@@ -1,5 +1,7 @@
 # AREG SDK to simplify multiprocessing programming
-![GitHub release (latest by date)](https://img.shields.io/github/v/release/aregtech/areg-sdk) ![cpp compilation](https://github.com/aregtech/areg-sdk/actions/workflows/c-cpp.yml/badge.svg) ![msbuild](https://github.com/aregtech/areg-sdk/actions/workflows/msbuild.yml/badge.svg) ![codeql](https://github.com/aregtech/areg-sdk/actions/workflows/codeql-analysis.yml/badge.svg) [![GitHub Super-Linter](https://github.com/aregtech/areg-sdk/actions/workflows/linter.yml/badge.svg)](https://github.com/marketplace/actions/super-linter)
+![cpp compilation](https://github.com/aregtech/areg-sdk/actions/workflows/c-cpp.yml/badge.svg) ![msbuild](https://github.com/aregtech/areg-sdk/actions/workflows/msbuild.yml/badge.svg) ![codeql](https://github.com/aregtech/areg-sdk/actions/workflows/codeql-analysis.yml/badge.svg) [![GitHub Super-Linter](https://github.com/aregtech/areg-sdk/actions/workflows/linter.yml/badge.svg)](https://github.com/marketplace/actions/super-linter)
+
+![GitHub release (latest by date)](https://img.shields.io/github/v/release/aregtech/areg-sdk) ![C++ Solution](https://img.shields.io/badge/C++-Solutions-blue.svg?style=flat&logo=c%2B%2B17) ![Linux](https://img.shields.io/badge/os-Linux-blue) ![Windows](https://img.shields.io/badge/os-Windows-blue) ![Made with love](https://img.shields.io/badge/Made%20with%20love%3F-yes-brightgreen)
 
 **_Bring your product to live service enabled_**
 
