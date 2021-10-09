@@ -3,7 +3,8 @@
 ## Super Linter GitHub Actions ##
 #################################
 #################################
-name: Lint Code Base
+# name: Lint Code Base
+name: Lint
 
 #
 # Documentation:
