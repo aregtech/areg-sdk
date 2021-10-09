@@ -1,12 +1,21 @@
 <!-- markdownlint-disable -->
-# AREG SDK 
-Simplify distributed and distributed programming
+<h1 align="center">
+  <a name="logo" href="https://www.aregtech.com"><img src="/docs/img/logo.png" alt="areg-sdk home" height="100"></a>
+  <br>
+  AREG SDK
+</h1>
+<h4 align="center">
+ Simplify distributed and multiprocessing programming.<br>
+</h4>
+
+<h4 align="center">Please make sure you <img src="https://img.shields.io/github/stars/aregtech/areg-sdk.svg?style=social&label=Stared%20us"/> on GitHub to inspire.</h4>
+
+## Project status
 
 ![cpp compilation](https://github.com/aregtech/areg-sdk/actions/workflows/c-cpp.yml/badge.svg) ![msbuild](https://github.com/aregtech/areg-sdk/actions/workflows/msbuild.yml/badge.svg) ![codeql](https://github.com/aregtech/areg-sdk/actions/workflows/codeql-analysis.yml/badge.svg) [![GitHub Super-Linter](https://github.com/aregtech/areg-sdk/actions/workflows/linter.yml/badge.svg)](https://github.com/marketplace/actions/super-linter)
 
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/aregtech/areg-sdk?label=%20%F0%9F%9A%80%20Release) ![C++ Solution](https://img.shields.io/badge/C++17-Yes-blue.svg?style=flat&logo=c%2B%2B) ![Platform](https://img.shields.io/badge/%F0%9F%94%94%20Platform-linux--32%20%7C%20linux--64%20%7C%20win--32%20%7C%20win--64-blue) ![Made with love](https://img.shields.io/badge/Made%20with%20%F0%9F%92%9B%EF%B8%8F%3F-Yes-brightgreen)
 
-**_Bring your product to live service enabled_**
 
 ## Introduction
 
