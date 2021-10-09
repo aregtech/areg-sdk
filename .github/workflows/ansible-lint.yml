@@ -23,5 +23,5 @@ jobs:
         # targets: |
         #   playbook_1.yml
         #   playbook_2.yml
-        targets: "./"
+        entryPoint: .
         args: "-q"
