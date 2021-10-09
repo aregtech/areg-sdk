@@ -1,16 +1,8 @@
-<style>
-.site-main table.no-border td {
-  border: none;
-  cellspacing: 2px
-  cellpadding: 2px
-}
-</style>
-
 <h1 align="center" style="display: block; font-size: 2.5em; font-weight: bold; margin-block-start: 1em; margin-block-end: 1em;">
 <a name="logo" href="https://www.aregtech.com"><img align="center" src="/docs/img/togo-bottom.png" alt="areg-sdk home" style="width:85%;height:85%"></a>
   <br><br>AREG SDK
 </h1>
-<h3 align="center">is made with ❤️</h3>
+<h3 align="center">is made with ❤️.</h3>
 
 <!-- markdownlint-disable -->
 ## Project status
@@ -22,10 +14,10 @@
     <td><img src="https://github.com/aregtech/areg-sdk/actions/workflows/linter.yml/badge.svg" alt="Super-Linter"/></td>
   </tr>
   <tr>
-    <td><img src="https://img.shields.io/github/v/release/aregtech/areg-sdk?label=%20%F0%9F%9A%80%20Release" alt="Latest release"/></td>
-    <td><img src="https://img.shields.io/badge/C++17-Solution-blue.svg?style=flat&logo=c%2B%2B" alt="C++ solution"/></td>
-    <td><img src="https://img.shields.io/badge/%F0%9F%94%94%20OS-linux%20%7C%20windows-blue" alt="Operating systems"/></td>
-    <td><img src="https://img.shields.io/badge/%F0%9F%94%94%20CPU-x86%20%7C%20x86__64%20%7C%20arm%20%7C%20aarch6-blue" alt="CPU Architect"/></td>
+    <td><img src="https://img.shields.io/github/v/release/aregtech/areg-sdk?label=%20%F0%9F%93%A3%20Release&style=flat&logoColor=b0c0c0&labelColor=363D44" alt="Latest release"/></td>
+    <td><img src="https://img.shields.io/badge/C++17-Solution-blue.svg?style=flat&logo=c%2B%2B&logoColor=b0c0c0&labelColor=363D44" alt="C++ solution"/></td>
+    <td><img src="https://img.shields.io/badge/OS-linux%20%7C%20windows-blue??style=flat&logo=Linux&logoColor=b0c0c0&labelColor=363D44" alt="Operating systems"/></td>
+    <td><img src="https://img.shields.io/badge/CPU-x86%20%7C%20x86__64%20%7C%20arm%20%7C%20aarch6-blue?style=flat&logo=amd&logoColor=b0c0c0&labelColor=363D44" alt="CPU Architect"/></td>
   </tr>
 </table>
 
