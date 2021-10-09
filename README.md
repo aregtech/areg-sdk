@@ -1,8 +1,10 @@
 <!-- markdownlint-disable -->
-# AREG SDK to simplify multiprocessing programming
-![cpp compilation](https://github.com/aregtech/areg-sdk/actions/workflows/c-cpp.yml/badge.svg) ![msbuild](https://github.com/aregtech/areg-sdk/actions/workflows/msbuild.yml/badge.svg) ![codeql](https://github.com/aregtech/areg-sdk/actions/workflows/codeql-analysis.yml/badge.svg) [![GitHub Super-Linter](https://github.com/aregtech/areg-sdk/actions/workflows/linter.yml/badge.svg)](https://github.com/marketplace/actions/super-linter) <!-- markdownlint-disable MD013 -->
+# AREG SDK 
+Simplify distributed and distributed programming
 
-![GitHub release (latest by date)](https://img.shields.io/github/v/release/aregtech/areg-sdk) ![C++ Solution](https://img.shields.io/badge/C++-Solutions-blue.svg?style=flat&logo=c%2B%2B) ![Linux](https://img.shields.io/badge/os-Linux-blue) ![Windows](https://img.shields.io/badge/os-Windows-blue) ![Made with love](https://img.shields.io/badge/Made%20with%20%E2%9D%A4%EF%B8%8F%3F-yes-brightgreen) <!-- markdownlint-disable MD013 -->
+![cpp compilation](https://github.com/aregtech/areg-sdk/actions/workflows/c-cpp.yml/badge.svg) ![msbuild](https://github.com/aregtech/areg-sdk/actions/workflows/msbuild.yml/badge.svg) ![codeql](https://github.com/aregtech/areg-sdk/actions/workflows/codeql-analysis.yml/badge.svg) [![GitHub Super-Linter](https://github.com/aregtech/areg-sdk/actions/workflows/linter.yml/badge.svg)](https://github.com/marketplace/actions/super-linter)
+
+![GitHub release (latest by date)](https://img.shields.io/github/v/release/aregtech/areg-sdk?label=%20%F0%9F%9A%80%20Release) ![C++ Solution](https://img.shields.io/badge/C++17-Yes-blue.svg?style=flat&logo=c%2B%2B) ![Platform](https://img.shields.io/badge/%F0%9F%94%94%20Platform-linux--32%20%7C%20linux--64%20%7C%20win--32%20%7C%20win--64-blue) ![Made with love](https://img.shields.io/badge/Made%20with%20%F0%9F%92%9B%EF%B8%8F%3F-Yes-brightgreen)
 
 **_Bring your product to live service enabled_**
 
