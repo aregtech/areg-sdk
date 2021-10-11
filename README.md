@@ -21,7 +21,7 @@
   </tr>
 </table>
 
-> By ![Staring us](https://img.shields.io/github/stars/aregtech/areg-sdk.svg?style=social&label=Staring%20us) on GitHub and sharing repository on other social media, you inspire us!</h4>
+> By ![Staring us](https://img.shields.io/github/stars/aregtech/areg-sdk.svg?style=social&label=Staring%20us) on GitHub and sharing repository link on other social media, you inspire us!</h4>
 
 ## Introduction
 
