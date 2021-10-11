@@ -1,5 +1,5 @@
 <h1 align="center" style="display: block; font-size: 2.5em; font-weight: bold; margin-block-start: 1em; margin-block-end: 1em;">
-<a name="logo" href="https://www.aregtech.com"><img align="center" src="/docs/img/logo-aregtech.png" alt="areg-sdk home" style="width:100%;height:100%"></a>
+<a name="logo" href="https://www.aregtech.com"><img align="center" src="/docs/img/areg-sdk-1280x410px.png" alt="areg-sdk home" style="width:100%;height:100%"></a>
   <br><br>AREG SDK
 </h1>
 <h3 align="center">is made with ❤️</h3>
