@@ -3,6 +3,8 @@
   <br><br>AREG SDK
 </h1>
 
+> By ![Staring us](https://img.shields.io/github/stars/aregtech/areg-sdk.svg?style=social&label=Staring%20us) on GitHub and spreding AREG on social media, you help and inspire us for further development. We are happy to provide featured technology that helps to cut costs and create service enabled product!
+
 <!-- markdownlint-disable -->
 ## Project status
 <table class="no-border">
@@ -19,8 +21,6 @@
     <td><img src="https://img.shields.io/badge/CPU-x86%20%7C%20x86__64%20%7C%20arm%20%7C%20aarch6-blue?style=flat&logo=amd&logoColor=b0c0c0&labelColor=363D44" alt="CPU Architect"/></td>
   </tr>
 </table>
-
-> By ![Staring us](https://img.shields.io/github/stars/aregtech/areg-sdk.svg?style=social&label=Staring%20us) on GitHub and sharing repository link on other social media, you inspire us!</h4>
 
 ## Introduction
 
