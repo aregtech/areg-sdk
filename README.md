@@ -1,9 +1,9 @@
 <h1 align="center" style="display: block; font-size: 2.5em; font-weight: bold; margin-block-start: 1em; margin-block-end: 1em;">
-<a name="logo" href="https://www.aregtech.com"><img align="center" src="/docs/img/areg-sdk-1280x360px-light-logo.png" alt="areg-sdk home" style="width:100%;height:100%"></a>
+<a name="logo" href="https://www.aregtech.com"><img align="center" src="/docs/img/areg-sdk-1280x360px-logo.png" alt="areg-sdk home" style="width:100%;height:100%"></a>
   <br><br>AREG SDK
 </h1>
 
-> By ![Staring us](https://img.shields.io/github/stars/aregtech/areg-sdk.svg?style=social&label=Staring%20us) on GitHub and spreding AREG on social media, you help and inspire us for further development. We are happy to provide featured technology that helps to cut costs and create service enabled product!
+> By ![Staring us](https://img.shields.io/github/stars/aregtech/areg-sdk.svg?style=social&label=Staring%20us) on GitHub and spreading AREG on social media, you help and inspire us for further development. We are happy to provide featured technology that helps to cut costs and create service enabled product!
 
 <!-- markdownlint-disable -->
 ## Project status
@@ -35,7 +35,7 @@ Traditionally, devices are connected clients to stream data to the cloud or fog 
 
 ## More than embedded
 
-When we were designing AREG SDK, the guiding principle was to create a framework to develop embedded applications that intelligently interact at the edge of the network. To keep application design homogeneous, we defined _Local_ services for multithreading and the _Public_ services for inter-process communications. These services are neither processes, nor tasks managed by the operating system, they are software components with Service Interface(s), which methods are invoked remotely. This technique of remote object communication is well known as Object Remote Procedure Call (_ORPC_).
+When we were designing AREG SDK, the guiding principle was to create a framework to develop embedded applications that intelligently interact at the edge of the network. To keep application design homogeneous, we defined _Local_ services for multi-threading and the _Public_ services for inter-process communications. These services are neither processes, nor tasks managed by the operating system, they are software components with Service Interface(s), which methods are invoked remotely. This technique of remote object communication is well known as Object Remote Procedure Call (_ORPC_).
 
 ## Escape complexity of multiprocessing
 
@@ -50,7 +50,7 @@ The major features of AREG SDK to benefit:
 
 ## Software build
 
-AREG SDK consists of [framework library](./framework/areg/) and [multicast router](./framework/mcrouter/) sources to compile.
+AREG SDK consists of [framework library](./framework/areg/) and [multi-cast router](./framework/mcrouter/) sources to compile.
 * **Supported OS**: POSIX-compliant OS (list of [POSIX API](./docs/POSIX.md#the-list-of-posix-api-used-in-areg-sdk-including-multicast-message-router)), Windows 8 and higher.
 * **Supported CPU**: x86, amd64, arm and aarch64.
 * **Supported compilers**: Version C++17 GCC, g++, clang and MSVC.
