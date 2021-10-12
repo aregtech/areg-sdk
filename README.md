@@ -3,7 +3,7 @@
   <br><br>AREG SDK
 </h1>
 
-> By ![Staring us](https://img.shields.io/github/stars/aregtech/areg-sdk.svg?style=social&label=Staring%20us) on GitHub and spreading AREG on social media, you help and inspire us for further development. We are happy to provide featured technology that helps to cut costs and create service enabled product!
+> 💡 By ![Staring us](https://img.shields.io/github/stars/aregtech/areg-sdk.svg?style=social&label=Staring%20us) on GitHub and spreading AREG SDK link on social media, you help and inspire us to provide featured technology that helps to cut costs and create service enabled product!
 
 <!-- markdownlint-disable -->
 ## Project status
