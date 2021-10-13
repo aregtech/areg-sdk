@@ -80,11 +80,11 @@ AREG SDK consts of _mcrounter_ executable and _areg_ library.
 * The _areg_ library can be linked with other binaries as a shared or static library.
 * Before starting _mcrouter_ or areg powered application, modify _router.init_.
 ```
-connection.type             = tcpip			# right now it supports only 'tcpip' (TCP/IP)
-connection.enable.tcpip     = true			# if 'true' the service mcrouter connection is enabled
-connection.name.tcpip       = TCPIP			# the connection name, which should be unique within system
+connection.type             = tcpip     # right now it supports only 'tcpip' (TCP/IP)
+connection.enable.tcpip     = true      # if 'true' the service mcrouter connection is enabled
+connection.name.tcpip       = TCPIP     # unique connection name
 connection.address.tcpip    = 127.0.0.1	# the address of service mcrouter host
-connection.port.tcpip       = 8181			# service mcrouter connection port
+connection.port.tcpip       = 8181      # service mcrouter connection port
 ```
 Akk binaries should have same settings to be able to connect with same multi-cast router.
 
