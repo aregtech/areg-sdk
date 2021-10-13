@@ -1,5 +1,5 @@
 <h1 align="center" style="display: block; font-size: 2.5em; font-weight: bold; margin-block-start: 1em; margin-block-end: 1em;">
-<a name="logo" href="https://www.aregtech.com"><img align="center" src="/docs/img/areg-sdk-1280x360px-logo.png" alt="AREG SDK Home" style="width:100%;height:100%"></a>
+<a name="logo" href="https://www.aregtech.com"><img align="center" src="/docs/img/areg-sdk-1280x360px-logo.png" alt="AREG SDK Home" style="width:100%;height:100%"/></a>
   <br><br><b>AREG SDK</b>
 </h1>
 
@@ -30,7 +30,8 @@
 
 Traditionally, devices are connected clients to stream data to the cloud or fog servers for further processing.
 <br>
-<img src="/docs/img/mist-network-1280x640.png" alt="IoT-to-Cloud (Nebula) network, mist network"/>
+<img src="/docs/img/mist-network-1280x640.png" alt="IoT-to-Cloud (Nebula) network, mist network, mist computing" style="width:75%;height:75%"/>
+<br>
 <br>
 Since data is generated and collected at the edge of the network (mist network), it makes sense to change the role of connected Things and provide network accessible (_Public_) services directly on devices. This is a good foothold for robust solutions such as:
 * _Increase data privacy_, which is an important factor for sensitive data.
@@ -40,14 +41,14 @@ Since data is generated and collected at the edge of the network (mist network),
 ## More than embedded
 
 When we were designing AREG SDK, the guiding principle was to create a framework to develop embedded applications that intelligently interact at the edge of the network. To keep application design homogeneous and escape complexity of multiple communication layers, we defined _services_ for multi-threading, distributed and multi-processing, and for internet communication.
-<br><img src="docs/img/services.png" alt="AREG SDK distributed services"/><br>
-These designed services are neither processes, nor tasks managed by the operating system, they are software components with Service Interface(s), which methods are invoked remotely (_Object Remote Procedure Call_ / _ORPC_).
+<br><br><img src="docs/img/services.png" alt="AREG SDK distributed services" style="width:60%;height:60%"/><br><br>
+The designed services are neither processes, nor tasks managed by the operating system, they are software components with Service Interface(s), which methods are invoked remotely (_Object Remote Procedure Call_ / _ORPC_).
 > 💡 The current implementation of AREG engine intelligently handles and distributed message for multi-threading (_Local_ services) and multi-processing (_Public_ services) communication. 
 
 ## Escape complexity of multiprocessing
 
 AREG SDK simplifies the multiprocessing programming and helps developers to focus on application business logic as they would program a single process application with one thread where methods of objects are event-driven. The engine creates fault tolerant and scalable system of distributed services, it guarantees that the system automatically delivers the exact and the newest data on subscription, and the system triggers the exact request or response method of the exact servicing component (_server_ or _client_), and the messages are neither mixed, nor lost. 
-<br><img src="/docs/img/service-oriented.png" alt="Service Oriented design"/><br>
+<br><br><img src="/docs/img/service-oriented.png" alt="Service Oriented design" style="width:80%;height:80%"/><br>
 
 ## Benefits
 The major features of AREG SDK to benefit:
