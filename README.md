@@ -73,6 +73,43 @@ $ make [all] [framework] [examples]
 ```
 For detailed instructions to load and/or compile projects see [HOWTO](./docs/HOWTO.md) document.
 
+## Integration
+
+AREG SDK consts of _mcrounter_ executable and _areg_ library.
+* After compilation, _mcrouter_ can be started either as a system service or console application.
+* The _areg_ library can be linked with other binaries as a shared or static library.
+* Before starting _mcrouter_ or areg powered application, modify _router.init_.
+```
+connection.type             = tcpip			# right now it supports only 'tcpip' (TCP/IP)
+connection.enable.tcpip     = true			# if 'true' the service mcrouter connection is enabled
+connection.name.tcpip       = TCPIP			# the connection name, which should be unique within system
+connection.address.tcpip    = 127.0.0.1	# the address of service mcrouter host
+connection.port.tcpip       = 8181			# service mcrouter connection port
+```
+Akk binaries should have same settings to be able to connect with same multi-cast router.
+
+## Development
+
+### Design Service Interface
+The service interface document is an XML structured file.
+```xml
+    <MethodList>
+        <Method ID="7" MethodType="request" Name="HelloWorld" Response="HelloWorld">
+            <Description>Request to print hello world</Description>
+            <ParamList>
+                <Parameter DataType="String" ID="8" Name="roleName">
+                    <Description>The role name of client component that requested to print hello world</Description>
+                </Parameter>
+                <Parameter DataType="String" ID="9" Name="addMessage">
+                    <Value IsDefault="true">""</Value>
+                    <Description>Additional message to output. Can be empty.</Description>
+                </Parameter>
+            </ParamList>
+        </Method>
+...
+    </MethodList>
+```
+
 ## Examples
 
 We provide various [examples](./examples/) to demonstrate features of the framework. The examples are listed in the [examples/README.md](./examples/README.md) document.
