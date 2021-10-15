@@ -40,9 +40,9 @@ Since data is generated and collected at the edge of the network (mist network),
 
 ## More than embedded
 
-When we were designing AREG SDK, the guiding principle was to create a framework embedded and high-end applications that intelligently interact at the edge of the network. To keep application design homogeneous we defined multi-threading (_local_), multi-processing (_Public_) and internet (_Internet_) communication service types. These services are neither processes, nor tasks managed by the operating system, they are software components with predefined interface, which methods are invoked remotely.
+When we were designing AREG SDK, the guiding principle was to create a framework to develop embedded and high-end applications that intelligently interact at the edge of the network. To keep application design homogeneous we defined multi-threading, multi-processing and internet communication service types. These services are neither processes, nor tasks managed by the operating system, they are software components with predefined interface, which methods are invoked remotely.
 <br><a href="docs/img/areg-services.png"><img src="docs/img/areg-services.png" alt="AREG SDK distributed services" style="width:50%;height:50%"/></a><br>
-> 💡 Currently AREG engine handles multi-threading (_Local_ services) and multi-processing (_Public_ services) communication. 
+> 💡 Currently AREG engine handles multi-threading (_Local_ services) and multi-processing (_Public_ services) communication. The _Internet_ service in our plan. 
 
 The existing automations simplify distributed programming, and help developers to focus on application business logic as they would program a single process application with one thread where methods of objects are event-driven. The AREG engine
 * Forms fault tolerant and scalable system of distributed services.
@@ -81,7 +81,7 @@ For detailed instructions to load and/or compile projects see [HOWTO](./docs/HOW
 
 ### Mulit-cast router
 
-Configure [_router.init_](./framework/areg/resources/router.init) file located in _./config_ subfolder of binary location. In most of the cases only IP-address and the port number of the multi-cast router should be changed:
+Configure [_router.init_](./framework/areg/resources/router.init) file located in _./config_ subfolder of binaries. In majority of cases only IP-address and the port number of the multi-cast router should be changed:
 ```
 connection.address.tcpip    = 127.0.0.1	# the address of mcrouter host
 connection.port.tcpip       = 8181      # the connection port of mcrouter
@@ -90,7 +90,7 @@ Ignore multi-cast router if develop only multi-threadin application.
 
 ### Logging service
 
-Configure [_log.init_](./framework/areg/resources/log.init) file located in the _./config_ subfolder of binary location. The configuration file contains well document description of parameters. In most of the cases only scopes and priorities are modified. Some common parameters:
+Configure [_log.init_](./framework/areg/resources/log.init) file located in the _./config_ subfolder of binaries. In most of the cases only loging scopes and priorities are modified. The other parameters are described in _log.init_ file.
 ```
 log.enable = true                         # <== Enable / disable logging globaly
 log.file   = ./logs/%appname%_%time%.log  # <== Logging file mask. Used app name and timestamp.
@@ -110,79 +110,58 @@ scope.my_app.ignore_this_group_* = NOTSET ;        # disable logs of certain sco
 
 ## Development
 
-For details of how to create Service Interface document, how to run code generator and how to write application, please see [develop.md](./docs/develop.md).
+The development guidance and examples of codes you'll find in [develop.md](./docs/develop.md).
 
 ## Use cases and benefits
 
-AREG SDK can be used practically in every application that are developed as multi-threading or multi-processing running on Linux or Windows machines.
+AREG SDK can be used in very large scope of multi-threading or multi-processing application development running on Linux or Windows machines.
 
 ### Event-driven
 
-The majority of applications are event-driven, when the components are reacting and states are changed by certain events. AREG engine is 100% event-driven, there is no need manually to poll messages from TCP stack and dispatch them by data type as it is required in many other solutions.
+Applications powered by AREG SDK are fully event-driven. There is no need for manual polling to extract and dispatch messages from TCP pool as it is required in many other solutions. The SDK force developers to keep modularity.
 
 ### Fault tolerant
 
-There is no need of application start and shutdown priority to run services and establish connections as it is required in many other solutions. The engine provides 100% fault tolerant system and the automatic service discovery makes sure that clients are automatically notified when waiting service is available in the system.
+AREG engine provides fault tolerant system, where crash of one application does not cause the crash or stuck of others, there is not application start or shutdown priority, the automatic service discovery notifies clients about service availability.
 
 ### Distributed
 
-AREG SDK is a lightweight form of distributed computing where the predefined services can run on any node on the accessible network. The system architect may easily define services running on one or many processes. 
+AREG SDK is a lightweight form of distributed computing where the services can run on any computing node in the network, and the application architects can very easy decide how to distributed the computing power.
 
-In this example, 2 services and one client run in one process and one thread:
+This examples shows the initialization of multiple services and clients in one process. 
+
 ```cpp
 // Describe mode, set model name
 BEGIN_MODEL(NECommon::ModelName)
 
     // define component thread
-    BEGIN_REGISTER_THREAD( "TestMainServiceThread" )
-
-        // define component, set role name. This will trigger default 'create' and 'delete' methods of component
+    BEGIN_REGISTER_THREAD( "Thread1" )
+        // define component, set name.
         BEGIN_REGISTER_COMPONENT( NECommon::MainService, MainServiceComponent )
-            
             // register RemoteRegistry, SystemShutdown service implementation and the dependency.
             REGISTER_IMPLEMENT_SERVICE( NERemoteRegistry::ServiceName, NERemoteRegistry::InterfaceVersion )
             REGISTER_IMPLEMENT_SERVICE( NESystemShutdown::ServiceName, NESystemShutdown::InterfaceVersion )
             REGISTER_DEPENDENCY(NECommon::LocalService)
-
         // end of component description
         END_REGISTER_COMPONENT( NECommon::MainService )
+
+        // define component, set role name. This will trigger default 'create' and 'delete' methods of component
+        BEGIN_REGISTER_COMPONENT( NECommon::LocalService, LocalServiceComponent )
+            // register LocalHelloWorld service implementation.
+            REGISTER_IMPLEMENT_SERVICE( NELocalHelloWorld::ServiceName, NELocalHelloWorld::InterfaceVersion )
+        // end of component description
+        END_REGISTER_COMPONENT( NECommon::LocalService )
+        
+    // end of thread description
+    END_REGISTER_THREAD( "Thread1" )
 
 // end of model NECommon::ModelName
 END_MODEL(NECommon::ModelName)
 ```
-In this example, 2 services run in 2 threads and each of them as well has a client:
+
+The Public services _NERemoteRegistry::ServiceName_ and _NESystemShutdown::ServiceName_ can be easily split in separate threads or they can run in different processes. Once the model is defined, components and services are initilized and run by simple call:
 ```cpp
-// Describe mode, set model name
-BEGIN_MODEL(NECommon::ModelName)
-
-    // define first  thread
-    BEGIN_REGISTER_THREAD( "Thread1" )
-
-        // define first component
-        BEGIN_REGISTER_COMPONENT( "component1", OneServiceComponent )
-
-            // register RemoteRegistry service implementation and the dependency.
-            REGISTER_IMPLEMENT_SERVICE( NERemoteRegistry::ServiceName, NERemoteRegistry::InterfaceVersion )
-            REGISTER_DEPENDENCY(NECommon::LocalService)
-
-        // end of component description
-        END_REGISTER_COMPONENT( "component1" )
-
-    // define second thread
-    BEGIN_REGISTER_THREAD( "Thread2" )
-
-        // define second component
-        BEGIN_REGISTER_COMPONENT( "component2", TwoServiceComponent )
-
-            // register SystemShutdown service implementation and the dependency.
-            REGISTER_IMPLEMENT_SERVICE( NESystemShutdown::ServiceName, NESystemShutdown::InterfaceVersion )
-            REGISTER_DEPENDENCY(NECommon::LocalService)
-
-        // end of component description
-        END_REGISTER_COMPONENT( "component2" )
-
-// end of model NECommon::ModelName
-END_MODEL(NECommon::ModelName)
+Application::loadModel(NECommon::ModelName);
 ```
 
 The major features of AREG SDK to benefit:
