@@ -80,7 +80,7 @@ For details to load and/or compile projects see [HOWTO](./docs/HOWTO.md) documen
 
 ## Integration
 
-### Mulit-cast router
+#### Mulit-cast router
 
 Configure [_router.init_](./framework/areg/resources/router.init) file to set IP-address and the port number of the multicast router:
 ```
@@ -89,7 +89,7 @@ connection.port.tcpip       = 8181      # the connection port of mcrouter
 ```
 In case of multi-threading applications the configuration of router.init can be ignored.
 
-### Logging service
+#### Logging service
 
 Configure [_log.init_](./framework/areg/resources/log.init) to specify scopes, log priorities and log file name:
 ```
@@ -111,13 +111,9 @@ The development guidance and examples of codes you'll find in [develop.md](./doc
 
 AREG SDK can be used in a very large scope of multithreading or multiprocessing application development running on Linux or Windows machines.
 
-### Event-driven
+#### Distributed solution
 
-Applications powered by AREG SDK are fully event-driven. There is no need for manual polling to extract and dispatch messages from the TCP pool as it is required in many other solutions. The SDK helps developers to keep modularity.
-
-### Distributed
-
-AREG SDK is a lightweight form of distributed computing where the services can run on any computing node in the network, and the application architects can easily decide how to distribute the computing power.
+AREG SDK is a lightweight form of distributed computing where the services can run on any computing node in the network, and the application architects can easily decide how to distribute the computing power. The system automated service discovery makes service location transparent, so that the applications interact as if the components are located within one process and even within the same thread.
 
 This example shows the initialization of 2 services in separate threads that can be very easily merged in one thread and in case of _Public_ services easily split in multiple processes.
 ```cpp
@@ -137,20 +133,29 @@ BEGIN_MODEL(NECommon::ModelName)
 
 END_MODEL(NECommon::ModelName)
 ```
-The MACRO create _model_ that describes the relation of objects. The threads and the services are insantiated when model is loaded:
+The MACRO create _model_ that describes the relation of objects. The threads and the services are instantiated when model is loaded:
 ```cpp
 Application::loadModel(NECommon::ModelName);
 ```
 It is as well possible to instantiate 2 instances of the same service implementation, but they must have unique role names within one system. This means, the _Public_ services must have unique names within a single network and the _Local_ services must have unique names within a process.
 
-### Driverless
+#### Driverless
 
-Normally, the devices are supplied with the drivers to install in the system and the software components are supplied with the header files to integrate in the other application. There is no need to deliver drivers or header files, because with AREG SDK devices provide device specific services that are described in XML files that can be used to generate all necessary files to implement service clients. 
+Normally, the devices are supplied with the drivers to install in the system and the software components are supplied with the header files to integrate in the other application. There is no need to deliver drivers or header files, because with AREG SDK devices provide device specific services that are described in XML files that can be used to generate all necessary files to implement service clients.
 
-The major features of AREG SDK to benefit:
-* The combination of request-response, broadcast and subscription services.
-* Transparency of service location, which also eases simulation development and test automation.
-* Automated service discovery, automated messaging and dispatching, featured logging and code generator.
+#### Real-time solutions
+
+As soon as a remote method is called, the engine of AREG SDK immediately generates and delivers messages to the target component, which invokes appropriate methods of service interface. This makes communication latency ultra-low and comparable with real-time. The AREG solution can be used in such industries like automotive, flock of drones, medtech, real-time manufacturing, real-time monitoring, etc.
+
+#### Digital twin
+
+In many solutions, the digital twins use client-server architecture, where the server is a middleware component that collects all the states of the external devices connected as clients, and the GUI application is just another client that visualizes the collected data. In such solutions devices interact through server middleware or the UI client application. The event-driven architecture and the real-time communication of AREG SDK is a perfect solution to use in digital twin development where the application monitors and controls external devices, and immediately reacts on state change, and where the devices can communicate directly with each other without any intermediate layer. In case of security and emergency, this is the most optimal and the most secured solution.
+
+#### Simulations and automated tests
+
+Testing rapidly changing software in a risk-free simulated environment to check unexpected phenomena is a good solution when hardware provisioning to all employees is impossible (too expensive, too big, only very few prototypes exist). Simulations are portable and accessible to everyone, help to optimize solutions, avoid unnecessary risks and protect lives. Projects using simulations are better prepared for remote work.
+
+The software components in applications normally are split in Data, Controller, Business and the optional Presentation layers. Distributed, fault tolerant and service oriented solution of the AREG SDK engine eases testing application in simulated environment, where the Simulation application provides implementation of Data layer services, so that the rest of application can be tested without any change. 
 
 ## Examples
 
