@@ -30,7 +30,7 @@
 
 Traditionally, devices are connected clients to stream data to the cloud or fog servers for further processing.
 <br>
-<img src="/docs/img/mist-network-1280x640.png" alt="IoT-to-Cloud (Nebula) network, mist network, mist computing" style="width:75%;height:75%"/>
+<img src="/docs/img/mist-network.png" alt="IoT-to-Cloud (Nebula) network, mist network, mist computing" style="width:75%;height:75%" align-"center"/>
 <br>
 <br>
 Since data is generated and collected at the edge of the network (mist network), it makes sense to change the role of connected Things and provide network accessible (_Public_) services directly on devices. This is a good foothold for robust solutions such as:
@@ -40,32 +40,35 @@ Since data is generated and collected at the edge of the network (mist network),
 
 ## More than embedded
 
-When we were designing AREG SDK, the guiding principle was to create a framework to develop embedded applications that intelligently interact at the edge of the network. To keep application design homogeneous and escape complexity of multiple communication layers, we defined _services_ for multi-threading, distributed and multi-processing, and for internet communication.
-<br><br><img src="docs/img/services.png" alt="AREG SDK distributed services" style="width:60%;height:60%"/><br><br>
-The designed services are neither processes, nor tasks managed by the operating system, they are software components with Service Interface(s), which methods are invoked remotely (_Object Remote Procedure Call_ / _ORPC_).
-> 💡 The current implementation of AREG engine intelligently handles and distributed message for multi-threading (_Local_ services) and multi-processing (_Public_ services) communication. 
+When we were designing AREG SDK, the guiding principle was to create a framework to develop applications for embedded and high-end systems that intelligently interact at the edge of the network. To keep application design homogeneous and escape complexity of multiple communication layers, we defined _types of services_ for multi-threading, multi-processing and internet communication. These services are neither processes, nor tasks managed by the operating system, they are software components with predefined interface, which methods are invoked remotely.
+<br><img src="docs/img/areg-services.png" alt="AREG SDK distributed services" style="width:75%;height:75%"/><br>
+> 💡 The current implementation of AREG engine intelligently handles and distributes messages for multi-threading (_Local_ services) and multi-processing (_Public_ services) communication. 
 
-## Escape complexity of multiprocessing
+The automations of AREG SDK engine simplify distributed and multi-processing programming, and help developers to focus on application business logic as they would program a single process application with one thread where methods of objects are event-driven. The engine forms fault tolerant and scalable system of distributed services, it automatically discovers services for the clients, delivers and dispatches messhages, and  guarantees that:
+* The requests called by client objects are automatically executed on server components.
+* The responses sent by server component are automatically invoked on exact client side and they are not mixed or missed.
+* On subscription, the engine automatically delivers data to subscriber without additional interaction.
 
-AREG SDK simplifies the multiprocessing programming and helps developers to focus on application business logic as they would program a single process application with one thread where methods of objects are event-driven. The engine creates fault tolerant and scalable system of distributed services, it guarantees that the system automatically delivers the exact and the newest data on subscription, and the system triggers the exact request or response method of the exact servicing component (_server_ or _client_), and the messages are neither mixed, nor lost. 
-<br><br><img src="/docs/img/service-oriented.png" alt="Service Oriented design" style="width:80%;height:80%"/><br>
+## Composition
 
-## Benefits
-The major features of AREG SDK to benefit:
-* The combination of request-response, broadcast and subscription services.
-* Transparency of service location, which also eases simulation development and test automation.
-* Automated service discovery, automated messaging and dispatching, featured logging and code generator.
+AREG SDK consists:
+# [Multi-cast router (_mcrouter_)](./framework/mcrouter/), which is used for inter-process communication (_IPC_), should be only one instance per network, and can run either as a service managed by the operatting system or as a console application.
+# [AREG framework (or engine)](./framework/areg/), which is a library (static or shared) and should be used in every application.
+# [Code generator tool](./tools/), which generates client and server bases objects from service interface document.
+# Integrated logging service that logs scopes and messages, can filter logs by priority and scopes.
+
+With each major release there are more tools and features are already planned to bring to the market.
 
 ## Software build
 
-AREG SDK consists of [framework library](./framework/areg/) and [multi-cast router](./framework/mcrouter/) sources to compile.
+AREG SDK sources are developed to compile:
 * **Supported OS**: POSIX-compliant OS (list of [POSIX API](./docs/POSIX.md#the-list-of-posix-api-used-in-areg-sdk-including-multicast-message-router)), Windows 8 and higher.
-* **Supported CPU**: x86, amd64, arm and aarch64.
+* **Supported CPU**: x86, x86_64 / amd64, arm and aarch64.
 * **Supported compilers**: Version C++17 GCC, g++, clang and MSVC.
 > 💡 The other POSIX-compliant OS and compilers are not tested yet.
 
 Compile AREG SDK sources and examples using following tools:
-* **On Linux or Windows**: import projects in _Eclipse_ to compile with POSIX.
+* **On Linux or Windows**: import projects in _Eclipse_ to compile with POSIX (you would probably need to change Toolchain).
 * **On Windows**: open areg-sdk.sln file in _MS Visual Studio_ to compile with Win32.
 * **On Linux**: in the terminal call “_make_” as shown below to compile with POSIX.
 ```shell
@@ -75,18 +78,41 @@ For detailed instructions to load and/or compile projects see [HOWTO](./docs/HOW
 
 ## Integration
 
-AREG SDK consts of _mcrounter_ executable and _areg_ library.
-* After compilation, _mcrouter_ can be started either as a system service or console application.
-* The _areg_ library can be linked with other binaries as a shared or static library.
-* Before starting _mcrouter_ or areg powered application, modify _router.init_.
+### Mulit-cast router
+
+Configure [_router.init_](./framework/areg/resources/router.init) file, make sure that it is located in _./config_ subfolder of your binary location. In most of the cases you would need to modify only these parameter. Set the IP-address and port number of the machine where multi-cast router (_mcrouter_) is running and the port that is listening. Make sure that _mcrouter_ and the application have same configuration.
 ```
-connection.type             = tcpip     # right now it supports only 'tcpip' (TCP/IP)
-connection.enable.tcpip     = true      # if 'true' the service mcrouter connection is enabled
-connection.name.tcpip       = TCPIP     # unique connection name
 connection.address.tcpip    = 127.0.0.1	# the address of service mcrouter host
 connection.port.tcpip       = 8181      # service mcrouter connection port
 ```
-Akk binaries should have same settings to be able to connect with same multi-cast router.
+You may ignore multi-cast router and the configuration if you only develop multi-threadin application.
+
+### Logging service
+
+Configure [_log.init_](./framework/areg/resources/log.init) file, make sure that is is located in the _./config_ subfolder of your binary location. The configuration of logging is realitevely well document, for details see the document description. In most of the cases you would need to use the following settings:
+```
+log.enable = true     # <== Enable logging globaly
+log.file   = ./logs/%appname%_%time%.log  # <== the mask of logging file. Used app name and timestamp.
+
+# #######################################
+# Application(s) Scopes
+# #######################################
+
+scope.mcrouter.*    = NOTSET ;  # disable logs for the entire mcrouter.
+
+scope.my_app.*                   = DEBUG | SCOPE ; # my_app logs everything
+scope.my_app.ignore_this_scope   = NOTSET ;        # my_app disables log of certain scopes
+scope.my_app.ignore_this_group_* = NOTSET ;        # my_app disables log of certain scope group
+
+scope.another_app.log_only_warn_and_errors = WARN | SCOPE ;  # another_app enables warnings of certain scope
+scope.another_app.do_not_log_scopes        = WARN ;          # another_app enables warnings and disables scope logs
+```
+
+## Benefits
+The major features of AREG SDK to benefit:
+* The combination of request-response, broadcast and subscription services.
+* Transparency of service location, which also eases simulation development and test automation.
+* Automated service discovery, automated messaging and dispatching, featured logging and code generator.
 
 ## Development
 
