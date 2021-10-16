@@ -142,8 +142,10 @@ It is as well possible to instantiate 2 instances of the same service implementa
 
 #### Driverless devices
 
-Normally, the devices are supplied with the drivers to install in the system and the software components are supplied with the header files to integrate in the other application. The drivers often run in Kernel mode, where the crash of the driver causes the crash of the entire system, driver development requires special technique, which is different for each operating system and it is hard to debug. Our proposal is to deliver driverless service enabled devices, where services are described in XML document. 
-<br><a href="/docs/img/areg-driverless.png"><img src="/docs/img/areg-driverless.png" alt="AREG SDK driverless solution" style="width:70%;height:70%"/></a><br>
+Normally, the devices are supplied with the drivers to install in the system and the software components are supplied with the header files to integrate in the other application. The drivers often run in Kernel mode, where the crash of the driver causes the crash of the entire system, driver development requires special technique, which is different for each operating system and it is hard to debug. 
+<br><a href="/docs/img/driver-solution.png"><img src="/docs/img/driver-solution.png" alt="Traditional kernel-mode driver solution" style="width:70%;height:70%"/></a><br>
+Our proposal is to deliver driverless service enabled devices, where services are described in XML document. 
+<br><a href="/docs/img/driverless-solution.png"><img src="/docs/img/driverless-solution.png" alt="AREG SDK driverless solution" style="width:70%;height:70%"/></a><br>
 In contrast to drivers, the service development does not differ from any user mode application development, it is faster, contains less risks and requires less resources. The code-generator will generate files to use services in any application.
 
 #### Real-time solutions
