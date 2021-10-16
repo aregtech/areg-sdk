@@ -6,7 +6,7 @@
 > 💡 By ![Staring us](https://img.shields.io/github/stars/aregtech/areg-sdk.svg?style=social&label=Staring%20us) on GitHub and spreading AREG SDK link on social media, you help and inspire us to provide featured technology that helps to cut costs and create service enabled product!
 
 <!-- markdownlint-disable -->
-## 🚦 Project status
+##  🚩 Project status
 <table class="no-border">
   <tr>
     <td><img src="https://github.com/aregtech/areg-sdk/actions/workflows/c-cpp.yml/badge.svg" alt="C++ compiltation"/></td>
@@ -22,17 +22,16 @@
   </tr>
 </table>
 
-## 🙋 Introduction
+##  🚩 Introduction
 
 **AREG SDK** is an Interface centric lightweight real-time asynchronous communication engine to provide IPC and enable [mist computing](https://csrc.nist.gov/publications/detail/sp/500-325/final), where Things interact and provide services, as if they act like thin distributed servers.
+<br><a href="/docs/img/areg-sdk-features.png"><img src="/docs/img/areg-sdk-features.png" alt="Traditional kernel-mode driver solution" style="width:70%;height:70%"/></a><br>
+> 💡 Currently AREG engine supports only one communication channel and flat buffer protocol. With each release there will be new channel and new protocol integrated.
 
-## 🎓 Motivation
+##  🚩 Motivation
 
 Traditionally, devices are connected clients to stream data to the cloud or fog servers for further processing.
-<br>
-<a href="/docs/img/mist-network.png"><img src="/docs/img/mist-network.png" alt="IoT-to-Cloud (Nebula) network, mist network, mist computing" style="width:70%;height:70%"/></a>
-<br>
-<br>
+<br><a href="/docs/img/mist-network.png"><img src="/docs/img/mist-network.png" alt="IoT-to-Cloud (Nebula) network, mist network, mist computing" style="width:70%;height:70%"/></a><br>
 Since data is generated and collected at the edge of the network (mist network), it makes sense to change the role of connected Things and provide network accessible (_Public_) services directly on devices. This extends _Cloud_ to the extreme edge and is a good foothold for robust solutions such as:
 * _Increase data privacy_, which is an important factor for sensitive data.
 * _Decrease data streaming_, which is a fundamental condition to optimize network communication.
