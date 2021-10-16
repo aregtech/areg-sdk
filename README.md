@@ -156,9 +156,9 @@ Often, the digital twin applications use client-server architecture, where the m
 
 #### Simulations and automated tests
 
-When hardware provisioning to all employees is impossible (too expensive, too big, only very few prototypes exist), testing and checking unexpected phenomena of rapidly changing software in a simulation can be the most rational solution. If with unit tests developers test a small portion of code, the simulation is used by developer and testers to check functionalities and system stability. Simulations are portable and accessible to everyone, help to test functionalities and optimize solutions, avoid unnecessary risks and protect lives. Projects using simulations are better prepared for remote work.
-
-The software components in applications normally are split in Data, Controller, Business and the optional Presentation layers. Distributed, fault tolerant and service oriented solution of the AREG SDK engine eases testing application in simulated environment, where the Simulation application provides implementation of Data layer services, so that the rest of application can be tested without any change. 
+When hardware provisioning to all employees is impossible, testing and checking unexpected phenomena of rapidly changing software in a simulated environment is the rational solution. If unit tests are used by developers to test a small portion of code, the simulation is used by developer and testers to check the system functionality and stability. Simulations are portable and accessible to everyone, help to optimize solutions, avoid unnecessary risks and protect lives. Projects using simulations are better prepared for remote work and easier to outsource.
+<br><a href="/docs/img/software-layers.png"><img src="/docs/img/software-layers.png" alt="Software application 4 layers" style="width:70%;height:70%"/></a><br>
+The software components in applications normally are split in Data, Controller, Business and the optional Presentation layers. Distributed, fault tolerant and service oriented solution of the AREG SDK engine eases to test the system in simulated environment, where the Simulation application provides implementation of services of Data layer, so that the rest of application can be tested without any change.
 
 ## Examples
 
