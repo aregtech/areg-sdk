@@ -72,14 +72,14 @@ Compile AREG SDK sources and examples using following tools:
 * **On Linux or Windows**: import projects in _Eclipse_ to compile with POSIX (you would probably need to change Toolchain).
 * **On Windows**: open areg-sdk.sln file in _MS Visual Studio_ to compile with Win32.
 * **On Linux**: in the terminal call “_make_” as shown below to compile with POSIX.
-🚩```shell
+```shell
 $ make [all] [framework] [examples]
 ```
 For details to load and/or compile projects see [HOWTO](./docs/HOWTO.md) document.
 
 ## 📌 Integration and development
 
-#### Mulitcast router
+#### 🚩 Mulitcast router
 
 Configure [_router.init_](./framework/areg/resources/router.init) file to set IP-address and the port number of the multicast router:
 ```
@@ -88,7 +88,7 @@ connection.port.tcpip       = 8181      # the connection port of mcrouter
 ```
 In case of multi-threading applications the configuration of router.init can be ignored.
 
-#### Logging service
+#### 🚩 Logging service
 
 Configure [_log.init_](./framework/areg/resources/log.init) to specify scopes, log priorities and log file name:
 ```
@@ -103,7 +103,7 @@ scope.my_app.ignore_this_group_* = NOTSET ;        # disable logs of certain sco
 > 💡 To enable all logs of all applications, use ```scope.*  = DEBUG | SCOPE ;``` .<br>
 > 💡 In current version the logging is possible only in the file.
 
-### Development
+### 🚩 Development
 
 The development guidance and examples of codes you'll find in [develop.md](./docs/develop.md).
 
@@ -111,12 +111,12 @@ The development guidance and examples of codes you'll find in [develop.md](./doc
 
 AREG SDK can be used in a very large scopes of multithreading or multiprocessing application development running on Linux or Windows machines.
 
-#### Distributed solution
+#### 🚩 Distributed solution
 
 AREG SDK is a lightweight form of distributed computing where the services can run on any node in the network, and the application architects can easily decide how to distribute the computing power. The automated service discovery makes service location transparent, so that the applications interact as if the components are located in the same process and even in the same thread.
 
 This example shows the definition of 2 services in separate threads that can be very easily merged in one thread and in case of _Public_ services easily split in 2 processes. Independent of these service location, neither software developers, nor client objects feel difference except possible slight network latency in case of IPC.
-🚩```cpp
+```cpp
 BEGIN_MODEL(NECommon::ModelName)
 
     BEGIN_REGISTER_THREAD( "Thread1" )
@@ -139,7 +139,7 @@ Application::loadModel(NECommon::ModelName); // start services.
 ```
 It is as well possible to instantiate 2 instances of the same service implementation, but they must have unique _role names_ within one system. This means, the _Public_ services must have unique names within a single network and the _Local_ services must have unique names within a process.
 
-#### Driverless devices
+#### 🚩 Driverless devices
 
 Normally, the devices are supplied with the drivers to install in the system and the software components are supplied with the header files to integrate in the other application. The drivers often run in Kernel mode, where the crash of the driver causes the crash of the entire system, driver development requires special technique, which is different for each operating system and it is hard to debug. 
 <br><a href="/docs/img/driver-solution.png"><img src="/docs/img/driver-solution.png" alt="Traditional kernel-mode driver solution" style="width:70%;height:70%"/></a><br>
@@ -147,15 +147,15 @@ Our proposal is to deliver driverless service enabled devices, where services ar
 <br><a href="/docs/img/driverless-solution.png"><img src="/docs/img/driverless-solution.png" alt="AREG SDK driverless solution" style="width:70%;height:70%"/></a><br>
 In contrast to drivers, the service development does not differ from any user mode application development, it is faster, contains less risks and requires less resources. The code-generator will generate files to use services in any application.
 
-#### Real-time solutions
+#### 🚩 Real-time solutions
 
 When a remote method of the service interface is called, the engine of AREG SDK immediately generates and delivers messages to the target component, which invokes appropriate method of addressed service. This makes communication real-time with ultra-low networking latency. Such solutions are highly required to develop time-sensetive applications for automotive, flock of drones, medtech, real-time manufacturing, real-time monitoring and other projects.
 
-#### Digital twin
+#### 🚩 Digital twin
 
 Often, the digital twin applications use client-server architecture, where the middleware server collects the data of the external devices and the UI application virtualizes them. In such solutions devices interact either through server middleware or the UI client application. The event-driven architecture and the real-time communication of AREG SDK is a perfect solution to use in digital twin development where the application virtualizes, monitors and controls external devices, and immediately reacts on state change in real-time mode. External devices may communicate to each other without additional layer, which is an important factor for emergency, security and safety cases.
 
-#### Simulations and automated tests
+#### 🚩 Simulations and automated tests
 
 When hardware provisioning to all employees is impossible, testing and checking unexpected phenomena of rapidly changing software in a simulated environment is the rational solution. If unit tests are used by developers to test a small portion of code and they may as well contain bugs, the simulation is used by developer and testers to check the system functionality and stability. Simulations are portable and accessible to everyone, help to optimize solutions, avoid unnecessary risks and protect lives. Projects using simulations are better prepared for remote work and easier to outsource.
 <br><a href="/docs/img/software-layers.png"><img src="/docs/img/software-layers.png" alt="Software application 4 layers" style="width:70%;height:70%"/></a><br>
@@ -177,6 +177,7 @@ For commercial license, support or additional information, please visit [Aregtec
 
 Did you like the project? Please share the project with your connections on [![Twitter](https://img.shields.io/twitter/url?label=Twitter&style=social&url=https%3A%2F%2Fgithub.com%2Faregtech%2Fareg-sdk)](https://twitter.com/intent/tweet?text=Wow:&url=https%3A%2F%2Fgithub.com%2Faregtech%2Fareg-sdk) and other social media platforms. [![Star us](https://img.shields.io/github/stars/aregtech/areg-sdk.svg?style=social&label=Star%20us)](https://github.com/aregtech/areg-sdk/) on GitHub. This inspires us, we feel useful and motivated to develop more! You are as well welcomed to become a code distributor or suggest features.
 
+#### 🚩 Follow us
 [![Follow us](https://img.shields.io/twitter/follow/aregtech.svg?style=social)](https://twitter.com/intent/follow?screen_name=aregtech) [![Follow us](https://img.shields.io/badge/LinkedIn-Follow%20us-blue)](https://www.linkedin.com/company/aregtech/)
 
 <!-- markdownlint-enable -->
