@@ -22,13 +22,13 @@
   </tr>
 </table>
 
-##  🚩 Introduction
+## 🚩 Introduction
 
 **AREG SDK** is an Interface centric lightweight real-time asynchronous communication engine to provide IPC and enable [mist computing](https://csrc.nist.gov/publications/detail/sp/500-325/final), where Things interact and provide services, as if they act like thin distributed servers.
 <br><a href="/docs/img/areg-sdk-features.png"><img src="/docs/img/areg-sdk-features.png" alt="Traditional kernel-mode driver solution" style="width:70%;height:70%"/></a><br>
 > 💡 Currently AREG engine supports only one communication channel and flat buffer protocol. With each release there will be new channel and new protocol integrated.
 
-##  🚩 Motivation
+## 🚩 Motivation
 
 Traditionally, devices are connected clients to stream data to the cloud or fog servers for further processing.
 <br><a href="/docs/img/mist-network.png"><img src="/docs/img/mist-network.png" alt="IoT-to-Cloud (Nebula) network, mist network, mist computing" style="width:70%;height:70%"/></a><br>
@@ -50,7 +50,7 @@ The implemented engine forms a fault tolerant system, automates communication, s
 * The sent responses are automatically invoked on the exact client side, they are not mixed or missed.
 * The subscriptions on data, response and broadcast are invoked on client side without additional interaction.
 
-## 👻 Composition
+## 📌 Composition
 
 AREG SDK consists of:
 1. [Multicast router (_mcrouter_)](./framework/mcrouter/) to use in IPC. It runs either as a service managed by the OS or as a console application.
@@ -59,7 +59,7 @@ AREG SDK consists of:
 
 The framework contains an integrated logging service that can be configured. More tools and features are planed for next releases.
 
-## 💪 Software build
+## 📌 Software build
 
 AREG SDK sources are developed to compile:
 * **Supported OS**: POSIX-compliant OS (list of [POSIX API](./docs/POSIX.md#the-list-of-posix-api-used-in-areg-sdk-including-multicast-message-router)), Windows 8 and higher.
@@ -77,7 +77,7 @@ $ make [all] [framework] [examples]
 ```
 For details to load and/or compile projects see [HOWTO](./docs/HOWTO.md) document.
 
-## 🔨 Integration and development
+## 📌 Integration and development
 
 #### Mulitcast router
 
