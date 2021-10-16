@@ -156,9 +156,11 @@ Often, the digital twin applications use client-server architecture, where the m
 
 #### Simulations and automated tests
 
-When hardware provisioning to all employees is impossible, testing and checking unexpected phenomena of rapidly changing software in a simulated environment is the rational solution. If unit tests are used by developers to test a small portion of code, the simulation is used by developer and testers to check the system functionality and stability. Simulations are portable and accessible to everyone, help to optimize solutions, avoid unnecessary risks and protect lives. Projects using simulations are better prepared for remote work and easier to outsource.
+When hardware provisioning to all employees is impossible, testing and checking unexpected phenomena of rapidly changing software in a simulated environment is the rational solution. If unit tests are used by developers to test a small portion of code and they may as well contain bugs, the simulation is used by developer and testers to check the system functionality and stability. Simulations are portable and accessible to everyone, help to optimize solutions, avoid unnecessary risks and protect lives. Projects using simulations are better prepared for remote work and easier to outsource.
 <br><a href="/docs/img/software-layers.png"><img src="/docs/img/software-layers.png" alt="Software application 4 layers" style="width:70%;height:70%"/></a><br>
 The software components in applications normally are split in Data, Controller, Business and the optional Presentation layers. Distributed, fault tolerant and service oriented solution of the AREG SDK engine eases to test the system in simulated environment, where the Simulation application provides implementation of services of Data layer, so that the rest of application can be tested without any change.
+
+The same technique of simulating data can be used to create API driven test automations.
 
 ## Examples
 
@@ -172,7 +174,7 @@ For commercial license, support or additional information, please visit [Aregtec
 
 ## Inspire us!
 
-Did you like the project? Please share the project with your connections on [![Twitter](https://img.shields.io/twitter/url?label=Twitter&style=social&url=https%3A%2F%2Fgithub.com%2Faregtech%2Fareg-sdk)](https://twitter.com/intent/tweet?text=Wow:&url=https%3A%2F%2Fgithub.com%2Faregtech%2Fareg-sdk) and [![Star us](https://img.shields.io/github/stars/aregtech/areg-sdk.svg?style=social&label=Star%20us)](https://github.com/aregtech/areg-sdk/) on GitHub to inspire us! You can as well become a distributor or suggest features.
+Did you like the project? Please share the project with your connections on [![Twitter](https://img.shields.io/twitter/url?label=Twitter&style=social&url=https%3A%2F%2Fgithub.com%2Faregtech%2Fareg-sdk)](https://twitter.com/intent/tweet?text=Wow:&url=https%3A%2F%2Fgithub.com%2Faregtech%2Fareg-sdk) and other social media platforms. [![Star us](https://img.shields.io/github/stars/aregtech/areg-sdk.svg?style=social&label=Star%20us)](https://github.com/aregtech/areg-sdk/) on GitHub. This inspires us, we feel useful and motivated to develop more! You are as well welcomed to become a code distributor or suggest features.
 
 [![Follow us](https://img.shields.io/twitter/follow/aregtech.svg?style=social)](https://twitter.com/intent/follow?screen_name=aregtech) [![Follow us](https://img.shields.io/badge/LinkedIn-Follow%20us-blue)](https://www.linkedin.com/company/aregtech/)
 
