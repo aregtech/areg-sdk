@@ -6,7 +6,7 @@
 > 💡 By ![Staring us](https://img.shields.io/github/stars/aregtech/areg-sdk.svg?style=social&label=Staring%20us) on GitHub and spreading AREG SDK link on social media, you help and inspire us to provide featured technology that helps to cut costs and create service enabled product!
 
 <!-- markdownlint-disable -->
-##  🚩 Project status
+##  📌 Project status
 <table class="no-border">
   <tr>
     <td><img src="https://github.com/aregtech/areg-sdk/actions/workflows/c-cpp.yml/badge.svg" alt="C++ compiltation"/></td>
@@ -22,13 +22,13 @@
   </tr>
 </table>
 
-## 🚩 Introduction
+## 📌 Introduction
 
 **AREG SDK** is an Interface centric lightweight real-time asynchronous communication engine to provide IPC and enable [mist computing](https://csrc.nist.gov/publications/detail/sp/500-325/final), where Things interact and provide services, as if they act like thin distributed servers.
 <br><a href="/docs/img/areg-sdk-features.png"><img src="/docs/img/areg-sdk-features.png" alt="Traditional kernel-mode driver solution" style="width:70%;height:70%"/></a><br>
 > 💡 Currently AREG engine supports only one communication channel and flat buffer protocol. With each release there will be new channel and new protocol integrated.
 
-## 🚩 Motivation
+## 📌 Motivation
 
 Traditionally, devices are connected clients to stream data to the cloud or fog servers for further processing.
 <br><a href="/docs/img/mist-network.png"><img src="/docs/img/mist-network.png" alt="IoT-to-Cloud (Nebula) network, mist network, mist computing" style="width:70%;height:70%"/></a><br>
@@ -37,7 +37,7 @@ Since data is generated and collected at the edge of the network (mist network),
 * _Decrease data streaming_, which is a fundamental condition to optimize network communication.
 * Develop _autonomous, intelligent and self-aware devices_ by providing network services directly in the environment of data origin.
 
-## 💎 More than embedded
+## 📌 More than embedded
 
 When we were designing AREG SDK, the guiding principle was to create a framework to develop embedded and high-end applications that intelligently interact at the edge of the network. To keep application design homogeneous we defined multi-threading, multi-processing and internet communication service types. These services are neither processes, nor tasks managed by the operating system, they are software components with predefined interface, which methods are invoked remotely.
 <br><a href="docs/img/areg-services.png"><img src="docs/img/areg-services.png" alt="AREG SDK distributed services" style="width:70%;height:70%"/></a><br>
@@ -72,7 +72,7 @@ Compile AREG SDK sources and examples using following tools:
 * **On Linux or Windows**: import projects in _Eclipse_ to compile with POSIX (you would probably need to change Toolchain).
 * **On Windows**: open areg-sdk.sln file in _MS Visual Studio_ to compile with Win32.
 * **On Linux**: in the terminal call “_make_” as shown below to compile with POSIX.
-```shell
+🚩```shell
 $ make [all] [framework] [examples]
 ```
 For details to load and/or compile projects see [HOWTO](./docs/HOWTO.md) document.
@@ -107,7 +107,7 @@ scope.my_app.ignore_this_group_* = NOTSET ;        # disable logs of certain sco
 
 The development guidance and examples of codes you'll find in [develop.md](./docs/develop.md).
 
-## 💰 Use cases and benefits
+## 📌 Use cases and benefits
 
 AREG SDK can be used in a very large scopes of multithreading or multiprocessing application development running on Linux or Windows machines.
 
@@ -116,7 +116,7 @@ AREG SDK can be used in a very large scopes of multithreading or multiprocessing
 AREG SDK is a lightweight form of distributed computing where the services can run on any node in the network, and the application architects can easily decide how to distribute the computing power. The automated service discovery makes service location transparent, so that the applications interact as if the components are located in the same process and even in the same thread.
 
 This example shows the definition of 2 services in separate threads that can be very easily merged in one thread and in case of _Public_ services easily split in 2 processes. Independent of these service location, neither software developers, nor client objects feel difference except possible slight network latency in case of IPC.
-```cpp
+🚩```cpp
 BEGIN_MODEL(NECommon::ModelName)
 
     BEGIN_REGISTER_THREAD( "Thread1" )
@@ -163,17 +163,17 @@ The software components in applications normally are split in Data, Controller, 
 
 The same technique of simulating data can be used to create API driven test automations.
 
-## 👀 Examples
+## 📌 Examples
 
 We provide various [examples](./examples/) to demonstrate features of the framework. The examples are listed in the [examples/README.md](./examples/README.md) document.
 
-## 🗽 Licensing
+## 📌 Licensing
  
 AREG SDK is dual-licensed under free open source (Apache version 2 license) and commercial licenses that gives the commercial support, full rights to create and distribute software without open source license obligations. For licensing details see [LICENSE](./LICENSE.txt) document.
  
 For commercial license, support or additional information, please visit [Aregtech](https://www.aregtech.com/) web site or contact _info[at]aregtech.com_.
 
-## 🔋 Inspire us!
+## 📌 Inspire us!
 
 Did you like the project? Please share the project with your connections on [![Twitter](https://img.shields.io/twitter/url?label=Twitter&style=social&url=https%3A%2F%2Fgithub.com%2Faregtech%2Fareg-sdk)](https://twitter.com/intent/tweet?text=Wow:&url=https%3A%2F%2Fgithub.com%2Faregtech%2Fareg-sdk) and other social media platforms. [![Star us](https://img.shields.io/github/stars/aregtech/areg-sdk.svg?style=social&label=Star%20us)](https://github.com/aregtech/areg-sdk/) on GitHub. This inspires us, we feel useful and motivated to develop more! You are as well welcomed to become a code distributor or suggest features.
 
