@@ -26,6 +26,25 @@
 
 **AREG SDK** is an Interface centric lightweight real-time asynchronous communication engine to provide [distributed](https://en.wikipedia.org/wiki/Distributed_computing) and enable [mist](https://csrc.nist.gov/publications/detail/sp/500-325/final) computing, where Things interact and provide services, as if they act like thin distributed servers.
 
+## 📌 Table of content
+1. [Motivation](#-motivation).
+2. [More than embedded](#-more-than-embedded).
+3. [Composition](#-composition).
+4. [Software build](#-software-build).
+5. [Integration and development](#-integration-and-development).
+5.1. [Multicast router](#mulitcast-router).
+5.2. [Loging service](#logging-service).
+5.3. [Development](#development).
+6. [Use cases and benefits](#-use-cases-and-benefits).
+6.1. [Distributes solutions](#distributed-solution).
+6.2. [Driverless devices](#driverless-devices).
+6.3. [Real-time solutions](#real-time-solutions).
+6.3. [Digital twin](#digital-twin).
+6.4. [Simulations and test automation](#simulations-and-test-automation).
+7. [Examples](#-examples).
+8. [Licensing](#-licensing).
+9. [Call for action!](#-call-for-action).
+
 ## 📌 Motivation
 
 Traditionally, devices are connected clients to stream data to the cloud or fog servers for further processing.
@@ -113,7 +132,7 @@ AREG SDK can be used in a very large scopes of multithreading or multiprocessing
 
 AREG SDK is a lightweight form of distributed computing where the services can run on any node in the network, and the application architects can easily decide how to distribute the computing power. The automated service discovery makes service location transparent, so that the applications interact as if the components are located in the same process and even in the same thread.
 
-This example shows the definition of 2 services in the separate threads. These services can be very easily merged in one thread and in case of _Public_ services easily split in 2 processes. Independent on service location, neither software developers, nor service client objects feel difference except possible slight network latency in case of IPC.
+This example shows the definition of 2 services in the separate threads.
 ```cpp
 BEGIN_MODEL(NECommon::ModelName)
 
@@ -131,7 +150,36 @@ BEGIN_MODEL(NECommon::ModelName)
 
 END_MODEL(NECommon::ModelName)
 ```
-In this example, the ```"RemoveRegistry"``` and the ```"SystemShudown"``` are the names of services (servicing components) called _role names_, and the ```NERemoteRegistry::ServiceName``` and the ```NESystemShutdown::ServiceName``` are the interface names. These MACRO create _model_ that describes the relation of the objects, which are instantiated during model loading:
+ These services can be very easily merged in one thread and in case of _Public_ services easily split in 2 processes. Each service should be defined in each process.
+_In Application 1:_
+```cpp 
+BEGIN_MODEL(NECommon::ModelName)
+
+    BEGIN_REGISTER_THREAD( "Thread1" )
+        BEGIN_REGISTER_COMPONENT( "RemoteRegistry", RemoteRegistryService )
+            REGISTER_IMPLEMENT_SERVICE( NERemoteRegistry::ServiceName, NERemoteRegistry::InterfaceVersion )
+        END_REGISTER_COMPONENT( "RemoteRegistry" )
+    END_REGISTER_THREAD( "Thread1" )
+
+END_MODEL(NECommon::ModelName)
+```
+_In Application 2:_
+```cpp
+BEGIN_MODEL(NECommon::ModelName)
+
+    BEGIN_REGISTER_THREAD( "Thread2" )
+        BEGIN_REGISTER_COMPONENT( "SystemShutdown", SystemShutdownService )
+            REGISTER_IMPLEMENT_SERVICE( NESystemShutdown::ServiceName, NESystemShutdown::InterfaceVersion )
+        END_REGISTER_COMPONENT( "SystemShutdown" )
+    END_REGISTER_THREAD( "Thread2" )
+
+END_MODEL(NECommon::ModelName)
+```
+Independent on service location, neither software developers, nor service client objects feel difference except possible slight network latency in case of IPC.
+
+In this example, the ```"RemoveRegistry"``` and the ```"SystemShudown"``` are the names of services (servicing components) called _role names_, and the ```NERemoteRegistry::ServiceName``` and the ```NESystemShutdown::ServiceName``` are the interface names. 
+
+These MACRO create _model_ that describes the relation of the objects, which are instantiated during model loading. Example, in ```int main()``` function call this method to load model:
 ```cpp
 Application::loadModel(NECommon::ModelName); // start services.
 ```
@@ -154,7 +202,7 @@ When a remote method of the service interface is called, the engine of AREG SDK 
 
 Often, the digital twin applications use client-server architecture, where the middleware server collects the data of external devices and the UI application virtualizes them. In such solutions devices interact either through server or UI client application. The event-driven architecture and the real-time communication of AREG SDK is a perfect solution to use in digital twin development where the application virtualizes, monitors and controls external devices, and immediately reacts on state change in real-time mode. External devices may communicate without additional layer, which is an important factor for emergency, security and safety cases.
 
-#### Simulations and automated tests
+#### Simulations and test automation
 
 When hardware provisioning to all employees is impossible, testing and checking unexpected phenomena of rapidly changing software in a simulated environment can be the most rational solution. If unit tests are used by developers to test a small portion of code and they may contain bugs, the simulation is used by developers and testers to check the system functionality and stability. Simulations are portable and accessible to everyone, help to optimize solutions, avoid unnecessary risks and protect lives. Projects using simulations are better prepared for remote work and easier to outsource.
 <br><a href="/docs/img/software-layers.png"><img src="/docs/img/software-layers.png" alt="Software application 4 layers" style="width:70%;height:70%"/></a><br>
@@ -172,9 +220,9 @@ AREG SDK is dual-licensed under free open source license (Apache version 2 licen
  
 For commercial license, support or additional information, please visit [Aregtech](https://www.aregtech.com/) web site or contact _info[at]aregtech.com_.
 
-## 📌 Inspire us!
+## 📌 Call for action!
 
-Did you like the project? Please share the project with your connections on [![Twitter](https://img.shields.io/twitter/url?label=Twitter&style=social&url=https%3A%2F%2Fgithub.com%2Faregtech%2Fareg-sdk)](https://twitter.com/intent/tweet?text=Wow:&url=https%3A%2F%2Fgithub.com%2Faregtech%2Fareg-sdk) and other social media platforms. [![Star us](https://img.shields.io/github/stars/aregtech/areg-sdk.svg?style=social&label=Star%20us)](https://github.com/aregtech/areg-sdk/) on GitHub. This inspires us, we feel useful and motivated to develop more! You are as well welcomed to become a code distributor or suggest features.
+Do you like the project, have more ideas or need features? You are welcomed to become code distributor or request features. Please share the project with your connections on [![Twitter](https://img.shields.io/twitter/url?label=Twitter&style=social&url=https%3A%2F%2Fgithub.com%2Faregtech%2Fareg-sdk)](https://twitter.com/intent/tweet?text=Wow:&url=https%3A%2F%2Fgithub.com%2Faregtech%2Fareg-sdk) and other social media platforms. [![Star us](https://img.shields.io/github/stars/aregtech/areg-sdk.svg?style=social&label=Star%20us)](https://github.com/aregtech/areg-sdk/) on GitHub. This inspires us, we feel useful and motivated to develop more!
 
 #### Follow us
 [![Follow us](https://img.shields.io/twitter/follow/aregtech.svg?style=social)](https://twitter.com/intent/follow?screen_name=aregtech) [![Follow us](https://img.shields.io/badge/LinkedIn-Aregtech-blue??style=flat&logo=linkedin&logoColor=b0c0c0&labelColor=363D44)](https://www.linkedin.com/company/aregtech/)
