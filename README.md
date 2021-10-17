@@ -25,7 +25,7 @@
 ## 📌 Introduction
 
 **AREG SDK** is an Interface centric lightweight real-time asynchronous communication engine to provide IPC and enable [mist computing](https://csrc.nist.gov/publications/detail/sp/500-325/final), where Things interact and provide services, as if they act like thin distributed servers.
-<br><a href="/docs/img/areg-sdk-features.png"><img src="/docs/img/areg-sdk-features.png" alt="Traditional kernel-mode driver solution" style="width:70%;height:70%"/></a><br>
+<br><a href="/docs/img/areg-sdk-features.png"><img src="/docs/img/areg-sdk-features.png" alt="AREG SDK and multicast features" style="width:70%;height:70%"/></a><br>
 > 💡 Currently AREG engine supports one communication channel and flat buffer protocol. We'll do our best with each new release to integrate new channel and new protocol.
 
 ## 📌 Motivation
