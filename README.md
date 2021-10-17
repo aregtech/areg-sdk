@@ -32,15 +32,15 @@
 3. [Composition](#-composition).
 4. [Software build](#-software-build).
 5. [Integration and development](#-integration-and-development).
-    - [Multicast router](#mulitcast-router).
-    - [Loging service](#logging-service).
-    - [Development](#development).
+   - [Multicast router](#mulitcast-router).
+   - [Loging service](#logging-service).
+   - [Development](#development).
 6. [Use cases and benefits](#-use-cases-and-benefits).
-    - [Distributes solutions](#distributed-solution).
-    - [Driverless devices](#driverless-devices).
-    - [Real-time solutions](#real-time-solutions).
-    - [Digital twin](#digital-twin).
-    - [Simulations and test automation](#simulations-and-test-automation).
+   - [Distributes solutions](#distributed-solution).
+   - [Driverless devices](#driverless-devices).
+   - [Real-time solutions](#real-time-solutions).
+   - [Digital twin](#digital-twin).
+   - [Simulations and test automation](#simulations-and-test-automation).
 7. [Examples](#-examples).
 8. [Licensing](#-licensing).
 9. [Call for action](#-call-for-action)!
@@ -130,10 +130,13 @@ AREG SDK can be used in a very large scopes of multithreading or multiprocessing
 
 #### Distributed solution
 
-AREG SDK is a lightweight form of distributed computing where the services can run on any node in the network, and the application architects can easily decide how to distribute the computing power. The automated service discovery makes service location transparent, so that the applications interact as if the components are located in the same process and even in the same thread.
+AREG SDK provides a lightweight form of distributed computing where the services can run on any node in the network, and the application architects can easily decide how to distribute the computing power. The automated service discovery makes service location transparent, so that the applications interact as if the components are located in the same process and even in the same thread.
 
-Here we would to demonstrate how the _Public_ services can be easily split or merged in one process. This example defines 2 services in one process that run in 2 threads:
+With AREG framework developers and architects can easily split between processes and threads. The framework offers MACRO that defines so called _model_, which is a definition of service relationship. The _model_ can be defined static or dynamic, and it can be loaded and unloaded at eny time. The following is a demonstration of _model_, which is loaded in ``` int main()``` function when it is needed and unloaded when application is going to exit.
 ```cpp
+// main.cpp source file.
+
+// Defines static model with 2 services
 BEGIN_MODEL(NECommon::ModelName)
 
     BEGIN_REGISTER_THREAD( "Thread1" )
@@ -149,51 +152,31 @@ BEGIN_MODEL(NECommon::ModelName)
     END_REGISTER_THREAD( "Thread2" )
 
 END_MODEL(NECommon::ModelName)
-```
-The services can be merged in one thread and in case of _Public_ services easily split in 2 processes, where every process contains own model of service. In one process (_application 1_) the model should look like:
-```cpp 
-// Model definition in application 1
 
-BEGIN_MODEL(NECommon::ModelName)
-
-    BEGIN_REGISTER_THREAD( "Thread1" )
-        BEGIN_REGISTER_COMPONENT( "RemoteRegistry", RemoteRegistryService )
-            REGISTER_IMPLEMENT_SERVICE( NERemoteRegistry::ServiceName, NERemoteRegistry::InterfaceVersion )
-        END_REGISTER_COMPONENT( "RemoteRegistry" )
-    END_REGISTER_THREAD( "Thread1" )
-
-END_MODEL(NECommon::ModelName)
-```
-In another process (_application 2_) model should be defined:
-```cpp
-// Model definition in application 2
-
-BEGIN_MODEL(NECommon::ModelName)
-
-    BEGIN_REGISTER_THREAD( "Thread2" )
-        BEGIN_REGISTER_COMPONENT( "SystemShutdown", SystemShutdownService )
-            REGISTER_IMPLEMENT_SERVICE( NESystemShutdown::ServiceName, NESystemShutdown::InterfaceVersion )
-        END_REGISTER_COMPONENT( "SystemShutdown" )
-    END_REGISTER_THREAD( "Thread2" )
-
-END_MODEL(NECommon::ModelName)
-```
-Independent on service location, neither software developers, nor service client objects feel difference except possible slight network latency when run IPC.
-
-In the example, the ```"RemoveRegistry"``` and the ```"SystemShudown"``` are the names of components called _roles_, and the ```NERemoteRegistry::ServiceName``` and the ```NESystemShutdown::ServiceName``` are the _interface names_. In combination, they define the _service name_, which can be accessed in the network.
-
-These used MACRO create _model_ that describes the relation of the objects, which are instantiated during model loading. For example, in ```int main()``` function called:
-```cpp
+// the main function
 int main()
 {
-    . . . .
-    Application::loadModel(NECommon::ModelName); // start services.
-    . . . .
-    Application::unloadModel(NECommon::ModelName); // stop services to exit.
-    . . . .
+    // Initialize application, enable logging, servicing and the timer.
+    Application::initApplication(true, true, true, true, nullptr, nullptr );
+
+    // load model to initialize components
+    Application::loadModel(NECommon::ModelName);
+
+    // wait until Application quit signal is set.
+    Application::waitAppQuit(NECommon::WAIT_INFINITE);
+
+    // stop and unload components
+    Application::unloadModel(NECommon::ModelName);
+
+    // release and cleanup resources of application.
+    Application::releaseApplication();
+
+    return 0;
 }
 ```
-It is as well possible to instantiate 2 instances of the same service implementation, but they must have unique _role names_ within one system. This means, the _Public_ services must have unique names within a single network and the _Local_ services must have unique names within a process. See details in [DEVELOP](/docs/)
+In the example, the ```"RemoveRegistry"``` and the ```"SystemShudown"``` are the names of components called _roles_, and the ```NERemoteRegistry::ServiceName``` and the ```NESystemShutdown::ServiceName``` are the _interface names_. In combination, they define the _service name_, which can be accessed in the network. The MACRO create static _model_ ```NECommon::ModelName```, which defines services and the services start when call method ```Application::loadModel(NECommon::ModelName)```. Services are stopped when call ```Application::unloadModel(NECommon::ModelName)```.
+
+Here the services can be merged in one thread and in case of _Public_ services easily split in 2 processes, where every process contains own model of service. Independent on service location, neither software developers, nor service client objects feel difference except possible slight network latency when run IPC. It is as well possible to instantiate 2 instances of the same service implementation, but they must have unique _role names_ within one system. This means, the _Public_ services must have unique names within a single network and the _Local_ services must have unique names within a process. See more details in [DEVELOP](/docs/DEVELOP.md) document.
 
 #### Driverless devices
 
