@@ -32,18 +32,18 @@
 3. [Composition](#-composition).
 4. [Software build](#-software-build).
 5. [Integration and development](#-integration-and-development).
-5.1. [Multicast router](#mulitcast-router).
-5.2. [Loging service](#logging-service).
-5.3. [Development](#development).
+    - [Multicast router](#mulitcast-router).
+    - [Loging service](#logging-service).
+    - [Development](#development).
 6. [Use cases and benefits](#-use-cases-and-benefits).
-6.1. [Distributes solutions](#distributed-solution).
-6.2. [Driverless devices](#driverless-devices).
-6.3. [Real-time solutions](#real-time-solutions).
-6.3. [Digital twin](#digital-twin).
-6.4. [Simulations and test automation](#simulations-and-test-automation).
+    - [Distributes solutions](#distributed-solution).
+    - [Driverless devices](#driverless-devices).
+    - [Real-time solutions](#real-time-solutions).
+    - [Digital twin](#digital-twin).
+    - [Simulations and test automation](#simulations-and-test-automation).
 7. [Examples](#-examples).
 8. [Licensing](#-licensing).
-9. [Call for action!](#-call-for-action).
+9. [Call for action](#-call-for-action)!
 
 ## 📌 Motivation
 
@@ -132,7 +132,7 @@ AREG SDK can be used in a very large scopes of multithreading or multiprocessing
 
 AREG SDK is a lightweight form of distributed computing where the services can run on any node in the network, and the application architects can easily decide how to distribute the computing power. The automated service discovery makes service location transparent, so that the applications interact as if the components are located in the same process and even in the same thread.
 
-This example shows the definition of 2 services in the separate threads.
+Here we would to demonstrate how the _Public_ services can be easily split or merged in one process. This example defines 2 services in one process that run in 2 threads:
 ```cpp
 BEGIN_MODEL(NECommon::ModelName)
 
@@ -150,9 +150,10 @@ BEGIN_MODEL(NECommon::ModelName)
 
 END_MODEL(NECommon::ModelName)
 ```
- These services can be very easily merged in one thread and in case of _Public_ services easily split in 2 processes. Each service should be defined in each process.
-_In Application 1:_
+The services can be merged in one thread and in case of _Public_ services easily split in 2 processes, where every process contains own model of service. In one process (_application 1_) the model should look like:
 ```cpp 
+// Model definition in application 1
+
 BEGIN_MODEL(NECommon::ModelName)
 
     BEGIN_REGISTER_THREAD( "Thread1" )
@@ -163,8 +164,10 @@ BEGIN_MODEL(NECommon::ModelName)
 
 END_MODEL(NECommon::ModelName)
 ```
-_In Application 2:_
+In another process (_application 2_) model should be defined:
 ```cpp
+// Model definition in application 2
+
 BEGIN_MODEL(NECommon::ModelName)
 
     BEGIN_REGISTER_THREAD( "Thread2" )
@@ -175,15 +178,22 @@ BEGIN_MODEL(NECommon::ModelName)
 
 END_MODEL(NECommon::ModelName)
 ```
-Independent on service location, neither software developers, nor service client objects feel difference except possible slight network latency in case of IPC.
+Independent on service location, neither software developers, nor service client objects feel difference except possible slight network latency when run IPC.
 
-In this example, the ```"RemoveRegistry"``` and the ```"SystemShudown"``` are the names of services (servicing components) called _role names_, and the ```NERemoteRegistry::ServiceName``` and the ```NESystemShutdown::ServiceName``` are the interface names. 
+In the example, the ```"RemoveRegistry"``` and the ```"SystemShudown"``` are the names of components called _roles_, and the ```NERemoteRegistry::ServiceName``` and the ```NESystemShutdown::ServiceName``` are the _interface names_. In combination, they define the _service name_, which can be accessed in the network.
 
-These MACRO create _model_ that describes the relation of the objects, which are instantiated during model loading. Example, in ```int main()``` function call this method to load model:
+These used MACRO create _model_ that describes the relation of the objects, which are instantiated during model loading. For example, in ```int main()``` function called:
 ```cpp
-Application::loadModel(NECommon::ModelName); // start services.
+int main()
+{
+    . . . .
+    Application::loadModel(NECommon::ModelName); // start services.
+    . . . .
+    Application::unloadModel(NECommon::ModelName); // stop services to exit.
+    . . . .
+}
 ```
-It is as well possible to instantiate 2 instances of the same service implementation, but they must have unique _role names_ within one system. This means, the _Public_ services must have unique names within a single network and the _Local_ services must have unique names within a process.
+It is as well possible to instantiate 2 instances of the same service implementation, but they must have unique _role names_ within one system. This means, the _Public_ services must have unique names within a single network and the _Local_ services must have unique names within a process. See details in [DEVELOP](/docs/)
 
 #### Driverless devices
 
