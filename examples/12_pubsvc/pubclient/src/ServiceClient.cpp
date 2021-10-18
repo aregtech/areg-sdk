@@ -87,7 +87,7 @@ void ServiceClient::responseHelloWorld(const NEHelloWorld::sConnectedClient & cl
 
     if ( mID == 0)
     {
-        TRACE_DBG("Registring ID [ %d ] for service client [ %s ]", clientInfo.ccID, mTimer.getName().getString());
+        TRACE_DBG("Registering ID [ %d ] for service client [ %s ]", clientInfo.ccID, mTimer.getName().getString());
         mID = clientInfo.ccID;
     }
 }
@@ -133,6 +133,6 @@ inline String ServiceClient::timerName( Component & owner ) const
     result += getServiceRole();
     result += NECommon::DEFAULT_SPECIAL_CHAR.data();
     result += getServiceName();
-    
+
     return result;
 }

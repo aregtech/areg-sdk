@@ -365,3 +365,454 @@ int main()
 ```
 
 The example [10_locsvc](./../examples/10_locsvc/) and higher contain implementations of _Local_ and _Public_ services and the clients. Browse examples to learn more.
+
+## Develop a Service
+
+Before developing a service, it is important to know that 
+1. Service owner is a `Component` object. The `Component` can provide more than one service interfaces.
+2. All service base classes generated from prototype XML document end with `Stub` and contain request pure virtual methods. For example, the base service class name from Sample interface is `SampleStub`, which contains list of request methods declared as pure virtual.
+
+The easiest way to create new service, to extend it from `Component` and `xxxStub` objects. However, it is not a MUST option, but when instantiate a `Component`, the instance of service stub should be instantiated as well. When extend `Component` and `xxxStub`
+1. Implement `Component * CreateComponent( ... )` and `void DeleteComponent( ... )` **static** methods
+2. Implement all pure virtual methods derived from `xxxStub`.
+
+The following is an example of implementing simple service:
+```cpp
+#pragma once
+
+#include "areg/base/GEGlobal.h"
+#include "areg/component/Component.hpp"
+#include "generated/src/HelloWorldStub.hpp"
+
+//////////////////////////////////////////////////////////////////////////
+// ServicingComponent declaration
+//////////////////////////////////////////////////////////////////////////
+
+class ServicingComponent    : public    Component
+                            , protected HelloWorldStub
+{
+//////////////////////////////////////////////////////////////////////////
+// static methods
+//////////////////////////////////////////////////////////////////////////
+public:
+
+    static Component * CreateComponent( const NERegistry::ComponentEntry & entry, ComponentThread & owner );
+
+    static void DeleteComponent( Component & compObject, const NERegistry::ComponentEntry & entry );
+
+protected:
+    ServicingComponent(const NERegistry::ComponentEntry & entry, ComponentThread & owner);
+
+    virtual ~ServicingComponent(void) = default;
+
+//////////////////////////////////////////////////////////////////////////
+// HelloWorldStub overrides
+//////////////////////////////////////////////////////////////////////////
+protected:
+
+    virtual void requestHelloWorld( const String & client ) override;
+
+//////////////////////////////////////////////////////////////////////////
+// Hidden / forbidden calls
+//////////////////////////////////////////////////////////////////////////
+private:
+    inline ServicingComponent & self( void )
+    { return (*this); };
+
+    ServicingComponent( void ) = delete;
+    DECLARE_NOCOPY_NOMOVE( ServicingComponent );
+};
+
+//////////////////////////////////////////////////////////////////////////
+// ServicingComponent implementation
+//////////////////////////////////////////////////////////////////////////
+
+Component * ServicingComponent::CreateComponent(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
+{
+    return DEBUG_NEW ServicingComponent(entry, owner);
+}
+
+void ServicingComponent::DeleteComponent(Component & compObject, const NERegistry::ComponentEntry & entry)
+{
+    delete (&compObject);
+}
+
+ServicingComponent::ServicingComponent(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
+    : Component         ( owner, entry.mRoleName)
+    , HelloWorldStub    ( static_cast<Component &>(self()) )
+{
+}
+
+void ServicingComponent::requestHelloWorld(const String & client)
+{
+    printf("Hello %s!!!\n", client.getString());
+
+    responseHelloWorld(true); // indicate success
+}
+```
+
+In this example
+* The class `ServicingComponent` is an instance of `Component` and `HelloWorldStub`.
+* The service is created in **static** `Component * ServicingComponent::CreateComponent(const NERegistry::ComponentEntry & entry, ComponentThread & owner)` method.
+* The service is deleted in **static** `void ServicingComponent::DeleteComponent(Component & compObject, const NERegistry::ComponentEntry & entry)` method.
+* The service implements virtual method `virtual void requestHelloWorld(const String & client)` inherited from `HelloWorldStub`
+* In the request `requestHelloWorld` called respone `responseHelloWorld`, so it is immediately unblocked. Otherwise, it would remain _blocked_ until response is sent.
+
+## Develop a Service client.
+
+Before developing service client, import to know that:
+1. Service client owner is a `Component` object. There can be more than clients in `Component` and there can be several instances of the same client in the `Component`.
+2. All service client base classes generated from prototype XML document end with `ClientBase` and contains list of all responses, broadcasts, attribute update, and request failure methods (callbacks). For example, the base service class name from Sample interface is `SampleClientBase`, which contains response, broadcasts, attribute update and request failure methods.
+3. Whenever service client is connected with the service (i.e. service is available) or disconnected, the system invokes method `bool serviceConnected( bool isConnected, ProxyBase & proxy )`, where the parameter `isConnected` indicates the connection status and parameter `proxy` indicates which object have got connection. In case if an instance of `Component` contains multiple clients, the `proxy` parameter indicates which clinet have got or lost the connection.
+
+The easiest way to create new service client, to extend it from `Component` and `xxxClientBase` objects. However, it is not a MUST option.
+1. Implement `Component * CreateComponent( ... )` and `void DeleteComponent( ... )` **static** methods.
+2. Implement only those response, broadcast, attribute update, and request failure methods, which are used by client. All other methods can be ignored, since they will be never triggered. However, you can implement all methods. The _implementation_ means to write the business logic when one of this methods are triggered (i.e. event is fired).
+
+The following is an example of implementing simple service client:
+```cpp
+#pragma once
+
+#include "areg/base/GEGlobal.h"
+#include "areg/component/Component.hpp"
+#include "generated/src/HelloWorldClientBase.hpp"
+#include "areg/appbase/Application.hpp"
+
+class ServiceClient : public    Component
+                    , protected HelloWorldClientBase
+{
+//////////////////////////////////////////////////////////////////////////
+// Static methods
+//////////////////////////////////////////////////////////////////////////
+public:
+    static Component * CreateComponent( const NERegistry::ComponentEntry & entry, ComponentThread & owner );
+
+    static void DeleteComponent( Component & compObject, const NERegistry::ComponentEntry & entry );
+
+public:
+    
+    ServiceClient(const NERegistry::ComponentEntry & entry, ComponentThread & owner);
+
+    virtual ~ServiceClient(void) = default;
+
+//////////////////////////////////////////////////////////////////////////
+// HelloWorldClientBase overrides
+//////////////////////////////////////////////////////////////////////////
+protected:
+
+    virtual void responseHelloWorld( bool success ) override;
+
+/************************************************************************/
+// Error handling.
+/************************************************************************/
+
+    virtual void requestHelloWorldFailed( NEService::eResultType FailureReason ) override;
+
+/************************************************************************/
+// IEProxyListener Overrides
+/************************************************************************/
+
+    //!< Triggered by system, when the service is either available and connected or disconnected.
+    virtual bool serviceConnected( bool isConnected, ProxyBase & proxy ) override;
+
+//////////////////////////////////////////////////////////////////////////
+// Hidden / FOrbidden methods
+//////////////////////////////////////////////////////////////////////////
+private:
+    inline ServiceClient & self( void )
+    {   return (*this); }
+
+    ServiceClient( void ) = delete;
+    DECLARE_NOCOPY_NOMOVE( ServiceClient );
+};
+
+//////////////////////////////////////////////////////////////////////////
+// ServiceClient implementation
+//////////////////////////////////////////////////////////////////////////
+
+Component * ServiceClient::CreateComponent(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
+{
+    return DEBUG_NEW ServiceClient(entry, owner);
+}
+
+void ServiceClient::DeleteComponent(Component & compObject, const NERegistry::ComponentEntry & entry)
+{
+    delete (&compObject);
+}
+
+ServiceClient::ServiceClient(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
+    : Component             ( owner, entry.mRoleName )
+    , HelloWorldClientBase  ( entry.mDependencyServices[0].mRoleName.getString(), owner )
+{
+}
+
+bool ServiceClient::serviceConnected(bool isConnected, ProxyBase & proxy)
+{
+    bool result = HelloWorldClientBase::serviceConnected(isConnected, proxy);
+    if (isConnected)
+    {
+        // Up from this part the client
+        //  - can send requests
+        //  - can subscribe on data or event.
+
+        // call request
+        requestHelloWorld( getRoleName() );
+    }
+    else
+    {
+        // Make cleanups, release subscription here.
+        // Since we've lost connection, exit client
+        Application::signalAppQuit();
+    }
+
+    return result;
+}
+
+void ServiceClient::responseHelloWorld( bool success )
+{
+    printf("%s to output message.\n", success ? "succeeded" : "failed");
+
+    // The client completed the job, set signal to exit application
+    Application::signalAppQuit();
+}
+
+void ServiceClient::requestHelloWorldFailed(NEService::eResultType FailureReason)
+{
+    // make error handling here.
+    printf("Failed to execute request, retry again.");
+    if (isConnected())
+    {
+        // the service is still connected, can re-send reqest.
+        requestHelloWorld( getRoleName() );
+    }
+}
+
+```
+In this example
+* The class `ServiceClient` is an instance of `Component` and `HelloWorldClientBase`.
+* The service client is created in **static** `Component * ServiceClient::CreateComponent(const NERegistry::ComponentEntry & entry, ComponentThread & owner)` method.
+* The service client is deleted in **static** `void ServiceClient::DeleteComponent(Component & compObject, const NERegistry::ComponentEntry & entry)` method.
+* The service client overrides virtual method `virtual bool serviceConnected(bool isConnected, ProxyBase & proxy)` used to react on service connect / diconnect event.
+* The service client overrides virtual method `virtual void responseHelloWorld( bool success )` inherited from `HelloWorldClientBase`
+* The service client overrides virtual method `virtual requestHelloWorldFailed(NEService::eResultType FailureReason)` inherited from `HelloWorldClientBase`
+* In the `serviceConnected` when clinets establishes the connection, it calls method `requestHelloWorl` to run on remote service.
+
+## Load model
+
+When services and clients are created, the developers can decide how to distribute service and client objects.
+* The service and the client can run in the same thread of the same process.
+* The service and the client can run in separate threads of the sam process.
+* The service and the clinet can run in separate processes (_Public_ service case).
+
+We'll consider all of them. The _model_ can be created either statically (fixed) or dynamically (can vary). Here we conside static models, since it is more readable and easier.
+
+### Model with single thread
+
+This example demonstrates how to instantiate service and clinet whith one thread (_Local_ servicing).
+> 💡 In the example, there are 2 components declared in one thread.
+
+```cpp
+// main.cpp
+
+#include "areg/base/GEGlobal.h"
+#include "areg/appbase/Application.hpp"
+#include "areg/component/ComponentLoader.hpp"
+
+#include "ServiceClient.hpp"
+#include "ServicingComponent.hpp"
+
+constexpr char const _modelName[]  { "ServiceModel" };   //!< The name of model
+
+// Describe mode, set model name
+BEGIN_MODEL(_modelName)
+
+    BEGIN_REGISTER_THREAD( "Thread1" )
+        BEGIN_REGISTER_COMPONENT( "ServiceClient", ServiceClient )
+            REGISTER_DEPENDENCY( "TheService" ) /* reference to the service*/
+        END_REGISTER_COMPONENT( "ServiceClient" )
+
+        BEGIN_REGISTER_COMPONENT( "TheService", ServicingComponent )
+            REGISTER_IMPLEMENT_SERVICE( NEHelloWorld::ServiceName, NEHelloWorld::InterfaceVersion )
+        END_REGISTER_COMPONENT( "TheService" )
+    END_REGISTER_THREAD( "Thread1" )
+
+// end of model description
+END_MODEL(_modelName)
+
+// main method
+int main( void )
+{
+    // Initialize application, enable logging, servicing and the timer.
+    Application::initApplication(true, true, true, true, nullptr, nullptr );
+
+    // load model to initialize components
+    Application::loadModel(_modelName);
+
+    // wait until Application quit signal is set.
+    Application::waitAppQuit(NECommon::WAIT_INFINITE);
+
+    // stop and unload components
+    Application::unloadModel(_modelName);
+
+    // release and cleanup resources of application.
+    Application::releaseApplication();
+
+    return 0;
+}
+```
+
+### Model with multiple threads
+
+This example demonstrates how to instantiate service and clinet running on separate threads, but in the same process (_Local_ servicing).
+
+```cpp
+// main.cpp
+
+#include "areg/base/GEGlobal.h"
+#include "areg/appbase/Application.hpp"
+#include "areg/component/ComponentLoader.hpp"
+
+#include "ServiceClient.hpp"
+#include "ServicingComponent.hpp"
+
+constexpr char const _modelName[]  { "ServiceModel" };   //!< The name of model
+
+// Describe mode, set model name
+BEGIN_MODEL(_modelName)
+
+    BEGIN_REGISTER_THREAD( "Thread1" )
+        BEGIN_REGISTER_COMPONENT( "ServiceClient", ServiceClient )
+            REGISTER_DEPENDENCY( "TheService" )
+        END_REGISTER_COMPONENT( "ServiceClient" )
+    END_REGISTER_THREAD( "Thread1" )
+
+    BEGIN_REGISTER_THREAD( "Thread2" )
+        BEGIN_REGISTER_COMPONENT( "TheService", ServicingComponent )
+            REGISTER_IMPLEMENT_SERVICE( NEHelloWorld::ServiceName, NEHelloWorld::InterfaceVersion )
+        END_REGISTER_COMPONENT( "TheService" )
+    END_REGISTER_THREAD( "Thread2" )
+
+// end of model description
+END_MODEL(_modelName)
+
+// main method
+int main( void )
+{
+    // Initialize application, enable logging, servicing and the timer.
+    Application::initApplication(true, true, true, true, nullptr, nullptr );
+
+    // load model to initialize components
+    Application::loadModel(_modelName);
+
+    // wait until Application quit signal is set.
+    Application::waitAppQuit(NECommon::WAIT_INFINITE);
+
+    // stop and unload components
+    Application::unloadModel(_modelName);
+
+    // release and cleanup resources of application.
+    Application::releaseApplication();
+
+    return 0;
+}
+```
+
+### Model with separate processes
+
+This example demonstrates how to instantiate service and clinet running in separate processes (_Public_ servicing). It is required to have 2 projects with 2 `main()` functions.
+
+> 💡 Note, the model and thread names in these 2 processes have same name, but the services differ.
+
+In the Service provider process:
+```cpp
+// main.cpp, Service provider project
+
+#include "areg/base/GEGlobal.h"
+#include "areg/appbase/Application.hpp"
+#include "areg/component/ComponentLoader.hpp"
+
+#include "ServicingComponent.hpp"
+
+constexpr char const _modelName[]  { "ServiceModel" };   //!< The name of model
+
+// Describe mode, set model name
+BEGIN_MODEL(_modelName)
+
+    BEGIN_REGISTER_THREAD( "Thread1" )
+        BEGIN_REGISTER_COMPONENT( "TheService", ServicingComponent )
+            REGISTER_IMPLEMENT_SERVICE( NEHelloWorld::ServiceName, NEHelloWorld::InterfaceVersion )
+        END_REGISTER_COMPONENT( "TheService" )
+    END_REGISTER_THREAD( "Thread1" )
+
+// end of model description
+END_MODEL(_modelName)
+
+// main method
+int main( void )
+{
+    // Initialize application, enable logging, servicing and the timer.
+    Application::initApplication(true, true, true, true, nullptr, nullptr );
+
+    // load model to initialize components
+    Application::loadModel(_modelName);
+
+    // wait until Application quit signal is set.
+    Application::waitAppQuit(NECommon::WAIT_INFINITE);
+
+    // stop and unload components
+    Application::unloadModel(_modelName);
+
+    // release and cleanup resources of application.
+    Application::releaseApplication();
+
+    return 0;
+}
+```
+
+This is a source code of secont `component`.
+
+```cpp
+// main.cpp, Service provider project
+
+#include "areg/base/GEGlobal.h"
+#include "areg/appbase/Application.hpp"
+#include "areg/component/ComponentLoader.hpp"
+
+#include "ServiceClient.hpp"
+
+constexpr char const _modelName[]  { "ServiceModel" };   //!< The name of model
+
+// Describe mode, set model name
+BEGIN_MODEL(_modelName)
+
+    BEGIN_REGISTER_THREAD( "Thread1" )
+        BEGIN_REGISTER_COMPONENT( "ServiceClient", ServiceClient )
+            REGISTER_DEPENDENCY( "TheService" )
+        END_REGISTER_COMPONENT( "ServiceClient" )
+    END_REGISTER_THREAD( "Thread1" )
+
+// end of model description
+END_MODEL(_modelName)
+
+// main method
+int main( void )
+{
+    // Initialize application, enable logging, servicing and the timer.
+    Application::initApplication(true, true, true, true, nullptr, nullptr );
+
+    // load model to initialize components
+    Application::loadModel(_modelName);
+
+    // wait until Application quit signal is set.
+    Application::waitAppQuit(NECommon::WAIT_INFINITE);
+
+    // stop and unload components
+    Application::unloadModel(_modelName);
+
+    // release and cleanup resources of application.
+    Application::releaseApplication();
+
+    return 0;
+}
+```
+In both cases, the services are up and running when load model.
