@@ -215,7 +215,8 @@ For commercial license, support or additional information, please visit [Aregtec
 
 Do you like the project, have more ideas or need features? You are welcomed to become code distributor or request features. Please share the project with your connections on [![Twitter](https://img.shields.io/twitter/url?label=Twitter&style=social&url=https%3A%2F%2Fgithub.com%2Faregtech%2Fareg-sdk)](https://twitter.com/intent/tweet?text=Wow:&url=https%3A%2F%2Fgithub.com%2Faregtech%2Fareg-sdk) and other social media platforms. [![Star the project](https://img.shields.io/github/stars/aregtech/areg-sdk.svg?style=social&label=Star%20the%20project)](https://github.com/aregtech/areg-sdk/) on GitHub to inspires us, becuase we'll feel useful and motivated to develop more!
 
-#### Follow us
+**Follow us**
+
 [![Follow us](https://img.shields.io/twitter/follow/aregtech.svg?style=social)](https://twitter.com/intent/follow?screen_name=aregtech) [![Follow us](https://img.shields.io/badge/LinkedIn-Aregtech-blue??style=flat&logo=linkedin&logoColor=b0c0c0&labelColor=363D44)](https://www.linkedin.com/company/aregtech/)
 
 <!-- markdownlint-enable -->
