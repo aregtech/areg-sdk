@@ -1,5 +1,5 @@
 ```
-This file is part of AREG IoT SDK.
+This file is part of AREG SDK
 Copyright (c) Aregtech, 2017-2021
 Contact: info[at]aregtech.com
 Website: https://www.aregtech.com
@@ -49,8 +49,8 @@ docs
 
 ## Locations
 
-- The source codes of _AREG IoT SDK_ are located in the [_framework_](./../framework/) subfolder of _areg-sdk_ root.
-- The sources of _AREG IoT SDK_ examples are located in the [_examples_](./../examples) subfolder of _areg-sdk_ root.
+- The source codes of AREG SDK are located in the [_framework_](./../framework/) subfolder of _areg-sdk_ root.
+- The sources codes of examples are located in the [_examples_](./../examples) subfolder of _areg-sdk_ root.
 - The MS Visual Studio property and Makefile user settings are located in the [_conf_](./../conf) subfolder of _areg-sdk_ root.
 - The **POSIX** related configuration, compilation and the list of used API are in [POSIX.md](./POSIX.md)
 - The **Windows** related configuration, compilation and the list of used API are in [WIN32.md](./WIN32.md)

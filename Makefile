@@ -1,5 +1,5 @@
 # ###########################################################################
-# This file is part of AREG IoT SDK
+# This file is part of AREG SDK
 # Copyright (c) Aregtech UG, 2017-2021
 # Contact: info[at]aregtech.com
 # ###########################################################################

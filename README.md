@@ -78,6 +78,12 @@ The framework contains a dynamic and configurable logging service. More tools an
 
 ## 📌 Software build
 
+Get latest sources using `git` or download ZIP files:
+```shell
+$ git clone https://github.com/aregtech/areg-sdk.git ./
+$ cd areg-sdk
+```
+
 AREG SDK sources are developed for:
 * **Supported OS**: POSIX-compliant OS (list of [POSIX API](./docs/POSIX.md#the-list-of-posix-api-used-in-areg-sdk-including-multicast-message-router)), Windows 8 and higher.
 * **Supported CPU**: x86, x86_64, arm and aarch64.
@@ -86,9 +92,9 @@ AREG SDK sources are developed for:
 > 💡 The other POSIX-compliant OS and compilers are not tested yet.
 
 Compile AREG SDK sources and examples using following tools:
-* **On Linux or Windows**: import projects in _Eclipse_ to compile with POSIX (select preferred Toolchain for every OS).
-* **On Windows**: open areg-sdk.sln file in _MS Visual Studio_ to compile with Win32.
-* **On Linux**: in the terminal call “_make_” as shown below to compile with POSIX.
+* **On Linux or Windows**: import projects in _Eclipse_ to compile with POSIX API (select preferred Toolchain before compile).
+* **On Windows**: open areg-sdk.sln file in _MS Visual Studio_ (VS2019 and higher requiered) to compile with Win32 API.
+* **On Linux**: in the terminal call “_make_” as shown below to compile with POSIX API.
 ```shell
 $ make [all] [framework] [examples]
 ```
