@@ -48,7 +48,7 @@
 ## 📌 Motivation
 
 Traditionally, devices are connected clients to stream data to the cloud or fog servers for further processing.
-<br><a href="/docs/img/mist-network.png"><img src="/docs/img/mist-network.png" alt="IoT-to-Cloud (Nebula) network" style="width:70%;height:70%"/></a><br>
+<br><br><a href="/docs/img/mist-network.png"><img src="/docs/img/mist-network.png" alt="IoT-to-Cloud (Nebula) network" style="width:70%;height:70%"/></a><br><br>
 Since data is generated and collected at the edge of the network (mist network), it makes sense to change the role of connected Things and provide network accessible (_Public_) services directly on devices. This extends _Cloud_ to the extreme edge and it is a good foothold for robust solutions such as:
 * _Increase data privacy_, which is an important factor for sensitive data.
 * _Decrease data streaming_, which is a fundamental condition to optimize network communication.
@@ -130,9 +130,7 @@ AREG SDK can be used in a very large scopes of multithreading or multiprocessing
 
 #### Distributed solution
 
-AREG SDK provides a lightweight form of distributed computing where the services can run on any node in the network, and the application architects can easily decide how to distribute the computing power. The automated service discovery makes service location transparent, so that the applications interact as if the components are located in the same process and even in the same thread.
-
-With AREG framework developers and architects can easily split between processes and threads. The framework offers MACRO that defines so called _model_, which is a definition of service relationship. The _model_ can be defined static or dynamic, and it can be loaded and unloaded at eny time. The following is a demonstration of _model_, which is loaded in ``` int main()``` function when it is needed and unloaded when application is going to exit.
+AREG SDK provides a lightweight form of distributed computing where the services can run on any node in the network, and the application architects can easily distribute the computing power between threads and processes. The automated service discovery makes service location transparent, so that the applications interact as if the components are located in one process. Developer define dynamic or static _model_, which is a description of service relationship that is used to load and start services. The following is a demonstration of _model_, which is loaded in `int main()` function and starts services and is unloaded when exits `main()`.
 ```cpp
 // main.cpp source file.
 
