@@ -6,7 +6,7 @@
 /************************************************************************
  * (c) copyright    2021
  *
- * Generated at     20.10.2021  13:21:57 GMT+02:00 
+ * Generated at     20.10.2021  15:43:41 GMT+02:00 
  *                  Create by AREG SDK code generator tool from source HelloWorld.
  *
  * \file            generated/src/NEHelloWorld.hpp
@@ -23,6 +23,7 @@
 //////////////////////////////////////////////////////////////////////////
 // Dependency includes
 //////////////////////////////////////////////////////////////////////////
+#include "areg/base/String.hpp"
 
 //////////////////////////////////////////////////////////////////////////
 // Mandatory includes
@@ -86,7 +87,7 @@ namespace   NEHelloWorld
          * \brief   Request ID: MsgId_requestHelloWorld
          *          The request to output greeting.
          **/
-          MsgId_requestHelloWorld     = NEService::REQUEST_ID_FIRST     // void requestHelloWorld( void );
+          MsgId_requestHelloWorld     = NEService::REQUEST_ID_FIRST     // void requestHelloWorld( const String & client );
      
     /************************************************************************
      * Response IDs
@@ -95,7 +96,7 @@ namespace   NEHelloWorld
          * \brief   Response ID: MsgId_responseHelloWorld
          *          The response indicating success status to output greeting
          **/
-        , MsgId_responseHelloWorld    = NEService::RESPONSE_ID_FIRST    // void responseHelloWorld( void );     
+        , MsgId_responseHelloWorld    = NEService::RESPONSE_ID_FIRST    // void responseHelloWorld( bool success );     
     /************************************************************************
      * Broadcast IDs
      ************************************************************************/

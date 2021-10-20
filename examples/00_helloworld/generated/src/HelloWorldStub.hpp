@@ -6,7 +6,7 @@
 /************************************************************************
  * (c) copyright    2021
  *
- * Generated at     20.10.2021  13:21:57 GMT+02:00 
+ * Generated at     20.10.2021  15:43:41 GMT+02:00 
  *                  Create by AREG SDK code generator tool from source HelloWorld.
  *
  * \file            generated/src/HelloWorldStub.hpp
@@ -80,9 +80,10 @@ public:
     /**
      * \brief   Request call.
      *          The request to output greeting.
+     * \param   client  The name of client to output greeting.
      * \see     responseHelloWorld
      **/
-    virtual void requestHelloWorld( void ) = 0;
+    virtual void requestHelloWorld( const String & client ) = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // HelloWorld Interface Responses
@@ -92,9 +93,10 @@ public:
     /**
      * \brief   Response call.
      *          The response indicating success status to output greeting
+     * \param   success Flag, indicates the success of output.
      * \see     requestHelloWorld
      **/
-    virtual void responseHelloWorld( void );
+    virtual void responseHelloWorld( bool success );
 
 //////////////////////////////////////////////////////////////////////////
 // HelloWorld Interface Broadcasts

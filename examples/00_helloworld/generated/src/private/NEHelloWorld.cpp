@@ -5,7 +5,7 @@
 /************************************************************************
  * (c) copyright    2021
  *
- * Generated at     20.10.2021  13:21:57 GMT+02:00 
+ * Generated at     20.10.2021  15:43:41 GMT+02:00 
  *                  Create by AREG SDK code generator tool from source HelloWorld.
  *
  * \file            generated/src/NEHelloWorld.hpp
@@ -31,7 +31,7 @@ const NEService::SInterfaceData & NEHelloWorld::getInterfaceData( void )
      ************************************************************************/
     static constexpr unsigned int _RequestList[] 
     {
-          static_cast<unsigned int>( NEHelloWorld::eMessageIDs::MsgId_requestHelloWorld   ) // requestHelloWorld( void )
+          static_cast<unsigned int>( NEHelloWorld::eMessageIDs::MsgId_requestHelloWorld   ) // requestHelloWorld( const String & client )
     };
 
     /************************************************************************
@@ -39,7 +39,7 @@ const NEService::SInterfaceData & NEHelloWorld::getInterfaceData( void )
      ************************************************************************/
     static constexpr unsigned int _ResponseList[] 
     {
-          static_cast<unsigned int>( NEHelloWorld::eMessageIDs::MsgId_responseHelloWorld  ) // responseHelloWorld( void )
+          static_cast<unsigned int>( NEHelloWorld::eMessageIDs::MsgId_responseHelloWorld  ) // responseHelloWorld( bool success )
     };
 
     /************************************************************************
@@ -52,7 +52,7 @@ const NEService::SInterfaceData & NEHelloWorld::getInterfaceData( void )
      ************************************************************************/
     static constexpr unsigned int _RequestToResponseMap[] 
     {
-          static_cast<unsigned int>( NEHelloWorld::eMessageIDs::MsgId_responseHelloWorld  ) // requestHelloWorld( void )
+          static_cast<unsigned int>( NEHelloWorld::eMessageIDs::MsgId_responseHelloWorld  ) // requestHelloWorld( const String & client )
     };
 
     /************************************************************************
@@ -63,7 +63,7 @@ const NEService::SInterfaceData & NEHelloWorld::getInterfaceData( void )
     /************************************************************************
      * Responses
      ************************************************************************/
-        0, // void responseHelloWorld( void )
+        1, // void responseHelloWorld( bool success )
 
     /************************************************************************
      * Broadcasts
