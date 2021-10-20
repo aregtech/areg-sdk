@@ -19,14 +19,14 @@ class ServiceComponent  : public    Component
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Called to instantiate service component when loading model.
+     * \brief   Called to instantiate the service component when loading the model.
      * \param   entry   Indicates the component description entry from Registry.
      * \param   owner   The component owning thread.
      **/
     static Component * CreateComponent( const NERegistry::ComponentEntry & entry, ComponentThread & owner );
 
     /**
-     * \brief   Called when unloads model to delete service component.
+     * \brief   Called when unloading model to delete service component.
      **/
     static void DeleteComponent( Component & compObject, const NERegistry::ComponentEntry & entry );
 
@@ -39,8 +39,8 @@ protected:
 // HelloWorld Interface Requests
 //////////////////////////////////////////////////////////////////////////
     /**
-     * \brief   The request to output greeting.
-     * \param   client  The name of client to output greeting.
+     * \brief   The request to output a greeting.
+     * \param   client  The name of client to output the greeting.
      **/
     virtual void requestHelloWorld( const String & client ) override;
 

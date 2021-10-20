@@ -19,14 +19,14 @@ class ClientComponent   : public    Component
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Called to instantiate component with service client when loading model.
+     * \brief   Called to instantiate the service component when loading the model.
      * \param   entry   Indicates the component description entry from Registry.
      * \param   owner   The component owning thread.
      **/
     static Component * CreateComponent( const NERegistry::ComponentEntry & entry, ComponentThread & owner );
 
     /**
-     * \brief   Called when unloads model to delete service component.
+     * \brief   Called when unloading model to delete service component.
      **/
     static void DeleteComponent( Component & compObject, const NERegistry::ComponentEntry & entry );
 
@@ -39,7 +39,7 @@ protected:
  * Response HelloWorld
  ************************************************************************/
     /**
-     * \brief   The response indicating success status to output greeting
+     * \brief   The response indicating success status to output a greeting
      * \param   success Flag, indicates the success of output.
      **/
     virtual void responseHelloWorld( bool success ) override;
@@ -59,8 +59,7 @@ protected:
      *          here. No request can be called, while service is not connected.
      * \param   isConnected     Indicates service connection status.
      * \param   proxy           The Service Interface Proxy object.
-     * \return  Return true if this service connect notification was relevant to client object,
-     *          i.e. if passed Proxy address is equal to the Proxy object that client has.
+     * \return  Return true if this service connect notification was relevant to client object.
      **/
     virtual bool serviceConnected( bool isConnected, ProxyBase & proxy ) override;
 

@@ -34,7 +34,7 @@ bool ClientComponent::serviceConnected(bool isConnected, ProxyBase & proxy)
         {
             // Up from this part the client
             //  - can send requests
-            //  - can subscribe on data or event.
+            //  - can subscribe to data, broadcasts and responses.
 
             // call request
             requestHelloWorld( getRoleName() );
@@ -66,7 +66,7 @@ void ClientComponent::requestHelloWorldFailed(NEService::eResultType FailureReas
     printf("Failed to execute request, retry again.");
     if (isConnected())
     {
-        // the service is still connected, can re-send reqest.
+        // the service is still connected, and can resend the request.
         requestHelloWorld( getRoleName() );
     }
 }

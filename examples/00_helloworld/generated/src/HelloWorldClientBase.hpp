@@ -6,7 +6,7 @@
 /************************************************************************
  * (c) copyright    2021
  *
- * Generated at     19.10.2021  18:07:50 GMT+02:00 
+ * Generated at     20.10.2021  13:21:57 GMT+02:00 
  *                  Create by AREG SDK code generator tool from source HelloWorld.
  *
  * \file            generated/src/HelloWorldClientBase.hpp
@@ -130,11 +130,10 @@ public:
     /**
      * \brief   Request call.
      *          The request to output greeting.
-     * \param   client  The name of client to output greeting.
      * \return  The sequence count number of call
      * \see     responseHelloWorld
      **/
-    inline unsigned int requestHelloWorld( const String & client );
+    inline unsigned int requestHelloWorld( void );
     /**
      * \brief   Overwrite to handle error of HelloWorld request call.
      * \param   FailureReason   The failure reason value of request call.
@@ -149,10 +148,9 @@ public:
      *          The response indicating success status to output greeting
      *          Overwrite, if need to handle Response call of server object. 
      *          This call will be automatically triggered, on every appropriate request call
-     * \param   success Flag, indicates the success of output.
      * \see     requestHelloWorld
      **/
-    virtual void responseHelloWorld( bool success );
+    virtual void responseHelloWorld( void );
     /**
      * \brief   Call to enable or disable receiving notifications on HelloWorld response call.
      *          This function is triggered, when client object is interested only on response result
@@ -360,10 +358,10 @@ inline const Version & HelloWorldClientBase::getServiceVersion( void ) const
  * Request calls
  ************************************************************************/
 
-inline unsigned int HelloWorldClientBase::requestHelloWorld( const String & client )
+inline unsigned int HelloWorldClientBase::requestHelloWorld( void )
 {
     ASSERT(mProxy != nullptr);
-    return mProxy->requestHelloWorld( static_cast<IENotificationEventConsumer &>(self()), client );
+    return mProxy->requestHelloWorld( static_cast<IENotificationEventConsumer &>(self()) );
 }
 
 /************************************************************************

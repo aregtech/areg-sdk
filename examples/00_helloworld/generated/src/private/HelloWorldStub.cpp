@@ -4,7 +4,7 @@
 /************************************************************************
  * (c) copyright    2021
  *
- * Generated at     19.10.2021  18:07:50 GMT+02:00 
+ * Generated at     20.10.2021  13:21:57 GMT+02:00 
  *                  Create by AREG SDK code generator tool from source HelloWorld.
  *
  * \file            generated/src/HelloWorldStub.hpp
@@ -154,13 +154,10 @@ void HelloWorldStub::errorRequest( unsigned int msgId, bool msgCancel )
  * Send responses
  ************************************************************************/
 
-void HelloWorldStub::responseHelloWorld( bool success )
+void HelloWorldStub::responseHelloWorld( void )
 {
     static const NEHelloWorld::eMessageIDs msgId = NEHelloWorld::eMessageIDs::MsgId_responseHelloWorld;
-    EventDataStream args(EventDataStream::eEventData::EventDataExternal);
-    IEOutStream & stream = args.getStreamForWrite();
-    stream << success;
-    sendResponseEvent( static_cast<msg_id>(msgId), args );
+    sendResponseEvent( static_cast<msg_id>(msgId), EventDataStream::EmptyData );
 }
 
 /************************************************************************
@@ -180,7 +177,6 @@ void HelloWorldStub::processRequestEvent( ServiceRequestEvent & eventElem )
     if ( (reqEvent != nullptr) && (reqEvent->getRequestType() == NEService::eRequestType::CallFunction) )
     {
         msg_id reqId = static_cast<msg_id>(reqEvent->getRequestId());
-        const IEInStream & stream  = static_cast<const HelloWorldRequestEvent *>(reqEvent)->getData().getReadStream();
         StubBase::Listener listener( reqId, 0, reqEvent->getEventSource() );
         NEHelloWorld::eMessageIDs respId = NEHelloWorld::getResponseId(static_cast<NEHelloWorld::eMessageIDs>(reqId));
 
@@ -189,9 +185,7 @@ void HelloWorldStub::processRequestEvent( ServiceRequestEvent & eventElem )
         case NEHelloWorld::eMessageIDs::MsgId_requestHelloWorld:
             if ( canExecuteRequest(listener, static_cast<msg_id>(respId), reqEvent->getSequenceNumber()) )
             {
-                String  client;
-                stream >> client;                
-                requestHelloWorld( client );
+                requestHelloWorld(  );
             }
             break;
             

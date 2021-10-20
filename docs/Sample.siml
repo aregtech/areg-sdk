@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<ServiceInterface FormatVesion="1.0.0">
+<ServiceInterface FormatVersion="1.0.0">
     <Overview ID="1" Name="Sample" Version="1.0.0" isRemote="true">
         <Description>This is an example of defining service interface.</Description>
     </Overview>
@@ -38,7 +38,7 @@
             </FieldList>
         </DataType>
         <DataType ID="11" Name="uAlign" Type="Imported">
-            <Description>Example of how to import existing types from other header files. This example exports NEMemory::uAlign</Description>
+            <Description>This example exports NEMemory::uAlign in the service interface.</Description>
             <Namespace>NEMemory</Namespace>
             <Location>areg/base/NEMemory.hpp</Location>
         </DataType>
@@ -53,7 +53,7 @@
             <BaseTypeValue>String</BaseTypeValue>
         </DataType>
         <DataType ID="14" Name="SomeMap" Type="DefinedType">
-            <Description>An example of defining hash-map, where the key is exported value and the value is new defined type.</Description>
+            <Description>This example defines hash-map where key is exported and value is new data type.</Description>
             <Container>HashMap</Container>
             <BaseTypeValue>SomeStruct</BaseTypeValue>
             <BaseTypeKey>String</BaseTypeKey>

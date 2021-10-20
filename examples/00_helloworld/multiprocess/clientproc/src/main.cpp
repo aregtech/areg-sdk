@@ -1,6 +1,6 @@
 /**
  * \file    multiprocess/clientproc/src/main.hpp
- * \brief   Runs service and the client in a one thread.
+ * \brief   Runs service and the client in one thread.
  **/
 
 #include "areg/base/GEGlobal.h"

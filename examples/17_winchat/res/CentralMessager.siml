@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<ServiceInterface FormatVesion="1.0.0">
+<ServiceInterface FormatVersion="1.0.0">
     <Overview ID="1" Name="CentralMessager" Version="1.0.0" isRemote="true">
         <Description>This service is used to receive messages from connected edge when typing or 
 sending messages. The service receives text message from initiator and

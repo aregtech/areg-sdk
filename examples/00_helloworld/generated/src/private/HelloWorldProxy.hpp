@@ -6,7 +6,7 @@
 /************************************************************************
  * (c) copyright    2021
  *
- * Generated at     19.10.2021  18:07:50 GMT+02:00 
+ * Generated at     20.10.2021  13:21:57 GMT+02:00 
  *                  Create by AREG SDK code generator tool from source HelloWorld.
  *
  * \file            generated/src/private/HelloWorldProxy.hpp
@@ -129,14 +129,6 @@ public:
 /************************************************************************
  * Parameters
  ************************************************************************/
-    /**
-     * \brief   Returns value of success of response call function.
-     *          The parameter is validated and set when Proxy is getting response call.
-     *          Parameter success description: 
-     *          Flag, indicates the success of output.
-     **/
-    inline bool getParamsuccess( void ) const;
-
 /************************************************************************
  * Requests
  ************************************************************************/
@@ -144,11 +136,10 @@ public:
      * \brief   Request call.
      *          The request to output greeting.
      * \param   caller  The reference of caller object to get response.
-     * \param   client  The name of client to output greeting.
      * \return  The sequence count number of call
      * \see     responseHelloWorld
      **/
-    unsigned int requestHelloWorld( IENotificationEventConsumer & caller, const String & client );
+    unsigned int requestHelloWorld( IENotificationEventConsumer & caller );
     
 //////////////////////////////////////////////////////////////////////////
 // Operations.
@@ -288,12 +279,6 @@ private:
 /************************************************************************
  * Parameter members
  ************************************************************************/
-    /**
-     * \brief   success parameter value.
-     *          Flag, indicates the success of output.
-     **/
-    bool    mParamsuccess;
-
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
 //////////////////////////////////////////////////////////////////////////
@@ -375,15 +360,6 @@ inline void HelloWorldProxy::clearAllNotifications( IENotificationEventConsumer 
 inline HelloWorldProxy & HelloWorldProxy::self( void )
 {
     return (*this);
-}
-
-/************************************************************************
- * Inline parameters
- ************************************************************************/
-
-inline bool HelloWorldProxy::getParamsuccess( void ) const
-{
-    return mParamsuccess;
 }
 
 

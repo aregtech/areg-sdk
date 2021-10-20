@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<ServiceInterface FormatVesion="1.0.0">
+<ServiceInterface FormatVersion="1.0.0">
     <Overview ID="1" Name="RemoteRegistry" Version="1.0.0" isRemote="true">
         <Description>Simple Service Interface to demonstrate working features of AREG SDK.
 This interface demonstrates how to use multiple remote services in the system.
