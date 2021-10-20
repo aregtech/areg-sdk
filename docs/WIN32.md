@@ -1,10 +1,10 @@
-﻿```
+﻿# Build with Win32 API
+```
 This file is part of AREG SDK
 Copyright (c) Aregtech, 2017-2021
 Contact: info[at]aregtech.com
 Website: https://www.aregtech.com
 ```
-============================================
 
 This document describes the instruction to compile **AREG SDK** and example source codes under _Windows_ 32- or 64-bit platform using Visual Studio 2019 or higher version.
 

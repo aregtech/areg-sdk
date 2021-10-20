@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-ME=$(realpath $0)
+ME=$(realpath "$0")
 TARGET=_generated
 
 helpmsg()

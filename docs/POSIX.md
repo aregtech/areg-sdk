@@ -1,10 +1,10 @@
-﻿```
+﻿# Build with POSIX API
+```
 This file is part of AREG SDK.
 Copyright (c) Aregtech, 2017-2021
 Contact: info[at]aregtech.com
 Website: https://www.aregtech.com
 ```
-============================================
 
 This document describes the instruction to compile **AREG SDK** and example source codes under _Linux_ or any other POSIX_ 32- or 64-bit platform. The minimum requirement to run an application built with the AREG SDK on the target device are 256KB of free RAM and 2MB of free storage space.
 

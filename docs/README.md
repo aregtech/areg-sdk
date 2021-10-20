@@ -1,12 +1,10 @@
+# Information
 ```
 This file is part of AREG SDK
 Copyright (c) Aregtech, 2017-2021
 Contact: info[at]aregtech.com
 Website: https://www.aregtech.com
 ```
-============================================
-
-# Information
 
 This document describes the file system structure of **AREG SDK** and the location of documents.
 
@@ -42,15 +40,26 @@ After compiling using _MS Visual Studio_ or _Makefile_, the root folder _areg-sd
 ```
 docs
   |
-  +- POSIX.md  .... --> the instructions to compile applications in Linux.
+  +- /img ......... --> Folder of images used in documents.
   |
-  +- WIN32.md  .... --> the instructions to compile applications in Windows.
+  +- DEVELOP.md ... --> The developer guide and technical explanations.
+  |
+  +- HOWTO.md ..... --> The instructions how to build software.
+  |
+  +- README.md .... --> This document file.
+  |
+  +- POSIX.md  .... --> The instructions to compile applications in Linux.
+  |
+  +- WIN32.md  .... --> The instructions to compile applications in Windows.
 ```
 
-## Locations
+## Shortcuts
 
-- The source codes of AREG SDK are located in the [_framework_](./../framework/) subfolder of _areg-sdk_ root.
-- The sources codes of examples are located in the [_examples_](./../examples) subfolder of _areg-sdk_ root.
-- The MS Visual Studio property and Makefile user settings are located in the [_conf_](./../conf) subfolder of _areg-sdk_ root.
-- The **POSIX** related configuration, compilation and the list of used API are in [POSIX.md](./POSIX.md)
-- The **Windows** related configuration, compilation and the list of used API are in [WIN32.md](./WIN32.md)
+- The source codes of AREG SDK are located in the [/<areg-sdk>/framework](./../framework/).
+- The sources codes of examples are located in the [/<areg-sdk>/examples](./../examples).
+- The Makefile general and user specific configuration files are in [/<areg-sdk>/conf/make](./../conf/make).
+- The MS Visual Studio general and user specific property files are in [/<areg-sdk>/conf/msvc](./../conf/msvc).
+- The [developer guide](./DEVELOP.md) gives technical details and helpt to develop distributed and service enabled application.
+- The document to explain [HOWTO](./HOWTO.md) export projects and make builds.
+- The **POSIX** related configuration, compilation and the list of used API are in [POSIX](./POSIX.md)
+- The **Windows** related configuration, compilation and the list of used API are in [WIN32](./WIN32.md)
