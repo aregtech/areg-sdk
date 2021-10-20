@@ -13,6 +13,32 @@ This document is a developer guide and describes how to develop a service enable
 ## Table of content
 1. [Service interface prototype](#service-interface-prototype)
     - [Public and Local services](#public-and-local-services)
+    - [Data types](#data-types)
+        * [Structures](#structures)
+        * [Enumerations](#enumerations)
+        * [Imported types](#imported-types)
+        * [Defined containers](#defined-containers)
+    - [Attributes](#attributes)
+    - [Requests, responses and broadcasts](#requests-responses-and-broadcasts)
+        * [Requests](#requests)
+        * [Responses](#responses)
+        * [Broadcasts](#broadcasts)
+    - [Constants](#constants)
+    - [Includes](#includes)
+2. [Code generator](#code-generator)
+3. [Generated codes](#generated-codes)
+4. [Modeling and service initialization](#modeling-and-service-initialization)
+5. [Hello Service!](#hello-service)
+    - [Service Interface](#service-interface)
+    - [Generate codes](#generate-codes)
+    - [Develop the service](#develop-the-service)
+    - [Develop the service client](#develop-the-service-client)
+    - [Create and load model](#create-and-load-model)
+        * [Model with single thread](#model-with-single-thread)
+        * [Model with multiple threads](#model-with-multiple-threads)
+        * [Model of separate processes](#model-of-separate-processes)
+6. [Make the build](#make-the-build)
+7. [Contact us!](#contact-us)
 
 ## Service interface prototype
 
@@ -415,7 +441,7 @@ $ java -jar ./../../tools/codegen.jar --root=./ --doc=res/HelloWorld.siml --targ
 ```
 This script is valid for Linux and Windows OS. It runs `codegen.jar` and generates files located in the `generated/src` subfolder of `helloworld`.
 
-### Develop a Service
+### Develop the service
 
 We'll develop the service in the folder `common/src` and include in all projects. Before developing a service, it is important to know that:
 1. The `Component` is the owner of the service object. The `Component` can provide more than one service interface. The component can contain a mixture of services and clients.
@@ -532,7 +558,7 @@ In this example:
 * The service implements virtual method `virtual void requestHelloWorld(const String & client)` inherited from `HelloWorldStub`.
 * In the request `requestHelloWorld` replies `responseHelloWorld` to the client and unlocks the request.
 
-### Develop a Service client.
+### Develop the service client
 
 We'll develop the client in the folder `common/src` to include in all projects. Before developing a client, it is important to know that:
 1. The `Component` is the owner of the service client object. The `Component` can provide more than one service client. A component can contain a mixture of services and clients.
@@ -742,7 +768,7 @@ In this example:
 * The service client overrides virtual method `virtual requestHelloWorldFailed(NEService::eResultType FailureReason)` to react on request failure (error handling).
 * In the `serviceConnected` when clients establishes the connection, it calls method `requestHelloWorl` to run on remote service.
 
-### Load model
+### Create and load model
 
 When services and clients are created, the developers can decide how to distribute service and client objects.
 * The service and the client can run in the same thread of the same process.
@@ -911,7 +937,7 @@ int main( void )
 }
 ```
 
-#### Model with separate processes
+#### Model of separate processes
 
 This example demonstrates how to instantiate service and client running in separate processes (_Public_ service). It is required to have 2 projects for each process.
 
@@ -1057,7 +1083,7 @@ int main( void )
 
 For this particular project, there can be multiple instances of service clients to start, because the role is generated and it is unique. The application will work if a client runs on another machine(s) within the network connected to the `mcrouter`.
 
-### Make a build
+### Make the build
 
 The builds can be done with the help of MS Visual Studio, Eclipse and Makefile. We do not consider in detail how to create Makefile or project files. But the developers should not forget to include all files in `common/src` in projects, link `00_generated` static library and `areg` library (shared or static). For details see appropriate file in [00_helloworld](./../examples/00_helloworld/) example.
 

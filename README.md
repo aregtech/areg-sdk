@@ -128,7 +128,7 @@ scope.my_app.ignore_this_group_* = NOTSET ;        # disable logs of certain sco
 
 ### Development
 
-The development guidance and examples of codes you'll find in [DEVELOP](./docs/DEVELOP.md).
+The development guidance and examples of codes you'll find in [DEVELOP](./docs/DEVELOP.md) document.
 
 ## 📌 Use cases and benefits
 
@@ -180,7 +180,7 @@ int main()
 ```
 In the example, the `"RemoveRegistry"` and the `"SystemShudown"` are the names of components called _roles_, and the `NERemoteRegistry::ServiceName` and the `NESystemShutdown::ServiceName` are the _interface names_. In combination, they define the _service name_, which is used to access in the network. The MACRO create static _model_ `NECommon::ModelName`, which defines services that are started when call method `Application::loadModel(NECommon::ModelName)`. Services are stopped when call `Application::unloadModel(NECommon::ModelName)`.
 
-In this example services can be merged in one thread and in case of the _Public_ services they can be split and distributed in 2 processes, where every process contains its own model to start service. Independent on service location, neither software developers, nor service client objects feel difference except possible slight network latency when run IPC. It is as well possible to instantiate 2 instances of the same service implementation, but they must have unique _role names_ within one system. Means, the _Public_ services must have unique names within a network and the _Local_ services must have unique names within a process. See more details in the [DEVELOP](/docs/DEVELOP.md) guding document.
+In this example services can be merged in one thread and in case of the _Public_ services they can be split and distributed in 2 processes, where every process contains its own model to start service. Independent on service location, neither software developers, nor service client objects feel difference except possible slight network latency when run IPC. It is as well possible to instantiate 2 instances of the same service implementation, but they must have unique _role names_ within one system. Means, the _Public_ services must have unique names within a network and the _Local_ services must have unique names within a process. As an example of developing service and client that can be split in multiple processes or split in one thread, see explanation of [Hello Service!](./docs/DEVELOP.md#hello-service) project developer guide.
 
 #### Driverless devices
 
