@@ -15,6 +15,7 @@ DEPS = $(00_generated_OBJS:%.o=%.d)
 -include $(DEPS)
 
 $(AREG_OUTPUT_LIB)/$(00_generated_TARGET_BIN): $(00_generated_OBJS)
+	@echo "$(00_helloworld_BASE)/generated/src/private/Makefile"
 	@echo "Linking $@ ..."
 	@mkdir -p $(dir $@)
 	$(AREG_AR) -rcs $@ $^

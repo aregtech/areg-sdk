@@ -14,7 +14,7 @@ $(foreach cpp, $(00_onethread_SRC), $(eval $(call obj, $(cpp), $(00_onethread_OU
 DEPS = $(00_onethread_OBJS:%.o=%.d)
 -include $(DEPS)
 
-$(AREG_OUTPUT_BIN)/$(00_onethread_TARGET_BIN): $(areg_TARGET_PATH) $(AREG_OUTPUT_LIB)/$(10_generated_TARGET_BIN) $(00_onethread_OBJS)
+$(AREG_OUTPUT_BIN)/$(00_onethread_TARGET_BIN): $(areg_TARGET_PATH) $(AREG_OUTPUT_LIB)/$(00_generated_TARGET_BIN) $(00_onethread_OBJS)
 	@echo "Linking $@ ..."
 	@mkdir -p $(dir $@)
 	$(AREG_TOOLCHAIN) $(CXXFLAGS) $(00_helloworld_CXXFLAGS) $(00_onethread_OBJS) $(00_helloworld_LDFLAGS) -o $@

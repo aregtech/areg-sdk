@@ -49,11 +49,13 @@
 							<tool id="cdt.managedbuild.tool.gnu.c.linker.base.106361092" name="GCC C Linker" superClass="cdt.managedbuild.tool.gnu.c.linker.base"/>
 							<tool id="cdt.managedbuild.tool.gnu.cpp.linker.base.355682297" name="GCC C++ Linker" superClass="cdt.managedbuild.tool.gnu.cpp.linker.base">
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.cpp.link.option.libs.533939027" name="Libraries (-l)" superClass="gnu.cpp.link.option.libs" useByScannerDiscovery="false" valueType="libs">
+									<listOptionValue builtIn="false" value="00_common"/>
 									<listOptionValue builtIn="false" value="00_generated"/>
 									<listOptionValue builtIn="false" value="areg"/>
 									<listOptionValue builtIn="false" value="rt"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.cpp.link.option.paths.1866359000" name="Library search path (-L)" superClass="gnu.cpp.link.option.paths" useByScannerDiscovery="false" valueType="libPaths">
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/00_common/Debug}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/00_generated/Debug}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/areg/Debug}&quot;"/>
 								</option>
@@ -137,11 +139,13 @@
 							<tool id="cdt.managedbuild.tool.gnu.c.linker.base.59539032" name="GCC C Linker" superClass="cdt.managedbuild.tool.gnu.c.linker.base"/>
 							<tool id="cdt.managedbuild.tool.gnu.cpp.linker.base.133394927" name="GCC C++ Linker" superClass="cdt.managedbuild.tool.gnu.cpp.linker.base">
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.cpp.link.option.libs.1341692467" name="Libraries (-l)" superClass="gnu.cpp.link.option.libs" useByScannerDiscovery="false" valueType="libs">
+									<listOptionValue builtIn="false" value="00_common"/>
 									<listOptionValue builtIn="false" value="00_generated"/>
 									<listOptionValue builtIn="false" value="areg"/>
 									<listOptionValue builtIn="false" value="rt"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.cpp.link.option.paths.304270958" name="Library search path (-L)" superClass="gnu.cpp.link.option.paths" useByScannerDiscovery="false" valueType="libPaths">
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/00_common/Release}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/00_generated/Release}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/areg/Release}&quot;"/>
 								</option>

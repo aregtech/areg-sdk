@@ -23,7 +23,7 @@ ServiceComponent::ServiceComponent(const NERegistry::ComponentEntry & entry, Com
 void ServiceComponent::requestHelloWorld(const String & client)
 {
     // output message
-    printf("Hello world of %s!!!\n", client.getString());
+    printf("\'Hello Service!\' from %s\n", client.getString());
 
     // reply to release the request
     responseHelloWorld(true);

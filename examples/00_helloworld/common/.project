@@ -1,11 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>00_serviceproc</name>
+	<name>00_common</name>
 	<comment></comment>
 	<projects>
-		<project>00_common</project>
-		<project>00_generated</project>
-		<project>areg</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

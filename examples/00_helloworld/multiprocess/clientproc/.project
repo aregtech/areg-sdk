@@ -3,8 +3,9 @@
 	<name>00_clientproc</name>
 	<comment></comment>
 	<projects>
-		<project>areg</project>
+		<project>00_common</project>
 		<project>00_generated</project>
+		<project>areg</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
