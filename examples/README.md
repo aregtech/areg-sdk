@@ -1,12 +1,10 @@
+# Examples
 ```
 This file is part of AREG SDK and describes the examples
 Copyright (c) 2017-2021, Aregtech
 Contact: info[at]aregtech.com
 Website: https://www.aregtech.com
 ```
-============================================
-# Examples
-
 The AREG SDK contains various examples to demonstrate features of the engine and framework.  **To run Public services examples based on IPC, make sure the process _mcrouter_ has started**. The [_mcrouter_](./../framework/mcrouter/) is a part of the AREG SDK.
 
 Below is the list of examples:

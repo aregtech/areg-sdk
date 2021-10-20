@@ -1,11 +1,10 @@
+# How To
 ```
 This file is part of AREG SDK
 Copyright (c) 2017-2021, Aregtech
 Contact: info[at]aregtech.com
 Website: https://www.aregtech.com
 ```
-============================================
-# How To
 
 This document replies to several howto questions.
 
