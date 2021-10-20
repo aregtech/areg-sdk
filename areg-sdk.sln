@@ -297,39 +297,39 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "msvc", "msvc", "{C0125346-E
 		conf\msvc\user.props = conf\msvc\user.props
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "00_helloworld", "00_helloworld", "{2DF9C20F-08BB-475B-8901-C1A64D88BA8A}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "00_helloservice", "00_helloservice", "{2DF9C20F-08BB-475B-8901-C1A64D88BA8A}"
 	ProjectSection(SolutionItems) = preProject
-		examples\00_helloworld\ReadMe.txt = examples\00_helloworld\ReadMe.txt
+		examples\00_helloservice\ReadMe.txt = examples\00_helloservice\ReadMe.txt
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "00_generated", "examples\00_helloworld\00_generated.vcxproj", "{92CF6BFF-1A9A-455A-9252-BF6D120C3CC9}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "00_generated", "examples\00_helloservice\00_generated.vcxproj", "{92CF6BFF-1A9A-455A-9252-BF6D120C3CC9}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "res", "res", "{5B537BA4-4245-4E64-93E9-E35738AB22B3}"
 	ProjectSection(SolutionItems) = preProject
-		examples\00_helloworld\res\generate.bat = examples\00_helloworld\res\generate.bat
-		examples\00_helloworld\res\generate.sh = examples\00_helloworld\res\generate.sh
-		examples\00_helloworld\res\HelloWorld.siml = examples\00_helloworld\res\HelloWorld.siml
+		examples\00_helloservice\res\generate.bat = examples\00_helloservice\res\generate.bat
+		examples\00_helloservice\res\generate.sh = examples\00_helloservice\res\generate.sh
+		examples\00_helloservice\res\HelloService.siml = examples\00_helloservice\res\HelloService.siml
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "00_onethread", "examples\00_helloworld\00_onethread.vcxproj", "{FE25F3A4-FB2F-47AE-89FA-7399D5475E6D}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "00_onethread", "examples\00_helloservice\00_onethread.vcxproj", "{FE25F3A4-FB2F-47AE-89FA-7399D5475E6D}"
 	ProjectSection(ProjectDependencies) = postProject
 		{2DF8165C-EDE2-4F76-8D2C-2FFE82CB6CE5} = {2DF8165C-EDE2-4F76-8D2C-2FFE82CB6CE5}
 		{92CF6BFF-1A9A-455A-9252-BF6D120C3CC9} = {92CF6BFF-1A9A-455A-9252-BF6D120C3CC9}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "00_twothreads", "examples\00_helloworld\00_twothreads.vcxproj", "{CF1C33CA-6F11-4B5C-B92B-F0138B90B956}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "00_twothreads", "examples\00_helloservice\00_twothreads.vcxproj", "{CF1C33CA-6F11-4B5C-B92B-F0138B90B956}"
 	ProjectSection(ProjectDependencies) = postProject
 		{2DF8165C-EDE2-4F76-8D2C-2FFE82CB6CE5} = {2DF8165C-EDE2-4F76-8D2C-2FFE82CB6CE5}
 		{92CF6BFF-1A9A-455A-9252-BF6D120C3CC9} = {92CF6BFF-1A9A-455A-9252-BF6D120C3CC9}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "00_serviceproc", "examples\00_helloworld\00_serviceproc.vcxproj", "{70CAB882-8FA3-4E1C-930D-53F7DA29D1E4}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "00_serviceproc", "examples\00_helloservice\00_serviceproc.vcxproj", "{70CAB882-8FA3-4E1C-930D-53F7DA29D1E4}"
 	ProjectSection(ProjectDependencies) = postProject
 		{2DF8165C-EDE2-4F76-8D2C-2FFE82CB6CE5} = {2DF8165C-EDE2-4F76-8D2C-2FFE82CB6CE5}
 		{92CF6BFF-1A9A-455A-9252-BF6D120C3CC9} = {92CF6BFF-1A9A-455A-9252-BF6D120C3CC9}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "00_clientproc", "examples\00_helloworld\00_clientproc.vcxproj", "{7F508C90-D49D-4E26-B7B0-3CBCA677A272}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "00_clientproc", "examples\00_helloservice\00_clientproc.vcxproj", "{7F508C90-D49D-4E26-B7B0-3CBCA677A272}"
 	ProjectSection(ProjectDependencies) = postProject
 		{2DF8165C-EDE2-4F76-8D2C-2FFE82CB6CE5} = {2DF8165C-EDE2-4F76-8D2C-2FFE82CB6CE5}
 		{92CF6BFF-1A9A-455A-9252-BF6D120C3CC9} = {92CF6BFF-1A9A-455A-9252-BF6D120C3CC9}

@@ -312,8 +312,8 @@ set CODE_GEN=generated\src
 :: Include codegen.jar in CLASSPATH
 set CLASSPATH=%CLASSPATH%;%AREG_SDK_ROOT%\tools;%AREG_SDK_ROOT%\tools\codegen.jar
 
-@echo Generating class of HelloWorld Service Interface in folder %CODE_GEN% .....
-java com.aregtech.CMFMain --root=%PROJECT_ROOT% --doc=res\HelloWorld.siml --target=%CODE_GEN%
+@echo Generating class of HelloService Service Interface in folder %CODE_GEN% .....
+java com.aregtech.CMFMain --root=%PROJECT_ROOT% --doc=res\HelloService.siml --target=%CODE_GEN%
 ```
 
 ## Generated codes
@@ -333,8 +333,8 @@ BEGIN_MODEL( "ServiceModel" )
     BEGIN_REGISTER_THREAD( "TestServiceThread" )
         // define component, set role name.
         BEGIN_REGISTER_COMPONENT( NECommon::ServiceHelloName, ServiceComponent )
-            // register HelloWorld service implementation.
-            REGISTER_IMPLEMENT_SERVICE( NEHelloWorld::ServiceName, NEHelloWorld::InterfaceVersion )
+            // register HelloService service implementation.
+            REGISTER_IMPLEMENT_SERVICE( NEHelloService::ServiceName, NEHelloService::InterfaceVersion )
         // end of component description
         END_REGISTER_COMPONENT( NECommon::ServiceHelloName )
     // end of thread description
@@ -390,7 +390,7 @@ The example [10_locsvc](./../examples/10_locsvc/) and higher contain implementat
 
 ## Hello Service!
 
-This topic is the step-by-step practical example to create a service enabled application(s) based on AREG SDK solution. The application discovers service, sends a request and a response. The source codes of this project are in [00_helloworld](./../examples/00_helloworld). First, download sources of AREG SDK. For simplicity, create the new project inside `examples` folder and name it `helloworld`, so that the `examples/helloworld` is the root of this training.
+This topic is the step-by-step practical example to create a service enabled application(s) based on AREG SDK solution. The application discovers service, sends a request and a response. The source codes of this project are in [00_helloservice](./../examples/00_helloservice). First, download sources of AREG SDK. For simplicity, create the new project inside `examples` folder and name it `helloservice`, so that the `examples/helloservice` is the root of this training.
 
 We create 3 types of applications that use same common the service and the client located in `common/src` subfolder of the project, where:
 - service and client run in the same thread of the same application (same as _Local_ service);
@@ -403,15 +403,15 @@ The agenda is to demonstrate service and client implementation, as well the posi
 
 ### Service Interface
 
-In `helloworld` create another folder called `res` to locate the first service interface prototype XML document. Create a file `HelloWorld.siml` and copy this XML in the file, which is a definition of _Public_ service interface with one request and connected response.
+In `helloservice` create another folder called `res` to locate the first service interface prototype XML document. Create a file `HelloService.siml` and copy this XML in the file, which is a definition of _Public_ service interface with one request and connected response.
 ```xml
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <ServiceInterface FormatVersion="1.0.0">
-    <Overview ID="1" Name="HelloWorld" Version="1.0.0" isRemote="true">
+    <Overview ID="1" Name="HelloService" Version="1.0.0" isRemote="true">
         <Description>The hello world application</Description>
     </Overview>
     <MethodList>
-        <Method ID="2" MethodType="request" Name="HelloWorld" Response="HelloWorld">
+        <Method ID="2" MethodType="request" Name="HelloService" Response="HelloService">
             <Description>The request to output a greeting.</Description>
             <ParamList>
                 <Parameter DataType="String" ID="3" Name="client">
@@ -419,7 +419,7 @@ In `helloworld` create another folder called `res` to locate the first service i
                 </Parameter>
             </ParamList>
         </Method>
-        <Method ID="4" MethodType="response" Name="HelloWorld">
+        <Method ID="4" MethodType="response" Name="HelloService">
             <Description>The response indicating success status to output a greeting</Description>
             <ParamList>
                 <Parameter DataType="bool" ID="5" Name="success">
@@ -435,24 +435,24 @@ In `helloworld` create another folder called `res` to locate the first service i
 
 > 💡 You must have Java installed on your machine to be able to run code generator.
 
-Open command line terminal in `helloworld` folder and run following command:
+Open command line terminal in `helloservice` folder and run following command:
 ```bash
-$ java -jar ./../../tools/codegen.jar --root=./ --doc=res/HelloWorld.siml --target=generated/src
+$ java -jar ./../../tools/codegen.jar --root=./ --doc=res/HelloService.siml --target=generated/src
 ```
-This script is valid for Linux and Windows OS. It runs `codegen.jar` and generates files located in the `generated/src` subfolder of `helloworld`.
+This script is valid for Linux and Windows OS. It runs `codegen.jar` and generates files located in the `generated/src` subfolder of `helloservice`.
 
 ### Develop the service
 
 We'll develop the service in the folder `common/src` and include in all projects. Before developing a service, it is important to know that:
 1. The `Component` is the owner of the service object. The `Component` can provide more than one service interface. The component can contain a mixture of services and clients.
-2. All service base class generated from a prototype XML document ends with `Stub` and contains the requests as pure virtual methods. For example, in our case the service base class has the name `HelloWorldStub` and it contains one pure virtual method.
+2. All service base class generated from a prototype XML document ends with `Stub` and contains the requests as pure virtual methods. For example, in our case the service base class has the name `HelloServiceStub` and it contains one pure virtual method.
 
 In the `common/src` subfolder let's create file `ServiceComponent.hpp` to create **ServiceComponent** object of service component. 
-- The `ServiceComponent` extends `Component` and `HelloWorldStub` classes.
+- The `ServiceComponent` extends `Component` and `HelloServiceStub` classes.
 - The `ServiceComponent` contains 2 static methods `Component * CreateComponent( ... )` and `void DeleteComponent( ... )` to instantiate and free  the object.
-- The `ServiceComponent` contains the `void requestHelloWorld( const String & client )` override method.
+- The `ServiceComponent` contains the `void requestHelloService( const String & client )` override method.
 
-The declaration of the service in the file [common/src/ServiceComponent.hpp](./../examples/00_helloworld/common/src/ServiceComponent.hpp):
+The declaration of the service in the file [common/src/ServiceComponent.hpp](./../examples/00_helloservice/common/src/ServiceComponent.hpp):
 ```cpp
 /**
  * \file    common/src/ServiceComponent.hpp
@@ -462,13 +462,13 @@ The declaration of the service in the file [common/src/ServiceComponent.hpp](./.
 
 #include "areg/base/GEGlobal.h"
 #include "areg/component/Component.hpp"
-#include "generated/src/HelloWorldStub.hpp"
+#include "generated/src/HelloServiceStub.hpp"
 
 //////////////////////////////////////////////////////////////////////////
 // ServiceComponent declaration
 //////////////////////////////////////////////////////////////////////////
 class ServiceComponent  : public    Component
-                        , protected HelloWorldStub
+                        , protected HelloServiceStub
 {
 //////////////////////////////////////////////////////////////////////////
 // static methods
@@ -492,13 +492,13 @@ protected:
     virtual ~ServiceComponent(void) = default;
 
 //////////////////////////////////////////////////////////////////////////
-// HelloWorld Interface Requests
+// HelloService Interface Requests
 //////////////////////////////////////////////////////////////////////////
     /**
      * \brief   The request to output a greeting.
      * \param   client  The name of client to output the greeting.
      **/
-    virtual void requestHelloWorld( const String & client ) override;
+    virtual void requestHelloService( const String & client ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden function calls
@@ -517,7 +517,7 @@ private:
 };
 ```
 
-The implementation of the service in the file [common/src/ServiceComponent.cpp](./../examples/00_helloworld/common/src/ServiceComponent.cpp):
+The implementation of the service in the file [common/src/ServiceComponent.cpp](./../examples/00_helloservice/common/src/ServiceComponent.cpp):
 
 ```cpp
 /**
@@ -538,25 +538,25 @@ void ServiceComponent::DeleteComponent(Component & compObject, const NERegistry:
 
 ServiceComponent::ServiceComponent(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
     : Component         ( owner, entry.mRoleName)
-    , HelloWorldStub    ( static_cast<Component &>(self()) )
+    , HelloServiceStub    ( static_cast<Component &>(self()) )
 {
 }
 
-void ServiceComponent::requestHelloWorld(const String & client)
+void ServiceComponent::requestHelloService(const String & client)
 {
     // output message
     printf("Hello world of %s!!!\n", client.getString());
 
     // reply to release the request
-    responseHelloWorld(true);
+    responseHelloService(true);
 }
 ```
 In this example:
-* The class `ServiceComponent` is an instance of `Component` and `HelloWorldStub`.
+* The class `ServiceComponent` is an instance of `Component` and `HelloServiceStub`.
 * The service is created in the **static** method `Component * ServiceComponent::CreateComponent(const NERegistry::ComponentEntry & entry, ComponentThread & owner)`.
 * The service is deleted in the **static** method `void ServiceComponent::DeleteComponent(Component & compObject, const NERegistry::ComponentEntry & entry)`.
-* The service implements virtual method `virtual void requestHelloWorld(const String & client)` inherited from `HelloWorldStub`.
-* In the request `requestHelloWorld` replies `responseHelloWorld` to the client and unlocks the request.
+* The service implements virtual method `virtual void requestHelloService(const String & client)` inherited from `HelloServiceStub`.
+* In the request `requestHelloService` replies `responseHelloService` to the client and unlocks the request.
 
 ### Develop the service client
 
@@ -564,18 +564,18 @@ We'll develop the client in the folder `common/src` to include in all projects. 
 1. The `Component` is the owner of the service client object. The `Component` can provide more than one service client. A component can contain a mixture of services and clients.
 2. All service client base classes generated from a prototype XML document end with `ClientBase` and contain base implementations of responses, broadcasts, attribute updates, and request failure callback methods.
 3. Whenever service client is connected with the service, the system triggers `bool serviceConnected( bool isConnected, ProxyBase & proxy )` callback to indicate the connection status and the proxy object that is communicating with the stub. 
-4. Since there might be more than one client in the component, check both, `isConnected` and `proxy` parameters to figure the exact connection status of clients. For example, if there are more than one client implementation in component, the HelloWorld service client can be checked like this:
+4. Since there might be more than one client in the component, check both, `isConnected` and `proxy` parameters to figure the exact connection status of clients. For example, if there are more than one client implementation in component, the HelloService service client can be checked like this:
 ```cpp
-bool HelloWorldClient::serviceConnected( bool isConnected, ProxyBase & proxy )
+bool HelloServiceClient::serviceConnected( bool isConnected, ProxyBase & proxy )
 {
     bool result = false;
 
-    // Is this a notification of HelloWorld client proxy object?
-    // This is same 'if (HelloWorldClientBase::getProxy() == &proxy)' condition
-    if ( HelloWorldClientBase::serviceConnected(isConnected, proxy) )
+    // Is this a notification of HelloService client proxy object?
+    // This is same 'if (HelloServiceClientBase::getProxy() == &proxy)' condition
+    if ( HelloServiceClientBase::serviceConnected(isConnected, proxy) )
     {
         result = true;
-        // it is a connection status of HelloWorld service
+        // it is a connection status of HelloService service
         if (isConnected)
         {
             // we've got a connection, can start sending requests and subscribe on attributes, broadcasts and responses.
@@ -595,12 +595,12 @@ bool HelloWorldClient::serviceConnected( bool isConnected, ProxyBase & proxy )
 ```
 
 In the `common/src` subfolder let's create file `ClientComponent.hpp` to create the **ClientComponent** object of service client. 
-- The `ClientComponent` extends `Component` and `HelloWorldClientBase` classes.
+- The `ClientComponent` extends `Component` and `HelloServiceClientBase` classes.
 - The `ClientComponent` contains 2 static methods `Component * CreateComponent( ... )` and `void DeleteComponent( ... )` to instantiate and free the object.
 - The `ClientComponent` waits when it is notified of the service connection and sends the request to run on the service.
 - The `ClientComponent` contains overrides to handle reply and the request failure.
 
-The declaration of the service in the file [common/src/ClientComponent.hpp](./../examples/00_helloworld/common/src/ClientComponent.hpp):
+The declaration of the service in the file [common/src/ClientComponent.hpp](./../examples/00_helloservice/common/src/ClientComponent.hpp):
 ```cpp
 /**
  * \file    common/src/ClientComponent.hpp
@@ -610,13 +610,13 @@ The declaration of the service in the file [common/src/ClientComponent.hpp](./..
 
 #include "areg/base/GEGlobal.h"
 #include "areg/component/Component.hpp"
-#include "generated/src/HelloWorldClientBase.hpp"
+#include "generated/src/HelloServiceClientBase.hpp"
 
 //////////////////////////////////////////////////////////////////////////
 // ClientComponent declaration
 //////////////////////////////////////////////////////////////////////////
 class ClientComponent   : public    Component
-                        , protected HelloWorldClientBase
+                        , protected HelloServiceClientBase
 {
 //////////////////////////////////////////////////////////////////////////
 // static methods
@@ -640,19 +640,19 @@ protected:
     virtual ~ClientComponent(void) = default;
 
 /************************************************************************
- * Response HelloWorld
+ * Response HelloService
  ************************************************************************/
     /**
      * \brief   The response indicating success status to output a greeting
      * \param   success Flag, indicates the success of output.
      **/
-    virtual void responseHelloWorld( bool success ) override;
+    virtual void responseHelloService( bool success ) override;
 
     /**
-     * \brief   Overwrite to handle error of HelloWorld request call.
+     * \brief   Overwrite to handle error of HelloService request call.
      * \param   FailureReason   The failure reason value of request call.
      **/
-    virtual void requestHelloWorldFailed( NEService::eResultType FailureReason ) override;
+    virtual void requestHelloServiceFailed( NEService::eResultType FailureReason ) override;
 
 /************************************************************************/
 // IEProxyListener Overrides
@@ -683,7 +683,7 @@ private:
     DECLARE_NOCOPY_NOMOVE( ClientComponent );
 };
 ```
-The implementation of the service in the file [common/src/ClientComponent.cpp](./../examples/00_helloworld/common/src/ClientComponent.cpp):
+The implementation of the service in the file [common/src/ClientComponent.cpp](./../examples/00_helloservice/common/src/ClientComponent.cpp):
 
 ```cpp
 /**
@@ -709,14 +709,14 @@ void ClientComponent::DeleteComponent(Component & compObject, const NERegistry::
 
 ClientComponent::ClientComponent(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
     : Component             ( owner, entry.mRoleName )
-    , HelloWorldClientBase  ( entry.mDependencyServices[0].mRoleName.getString(), owner )
+    , HelloServiceClientBase  ( entry.mDependencyServices[0].mRoleName.getString(), owner )
 {
 }
 
 bool ClientComponent::serviceConnected(bool isConnected, ProxyBase & proxy)
 {
     bool result = false;
-    if ( HelloWorldClientBase::serviceConnected(isConnected, proxy) )
+    if ( HelloServiceClientBase::serviceConnected(isConnected, proxy) )
     {
         if (isConnected)
         {
@@ -725,7 +725,7 @@ bool ClientComponent::serviceConnected(bool isConnected, ProxyBase & proxy)
             //  - can subscribe to data, broadcasts and responses.
 
             // call request
-            requestHelloWorld( getRoleName() );
+            requestHelloService( getRoleName() );
         }
         else
         {
@@ -738,7 +738,7 @@ bool ClientComponent::serviceConnected(bool isConnected, ProxyBase & proxy)
     return result;
 }
 
-void ClientComponent::responseHelloWorld( bool success )
+void ClientComponent::responseHelloService( bool success )
 {
     printf("%s to output message.\n", success ? "succeeded" : "failed");
 
@@ -748,24 +748,24 @@ void ClientComponent::responseHelloWorld( bool success )
     Application::signalAppQuit();
 }
 
-void ClientComponent::requestHelloWorldFailed(NEService::eResultType FailureReason)
+void ClientComponent::requestHelloServiceFailed(NEService::eResultType FailureReason)
 {
     // make error handling here.
     printf("Failed to execute request, retry again.");
     if (isConnected())
     {
         // the service is still connected, and can resend the request.
-        requestHelloWorld( getRoleName() );
+        requestHelloService( getRoleName() );
     }
 }
 ```
 In this example:
-* The `ServiceClient` is an instance of `Component` and `HelloWorldClientBase`.
+* The `ServiceClient` is an instance of `Component` and `HelloServiceClientBase`.
 * The service client is created in the **static** method `Component * ServiceClient::CreateComponent(const NERegistry::ComponentEntry & entry, ComponentThread & owner)`.
 * The service client is deleted in the **static** method `void ServiceClient::DeleteComponent(Component & compObject, const NERegistry::ComponentEntry & entry)`.
 * The service client overrides virtual method `virtual bool serviceConnected(bool isConnected, ProxyBase & proxy)` to react on service connect / disconnect events.
-* The service client overrides virtual method `virtual void responseHelloWorld( bool success )` to react on service reply.
-* The service client overrides virtual method `virtual requestHelloWorldFailed(NEService::eResultType FailureReason)` to react on request failure (error handling).
+* The service client overrides virtual method `virtual void responseHelloService( bool success )` to react on service reply.
+* The service client overrides virtual method `virtual requestHelloServiceFailed(NEService::eResultType FailureReason)` to react on request failure (error handling).
 * In the `serviceConnected` when clients establishes the connection, it calls method `requestHelloWorl` to run on remote service.
 
 ### Create and load model
@@ -779,7 +779,7 @@ We'll consider each case and for each case we create a new project to test. The 
 
 #### Model with single thread
 
-This example demonstrates how to instantiate service and client in one thread to act as _Local_ service. Create `onethread/src` in the `helloworld`, and create the `main.cpp` file to implement the _model_ and application. File [./onethread/src/main.cpp](./../examples/00_helloworld/onethread/src/main.cpp).
+This example demonstrates how to instantiate service and client in one thread to act as _Local_ service. Create `onethread/src` in the `helloservice`, and create the `main.cpp` file to implement the _model_ and application. File [./onethread/src/main.cpp](./../examples/00_helloservice/onethread/src/main.cpp).
 
 > 💡 In the example, there are 2 components declared in one thread.
 
@@ -821,7 +821,7 @@ BEGIN_MODEL(_modelName)
     BEGIN_REGISTER_THREAD( "Thread1" )
         // register service
         BEGIN_REGISTER_COMPONENT( _service, ServiceComponent )
-            REGISTER_IMPLEMENT_SERVICE( NEHelloWorld::ServiceName, NEHelloWorld::InterfaceVersion )
+            REGISTER_IMPLEMENT_SERVICE( NEHelloService::ServiceName, NEHelloService::InterfaceVersion )
         END_REGISTER_COMPONENT( _service )
         // register client
         BEGIN_REGISTER_COMPONENT( _client.c_str(), ClientComponent )
@@ -859,7 +859,7 @@ int main( void )
 
 #### Model with multiple threads
 
-This example demonstrates how to instantiate service and client in separate threads, but in the same process to act like _Local_ service. File File [./twothreads/src/main.cpp](./../examples/00_helloworld/twothreads/src/main.cpp)
+This example demonstrates how to instantiate service and client in separate threads, but in the same process to act like _Local_ service. File File [./twothreads/src/main.cpp](./../examples/00_helloservice/twothreads/src/main.cpp)
 
 ```cpp
 /**
@@ -898,7 +898,7 @@ BEGIN_MODEL(_modelName)
     // Thread 1, service
     BEGIN_REGISTER_THREAD( "Thread1" )
         BEGIN_REGISTER_COMPONENT( _service, ServiceComponent )
-            REGISTER_IMPLEMENT_SERVICE( NEHelloWorld::ServiceName, NEHelloWorld::InterfaceVersion )
+            REGISTER_IMPLEMENT_SERVICE( NEHelloService::ServiceName, NEHelloService::InterfaceVersion )
         END_REGISTER_COMPONENT( _service )
     END_REGISTER_THREAD( "Thread1" )
 
@@ -943,7 +943,7 @@ This example demonstrates how to instantiate service and client running in separ
 
 > 💡 Note, the model and thread names in these 2 processes have same name, but the services differ.
 
-Process `00_serviceproc`, instantiate service, file [./multiprocess/serviceproc/src/main.cpp](./../examples/00_helloworld/multiprocess/serviceproc/src/main.cpp)
+Process `00_serviceproc`, instantiate service, file [./multiprocess/serviceproc/src/main.cpp](./../examples/00_helloservice/multiprocess/serviceproc/src/main.cpp)
 ```cpp
 /**
  * \file    multiprocess/serviceproc/src/main.cpp
@@ -979,7 +979,7 @@ BEGIN_MODEL(_modelName)
 
     BEGIN_REGISTER_THREAD( "Thread1" )
         BEGIN_REGISTER_COMPONENT( _service, ServiceComponent )
-            REGISTER_IMPLEMENT_SERVICE( NEHelloWorld::ServiceName, NEHelloWorld::InterfaceVersion )
+            REGISTER_IMPLEMENT_SERVICE( NEHelloService::ServiceName, NEHelloService::InterfaceVersion )
         END_REGISTER_COMPONENT( _service )
     END_REGISTER_THREAD( "Thread1" )
 
@@ -1012,7 +1012,7 @@ int main( void )
 ```
 
 Service client implementation in another process.
-Process `00_clientproc`, instantiate service, file [./multiprocess/clientproc/src/main.cpp](./../examples/00_helloworld/multiprocess/clientproc/src/main.cpp)
+Process `00_clientproc`, instantiate service, file [./multiprocess/clientproc/src/main.cpp](./../examples/00_helloservice/multiprocess/clientproc/src/main.cpp)
 
 ```cpp
 /**
@@ -1049,7 +1049,7 @@ BEGIN_MODEL(_modelName)
 
     BEGIN_REGISTER_THREAD( "Thread1" )
         BEGIN_REGISTER_COMPONENT( _service, ServiceComponent )
-            REGISTER_IMPLEMENT_SERVICE( NEHelloWorld::ServiceName, NEHelloWorld::InterfaceVersion )
+            REGISTER_IMPLEMENT_SERVICE( NEHelloService::ServiceName, NEHelloService::InterfaceVersion )
         END_REGISTER_COMPONENT( _service )
     END_REGISTER_THREAD( "Thread1" )
 
@@ -1085,7 +1085,7 @@ For this particular project, there can be multiple instances of service clients 
 
 ### Make the build
 
-The builds can be done with the help of MS Visual Studio, Eclipse and Makefile. We do not consider in detail how to create Makefile or project files. But the developers should not forget to include all files in `common/src` in projects, link `00_generated` static library and `areg` library (shared or static). For details see appropriate file in [00_helloworld](./../examples/00_helloworld/) example.
+The builds can be done with the help of MS Visual Studio, Eclipse and Makefile. We do not consider in detail how to create Makefile or project files. But the developers should not forget to include all files in `common/src` in projects, link `00_generated` static library and `areg` library (shared or static). For details see appropriate file in [00_helloservice](./../examples/00_helloservice/) example.
 
 ## Contact us!
 
