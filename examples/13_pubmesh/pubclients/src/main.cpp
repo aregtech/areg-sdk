@@ -3,10 +3,10 @@
 // Author      : Artak Avetyan
 // Version     :
 // Copyright   : Aregtech (c) 2021
-// Description : This project contains multiple instances of Public service 
-//               clients to invoke remote method calls.The system guarantees 
-//               that the each call is delivered to the target and the 
-//               messages are not mixed or lost. The application shuts down 
+// Description : This project contains multiple instances of Public service
+//               clients to invoke remote method calls.The system guarantees
+//               that the each call is delivered to the target and the
+//               messages are not mixed or lost. The application shuts down
 //               when the 'main' service completes the job and exits.
 //============================================================================
 
@@ -63,7 +63,7 @@ int main()
     // Initialize application, enable logging, servicing and the timer.
     Application::initApplication(true, true, true, true, nullptr, nullptr );
 
-    do 
+    do
     {
         TRACE_SCOPE(example_13_pubclients_main_main);
         TRACE_DBG("The application has been initialized, loading model [ %s ]", NECommon::ModelName);
@@ -72,7 +72,7 @@ int main()
         Application::loadModel(NECommon::ModelName);
 
         TRACE_DBG("Servicing model is loaded");
-        
+
         // wait until Application quit signal is set.
         Application::waitAppQuit(NECommon::WAIT_INFINITE);
 
@@ -83,6 +83,6 @@ int main()
         Application::releaseApplication();
 
     } while (false);
-    
-	return 0;
+
+    return 0;
 }

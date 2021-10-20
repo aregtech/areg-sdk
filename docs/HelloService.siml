@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<ServiceInterface FormatVersion="1.0.0">
+    <Overview ID="1" Name="HelloService" Version="1.0.0" isRemote="true">
+        <Description>The hello world application</Description>
+    </Overview>
+    <MethodList>
+        <Method ID="2" MethodType="request" Name="HelloService" Response="HelloService">
+            <Description>The request to output greeting.</Description>
+            <ParamList>
+                <Parameter DataType="String" ID="3" Name="client">
+                    <Description>The name of client to output greeting.</Description>
+                </Parameter>
+            </ParamList>
+        </Method>
+        <Method ID="4" MethodType="response" Name="HelloService">
+            <Description>The response indicating success status to output greeting</Description>
+            <ParamList>
+                <Parameter DataType="bool" ID="5" Name="success">
+                    <Description>Flag, indicates the success of output.</Description>
+                </Parameter>
+            </ParamList>
+        </Method>
+    </MethodList>
+</ServiceInterface>

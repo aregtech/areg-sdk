@@ -17,6 +17,8 @@
 product/*
 tools/*.zip
 
+areg-sdk.code-workspace
+
 Debug
 Release
 framework/areg/Debug
@@ -33,7 +35,13 @@ examples/*/.gitignore
 examples/*/.settings
 examples/*/Debug
 examples/*/Release
+
 examples/*/*/.gitignore
 examples/*/*/.settings
 examples/*/*/Debug
 examples/*/*/Release
+
+examples/*/*/*/.gitignore
+examples/*/*/*/.settings
+examples/*/*/*/Debug
+examples/*/*/*/Release

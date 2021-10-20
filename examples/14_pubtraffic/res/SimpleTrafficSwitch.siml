@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<ServiceInterface FormatVesion="1.0.0">
+<ServiceInterface FormatVersion="1.0.0">
     <Overview ID="1" Name="SimpleTrafficSwitch" Version="1.0.0">
         <Description>Simple traffic light switch on/off.
 Declared as local service to prevent any other external client to send unexpected signal to switch off the light.</Description>

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<ServiceInterface FormatVesion="1.0.0">
+<ServiceInterface FormatVersion="1.0.0">
     <Overview ID="1" Name="TrafficController" Version="1.0.0" isRemote="true">
         <Description>This is a traffic light controlle service interface.</Description>
     </Overview>

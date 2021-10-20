@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<ServiceInterface FormatVersion="1.0.0">
+    <Overview ID="1" Name="Sample" Version="1.0.0" isRemote="true">
+        <Description>This is an example of defining service interface.</Description>
+    </Overview>
+    <DataTypeList>
+        <DataType ID="2" Name="SomeStruct" Type="Structure">
+            <Description>Some structure with data. It will become new type.</Description>
+            <FieldList>
+                <Field DataType="int16" ID="3" Name="anyFiled1">
+                    <Value IsDefault="true">0</Value>
+                    <Description>Some filed 1</Description>
+                </Field>
+                <Field DataType="int32" ID="4" Name="anyField2">
+                    <Value IsDefault="true">0</Value>
+                    <Description>Just another field</Description>
+                </Field>
+                <Field DataType="String" ID="5" Name="anyField3">
+                    <Value IsDefault="true"/>
+                    <Description>More field.</Description>
+                </Field>
+            </FieldList>
+        </DataType>
+        <DataType ID="6" Name="SomeEnum" Type="Enumerate" Values="default">
+            <FieldList>
+                <EnumEntry ID="7" Name="Invalid">
+                    <Value>-1</Value>
+                </EnumEntry>
+                <EnumEntry ID="8" Name="Nothing">
+                    <Value>0</Value>
+                </EnumEntry>
+                <EnumEntry ID="9" Name="Something">
+                    <Value/>
+                </EnumEntry>
+                <EnumEntry ID="10" Name="Anything">
+                    <Value/>
+                </EnumEntry>
+            </FieldList>
+        </DataType>
+        <DataType ID="11" Name="uAlign" Type="Imported">
+            <Description>This example exports NEMemory::uAlign in the service interface.</Description>
+            <Namespace>NEMemory</Namespace>
+            <Location>areg/base/NEMemory.hpp</Location>
+        </DataType>
+        <DataType ID="12" Name="SomeArray" Type="DefinedType">
+            <Description>Defines new type of array</Description>
+            <Container>Array</Container>
+            <BaseTypeValue>uint32</BaseTypeValue>
+        </DataType>
+        <DataType ID="13" Name="SomeList" Type="DefinedType">
+            <Description>New type of linked list.</Description>
+            <Container>LinkedList</Container>
+            <BaseTypeValue>String</BaseTypeValue>
+        </DataType>
+        <DataType ID="14" Name="SomeMap" Type="DefinedType">
+            <Description>This example defines hash-map where key is exported and value is new data type.</Description>
+            <Container>HashMap</Container>
+            <BaseTypeValue>SomeStruct</BaseTypeValue>
+            <BaseTypeKey>String</BaseTypeKey>
+        </DataType>
+    </DataTypeList>
+    <AttributeList>
+        <Attribute DataType="SomeEnum" ID="15" Name="SomeAttr1" Notify="OnChange">
+            <Description>An attribute to notify subscribers only when value is changed.</Description>
+        </Attribute>
+        <Attribute DataType="SomeStruct" ID="16" Name="SomeAttr2" Notify="Always">
+            <Description>Another attribute to notify subscribers any time when value is set (maybe not changed).</Description>
+        </Attribute>
+    </AttributeList>
+    <MethodList>
+        <Method ID="17" MethodType="request" Name="SomeRequest1" Response="SomeResponse1">
+            <Description>Request and response with no parameters.</Description>
+        </Method>
+        <Method ID="19" MethodType="response" Name="SomeResponse1">
+            <Description/>
+        </Method>
+        <Method ID="20" MethodType="request" Name="SomeRequest2" Response="SomeResponse">
+            <Description>A request with parameters that is connected to SomeResponse interface.</Description>
+            <ParamList>
+                <Parameter DataType="int32" ID="21" Name="param1"/>
+                <Parameter DataType="SomeStruct" ID="23" Name="param2"/>
+                <Parameter DataType="SomeEnum" ID="24" Name="param3">
+                    <Value IsDefault="true">SomeEnum::Nothing</Value>
+                    <Description>parameter with default value</Description>
+                </Parameter>
+            </ParamList>
+        </Method>
+        <Method ID="22" MethodType="response" Name="SomeResponse">
+            <Description>Response, where 2 requests can connect.</Description>
+            <ParamList>
+                <Parameter DataType="bool" ID="26" Name="succeeded"/>
+            </ParamList>
+        </Method>
+        <Method ID="25" MethodType="request" Name="SomeRequest3" Response="SomeResponse">
+            <Description>Another request with parameter that is connected with SomeResponse method</Description>
+            <ParamList>
+                <Parameter DataType="NEMemory::uAlign" ID="28" Name="param"/>
+            </ParamList>
+        </Method>
+        <Method ID="27" MethodType="request" Name="StandAlone">
+            <Description>A request with no response.</Description>
+        </Method>
+        <Method ID="29" MethodType="broadcast" Name="SomeBroadcast">
+            <Description>Broadcast with parameters. Can pass multiple parameters at once.</Description>
+            <ParamList>
+                <Parameter DataType="SomeEnum" ID="30" Name="value1">
+                    <Description>We already have 'param1' in response, this parameter name must differ.</Description>
+                </Parameter>
+                <Parameter DataType="NEMemory::uAlign" ID="31" Name="value2"/>
+                <Parameter DataType="SomeStruct" ID="32" Name="value3"/>
+                <Parameter DataType="SomeArray" ID="34" Name="value4"/>
+            </ParamList>
+        </Method>
+    </MethodList>
+    <ConstantList>
+        <Constant DataType="uint16" ID="35" Name="SomeConst">
+            <Value>100</Value>
+            <Description>define a constant if need.</Description>
+        </Constant>
+    </ConstantList>
+    <IncludeList>
+        <Location ID="36" Name="areg/base/NEMath.hpp">
+            <Description>can make additional includes</Description>
+        </Location>
+    </IncludeList>
+</ServiceInterface>

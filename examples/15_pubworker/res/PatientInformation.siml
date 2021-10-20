@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<ServiceInterface FormatVesion="1.0.0">
+<ServiceInterface FormatVersion="1.0.0">
     <Overview ID="1" Name="PatientInformation" Version="0.1.0" isRemote="true">
         <Description>This service sends the patient information to apply connected devices.</Description>
     </Overview>
