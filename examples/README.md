@@ -11,6 +11,7 @@ The AREG SDK contains various examples to demonstrate features of the engine and
 
 Below is the list of examples:
 
+0.  [00_helloworld](./00_helloworld) -- multithreading and multiprocessing applications used as an example in [developer guide](./../docs/DEVELOP.md).
 1.  [01_hello](./01_hello/) -- multithreading console application to output "Hello World" message.
 2.  [02_buffer](./02_buffer/) -- multithreading console application to demonstrate streaming in shared buffer.
 3.  [03_file](./03_file/) -- console application to demonstrate work with text and binary files, and use of file name masks.

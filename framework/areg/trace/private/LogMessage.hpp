@@ -240,7 +240,7 @@ inline NETrace::eLogType LogMessage::getLogType(void) const
 
 inline id_type LogMessage::getThreadId(void) const
 {
-    return lmTrace.traceThreadId;
+    return static_cast<id_type>(lmTrace.traceThreadId);
 }
 
 inline unsigned int LogMessage::getScopeId(void) const

@@ -295,7 +295,8 @@ ThreadNameLayout::ThreadNameLayout( ThreadNameLayout && /*src*/ ) noexcept
 
 void ThreadNameLayout::logMessage( const NETrace::sLogMessage & msgLog, IEOutStream & stream ) const
 {
-    Thread * thread = Thread::findThreadById(msgLog.lmTrace.traceThreadId);
+    id_type id = static_cast<id_type>(msgLog.lmTrace.traceThreadId);
+    Thread * thread = Thread::findThreadById( id );
     stream.write( thread != nullptr ? thread->getName() : String("Unknown Thread") );
 }
 

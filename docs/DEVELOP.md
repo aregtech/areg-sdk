@@ -35,6 +35,7 @@ The following example defines _Sample_ service as _Public_ (used in IPC).
 Remove **isRemote** or set to false `isRemote="true"` to switch service to _Local_.
 
 > 💡 The _Local_ services are not used in IPC, the system will ignore to forward messages and they will not be visible outside of process.
+> 💡 Within one process the _Public_ service and the client act similar to _Local_ service with the difference that the service can accept requests from remote clients. In case of _Local_ service, it is not visible outside of process.
 
 
 ### Data types
@@ -134,7 +135,7 @@ The following example demonstrates how to define a container. The types of conta
 
 ### Attributes
 
-_Attributes_ in services are data that clients can subscribe to get update notifications. The attributes are listed in the section `<AttributeList> ... <\AttributeList>`. In this example the system notifies connected clients when the value of `SomeAttr1` is changed, i.e. the system checks whether the new value is equal or not, then updates and sends notification to all subscribed clients:
+_Attributes_ in services are data that clients can subscribe to get update notifications. The attributes are listed in the section `<AttributeList> ... </AttributeList>`. In this example the system notifies connected clients when the value of `SomeAttr1` is changed, i.e. the system checks whether the new value is equal or not, then updates and sends notification to all subscribed clients:
 ```xml
 <Attribute DataType="SomeEnum" ID="15" Name="SomeAttr1" Notify="OnChange">
     <Description>An attribute to notify subscribers only when value is changed.</Description>
@@ -268,7 +269,7 @@ Before calling code generator, make sure that there is Java installed on the mac
 
 The followings are the parameters of code generator:
 ```bash
-$ java com.aregtech.CMFMain --root=<project_root> --doc=<relative_path_to_siml> --target=<relative_path_to_target_location>
+$ java -jar codegen.jar --root=<project_root> --doc=<relative_path_to_siml> --target=<relative_path_to_target_location>
 ```
 where:
 - `<project_root>` if the path of your project, for example `~/aregtech/areg-sdk/examples`;
@@ -310,7 +311,7 @@ BEGIN_MODEL(_modelName)
     // define component thread
     BEGIN_REGISTER_THREAD( "TestServiceThread" )
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
-        BEGIN_REGISTER_COMPONENT( NECommon::ServiceHelloName, ServicingComponent )
+        BEGIN_REGISTER_COMPONENT( NECommon::ServiceHelloName, ServiceComponent )
             // register HelloWorld service implementation.
             REGISTER_IMPLEMENT_SERVICE( NEHelloWorld::ServiceName, NEHelloWorld::InterfaceVersion )
         // end of component description
@@ -366,18 +367,77 @@ int main()
 
 The example [10_locsvc](./../examples/10_locsvc/) and higher contain implementations of _Local_ and _Public_ services and the clients. Browse examples to learn more.
 
-## Develop a Service
+## Hello Service!
 
-Before developing a service, it is important to know that 
-1. Service owner is a `Component` object. The `Component` can provide more than one service interfaces.
-2. All service base classes generated from prototype XML document end with `Stub` and contain request pure virtual methods. For example, the base service class name from Sample interface is `SampleStub`, which contains list of request methods declared as pure virtual.
+This topic is the step-by-step practical example to create service enabled application(s) based on AREG SDK solution. The application discovers service, sends request and response. The complete source codes of this project is in [00_helloworld](./../examples/00_helloworld). At first, you must download sources of AREG SDK. For simplicity, we create the new project inside `examples` folder and name it `helloworld`, so that the `examples/helloworld` is the root of this traning.
 
-The easiest way to create new service, to extend it from `Component` and `xxxStub` objects. However, it is not a MUST option, but when instantiate a `Component`, the instance of service stub should be instantiated as well. When extend `Component` and `xxxStub`
-1. Implement `Component * CreateComponent( ... )` and `void DeleteComponent( ... )` **static** methods
-2. Implement all pure virtual methods derived from `xxxStub`.
+We create 3 types of applications that use same common the service and the client located in `common/src` subfolder of the projects, where in each application:
+- service and clinet run in the same thread of the same application (same as _Local_ service);
+- service and client run in different thread of the same application (same as _Local_ service);
+- servcie and client run in different processes (same as _Public_ service).
 
-The following is an example of implementing simple service:
+The agenda is to demonstrate service and client implementation, as well the split and the merge of services in processes, which help to distribute computing power between processes.
+
+> 💡 More examples are listed in [examples](./../examples/) folder of `areg-sdk`.
+
+### Service Interface
+
+In `helloworld` create another folder called `res` to locate first service interface prorotype XML document. Create a file `HelloWorld.siml` and copy this XML in the file, which is a definition of _Public_ service interface with one request and connected response.
+```xml
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<ServiceInterface FormatVesion="1.0.0">
+    <Overview ID="1" Name="HelloWorld" Version="1.0.0" isRemote="true">
+        <Description>The hello world application</Description>
+    </Overview>
+    <MethodList>
+        <Method ID="2" MethodType="request" Name="HelloWorld" Response="HelloWorld">
+            <Description>The request to output greeting.</Description>
+            <ParamList>
+                <Parameter DataType="String" ID="3" Name="client">
+                    <Description>The name of client to output greeting.</Description>
+                </Parameter>
+            </ParamList>
+        </Method>
+        <Method ID="4" MethodType="response" Name="HelloWorld">
+            <Description>The response indicating success status to output greeting</Description>
+            <ParamList>
+                <Parameter DataType="bool" ID="5" Name="success">
+                    <Description>Flag, indicates the success of output.</Description>
+                </Parameter>
+            </ParamList>
+        </Method>
+    </MethodList>
+</ServiceInterface>
+```
+
+### Generate codes
+
+> 💡 You must have Java installed on your machine to be able to run code generator. Make sure that it exists and you can call from command line.
+
+Open command line terminal in `helloworld` folder and run following command:
+```bash
+$ java -jar ./../../tools/codegen.jar --root=./ --doc=res/HelloWorld.siml --target=generated/src
+```
+
+This script is valid for Linux and Windows OS. It runs `codegen.jar` and generates files located in `generated/src` subfolder of `helloworld`.
+
+### Develop a Service
+
+We'll develop service in folder `common/src` to include in all projects. Before developing a service, it is important to know that:
+1. The `Component` is the owner of service object. The `Component` can provide more than one service interfaces. Component can contain mixture of services and clients.
+2. All service base classes generated from prototype XML document end with `Stub` and contain request pure virtual methods. For example, in our case the service base class has name `HelloWorldStub` and it contains one pure virtual method.
+
+In the `common/src` subfolder let's create file `ServiceComponent.hpp` to create **ServiceComponent** object of service component. 
+- The `ServiceComponent` extends `Component` and `HelloWorldStub` classes.
+- The `ServiceComponent` contains 2 static methods `Component * CreateComponent( ... )` and `void DeleteComponent( ... )` to instantiate and free  the object.
+- The `ServiceComponent` constains `void requestHelloWorld( const String & client )` override method.
+
+The declaration of the service in the file [common/src/ServiceComponent.hpp](./../examples/00_helloworld/common/src/ServiceComponent.hpp):
 ```cpp
+/**
+ * \file    common/src/ServiceComponent.hpp
+ * \brief   Declaration of the service component.
+ **/
 #pragma once
 
 #include "areg/base/GEGlobal.h"
@@ -385,198 +445,291 @@ The following is an example of implementing simple service:
 #include "generated/src/HelloWorldStub.hpp"
 
 //////////////////////////////////////////////////////////////////////////
-// ServicingComponent declaration
+// ServiceComponent declaration
 //////////////////////////////////////////////////////////////////////////
-
-class ServicingComponent    : public    Component
-                            , protected HelloWorldStub
+class ServiceComponent  : public    Component
+                        , protected HelloWorldStub
 {
 //////////////////////////////////////////////////////////////////////////
 // static methods
 //////////////////////////////////////////////////////////////////////////
 public:
-
+    /**
+     * \brief   Called to instantiate service component when loading model.
+     * \param   entry   Indicates the component description entry from Registry.
+     * \param   owner   The component owning thread.
+     **/
     static Component * CreateComponent( const NERegistry::ComponentEntry & entry, ComponentThread & owner );
 
+    /**
+     * \brief   Called when unloads model to delete service component.
+     **/
     static void DeleteComponent( Component & compObject, const NERegistry::ComponentEntry & entry );
 
 protected:
-    ServicingComponent(const NERegistry::ComponentEntry & entry, ComponentThread & owner);
+    ServiceComponent(const NERegistry::ComponentEntry & entry, ComponentThread & owner);
 
-    virtual ~ServicingComponent(void) = default;
+    virtual ~ServiceComponent(void) = default;
 
 //////////////////////////////////////////////////////////////////////////
-// HelloWorldStub overrides
+// HelloWorld Interface Requests
 //////////////////////////////////////////////////////////////////////////
-protected:
-
+    /**
+     * \brief   The request to output greeting.
+     * \param   client  The name of client to output greeting.
+     **/
     virtual void requestHelloWorld( const String & client ) override;
 
 //////////////////////////////////////////////////////////////////////////
-// Hidden / forbidden calls
+// Hidden function calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    inline ServicingComponent & self( void )
-    { return (*this); };
+    //!< The wrapper of this pointer.
+    inline ServiceComponent & self( void )
+    {   return (*this); }
 
-    ServicingComponent( void ) = delete;
-    DECLARE_NOCOPY_NOMOVE( ServicingComponent );
+//////////////////////////////////////////////////////////////////////////
+// Forbidden calls
+//////////////////////////////////////////////////////////////////////////
+private:
+    ServiceComponent( void ) = delete;
+    DECLARE_NOCOPY_NOMOVE( ServiceComponent );
 };
+```
 
-//////////////////////////////////////////////////////////////////////////
-// ServicingComponent implementation
-//////////////////////////////////////////////////////////////////////////
+The implementation of the service in the file [common/src/ServiceComponent.cpp](./../examples/00_helloworld/common/src/ServiceComponent.cpp):
 
-Component * ServicingComponent::CreateComponent(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
+```cpp
+/**
+ * \file    common/src/ServiceComponent.cpp
+ * \brief   Implementation of the service component.
+ **/
+#include "common/src/ServiceComponent.hpp"
+
+Component * ServiceComponent::CreateComponent(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
 {
-    return DEBUG_NEW ServicingComponent(entry, owner);
+    return DEBUG_NEW ServiceComponent(entry, owner);
 }
 
-void ServicingComponent::DeleteComponent(Component & compObject, const NERegistry::ComponentEntry & entry)
+void ServiceComponent::DeleteComponent(Component & compObject, const NERegistry::ComponentEntry & entry)
 {
     delete (&compObject);
 }
 
-ServicingComponent::ServicingComponent(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
+ServiceComponent::ServiceComponent(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
     : Component         ( owner, entry.mRoleName)
     , HelloWorldStub    ( static_cast<Component &>(self()) )
 {
 }
 
-void ServicingComponent::requestHelloWorld(const String & client)
+void ServiceComponent::requestHelloWorld(const String & client)
 {
-    printf("Hello %s!!!\n", client.getString());
+    // output message
+    printf("Hello world of %s!!!\n", client.getString());
 
-    responseHelloWorld(true); // indicate success
+    // reply to release the request
+    responseHelloWorld(true);
+}
+```
+In this example:
+* The class `ServiceComponent` is an instance of `Component` and `HelloWorldStub`.
+* The service is created in **static** `Component * ServiceComponent::CreateComponent(const NERegistry::ComponentEntry & entry, ComponentThread & owner)` method.
+* The service is deleted in **static** `void ServiceComponent::DeleteComponent(Component & compObject, const NERegistry::ComponentEntry & entry)` method.
+* The service implements virtual method `virtual void requestHelloWorld(const String & client)` inherited from `HelloWorldStub`
+* In the request `requestHelloWorld` replies `responseHelloWorld` to the client and unlocks the request.
+
+### Develop a Service client.
+
+We'll develop client in the folder `common/src` to include in all projects. Before developing a client, it is important to know that:
+1. The `Component` is the owner of service client object. The `Component` can provide more than one service client. Component can contain mixture of services and clients.
+2. All service client base classes generated from prototype XML document end with `ClientBase` and contain bases implementations of responses, broadcasts, attribute updates, and request failure callback methods.
+3. Whenever service client is connected with the service, the system triggers `bool serviceConnected( bool isConnected, ProxyBase & proxy )` callback to indicate the connection status and the proxy object that is communicating with the stub. 
+4. Since there might be more than one clients in the component, check both, `isConnected` and `proxy` parameters to figure the exact connection status of clients. For example, if there are more than one client implementation in component, the HelloWorld service client can be checked like this:
+```cpp
+bool HelloWorldClient::serviceConnected( bool isConnected, ProxyBase & proxy )
+{
+    bool result = false;
+
+    // Is this notification of HelloWorld client proxy object?
+    // This is same 'if (HelloWorldClientBase::getProxy() == &proxy)' condition
+    if ( HelloWorldClientBase::serviceConnected(isConnected, proxy) )
+    {
+        result = true;
+        // it is a connection status of HelloWorld service
+        if (isConnected)
+        {
+            // we've got connection, can start sending requests and subscribe on attributes, broadcasts and responses.
+        }
+        else
+        {
+            // we lost connection, make fallback, free subscriptions
+        }
+    }
+    else
+    {
+        // not a relevant service connection.
+    }
+
+    return result;
 }
 ```
 
-In this example
-* The class `ServicingComponent` is an instance of `Component` and `HelloWorldStub`.
-* The service is created in **static** `Component * ServicingComponent::CreateComponent(const NERegistry::ComponentEntry & entry, ComponentThread & owner)` method.
-* The service is deleted in **static** `void ServicingComponent::DeleteComponent(Component & compObject, const NERegistry::ComponentEntry & entry)` method.
-* The service implements virtual method `virtual void requestHelloWorld(const String & client)` inherited from `HelloWorldStub`
-* In the request `requestHelloWorld` called respone `responseHelloWorld`, so it is immediately unblocked. Otherwise, it would remain _blocked_ until response is sent.
+In the `common/src` subfolder let's create file `ClientComponent.hpp` to create **ClientComponent** object of service client. 
+- The `ClientComponent` extends `Component` and `HelloWorldClientBase` classes.
+- The `ClientComponent` contains 2 static methods `Component * CreateComponent( ... )` and `void DeleteComponent( ... )` to instantiate and free the object.
+- The `ClientComponent` waits when is notified the service connection and send the request to run on service side.
+- The `ClientComponent` constains overrides to handle reply and the request failure.
 
-## Develop a Service client.
-
-Before developing service client, import to know that:
-1. Service client owner is a `Component` object. There can be more than clients in `Component` and there can be several instances of the same client in the `Component`.
-2. All service client base classes generated from prototype XML document end with `ClientBase` and contains list of all responses, broadcasts, attribute update, and request failure methods (callbacks). For example, the base service class name from Sample interface is `SampleClientBase`, which contains response, broadcasts, attribute update and request failure methods.
-3. Whenever service client is connected with the service (i.e. service is available) or disconnected, the system invokes method `bool serviceConnected( bool isConnected, ProxyBase & proxy )`, where the parameter `isConnected` indicates the connection status and parameter `proxy` indicates which object have got connection. In case if an instance of `Component` contains multiple clients, the `proxy` parameter indicates which clinet have got or lost the connection.
-
-The easiest way to create new service client, to extend it from `Component` and `xxxClientBase` objects. However, it is not a MUST option.
-1. Implement `Component * CreateComponent( ... )` and `void DeleteComponent( ... )` **static** methods.
-2. Implement only those response, broadcast, attribute update, and request failure methods, which are used by client. All other methods can be ignored, since they will be never triggered. However, you can implement all methods. The _implementation_ means to write the business logic when one of this methods are triggered (i.e. event is fired).
-
-The following is an example of implementing simple service client:
+The declaration of the service in the file [common/src/ClientComponent.hpp](./../examples/00_helloworld/common/src/ClientComponent.hpp):
 ```cpp
+/**
+ * \file    common/src/ClientComponent.hpp
+ * \brief   Declaration of the service client component.
+ **/
 #pragma once
 
 #include "areg/base/GEGlobal.h"
 #include "areg/component/Component.hpp"
 #include "generated/src/HelloWorldClientBase.hpp"
-#include "areg/appbase/Application.hpp"
 
-class ServiceClient : public    Component
-                    , protected HelloWorldClientBase
+//////////////////////////////////////////////////////////////////////////
+// ClientComponent declaration
+//////////////////////////////////////////////////////////////////////////
+class ClientComponent   : public    Component
+                        , protected HelloWorldClientBase
 {
 //////////////////////////////////////////////////////////////////////////
-// Static methods
+// static methods
 //////////////////////////////////////////////////////////////////////////
 public:
+    /**
+     * \brief   Called to instantiate component with service client when loading model.
+     * \param   entry   Indicates the component description entry from Registry.
+     * \param   owner   The component owning thread.
+     **/
     static Component * CreateComponent( const NERegistry::ComponentEntry & entry, ComponentThread & owner );
 
+    /**
+     * \brief   Called when unloads model to delete service component.
+     **/
     static void DeleteComponent( Component & compObject, const NERegistry::ComponentEntry & entry );
 
-public:
-    
-    ServiceClient(const NERegistry::ComponentEntry & entry, ComponentThread & owner);
-
-    virtual ~ServiceClient(void) = default;
-
-//////////////////////////////////////////////////////////////////////////
-// HelloWorldClientBase overrides
-//////////////////////////////////////////////////////////////////////////
 protected:
+    ClientComponent(const NERegistry::ComponentEntry & entry, ComponentThread & owner);
 
+    virtual ~ClientComponent(void) = default;
+
+/************************************************************************
+ * Response HelloWorld
+ ************************************************************************/
+    /**
+     * \brief   The response indicating success status to output greeting
+     * \param   success Flag, indicates the success of output.
+     **/
     virtual void responseHelloWorld( bool success ) override;
 
-/************************************************************************/
-// Error handling.
-/************************************************************************/
-
+    /**
+     * \brief   Overwrite to handle error of HelloWorld request call.
+     * \param   FailureReason   The failure reason value of request call.
+     **/
     virtual void requestHelloWorldFailed( NEService::eResultType FailureReason ) override;
 
 /************************************************************************/
 // IEProxyListener Overrides
 /************************************************************************/
-
-    //!< Triggered by system, when the service is either available and connected or disconnected.
+    /**
+     * \brief   Triggered when gets service connected / disconnected event.
+     *          Client should be initialized and the listeners should be setup
+     *          here. No request can be called, while service is not connected.
+     * \param   isConnected     Indicates service connection status.
+     * \param   proxy           The Service Interface Proxy object.
+     * \return  Return true if this service connect notification was relevant to client object,
+     *          i.e. if passed Proxy address is equal to the Proxy object that client has.
+     **/
     virtual bool serviceConnected( bool isConnected, ProxyBase & proxy ) override;
 
 //////////////////////////////////////////////////////////////////////////
-// Hidden / FOrbidden methods
+// Hidden function calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    inline ServiceClient & self( void )
+    //!< The wrapper of this pointer.
+    inline ClientComponent & self( void )
     {   return (*this); }
 
-    ServiceClient( void ) = delete;
-    DECLARE_NOCOPY_NOMOVE( ServiceClient );
+//////////////////////////////////////////////////////////////////////////
+// Forbidden calls
+//////////////////////////////////////////////////////////////////////////
+private:
+    ClientComponent( void ) = delete;
+    DECLARE_NOCOPY_NOMOVE( ClientComponent );
 };
+```
+The implementation of the service in the file [common/src/ClientComponent.cpp](./../examples/00_helloworld/common/src/ClientComponent.cpp):
 
-//////////////////////////////////////////////////////////////////////////
-// ServiceClient implementation
-//////////////////////////////////////////////////////////////////////////
+```cpp
+/**
+ * \file    common/src/ClientComponent.hpp
+ * \brief   Implementation of the service client component.
+ **/
+#include "common/src/ClientComponent.hpp"
 
-Component * ServiceClient::CreateComponent(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
+#include "areg/base/Thread.hpp"
+#include "areg/base/NECommon.hpp"
+#include "areg/component/ComponentThread.hpp"
+#include "areg/appbase/Application.hpp"
+
+Component * ClientComponent::CreateComponent(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
 {
-    return DEBUG_NEW ServiceClient(entry, owner);
+    return DEBUG_NEW ClientComponent(entry, owner);
 }
 
-void ServiceClient::DeleteComponent(Component & compObject, const NERegistry::ComponentEntry & entry)
+void ClientComponent::DeleteComponent(Component & compObject, const NERegistry::ComponentEntry & entry)
 {
     delete (&compObject);
 }
 
-ServiceClient::ServiceClient(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
+ClientComponent::ClientComponent(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
     : Component             ( owner, entry.mRoleName )
     , HelloWorldClientBase  ( entry.mDependencyServices[0].mRoleName.getString(), owner )
 {
 }
 
-bool ServiceClient::serviceConnected(bool isConnected, ProxyBase & proxy)
+bool ClientComponent::serviceConnected(bool isConnected, ProxyBase & proxy)
 {
-    bool result = HelloWorldClientBase::serviceConnected(isConnected, proxy);
-    if (isConnected)
+    bool result = false;
+    if ( HelloWorldClientBase::serviceConnected(isConnected, proxy) )
     {
-        // Up from this part the client
-        //  - can send requests
-        //  - can subscribe on data or event.
+        if (isConnected)
+        {
+            // Up from this part the client
+            //  - can send requests
+            //  - can subscribe on data or event.
 
-        // call request
-        requestHelloWorld( getRoleName() );
-    }
-    else
-    {
-        // Make cleanups, release subscription here.
-        // Since we've lost connection, exit client
-        Application::signalAppQuit();
+            // call request
+            requestHelloWorld( getRoleName() );
+        }
+        else
+        {
+            // Make cleanups, release subscription here.
+            // Since we've lost connection, exit client
+            Application::signalAppQuit();
+        }
     }
 
     return result;
 }
 
-void ServiceClient::responseHelloWorld( bool success )
+void ClientComponent::responseHelloWorld( bool success )
 {
     printf("%s to output message.\n", success ? "succeeded" : "failed");
 
     // The client completed the job, set signal to exit application
+    // sleep for a while before exit application.
+    Thread::sleep(NECommon::WAIT_500_MILLISECONDS);
     Application::signalAppQuit();
 }
 
-void ServiceClient::requestHelloWorldFailed(NEService::eResultType FailureReason)
+void ClientComponent::requestHelloWorldFailed(NEService::eResultType FailureReason)
 {
     // make error handling here.
     printf("Failed to execute request, retry again.");
@@ -586,60 +739,84 @@ void ServiceClient::requestHelloWorldFailed(NEService::eResultType FailureReason
         requestHelloWorld( getRoleName() );
     }
 }
-
 ```
-In this example
-* The class `ServiceClient` is an instance of `Component` and `HelloWorldClientBase`.
+In this example:
+* The `ServiceClient` is an instance of `Component` and `HelloWorldClientBase`.
 * The service client is created in **static** `Component * ServiceClient::CreateComponent(const NERegistry::ComponentEntry & entry, ComponentThread & owner)` method.
 * The service client is deleted in **static** `void ServiceClient::DeleteComponent(Component & compObject, const NERegistry::ComponentEntry & entry)` method.
-* The service client overrides virtual method `virtual bool serviceConnected(bool isConnected, ProxyBase & proxy)` used to react on service connect / diconnect event.
-* The service client overrides virtual method `virtual void responseHelloWorld( bool success )` inherited from `HelloWorldClientBase`
-* The service client overrides virtual method `virtual requestHelloWorldFailed(NEService::eResultType FailureReason)` inherited from `HelloWorldClientBase`
+* The service client overrides virtual method `virtual bool serviceConnected(bool isConnected, ProxyBase & proxy)` to react on service connect / diconnect event.
+* The service client overrides virtual method `virtual void responseHelloWorld( bool success )` to react on service reply.
+* The service client overrides virtual method `virtual requestHelloWorldFailed(NEService::eResultType FailureReason)` to react on request failure (error handling).
 * In the `serviceConnected` when clinets establishes the connection, it calls method `requestHelloWorl` to run on remote service.
 
-## Load model
+### Load model
 
 When services and clients are created, the developers can decide how to distribute service and client objects.
 * The service and the client can run in the same thread of the same process.
 * The service and the client can run in separate threads of the sam process.
 * The service and the clinet can run in separate processes (_Public_ service case).
 
-We'll consider all of them. The _model_ can be created either statically (fixed) or dynamically (can vary). Here we conside static models, since it is more readable and easier.
+We'll consider each case and for each case we create new project to test. The _model_ can be created either statically (fixed) or dynamically (can vary). Here we create static models.
 
-### Model with single thread
+#### Model with single thread
 
-This example demonstrates how to instantiate service and clinet whith one thread (_Local_ servicing).
+This example demonstrates how to instantiate service and clinet in one thread to act as _Local_ service. Create `onethread/src` in the `helloworld`, and create main.cpp file implement _model_ and application. File [./onethread/src/main.cpp](./../examples/00_helloworld/onethread/src/main.cpp).
+
 > 💡 In the example, there are 2 components declared in one thread.
 
 ```cpp
-// main.cpp
-
+/**
+ * \file    onethread/src/main.cpp
+ * \brief   Runs service and the client in a one thread.
+ **/
 #include "areg/base/GEGlobal.h"
+#include "areg/base/NEUtilities.hpp"
 #include "areg/appbase/Application.hpp"
 #include "areg/component/ComponentLoader.hpp"
 
-#include "ServiceClient.hpp"
-#include "ServicingComponent.hpp"
+#include "common/src/ServiceComponent.hpp"
+#include "common/src/ClientComponent.hpp"
 
-constexpr char const _modelName[]  { "ServiceModel" };   //!< The name of model
+#include <string>
 
-// Describe mode, set model name
+// Use these options if compile for Windows with MSVC
+// It links with areg library (dynamic or static) and generated static library
+#ifdef WINDOWS
+    #pragma comment(lib, "areg")
+    #pragma comment(lib, "00_generated.lib")
+#endif // WINDOWS
+
+namespace
+{
+//!< The name of model
+constexpr char const _modelName[]   { "ServiceModel" };
+//! Service component role
+constexpr char const _service[]     { "ServiceComponent" };
+//!< Client component name. Let's generate the name for client service, we'll use it later.
+const std::string   _client( NEUtilities::generateName("ServiceClient").getString() );
+}
+
+// Describe model, register the service and the client in one thread "Thread1"
 BEGIN_MODEL(_modelName)
 
     BEGIN_REGISTER_THREAD( "Thread1" )
-        BEGIN_REGISTER_COMPONENT( "ServiceClient", ServiceClient )
-            REGISTER_DEPENDENCY( "TheService" ) /* reference to the service*/
-        END_REGISTER_COMPONENT( "ServiceClient" )
-
-        BEGIN_REGISTER_COMPONENT( "TheService", ServicingComponent )
+        // register service
+        BEGIN_REGISTER_COMPONENT( _service, ServiceComponent )
             REGISTER_IMPLEMENT_SERVICE( NEHelloWorld::ServiceName, NEHelloWorld::InterfaceVersion )
-        END_REGISTER_COMPONENT( "TheService" )
+        END_REGISTER_COMPONENT( _service )
+        // register client
+        BEGIN_REGISTER_COMPONENT( _client.c_str(), ClientComponent )
+            REGISTER_DEPENDENCY( _service ) /* reference to the service*/
+        END_REGISTER_COMPONENT( _client )
     END_REGISTER_THREAD( "Thread1" )
 
 // end of model description
 END_MODEL(_modelName)
 
+//////////////////////////////////////////////////////////////////////////
 // main method
+//////////////////////////////////////////////////////////////////////////
+
 int main( void )
 {
     // Initialize application, enable logging, servicing and the timer.
@@ -661,41 +838,65 @@ int main( void )
 }
 ```
 
-### Model with multiple threads
+#### Model with multiple threads
 
-This example demonstrates how to instantiate service and clinet running on separate threads, but in the same process (_Local_ servicing).
+This example demonstrates how to instantiate service and clinet in separate threads, but in the same process to act like _Local_ service. File File [./twothreads/src/main.cpp](./../examples/00_helloworld/twothreads/src/main.cpp)
 
 ```cpp
-// main.cpp
-
+/**
+ * \file    twothreads/src/main.cpp
+ * \brief   Runs service and the client in a one thread.
+ **/
 #include "areg/base/GEGlobal.h"
+#include "areg/base/NEUtilities.hpp"
 #include "areg/appbase/Application.hpp"
 #include "areg/component/ComponentLoader.hpp"
 
-#include "ServiceClient.hpp"
-#include "ServicingComponent.hpp"
+#include "common/src/ServiceComponent.hpp"
+#include "common/src/ClientComponent.hpp"
 
-constexpr char const _modelName[]  { "ServiceModel" };   //!< The name of model
+#include <string>
 
-// Describe mode, set model name
+// Use these options if compile for Windows with MSVC
+// It links with areg library (dynamic or static) and generated static library
+#ifdef WINDOWS
+    #pragma comment(lib, "areg")
+    #pragma comment(lib, "00_generated.lib")
+#endif // WINDOWS
+
+namespace
+{
+//!< The name of model
+constexpr char const _modelName[]   { "ServiceModel" };
+//! Service component role
+constexpr char const _service[]     { "ServiceComponent" };
+//!< Client component name. Let's generate the name for client service, we'll use it later.
+const std::string   _client( NEUtilities::generateName("ServiceClient").getString() );
+}
+
+// Describe model, register the service and the client in 2 different threads "Thread1" and "Thread2"
 BEGIN_MODEL(_modelName)
-
+    // Thread 1, service
     BEGIN_REGISTER_THREAD( "Thread1" )
-        BEGIN_REGISTER_COMPONENT( "ServiceClient", ServiceClient )
-            REGISTER_DEPENDENCY( "TheService" )
-        END_REGISTER_COMPONENT( "ServiceClient" )
+        BEGIN_REGISTER_COMPONENT( _service, ServiceComponent )
+            REGISTER_IMPLEMENT_SERVICE( NEHelloWorld::ServiceName, NEHelloWorld::InterfaceVersion )
+        END_REGISTER_COMPONENT( _service )
     END_REGISTER_THREAD( "Thread1" )
 
+    // Thread 2, client
     BEGIN_REGISTER_THREAD( "Thread2" )
-        BEGIN_REGISTER_COMPONENT( "TheService", ServicingComponent )
-            REGISTER_IMPLEMENT_SERVICE( NEHelloWorld::ServiceName, NEHelloWorld::InterfaceVersion )
-        END_REGISTER_COMPONENT( "TheService" )
+        BEGIN_REGISTER_COMPONENT( _client.c_str(), ClientComponent )
+            REGISTER_DEPENDENCY( _service ) /* reference to the service*/
+        END_REGISTER_COMPONENT( _client )
     END_REGISTER_THREAD( "Thread2" )
 
 // end of model description
 END_MODEL(_modelName)
 
+//////////////////////////////////////////////////////////////////////////
 // main method
+//////////////////////////////////////////////////////////////////////////
+
 int main( void )
 {
     // Initialize application, enable logging, servicing and the timer.
@@ -717,37 +918,59 @@ int main( void )
 }
 ```
 
-### Model with separate processes
+#### Model with separate processes
 
-This example demonstrates how to instantiate service and clinet running in separate processes (_Public_ servicing). It is required to have 2 projects with 2 `main()` functions.
+This example demonstrates how to instantiate service and clinet running in separate processes (_Public_ service). It is required to have 2 project for each process.
 
 > 💡 Note, the model and thread names in these 2 processes have same name, but the services differ.
 
-In the Service provider process:
+Process `00_serviceproc`, instantiate service, file [./multiprocess/serviceproc/src/main.cpp](./../examples/00_helloworld/multiprocess/serviceproc/src/main.cpp)
 ```cpp
-// main.cpp, Service provider project
-
+/**
+ * \file    multiprocess/serviceproc/src/main.cpp
+ * \brief   Runs service in the process.
+ **/
 #include "areg/base/GEGlobal.h"
+#include "areg/base/NEUtilities.hpp"
 #include "areg/appbase/Application.hpp"
 #include "areg/component/ComponentLoader.hpp"
 
-#include "ServicingComponent.hpp"
+#include "common/src/ServiceComponent.hpp"
 
-constexpr char const _modelName[]  { "ServiceModel" };   //!< The name of model
+#include <string>
 
-// Describe mode, set model name
+// Use these options if compile for Windows with MSVC
+// It links with areg library (dynamic or static) and generated static library
+#ifdef WINDOWS
+    #pragma comment(lib, "areg")
+    #pragma comment(lib, "00_generated.lib")
+#endif // WINDOWS
+
+
+namespace
+{
+//!< The name of model
+constexpr char const _modelName[]   { "ServiceModel" };
+//! Service component role
+constexpr char const _service[]     { "ServiceComponent" };
+}
+
+// Describe model, register the service in this model
 BEGIN_MODEL(_modelName)
 
     BEGIN_REGISTER_THREAD( "Thread1" )
-        BEGIN_REGISTER_COMPONENT( "TheService", ServicingComponent )
+        BEGIN_REGISTER_COMPONENT( _service, ServiceComponent )
             REGISTER_IMPLEMENT_SERVICE( NEHelloWorld::ServiceName, NEHelloWorld::InterfaceVersion )
-        END_REGISTER_COMPONENT( "TheService" )
+        END_REGISTER_COMPONENT( _service )
     END_REGISTER_THREAD( "Thread1" )
 
 // end of model description
 END_MODEL(_modelName)
 
+//////////////////////////////////////////////////////////////////////////
 // main method
+//////////////////////////////////////////////////////////////////////////
+
 int main( void )
 {
     // Initialize application, enable logging, servicing and the timer.
@@ -769,32 +992,55 @@ int main( void )
 }
 ```
 
-This is a source code of secont `component`.
+Service clinet implementation in another process.
+Process `00_clientproc`, instantiate service, file [./multiprocess/clientproc/src/main.cpp](./../examples/00_helloworld/multiprocess/clientproc/src/main.cpp)
 
 ```cpp
-// main.cpp, Service provider project
-
+/**
+ * \file    multiprocess/serviceproc/src/main.cpp
+ * \brief   Runs service in the process.
+ **/
 #include "areg/base/GEGlobal.h"
+#include "areg/base/NEUtilities.hpp"
 #include "areg/appbase/Application.hpp"
 #include "areg/component/ComponentLoader.hpp"
 
-#include "ServiceClient.hpp"
+#include "common/src/ServiceComponent.hpp"
 
-constexpr char const _modelName[]  { "ServiceModel" };   //!< The name of model
+#include <string>
 
-// Describe mode, set model name
+// Use these options if compile for Windows with MSVC
+// It links with areg library (dynamic or static) and generated static library
+#ifdef WINDOWS
+    #pragma comment(lib, "areg")
+    #pragma comment(lib, "00_generated.lib")
+#endif // WINDOWS
+
+
+namespace
+{
+//!< The name of model
+constexpr char const _modelName[]   { "ServiceModel" };
+//! Service component role
+constexpr char const _service[]     { "ServiceComponent" };
+}
+
+// Describe model, register the service in this model
 BEGIN_MODEL(_modelName)
 
     BEGIN_REGISTER_THREAD( "Thread1" )
-        BEGIN_REGISTER_COMPONENT( "ServiceClient", ServiceClient )
-            REGISTER_DEPENDENCY( "TheService" )
-        END_REGISTER_COMPONENT( "ServiceClient" )
+        BEGIN_REGISTER_COMPONENT( _service, ServiceComponent )
+            REGISTER_IMPLEMENT_SERVICE( NEHelloWorld::ServiceName, NEHelloWorld::InterfaceVersion )
+        END_REGISTER_COMPONENT( _service )
     END_REGISTER_THREAD( "Thread1" )
 
 // end of model description
 END_MODEL(_modelName)
 
+//////////////////////////////////////////////////////////////////////////
 // main method
+//////////////////////////////////////////////////////////////////////////
+
 int main( void )
 {
     // Initialize application, enable logging, servicing and the timer.
@@ -815,4 +1061,14 @@ int main( void )
     return 0;
 }
 ```
-In both cases, the services are up and running when load model.
+
+For this particular project, there can be multiple instances of service client to start, because role is generated and it is unique. The application will work if client runs on other machine(s) within network where `mcrouter` is visible.
+
+### Make a build
+
+The builds can be done with the help of MS Visual Studio, Eclipse and Makefile. We do not consider in details how to create Makefile or project files. But the developers should not forget to include all files in `common/src` in projects, link `00_generated` staticlibrary and `areg` library (shared or static). For details see appropriate file in [00_helloworld](./../examples/00_helloworld/) example.
+
+## Contact us!
+
+Contact us at info[at]aregtech.com for any reason.
+Do not forget to ![star us](https://img.shields.io/github/stars/aregtech/areg-sdk.svg?style=social&label=staring%20us) at GitHub.
