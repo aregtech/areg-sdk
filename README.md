@@ -3,7 +3,7 @@
   <br><br><b>AREG SDK</b>
 </h1>
 
-> 💡 By ![star us](https://img.shields.io/github/stars/aregtech/areg-sdk.svg?style=social&label=staring%20us) on GitHub and spreading the AREG SDK link on social media, you help and inspire us for further development of technology, which helps to cut costs of projects and create intelligent service enabled products!
+> 💡 By ![star us](https://img.shields.io/github/stars/aregtech/areg-sdk.svg?style=social&label=staring%20us) on GitHub and spreading the AREG SDK on social media, you help and inspire us for further development of technology, which helps to cut projects cost and create intelligent service enabled products!
 
 ![Latest release](https://img.shields.io/github/v/release/aregtech/areg-sdk?label=%20%F0%9F%93%A3%20Latest%20release&style=flat&logoColor=b0c0c0&labelColor=363D44)
 
