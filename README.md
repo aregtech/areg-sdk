@@ -225,4 +225,6 @@ Do you like the project, have more ideas or need features? You are welcomed to b
 
 [![Follow us](https://img.shields.io/twitter/follow/aregtech.svg?style=social)](https://twitter.com/intent/follow?screen_name=aregtech) [![Follow us](https://img.shields.io/badge/LinkedIn-Aregtech-blue??style=flat&logo=linkedin&logoColor=b0c0c0&labelColor=363D44)](https://www.linkedin.com/company/aregtech/)
 
+![Viewers](https://gpvc.arturio.dev/aregtech)
+
 <!-- markdownlint-enable -->
