@@ -8,7 +8,7 @@
 ![Latest release](https://img.shields.io/github/v/release/aregtech/areg-sdk?label=%20%F0%9F%93%A3%20Latest%20release&style=flat&logoColor=b0c0c0&labelColor=363D44)
 
 <!-- markdownlint-disable -->
-## Project Status <a href="#-project-status" alight="vcenter"><img src="./docs/img/pin.svg" style="height:2%; width:2%"/></a>
+## Project Status <a href="#-project-status" alight="vcenter"><img src="./docs/img/pin5.png" style="width:20px"/></a>
 <table class="no-border">
   <tr>
     <td><img src="https://github.com/aregtech/areg-sdk/actions/workflows/c-cpp.yml/badge.svg" alt="C++ compiltation"/></td>
