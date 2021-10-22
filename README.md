@@ -8,7 +8,7 @@
 ![Latest release](https://img.shields.io/github/v/release/aregtech/areg-sdk?label=%20%F0%9F%93%A3%20Latest%20release&style=flat&logoColor=b0c0c0&labelColor=363D44)
 
 <!-- markdownlint-disable -->
-## <a href="#-project-status"><img src="./docs/img/pin.svg" style="width:2%;height:2%"/></a> Project Status
+## Project Status <a href="#-project-status" alight="vcenter"><img src="./docs/img/pin.svg" style="height:2%; width:2%"/></a>
 <table class="no-border">
   <tr>
     <td><img src="https://github.com/aregtech/areg-sdk/actions/workflows/c-cpp.yml/badge.svg" alt="C++ compiltation"/></td>
@@ -22,11 +22,11 @@
   </tr>
 </table>
 
-## 📌 Introduction
+## <a href="#-project-status" alight="vcenter"><img src="./docs/img/pin.svg" style="height:2%; width:2%"/></a> Introduction
 
 **AREG SDK** is an Interface centric lightweight real-time asynchronous communication engine to provide [distributed](https://en.wikipedia.org/wiki/Distributed_computing) and enable [mist](https://csrc.nist.gov/publications/detail/sp/500-325/final) computing, where Things interact and provide services, as if they act like thin distributed servers.
 
-## 📌 Table of content
+## <a href="#-project-status" alight="vcenter"><img src="./docs/img/pin.svg" style="height:16px"/></a> Table of content
 1. [Motivation](#-motivation)
 2. [More than embedded](#-more-than-embedded)
 3. [Composition](#-composition)
