@@ -8,7 +8,7 @@
 ![Latest release](https://img.shields.io/github/v/release/aregtech/areg-sdk?label=%20%F0%9F%93%A3%20Latest%20release&style=flat&logoColor=b0c0c0&labelColor=363D44)
 
 <!-- markdownlint-disable -->
-## Project Status <a href="#-project-status" alight="vcenter"><img src="./docs/img/pin5.png" style="width:20px"/></a>
+## Project Status[![](./docs/img/pin.svg)](#project-status)
 <table class="no-border">
   <tr>
     <td><img src="https://github.com/aregtech/areg-sdk/actions/workflows/c-cpp.yml/badge.svg" alt="C++ compiltation"/></td>
@@ -26,26 +26,26 @@
 
 **AREG SDK** is an Interface centric lightweight real-time asynchronous communication engine to provide [distributed](https://en.wikipedia.org/wiki/Distributed_computing) and enable [mist](https://csrc.nist.gov/publications/detail/sp/500-325/final) computing, where Things interact and provide services, as if they act like thin distributed servers.
 
-## <a href="#-project-status" alight="vcenter"><img src="./docs/img/pin.svg" style="height:16px"/></a> Table of content
-1. [Motivation](#-motivation)
-2. [More than embedded](#-more-than-embedded)
-3. [Composition](#-composition)
-4. [Software build](#-software-build)
-5. [Integration and development](#-integration-and-development)
+## Table of contents[![](./docs/img/pin.svg)](#table-of-contents)
+1. [Motivation](#motivation)
+2. [More than embedded](#more-than-embedded)
+3. [Composition](#composition)
+4. [Software build](#software-build)
+5. [Software integration](#software-integration)
    - [Multicast router](#mulitcast-router)
    - [Logging service](#logging-service)
    - [Development](#development)
-6. [Use cases and benefits](#-use-cases-and-benefits)
+6. [Use cases and benefits](#use-cases-and-benefits)
    - [Distributes solutions](#distributed-solution)
    - [Driverless devices](#driverless-devices)
    - [Real-time solutions](#real-time-solutions)
    - [Digital twin](#digital-twin)
    - [Simulation and test automations](#simulation-and-test-automations)
-7. [Examples](#-examples)
-8. [Licensing](#-licensing)
-9. [Call for action](#-call-for-action)!
+7. [Examples](#examples)
+8. [Licensing](#licensing)
+9. [Call for action](#call-for-action)
 
-## 📌 Motivation
+## Motivation[![](./docs/img/pin.svg)](#motivation)
 
 Traditionally, devices are connected clients to stream data to the cloud or fog servers for further processing.
 <br><br><a href="/docs/img/mist-network.png"><img src="/docs/img/mist-network.png" alt="IoT-to-Cloud (Nebula) network" style="width:70%;height:70%"/></a><br><br>
@@ -54,7 +54,7 @@ Since data is generated and collected at the edge of the network (mist network),
 * _Decrease data streaming_, which is a fundamental condition to optimize network communication.
 * Develop _autonomous, intelligent and self-aware devices_ by providing network services directly in the environment of data origin.
 
-## 📌 More than embedded
+## More than embedded[![](./docs/img/pin.svg)](#more-than-embedded)
 
 When we were designing AREG SDK, the guiding principle was to create a framework to develop embedded and high-end applications that intelligently interact at the edge of the network. To keep application design homogeneous we defined multithreading, multiprocessing and internet communication service categories. These services are neither processes, nor tasks managed by the operating system, they are software components with predefined interface, which methods are invoked remotely.
 <br><a href="docs/img/areg-services.png"><img src="docs/img/areg-services.png" alt="AREG SDK distributed services" style="width:70%;height:70%"/></a><br>
@@ -67,7 +67,7 @@ The AREG engine forms a fault tolerant system, discovers services and automates 
 * The service responses are automatically invoked on the exact client side, and they are not mixed or missed.
 * The subscriptions on data change, on response and broadcast are automatically invoked on client side when service triggers a call.
 
-## 📌 Composition
+## Composition[![](./docs/img/pin.svg)](#composition)
 
 AREG SDK consists of:
 1. [Multicast router (_mcrouter_)](./framework/mcrouter/) to use in IPC. It runs either as a service managed by the OS or as a console application.
@@ -76,7 +76,7 @@ AREG SDK consists of:
 
 The framework contains a dynamic and configurable logging service. More tools and features are planned in next releases.
 
-## 📌 Software build
+## Software build[![](./docs/img/pin.svg)](#software-build)
 
 Get latest sources using `git` or download ZIP files:
 ```shell
@@ -85,7 +85,7 @@ $ cd areg-sdk
 ```
 
 AREG SDK sources are developed for:
-* **Supported OS**: POSIX-compliant OS (list of [POSIX API](./docs/POSIX.md#the-list-of-posix-api-used-in-areg-sdk-including-multicast-message-router)), Windows 8 and higher.
+* **Supported OS**: Linux (list of [POSIX API](./docs/POSIX.md#the-list-of-posix-api-used-in-areg-sdk-including-multicast-message-router)), Windows 8 and higher.
 * **Supported CPU**: x86, x86_64, arm and aarch64.
 * **Supported compilers**: Version C++17 GCC, g++, clang and MSVC.
 
@@ -100,7 +100,7 @@ $ make [all] [framework] [examples]
 ```
 For details on how to load and/or compile projects for various compilers and hardware see [HOWTO](./docs/HOWTO.md) document.
 
-## 📌 Integration and development
+## Software integration[![](./docs/img/pin.svg)](#software-integration)
 
 #### Mulitcast router
 
@@ -128,9 +128,9 @@ scope.my_app.ignore_this_group_* = NOTSET ;        # disable logs of certain sco
 
 ### Development
 
-The development guidance and examples of codes you'll find in [DEVELOP](./docs/DEVELOP.md) document.
+The development guidance and step-by-step example of test project you find in [DEVELOP](./docs/DEVELOP.md) document.
 
-## 📌 Use cases and benefits
+## Use cases and benefits[![](./docs/img/pin.svg)](#use-cases-and-benefits)
 
 AREG SDK can be used in a very large scopes of multithreading or multiprocessing application development running on Linux or Windows machines.
 
@@ -180,7 +180,7 @@ int main()
 ```
 In the example, the `"RemoveRegistry"` and the `"SystemShudown"` are the names of components called _roles_, and the `NERemoteRegistry::ServiceName` and the `NESystemShutdown::ServiceName` are the _interface names_. In combination, they define the _service name_, which is used to access in the network. The MACRO create static _model_ `NECommon::ModelName`, which defines services that are started when call method `Application::loadModel(NECommon::ModelName)`. Services are stopped when call `Application::unloadModel(NECommon::ModelName)`.
 
-In this example services can be merged in one thread and in case of the _Public_ services they can be split and distributed in 2 processes, where every process contains its own model to start service. Independent on service location, neither software developers, nor service client objects feel difference except possible slight network latency when run IPC. It is as well possible to instantiate 2 instances of the same service implementation, but they must have unique _role names_ within one system. Means, the _Public_ services must have unique names within a network and the _Local_ services must have unique names within a process. As an example of developing service and client that can be split in multiple processes or split in one thread, see explanation of [Hello Service!](./docs/DEVELOP.md#hello-service) project developer guide.
+In this example services can be merged in one thread and in case of the _Public_ services they can be split and distributed in 2 processes, where every process contains its own model to start service. Independent on service location, neither software developers, nor service client objects feel difference except possible slight network latency when run IPC. It is as well possible to instantiate 2 instances of the same service implementation, but they must have unique _role names_ within one system. Means, the _Public_ services must have unique names within a network and the _Local_ services must have unique names within a process. As an example of developing service and client that can be split in multiple processes or split in one thread, see explanation of [**Hello Service!**](./docs/DEVELOP.md#hello-service) project developer guide.
 
 #### Driverless devices
 
@@ -207,17 +207,17 @@ The software components in applications normally are split in Data, Controller, 
 
 The same technique of simulating data can be used to create API driven test automations.
 
-## 📌 Examples
+## Examples[![](./docs/img/pin.svg)](#examples)
 
 We provide various [examples](./examples/) to demonstrate features of the AREG framework. The examples are listed in the [examples/README.md](./examples/README.md) document.
 
-## 📌 Licensing
+## Licensing[![](./docs/img/pin.svg)](#licensing)
  
 AREG SDK is dual-licensed under free open source license (Apache version 2 license) and commercial license, which gives the commercial support, full rights to create and distribute software without open source license obligations. For licensing details see [LICENSE](./LICENSE.txt) document.
  
 For commercial license, support or additional information, please visit [Aregtech](https://www.aregtech.com/) website or contact _info[at]aregtech.com_.
 
-## 📌 Call for action!
+## Call for action[![](./docs/img/pin.svg)](#call-for-action)
 
 Do you like the project, have more ideas or need features? You are welcomed to become code distributor or request features. Please share the project with your connections on [![Twitter](https://img.shields.io/twitter/url?label=Twitter&style=social&url=https%3A%2F%2Fgithub.com%2Faregtech%2Fareg-sdk)](https://twitter.com/intent/tweet?text=Wow:&url=https%3A%2F%2Fgithub.com%2Faregtech%2Fareg-sdk) and other social media platforms. [![Star the project](https://img.shields.io/github/stars/aregtech/areg-sdk.svg?style=social&label=Star%20the%20project)](https://github.com/aregtech/areg-sdk/) on GitHub to inspire us, because we'll feel useful and motivated to develop more!
 
