@@ -5,7 +5,21 @@ Copyright (c) 2017-2021, Aregtech
 Contact: info[at]aregtech.com
 Website: https://www.aregtech.com
 ```
-The AREG SDK contains various examples to demonstrate features of the engine and framework.  **To run Public services examples based on IPC, make sure the process _mcrouter_ has started**. The [_mcrouter_](./../framework/mcrouter/) is a part of the AREG SDK.
+The AREG SDK contains various examples to demonstrate features of the engine and framework. 
+
+> 💡 **To run _Public_ services of examples based on IPC, make sure the process _mcrouter_ has started**. Otherewise, the service is no visible in the network. The [_mcrouter_](./../framework/mcrouter/) is a part of the AREG SDK.
+
+To compile examples, call one of these from command line:
+
+```shell
+# Compile areg-sdk sources and examples. The option 'all' is optional
+$ make all
+```
+If `areg` library is already compiled, call
+```shell
+# Compile only examples
+$ make examples
+```
 
 Below is the list of examples:
 

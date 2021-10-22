@@ -26,15 +26,17 @@ This document replies to several howto questions.
 ## How to use preprocessor directives
 
 AREG SDK uses a few preprocessor directives to compile **POSIX** and **Windows** versions of codes. Here is the list:
-- **POSIX** to compile sources with _POSIX API_, details are in [POSIX.md](./POSIX.md).
-- **WINDOWS** to compile sources with _Win32 API_, details are in [WIN32.md](./WIN32.md).
-- **DEBUG** to compile Debug configuration.
-- **NDEBUG** to compile Release configuration.
-- **ENABLE_TRACES** to enable logging / tracing in sources.
-- **EXP_AREG_LIB** or **EXPORT_STATIC_SYMBOLS** to build the AREG framework _static_ library
-- **EXP_AREG_DLL** or **EXPORT_SHARED_SYMBOLS** to build the AREG framework _shared_ library
-- **IMP_AREG_LIB** or **IMPORT_STATIC_SYMBOLS** to link with the AREG framework _static_ library
-- **IMP_AREG_DLL** or **IMPORT_SHARED_SYMBOLS** to link with the AREG framework _shared_ library
+| Preprocessor | Description and meaning |
+| --- | --- |
+| **POSIX** | Compile sources with _POSIX API_, details are in [POSIX.md](./POSIX.md). |
+| **WINDOWS** | Compile sources with _Win32 API_, details are in [WIN32.md](./WIN32.md). |
+| **DEBUG** | Compile Debug configuration. |
+| **NDEBUG** | Compile Release configuration. |
+| **ENABLE_TRACES** | Enable logging / tracing in sources. |
+| **EXP_AREG_LIB** | Build AREG _static_ library (also can use EXPORT_STATIC_SYMBOLS). |
+| **EXP_AREG_DLL** | Build AREG _shared_ library (also can use EXPORT_SHARED_SYMBOLS). |
+| **IMP_AREG_LIB** | Link with AREG _static_ library (also can use IMPORT_STATIC_SYMBOLS). |
+| **IMP_AREG_DLL** | Link with AREG _shared_ library (also can use IMPORT_SHARED_SYMBOLS). |
 
 A _POSIX_ application usually is compiled with _POSIX, DEBUG (NDEBUG), IMP_AREG_LIB (IMP_AREG_DLL), ENABLE_TRACES_ preprocessor directives.
 
@@ -50,11 +52,13 @@ To build the _POSIX_ version of projects use _make_ or _Eclipse for C/C++ Develo
 
 _make_ and _Makefile_ is used to build AREG framework with _POSIX API_. To build projects, open command line terminal in _AREG SDK root_ directory and do one of these actions:
 
-Compile all projects ...: `$ make [all]` <br>
-Compile _framework_ only: `$ make framework` <br>
-Compile _examples_ only : `$ make examples`
+| Description | Command |
+| --- | --- |
+| Compile all projects: | `$ make [all]` |
+| Compile _framework_ only: | `$ make framework` |
+| Compile _examples_ only: | `$ make examples` |
 
-All builds are located in the created `./product` sub-folder located in the _areg-sdk root_ directory.
+All builds are located in the created `./product/build/<compiler-platform-path>` sub-folder located in the _areg-sdk root_ directory.
 
 To clean an existing build call `$ make clean` command terminal. This removes the entire _'product'_ output directory.
 
@@ -77,16 +81,16 @@ To change compiler settings, use [user.mk](../conf/make/user.mk) file and edit. 
 
 Examples for the command to use for different settings:
 
-```
+```shell
 # Compile areg-sdk with clang using 8 threads
 $ make -j 8 Toolset=clang++-13
 ```
-```
+```shell
 # Compile areg-sdk with arm-linux-gnueabihf-g++ for arm32
 $ make -j 8 CrossCompile=arm-linux-gnueabihf-
 ```
 
-```
+```shell
 # Compile areg-sdk as Debug shared library with aarch64-linux-gnu-gcc
 $ make -j 8 Config=Debug CrossCompile=aarch64-linux-gnu- Toolset=gcc
 ```
