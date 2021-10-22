@@ -773,11 +773,11 @@ When services and clients are created, the developers can decide how to distribu
 * The service and the client can run in separate threads of the same process.
 * The service and the client can run in separate processes (_Public_ service case).
 
-We'll consider each case and for each case we create a new project to test. The _model_ can be created either statically (fixed) or dynamically (can vary). Here we create static models.
+We'll consider each case and for each case we create a new project to run. The _model_ can be created either statically (fixed) or dynamically (can vary). Here we create static models.
 
 #### Model with single thread
 
-This example demonstrates how to instantiate service and client in one thread to act as _Local_ service. Create `onethread/src` in the `helloservice`, and create the `main.cpp` file to implement the _model_ and application. File [./onethread/src/main.cpp](./../examples/00_helloservice/onethread/src/main.cpp).
+This example demonstrates how to instantiate service and client in **one thread** to act as _Local_ service. Create `onethread/src` subfolder in the `helloservice`, and create the `main.cpp` source file to implement the _model_ and application. File [./onethread/src/main.cpp](./../examples/00_helloservice/onethread/src/main.cpp).
 
 > 💡 In the example, there are 2 components declared in one thread.
 
@@ -800,7 +800,7 @@ This example demonstrates how to instantiate service and client in one thread to
 // It links with areg library (dynamic or static) and generated static library
 #ifdef WINDOWS
     #pragma comment(lib, "areg")
-    #pragma comment(lib, "00_generated.lib")
+    #pragma comment(lib, "generated.lib")
 #endif // WINDOWS
 
 namespace
@@ -857,7 +857,7 @@ int main( void )
 
 #### Model with multiple threads
 
-This example demonstrates how to instantiate service and client in separate threads, but in the same process to act like _Local_ service. File File [./twothreads/src/main.cpp](./../examples/00_helloservice/twothreads/src/main.cpp)
+This example demonstrates how to instantiate service and client in **two threads** to act as _Local_ service. Create `twothreads/src` subfolder in the `helloservice`, and create the `main.cpp` source file to implement the _model_ and application. File [./twothreads/src/main.cpp](./../examples/00_helloservice/twothreads/src/main.cpp).
 
 ```cpp
 /**
@@ -878,7 +878,7 @@ This example demonstrates how to instantiate service and client in separate thre
 // It links with areg library (dynamic or static) and generated static library
 #ifdef WINDOWS
     #pragma comment(lib, "areg")
-    #pragma comment(lib, "00_generated.lib")
+    #pragma comment(lib, "generated.lib")
 #endif // WINDOWS
 
 namespace
@@ -937,11 +937,11 @@ int main( void )
 
 #### Model of separate processes
 
-This example demonstrates how to instantiate service and client running in separate processes (_Public_ service). It is required to have 2 projects for each process.
+This example demonstrates how to instantiate service and client in **two separate processes** to act as _Public_ service. This requires 2 projects for each process. Create empty `main.cpp` source file in 2 `multiprocess\serviceproc\src` and `multiprocess\clientproc\src` subfolder of the `helloservice`.
 
-> 💡 Note, the model and thread names in these 2 processes have same name, but the services differ.
+> 💡 Note, the model and thread names in these 2 processes have same name, but the service roles differ.
 
-Process `00_serviceproc`, instantiate service, file [./multiprocess/serviceproc/src/main.cpp](./../examples/00_helloservice/multiprocess/serviceproc/src/main.cpp)
+In file [./multiprocess/serviceproc/src/main.cpp](./../examples/00_helloservice/multiprocess/serviceproc/src/main.cpp) we declare and instantiate the _Public_ service.
 ```cpp
 /**
  * \file    multiprocess/serviceproc/src/main.cpp
@@ -960,7 +960,7 @@ Process `00_serviceproc`, instantiate service, file [./multiprocess/serviceproc/
 // It links with areg library (dynamic or static) and generated static library
 #ifdef WINDOWS
     #pragma comment(lib, "areg")
-    #pragma comment(lib, "00_generated.lib")
+    #pragma comment(lib, "generated.lib")
 #endif // WINDOWS
 
 
@@ -1009,8 +1009,7 @@ int main( void )
 }
 ```
 
-Service client implementation in another process.
-Process `00_clientproc`, instantiate service, file [./multiprocess/clientproc/src/main.cpp](./../examples/00_helloservice/multiprocess/clientproc/src/main.cpp)
+In file [./multiprocess/clientproc/src/main.cpp](./../examples/00_helloservice/multiprocess/clientproc/src/main.cpp) we declare and instantiate the client of _Public_ service.
 
 ```cpp
 /**
@@ -1030,7 +1029,7 @@ Process `00_clientproc`, instantiate service, file [./multiprocess/clientproc/sr
 // It links with areg library (dynamic or static) and generated static library
 #ifdef WINDOWS
     #pragma comment(lib, "areg")
-    #pragma comment(lib, "00_generated.lib")
+    #pragma comment(lib, "generated.lib")
 #endif // WINDOWS
 
 
@@ -1083,7 +1082,71 @@ For this particular project, there can be multiple instances of service clients 
 
 ### Make the build
 
-The builds can be done with the help of MS Visual Studio, Eclipse and Makefile. We do not consider in detail how to create Makefile or project files. But the developers should not forget to include all files in `common/src` in projects, link `00_generated` static library and `areg` library (shared or static). For details see appropriate file in [00_helloservice](./../examples/00_helloservice/) example.
+The builds can be done with the help of MS Visual Studio, Eclipse or Makefile. We do not consider in details all cases and hope that developers will be able to creae projects for MS Visual Studio and Eclipse. You can also use project files in [00_helloservice](./../examples/00_helloservice) and subfodels to use them as templates. Here are the Makefiles to place in folders to compile. The Makefile should be present in following folrders
+```
+helloservice/Makefile
+
+helloservice/generated/Makefile
+helloservice/generated/src/Makefile
+
+helloservice/multiprocess/clientproc/Makefile
+helloservice/multiprocess/clientproc/src/Makefile
+
+helloservice/multiprocess/serviceproc/Makefile
+helloservice/multiprocess/serviceproc/src/Makefile
+
+helloservice/onethread/Makefile
+helloservice/onethread/src/Makefile
+
+helloservice/twothreads/Makefile
+helloservice/twothreads/src/Makefile
+```
+
+We'll use `Makefile` settings of `areg-sdk` to build the projects, but will not go to much into the details. To escape flooding of this manual, I'll not output each Makefile of `helloservice` project. Instead, use identical structure of [00_helloservice](./../examples/00_helloservice), copy Makefiles and remove everywhere string `00_`, so that for example the `Makefile` in `helloservice` will look like this:
+
+```shell
+helloservice_BASE       := $(AREG_EXAMPLES)/helloservice
+helloservice_OUTPUT_OBJ := $(AREG_OUTPUT_OBJ)/helloservice
+
+helloservice_CXXFLAGS   = -I$(helloservice_BASE) $(examples_CXXFLAGS)
+helloservice_LDFLAGS    = -L $(AREG_OUTPUT_LIB) -Wl,-Bstatic -l$(generated_PROJECT_NAME) -Wl,-Bdynamic $(examples_LDFLAGS)
+
+# 'generated' have to be first
+include $(helloservice_BASE)/generated/Makefile
+include $(helloservice_BASE)/onethread/Makefile
+include $(helloservice_BASE)/twothreads/Makefile
+include $(helloservice_BASE)/multiprocess/serviceproc/Makefile
+include $(helloservice_BASE)/multiprocess/clientproc/Makefile
+
+helloservice: $(AREG_OUTPUT_BIN)/$(onethread_TARGET_BIN) $(AREG_OUTPUT_BIN)/$(twothreads_TARGET_BIN) $(AREG_OUTPUT_BIN)/$(serviceproc_TARGET_BIN) $(AREG_OUTPUT_BIN)/$(clientproc_TARGET_BIN)
+
+.PHONY: helloservice
+```
+When go through all subfolders, do not forget to include new projects of `helloservice` in the `examples/Makefile`. To to so, let's make the last step in [example/Makefile](./../examples/Makefile) and modify followings:
+
+**Step #1:** Include `Makefile` of `helloservice`:
+```shell
+include $(AREG_EXAMPLES)/helloservice/Makefile
+```
+**Step #2:** Include `helloservice` in build (project added at the end):
+```shell
+examples: 00_helloservice 01_hello 02_buffer 03_file 04_trace \
+    05_timer 06_threads 07_synch 08_service 09_svcmulti \
+    10_locsvc 11_locmesh 12_pubsvc 13_pubmesh \
+    14_pubtraffic 15_pubworker 16_pubfsm helloservice
+```
+Now the projects are ready for compilation. Open the Terminal and if already have build `areg` library, call from commandline to build only examples:
+```shell
+$ make examples
+```
+or if you want to build all, just call `make` with or without optional `all` option:
+```shell
+$make
+```
+
+The compiled binaries you find in <areg-sdk>/product/build/<compiler-platform-path>/bin. You can run them ans see the results. 
+
+> 💡 When testing _Public_ service implemented in `serviceproc` and the client `clientproc` do not forget to start `mcrouter`. The sequence of process startup has no dependency, the client and service communicate as soon as _Automatic Service Discovery_ detects the availability of service and the client.
 
 ## Contact us!
 
