@@ -51,7 +51,7 @@ public:
     /**
      * \brief   Destructor.
      **/
-    virtual ~ClientReceiveThread( void );
+    virtual ~ClientReceiveThread( void ) = default;
 
 protected:
 /************************************************************************/
@@ -59,7 +59,7 @@ protected:
 /************************************************************************/
 
     /**
-     * \brief	Triggered when dispatcher starts running. 
+     * \brief	Triggered when dispatcher starts running.
      *          In this function runs main dispatching loop.
      *          Events are picked and dispatched here.
      *          Override if logic should be changed.

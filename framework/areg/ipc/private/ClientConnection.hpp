@@ -68,7 +68,7 @@ public:
     /**
      * \brief   Destructor.
      **/
-    virtual ~ClientConnection( void );
+    virtual ~ClientConnection( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes

@@ -24,7 +24,7 @@
 // ClientServiceEventData class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   The client service event data. Used for communication with 
+ * \brief   The client service event data. Used for communication with
  *          remote routing service.
  **/
 class ClientServiceEventData
@@ -58,7 +58,7 @@ public:
      * \brief   Initializes client connection service event data, sets command.
      * \param   cmdService  The command to set in event data.
      **/
-    explicit ClientServiceEventData( ClientServiceEventData::eClientServiceCommands cmdService );
+    explicit inline ClientServiceEventData( ClientServiceEventData::eClientServiceCommands cmdService );
     /**
      * \brief   Copies the event data from given source.
      * \param   source  The source to copy data.
@@ -120,6 +120,11 @@ DECLARE_EVENT(ClientServiceEventData, ClientServiceEvent, IEClientServiceEventCo
 //////////////////////////////////////////////////////////////////////////////
 // ClientServiceEventData class inline methods
 //////////////////////////////////////////////////////////////////////////////
+
+inline ClientServiceEventData::ClientServiceEventData( ClientServiceEventData::eClientServiceCommands cmdService )
+    : mServiceCommand   ( cmdService )
+{
+}
 
 inline ClientServiceEventData::eClientServiceCommands ClientServiceEventData::getCommand( void ) const
 {

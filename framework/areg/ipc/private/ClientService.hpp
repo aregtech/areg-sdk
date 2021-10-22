@@ -45,7 +45,7 @@ class DispatcherThread;
 //////////////////////////////////////////////////////////////////////////
 /**
  * \brief   The connected client servicing object to handle connections,
- *          to read and send message, to dispatch messages and 
+ *          to read and send message, to dispatch messages and
  *          communicate with service manager.
  **/
 class ClientService : public    IERemoteService
@@ -93,7 +93,7 @@ public:
     /**
      * \brief   Destructor
      **/
-    virtual ~ClientService( void );
+    virtual ~ClientService( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Attribute
@@ -117,7 +117,7 @@ public:
      * \brief   Call to configure remote service. The passed file name
      *          can be either absolute or relative path.
      *          The function will read configuration file and initialize settings.
-     *          If file path is nullptr or empty, Remote Service will have default 
+     *          If file path is nullptr or empty, Remote Service will have default
      *          configuration settings.
      * \param   configFile  Relative or absolute path of remote service configuration file.
      *                      If nullptr or empty, it will use default settings.
@@ -209,7 +209,7 @@ protected:
 /************************************************************************/
 
     /**
-     * \brief   Triggered when Timer is expired. 
+     * \brief   Triggered when Timer is expired.
      *          The passed Timer parameter is indicating object, which has been expired.
      *          Overwrite method to receive messages.
      * \param   timer   The timer object that is expired.
@@ -264,7 +264,7 @@ protected:
 /************************************************************************/
 
     /**
-     * \brief	Triggered when dispatcher starts running. 
+     * \brief	Triggered when dispatcher starts running.
      *          In this function runs main dispatching loop.
      *          Events are picked and dispatched here.
      *          Override if logic should be changed.

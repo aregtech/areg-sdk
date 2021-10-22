@@ -263,9 +263,12 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "17_register", "examples\17_
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{1D3709F1-9915-4CEA-A9F6-4D3FDFD79965}"
 	ProjectSection(SolutionItems) = preProject
+		docs\DEVELOP.md = docs\DEVELOP.md
+		docs\HelloService.siml = docs\HelloService.siml
 		docs\HOWTO.md = docs\HOWTO.md
 		docs\POSIX.md = docs\POSIX.md
 		docs\README.md = docs\README.md
+		docs\Sample.siml = docs\Sample.siml
 		docs\WIN32.md = docs\WIN32.md
 	EndProjectSection
 EndProject
@@ -333,6 +336,21 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "00_clientproc", "examples\0
 	ProjectSection(ProjectDependencies) = postProject
 		{2DF8165C-EDE2-4F76-8D2C-2FFE82CB6CE5} = {2DF8165C-EDE2-4F76-8D2C-2FFE82CB6CE5}
 		{92CF6BFF-1A9A-455A-9252-BF6D120C3CC9} = {92CF6BFF-1A9A-455A-9252-BF6D120C3CC9}
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "img", "img", "{7BD2AAAA-FA5E-4895-837F-4A24C85A851A}"
+	ProjectSection(SolutionItems) = preProject
+		docs\img\areg-sdk-1280x360px-logo.png = docs\img\areg-sdk-1280x360px-logo.png
+		docs\img\areg-sdk-1280x640px-light.png = docs\img\areg-sdk-1280x640px-light.png
+		docs\img\areg-sdk-features.png = docs\img\areg-sdk-features.png
+		docs\img\areg-services.png = docs\img\areg-services.png
+		docs\img\driver-solution.png = docs\img\driver-solution.png
+		docs\img\driverless-solution.png = docs\img\driverless-solution.png
+		docs\img\generated-sources.png = docs\img\generated-sources.png
+		docs\img\logo-aregtech.png = docs\img\logo-aregtech.png
+		docs\img\logo-aregtech.svg = docs\img\logo-aregtech.svg
+		docs\img\mist-network.png = docs\img\mist-network.png
+		docs\img\software-layers.png = docs\img\software-layers.png
 	EndProjectSection
 EndProject
 Global
@@ -720,6 +738,7 @@ Global
 		{CF1C33CA-6F11-4B5C-B92B-F0138B90B956} = {2DF9C20F-08BB-475B-8901-C1A64D88BA8A}
 		{70CAB882-8FA3-4E1C-930D-53F7DA29D1E4} = {2DF9C20F-08BB-475B-8901-C1A64D88BA8A}
 		{7F508C90-D49D-4E26-B7B0-3CBCA677A272} = {2DF9C20F-08BB-475B-8901-C1A64D88BA8A}
+		{7BD2AAAA-FA5E-4895-837F-4A24C85A851A} = {1D3709F1-9915-4CEA-A9F6-4D3FDFD79965}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {1034084F-74DD-4B33-86E3-D8038C748F48}

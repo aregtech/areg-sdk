@@ -14,8 +14,3 @@
  ************************************************************************/
 
 #include "areg/ipc/private/ClientServiceEvent.hpp"
-
-ClientServiceEventData::ClientServiceEventData( ClientServiceEventData::eClientServiceCommands cmdService )
-    : mServiceCommand   ( cmdService )
-{
-}

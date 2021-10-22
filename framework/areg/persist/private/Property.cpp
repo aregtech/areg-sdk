@@ -181,8 +181,8 @@ bool Property::parseProperty(const char * strProperties)
         {
             addComment( strProperties + static_cast<int>(pos));
             values = values.substring(0, pos);
-        }            
-        
+        }
+
         if ( values.isEmpty() == false )
         {
             const char * value  = nullptr;

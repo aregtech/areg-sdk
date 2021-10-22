@@ -30,10 +30,6 @@ ClientReceiveThread::ClientReceiveThread( IERemoteServiceHandler & remoteService
 {
 }
 
-ClientReceiveThread::~ClientReceiveThread( void )
-{
-}
-
 bool ClientReceiveThread::runDispatcher(void)
 {
     TRACE_SCOPE(areg_ipc_private_ClientReceiveThread_runDispatcher);

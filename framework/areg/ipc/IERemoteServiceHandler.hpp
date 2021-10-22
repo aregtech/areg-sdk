@@ -44,11 +44,11 @@ protected:
     /**
      * \brief   Default constructor
      **/
-    IERemoteServiceHandler( void );
+    IERemoteServiceHandler( void ) = default;
     /**
      * \brief   Destructor
      **/
-    virtual ~IERemoteServiceHandler( void );
+    virtual ~IERemoteServiceHandler( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides

@@ -255,6 +255,7 @@ AREG_API RemoteMessage NEConnection::createRouterRegisterClient( const ProxyAddr
         temp.setCookie(source);
         _createRegisterRequest(msgResult, source, NEService::eServiceRequestType::RegisterClient, temp);
     }
+
     return msgResult;
 }
 
@@ -267,6 +268,7 @@ AREG_API RemoteMessage NEConnection::createRouterUnregisterService( const StubAd
         temp.setCookie(source);
         _createRegisterRequest(msgResult, source, NEService::eServiceRequestType::UnregisterStub, temp);
     }
+
     return msgResult;
 }
 
@@ -279,6 +281,7 @@ AREG_API RemoteMessage NEConnection::createRouterUnregisterClient( const ProxyAd
         temp.setCookie(source);
         _createRegisterRequest(msgResult, source, NEService::eServiceRequestType::UnregisterClient, temp);
     }
+
     return msgResult;
 }
 
@@ -287,7 +290,8 @@ AREG_API bool NEConnection::isMessageHelloServer(const RemoteMessage & msgHelloS
     bool result = false;
     if ( msgHelloServer.isChecksumValid() )
     {
-        result = (msgHelloServer.getMessageId() == static_cast<uint32_t>(NEService::eFuncIdRange::ServiceRouterConnect)) && (msgHelloServer.getSource()  == NEService::COOKIE_UNKNOWN);
+        result = (msgHelloServer.getMessageId() == static_cast<uint32_t>(NEService::eFuncIdRange::ServiceRouterConnect)) &&
+                 (msgHelloServer.getSource()    == NEService::COOKIE_UNKNOWN);
     }
 
     return result;
@@ -298,9 +302,10 @@ AREG_API bool NEConnection::isMessageByeServer(const RemoteMessage & msgByeServe
     bool result = false;
     if ( msgByeServer.isChecksumValid() )
     {
-        result = (msgByeServer.getMessageId() == static_cast<uint32_t>(NEService::eFuncIdRange::ServiceRouterDisconnect)) && (msgByeServer.getSource()  != NEService::COOKIE_UNKNOWN);
+        result = (msgByeServer.getMessageId()   == static_cast<uint32_t>(NEService::eFuncIdRange::ServiceRouterDisconnect)) &&
+                 (msgByeServer.getSource()      != NEService::COOKIE_UNKNOWN);
     }
-    
+
     return result;
 }
 
@@ -309,7 +314,8 @@ AREG_API bool NEConnection::isMessagNotifyClient(const RemoteMessage & msgNotify
     bool result = false;
     if ( msgNotifyClient.isChecksumValid() )
     {
-        result = (msgNotifyClient.getMessageId() == static_cast<uint32_t>(NEService::eFuncIdRange::ServiceRouterNotify)) && (msgNotifyClient.getSource() == NEService::COOKIE_ROUTER);
+        result = (msgNotifyClient.getMessageId()== static_cast<uint32_t>(NEService::eFuncIdRange::ServiceRouterNotify)) &&
+                 (msgNotifyClient.getSource()   == NEService::COOKIE_ROUTER);
     }
 
     return result;
@@ -321,9 +327,10 @@ AREG_API bool NEConnection::isMessageRegisterService(const RemoteMessage & msgRe
     if ( msgRegisterService.isChecksumValid() )
     {
         result =(msgRegisterService.getMessageId() == static_cast<uint32_t>(NEService::eFuncIdRange::ServiceRouterRegister) ) &&
-                (msgRegisterService.getSource()    != NEService::COOKIE_UNKNOWN     ) && 
+                (msgRegisterService.getSource()    != NEService::COOKIE_UNKNOWN     ) &&
                 (msgRegisterService.getTarget()    == NEService::COOKIE_ROUTER      );
     }
+
     return result;
 }
 
@@ -335,6 +342,7 @@ AREG_API RemoteMessage NEConnection::createServiceRegisteredNotification(const S
         StubAddress temp( stub );
         _createRegistereNotify(msgResult, target, NEService::eServiceRequestType::RegisterStub, temp);
     }
+
     return msgResult;
 }
 
@@ -346,6 +354,7 @@ AREG_API RemoteMessage NEConnection::createServiceClientRegisteredNotification(c
         ProxyAddress temp( proxy );
         _createRegistereNotify(msgResult, target, NEService::eServiceRequestType::RegisterClient, temp);
     }
+
     return msgResult;
 }
 
@@ -368,6 +377,7 @@ AREG_API RemoteMessage NEConnection::createServiceClientUnregisteredNotification
         ProxyAddress temp( proxy );
         _createRegistereNotify(msgResult, target, NEService::eServiceRequestType::UnregisterClient, temp);
     }
+
     return msgResult;
 }
 
@@ -381,6 +391,7 @@ AREG_API RemoteMessage NEConnection::createConnectRequest(void)
 
         msgHelloServer.bufferCompletionFix();
     }
+
     return msgHelloServer;
 }
 
@@ -395,6 +406,7 @@ AREG_API RemoteMessage NEConnection::createDisconnectRequest(ITEM_ID cookie)
 
         msgBeyServer.bufferCompletionFix();
     }
+
     return msgBeyServer;
 }
 
@@ -411,6 +423,7 @@ AREG_API RemoteMessage NEConnection::createConnectNotify( ITEM_ID cookie  )
 
         msgNotifyConnect.bufferCompletionFix();
     }
+
     return msgNotifyConnect;
 }
 
@@ -427,6 +440,7 @@ AREG_API RemoteMessage NEConnection::createDisconnectNotify(ITEM_ID cookie)
 
         msgNotifyDisconnect.bufferCompletionFix();
     }
+
     return msgNotifyDisconnect;
 }
 
@@ -443,5 +457,6 @@ AREG_API RemoteMessage NEConnection::createRejectNotify(ITEM_ID cookie)
 
         msgNotifyReject.bufferCompletionFix();
     }
+
     return msgNotifyReject;
 }
