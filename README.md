@@ -111,7 +111,7 @@ _AREG SDK sources are developed for:_
 _Compile AREG SDK sources and examples:_
 | Operatin System | Quick actions to use tools and compile|
 | --- | --- |
-|**Linux or Windows**| Import projects in _Eclipse_ to compile with POSIX API (you may need to change to OS suitable Toolchain).|
+|**Linux or Windows**| Import projects in _Eclipse_ to compile with POSIX API (you may need to change Toolchain).|
 |**Windows**| Open `areg-sdk.sln` file in _MS Visual Studio_ (VS2019 and higher) to compile with Win32 API.|
 |**Linux**| Open gnome-terminal in Linux and call “_make_” to compile with POSIX API.|
 
