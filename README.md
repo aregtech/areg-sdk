@@ -78,27 +78,47 @@ The framework contains a dynamic and configurable logging service. More tools an
 
 ## Software build[![](./docs/img/pin.svg)](#software-build)
 
-Get latest sources using `git` or download ZIP files:
+An example to get source codes and compile under **Linux**. You'd need at least C++17 `g++` (default) compiler. Open _Terminal_ console in your `projects` folder and make following steps:
 ```shell
+# Step 1: Get sources from GitHub
 $ git clone https://github.com/aregtech/areg-sdk.git ./
 $ cd areg-sdk
 ```
+```shell
+# Step 2: Compile sources from terminal by calling: make [all] [framework] [examples]
+$ make all
+```
+After compilation, the binaries are located in `<areg-sdk>/product/build/<compiler-platform-path>/bin` folder.
 
-AREG SDK sources are developed for:
-* **Supported OS**: Linux (list of [POSIX API](./docs/POSIX.md#the-list-of-posix-api-used-in-areg-sdk-including-multicast-message-router)), Windows 8 and higher.
-* **Supported CPU**: x86, x86_64, arm and aarch64.
-* **Supported compilers**: Version C++17 GCC, g++, clang and MSVC.
+_AREG SDK sources are developed for:_
+<table>
+  <tr>
+    <td nowrap><strong>Supported OS</strong></td>
+    <td>Linux (list of <a href="./docs/POSIX.md#the-list-of-posix-api-used-in-areg-sdk-including-multicast-message-router" alt="list of POSX API">POSIX API</a>), Windows 8 and higher.</td>
+  </tr>
+  <tr>
+    <td nowrap><strong>Supported CPU</strong></td>
+    <td>x86, x86_64, arm and aarch64.</td>
+  </tr>
+  <tr>
+    <td nowrap><strong>Supported compilers</strong></td>
+    <td>Version C++17 GCC, g++, clang and MSVC.</td>
+  </tr>
+</table>
 
 > 💡 The other POSIX-compliant OS and compilers are not tested yet.
 
-Compile AREG SDK sources and examples using following tools:
-* **On Linux or Windows**: import projects in _Eclipse_ to compile with POSIX API (select preferred Toolchain before compile).
-* **On Windows**: open areg-sdk.sln file in _MS Visual Studio_ (VS2019 and higher requiered) to compile with Win32 API.
-* **On Linux**: in the terminal call “_make_” as shown below to compile with POSIX API.
-```shell
-$ make [all] [framework] [examples]
-```
-For details on how to load and/or compile projects for various compilers and hardware see [HOWTO](./docs/HOWTO.md) document.
+_Compile AREG SDK sources and examples:_
+| Operatin System | Quick actions to use tools and compile|
+| --- | --- |
+|**Linux or Windows**| Import projects in _Eclipse_ to compile with POSIX API (you may need to change to OS suitable Toolchain).|
+|**Windows**| Open `areg-sdk.sln` file in _MS Visual Studio_ (VS2019 and higher) to compile with Win32 API.|
+|**Linux**| Open gnome-terminal in Linux and call “_make_” to compile with POSIX API.|
+
+> 💡 The compilation for each platform does not require special changes, except if compile with _Elipse_ for Windows. There might be a need to switch to appropriate Toolchain. For example, switch to `Cygwin GCC`.<br>
+> 💡 Under Linux, make sure you have at least C++ 17 supporting `g++` compiler (default).
+
+For details on how to change compiler, load and compile sources with various compilers and for various target hardware see [HOWTO](./docs/HOWTO.md).
 
 ## Software integration[![](./docs/img/pin.svg)](#software-integration)
 
