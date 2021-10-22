@@ -22,7 +22,7 @@
   </tr>
 </table>
 
-## Introduction[![](./docs/img/pin.svg)](href="#introduction")
+## Introduction[![](./docs/img/pin.svg)]("#introduction")
 
 **AREG SDK** is an Interface centric lightweight real-time asynchronous communication engine to provide [distributed](https://en.wikipedia.org/wiki/Distributed_computing) and enable [mist](https://csrc.nist.gov/publications/detail/sp/500-325/final) computing, where Things interact and provide services, as if they act like thin distributed servers.
 
