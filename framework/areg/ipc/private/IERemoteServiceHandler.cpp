@@ -13,11 +13,3 @@
  * \brief       AREG Platform, Remote Service Handler
  ************************************************************************/
 #include "areg/ipc/IERemoteServiceHandler.hpp"
-
-IERemoteServiceHandler::IERemoteServiceHandler(void)
-{
-}
-
-IERemoteServiceHandler::~IERemoteServiceHandler(void)
-{
-}

@@ -29,10 +29,6 @@ ClientSendThread::ClientSendThread( IERemoteServiceHandler & remoteService, Clie
 {
 }
 
-ClientSendThread::~ClientSendThread(void)
-{
-}
-
 bool ClientSendThread::runDispatcher(void)
 {
     TRACE_SCOPE(areg_ipc_private_ClientSendThread_runDispatcher);

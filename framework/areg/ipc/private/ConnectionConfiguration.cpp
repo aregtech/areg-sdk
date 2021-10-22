@@ -10,7 +10,7 @@
  * \file        areg/ipc/private/ConnectionConfiguration.cpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
  * \author      Artak Avetyan
- * \brief       AREG Platform Remote service connection configuration 
+ * \brief       AREG Platform Remote service connection configuration
  ************************************************************************/
 
 /************************************************************************
@@ -32,16 +32,6 @@ ConnectionConfiguration::eConnectionProperty ConnectionConfiguration::getPositio
         return eConnectionProperty::PropertyPort;
     else
         return eConnectionProperty::PropertyInvalid;
-}
-
-ConnectionConfiguration::ConnectionConfiguration( void )
-    : mConfigFile   ( )
-    , mMapConfig    ( )
-{
-}
-
-ConnectionConfiguration::~ConnectionConfiguration( void )
-{
 }
 
 bool ConnectionConfiguration::loadConfiguration(const char * filePath /* = nullptr */)
@@ -94,7 +84,7 @@ NERemoteService::eServiceConnection ConnectionConfiguration::_parseConnectionPro
             const String & section    = key.getSection();
             const String & target     = key.getProperty();
 
-            if ( (section   == NERemoteService::CONFIG_KEY_CONNECTION.data( )   ) && 
+            if ( (section   == NERemoteService::CONFIG_KEY_CONNECTION.data( )   ) &&
                  (target    == NERemoteService::CONFIG_KEY_PROP_TYPE.data( )    ) )
             {
                 result = NERemoteService::getServiceConnectionType(prop.getValue().getString(), false);

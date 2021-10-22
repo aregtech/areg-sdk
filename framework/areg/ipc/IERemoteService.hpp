@@ -47,12 +47,12 @@ protected:
     /**
      * \brief   Default constructor. Protected.
      **/
-    IERemoteService( void );
+    IERemoteService( void ) = default;
 
     /**
      * \brief   Destructor
      **/
-    virtual ~IERemoteService( void );
+    virtual ~IERemoteService( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides

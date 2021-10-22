@@ -14,11 +14,3 @@
  ************************************************************************/
 
 #include "areg/ipc/IERemoteService.hpp"
-
-IERemoteService::IERemoteService(void)
-{
-}
-
-IERemoteService::~IERemoteService(void)
-{
-}

@@ -31,9 +31,9 @@
 //////////////////////////////////////////////////////////////////////////
 /**
  * \brief   The Server Socket is used to accept connection from remote clients,
- *          send and receive data. Before accepting connections, 
- *          sending or receiving any data, the socket should be created, 
- *          set for listening and wait for incoming connection. 
+ *          send and receive data. Before accepting connections,
+ *          sending or receiving any data, the socket should be created,
+ *          set for listening and wait for incoming connection.
  *          When connection from client is accepted, the server specifies
  *          unique cookie for accepted client. As soon as connection is
  *          accepted, the server can start to send and receive data.
@@ -90,7 +90,7 @@ public:
 
     /**
      * \brief   Creates instance of object with invalid socket object.
-     *          Before sending or receiving data, the socket should be created 
+     *          Before sending or receiving data, the socket should be created
      *          and bound to specified local IP-address and port.
      *          When instantiated, it will resolved passed host
      *          name and port number. If succeeded to resolve,
@@ -104,7 +104,7 @@ public:
 
     /**
      * \brief   Creates instance of object with invalid socket object.
-     *          Before sending or receiving data, the socket should be created 
+     *          Before sending or receiving data, the socket should be created
      *          and bound to host and port. Specified remoteAddress will be set as server address.
      * \param   remoteAddress   Address of server.
      **/
@@ -113,7 +113,7 @@ public:
     /**
      * \brief   Destructor.
      **/
-    virtual ~ServerConnectionBase( void );
+    virtual ~ServerConnectionBase( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes
@@ -126,7 +126,7 @@ public:
     inline const NESocket::SocketAddress & getAddress( void ) const;
 
     /**
-     * \brief   Sets Socket Address. If hostName is not IP-address, it will 
+     * \brief   Sets Socket Address. If hostName is not IP-address, it will
      *          try to resolve first then set. The isServer parameter is needed
      *          to resolve address either for server or for client.
      *          For accepted sockets this call plays no role, because the
@@ -203,8 +203,8 @@ public:
 //////////////////////////////////////////////////////////////////////////
 
     /**
-     * \brief   Before listening and accepting connection from clients, 
-     *          call this method to create new socket descriptor and bind 
+     * \brief   Before listening and accepting connection from clients,
+     *          call this method to create new socket descriptor and bind
      *          socket to specified host name and port number.
      * \param   hostName    The name of host to bind.
      * \param   portNr      The valid port number to bind.
@@ -213,8 +213,8 @@ public:
     bool createSocket( const char * hostName, unsigned short portNr );
 
     /**
-     * \brief   Before listening and accepting connection from clients, 
-     *          call this method to create new socket descriptor and bind 
+     * \brief   Before listening and accepting connection from clients,
+     *          call this method to create new socket descriptor and bind
      *          socket to exiting local IP-address and port number.
      *          Both, socket IP-address and port number should be already set.
      * \return  Returns true if operation succeeded.
@@ -222,17 +222,17 @@ public:
     bool createSocket( void );
 
     /**
-     * \brief   Closes existing socket. 
+     * \brief   Closes existing socket.
      *          The call will disconnect all accepted connections.
      **/
     void closeSocket( void );
 
     /**
      * \brief   Call to place server socket in a state in which it is listening for an incoming connection.
-     *          To accept connections on server side, firs socket should be created, which is bound to a 
+     *          To accept connections on server side, firs socket should be created, which is bound to a
      *          local address. A backlog for incoming connections is specified with listen, and the length
      *          of pending connections are specified in maxQueueSize parameter. Then the connections are accepted.
-     * \param   maxQueueSize    
+     * \param   maxQueueSize
      **/
     bool serverListen( int maxQueueSize = NESocket::MAXIMUM_LISTEN_QUEUE_SIZE );
 
@@ -250,7 +250,7 @@ public:
      *                              when client sends data or close socket, this parameter
      *                              remains unchanged.
      * \return  If function succeeds, the function returns valid socket handle. For new connections,
-     *          out_addrNewAccepted parameter contains address of accepted socket. 
+     *          out_addrNewAccepted parameter contains address of accepted socket.
      *          If function fails, returns invalid socket handle.
      **/
     SOCKETHANDLE waitForConnectionEvent(NESocket::SocketAddress & out_addrNewAccepted);
@@ -258,7 +258,7 @@ public:
     /**
      * \brief   Call to accept connection. Nothing will happen if connection was already accepted.
      *          For new connections, on output out_connection parameter will have accepted state.
-     * \param   out_connection  Connection to accept. If object is valid, on output this will 
+     * \param   out_connection  Connection to accept. If object is valid, on output this will
      *                          be in accepted state.
      **/
     bool acceptConnection( SocketAccepted & clientConnection );

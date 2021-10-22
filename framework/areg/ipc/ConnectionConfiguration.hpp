@@ -11,7 +11,7 @@
  * \file        areg/ipc/ConnectionConfigurator.hpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
  * \author      Artak Avetyan
- * \brief       AREG Platform, Remote service connection configuration 
+ * \brief       AREG Platform, Remote service connection configuration
  ************************************************************************/
 
 /************************************************************************
@@ -89,11 +89,11 @@ public:
     /**
      * \brief   Initializes connection configuration object and internals.
      **/
-    ConnectionConfiguration( void );
+    ConnectionConfiguration( void ) = default;
     /**
      * \brief   Destructor.
      **/
-    virtual ~ConnectionConfiguration( void );
+    virtual ~ConnectionConfiguration( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations.
@@ -182,7 +182,7 @@ private:
      * \brief   Parses single line of connection configuration. Returns valid section type
      *          if could find appropriate property entry.
      * \param   file        The file object, which is opened for reading.
-     * \param   inLine      The line of configuration to parse. The passed parameter is modified, 
+     * \param   inLine      The line of configuration to parse. The passed parameter is modified,
      *                      until could not find the appropriate section type entry in configuration.
      * \param   outProp     On output, this parameter contains appropriate connection section property data.
      *\return   Returns connection section type if found any entry. Otherwise, returns invalid section value.

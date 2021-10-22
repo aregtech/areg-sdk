@@ -72,10 +72,6 @@ ClientService::ClientService( IERemoteServiceConsumer & serviceConsumer )
 {
 }
 
-ClientService::~ClientService(void)
-{
-}
-
 bool ClientService::configureRemoteServicing( const char * configFile )
 {
     Lock lock( mLock );
@@ -189,7 +185,7 @@ bool ClientService::registerService( const StubAddress & stubService )
         TRACE_DBG("Queueing to send register [ %s ] service message by connection [ %d ]"
                    , StubAddress::convAddressToPath(stubService).getString()
                    , mClientConnection.getCookie());
-        
+
         result = queueSendMessage( NEConnection::createRouterRegisterService(stubService, mClientConnection.getCookie()) );
     }
     return result;
@@ -198,7 +194,7 @@ bool ClientService::registerService( const StubAddress & stubService )
 void ClientService::unregisterService(const StubAddress & stubService)
 {
     TRACE_SCOPE(areg_ipc_private_ClientService_unregisterService);
-    
+
     Lock lock( mLock );
     if ( isStarted() )
     {
@@ -220,7 +216,7 @@ bool ClientService::registerServiceClient(const ProxyAddress & proxyService)
         TRACE_DBG("Queueing to send register [ %s ] service client message by connection [ %d ]"
                    , ProxyAddress::convAddressToPath(proxyService).getString()
                    , mClientConnection.getCookie());
-        
+
         result = queueSendMessage( NEConnection::createRouterRegisterClient(proxyService, mClientConnection.getCookie()) );
     }
 
@@ -237,7 +233,7 @@ void ClientService::unregisterServiceClient(const ProxyAddress & proxyService)
         TRACE_DBG("Queueing to send unregister [ %s ] service client message by connection [ %d ]"
                    , ProxyAddress::convAddressToPath(proxyService).getString()
                    , mClientConnection.getCookie());
-        
+
         queueSendMessage( NEConnection::createRouterUnregisterClient(proxyService, mClientConnection.getCookie()) );
     }
 }
@@ -251,7 +247,7 @@ void ClientService::processTimer(Timer & timer)
 void ClientService::processEvent( const ClientServiceEventData & data )
 {
     TRACE_SCOPE(areg_ipc_private_ClientService_processEvent);
-    
+
     ClientServiceEventData::eClientServiceCommands cmdService = data.getCommand();
     TRACE_DBG("Client service is executing command [ %s ]", ClientServiceEventData::getString(cmdService));
 

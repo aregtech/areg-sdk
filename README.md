@@ -27,22 +27,22 @@
 **AREG SDK** is an Interface centric lightweight real-time asynchronous communication engine to provide [distributed](https://en.wikipedia.org/wiki/Distributed_computing) and enable [mist](https://csrc.nist.gov/publications/detail/sp/500-325/final) computing, where Things interact and provide services, as if they act like thin distributed servers.
 
 ## 📌 Table of content
-1. [Motivation](#-motivation).
-2. [More than embedded](#-more-than-embedded).
-3. [Composition](#-composition).
-4. [Software build](#-software-build).
-5. [Integration and development](#-integration-and-development).
-   - [Multicast router](#mulitcast-router).
-   - [Logging service](#logging-service).
-   - [Development](#development).
-6. [Use cases and benefits](#-use-cases-and-benefits).
-   - [Distributes solutions](#distributed-solution).
-   - [Driverless devices](#driverless-devices).
-   - [Real-time solutions](#real-time-solutions).
-   - [Digital twin](#digital-twin).
-   - [Simulation and test automations](#simulation-and-test-automations).
-7. [Examples](#-examples).
-8. [Licensing](#-licensing).
+1. [Motivation](#-motivation)
+2. [More than embedded](#-more-than-embedded)
+3. [Composition](#-composition)
+4. [Software build](#-software-build)
+5. [Integration and development](#-integration-and-development)
+   - [Multicast router](#mulitcast-router)
+   - [Logging service](#logging-service)
+   - [Development](#development)
+6. [Use cases and benefits](#-use-cases-and-benefits)
+   - [Distributes solutions](#distributed-solution)
+   - [Driverless devices](#driverless-devices)
+   - [Real-time solutions](#real-time-solutions)
+   - [Digital twin](#digital-twin)
+   - [Simulation and test automations](#simulation-and-test-automations)
+7. [Examples](#-examples)
+8. [Licensing](#-licensing)
 9. [Call for action](#-call-for-action)!
 
 ## 📌 Motivation

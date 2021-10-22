@@ -18,21 +18,24 @@
 
 AREG_API const char * NERemoteService::getServiceConnectionTypeString(NERemoteService::eServiceConnection connectionType)
 {
-    switch (connectionType)
+    if ( connectionType == NERemoteService::eServiceConnection::ConnectionTcpip )
     {
-    case NERemoteService::eServiceConnection::ConnectionTcpip:
-        return NERemoteService::STR_CONNECTION_TYPE_TCPIP.data();
-
-    case NERemoteService::eServiceConnection::ConnectionUndefined:  // fall through
-    default:
-        return String::EmptyString.data();
+        return NERemoteService::STR_CONNECTION_TYPE_TCPIP.data( );
+    }
+    else
+    {
+        return String::EmptyString.data( );
     }
 }
 
 AREG_API NERemoteService::eServiceConnection NERemoteService::getServiceConnectionType(const char * connectionType, bool caseSensitive /* = true */ )
 {
     if ( NEString::compareStrings<char, char>(NERemoteService::STR_CONNECTION_TYPE_TCPIP.data(), connectionType, NEString::COUNT_ALL, caseSensitive ) == 0)
+    {
         return NERemoteService::eServiceConnection::ConnectionTcpip;
+    }
     else
+    {
         return NERemoteService::eServiceConnection::ConnectionUndefined;
+    }
 }

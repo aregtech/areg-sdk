@@ -47,10 +47,6 @@ ServerConnectionBase::ServerConnectionBase(const NESocket::SocketAddress & serve
 {
 }
 
-ServerConnectionBase::~ServerConnectionBase(void)
-{
-}
-
 bool ServerConnectionBase::createSocket(const char * hostName, unsigned short portNr)
 {
     Lock lock(mLock);

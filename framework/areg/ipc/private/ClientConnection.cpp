@@ -39,9 +39,6 @@ ClientConnection::ClientConnection(const NESocket::SocketAddress & remoteAddress
 {
 }
 
-ClientConnection::~ClientConnection( void )
-{
-}
 
 bool ClientConnection::createSocket(const char * hostName, unsigned short portNr)
 {
