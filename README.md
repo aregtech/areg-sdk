@@ -241,16 +241,7 @@ For commercial license, support or additional information, please visit [Aregtec
 
 Do you like the project, have more ideas or need features? You are welcomed to become code distributor or request features. Please share the project with your connections on [![Twitter](https://img.shields.io/twitter/url?label=Twitter&style=social&url=https%3A%2F%2Fgithub.com%2Faregtech%2Fareg-sdk)](https://twitter.com/intent/tweet?text=Wow:&url=https%3A%2F%2Fgithub.com%2Faregtech%2Fareg-sdk) and other social media platforms. [![Star the project](https://img.shields.io/github/stars/aregtech/areg-sdk.svg?style=social&label=Star%20the%20project)](https://github.com/aregtech/areg-sdk/) on GitHub to inspire us, because we'll feel useful and motivated to develop more!
 
-<table>
-  <tr>
-    <td><strong>Follow us</strong></td>
-    <td><a href="https://twitter.com/intent/follow?screen_name=aregtech"><img src="https://img.shields.io/twitter/follow/aregtech.svg?style=social" alt="Follow us on twitter"/></a> &nbsp; <a href="https://www.linkedin.com/company/aregtech/"><img src="https://img.shields.io/badge/LinkedIn-Aregtech-blue?style=flat&logo=linkedin&logoColor=b0c0c0&labelColor=363D44" alt="Follow us on LinkedIn"/></a></td>
-  </tr>
-  <tr>
-    <td><strong>Since 20 Oct. 2021<strong></strong></td>
-    <td><img src="https://gpvc.arturio.dev/aregtech" alt="Viewers"/></td>
-  </tr>
-</table>
+**Follow us:** [![Follow us on Twitter](https://img.shields.io/twitter/follow/aregtech.svg?style=social)](https://twitter.com/intent/follow?screen_name=aregtech) [![Follow us on LinkedIn](https://img.shields.io/badge/LinkedIn-Aregtech-blue?style=flat&logo=linkedin&logoColor=b0c0c0&labelColor=363D44)](https://www.linkedin.com/company/aregtech/)
 
 ![Repo status](https://github-readme-stats.vercel.app/api?username=aregtech&theme=blue-green)
 
