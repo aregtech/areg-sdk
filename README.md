@@ -252,4 +252,6 @@ Do you like the project, have more ideas or need features? You are welcomed to b
   </tr>
 </table>
 
+![Repo status](https://github-readme-stats.vercel.app/api?username=aregtech&theme=blue-green)
+
 <!-- markdownlint-enable -->
