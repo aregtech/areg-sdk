@@ -1,11 +1,13 @@
 <h1 align="center" style="display: block; font-size: 2.5em; font-weight: bold; margin-block-start: 1em; margin-block-end: 1em;">
 <a name="logo" href="https://www.aregtech.com"><img align="center" src="/docs/img/areg-sdk-1280x360px-logo.png" alt="AREG SDK Home" style="width:100%;height:100%"/></a>
-  <br><br><b>AREG SDK</b>
+  <br><br><strong>AREG SDK</strong>
 </h1>
 
 > 💡 By ![star us](https://img.shields.io/github/stars/aregtech/areg-sdk.svg?style=social&label=staring%20us) on GitHub and spreading the AREG SDK on social media, you help and inspire us for further development of technology, which helps to cut project costs and create intelligent service enabled products!
 
 ![Latest release](https://img.shields.io/github/v/release/aregtech/areg-sdk?label=%20%F0%9F%93%A3%20Latest%20release&style=flat&logoColor=b0c0c0&labelColor=363D44)
+
+---
 
 <!-- markdownlint-disable -->
 ## Project Status[![](./docs/img/pin.svg)](#project-status)
@@ -22,9 +24,13 @@
   </tr>
 </table>
 
+---
+
 ## Introduction[![](./docs/img/pin.svg)](#introduction)
 
 **AREG SDK** is a developer friendly, an interface-centric real-time asynchronous communication engine to enable [distributed-](https://en.wikipedia.org/wiki/Distributed_computing) and [mist-](https://csrc.nist.gov/publications/detail/sp/500-325/final)computing, where connected Things interact and provide services, as if they act like thin distributed servers.
+
+---
 
 ## Table of contents[![](./docs/img/pin.svg)](#table-of-contents)
 1. [Motivation](#motivation)
@@ -45,6 +51,8 @@
 8. [Licensing](#licensing)
 9. [Call for action](#call-for-action)
 
+---
+
 ## Motivation[![](./docs/img/pin.svg)](#motivation)
 
 Traditionally, devices are connected clients to stream data to the cloud or fog servers for further processing.
@@ -53,6 +61,8 @@ Since data is generated and collected at the edge of the network (mist network),
 * _Increase data privacy_, which is an important factor for sensitive data.
 * _Decrease data streaming_, which is a fundamental condition to optimize network communication.
 * Develop _autonomous, intelligent and self-aware devices_ by providing network services directly in the environment of data origin.
+
+---
 
 ## More than embedded[![](./docs/img/pin.svg)](#more-than-embedded)
 
@@ -67,6 +77,8 @@ The AREG engine forms a fault tolerant system, discovers services and automates 
 * The service responses are automatically invoked on the exact client side, and they are not mixed or missed.
 * The subscriptions on data change, on response and broadcast are automatically invoked on client side when service triggers a call.
 
+---
+
 ## Composition[![](./docs/img/pin.svg)](#composition)
 
 AREG SDK consists of:
@@ -75,6 +87,8 @@ AREG SDK consists of:
 3. [Code generator tool](./tools/) to create client and server base objects from a service prototype document.
 
 The framework contains a dynamic and configurable logging service. More tools and features are planned in next releases.
+
+---
 
 ## Software build[![](./docs/img/pin.svg)](#software-build)
 
@@ -120,6 +134,8 @@ _Compile AREG SDK sources and examples:_
 
 For details on how to change compiler, load and compile sources with various compilers and for various targets see [HOWTO](./docs/HOWTO.md).
 
+---
+
 ## Software integration[![](./docs/img/pin.svg)](#software-integration)
 
 #### Mulitcast router
@@ -149,6 +165,8 @@ scope.my_app.ignore_this_group_* = NOTSET ;        # disable logs of certain sco
 ### Development
 
 The development guidance and step-by-step example of test project you find in [DEVELOP](./docs/DEVELOP.md) document.
+
+---
 
 ## Use cases and benefits[![](./docs/img/pin.svg)](#use-cases-and-benefits)
 
@@ -227,9 +245,13 @@ The software components in applications normally are split in Data, Controller, 
 
 The same technique of simulating data can be used to create API driven test automations.
 
+---
+
 ## Examples[![](./docs/img/pin.svg)](#examples)
 
 There are various [examples](./examples/) to demonstrate features of the AREG framework. The examples are listed in the [examples/README.md](./examples/README.md) document.
+
+---
 
 ## Licensing[![](./docs/img/pin.svg)](#licensing)
  
@@ -237,9 +259,13 @@ AREG SDK is dual-licensed under free open source license (Apache version 2 licen
  
 For commercial license, support or additional information, please visit [Aregtech](https://www.aregtech.com/) website or contact _info[at]aregtech.com_.
 
+---
+
 ## Call for action[![](./docs/img/pin.svg)](#call-for-action)
 
 Do you like the project, have more ideas or need features? You are welcomed to join the project. Please share the project with your connections on [![Twitter](https://img.shields.io/twitter/url?label=Twitter&style=social&url=https%3A%2F%2Fgithub.com%2Faregtech%2Fareg-sdk)](https://twitter.com/intent/tweet?text=Wow:&url=https%3A%2F%2Fgithub.com%2Faregtech%2Fareg-sdk) and other social media platforms. [![Star the project](https://img.shields.io/github/stars/aregtech/areg-sdk.svg?style=social&label=Star%20the%20project)](https://github.com/aregtech/areg-sdk/) on GitHub to inspire us, because we'll feel useful and motivated to develop more!
+
+---
 
 **Follow us**<br>
 [![Follow us on twitter](https://img.shields.io/twitter/follow/aregtech.svg?style=social)](https://twitter.com/intent/follow?screen_name=aregtech) 
