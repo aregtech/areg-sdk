@@ -261,7 +261,7 @@ For commercial license, support or additional information, please visit [Aregtec
 
 ## Call for action[![](./docs/img/pin.svg)](#call-for-action)
 
-Do you like the project, have more ideas or need features? You are welcomed to join the project. Please share the project with your connections on [![Twitter](https://img.shields.io/twitter/url?label=Twitter&style=social&url=https%3A%2F%2Fgithub.com%2Faregtech%2Fareg-sdk)](https://twitter.com/intent/tweet?text=Wow:&url=https%3A%2F%2Fgithub.com%2Faregtech%2Fareg-sdk) and other social media platforms. [![Star the project](https://img.shields.io/github/stars/aregtech/areg-sdk.svg?style=social&label=Star%20the%20project)](https://github.com/aregtech/areg-sdk/) on GitHub to inspire us for further development of technology, because we'll feel useful and motivated to develop more!
+Do you like the project, have more ideas or need features? You are welcomed to join the project. To join the development team, please prepare an introduction and code examples. Please also share the project with your connections on [![Twitter](https://img.shields.io/twitter/url?label=Twitter&style=social&url=https%3A%2F%2Fgithub.com%2Faregtech%2Fareg-sdk)](https://twitter.com/intent/tweet?text=Wow:&url=https%3A%2F%2Fgithub.com%2Faregtech%2Fareg-sdk) and other social media platforms. [![Star the project](https://img.shields.io/github/stars/aregtech/areg-sdk.svg?style=social&label=Star%20the%20project)](https://github.com/aregtech/areg-sdk/) on GitHub to inspire us for further development of technology, because we'll feel useful and motivated to develop more!
 
 ---
 
