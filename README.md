@@ -64,9 +64,9 @@ Since data is generated and collected at the edge of the network (mist network),
 
 ## More than embedded[![](./docs/img/pin.svg)](#more-than-embedded)
 
-When we were designing AREG SDK, the guiding principle was to create a framework to develop embedded and high-end applications that intelligently interact at the edge of the network. To keep application design homogeneous we defined multithreading, multiprocessing and internet communication service categories. These services are neither processes, nor tasks managed by the operating system, they are software components with predefined interface, which methods are invoked remotely.
+When we were designing AREG SDK, the guiding principle was to provide homogeneous solution for multithreading, multiprocessing and internet communication wrapped in services appropriately having _Local_, _Public_ and _Internet_ categories. These services are neither processes, nor tasks managed by the operating system, they are software components with predefined interface, which methods are invoked remotely. This concept simplifies software architecture with complex communication.
 <br><a href="docs/img/areg-services.png"><img src="docs/img/areg-services.png" alt="AREG SDK distributed services" style="width:70%;height:70%"/></a><br>
-> 💡 In current version AREG engine handles multithreading (_Local_) and multiprocessing (_Public_) communication. 
+> 💡 In current version, the AREG engine handles multithreading (_Local_) and multiprocessing (_Public_) communication. 
 
 The AREG engine forms a fault tolerant system, discovers services and automates communication, simplifies distributed programming, and helps developers to focus on application business logic as if they would program a single process application with one thread where methods of objects are event-driven. The engine guaranties that:
 * The crash of one application does not cause the crash of the system.
@@ -172,7 +172,7 @@ AREG SDK can be used in a very large scopes of multithreading or multiprocessing
 
 #### Distributed solution
 
-AREG SDK provides a lightweight form of distributed computing where the services can be distributed and run on any node of the network, and the application architects can easily distribute the computing power between threads and processes. The automatic service discovery makes service location transparent, so that the applications interact as if the components are located in one process. Developers define a dynamic or static _model_, which is a description of service relationship and is used to load and start services. A process may have multiple _models_ that can be dynamically loaded and unloaded during runtime. The following is a demonstration of a static _model_, which is loaded in `int main()` function to start services, and is unloaded to stop services when exits `main()`.
+AREG SDK provides a lightweight distributed computing solution where the services can be distributed and run on any node of the network, and the application architects can easily distribute the computing power between processes. The automatic service discovery makes service location transparent, so that the applications interact as if the components are located in one process. Developers need to define at least one dynamic or static _model_, which is a description of service relationship, and it is used to load and start services during runtime. The following is a demonstration of a static _model_ that is loaded when application starts and unloaded when application exits `int main()`. This starts and stops services described in the _model_.
 ```cpp
 // main.cpp source file.
 
@@ -214,9 +214,9 @@ int main()
     return 0;
 }
 ```
-In the example, the `"RemoveRegistry"` and the `"SystemShudown"` are the names of components called _roles_, and the `NERemoteRegistry::ServiceName` and the `NESystemShutdown::ServiceName` are the _interface names_. In combination, they define the _service name_, which is used to access in the network. These MACRO create static _model_ `NECommon::ModelName`, which defines services that are started when call method `Application::loadModel(NECommon::ModelName)`. Services are stopped when call `Application::unloadModel(NECommon::ModelName)`.
+In the example, the `"RemoveRegistry"` and the `"SystemShudown"` are the names of components called _roles_, and the `NERemoteRegistry::ServiceName` and the `NESystemShutdown::ServiceName` are the _interface names_. In combination, they define the _service name_, which is used to access in the network. These MACRO create static _model_ `NECommon::ModelName`. The _model_ is loaded and services are started when call `Application::loadModel(NECommon::ModelName)`, and the services are stopped when call `Application::unloadModel(NECommon::ModelName)`.
 
-In this example services can be merged in one thread and in case of the _Public_ services they can be split and distributed in 2 processes, where every process contains its own model to load. Independent on service location, neither software developers, nor service client objects feel difference except possible slight network latency when run IPC. It is as well possible to instantiate 2 same service components, but they must have unique _role names_ within one system scope. Means, in case of _Public_ services, the names must be unique within a network, and in case of _Local_ services, the names must unique within a process scope. An example of developing service and client that can be split in multiple processes or merged in one thread is in [**Hello Service!**](./docs/DEVELOP.md#hello-service) project described in development guide.
+In this example services can be merged in one thread, or in case of the _Public_ services they can be split and distributed in 2 processes, where every process contains a _model_ to load. Independent on service location, neither software developers, nor service client objects feel difference except possible slight network latency when run IPC. The services must have unique names within the scope of service visibility. Means, in case of _Public_ services, the names must be unique within a network, and in case of _Local_ services, the names must unique within a process scope. An example of developing service and client that can be split in multiple processes or merged in one thread is in [**Hello Service!**](./docs/DEVELOP.md#hello-service) project described in development guide.
 
 #### Driverless devices
 
