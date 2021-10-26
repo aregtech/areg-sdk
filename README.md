@@ -222,11 +222,11 @@ In this example services can be merged in one thread or distributed in 2 process
 
 #### Driverless devices
 
-Normally, the devices are supplied with the drivers to install in the system and with the header files to integrate in the application(s). The drivers often run in Kernel mode, where the crash of the driver crashes the entire system. Driver development requires special technique, which is different for each operating system, and it is hard to debug. 
+Normally, the devices are supplied with the drivers to install in the system and with the header files to integrate in the application(s). The drivers often run in Kernel mode and the crash of the driver crashes the entire system. Driver development requires special technique, which is different for each operating system, and it is hard to debug. 
 <br><a href="/docs/img/driver-solution.png"><img src="/docs/img/driver-solution.png" alt="Kkernel-mode driver solution" style="width:70%;height:70%"/></a><br>
 Our proposal is to deliver driverless service enabled devices, where device specific services are described in the interface prototype documents. 
 <br><a href="/docs/img/driverless-solution.png"><img src="/docs/img/driverless-solution.png" alt="AREG SDK driverless solution" style="width:70%;height:70%"/></a><br>
-In contrast to drivers, the service development does not differ from any user mode application development, it is faster to develop, easily serves multiple applications (service clients), contains less risks and requires less development resources. The service interface client base objects are generated from supplied prototype documents that can be used by developers in application to communicate with device service(s).
+In contrast to drivers, the service development does not differ from user mode application development, it is faster to develop, easily serves multiple applications (service clients), contains less risks and requires less development resources. The client object generated from supplied service interface prototype document is easily integrated in application to communicate and trigger device specific service(s).
 
 #### Real-time solutions
 
@@ -235,7 +235,7 @@ When a remote method of the service interface is called, the engine of AREG SDK 
 
 #### Digital twin
 
-Often, the digital twin applications use client-server architecture, where the middleware server collects the data of external devices and the UI application virtualizes them. In such solutions devices interact either through server or UI client application. The event-driven and the service-oriented architecture, and the real-time communication of AREG SDK is a perfect solution to develop digital twin applications that virtualize, monitor and control external devices, and immediately react to environment or device state change in real-time mode. External devices may communicate without additional layer, which is an important factor for emergency, security and safety cases.
+Often, the digital twin applications use client-server architecture, where the middleware server collects the data of external devices and the UI application virtualizes them. In such solutions devices interact either through server or UI client application. The event-driven and the service-oriented architecture, and the real-time communication of AREG SDK is a perfect solution to develop digital twin applications that virtualize, monitor and control external devices, and immediately react to environment or device state change in real-time mode. External devices may also communicate without additional layer, which is an important factor for emergency, security and safety cases.
 
 #### Simulation and test automations
 
@@ -249,7 +249,7 @@ The same technique of simulating data can be used to create API driven test auto
 
 ## Examples[![](./docs/img/pin.svg)](#examples)
 
-There are various [examples](./examples/) to demonstrate features of the AREG framework. The examples are listed in the [examples/README.md](./examples/README.md) document.
+There are various [examples](./examples/) to demonstrate features of the AREG SDK. The examples are listed in the [examples/README.md](./examples/README.md) document.
 
 ---
 
@@ -263,7 +263,7 @@ For commercial license, support or additional information, please visit [Aregtec
 
 ## Call for action[![](./docs/img/pin.svg)](#call-for-action)
 
-Do you like the project, have more ideas or need features? You are welcomed to join the project. To join the development team, please prepare an introduction and code examples. Please also share the project with your connections on [![Twitter](https://img.shields.io/twitter/url?label=Twitter&style=social&url=https%3A%2F%2Fgithub.com%2Faregtech%2Fareg-sdk)](https://twitter.com/intent/tweet?text=Wow:&url=https%3A%2F%2Fgithub.com%2Faregtech%2Fareg-sdk) and other social media platforms. [![Star the project](https://img.shields.io/github/stars/aregtech/areg-sdk.svg?style=social&label=Star%20the%20project)](https://github.com/aregtech/areg-sdk/) on GitHub to inspire us for further development of technology, because we'll feel useful and motivated to develop more!
+Do you like the project, have new ideas or need features? You are welcomed to join the project. To join the development team, please prepare an introduction and code examples. Please also share the project with your connections on [![Twitter](https://img.shields.io/twitter/url?label=Twitter&style=social&url=https%3A%2F%2Fgithub.com%2Faregtech%2Fareg-sdk)](https://twitter.com/intent/tweet?text=Wow:&url=https%3A%2F%2Fgithub.com%2Faregtech%2Fareg-sdk) and other social media platforms. [![Star AREG SDK](https://img.shields.io/github/stars/aregtech/areg-sdk.svg?style=social&label=Star%20AREG%20SDK)](https://github.com/aregtech/areg-sdk/) on GitHub to inspire us to development the technology with heart! We'll feel useful and motivated to develop more.
 
 ---
 
