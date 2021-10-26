@@ -64,23 +64,23 @@ Since data is generated and collected at the edge of the network (mist network),
 
 ## More than embedded[![](./docs/img/pin.svg)](#more-than-embedded)
 
-When we were designing AREG SDK, the guiding principle was to provide homogeneous solution for multithreading, multiprocessing and internet communication wrapped in services appropriately having _Local_, _Public_ and _Internet_ categories. These services are neither processes, nor tasks managed by the operating system, they are software components with predefined interface, which methods are invoked remotely. This concept simplifies software architecture with complex communication.
+When we were designing AREG SDK, the guiding principle was to provide homogeneous solution for multithreading, multiprocessing and internet communication wrapped in services appropriately having _Local_, _Public_ and _Internet_ categories. These services are neither processes, nor tasks managed by the operating system, they are software components with predefined interface, which methods are invoked remotely.
 <br><a href="docs/img/areg-services.png"><img src="docs/img/areg-services.png" alt="AREG SDK distributed services" style="width:70%;height:70%"/></a><br>
 > 💡 In current version, the AREG engine handles multithreading (_Local_) and multiprocessing (_Public_) communication. 
 
-The AREG engine forms a fault tolerant system, discovers services and automates communication, simplifies distributed programming, and helps developers to focus on application business logic as if they would program a single process application with one thread where methods of objects are event-driven. The engine guaranties that:
+The AREG engine forms a fault tolerant system, automatically discovers services, automates communication, simplifies distributed programming, and helps developers to focus on application business logic as if they would program a single process application with one thread where methods of objects are event-driven. The engine guaranties that:
 * The crash of one application does not cause the crash of the system.
-* The service clients are automatically notified about service availability and connection.
-* The requests called by service clients are automatically invoked to be executed on service components.
-* The service responses are automatically invoked on the exact client side, and they are not mixed or missed.
-* The subscriptions on data change, on response and broadcast are automatically invoked on client side when service triggers a call.
+* The service clients are automatically notified about service availability status.
+* The client requests are automatically invoked to run on service component.
+* The service responses are automatically invoked on the exact client, and they are not mixed or missed.
+* The subscriptions on data, responses and broadcasts are automatically invoked on client when service triggers a call.
 
 ---
 
 ## Composition[![](./docs/img/pin.svg)](#composition)
 
 AREG SDK consists of:
-1. [Multicast router (_mcrouter_)](./framework/mcrouter/) to use in IPC. It runs either as a service managed by the OS or as a console application.
+1. [Multicast router (_mcrouter_)](./framework/mcrouter/) to use for IPC. It runs either as a service managed by the OS or as a console application.
 2. [AREG framework (or engine)](./framework/areg/) is a library (shared or static) linked in every application.
 3. [Code generator tool](./tools/) to create client and server base objects from a service prototype document.
 
@@ -127,10 +127,10 @@ _Compile AREG SDK sources and examples:_
 |**Windows**| Open `areg-sdk.sln` file in _MS Visual Studio_ (VS2019 and higher) to compile with Win32 API.|
 |**Linux**| Open gnome-terminal in Linux and call “_make_” to compile with POSIX API.|
 
-> 💡 The compilation for each platform does not require special changes, except if compile with _Elipse_ for Windows. There might be a need to switch to appropriate Toolchain. For example, switch to `Cygwin GCC`.<br>
-> 💡 Under Linux, make sure you have at least C++17 `g++` compiler (default). Otherwise, set your prefered C++17 compiler in [conf/make/user.mk](./conf/make/user.mk) file.
+> 💡 Compilaton with _Elipse_ under Windows might need to switch the Toolchain. For example, switch to `Cygwin GCC`.<br>
+> 💡 For Linux the default compiler is `g++`. Set prefered C++17 compiler in [conf/make/user.mk](./conf/make/user.mk) file.
 
-For details on how to change compiler, load and compile sources with various compilers and for various targets see [HOWTO](./docs/HOWTO.md).
+Details on how to change compiler, load and compile sources for various targets are described in [HOWTO](./docs/HOWTO.md).
 
 ---
 
@@ -138,16 +138,16 @@ For details on how to change compiler, load and compile sources with various com
 
 #### Mulitcast router
 
-Configure [_router.init_](./framework/areg/resources/router.init) file to set IP-address and the port number of the multicast router:
+Configure [_router.init_](./framework/areg/resources/router.init) file to set the IP-address and the port of _multicast router_:
 ```
 connection.address.tcpip    = 127.0.0.1	# the address of mcrouter host
 connection.port.tcpip       = 8181      # the connection port of mcrouter
 ```
-The multicast router forms the network and can run on any device. For example, in case of M2M can run on gateway, in case of IPC can run on the same machine. In case of multithreading application development the configuration of `router.init` can be ignored, because _mcrouter_ is not involved.
+The multicast router forms the network and can run on any device. For example, in case of M2M can run on a gateway, in case of IPC can run on the same machine. In case of multithreading application development there is no need to configure `router.init` and run _mcrouter_.
 
 #### Logging service
 
-Configure [_log.init_](./framework/areg/resources/log.init) to specify scopes, log priorities and log file name:
+Configure [_log.init_](./framework/areg/resources/log.init) to set scopes, log priorities and log file name:
 ```
 log.file        = %home%/logs/%appname%_%time%.log # create logs in 'log' subfolder of user home 
 scope.mcrouter.*= NOTSET ;                         # disable logs for mcrouter.
@@ -156,23 +156,25 @@ scope.my_app.*                   = DEBUG | SCOPE ; # enable all logs of my_app
 scope.my_app.ignore_this_scope   = NOTSET ;        # disable logs of certain scopes in my_app
 scope.my_app.ignore_this_group_* = NOTSET ;        # disable logs of certain scope group in my_app
 ```
-> 💡 By default, the _router.init_ and _log.init_ files are located in _config_ subfolder of binaries.<br>
-> 💡 To enable all logs of all applications, use ```scope.*  = DEBUG | SCOPE ;``` .<br>
-> 💡 In current version the logging is possible only in the file.
+> 💡 By default, the `router.init` and `log.init` files are located in the `config` subfolder of binaries.<br>
+> 💡 To enable all logs of all applications, use `scope.*  = DEBUG | SCOPE ;` .<br>
+> 💡 In the current version the logging is possible only in file.
 
 ### Development
 
-The development guidance and step-by-step example of test project you find in [DEVELOP](./docs/DEVELOP.md) document.
+The development guidance and step-by-step example to create a simple service enabled application are described in [DEVELOP](./docs/DEVELOP.md).
 
 ---
 
 ## Use cases and benefits[![](./docs/img/pin.svg)](#use-cases-and-benefits)
 
-AREG SDK can be used in a very large scopes of multithreading or multiprocessing application development running on Linux or Windows machines.
+AREG SDK can be used in a very large scopes of multithreading and multiprocessing application development running on Linux or Windows machines.
 
 #### Distributed solution
 
-AREG SDK provides a lightweight distributed computing solution where the services can be distributed and run on any node of the network, and the application architects can easily distribute the computing power between processes. The automatic service discovery makes service location transparent, so that the applications interact as if the components are located in one process. Developers need to define at least one dynamic or static _model_, which is a description of service relationship, and it is used to load and start services during runtime. The following is a demonstration of a static _model_ that is loaded when application starts and unloaded when application exits `int main()`. This starts and stops services described in the _model_.
+AREG SDK is a distributed computing solution, where the services can be distributed and run on any node of the network. The automatic service discovery makes service location transparent, so that the applications interact as if the components are located in one process. Developers define a _model_, which is a description of service relationship, and load it to start services during runtime. The services can easily be distributed between multiple processes.
+
+The following is a demonstration of a static _model_ descriptions, which is loaded to start services and unloaded to stop them.
 ```cpp
 // main.cpp source file.
 
@@ -214,9 +216,9 @@ int main()
     return 0;
 }
 ```
-In the example, the `"RemoveRegistry"` and the `"SystemShudown"` are the names of components called _roles_, and the `NERemoteRegistry::ServiceName` and the `NESystemShutdown::ServiceName` are the _interface names_. In combination, they define the _service name_, which is used to access in the network. These MACRO create static _model_ `NECommon::ModelName`. The _model_ is loaded and services are started when call `Application::loadModel(NECommon::ModelName)`, and the services are stopped when call `Application::unloadModel(NECommon::ModelName)`.
+In the example, the `"RemoveRegistry"` and the `"SystemShudown"` are the names of components called _roles_, and the `NERemoteRegistry::ServiceName` and the `NESystemShutdown::ServiceName` are the _interface names_. In combination, they define the _service name_ used to access in the network. These MACRO create static _model_ `NECommon::ModelName`, which is loaded when call `Application::loadModel(NECommon::ModelName)`, and the services are stopped when call `Application::unloadModel(NECommon::ModelName)`.
 
-In this example services can be merged in one thread, or in case of the _Public_ services they can be split and distributed in 2 processes, where every process contains a _model_ to load. Independent on service location, neither software developers, nor service client objects feel difference except possible slight network latency when run IPC. The services must have unique names within the scope of service visibility. Means, in case of _Public_ services, the names must be unique within a network, and in case of _Local_ services, the names must unique within a process scope. An example of developing service and client that can be split in multiple processes or merged in one thread is in [**Hello Service!**](./docs/DEVELOP.md#hello-service) project described in development guide.
+In this example services can be merged in one thread or distributed in 2 processes by defining a _model_ in each process. Independent on service location, neither software developers, nor service client objects feel difference except possible slight network latency when run IPC. The services must have unique names within the scope of visibility. Means, in case of _Public_ services, the names are unique within a network, and in case of _Local_ services, the names are unique within a process scope. An example of developing a service and a client in one and multiple processes is in [**Hello Service!**](./docs/DEVELOP.md#hello-service) project described in development guide.
 
 #### Driverless devices
 
