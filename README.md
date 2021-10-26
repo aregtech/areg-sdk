@@ -270,4 +270,6 @@ Do you like the project, have more ideas or need features? You are welcomed to j
 [![Follow us on LinkedIn](https://img.shields.io/badge/LinkedIn-Aregtech-blue?style=flat&logo=linkedin&logoColor=b0c0c0&labelColor=363D44)](https://www.linkedin.com/company/aregtech) [![Join the chat at https://gitter.im/areg-sdk/community](https://badges.gitter.im/areg-sdk/community.svg)](https://gitter.im/areg-sdk/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 Since 20 Oct. 2021 ![Viewers](https://gpvc.arturio.dev/aregtech)
+
+[![AwesomeCode Status for aregtech/areg-sdk](https://awesomecode.io/projects/70a9a040-1af4-43c9-a236-ba232453eff8/status)](https://awesomecode.io/repos/aregtech/areg-sdk)
 <!-- markdownlint-enable -->
