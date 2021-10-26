@@ -271,5 +271,4 @@ Do you like the project, have more ideas or need features? You are welcomed to j
 
 Since 20 Oct. 2021 ![Viewers](https://gpvc.arturio.dev/aregtech)
 
-[![AwesomeCode Status for aregtech/areg-sdk](https://awesomecode.io/projects/70a9a040-1af4-43c9-a236-ba232453eff8/status)](https://awesomecode.io/repos/aregtech/areg-sdk)
 <!-- markdownlint-enable -->
