@@ -127,7 +127,7 @@ _Compile AREG SDK sources and examples:_
 |**Windows**| Open `areg-sdk.sln` file in _MS Visual Studio_ (VS2019 and higher) to compile with Win32 API.|
 |**Linux**| Open gnome-terminal in Linux and call “_make_” to compile with POSIX API.|
 
-> 💡 Compilation with _Eclipse_ under Windows might need to switch the Toolchain. For example, switch to `Cygwin GCC`.<br>
+> 💡 Compilation with _Eclipse_ under Windows might require to switch the Toolchain. For example, `Cygwin GCC`.<br>
 > 💡 For Linux the default compiler is `g++`. Set prefered C++17 compiler in [conf/make/user.mk](./conf/make/user.mk) file.
 
 Details on how to change compiler, load and compile sources for various targets are described in [HOWTO](./docs/HOWTO.md).
