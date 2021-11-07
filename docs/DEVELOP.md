@@ -536,16 +536,16 @@ void ServiceComponent::DeleteComponent(Component & compObject, const NERegistry:
 
 ServiceComponent::ServiceComponent(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
     : Component         ( owner, entry.mRoleName)
-    , HelloServiceStub    ( static_cast<Component &>(self()) )
+    , HelloServiceStub  ( static_cast<Component &>(self()) )
 {
 }
 
 void ServiceComponent::requestHelloService(const String & client)
 {
     // output message
-    printf("Hello world of %s!!!\n", client.getString());
+    printf("\'Hello Service!\' from %s\n", client.getString());
 
-    // reply to release the request
+    // reply to unblock the request
     responseHelloService(true);
 }
 ```
@@ -718,17 +718,17 @@ bool ClientComponent::serviceConnected(bool isConnected, ProxyBase & proxy)
     {
         if (isConnected)
         {
-            // Up from this part the client
-            //  - can send requests
-            //  - can subscribe to data, broadcasts and responses.
+            // Up from this part the client can:
+            //      a. call requests to run on server side.
+            //      b. subscribe on data update notification
+            //      c. subscribe on broadcasts and responses.
 
-            // call request
+            // call request to run on server side.
             requestHelloService( getRoleName() );
         }
         else
         {
-            // Make cleanups, release subscription here.
-            // Since we've lost connection, exit client
+            // No connection, make cleanups, release subscription here, signal to quit application.
             Application::signalAppQuit();
         }
     }
@@ -740,16 +740,19 @@ void ClientComponent::responseHelloService( bool success )
 {
     printf("%s to output message.\n", success ? "succeeded" : "failed");
 
-    // The client completed the job, set signal to exit application
-    // sleep for a while before exit application.
-    Thread::sleep(NECommon::WAIT_500_MILLISECONDS);
+    // Sleep for no reason! Do not do this in a real application.
+    // It is done to give chance to see output message on console.
+    // Otherwise, the next line of code close the application and yuo miss the message on console.
+    Thread::sleep(NECommon::WAIT_1_SECOND);
+
+    // The client completed the job, set signal to quit application
     Application::signalAppQuit();
 }
 
 void ClientComponent::requestHelloServiceFailed(NEService::eResultType FailureReason)
 {
     // make error handling here.
-    printf("Failed to execute request, retry again.");
+    printf("Failed to execute request, retry again.\n");
     if (isConnected())
     {
         // the service is still connected, and can resend the request.
@@ -800,7 +803,7 @@ This example demonstrates how to instantiate service and client in **one thread*
 // It links with areg library (dynamic or static) and generated static library
 #ifdef WINDOWS
     #pragma comment(lib, "areg")
-    #pragma comment(lib, "generated.lib")
+    #pragma comment(lib, "00_generated.lib")
 #endif // WINDOWS
 
 namespace
@@ -817,11 +820,11 @@ const std::string   _client( NEUtilities::generateName("ServiceClient").getStrin
 BEGIN_MODEL(_modelName)
 
     BEGIN_REGISTER_THREAD( "Thread1" )
-        // register service
+        // register service in the thread
         BEGIN_REGISTER_COMPONENT( _service, ServiceComponent )
             REGISTER_IMPLEMENT_SERVICE( NEHelloService::ServiceName, NEHelloService::InterfaceVersion )
         END_REGISTER_COMPONENT( _service )
-        // register client
+        // register client in the same thread
         BEGIN_REGISTER_COMPONENT( _client.c_str(), ClientComponent )
             REGISTER_DEPENDENCY( _service ) /* reference to the service*/
         END_REGISTER_COMPONENT( _client )
@@ -878,7 +881,7 @@ This example demonstrates how to instantiate service and client in **two threads
 // It links with areg library (dynamic or static) and generated static library
 #ifdef WINDOWS
     #pragma comment(lib, "areg")
-    #pragma comment(lib, "generated.lib")
+    #pragma comment(lib, "00_generated.lib")
 #endif // WINDOWS
 
 namespace
@@ -893,14 +896,14 @@ const std::string   _client( NEUtilities::generateName("ServiceClient").getStrin
 
 // Describe model, register the service and the client in 2 different threads "Thread1" and "Thread2"
 BEGIN_MODEL(_modelName)
-    // Thread 1, service
+    // Thread 1, provides a service
     BEGIN_REGISTER_THREAD( "Thread1" )
         BEGIN_REGISTER_COMPONENT( _service, ServiceComponent )
             REGISTER_IMPLEMENT_SERVICE( NEHelloService::ServiceName, NEHelloService::InterfaceVersion )
         END_REGISTER_COMPONENT( _service )
     END_REGISTER_THREAD( "Thread1" )
 
-    // Thread 2, client
+    // Thread 2, is a client / service consumer.
     BEGIN_REGISTER_THREAD( "Thread2" )
         BEGIN_REGISTER_COMPONENT( _client.c_str(), ClientComponent )
             REGISTER_DEPENDENCY( _service ) /* reference to the service*/
@@ -960,7 +963,7 @@ In file [./multiprocess/serviceproc/src/main.cpp](./../examples/00_helloservice/
 // It links with areg library (dynamic or static) and generated static library
 #ifdef WINDOWS
     #pragma comment(lib, "areg")
-    #pragma comment(lib, "generated.lib")
+    #pragma comment(lib, "00_generated.lib")
 #endif // WINDOWS
 
 
@@ -972,7 +975,7 @@ constexpr char const _modelName[]   { "ServiceModel" };
 constexpr char const _service[]     { "ServiceComponent" };
 }
 
-// Describe model, register the service in this model
+// Describe model, register the provided service in this model
 BEGIN_MODEL(_modelName)
 
     BEGIN_REGISTER_THREAD( "Thread1" )
@@ -1013,15 +1016,16 @@ In file [./multiprocess/clientproc/src/main.cpp](./../examples/00_helloservice/m
 
 ```cpp
 /**
- * \file    multiprocess/serviceproc/src/main.cpp
- * \brief   Runs service in the process.
+ * \file    multiprocess/clientproc/src/main.hpp
+ * \brief   Runs service and the client in one thread.
  **/
+
 #include "areg/base/GEGlobal.h"
 #include "areg/base/NEUtilities.hpp"
 #include "areg/appbase/Application.hpp"
 #include "areg/component/ComponentLoader.hpp"
 
-#include "common/src/ServiceComponent.hpp"
+#include "common/src/ClientComponent.hpp"
 
 #include <string>
 
@@ -1029,7 +1033,7 @@ In file [./multiprocess/clientproc/src/main.cpp](./../examples/00_helloservice/m
 // It links with areg library (dynamic or static) and generated static library
 #ifdef WINDOWS
     #pragma comment(lib, "areg")
-    #pragma comment(lib, "generated.lib")
+    #pragma comment(lib, "00_generated.lib")
 #endif // WINDOWS
 
 
@@ -1039,15 +1043,17 @@ namespace
 constexpr char const _modelName[]   { "ServiceModel" };
 //! Service component role
 constexpr char const _service[]     { "ServiceComponent" };
+//!< Client component name. Let's generate the name for client service, we'll use it later.
+const std::string   _client( NEUtilities::generateName("ServiceClient").getString() );
 }
 
-// Describe model, register the service in this model
+// Describe model, register the service consumer (client)
 BEGIN_MODEL(_modelName)
 
     BEGIN_REGISTER_THREAD( "Thread1" )
-        BEGIN_REGISTER_COMPONENT( _service, ServiceComponent )
-            REGISTER_IMPLEMENT_SERVICE( NEHelloService::ServiceName, NEHelloService::InterfaceVersion )
-        END_REGISTER_COMPONENT( _service )
+        BEGIN_REGISTER_COMPONENT( _client.c_str(), ClientComponent )
+            REGISTER_DEPENDENCY( _service ) /* reference to the service*/
+        END_REGISTER_COMPONENT( _client )
     END_REGISTER_THREAD( "Thread1" )
 
 // end of model description

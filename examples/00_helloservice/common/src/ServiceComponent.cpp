@@ -16,7 +16,7 @@ void ServiceComponent::DeleteComponent(Component & compObject, const NERegistry:
 
 ServiceComponent::ServiceComponent(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
     : Component         ( owner, entry.mRoleName)
-    , HelloServiceStub    ( static_cast<Component &>(self()) )
+    , HelloServiceStub  ( static_cast<Component &>(self()) )
 {
 }
 
@@ -25,6 +25,6 @@ void ServiceComponent::requestHelloService(const String & client)
     // output message
     printf("\'Hello Service!\' from %s\n", client.getString());
 
-    // reply to release the request
+    // reply to unblock the request
     responseHelloService(true);
 }

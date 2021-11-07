@@ -32,17 +32,17 @@ bool ClientComponent::serviceConnected(bool isConnected, ProxyBase & proxy)
     {
         if (isConnected)
         {
-            // Up from this part the client
-            //  - can send requests
-            //  - can subscribe to data, broadcasts and responses.
+            // Up from this part the client can:
+            //      a. call requests to run on server side.
+            //      b. subscribe on data update notification
+            //      c. subscribe on broadcasts and responses.
 
-            // call request
+            // call request to run on server side.
             requestHelloService( getRoleName() );
         }
         else
         {
-            // Make cleanups, release subscription here.
-            // Since we've lost connection, exit client
+            // No connection, make cleanups, release subscription here, signal to quit application.
             Application::signalAppQuit();
         }
     }
@@ -54,16 +54,19 @@ void ClientComponent::responseHelloService( bool success )
 {
     printf("%s to output message.\n", success ? "succeeded" : "failed");
 
-    // The client completed the job, set signal to exit application
-    // sleep for a while before exit application.
-    Thread::sleep(NECommon::WAIT_500_MILLISECONDS);
+    // Sleep for no reason! Do not do this in a real application.
+    // It is done to give chance to see output message on console.
+    // Otherwise, the next line of code close the application and yuo miss the message on console.
+    Thread::sleep(NECommon::WAIT_1_SECOND);
+
+    // The client completed the job, set signal to quit application
     Application::signalAppQuit();
 }
 
 void ClientComponent::requestHelloServiceFailed(NEService::eResultType FailureReason)
 {
     // make error handling here.
-    printf("Failed to execute request, retry again.");
+    printf("Failed to execute request, retry again.\n");
     if (isConnected())
     {
         // the service is still connected, and can resend the request.

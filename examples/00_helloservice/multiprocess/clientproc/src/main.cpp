@@ -30,7 +30,7 @@ constexpr char const _service[]     { "ServiceComponent" };
 const std::string   _client( NEUtilities::generateName("ServiceClient").getString() );
 }
 
-// Describe model, register the service and the client in one thread "Thread1"
+// Describe model, register the service consumer (client)
 BEGIN_MODEL(_modelName)
 
     BEGIN_REGISTER_THREAD( "Thread1" )
