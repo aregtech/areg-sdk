@@ -33,11 +33,11 @@ const std::string   _client( NEUtilities::generateName("ServiceClient").getStrin
 BEGIN_MODEL(_modelName)
 
     BEGIN_REGISTER_THREAD( "Thread1" )
-        // register service
+        // register service in the thread
         BEGIN_REGISTER_COMPONENT( _service, ServiceComponent )
             REGISTER_IMPLEMENT_SERVICE( NEHelloService::ServiceName, NEHelloService::InterfaceVersion )
         END_REGISTER_COMPONENT( _service )
-        // register client
+        // register client in the same thread
         BEGIN_REGISTER_COMPONENT( _client.c_str(), ClientComponent )
             REGISTER_DEPENDENCY( _service ) /* reference to the service*/
         END_REGISTER_COMPONENT( _client )

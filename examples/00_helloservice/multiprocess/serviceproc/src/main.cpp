@@ -27,7 +27,7 @@ constexpr char const _modelName[]   { "ServiceModel" };
 constexpr char const _service[]     { "ServiceComponent" };
 }
 
-// Describe model, register the service in this model
+// Describe model, register the provided service in this model
 BEGIN_MODEL(_modelName)
 
     BEGIN_REGISTER_THREAD( "Thread1" )

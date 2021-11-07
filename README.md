@@ -93,7 +93,7 @@ The framework contains a dynamic and configurable logging service. More tools an
 An example to get source codes and compile under **Linux**. You'd need at least C++17 `g++` (default) compiler. Open _Terminal_ console in your `projects` folder and make following steps:
 ```shell
 # Step 1: Get sources from GitHub
-$ git clone https://github.com/aregtech/areg-sdk.git ./
+$ git clone https://github.com/aregtech/areg-sdk.git
 $ cd areg-sdk
 ```
 ```shell
