@@ -7,6 +7,8 @@ set(CMAKE_CONFIG_DIR "${AREG_SDK_ROOT}/conf/cmake")
 set(AREG_BASE "${AREGE_SDK_ROOT}/framework")
 set(AREG_EXAMPLES "${AREGE_SDK_ROOT}/examples")
 
+include("${CMAKE_CONFIG_DIR}/common.cmake")
+
 # Project's properties
 set(PROJECT_NAME "AREG-SDK")
 set(PROJECT_VERSION "1.1.0")
