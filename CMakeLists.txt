@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.18.0)
+cmake_minimum_required(VERSION 3.16.0)
 
 # Areg root directory
 set(CMAKE_ROOT_FILE "${CMAKE_SOURCE_DIR}")
