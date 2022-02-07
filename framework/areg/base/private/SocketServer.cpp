@@ -37,7 +37,7 @@ bool SocketServer::createSocket(void)
     decreaseLock();
     if ( mAddress.isValid() )
     {
-    	SOCKETHANDLE hSocket = NESocket::serverSocketConnect(static_cast<const char *>(mAddress.getHostAddress()), mAddress.getHostPort());
+        SOCKETHANDLE hSocket = NESocket::serverSocketConnect(mAddress.getHostAddress().c_str(), mAddress.getHostPort());
         if ( hSocket != NESocket::InvalidSocketHandle )
         {
             mSocket = std::make_shared<SOCKETHANDLE>( hSocket );

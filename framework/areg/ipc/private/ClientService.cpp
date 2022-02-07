@@ -668,7 +668,7 @@ void ClientService::processReceivedMessage( const RemoteMessage & msgReceived, c
     }
     else
     {
-        TRACE_WARN("Invalid message from host [ %s : %u ], ignore processing", addrHost.getHostAddress().getString(), addrHost.getHostPort());
+        TRACE_WARN("Invalid message from host [ %s : %u ], ignore processing", addrHost.getHostAddress().c_str(), addrHost.getHostPort());
     }
 }
 

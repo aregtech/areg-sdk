@@ -37,7 +37,7 @@ int SocketConnectionBase::sendMessage(const RemoteMessage & in_message, const So
                         , static_cast<id_type>(in_message.getSource())
                         , static_cast<id_type>(in_message.getTarget())
                         , static_cast<unsigned int>(clientSocket.getHandle())
-                        , clientSocket.getAddress().getHostAddress().getString()
+                        , clientSocket.getAddress().getHostAddress().c_str()
                         , clientSocket.getAddress().getHostPort()
                         , buffer.rbhBufHeader.biBufSize
                         , buffer.rbhBufHeader.biUsed
