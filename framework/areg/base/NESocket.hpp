@@ -284,13 +284,13 @@ namespace NESocket
      *          Creates client TCP/IP socket and connect to specified remote host name and port number.
      *          The host name can be either numeric IP-address or human readable host name to resolve.
      *          If passed out_socketAddr pointer is not nullptr, on output it will contain readable
-     *          numeric IP-address with dots and port number (IP-address like "123.45.678.90"
+     *          numeric IP-address with dots and port number (IP-address like "123.45.67.89"
      * \param   hostName    The host name or IP_address of remote server to connect.
      * \param   portNr      The port number to connect. This should be valid port number.
      * \return  Returns valid socket descriptor, if could create socket and connect to remote peer.
      *          Otherwise, it returns NESocket::InvalidSocketHandle value.
      **/
-    AREG_API SOCKETHANDLE clientSocketConnect( const std::string_view & hostName, unsigned short portNr, NESocket::SocketAddress * out_socketAddr = nullptr );
+    AREG_API SOCKETHANDLE clientSocketConnect( const std::string & hostName, unsigned short portNr, NESocket::SocketAddress * out_socketAddr = nullptr );
 
     /**
      * \brief   NESocket::serverSocketConnect

@@ -317,11 +317,11 @@ AREG_API int NESocket::getMaxReceiveSize( SOCKETHANDLE hSocket )
     return static_cast<int>(maxData);
 }
 
-AREG_API SOCKETHANDLE NESocket::clientSocketConnect(const std::string_view & hostName, unsigned short portNr, NESocket::SocketAddress * out_socketAddr /*= nullptr*/)
+AREG_API SOCKETHANDLE NESocket::clientSocketConnect(const std::string & hostName, unsigned short portNr, NESocket::SocketAddress * out_socketAddr /*= nullptr*/)
 {
     TRACE_SCOPE(areg_base_NESocket_clientSocketConnect);
 
-    const char * host = hostName.empty() ? hostName.data() : NESocket::LocalHost.data();
+    const char * host = hostName.empty() ? hostName.c_str() : NESocket::LocalHost.data();
 
     TRACE_DBG("Creating client socket to connect remote host [ %s ] and port number [ %u ]", host, static_cast<unsigned int>(portNr));
 
