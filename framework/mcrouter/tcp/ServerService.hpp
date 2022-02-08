@@ -447,36 +447,38 @@ inline ServerService & ServerService::self( void )
 
 inline bool ServerService::isAddressInWhiteList(const NESocket::SocketAddress & addrClient) const
 {
-    return (mWhiteList.isEmpty() == false ? mWhiteList.find(addrClient.getHostAddress()) != -1 : false);
+    return (mWhiteList.isEmpty() == false ? mWhiteList.find(String(addrClient.getHostAddress().c_str())) != -1 : false);
 }
 
 inline bool ServerService::isAddressInBlackList(const NESocket::SocketAddress & addrClient) const
 {
-    return mBlackList.isEmpty() == false ? mBlackList.find(addrClient.getHostAddress()) != -1 : false;
+    return mBlackList.isEmpty() == false ? mBlackList.find(String(addrClient.getHostAddress().c_str())) != -1 : false;
 }
 
 inline void ServerService::addWhiteList(const NESocket::SocketAddress & addrClient)
 {
-    if ( mWhiteList.find(addrClient.getHostAddress()) == -1 )
+    const auto hostAddr = addrClient.getHostAddress().c_str();
+    if ( mWhiteList.find(hostAddr) == -1 )
     {
-        mWhiteList.add(addrClient.getHostAddress());
+        mWhiteList.add(hostAddr);
     }
 }
 
 inline void ServerService::addBlackList(const NESocket::SocketAddress & addrClient)
 {
-    if ( mBlackList.find(addrClient.getHostAddress()) == -1 )
+    const auto hostAddr = addrClient.getHostAddress().c_str();
+    if ( mBlackList.find(hostAddr) == -1 )
     {
-        mBlackList.add(addrClient.getHostAddress());
+        mBlackList.add(hostAddr);
     }
 }
 
 inline void ServerService::removeWhiteList(const NESocket::SocketAddress & addrClient)
 {
-    mWhiteList.remove( addrClient.getHostAddress(), 0);
+    mWhiteList.remove(String(addrClient.getHostAddress().c_str()), 0);
 }
 
 inline void ServerService::removeBlackList(const NESocket::SocketAddress & addrClient)
 {
-    mBlackList.remove( addrClient.getHostAddress(), 0);
+    mBlackList.remove(String(addrClient.getHostAddress().c_str()), 0);
 }

@@ -224,7 +224,7 @@ bool NESocket::SocketAddress::resolveAddress( const std::string_view & hostName,
 #if defined(_MSC_VER) && (_MSC_VER >= 1800)
                     char ipAddr[32] = { 0 };
                     mIpAddr = inet_ntop( AF_INET, &addrIn->sin_addr, ipAddr, 32 );
-                    result  = mIpAddr.isEmpty() == false;
+                    result  = mIpAddr.empty() == false;
 #else   // (_MSC_VER >= 1800)
                     mIpAddr = inet_ntoa(addrIn->sin_addr);
                     result = true;

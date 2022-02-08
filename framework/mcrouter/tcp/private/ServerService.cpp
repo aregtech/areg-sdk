@@ -185,7 +185,7 @@ void ServerService::connectionLost( SocketAccepted & clientSocket )
     TRACE_WARN("Client lost connection: cookie [ %u ], socket [ %d ], host [ %s : %d ], closing connection"
                 , static_cast<uint32_t>(cookie)
                 , clientSocket.getHandle()
-                , clientSocket.getAddress().getHostAddress().getString()
+                , clientSocket.getAddress().getHostAddress().c_str()
                 , clientSocket.getAddress().getHostPort());
 
     mServerConnection.closeConnection(clientSocket);
@@ -404,7 +404,7 @@ bool ServerService::startConnection(void)
 {
     TRACE_SCOPE(mcrouter_tcp_private_ServerService_startConnection);
     TRACE_DBG("Going to start connection. Address [ %u ], port [ %d ]"
-                , mServerConnection.getAddress().getHostAddress().getString()
+                , mServerConnection.getAddress().getHostAddress().c_str()
                 , mServerConnection.getAddress().getHostPort());
 
 
@@ -494,7 +494,7 @@ void ServerService::registerRemoteStub(const StubAddress & stub)
         if ( stubService.getServiceStatus() == NEService::eServiceConnection::ServiceConnected && listProxies.isEmpty() == false )
         {
             TRACE_DBG("Stub [ %s ] is connected, sending notification messages to [ %d ] waiting proxies"
-                        , StubAddress::convAddressToPath(stubService.getServiceAddress()).getString()
+                        , StubAddress::convAddressToPath(stubService.getServiceAddress())
                         , listProxies.getSize());
             
             TEArrayList<ITEM_ID> sendList;
@@ -765,7 +765,7 @@ void ServerService::processReceivedMessage(const RemoteMessage & msgReceived, co
                         , static_cast<uint32_t>(msgId)
                         , static_cast<uint32_t>(source)
                         , static_cast<uint32_t>(cookie)
-                        , addrHost.getHostAddress().getString()
+                        , addrHost.getHostAddress().c_str()
                         , static_cast<int>(addrHost.getHostPort())
                         , static_cast<id_type>(target));
 
