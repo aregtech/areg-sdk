@@ -63,7 +63,7 @@ bool ServerReceiveThread::runDispatcher(void)
                         clientSocket = mConnection.getClientByHandle( hSocket );
                         TRACE_DBG("Received connection event of socket [ %u ], client [ %s : %d ]"
                                             , hSocket
-                                            , clientSocket.getAddress().getHostAddress().getString()
+                                            , clientSocket.getAddress().getHostAddress().c_str()
                                             , clientSocket.getAddress().getHostPort());
                     }
                     else
@@ -73,7 +73,7 @@ bool ServerReceiveThread::runDispatcher(void)
                         {
                             TRACE_DBG("Accepting new connection of socket [ %u ], client [ %s : %d ]"
                                             , hSocket
-                                            , addrAccepted.getHostAddress().getString()
+                                            , addrAccepted.getHostAddress().c_str()
                                             , addrAccepted.getHostPort());
                             
                             mConnection.acceptConnection(clientSocket);
@@ -82,7 +82,7 @@ bool ServerReceiveThread::runDispatcher(void)
                         {
                             TRACE_WARN("Rejecting new connection of socket [ %u ], client [ %s : %d ]"
                                             , hSocket
-                                            , addrAccepted.getHostAddress().getString()
+                                            , addrAccepted.getHostAddress().c_str()
                                             , addrAccepted.getHostPort());
                             
                             mConnection.rejectConnection(clientSocket);
@@ -97,7 +97,7 @@ bool ServerReceiveThread::runDispatcher(void)
                         TRACE_DBG("Received message [ %p ] from source [ %p ], client [ %s : %d ]"
                                     , static_cast<id_type>(msgReceived.getMessageId())
                                     , static_cast<id_type>(msgReceived.getSource())
-                                    , addSocket.getHostAddress().getString()
+                                    , addSocket.getHostAddress().c_str()
                                     , addSocket.getHostPort());
 
                         mRemoteService.processReceivedMessage(msgReceived, addSocket, clientSocket.getHandle());
@@ -105,7 +105,7 @@ bool ServerReceiveThread::runDispatcher(void)
                     else
                     {
                         TRACE_DBG("Failed to receive message from client socket [ %s : %d ], socket [ %u ]. Going to close connection"
-                                        , addSocket.getHostAddress().getString()
+                                        , addSocket.getHostAddress().c_str()
                                         , addSocket.getHostPort()
                                         , clientSocket.getHandle());
 

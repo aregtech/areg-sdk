@@ -99,13 +99,13 @@ bool NESocket::SocketAddress::getAddress(struct sockaddr_in & out_sockAddr) cons
         NEMemory::memZero(&out_sockAddr, sizeof(out_sockAddr));
         out_sockAddr.sin_family = AF_INET;
         out_sockAddr.sin_port   = htons( mPortNr );
-        if (mIpAddr.isEmpty() == false)
+        if (!mIpAddr.empty())
         {
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1800)
-            result = RETURNED_OK == inet_pton(AF_INET, mIpAddr.getString(), &out_sockAddr.sin_addr);
+            result = RETURNED_OK == inet_pton(AF_INET, mIpAddr.c_str(), &out_sockAddr.sin_addr);
 #else   // (_MSC_VER >= 1800)
-            out_sockAddr.sin_addr.s_addr = inet_addr(mIpAddr.getString());
+            out_sockAddr.sin_addr.s_addr = inet_addr(mIpAddr.c_str());
             result = true;
 #endif  // (_MSC_VER >= 1800)
 
@@ -224,7 +224,7 @@ bool NESocket::SocketAddress::resolveAddress( const std::string_view & hostName,
 #if defined(_MSC_VER) && (_MSC_VER >= 1800)
                     char ipAddr[32] = { 0 };
                     mIpAddr = inet_ntop( AF_INET, &addrIn->sin_addr, ipAddr, 32 );
-                    result  = mIpAddr.isEmpty() == false;
+                    result  = mIpAddr.empty() == false;
 #else   // (_MSC_VER >= 1800)
                     mIpAddr = inet_ntoa(addrIn->sin_addr);
                     result = true;
@@ -317,11 +317,11 @@ AREG_API int NESocket::getMaxReceiveSize( SOCKETHANDLE hSocket )
     return static_cast<int>(maxData);
 }
 
-AREG_API SOCKETHANDLE NESocket::clientSocketConnect(const std::string_view & hostName, unsigned short portNr, NESocket::SocketAddress * out_socketAddr /*= nullptr*/)
+AREG_API SOCKETHANDLE NESocket::clientSocketConnect(const std::string & hostName, unsigned short portNr, NESocket::SocketAddress * out_socketAddr /*= nullptr*/)
 {
     TRACE_SCOPE(areg_base_NESocket_clientSocketConnect);
 
-    const char * host = hostName.empty() ? hostName.data() : NESocket::LocalHost.data();
+    const char * host = hostName.empty() ? hostName.c_str() : NESocket::LocalHost.data();
 
     TRACE_DBG("Creating client socket to connect remote host [ %s ] and port number [ %u ]", host, static_cast<unsigned int>(portNr));
 
@@ -360,7 +360,7 @@ AREG_API SOCKETHANDLE NESocket::clientSocketConnect(const SocketAddress & peerAd
             if ( RETURNED_OK != connect(result, reinterpret_cast<sockaddr *>(&remoteAddr), sizeof(sockaddr_in)))
             {
                 TRACE_ERR("Client failed to connect to remote host [ %s ] and port number [ %u ]. Closing socket [ %u ]"
-                            , static_cast<const char *>(peerAddr.getHostAddress())
+                            , peerAddr.getHostAddress().c_str()
                             , static_cast<unsigned int>(peerAddr.getHostPort())
                             , static_cast<unsigned int>(result));
 
@@ -384,7 +384,7 @@ AREG_API SOCKETHANDLE NESocket::clientSocketConnect(const SocketAddress & peerAd
     }
     else
     {
-        TRACE_ERR("Address [ %s ] or port number [ %u ] is not valid. No client is created", static_cast<const char *>(peerAddr.getHostAddress()), peerAddr.getHostPort());
+        TRACE_ERR("Address [ %s ] or port number [ %u ] is not valid. No client is created", peerAddr.getHostAddress().c_str(), peerAddr.getHostPort());
     }
 
     return result;
@@ -436,7 +436,7 @@ AREG_API SOCKETHANDLE NESocket::serverSocketConnect(const SocketAddress & peerAd
             if ( RETURNED_OK != bind(result, reinterpret_cast<sockaddr *>(&serverAddr), sizeof(sockaddr_in)) )
             {
                 TRACE_ERR("Server failed to bind on host [ %s ] and port number [ %u ]. Closing socket [ %u ]"
-                            , static_cast<const char *>(peerAddr.getHostAddress())
+                            , peerAddr.getHostAddress().c_str()
                             , static_cast<unsigned int>(peerAddr.getHostPort())
                             , static_cast<unsigned int>(result));
 
@@ -448,7 +448,7 @@ AREG_API SOCKETHANDLE NESocket::serverSocketConnect(const SocketAddress & peerAd
             {
                 TRACE_DBG("Server socket [ %u ] succeeded to bind on host [ %s ] and port number [ %u ]. Ready to listen."
                           , static_cast<unsigned int>(result)
-                          , static_cast<const char *>(peerAddr.getHostAddress())
+                          , peerAddr.getHostAddress().c_str()
                           , static_cast<unsigned int>(peerAddr.getHostPort()));
 
             }
@@ -461,7 +461,7 @@ AREG_API SOCKETHANDLE NESocket::serverSocketConnect(const SocketAddress & peerAd
     }
     else
     {
-        TRACE_ERR("Address [ %s ] or port number [ %u ] is not valid. No server is created", static_cast<const char *>(peerAddr.getHostAddress()), peerAddr.getHostPort());
+        TRACE_ERR("Address [ %s ] or port number [ %u ] is not valid. No server is created", peerAddr.getHostAddress().c_str(), peerAddr.getHostPort());
     }
 
     return result;

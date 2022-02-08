@@ -20,6 +20,7 @@
 #include "areg/base/GEGlobal.h"
 #include "areg/base/String.hpp"
 
+#include <string>
 #include <string_view>
 
 /************************************************************************
@@ -153,7 +154,7 @@ namespace NESocket
         /**
          * \brief   Returns IP address of host as readable string.
          **/
-        inline const String & getHostAddress( void ) const;
+        inline const std::string & getHostAddress( void ) const;
 
         /**
          * \brief   Returns port number of host.
@@ -177,7 +178,7 @@ namespace NESocket
         /**
          * \brief   The string containing human readable numeric IP-address.
          **/
-        String          mIpAddr;
+        std::string mIpAddr;
         /**
          * \brief   The port number of socket to connect.
          **/
@@ -283,13 +284,13 @@ namespace NESocket
      *          Creates client TCP/IP socket and connect to specified remote host name and port number.
      *          The host name can be either numeric IP-address or human readable host name to resolve.
      *          If passed out_socketAddr pointer is not nullptr, on output it will contain readable
-     *          numeric IP-address with dots and port number (IP-address like "123.45.678.90"
+     *          numeric IP-address with dots and port number (IP-address like "123.45.67.89"
      * \param   hostName    The host name or IP_address of remote server to connect.
      * \param   portNr      The port number to connect. This should be valid port number.
      * \return  Returns valid socket descriptor, if could create socket and connect to remote peer.
      *          Otherwise, it returns NESocket::InvalidSocketHandle value.
      **/
-    AREG_API SOCKETHANDLE clientSocketConnect( const std::string_view & hostName, unsigned short portNr, NESocket::SocketAddress * out_socketAddr = nullptr );
+    AREG_API SOCKETHANDLE clientSocketConnect( const std::string & hostName, unsigned short portNr, NESocket::SocketAddress * out_socketAddr = nullptr );
 
     /**
      * \brief   NESocket::serverSocketConnect
@@ -440,10 +441,10 @@ namespace NESocket
 
 inline bool NESocket::SocketAddress::isValid( void ) const
 {
-    return ((mIpAddr.isEmpty() == false) && (mPortNr != NESocket::InvalidPort));
+    return ((!mIpAddr.empty()) && (mPortNr != NESocket::InvalidPort));
 }
 
-inline const String & NESocket::SocketAddress::getHostAddress( void ) const
+inline const std::string & NESocket::SocketAddress::getHostAddress() const
 {
     return mIpAddr;
 }

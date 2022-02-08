@@ -53,7 +53,7 @@ void ServerSendThread::processEvent( const SendMessageEventData & data )
         TRACE_DBG("Sending message [ %s ] (ID = [ %u ]) to client [ %s : %d ] of socket [ %u ]. The message sent from source [ %u ] to target [ %u ]"
                     , NEService::getString( static_cast<NEService::eFuncIdRange>(msgSend.getMessageId()) )
                     , static_cast<unsigned int>(msgSend.getMessageId())
-                    , client.getAddress().getHostAddress().getString()
+                    , client.getAddress().getHostAddress().c_str()
                     , client.getAddress().getHostPort()
                     , ((unsigned int)(client.getHandle()))
                     , static_cast<unsigned int>(msgSend.getSource())

@@ -37,10 +37,10 @@ bool SocketClient::createSocket( void )
 
     if ( mAddress.isValid() )
     {
-    	SOCKETHANDLE hSocket = NESocket::clientSocketConnect(static_cast<const char *>(mAddress.getHostAddress()), mAddress.getHostPort());
+        SOCKETHANDLE hSocket = NESocket::clientSocketConnect(mAddress.getHostAddress(), mAddress.getHostPort());
         if ( hSocket != NESocket::InvalidSocketHandle )
         {
-        	mSocket = std::make_shared<SOCKETHANDLE>(hSocket);
+            mSocket = std::make_shared<SOCKETHANDLE>(hSocket);
         }
     }
 
