@@ -92,7 +92,7 @@ int ComponentThread::createComponents( void )
 {
     OUTPUT_DBG("Starting to create components in thread [ %s ].", getName().getString());
     int result = 0;
-    const NERegistry::ComponentList& comList = ComponentLoader::getComponentList(getName());
+    const NERegistry::ComponentList& comList = ComponentLoader::getComponentList(getName().c_str());
     if (comList.isValid())
     {
         for (int i = 0; i < comList.getSize(); ++ i)
@@ -126,7 +126,7 @@ void ComponentThread::destroyComponents( void )
         if (comObj != nullptr)
         {
             OUTPUT_DBG("Destroying component [ %s ] in thread [ %s ]...", comObj->getRoleName().getString(), getName().getString());
-            const NERegistry::ComponentEntry& entry = ComponentLoader::findComponentEntry(comObj->getRoleName(), getName());
+            const NERegistry::ComponentEntry& entry = ComponentLoader::findComponentEntry(comObj->getRoleName(), getName().c_str());
             if (entry.isValid() && entry.mFuncDelete != nullptr)
             {
                 Component::unloadComponent(*comObj, entry);

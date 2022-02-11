@@ -19,13 +19,13 @@
 #include "areg/base/GEGlobal.h"
 #include "areg/base/String.hpp"
 
+#include <string>
 #include <string_view>
 #include <utility>
 
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class IEInStream;
 
 //////////////////////////////////////////////////////////////////////////
 // ThreadAddress class declaration
@@ -133,7 +133,7 @@ public:
     /**
      * \brief   Return thread name.
      **/
-    inline const String & getThreadName( void ) const;
+    inline const std::string & getThreadName( void ) const;
 
     /**
      * \brief   Return true if current object is not equal to INVALID_THREAD_ADDRESS
@@ -148,7 +148,7 @@ public:
      * \param	threadAddress	The thread address object to convert.
      * \return	Returns string of thread path
      **/
-    static String convAddressToPath( const ThreadAddress & threadAddress );
+    static std::string convAddressToPath( const ThreadAddress & threadAddress );
 
     /**
      * \brief	Parses passed path and converts passed path to the Thread Address object.
@@ -174,7 +174,7 @@ public:
      *          <string name> is the name of string.
      * \return  Returns converted path of thread as string.
      **/
-    inline String convToString( void ) const;
+    inline std::string convToString( void ) const;
 
     /**
      * \brief	Parse string and retrieves thread address data from path.
@@ -200,7 +200,7 @@ private:
     /**
      * \brief   The thread name.
      **/
-    String          mThreadName;
+    std::string     mThreadName;
     /**
      * \brief   The calculated number of thread address.
      **/
@@ -230,7 +230,7 @@ inline ThreadAddress & ThreadAddress::operator = ( ThreadAddress && src ) noexce
     return (*this);
 }
 
-inline const String & ThreadAddress::getThreadName( void ) const
+inline const std::string & ThreadAddress::getThreadName( void ) const
 {
     return mThreadName;
 }
@@ -250,7 +250,7 @@ inline ThreadAddress::operator unsigned int( void ) const
     return mMagicNum;
 }
 
-inline String ThreadAddress::convToString(void) const
+inline std::string ThreadAddress::convToString(void) const
 {
     return mThreadName;
 }
@@ -260,10 +260,16 @@ inline String ThreadAddress::convToString(void) const
 //////////////////////////////////////////////////////////////////////////
 inline const IEInStream & operator >> (const IEInStream & stream, ThreadAddress & input)
 {
-    return ( stream >> input.mThreadName );
+    //FIXME
+    String name;
+    stream >> name;
+    input.mThreadName = std::string(name);
+    return stream;
 }
 
 inline IEOutStream & operator << (IEOutStream & stream, const ThreadAddress & output)
 {
-    return ( stream << output.mThreadName );
+    //FIXME
+    stream << String(output.mThreadName);
+    return stream;
 }

@@ -91,7 +91,7 @@ inline HelloThread & HelloThread::self( void )
 
 void HelloThread::onThreadRuns( void )
 {
-    printf("The thread [ %s ] runs, going to output message:\n", Thread::getCurrentThreadName().getString());
+    printf("The thread [ %s ] runs, going to output message:\n", Thread::getCurrentThreadName().c_str());
 
     int numDigit  = 0;
     float numPI   = 0.0;
@@ -110,7 +110,7 @@ void HelloThread::onThreadRuns( void )
     std::cout << "END dump buffer data ............" << std::endl;
     std::cout << "*********************************" << std::endl;
 
-    printf( "The thread [ %s ] completed job...\n", getName().getString() );
+    printf( "The thread [ %s ] completed job...\n", getName().c_str() );
 }
 
 //////////////////////////////////////////////////////////////////////////

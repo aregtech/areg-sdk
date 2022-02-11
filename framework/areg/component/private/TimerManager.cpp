@@ -155,7 +155,7 @@ bool TimerManager::_registerTimer(Timer &timer, const DispatcherThread & whichTh
     }
     else
     {
-        TRACE_ERR("Either times [ %s ] is not valid or thread [ %s ] is not running, cancel timer.", timer.getName().getString(), whichThread.getName().getString());
+        TRACE_ERR("Either times [ %s ] is not valid or thread [ %s ] is not running, cancel timer.", timer.getName().getString(), whichThread.getName().c_str());
     }
 
     return result;

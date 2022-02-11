@@ -82,7 +82,7 @@ inline HelloThread & HelloThread::self( void )
 
 void HelloThread::onThreadRuns( void )
 {
-    printf("The thread [ %s ] runs, going to output message.\n", getName().getString());
+    printf("The thread [ %s ] runs, going to output message.\n", getName().c_str());
 
     std::cout << "!!!Hello World!!!" << std::endl; // prints !!!Hello World!!!
 }

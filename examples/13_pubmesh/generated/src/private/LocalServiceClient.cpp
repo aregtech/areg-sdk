@@ -34,7 +34,7 @@ LocalServiceClient::LocalServiceClient(const String & roleName, Component & owne
                     , roleName.getString()
                     , LocalHelloWorldClientBase::getServiceName().getString()
                     , owner.getRoleName().getString()
-                    , owner.getMasterThread().getName().getString()
+                    , owner.getMasterThread().getName().c_str()
                     , mTimer.getName().getString()
                     , timeout);
     TRACE_DBG("Proxy: [ %s ]", ProxyAddress::convAddressToPath(LocalHelloWorldClientBase::getProxy()->getProxyAddress()).getString());

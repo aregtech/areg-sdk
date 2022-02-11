@@ -40,7 +40,7 @@ ServiceClient::ServiceClient(const String & roleName, Component & owner)
                     , roleName.getString()
                     , getServiceName().getString()
                     , owner.getRoleName().getString()
-                    , owner.getMasterThread().getName().getString()
+                    , owner.getMasterThread().getName().c_str()
                     , mTimer.getName().getString());
     TRACE_DBG("Proxy: [ %s ]", ProxyAddress::convAddressToPath(getProxy()->getProxyAddress()).getString());
 }

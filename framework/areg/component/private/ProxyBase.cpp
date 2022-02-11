@@ -185,7 +185,7 @@ ProxyBase * ProxyBase::findOrCreateProxy( const char * roleName
     ProxyBase*   proxy = nullptr;
     if (ownerThread.isValid())
     {
-        ProxyAddress Key(serviceIfData, roleName, ownerThread.getName().getString() );
+        ProxyAddress Key(serviceIfData, roleName, ownerThread.getName().c_str() );
         proxy = _mapRegisteredProxies.findResourceObject(Key);
         if (proxy == nullptr)
         {
@@ -265,7 +265,7 @@ ProxyBase::ProxyBase(const char* roleName, const NEService::SInterfaceData & ser
 
     : IEProxyEventConsumer  ( mProxyAddress )
     
-    , mProxyAddress     ( serviceIfData, roleName, (ownerThread != nullptr) && (ownerThread->isValid()) ? ownerThread->getName().getString() : nullptr )
+    , mProxyAddress     ( serviceIfData, roleName, (ownerThread != nullptr) && (ownerThread->isValid()) ? ownerThread->getName().c_str() : nullptr )
     , mStubAddress      ( StubAddress::INVALID_STUB_ADDRESS )
     , mSequenceCount    ( 0 )
     , mListenerList     ( static_cast<int>(serviceIfData.idAttributeCount + serviceIfData.idResponseCount) )

@@ -230,7 +230,7 @@ public:
     /**
      * \brief   Returns thread name
      **/
-    inline const String & getName( void ) const;
+    inline const std::string & getName( void ) const;
 
     /**
      * \brief	Returns the address object of thread.
@@ -341,7 +341,7 @@ public:
      * \brief   Returns the name of current thread.
      *          If Thread is not registered, returns empty string.
      **/
-    static inline const String & getCurrentThreadName( void );
+    static inline const std::string & getCurrentThreadName( void );
 
     /**
      * \brief   Returns the address of current thread.
@@ -363,7 +363,7 @@ public:
      * \brief   Returns the name of thread by specified ID. 
      *          If Thread is not registered, returns empty string.
      **/
-    static const String & getThreadName( id_type threadId );
+    static const std::string & getThreadName( id_type threadId );
 
     /**
      * \brief   Returns the address of thread by specified ID. 
@@ -663,7 +663,7 @@ inline id_type Thread::getId( void ) const
     return mThreadId;
 }
 
-inline const String& Thread::getName( void ) const
+inline const std::string & Thread::getName( void ) const
 {
     Lock lock(mSynchObject);
     return mThreadAddress.getThreadName();
@@ -687,7 +687,7 @@ inline Thread* Thread::findThreadById( id_type threadId)
 
 inline Thread* Thread::findThreadByAddress(const ThreadAddress& threadAddress)
 {
-    return Thread::findThreadByName(threadAddress.getThreadName());
+    return Thread::findThreadByName(threadAddress.getThreadName().c_str());
 }
 
 inline const ThreadAddress & Thread::findThreadAddressById( id_type threadId)
@@ -713,7 +713,7 @@ inline Thread * Thread::getCurrentThread( void )
     return Thread::findThreadById(Thread::getCurrentThreadId());
 }
 
-inline const String & Thread::getCurrentThreadName( void )
+inline const std::string & Thread::getCurrentThreadName( void )
 {
     return Thread::getThreadName( Thread::getCurrentThreadId() );
 }

@@ -41,7 +41,7 @@ RemoteServiceClient::RemoteServiceClient(const String & roleName, Component & ow
                     , roleName.getString()
                     , RemoteRegistryClientBase::getServiceName().getString()
                     , owner.getRoleName().getString()
-                    , owner.getMasterThread().getName().getString()
+                    , owner.getMasterThread().getName().c_str()
                     , mTimer.getName().getString()
                     , timeout);
     TRACE_DBG("Proxy: [ %s ]", ProxyAddress::convAddressToPath(RemoteRegistryClientBase::getProxy()->getProxyAddress()).getString());

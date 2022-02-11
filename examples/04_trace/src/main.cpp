@@ -98,7 +98,7 @@ void HelloThread::onThreadRuns( void )
 {
     TRACE_SCOPE(main_HelloThread_onThreadRuns);
 
-    TRACE_WARN("The thread [ %s ] runs, going to output messages ...", getName().getString());
+    TRACE_WARN("The thread [ %s ] runs, going to output messages ...", getName().c_str());
     TRACE_INFO("!!!Hello World!!!");
     TRACE_DBG("!!!Hello Tracing!!!");
 }
@@ -132,10 +132,10 @@ int main()
 
         // create and start thread, wait until it is started.
         aThread.createThread(NECommon::WAIT_INFINITE);
-        TRACE_DBG("[ %s ] to create thread [ %s ]", aThread.isValid() ? "SUCCEEDED" : "FAILED", aThread.getName().getString());
+        TRACE_DBG("[ %s ] to create thread [ %s ]", aThread.isValid() ? "SUCCEEDED" : "FAILED", aThread.getName().c_str());
 
         // stop and destroy thread, clean resources. Wait until thread ends.
-        TRACE_INFO("Going to stop and destroy [ %s ] thread.", aThread.getName().getString());
+        TRACE_INFO("Going to stop and destroy [ %s ] thread.", aThread.getName().c_str());
         aThread.destroyThread(NECommon::WAIT_INFINITE);
 
     } while (false);

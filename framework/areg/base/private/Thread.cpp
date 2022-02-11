@@ -236,9 +236,9 @@ void Thread::onPostExitThread( void )
 {
 }
 
-const String & Thread::getThreadName( id_type threadId )
+const std::string & Thread::getThreadName( id_type threadId )
 {
-    static String emptyString;
+    static std::string emptyString = "";
     Thread* threadObj = Thread::findThreadById( threadId);
     return (threadObj != nullptr ? threadObj->getName() : emptyString);
 }
@@ -296,10 +296,10 @@ void Thread::_cleanResources( void )
 bool Thread::_registerThread( void )
 {
     Thread::_mapThreadhHandle.registerResourceObject(mThreadHandle, this);
-    Thread::_mapThreadName.registerResourceObject(mThreadAddress.getThreadName(), this);
+    Thread::_mapThreadName.registerResourceObject(mThreadAddress.getThreadName().c_str(), this);
     Thread::_mapThreadId.registerResourceObject(mThreadId, this);
 
-    _setThreadName(mThreadId, mThreadAddress.getThreadName());
+    _setThreadName(mThreadId, mThreadAddress.getThreadName().c_str());
     return mThreadConsumer.onThreadRegistered(this);
 }
 
@@ -310,7 +310,7 @@ void Thread::_unregisterThread( void )
         mThreadConsumer.onThreadUnregistering();
         
         Thread::_mapThreadhHandle.unregisterResourceObject(mThreadHandle);
-        Thread::_mapThreadName.unregisterResourceObject(mThreadAddress.getThreadName());
+        Thread::_mapThreadName.unregisterResourceObject(mThreadAddress.getThreadName().c_str());
         Thread::_mapThreadId.unregisterResourceObject(mThreadId);
 
         if (Thread::_mapThreadhHandle.isEmpty())

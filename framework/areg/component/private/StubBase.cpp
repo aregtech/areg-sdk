@@ -67,7 +67,7 @@ StubBase::StubBase( Component & masterComp, const NEService::SInterfaceData & si
 
     , mComponent            (masterComp)
     , mInterface            (siData)
-    , mAddress              (siData, masterComp.getAddress().getRoleName(), masterComp.getAddress().getThreadAddress().getThreadName())
+    , mAddress              (siData, masterComp.getAddress().getRoleName(), masterComp.getAddress().getThreadAddress().getThreadName().c_str())
     , mConnectionStatus     ( NEService::eServiceConnection::ServiceDisconnected )
     , mListListener         ( )
     , mCurrListener         (nullptr)

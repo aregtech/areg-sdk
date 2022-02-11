@@ -48,7 +48,7 @@ ServiceClient::ServiceClient(const NERegistry::ComponentEntry & entry, Component
                     , entry.mDependencyServices[0].mRoleName.getString()
                     , getServiceName().getString()
                     , getRoleName().getString()
-                    , owner.getName().getString()
+                    , owner.getName().c_str()
                     , mTimer.getName().getString());
     TRACE_DBG("Proxy: [ %s ]", ProxyAddress::convAddressToPath(getProxy()->getProxyAddress()).getString());
 }

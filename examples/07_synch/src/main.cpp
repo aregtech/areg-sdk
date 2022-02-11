@@ -148,7 +148,7 @@ void HelloThread::onThreadRuns( void )
 {
     TRACE_SCOPE(main_HelloThread_onThreadRuns);
 
-    TRACE_INFO("The thread [ %s ] runs, going to output message", getName().getString());
+    TRACE_INFO("The thread [ %s ] runs, going to output message", getName().c_str());
     TRACE_INFO("!!!Hello World!!! from thread [ %s ]", THREAD_NAME.data());
 
     // reset events
@@ -219,7 +219,7 @@ void GoodbyeThread::onThreadRuns( void )
 {
     TRACE_SCOPE(main_GoodbyeThread_onThreadRuns);
 
-    TRACE_INFO("The thread [ %s ] runs, going to output message", getName().getString());
+    TRACE_INFO("The thread [ %s ] runs, going to output message", getName().c_str());
     TRACE_INFO("!!!Hello World!!! from thread [ %s ]", THREAD_NAME.data());
 
     mQuit.resetEvent();
@@ -282,7 +282,7 @@ int main()
         TRACE_DBG("Starting Goodbye Thread");
         GoodbyeThread goodbyeThread;
         goodbyeThread.createThread(NECommon::WAIT_INFINITE);
-        TRACE_DBG("Created thread [ %s ], which is in [ %s ] state", goodbyeThread.getName().getString(), goodbyeThread.isRunning() ? "RUNNING" : "NOT RUNNING");
+        TRACE_DBG("Created thread [ %s ], which is in [ %s ] state", goodbyeThread.getName().c_str(), goodbyeThread.isRunning() ? "RUNNING" : "NOT RUNNING");
 
         Thread::sleep( NECommon::WAIT_1_SECOND);           // sleep for no reason
 
