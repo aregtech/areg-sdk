@@ -57,8 +57,8 @@ void DirectConnectionStub::startupServiceInterface( Component & holder )
 {
     TRACE_SCOPE(generated_DirectConnectionStub_startupServiceInterface);
     
-    DirectConnectionRequestEvent::addListener( static_cast<IEEventConsumer &>(self()), Thread::getCurrentThreadName() );
-    DirectConnectionNotifyRequestEvent::addListener( static_cast<IEEventConsumer &>(self()), Thread::getCurrentThreadName() );
+    DirectConnectionRequestEvent::addListener( static_cast<IEEventConsumer &>(self()), Thread::getCurrentThreadName().c_str() );
+    DirectConnectionNotifyRequestEvent::addListener( static_cast<IEEventConsumer &>(self()), Thread::getCurrentThreadName().c_str() );
     StubBase::startupServiceInterface( holder );
 
     TRACE_DBG("The Stub Service [ %s ] of component with role name [ %s ] has been started and is available ...", mAddress.getServiceName().getString(), mAddress.getRoleName().getString());
@@ -70,8 +70,8 @@ void DirectConnectionStub::shutdownServiceIntrface( Component & holder )
     TRACE_SCOPE(generated_DirectConnectionStub_shutdownServiceIntrface);
     TRACE_DBG("The Stub Service [ %s ] of component with role name [ %s ] is shutting down and not available anymore ...", mAddress.getServiceName().getString(), mAddress.getRoleName().getString());
     
-    DirectConnectionRequestEvent::removeListener( static_cast<IEEventConsumer &>(self()), Thread::getCurrentThreadName() );
-    DirectConnectionNotifyRequestEvent::removeListener( static_cast<IEEventConsumer &>(self()), Thread::getCurrentThreadName() );
+    DirectConnectionRequestEvent::removeListener( static_cast<IEEventConsumer &>(self()), Thread::getCurrentThreadName().c_str() );
+    DirectConnectionNotifyRequestEvent::removeListener( static_cast<IEEventConsumer &>(self()), Thread::getCurrentThreadName().c_str() );
     StubBase::shutdownServiceIntrface( holder );
 }
 

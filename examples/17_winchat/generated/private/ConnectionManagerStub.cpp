@@ -57,8 +57,8 @@ void ConnectionManagerStub::startupServiceInterface( Component & holder )
 {
     TRACE_SCOPE(generated_ConnectionManagerStub_startupServiceInterface);
     
-    ConnectionManagerRequestEvent::addListener( static_cast<IEEventConsumer &>(self()), Thread::getCurrentThreadName() );
-    ConnectionManagerNotifyRequestEvent::addListener( static_cast<IEEventConsumer &>(self()), Thread::getCurrentThreadName() );
+    ConnectionManagerRequestEvent::addListener( static_cast<IEEventConsumer &>(self()), Thread::getCurrentThreadName().c_str() );
+    ConnectionManagerNotifyRequestEvent::addListener( static_cast<IEEventConsumer &>(self()), Thread::getCurrentThreadName().c_str() );
     StubBase::startupServiceInterface( holder );
 
     TRACE_DBG("The Stub Service [ %s ] of component with role name [ %s ] has been started and is available ...", mAddress.getServiceName().getString(), mAddress.getRoleName().getString());
@@ -70,8 +70,8 @@ void ConnectionManagerStub::shutdownServiceIntrface( Component & holder )
     TRACE_SCOPE(generated_ConnectionManagerStub_shutdownServiceIntrface);
     TRACE_DBG("The Stub Service [ %s ] of component with role name [ %s ] is shutting down and not available anymore ...", mAddress.getServiceName().getString(), mAddress.getRoleName().getString());
     
-    ConnectionManagerRequestEvent::removeListener( static_cast<IEEventConsumer &>(self()), Thread::getCurrentThreadName() );
-    ConnectionManagerNotifyRequestEvent::removeListener( static_cast<IEEventConsumer &>(self()), Thread::getCurrentThreadName() );
+    ConnectionManagerRequestEvent::removeListener( static_cast<IEEventConsumer &>(self()), Thread::getCurrentThreadName().c_str() );
+    ConnectionManagerNotifyRequestEvent::removeListener( static_cast<IEEventConsumer &>(self()), Thread::getCurrentThreadName().c_str() );
     StubBase::shutdownServiceIntrface( holder );
 }
 

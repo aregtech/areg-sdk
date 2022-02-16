@@ -149,7 +149,7 @@ Thread::eCompletionStatus Thread::destroyThread(unsigned int waitForStopMs /* = 
 bool Thread::_createSystemThread( void )
 {
     bool result = false;
-    if ((_isValidNoLock() == false) && (mThreadAddress.getThreadName().isEmpty() == false))
+    if ((_isValidNoLock() == false) && (mThreadAddress.getThreadName().empty() == false))
     {
         mWaitForRun.resetEvent();
         mWaitForExit.resetEvent( );
