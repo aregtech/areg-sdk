@@ -372,7 +372,7 @@ AREG_API SOCKETHANDLE NESocket::clientSocketConnect(const SocketAddress & peerAd
             {
                 TRACE_DBG("Client socket [ %u ] succeeded to connect to remote host [ %s ] and port number [ %u ]"
                             , static_cast<unsigned int>(result)
-                            , static_cast<const char *>(peerAddr.getHostAddress())
+                            , peerAddr.getHostAddress().c_str()
                             , static_cast<unsigned int>(peerAddr.getHostPort()));
             }
 #endif  // DEBUG

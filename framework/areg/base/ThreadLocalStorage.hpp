@@ -95,7 +95,7 @@ public:
      * \brief   Returns the name of thread local storage.
      *          The name of local storage is same as thread name.
      **/
-    const String & getName( void ) const;
+    const std::string & getName( void ) const;
 
     /**
      * \brief   Returns true, if there is an local storage item 

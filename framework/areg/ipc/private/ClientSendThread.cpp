@@ -32,14 +32,14 @@ ClientSendThread::ClientSendThread( IERemoteServiceHandler & remoteService, Clie
 bool ClientSendThread::runDispatcher(void)
 {
     TRACE_SCOPE(areg_ipc_private_ClientSendThread_runDispatcher);
-    TRACE_DBG("Starting client service dispatcher thread [ %s ]", getName().getString());
+    TRACE_DBG("Starting client service dispatcher thread [ %s ]", getName().c_str());
 
     SendMessageEvent::addListener( static_cast<IESendMessageEventConsumer &>(*this), static_cast<DispatcherThread &>(*this));
 
     bool result = DispatcherThread::runDispatcher();
 
     SendMessageEvent::removeListener( static_cast<IESendMessageEventConsumer &>(*this), static_cast<DispatcherThread &>(*this));
-    TRACE_DBG("Exiting client service dispatcher thread [ %s ] with result [ %s ]", getName().getString(), result ? "SUCCESS" : "FAILURE");
+    TRACE_DBG("Exiting client service dispatcher thread [ %s ] with result [ %s ]", getName().c_str(), result ? "SUCCESS" : "FAILURE");
     return result;
 }
 

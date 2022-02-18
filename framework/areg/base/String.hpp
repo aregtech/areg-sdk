@@ -21,6 +21,7 @@
 #include "areg/base/TEString.hpp"
 #include <stdio.h>
 #include <stdarg.h>
+#include <string>
 #include <string_view>
 
 /************************************************************************
@@ -76,6 +77,7 @@ public:
      * \param    source    The string data source. If nullptr, sets empty string.
      **/
     inline String( const char * source );
+
     /**
      * \brief    Initialization constructor. Copies carCount chars from source
      * \param    source       The string source
@@ -92,6 +94,13 @@ public:
      * \param   source  The source to copy data.
      **/
     inline String( const String & source );
+
+    /**
+     * \brief    Temporary ctor for the movement to std::string
+     * \param    source     he string data source
+     **/
+    inline String( const std::string & source );
+
     /**
      * \brief   Copy constructor.
      * \param   source  The source to copy data.
@@ -786,6 +795,11 @@ inline String::String( char ch )
 
 inline String::String( const String & source )
     : TEString<char>( static_cast<const TEString<char> &>(source) )
+{
+}
+
+inline String::String( const std::string & source )
+    : TEString<char>( source.c_str() )
 {
 }
 

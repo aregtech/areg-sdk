@@ -97,7 +97,7 @@ void HelloThread::onThreadRuns( void )
 {
     TRACE_SCOPE(main_HelloThread_onThreadRuns);
 
-    TRACE_INFO("The thread [ %s ] runs, going to output message", getName().getString());
+    TRACE_INFO("The thread [ %s ] runs, going to output message", getName().c_str());
     TRACE_INFO("!!!Hello World!!! !!!Hello Tracing!!!");
 
     Thread::sleep( NECommon::WAIT_500_MILLISECONDS);
@@ -272,22 +272,22 @@ int main()
 
         // create and start thread, wait until it is started.
         helloThread.createThread(NECommon::WAIT_INFINITE);
-        TRACE_DBG("[ %s ] to create thread [ %s ]", helloThread.isValid() ? "SUCCEEDED" : "FAILED", helloThread.getName().getString());
+        TRACE_DBG("[ %s ] to create thread [ %s ]", helloThread.isValid() ? "SUCCEEDED" : "FAILED", helloThread.getName().c_str());
 
         TRACE_DBG("Starting Hello Dispatcher");
         HelloDispatcher helloDispatcher;
         // create and start thread, wait until it is started.
         helloDispatcher.createThread(NECommon::WAIT_INFINITE);
-        TRACE_DBG("[ %s ] to create thread [ %s ]", helloDispatcher.isValid() ? "SUCCEEDED" : "FAILED", helloDispatcher.getName().getString());
+        TRACE_DBG("[ %s ] to create thread [ %s ]", helloDispatcher.isValid() ? "SUCCEEDED" : "FAILED", helloDispatcher.getName().c_str());
 
         TRACE_DBG("Main thread sleep");
         Thread::sleep( NECommon::WAIT_1_SECOND);
 
         // stop and destroy thread, clean resources. Wait until thread ends.
-        TRACE_INFO("Going to stop and destroy [ %s ] thread.", helloDispatcher.getName().getString());
+        TRACE_INFO("Going to stop and destroy [ %s ] thread.", helloDispatcher.getName().c_str());
         helloDispatcher.destroyThread(NECommon::WAIT_INFINITE);
 
-        TRACE_INFO("Going to stop and destroy [ %s ] thread.", helloThread.getName().getString());
+        TRACE_INFO("Going to stop and destroy [ %s ] thread.", helloThread.getName().c_str());
         helloThread.destroyThread(NECommon::WAIT_INFINITE);
 
     } while (false);

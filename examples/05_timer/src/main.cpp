@@ -156,7 +156,7 @@ bool TimerDispatcher::postEvent( Event & eventElem )
 void TimerDispatcher::processTimer( Timer & timer )
 {
     TRACE_SCOPE(main_TimerDispatcher_processTimer);
-    TRACE_DBG("The timer [ %s ] has expired. Timeout [ %u ] ms, Event Count [ %u ], processing in Thread [ %s ]", timer.getName( ).getString( ), timer.getTimeout(), timer.getEventCount(), getName().getString());
+    TRACE_DBG("The timer [ %s ] has expired. Timeout [ %u ] ms, Event Count [ %u ], processing in Thread [ %s ]", timer.getName( ).getString( ), timer.getTimeout(), timer.getEventCount(), getName().c_str());
 
     printf("[ %s ] : Timer [ %s ] expired...\n", DateTime::getNow().formatTime().getString(), timer.getName().getString());
 
@@ -242,7 +242,7 @@ static void startTimerThread( TimerDispatcher & aThread )
 
     // create and start thread, wait until it is started.
     aThread.createThread(NECommon::WAIT_INFINITE);
-    TRACE_DBG("[ %s ] to create thread [ %s ]", aThread.isValid() ? "SUCCEEDED" : "FAILED", aThread.getName().getString());
+    TRACE_DBG("[ %s ] to create thread [ %s ]", aThread.isValid() ? "SUCCEEDED" : "FAILED", aThread.getName().c_str());
 
     TRACE_DBG("Triggering timers....");
     aThread.startTimers();
@@ -256,14 +256,14 @@ static void stopTimerThread( TimerDispatcher & aThread )
 {
     TRACE_SCOPE(main_stopTimerThread);
 
-    TRACE_INFO("Stopping timers of thread [ %s ]", aThread.getName().getString());
+    TRACE_INFO("Stopping timers of thread [ %s ]", aThread.getName().c_str());
     aThread.stopTimers();
 
-    TRACE_DBG("Comleted demo, going to stop and exit dispatcher thread [ %s ]", aThread.getName().getString());
+    TRACE_DBG("Comleted demo, going to stop and exit dispatcher thread [ %s ]", aThread.getName().c_str());
     aThread.triggerExitEvent();
     aThread.completionWait(NECommon::WAIT_INFINITE);
 
-    TRACE_WARN("The [ %s ] thread has completed job...", aThread.getName().getString());
+    TRACE_WARN("The [ %s ] thread has completed job...", aThread.getName().c_str());
 }
 
 /**

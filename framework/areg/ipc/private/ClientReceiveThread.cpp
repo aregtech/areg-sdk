@@ -33,7 +33,7 @@ ClientReceiveThread::ClientReceiveThread( IERemoteServiceHandler & remoteService
 bool ClientReceiveThread::runDispatcher(void)
 {
     TRACE_SCOPE(areg_ipc_private_ClientReceiveThread_runDispatcher);
-    TRACE_DBG("Starting client service dispatcher thread [ %s ]", getName().getString());
+    TRACE_DBG("Starting client service dispatcher thread [ %s ]", getName().c_str());
     mEventStarted.setEvent();
 
     IESynchObject* syncObjects[2] = {&mEventExit, &mEventQueue};
@@ -72,7 +72,7 @@ bool ClientReceiveThread::runDispatcher(void)
 
     mEventStarted.resetEvent();
 
-    TRACE_DBG("Exiting client service dispatcher thread [ %s ] with result [ %s ]", getName().getString()
+    TRACE_DBG("Exiting client service dispatcher thread [ %s ] with result [ %s ]", getName().c_str()
                , whichEvent == static_cast<int>(EventDispatcherBase::eEventOrder::EventExit) ? "SUCCESS" : "FAILURE");
 
     return (whichEvent == static_cast<int>(EventDispatcherBase::eEventOrder::EventExit));

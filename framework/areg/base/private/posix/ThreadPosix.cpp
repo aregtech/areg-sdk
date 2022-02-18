@@ -166,7 +166,7 @@ bool Thread::_createSystemThread( void )
 {
     bool result = false;
 
-    if ((_isValidNoLock() == false) && (mThreadAddress.getThreadName().isEmpty() == false))
+    if ((_isValidNoLock() == false) && (mThreadAddress.getThreadName().empty() == false))
     {
         sPosixThread * handle = new sPosixThread;
         if ( handle != nullptr)

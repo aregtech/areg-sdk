@@ -116,7 +116,7 @@ bool ThreadLocalStorage::existKey( const char* Key ) const
     return (pos != nullptr);
 }
 
-const String & ThreadLocalStorage::getName( void ) const
+const std::string & ThreadLocalStorage::getName( void ) const
 {
     return mOwningThread.getName();
 }

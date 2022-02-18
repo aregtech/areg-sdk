@@ -18,7 +18,7 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
-#include "areg/base/String.hpp"
+#include "areg/base/NECommon.hpp"
 
 #include <string>
 #include <string_view>
@@ -456,6 +456,6 @@ inline unsigned short NESocket::SocketAddress::getHostPort( void ) const
 
 inline void NESocket::SocketAddress::resetAddress( void )
 {
-    mIpAddr = String::EmptyString.data();
+    mIpAddr = "";
     mPortNr = NESocket::InvalidPort;
 }

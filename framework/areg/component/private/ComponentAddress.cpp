@@ -128,7 +128,7 @@ String ComponentAddress::convToString(void) const
 
     result += mRoleName;
     result += NECommon::COMPONENT_PATH_SEPARATOR.data();
-    result += ThreadAddress::convAddressToPath(mThreadAddress);
+    result += ThreadAddress::convAddressToPath(mThreadAddress).c_str();
 
     return result;
 }
@@ -151,7 +151,7 @@ unsigned int ComponentAddress::_magicNumber(const ComponentAddress & addrComp)
     if (addrComp.mThreadAddress.isValid() && (addrComp.mRoleName.isEmpty() == false) && (addrComp.mRoleName != INVALID_COMPONENT_NAME.data()))
     {
         result = NEMath::crc32Init();
-        result = NEMath::crc32Start(result, addrComp.mThreadAddress.getThreadName().getString());
+        result = NEMath::crc32Start(result, addrComp.mThreadAddress.getThreadName().c_str());
         result = NEMath::crc32Start(result, addrComp.mRoleName.getString());
         result = NEMath::crc32Finish(result);
     }

@@ -36,7 +36,7 @@ ServerReceiveThread::ServerReceiveThread( IEServerConnectionHandler & connectHan
 bool ServerReceiveThread::runDispatcher(void)
 {
     TRACE_SCOPE(areg_ipc_private_ServerReceiveThread_runDispatcher);
-    TRACE_DBG("Starting dispatcher [ %s ]", getName().getString());
+    TRACE_DBG("Starting dispatcher [ %s ]", getName().c_str());
 
     mEventStarted.setEvent();
 
