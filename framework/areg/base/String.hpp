@@ -95,7 +95,10 @@ public:
      **/
     inline String( const String & source );
 
-    /* temporary ctor to for the movement */
+    /**
+     * \brief    Temporary ctor for the movement to std::string
+     * \param    source     he string data source
+     **/
     inline String( const std::string & source );
 
     /**

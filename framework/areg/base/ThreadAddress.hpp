@@ -261,6 +261,7 @@ inline std::string ThreadAddress::convToString(void) const
 inline const IEInStream & operator >> (const IEInStream & stream, ThreadAddress & input)
 {
     //FIXME
+    // return ( stream >> input.mThreadName );
     String name;
     stream >> name;
     input.mThreadName = std::string(name);
@@ -270,6 +271,7 @@ inline const IEInStream & operator >> (const IEInStream & stream, ThreadAddress 
 inline IEOutStream & operator << (IEOutStream & stream, const ThreadAddress & output)
 {
     //FIXME
+    // return ( stream << output.mThreadName );
     stream << String(output.mThreadName);
     return stream;
 }

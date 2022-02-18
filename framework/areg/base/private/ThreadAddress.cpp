@@ -71,10 +71,11 @@ ThreadAddress::ThreadAddress( ThreadAddress && src ) noexcept
     src.mMagicNum   = NEMath::CHECKSUM_IGNORE;
 }
 
-//FIXME
 ThreadAddress::ThreadAddress( const IEInStream & stream )
+    : mMagicNum     ( NEMath::CHECKSUM_IGNORE )
 {
-    mMagicNum    = ThreadAddress::_magicNumber(*this);
+    String name(stream);
+    mThreadName = std::string(name);
 }
 
 bool ThreadAddress::isValid( void ) const
