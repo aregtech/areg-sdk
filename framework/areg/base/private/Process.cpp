@@ -40,19 +40,18 @@ void Process::_initPaths( const char * fullPath )
 {
     mProcessFullPath= fullPath;
 
-
-    NEString::CharPos pos = mProcessFullPath.findLastOf(File::PATH_SEPARATOR);
-    if ( pos != NEString::INVALID_POS )
+    auto pos = mProcessFullPath.find_last_of(File::PATH_SEPARATOR);
+    if ( pos != std::string::npos )
     {
-        mProcessPath   = mProcessFullPath.substring(NEString::START_POS, static_cast<NEString::CharCount>(pos));
-        mProcessName   = mProcessFullPath.substring(pos + 1, NEString::END_POS);
+        mProcessPath   = mProcessFullPath.substr(0, pos);
+        mProcessName   = mProcessFullPath.substr(pos + 1);
         mAppName       = mProcessName;     // initial value
     }
 
-    pos = mProcessName.findLastOf(File::EXTENSION_SEPARATOR);
-    if ( pos != NEString::INVALID_POS )
+    pos = mProcessName.find_last_of(File::EXTENSION_SEPARATOR);
+    if ( pos != std::string::npos )
     {
-        mAppName    = mProcessName.substring(NEString::START_POS, static_cast<NEString::CharCount>(pos));
-        mProcessExt = mProcessName.substring(pos + 1, NEString::END_POS);
+        mAppName    = mProcessName.substr(0, pos);
+        mProcessExt = mProcessName.substr(pos + 1);
     }
 }

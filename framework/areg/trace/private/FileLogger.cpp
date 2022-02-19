@@ -65,7 +65,7 @@ bool FileLogger::openLogger( void )
                                         , NETrace::LOG_MESSAGE_BUFFER_SIZE
                                         , LoggerBase::FOMAT_MESSAGE_HELLO.data()
                                         , Process::getString(curProcess.getEnvironment())
-                                        , curProcess.getFullPath().getString()
+                                        , curProcess.getFullPath().c_str()
                                         , curProcess.getId());
 
                     logMessage(logMsgHello);
@@ -105,7 +105,7 @@ void FileLogger::closeLogger(void)
                             , NETrace::LOG_MESSAGE_BUFFER_SIZE
                             , LoggerBase::FORMAT_MESSAGE_BYE.data()
                             , Process::getString(curProcess.getEnvironment())
-                            , curProcess.getFullPath().getString()
+                            , curProcess.getFullPath().c_str()
                             , curProcess.getId());
 
         logMessage(logMsgHello);

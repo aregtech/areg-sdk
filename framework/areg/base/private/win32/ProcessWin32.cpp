@@ -53,9 +53,9 @@ Process & Process::initilize( void )
     return (*this);
 }
 
-String Process::getSafeEnvVariable( const char* var ) const
+std::string Process::getSafeEnvVariable( const char* var ) const
 {
-    String result;
+    std::string result;
     DWORD length = ::GetEnvironmentVariableA(var, nullptr, 0);
     if (length > 0)
     {

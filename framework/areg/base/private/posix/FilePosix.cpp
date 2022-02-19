@@ -635,11 +635,11 @@ String File::getSpecialDir(eSpecialFolder specialFolder)
             if (filePath != nullptr)
             {
                 sprintf(  buffer, "%s%c.%s%c%s"
-						, filePath
-						, static_cast<int>(File::PATH_SEPARATOR)
-						, Process::getInstance().getAppName().getString()
-						, static_cast<int>(File::PATH_SEPARATOR)
-						, DIR_NAME_APPDATA);
+                        , filePath
+                        , static_cast<int>(File::PATH_SEPARATOR)
+                        , Process::getInstance().getAppName().c_str()
+                        , static_cast<int>(File::PATH_SEPARATOR)
+                        , DIR_NAME_APPDATA);
             }
             break;
 

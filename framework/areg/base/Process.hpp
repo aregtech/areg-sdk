@@ -18,7 +18,8 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
-#include "areg/base/String.hpp"
+
+#include <string>
 
 /************************************************************************
  * Dependencies.
@@ -101,30 +102,30 @@ public:
      * \brief   Return application name of current process.
      *          The name does not contain files extension.
      **/
-    inline const String & getAppName( void ) const;
+    inline const std::string & getAppName( void ) const;
     /**
      * \brief   Returns the name of current process. 
      *          The name may contain file extension as well.
      **/
-    inline const String & getName( void ) const;
+    inline const std::string & getName( void ) const;
 
     /**
      * \brief   Returns the extension of current process.
      **/
-    inline const String & getExtension( void ) const;
+    inline const std::string & getExtension( void ) const;
 
     /**
      * \brief   Returns the path of current process.
      *          The path does not contain path-separation
      *          character '\\' at the end.
      **/
-    inline const String & getPath( void ) const;
+    inline const std::string & getPath( void ) const;
 
     /**
      * \brief   Returns the full path of current process,
      *          including file name and file extension.
      **/
-    inline const String & getFullPath( void ) const;
+    inline const std::string & getFullPath( void ) const;
 
     /**
      * \brief   Return the ID of current process.
@@ -144,7 +145,7 @@ public:
      *              (e.g. elevated privileges in Linux)
      * \param   var   the environment variable to return
      **/
-    String getSafeEnvVariable( const char * var ) const;
+    std::string getSafeEnvVariable( const char * var ) const;
 
 private:
 
@@ -178,23 +179,23 @@ private:
     /**
      * \brief   The name of application without extension.
      **/
-    String          mAppName;
+    std::string     mAppName;
     /**
      * \brief   The name of process file
      **/
-    String          mProcessName;
+    std::string     mProcessName;
     /**
      * \brief   The extension of process file
      **/
-    String          mProcessExt;
+    std::string     mProcessExt;
     /**
      * \brief   The path of process
      **/
-    String          mProcessPath;
+    std::string     mProcessPath;
     /**
      * \brief   The full path of process, including name and extension
      **/
-    String          mProcessFullPath;
+    std::string     mProcessFullPath;
     /**
      * \brief	Flag, indicating whether process object is initialized or not.
      **/
@@ -220,27 +221,27 @@ inline Process & Process::getInstance( void )
     return Process::_theProcess.initilize();
 }
 
-inline const String & Process::getAppName( void ) const
+inline const std::string & Process::getAppName( void ) const
 {
     return mAppName;
 }
 
-inline const String & Process::getName(void) const
+inline const std::string & Process::getName(void) const
 {
     return mProcessName;
 }
 
-inline const String & Process::getExtension(void) const
+inline const std::string & Process::getExtension(void) const
 {
     return mProcessExt;
 }
 
-inline const String & Process::getPath(void) const
+inline const std::string & Process::getPath(void) const
 {
     return mProcessPath;
 }
 
-inline const String & Process::getFullPath(void) const
+inline const std::string & Process::getFullPath(void) const
 {
     return mProcessFullPath;
 }
