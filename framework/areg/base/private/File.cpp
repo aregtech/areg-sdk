@@ -162,11 +162,6 @@ String File::genTempFileName()
     return genTempFileName(nullptr, true, true);
 }
 
-const String & File::getExecutableDir(void)
-{
-    return Process::getInstance().getPath();
-}
-
 String File::getFileNameWithExtension( const char* filePath )
 {
     const char * result = "";

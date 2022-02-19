@@ -520,7 +520,7 @@ public:
     /**
      * \brief   Returns folder location of current executable.
      **/
-    static const String & getExecutableDir( void );
+    //static const String & getExecutableDir( void );
 
     /**
      * \brief   Returns special folder path. The type of required folder is defined in

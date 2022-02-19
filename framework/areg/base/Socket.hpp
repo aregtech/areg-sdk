@@ -19,7 +19,6 @@
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
 
-#include "areg/base/String.hpp"
 #include "areg/base/NEMemory.hpp"
 #include "areg/base/NESocket.hpp"
 #include <memory>

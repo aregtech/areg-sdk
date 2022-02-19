@@ -131,7 +131,7 @@ bool Application::isModelLoaded(const char * modelName)
 
 void Application::setWorkingDirectory( const char * dirPath /*= nullptr*/ )
 {
-    const char * path = NEString::isEmpty<char>(dirPath) ? Process::getInstance().getPath().getString() : dirPath;
+    const char * path = NEString::isEmpty<char>(dirPath) ? Process::getInstance().getPath().c_str() : dirPath;
 
 #ifdef _DEBUG
     

@@ -60,9 +60,9 @@ Process & Process::initilize( void )
 }
 
 
-String Process::getSafeEnvVariable( const char* var ) const
+std::string Process::getSafeEnvVariable( const char* var ) const
 {
-    return String(var != nullptr ? getenv(var) : String::EmptyString.data());
+    return std::string(var != nullptr ? getenv(var) : "");
 }
 
 #endif // defined(_POSIX) || defined(POSIX)
