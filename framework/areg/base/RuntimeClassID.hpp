@@ -23,7 +23,8 @@
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
 
-#include "areg/base/String.hpp"
+#include "areg/base/NEMath.hpp"
+#include <string>
 #include <utility>
 
 //////////////////////////////////////////////////////////////////////////
@@ -162,7 +163,7 @@ public:
      * \param   src     The source of string to copy.
      * \return  Returns Runtime Class ID object.
      **/
-    inline RuntimeClassID & operator = ( const String & src );
+    inline RuntimeClassID & operator = ( const std::string & src );
 
     /**
      * \brief   Comparing operator. Compares 2 Runtime Class ID objects.
@@ -235,7 +236,7 @@ private:
     /**
      * \brief   Runtime Class ID value.
      **/
-    String          mClassName;
+    std::string     mClassName;
     /**
      * \brief   The calculated number of runtime class.
      **/
@@ -273,9 +274,9 @@ inline RuntimeClassID & RuntimeClassID::operator = ( const char * src )
     return (*this);
 }
 
-inline RuntimeClassID & RuntimeClassID::operator = ( const String & src )
+inline RuntimeClassID & RuntimeClassID::operator = ( const std::string & src )
 {
-    setName(src);
+    setName(src.c_str());
     return (*this);
 }
 
@@ -311,7 +312,7 @@ inline bool RuntimeClassID::isValid( void ) const
 
 inline const char* RuntimeClassID::getName( void ) const
 {
-    return mClassName.getString();
+    return mClassName.c_str();
 }
 
 inline unsigned RuntimeClassID::getMagic(void) const
