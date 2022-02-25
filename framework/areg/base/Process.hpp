@@ -211,27 +211,27 @@ inline Process & Process::getInstance( void )
 
 inline std::string Process::getAppName() const
 {
-    return mProcessFullPath.stem();
+    return mProcessFullPath.stem().string();
 }
 
 inline std::string Process::getName() const
 {
-    return mProcessFullPath.filename();
+    return mProcessFullPath.filename().string();
 }
 
 inline std::string Process::getExtension() const
 {
-    return mProcessFullPath.extension();
+    return mProcessFullPath.extension().string();
 }
 
 inline std::string Process::getPath() const
 {
-    return mProcessFullPath.parent_path();
+    return mProcessFullPath.parent_path().string();
 }
 
 inline std::string Process::getFullPath() const
 {
-    return mProcessFullPath;
+    return mProcessFullPath.string();
 }
 
 inline id_type Process::getId(void) const
