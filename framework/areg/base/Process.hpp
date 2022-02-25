@@ -19,6 +19,7 @@
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
 
+#include <filesystem>
 #include <string>
 
 /************************************************************************
@@ -102,30 +103,30 @@ public:
      * \brief   Return application name of current process.
      *          The name does not contain files extension.
      **/
-    inline const std::string & getAppName( void ) const;
+    inline std::string getAppName() const;
     /**
      * \brief   Returns the name of current process. 
      *          The name may contain file extension as well.
      **/
-    inline const std::string & getName( void ) const;
+    inline std::string getName() const;
 
     /**
      * \brief   Returns the extension of current process.
      **/
-    inline const std::string & getExtension( void ) const;
+    inline std::string getExtension() const;
 
     /**
      * \brief   Returns the path of current process.
      *          The path does not contain path-separation
      *          character '\\' at the end.
      **/
-    inline const std::string & getPath( void ) const;
+    inline std::string getPath() const;
 
     /**
      * \brief   Returns the full path of current process,
      *          including file name and file extension.
      **/
-    inline const std::string & getFullPath( void ) const;
+    inline std::string getFullPath() const;
 
     /**
      * \brief   Return the ID of current process.
@@ -176,34 +177,21 @@ private:
      * \brief   The handle of process
      **/
     PROCESSHANDLE   mProcessHandle;
-    /**
-     * \brief   The name of application without extension.
-     **/
-    std::string     mAppName;
-    /**
-     * \brief   The name of process file
-     **/
-    std::string     mProcessName;
-    /**
-     * \brief   The extension of process file
-     **/
-    std::string     mProcessExt;
-    /**
-     * \brief   The path of process
-     **/
-    std::string     mProcessPath;
+
     /**
      * \brief   The full path of process, including name and extension
      **/
-    std::string     mProcessFullPath;
+    std::filesystem::path   mProcessFullPath;
+
     /**
-     * \brief	Flag, indicating whether process object is initialized or not.
+     * \brief   Flag, indicating whether process object is initialized or not.
      **/
-    bool 			mIsInitialized;
+    bool            mIsInitialized;
     /**
-     * \brief	The singletone instance of Process object.
+     * \brief   The singletone instance of Process object.
      */
-    static Process	_theProcess;
+    static Process  _theProcess;
+
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -221,27 +209,27 @@ inline Process & Process::getInstance( void )
     return Process::_theProcess.initilize();
 }
 
-inline const std::string & Process::getAppName( void ) const
+inline std::string Process::getAppName() const
 {
-    return mAppName;
+    return mProcessFullPath.stem();
 }
 
-inline const std::string & Process::getName(void) const
+inline std::string Process::getName() const
 {
-    return mProcessName;
+    return mProcessFullPath.filename();
 }
 
-inline const std::string & Process::getExtension(void) const
+inline std::string Process::getExtension() const
 {
-    return mProcessExt;
+    return mProcessFullPath.extension();
 }
 
-inline const std::string & Process::getPath(void) const
+inline std::string Process::getPath() const
 {
-    return mProcessPath;
+    return mProcessFullPath.parent_path();
 }
 
-inline const std::string & Process::getFullPath(void) const
+inline std::string Process::getFullPath() const
 {
     return mProcessFullPath;
 }

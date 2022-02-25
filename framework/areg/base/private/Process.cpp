@@ -16,7 +16,6 @@
 #include "areg/base/Process.hpp"
 
 #include "areg/base/File.hpp"
-#include <filesystem>
 
 //////////////////////////////////////////////////////////////////////////
 // Process class implementation
@@ -28,10 +27,6 @@ Process::Process( void )
     : mProcEnv          ( static_cast<Process::eProcEnv>(sizeof(id_type)) )
     , mProcessId        ( Process::UNKNOWN_PROCESS )
     , mProcessHandle    ( nullptr )
-    , mAppName          ( )
-    , mProcessName      ( )
-    , mProcessExt       ( )
-    , mProcessPath      ( )
     , mProcessFullPath  ( )
     , mIsInitialized    ( false )
 {
@@ -39,11 +34,5 @@ Process::Process( void )
 
 void Process::_initPaths( const char * fullPath )
 {
-    const std::filesystem::path fullProcessPath = fullPath;
-
-    mProcessFullPath = std::filesystem::absolute(fullProcessPath).c_str();
-    mProcessPath = std::filesystem::absolute(fullProcessPath).parent_path().c_str();
-    mProcessName = std::filesystem::absolute(fullProcessPath).filename().c_str();
-    mAppName     = std::filesystem::absolute(fullProcessPath).stem().c_str();
-    mProcessExt  = std::filesystem::absolute(fullProcessPath).extension().c_str();
+    mProcessFullPath = std::filesystem::absolute(std::filesystem::path(fullPath));
 }
