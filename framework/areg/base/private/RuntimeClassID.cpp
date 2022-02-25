@@ -59,14 +59,14 @@ RuntimeClassID::RuntimeClassID( const RuntimeClassID & src )
     : mClassName(src.mClassName)
     , mMagicNum (src.mMagicNum)
 {
-    ASSERT(src.mClassName.isEmpty() == false);
+    ASSERT(src.mClassName.empty() == false);
 }
 
 RuntimeClassID::RuntimeClassID( RuntimeClassID && src ) noexcept
     : mClassName( std::move(src.mClassName) )
     , mMagicNum ( src.mMagicNum )
 {
-    ASSERT( src.mClassName.isEmpty( ) == false );
+    ASSERT( src.mClassName.empty( ) == false );
 }
 
 //////////////////////////////////////////////////////////////////////////

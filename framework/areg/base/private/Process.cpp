@@ -27,10 +27,6 @@ Process::Process( void )
     : mProcEnv          ( static_cast<Process::eProcEnv>(sizeof(id_type)) )
     , mProcessId        ( Process::UNKNOWN_PROCESS )
     , mProcessHandle    ( nullptr )
-    , mAppName          ( )
-    , mProcessName      ( )
-    , mProcessExt       ( )
-    , mProcessPath      ( )
     , mProcessFullPath  ( )
     , mIsInitialized    ( false )
 {
@@ -38,20 +34,5 @@ Process::Process( void )
 
 void Process::_initPaths( const char * fullPath )
 {
-    mProcessFullPath= fullPath;
-
-    auto pos = mProcessFullPath.find_last_of(File::PATH_SEPARATOR);
-    if ( pos != std::string::npos )
-    {
-        mProcessPath   = mProcessFullPath.substr(0, pos);
-        mProcessName   = mProcessFullPath.substr(pos + 1);
-        mAppName       = mProcessName;     // initial value
-    }
-
-    pos = mProcessName.find_last_of(File::EXTENSION_SEPARATOR);
-    if ( pos != std::string::npos )
-    {
-        mAppName    = mProcessName.substr(0, pos);
-        mProcessExt = mProcessName.substr(pos + 1);
-    }
+    mProcessFullPath = std::filesystem::absolute(std::filesystem::path(fullPath));
 }
