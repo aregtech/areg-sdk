@@ -1,6 +1,7 @@
 
+
 set(Toolset "g++")
-set(CrossCompile)
+set(CrossCompile OFF)
 
 # ###########################################################################
 # Settings
@@ -13,20 +14,21 @@ set(bit)
 set(Config "Release")
 
 
-set(Platform)
-set(OpSystem)
+set(Platform "x86_64")
 
-if(NOT DEFINED Platform)
-    set(Platform x86_64)
+set(OpSystem "UNIX")
+
+if(NOT ${CMAKE_SIZEOF_VOID_P} MATCHES "8")
+    set(Platform "x86")
 endif()
-if(NOT DEFINED OpSystem)
-    set(OpSystem ${CMAKE_HOST_SYSTEM_NAME})
+if(WIN32)
+    set(OpSystem "Windows")
 endif()
 
 
-set(AregRoot ${AREG_SDK_ROOT})
+set(AregRoot "${AREG_SDK_ROOT}")
 
-set(AregInclude ${AREG_BASE})
+set(AregInclude "${AREG_BASE}")
 
 
 
@@ -38,16 +40,16 @@ set(UserDefLibPaths)
 
 set(UserDefLibs)
 
-set(UserDefOutput)
+set(UserDefOutput "product")
 
 
 
 
-set(ProjBuildPath)
+set(ProjBuildPath "build/${CrossCompile}${Toolset}/${OpSystem}-${Platform}-${Config}")
 
 set(ProjOutputDir "${AregRoot}/${UserDefOutput}/${ProjBuildPath}")
 
-set(ProGenDir "${AregRoot}/${userDefOutput}/generate")
+set(ProjGenDir "${AregRoot}/${UserDefOutput}/generate")
 
 set(ProObjDir "${ProjOutputDir}/obj")
 
@@ -56,10 +58,9 @@ set(ProLibDir "${ProjOutputDir}/lib")
 set(ProBinDir "${ProjOutputDir}/bin")
 
 
-set(ProjIncludes)
 set(ProjIncludes "${ProjIncludes} -I${AregInclude}")
 set(ProjIncludes "${ProjIncludes} -I${ProjGenDir}")
-set(ProjIncludes "${ProjIncludes} -I${UserDefIncludes}")
+set(ProjIncludes "${ProjIncludes} ${UserDefIncludes}")
 
 
 
