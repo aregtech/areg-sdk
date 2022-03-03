@@ -7,3 +7,4 @@ else()
 	set(examples_CXXFLAGS "-DIMP_AREG_LIB")
 	set(examples_LDFLAGS  "-L ${AREG_OUTPUT_LIB} -Wl,-Bstatic -lareg -Wl,-Bdynamic ${LDFLAGS}")
 endif()
+

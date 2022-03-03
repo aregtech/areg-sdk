@@ -61,7 +61,3 @@ set(ProBinDir "${ProjOutputDir}/bin")
 set(ProjIncludes "${ProjIncludes} -I${AregInclude}")
 set(ProjIncludes "${ProjIncludes} -I${ProjGenDir}")
 set(ProjIncludes "${ProjIncludes} ${UserDefIncludes}")
-
-
-
-
