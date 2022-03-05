@@ -20,6 +20,7 @@
 #include "areg/base/NEUtilities.hpp"
 #include "areg/base/NECommon.hpp"
 
+#include <regex>
 #include <sstream>
 
 //////////////////////////////////////////////////////////////////////////
@@ -91,21 +92,14 @@ Version & Version::convFromString( const char * version )
 
     std::string temp = version;
 
-    auto pos1 = temp.find_first_of(NECommon::OBJECT_SEPARATOR);
-    if (pos1 != std::string::npos)
-    {
-        const std::string major = temp.substr(0, pos1);
-        mMajor = std::stoi(major);
-    }
+    std::regex version_regex("^(\\d+)\\.(\\d+)\\.(\\d+)$");
+    std::smatch matches;
 
-    auto pos2 = temp.find_last_of(NECommon::OBJECT_SEPARATOR);
-    if (pos2 != std::string::npos && pos2 != pos1)
+    if (std::regex_search(temp, matches, version_regex))
     {
-        const std::string minor = temp.substr(pos1 + 1, pos2 - pos1 - 1);
-        mMinor = std::stoi(minor);
-
-        const std::string patch = temp.substr(pos2+1);
-        mPatch  = (mMajor != 0) && (mMinor != 0) ? std::stoi(patch) : 0;
+        mMajor = std::stoi(matches[1]);
+        mMinor = std::stoi(matches[2]);
+        mPatch  = (mMajor != 0) && (mMinor != 0) ? std::stoi(matches[3]) : 0;
     }
 
     return (*this);
