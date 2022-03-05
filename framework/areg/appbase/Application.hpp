@@ -417,7 +417,6 @@ private:
     /**
      * \brief   The application named storage.
      **/
-    //MapAppStorage   mStorage;
     std::map<std::string, NEMemory::uAlign> mStorage;
 #if defined(_MSC_VER) && (_MSC_VER > 1200)
     #pragma warning(default: 4251)
