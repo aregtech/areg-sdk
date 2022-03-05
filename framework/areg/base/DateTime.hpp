@@ -18,8 +18,9 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
-#include "areg/base/String.hpp"
 #include "areg/base/NEUtilities.hpp"
+
+#include <string>
 #include <string_view>
 
 /************************************************************************
@@ -243,7 +244,7 @@ public:
      * \brief   Formats time and outputs as a string. The caller should specify the
      *          the time format name for output
      **/
-    String formatTime( const std::string_view & formatName = DateTime::TIME_FORMAT_ISO8601_OUTPUT ) const;
+    std::string formatTime( const std::string_view & formatName = DateTime::TIME_FORMAT_ISO8601_OUTPUT ) const;
 
     /**
      * \brief   Returns the time data.

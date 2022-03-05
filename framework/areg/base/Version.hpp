@@ -20,7 +20,8 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
-#include "areg/base/String.hpp"
+
+#include <string>
 
 /************************************************************************
  * Dependencies
@@ -110,7 +111,7 @@ public:
     /**
      * \brief   Assigning operator. Sets version from string
      **/
-    Version & operator = ( const String & version );
+    Version & operator = ( const std::string & version );
 
     /**
      * \brief   Determines equality of two versions.
@@ -213,7 +214,7 @@ public:
      * \brief   Converts version object to string in format
      *          "major.minor.patch", and returns string.
      **/
-    String convToString( void ) const;
+    std::string convToString() const;
 
     /**
      * \brief   Retrieves version information from given string
@@ -269,9 +270,9 @@ inline bool Version::isCompatible( const Version & version ) const
     return ((mMajor == version.mMajor)  && (mMinor >= version.mMinor));
 }
 
-inline Version & Version::operator = ( const String & version )
+inline Version & Version::operator = ( const std::string & version )
 {
-    return (*this) = version.getString();
+    return (*this) = version.c_str();
 }
 
 inline bool Version::operator == ( const Version &version ) const

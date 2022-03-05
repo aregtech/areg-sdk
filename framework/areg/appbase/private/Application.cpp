@@ -108,8 +108,8 @@ void Application::releaseApplication(void)
     theApp.mStartService    = false;
     theApp.mStartTimer      = false;
     theApp.mStartRouting    = false;
-    theApp.mConfigTracer    = String::EmptyString.data();
-    theApp.mConfigService   = String::EmptyString.data();
+    theApp.mConfigTracer    = "";
+    theApp.mConfigService   = "";
 
     Application::_setAppState(Application::eAppState::AppStateStopped);
 }
@@ -440,36 +440,34 @@ bool Application::startRouterService(void)
     return Application::_startRouterService();
 }
 
-bool Application::isElementStored( const String & elemName )
+bool Application::isElementStored( const std::string& elemName )
 {
     Application & theApp = Application::getInstance();
     Lock lock(theApp.mLock);
-    return (theApp.mStorage.find(elemName) != nullptr);
+    return (theApp.mStorage.find(elemName) != theApp.mStorage.end());
 }
 
-NEMemory::uAlign Application::storeElement( const String & elemName, NEMemory::uAlign elem )
+NEMemory::uAlign Application::storeElement( const std::string& elemName, NEMemory::uAlign elem )
 {
     Application & theApp = Application::getInstance( );
     Lock lock( theApp.mLock );
 
-    MAPPOS pos = theApp.mStorage.find(elemName);
     NEMemory::uAlign result = NEMemory::InvalidElement;
-    if ( pos != nullptr )
+    if ( const auto it = theApp.mStorage.find(elemName); it != theApp.mStorage.end())
     {
-        result = theApp.mStorage.valueAtPosition(pos);
-        theApp.mStorage.removePosition(pos);
+        result = it->second;
     }
-    theApp.mStorage.setAt(elemName, elem, false);
+    theApp.mStorage[elemName] = elem;
     return result;
 }
 
-NEMemory::uAlign Application::getStoredElement( const String & elemName )
+NEMemory::uAlign Application::getStoredElement( const std::string& elemName )
 {
     Application & theApp = Application::getInstance( );
     Lock lock( theApp.mLock );
 
-    MAPPOS pos = theApp.mStorage.find( elemName );
-    return (pos != nullptr ? theApp.mStorage.valueAtPosition( pos ) : NEMemory::InvalidElement);
+    const auto it = theApp.mStorage.find( elemName );
+    return (it != theApp.mStorage.end() ? it->second : NEMemory::InvalidElement);
 }
 
 bool Application::waitAppQuit(unsigned int waitTimeout /*= NECommon::WAIT_INFINITE*/)

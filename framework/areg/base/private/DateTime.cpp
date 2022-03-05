@@ -135,10 +135,10 @@ void DateTime::getNow( NEUtilities::sSystemTime & OUT timeData, bool localTime )
     NEUtilities::systemTimeNow(timeData, localTime);
 }
 
-String DateTime::formatTime( const std::string_view & formatName /*= DateTime::TIME_FORMAT_ISO8601_OUTPUT */ ) const
+std::string DateTime::formatTime( const std::string_view & formatName /*= DateTime::TIME_FORMAT_ISO8601_OUTPUT */ ) const
 {
     char buffer[128] = {0};
-    
+
     if ( mDateTime != 0 )
     {
         NEUtilities::sSystemTime sysTime;
@@ -147,25 +147,26 @@ String DateTime::formatTime( const std::string_view & formatName /*= DateTime::T
         NEUtilities::convToLocalTime( mDateTime, sysTime);
         NEUtilities::convToTm(sysTime, conv);
 
-        unsigned short milli = sysTime.stMillisecs;
-
-        String str = formatName.empty() == false ? formatName.data() : DateTime::TIME_FORMAT_ISO8601_OUTPUT.data();
-        NEString::CharPos ms = str.findFirstOf( FORMAT_MILLISECOND.data() );
-        if ( ms != NEString::INVALID_POS )
+        std::string str(DateTime::TIME_FORMAT_ISO8601_OUTPUT);
+        if (!formatName.empty())
         {
-            char buf[12];
-            String::formatString( buf, 12, "%03d", milli );
-            str.replace( buf, ms, static_cast<NEString::CharCount>(FORMAT_MILLISECOND.length()) );
+            str = formatName;
         }
 
-        strftime( buffer, 128, str.getString(), &conv );
+        if (const auto ms = str.find_first_of(FORMAT_MILLISECOND.data()); ms != std::string::npos)
+        {
+            std::string buf = std::to_string(sysTime.stMillisecs);
+            str.replace( ms, FORMAT_MILLISECOND.size(), buf );
+        }
+
+        strftime( buffer, 128, str.c_str(), &conv );
     }
     else
     {
-        *buffer = String::EmptyChar;
+        return {};
     }
 
-    return String(buffer);
+    return std::string(buffer);
 }
 
 AREG_API const IEInStream & operator >> ( const IEInStream & stream, DateTime & input )

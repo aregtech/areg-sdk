@@ -158,7 +158,7 @@ void TimerDispatcher::processTimer( Timer & timer )
     TRACE_SCOPE(main_TimerDispatcher_processTimer);
     TRACE_DBG("The timer [ %s ] has expired. Timeout [ %u ] ms, Event Count [ %u ], processing in Thread [ %s ]", timer.getName( ).getString( ), timer.getTimeout(), timer.getEventCount(), getName().c_str());
 
-    printf("[ %s ] : Timer [ %s ] expired...\n", DateTime::getNow().formatTime().getString(), timer.getName().getString());
+    printf("[ %s ] : Timer [ %s ] expired...\n", DateTime::getNow().formatTime().c_str(), timer.getName().getString());
 
     if (&timer == &mOneTime)
     {

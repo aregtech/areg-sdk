@@ -20,10 +20,11 @@
 #include "areg/base/GEGlobal.h"
 #include "areg/appbase/NEApplication.hpp"
 
-#include "areg/base/String.hpp"
-#include "areg/base/Containers.hpp"
 #include "areg/base/NEMemory.hpp"
 #include "areg/base/SynchObjects.hpp"
+
+#include <map>
+#include <string>
 
 //////////////////////////////////////////////////////////////////////////
 // Dependencies
@@ -49,8 +50,6 @@ class AREG_API Application
      *          by given names. If a stored element is created by manually allocating memory, the memory
      *          should be as well manually freed.
      **/
-    using ImplStringHashMap = TEHashMapImpl<const String &, const NEMemory::uAlign>;
-    using MapAppStorage     = TEStringHashMap<NEMemory::uAlign, const NEMemory::uAlign, ImplStringHashMap>;
 
 //////////////////////////////////////////////////////////////////////////
 // Constants and statics
@@ -331,7 +330,7 @@ public:
      * \brief   Returns true if an element exists in the application storage
      * \param   elemName    The name of element stored in application storage.
      **/
-    static bool isElementStored( const String & elemName );
+    static bool isElementStored( const std::string& elemName );
 
     /**
      * \brief   Saves element in application storage. If storage already has element save with specified
@@ -341,13 +340,13 @@ public:
      * \return  If storage already has an element saved with same name, it returns previously save element.
      *          Otherwise, it returns NEMemory::InvalidElement.
      **/
-    static NEMemory::uAlign storeElement( const String & elemName, NEMemory::uAlign elem );
+    static NEMemory::uAlign storeElement( const std::string& elemName, NEMemory::uAlign elem );
 
     /**
      * \brief   Returns stored element, which has given name. If element does not exist, returns NEMemory::InvalidElement.
      * \param   elemName    The name of element to search in storage.
      **/
-    static NEMemory::uAlign getStoredElement( const String & elemName );
+    static NEMemory::uAlign getStoredElement( const std::string& elemName );
 
     /**
      * \brief   Locks the calling thread until either application quit signal is set, or waiting timeout is expired.
@@ -383,7 +382,7 @@ private:
     /**
      * \brief   The config file name of Tracer
      **/
-    String          mConfigTracer;
+    std::string     mConfigTracer;
     /**
      * \brief   Requested to start service manager.
      **/
@@ -399,7 +398,7 @@ private:
     /**
      * \brief   The config file name of Router Service
      **/
-    String          mConfigService;
+    std::string     mConfigService;
     /**
      * \brief   The state of application.
      **/
@@ -418,7 +417,8 @@ private:
     /**
      * \brief   The application named storage.
      **/
-    MapAppStorage   mStorage;
+    //MapAppStorage   mStorage;
+    std::map<std::string, NEMemory::uAlign> mStorage;
 #if defined(_MSC_VER) && (_MSC_VER > 1200)
     #pragma warning(default: 4251)
 #endif  // _MSC_VER
@@ -482,12 +482,12 @@ inline bool Application::startServiceManagerRequested( void )
 
 inline const char * Application::getTracerConfigFile( void )
 {
-    return Application::getInstance().mConfigTracer.getString();
+    return Application::getInstance().mConfigTracer.c_str();
 }
 
 inline const char * Application::getRoutingConfigFile( void )
 {
-    return Application::getInstance().mConfigService.getString();
+    return Application::getInstance().mConfigService.c_str();
 }
 
 inline Application & Application::getInstance( void )

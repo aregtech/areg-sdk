@@ -20,6 +20,8 @@
 #include "areg/base/NEUtilities.hpp"
 #include "areg/base/NECommon.hpp"
 
+#include <sstream>
+
 //////////////////////////////////////////////////////////////////////////
 // Version class implementation
 //////////////////////////////////////////////////////////////////////////
@@ -87,15 +89,24 @@ Version & Version::convFromString( const char * version )
     mMinor  = 0;
     mPatch  = 0;
 
-    String temp(version), major, minor, patch;
-    NEString::CharPos pos = NEString::START_POS;
-    pos = temp.substring( major, NECommon::OBJECT_SEPARATOR, pos );
-    pos = temp.substring( minor, NECommon::OBJECT_SEPARATOR, pos );
-    pos = temp.substring( patch, NECommon::OBJECT_SEPARATOR, pos );
+    std::string temp = version;
 
-    mMajor  = major.convToUInt32();;
-    mMinor  = minor.convToUInt32();
-    mPatch  = (mMajor != 0) && (mMinor != 0) ? patch.convToUInt32() : 0;
+    auto pos1 = temp.find_first_of(NECommon::OBJECT_SEPARATOR);
+    if (pos1 != std::string::npos)
+    {
+        const std::string major = temp.substr(0, pos1);
+        mMajor = std::stoi(major);
+    }
+
+    auto pos2 = temp.find_last_of(NECommon::OBJECT_SEPARATOR);
+    if (pos2 != std::string::npos && pos2 != pos1)
+    {
+        const std::string minor = temp.substr(pos1 + 1, pos2 - pos1 - 1);
+        mMinor = std::stoi(minor);
+
+        const std::string patch = temp.substr(pos2+1);
+        mPatch  = (mMajor != 0) && (mMinor != 0) ? std::stoi(patch) : 0;
+    }
 
     return (*this);
 }
@@ -146,10 +157,11 @@ bool Version::operator > ( const Version & version ) const
             );
 }
 
-String Version::convToString( void ) const
+std::string Version::convToString() const
 {
-    String result;
-    return result.formatString("%d%c%d%c%d", mMajor, NECommon::OBJECT_SEPARATOR, mMinor, NECommon::OBJECT_SEPARATOR, mPatch);
+    std::stringstream ss;
+    ss << mMajor << NECommon::OBJECT_SEPARATOR << mMinor << NECommon::OBJECT_SEPARATOR << mPatch;
+    return ss.str();
 }
 
 //////////////////////////////////////////////////////////////////////////
