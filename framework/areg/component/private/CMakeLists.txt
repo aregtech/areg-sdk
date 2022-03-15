@@ -55,7 +55,6 @@ list(APPEND areg_SRC
 	${areg_BASE}/component/private/TimerManager.cpp
 	${areg_BASE}/component/private/TimerManagingEvent.cpp
 	${areg_BASE}/component/private/WorkerThread.cpp
-	${areg_BASE}/component/private/posix/TimerManagerPosix.cpp
-	${areg_BASE}/component/private/posix/TimerPosix.cpp
-	${areg_BASE}/component/private/win32/TimerManagerWin32.cpp
 )
+include("${areg_BASE}/component/private/posix/CMakeLists.txt")
+include("${areg_BASE}/component/private/win32/CMakeLists.txt")
