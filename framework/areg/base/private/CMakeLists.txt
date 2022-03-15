@@ -42,29 +42,7 @@ list(APPEND areg_SRC
 	${areg_BASE}/base/private/Version.cpp
 	${areg_BASE}/base/private/WideString.cpp
 	${areg_BASE}/base/private/WriteConverter.cpp
-	${areg_BASE}/base/private/posix/CriticalSectionIX.cpp
-	${areg_BASE}/base/private/posix/FilePosix.cpp
-	${areg_BASE}/base/private/posix/IESynchObjectBaseIX.cpp
-	${areg_BASE}/base/private/posix/IEWaitableBaseIX.cpp
-	${areg_BASE}/base/private/posix/MutexIX.cpp
-	${areg_BASE}/base/private/posix/NEDebugPosix.cpp
-	${areg_BASE}/base/private/posix/NESocketPosix.cpp
-	${areg_BASE}/base/private/posix/NEUtilitiesPosix.cpp
-	${areg_BASE}/base/private/posix/ProcessPosix.cpp
-	${areg_BASE}/base/private/posix/SpinLockIX.cpp
-	${areg_BASE}/base/private/posix/SynchLockAndWaitIX.cpp
-	${areg_BASE}/base/private/posix/SynchObjectsPosix.cpp
-	${areg_BASE}/base/private/posix/ThreadPosix.cpp
-	${areg_BASE}/base/private/posix/WaitableEventIX.cpp
-	${areg_BASE}/base/private/posix/WaitableMutexIX.cpp
-	${areg_BASE}/base/private/posix/WaitableSemaphoreIX.cpp
-	${areg_BASE}/base/private/posix/WaitableTimerIX.cpp
-	${areg_BASE}/base/private/win32/FileWin32.cpp
-	${areg_BASE}/base/private/win32/NEDebugWin32.cpp
-	${areg_BASE}/base/private/win32/NESocketWin32.cpp
-	${areg_BASE}/base/private/win32/NEUtilitiesWin32.cpp
-	${areg_BASE}/base/private/win32/ProcessWin32.cpp
-	${areg_BASE}/base/private/win32/SpinLockWin32.cpp
-	${areg_BASE}/base/private/win32/SynchObjectsWin32.cpp
-	${areg_BASE}/base/private/win32/ThreadWin32.cpp
 )
+
+include("${areg_BASE}/base/private/win32/CMakeLists.txt")
+include("${areg_BASE}/base/private/posix/CMakeLists.txt")
