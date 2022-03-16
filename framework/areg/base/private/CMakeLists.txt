@@ -1,0 +1,48 @@
+# Adding sources
+list(APPEND areg_SRC
+    ${areg_BASE}/base/private/BufferPosition.cpp
+	${areg_BASE}/base/private/BufferStreamBase.cpp
+	${areg_BASE}/base/private/Containers.cpp
+	${areg_BASE}/base/private/DateTime.cpp
+	${areg_BASE}/base/private/File.cpp
+	${areg_BASE}/base/private/FileBase.cpp
+	${areg_BASE}/base/private/FileBuffer.cpp
+	${areg_BASE}/base/private/GEGlobal.cpp
+	${areg_BASE}/base/private/IEByteBuffer.cpp
+	${areg_BASE}/base/private/IECursorPosition.cpp
+	${areg_BASE}/base/private/IEGenericObject.cpp
+	${areg_BASE}/base/private/IEIOStream.cpp
+	${areg_BASE}/base/private/IESynchObject.cpp
+	${areg_BASE}/base/private/IEThreadConsumer.cpp
+	${areg_BASE}/base/private/Identifier.cpp
+	${areg_BASE}/base/private/NECommon.cpp
+	${areg_BASE}/base/private/NEDebug.cpp
+	${areg_BASE}/base/private/NEMath.cpp
+	${areg_BASE}/base/private/NEMemory.cpp
+	${areg_BASE}/base/private/NESocket.cpp
+	${areg_BASE}/base/private/NEString.cpp
+	${areg_BASE}/base/private/NEUtilities.cpp
+	${areg_BASE}/base/private/Object.cpp
+	${areg_BASE}/base/private/Process.cpp
+	${areg_BASE}/base/private/ReadConverter.cpp
+	${areg_BASE}/base/private/RemoteMessage.cpp
+	${areg_BASE}/base/private/RuntimeBase.cpp
+	${areg_BASE}/base/private/RuntimeClassID.cpp
+	${areg_BASE}/base/private/RuntimeObject.cpp
+	${areg_BASE}/base/private/SharedBuffer.cpp
+	${areg_BASE}/base/private/Socket.cpp
+	${areg_BASE}/base/private/SocketAccepted.cpp
+	${areg_BASE}/base/private/SocketClient.cpp
+	${areg_BASE}/base/private/SocketServer.cpp
+	${areg_BASE}/base/private/String.cpp
+	${areg_BASE}/base/private/SynchObjects.cpp
+	${areg_BASE}/base/private/Thread.cpp
+	${areg_BASE}/base/private/ThreadAddress.cpp
+	${areg_BASE}/base/private/ThreadLocalStorage.cpp
+	${areg_BASE}/base/private/Version.cpp
+	${areg_BASE}/base/private/WideString.cpp
+	${areg_BASE}/base/private/WriteConverter.cpp
+)
+
+include("${areg_BASE}/base/private/win32/CMakeLists.txt")
+include("${areg_BASE}/base/private/posix/CMakeLists.txt")
