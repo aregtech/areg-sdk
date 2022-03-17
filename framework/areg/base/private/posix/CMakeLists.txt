@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 list(APPEND areg_SRC
 	${areg_BASE}/base/private/posix/CriticalSectionIX.cpp
 	${areg_BASE}/base/private/posix/FilePosix.cpp
