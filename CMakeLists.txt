@@ -16,6 +16,7 @@ set(AREG_EXAMPLES "${AREG_SDK_ROOT}/examples")
 include("${CMAKE_CONFIG_DIR}/common.cmake")
 
 
+include_directories(framework/)
 include("${AREG_BASE}/CMakeLists.txt")
 include("${AREG_EXAMPLES}/CMakeLists.txt")
 
