@@ -17,46 +17,45 @@ else()
 endif()
 
 
-# Adding CXXFLAGS and ldflags for linking libraries
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -pthread -std=c++17")
+# Add compiler flags here
+add_compile_options(-g -pthread -Werror)
 
 add_library(Libs SHARED IMPORTED)
 target_link_libraries(Libs INTERFACE -lm -lstdc++ -lrt -lpthread)
 
 # Checking Compiler for adding corresponded tweaks and flags
 if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-    # using Clang
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror ${UserDefines} -stdlib=libc++")
+    # Clang compile options
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
 elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-    # using GCC
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Werror ${UserDefined}")
+    # GNU compile options
+    add_compile_options(-Wall ${UserDefines})
 elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-    # using Visual Studio C++
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Werror ${UserDefined}")
+    # Visual Studio C++
 endif()
 
 
-
 if(Config MATCHES "Release")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2 -DDEBUG")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2")
+    add_definitions(-DNDEBUG)
 else()
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DDEBUG")
+    add_definitions(-DDEBUG)
 endif()
 
 # flags for bitness 
 if(Platform MATCHES "x86_64")
     if(NOT DEFINED CrossCompile)
         if(bit MATCHES "32")
-            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m32")
+            add_compile_options(-m32)
         else()
-            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m64")
+            add_compile_options(-m64)
         endif()
     endif()
 endif()
 
 if(AREG_OS MATCHES "Windows")
 # Windows 
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DWINDOWS")
+    add_definitions(-DWINDOWS)
     set(OBJ_EXT "obj")
     set(AREG_BIN_EXT ".exe")
     set(AREG_LIB_PREFIX)
@@ -68,7 +67,7 @@ if(AREG_OS MATCHES "Windows")
     endif()
 else()
 # Unix
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DPOSIX")
+    add_definitions(-DPOSIX)
     set(OBJ_EXT "o")
     set(AREG_BIN_EXT ".out")
     set(AREG_LIB_PREFIX "lib")
@@ -79,7 +78,4 @@ else()
         set(AREG_LIB_EXT ".a")
     endif()
 endif()
-
-
-
 

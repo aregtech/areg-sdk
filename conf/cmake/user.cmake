@@ -1,6 +1,7 @@
-
-
-set(Toolset "g++")
+# To use specific compiler, set CMAKE_C_COMPILER and CMAKE_CXX_COMPILER values
+# for instance:
+# set(CMAKE_CXX_COMPILER "/usr/bin/g++-4.2")
+set(CMAKE_CXX_COMPILER)
 set(CrossCompile OFF)
 
 # ###########################################################################
@@ -18,6 +19,8 @@ set(Platform "x86_64")
 
 set(OpSystem "UNIX")
 
+# Determining bitness by size of void pointer
+# 8 bytes ==> x64 and 4 bytes ==> x86
 if(NOT ${CMAKE_SIZEOF_VOID_P} MATCHES "8")
     set(Platform "x86")
 endif()
