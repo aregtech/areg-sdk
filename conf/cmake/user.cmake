@@ -1,4 +1,11 @@
-set(CrossCompile OFF)
+if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+    set(Toolset "clang")
+elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    set(Toolset "g++")
+elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+    set(Toolset "MSVC")
+endif()
+set(CrossCompile)
 
 # ###########################################################################
 # Settings
