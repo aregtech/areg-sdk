@@ -1,7 +1,11 @@
-
-
-set(Toolset "g++")
-set(CrossCompile OFF)
+if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+    set(Toolset "clang")
+elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    set(Toolset "g++")
+elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+    set(Toolset "MSVC")
+endif()
+set(CrossCompile)
 
 # ###########################################################################
 # Settings
@@ -18,6 +22,8 @@ set(Platform "x86_64")
 
 set(OpSystem "UNIX")
 
+# Determining bitness by size of void pointer
+# 8 bytes ==> x64 and 4 bytes ==> x86
 if(NOT ${CMAKE_SIZEOF_VOID_P} MATCHES "8")
     set(Platform "x86")
 endif()
