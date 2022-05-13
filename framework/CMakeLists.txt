@@ -15,6 +15,10 @@ set_property(TARGET areg PROPERTY LIBRARY_OUTPUT_DIRECTORY ${ProBinDir})
 set(EXE mcrouter${AREG_BIN_EXT})
 add_executable(${EXE} ${mcrouter_SRC})
 
-# Setting other flags and properties
+# Setting linker flags and properties
 target_link_libraries(${EXE} areg m  stdc++ rt pthread)
-set_property(TARGET ${EXE} PROPERTY CXX_STANDARD 17)
+set_target_properties(${EXE}
+    PROPERTIES
+    CXX_STANDARD 17
+    CXX_STANDARD_REQUIRED ON
+    )

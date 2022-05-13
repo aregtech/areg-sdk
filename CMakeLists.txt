@@ -21,5 +21,3 @@ include(${CMAKE_CONFIG_DIR}/common.cmake)
 include_directories(framework/)
 include(${AREG_BASE}/CMakeLists.txt)
 include(${AREG_EXAMPLES}/CMakeLists.txt)
-
-
