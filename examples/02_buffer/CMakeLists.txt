@@ -1,1 +1,1 @@
-include(${myDir}/CMakeLists.txt)
+include(${subProjDir}/CMakeLists.txt)

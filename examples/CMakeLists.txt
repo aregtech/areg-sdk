@@ -21,7 +21,7 @@ list(APPEND fileList
 foreach(item IN LISTS fileList)
 	unset(SRC)
 	set(itemDir ${AREG_EXAMPLES}/${item})
-	set(myDir ${itemDir}/src)
+	set(subProjDir ${itemDir}/src)
 	include(${AREG_EXAMPLES}/${item}/CMakeLists.txt)
 
 	# Adding target for each example.

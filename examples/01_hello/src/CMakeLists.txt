@@ -1,3 +1,3 @@
 list(APPEND SRC
-    ${myDir}/main.cpp
+    ${subProjDir}/main.cpp
 )
