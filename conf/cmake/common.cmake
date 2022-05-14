@@ -8,7 +8,7 @@ set(AREG_OS          "${OpSystem}")
 set(AREG_STATIC_LIB)
 
 
-include("${CMAKE_CONFIG_DIR}/user.cmake") 
+include("${CMAKE_CONFIG_DIR}/user.cmake")
 
 if(areg MATCHES "static")
     set(AREG_BINARY "static")
@@ -39,7 +39,7 @@ else()
     add_definitions(-DDEBUG)
 endif()
 
-# flags for bitness 
+# flags for bitness
 if(Platform MATCHES "x86_64")
     if(NOT DEFINED CrossCompile)
         if(bit MATCHES "32")
@@ -51,7 +51,7 @@ if(Platform MATCHES "x86_64")
 endif()
 
 if(AREG_OS MATCHES "Windows")
-# Windows 
+# Windows
     add_definitions(-DWINDOWS)
     set(OBJ_EXT "obj")
     set(AREG_BIN_EXT ".exe")
@@ -76,3 +76,6 @@ else()
     endif()
 endif()
 
+# Examples LD flags (-l is not necessary)
+list(APPEND exampleLDFlags areg m  stdc++ rt pthread)
+set(exampleCXXStandard "17")

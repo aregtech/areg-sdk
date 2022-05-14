@@ -37,10 +37,10 @@ foreach(item IN LISTS fileList)
 	endif()
 
 	# -l options for compiler
-	target_link_libraries(${item} areg m  stdc++ rt pthread ${LDFLAGS})
+	target_link_libraries(${item} ${exampleLDFlags} ${LDFLAGS})
 	set_target_properties(${item}
 		PROPERTIES
-		CXX_STANDARD 17
+		CXX_STANDARD ${exampleCXXStandard}
 		CXX_STANDARD_REQUIRED ON
 		)
 endforeach()
