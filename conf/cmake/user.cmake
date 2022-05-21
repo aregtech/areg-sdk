@@ -20,15 +20,16 @@ set(Config "Release")
 
 set(Platform "x86_64")
 
-set(OpSystem "UNIX")
+set(OpSystem "${CMAKE_SYSTEM_NAME}")
+
+if(OpSystem STREQUAL "Darwin")
+    set(OpSystem "MacOS")
+endif()
 
 # Determining bitness by size of void pointer
 # 8 bytes ==> x64 and 4 bytes ==> x86
 if(NOT ${CMAKE_SIZEOF_VOID_P} MATCHES "8")
     set(Platform "x86")
-endif()
-if(WIN32)
-    set(OpSystem "Windows")
 endif()
 
 

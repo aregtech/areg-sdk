@@ -8,7 +8,7 @@ set(AREG_OS          "${OpSystem}")
 set(AREG_STATIC_LIB)
 
 
-include("${CMAKE_CONFIG_DIR}/user.cmake") 
+include("${CMAKE_CONFIG_DIR}/user.cmake")
 
 if(areg MATCHES "static")
     set(AREG_BINARY "static")
@@ -20,13 +20,10 @@ endif()
 # Add compiler flags here
 add_compile_options(-g -pthread -Werror)
 
-add_library(Libs SHARED IMPORTED)
-target_link_libraries(Libs INTERFACE -lm -lstdc++ -lrt -lpthread)
-
 # Checking Compiler for adding corresponded tweaks and flags
 if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     # Clang compile options
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
+    add_compile_options(-stdlib=libc++)
 elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     # GNU compile options
     add_compile_options(-Wall ${UserDefines})
@@ -36,13 +33,13 @@ endif()
 
 
 if(Config MATCHES "Release")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2")
+    add_compile_options(-O2)
     add_definitions(-DNDEBUG)
 else()
     add_definitions(-DDEBUG)
 endif()
 
-# flags for bitness 
+# flags for bitness
 if(Platform MATCHES "x86_64")
     if(NOT DEFINED CrossCompile)
         if(bit MATCHES "32")
@@ -54,7 +51,7 @@ if(Platform MATCHES "x86_64")
 endif()
 
 if(AREG_OS MATCHES "Windows")
-# Windows 
+# Windows
     add_definitions(-DWINDOWS)
     set(OBJ_EXT "obj")
     set(AREG_BIN_EXT ".exe")
@@ -79,3 +76,6 @@ else()
     endif()
 endif()
 
+# Examples LD flags (-l is not necessary)
+list(APPEND exampleLDFlags areg m  stdc++ rt pthread)
+set(exampleCXXStandard "17")
