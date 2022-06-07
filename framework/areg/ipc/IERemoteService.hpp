@@ -90,6 +90,14 @@ public:
     virtual bool startRemoteServicing( void ) = 0;
 
     /**
+     * \brief   Call to restart remove service. The host name and the port number should be already set.
+     *          If the service had connection, it will be lost and re-connected again. If there was no
+     *          connection, it starts new connection.
+     * \return  Returns true if succeeded to restart service.
+     **/
+    virtual bool restartRemoteServicing(void) = 0;
+
+    /**
      * \brief   Call to stop service. No more remote communication should be possible.
      **/
     virtual void stopRemoteServicing( void ) = 0;

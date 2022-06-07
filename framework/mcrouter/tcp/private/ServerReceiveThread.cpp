@@ -47,6 +47,7 @@ bool ServerReceiveThread::runDispatcher(void)
         MultiLock multiLock(syncObjects, 2, false);
 
         RemoteMessage msgReceived;
+        uint32_t retryCount = 0;
         do 
         {
             whichEvent = multiLock.lock(NECommon::DO_NOT_WAIT, false);
@@ -55,8 +56,20 @@ bool ServerReceiveThread::runDispatcher(void)
                 whichEvent = static_cast<int>(EventDispatcherBase::eEventOrder::EventQueue); // escape quit
                 NESocket::SocketAddress addrAccepted;
                 SOCKETHANDLE hSocket = mConnection.waitForConnectionEvent(addrAccepted);
-                if ( hSocket != NESocket::InvalidSocketHandle )
+
+                if (hSocket == NESocket::FailedSocketHandle)
                 {
+                    TRACE_WARN("Failed selecting server socket, going to retry [ %d ] times before restart.", (RETRY_COUNT - retryCount - 1));
+                    if (++retryCount >= RETRY_COUNT)
+                    {
+                        mConnectHandler.connectionFailure();
+                        whichEvent = static_cast<int>(EventDispatcherBase::eEventOrder::EventExit);
+                    }
+                }
+                else if ( hSocket != NESocket::InvalidSocketHandle )
+                {
+                    retryCount = 0;
+
                     SocketAccepted clientSocket;
                     if (mConnection.isConnectionAccepted(hSocket) )
                     {

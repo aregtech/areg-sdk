@@ -192,7 +192,12 @@ namespace NESocket
      * \brief   NESocket::InvalidSocketHandle
      *          Constant, identifying invalid socket descriptor.
      **/
-    extern AREG_API const SOCKETHANDLE  InvalidSocketHandle         /*= INVALID_SOCKET*/; // invalid socket descriptor
+    extern AREG_API const SOCKETHANDLE  InvalidSocketHandle         /* = ~0 */; // invalid socket descriptor
+    /**
+     * \brief   NESocket::FailedSocketHandle
+     *          Invalid connection socket descriptor. Used to indicate failure on server socket.
+     **/
+    extern AREG_API const SOCKETHANDLE  FailedSocketHandle          /* = ~1 */; // failed socket descriptor
     /**
      * \brief   NESocket::MAXIMUM_LISTEN_QUEUE_SIZE
      *          Constant, identifying maximum number of listeners in the queue.
@@ -340,7 +345,8 @@ namespace NESocket
      *                          Note:   the data will be valid only in case of new accepted connections.
      *                                  In all other cases there will be no valid data.
      * \return  If succeeds to accept connection, returns valid accepted socket descriptor.
-     *          Otherwise, if server socket is not valid anymore, returns NESocket::InvalidSocketHandle.
+     *          If server socket is not valid anymore, returns NESocket::FailedSocketHandle.
+     *          In all other failure cases, returns NESocket::InvalidSocketHandle.
      **/
     AREG_API SOCKETHANDLE serverAcceptConnection( SOCKETHANDLE serverSocket, const SOCKETHANDLE * masterList, int entriesCount, NESocket::SocketAddress * out_socketAddr = nullptr );
 

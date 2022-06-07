@@ -39,10 +39,11 @@ public:
      **/
     typedef enum class E_ServerServiceCommands
     {
-          CMD_StartService          //!< Sent to start message router connection service
-        , CMD_StopService           //!< Sent to stop message router connection service
-        , CMD_ServiceSendMsg        //!< Sent to notify to sent messages to connected client
-        , CMD_ServiceReceivedMsg    //!< Sent to notify received message from connected client
+          CMD_StartService          //!< Start message router connection service
+        , CMD_StopService           //!< Stop message router connection service
+        , CMD_RestartService        //!< Restart the message router connection service
+        , CMD_ServiceSendMsg        //!< Notify to sent messages to connected client
+        , CMD_ServiceReceivedMsg    //!< Notify received message from connected client
     } eServerServiceCommands;
 
     /**
@@ -155,6 +156,8 @@ inline const char * ServerServiceEventData::getString( ServerServiceEventData::e
         return "ServerServiceEventData::CMD_StartService";
     case ServerServiceEventData::eServerServiceCommands::CMD_StopService:
         return "ServerServiceEventData::CMD_StopService";
+    case ServerServiceEventData::eServerServiceCommands::CMD_RestartService:
+        return "ServerServiceEventData::CMD_RestartService";
     case ServerServiceEventData::eServerServiceCommands::CMD_ServiceSendMsg:
         return "ServerServiceEventData::CMD_ServiceSendMsg";
     case ServerServiceEventData::eServerServiceCommands::CMD_ServiceReceivedMsg:

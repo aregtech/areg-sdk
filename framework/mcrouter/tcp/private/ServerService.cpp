@@ -11,6 +11,7 @@
 #include "areg/trace/GETrace.h"
 
 DEF_TRACE_SCOPE(mcrouter_tcp_private_ServerService_startRemoteServicing);
+DEF_TRACE_SCOPE(mcrouter_tcp_private_ServerService_restartRemoteServicing);
 DEF_TRACE_SCOPE(mcrouter_tcp_private_ServerService_stopRemoteServicing);
 DEF_TRACE_SCOPE(mcrouter_tcp_private_ServerService_registerService);
 DEF_TRACE_SCOPE(mcrouter_tcp_private_ServerService_unregisterService);
@@ -25,6 +26,7 @@ DEF_TRACE_SCOPE(mcrouter_tcp_private_ServerService_unregisterRemoteProxy);
 DEF_TRACE_SCOPE(mcrouter_tcp_private_ServerService_processReceivedMessage);
 
 DEF_TRACE_SCOPE(mcrouter_tcp_private_ServerService_startConnection);
+DEF_TRACE_SCOPE(mcrouter_tcp_private_ServerService_restartConnection);
 DEF_TRACE_SCOPE(mcrouter_tcp_private_ServerService_stopConnection);
 
 DEF_TRACE_SCOPE(mcrouter_tcp_private_ServerService_failedSendMessage);
@@ -100,6 +102,34 @@ bool ServerService::startRemoteServicing(void)
         ASSERT(isRunning());
     }
 #endif // DEBUG
+
+    return result;
+}
+
+bool ServerService::restartRemoteServicing(void)
+{
+    TRACE_SCOPE(mcrouter_tcp_private_ServerService_restartRemoteServicing);
+
+    Lock lock(mLock);
+    bool result = true;
+    if (isRunning() == false)
+    {
+        if (createThread(NECommon::WAIT_INFINITE) && waitForDispatcherStart(NECommon::WAIT_INFINITE))
+        {
+            result = ServerServiceEvent::sendEvent( ServerServiceEventData(ServerServiceEventData::eServerServiceCommands::CMD_RestartService)
+                                                    , static_cast<IEServerServiceEventConsumer&>(self())
+                                                    , static_cast<DispatcherThread&>(self()));
+        }
+
+        TRACE_DBG("Created remote servicing thread with [ %s ]", result ? "SUCCESS" : "FAIL");
+    }
+    else
+    {
+        TRACE_WARN("The servicing thread is running, restarting servicing.");
+        result = ServerServiceEvent::sendEvent( ServerServiceEventData(ServerServiceEventData::eServerServiceCommands::CMD_RestartService)
+                                                , static_cast<IEServerServiceEventConsumer&>(self())
+                                                , static_cast<DispatcherThread&>(self()));
+    }
 
     return result;
 }
@@ -198,6 +228,14 @@ void ServerService::connectionLost( SocketAccepted & clientSocket )
     }
 }
 
+void ServerService::connectionFailure(void)
+{
+    if (isRemoteServicingStarted())
+    {
+        restartRemoteServicing();
+    }
+}
+
 void ServerService::processTimer(Timer & timer)
 {
     if ( &timer == &mTimerConnect )
@@ -230,6 +268,13 @@ void ServerService::processEvent(const ServerServiceEventData & data)
         mThreadSend.completionWait( NECommon::WAIT_INFINITE );
         mThreadReceive.destroyThread( NECommon::DO_NOT_WAIT );
         mThreadSend.destroyThread( NECommon::DO_NOT_WAIT );
+        break;
+
+    case ServerServiceEventData::eServerServiceCommands::CMD_RestartService:
+        {
+            Lock lock(mLock);
+            restartConnection();
+        }
         break;
 
     case ServerServiceEventData::eServerServiceCommands::CMD_ServiceReceivedMsg:
@@ -446,6 +491,22 @@ bool ServerService::startConnection(void)
     }
 
     return result;
+}
+
+bool ServerService::restartConnection( void )
+{
+    TRACE_SCOPE(mcrouter_tcp_private_ServerService_restartConnection);
+    TRACE_DBG("Going to start connection. Address [ %u ], port [ %d ]"
+                , mServerConnection.getAddress().getHostAddress().getString()
+                , mServerConnection.getAddress().getHostPort());
+
+    stopConnection();
+    mThreadReceive.completionWait(NECommon::WAIT_INFINITE);
+    mThreadSend.completionWait(NECommon::WAIT_INFINITE);
+    mThreadReceive.destroyThread(NECommon::DO_NOT_WAIT);
+    mThreadSend.destroyThread(NECommon::DO_NOT_WAIT);
+
+    return startConnection();
 }
 
 void ServerService::stopConnection(void)

@@ -50,6 +50,11 @@ DEF_TRACE_SCOPE(areg_base_NESocket_serverAcceptConnection);
 AREG_API const SOCKETHANDLE         NESocket::InvalidSocketHandle      = static_cast<SOCKETHANDLE>(~0);
 
 /**
+ * \brief   Invalid connection socket descriptor. Used to indicate failure on server socket.
+ **/
+AREG_API const SOCKETHANDLE         NESocket::FailedSocketHandle = static_cast<SOCKETHANDLE>(~1);
+
+/**
  * \brief   Constant, identifying maximum number of listeners in the queue. Used by server socket when set to listen connection.
  **/
 AREG_API const int                  NESocket::MAXIMUM_LISTEN_QUEUE_SIZE = SOMAXCONN;
@@ -565,6 +570,7 @@ AREG_API SOCKETHANDLE NESocket::serverAcceptConnection(SOCKETHANDLE serverSocket
             else
             {
                 TRACE_ERR("Failed to select connection. The server socket [ %u ] might be closed and not valid anymore, return value [ %d ]", static_cast<unsigned int>(serverSocket), selected);
+                result = NESocket::FailedSocketHandle;
             }
         }
         else

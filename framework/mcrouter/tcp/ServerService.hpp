@@ -156,6 +156,14 @@ public:
     virtual bool startRemoteServicing( void ) override;
 
     /**
+     * \brief   Call to restart remove service. The host name and the port number should be already set.
+     *          If the service had connection, it will be lost and re-connected again. If there was no
+     *          connection, it starts new connection.
+     * \return  Returns true if succeeded to restart service.
+     **/
+    virtual bool restartRemoteServicing(void) override;
+
+    /**
      * \brief   Call to stop service. No more remote communication should be possible.
      **/
     virtual void stopRemoteServicing( void ) override;
@@ -236,6 +244,11 @@ protected:
      * \param   clientSocket    Client socket object, which lost connection.
      **/
     virtual void connectionLost( SocketAccepted & clientSocket ) override;
+
+    /**
+     * \brief   Triggered, when there is a connection failure. Normally, this should restart the connection.
+     **/
+    virtual void connectionFailure( void ) override;
 
 /************************************************************************/
 // IETimerConsumer interface overrides.
@@ -403,6 +416,8 @@ private:
      * \return  Returns true if could start connection.
      **/
     bool startConnection( void );
+
+    bool restartConnection( void );
 
     /**
      * \brief   Called to stop connection. All clients are automatically disconnected.

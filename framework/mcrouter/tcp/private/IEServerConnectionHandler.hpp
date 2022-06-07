@@ -73,6 +73,11 @@ public:
      **/
     virtual void connectionLost( SocketAccepted & clientSocket ) = 0;
 
+    /**
+     * \brief   Triggered, when there is a connection failure. Normally, this should restart the connection.
+     **/
+    virtual void connectionFailure( void ) = 0;
+
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////

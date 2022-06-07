@@ -131,6 +131,11 @@ bool ClientService::startRemoteServicing(void)
     return result;
 }
 
+bool ClientService::restartRemoteServicing(void)
+{
+    return false;
+}
+
 void ClientService::stopRemoteServicing(void)
 {
     TRACE_SCOPE(areg_ipc_private_ClientService_stopRemotingService);
@@ -182,7 +187,7 @@ bool ClientService::registerService( const StubAddress & stubService )
     bool result = false;
     if ( isStarted() )
     {
-        TRACE_DBG("Queueing to send register [ %s ] service message by connection [ %d ]"
+        TRACE_DBG("Queuing to send register [ %s ] service message by connection [ %d ]"
                    , StubAddress::convAddressToPath(stubService).getString()
                    , mClientConnection.getCookie());
 
@@ -198,7 +203,7 @@ void ClientService::unregisterService(const StubAddress & stubService)
     Lock lock( mLock );
     if ( isStarted() )
     {
-        TRACE_DBG("Queueing to send unregister [ %s ] service message by connection [ %d ]"
+        TRACE_DBG("Queuing to send unregister [ %s ] service message by connection [ %d ]"
                    , StubAddress::convAddressToPath(stubService).getString()
                    , mClientConnection.getCookie());
 
@@ -213,7 +218,7 @@ bool ClientService::registerServiceClient(const ProxyAddress & proxyService)
     bool result = false;
     if ( isStarted() )
     {
-        TRACE_DBG("Queueing to send register [ %s ] service client message by connection [ %d ]"
+        TRACE_DBG("Queuing to send register [ %s ] service client message by connection [ %d ]"
                    , ProxyAddress::convAddressToPath(proxyService).getString()
                    , mClientConnection.getCookie());
 
@@ -230,7 +235,7 @@ void ClientService::unregisterServiceClient(const ProxyAddress & proxyService)
     Lock lock( mLock );
     if ( isStarted() )
     {
-        TRACE_DBG("Queueing to send unregister [ %s ] service client message by connection [ %d ]"
+        TRACE_DBG("Queuing to send unregister [ %s ] service client message by connection [ %d ]"
                    , ProxyAddress::convAddressToPath(proxyService).getString()
                    , mClientConnection.getCookie());
 
@@ -338,7 +343,7 @@ void ClientService::processEvent( const ClientServiceEventData & data )
         }
         else
         {
-            TRACE_WARN("Ignoring lost connection event, either servising state is not allowed, or application is closing.");
+            TRACE_WARN("Ignoring lost connection event, either servicing state is not allowed, or application is closing.");
         }
     }
     break;
@@ -521,7 +526,7 @@ void ClientService::failedProcessMessage( const RemoteMessage & msgUnprocessed )
     }
     else
     {
-        TRACE_WARN("Ignore processing failure message, te application is closing");
+        TRACE_WARN("Ignore processing failure message, the application is closing");
     }
 }
 
