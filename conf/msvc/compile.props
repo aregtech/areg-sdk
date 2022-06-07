@@ -2,31 +2,31 @@
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <!-- Project configurations and compiler settings -->
   <ItemGroup Label="ProjectConfigurations">
-    <ProjectConfiguration Include="dbg_vc142|Win32">
-      <Configuration>dbg_vc142</Configuration>
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
       <Platform>Win32</Platform>
     </ProjectConfiguration>
-    <ProjectConfiguration Include="dbg_vc142|x64">
-      <Configuration>dbg_vc142</Configuration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
       <Platform>x64</Platform>
     </ProjectConfiguration>
-    <ProjectConfiguration Include="rls_vc142|Win32">
-      <Configuration>rls_vc142</Configuration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
       <Platform>Win32</Platform>
     </ProjectConfiguration>
-    <ProjectConfiguration Include="rls_vc142|x64">
-      <Configuration>rls_vc142</Configuration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="UserMacros">
-    <ConfigShortName Condition="'$(Configuration)'=='dbg_vc142'">Debug</ConfigShortName>
-    <ConfigShortName Condition="'$(Configuration)'=='rls_vc142'">Release</ConfigShortName>
-    <VCCompilerVersion Condition="'$(Configuration)'=='dbg_vc142'">v142</VCCompilerVersion>
-    <VCCompilerVersion Condition="'$(Configuration)'=='rls_vc142'">v142</VCCompilerVersion>
+    <ConfigShortName Condition="'$(Configuration)'=='Debug'">Debug</ConfigShortName>
+    <ConfigShortName Condition="'$(Configuration)'=='Release'">Release</ConfigShortName>
+    <VCCompilerVersion Condition="'$(Configuration)'=='Debug'">v143</VCCompilerVersion>
+    <VCCompilerVersion Condition="'$(Configuration)'=='Release'">v143</VCCompilerVersion>
   </PropertyGroup>
   <PropertyGroup Label="Globals">
-    <PlatformToolset Condition="'$(VCCompilerVersion)'=='v142'">v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
   </PropertyGroup>
   <!-- Import User settings -->
 </Project>

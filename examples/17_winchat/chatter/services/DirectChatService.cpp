@@ -35,7 +35,7 @@ NERegistry::Model DirectChatService::GetModel( const NEDirectMessager::sParticip
     {
         const NEDirectConnection::sParticipant & participant = listParticipants[i];
         NERegistry::DependencyEntry entry( NEDistributedApp::getConnectionServiceRole( participant.nickName, participant.cookie ) );
-        listDependencies.add( entry );
+        listDependencies.mListDependencies.add( entry );
     }
 
     NERegistry::ServiceEntry          serviceEntry( NEDirectMessager::ServiceName, NEDirectMessager::InterfaceVersion );
@@ -168,7 +168,7 @@ void DirectChatService::requestChatLeave( const NEDirectMessager::sParticipant &
 {
     TRACE_SCOPE( distrbutedapp_DirectChatService_RequestChatLeave );
     NEDirectMessager::ListParticipants & chatParticipants = getChatParticipants( );
-    if ( chatParticipants.remove( participant, 0 ) )
+    if ( chatParticipants.removeElem( participant, 0 ) )
     {
         broadcastParticipantLeft( participant, timeLeave );
         notifyChatParticipantsUpdated( );

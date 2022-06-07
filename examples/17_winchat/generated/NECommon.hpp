@@ -174,7 +174,7 @@ namespace NECommon
 	 * \brief	NECommon::ListConnections
 	 *			Internal custom type definition of TEArrayList<sConnection, const sConnection &> 
 	 **/
-    typedef	TEArrayList<sConnection, const sConnection &>		                                    ListConnections;
+    typedef	TEArrayList<sConnection>		                                    ListConnections;
 
 	/**
 	 * \brief	NECommon::MapConnections
@@ -266,7 +266,7 @@ namespace NECommon
 	 * \brief	NECommon::ListConnections
 	 *			Internal custom type definition of TEArrayList<sConnection, const sConnection &> 
 	 **/
-	typedef	TEArrayList<sParticipant, const sParticipant &>		                                    ListParticipants;
+	typedef	TEArrayList<sParticipant>		                                    ListParticipants;
 
 	/**
 	 * \brief	NECommon::MapDirectConnections

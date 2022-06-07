@@ -299,8 +299,8 @@ void ServerService::processEvent(const ServerServiceEventData & data)
                     msgReceived >> cookie;
                     mServerConnection.closeConnection(cookie);
 
-                    TEArrayList<StubAddress, const StubAddress &>   listStubs;
-                    TEArrayList<ProxyAddress, const ProxyAddress &> listProxies;
+                    TEArrayList<StubAddress>   listStubs;
+                    TEArrayList<ProxyAddress> listProxies;
                     mServiceRegistry.getServiceSources(cookie, listStubs, listProxies);
 
                     TRACE_DBG("Routing service received disconnect message from cookie [ %u ], [ %d ] stubs and [ %d ] proxies are going to be disconnected"
@@ -456,8 +456,8 @@ void ServerService::stopConnection(void)
     mThreadReceive.triggerExitEvent();
     mThreadReceive.destroyThread( NECommon::DO_NOT_WAIT );
 
-    TEArrayList<StubAddress, const StubAddress &> stubList;
-    TEArrayList<ProxyAddress, const ProxyAddress &> proxyList;
+    TEArrayList<StubAddress> stubList;
+    TEArrayList<ProxyAddress> proxyList;
     getServiceList(NEService::COOKIE_ANY, stubList, proxyList);
 
     for ( int i = 0; i < stubList.getSize(); ++ i )
@@ -476,7 +476,7 @@ void ServerService::stopConnection(void)
     mServerConnection.closeSocket();
 }
 
-void ServerService::getServiceList(ITEM_ID cookie, TEArrayList<StubAddress, const StubAddress &> & out_listStubs, TEArrayList<ProxyAddress, const ProxyAddress &> & out_lisProxies) const
+void ServerService::getServiceList(ITEM_ID cookie, TEArrayList<StubAddress> & out_listStubs, TEArrayList<ProxyAddress> & out_lisProxies) const
 {
     mServiceRegistry.getServiceList(cookie, out_listStubs, out_lisProxies);
 }

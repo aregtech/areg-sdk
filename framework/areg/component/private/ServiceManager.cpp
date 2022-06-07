@@ -516,8 +516,8 @@ void ServiceManager::processEvent( const ServiceManagerEventData & data )
     case ServiceManagerEventData::eServiceManagerCommands::CMD_UnregisterConnection:
     case ServiceManagerEventData::eServiceManagerCommands::CMD_LostConnection:
         {
-            TEArrayList<StubAddress, const StubAddress &> stubList;
-            TEArrayList<ProxyAddress, const ProxyAddress &> proxyList;
+            TEArrayList<StubAddress> stubList;
+            TEArrayList<ProxyAddress> proxyList;
             for ( MAPPOS posMap = mServerList.firstPosition(); posMap != nullptr; posMap = mServerList.nextPosition(posMap) )
             {
                 const StubAddress & server = mServerList.keyAtPosition(posMap).getAddress();
@@ -604,7 +604,7 @@ void ServiceManager::_stopServiceManagerThread( void )
     completionWait( NECommon::WAIT_INFINITE );
 }
 
-void ServiceManager::getServiceList( ITEM_ID cookie, TEArrayList<StubAddress, const StubAddress &> & OUT out_listStubs, TEArrayList<ProxyAddress, const ProxyAddress &> & OUT out_lisProxies ) const
+void ServiceManager::getServiceList( ITEM_ID cookie, TEArrayList<StubAddress> & OUT out_listStubs, TEArrayList<ProxyAddress> & OUT out_lisProxies ) const
 {
     TRACE_SCOPE(areg_component_private_ServiceManager_getServiceList);
     Lock lock( mLock );

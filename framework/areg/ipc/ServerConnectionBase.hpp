@@ -70,7 +70,7 @@ protected:
     /**
      * \brief   The list of accepted sockets.
      **/
-    using ListSockets			= TEArrayList<SOCKETHANDLE, const SOCKETHANDLE>;
+    using ListSockets			= TEArrayList<SOCKETHANDLE>;
 
     /**
      * \brief   The size of master list to listen sockets for incoming messages.

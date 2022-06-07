@@ -215,7 +215,7 @@ MAPPOS ServiceRegistry::findService( const ServiceAddress & addrService ) const
     return static_cast<MAPPOS>(*result);
 }
 
-void ServiceRegistry::getServiceList( ITEM_ID cookie , TEArrayList<StubAddress, const StubAddress &> & OUT out_stubServiceList, TEArrayList<ProxyAddress, const ProxyAddress &> & OUT out_proxyServiceList ) const
+void ServiceRegistry::getServiceList( ITEM_ID cookie , TEArrayList<StubAddress> & OUT out_stubServiceList, TEArrayList<ProxyAddress> & OUT out_proxyServiceList ) const
 {
     TRACE_SCOPE(mcrouter_tcp_private_ServiceRegistry_getServiceList);
     TRACE_DBG("Filter service list for cookie [ %u ]", static_cast<unsigned int>(cookie));
@@ -267,7 +267,7 @@ void ServiceRegistry::getServiceList( ITEM_ID cookie , TEArrayList<StubAddress, 
     }
 }
 
-void ServiceRegistry::getServiceSources(ITEM_ID cookie, TEArrayList<StubAddress, const StubAddress &> & OUT stubSource, TEArrayList<ProxyAddress, const ProxyAddress &> & OUT proxySources)
+void ServiceRegistry::getServiceSources(ITEM_ID cookie, TEArrayList<StubAddress> & OUT stubSource, TEArrayList<ProxyAddress> & OUT proxySources)
 {
     TRACE_SCOPE(mcrouter_tcp_private_ServiceRegistry_getServiceSources);
     TRACE_DBG("Pickup services with [ %u ] sources ", static_cast<unsigned int>(cookie));

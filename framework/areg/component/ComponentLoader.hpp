@@ -356,7 +356,7 @@ private:
      * \brief   ComponentLoader::ModelList
      *          Linked List of Model objects
      **/
-    using ModelList     = TEArrayList<NERegistry::Model, const NERegistry::Model &>;
+    using ModelList     = TEArrayList<NERegistry::Model>;
 
 //////////////////////////////////////////////////////////////////////////
 // Static members

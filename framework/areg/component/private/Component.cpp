@@ -46,9 +46,9 @@ Component* Component::loadComponent(const NERegistry::ComponentEntry &entry, Com
     if (component != nullptr)
     {
         const NERegistry::WorkerThreadList& wThreads = entry.getWorkerThreads();
-        for (int i = 0; i < wThreads.getSize(); ++ i)
+        for (int i = 0; i < wThreads.mListWorkers.getSize(); ++ i)
         {
-            const NERegistry::WorkerThreadEntry& wtEntry = wThreads[i];
+            const NERegistry::WorkerThreadEntry& wtEntry = wThreads.mListWorkers[i];
             IEWorkerThreadConsumer* consumer = static_cast<Component *>(component)->workerThreadConsumer(wtEntry.mConsumerName.getString(), wtEntry.mThreadName.getBuffer());
             if (consumer != nullptr)
                 component->createWorkerThread(wtEntry.mThreadName.getString(), *consumer, componentThread);
@@ -63,8 +63,8 @@ void Component::unloadComponent( Component& comItem, const NERegistry::Component
     ASSERT(entry.mFuncDelete != nullptr);
 
     const NERegistry::WorkerThreadList& wThreads = entry.getWorkerThreads();
-    for (int i = 0; i < wThreads.getSize(); ++ i)
-        comItem.deleteWorkerThread(wThreads[i].mThreadName.getString());
+    for (int i = 0; i < wThreads.mListWorkers.getSize(); ++ i)
+        comItem.deleteWorkerThread(wThreads.mListWorkers[i].mThreadName.getString());
 
     entry.mFuncDelete(comItem, entry);
 }

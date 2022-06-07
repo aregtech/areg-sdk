@@ -95,9 +95,9 @@ int ComponentThread::createComponents( void )
     const NERegistry::ComponentList& comList = ComponentLoader::getComponentList(getName());
     if (comList.isValid())
     {
-        for (int i = 0; i < comList.getSize(); ++ i)
+        for (int i = 0; i < comList.mListComponents.getSize(); ++ i)
         {
-            const NERegistry::ComponentEntry& entry = comList[i];
+            const NERegistry::ComponentEntry& entry = comList.mListComponents[i];
             if (entry.isValid() && entry.mFuncCreate != nullptr)
             {
                 Component *comObj = Component::loadComponent(entry, self());
@@ -156,7 +156,7 @@ void ComponentThread::shutdownComponents( void )
 {
     OUTPUT_DBG("Going to shutdown components in thread [ %s ].", getName().getString());
 
-    TEArrayList<ProxyBase *, ProxyBase *> proxyList;
+    TEArrayList<ProxyBase *> proxyList;
     ProxyBase::findThreadProxies( self(), proxyList );
     for ( int i = 0; i < proxyList.getSize(); ++ i)
     {

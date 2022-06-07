@@ -50,7 +50,7 @@ PropertyValue::PropertyValue(double dValue)
 {
 }
 
-PropertyValue::PropertyValue(const TEArrayList<Identifier, const Identifier &> idList)
+PropertyValue::PropertyValue(const TEArrayList<Identifier> idList)
     : mValue    ( )
 {
     setIndentifier(idList);
@@ -86,7 +86,7 @@ PropertyValue & PropertyValue::operator = (double dValue)
     return (*this);
 }
 
-PropertyValue & PropertyValue::operator = (const TEArrayList<Identifier, const Identifier &> & idList)
+PropertyValue & PropertyValue::operator = (const TEArrayList<Identifier> & idList)
 {
     setIndentifier(idList);
     return (*this);
@@ -137,7 +137,7 @@ double PropertyValue::getDouble(void) const
     return mValue.convToDouble( );
 }
 
-unsigned int PropertyValue::getIndetifier( const TEArrayList<Identifier, const Identifier &> idList ) const
+unsigned int PropertyValue::getIndetifier( const TEArrayList<Identifier> idList ) const
 {
     static const char _or[2] = {NEPersistence::SYNTAX_LOGICAL_OR, '\0'};
     unsigned int result = Identifier::BAD_IDENTIFIER.getValue();
@@ -183,7 +183,7 @@ void PropertyValue::setDouble(double dValue)
     mValue = String::doubleToString( dValue );
 }
 
-void PropertyValue::setIndentifier(const TEArrayList<Identifier, const Identifier &> idList)
+void PropertyValue::setIndentifier(const TEArrayList<Identifier> idList)
 {
     mValue.clear();
     for ( int i = 0; i < idList.getSize(); ++ i )

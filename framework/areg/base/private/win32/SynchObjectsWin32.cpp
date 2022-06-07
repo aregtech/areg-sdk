@@ -53,9 +53,9 @@ Mutex::Mutex(bool lock /* = true */)
 {
     static_assert(std::atomic<id_type>::is_always_lock_free);
     SYNCHANDLE synchObj = static_cast<SYNCHANDLE>(CreateMutex( nullptr, lock ? TRUE : FALSE, nullptr ));
-    if (lock && (synchObj != nullptr))
+    mSynchObject = synchObj;
+    if (lock)
     {
-        mSynchObject = synchObj;
         _lockMutex(NECommon::WAIT_INFINITE);
     }
 }

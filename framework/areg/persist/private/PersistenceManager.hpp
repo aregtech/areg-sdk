@@ -90,7 +90,7 @@ public:
      * \param   position    The name of position at section to get the values
      * \return  Returns number of properties in the list.
      **/
-    int getProperty( const char * section, const char * property, const char * position, TEArrayList<Property, const Property &> & out_listProperties );
+    int getProperty( const char * section, const char * property, const char * position, TEArrayList<Property> & out_listProperties );
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables

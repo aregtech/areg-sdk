@@ -130,7 +130,7 @@ void ServerConnectionBase::closeConnection(SocketAccepted & clientConnection)
     mSocketToCookie.removeAt(hSocket);
     mCookieToSocket.removeAt(cookie);
     mAcceptedConnections.removeAt(hSocket);
-    mMasterList.remove(hSocket, 0);
+    mMasterList.removeElem(hSocket, 0);
 
     clientConnection.closeSocket();
 }
@@ -145,7 +145,7 @@ void ServerConnectionBase::closeConnection( ITEM_ID cookie )
         SOCKETHANDLE hSocket= mCookieToSocket.removePosition( posCookie );
         MAPPOS posClient    = mAcceptedConnections.find( hSocket );
         mSocketToCookie.removeAt( hSocket );
-        mMasterList.remove( hSocket, 0 );
+        mMasterList.removeElem( hSocket, 0 );
         if (posClient != nullptr)
         {
             SocketAccepted client(mAcceptedConnections.removePosition(posClient));

@@ -21,26 +21,27 @@
 //////////////////////////////////////////////////////////////////////////
 
 Tokenizer::Tokenizer( const String & str, const String & delimiters, bool keepEmpty/*=true*/)
+    : mTokens   ()
 {
-    Tokenize(str, delimiters, keepEmpty);
+   tokenize(str, delimiters, keepEmpty);
 }
 
 Tokenizer::Tokenizer( const Tokenizer & src )
-    : StringArray( static_cast<const StringArray &>(src) )
+    : mTokens( src.mTokens )
 {
 }
 
 Tokenizer::Tokenizer( Tokenizer && src ) noexcept
-    : StringArray( static_cast<StringArray &&>(src) )
+    : mTokens( std::move(src.mTokens) )
 {
 }
 
-void Tokenizer::Tokenize( const String & str, const String & delimiters, bool keepEmpty/*=true*/)
+void Tokenizer::tokenize( const String & str, const String & delimiters, bool keepEmpty/*=true*/)
 {
     NEString::CharPos lastPos   = 0;
     NEString::CharCount length  = str.getLength();
     // empty self
-    removeAll();
+    mTokens.removeAll();
     while (lastPos <= length)
     {
         NEString::CharPos pos = str.findOneOf(delimiters, lastPos);
@@ -48,7 +49,7 @@ void Tokenizer::Tokenize( const String & str, const String & delimiters, bool ke
            pos = length;
 
         if (pos != lastPos || keepEmpty)
-            add(str.substring(lastPos, pos - lastPos));
+            mTokens.add(str.substring(lastPos, pos - lastPos));
         
         lastPos = pos + 1;
     }

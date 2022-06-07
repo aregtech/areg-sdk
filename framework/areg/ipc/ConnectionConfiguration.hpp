@@ -46,7 +46,7 @@ private:
     /**
      * \brief   List of configuration properties
      **/
-    using ListProperties        = TEArrayList<Property, const Property &>;
+    using ListProperties        = TEArrayList<Property>;
     /**
      * \brief   Remote servicing map helper class.
      **/

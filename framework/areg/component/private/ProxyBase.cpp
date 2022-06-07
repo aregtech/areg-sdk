@@ -226,13 +226,13 @@ ProxyBase * ProxyBase::findOrCreateProxy( const char * roleName
 }
 
 
-int ProxyBase::findThreadProxies(DispatcherThread & ownerThread, TEArrayList<ProxyBase *, ProxyBase *> & OUT threadProxyList )
+int ProxyBase::findThreadProxies(DispatcherThread & ownerThread, TEArrayList<ProxyBase *> & OUT threadProxyList )
 {
     ThreadProxyList * proxyList = ProxyBase::_mapThreadProxies.findResource(ownerThread.getName());
     int result = proxyList != nullptr ? proxyList->getSize() : 0;
     if ( result > 0 )
     {
-        threadProxyList = static_cast<const TEArrayList<ProxyBase *, ProxyBase *> &>(*proxyList);
+        threadProxyList = static_cast<const TEArrayList<ProxyBase *> &>(*proxyList);
     }
 
     return result;
@@ -397,7 +397,7 @@ void ProxyBase::serviceConnectionUpdated( const StubAddress & server, const Chan
             }
             else
             {
-                mListConnect.remove(listener, 0);
+                mListConnect.removeElem(listener, 0);
             }
 
             listener->serviceConnected(mIsConnected, *this);

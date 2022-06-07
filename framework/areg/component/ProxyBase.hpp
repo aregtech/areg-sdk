@@ -199,7 +199,7 @@ private:
      * \brief   Proxy Listener List class to save list of listener objects.
      *          Every Proxy class has list of listeners.
      ************************************************************************/
-    using ProxyListenerList = TEArrayList<ProxyBase::Listener, const ProxyBase::Listener &>;
+    using ProxyListenerList = TEArrayList<ProxyBase::Listener>;
 
     //////////////////////////////////////////////////////////////////////////
     // ProxyBase::ProxyConnectList definition
@@ -208,7 +208,7 @@ private:
      * \brief   Proxy Connected client List class to handle connect and 
      *          disconnect service.
      ************************************************************************/
-    using ProxyConnectList  = TEArrayList<IEProxyListener *, IEProxyListener *>;
+    using ProxyConnectList  = TEArrayList<IEProxyListener *>;
 
     //////////////////////////////////////////////////////////////////////////
     // ProxyBase::ProxyMap class declaration.
@@ -262,7 +262,7 @@ private:
     /************************************************************************
      * \brief   The list of proxies. Used to save in Map List.
      ************************************************************************/
-    using ThreadProxyList   = TEArrayList<ProxyBase *, ProxyBase *>;
+    using ThreadProxyList   = TEArrayList<ProxyBase *>;
 
     //////////////////////////////////////////////////////////////////////////
     // ProxyBase::ImplThreadProxyMap internal class declaration
@@ -304,7 +304,7 @@ private:
          **/
         inline bool implRemoveResource( ThreadProxyList & List, ProxyBase * Resource )
         {
-            return (Resource != nullptr ? List.remove( Resource, 0 ) : false);
+            return (Resource != nullptr ? List.removeElem( Resource, 0 ) : false);
         }
     };
 
@@ -450,7 +450,7 @@ public:
      * \param   threadProxyList On output, which contains list of proxies created in specified thread.
      * \return  Returns number of proxies added to the list.
      **/
-    static int findThreadProxies( DispatcherThread & ownerThread, TEArrayList<ProxyBase *, ProxyBase *> & OUT threadProxyList );
+    static int findThreadProxies( DispatcherThread & ownerThread, TEArrayList<ProxyBase *> & OUT threadProxyList );
 
     /**
      * \brief   Creates the request failure event to send to remote proxy. This may happen when either the request of client
@@ -1095,7 +1095,7 @@ inline bool ProxyBase::addListener( unsigned int msgId, unsigned int seqNr, IENo
 
 inline void ProxyBase::removeListener( unsigned int msgId, unsigned int seqNr, IENotificationEventConsumer* caller )
 {
-    static_cast<void>(mListenerList.remove( ProxyBase::Listener( msgId, seqNr, caller ) ));
+    static_cast<void>(mListenerList.removeElem( ProxyBase::Listener( msgId, seqNr, caller ) ));
 }
 
 

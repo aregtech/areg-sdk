@@ -376,17 +376,17 @@ using ImplPointerList           = TEListImpl<void *>;
 /**
  * \brief   Array of integer elements
  **/
-using IntegerArray  = TEArrayList<unsigned int, unsigned int, ImplIntegerList>;
+using IntegerArray  = TEArrayList<unsigned int, ImplIntegerList>;
 
 /**
  * \brief   Array of string elements
  **/
-using StringArray   = TEArrayList<String, const String &, ImplStringList>;
+using StringArray   = TEArrayList<String, ImplStringList>;
 
 /**
  * \brief   Array of pointer elements
  **/
-using PointerArray  = TEArrayList<void *, void *, ImplPointerList>;
+using PointerArray  = TEArrayList<void *, ImplPointerList>;
 
 /**
  * \brief   Hash Map where keys are values are integers.
@@ -464,7 +464,7 @@ using SortedStringList  = TESortedLinkedList<String, const String &, ImplSortedS
 /**
  * \brief   Class for tokenizing a String.
  **/
-class AREG_API Tokenizer   :   public StringArray
+class AREG_API Tokenizer
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -510,7 +510,20 @@ public:
      * \param   keepEmpty   if two delimiters next to each other specify an empty token
      *                      if false, the result will only contain nonempty tokens
      **/
-    void Tokenize( const String & str, const String & delimiters, bool keepEmpty = true);
+    void tokenize( const String & str, const String & delimiters, bool keepEmpty = true);
+
+private:
+
+#if defined(_MSC_VER) && (_MSC_VER > 1200)
+    #pragma warning(disable: 4251)
+#endif  // _MSC_VER
+    /**
+     * \brief   The list of tokenized string.
+     */
+    StringArray mTokens;
+#if defined(_MSC_VER) && (_MSC_VER > 1200)
+    #pragma warning(default: 4251)
+#endif  // _MSC_VER
 };
 
 /************************************************************************

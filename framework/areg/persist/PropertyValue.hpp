@@ -57,7 +57,7 @@ public:
      * \brief   Initializes Value from list of identifiers.
      * \param   value    The Value as a list of identifiers to set.
      **/
-    explicit PropertyValue( const TEArrayList<Identifier, const Identifier &> idList );
+    explicit PropertyValue( const TEArrayList<Identifier> idList );
     /**
      * \brief   Copies value from given source
      * \param   value   The source to copy value
@@ -116,7 +116,7 @@ public:
      * \brief   Copies property Value from given source as a list of identifiers
      * \param   idList      The data to convert.
      **/
-    PropertyValue & operator = ( const TEArrayList<Identifier, const Identifier &> & idList );
+    PropertyValue & operator = ( const TEArrayList<Identifier> & idList );
 
     /**
      * \brief   Checks equality of two Value objects.
@@ -198,13 +198,13 @@ public:
      * \param   idList  On output, this contains list of identifiers
      * \return  Number of identifiers in the list.
      **/
-    unsigned int getIndetifier( const TEArrayList<Identifier, const Identifier &> idList ) const;
+    unsigned int getIndetifier( const TEArrayList<Identifier> idList ) const;
 
     /**
      * \brief   Converts and sets value as a list of Identifiers
      * \param   idList      The list of Identifiers to convert and set.
      **/
-    void setIndentifier( const TEArrayList<Identifier, const Identifier &> idList );
+    void setIndentifier( const TEArrayList<Identifier> idList );
 
     /**
      * \brief   Parses given string, extracts Value data.

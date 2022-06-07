@@ -258,7 +258,7 @@ inline int PageConnections::getSelectedConnections( NEDirectConnection::sInitiat
     int count = 0;
     if (selected != 0)
     {
-        outListParticipants.resize(selected + 1, 1);
+        outListParticipants.resize(selected + 1);
         DateTime now = DateTime::getNow();
 
         outParticipant.nickName  = mConnectionHandler.GetNickName();

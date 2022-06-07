@@ -215,18 +215,19 @@ namespace NERegistry
     //////////////////////////////////////////////////////////////////////////
     // NERegistry::ServiceList class declaration
     //////////////////////////////////////////////////////////////////////////
-    //!< The base class of Servicelist.
-    using ServiceListBase   = TEArrayList<NERegistry::ServiceEntry, const NERegistry::ServiceEntry &>;
     /**
      * \brief   NERegistry::ServiceList, defines list of Service Entries. 
      *          It is a list of all implemented Service Interfaces in the Component.
      **/
-    class AREG_API ServiceList : public ServiceListBase
+    class AREG_API ServiceList
     {
     //////////////////////////////////////////////////////////////////////////
     // NERegistry::ServiceList class, Constructors / Destructor
     //////////////////////////////////////////////////////////////////////////
     public:
+        //!< The list of service entries.
+        using ServiceListBase = TEArrayList<NERegistry::ServiceEntry>;
+
         /**
          * \brief   Default constructor.
          **/
@@ -271,6 +272,14 @@ namespace NERegistry
          **/
         NERegistry::ServiceList & operator = ( NERegistry::ServiceList && src ) noexcept = default;
 
+        /**
+         * \brief   Operator to access elements of the service list by index.
+         * \param   index   Must be valid index of the entry.
+         * \return  The instance of service element entry for real-only operations.
+         *          Returns instance of NERegistry::INVALID_SERVICE_ENTRY if index is invalid.
+         */
+        inline const NERegistry::ServiceEntry& operator [] (uint32_t index) const;
+
     //////////////////////////////////////////////////////////////////////////
     // NERegistry::ServiceList class, Attributes and Operations
     //////////////////////////////////////////////////////////////////////////
@@ -312,13 +321,25 @@ namespace NERegistry
          *          Otherwise, returns -1.
          **/
         int findService(const NERegistry::ServiceEntry & entry) const;
+
+    public:
+#if defined(_MSC_VER) && (_MSC_VER > 1200)
+    #pragma warning(disable: 4251)
+#endif  // _MSC_VER
+        /**
+         * \brief   The list of services.
+         */
+        ServiceListBase mListServices;
+#if defined(_MSC_VER) && (_MSC_VER > 1200)
+    #pragma warning(default: 4251)
+#endif  // _MSC_VER
     };
 
     //////////////////////////////////////////////////////////////////////////
     // NERegistry::WorkerThreadEntry class declaration
     //////////////////////////////////////////////////////////////////////////
     /**
-     * \brief   NERegistry::WorkerThreadEntry, definines Worker Thread.
+     * \brief   NERegistry::WorkerThreadEntry, defines Worker Thread.
      *          It should be part of binding Component. The Worker Threads
      *          are created when Component is crated.
      **/
@@ -415,18 +436,19 @@ namespace NERegistry
     // NERegistry::WorkerThreadList class declaration
     //////////////////////////////////////////////////////////////////////////
     
-    //!< The worker thread list base class.
-    using WorkerThreadListBase = TEArrayList<NERegistry::WorkerThreadEntry, const NERegistry::WorkerThreadEntry&>;
     /**
      * \brief   NERegistry::WorkerThreadList. Defines list of Worker Thread Entries.
      *          It is a list of all Worker Threads binded with one Component.
      **/
-    class AREG_API WorkerThreadList    : public WorkerThreadListBase
+    class AREG_API WorkerThreadList
     {
     //////////////////////////////////////////////////////////////////////////
     // NERegistry::WorkerThreadList class, Constructors / Destructor
     //////////////////////////////////////////////////////////////////////////
     public:
+        //!< The list of worker threads.
+        using WorkerThreadListBase = TEArrayList<NERegistry::WorkerThreadEntry>;
+
         /**
          * \brief   Default constructor.
          **/
@@ -471,6 +493,14 @@ namespace NERegistry
          **/
         NERegistry::WorkerThreadList & operator = ( NERegistry::WorkerThreadList && src ) noexcept = default;
 
+        /**
+         * \brief   Operator to access elements of the worker thread list by index.
+         * \param   index   Must be valid index of the entry.
+         * \return  The instance of service element entry for real-only operations.
+         *          Returns instance of NERegistry::INVALID_WORKER_THREAD_ENTRY if index is invalid.
+         **/
+        inline const NERegistry::WorkerThreadEntry& operator [] (uint32_t index) const;
+
     //////////////////////////////////////////////////////////////////////////
     // NERegistry::WorkerThreadList class, Attributes and operations
     //////////////////////////////////////////////////////////////////////////
@@ -508,6 +538,18 @@ namespace NERegistry
          *          Otherwise, returns -1.
          **/
         int findThread( const NERegistry::WorkerThreadEntry & entry ) const;
+
+    public:
+#if defined(_MSC_VER) && (_MSC_VER > 1200)
+    #pragma warning(disable: 4251)
+#endif  // _MSC_VER
+        /**
+         * \brief   The list of worker threads.
+         */
+        WorkerThreadListBase    mListWorkers;
+#if defined(_MSC_VER) && (_MSC_VER > 1200)
+    #pragma warning(default: 4251)
+#endif  // _MSC_VER
     };
 
     //////////////////////////////////////////////////////////////////////////
@@ -617,8 +659,6 @@ namespace NERegistry
     // NERegistry::DependencyList class declaration
     //////////////////////////////////////////////////////////////////////////
 
-    //!< The base class of dependency list 
-    using DependencyListBase = TEArrayList<NERegistry::DependencyEntry, const NERegistry::DependencyEntry&>;
     /**
      * \brief   NERegistry::DependencyList, Defines list of Dependency Entries. 
      *          It is a list of all dependent Components. Can be empty, 
@@ -627,12 +667,14 @@ namespace NERegistry
      *          between Components. Every Dependency Entry is specifying
      *          client of specified Component.
      **/
-    class AREG_API DependencyList   : public DependencyListBase
+    class AREG_API DependencyList
     {
     //////////////////////////////////////////////////////////////////////////
     // NERegistry::DependencyList class, Constructors / Destructor
     //////////////////////////////////////////////////////////////////////////
     public:
+        //!< The base class of dependency list 
+        using DependencyListBase = TEArrayList<NERegistry::DependencyEntry>;
 
         /**
          * \brief   Creates empty list of dependent services.
@@ -679,6 +721,14 @@ namespace NERegistry
          **/
         NERegistry::DependencyList & operator = ( NERegistry::DependencyList && src ) noexcept = default;
 
+        /**
+         * \brief   Operator to access elements of the dependency service list by index.
+         * \param   index   Must be valid index of the entry.
+         * \return  The instance of service element entry for real-only operations.
+         *          Returns instance of NERegistry::INVALID_DEPENDENCY_ENTRY if index is invalid.
+         **/
+        inline const NERegistry::DependencyEntry& operator [] (uint32_t index) const;
+
     //////////////////////////////////////////////////////////////////////////
     // Operations
     //////////////////////////////////////////////////////////////////////////
@@ -715,6 +765,19 @@ namespace NERegistry
          * \brief   Returns true if dependency list is valid.
          **/
         bool isValid( void ) const;
+
+    public:
+#if defined(_MSC_VER) && (_MSC_VER > 1200)
+    #pragma warning(disable: 4251)
+#endif  // _MSC_VER
+        /**
+         * \brief   The list of dependency services.
+         */
+        DependencyListBase  mListDependencies;
+
+#if defined(_MSC_VER) && (_MSC_VER > 1200)
+    #pragma warning(default: 4251)
+#endif  // _MSC_VER
     };
 
     //////////////////////////////////////////////////////////////////////////
@@ -1096,8 +1159,6 @@ namespace NERegistry
     // NERegistry::ComponentEntryList class declaration
     //////////////////////////////////////////////////////////////////////////
 
-    //!< The base class of component list.
-    using ComponentListBase = TEArrayList<NERegistry::ComponentEntry, const NERegistry::ComponentEntry&>;
     /**
      * \brief   NERegistry::ComponentList. Defines list of Component Entries.
      *          It is a list of all Components within one Thread.
@@ -1106,7 +1167,7 @@ namespace NERegistry
      *          If more than one Components are implementing same Service Interface,
      *          they should be listed in different list of different thread.
      **/
-    class AREG_API ComponentList   : public ComponentListBase
+    class AREG_API ComponentList
     {
     //////////////////////////////////////////////////////////////////////////
     // NERegistry::ComponentList class, Friend classes
@@ -1117,6 +1178,9 @@ namespace NERegistry
     // NERegistry::ComponentList class, Constructors / Destructor
     //////////////////////////////////////////////////////////////////////////
     public:
+        //!< The base class of component list.
+        using ComponentListBase = TEArrayList<NERegistry::ComponentEntry>;
+
         /**
          * \brief   Creates empty list.
          **/
@@ -1160,6 +1224,14 @@ namespace NERegistry
          * \param   src     The source of Component List, containing Component Entries.
          **/
         NERegistry::ComponentList & operator = ( NERegistry::ComponentList && src ) noexcept = default;
+
+        /**
+         * \brief   Operator to access elements of the service component list by index.
+         * \param   index   Must be valid index of the entry.
+         * \return  The instance of service element entry for real-only operations.
+         *          Returns instance of NERegistry::INVALID_COMPONENT_ENTRY if index is invalid.
+         **/
+        inline const NERegistry::ComponentEntry& operator [] (uint32_t index) const;
 
     //////////////////////////////////////////////////////////////////////////
     // NERegistry::ComponentList class, Attributes and Operations
@@ -1209,6 +1281,20 @@ namespace NERegistry
          *          Otherwise, returns -1.
          **/
         int findComponent(const NERegistry::ComponentEntry& entry) const;
+
+    public:
+#if defined(_MSC_VER) && (_MSC_VER > 1200)
+    #pragma warning(disable: 4251)
+#endif  // _MSC_VER
+
+        /**
+         * \brief   The list of components.
+         */
+        ComponentListBase   mListComponents;
+
+#if defined(_MSC_VER) && (_MSC_VER > 1200)
+    #pragma warning(default: 4251)
+#endif  // _MSC_VER
     };
 
     //////////////////////////////////////////////////////////////////////////
@@ -1405,14 +1491,12 @@ namespace NERegistry
     // NERegistry::ComponentThreadList class declaration
     //////////////////////////////////////////////////////////////////////////
 
-    //!< The base class of component thread list.
-    using ComponentThreadListBase = TEArrayList< NERegistry::ComponentThreadEntry, const NERegistry::ComponentThreadEntry & >;
     /**
      * \brief   NERegistry::ComponentThreadList. Defines list of Thread Entries in Model.
      *          All names of Thread should be unique. A Model has more than one
      *          Thread Entry.
      **/
-    class AREG_API ComponentThreadList  : public ComponentThreadListBase
+    class AREG_API ComponentThreadList
     {
     //////////////////////////////////////////////////////////////////////////
     // NERegistry::ComponentThreadList class, Friend classes
@@ -1423,6 +1507,8 @@ namespace NERegistry
     // NERegistry::ComponentThreadList class, Constructors / destructor
     //////////////////////////////////////////////////////////////////////////
     public:
+        //!< The base class of component thread list.
+        using ComponentThreadListBase = TEArrayList< NERegistry::ComponentThreadEntry>;
 
         /**
          * \brief   Default constructor.
@@ -1468,6 +1554,14 @@ namespace NERegistry
          **/
         NERegistry::ComponentThreadList & operator = ( NERegistry::ComponentThreadList && src ) noexcept = default;
 
+        /**
+         * \brief   Operator to access elements of the service component thread list by index.
+         * \param   index   Must be valid index of the entry.
+         * \return  The instance of service element entry for real-only operations.
+         *          Returns instance of NERegistry::INVALID_THREAD_ENTRY if index is invalid.
+         **/
+        inline const NERegistry::ComponentThreadEntry& operator [] (uint32_t index) const;
+
     //////////////////////////////////////////////////////////////////////////
     // NERegistry::ComponentThreadList class, Attributes and Operations
     //////////////////////////////////////////////////////////////////////////
@@ -1505,6 +1599,20 @@ namespace NERegistry
          *          Otherwise, returns -1.
          **/
         int findThread( const NERegistry::ComponentThreadEntry & entry ) const;
+
+    public:
+#if defined(_MSC_VER) && (_MSC_VER > 1200)
+    #pragma warning(disable: 4251)
+#endif  // _MSC_VER
+
+        /**
+         * \brief   The list of component threads.
+         */
+        ComponentThreadListBase mListThreads;
+
+#if defined(_MSC_VER) && (_MSC_VER > 1200)
+    #pragma warning(default: 4251)
+#endif  // _MSC_VER
     };
 
     //////////////////////////////////////////////////////////////////////////
@@ -1789,4 +1897,33 @@ namespace NERegistry
      **/
     extern AREG_API const NERegistry::Model                   INVALID_MODEL;
 
+}
+
+//////////////////////////////////////////////////////////////////////////
+// NERegistry inline methods
+//////////////////////////////////////////////////////////////////////////
+
+inline const NERegistry::ServiceEntry& NERegistry::ServiceList::operator [] (uint32_t index) const
+{
+    return (mListServices.isValidIndex(index) ? mListServices[index] : NERegistry::INVALID_SERVICE_ENTRY);
+}
+
+inline const NERegistry::WorkerThreadEntry& NERegistry::WorkerThreadList::operator [] (uint32_t index) const
+{
+    return (mListWorkers.isValidIndex(index) ? mListWorkers[index] : NERegistry::INVALID_WORKER_THREAD_ENTRY);
+}
+
+inline const NERegistry::DependencyEntry& NERegistry::DependencyList::operator [] (uint32_t index) const
+{
+    return (mListDependencies.isValidIndex(index) ? mListDependencies[index] : NERegistry::INVALID_DEPENDENCY_ENTRY);
+}
+
+inline const NERegistry::ComponentEntry& NERegistry::ComponentList::operator [] (uint32_t index) const
+{
+    return (mListComponents.isValidIndex(index) ? mListComponents[index] : NERegistry::INVALID_COMPONENT_ENTRY);
+}
+
+inline const NERegistry::ComponentThreadEntry& NERegistry::ComponentThreadList::operator [] (uint32_t index) const
+{
+    return (mListThreads.isValidIndex(index) ? mListThreads[index] : NERegistry::INVALID_THREAD_ENTRY);
 }
