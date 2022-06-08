@@ -95,7 +95,7 @@ int ComponentThread::createComponents( void )
     const NERegistry::ComponentList& comList = ComponentLoader::getComponentList(getName());
     if (comList.isValid())
     {
-        for (int i = 0; i < comList.mListComponents.getSize(); ++ i)
+        for (uint32_t i = 0; i < comList.mListComponents.getSize(); ++ i)
         {
             const NERegistry::ComponentEntry& entry = comList.mListComponents[i];
             if (entry.isValid() && entry.mFuncCreate != nullptr)
@@ -114,6 +114,7 @@ int ComponentThread::createComponents( void )
             }
         }
     }
+
     return result;
 }
 
@@ -158,7 +159,7 @@ void ComponentThread::shutdownComponents( void )
 
     TEArrayList<ProxyBase *> proxyList;
     ProxyBase::findThreadProxies( self(), proxyList );
-    for ( int i = 0; i < proxyList.getSize(); ++ i)
+    for ( uint32_t i = 0; i < proxyList.getSize(); ++ i)
     {
         ProxyBase * proxy = proxyList.getAt(i);
         ASSERT(proxy != nullptr);

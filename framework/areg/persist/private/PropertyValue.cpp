@@ -145,7 +145,7 @@ unsigned int PropertyValue::getIndetifier( const TEArrayList<Identifier> idList 
     {
         result = 0;
         String temp = mValue;
-        for ( int i = 0; (i < idList.getSize()) && (temp.isEmpty() == false); ++ i)
+        for ( uint32_t i = 0; (i < idList.getSize()) && (temp.isEmpty() == false); ++ i)
         {
             const char * idName = idList[i].getName();
             
@@ -160,11 +160,12 @@ unsigned int PropertyValue::getIndetifier( const TEArrayList<Identifier> idList 
                     String::getSubstring(temp.getString(), _or, &next);
                     temp = next != nullptr ? next : "";
                     temp.trimAll();
-                    i = -1; // reset, to search next identifier value again or stop loop if temp is empty.
+                    i = 0; // reset, to search next identifier value again or stop loop if temp is empty.
                 }
             }
         }
     }
+
     return result;
 }
 
@@ -186,7 +187,7 @@ void PropertyValue::setDouble(double dValue)
 void PropertyValue::setIndentifier(const TEArrayList<Identifier> idList)
 {
     mValue.clear();
-    for ( int i = 0; i < idList.getSize(); ++ i )
+    for ( uint32_t i = 0; i < idList.getSize(); ++ i )
     {
         if ( mValue.isEmpty() == false )
         {

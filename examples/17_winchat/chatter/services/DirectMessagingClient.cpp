@@ -63,7 +63,7 @@ void DirectMessagingClient::responseChatJoin( bool succeed, const NEDirectMessag
 
     if ( succeed )
     {
-        for ( int i = 0; i < listParticipant.getSize( ); ++ i )
+        for (uint32_t i = 0; i < listParticipant.getSize( ); ++ i )
             updateChatOutput( NEDistributedApp::CmdChatMessage, listParticipant[i], "Is in chat room", DateTime( ), DateTime( ) );
     }
 }

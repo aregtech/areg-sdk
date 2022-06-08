@@ -39,11 +39,12 @@ PageConnections::PageConnections()
 
 PageConnections::~PageConnections()
 {
-    for ( int i = 0; i < mTypingList.getSize(); ++ i )
+    for (uint32_t i = 0; i < mTypingList.getSize(); ++ i )
     {
         NECommon::sMessageData * data = mTypingList.getAt(i);
         delete data;
     }
+
     mTypingList.removeAll();
 }
 
@@ -216,11 +217,15 @@ LRESULT PageConnections::OnCmdRegistered( WPARAM wParam, LPARAM lParam )
 int PageConnections::findInTyping( unsigned int cookie )
 {
     int result = NECommon::INVALID_INDEX;
-    for ( int i = 0; (result == NECommon::INVALID_INDEX) && (i < mTypingList.getSize( )); ++ i )
+    for (uint32_t i = 0; i < mTypingList.getSize( ); ++i )
     {
-        if ( cookie == mTypingList[i]->dataSave )
-            result = i;
+        if (cookie == mTypingList[i]->dataSave)
+        {
+            result = static_cast<int>(i);
+            break;
+        }
     }
+
     return result;
 }
 

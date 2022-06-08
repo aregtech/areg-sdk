@@ -84,7 +84,7 @@ void DirectChatService::startupComponent( ComponentThread & comThread )
 
     const NEDirectConnection::sInitiator & initiator = mPaticipantsHandler.GetInitiator();
     const NEDirectConnection::ListParticipants & listParticipants = mPaticipantsHandler.GetParticipantList();
-    for ( int i = 0; i < listParticipants.getSize( ); ++ i )
+    for (uint32_t i = 0; i < listParticipants.getSize( ); ++ i )
     {
         const NEDirectConnection::sParticipant & target = listParticipants[i];
         if ( target != initiator )
@@ -100,11 +100,10 @@ void DirectChatService::shutdownComponent( ComponentThread & comThread )
     TRACE_SCOPE( distrbutedapp_DirectChatService_ShutdownComponent );
     mPaticipantsHandler.SetConnectionService( nullptr );
 
-    for ( int i = 0; i < mListClients.getSize(); ++ i )
+    for (uint32_t i = 0; i < mListClients.getSize(); ++ i )
     {
         DirectConnectionClient * client = mListClients[i];
-        if ( client != nullptr )
-            delete client;
+        delete client;
     }
     mListClients.removeAll();
 

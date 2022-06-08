@@ -47,7 +47,7 @@ int ConnectionHandler::AddConnections(const NECommon::ListConnections & listConn
 {
     Lock lock(mLock);
     int result = 0;
-    for (int i = 0; i < listConnections.getSize(); ++i)
+    for (uint32_t i = 0; i < listConnections.getSize(); ++i)
     {
         const NECommon::sConnection & entry = listConnections.getAt(i);
         if (entry.nickName != mNickName)
@@ -59,6 +59,7 @@ int ConnectionHandler::AddConnections(const NECommon::ListConnections & listConn
             }
         }
     }
+
     return result;
 }
 
@@ -80,15 +81,16 @@ bool ConnectionHandler::ConnectionExist(const NECommon::sConnection & connection
 int ConnectionHandler::findConnection(const NECommon::sConnection & connection) const
 {
     int result = NECommon::INVALID_INDEX;
-    for (int i = 0; i < mListConnections.getSize(); ++i)
+    for (uint32_t i = 0; i < mListConnections.getSize(); ++i)
     {
         const NECommon::sConnection & entry = mListConnections.getAt(i);
         if (entry.nickName == connection.nickName)
         {
-            result = i;
+            result = static_cast<int>(i);
             break;
         }
     }
+
     return result;
 }
 

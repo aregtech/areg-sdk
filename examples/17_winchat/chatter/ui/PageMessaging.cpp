@@ -86,7 +86,8 @@ void PageMessaging::OnClientRegistration( bool isRegistered, DispatcherThread * 
         {
             outputMessage( "<Info>", String::int32ToString(listConnections.getSize()) + " participants...", 0, 0, 0 );
         }
-        for ( int i = 0; i < listConnections.getSize(); ++ i )
+
+        for (uint32_t i = 0; i < listConnections.getSize(); ++ i )
         {
             const NECommon::sConnection & connection = listConnections.getAt(i);
             if ( (connection.cookie != cookie) && (connection.nickName != nickName) )

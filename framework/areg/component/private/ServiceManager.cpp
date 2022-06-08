@@ -534,12 +534,17 @@ void ServiceManager::processEvent( const ServiceManagerEventData & data )
                 }
             }
 
-            int index = 0;
-            for ( index = 0; index < stubList.getSize(); ++ index )
-                _unregisterServer( stubList[index]);
-            for ( index = 0; index < proxyList.getSize(); ++ index )
-                _unregisterClient(proxyList[index]);
+            for (uint32_t i = 0; i < stubList.getSize(); ++i)
+            {
+                _unregisterServer(stubList[i]);
+            }
+
+            for (uint32_t i = 0; i < proxyList.getSize(); ++i)
+            {
+                _unregisterClient(proxyList[i]);
+            }
         }
+
         break;
 
     default:

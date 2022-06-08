@@ -375,7 +375,7 @@ void ProxyBase::serviceConnectionUpdated( const StubAddress & server, const Chan
         // first collect listeners, because on connect / disconnect
         // the listener list might be updated!
         TEArrayList<ProxyBase::Listener> conListeners;
-        int index = 0;
+        uint32_t index = 0;
         for (index = 0 ; index < mListenerList.getSize(); ++ index)
         {
             ProxyBase::Listener& listener = mListenerList[index];
@@ -451,9 +451,9 @@ void ProxyBase::clearNotification( unsigned int msgId, IENotificationEventConsum
 void ProxyBase::unregisterListener( IENotificationEventConsumer *consumer )
 {
     TRACE_SCOPE(areg_component_ProxyBase_unregisterListener);
-    TRACE_DBG("Unregisteres proxy client [ %p ]", consumer);
+    TRACE_DBG("Unregisters proxy client [ %p ]", consumer);
 
-    int index = 0;
+    uint32_t index = 0;
     while (index < mListenerList.getSize())
     {
         const ProxyBase::Listener& elem = mListenerList[index];
@@ -480,7 +480,7 @@ int ProxyBase::prepareListeners( ProxyBase::ProxyListenerList& out_listenerList,
 {
     TRACE_SCOPE(areg_component_ProxyBase_prepareListeners);
     ProxyBase::Listener searchListener(msgId, NEService::SEQUENCE_NUMBER_ANY);
-    for ( int i = 0; i < mListenerList.getSize(); ++ i )
+    for (uint32_t i = 0; i < mListenerList.getSize(); ++ i )
     {
         const ProxyBase::Listener & elem = mListenerList.getAt(i);
         if ( elem == searchListener )
@@ -506,7 +506,7 @@ void ProxyBase::notifyListeners( unsigned int respId, NEService::eResultType res
 {
     ProxyBase::ProxyListenerList listenerList;
     prepareListeners(listenerList, respId, seqNrToSearch);
-    for (int i = 0; i < listenerList.getSize(); ++ i)
+    for (uint32_t i = 0; i < listenerList.getSize(); ++ i)
     {
         const ProxyBase::Listener & elem = listenerList.getAt(i);
         sendNotificationEvent(respId, result, seqNrToSearch, elem.mListener);
@@ -593,7 +593,7 @@ void ProxyBase::sendServiceAvailableEvent( ProxyBase::ServiceAvailableEvent * ev
 bool ProxyBase::isServiceListenerRegistered( IENotificationEventConsumer & caller ) const
 {
     bool result = false;
-    for ( int i = 0; (result == false) && (i < mListenerList.getSize()); ++ i )
+    for (uint32_t i = 0; (result == false) && (i < mListenerList.getSize()); ++ i )
     {
         const ProxyBase::Listener & listener = mListenerList[i];
         result = NEService::isConnectNotifyId( listener.mMessageId ) && (&caller == listener.mListener);
@@ -628,7 +628,7 @@ void ProxyBase::stopProxy(void)
     {
         TRACE_WARN("Going to stop proxy [ %s ]", ProxyAddress::convAddressToPath(mProxyAddress).getString());
 
-        for (int i = 0 ; i < mListConnect.getSize(); ++ i)
+        for (uint32_t i = 0 ; i < mListConnect.getSize(); ++ i)
         {
             IEProxyListener * listener = mListConnect.getAt(i);
             ASSERT(listener != nullptr);

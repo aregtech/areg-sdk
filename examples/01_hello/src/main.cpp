@@ -93,6 +93,9 @@ void HelloThread::onThreadRuns( void )
 /**
  * \brief   Demo to create and destroy thread.
  */
+
+#include "areg/base/TEArrayList.hpp"
+
 int main()
 {
     // declare thread object.

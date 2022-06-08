@@ -353,12 +353,15 @@ void ServerService::processEvent(const ServerServiceEventData & data)
                                 , listStubs.getSize()
                                 , listProxies.getSize());
 
-                    int index = 0;
-                    for ( index = 0; index < listProxies.getSize(); ++ index )
-                        unregisterRemoteProxy( listProxies[index], cookie );
+                    for (uint32_t i = 0; i < listProxies.getSize(); ++i)
+                    {
+                        unregisterRemoteProxy(listProxies[i], cookie);
+                    }
 
-                    for ( index = 0; index < listStubs.getSize(); ++ index )
-                        unregisterRemoteStub( listStubs[index], cookie );
+                    for (uint32_t i = 0; i < listStubs.getSize(); ++i)
+                    {
+                        unregisterRemoteStub(listStubs[i], cookie);
+                    }
                 }
                 break;
 
@@ -521,12 +524,12 @@ void ServerService::stopConnection(void)
     TEArrayList<ProxyAddress> proxyList;
     getServiceList(NEService::COOKIE_ANY, stubList, proxyList);
 
-    for ( int i = 0; i < stubList.getSize(); ++ i )
+    for ( uint32_t i = 0; i < stubList.getSize(); ++ i )
     {
         unregisterRemoteStub( stubList[i], NEService::COOKIE_ANY );
     }
 
-    for ( int i = 0; i < proxyList.getSize(); ++ i )
+    for ( uint32_t i = 0; i < proxyList.getSize(); ++ i )
     {
         unregisterRemoteProxy( proxyList[i], NEService::COOKIE_ANY );
     }

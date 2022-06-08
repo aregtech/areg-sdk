@@ -109,7 +109,7 @@ inline bool DirectConnectionService::exists( const NEDirectConnection::sInitiato
 uint64_t DirectConnectionService::getSession( const NEDirectConnection::ListParticipants & listParticipants )
 {
     uint64_t result = NEDirectConnection::InvalidSession;
-    for ( int i = 0; i < listParticipants.getSize(); ++ i )
+    for (uint32_t i = 0; i < listParticipants.getSize(); ++ i )
     {
         const NEDirectConnection::sParticipant & participant = listParticipants[i];
         if ( (participant.nickName == mNickName) && (participant.cookie == mCookie) )
@@ -235,10 +235,10 @@ void DirectConnectionService::requestRemoveParticipant( const NEDirectConnection
 
             NEDirectConnection::MapParticipants & mapParticpants = getInitiatedConnections( );
             NEDirectConnection::ListParticipants listRegistered( mapParticpants.getAt( initiator ) );
-            for ( int i = 0; i < listParticipants.getSize(); ++ i )
+            for (uint32_t i = 0; i < listParticipants.getSize(); ++ i )
             {
                 const NEDirectConnection::sParticipant & particpant = listParticipants[i];
-                for ( int j = 0; j < listRegistered.getSize(); ++ j )
+                for (uint32_t j = 0; j < listRegistered.getSize(); ++ j )
                 {
                     if ( particpant == listRegistered[j] )
                     {

@@ -104,14 +104,14 @@ public:
      *          The index should be valid number between 0 and (mSize -1).
      *          May be used on either the right (r-value) or the left (l-value) of an assignment statement.
      **/
-    inline VALUE & operator [] ( int index );
+    inline VALUE & operator [] ( uint32_t index );
 
     /**
      * \brief   Subscript operator. Returns reference to value of element by given valid index.
      *          The index should be valid number between 0 and (mSize -1).
      *          May be used on either the right (r-value).
      **/
-    inline const VALUE & operator [] ( int index ) const;
+    inline const VALUE & operator [] (uint32_t index ) const;
 
     /**
      * \brief   Assigning operator. Copies all values from given source.
@@ -164,8 +164,8 @@ public:
      * \param   stream  The streaming object for reading values
      * \param   input   The Array object to save initialized values.
      **/
-    template <typename V, class Impl>
-    friend const IEInStream & operator >> (const IEInStream & stream, TEArrayList<V, Impl> & input);
+    template <typename VALUE, class Implement>
+    friend const IEInStream & operator >> (const IEInStream & stream, TEArrayList<VALUE, Implement> & input);
 
     /**
      * \brief   Writes to the stream Array values.
@@ -175,8 +175,8 @@ public:
      * \param   stream  The streaming object to write values
      * \param   input   The Array object to read out values.
      **/
-    template <typename V, class Impl>
-    friend IEOutStream & operator << (IEOutStream & stream, const TEArrayList<V, Impl> & output);
+    template <typename VALUE, class Implement>
+    friend IEOutStream & operator << (IEOutStream & stream, const TEArrayList<VALUE, Implement> & output);
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes
@@ -190,7 +190,7 @@ public:
     /**
      * \brief	Returns the current size of array
      **/
-    inline int getSize( void ) const;
+    inline uint32_t getSize( void ) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -203,7 +203,7 @@ public:
     /**
      * \brief   Returns true if the specified index is valid.
      **/
-    inline bool isValidIndex( int index ) const;
+    inline bool isValidIndex( uint32_t index ) const;
 
     /**
      * \brief   Remove all entries of array
@@ -214,19 +214,19 @@ public:
      * \brief   Returns element value by valid index. 
      *          If index is not valid, assertion is raised.
      **/
-    inline const VALUE & getAt( int index ) const;
+    inline const VALUE & getAt( uint32_t index ) const;
 
     /**
      * \brief   Returns instance of element at given valid index.
      *          If index is not valid, assertion is raised.
      **/
-    inline VALUE & getAt( int index );
+    inline VALUE & getAt( uint32_t index );
 
     /**
      * \brief   Sets new element at given valid index.
      *          If index is not valid, assertion is raised.
      **/
-    inline void setAt( int index, const VALUE & newElement );
+    inline void setAt( uint32_t index, const VALUE & newElement );
 
     /**
      * \brief   Returns array of elements.
@@ -236,9 +236,8 @@ public:
     /**
      * \brief   Adds new element at the end of array and returns index value of new inserted element
      * \param   newElement  New element to add at the end of array.
-     * \return  Returns the index of new element in the array.
      **/
-    inline int add( const VALUE & newElement );
+    inline void add( const VALUE & newElement );
 
     /**
      * \brief   Adds new element at the end of the array only if the element does not exist.
@@ -253,45 +252,47 @@ public:
     /**
      * \brief	Appends entries taken from source at the end of array.
      * \param	src	    The source of new entries.
-     * \return	Returns new size of array. 
      **/
-    inline int append( const TEArrayList<VALUE, Implement> & src );
+    inline void append( const TEArrayList<VALUE, Implement> & src );
 
     /**
      * \brief	Copies all entries from given source
      * \param	src	    The source of array elements
-     * \return	Returns actual size of array.
      **/
-    int copy( const TEArrayList<VALUE, Implement> & src );
+    void copy( const TEArrayList<VALUE, Implement> & src );
 
     /**
      * \brief	Moves all entries from given source. On output, the source is empty.
      * \param	src	    The source of array elements
-     * \return	Returns actual size of array.
      **/
-    int move( TEArrayList<VALUE, Implement> && src ) noexcept;
+    void move( TEArrayList<VALUE, Implement> && src ) noexcept;
 
     /**
      * \brief   Inserts element at the specified zero-based position. If position is valid, it shifts
      *          elements and inserts at specified position. If position is equal or more than number
      *          of elements in the array, it inserts element at end of the array without shifting elements.
      *          Nothing happens if index is negative.
-     * \param   index       The index position to insert. If valid position, shifts the elements to insert
+     * \param   startAt     The index position to insert. If valid position, shifts the elements to insert
      *                      new element. If more than element count, inserts element at the end of array.
      * \param   newElement  Value of new element to insert.
      * \param   elemCount   If not one, it will repeat operation.
-     * \return  Returns the zero-based position of last element that was inserted. If 'elemCount' is one,
-     *          it returns the zero-based position where the element is inserted. If 'elemCount' is more than one,
-     *          it returns the zero-based position of last element inserted in the list.
      **/
-    inline int insertAt( int index, const VALUE & newElement, uint32_t elemCount = 1 );
+    inline void insertAt( uint32_t startAt, const VALUE & newElement, uint32_t elemCount = 1 );
+
+    /**
+     * \brief	Inserts new entries from given array source
+     * \param	startAt	    Starting index position to insert entries.
+     * \param	newArray	Sources of array elements to insert.
+     * \param   count       Number of elements in the array.
+     **/
+    inline void insertAt(uint32_t startAt, const VALUE * newArray, uint32_t count );
 
     /**
      * \brief	Inserts new entries from given array source
      * \param	startAt	    Starting index position to insert entries.
      * \param	newArray	Sources of array elements
      **/
-    inline int insertAt( int startAt, const TEArrayList<VALUE, Implement> & newArray );
+    inline void insertAt( uint32_t startAt, const TEArrayList<VALUE, Implement> & newArray );
 
     /**
      * \brief	Removes elemCount element starting at given index position.
@@ -299,7 +300,7 @@ public:
      * \param	index	    The index to start removing elements
      * \param	elemCount	Amount of elements to remove.
      **/
-    inline void removeAt( int index, uint32_t elemCount = 1);
+    inline void removeAt(uint32_t index, uint32_t elemCount = 1);
 
     /**
      * \brief   Remove the element at specified index and returns the removed element.
@@ -324,7 +325,7 @@ public:
      *                      search from begging.
      * \return	If found, returns index of element in array. Otherwise return -1.
      **/
-    inline int find( const VALUE & elemSearch, int startAt = 0 ) const;
+    inline int find( const VALUE & elemSearch, uint32_t startAt = 0 ) const;
 
     /**
      * \brief	Checks whether given element exist in array or not.
@@ -334,7 +335,7 @@ public:
      *          search from begging.
      * \return	Returns true if could find element starting at given position.
      **/
-    inline bool exist( const VALUE & elemSearch, int startAt = 0 ) const;
+    inline bool exist( const VALUE & elemSearch, uint32_t startAt = 0 ) const;
 
     /**
      * \brief   Ensures validity of index. If index is more that element count in array,
@@ -345,7 +346,7 @@ public:
      * \param   index   The index to ensure. Cannot be negative value
      * \return  Returns true if index is validation succeeded.
      **/
-    inline bool validateIndex( int index );
+    inline bool validateIndex(uint32_t index );
 
     /**
      * \brief	Sets new size of array. If size is zero, all elements are removed.
@@ -367,17 +368,20 @@ public:
      */
     inline void reserve( uint32_t newCapacity );
 
+    /**
+     * \brief	Shifts array elements starting at given index position. Reserves 'count' entries in new array
+     *          or removes them depending whether the 'count' value is positive or negative.
+     * \param	startAt	    The starting index position to start shifting
+     * \param	count       The space to reserve. If the value is positive, the elements are stretched out, 
+     *                      so that there are 'count' elements can be inserted. If the value is negative,
+     *                      the elements are narrowed, so that there are 'count' elements are removed.
+     **/
+    void shift( uint32_t startAt, int count);
+
 //////////////////////////////////////////////////////////////////////////
 // Protected operations
 //////////////////////////////////////////////////////////////////////////
 protected:
-
-    /**
-     * \brief	Shifts array elements starting at given index position and reserves placeCount entries in new array
-     * \param	startAt	    The starting index position to start shifting
-     * \param	placeCount	The space to reserve
-     **/
-    // void shift( int startAt, int placeCount );
 
     /**
      * \brief	Sets new size of array. 
@@ -400,20 +404,19 @@ protected:
     inline bool isEqualValues( const VALUE & value1, const VALUE & value2) const;
 
     /**
-     * \brief	Constructs element entries in the given list
-     * \param	valueList	The list to construct elements
-     * \param	elemCount	The number of element entries in list
-     **/
-    // inline void construct( VALUE * valueList, int elemCount );
+     * \brief   Returns the position of the element at the given index.
+     *          The value of returned position cannot be modified.
+     * \param   index   The index of the element to return position.
+     * \return  Returns the position of the element at the given index.
+     *          The value of returned position cannot be modified.
+     */
+    inline typename std::vector<VALUE>::const_iterator getPosition( uint32_t index ) const;
 
     /**
-     * \brief	Destructs element entries in the given list
-     * \param	valueList	The list to destroy elements
-     * \param	elemCount	The number of element entries in list
-     **/
-    // inline void destruct( VALUE * valueList, int elemCount );
-
-    inline typename std::vector<VALUE>::const_iterator getPosition( uint32_t index ) const;
+     * \brief   Returns the position of the element at the given index.
+     * \param   index   The index of the element to return position.
+     * \return  Returns the position of the element at the given index.
+     */
     inline typename std::vector<VALUE>::iterator getPosition(uint32_t index);
 
 //////////////////////////////////////////////////////////////////////////
@@ -446,8 +449,12 @@ protected:
 
 template<typename VALUE, class Implement /*= TEListImpl<const VALUE &>*/>
 TEArrayList<VALUE, Implement>::TEArrayList(uint32_t capacity /*= 0*/)
-    : mElements ( capacity )
+    : mElements ( )
 {
+    if (capacity != 0)
+    {
+        mElements.reserve(capacity > NECommon::MAX_CONTAINER_SIZE ? NECommon::MAX_CONTAINER_SIZE : capacity);
+    }
 }
 
 template<typename VALUE, class Implement /*= TEListImpl<const VALUE &>*/>
@@ -469,9 +476,9 @@ inline bool TEArrayList<VALUE, Implement>::isEmpty( void ) const
 }
 
 template<typename VALUE, class Implement /*= TEListImpl<const VALUE &>*/>
-inline int TEArrayList<VALUE, Implement>::getSize( void ) const
+inline uint32_t TEArrayList<VALUE, Implement>::getSize( void ) const
 {
-    return static_cast<int>(mElements.size());
+    return static_cast<uint32_t>(mElements.size());
 }
 
 template<typename VALUE, class Implement /*= TEListImpl<const VALUE &>*/>
@@ -481,9 +488,9 @@ void TEArrayList<VALUE, Implement>::freeExtra( void )
 }
 
 template<typename VALUE, class Implement /*= TEListImpl<const VALUE &>*/>
-inline bool TEArrayList<VALUE, Implement>::isValidIndex( int index ) const
+inline bool TEArrayList<VALUE, Implement>::isValidIndex(uint32_t index ) const
 {
-    return ( (index >= 0) && (index < static_cast<int>(mElements.size())) );
+    return ( index < static_cast<uint32_t>(mElements.size()) );
 }
 
 template<typename VALUE, class Implement /*= TEListImpl<const VALUE &>*/>
@@ -493,60 +500,60 @@ inline void TEArrayList<VALUE, Implement>::removeAll( void )
 }
 
 template<typename VALUE, class Implement /*= TEListImpl<const VALUE &>*/>
-inline const VALUE & TEArrayList<VALUE, Implement>::getAt(int index) const
+inline const VALUE & TEArrayList<VALUE, Implement>::getAt(uint32_t index) const
 {
     ASSERT(isValidIndex(index));
     return mElements.at(index);
 }
 
 template<typename VALUE, class Implement /*= TEListImpl<const VALUE &>*/>
-inline VALUE& TEArrayList<VALUE, Implement>::getAt(int index)
+inline VALUE& TEArrayList<VALUE, Implement>::getAt(uint32_t index)
 {
     ASSERT(isValidIndex(index));
     return mElements.at(index);
 }
 
 template<typename VALUE, class Implement /*= TEListImpl<const VALUE &>*/>
-inline void TEArrayList<VALUE, Implement>::setAt(int index, const VALUE & newElement)
+inline void TEArrayList<VALUE, Implement>::setAt(uint32_t index, const VALUE & newElement)
 {
     if (isValidIndex(index))
     {
         mElements[index] = newElement;
     }
-    else if (index >= 0)
+    else if ( NECommon::MAX_CONTAINER_SIZE > static_cast<uint32>(mElements.size()) )
     {
         mElements.push_back(newElement);
     }
-#ifdef _DEBUG
+#ifdef DEBUG
     else
     {
         ASSERT(false);
     }
-#endif // _DEBUG
+#endif // DEBUG
+
 }
 
 template<typename VALUE, class Implement /*= TEListImpl<const VALUE &>*/>
-inline bool TEArrayList<VALUE, Implement>::validateIndex(int index)
+inline bool TEArrayList<VALUE, Implement>::validateIndex(uint32_t index)
 {
-    ASSERT(index >= 0);
-    if (index >= static_cast<int>(mElements.size()))
+    if ( (index < NECommon::MAX_CONTAINER_SIZE) && (index >= static_cast<uint32_t>(mElements.size())) )
     {
-        reserve(index + 1);
+        mElements.resize(index + 1);
     }
 
-    return ((index >= 0) && (static_cast<int>(mElements.size()) >= index + 1));
+    return (index < static_cast<uint32_t>(mElements.size()));
 }
 
 template<typename VALUE, class Implement /*= TEListImpl<const VALUE &>*/>
 inline void TEArrayList<VALUE, Implement>::resize( uint32_t newSize )
 {
-    mElements.resize(newSize);
+    mElements.resize(newSize > NECommon::MAX_CONTAINER_SIZE ? NECommon::MAX_CONTAINER_SIZE : newSize);
 }
 
 template<typename VALUE, class Implement /*= TEListImpl<const VALUE &>*/>
 inline void TEArrayList<VALUE, Implement>::reserve( uint32_t newCapacity)
 {
-    mElements.reserve(newCapacity);
+    mElements.reserve(newCapacity > NECommon::MAX_CONTAINER_SIZE ? NECommon::MAX_CONTAINER_SIZE : newCapacity);
 }
 
 template<typename VALUE, class Implement /*= TEListImpl<const VALUE &>*/>
@@ -556,75 +563,89 @@ inline const VALUE* TEArrayList<VALUE, Implement>::getValues( void ) const
 }
 
 template<typename VALUE, class Implement /*= TEListImpl<const VALUE &>*/>
-inline int TEArrayList<VALUE, Implement>::add(const VALUE & newElement)
+inline void TEArrayList<VALUE, Implement>::add(const VALUE & newElement)
 {
-    mElements.push_back(newElement);
-    return static_cast<int>(mElements.size()) - 1;
+    if (NECommon::MAX_CONTAINER_SIZE > static_cast<uint32_t>(mElements.size()))
+    {
+        mElements.push_back(newElement);
+    }
 }
 
 template<typename VALUE, class Implement /*= TEListImpl<const VALUE &>*/>
 inline bool TEArrayList<VALUE, Implement>::addUnique(const VALUE & newElement)
 {
-    bool isUnique = true;
+    bool result = true;
     for (const VALUE& elem : mElements)
     {
         if (isEqualValues(elem, newElement))
         {
-            isUnique = false;
+            result = false;
             break;
         }
     }
 
-    if (isUnique)
+    if (result)
     {
-        mElements.push_back(newElement);
+        if (NECommon::MAX_CONTAINER_SIZE > static_cast<uint32_t>(mElements.size()))
+        {
+            mElements.push_back(newElement);
+        }
+        else
+        {
+            result = false;
+        }
     }
 
-    return isUnique;
+    return result;
 }
 
 template<typename VALUE, class Implement /*= TEListImpl<const VALUE &>*/>
-inline int TEArrayList<VALUE, Implement>::append(const TEArrayList<VALUE, Implement>& src)
+inline void TEArrayList<VALUE, Implement>::append(const TEArrayList<VALUE, Implement>& src)
 {
     ASSERT(this != &src);
 
-    int curPos  = static_cast<int>(mElements.size());
-    mElements.resize(curPos + src.getSize());
-    for (const VALUE& elem : src.mElements)
+    if (NECommon::MAX_CONTAINER_SIZE >= (getSize() + src.getSize()))
     {
-        mElements[curPos ++] = elem;
+        for (const VALUE& elem : src.mElements)
+        {
+            mElements.push_back(elem);
+        }
     }
-
-    return curPos;
+    else
+    {
+        uint32_t count = NECommon::MAX_CONTAINER_SIZE - getSize();
+        for (uint32_t i = 0; i < count; ++i)
+        {
+            mElements.push_back(src[i]);
+        }
+    }
 }
 
 template<typename VALUE, class Implement /*= TEListImpl<const VALUE &>*/>
-int TEArrayList<VALUE, Implement>::copy(const TEArrayList<VALUE, Implement>& src)
+void TEArrayList<VALUE, Implement>::copy(const TEArrayList<VALUE, Implement>& src)
 {
     ASSERT(this != &src);
-
     mElements = src.mElements;
-    return static_cast<int>(mElements.size());
 }
 
 template<typename VALUE, class Implement /*= TEListImpl<const VALUE &>*/>
-int TEArrayList<VALUE, Implement>::move( TEArrayList<VALUE, Implement> && src ) noexcept
+void TEArrayList<VALUE, Implement>::move( TEArrayList<VALUE, Implement> && src ) noexcept
 {
     ASSERT( this != &src );
-
     mElements = std::move(src.mElements);
-    return static_cast<int>(mElements.size());
 }
 
 template<typename VALUE, class Implement /*= TEListImpl<const VALUE &>*/>
-inline VALUE& TEArrayList<VALUE, Implement>::operator [] (int index)
+inline VALUE& TEArrayList<VALUE, Implement>::operator [] (uint32_t index)
 {
+    ASSERT(isValidIndex(index));
     return mElements[index];
 }
 
 template<typename VALUE, class Implement /*= TEListImpl<const VALUE &>*/>
-inline const VALUE & TEArrayList<VALUE, Implement>::operator [] (int index) const
+inline const VALUE & TEArrayList<VALUE, Implement>::operator [] (uint32_t index) const
 {
+    ASSERT(isValidIndex(index));
     return mElements[index];
 }
 
@@ -661,31 +682,7 @@ inline TEArrayList<VALUE, Implement>::operator const VALUE * ( void ) const
 }
 
 template<typename VALUE, class Implement /*= TEListImpl<const VALUE &>*/>
-inline int TEArrayList<VALUE, Implement>::insertAt(int index, const VALUE & newElement, uint32_t elemCount /*= 1*/)
-{
-    std::vector<VALUE>::const_iterator cit = getPosition(index);
-    if (elemCount > 0)
-    {
-        if (cit != mElements.end())
-        {
-            mElements.insert(cit, elemCount, newElement);
-        }
-        else
-        {
-            for (uint32_t i = 0; i < elemCount; ++i)
-            {
-                mElements.push_back(newElement);
-            }
-
-            index = static_cast<int>(mElements.size() - 1);
-        }
-    }
-
-    return index;
-}
-
-template<typename VALUE, class Implement /*= TEListImpl<const VALUE &>*/>
-inline void TEArrayList<VALUE, Implement>::removeAt(int index, uint32_t elemCount /*= 1*/)
+inline void TEArrayList<VALUE, Implement>::removeAt(uint32_t index, uint32_t elemCount /*= 1*/)
 {
     if (elemCount != 0)
     {
@@ -713,27 +710,75 @@ inline VALUE TEArrayList<VALUE, Implement>::removePos(uint32_t index)
 }
 
 template<typename VALUE, class Implement /*= TEListImpl<const VALUE &>*/>
-inline int TEArrayList<VALUE, Implement>::insertAt(int startAt, const TEArrayList<VALUE, Implement>& newArray)
+inline void TEArrayList<VALUE, Implement>::insertAt(uint32_t startAt, const VALUE& newElement, uint32_t elemCount /*= 1*/)
 {
-    ASSERT(startAt >= 0);
-    int result = startAt < static_cast<int>(mElements.size()) ? startAt : static_cast<int>(mElements.size() - 1);
-    if (newArray.mElements.empty() == false)
+    if (elemCount != 0)
     {
-        std::vector<VALUE>::const_iterator cit = getPosition(startAt);
-        mElements.insert(cit, newArray.mElements.begin(), newArray.mElements.end());
-    }
+        if ((getSize() + elemCount) > NECommon::MAX_CONTAINER_SIZE)
+        {
+            elemCount = NECommon::MAX_CONTAINER_SIZE - getSize();
+        }
 
-    return (result + newArray.getSize());
+        std::vector<VALUE>::const_iterator cit = getPosition(startAt);
+        if (cit != mElements.end())
+        {
+            mElements.insert(cit, elemCount, newElement);
+        }
+        else
+        {
+            for (uint32_t i = 0; i < elemCount; ++i)
+            {
+                mElements.push_back(newElement);
+            }
+        }
+    }
 }
 
 template<typename VALUE, class Implement /*= TEListImpl<const VALUE &>*/>
-inline int TEArrayList<VALUE, Implement>::find( const VALUE & elemSearch, int startAt /*= 0*/ ) const
+inline void TEArrayList<VALUE, Implement>::insertAt(uint32_t startAt, const VALUE* newArray, uint32_t count)
 {
-    int count = static_cast<int>(mElements.size());
+    ASSERT(isValidIndex(startAt));
+    if ((newArray != nullptr) && (count != 0))
+    {
+        if ((getSize() + count) > NECommon::MAX_CONTAINER_SIZE)
+        {
+            count = NECommon::MAX_CONTAINER_SIZE - getSize();
+        }
+
+        shift(startAt, static_cast<int>(count));
+        for (uint32_t i = 0; i < count; ++i)
+        {
+            mElements[startAt ++] = newArray[i];
+        }
+    }
+}
+
+template<typename VALUE, class Implement /*= TEListImpl<const VALUE &>*/>
+inline void TEArrayList<VALUE, Implement>::insertAt(uint32_t startAt, const TEArrayList<VALUE, Implement>& newArray)
+{
+    ASSERT(isValidIndex(startAt));
+
+    if (newArray.mElements.empty() == false)
+    {
+        uint32_t limit = 0;
+        if ((getSize() + newArray.getSize()) > NECommon::MAX_CONTAINER_SIZE)
+        {
+            limit = NECommon::MAX_CONTAINER_SIZE - (getSize() + newArray.getSize());
+        }
+
+        std::vector<VALUE>::const_iterator cit = getPosition(startAt);
+        mElements.insert(cit, newArray.mElements.begin(), newArray.mElements.end() - limit);
+    }
+}
+
+template<typename VALUE, class Implement /*= TEListImpl<const VALUE &>*/>
+inline int TEArrayList<VALUE, Implement>::find( const VALUE & elemSearch, uint32_t startAt /*= 0*/ ) const
+{
+    uint32_t count = static_cast<int>(mElements.size());
     startAt = startAt <= 0 ? 0 : MACRO_MIN(startAt, count);
     std::vector<VALUE>::const_iterator cit = getPosition(startAt);
     
-    int result = startAt;
+    uint32_t result = startAt;
     for (; cit != mElements.end(); ++cit, ++result)
     {
         if (isEqualValues(*cit, elemSearch))
@@ -742,11 +787,11 @@ inline int TEArrayList<VALUE, Implement>::find( const VALUE & elemSearch, int st
         }
     }
 
-    return (result < count ? result : -1);
+    return (result < count ? static_cast<int>(result) : NECommon::INVALID_INDEX);
 }
 
 template<typename VALUE, class Implement /*= TEListImpl<const VALUE &>*/>
-inline bool TEArrayList<VALUE, Implement>::exist( const VALUE & elemSearch, int startAt /*= 0*/ ) const
+inline bool TEArrayList<VALUE, Implement>::exist( const VALUE & elemSearch, uint32_t startAt /*= 0*/ ) const
 {
     return (find(elemSearch, startAt) >= 0);
 }
@@ -769,40 +814,41 @@ inline bool TEArrayList<VALUE, Implement>::removeElem( const VALUE & elemRemove,
     return result;
 }
 
-#if 0
 template<typename VALUE, class Implement /*= TEListImpl<const VALUE &>*/>
-void TEArrayList<VALUE, Implement>::shift(int startAt, int placeCount)
+void TEArrayList<VALUE, Implement>::shift(uint32_t startAt, int count)
 {
-    ASSERT(startAt >= 0 && placeCount > 0);
-    int oldSize = mElemCount;
-    if (startAt >= mElemCount)
+    if ((mElements.size() != 0) && (startAt < mElements.size()) && (count != 0))
     {
-        setSize(startAt + placeCount, -1);
-        mElemCount = startAt + placeCount;
+        if (count > 0)
+        {
+            if ((getSize() + count) > NECommon::MAX_CONTAINER_SIZE)
+            {
+                count = static_cast<int>(NECommon::MAX_CONTAINER_SIZE - getSize());
+            }
+
+            uint32_t posFirst   = static_cast<uint32_t>(mElements.size()) - 1;
+            uint32_t posLast    = posFirst + count;
+            mElements.resize(mElements.size() + count);
+            while (posFirst >= startAt)
+            {
+                mElements[posLast --] = mElements[posFirst --];
+            }
+        }
+        else
+        {
+            count *= -1;
+            uint32_t start  = static_cast<uint32_t>(count) > (startAt + 1) ? 0 : startAt - count;
+            uint32_t last   = static_cast<uint32_t>(mElements.size()) - 1;
+            uint32_t length = start + (last - startAt) + 1;
+            for (uint32_t i = startAt; i <= last; ++i)
+            {
+                mElements[start++] = mElements[i];
+            }
+
+            mElements.resize(length);
+        }
     }
-    else
-    {
-        setSize(mElemCount + placeCount, -1);
-        mElemCount += placeCount;
-        NEMemory::moveElems<VALUE, Implement>(mValueList + startAt + placeCount, mValueList + startAt, oldSize - startAt);
-    }
-
-    ASSERT(startAt + placeCount <= mElemCount);
 }
-
-template<typename VALUE, class Implement /*= TEListImpl<const VALUE &>*/>
-inline void TEArrayList<VALUE, Implement>::construct(VALUE* valueList, int elemCount)
-{
-    NEMemory::constructElems<VALUE, Implement>(static_cast<void*>(valueList), elemCount);
-}
-
-template<typename VALUE, class Implement /*= TEListImpl<const VALUE &>*/>
-inline void TEArrayList<VALUE, Implement>::destruct(VALUE* valueList, int elemCount)
-{
-    NEMemory::destroyElems<VALUE, Implement>(valueList, elemCount);
-}
-
-#endif
 
 template<typename VALUE, class Implement /*= TEListImpl<const VALUE &>*/>
 inline void TEArrayList<VALUE, Implement>::setSize(uint32_t elemCount)
@@ -813,8 +859,7 @@ inline void TEArrayList<VALUE, Implement>::setSize(uint32_t elemCount)
 template<typename VALUE, class Implement /*= TEListImpl<const VALUE &>*/>
 inline bool TEArrayList<VALUE, Implement>::isEqualValues(const VALUE & value1, const VALUE & value2) const
 {
-    // return mImplement.implEqualValues(value1, value2);
-    return (value1 == value2);
+    return mImplement.implEqualValues(value1, value2);
 }
 
 template<typename VALUE, class Implement /*= TEListImpl<const VALUE &>*/>
@@ -837,20 +882,18 @@ inline typename std::vector<VALUE>::iterator TEArrayList<VALUE, Implement>::getP
     return result;
 }
 
-
 //////////////////////////////////////////////////////////////////////////
 // Friend function implementation
 //////////////////////////////////////////////////////////////////////////
 
-template <typename V, class Impl>
-const IEInStream & operator >> ( const IEInStream & stream, TEArrayList<V, Impl> & input )
+template<typename VALUE, class Implement>
+const IEInStream & operator >> ( const IEInStream & stream, TEArrayList<VALUE, Implement> & input )
 {
-    int size = 0;
+    uint32_t size = 0;
     stream >> size;
-    input.removeAll();
     input.setSize( size );
  
-    for (V& elem : input.mElements)
+    for (VALUE & elem : input.mElements)
     {
         stream >> elem;
     }
@@ -858,11 +901,11 @@ const IEInStream & operator >> ( const IEInStream & stream, TEArrayList<V, Impl>
     return stream;
 }
 
-template <typename V, class Impl>
-IEOutStream & operator << ( IEOutStream& stream, const TEArrayList<V, Impl>& output )
+template<typename VALUE, class Implement>
+IEOutStream & operator << ( IEOutStream& stream, const TEArrayList<VALUE, Implement>& output )
 {
     stream << output.getSize();
-    for (const V& elem : output.mElements)
+    for (const VALUE & elem : output.mElements)
     {
         stream << elem;
     }

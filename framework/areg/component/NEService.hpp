@@ -470,7 +470,7 @@ namespace NEService
     /**
      * \brief   StateArray class. Keeps data state information
      **/
-    class AREG_API StateArray : public StateArrayBase
+    class AREG_API StateArray : private StateArrayBase
     {
         friend class ParameterArray;
     //////////////////////////////////////////////////////////////////////////
@@ -480,41 +480,37 @@ namespace NEService
         /**
          * \brief   Sets initial size of fixed array. The size of array cannot be changed dynamically.
          **/
-        explicit StateArray(int size = 0);
+        StateArray(uint32_t count);
 
         /**
-         * \brief   Copies entries from given source.
-         * \param   src     The source of data to copy.
+         * \brief   Initialization constructor.
+         *          Does not make hard-copy, only assigns given
+         *          parameters
          **/
-        StateArray(const StateArray & src) = default;
-
-        /**
-         * \brief   Copies entries from given source.
-         * \param   src     The source of data to copy.
-         **/
-        StateArray( StateArray && src ) noexcept = default;
+        StateArray(unsigned char* thisBffer, int elemCount);
 
         /**
          * \brief   Destructor
          **/
-        ~StateArray( void ) = default;
-
-        /**
-         * \brief   Copies data from give source.
-         * \param   src     The source of data to copy.
-         **/
-        StateArray & operator = ( const StateArray & src) = default;
-
-        /**
-         * \brief   Moves data from give source.
-         * \param   src     The source of data to move.
-         **/
-        StateArray & operator = ( StateArray && src) noexcept = default;
+        ~StateArray( void );
 
     //////////////////////////////////////////////////////////////////////////
-    // Attributes and operations
+    // Operators, attributes and operations
     //////////////////////////////////////////////////////////////////////////
     public:
+        /**
+         * \brief   Returns element by the index for reading. The index must be valid.
+         **/
+        inline const NEService::eDataStateType operator [] (int index) const;
+        /**
+         * \brief   Returns element by the index for reading. The index must be valid.
+         **/
+        inline NEService::eDataStateType& operator [] (int index);
+
+        /**
+         * \brief   Returns the number of elements in the array.
+         */
+        inline uint32_t getSize(void) const;
         /**
          * \brief   Resets states in array. All states will be set to NEService::DataIsUnavailable
          **/
@@ -540,16 +536,22 @@ namespace NEService
         inline void setAllState(NEService::eDataStateType newState);
 
     //////////////////////////////////////////////////////////////////////////
-    // Hidden methods
+    // Member variables
     //////////////////////////////////////////////////////////////////////////
     private:
+        //! Flag, indicating whether the state buffer is external or not.
+        //! In case of external buffer, it will not be deleted when release.
+        const bool  mExternal;
 
-        /**
-         * \brief   Initialization constructor.
-         *          Does not make hard-copy, only assigns given
-         *          parameters
-         **/
-        StateArray(unsigned char* thisBffer, int elemCount);
+    //////////////////////////////////////////////////////////////////////////
+    // Forbidden calls
+    //////////////////////////////////////////////////////////////////////////
+    private:
+        StateArray(void) = delete;
+        StateArray(const StateArray& src) = delete;
+        StateArray(StateArray&& src) noexcept = delete;
+        StateArray& operator = (const StateArray& src) = delete;
+        StateArray& operator = (StateArray&& src) noexcept = delete;
     };
 
     //////////////////////////////////////////////////////////////////////////
@@ -864,7 +866,7 @@ namespace NEService
         /**
          * \brief   Destructor
          **/
-        ~ProxyData( void );
+        ~ProxyData( void ) = default;
 
     public:
 
@@ -1021,6 +1023,22 @@ inline NEService::eMessageDataType NEService::getMessageDataType( unsigned int m
 //////////////////////////////////////////////////////////////////////////
 // class NEService::StateArray inline function implementation
 //////////////////////////////////////////////////////////////////////////
+
+inline const NEService::eDataStateType NEService::StateArray::operator [] (int index) const
+{
+    return StateArrayBase::operator[](index);
+}
+
+inline NEService::eDataStateType& NEService::StateArray::operator [] (int index)
+{
+    return StateArrayBase::operator[](index);
+}
+
+inline uint32_t NEService::StateArray::getSize(void) const
+{
+    return StateArrayBase::getSize();
+}
+
 inline void NEService::StateArray::resetStates( void )
 {
     setAllState(NEService::eDataStateType::DataIsUnavailable);
@@ -1033,13 +1051,12 @@ inline bool NEService::StateArray::hasParams( void ) const
 
 inline void NEService::StateArray::setState(int whichIndex, NEService::eDataStateType newState)
 {
-    ASSERT(isValidIndex(whichIndex));
     mValueList[whichIndex] = newState;
 }
 
 inline void NEService::StateArray::setAllState(NEService::eDataStateType newState)
 {
-    for ( int i = 0; i < this->mElemCount; ++ i )
+    for ( uint32_t i = 0; i < this->mElemCount; ++ i )
         mValueList[i] = newState;
 }
 
@@ -1078,7 +1095,7 @@ inline bool NEService::ParameterArray::hasParameters( int whichRespIndex ) const
 
 inline void NEService::ParameterArray::resetAllStates( void )
 {
-    for (int col = 0; col < mElemCount; col ++)
+    for (int col = 0; col < mElemCount; ++col)
         mParamList[col]->resetStates();
 }
 

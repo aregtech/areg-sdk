@@ -129,11 +129,12 @@ void PageConnections::OnClientRegistration( bool isRegistered, DispatcherThread 
 
         mCtrlConnections.DeleteAllItems();
         const NECommon::ListConnections & listConnections = mConnectionHandler.GetConnectionList( );
-        for ( int i = 0; i < listConnections.getSize(); ++ i )
+        for ( uint32_t i = 0; i < listConnections.getSize(); ++ i )
         {
             const NECommon::sConnection & connection = listConnections.getAt(i);
             addConnection( connection );
         }
+
         loadModel(nickname, cookie);
     }
     else

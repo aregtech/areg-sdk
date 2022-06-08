@@ -115,7 +115,7 @@ BOOL PageChat::OnInitDialog( )
     String message("");
     String comma("");
 
-    for ( int i = 0; i < parties.getSize(); ++ i )
+    for ( uint32_t i = 0; i < parties.getSize(); ++ i )
     {
         const NEDirectConnection::sParticipant & participant = parties[i];
         if ( owner != participant )

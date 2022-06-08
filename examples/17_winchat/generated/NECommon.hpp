@@ -260,19 +260,19 @@ namespace NECommon
     
 	};
 
-    typedef sParticipant                                                                            sInitiator;
+    using sInitiator        = sParticipant;
 
 	/**
 	 * \brief	NECommon::ListConnections
 	 *			Internal custom type definition of TEArrayList<sConnection, const sConnection &> 
 	 **/
-	typedef	TEArrayList<sParticipant>		                                    ListParticipants;
+	using ListParticipants  = TEArrayList<sParticipant>;
 
 	/**
 	 * \brief	NECommon::MapDirectConnections
 	 *			Internal custom type definition of TEHashMap<String, PairConnection, const String &, const PairConnection &> 
 	 **/
-	typedef	TEHashMap<sInitiator, ListParticipants, const sInitiator &, const ListParticipants &>   MapParticipants;
+	using MapParticipants   = TEHashMap<sInitiator, ListParticipants, const sInitiator &, const ListParticipants &>;
 
 }
 

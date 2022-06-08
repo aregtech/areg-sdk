@@ -28,7 +28,7 @@
  * \brief   The class template to implement equality of 2 values used in containers.
  * \tparam  VALUE_TYPE  The type of value to compare.
  **/
-template <typename VALUE_TYPE>
+template <typename VALUE>
 class TEEqualValueImpl
 {
 public:
@@ -38,7 +38,7 @@ public:
      * \param   Value2  The left-side value to compare.
      * \return  Returns true if 2 values are equal.
      **/
-    inline bool implEqualValues(VALUE_TYPE Value1, VALUE_TYPE Value2) const
+    inline bool implEqualValues(const VALUE & Value1, const VALUE & Value2) const
     {
         return (Value1 == Value2);
     }
@@ -121,8 +121,8 @@ public:
  *          Make own implementation if it differs from default implementation of value comparison.
  * \tparam  The type of values saved in the lists.
  **/
-template <typename VALUE_TYPE>
-class TEListImpl        : public TEEqualValueImpl<VALUE_TYPE>
+template <typename VALUE>
+class TEListImpl        : public TEEqualValueImpl<VALUE>
 {
 
 };

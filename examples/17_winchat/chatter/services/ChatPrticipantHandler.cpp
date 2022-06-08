@@ -37,7 +37,7 @@ int ChatPrticipantHandler::AddParticipant( const NECommon::sInitiator & initiato
     int result = 0;
     if ( mInitiator == initiator )
     {
-        for ( int i = 0; i < listParticipants.getSize(); ++ i )
+        for (uint32_t i = 0; i < listParticipants.getSize(); ++ i )
         {
             const NECommon::sParticipant & connection = listParticipants[i];
             if ( findPosition(connection) == NECommon::INVALID_INDEX )
@@ -68,7 +68,7 @@ int ChatPrticipantHandler::RemoveParticipant( const NECommon::sInitiator & initi
     int result = 0;
     if ( mInitiator == initiator )
     {
-        for ( int i = 0; i < listParticipants.getSize(); ++ i )
+        for (uint32_t i = 0; i < listParticipants.getSize(); ++ i )
         {
             const NECommon::sParticipant & connection = listParticipants[i];
             int pos = findPosition(connection);
@@ -125,14 +125,15 @@ void ChatPrticipantHandler::Invalidate( void )
 int ChatPrticipantHandler::findPosition( const NECommon::sParticipant & participant ) const
 {
     int result = NECommon::INVALID_INDEX;
-    for ( int i = 0; i < mListParticipants.getSize( ); ++ i )
+    for (uint32_t i = 0; i < mListParticipants.getSize( ); ++ i )
     {
         if ( participant == mListParticipants[i] )
         {
-            result = i;
+            result = static_cast<int>(i);
             break;
         }
     }
+
     return result;
 }
 

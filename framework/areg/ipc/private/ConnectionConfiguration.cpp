@@ -123,7 +123,7 @@ String ConnectionConfiguration::_getPropertyValue( NERemoteService::eServiceConn
     if ( mMapConfig.isEmpty( ) == false )
     {
         const ListProperties & listProp = mMapConfig.getAt( key );
-        if ( listProp.getSize( ) > static_cast<int>(entryIndex) )
+        if ( listProp.getSize( ) > static_cast<uint32_t>(entryIndex) )
         {
             const Property & prop = listProp[static_cast<int>(entryIndex)];
             result = prop.getValue( ).getString( );
