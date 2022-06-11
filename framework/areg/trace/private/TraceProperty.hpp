@@ -258,6 +258,25 @@ private:
 };
 
 //////////////////////////////////////////////////////////////////////////
+// Hasher of TraceProperty class
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   A template to calculate hash value of the TraceProperty.
+ */
+namespace std
+{
+    template<>
+    struct hash<TraceProperty>
+    {
+        //! A function to convert TraceProperty object to unsigned int.
+        inline unsigned int operator()(const TraceProperty& key) const
+        {
+            return static_cast<unsigned int>(key);
+        }
+    };
+}
+
+//////////////////////////////////////////////////////////////////////////
 // TraceProperty class inline methods implementation
 //////////////////////////////////////////////////////////////////////////
 

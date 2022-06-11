@@ -756,6 +756,25 @@ private:
 };
 
 //////////////////////////////////////////////////////////////////////////
+// Hasher of WideString class
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   A template to calculate hash value of the WideString.
+ */
+namespace std
+{
+    template<>
+    struct hash<WideString>
+    {
+        //! A function to convert WideString object to unsigned int.
+        inline unsigned int operator()(const WideString& key) const
+        {
+            return static_cast<unsigned int>(key);
+        }
+    };
+}
+
+//////////////////////////////////////////////////////////////////////////
 // WideString class inline function implementation
 //////////////////////////////////////////////////////////////////////////
 

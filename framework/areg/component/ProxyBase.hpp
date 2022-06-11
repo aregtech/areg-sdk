@@ -65,7 +65,7 @@ typedef ProxyBase* (*FuncCreateProxy)( const char* /*roleName*/, DispatcherThrea
 // ProxyBase class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief  Proxy Base is a base class for all proxy instantces in the 
+ * \brief  Proxy Base is a base class for all proxy instances in the 
  *          application. It provides communication functionalities with 
  *          server, sends and receives notifications. Triggers calls
  *          to dispatch messages and trigger messages of clients.
@@ -222,7 +222,7 @@ private:
     /**
      * \brief   Proxy map helper functions implementation.
      **/
-    class ImplProxyMap   : public TEHashMapImpl<const ProxyAddress &, ProxyBase *>
+    class ImplProxyMap   : public TEHashMapImpl<ProxyAddress, ProxyBase *>
     {
     public:
 
@@ -241,7 +241,7 @@ private:
     /**
      * \brief   Proxy hash map
      **/
-    using MapProxy          = TEHashMap<ProxyAddress, ProxyBase *, const ProxyAddress &, ProxyBase *, ImplProxyMap>;
+    using MapProxy          = TEHashMap<ProxyAddress, ProxyBase *, ImplProxyMap>;
     /**
      * \brief   Proxy resource map helper.
      **/
@@ -834,7 +834,7 @@ protected:
      * \param   msgId           The Notification Message ID
      * \param   consumer        The pointer of Notification Event consumer
      * \param   alwaysNotify    The flag indicating whether notification message
-     *                          should be sent if the the notification already is pending.
+     *                          should be sent if the notification already is pending.
      **/
     void setNotification( unsigned int msgId, IENotificationEventConsumer * caller, bool alwaysNotify = false );
 
@@ -1037,12 +1037,12 @@ inline bool ProxyBase::isConnected( void ) const
 
 inline bool ProxyBase::hasAnyListener(unsigned int msgId) const
 {
-    return mListenerList.exist(ProxyBase::Listener(msgId, NEService::SEQUENCE_NUMBER_ANY));
+    return mListenerList.contains(ProxyBase::Listener(msgId, NEService::SEQUENCE_NUMBER_ANY));
 }
 
 inline bool ProxyBase::hasNotificationListener(unsigned int msgId) const
 {
-    return mListenerList.exist(ProxyBase::Listener(msgId, NEService::SEQUENCE_NUMBER_NOTIFY));
+    return mListenerList.contains(ProxyBase::Listener(msgId, NEService::SEQUENCE_NUMBER_NOTIFY));
 }
 
 inline void ProxyBase::startNotification( unsigned int msgId )

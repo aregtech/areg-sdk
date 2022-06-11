@@ -194,7 +194,7 @@ bool Application::startTracer(const char * configFile /*= nullptr*/, bool force 
         }
         else if (force)
         {
-            OUTPUT_WARN("The tracing is enabled, but there is neither configuration file speficied, nor default exists.");
+            OUTPUT_WARN("The tracing is enabled, but there is neither configuration file specified, nor default exists.");
             OUTPUT_WARN("Forcing to start logging with system default values.");
             if ( NETrace::forceStartLogging() )
             {
@@ -444,7 +444,7 @@ bool Application::isElementStored( const String & elemName )
 {
     Application & theApp = Application::getInstance();
     Lock lock(theApp.mLock);
-    return (theApp.mStorage.find(elemName) != nullptr);
+    return theApp.mStorage.contains(elemName);
 }
 
 NEMemory::uAlign Application::storeElement( const String & elemName, NEMemory::uAlign elem )
@@ -452,14 +452,15 @@ NEMemory::uAlign Application::storeElement( const String & elemName, NEMemory::u
     Application & theApp = Application::getInstance( );
     Lock lock( theApp.mLock );
 
-    MAPPOS pos = theApp.mStorage.find(elemName);
+    MapAppStorage::MAPPOS pos = theApp.mStorage.find(elemName);
     NEMemory::uAlign result = NEMemory::InvalidElement;
-    if ( pos != nullptr )
+    if (theApp.mStorage.isValidPosition(pos))
     {
         result = theApp.mStorage.valueAtPosition(pos);
         theApp.mStorage.removePosition(pos);
     }
-    theApp.mStorage.setAt(elemName, elem, false);
+
+    theApp.mStorage.setAt(elemName, elem);
     return result;
 }
 
@@ -468,8 +469,8 @@ NEMemory::uAlign Application::getStoredElement( const String & elemName )
     Application & theApp = Application::getInstance( );
     Lock lock( theApp.mLock );
 
-    MAPPOS pos = theApp.mStorage.find( elemName );
-    return (pos != nullptr ? theApp.mStorage.valueAtPosition( pos ) : NEMemory::InvalidElement);
+    MapAppStorage::MAPPOS pos = theApp.mStorage.find( elemName );
+    return (theApp.mStorage.isValidPosition(pos) ? theApp.mStorage.valueAtPosition( pos ) : NEMemory::InvalidElement);
 }
 
 bool Application::waitAppQuit(unsigned int waitTimeout /*= NECommon::WAIT_INFINITE*/)

@@ -240,93 +240,37 @@ int ExpiredTimers::removeAllTimers( Timer * whichTimer )
 // MapTimerTable implementation
 //////////////////////////////////////////////////////////////////////////
 
-void MapTimerTable::registerObject(const Timer * key, const TimerInfo & object)
+void MapTimerTable::registerObject(Timer * key, const TimerInfo & object)
 {
-    ASSERT(mHashTable != nullptr);
-
-    unsigned int hash = NECommon::MAP_INVALID_HASH;
-    TEHashMap<Timer *, TimerInfo, const Timer *, const TimerInfo &, ImplTimerTable>::Block* block = TEHashMap<Timer *, TimerInfo, const Timer *, const TimerInfo &, ImplTimerTable>::blockAt(key, hash);
-    if (block == nullptr)
-    {
-        ASSERT(hash != NECommon::MAP_INVALID_HASH);
-
-        // it doesn't exist, add a new Block
-        int idx     = static_cast<int>(hash % mHashTableSize);
-        block       = initNewBlock();
-        block->mHash= hash;
-        block->mKey	= const_cast<Timer *>(key);
-        block->mNext= mHashTable[idx];
-        mHashTable[idx]= block;
-    }
-
-    block->mValue= object;
+    TimerTableBase::setAt(key, object);
 }
 
-bool MapTimerTable::updateObject(const Timer * key, const TimerInfo & object)
+bool MapTimerTable::updateObject(Timer * key, const TimerInfo & object)
 {
-    bool result = false;
-    ASSERT( mHashTable != nullptr );
-
-    unsigned int hash = NECommon::MAP_INVALID_HASH;
-    TEHashMap<Timer *, TimerInfo, const Timer *, const TimerInfo &, ImplTimerTable>::Block* block = TEHashMap<Timer *, TimerInfo, const Timer *, const TimerInfo &, ImplTimerTable>::blockAt(key, hash);
-    if (block != nullptr)
-    {
-        block->mValue= object;
-        result = false;
-    }
-
-    return result;
+    return TimerTableBase::isValidPosition(TimerTableBase::updateAt(key, object));
 }
 
-bool MapTimerTable::unregisterObject(const Timer * key)
+bool MapTimerTable::unregisterObject(Timer * key)
 {
-    bool result = false;
-    TEHashMap<Timer *, TimerInfo, const Timer *, const TimerInfo &, ImplTimerTable>::Block** block = blockAtRef(key);
-    if ((block != nullptr) && (*block != nullptr))
-    {
-        removeBlock(block);
-        result = true;
-    }
-
-    return result;
+    return TimerTableBase::removeAt(key);
 }
 
-bool MapTimerTable::unregisterObject(const Timer * key, TimerInfo & OUT object)
+bool MapTimerTable::unregisterObject(Timer * key, TimerInfo & OUT object)
 {
-    bool result = false;
-    TEHashMap<Timer *, TimerInfo, const Timer *, const TimerInfo &, ImplTimerTable>::Block** block = blockAtRef(key);
-    if ((block != nullptr) && (*block != nullptr))
-    {
-        object = (*block)->mValue;
-        removeBlock(block);
-        result = true;
-    }
-
-    return result;
+    return TimerTableBase::removeAt(key, object);
 }
 
-bool MapTimerTable::unregisterFirstObject(Timer * & OUT key, TimerInfo & OUT object)
+bool MapTimerTable::unregisterFirstObject(Timer* & OUT key, TimerInfo & OUT object)
 {
-    bool result = false;
-    TEHashMap<Timer *, TimerInfo, const Timer *, const TimerInfo &, ImplTimerTable>::Block* block = firstValidBlock();
-    if (block != nullptr)
-    {
-        key     = block->mKey;
-        object  = block->mValue;
-        removeBlock(blockReference(*block));
-        result = true;
-    }
-
-    return result;
+    return TimerTableBase::removeFirst(key, object);
 }
 
-bool MapTimerTable::resetActiveTimerState(const Timer * key)
+bool MapTimerTable::resetActiveTimerState(Timer * key)
 {
     bool result = false;
-    TEHashMap<Timer *, TimerInfo, const Timer *, const TimerInfo &, ImplTimerTable>::Block** block = blockAtRef(key);
-    if ((block != nullptr) && (*block != nullptr))
+    if (TimerTableBase::contains(key))
     {
-        result = (*block)->mValue.resetActiveTimer();
+        result = TimerTableBase::getAt(key).resetActiveTimer();
     }
 
     return result;

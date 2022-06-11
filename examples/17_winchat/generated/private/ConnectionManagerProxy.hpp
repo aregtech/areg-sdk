@@ -164,7 +164,7 @@ public:
      * \brief   Returns value of dateTime of response call function.
      *          The parameter is validated and set when Proxy is getting response call.
      *          Parameter dateTime description: 
-     *          The client service connection timestamp in UTC
+     *          The client service connection time-stamp in UTC
      **/
     inline const DateTime & getParamdateTime( void ) const;
 
@@ -232,11 +232,11 @@ public:
      *          The request to connect to system
      * \param   caller      The reference of caller object to get response.
      * \param   nickName    The nick name of connecting client service
-     * \param   dateTime    The connecting client connection timestamp in UTC
+     * \param   dateTime    The connecting client connection time-stamp in UTC
      * \return  The sequence count number of call
      * \see     responseConnect
      **/
-    unsigned int requestConnet( IENotificationEventConsumer & caller, const String & nickName, const DateTime & dateTime );
+    unsigned int requestConnect( IENotificationEventConsumer & caller, const String & nickName, const DateTime & dateTime );
     
     /**
      * \brief   Request call.
@@ -245,7 +245,7 @@ public:
      * \param   nickName        The nick name of connection used in service
      * \param   cookie          The cookie value to set
      * \param   connectCookie   The cookie to use for registration. 
-     * \param   dateRegister    The connection registration timestamp
+     * \param   dateRegister    The connection registration time-stamp
      * \return  The sequence count number of call
      * \see     responseRegisterConnection
      **/
@@ -259,7 +259,7 @@ public:
      * \param   dateTime    Disconnect request date-time
      * \see     Has no Response.
      **/
-    void requestDiconnect( const String & nickName, unsigned int cookie, const DateTime & dateTime );
+    void requestDisconnect( const String & nickName, unsigned int cookie, const DateTime & dateTime );
 
 //////////////////////////////////////////////////////////////////////////
 // Operations.
@@ -419,7 +419,7 @@ private:
 
     /**
      * \brief   dateTime parameter value.
-     *          The client service connection timestamp in UTC
+     *          The client service connection time-stamp in UTC
      **/
     DateTime                                mParamdateTime;
 

@@ -147,9 +147,9 @@ void ConnectionManagerStub::errorRequest( unsigned int msgId, bool msgCancel )
 /************************************************************************
  * Request errors
  ************************************************************************/
-    case NEConnectionManager::eMessageIDs::MsgId_requestConnet:
+    case NEConnectionManager::eMessageIDs::MsgId_requestConnect:
     case NEConnectionManager::eMessageIDs::MsgId_requestRegisterConnection:
-    case NEConnectionManager::eMessageIDs::MsgId_requestDiconnect:
+    case NEConnectionManager::eMessageIDs::MsgId_requestDisconnect:
         listenerId = static_cast<msg_id>(NEConnectionManager::getResponseId(static_cast< NEConnectionManager::eMessageIDs>(msgId)));
         result = msgCancel ? NEService::eResultType::RequestCanceled : NEService::eResultType::RequestError;
         break;
@@ -265,14 +265,14 @@ void ConnectionManagerStub::processRequestEvent( ServiceRequestEvent & eventElem
 
         switch ( static_cast<NEConnectionManager::eMessageIDs>(reqId) )
         {
-        case NEConnectionManager::eMessageIDs::MsgId_requestConnet:
+        case NEConnectionManager::eMessageIDs::MsgId_requestConnect:
             if ( canExecuteRequest(listener, static_cast<msg_id>(respId), reqEvent->getSequenceNumber()) )
             {
                 String      nickName;
                 DateTime    dateTime;
                 stream >> nickName;                
                 stream >> dateTime;                
-                requestConnet( nickName, dateTime );
+                requestConnect( nickName, dateTime );
             }
             break;
             
@@ -291,7 +291,7 @@ void ConnectionManagerStub::processRequestEvent( ServiceRequestEvent & eventElem
             }
             break;
             
-        case NEConnectionManager::eMessageIDs::MsgId_requestDiconnect:
+        case NEConnectionManager::eMessageIDs::MsgId_requestDisconnect:
             if ( true )
             {
                 String          nickName;
@@ -300,7 +300,7 @@ void ConnectionManagerStub::processRequestEvent( ServiceRequestEvent & eventElem
                 stream >> nickName;                
                 stream >> cookie;                
                 stream >> dateTime;                
-                requestDiconnect( nickName, cookie, dateTime );
+                requestDisconnect( nickName, cookie, dateTime );
             }
             break;
             

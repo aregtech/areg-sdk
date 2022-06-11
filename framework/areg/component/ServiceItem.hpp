@@ -275,6 +275,25 @@ private:
 };
 
 //////////////////////////////////////////////////////////////////////////
+// Hasher of ServiceItem class
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   A template to calculate hash value of the ServiceItem.
+ */
+namespace std
+{
+    template<>
+    struct hash<ServiceItem>
+    {
+        //! A function to convert ServiceItem object to unsigned int.
+        inline unsigned int operator()(const ServiceItem& key) const
+        {
+            return static_cast<unsigned int>(key);
+        }
+    };
+}
+
+//////////////////////////////////////////////////////////////////////////
 // ServiceItem class inline functions
 //////////////////////////////////////////////////////////////////////////
 

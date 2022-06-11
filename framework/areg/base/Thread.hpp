@@ -53,7 +53,7 @@ class String;
  *          to save thread specific storage to store objects that are not accessible outside
  *          of the thread context.
  * 
- *          The derived objects are Dispather, Worker and Component threads that are able
+ *          The derived objects are Dispatcher, Worker and Component threads that are able
  *          to receive and process thread specific events.
  *
  * \see     IEThreadConsumer, ThreadLocalStorage, DispatcherThread, WorkerThread, ComponentThread
@@ -166,7 +166,7 @@ public:
      *                          is created and running.
      *                          -   Set DO_NOT_WAIT to escape waiting. The function
      *                              returns immediately when thread is created and
-     *                              gives no guarantie that it already runs.
+     *                              gives no guarantee that it already runs.
      *                          -   Set WAIT_INFINITE to ensure that thread is running.
      *                          -   Set any other value in milliseconds to specify waiting time
      *                              until thread starts running or timeout expires.
@@ -584,25 +584,25 @@ private:
      *          The unique thread ID is set when thread is created
      **/
     using   ImplMapThreadID         = TEHashMapImpl<id_type, Thread *>;
-    using   MapThreadID             = TEIdHashMap<Thread *, Thread *, ImplMapThreadID>;
+    using   MapThreadID             = TEIdHashMap<Thread *, ImplMapThreadID>;
     using   ImplThreadIDResource    = TEResourceMapImpl<id_type, Thread>;
-    typedef TELockResourceMap<id_type, Thread, MapThreadID,ImplThreadIDResource>        MapThreadIDResource;
+    using   MapThreadIDResource     = TELockResourceMap<id_type, Thread, MapThreadID,ImplThreadIDResource>;
     /**
      * \brief   Thread resource mapping by thread handle. 
      *          The unique thread handle can be used to access thread object.
      **/
     using   ImplMapThreadHandle     = TEPointerHashMapImpl<void *, Thread *>;
-    using   MapThreadPoiters        = TEPointerHashMap<Thread *, Thread *, ImplMapThreadHandle>;
+    using   MapThreadPoiters        = TEPointerHashMap<Thread *, ImplMapThreadHandle>;
     using   ImplThreadHandleResource= TEResourceMapImpl<void *, Thread>;
-    typedef TELockResourceMap<void *, Thread, MapThreadPoiters,ImplThreadHandleResource> MapThreadHandleResource;
+    using   MapThreadHandleResource = TELockResourceMap<void *, Thread, MapThreadPoiters,ImplThreadHandleResource>;
     /**
      * \brief   Thread resource mapping by thread name. 
      *          The unique thread name can be used to access thread object.
      **/
-    using   ImplMapThreadName       = TEHashMapImpl<const String &, Thread *>;
-    using   MapThreadName           = TEStringHashMap<Thread *, Thread *, ImplMapThreadName>;
+    using   ImplMapThreadName       = TEHashMapImpl<String, Thread *>;
+    using   MapThreadName           = TEStringHashMap<Thread *, ImplMapThreadName>;
     using   ImplThreadNameResource  = TEResourceMapImpl<String, Thread>;
-    typedef TELockResourceMap<String, Thread, MapThreadName, ImplThreadNameResource>    MapThreadNameResource;
+    using   MapThreadNameResource   = TELockResourceMap<String, Thread, MapThreadName, ImplThreadNameResource>;
 
 /************************************************************************/
 // Resource controlling and mapping variables

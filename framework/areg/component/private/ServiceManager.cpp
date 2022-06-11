@@ -315,7 +315,7 @@ void ServiceManager::_sendClientConnectedEvent( const ClientInfo & client, const
     }
     else
     {
-        TRACE_INFO("The client Proxy [ %s ] has NO CONNECTION yet. Notingto send", ProxyAddress::convAddressToPath(client.getAddress()).getString());
+        TRACE_INFO("The client Proxy [ %s ] has NO CONNECTION yet. Noting to send", ProxyAddress::convAddressToPath(client.getAddress()).getString());
     }
 }
 
@@ -372,7 +372,7 @@ void ServiceManager::processEvent( const ServiceManagerEventData & data )
 
     case ServiceManagerEventData::eServiceManagerCommands::CMD_StopRoutingClient:
         {
-            for ( MAPPOS pos = mServerList.firstPosition(); pos != nullptr; pos = mServerList.nextPosition(pos) )
+            for (ServerList::MAPPOS pos = mServerList.firstPosition(); mServerList.isValidPosition(pos); pos = mServerList.nextPosition(pos) )
             {
                 ServerInfo si;
                 ClientList cList;
@@ -495,7 +495,7 @@ void ServiceManager::processEvent( const ServiceManagerEventData & data )
 
     case ServiceManagerEventData::eServiceManagerCommands::CMD_RegisterConnection:
         {
-            for ( MAPPOS posMap = mServerList.firstPosition(); posMap != nullptr; posMap = mServerList.nextPosition(posMap) )
+            for (ServerList::MAPPOS posMap = mServerList.firstPosition(); mServerList.isValidPosition(posMap); posMap = mServerList.nextPosition(posMap) )
             {
                 const StubAddress & server = mServerList.keyAtPosition(posMap).getAddress();
                 const ClientList & listClients = mServerList.valueAtPosition(posMap);
@@ -518,7 +518,7 @@ void ServiceManager::processEvent( const ServiceManagerEventData & data )
         {
             TEArrayList<StubAddress> stubList;
             TEArrayList<ProxyAddress> proxyList;
-            for ( MAPPOS posMap = mServerList.firstPosition(); posMap != nullptr; posMap = mServerList.nextPosition(posMap) )
+            for (ServerList::MAPPOS posMap = mServerList.firstPosition(); mServerList.isValidPosition(posMap); posMap = mServerList.nextPosition(posMap) )
             {
                 const StubAddress & server = mServerList.keyAtPosition(posMap).getAddress();
                 const ClientList & listClients = mServerList.valueAtPosition(posMap);
@@ -617,7 +617,7 @@ void ServiceManager::getServiceList( ITEM_ID cookie, TEArrayList<StubAddress> & 
     out_listStubs.removeAll();
     out_lisProxies.removeAll();
 
-    for ( MAPPOS posMap = mServerList.firstPosition(); posMap != nullptr; posMap = mServerList.nextPosition(posMap) )
+    for (ServerList::MAPPOS posMap = mServerList.firstPosition(); mServerList.isValidPosition(posMap); posMap = mServerList.nextPosition(posMap) )
     {
         const StubAddress & server      = mServerList.keyAtPosition(posMap).getAddress();
         const ClientList & listClients  = mServerList.valueAtPosition(posMap);

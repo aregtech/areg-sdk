@@ -31,9 +31,9 @@ const NEService::SInterfaceData & NEConnectionManager::getInterfaceData( void )
      ************************************************************************/
     static constexpr unsigned int _RequestList[] 
     {
-          static_cast<unsigned int>( NEConnectionManager::eMessageIDs::MsgId_requestConnet                ) // requestConnet( const String & nickName, const DateTime & dateTime )
+          static_cast<unsigned int>( NEConnectionManager::eMessageIDs::MsgId_requestConnect                ) // requestConnect( const String & nickName, const DateTime & dateTime )
         , static_cast<unsigned int>( NEConnectionManager::eMessageIDs::MsgId_requestRegisterConnection    ) // requestRegisterConnection( const String & nickName, unsigned int cookie, unsigned int connectCookie, const DateTime & dateRegister )
-        , static_cast<unsigned int>( NEConnectionManager::eMessageIDs::MsgId_requestDiconnect             ) // requestDiconnect( const String & nickName, unsigned int cookie, const DateTime & dateTime )
+        , static_cast<unsigned int>( NEConnectionManager::eMessageIDs::MsgId_requestDisconnect             ) // requestDisconnect( const String & nickName, unsigned int cookie, const DateTime & dateTime )
     };
 
     /************************************************************************
@@ -61,9 +61,9 @@ const NEService::SInterfaceData & NEConnectionManager::getInterfaceData( void )
      ************************************************************************/
     static constexpr unsigned int _RequestToResponseMap[] 
     {
-          static_cast<unsigned int>( NEConnectionManager::eMessageIDs::MsgId_responseConnect              ) // requestConnet( const String & nickName, const DateTime & dateTime )
+          static_cast<unsigned int>( NEConnectionManager::eMessageIDs::MsgId_responseConnect              ) // requestConnect( const String & nickName, const DateTime & dateTime )
         , static_cast<unsigned int>( NEConnectionManager::eMessageIDs::MsgId_responseRegisterConnection   ) // requestRegisterConnection( const String & nickName, unsigned int cookie, unsigned int connectCookie, const DateTime & dateRegister )
-        , static_cast<unsigned int>( NEConnectionManager::eMessageIDs::MsgId_NotProcessed                 ) // requestDiconnect( const String & nickName, unsigned int cookie, const DateTime & dateTime )
+        , static_cast<unsigned int>( NEConnectionManager::eMessageIDs::MsgId_NotProcessed                 ) // requestDisconnect( const String & nickName, unsigned int cookie, const DateTime & dateTime )
     };
 
     /************************************************************************

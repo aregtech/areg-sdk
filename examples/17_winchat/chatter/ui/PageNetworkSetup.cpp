@@ -86,7 +86,7 @@ void PageNetworkSetup::OnServiceNetwork( bool isConnected, DispatcherThread * ow
         if ( (mConnectionHandler.GetNickName().isEmpty() == false) && (mConnectionHandler.GetCookie() == NECommon::InvalidCookie) )
         {
             ASSERT(mNetworkSetup != nullptr);
-            mNetworkSetup->requestConnet(mConnectionHandler.GetNickName(), DateTime::getNow() );
+            mNetworkSetup->requestConnect(mConnectionHandler.GetNickName(), DateTime::getNow() );
         }
     }
     mConnectPending = isConnected ? false : mConnectPending;
@@ -113,7 +113,7 @@ void PageNetworkSetup::OnClientRegistration( bool isRegistered, DispatcherThread
     }
     else if ( (isRegistered == false) && (mNetworkSetup != nullptr) )
     {
-        mNetworkSetup->requestDiconnect( mConnectionHandler.GetNickName(), mConnectionHandler.GetCookie(), DateTime::getNow());
+        mNetworkSetup->requestDisconnect( mConnectionHandler.GetNickName(), mConnectionHandler.GetCookie(), DateTime::getNow());
         mConnectionHandler.ResetConnectionList( );
     }
 }
@@ -137,7 +137,7 @@ void PageNetworkSetup::OnDisconnectTriggered( void )
 {
     if ( mNetworkSetup != nullptr )
     {
-        mNetworkSetup->requestDiconnect(mConnectionHandler.GetNickName(), mConnectionHandler.GetCookie(), mConnectionHandler.GetTimeConnect());
+        mNetworkSetup->requestDisconnect(mConnectionHandler.GetNickName(), mConnectionHandler.GetCookie(), mConnectionHandler.GetTimeConnect());
         delete mNetworkSetup;
         mNetworkSetup = nullptr;
     }
@@ -225,7 +225,7 @@ void PageNetworkSetup::OnClickedButtonRegister( )
             mRegisterPending = true;
             mConnectionHandler.SetRegistered(false);
             mConnectionHandler.SetNickName(nickName);
-            mNetworkSetup->requestConnet(nickName, DateTime::getNow() );
+            mNetworkSetup->requestConnect(nickName, DateTime::getNow() );
         }
         else
         {
@@ -401,7 +401,7 @@ void PageNetworkSetup::OnDestroy( )
 
     if ( mNetworkSetup != nullptr )
     {
-        mNetworkSetup->requestDiconnect( mConnectionHandler.GetNickName( ), mConnectionHandler.GetCookie( ), mConnectionHandler.GetTimeConnect( ) );
+        mNetworkSetup->requestDisconnect( mConnectionHandler.GetNickName( ), mConnectionHandler.GetCookie( ), mConnectionHandler.GetTimeConnect( ) );
         delete mNetworkSetup;
         mNetworkSetup = nullptr;
     }

@@ -35,7 +35,8 @@ class ProxyAddress;
 /**
  * \brief   Server List helper class.
  **/
-using ImplServerList    = TEHashMapImpl<const ServerInfo &, const ClientList &>;
+using ImplServerList    = TEHashMapImpl<ServerInfo, ClientList>;
+using ServerListBase    = TEHashMap<ServerInfo, ClientList, ImplServerList>;
 
 /**
  * \brief   Server List is a Hash Map class containing information
@@ -46,16 +47,8 @@ using ImplServerList    = TEHashMapImpl<const ServerInfo &, const ClientList &>;
  *          The controlling of server and connected clients done via
  *          registration of client(s).
  **/
-class ServerList  : public TEHashMap<ServerInfo, ClientList, const ServerInfo &, const ClientList &, ImplServerList>
+class ServerList  : public TEHashMap<ServerInfo, ClientList, ImplServerList>
 {
-//////////////////////////////////////////////////////////////////////////
-// Predefined types and constants
-//////////////////////////////////////////////////////////////////////////
-    /**
-     * \brief   ServerList::ServiceBlock
-     *          Define Block class of Hash Map as ServiceBlock. Defined to short syntax.
-     **/
-    using ServiceBlock  = TEHashMap<ServerInfo, ClientList, const ServerInfo &, const ClientList &, ImplServerList>::Block;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -172,17 +165,17 @@ private:
     /**
      * \brief   Find server component by client proxy address.
      **/
-    MAPPOS findServer( const ProxyAddress & whichClient ) const;
+    MAPPOS findServer(const ProxyAddress& whichClient) const;
 
     /**
      * \brief   Find server component by service address.
      **/
-    MAPPOS findServer( const StubAddress & whichServer ) const;
+    MAPPOS findServer(const StubAddress& whichServer) const;
 
     /**
      * \brief   Find server component by server info.
      **/
-    MAPPOS findServer( const ServerInfo & server ) const;
+    MAPPOS findServer(const ServerInfo& server) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

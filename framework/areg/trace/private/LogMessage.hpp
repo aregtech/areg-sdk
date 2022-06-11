@@ -155,7 +155,7 @@ public:
     inline unsigned int getScopeId( void ) const;
 
     /**
-     * \brief   Returns the timestamp of created message log
+     * \brief   Returns the time-stamp of created message log
      **/
     inline const DateTime getTimestamp( void ) const;
 

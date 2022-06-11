@@ -16,7 +16,7 @@
 #                           Specifying file name, make sure that permissions are granted.
 #                           If file name contains '%appdata%' mark in the path, the logging file is stored
 #                           in system special folder "APPDATA_Roaming" (in Win7 system "C:\Users\<user_name>\AppData\Roaming").
-#                           If file name contains '%timestamp%' mark, it will add special timestamp into the file name.
+#                           If file name contains '%timestamp%' mark, it will add special time-stamp into the file name.
 #                           If file name contains symbol of current folder './', the path is relative to the folder of executable.
 #
 #   Logging to remote host: To log traces to remote host (by further saving), specify host name and the port number.

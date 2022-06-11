@@ -48,7 +48,7 @@ public:
  * \brief   The class template to implement equality of 2 keys used in containers.
  * \tparam  KEY_TYPE    The type of keys to compare.
  **/
-template <typename KEY_TYPE>
+template <typename KEY>
 class TEEqualKeyImpl
 {
 public:
@@ -58,7 +58,7 @@ public:
      * \param   Value2  The key of left-side object to compare.
      * \return  Returns true if 2 keys are equal.
      **/
-    inline bool implEqualKeys(KEY_TYPE Key1, KEY_TYPE Key2) const
+    inline bool implEqualKeys(const KEY & Key1, const KEY& Key2) const
     {
         return (Key1 == Key2);
     }
@@ -68,7 +68,7 @@ public:
  * \brief   The class template to implement comparing functionality of 2 values used in sorting algorithms.
  * /tparam  VALUE_TYPE  The type of values to compare.
  **/
-template <typename VALUE_TYPE>
+template <typename VALUE>
 class TECompareImpl
 {
 public:
@@ -85,7 +85,7 @@ public:
      *              - NEMath::Equal     if Value1 and Value2 are equal;
      *              - NEMath::Bigger   if Value1 is greater than Value2.
      **/
-    inline NEMath::eCompare implCompareValues(VALUE_TYPE Value1, VALUE_TYPE Value2) const
+    inline NEMath::eCompare implCompareValues(const VALUE & Value1, const VALUE& Value2) const
     {
         if (Value1 < Value2)
             return NEMath::eCompare::Smaller;
@@ -101,7 +101,7 @@ public:
  *          Make own implementation if need to customize calculation.
  * \tparam  KEY_TYPE    The type of value to calculate 32-bit hash key.
  **/
-template <typename KEY_TYPE>
+template <typename KEY>
 class TEHashKeyImpl
 {
 public:
@@ -110,7 +110,7 @@ public:
      * \ param  Key     The object to calculate 32-bit hash key.
      * \return  Returns 32-bit hash key value.
      **/
-    unsigned int implHashKey(KEY_TYPE Key) const
+    unsigned int implHashKey(const KEY & Key) const
     {
         return static_cast<unsigned int>( Key );
     }
@@ -132,9 +132,9 @@ class TEListImpl        : public TEEqualValueImpl<VALUE>
  *          Make own implementation if it differs from default implementation.
  * \tparam  VALUE_TYPE  The type of values to compare.
  **/
-template <typename VALUE_TYPE>
-class TESortImpl    : public TEEqualValueImpl<VALUE_TYPE>
-                    , public TECompareImpl<VALUE_TYPE>
+template <typename VALUE>
+class TESortImpl    : public TEEqualValueImpl<VALUE>
+                    , public TECompareImpl<VALUE>
 {
 
 };
@@ -146,11 +146,10 @@ class TESortImpl    : public TEEqualValueImpl<VALUE_TYPE>
  * \tparam  KEY_TYPE    The type of key saved in the pair container.
  * \tparam  VALUE_TYPE  The type of value saved in the pair container.
  **/
-template <typename KEY_TYPE, typename VALUE_TYPE>
-class TEPairImpl        : public TEEqualKeyImpl     <KEY_TYPE>
-                        , public TEEqualValueImpl   <VALUE_TYPE>
+template <typename KEY, typename VALUE>
+class TEPairImpl        : public TEEqualKeyImpl     <KEY>
+                        , public TEEqualValueImpl   <VALUE>
 {
-
 };
 
 /**
@@ -160,8 +159,8 @@ class TEPairImpl        : public TEEqualKeyImpl     <KEY_TYPE>
  * \tparam  KEY_TYPE    The type of key, which should be pointer, saved in the hash-map container.
  * \tparam  VALUE_TYPE  The type of value associated with the key.
  **/
-template <typename KEY_TYPE, typename VALUE_TYPE>
-class TEPointerHashMapImpl	: public TEPairImpl     <KEY_TYPE, VALUE_TYPE>
+template <typename KEY, typename VALUE>
+class TEPointerHashMapImpl	: public TEPairImpl<KEY, VALUE>
 {
 public:
     /**
@@ -169,7 +168,7 @@ public:
      * \ param  Key     The object to calculate 32-bit hash key.
      * \return  Returns 32-bit hash key value.
      **/
-    unsigned int implHashKey(KEY_TYPE Key) const
+    unsigned int implHashKey(const KEY & Key) const
     {
     	return MACRO_PTR2INT32( Key );
     }
@@ -182,11 +181,10 @@ public:
  * \tparam  KEY_TYPE    The type of key saved in the hash-map container.
  * \tparam  VALUE_TYPE  The type of value associated with the key.
  **/
-template <typename KEY_TYPE, typename VALUE_TYPE>
-class TEHashMapImpl     : public TEPairImpl     <KEY_TYPE, VALUE_TYPE>
-                        , public TEHashKeyImpl  <KEY_TYPE>
+template <typename KEY, typename VALUE>
+class TEHashMapImpl     : public TEPairImpl     <KEY, VALUE>
+                        , public TEHashKeyImpl  <KEY>
 {
-
 };
 
 /**
@@ -411,5 +409,30 @@ public:
         stream << static_cast<CharType>(NEString::EndOfString);
 
         return result;
+    }
+};
+
+/**
+ * \brief   Converts the const_iterator type random access iterator into normal iterator.
+ * \tparam  Container   The container object type to convert.
+ */
+template <typename Container>
+class Constless
+{
+public:
+    /**
+     * \brief   Converts the given const_iterator type into normal iterator type during run-time without casting.
+     * \param   cont    The container object, which const_iterator should be converted.
+     * \param   cit     The const_iterator object to convert
+     * \return  Returns converted iterator type object.
+     */
+    inline typename const Container::iterator iter(typename const Container& cont, typename Container::const_iterator& cit) const
+    {
+        return const_cast<Container &>(cont).erase(cit, cit);
+    }
+
+    inline typename Container::iterator iter(typename Container& c, typename Container::const_iterator& cit)
+    {
+        return c.erase(cit, cit);
     }
 };

@@ -47,17 +47,17 @@ public:
 /************************************************************************/
 
     /**
-     * \brief   ISO8601 format of timestamp to display logs
+     * \brief   ISO8601 format of time-stamp to display logs
      **/
     static constexpr std::string_view   TIME_FORMAT_ISO8601_OUTPUT          { "%Y-%m-%d %H:%M:%S,%l" };
 
     /**
-     * \brief   Absolute time format of timestamp
+     * \brief   Absolute time format of time-stamp
      **/
     static constexpr std::string_view   TIME_FORMAT_ABSOLUTE_OUTPUT         { "%H:%M:%S,%l" };
 
     /**
-     * \brief   Format only data of timestamp
+     * \brief   Format only data of time-stamp
      **/
     static constexpr std::string_view   TIME_FORMAT_DATE_OUTPUT             { "%d %b %Y %H:%M:%S,%l" };
 

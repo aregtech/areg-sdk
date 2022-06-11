@@ -70,7 +70,7 @@
  * \tparam  HashMap         HashMap class to inherit, which has possibility
  *                          to calculate Hash value from RESOURCE_KEY type.
  * \tparam Deleter          The name of class that contains implementation 
- *                          of resourse clean method.
+ *                          of resource clean method.
  **/
 template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Deleter = TEResourceMapImpl<RESOURCE_KEY, RESOURCE_OBJECT>>
 class TEResourceMap     : protected HashMap
@@ -133,7 +133,7 @@ public:
      *          new resource. If the resource Key is already registered, but 
      *          resource objects are different, returns false.
      **/
-    inline bool registerResourceObject( const RESOURCE_KEY & Key, RESOURCE_OBJECT * resource );
+    inline void registerResourceObject( const RESOURCE_KEY & Key, RESOURCE_OBJECT * resource );
 
     /**
      * \brief	Unregisters Resource from map and if succeeded, returns pointer
@@ -275,7 +275,7 @@ private:
  * \tparam  HashMap         HashMap class to inherit, which has possibility
  *                          to calculate Hash value from RESOURCE_KEY type.
  * \tparam Deleter          The name of class that contains implementation
- *                          of resourse clean method.
+ *                          of resource clean method.
  **/
 template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Deleter>
 class TENolockResourceMap  : public TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>
@@ -322,7 +322,7 @@ private:
  * \tparam  HashMap         HashMap class to inherit, which has possibility
  *                          to calculate Hash value from RESOURCE_KEY type.
  * \tparam Deleter          The name of class that contains implementation
- *                          of resourse clean method.
+ *                          of resource clean method.
  **/
 template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Deleter = TEResourceMapImpl<RESOURCE_KEY, RESOURCE_OBJECT>>
 class TELockResourceMap    : public TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>
@@ -367,18 +367,16 @@ private:
 template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Deleter>
 TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::TEResourceMap( IEResourceLock & synchObject )
     : HashMap   ( )
-    , Deleter ( )
+    , Deleter   ( )
     , mSynchObj (synchObject)
 {
 }
 
 template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Deleter>
-inline bool TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::registerResourceObject(const RESOURCE_KEY & Key, RESOURCE_OBJECT * resource)
+inline void TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::registerResourceObject(const RESOURCE_KEY & Key, RESOURCE_OBJECT * resource)
 {
     Lock lock(mSynchObj);
-
-    RESOURCE_OBJECT* existing = nullptr;
-    return ( HashMap::find(Key, existing) ? resource == existing : HashMap::setAt(Key, resource, false) != nullptr);
+    HashMap::setAt(Key, resource);
 }
 
 template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Deleter>
@@ -405,7 +403,7 @@ template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class 
 inline bool TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::existResource(const RESOURCE_KEY & Key) const
 {
     Lock lock(mSynchObj);
-    return (HashMap::find(Key) != nullptr);
+    return HashMap::contains(Key);
 }
 
 template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Deleter>
@@ -445,18 +443,18 @@ inline bool TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::remo
 {
     Lock lock(mSynchObj);
 
-    bool removed = false;
-    for ( MAPPOS pos = HashMap::firstPosition(); pos != nullptr; pos = HashMap::nextPosition(pos))
+    bool result = false;
+    for ( HashMap::MAPPOS pos = HashMap::firstPosition(); pos != nullptr; pos = HashMap::nextPosition(pos))
     {
         if ( resource == HashMap::valueAtPosition(pos) )
         {
             HashMap::removePosition(pos);
-            removed = true;
+            result = true;
             break;
         }
     }
 
-    return removed;
+    return result;
 }
 
 template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Deleter>
@@ -464,13 +462,12 @@ inline void TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::remo
 {
     Lock lock(mSynchObj);
 
-    for ( MAPPOS pos = HashMap::firstPosition(); pos != nullptr; pos = HashMap::nextPosition(pos))
+    for ( HashMap::MAPPOS pos = HashMap::firstPosition(); HashMap::isValidPosition(pos); pos = HashMap::nextPosition(pos))
     {
-        typename HashMap::Block * block = HashMap::blockAt(pos);
-        if (block != nullptr)
-        {
-            cleanResourceEntry(block->mKey, block->mValue);
-        }
+        RESOURCE_KEY Key;
+        RESOURCE_OBJECT* Value;
+        HashMap::getAtPosition(pos, Key, Value);
+        cleanResourceEntry(Key, Value);
     }
 
     HashMap::removeAll();
@@ -480,13 +477,15 @@ template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class 
 inline bool TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::removeResourceFirstElement( TEPair<RESOURCE_KEY, RESOURCE_OBJECT *> out_FirstElement )
 {
     Lock lock(mSynchObj);
-    MAPPOS pos = HashMap::firstPosition();
-    if (pos != nullptr)
+    bool result = false;
+    HashMap::MAPPOS pos  = HashMap::firstPosition();
+    if (HashMap::isValidPosition(pos))
     {
+        result = true;
         HashMap::removePosition(pos, out_FirstElement.mKey, out_FirstElement.mValue);
     }
 
-    return (pos != nullptr);
+    return result;
 }
 
 template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Deleter>
@@ -496,7 +495,7 @@ inline RESOURCE_OBJECT* TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, De
 
     RESOURCE_OBJECT * result = nullptr;
     MAPPOS pos = HashMap::firstPosition();
-    if (pos != nullptr)
+    if (HashMap::isValidPosition(pos))
     {
         HashMap::getAtPosition(pos, out_FirstKey, result);
     }
@@ -511,8 +510,10 @@ inline RESOURCE_OBJECT* TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, De
 
     RESOURCE_OBJECT * result = nullptr;
     MAPPOS pos = HashMap::find(in_out_NextKey);
-    if (pos != nullptr && HashMap::nextEntry(pos, in_out_NextKey, result) == false)
-        result = nullptr;
+    if (HashMap::isValidPosition(pos))
+    {
+        HashMap::nextEntry(pos, in_out_NextKey, result);
+    }
 
     return result;
 }

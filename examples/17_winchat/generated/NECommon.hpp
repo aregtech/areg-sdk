@@ -172,15 +172,15 @@ namespace NECommon
 
 	/**
 	 * \brief	NECommon::ListConnections
-	 *			Internal custom type definition of TEArrayList<sConnection, const sConnection &> 
+	 *			Internal custom type definition of TEArrayList<sConnection> 
 	 **/
-    typedef	TEArrayList<sConnection>		                                    ListConnections;
+    using ListConnections   = TEArrayList<sConnection>;
 
 	/**
 	 * \brief	NECommon::MapConnections
-     *			Internal custom type definition of TEHashMap<uint32_t, sConnection, uint32_t, const sConnection &>
+     *			Internal custom type definition of TEHashMap<uint32_t, sConnection>
      **/
-    typedef	TEHashMap<uint32_t, sConnection, uint32_t, const sConnection &>		                    MapConnections;
+    using MapConnections    = TEHashMap<uint32_t, sConnection >;
 
 	/************************************************************************
 	 * \brief   NECommon::sParticipant
@@ -270,9 +270,9 @@ namespace NECommon
 
 	/**
 	 * \brief	NECommon::MapDirectConnections
-	 *			Internal custom type definition of TEHashMap<String, PairConnection, const String &, const PairConnection &> 
+	 *			Internal custom type definition of TEHashMap<String, PairConnection>
 	 **/
-	using MapParticipants   = TEHashMap<sInitiator, ListParticipants, const sInitiator &, const ListParticipants &>;
+	using MapParticipants   = TEHashMap<sInitiator, ListParticipants>;
 
 }
 
@@ -354,6 +354,7 @@ inline bool NECommon::sConnection::operator != ( const NECommon::sConnection & o
  {
     return  ( static_cast<size_t>( cookie ) + static_cast<unsigned int>( nickName ) );
  }
+
 /**
  * \brief   Streaming operator. Reads and instantiates NECommon::sConnection structure field entries from stream.
  * \param   stream      The streaming object to read fields data of structure
@@ -381,6 +382,24 @@ inline IEOutStream & operator << ( IEOutStream & stream, const NECommon::sConnec
     stream  << output.connectTime;
     stream  << output.connectedTime;
     return stream;
+}
+
+//////////////////////////////////////////////////////////////////////////
+// Hasher of NECommon::sConnection object
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   A template to calculate hash value of the NECommon::sConnection.
+ */
+namespace std
+{
+    template<> struct hash<NECommon::sConnection>
+    {
+        //! A function to convert NECommon::sConnection object to unsigned int.
+        inline unsigned int operator()(const NECommon::sConnection & key) const
+        {
+            return static_cast<unsigned int>(key);
+        }
+    };
 }
 
 /************************************************************************
@@ -477,6 +496,25 @@ inline IEOutStream & operator << ( IEOutStream & stream, const NECommon::sPartic
     stream  << output.nickName;
     return stream;
 }
+
+//////////////////////////////////////////////////////////////////////////
+// Hasher of NECommon::sParticipant object
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   A template to calculate hash value of the NECommon::sParticipant.
+ */
+namespace std
+{
+    template<> struct hash<NECommon::sParticipant>
+    {
+        //! A function to convert NECommon::sParticipant object to unsigned int.
+        inline unsigned int operator()(const NECommon::sParticipant& key) const
+        {
+            return static_cast<unsigned int>(key);
+        }
+    };
+}
+
 
 inline NECommon::sMessageData * NECommon::newData( )
 {

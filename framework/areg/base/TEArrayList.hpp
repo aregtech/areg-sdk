@@ -28,7 +28,6 @@
 #include "areg/base/NEMemory.hpp"
 #include "areg/base/IEIOStream.hpp"
 
-#include <utility>
 #include <vector>
 
 //////////////////////////////////////////////////////////////////////////
@@ -57,12 +56,15 @@
  * \tparam  VALUE       The type of stored items. Either should be 
  *                      primitive or should have default constructor 
  *                      and valid assigning operator. Also, should be 
- *                      possible to convert to type const VALUE &.
+ *                      possible to convert to type 'const VALUE &'.
  * \tparam  Implement   The implementation of value equality function used by array list.
  **/
 template<typename VALUE, class Implement = TEListImpl<const VALUE &>>
-class TEArrayList
+class TEArrayList   : private Constless<std::vector<VALUE>>
 {
+protected:
+    using ARRAYPOS  = typename std::vector<VALUE>::iterator;
+
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
@@ -123,7 +125,7 @@ public:
     inline TEArrayList<VALUE, Implement> & operator = ( const TEArrayList<VALUE, Implement> & src );
 
     /**
-     * \brief   Move operator. Movesall values from given source.
+     * \brief   Move operator. Moves all values from given source.
      *          If Array previously had values, they will be removed and new values
      *          from source Array will be set in the same sequence as they are
      *          present in the source.
@@ -136,14 +138,14 @@ public:
      *          There should be possible to compare VALUE type entries of array.
      * \param   other   The array object to compare
      **/
-    bool operator == ( const TEArrayList<VALUE, Implement> & other ) const;
+    inline bool operator == ( const TEArrayList<VALUE, Implement> & other ) const;
 
     /**
      * \brief   Checks inequality of 2 hash-map objects, and returns true if they are not equal.
      *          There should be possible to compare VALUE type entries of array.
      * \param   other   The hash-map object to compare
      **/
-    bool operator != ( const TEArrayList<VALUE, Implement> & other ) const;
+    inline bool operator != ( const TEArrayList<VALUE, Implement> & other ) const;
 
     /**
      * \brief   Returns pointer to the array value. The values cannot be modified
@@ -198,7 +200,7 @@ public:
     /**
      * \brief   Delete extra entries in array
      **/
-    void freeExtra( void );
+    inline void freeExtra( void );
 
     /**
      * \brief   Returns true if the specified index is valid.
@@ -259,13 +261,20 @@ public:
      * \brief	Copies all entries from given source
      * \param	src	    The source of array elements
      **/
-    void copy( const TEArrayList<VALUE, Implement> & src );
+    inline void copy( const TEArrayList<VALUE, Implement> & src );
 
     /**
      * \brief	Moves all entries from given source. On output, the source is empty.
      * \param	src	    The source of array elements
      **/
-    void move( TEArrayList<VALUE, Implement> && src ) noexcept;
+    inline void move( TEArrayList<VALUE, Implement> && src ) noexcept;
+
+    /**
+     * \brief	Extracts entries from the given source and inserted into the array list.
+     * \param	src	    The source of array elements to merge
+     **/
+    inline void merge(const TEArrayList<VALUE, Implement> & src);
+    inline void merge(TEArrayList<VALUE, Implement> && src);
 
     /**
      * \brief   Inserts element at the specified zero-based position. If position is valid, it shifts
@@ -307,7 +316,7 @@ public:
      * \param   index   The index of element to remove.
      * \return  The actual returned element.
      */
-    inline VALUE removePos( uint32_t index );
+    inline VALUE removePosition( uint32_t index );
 
     /**
      * \brief	Search element starting from given position and removes by first match
@@ -335,7 +344,7 @@ public:
      *          search from begging.
      * \return	Returns true if could find element starting at given position.
      **/
-    inline bool exist( const VALUE & elemSearch, uint32_t startAt = 0 ) const;
+    inline bool contains( const VALUE & elemSearch, uint32_t startAt = 0 ) const;
 
     /**
      * \brief   Ensures validity of index. If index is more that element count in array,
@@ -365,7 +374,7 @@ public:
      *          If the newCapacity is greater than the existing capacity of the array, it allocates new
      *          space. Otherwise, it does nothing.
      * \param   newCapacity The new capacity of the array.
-     */
+     **/
     inline void reserve( uint32_t newCapacity );
 
     /**
@@ -409,34 +418,28 @@ protected:
      * \param   index   The index of the element to return position.
      * \return  Returns the position of the element at the given index.
      *          The value of returned position cannot be modified.
-     */
-    inline typename std::vector<VALUE>::const_iterator getPosition( uint32_t index ) const;
+     **/
+    inline const ARRAYPOS getPosition( uint32_t index ) const;
 
     /**
      * \brief   Returns the position of the element at the given index.
      * \param   index   The index of the element to return position.
      * \return  Returns the position of the element at the given index.
-     */
-    inline typename std::vector<VALUE>::iterator getPosition(uint32_t index);
+     **/
+    inline ARRAYPOS getPosition(uint32_t index);
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
 //////////////////////////////////////////////////////////////////////////
 protected:
-#if defined(_MSC_VER) && (_MSC_VER > 1200)
-    #pragma warning(disable: 4251)
-#endif  // _MSC_VER
     /**
      * \brief   The array of elements.
-     */
-    std::vector<VALUE>  mElements;
+     **/
+    std::vector<VALUE>  mValueList;
     /**
      * \brief   Instance of object that compares values.
      **/
-    Implement   mImplement;
-#if defined(_MSC_VER) && (_MSC_VER > 1200)
-    #pragma warning(default: 4251)
-#endif  // _MSC_VER
+    Implement           mImplement;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -449,68 +452,71 @@ protected:
 
 template<typename VALUE, class Implement /*= TEListImpl<const VALUE &>*/>
 TEArrayList<VALUE, Implement>::TEArrayList(uint32_t capacity /*= 0*/)
-    : mElements ( )
+    : Constless ( )
+    , mValueList( )
 {
     if (capacity != 0)
     {
-        mElements.reserve(capacity > NECommon::MAX_CONTAINER_SIZE ? NECommon::MAX_CONTAINER_SIZE : capacity);
+        mValueList.reserve(capacity > NECommon::MAX_CONTAINER_SIZE ? NECommon::MAX_CONTAINER_SIZE : capacity);
     }
 }
 
 template<typename VALUE, class Implement /*= TEListImpl<const VALUE &>*/>
 TEArrayList<VALUE, Implement>::TEArrayList( const TEArrayList<VALUE, Implement> & src )
-    : mElements (src.mElements)
+    : Constless ( )
+    , mValueList(src.mValueList)
 {
 }
 
 template<typename VALUE, class Implement /*= TEListImpl<const VALUE &>*/>
 TEArrayList<VALUE, Implement>::TEArrayList( TEArrayList<VALUE, Implement> && src ) noexcept
-    : mElements (static_cast<std::vector<VALUE> &&>(src.mElements))
+    : Constless ( )
+    , mValueList(std::move(src.mValueList))
 {
 }
 
 template<typename VALUE, class Implement /*= TEListImpl<const VALUE &>*/>
 inline bool TEArrayList<VALUE, Implement>::isEmpty( void ) const
 {
-    return mElements.empty();
+    return mValueList.empty();
 }
 
 template<typename VALUE, class Implement /*= TEListImpl<const VALUE &>*/>
 inline uint32_t TEArrayList<VALUE, Implement>::getSize( void ) const
 {
-    return static_cast<uint32_t>(mElements.size());
+    return static_cast<uint32_t>(mValueList.size());
 }
 
 template<typename VALUE, class Implement /*= TEListImpl<const VALUE &>*/>
-void TEArrayList<VALUE, Implement>::freeExtra( void )
+inline void TEArrayList<VALUE, Implement>::freeExtra( void )
 {
-    mElements.shrink_to_fit();
+    mValueList.shrink_to_fit();
 }
 
 template<typename VALUE, class Implement /*= TEListImpl<const VALUE &>*/>
 inline bool TEArrayList<VALUE, Implement>::isValidIndex(uint32_t index ) const
 {
-    return ( index < static_cast<uint32_t>(mElements.size()) );
+    return ( index < static_cast<uint32_t>(mValueList.size()) );
 }
 
 template<typename VALUE, class Implement /*= TEListImpl<const VALUE &>*/>
 inline void TEArrayList<VALUE, Implement>::removeAll( void )
 {
-    mElements.clear();
+    mValueList.clear();
 }
 
 template<typename VALUE, class Implement /*= TEListImpl<const VALUE &>*/>
 inline const VALUE & TEArrayList<VALUE, Implement>::getAt(uint32_t index) const
 {
     ASSERT(isValidIndex(index));
-    return mElements.at(index);
+    return mValueList.at(index);
 }
 
 template<typename VALUE, class Implement /*= TEListImpl<const VALUE &>*/>
 inline VALUE& TEArrayList<VALUE, Implement>::getAt(uint32_t index)
 {
     ASSERT(isValidIndex(index));
-    return mElements.at(index);
+    return mValueList.at(index);
 }
 
 template<typename VALUE, class Implement /*= TEListImpl<const VALUE &>*/>
@@ -518,11 +524,11 @@ inline void TEArrayList<VALUE, Implement>::setAt(uint32_t index, const VALUE & n
 {
     if (isValidIndex(index))
     {
-        mElements[index] = newElement;
+        mValueList[index] = newElement;
     }
-    else if ( NECommon::MAX_CONTAINER_SIZE > static_cast<uint32>(mElements.size()) )
+    else if ( NECommon::MAX_CONTAINER_SIZE > static_cast<uint32_t>(mValueList.size()) )
     {
-        mElements.push_back(newElement);
+        mValueList.push_back(newElement);
     }
 #ifdef DEBUG
     else
@@ -536,38 +542,38 @@ inline void TEArrayList<VALUE, Implement>::setAt(uint32_t index, const VALUE & n
 template<typename VALUE, class Implement /*= TEListImpl<const VALUE &>*/>
 inline bool TEArrayList<VALUE, Implement>::validateIndex(uint32_t index)
 {
-    if ( (index < NECommon::MAX_CONTAINER_SIZE) && (index >= static_cast<uint32_t>(mElements.size())) )
+    if ( (index < NECommon::MAX_CONTAINER_SIZE) && (index >= static_cast<uint32_t>(mValueList.size())) )
     {
-        mElements.resize(index + 1);
+        mValueList.resize(index + 1);
     }
 
-    return (index < static_cast<uint32_t>(mElements.size()));
+    return (index < static_cast<uint32_t>(mValueList.size()));
 }
 
 template<typename VALUE, class Implement /*= TEListImpl<const VALUE &>*/>
 inline void TEArrayList<VALUE, Implement>::resize( uint32_t newSize )
 {
-    mElements.resize(newSize > NECommon::MAX_CONTAINER_SIZE ? NECommon::MAX_CONTAINER_SIZE : newSize);
+    mValueList.resize(newSize > NECommon::MAX_CONTAINER_SIZE ? NECommon::MAX_CONTAINER_SIZE : newSize);
 }
 
 template<typename VALUE, class Implement /*= TEListImpl<const VALUE &>*/>
 inline void TEArrayList<VALUE, Implement>::reserve( uint32_t newCapacity)
 {
-    mElements.reserve(newCapacity > NECommon::MAX_CONTAINER_SIZE ? NECommon::MAX_CONTAINER_SIZE : newCapacity);
+    mValueList.reserve(newCapacity > NECommon::MAX_CONTAINER_SIZE ? NECommon::MAX_CONTAINER_SIZE : newCapacity);
 }
 
 template<typename VALUE, class Implement /*= TEListImpl<const VALUE &>*/>
 inline const VALUE* TEArrayList<VALUE, Implement>::getValues( void ) const
 {
-    return static_cast<const VALUE *>(mElements.data());
+    return static_cast<const VALUE *>(mValueList.data());
 }
 
 template<typename VALUE, class Implement /*= TEListImpl<const VALUE &>*/>
 inline void TEArrayList<VALUE, Implement>::add(const VALUE & newElement)
 {
-    if (NECommon::MAX_CONTAINER_SIZE > static_cast<uint32_t>(mElements.size()))
+    if (NECommon::MAX_CONTAINER_SIZE > static_cast<uint32_t>(mValueList.size()))
     {
-        mElements.push_back(newElement);
+        mValueList.push_back(newElement);
     }
 }
 
@@ -575,7 +581,7 @@ template<typename VALUE, class Implement /*= TEListImpl<const VALUE &>*/>
 inline bool TEArrayList<VALUE, Implement>::addUnique(const VALUE & newElement)
 {
     bool result = true;
-    for (const VALUE& elem : mElements)
+    for (const VALUE& elem : mValueList)
     {
         if (isEqualValues(elem, newElement))
         {
@@ -586,9 +592,9 @@ inline bool TEArrayList<VALUE, Implement>::addUnique(const VALUE & newElement)
 
     if (result)
     {
-        if (NECommon::MAX_CONTAINER_SIZE > static_cast<uint32_t>(mElements.size()))
+        if (NECommon::MAX_CONTAINER_SIZE > static_cast<uint32_t>(mValueList.size()))
         {
-            mElements.push_back(newElement);
+            mValueList.push_back(newElement);
         }
         else
         {
@@ -606,9 +612,9 @@ inline void TEArrayList<VALUE, Implement>::append(const TEArrayList<VALUE, Imple
 
     if (NECommon::MAX_CONTAINER_SIZE >= (getSize() + src.getSize()))
     {
-        for (const VALUE& elem : src.mElements)
+        for (const VALUE& elem : src.mValueList)
         {
-            mElements.push_back(elem);
+            mValueList.push_back(elem);
         }
     }
     else
@@ -616,69 +622,101 @@ inline void TEArrayList<VALUE, Implement>::append(const TEArrayList<VALUE, Imple
         uint32_t count = NECommon::MAX_CONTAINER_SIZE - getSize();
         for (uint32_t i = 0; i < count; ++i)
         {
-            mElements.push_back(src[i]);
+            mValueList.push_back(src[i]);
         }
     }
 }
 
 template<typename VALUE, class Implement /*= TEListImpl<const VALUE &>*/>
-void TEArrayList<VALUE, Implement>::copy(const TEArrayList<VALUE, Implement>& src)
+inline void TEArrayList<VALUE, Implement>::copy(const TEArrayList<VALUE, Implement>& src)
 {
     ASSERT(this != &src);
-    mElements = src.mElements;
+    mValueList = src.mValueList;
 }
 
 template<typename VALUE, class Implement /*= TEListImpl<const VALUE &>*/>
-void TEArrayList<VALUE, Implement>::move( TEArrayList<VALUE, Implement> && src ) noexcept
+inline void TEArrayList<VALUE, Implement>::move( TEArrayList<VALUE, Implement> && src ) noexcept
 {
     ASSERT( this != &src );
-    mElements = std::move(src.mElements);
+    mValueList = std::move(src.mValueList);
+}
+
+template<typename VALUE, class Implement /*= TEListImpl<const VALUE &>*/>
+inline void TEArrayList<VALUE, Implement>::merge(const TEArrayList<VALUE, Implement>& src)
+{
+    ASSERT(this != &src);
+    uint32_t size   = mValueList.size();
+    uint32_t remain = src.mValueList.size();
+    if ((size + remain) > NECommon::MAX_CONTAINER_SIZE)
+        remain = NECommon::MAX_CONTAINER_SIZE - mValueList.size();
+
+    mValueList.reserve(size + remain);
+    for (uint32_t i = 0; i < remain; ++i)
+    {
+        mValueList.push_back(src.mValueList[i]);
+    }
+}
+
+template<typename VALUE, class Implement /*= TEListImpl<const VALUE &>*/>
+inline void TEArrayList<VALUE, Implement>::merge( TEArrayList<VALUE, Implement> && src)
+{
+    ASSERT(this != &src);
+    uint32_t size = mValueList.size();
+    uint32_t remain = src.mValueList.size();
+    if ((size + remain) > NECommon::MAX_CONTAINER_SIZE)
+        remain = NECommon::MAX_CONTAINER_SIZE - mValueList.size();
+
+    mValueList.reserve(size + remain);
+    for (uint32_t i = 0; i < remain; ++i)
+    {
+        mValueList.push_back( std::move(src.mValueList[i]) );
+    }
 }
 
 template<typename VALUE, class Implement /*= TEListImpl<const VALUE &>*/>
 inline VALUE& TEArrayList<VALUE, Implement>::operator [] (uint32_t index)
 {
     ASSERT(isValidIndex(index));
-    return mElements[index];
+    return mValueList[index];
 }
 
 template<typename VALUE, class Implement /*= TEListImpl<const VALUE &>*/>
 inline const VALUE & TEArrayList<VALUE, Implement>::operator [] (uint32_t index) const
 {
     ASSERT(isValidIndex(index));
-    return mElements[index];
+    return mValueList[index];
 }
 
 template<typename VALUE, class Implement /*= TEListImpl<const VALUE &>*/>
-TEArrayList<VALUE, Implement> & TEArrayList<VALUE, Implement>::operator = ( const TEArrayList<VALUE, Implement>& src )
+inline TEArrayList<VALUE, Implement> & TEArrayList<VALUE, Implement>::operator = ( const TEArrayList<VALUE, Implement>& src )
 {
-    mElements = src.mElements;
+    mValueList = src.mValueList;
     return (*this);
 }
 
 template<typename VALUE, class Implement /*= TEListImpl<const VALUE &>*/>
-TEArrayList<VALUE, Implement> & TEArrayList<VALUE, Implement>::operator = ( TEArrayList<VALUE, Implement> && src ) noexcept
+inline TEArrayList<VALUE, Implement> & TEArrayList<VALUE, Implement>::operator = ( TEArrayList<VALUE, Implement> && src ) noexcept
 {
-    mElements = std::move(src.mElements);
+    mValueList = std::move(src.mValueList);
     return (*this);
 }
 
 template<typename VALUE, class Implement /*= TEListImpl<const VALUE &>*/>
-bool TEArrayList<VALUE, Implement>::operator == ( const TEArrayList<VALUE, Implement>& other ) const
+inline bool TEArrayList<VALUE, Implement>::operator == ( const TEArrayList<VALUE, Implement>& other ) const
 {
-    return mElements == other.mElements;
+    return mValueList == other.mValueList;
 }
 
 template<typename VALUE, class Implement /*= TEListImpl<const VALUE &>*/>
-bool TEArrayList<VALUE, Implement>::operator != (const TEArrayList<VALUE, Implement>& other) const
+inline bool TEArrayList<VALUE, Implement>::operator != (const TEArrayList<VALUE, Implement>& other) const
 {
-    return mElements != other.mElements;
+    return mValueList != other.mValueList;
 }
 
 template<typename VALUE, class Implement /*= TEListImpl<const VALUE &>*/>
 inline TEArrayList<VALUE, Implement>::operator const VALUE * ( void ) const
 {   
-    return static_cast<const VALUE *>(mElements.data());
+    return static_cast<const VALUE *>(mValueList.data());
 }
 
 template<typename VALUE, class Implement /*= TEListImpl<const VALUE &>*/>
@@ -688,25 +726,25 @@ inline void TEArrayList<VALUE, Implement>::removeAt(uint32_t index, uint32_t ele
     {
         elemCount -= 1;
         ASSERT(isValidIndex(index) && isValidIndex(index + elemCount));
-        std::vector<VALUE>::const_iterator first = getPosition(index);
+        ARRAYPOS first = getPosition(index);
         if (elemCount == 0)
         {
-            mElements.erase(first);
+            mValueList.erase(first);
         }
         else
         {
-            std::vector<VALUE>::const_iterator last = first + elemCount;
-            mElements.erase(first, last);
+            ARRAYPOS last = first + elemCount;
+            mValueList.erase(first, last);
         }
     }
 }
 
 template<typename VALUE, class Implement /*= TEListImpl<const VALUE &>*/>
-inline VALUE TEArrayList<VALUE, Implement>::removePos(uint32_t index)
+inline VALUE TEArrayList<VALUE, Implement>::removePosition(uint32_t index)
 {
     ASSERT(isValidIndex(index));
-    std::vector<VALUE>::const_iterator first = getPosition(index);
-    *(mElements.erase(first));
+    ARRAYPOS first = getPosition(index);
+    *(mValueList.erase(first));
 }
 
 template<typename VALUE, class Implement /*= TEListImpl<const VALUE &>*/>
@@ -719,16 +757,16 @@ inline void TEArrayList<VALUE, Implement>::insertAt(uint32_t startAt, const VALU
             elemCount = NECommon::MAX_CONTAINER_SIZE - getSize();
         }
 
-        std::vector<VALUE>::const_iterator cit = getPosition(startAt);
-        if (cit != mElements.end())
+        ARRAYPOS cit = getPosition(startAt);
+        if (cit != mValueList.end())
         {
-            mElements.insert(cit, elemCount, newElement);
+            mValueList.insert(cit, elemCount, newElement);
         }
         else
         {
             for (uint32_t i = 0; i < elemCount; ++i)
             {
-                mElements.push_back(newElement);
+                mValueList.push_back(newElement);
             }
         }
     }
@@ -748,7 +786,7 @@ inline void TEArrayList<VALUE, Implement>::insertAt(uint32_t startAt, const VALU
         shift(startAt, static_cast<int>(count));
         for (uint32_t i = 0; i < count; ++i)
         {
-            mElements[startAt ++] = newArray[i];
+            mValueList[startAt ++] = newArray[i];
         }
     }
 }
@@ -758,7 +796,7 @@ inline void TEArrayList<VALUE, Implement>::insertAt(uint32_t startAt, const TEAr
 {
     ASSERT(isValidIndex(startAt));
 
-    if (newArray.mElements.empty() == false)
+    if (newArray.mValueList.empty() == false)
     {
         uint32_t limit = 0;
         if ((getSize() + newArray.getSize()) > NECommon::MAX_CONTAINER_SIZE)
@@ -766,20 +804,20 @@ inline void TEArrayList<VALUE, Implement>::insertAt(uint32_t startAt, const TEAr
             limit = NECommon::MAX_CONTAINER_SIZE - (getSize() + newArray.getSize());
         }
 
-        std::vector<VALUE>::const_iterator cit = getPosition(startAt);
-        mElements.insert(cit, newArray.mElements.begin(), newArray.mElements.end() - limit);
+        ARRAYPOS cit = getPosition(startAt);
+        mValueList.insert(cit, newArray.mValueList.begin(), newArray.mValueList.end() - limit);
     }
 }
 
 template<typename VALUE, class Implement /*= TEListImpl<const VALUE &>*/>
 inline int TEArrayList<VALUE, Implement>::find( const VALUE & elemSearch, uint32_t startAt /*= 0*/ ) const
 {
-    uint32_t count = static_cast<int>(mElements.size());
+    uint32_t count = static_cast<int>(mValueList.size());
     startAt = startAt <= 0 ? 0 : MACRO_MIN(startAt, count);
-    std::vector<VALUE>::const_iterator cit = getPosition(startAt);
+    ARRAYPOS cit = getPosition(startAt);
     
     uint32_t result = startAt;
-    for (; cit != mElements.end(); ++cit, ++result)
+    for (; cit != mValueList.end(); ++cit, ++result)
     {
         if (isEqualValues(*cit, elemSearch))
         {
@@ -791,7 +829,7 @@ inline int TEArrayList<VALUE, Implement>::find( const VALUE & elemSearch, uint32
 }
 
 template<typename VALUE, class Implement /*= TEListImpl<const VALUE &>*/>
-inline bool TEArrayList<VALUE, Implement>::exist( const VALUE & elemSearch, uint32_t startAt /*= 0*/ ) const
+inline bool TEArrayList<VALUE, Implement>::contains( const VALUE & elemSearch, uint32_t startAt /*= 0*/ ) const
 {
     return (find(elemSearch, startAt) >= 0);
 }
@@ -800,12 +838,12 @@ template<typename VALUE, class Implement /*= TEListImpl<const VALUE &>*/>
 inline bool TEArrayList<VALUE, Implement>::removeElem( const VALUE & elemRemove, uint32_t searchAt /*= 0*/ )
 {
     bool result = false;
-    std::vector<VALUE>::const_iterator cit = getPosition(searchAt);
-    for (; cit != mElements.end(); ++cit)
+    ARRAYPOS cit = getPosition(searchAt);
+    for (; cit != mValueList.end(); ++cit)
     {
         if (isEqualValues(*cit, elemRemove))
         {
-            mElements.erase(cit);
+            mValueList.erase(cit);
             result = true;
             break;
         }
@@ -817,7 +855,7 @@ inline bool TEArrayList<VALUE, Implement>::removeElem( const VALUE & elemRemove,
 template<typename VALUE, class Implement /*= TEListImpl<const VALUE &>*/>
 void TEArrayList<VALUE, Implement>::shift(uint32_t startAt, int count)
 {
-    if ((mElements.size() != 0) && (startAt < mElements.size()) && (count != 0))
+    if ((mValueList.size() != 0) && (startAt < mValueList.size()) && (count != 0))
     {
         if (count > 0)
         {
@@ -826,26 +864,26 @@ void TEArrayList<VALUE, Implement>::shift(uint32_t startAt, int count)
                 count = static_cast<int>(NECommon::MAX_CONTAINER_SIZE - getSize());
             }
 
-            uint32_t posFirst   = static_cast<uint32_t>(mElements.size()) - 1;
+            uint32_t posFirst   = static_cast<uint32_t>(mValueList.size()) - 1;
             uint32_t posLast    = posFirst + count;
-            mElements.resize(mElements.size() + count);
+            mValueList.resize(mValueList.size() + count);
             while (posFirst >= startAt)
             {
-                mElements[posLast --] = mElements[posFirst --];
+                mValueList[posLast --] = mValueList[posFirst --];
             }
         }
         else
         {
             count *= -1;
             uint32_t start  = static_cast<uint32_t>(count) > (startAt + 1) ? 0 : startAt - count;
-            uint32_t last   = static_cast<uint32_t>(mElements.size()) - 1;
+            uint32_t last   = static_cast<uint32_t>(mValueList.size()) - 1;
             uint32_t length = start + (last - startAt) + 1;
             for (uint32_t i = startAt; i <= last; ++i)
             {
-                mElements[start++] = mElements[i];
+                mValueList[start++] = mValueList[i];
             }
 
-            mElements.resize(length);
+            mValueList.resize(length);
         }
     }
 }
@@ -853,7 +891,7 @@ void TEArrayList<VALUE, Implement>::shift(uint32_t startAt, int count)
 template<typename VALUE, class Implement /*= TEListImpl<const VALUE &>*/>
 inline void TEArrayList<VALUE, Implement>::setSize(uint32_t elemCount)
 {
-    mElements.resize(elemCount);
+    mValueList.resize(elemCount);
 }
 
 template<typename VALUE, class Implement /*= TEListImpl<const VALUE &>*/>
@@ -863,20 +901,20 @@ inline bool TEArrayList<VALUE, Implement>::isEqualValues(const VALUE & value1, c
 }
 
 template<typename VALUE, class Implement /*= TEListImpl<const VALUE &>*/>
-inline typename std::vector<VALUE>::const_iterator TEArrayList<VALUE, Implement>::getPosition(uint32_t index) const
+inline const typename TEArrayList<VALUE, Implement>::ARRAYPOS TEArrayList<VALUE, Implement>::getPosition(uint32_t index) const
 {
-    std::vector<VALUE>::const_iterator result = mElements.begin();
-    for (; (index != 0) && (result != mElements.end()); --index)
+    std::vector<VALUE>::const_iterator result = mValueList.begin();
+    for (; (index != 0) && (result != mValueList.end()); --index)
         ++ result;
 
-    return result;
+    return Constless::iter(mValueList, result);
 }
 
 template<typename VALUE, class Implement /*= TEListImpl<const VALUE &>*/>
-inline typename std::vector<VALUE>::iterator TEArrayList<VALUE, Implement>::getPosition(uint32_t index)
+inline typename TEArrayList<VALUE, Implement>::ARRAYPOS TEArrayList<VALUE, Implement>::getPosition(uint32_t index)
 {
-    std::vector<VALUE>::iterator result = mElements.begin();
-    for (; (index != 0) && (result != mElements.end()); --index)
+    std::vector<VALUE>::iterator result = mValueList.begin();
+    for (; (index != 0) && (result != mValueList.end()); --index)
         ++result;
 
     return result;
@@ -893,7 +931,7 @@ const IEInStream & operator >> ( const IEInStream & stream, TEArrayList<VALUE, I
     stream >> size;
     input.setSize( size );
  
-    for (VALUE & elem : input.mElements)
+    for (VALUE & elem : input.mValueList)
     {
         stream >> elem;
     }
@@ -905,7 +943,7 @@ template<typename VALUE, class Implement>
 IEOutStream & operator << ( IEOutStream& stream, const TEArrayList<VALUE, Implement>& output )
 {
     stream << output.getSize();
-    for (const VALUE & elem : output.mElements)
+    for (const VALUE & elem : output.mValueList)
     {
         stream << elem;
     }

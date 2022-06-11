@@ -84,7 +84,7 @@ public:
 
     /**
      * \brief   TimerInfo::getString()
-     *          Retunrs the string value of TimerInfo::eTimerState type
+     *          Returns the string value of TimerInfo::eTimerState type
      **/
     static const char* getString(TimerInfo::eTimerState timerState);
 
@@ -331,7 +331,8 @@ public:
 /**
  * \brief   Overrides methods required by Time Table hash map object.
  **/
-using ImplTimerTable    = TEPointerHashMapImpl<const Timer *, const TimerInfo &>;
+using ImplTimerTable    = TEPointerHashMapImpl<Timer *, TimerInfo>;
+using TimerTableBase    = TEHashMap<Timer*, TimerInfo, ImplTimerTable>;
 
 /**
  * \brief   Timer Table Hash Map contains list of registered timers. 
@@ -340,7 +341,7 @@ using ImplTimerTable    = TEPointerHashMapImpl<const Timer *, const TimerInfo &>
  *          no longer active (i.e. no more needed to be fired).
  *          The Continuous timers are remaining active until they are not stopped.
  **/
-class MapTimerTable    : private TEHashMap<Timer *, TimerInfo, const Timer *, const TimerInfo &, ImplTimerTable>
+class MapTimerTable    : private TimerTableBase
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -376,7 +377,7 @@ public:
      * \param   key     The pointer to timer object to check.
      * \return  Returns true if specified timer exists in the map.
      **/
-    inline bool keyExists( const Timer * key ) const;
+    inline bool keyExists( Timer * key ) const;
 
     /**
      * \brief   Searches specified timer pointer as a key. If the entry in hash map exists
@@ -386,7 +387,7 @@ public:
      * \return  Returns true if specified timer exists in the hash map and the 
      *          'object' parameter contains valid stored data.
      **/
-    inline bool findObject( const Timer * key, TimerInfo & OUT object ) const;
+    inline bool findObject( Timer * key, TimerInfo & OUT object ) const;
 
     /**
      * \brief   Searches specified timer pointer as a key. If the entry in hash map exists
@@ -395,7 +396,7 @@ public:
      * \return  Returns valid pointer to TimerInfor if specified Timer key exists in the map.
      *          Otherwise, returns nullptr.
      **/
-    inline TimerInfo * findObject( const Timer * key );
+    inline TimerInfo * findObject( Timer * key );
 
     /**
      * \brief   Removes all timer entries from hash map.
@@ -406,7 +407,7 @@ public:
      * \brief   Registers specified TimerInfor data in the hash map, where the key
      *          is specified pointer to Timer object and the value is TimerInfo object.
      **/
-    void registerObject(const Timer * key, const TimerInfo & object);
+    void registerObject(Timer * key, const TimerInfo & object);
 
     /**
      * \brief   Updates existing entry in the hash map. If specified pointer to Timer
@@ -418,7 +419,7 @@ public:
      * \return  Returns true if specified timer is registered in the map and the
      *          value is updated.
      **/
-    bool updateObject( const Timer * key, const TimerInfo & object );
+    bool updateObject( Timer * key, const TimerInfo & object );
 
     /**
      * \brief   Unregisters previously registered key as a pointer to Timer object.
@@ -426,7 +427,7 @@ public:
      * \return  Returns true if a specified pointer to timer is in the system
      *          and it could unregister.
      **/
-    bool unregisterObject( const Timer * key );
+    bool unregisterObject( Timer * key );
 
     /**
      * \brief   Unregisters previously registered key as a pointer to Timer object.
@@ -436,7 +437,7 @@ public:
      * \return  Returns true if a specified pointer to timer is in the system
      *          and it could unregister.
      **/
-    bool unregisterObject( const Timer * key, TimerInfo & OUT object );
+    bool unregisterObject( Timer * key, TimerInfo & OUT object );
 
     /**
      * \brief   Unregisters the first entry in the hash-map.
@@ -447,14 +448,14 @@ public:
      * \return  Returns true if succeeded to unregister first entry. Returns nullptr, if there are
      *          no more entries in the list.
      **/
-    bool unregisterFirstObject( Timer * & OUT key, TimerInfo & OUT object );
+    bool unregisterFirstObject( Timer* & OUT key, TimerInfo & OUT object );
 
     /**
      * \brief   Resets the active timer state to pending
      * \param   key         The timer to search in the table.
      * \return  Returns true if the specified timer is registered in table and is active.
      **/
-    bool resetActiveTimerState(const Timer * key);
+    bool resetActiveTimerState(Timer * key);
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden / Forbidden methods
@@ -518,7 +519,7 @@ public:
 
     /**
      * \brief   Searches specified timer in the list of expired timers and returns
-     *          valid position if found. The starts starts either from beginning
+     *          valid position if found. Searching starts either from beginning
      *          of the list from specified position.
      * \param   whichTimer      The pointer to timer object to search in the list.
      * \param   searchAfter     If nullptr, searches from beginning of the list.
@@ -553,41 +554,30 @@ private:
 
 inline bool MapTimerTable::isEmpty(void) const
 {
-    return TEHashMap<Timer *, TimerInfo, const Timer *, const TimerInfo &, ImplTimerTable>::isEmpty();
+    return TimerTableBase::isEmpty();
 }
 
 inline int MapTimerTable::getSize(void) const
 {
-    return TEHashMap<Timer *, TimerInfo, const Timer *, const TimerInfo &, ImplTimerTable>::getSize();
+    return TimerTableBase::getSize();
 }
 
-inline bool MapTimerTable::keyExists(const Timer * key) const
+inline bool MapTimerTable::keyExists(Timer * key) const
 {
-    TEHashMap<Timer *, TimerInfo, const Timer *, const TimerInfo &, ImplTimerTable>::Block** block = blockAtRef(key);
-    return (block != nullptr) && (*block != nullptr);
+    return TimerTableBase::contains(key);
 }
 
-inline bool MapTimerTable::findObject(const Timer * key, TimerInfo & OUT object) const
+inline bool MapTimerTable::findObject(Timer * key, TimerInfo & OUT object) const
 {
-    bool result = false;
-
-    TEHashMap<Timer *, TimerInfo, const Timer *, const TimerInfo &, ImplTimerTable>::Block** block = blockAtRef(key);
-    if ( (block != nullptr) && (*block != nullptr) )
-    {
-        object = (*block)->mValue;
-        result = true;
-    }
-
-    return result;
+    return TimerTableBase::find(key, object);
 }
 
-inline TimerInfo * MapTimerTable::findObject(const Timer * key)
+inline TimerInfo * MapTimerTable::findObject(Timer * key)
 {
     TimerInfo * result = nullptr;
-    TEHashMap<Timer *, TimerInfo, const Timer *, const TimerInfo &, ImplTimerTable>::Block** block = blockAtRef(key);
-    if ( (block != nullptr) && (*block != nullptr) )
+    if (TimerTableBase::contains(key))
     {
-        result = &((*block)->mValue);
+        result = &TimerTableBase::getAt(key);
     }
 
     return result;
@@ -595,7 +585,7 @@ inline TimerInfo * MapTimerTable::findObject(const Timer * key)
 
 inline void MapTimerTable::removeAll(void)
 {
-    TEHashMap<Timer *, TimerInfo, const Timer *, const TimerInfo &, ImplTimerTable>::removeAll();
+    TimerTableBase::removeAll();
 }
 
 //////////////////////////////////////////////////////////////////////////

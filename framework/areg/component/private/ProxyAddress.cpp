@@ -132,6 +132,22 @@ ProxyAddress::ProxyAddress( ProxyAddress && source ) noexcept
 {
 }
 
+ProxyAddress::ProxyAddress(const ServiceAddress & source)
+    : ServiceAddress(static_cast<const ServiceAddress&>(source))
+    , mThreadName   ("")
+    , mChannel      ( )
+    , mMagicNum     (static_cast<unsigned int>(source))
+{
+}
+
+ProxyAddress::ProxyAddress( ServiceAddress && source)
+    : ServiceAddress(std::move(source))
+    , mThreadName   ("")
+    , mChannel      ( )
+    , mMagicNum     (static_cast<unsigned int>(static_cast<const ServiceAddress &>(source)))
+{
+}
+
 ProxyAddress::ProxyAddress( const IEInStream & stream )
     : ServiceAddress( stream )
     , mThreadName   ( stream )

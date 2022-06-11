@@ -49,8 +49,8 @@ class AREG_API Application
      *          by given names. If a stored element is created by manually allocating memory, the memory
      *          should be as well manually freed.
      **/
-    using ImplStringHashMap = TEHashMapImpl<const String &, const NEMemory::uAlign>;
-    using MapAppStorage     = TEStringHashMap<NEMemory::uAlign, const NEMemory::uAlign, ImplStringHashMap>;
+    using ImplStringHashMap = TEHashMapImpl<String, NEMemory::uAlign>;
+    using MapAppStorage     = TEStringHashMap<NEMemory::uAlign, ImplStringHashMap>;
 
 //////////////////////////////////////////////////////////////////////////
 // Constants and statics
@@ -127,7 +127,7 @@ public:
      *
      * \example     Start Model
      *          // In this example the system starts services and starts all models:
-     *          Application::initializ();
+     *          Application::initialize();
      *          Application::loadModel();
      **/
     static bool loadModel( const char * modelName = nullptr );
@@ -140,7 +140,7 @@ public:
      * \example     Start and Stop all models
      *          // This example starts all services, loads all models. 1 second later stops and unloads all models,
      *          // stop all services, release all resources:
-     *          Application::initiali();
+     *          Application::initialize();
      *          Application::loadModel();
      *          Thread::sleep(1000);
      *          Application::unloadModel();
@@ -335,7 +335,7 @@ public:
 
     /**
      * \brief   Saves element in application storage. If storage already has element save with specified
-     *          name, the function returns stored element. Otherwise, retirns NEMemroy::InvalidElement.
+     *          name, the function returns stored element. Otherwise, returns NEMemroy::InvalidElement.
      * \param   elemName    The name of element to save.
      * \param   elem        The element to save in storage.
      * \return  If storage already has an element saved with same name, it returns previously save element.

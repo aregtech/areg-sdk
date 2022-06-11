@@ -11,7 +11,7 @@
  * \file        areg/base/TERuntimeResourceMap.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
  * \author      Artak Avetyan
- * \brief       AREG Platform, Blocking and Non-blockind
+ * \brief       AREG Platform, Blocking and Non-blocking
  *              Runtime Resource Object container.
  *
  *
@@ -33,7 +33,7 @@
 /************************************************************************
  * Hierarchies and list of declared classes
  ************************************************************************/
-// TEHashMap<RuntimeClassID, RUNTIME_DELEGATE *, const RuntimeClassID &, RUNTIME_DELEGATE *>
+// TEHashMap<RuntimeClassID, RUNTIME_DELEGATE *>
     template <typename RUNTIME_DELEGATE> class TERuntimeHashMap;
         // TEResourceMap<RuntimeClassID, RUNTIME_DELEGATE, TERuntimeHashMap<RUNTIME_DELEGATE>>
             template <class RUNTIME_DELEGATE, class Implement> class TERuntimeResourceMap;
@@ -44,11 +44,11 @@
 // TERuntimeHashMapImpl<RUNTIME_DELEGATE> class template declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   An hash map class template helpter object used to call methods
+ * \brief   An hash map class template helper object used to call methods
  *          to get hash-value, and compare key and value elements.
  **/
 template <typename RUNTIME_DELEGATE>
-class TERuntimeHashMapImpl  : public TEHashMapImpl<const RuntimeClassID &, const RUNTIME_DELEGATE *>
+class TERuntimeHashMapImpl  : public TEHashMapImpl<RuntimeClassID, RUNTIME_DELEGATE *>
 {
 };
 
@@ -57,13 +57,13 @@ class TERuntimeHashMapImpl  : public TEHashMapImpl<const RuntimeClassID &, const
 //////////////////////////////////////////////////////////////////////////
 /**
  * \brief   A hash map class template to track run-time objects accessed by 
- *          key, which are Runtime Class ID, and the sotred values are 
+ *          key, which are Runtime Class ID, and the stored values are 
  *          run-time objects.
  * 
  * \tparam  RUNTIME_DELEGATE    The type of runtime object to store in runtime resource map.
  **/
 template <typename RUNTIME_DELEGATE>
-class TERuntimeHashMap : public TEHashMap<RuntimeClassID, RUNTIME_DELEGATE *, const RuntimeClassID &, RUNTIME_DELEGATE *, TERuntimeHashMapImpl<RUNTIME_DELEGATE>>
+class TERuntimeHashMap : public TEHashMap<RuntimeClassID, RUNTIME_DELEGATE *, TERuntimeHashMapImpl<RUNTIME_DELEGATE>>
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -95,7 +95,7 @@ private:
  * \brief   A run-time object resource map base class template to track run-time objects
  *          accessed by key, which are Runtime Class ID, and the stored values are 
  *          run-time object. Whether the resource map is thread safe or not, depends
- *          on instance of resourse lock object passed in constructor. If a resource map
+ *          on instance of resource lock object passed in constructor. If a resource map
  *          is used only within one thread context, pass no locking synchronization object,
  *          which is faster. Otherwise, pass one of instances of resource lock.
  *

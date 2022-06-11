@@ -45,7 +45,7 @@ public:
      * \param   dateTime    Client connection request date time in UTC
      * \see     ResponseConnect
      **/
-    virtual void requestConnet( const String & nickName, const DateTime & dateTime );
+    virtual void requestConnect( const String & nickName, const DateTime & dateTime );
 
     /**
      * \brief   Request call.
@@ -53,7 +53,7 @@ public:
      * \param   nickName        The nick name of connection used in service
      * \param   cookie          The cookie value to set
      * \param   connectCookie   The cookie to use for registration. 
-     * \param   dateRegister    The connection registration timestamp
+     * \param   dateRegister    The connection registration time-stamp
      * \see     responseRegisterConnection
      **/
     virtual void requestRegisterConnection( const String & nickName, unsigned int cookie, unsigned int connectCookie, const DateTime & dateRegister );
@@ -66,7 +66,7 @@ public:
      * \param   dateTime    Disconnect request date-time
      * \see     Has no response
      **/
-    virtual void requestDiconnect( const String & nickName, unsigned int cookie, const DateTime & dateTime );
+    virtual void requestDisconnect( const String & nickName, unsigned int cookie, const DateTime & dateTime );
 
 //////////////////////////////////////////////////////////////////////////
 // CentralMessager Interface Requests
@@ -77,9 +77,9 @@ public:
      * \brief   Request call.
      *          Request to sends message that all clients can see.
      * \param   nickName    The nick name of initiator
-     * \param   cookie      Cookie given by connection manager. Should not be invalid.
+     * \param   cookie      The cookie given by connection manager. Should not be invalid.
      * \param   newMessage  The message sent by connected initiator
-     * \param   dateTime    The timestamp create on local host of initiator
+     * \param   dateTime    The time-stamp create on local host of initiator
      * \note    Has no response
      **/
     virtual void requestSendMessage( const String & nickName, unsigned int cookie, const String & newMessage, const DateTime & dateTime );

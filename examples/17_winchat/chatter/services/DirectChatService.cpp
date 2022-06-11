@@ -123,7 +123,7 @@ void DirectChatService::requestChatJoin( const NEDirectMessager::sParticipant & 
     {
         bool newParticipant = false;
         NEDirectMessager::ListParticipants & chatParticipants = getChatParticipants();
-        if ( chatParticipants.exist(participant, 0) == false )
+        if ( chatParticipants.contains(participant, 0) == false )
         {
             chatParticipants.add(participant);
             newParticipant = true;
@@ -146,7 +146,7 @@ void DirectChatService::requestMessageSend( const NEDirectMessager::sParticipant
 {
     TRACE_SCOPE( distrbutedapp_DirectChatService_RequestMessageSend );
     const NEDirectMessager::ListParticipants & chatParticipants = getChatParticipants( );
-    if ( chatParticipants.exist(participant, 0) )
+    if ( chatParticipants.contains(participant, 0) )
     {
         broadcastMessageSent(participant, msgText, timeSent );
         broadcastMessageTyped( participant, String::EmptyString.data() );
@@ -157,7 +157,7 @@ void DirectChatService::requestMessageType( const NEDirectMessager::sParticipant
 {
     TRACE_SCOPE( distrbutedapp_DirectChatService_RequestMessageType );
     const NEDirectMessager::ListParticipants & chatParticipants = getChatParticipants( );
-    if ( chatParticipants.exist( participant, 0 ) )
+    if ( chatParticipants.contains( participant, 0 ) )
     {
         broadcastMessageTyped( participant, msgText );
     }

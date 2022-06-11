@@ -36,7 +36,7 @@
                     <Description>The participant to join chat. The participant should be in the connection list.</Description>
                 </Parameter>
                 <Parameter DataType="DateTime" ID="9" Name="timeConnect">
-                    <Description>The timestamp when the request was sent.</Description>
+                    <Description>The time-stamp when the request was sent.</Description>
                 </Parameter>
             </ParamList>
         </Method>
@@ -50,10 +50,10 @@
                     <Description>The list of participants.</Description>
                 </Parameter>
                 <Parameter DataType="DateTime" ID="13" Name="timeConnect">
-                    <Description>Timestamp when it was requested to join chat</Description>
+                    <Description>Time-stamp when it was requested to join chat</Description>
                 </Parameter>
                 <Parameter DataType="DateTime" ID="14" Name="timeConnected">
-                    <Description>Timestamp when the request to join was accepted and new participants was registered.</Description>
+                    <Description>Time-stamp when the request to join was accepted and new participants was registered.</Description>
                 </Parameter>
             </ParamList>
         </Method>
@@ -67,7 +67,7 @@
                     <Description>The text message to send</Description>
                 </Parameter>
                 <Parameter DataType="DateTime" ID="18" Name="timeSent">
-                    <Description>The timestamp when the message is requested to send.</Description>
+                    <Description>The time-stamp when the message is requested to send.</Description>
                 </Parameter>
             </ParamList>
         </Method>
@@ -89,7 +89,7 @@
                     <Description>The structure of chat-room participant.</Description>
                 </Parameter>
                 <Parameter DataType="DateTime" ID="24" Name="timeLeave">
-                    <Description>Timestamp when it was requested to leave chat-room.</Description>
+                    <Description>Time-stamp when it was requested to leave chat-room.</Description>
                 </Parameter>
             </ParamList>
         </Method>
@@ -103,7 +103,7 @@
                     <Description>The message, which was sent.</Description>
                 </Parameter>
                 <Parameter DataType="DateTime" ID="28" Name="timeSent">
-                    <Description>The timestamp when the message was sent.</Description>
+                    <Description>The time-stamp when the message was sent.</Description>
                 </Parameter>
             </ParamList>
         </Method>
@@ -125,7 +125,7 @@
                     <Description>The structure of participant, joined chat-room.</Description>
                 </Parameter>
                 <Parameter DataType="DateTime" ID="34" Name="timeJoined">
-                    <Description>Timestamp when participant joined the chat-room</Description>
+                    <Description>Time-stamp when participant joined the chat-room</Description>
                 </Parameter>
             </ParamList>
         </Method>
@@ -136,7 +136,7 @@
                     <Description>The structure of participant, who left the chat-room.</Description>
                 </Parameter>
                 <Parameter DataType="DateTime" ID="37" Name="timeLeft">
-                    <Description>The timestamp when the participant left chat-room.</Description>
+                    <Description>The time-stamp when the participant left chat-room.</Description>
                 </Parameter>
             </ParamList>
         </Method>

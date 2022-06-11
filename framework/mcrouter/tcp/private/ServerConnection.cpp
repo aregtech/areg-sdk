@@ -48,7 +48,7 @@ void ServerConnection::closeAllConnections(void)
         msgBeyClient.bufferCompletionFix();
     }
 
-    for ( MAPPOS pos = mAcceptedConnections.firstPosition(); pos != nullptr; pos = mAcceptedConnections.nextPosition(pos) )
+    for ( MapSocketToObject::MAPPOS pos = mAcceptedConnections.firstPosition(); mAcceptedConnections.isValidPosition(pos); pos = mAcceptedConnections.nextPosition(pos) )
     {
         SocketAccepted clientConnection = mAcceptedConnections.valueAtPosition(pos);
         msgBeyClient.setTarget( getCookie(clientConnection) );

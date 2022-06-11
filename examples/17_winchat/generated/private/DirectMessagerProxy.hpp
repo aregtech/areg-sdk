@@ -164,7 +164,7 @@ public:
      * \brief   Returns value of timeConnect of response call function.
      *          The parameter is validated and set when Proxy is getting response call.
      *          Parameter timeConnect description: 
-     *          Timestamp when it was requested to join chat
+     *          Time-stamp when it was requested to join chat
      **/
     inline const DateTime & getParamtimeConnect( void ) const;
 
@@ -172,7 +172,7 @@ public:
      * \brief   Returns value of timeConnected of response call function.
      *          The parameter is validated and set when Proxy is getting response call.
      *          Parameter timeConnected description: 
-     *          Timestamp when the request to join was accepted and new participants was registered.
+     *          Time-stamp when the request to join was accepted and new participants was registered.
      **/
     inline const DateTime & getParamtimeConnected( void ) const;
 
@@ -196,7 +196,7 @@ public:
      * \brief   Returns value of timeSent of response call function.
      *          The parameter is validated and set when Proxy is getting response call.
      *          Parameter timeSent description: 
-     *          The timestamp when the message was sent.
+     *          The time-stamp when the message was sent.
      **/
     inline const DateTime & getParamtimeSent( void ) const;
 
@@ -212,7 +212,7 @@ public:
      * \brief   Returns value of timeJoined of response call function.
      *          The parameter is validated and set when Proxy is getting response call.
      *          Parameter timeJoined description: 
-     *          Timestamp when participant joined the chat-room
+     *          Time-stamp when participant joined the chat-room
      **/
     inline const DateTime & getParamtimeJoined( void ) const;
 
@@ -220,7 +220,7 @@ public:
      * \brief   Returns value of timeLeft of response call function.
      *          The parameter is validated and set when Proxy is getting response call.
      *          Parameter timeLeft description: 
-     *          The timestamp when the participant left chat-room.
+     *          The time-stamp when the participant left chat-room.
      **/
     inline const DateTime & getParamtimeLeft( void ) const;
 
@@ -232,7 +232,7 @@ public:
      *          Request to join chat. The participant should be in the list of connections
      * \param   caller      The reference of caller object to get response.
      * \param   participant The participant to join chat. The participant should be in the connection list.
-     * \param   timeConnect The timestamp when the request was sent.
+     * \param   timeConnect The time-stamp when the request was sent.
      * \return  The sequence count number of call
      * \see     responseChatJoin
      **/
@@ -243,7 +243,7 @@ public:
      *          Request to send a message, has no response
      * \param   sender      The participant structure of message sender
      * \param   msgText     The text message to send
-     * \param   timeSent    The timestamp when the message is requested to send.
+     * \param   timeSent    The time-stamp when the message is requested to send.
      * \see     Has no Response.
      **/
     void requestMessageSend( const NEDirectMessager::sParticipant & sender, const String & msgText, const DateTime & timeSent );
@@ -261,7 +261,7 @@ public:
      * \brief   Request call.
      *          The request to leave chat-room. Has no response.
      * \param   participant The structure of chat-room participant.
-     * \param   timeLeave   Timestamp when it was requested to leave chat-room.
+     * \param   timeLeave   Time-stamp when it was requested to leave chat-room.
      * \see     Has no Response.
      **/
     void requestChatLeave( const NEDirectMessager::sParticipant & participant, const DateTime & timeLeave );
@@ -424,13 +424,13 @@ private:
 
     /**
      * \brief   timeConnect parameter value.
-     *          Timestamp when it was requested to join chat
+     *          Time-stamp when it was requested to join chat
      **/
     DateTime                            mParamtimeConnect;
 
     /**
      * \brief   timeConnected parameter value.
-     *          Timestamp when the request to join was accepted and new participants was registered.
+     *          Time-stamp when the request to join was accepted and new participants was registered.
      **/
     DateTime                            mParamtimeConnected;
 
@@ -448,7 +448,7 @@ private:
 
     /**
      * \brief   timeSent parameter value.
-     *          The timestamp when the message was sent.
+     *          The time-stamp when the message was sent.
      **/
     DateTime                            mParamtimeSent;
 
@@ -460,13 +460,13 @@ private:
 
     /**
      * \brief   timeJoined parameter value.
-     *          Timestamp when participant joined the chat-room
+     *          Time-stamp when participant joined the chat-room
      **/
     DateTime                            mParamtimeJoined;
 
     /**
      * \brief   timeLeft parameter value.
-     *          The timestamp when the participant left chat-room.
+     *          The time-stamp when the participant left chat-room.
      **/
     DateTime                            mParamtimeLeft;
 

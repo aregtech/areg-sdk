@@ -68,7 +68,7 @@ private:
     //!< Scope hash map helper
     using ImplMapTraceScope	= TEHashMapImpl<unsigned int, TraceScope *>;
     //!< Scope hash map
-    using MapTraceScope     = TEHashMap<unsigned int, TraceScope *, unsigned int, TraceScope *, ImplMapTraceScope>;
+    using MapTraceScope     = TEHashMap<unsigned int, TraceScope *, ImplMapTraceScope>;
     //!< Scope resource map helper
     using ImplTraceScope    = TEResourceMapImpl<unsigned int, TraceScope>;
     /**
@@ -567,7 +567,7 @@ private:
     /**
      * \brief   Starts logging thread, loads scopes and sets up all tracers.
      *          The configuration should be already loaded.
-     * \param   waitTimeout     The timeout in milliseconds to wait until loggint starts.
+     * \param   waitTimeout     The timeout in milliseconds to wait until logging starts.
      * \return  Returns true if started with success.
      **/
     bool startLoggingThread( unsigned int waitTimeout = NECommon::WAIT_INFINITE );

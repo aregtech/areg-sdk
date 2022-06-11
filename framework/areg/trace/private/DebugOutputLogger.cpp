@@ -61,7 +61,7 @@ bool DebugOutputLogger::openLogger(void)
 
                 logMsgHello.lmTrace.traceThreadId   = 0;
                 logMsgHello.lmTrace.traceScopeId    = 0;
-                logMsgHello.lmTrace.traceTimestamp  = DateTime::getNow();
+                logMsgHello.lmTrace.traceTime-stamp  = DateTime::getNow();
                 logMsgHello.lmTrace.traceMessagePrio= NETrace::PrioIgnoreLayout;
                 String::formatString( logMsgHello.lmTrace.traceMessage
                                     , NETrace::LOG_MESSAGE_BUFFER_SIZE
@@ -98,7 +98,7 @@ void DebugOutputLogger::closeLogger(void)
 
         logMsgHello.lmTrace.traceThreadId   = 0;
         logMsgHello.lmTrace.traceScopeId    = 0;
-        logMsgHello.lmTrace.traceTimestamp  = DateTime::getNow();
+        logMsgHello.lmTrace.traceTime-stamp  = DateTime::getNow();
         logMsgHello.lmTrace.traceMessagePrio= NETrace::PrioIgnoreLayout;
         String::formatString( logMsgHello.lmTrace.traceMessage
                             , NETrace::LOG_MESSAGE_BUFFER_SIZE

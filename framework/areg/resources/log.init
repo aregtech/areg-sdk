@@ -16,14 +16,14 @@
 #                           Specifying file name, make sure that permissions are granted.
 #                           If file name contains '%appdata%' mark in the path, the logging file is stored
 #                           in system special folder "APPDATA_Roaming" (in Win7 system "C:\Users\<user_name>\AppData\Roaming").
-#                           If file name contains '%timestamp%' mark, it will add special timestamp into the file name.
+#                           If file name contains '%timestamp%' mark, it will add special time-stamp into the file name.
 #                           If file name contains symbol of current folder './', the path is relative to the folder of executable.
 #
 #   Logging to remote host: To log traces to remote host (by further saving), specify host name and the port number.
 #
 #   Meaning of fields in configuration:
 #       1. log.version      -- the logging version
-#       2. log.file         -- name of log file, should be either relative or absolute path. if it contains '%time%' key in the name, then will add timestamp every time when creates log. If file path contains '%appdata%', logs are saved in user APPDATA_Roaming folder
+#       2. log.file         -- name of log file, should be either relative or absolute path. if it contains '%time%' key in the name, then will add time-stamp every time when creates log. If file path contains '%appdata%', logs are saved in user APPDATA_Roaming folder
 #       3. log.append       -- create new file or adds at the end of existing log file. If file name contains '%time%', it will always create new file. If the file name is fixed, it will either overwrite or add logs at the end of file.
 #       4. log.host         -- used for remote logging, specify either IP-address or host name
 #       5. log.port         -- specify port number on remote host to connect.
@@ -128,7 +128,7 @@
 #       Example specifying logging settings:
 #       log.version         = 1.0.0     <== Logging version number
 #       log.enable          = true      <== If 'true', the logging is enabled (by default it is disabled)
-#       log.file            = %appdata%/logs/trace_%time%.log   <== create log file in user's AppData\Roaming folder and set timestamp on the name of every log file
+#       log.file            = %appdata%/logs/trace_%time%.log   <== create log file in user's AppData\Roaming folder and set time-stamp on the name of every log file
 #       log.append          = false     <== always create if not existing or overwrite file in case of existing file. In this particular configuration this is not playing any role since the file name always changes
 #       log.layout.message  = %d: [ %u.%t %p >>> ] %m %n      <== logging layout (trace message format)
 #

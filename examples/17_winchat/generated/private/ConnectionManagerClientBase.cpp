@@ -32,9 +32,9 @@ namespace NEConnectionManager
     typedef void (ConnectionManagerClientBase::* FuncRequestFailure) ( NEService::eResultType );
     static FuncRequestFailure failureFunctions[] = 
     {
-          &ConnectionManagerClientBase::requestConnetFailed
+          &ConnectionManagerClientBase::requestConnectFailed
         , &ConnectionManagerClientBase::requestRegisterConnectionFailed
-        , &ConnectionManagerClientBase::requestDiconnectFailed
+        , &ConnectionManagerClientBase::requestDisconnectFailed
     };
 }
 
@@ -350,12 +350,12 @@ void ConnectionManagerClientBase::onConnectionListUpdate( const NEConnectionMana
  * Request failure / Response and Broadcast notifications
  ************************************************************************/
  
-DEF_TRACE_SCOPE(generated_ConnectionManagerClientBase_requestConnetFailed);
-void ConnectionManagerClientBase::requestConnetFailed( NEService::eResultType FailureReason )
+DEF_TRACE_SCOPE(generated_ConnectionManagerClientBase_requestConnectFailed);
+void ConnectionManagerClientBase::requestConnectFailed( NEService::eResultType FailureReason )
 {
-    TRACE_SCOPE(generated_ConnectionManagerClientBase_requestConnetFailed);
-    TRACE_WARN("The request requestConnet (value = %u) method of proxy [ %s ] client ConnectionManagerClientBase is failed with reason [ %s ]! Make error handling!"
-                    , static_cast<unsigned int>(NEConnectionManager::eMessageIDs::MsgId_requestConnet)
+    TRACE_SCOPE(generated_ConnectionManagerClientBase_requestConnectFailed);
+    TRACE_WARN("The request requestConnect (value = %u) method of proxy [ %s ] client ConnectionManagerClientBase is failed with reason [ %s ]! Make error handling!"
+                    , static_cast<unsigned int>(NEConnectionManager::eMessageIDs::MsgId_requestConnect)
                     , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString()
                     , NEService::getString(FailureReason));
 }
@@ -370,12 +370,12 @@ void ConnectionManagerClientBase::requestRegisterConnectionFailed( NEService::eR
                     , NEService::getString(FailureReason));
 }
 
-DEF_TRACE_SCOPE(generated_ConnectionManagerClientBase_requestDiconnectFailed);
-void ConnectionManagerClientBase::requestDiconnectFailed( NEService::eResultType FailureReason )
+DEF_TRACE_SCOPE(generated_ConnectionManagerClientBase_requestDisconnectFailed);
+void ConnectionManagerClientBase::requestDisconnectFailed( NEService::eResultType FailureReason )
 {
-    TRACE_SCOPE(generated_ConnectionManagerClientBase_requestDiconnectFailed);
-    TRACE_WARN("The request requestDiconnect (value = %u) method of proxy [ %s ] client ConnectionManagerClientBase is failed with reason [ %s ]! Make error handling!"
-                    , static_cast<unsigned int>(NEConnectionManager::eMessageIDs::MsgId_requestDiconnect)
+    TRACE_SCOPE(generated_ConnectionManagerClientBase_requestDisconnectFailed);
+    TRACE_WARN("The request requestDisconnect (value = %u) method of proxy [ %s ] client ConnectionManagerClientBase is failed with reason [ %s ]! Make error handling!"
+                    , static_cast<unsigned int>(NEConnectionManager::eMessageIDs::MsgId_requestDisconnect)
                     , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString()
                     , NEService::getString(FailureReason));
 }

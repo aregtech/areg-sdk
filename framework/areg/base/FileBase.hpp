@@ -126,15 +126,15 @@ public:
 
         , FO_MODE_READ          = (FOB_READ)                                                        //!< 0000000000000001 <= read bit
         , FO_MODE_WRITE         = (FOB_WRITE | FOB_READ)                                            //!< 0000000000000011 <= write mode, should contain "read" bit
-        , FO_MODE_BINARY        = (FOB_BINARY)                                                      //!< 0000000000000100 <= binary bit. strings in binary mode will write EOS char, all data will be dumpped.
+        , FO_MODE_BINARY        = (FOB_BINARY)                                                      //!< 0000000000000100 <= binary bit. strings in binary mode will write EOS char, all data will be dumped.
         , FO_MODE_TEXT          = (FOB_TEXT)                                                        //!< 0000000000001000 <= text bit. EOS char of string will not be written, can write and read line of string
         , FO_MODE_SHARE_READ    = (FOB_SHARE_READ | FOB_READ)                                       //!< 0000000000010001 <= share read mode, should contain "read" bit
         , FO_MODE_SHARE_WRITE   = (FOB_SHARE_WRITE | FOB_SHARE_READ | FOB_WRITE | FOB_READ)         //!< 0000000000110011 <= share write mode, should contain "read", "write" and "share read" bits
         , FO_MODE_CREATE        = (FOB_CREATE)                                                      //!< 0000000001000000 <= always create file
-        , FO_MODE_EXIST         = (FOB_EXIST)                                                       //!< 0000000010000000 <= file should exist, otherwise it failes
+        , FO_MODE_EXIST         = (FOB_EXIST)                                                       //!< 0000000010000000 <= file should exist, otherwise it fails
         , FO_MODE_TRUNCATE      = (FOB_TRUNCATE | FOB_WRITE | FOB_READ)                             //!< 0000000100000011 <= truncate file, i.e. set initial size zero, "read" and "write" bits should be set
-        , FO_MODE_ATTACH        = (FOB_ATTACH | FOB_EXIST | FOB_SHARE_READ | FOB_READ)              //!< 0000001010010001 <= attached handle (buffer). Can only read memory data, cannot change the size or write data. Bits "read", "share read", "exist" are set automaticaly. Not able to control share mode, the pointer should be passed. Should not free buffer in destructor.
-        , FO_MODE_DETACH        = (FOB_DETACH | FOB_CREATE | FOB_SHARE_READ | FOB_WRITE | FOB_READ) //!< 0000010001010011 <= mode detach buffer. Can read and write memory data. Bits "read", "write", "share read" and "create" are set automaticaly. Not able to control share modes. Should not free buffer in destructor, it is up to caller to free buffer.
+        , FO_MODE_ATTACH        = (FOB_ATTACH | FOB_EXIST | FOB_SHARE_READ | FOB_READ)              //!< 0000001010010001 <= attached handle (buffer). Can only read memory data, cannot change the size or write data. Bits "read", "share read", "exist" are set automatically. Not able to control share mode, the pointer should be passed. Should not free buffer in destructor.
+        , FO_MODE_DETACH        = (FOB_DETACH | FOB_CREATE | FOB_SHARE_READ | FOB_WRITE | FOB_READ) //!< 0000010001010011 <= mode detach buffer. Can read and write memory data. Bits "read", "write", "share read" and "create" are set automatically. Not able to control share modes. Should not free buffer in destructor, it is up to caller to free buffer.
         , FO_MODE_DELETE        = (FOB_FOR_DELETE)                                                  //!< 0000100000000000 <= mode to delete on close. Can be combined with any mode. The file / buffer will be deleted even if mode attached / detach are set.
         , FO_MODE_WRITE_DIRECT  = (FOB_WRITE_DIRECT | FOB_WRITE | FOB_READ)                         //!< 0001000000000011 <= write operations will not go through any intermediate cache, they will go directly to disk. read and write flags are set automatically.
         , FO_MODE_CREATE_TEMP   = (FOB_TEMP_FILE | FOB_WRITE | FOB_READ)                            //!< 0010000000000011 <= The file is being used for temporary storage. File systems avoid writing data back to mass storage if sufficient cache memory is available, because an application deletes a temporary file after a handle is closed. In that case, the system can entirely avoid writing the data.
@@ -150,13 +150,13 @@ public:
 
     /**
      * \brief   File::TIMESTAMP_FILE_MASK
-     *          Mask used in file name to set timestamp
+     *          Mask used in file name to set time-stamp
      **/
     static constexpr std::string_view   FILE_MASK_TIMESTAMP { "%time%" };
 
     /**
      * \brief   File::TIMESTAMP_FORMAT
-     *          Default timestamp format, used as yyyy_mm_dd_hh_mm_ss_ms
+     *          Default time-stamp format, used as yyyy_mm_dd_hh_mm_ss_ms
      **/
     static constexpr std::string_view   TIMESTAMP_FORMAT    { "%04d_%02d_%02d_%02d_%02d_%02d_%03d" };
 
@@ -408,96 +408,112 @@ public:
     /**
      * \brief   Reads boolean value and if succeeds, returns true.
      *          If fails, this will not change the current file pointer position
+     * \param   outValue[out]   On output contains value that could read.
      **/
     inline bool readBool(bool & OUT outValue) const;
 
     /**
      * \brief   Reads 1 byte of data, covert to char and if succeeds, returns true.
      *          If fails, this will not change the current file pointer position
+     * \param   outValue[out]   On output contains value that could read.
      **/
     inline bool readChar(char & OUT outValue) const;
 
     /**
      * \brief   Reads 2 bytes of data, covert to wide char and if succeeds, returns true.
      *          If fails, this will not change the current file pointer position
+     * \param   outValue[out]   On output contains value that could read.
      **/
     inline bool readChar(wchar_t & OUT outValue) const;
 
     /**
      * \brief   Reads 2 bytes of data, covert to short integer and if succeeds, returns true.
      *          If fails, this will not change the current file pointer position
+     * \param   outValue[out]   On output contains value that could read.
      **/
     inline bool readShort(short & OUT outValue) const;
 
     /**
      * \brief   Reads 4 bytes of data, covert to integer and if succeeds, returns true.
      *          If fails, this will not change the current file pointer position
+     * \param   outValue[out]   On output contains value that could read.
      **/
     inline bool readInt(int & OUT outValue) const;
 
     /**
      * \brief   Reads 8 bytes of data, covert to large integer and if succeeds, returns true.
      *          If fails, this will not change the current file pointer position
+     * \param   outValue[out]   On output contains value that could read.
      **/
     inline bool readLarge(int64_t & OUT outValue) const;
 
     /**
      * \brief   Reads 2 bytes of data, covert to floating value and if succeeds, returns true.
      *          If fails, this will not change the current file pointer position
+     * \param   outValue[out]   On output contains value that could read.
      **/
     inline bool readFloat(float & OUT outValue) const;
 
     /**
      * \brief   Reads 4 bytes of data, covert to double floating value and if succeeds, returns true.
      *          If fails, this will not change the current file pointer position
+     * \param   outValue[out]   On output contains value that could read.
      **/
     inline bool readDouble(double & OUT outValue) const;
 
     /**
      * \brief   Write 1 byte of char data and if succeeds, returns true.
      *          If fails, this will not change the current file pointer position
+     * \param   inValue [in]    Value to write.
      **/
     inline bool writeBool(bool inValue);
 
     /**
      * \brief   Write 1 byte of char data and if succeeds, returns true.
      *          If fails, this will not change the current file pointer position
+     * \param   inValue [in]    Value to write.
      **/
     inline bool writeChar(char inValue);
 
     /**
      * \brief   Write 2 bytes of wide char data and if succeeds, returns true.
      *          If fails, this will not change the current file pointer position
+     * \param   inValue [in]    Value to write.
      **/
     inline bool writeChar(wchar_t inValue);
 
     /**
      * \brief   Write 2 bytes of short integer data and if succeeds, returns true.
      *          If fails, this will not change the current file pointer position
+     * \param   inValue [in]    Value to write.
      **/
     inline bool writeShort(short inValue);
 
     /**
      * \brief   Write 4 bytes of integer data and if succeeds, returns true.
      *          If fails, this will not change the current file pointer position
+     * \param   inValue [in]    Value to write.
      **/
     inline bool writeInt(int inValue);
 
     /**
      * \brief   Write 8 bytes of large integer data and if succeeds, returns true.
      *          If fails, this will not change the current file pointer position
+     * \param   inValue [in]    Value to write.
      **/
     inline bool writeLarge(int64_t inValue);
 
     /**
      * \brief   Write 2 bytes of floating value data and if succeeds, returns true.
      *          If fails, this will not change the current file pointer position
+     * \param   inValue [in]    Value to write.
      **/
     inline bool writeFloat(float inValue);
 
     /**
      * \brief   Write 4 bytes of double floating value data and if succeeds, returns true.
      *          If fails, this will not change the current file pointer position
+     * \param   inValue [in]    Value to write.
      **/
     inline bool writeDouble(double inValue);
 
@@ -787,7 +803,7 @@ protected:
     virtual void resetCursor( void ) const override;
 
     /**
-     * \brief   Normalizes the name, replace special masks such as timestamp or process name in the give name.
+     * \brief   Normalizes the name, replace special masks such as time-stamp or process name in the give name.
      * \param[out]  name    On output, contains normalized name of file.
      **/
     static void normalizeName( String & OUT name );
@@ -947,42 +963,42 @@ inline IEOutStream& FileBase::getWriteStream( void )
     return static_cast<IEOutStream &>(*this);
 }
 
-inline bool FileBase::readBool(bool &outValue) const
+inline bool FileBase::readBool(bool & OUT outValue) const
 {
     return mReadConvert.getBool(outValue);
 }
 
-inline bool FileBase::readChar( char &outValue ) const
+inline bool FileBase::readChar( char & OUT outValue ) const
 {
     return mReadConvert.getChar(outValue);
 }
 
-inline bool FileBase::readChar( wchar_t &outValue ) const
+inline bool FileBase::readChar( wchar_t & OUT outValue ) const
 {
     return mReadConvert.getChar(outValue);
 }
 
-inline bool FileBase::readShort( short &outValue ) const
+inline bool FileBase::readShort( short & OUT outValue ) const
 {
     return mReadConvert.getShort(outValue);
 }
 
-inline bool FileBase::readInt( int &outValue ) const
+inline bool FileBase::readInt( int & OUT outValue ) const
 {
     return mReadConvert.getInt(outValue);
 }
 
-inline bool FileBase::readLarge( int64_t &outValue ) const
+inline bool FileBase::readLarge( int64_t & OUT outValue ) const
 {
     return mReadConvert.getInt64(outValue);
 }
 
-inline bool FileBase::readFloat(float &outValue) const
+inline bool FileBase::readFloat(float & OUT outValue) const
 {
     return mReadConvert.getFloat(outValue);
 }
 
-inline bool FileBase::readDouble(double &outValue) const
+inline bool FileBase::readDouble(double & OUT outValue) const
 {
     return mReadConvert.getDouble(outValue);
 }

@@ -271,6 +271,25 @@ private:
 };
 
 //////////////////////////////////////////////////////////////////////////
+// Hasher of ComponentAddress class
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   A template to calculate hash value of the ComponentAddress.
+ */
+namespace std
+{
+    template<>
+    struct hash<ComponentAddress>
+    {
+        //! A function to convert ComponentAddress object to unsigned int.
+        inline unsigned int operator()(const ComponentAddress& key) const
+        {
+            return static_cast<unsigned int>(key);
+        }
+    };
+}
+
+//////////////////////////////////////////////////////////////////////////
 // ComponentAddress class inline function implementation
 //////////////////////////////////////////////////////////////////////////
 

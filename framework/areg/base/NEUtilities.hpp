@@ -125,7 +125,7 @@ namespace   NEUtilities
     {
         unsigned short  stYear;         //!< The year in the time
         unsigned short  stMonth;        //!< The month in the time, which starts from 1 (January) until 12 (December)
-        unsigned short  stDayOfWeek;    //!< The day of week in the time, wich starts from 0 (Sunday) until 6 (Saturday)
+        unsigned short  stDayOfWeek;    //!< The day of week in the time, which starts from 0 (Sunday) until 6 (Saturday)
         unsigned short  stDay;          //!< The day of the month in the time, which starts from 1
         unsigned short  stHour;         //!< The hour in the time, which starts from 0
         unsigned short  stMinute;       //!< The minute in the time, which starts from 0
@@ -245,8 +245,8 @@ namespace   NEUtilities
 
     /**
      * \brief   Converts system-time data structure to standard 'tm' type. In conversion, a milliseconds part of data will be lost.
-     * \param   sysTime     The system-time data structure to convert.
-     * \param   out_time    On output the parameter contains date-time of converted system time without information of milliseconds.
+     * \param   sysTime         The system-time data structure to convert.
+     * \param   out_time [out]  On output the parameter contains date-time of converted system time without information of milliseconds.
      **/
     AREG_API void convToTm( const sSystemTime & sysTime, struct tm & OUT out_time );
 
@@ -259,8 +259,8 @@ namespace   NEUtilities
 
     /**
      * \brief   Localizes the UTC time data value. On output the passed structure contains values in UTC timezone.
-     * \param   utcTime     The time structure in UTC time to convert.
-     *                      On output the values of structure will be in local time zone.
+     * \param   utcTime [in, out]   The time structure in UTC time to convert.
+     *                              On output the values of structure will be in local time zone.
      **/
     AREG_API void makeTmLocal( struct tm & IN OUT utcTime );
 
@@ -299,7 +299,7 @@ namespace   NEUtilities
 
     /**
      * \brief   This function generates and returns name 
-     *          using timestamp value in nanoseconds in the name.
+     *          using time-stamp value in nanoseconds in the name.
      *          If passed prefix is nullptr, it will use predefined
      *          NEUtilities::DEFAULT_GENERATED_NAME constant as a
      *          prefix for name. The maximum length of generated
@@ -317,23 +317,23 @@ namespace   NEUtilities
 
     /**
      * \brief   This function generates and returns name 
-     *          using timestamp value in nanoseconds in the name.
+     *          using time-stamp value in nanoseconds in the name.
      *          If passed prefix is nullptr, it will use predefined
      *          NEUtilities::DEFAULT_GENERATED_NAME constant as a
      *          prefix for name. Before calling this function,
      *          the output buffer should be allocated and the length
      *          of buffer should be big enough to contain prefix
-     *          and the timestamp. The timestamp requires at least
+     *          and the time-stamp. The time-stamp requires at least
      *          34 characters. Generated output name is in 
      *          format <prefix>:{nn:nn:nn:nn:nn:nn:nn:nn})
-     * \param   prefix      The prefix to add in generated name.
-     *                      If this value is nullptr it will use
-     *                      NEUtilities::DEFAULT_GENERATED_NAME as
-     *                      a prefix for name.
-     * \param   out_buffer  The output buffer to fill generated name.
-     *                      The length of buffer should be big enough
-     *                      to contain prefix and prefix.
-     * \param   length      The length of buffer to set name.
+     * \param   prefix              The prefix to add in generated name.
+     *                              If this value is nullptr it will use
+     *                              NEUtilities::DEFAULT_GENERATED_NAME as
+     *                              a prefix for name.
+     * \param   out_buffer [out]    The output buffer to fill generated name.
+     *                              The length of buffer should be big enough
+     *                              to contain prefix and prefix.
+     * \param   length              The length of buffer to set name.
      * \param   specChar    Special character used in generated name.
      * \return  Returns the content of 'out_buffer'. If 'out_buffer' is invalid, returns nullptr.
      **/

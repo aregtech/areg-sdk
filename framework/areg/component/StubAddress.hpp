@@ -134,6 +134,18 @@ public:
     StubAddress( StubAddress && source ) noexcept;
 
     /**
+     * \brief   Initializes stub address by copying service address data.
+     * \param   source  The service address source of data to copy.
+     **/
+    explicit StubAddress( const ServiceAddress & source );
+
+    /**
+     * \brief   Initializes stub address by moving service address data.
+     * \param   source  The service address source of data to move.
+     **/
+    explicit StubAddress( ServiceAddress && source );
+
+    /**
      * \brief   Initialize Stub address from stream.
      * \param   stream  The streaming object to read data.
      **/
@@ -348,6 +360,35 @@ private:
      **/
     unsigned int    mMagicNum;
 };
+
+//////////////////////////////////////////////////////////////////////////
+// Hasher of StubAddress class
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   A template to calculate hash value of the StubAddress.
+ */
+namespace std
+{
+    //! Calculates the hash value of the StubAddress object
+    template<> struct hash<StubAddress>
+    {
+        //! A function operator to convert StubAddress object to hash value.
+        inline unsigned int operator()(const StubAddress& key) const
+        {
+            return static_cast<unsigned int>(key);
+        }
+    };
+
+    //!< Compares 2 StubAddress objects
+    template<> struct equal_to<StubAddress>
+    {
+        //! A function operator to compare 2 StubAddress objects.
+        inline bool operator() (const StubAddress& key1, const StubAddress& key2) const
+        {
+            return static_cast<const ServiceAddress&>(key1) == static_cast<const ServiceAddress&>(key2);
+        }
+    };
+}
 
 //////////////////////////////////////////////////////////////////////////
 // StubAddress class inline functions implementation

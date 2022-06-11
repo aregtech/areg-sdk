@@ -411,9 +411,9 @@ LRESULT DistributedDialog::OnCmdChatClosed( WPARAM wParam, LPARAM lParam )
     PageChat * pageChat = reinterpret_cast<PageChat *>(lParam);
     if ( pageChat != nullptr )
     {
-        for ( MAPPOS pos = mMapChatPages.firstPosition( ); pos != nullptr; pos = mMapChatPages.nextPosition( pos ) )
+        for (MapChatPages::MAPPOS pos = mMapChatPages.firstPosition( ); mMapChatPages.isValidPosition(pos); pos = mMapChatPages.nextPosition( pos ) )
         {
-            PageChat * page = mMapChatPages.getPosition( pos );
+            PageChat * page = mMapChatPages.valueAtPosition( pos );
             if ( page == pageChat )
             {
                 mMapChatPages.removePosition( pos );
@@ -424,6 +424,7 @@ LRESULT DistributedDialog::OnCmdChatClosed( WPARAM wParam, LPARAM lParam )
         RemovePage( pageChat );
         delete pageChat;
     }
+
     return 0;
 }
 
@@ -491,7 +492,7 @@ PageChat * DistributedDialog::AddChatPage( const NEDirectConnection::sInitiator 
     PageChat * chatPage   = new PageChat( serviceName, initiator, listParties, owner, isInitiator );
     if ( chatPage != nullptr )
     {
-        ASSERT(mMapChatPages.find(serviceName) == nullptr );
+        ASSERT(mMapChatPages.contains(serviceName) == false);
         mMapChatPages.setAt( serviceName, chatPage );
 
         AddPage( chatPage );
@@ -524,25 +525,29 @@ void DistributedDialog::ChangeCaption( LPCTSTR newCaption )
 
 bool DistributedDialog::RemoveChatPage( const String & connectName )
 {
-    MAPPOS pos = mMapChatPages.find(connectName);
-    if ( pos != nullptr )
+    bool result = false;
+    MapChatPages::MAPPOS pos = mMapChatPages.find(connectName);
+    if (mMapChatPages.isValidPosition(pos) )
     {
-        PageChat * chatPage = mMapChatPages.getPosition(pos);
+        result = true;
+        PageChat * chatPage = mMapChatPages.valueAtPosition(pos);
         if ( chatPage != nullptr )
         {
             RemovePage(chatPage);
             delete chatPage;
         }
+
         mMapChatPages.removePosition(pos);
     }
-    return (pos != nullptr);
+
+    return result;
 }
 
 void DistributedDialog::RemoveAllChatPages( void )
 {
-    for ( MAPPOS pos = mMapChatPages.firstPosition(); pos != nullptr; pos = mMapChatPages.nextPosition(pos) )
+    for (MapChatPages::MAPPOS pos = mMapChatPages.firstPosition(); mMapChatPages.isValidPosition(pos); pos = mMapChatPages.nextPosition(pos) )
     {
-        PageChat * chatPage = mMapChatPages.getPosition( pos );
+        PageChat * chatPage = mMapChatPages.valueAtPosition( pos );
         if ( chatPage != nullptr )
         {
             RemovePage( chatPage );

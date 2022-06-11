@@ -128,6 +128,18 @@ public:
     ProxyAddress( ProxyAddress && source ) noexcept;
 
     /**
+     * \brief   Initializes proxy address by copying service address data.
+     * \param   source  The service address source of data to copy.
+     **/
+    explicit ProxyAddress(const ServiceAddress & source);
+
+    /**
+     * \brief   Initializes proxy address by moving service address data.
+     * \param   source  The service address source of data to move.
+     **/
+    explicit ProxyAddress(ServiceAddress && source);
+
+    /**
      * \brief   Initialize proxy address from streaming object.
      **/
     ProxyAddress(const IEInStream & stream);
@@ -351,6 +363,25 @@ private:
      **/
     unsigned int    mMagicNum;
 };
+
+//////////////////////////////////////////////////////////////////////////
+// Hasher of ProxyAddress class
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   A template to calculate hash value of the ProxyAddress.
+ */
+namespace std
+{
+    template<>
+    struct hash<ProxyAddress>
+    {
+        //! A function to convert ProxyAddress object to unsigned int.
+        inline unsigned int operator()(const ProxyAddress& key) const
+        {
+            return static_cast<unsigned int>(key);
+        }
+    };
+}
 
 //////////////////////////////////////////////////////////////////////////
 // ProxyAddress class inline functions

@@ -148,20 +148,20 @@ namespace   NEConnectionManager
      * Request IDs
      ************************************************************************/
         /**
-         * \brief   Request ID: MsgId_requestConnet
+         * \brief   Request ID: MsgId_requestConnect
          *          The request to connect to system
          **/
-          MsgId_requestConnet                 = NEService::REQUEST_ID_FIRST     // void requestConnet( const String & nickName, const DateTime & dateTime );
+          MsgId_requestConnect                 = NEService::REQUEST_ID_FIRST     // void requestConnect( const String & nickName, const DateTime & dateTime );
         /**
          * \brief   Request ID: MsgId_requestRegisterConnection
          *          Request to register direct connection service.
          **/
         , MsgId_requestRegisterConnection                                       // void requestRegisterConnection( const String & nickName, unsigned int cookie, unsigned int connectCookie, const DateTime & dateRegister );
         /**
-         * \brief   Request ID: MsgId_requestDiconnect
+         * \brief   Request ID: MsgId_requestDisconnect
          *          Request to disconnect.
          **/
-        , MsgId_requestDiconnect                                                // void requestDiconnect( const String & nickName, unsigned int cookie, const DateTime & dateTime );
+        , MsgId_requestDisconnect                                                // void requestDisconnect( const String & nickName, unsigned int cookie, const DateTime & dateTime );
      
     /************************************************************************
      * Response IDs
@@ -287,12 +287,12 @@ inline const char * NEConnectionManager::getString( NEConnectionManager::eMessag
 {
     switch ( msgId )
     {
-    case    NEConnectionManager::eMessageIDs::MsgId_requestConnet:
-        return "NEConnectionManager::eMessageIDs::MsgId_requestConnet";
+    case    NEConnectionManager::eMessageIDs::MsgId_requestConnect:
+        return "NEConnectionManager::eMessageIDs::MsgId_requestConnect";
     case    NEConnectionManager::eMessageIDs::MsgId_requestRegisterConnection:
         return "NEConnectionManager::eMessageIDs::MsgId_requestRegisterConnection";
-    case    NEConnectionManager::eMessageIDs::MsgId_requestDiconnect:
-        return "NEConnectionManager::eMessageIDs::MsgId_requestDiconnect";
+    case    NEConnectionManager::eMessageIDs::MsgId_requestDisconnect:
+        return "NEConnectionManager::eMessageIDs::MsgId_requestDisconnect";
     case    NEConnectionManager::eMessageIDs::MsgId_responseConnect:
         return "NEConnectionManager::eMessageIDs::MsgId_responseConnect";
     case    NEConnectionManager::eMessageIDs::MsgId_responseRegisterConnection:

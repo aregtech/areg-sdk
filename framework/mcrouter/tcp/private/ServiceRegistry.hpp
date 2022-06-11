@@ -29,7 +29,7 @@
 /**
  * \brief   Service registry map helper class.
  **/
-class ImplServiceRegistry  : public TEHashMapImpl<const ServiceStub &, const ListServiceProxies &>
+class ImplServiceRegistry  : public TEHashMapImpl<ServiceStub, ListServiceProxies>
 {
 public:
     /**
@@ -43,7 +43,7 @@ public:
     }
 };
 
-using ServiceRegistryBase = TEHashMap<ServiceStub, ListServiceProxies, const ServiceStub &, const ListServiceProxies &, ImplServiceRegistry>;
+using ServiceRegistryBase = TEHashMap<ServiceStub, ListServiceProxies, ImplServiceRegistry>;
 
 /**
  * \brief   The remote services registration map, which is a map of stub and list of connected proxies.
@@ -53,11 +53,6 @@ class ServiceRegistry   : public ServiceRegistryBase
 //////////////////////////////////////////////////////////////////////////
 // Predefined types and constants
 //////////////////////////////////////////////////////////////////////////
-    /**
-     * \brief   ServiceRegistry::ServiceBlock
-     *          Defines Block class of Hash Map as ServiceBlock. Defined to short syntax.
-     **/
-    using ServiceBlock = ServiceRegistryBase::Block;
 
     /**
      * \brief   ServiceRegistry::InvalidStubService

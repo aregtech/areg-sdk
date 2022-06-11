@@ -194,3 +194,22 @@ private:
      **/
     String  mPosition;     // pos 4
 };
+
+//////////////////////////////////////////////////////////////////////////
+// Hasher of PropertyKey class
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   A template to calculate hash value of the PropertyKey.
+ */
+namespace std
+{
+    template<>
+    struct hash<PropertyKey>
+    {
+        //! A function to convert PropertyKey object to unsigned int.
+        inline unsigned int operator()(const PropertyKey& key) const
+        {
+            return static_cast<unsigned int>(key);
+        }
+    };
+}

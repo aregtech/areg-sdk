@@ -119,25 +119,25 @@ public:
      *          The previous buffer will be freed and the size will be changed.
      * \param	src	    Source of Array to copy data.
      **/
-    TEFixedArray<VALUE, VALUE_TYPE, Implement> & operator = ( const TEFixedArray<VALUE, VALUE_TYPE, Implement> & src);
+    inline TEFixedArray<VALUE, VALUE_TYPE, Implement> & operator = ( const TEFixedArray<VALUE, VALUE_TYPE, Implement> & src);
     /**
      * \brief	Move operator. Moves elements from given source.
      *          The previous buffer is freed and the size is changed.
      * \param	src	    Source of Array to copy data.
      **/
-    TEFixedArray<VALUE, VALUE_TYPE, Implement> & operator = ( TEFixedArray<VALUE, VALUE_TYPE, Implement> && src ) noexcept;
+    inline TEFixedArray<VALUE, VALUE_TYPE, Implement> & operator = ( TEFixedArray<VALUE, VALUE_TYPE, Implement> && src ) noexcept;
     /**
      * \brief   Checks equality of 2 hash-map objects, and returns true if they are equal.
      *          There should be possible to compare VALUE type entries of array.
      * \param   other   The fixed array object to compare
      **/
-    bool operator == (const TEFixedArray<VALUE, VALUE_TYPE, Implement> & other) const;
+    inline bool operator == (const TEFixedArray<VALUE, VALUE_TYPE, Implement> & other) const;
     /**
      * \brief   Checks inequality of 2 hash-map objects, and returns true if they are not equal.
      *          There should be possible to compare VALUE type entries of array.
      * \param   other   The fixed array object to compare
      **/
-    bool operator != (const TEFixedArray<VALUE, VALUE_TYPE, Implement> & other) const;
+    inline bool operator != (const TEFixedArray<VALUE, VALUE_TYPE, Implement> & other) const;
 
     /**
      * \brief   Subscript operator. Returns reference to value of element by given valid index.
@@ -235,7 +235,7 @@ public:
      * \brief   Resize the array, set new length and copy existing data.
      * \param   newLength   The new length of array to set.
      **/
-    void resize(uint32_t newLength );
+    inline void resize(uint32_t newLength );
 
     /**
      * \brief   Clears all elements of array
@@ -269,7 +269,7 @@ protected:
      **/
     uint32_t    mElemCount;
     /**
-     * \brief   Instance of object that copares values.
+     * \brief   Instance of object that compares values.
      **/
     Implement   mImplement;
 };
@@ -316,7 +316,7 @@ TEFixedArray<VALUE, VALUE_TYPE, Implement>::~TEFixedArray( void )
 }
 
 template<typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /* = TEListImpl<VALUE_TYPE> */>
-TEFixedArray<VALUE, VALUE_TYPE, Implement> & TEFixedArray<VALUE, VALUE_TYPE, Implement>::operator = ( const TEFixedArray<VALUE, VALUE_TYPE, Implement>& src )
+inline TEFixedArray<VALUE, VALUE_TYPE, Implement> & TEFixedArray<VALUE, VALUE_TYPE, Implement>::operator = ( const TEFixedArray<VALUE, VALUE_TYPE, Implement>& src )
 {
     if (static_cast<const TEFixedArray<VALUE, VALUE_TYPE, Implement> *>(this) != &src)
     {
@@ -335,7 +335,7 @@ TEFixedArray<VALUE, VALUE_TYPE, Implement> & TEFixedArray<VALUE, VALUE_TYPE, Imp
 }
 
 template<typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /* = TEListImpl<VALUE_TYPE> */>
-TEFixedArray<VALUE, VALUE_TYPE, Implement> & TEFixedArray<VALUE, VALUE_TYPE, Implement>::operator = ( TEFixedArray<VALUE, VALUE_TYPE, Implement> && src ) noexcept
+inline TEFixedArray<VALUE, VALUE_TYPE, Implement> & TEFixedArray<VALUE, VALUE_TYPE, Implement>::operator = ( TEFixedArray<VALUE, VALUE_TYPE, Implement> && src ) noexcept
 {
     if ( static_cast<const TEFixedArray<VALUE, VALUE_TYPE, Implement> *>(this) != &src )
     {
@@ -351,7 +351,7 @@ TEFixedArray<VALUE, VALUE_TYPE, Implement> & TEFixedArray<VALUE, VALUE_TYPE, Imp
 }
 
 template<typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /* = TEListImpl<VALUE_TYPE> */>
-bool TEFixedArray<VALUE, VALUE_TYPE, Implement>::operator == ( const TEFixedArray<VALUE, VALUE_TYPE, Implement>& other ) const
+inline bool TEFixedArray<VALUE, VALUE_TYPE, Implement>::operator == ( const TEFixedArray<VALUE, VALUE_TYPE, Implement>& other ) const
 {
     bool result = true;
 
@@ -372,7 +372,7 @@ bool TEFixedArray<VALUE, VALUE_TYPE, Implement>::operator == ( const TEFixedArra
 }
 
 template<typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /* = TEListImpl<VALUE_TYPE> */>
-bool TEFixedArray<VALUE, VALUE_TYPE, Implement>::operator != (const TEFixedArray<VALUE, VALUE_TYPE, Implement>& other) const
+inline bool TEFixedArray<VALUE, VALUE_TYPE, Implement>::operator != (const TEFixedArray<VALUE, VALUE_TYPE, Implement>& other) const
 {
     bool result = false;
     
@@ -471,7 +471,7 @@ inline void TEFixedArray<VALUE, VALUE_TYPE, Implement>::removeAll( void )
 }
 
 template<typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /*= TEListImpl<VALUE_TYPE>*/>
-void TEFixedArray<VALUE, VALUE_TYPE, Implement>::resize(uint32_t newLength)
+inline void TEFixedArray<VALUE, VALUE_TYPE, Implement>::resize(uint32_t newLength)
 {
     VALUE * newList = newLength != 0 ? DEBUG_NEW VALUE[newLength] : nullptr;
     int count = MACRO_MIN(newLength, mElemCount);

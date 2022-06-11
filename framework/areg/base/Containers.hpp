@@ -42,11 +42,11 @@
         class Tokenizer;
 
 /* class TEHashMap */
-    template <typename VALUE, typename VALUE_TYPE, class Implement>
+    template <typename VALUE, class Implement>
     class TEIntegerHashMap;
-    template <typename VALUE, typename VALUE_TYPE, class Implement>
+    template <typename VALUE, class Implement>
     class TEStringHashMap;
-    template <typename VALUE, typename VALUE_TYPE, class Implement>
+    template <typename VALUE, class Implement>
     class TEPointerHashMap;
 
 //////////////////////////////////////////////////////////////////////////
@@ -119,8 +119,8 @@ public:
  * \tparam  VALUE       The type of value to store in map
  * \tparam  VALUE_TYPE  The type when get or set value
  **/
-template <typename VALUE, typename VALUE_TYPE = VALUE, class Implement = TEHashMapImpl<unsigned int, VALUE_TYPE>>
-class TEIntegerHashMap  : public TEHashMap<unsigned int, VALUE, unsigned int, VALUE_TYPE, Implement>
+template <typename VALUE, class Implement = TEHashMapImpl<unsigned int, VALUE>>
+class TEIntegerHashMap  : public TEHashMap<unsigned int, VALUE, Implement>
 {
     //////////////////////////////////////////////////////////////////////////
     // Constructor / Destructor
@@ -137,23 +137,20 @@ public:
      * \param	blockSize	The size of blocks in hash map to create at once.
      *                      If this is negative value, it creates MAP_DEFAULT_BLOCK_SIZE blocks.
      *                      It cannot be more than MAP_MAX_BLOCK_SIZE (1024)
-     * \param	hashSize	The size of has map table.
-     *                      If it is negative, the size is MAP_DEFAULT_HASH_SIZE (64).
-     *                      It cannot be more than MAP_MAX_TABLE_SIZE (1024)
      **/
-    TEIntegerHashMap( int blockSize, int hashSize );
+    TEIntegerHashMap( uint32_t hashSize );
 
     /**
      * \brief   Copies hash-map data from given sources.
      * \param   src     The source to copy data.
      **/
-    TEIntegerHashMap( const TEIntegerHashMap<VALUE, VALUE_TYPE, Implement> & src );
+    TEIntegerHashMap( const TEIntegerHashMap<VALUE, Implement> & src ) = default;
 
     /**
      * \brief   Copies hash-map data from given sources.
      * \param   src     The source to copy data.
      **/
-    TEIntegerHashMap( TEIntegerHashMap<VALUE, VALUE_TYPE, Implement> && src ) noexcept;
+    TEIntegerHashMap( TEIntegerHashMap<VALUE, Implement> && src ) noexcept = default;
 
     /**
      * \brief   Destructor
@@ -170,13 +167,21 @@ public:
  *          keep control of resources. So that, there will be no other implementation. Because
  *          resources are mainly pointers and they would need individual solutions.
  **/
-template <typename VALUE, typename VALUE_TYPE = VALUE, class Implement = TEHashMapImpl<id_type, VALUE_TYPE>>
-class TEIdHashMap: public TEHashMap<id_type, VALUE, id_type, VALUE_TYPE, Implement>
+template <typename VALUE, class Implement = TEHashMapImpl<id_type, VALUE>>
+class TEIdHashMap: public TEHashMap<id_type, VALUE, Implement>
 {
     //////////////////////////////////////////////////////////////////////////
     // Constructor / Destructor
     //////////////////////////////////////////////////////////////////////////
 public:
+    /**
+     * \brief	Creates Hash Map where keys are Item IDs.
+     * \param	hashSize	The size of has map table.
+     *                      If it is negative, the size is MAP_DEFAULT_HASH_SIZE (64).
+     *                      It cannot be more than MAP_MAX_TABLE_SIZE (1024)
+     **/
+    TEIdHashMap(uint32_t hashSize);
+
     /**
      * \brief   Creates Hash Map object where the keys are Item IDs, the Block Size is MAP_DEFAULT_BLOCK_SIZE (48) and
      *          Hash Table size is MAP_DEFAULT_HASH_SIZE (40)
@@ -184,27 +189,16 @@ public:
     TEIdHashMap( void ) = default;
 
     /**
-     * \brief	Creates Hash Map where keys are Item IDs.
-     * \param	blockSize	The size of blocks in hash map to create at once.
-     *                      If this is negative value, it creates MAP_DEFAULT_BLOCK_SIZE blocks.
-     *                      It cannot be more than MAP_MAX_BLOCK_SIZE (1024)
-     * \param	hashSize	The size of has map table.
-     *                      If it is negative, the size is MAP_DEFAULT_HASH_SIZE (64).
-     *                      It cannot be more than MAP_MAX_TABLE_SIZE (1024)
-     **/
-    TEIdHashMap( int blockSize, int hashSize );
-
-    /**
      * \brief   Copies hash map data from given source.
      * \param   src     The source to copy data.
      **/
-    TEIdHashMap( const TEIdHashMap<VALUE, VALUE_TYPE, Implement> & src );
+    TEIdHashMap( const TEIdHashMap<VALUE, Implement> & src ) = default;
 
     /**
      * \brief   Moves hash map data from given source.
      * \param   src     The source to move data.
      **/
-    TEIdHashMap( TEIdHashMap<VALUE, VALUE_TYPE, Implement> && src ) noexcept;
+    TEIdHashMap( TEIdHashMap<VALUE, Implement> && src ) noexcept = default;
 
     /**
      * \brief   Destructor
@@ -220,13 +214,21 @@ public:
  * \tparam  VALUE       The type of value to store in map
  * \tparam  VALUE_TYPE  The type when get or set value
  **/
-template <typename VALUE, typename VALUE_TYPE = VALUE, class Implement = TEHashMapImpl<const String &, VALUE_TYPE>>
-class TEStringHashMap: public TEHashMap<String, VALUE, const String &, VALUE_TYPE, Implement>
+template <typename VALUE, class Implement = TEHashMapImpl<const String &, VALUE>>
+class TEStringHashMap: public TEHashMap<String, VALUE, Implement>
 {
     //////////////////////////////////////////////////////////////////////////
     // Constructor / Destructor
     //////////////////////////////////////////////////////////////////////////
 public:
+    /**
+     * \brief	Creates Hash Map where keys are strings.
+     * \param	hashSize	The size of has map table.
+     *                      If it is negative, the size is MAP_DEFAULT_HASH_SIZE (64).
+     *                      It cannot be more than MAP_MAX_TABLE_SIZE (1024)
+     **/
+    TEStringHashMap(uint32_t hashSize);
+
     /**
      * \brief   Creates Hash Map where keys are strings, Block Size is MAP_DEFAULT_BLOCK_SIZE (48) and
      *          Hash Table size is MAP_DEFAULT_HASH_SIZE (40)
@@ -234,27 +236,16 @@ public:
     TEStringHashMap( void ) = default;
 
     /**
-     * \brief	Creates Hash Map where keys are strings.
-     * \param	blockSize	The size of blocks in hash map to create at once.
-     *                      If this is negative value, it creates MAP_DEFAULT_BLOCK_SIZE blocks.
-     *                      It cannot be more than MAP_MAX_BLOCK_SIZE (1024)
-     * \param	hashSize	The size of has map table.
-     *                      If it is negative, the size is MAP_DEFAULT_HASH_SIZE (64).
-     *                      It cannot be more than MAP_MAX_TABLE_SIZE (1024)
-     **/
-    TEStringHashMap( int blockSize, int hashSize );
-
-    /**
      * \brief   Copies hash-map values from given source.
      * \param   src     The source to copy data.
      **/
-    TEStringHashMap( const TEStringHashMap<VALUE, VALUE_TYPE, Implement> & src );
+    TEStringHashMap( const TEStringHashMap<VALUE, Implement> & src ) = default;
 
     /**
      * \brief   Moves hash-map values from given source.
      * \param   src     The source to move data.
      **/
-    TEStringHashMap( TEStringHashMap<VALUE, VALUE_TYPE, Implement> && src ) noexcept;
+    TEStringHashMap( TEStringHashMap<VALUE, Implement> && src ) noexcept = default;
 
     /**
      * \brief   Destructor
@@ -271,13 +262,21 @@ public:
  * \tparam  VALUE       The type of value to store in map
  * \tparam  VALUE_TYPE  The type when get or set value
  **/
-template <typename VALUE, typename VALUE_TYPE = VALUE, class Implement = TEPointerHashMapImpl<void *, VALUE_TYPE>>
-class TEPointerHashMap: public TEHashMap<void *, VALUE, void *, VALUE_TYPE, Implement>
+template <typename VALUE, class Implement = TEPointerHashMapImpl<void *, VALUE>>
+class TEPointerHashMap: public TEHashMap<void *, VALUE, Implement>
 {
     //////////////////////////////////////////////////////////////////////////
     // Constructor / Destructor
     //////////////////////////////////////////////////////////////////////////
 public:
+    /**
+     * \brief	Creates Hash Map where keys are pointers.
+     * \param	hashSize	The size of has map table.
+     *                      If it is negative, the size is MAP_DEFAULT_HASH_SIZE (64).
+     *                      It cannot be more than MAP_MAX_TABLE_SIZE (1024)
+     **/
+    TEPointerHashMap(uint32_t hashSize);
+
     /**
      * \brief   Creates Hash Map where keys are pointers Block Size is MAP_DEFAULT_BLOCK_SIZE (48) and
      *          Hash Table size is MAP_DEFAULT_HASH_SIZE (40)
@@ -285,27 +284,16 @@ public:
     TEPointerHashMap( void ) = default;
 
     /**
-     * \brief	Creates Hash Map where keys are pointers.
-     * \param	blockSize	The size of blocks in hash map to create at once.
-     *                      If this is negative value, it creates MAP_DEFAULT_BLOCK_SIZE blocks.
-     *                      It cannot be more than MAP_MAX_BLOCK_SIZE (1024)
-     * \param	hashSize	The size of has map table.
-     *                      If it is negative, the size is MAP_DEFAULT_HASH_SIZE (64).
-     *                      It cannot be more than MAP_MAX_TABLE_SIZE (1024)
-     **/
-    TEPointerHashMap( int blockSize, int hashSize );
-
-    /**
      * \brief   Copies hash map entries from given source.
      * \param   src     The source to copy data.
      **/
-    TEPointerHashMap( const TEPointerHashMap<VALUE, VALUE_TYPE, Implement> & src );
+    TEPointerHashMap( const TEPointerHashMap<VALUE, Implement> & src ) = default;
 
     /**
      * \brief   Moves hash map entries from given source.
      * \param   src     The source to move data.
      **/
-    TEPointerHashMap( TEPointerHashMap<VALUE, VALUE_TYPE, Implement> && src ) noexcept;
+    TEPointerHashMap( TEPointerHashMap<VALUE, Implement> && src ) noexcept = default;
 
     /**
      * \brief   Destructor
@@ -391,47 +379,47 @@ using PointerArray  = TEArrayList<void *, ImplPointerList>;
 /**
  * \brief   Hash Map where keys are values are integers.
  **/
-using IntegerToIntegerMap   = TEIntegerHashMap<unsigned int, unsigned int, ImplIntegerToIntegerMap>;
+using IntegerToIntegerMap   = TEIntegerHashMap<unsigned int, ImplIntegerToIntegerMap>;
 
 /**
  * \brief   Hash Map where keys are integers and values are strings
  **/
-using IntegerToStringMap    = TEIntegerHashMap<String, const String &, ImplIntegerToStringMap>;
+using IntegerToStringMap    = TEIntegerHashMap<String, ImplIntegerToStringMap>;
 
 /**
  * \brief   Hash Map where keys are integers and values are pointers.
  **/
-using IntegerToPointergMap  = TEIntegerHashMap<void *, void *, ImplIntegerToPointergMap>;
+using IntegerToPointergMap  = TEIntegerHashMap<void *, ImplIntegerToPointergMap>;
 
 /**
  * \brief   Hash Map where keys are strings and values are integers.
  **/
-using StringToIntegerMap    = TEStringHashMap<unsigned int, unsigned int, ImplStringToIntegerMap>;
+using StringToIntegerMap    = TEStringHashMap<unsigned int, ImplStringToIntegerMap>;
 
 /**
  * \brief   Hash Map where keys are strings and values are strings.
  **/
-using StringToStringMap     = TEStringHashMap<String, const String &, ImplStringToStringMap>;
+using StringToStringMap     = TEStringHashMap<String, ImplStringToStringMap>;
 
 /**
  * \brief   Hash Map where keys are strings and values are pointers.
  **/
-using StringToPointergMap   = TEStringHashMap<void *, void *, ImplStringToPointergMap>;
+using StringToPointergMap   = TEStringHashMap<void *, ImplStringToPointergMap>;
 
 /**
  * \brief   Hash Map where keys are pointers and values are integers.
  **/
-using PointerToIntegerMap   = TEPointerHashMap<unsigned int, unsigned int, ImplPointerToIntegerMap>;
+using PointerToIntegerMap   = TEPointerHashMap<unsigned int, ImplPointerToIntegerMap>;
 
 /**
  * \brief   Hash Map where keys are pointers and values are strings.
  **/
-using PointerToStringMap    = TEPointerHashMap<String, const String &, ImplPointerToStringMap>;
+using PointerToStringMap    = TEPointerHashMap<String, ImplPointerToStringMap>;
 
 /**
  * \brief   Hash Map where keys are pointers and values are pointers.
  **/
-using PointerToPointergMap  = TEPointerHashMap<void *, void *, ImplPointerToPointergMap>;
+using PointerToPointergMap  = TEPointerHashMap<void *, ImplPointerToPointergMap>;
 
 /**
  * \brief   Linked List where values are integers.
@@ -462,7 +450,7 @@ using SortedStringList  = TESortedLinkedList<String, const String &, ImplSortedS
 // Tokenizer class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   Class for tokenizing a String.
+ * \brief   Class to tokenize a String.
  **/
 class AREG_API Tokenizer
 {
@@ -534,21 +522,9 @@ private:
 // TEIntegerHashMap<VALUE, VALUE_TYPE> class implementation
 //////////////////////////////////////////////////////////////////////////
 
-template <typename VALUE, typename VALUE_TYPE /*= VALUE*/,class Implement>
-TEIntegerHashMap<VALUE, VALUE_TYPE, Implement>::TEIntegerHashMap(int blockSize, int hashSize)
-    : TEHashMap<unsigned int, VALUE, unsigned int, VALUE_TYPE, Implement> (blockSize, hashSize)
-{
-}
-
-template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement>
-TEIntegerHashMap<VALUE, VALUE_TYPE, Implement>::TEIntegerHashMap( const TEIntegerHashMap<VALUE, VALUE_TYPE, Implement> & src )
-    : TEHashMap<unsigned int, VALUE, unsigned int, VALUE_TYPE, Implement> ( static_cast< const TEHashMap<unsigned int, VALUE, unsigned int, VALUE_TYPE, Implement> &>(src) )
-{
-}
-
-template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement>
-TEIntegerHashMap<VALUE, VALUE_TYPE, Implement>::TEIntegerHashMap( TEIntegerHashMap<VALUE, VALUE_TYPE, Implement> && src ) noexcept
-    : TEHashMap<unsigned int, VALUE, unsigned int, VALUE_TYPE, Implement> ( static_cast<TEHashMap<unsigned int, VALUE, unsigned int, VALUE_TYPE, Implement> &&>(src) )
+template <typename VALUE, class Implement>
+TEIntegerHashMap<VALUE, Implement>::TEIntegerHashMap(uint32_t hashSize)
+    : TEHashMap<unsigned int, VALUE, Implement> (hashSize)
 {
 }
 
@@ -556,21 +532,9 @@ TEIntegerHashMap<VALUE, VALUE_TYPE, Implement>::TEIntegerHashMap( TEIntegerHashM
 // TEIdHashMap<VALUE, VALUE_TYPE> class implementation
 //////////////////////////////////////////////////////////////////////////
 
-template <typename VALUE, typename VALUE_TYPE /*= VALUE*/,class Implement>
-TEIdHashMap<VALUE, VALUE_TYPE, Implement>::TEIdHashMap(int blockSize, int hashSize)
-    : TEHashMap<id_type, VALUE, id_type, VALUE_TYPE, Implement> (blockSize, hashSize)
-{
-}
-
-template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement>
-TEIdHashMap<VALUE, VALUE_TYPE, Implement>::TEIdHashMap( const TEIdHashMap<VALUE, VALUE_TYPE, Implement> & src )
-    : TEHashMap<id_type, VALUE, id_type, VALUE_TYPE, Implement> ( static_cast< const TEHashMap<id_type, VALUE, id_type, VALUE_TYPE, Implement> &>(src) )
-{
-}
-
-template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement>
-TEIdHashMap<VALUE, VALUE_TYPE, Implement>::TEIdHashMap( TEIdHashMap<VALUE, VALUE_TYPE, Implement> && src ) noexcept
-    : TEHashMap<id_type, VALUE, id_type, VALUE_TYPE, Implement> ( static_cast<TEHashMap<id_type, VALUE, id_type, VALUE_TYPE, Implement> &&>(src) )
+template <typename VALUE, class Implement>
+TEIdHashMap<VALUE, Implement>::TEIdHashMap(uint32_t hashSize)
+    : TEHashMap<id_type, VALUE, Implement> (hashSize)
 {
 }
 
@@ -578,21 +542,9 @@ TEIdHashMap<VALUE, VALUE_TYPE, Implement>::TEIdHashMap( TEIdHashMap<VALUE, VALUE
 // TEStringHashMap<VALUE, VALUE_TYPE> class implementation
 //////////////////////////////////////////////////////////////////////////
 
-template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement>
-TEStringHashMap<VALUE, VALUE_TYPE, Implement>::TEStringHashMap( int blockSize, int hashSize )
-    : TEHashMap<String, VALUE, const String &, VALUE_TYPE, Implement>   (blockSize, hashSize)
-{
-}
-
-template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement>
-TEStringHashMap<VALUE, VALUE_TYPE, Implement>::TEStringHashMap( const TEStringHashMap<VALUE, VALUE_TYPE, Implement> & src )
-    : TEHashMap<String, VALUE, const String &, VALUE_TYPE, Implement>   ( static_cast<const TEHashMap<String, VALUE, const String &, VALUE_TYPE, Implement> &>(src) )
-{
-}
-
-template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement>
-TEStringHashMap<VALUE, VALUE_TYPE, Implement>::TEStringHashMap( TEStringHashMap<VALUE, VALUE_TYPE, Implement> && src ) noexcept
-    : TEHashMap<String, VALUE, const String &, VALUE_TYPE, Implement>   ( static_cast<TEHashMap<String, VALUE, const String &, VALUE_TYPE, Implement> &&>(src) )
+template <typename VALUE, class Implement>
+TEStringHashMap<VALUE, Implement>::TEStringHashMap( uint32_t hashSize )
+    : TEHashMap<String, VALUE, Implement>   (hashSize)
 {
 }
 
@@ -600,20 +552,8 @@ TEStringHashMap<VALUE, VALUE_TYPE, Implement>::TEStringHashMap( TEStringHashMap<
 // TEPointerHashMap<VALUE, VALUE_TYPE> class implementation
 //////////////////////////////////////////////////////////////////////////
 
-template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement>
-TEPointerHashMap<VALUE, VALUE_TYPE, Implement>::TEPointerHashMap( int blockSize, int hashSize )
-    : TEHashMap<void *, VALUE, void *, VALUE_TYPE, Implement>   (blockSize, hashSize)
-{
-}
-
-template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement>
-TEPointerHashMap<VALUE, VALUE_TYPE, Implement>::TEPointerHashMap( const TEPointerHashMap<VALUE, VALUE_TYPE, Implement> & src )
-    : TEHashMap<void *, VALUE, void *, VALUE_TYPE, Implement>   ( static_cast< const TEHashMap<void *, VALUE, void *, VALUE_TYPE, Implement> &>(src) )
-{
-}
-
-template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement>
-TEPointerHashMap<VALUE, VALUE_TYPE, Implement>::TEPointerHashMap( TEPointerHashMap<VALUE, VALUE_TYPE, Implement> && src ) noexcept
-    : TEHashMap<void *, VALUE, void *, VALUE_TYPE, Implement>   ( static_cast<TEHashMap<void *, VALUE, void *, VALUE_TYPE, Implement> &&>(src) )
+template <typename VALUE, class Implement>
+TEPointerHashMap<VALUE, Implement>::TEPointerHashMap( uint32_t hashSize )
+    : TEHashMap<void *, VALUE, Implement>(hashSize)
 {
 }

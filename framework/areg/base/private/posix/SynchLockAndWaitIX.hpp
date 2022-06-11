@@ -55,7 +55,7 @@ class SynchLockAndWaitIX
     /**
      * \brief   Declaration of list helper object.
      **/
-    using ImplListLockAndWait   = TEListImpl<const SynchLockAndWaitIX *>;
+    using ImplListLockAndWait   = TEListImpl<SynchLockAndWaitIX>;
     /**
      * \brief   The list of LockAndWait objects.
      **/
@@ -63,11 +63,11 @@ class SynchLockAndWaitIX
     /**
      * \brief   Declaration of hash map helper object.
      **/
-    using ImplMapLockAndWait    = TEPointerHashMapImpl<const IEWaitableBaseIX *, ListLockAndWait &>;
+    using ImplMapLockAndWait    = TEPointerHashMapImpl<IEWaitableBaseIX *, ListLockAndWait>;
     /**
      * \brief   The hash map container of waitable object and LockAndWait lists.
      **/
-    using MapLockAndWait        = TEHashMap<IEWaitableBaseIX *, ListLockAndWait, IEWaitableBaseIX *, ListLockAndWait &, ImplMapLockAndWait>;
+    using MapLockAndWait        = TEHashMap<IEWaitableBaseIX *, ListLockAndWait, ImplMapLockAndWait>;
 
 //////////////////////////////////////////////////////////////////////////
 // SynchWaitableMapIX class declaration
@@ -128,7 +128,7 @@ class SynchLockAndWaitIX
     /**
      * \brief   The resource map of waitable, where keys are id_type and the values are WaitAndLock objects
      **/
-    using MapWaitID         = TEIdHashMap<SynchLockAndWaitIX *, SynchLockAndWaitIX *, ImplMapWaitID>;
+    using MapWaitID         = TEIdHashMap<SynchLockAndWaitIX *, ImplMapWaitID>;
     /**
      * \brief   Helper object for resource map basic method implementations
      **/
@@ -221,7 +221,7 @@ public:
      *              - NESynchTypesIX::SynchObjectAll if 'waitAll' flag is true and all waitables are signaled.
      *              - NESynchTypesIX::SynchObjectTimeout if waiting timeout is expired;
      *              - NESynchTypesIX::SynchWaitInterrupted if waiting was interrupted by such event like timer;
-     *              - NESynchTypesIX::SynchObject0Error + N if error happened, where 'N' is the indes of failed waitalbe object. For example, the waitable is invalidated.
+     *              - NESynchTypesIX::SynchObject0Error + N if error happened, where 'N' is the index of failed waitable object. For example, the waitable is invalidated.
      **/
     static int waitForMultipleObjects( IEWaitableBaseIX ** listWaitables, int count, bool waitAll = false, unsigned int msTimeout = NECommon::WAIT_INFINITE);
 

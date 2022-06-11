@@ -52,7 +52,7 @@ private:
     /**
      * \brief   Helper class for worker thread map.
      **/
-    using _ImplWorkerThreadMap  = TEHashMapImpl<const ThreadAddress &, WorkerThread *>;
+    using _ImplWorkerThreadMap  = TEHashMapImpl<ThreadAddress, WorkerThread *>;
 
     //////////////////////////////////////////////////////////////////////////
     // ComponentInfo::_WorkerThreadMap type declaration
@@ -61,7 +61,7 @@ private:
      * \brief   The Hash Map object to save information of threads
      *          saved in specified Component Info object.
      **/
-    using _WorkerThreadMap  = TEHashMap<ThreadAddress, WorkerThread*, const ThreadAddress &, WorkerThread*, _ImplWorkerThreadMap>;
+    using _WorkerThreadMap  = TEHashMap<ThreadAddress, WorkerThread*, _ImplWorkerThreadMap>;
 
     /**
      * \brief   Resource mapping object type. 
@@ -144,7 +144,7 @@ public:
      *          and returns true, if registration succeeded.
      * \param   workerThread    The Worker Thread to register in Component Info
      **/
-    bool registerWorkerThread( WorkerThread & workerThread );
+    void registerWorkerThread( WorkerThread & workerThread );
 
     /**
      * \brief   Unregisters specified Worker Thread object in Component Info

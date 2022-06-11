@@ -160,7 +160,7 @@ public:
      * \brief   Returns value of dateTime of response call function.
      *          The parameter is validated and set when Proxy is getting response call.
      *          Parameter dateTime description: 
-     *          The local timestamp of initiator
+     *          The local time-stamp of initiator
      **/
     inline const DateTime & getParamdateTime( void ) const;
 
@@ -179,9 +179,9 @@ public:
      * \brief   Request call.
      *          Request to sends message that all clients can see.
      * \param   nickName    The nick name of initiator
-     * \param   cookie      Cookie given by connection manager. Should not be invalid.
+     * \param   cookie      The cookie given by connection manager. Should not be invalid.
      * \param   newMessage  The message sent by connected initiator
-     * \param   dateTime    The timestamp create on local host of initiator
+     * \param   dateTime    The time-stamp create on local host of initiator
      * \see     Has no Response.
      **/
     void requestSendMessage( const String & nickName, unsigned int cookie, const String & newMessage, const DateTime & dateTime );
@@ -354,7 +354,7 @@ private:
 
     /**
      * \brief   dateTime parameter value.
-     *          The local timestamp of initiator
+     *          The local time-stamp of initiator
      **/
     DateTime        mParamdateTime;
 

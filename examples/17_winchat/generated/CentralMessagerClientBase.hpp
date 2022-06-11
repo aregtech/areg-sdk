@@ -134,9 +134,9 @@ public:
      * \brief   Request call.
      *          Request to sends message that all clients can see.
      * \param   nickName    The nick name of initiator
-     * \param   cookie      Cookie given by connection manager. Should not be invalid.
+     * \param   cookie      The cookie given by connection manager. Should not be invalid.
      * \param   newMessage  The message sent by connected initiator
-     * \param   dateTime    The timestamp create on local host of initiator
+     * \param   dateTime    The time-stamp create on local host of initiator
      * \see     Has no response
      **/
     inline void requestSendMessage( const String & nickName, unsigned int cookie, const String & newMessage, const DateTime & dateTime );
@@ -175,7 +175,7 @@ public:
      * \param   nickName    The nick name of initiator
      * \param   cookie      The cookie assigned to initiator
      * \param   newMessage  The message sent by initiator
-     * \param   dateTime    The local timestamp of initiator
+     * \param   dateTime    The local time-stamp of initiator
      **/
     virtual void broadcastSendMessage( const String & nickName, unsigned int cookie, const String & newMessage, const DateTime & dateTime );
     /**
@@ -216,7 +216,7 @@ public:
      *          Overwrite, if need to handle Broadcast call of server object. 
      *          This call will be automatically triggered, on every appropriate request call
      * \param   serverMessage   The message sent by servicing server
-     * \param   dateTime        The timestamp of servicing component
+     * \param   dateTime        The time-stamp of servicing component
      **/
     virtual void broadcastBroadcastMessage( const String & serverMessage, const DateTime & dateTime );
     /**

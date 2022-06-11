@@ -21,6 +21,7 @@
 
 #include <string_view>
 #include <limits>
+#include <utility>
 
 namespace NECommon
 {
@@ -50,7 +51,7 @@ namespace NECommon
          **/
           StopOnOverlap     = 0
         /**
-         * \brief   Shifts start position, if ring is full, insert new elemen,
+         * \brief   Shifts start position, if ring is full, insert new element,
          *          and do not resize ring. Last element is lost.
          **/
         , ShiftOnOverlap    = 1
@@ -121,55 +122,55 @@ namespace NECommon
      * \brief   NECommon::VALUE_MAX_INT8
      *          The maximum 8-bit signed integer value.
      **/
-    constexpr int8_t        VALUE_MAX_INT8          { std::numeric_limits<int8_t>::max() };
+    constexpr int8_t        VALUE_MAX_INT8          { static_cast<int8_t>(0x7F) };
 
     /**
      * \brief   NECommon::VALUE_MIN_INT8
      *          The minimum 8-bit signed integer value.
      **/
-    constexpr int8_t        VALUE_MIN_INT8          { std::numeric_limits<int8_t>::min() };
+    constexpr int8_t        VALUE_MIN_INT8          { static_cast<int8_t>(0x80) };
 
     /**
      * \brief   NECommon::VALUE_MAX_UINT8
      *          The maximum 8-bit unsigned integer value.
      **/
-    constexpr uint8_t       VALUE_MAX_UINT8         { std::numeric_limits<uint8_t>::max() };
+    constexpr uint8_t       VALUE_MAX_UINT8         { static_cast<uint8_t>(0xFFu) };
 
     /**
      * \brief   NECommon::VALUE_MAX_INT16
      *          The maximum 16-bit signed integer value.
      **/
-    constexpr int16_t       VALUE_MAX_INT16         { std::numeric_limits<int16_t>::max() };
+    constexpr int16_t       VALUE_MAX_INT16         { static_cast<int16_t>(0x7FFF) };
 
     /**
      * \brief   NECommon::VALUE_MIN_INT16
      *          The minimum 16-bit signed integer value.
      **/
-    constexpr int16_t       VALUE_MIN_INT16         { std::numeric_limits<int16_t>::min() };
+    constexpr int16_t       VALUE_MIN_INT16         { static_cast<int16_t>(0x8000) };
 
     /**
      * \brief   NECommon::VALUE_MAX_UINT16
      *          The maximum 16-bit unsigned integer value.
      **/
-    constexpr uint16_t      VALUE_MAX_UINT16        { std::numeric_limits<uint16_t>::max() };
+    constexpr uint16_t      VALUE_MAX_UINT16        { static_cast<uint16_t>(0xFFFFu) };
 
     /**
      * \brief   NECommon::VALUE_MAX_INT32
      *          The maximum 32-bit signed integer value.
      **/
-    constexpr int32_t       VALUE_MAX_INT32         { std::numeric_limits<int32_t>::max() };
+    constexpr int32_t       VALUE_MAX_INT32         { static_cast<int32_t>(0x7FFFFFFF) };
 
     /**
      * \brief   NECommon::VALUE_MIN_INT32
      *          The minimum 32-bit signed integer value.
      **/
-    constexpr int32_t       VALUE_MIN_INT32         { std::numeric_limits<int32_t>::min() };
+    constexpr int32_t       VALUE_MIN_INT32         { static_cast<int32_t>(0x80000000) };
 
     /**
      * \brief   NECommon::VALUE_MAX_UINT32
      *          The maximum 32-bit unsigned integer value.
      **/
-    constexpr uint32_t      VALUE_MAX_UINT32        { std::numeric_limits<uint32_t>::max() };
+    constexpr uint32_t      VALUE_MAX_UINT32        { static_cast<uint32_t>(0xFFFFFFFF) };
 
     /**
      * \brief   NECommon::MAX_CONTAINER_SIZE

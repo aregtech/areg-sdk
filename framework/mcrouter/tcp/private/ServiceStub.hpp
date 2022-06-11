@@ -46,7 +46,7 @@ public:
      * \brief   Initializes Stub address of remote service
      * \param   addrStub    The Stub address to set.
      **/
-    explicit ServiceStub( const StubAddress & addrStub );
+    ServiceStub( const StubAddress & addrStub );
 
     /**
      * \brief   Initializes Stub address of remote service
@@ -77,6 +77,18 @@ public:
      * \param   stubService     The source of Stub service object to copy data.
      **/
     ServiceStub( ServiceStub && stubService ) noexcept;
+
+    /**
+     * \brief   Initializes Service stub object by copying the service address data.
+     * \param   addrService     Service address that contains data to copy.
+     **/
+    explicit ServiceStub( const ServiceAddress & addrService );
+
+    /**
+     * \brief   Initializes Service stub object by moving the service address data.
+     * \param   addrService     Service address that contains data to move.
+     **/
+    explicit ServiceStub( ServiceAddress && addrService );
 
     /**
      * \brief   Destructor
@@ -199,6 +211,35 @@ private:
      **/
     NEService::eServiceConnection   mConnectStatus;
 };
+
+//////////////////////////////////////////////////////////////////////////
+// Hasher of ServiceStub class
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   A template to calculate hash value of the ServiceStub.
+ */
+namespace std
+{
+    //! Calculates the hash value of the ServiceStub object
+    template<> struct hash<ServiceStub>
+    {
+        //! A function to convert ServiceStub object to unsigned int.
+        inline unsigned int operator()(const ServiceStub& key) const
+        {
+            return static_cast<unsigned int>(static_cast<const ServiceAddress &>(key.getServiceAddress()));
+        }
+    };
+
+    //!< Compares 2 ServiceStub objects
+    template<> struct equal_to<ServiceStub>
+    {
+        //! A function operator to compare 2 StubAddress objects.
+        inline bool operator() (const ServiceStub& key1, const ServiceStub& key2) const
+        {
+            return static_cast<const ServiceAddress&>(key1.getServiceAddress()) == static_cast<const ServiceAddress&>(key2.getServiceAddress());
+        }
+    };
+}
 
 //////////////////////////////////////////////////////////////////////////
 // ServiceStub class inline function implementation

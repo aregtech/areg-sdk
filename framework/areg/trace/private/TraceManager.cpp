@@ -604,7 +604,7 @@ void TraceManager::setScopesActivity( bool makeActive )
             unsigned int defaultPrio= NELogConfig::DEFAULT_LOG_PRIORITY;
             mConfigScopeGroup.find( NELogConfig::MODULE_SCOPE.data(),  defaultPrio);
 
-            for ( MAPPOS pos = mMapTraceScope.firstPosition(); pos != nullptr; pos = mMapTraceScope.nextPosition(pos) )
+            for (TraceScopeMap::MAPPOS pos = mMapTraceScope.firstPosition(); mMapTraceScope.isValidPosition(pos); pos = mMapTraceScope.nextPosition(pos) )
             {
                 activateScope(*mMapTraceScope.valueAtPosition(pos), defaultPrio);
             }
@@ -613,7 +613,7 @@ void TraceManager::setScopesActivity( bool makeActive )
         }
         else if ( (makeActive == false) && mScopesActivated )
         {
-            for ( MAPPOS pos = mMapTraceScope.firstPosition(); pos != nullptr; pos = mMapTraceScope.nextPosition(pos) )
+            for (TraceScopeMap::MAPPOS pos = mMapTraceScope.firstPosition(); mMapTraceScope.isValidPosition(pos); pos = mMapTraceScope.nextPosition(pos) )
             {
                 mMapTraceScope.valueAtPosition(pos)->setPriority( NETrace::PrioNotset );
             }
@@ -769,7 +769,7 @@ void TraceManager::setScopesPriority(const char * scopeName, unsigned int logPri
         {
             // change all, it is set group change for complete module
             mConfigScopeGroup.setAt(scopeName, static_cast<unsigned int>(logPriority));
-            for ( MAPPOS mapPos = mMapTraceScope.firstPosition(); mapPos != nullptr; mapPos = mMapTraceScope.nextPosition(mapPos) )
+            for ( TraceScopeMap::MAPPOS mapPos = mMapTraceScope.firstPosition(); mMapTraceScope.isValidPosition(mapPos); mapPos = mMapTraceScope.nextPosition(mapPos) )
                 mMapTraceScope.valueAtPosition(mapPos)->setPriority( logPriority );
         }
         else if ( (pos > 0) && (scopeName[pos - 1] == NELogConfig::SYNTAX_SCOPE_SEPARATOR))
@@ -777,7 +777,7 @@ void TraceManager::setScopesPriority(const char * scopeName, unsigned int logPri
             // it is a group scope, update all groups
             mConfigScopeGroup.setAt(scopeName, static_cast<unsigned int>(logPriority));
             int len = static_cast<int>(pos - 1);
-            for ( MAPPOS mapPos = mMapTraceScope.firstPosition(); mapPos != nullptr; mapPos = mMapTraceScope.nextPosition(mapPos) )
+            for (TraceScopeMap::MAPPOS mapPos = mMapTraceScope.firstPosition(); mMapTraceScope.isValidPosition(mapPos); mapPos = mMapTraceScope.nextPosition(mapPos) )
             {
                 TraceScope * traceScope = mMapTraceScope.valueAtPosition(mapPos);
                 if ( NEString::compareStrings<char, char>(scopeName, traceScope->getScopeName(), len) == 0 )

@@ -26,9 +26,9 @@ private:
      *          This call will be automatically triggered, on every appropriate request call
      * \param   nickName    Client connection data, which contains nick name and connection date-time
      * \param   cookie      Connection assigned cookie for client service
-     * \param   dateTime    The client service connection timestamp in UTC
+     * \param   dateTime    The client service connection time-stamp in UTC
      * \param   result      The connection operation result
-     * \see     requestConnet
+     * \see     requestConnect
      **/
     virtual void responseConnect( const String & nickName, unsigned int cookie, const DateTime & dateTime, NEConnectionManager::eConnectionResult result );
 
@@ -62,7 +62,7 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    NetworkSetup( void );
-    NetworkSetup( const NetworkSetup & /*src*/ );
-    const NetworkSetup & operator = ( const NetworkSetup & /*src*/ );
+    NetworkSetup( void ) = delete;
+    NetworkSetup( const NetworkSetup & /*src*/ ) = delete;
+    const NetworkSetup & operator = ( const NetworkSetup & /*src*/ ) = delete;
 };

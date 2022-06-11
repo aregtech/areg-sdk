@@ -52,20 +52,20 @@ protected:
     /**
      * \brief   The container of accepted socket objects where the keys are socket handle.
      **/
-    using ImplMapSocketToObject	= TEHashMapImpl<const SOCKETHANDLE, const SocketAccepted &>;
-    using MapSocketToObject 	= TEHashMap<SOCKETHANDLE, SocketAccepted, const SOCKETHANDLE, const SocketAccepted &, ImplMapSocketToObject>;
+    using ImplMapSocketToObject	= TEHashMapImpl<SOCKETHANDLE, SocketAccepted>;
+    using MapSocketToObject 	= TEHashMap<SOCKETHANDLE, SocketAccepted, ImplMapSocketToObject>;
 
     /**
      * \brief   The container of socket handles where the keys are cookie values.
      **/
     using ImplMapCookieToSocket	= TEHashMapImpl<ITEM_ID, SOCKETHANDLE>;
-    using MapCookieToSocket		= TEHashMap<ITEM_ID, SOCKETHANDLE, ITEM_ID, SOCKETHANDLE, ImplMapCookieToSocket>;
+    using MapCookieToSocket		= TEHashMap<ITEM_ID, SOCKETHANDLE, ImplMapCookieToSocket>;
 
     /**
      * \brief   The container of cookie values where the keys are socket handles.
      **/
     using ImplMapSocketToCookie	= TEHashMapImpl<SOCKETHANDLE, ITEM_ID>;
-    using MapSocketToCookie		= TEHashMap<SOCKETHANDLE, ITEM_ID, SOCKETHANDLE, ITEM_ID, ImplMapSocketToCookie>;
+    using MapSocketToCookie		= TEHashMap<SOCKETHANDLE, ITEM_ID, ImplMapSocketToCookie>;
 
     /**
      * \brief   The list of accepted sockets.
@@ -371,7 +371,7 @@ inline SOCKETHANDLE ServerConnectionBase::getSocketHandle( void ) const
 inline bool ServerConnectionBase::isConnectionAccepted( SOCKETHANDLE connection ) const
 {
     Lock lock(mLock);
-    return (mAcceptedConnections.find(connection) != nullptr);
+    return mAcceptedConnections.contains(connection);
 }
 
 inline ITEM_ID ServerConnectionBase::getCookie(const SocketAccepted & clientSocket) const
@@ -383,22 +383,22 @@ inline ITEM_ID ServerConnectionBase::getCookie(SOCKETHANDLE socketHandle) const
 {
     Lock lock( mLock );
 
-    MAPPOS pos = mSocketToCookie.find( socketHandle );
-    return ( pos != nullptr ? mSocketToCookie.valueAtPosition(pos) : NEService::COOKIE_UNKNOWN );
+    MapSocketToCookie::MAPPOS pos = mSocketToCookie.find( socketHandle );
+    return (mSocketToCookie.isValidPosition(pos) ? mSocketToCookie.valueAtPosition(pos) : NEService::COOKIE_UNKNOWN );
 }
 
 inline SocketAccepted ServerConnectionBase::getClientByCookie(ITEM_ID clientCookie) const
 {
     Lock lock( mLock );
-    MAPPOS pos = mCookieToSocket.find(clientCookie);
-    return (pos != nullptr ? getClientByHandle( mCookieToSocket.valueAtPosition(pos) ) : SocketAccepted());
+    MapCookieToSocket::MAPPOS pos = mCookieToSocket.find(clientCookie);
+    return (mCookieToSocket.isValidPosition(pos) ? getClientByHandle( mCookieToSocket.valueAtPosition(pos) ) : SocketAccepted());
 }
 
 inline SocketAccepted ServerConnectionBase::getClientByHandle(SOCKETHANDLE clientSocket) const
 {
     Lock lock( mLock );
-    MAPPOS pos = mAcceptedConnections.find(clientSocket);
-    return (pos != nullptr ? mAcceptedConnections.getAt(clientSocket) : SocketAccepted());
+    MapSocketToObject::MAPPOS pos = mAcceptedConnections.find(clientSocket);
+    return (mAcceptedConnections.isValidPosition(pos) ? mAcceptedConnections.getAt(clientSocket) : SocketAccepted());
 }
 
 inline bool ServerConnectionBase::disableSend( const SocketAccepted & clientConnection )

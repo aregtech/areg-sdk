@@ -208,6 +208,24 @@ private:
 };
 
 //////////////////////////////////////////////////////////////////////////
+// Hasher of ThreadAddress class
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   A template to calculate hash value of the ThreadAddress.
+ */
+namespace std
+{
+    template<> struct hash<ThreadAddress>
+    {
+        //! A function to convert ThreadAddress object to unsigned int.
+        inline unsigned int operator()(const ThreadAddress& key) const
+        {
+            return static_cast<unsigned int>(key);
+        }
+    };
+}
+
+//////////////////////////////////////////////////////////////////////////
 // ThreadAddress class inline function implementation
 //////////////////////////////////////////////////////////////////////////
 inline ThreadAddress & ThreadAddress::operator = ( const ThreadAddress & src )

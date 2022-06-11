@@ -49,9 +49,9 @@ class StubBase;
  *          and developers should not mix them. If a service interface object
  *          with the same service interface name can be instantiated several times,
  *          each component must have unique name within their visibility and
- *          accessibility scope, i.e. in case of proveded public service the
+ *          accessibility scope, i.e. in case of provided public service the
  *          name should be unique within network, and in case of provided local
- *          service, the role name shooud be unique within local process.
+ *          service, the role name should be unique within local process.
  **/
 class AREG_API Component   : public    RuntimeObject
 {
@@ -67,7 +67,7 @@ class AREG_API Component   : public    RuntimeObject
      * \tparam  Component           The saved values are Component objects
      * \tparam  ImplIntegerHashMap	The implementation of hash-map basic operations.
      **/
-    using MaComponentContainer  = TEIntegerHashMap<Component *, Component *, ImplIntegerHashMap>;
+    using MaComponentContainer  = TEIntegerHashMap<Component *, ImplIntegerHashMap>;
     /**
      * \brief   Component::MapComponentResource
      *          The Resource Map of instantiated components.
@@ -102,7 +102,7 @@ public:
      * \brief   This function is loading component. The component loading information
      *          like component create and delete functions, worker thread information
      *          is taken from component entry object.
-     * \param   entry           The NERegistry::ComponentEntry containing component loading infromation.
+     * \param   entry           The NERegistry::ComponentEntry containing component loading information.
      * \param   componentThread The thread, which is loading component and dispatching messages
      * \return  Returns pointer to instantiated component.
      **/
@@ -113,7 +113,7 @@ public:
      *          like component create and delete functions, worker thread information
      *          is taken from component entry object.
      * \param   comItem The component object, which should be unloaded.
-     * \param   entry   The NERegistry::ComponentEntry containing component loading infromation.
+     * \param   entry   The NERegistry::ComponentEntry containing component loading information.
      **/
     static void unloadComponent( Component & comItem, const NERegistry::ComponentEntry & entry);
 

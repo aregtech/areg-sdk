@@ -141,6 +141,6 @@ void ChatPrticipantHandler::SetInitiator( const NECommon::sInitiator & initiator
 {
     Lock lock( mLock );
     mInitiator  = initiator;
-    if ( mListParticipants.exist(initiator, 0) == false )
+    if ( mListParticipants.contains(initiator, 0) == false )
         mListParticipants.add(initiator);
 }

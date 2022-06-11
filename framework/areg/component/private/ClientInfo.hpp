@@ -196,6 +196,25 @@ private:
 };
 
 //////////////////////////////////////////////////////////////////////////
+// Hasher of ClientInfo class
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   A template to calculate hash value of the ClientInfo.
+ */
+namespace std
+{
+    template<>
+    struct hash<ClientInfo>
+    {
+        //! A function to convert ClientInfo object to unsigned int.
+        inline unsigned int operator()(const ClientInfo& key) const
+        {
+            return static_cast<unsigned int>(key);
+        }
+    };
+}
+
+//////////////////////////////////////////////////////////////////////////
 // ClientInfo class inline functions implementation
 //////////////////////////////////////////////////////////////////////////
 

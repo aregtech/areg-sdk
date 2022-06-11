@@ -252,3 +252,22 @@ protected:
     #pragma warning(default: 4251)
 #endif  // _MSC_VER
 };
+
+//////////////////////////////////////////////////////////////////////////
+// Hasher of Property class
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   A template to calculate hash value of the Property.
+ */
+namespace std
+{
+    template<>
+    struct hash<Property>
+    {
+        //! A function to convert Property object to unsigned int.
+        inline unsigned int operator()(const Property& key) const
+        {
+            return static_cast<unsigned int>(key);
+        }
+    };
+}

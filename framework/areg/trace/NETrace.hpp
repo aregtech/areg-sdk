@@ -208,9 +208,9 @@ namespace NETrace
 
         ITEM_ID                 traceThreadId;      //!< The ID of thread, which is logging
         unsigned int            traceScopeId;       //!< The ID of trace scope, which is logging
-        TIME64                  traceTimestamp;     //!< The timestamp of trace message
+        TIME64                  traceTimestamp;     //!< The time-stamp of trace message
         NETrace::eLogPriority   traceMessagePrio;   //!< The message priority to output
-        unsigned int            traceMessageLen;    //!< The actual length ot the message
+        unsigned int            traceMessageLen;    //!< The actual length of the message
         char                    traceMessage[LOG_MESSAGE_BUFFER_SIZE];  //!< The message text to output, with maximum NETrace::LOG_MESSAGE_BUFFER_SIZE characters
     } sLogData;
 

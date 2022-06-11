@@ -177,7 +177,7 @@ public:
     inline bool isValid( void ) const;
 
     /**
-     * \brief   Returns priority value of the the property as integer.
+     * \brief   Returns priority value of the property as integer.
      **/
     inline unsigned int getPriority( void ) const;
 
@@ -204,6 +204,25 @@ private:
      **/
     void _setValue( const char * newValue);
 };
+
+//////////////////////////////////////////////////////////////////////////
+// Hasher of TracePropertyValue class
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   A template to calculate hash value of the TracePropertyValue.
+ */
+namespace std
+{
+    template<>
+    struct hash<TracePropertyValue>
+    {
+        //! A function to convert TracePropertyValue object to unsigned int.
+        inline unsigned int operator()(const TracePropertyValue& key) const
+        {
+            return static_cast<unsigned int>(key);
+        }
+    };
+}
 
 //////////////////////////////////////////////////////////////////////////
 // TracePropertyValue class inline methods implementation

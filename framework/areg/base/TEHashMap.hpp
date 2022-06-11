@@ -26,8 +26,10 @@
 #include "areg/base/IEIOStream.hpp"
 #include "areg/base/NEMemory.hpp"
 
+#include <unordered_map>
+
 //////////////////////////////////////////////////////////////////////////
-// TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement> class template declaration
+// TEHashMap<KEY, VALUE, Implement> class template declaration
 //////////////////////////////////////////////////////////////////////////
 
 /**
@@ -42,7 +44,7 @@
  *          The maximum size of the Hash Table is NECommon::MAP_MAX_TABLE_SIZE.
  *
  *          To access first element in Hash Map, get the first Position (call function 
- *          firstPosition()). Each next element is accessed by calling nex position.
+ *          firstPosition()). Each next element is accessed by calling next position.
  *          The type KEY should be possible to convert to unsigned int type required to 
  *          calculate the Hash. KEY and VALUE types should have at least default constructor
  *          and valid assigning operator.
@@ -68,100 +70,45 @@
  *                      compare keys and values of the map. Pass own implementation
  *                      if default methods needs to be changed.
  **/
-template < typename KEY, typename VALUE, typename KEY_TYPE = KEY, typename VALUE_TYPE = VALUE, class Implement = TEHashMapImpl<KEY_TYPE, VALUE_TYPE> >
-class TEHashMap
+template < typename KEY, typename VALUE, class Implement = TEHashMapImpl<KEY, VALUE> >
+class TEHashMap : protected Constless<std::unordered_map<KEY, VALUE>>
 {
 //////////////////////////////////////////////////////////////////////////
-// Internal objects and types declaration
+// Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    /**
-     * \brief   Hidden / Protected class declaration.
-     *          The Block class contains information
-     *          of element in Hash Map -- value, pointers to next element,
-     *          key value and hash value of Block object.
-     **/
-    //////////////////////////////////////////////////////////////////////////
-    // TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::Block class declaration
-    //////////////////////////////////////////////////////////////////////////
-    class Block   : public TEPair<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>
-    {
-    //////////////////////////////////////////////////////////////////////////
-    // constructor / destructor
-    //////////////////////////////////////////////////////////////////////////
-    public:
-        /**
-         * \brief   Default constructor
-         **/
-        Block( void );
-        /**
-         * \brief   Initialization constructor.
-         **/
-        Block(unsigned int hash, KEY_TYPE key, VALUE_TYPE value);
-        /**
-         * \brief   Moves data from given source.
-         **/
-        Block( Block && src ) noexcept;
-        /**
-         * \brief   Destructor.
-         **/
-        ~Block();
-
-    //////////////////////////////////////////////////////////////////////////
-    // member variables
-    //////////////////////////////////////////////////////////////////////////
-    public:
-        /**
-         * \brief   Pointer to next block in hash map
-         **/
-        Block *       mNext;
-        /**
-         * \brief   Hash value of element, 
-         *          it cannot be different for every element key, as well as it identifies
-         *          the index in Hash Table, which value cannot be more than the Maximum Hash Size
-         *          of Hash Table. The maximum size is no more than MAP_MAX_TABLE_SIZE (1024)
-         **/
-        unsigned int    mHash;
-    };
+    //! Position in the hash map
+    using MAPPOS    = typename std::unordered_map<KEY, VALUE>::iterator;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    /**
-     * \brief   Default constructor. 
-     *          By default, the block size is MAP_DEFAULT_BLOCK_SIZE (48),
-     *          Hash Table size is MAP_DEFAULT_HASH_SIZE (40)
-     **/
-    TEHashMap( void );
 
     /**
      * \brief	Constructor, initialization
-     * \param	blockSize	The size of blocks in hash map to create at once.
-     *                      If this is negative value, it creates MAP_DEFAULT_BLOCK_SIZE blocks.
-     *                      It cannot be more than MAP_MAX_BLOCK_SIZE (1024)
      * \param	hashSize	The size of has map table. 
      *                      If it is negative, the size is MAP_DEFAULT_HASH_SIZE (64).
      *                      It cannot be more than MAP_MAX_TABLE_SIZE (1024)
      **/
-    TEHashMap( int blockSize, int hashSize );
+    TEHashMap( uint32_t hashSize = NECommon::MAP_DEFAULT_HASH_SIZE);
 
     /**
      * \brief   Copy constructor.
      * \param   src     The source to copy data.
      **/
-    TEHashMap( const TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement> & src );
+    TEHashMap( const TEHashMap<KEY, VALUE, Implement> & src );
 
     /**
      * \brief   Move constructor.
      * \param   src     The source to move data.
      **/
-    TEHashMap( TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement> && src ) noexcept;
+    TEHashMap( TEHashMap<KEY, VALUE, Implement> && src ) noexcept;
 
     /**
      * \brief   Destructor
      **/
-    ~TEHashMap( void );
+    ~TEHashMap( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
@@ -174,40 +121,40 @@ public:
     /**
      * \brief	Assigning operator. It copies all elements from source map
      **/
-    TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>& operator = ( const TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement> & src );
+    inline TEHashMap<KEY, VALUE, Implement>& operator = ( const TEHashMap<KEY, VALUE, Implement> & src );
 
     /**
      * \brief	Move operator. It moves all elements from source map
      **/
-    TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>& operator = ( TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement> && src ) noexcept;
+    inline TEHashMap<KEY, VALUE, Implement>& operator = ( TEHashMap<KEY, VALUE, Implement> && src ) noexcept;
 
     /**
      * \brief   Checks equality of 2 hash-map objects, and returns true if they are equal.
      *          There should be possible to compare KEY and VALUE types of hash map.
      * \param   other   The hash-map object to compare
      **/
-    bool operator == ( const TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement> & other ) const;
+    inline bool operator == ( const TEHashMap<KEY, VALUE, Implement> & other ) const;
 
     /**
      * \brief   Checks inequality of 2 hash-map objects, and returns true if they are not equal.
      *          There should be possible to compare KEY and VALUE types of hash map.
      * \param   other   The hash-map object to compare
      **/
-    bool operator != ( const TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement> & other ) const;
+    inline bool operator != ( const TEHashMap<KEY, VALUE, Implement> & other ) const;
 
     /**
      * \brief	Subscript operator. Returns reference to value of element by given key.
      *          If the key does not exist, inserts an element into Hash Map with specified key value. 
      *          Used on the left of an assignment statement.
      **/
-    VALUE & operator [] ( KEY_TYPE Key );
+    inline VALUE & operator [] ( const KEY & Key );
 
     /**
      * \brief	Subscript operator. Returns value of element by given key.
      *          If the key does not exist, inserts an element into Hash Map with specified key value.
      *          Modification of value is not possible.
      **/
-    inline VALUE_TYPE operator [] ( KEY_TYPE Key ) const;
+    inline const VALUE & operator [] (const KEY& Key ) const;
 
 /************************************************************************/
 // Friend global operators to make Hash Map streamable
@@ -223,8 +170,8 @@ public:
      * \param   stream  The streaming object for reading values
      * \param   input   The Hash Map object to save initialized values.
      **/
-     template <typename K, typename V, typename KT, typename VT, class Impl>
-    friend const IEInStream & operator >> ( const IEInStream & stream, TEHashMap<K, V, KT, VT, Impl> & input);
+    template < typename KEY, typename VALUE, class Implement >
+    friend const IEInStream & operator >> ( const IEInStream & stream, TEHashMap<KEY, VALUE, Implement> & input);
     /**
      * \brief   Writes to the stream Hash Map values.
      *          The Elements of Hash Map will be written to the stream starting from start position.
@@ -233,8 +180,8 @@ public:
      * \param   stream  The streaming object to write values
      * \param   input   The Hash Map object to read out values.
      **/
-     template <typename K, typename V, typename KT, typename VT, class Impl>
-    friend IEOutStream & operator << ( IEOutStream & stream, const TEHashMap<K, V, KT, VT, Impl> & output );
+    template < typename KEY, typename VALUE, class Implement >
+    friend IEOutStream & operator << ( IEOutStream & stream, const TEHashMap<KEY, VALUE, Implement> & output );
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -252,19 +199,55 @@ public:
     /**
      * \brief	Returns the size of Hash Map
      **/
-    inline int getSize( void ) const;
+    inline uint32_t getSize( void ) const;
 
     /**
      * \brief	Returns the size of hash table
      **/
-    inline int getTableSize( void ) const;
+    inline uint32_t getTableSize( void ) const;
 
     /**
-     * \brief	If Hash Map is not empty, returns the starting position.
-     *          Otherwise, returns nullptr.
+     * \brief	Returns the first position of the hash map, which is not invalid if
+     *          the hash map is not empty. Otherwise, it is equal to the last position
+     *          and not valid.
      **/
     inline MAPPOS firstPosition( void ) const;
 
+    /**
+     * \brief	Returns the last position of the hash map, which is always invalid.
+     **/
+    inline MAPPOS lastPosition(void) const;
+
+    /**
+     * \brief   Returns true if specified position reached the end of the hash map.
+     * \param   pos     The position to check.
+     * \return  Returns true if specified position reached the end of the hash map.
+     **/
+    inline bool isEndPosition(const MAPPOS & pos) const;
+
+    /**
+     * \brief   Returns true if specified position pointing start of the hash map.
+     * \param   pos     The position to check.
+     * \return  Returns true if specified position pointing start of the hash map.
+     **/
+    inline bool isStartPosition(const MAPPOS& pos) const;
+
+    /**
+     * \brief   Returns true if specified position is not pointing the end of the hash map.
+     *          NOTE:   This method does not ensure that the position object is pointing
+     *                  to the valid entry in the hash map. To do so, use 'checkPos' method.
+     * \param pos       The position to check.
+     * \return Returns true if specified position is not pointing the end of the hash map.
+     */
+    inline bool isValidPosition(const MAPPOS& pos) const;
+
+    /**
+     * \brief   Checks and ensures that specified position is pointing the valid entry in the hash map.
+     *          The duration of checkup depends on the location of the position in the map and may run long.
+     * \param pos       The position to check.
+     * \return  Returns true if specified position points to the valid entry in the hash map.
+     */
+    inline bool checkPosition(const MAPPOS& pos) const;
 
 /************************************************************************/
 // Operations
@@ -273,47 +256,68 @@ public:
     /**
      * \brief	Searches element by given key. 
      *          If found element, return true and on exit returns the value of element
-     * \param	Key	        Key to search.
+     * \param	Key	        The key to search.
      * \param	out_Value   On output, contains value of found element
      * \return	Returns true if finds element with specified key.
      **/
-    inline bool find( KEY_TYPE Key, VALUE & out_Value ) const;
+    inline bool find( const KEY & Key, VALUE & out_Value ) const;
 
     /**
      * \brief	Search an element by given key and returns position.
-     *          If could not find element, returns nullptr (INVALID_POSITION).
+     *          If could not find element, returns end-of-map position.
+     *          The values of position can be modified carefully that
+     *          the hash-value of the key is not changed.
      * \param	Key	    The key to search.
-     * \return	If finds, return position in Hash Map, otherwise returns nullptr (INVALID_POSITION)
+     * \return	If finds, return position in Hash Map, otherwise returns end-of-map.
      **/
-    inline MAPPOS find( KEY_TYPE Key ) const;
+    inline MAPPOS find(const KEY& Key) const;
+
+    /**
+     * \brief   Returns true if specified key exists in the hash map.
+     * \param   Key     The key to check.
+     * \return  Returns true if key exists.
+     */
+    inline bool contains(const KEY& Key) const;
 
     /**
      * \brief	Update existing element value or inserts new element in the Hash Map.
-     *          If searchBeforeInsert is true, it will search for element first, 
-     *          and if finds, it will update existing. Otherwise, it inserts new element.
-     *          if searchBeforeInsert is false, it will insert new element without searching
-     *          and no uniqueness of key values in hash map can be guarantied.
      * \param	Key	                The key of element to search or to create
-     * \param	newValue	        The value of element to set or insert
-     * \param	searchBeforeInsert	If true, it will search before creating new element and if finds
-     *                              update value of existing element. Otherwise create new element
-     *                              without checking uniqueness of keys in hash map
-     * \return  Returns position of updated or new inserted element.
+     * \param	newValue	        The value of element to set or insert.
      **/
-    MAPPOS setAt( KEY_TYPE Key, VALUE_TYPE newValue, bool searchBeforeInsert = true );
+    inline void setAt( const KEY & Key, const VALUE & newValue );
+    inline void setAt( KEY && Key, const VALUE & newValue);
     /**
      * \brief	Update existing element value or inserts new element in the Hash Map.
-     *          If searchBeforeInsert is true, it will search for element first, 
-     *          and if finds, it will update existing. Otherwise, it inserts new element.
-     *          if searchBeforeInsert is false, it will insert new element without searching
-     *          and no uniqueness of key values in hash map can be guarantied.
-     * \param	newElement	        The Key and Value pair of element to set or insert
-     * \param	searchBeforeInsert	If true, it will search before creating new element and if finds
-     *                              update value of existing element. Otherwise create new element
-     *                              without checking uniqueness of keys in hash map
-     * \return  Returns position of updated or new inserted element.
+     * \param	newElement	        The Key and Value pair of element to set or insert.
      **/
-    inline MAPPOS setAt( const TEPair<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement> & newElement, bool searchBeforeInsert = true );
+    inline void setAt( const TEPair<KEY, VALUE, Implement> & newElement );
+    inline void setAt( TEPair<KEY, VALUE, Implement> && newElement);
+
+    /**
+     * \brief   Extracts elements from the given source and inserts into the hash map.
+     *          If there is an entry with the key equivalent to the key from source element,
+     *          then that element is not extracted from the source and remains unchanged.
+     * \param   source  The source of hash map to merge.
+     */
+    inline void merge( const TEHashMap<KEY, VALUE, Implement> & source );
+    inline void merge( TEHashMap<KEY, VALUE, Implement> && source );
+
+    /**
+     * \brief   Adds new entry with the specified key in the hash map if it is not existing.
+     *          If the entry with specified key exists, the entry is not added.
+     *          The method returns pair of value, where it indicates the position of the entry
+     *          and the flag, indicating whether it added new entry or not.
+     *          In 'std::pair<MAPPOS, bool>' the 'MAPPOS' indicates the position of the entry in
+     *          the hash map, and 'bool' equal to 'true' indicates that the new entry is created.
+     * \param   Key     The key of the entry in the hash map.
+     * \param   Value   The value of the entry in the hash map.
+     * \return  Returns a pair of 'MAPPOS' and 'bool' values, where
+     *              -   'MAPPOS' indicates the position of the entry in the hash map.
+     *              -   'bool' equal to 'true' indicates that new entry is created.
+     *                  If this value is 'false' no new entry is created.
+     */
+    inline std::pair<MAPPOS, bool> addNew(const KEY & newKey, const VALUE & newValue);
+    inline std::pair<MAPPOS, bool> addNew(KEY && newKey, VALUE && newValue);
 
     /**
      * \brief   Updates Existing Key and returns the position in the map.
@@ -325,14 +329,14 @@ public:
      * \return  Returns non-nullptr position value of existing key.
      *          And returns nullptr if key does not exit.
      **/
-    MAPPOS updateAt( KEY_TYPE Key, VALUE_TYPE newValue );
+    inline MAPPOS updateAt( const KEY & Key, const VALUE & newValue );
 
     /**
      * \brief	Remove existing key and if key exists, returns true.
      * \param	Key	    The Key to search and remove
      * \return	Return true if key successfully removed from hash map
      **/
-    bool removeAt( KEY_TYPE Key );
+    inline bool removeAt(const KEY& Key );
 
     /**
      * \brief	Remove existing key and if succeeded, on output contains value of removed element
@@ -340,7 +344,7 @@ public:
      * \param	out_Value       If removed with success, on output it contains value of removed element
      * \return	Return true if successfully removed key. If key does not exist, return false.
      **/
-    bool removeAt( KEY_TYPE Key, VALUE & out_Value );
+    inline bool removeAt( const KEY & Key, VALUE & out_Value );
 
     /**
      * \brief	Update value of an element by given position and return position to next element
@@ -348,7 +352,7 @@ public:
      * \param	newValue	    New value to set for existing element.
      * \return  Returns position of next element. If given position was position of last valid element, it will return nullptr.
      **/
-    MAPPOS setPosition( MAPPOS atPosition, VALUE_TYPE newValue );
+    inline MAPPOS setPosition(typename MAPPOS atPosition, const VALUE& newValue );
 
     /**
      * \brief	Removes element by given position, and on output key and value 
@@ -357,21 +361,53 @@ public:
      * \param	curPos      This should contain valid position of hash map.
      * \param	out_Key     On output, this contains key of removed element
      * \param	out_Value   On output, this contains value of removed element.
-     * \return  Next position in hash map or nullptr if reached the end.
+     * \return  Next position in hash map or invalid position if reached the end.
      **/
-    MAPPOS removePosition( MAPPOS curPos, KEY & out_Key, VALUE & out_Value );
+    inline MAPPOS removePosition(typename MAPPOS curPos, KEY & out_Key, VALUE & out_Value );
 
     /**
      * \brief	Removes element by given valid position and returns value of removed element
      * \param	atPosition	Valid position of element in hash map
-     * \return	Value of removed element.
+     * \return  Next position in hash map or invalid position if reached the end.
      **/
-    VALUE removePosition( MAPPOS atPosition );
+    inline MAPPOS removePosition(typename MAPPOS atPosition );
+
+    /**
+     * \brief   Removes the first entry in the hash map. On output, the
+     *          'out_Key' and 'out_Value' contain the entries that are removed.
+     * \param   out_Key     On output it contains the key of the fist element in hash-map, which was removed.
+     * \param   out_Value   On output it contains the value of the fist element in hash-map, which was removed.
+     * \return  Returns true if hash-map was not empty and first element is removed.
+     *          Returns false if hash-map is empty, so that it could not remove first entry.
+     **/
+    inline bool removeFirst(KEY& out_Key, VALUE& out_Value);
+
+    /**
+     * \brief   Removes the first element in the hash map and returns true if removed with success.
+     * \return  Returns true if could remove first element in the hash map.
+     **/
+    inline bool removeFirst( void );
+
+    /**
+     * \brief   Removes the last entry in the hash map. On output, the
+     *          'out_Key' and 'out_Value' contain the entries that are removed.
+     * \param   out_Key     On output it contains the key of the last element in hash-map, which was removed.
+     * \param   out_Value   On output it contains the value of the last element in hash-map, which was removed.
+     * \return  Returns true if hash-map was not empty and last element is removed.
+     *          Returns false if hash-map is empty, so that it could not remove last entry.
+     **/
+    inline bool removeLast(KEY& out_Key, VALUE& out_Value);
+
+    /**
+     * \brief   Removes the first element in the hash map and returns true if removed with success.
+     * \return  Returns true if could remove first element in the hash map.
+     **/
+    inline bool removeLast(void);
 
     /**
      * \brief   Removes all elements in hash map, sets size zero
      **/
-    void removeAll( void );
+    inline void removeAll( void );
 
     /**
      * \brief	By given position value, retrieves key and value of element, and returns next position
@@ -380,42 +416,32 @@ public:
      * \param	out_Value   On output, this contains value of given position
      * \return	Next position of element or next if it is last element in hash map.
      **/
-    MAPPOS nextPosition( MAPPOS atPosition, KEY & out_Key, VALUE & out_Value ) const;
+    inline MAPPOS nextPosition(typename MAPPOS  atPosition, KEY & out_Key, VALUE & out_Value ) const;
     /**
      * \brief	By given position value, retrieves key and value pair of element, and returns next position
      * \param	atPosition  Starting Position to get next position of element, and retrieve value and key pair
      * \param	out_Element On output, this element contains pair of Key and Value
      * \return	Next position of element or next if it is last element in hash map.
      **/
-    inline MAPPOS nextPosition( MAPPOS atPosition, TEPair<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement> & out_Element ) const;
+    inline MAPPOS nextPosition(typename MAPPOS atPosition, TEPair<KEY, VALUE, Implement> & out_Element ) const;
     /**
      * \brief	By given position value, returns next position
      * \param	atPosition  Starting Position to get next position of element
      * \return	Next position of element or next if it is last element in hash map.
      **/
-    inline MAPPOS nextPosition( MAPPOS atPosition ) const;
-    /**
-     * \brief   Returns reverence of element value at given valid position.
-     *          If index is not valid, assertion is raised.
-     **/
-    inline VALUE & getPosition( const MAPPOS atPosition );
-    /**
-     * \brief   Returns element value at given valid position.
-     *          If index is not valid, assertion is raised.
-     **/
-    inline VALUE_TYPE getPosition( const MAPPOS atPosition ) const;
+    inline MAPPOS nextPosition(typename MAPPOS atPosition ) const;
     /**
      * \brief	Returns reference to value of element by given key.
      *          If the key does not exist, inserts an element into Hash Map with specified key value.
      **/
-    VALUE & getAt(KEY_TYPE Key);
+    inline VALUE & getAt(const KEY & Key);
     /**
      * \brief	Finds element by given Key and returns Value. The key should exist in hash map.
      *          If not element with give key found, assertion raises.
      * \param	Key	    The Key to search
      * \return	Value of element
      **/
-    inline VALUE_TYPE getAt( KEY_TYPE Key ) const;
+    inline const VALUE & getAt( const KEY & Key ) const;
 
     /**
      * \brief	Retrieves key and value of element by given position
@@ -423,26 +449,42 @@ public:
      * \param	out_Key	    On output, contains key of element of given position
      * \param	out_Value   On output, contains value of element of given position
      **/
-    inline void getAtPosition( MAPPOS atPosition, KEY & out_Key, VALUE & out_Value ) const;
+    inline void getAtPosition(typename MAPPOS atPosition, KEY & out_Key, VALUE & out_Value ) const;
     /**
      * \brief	Retrieves key and value pair of element by given position
      * \param	atPosition	The position of element to retrieve key and value
      * \param	out_Element On output, contains Key and Value pair of element of given position
      **/
-    inline void getAtPosition( MAPPOS atPosition, TEPair<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement> & out_Element) const;
+    inline void getAtPosition(typename MAPPOS atPosition, TEPair<KEY, VALUE, Implement> & out_Element) const;
 
     /**
      * \brief   Returns the Key object value at the given position.
      *          The Key should be used only for reading. Avoid modifications of Key value.
      * \param   atPosition  The position to return Key object value.
      **/
-    inline KEY_TYPE keyAtPosition( MAPPOS atPosition ) const;
+    inline const KEY & keyAtPosition(typename MAPPOS atPosition ) const;
 
     /**
-     * \brief   Returns the Value object value at the given position.
+     * \brief   Returns the Key object value at the given position, which can be modified.
+     *          Modification of the Key after return may harm hash-map if the update
+     *          can change hash value. Use this method carefully.
+     * \param   atPosition  The position to return Key object value.
+     **/
+    inline KEY& keyAtPosition(typename MAPPOS atPosition);
+
+    /**
+     * \brief   Returns the Value object value at the given position,
+     *          which can be used only for reading data.
      * \param   atPosition  The position to return Value object value.
      **/
-    inline VALUE_TYPE valueAtPosition( MAPPOS atPosition ) const;
+    inline const VALUE & valueAtPosition(typename MAPPOS atPosition ) const;
+
+    /**
+     * \brief   Returns the Value object value at the given position,
+     *          which can be used to modify data.
+     * \param   atPosition  The position to return Value object value.
+     **/
+    inline VALUE& valueAtPosition(typename MAPPOS atPosition);
 
     /**
      * \brief	Gets next element in hash map by given valid position and on output, 
@@ -453,282 +495,20 @@ public:
      * \param	out_NextValue       On output, this contain value of next element in hash map
      * \return	Returns true, if next element was found and values on output are valid.
      **/
-    bool nextEntry( MAPPOS & in_out_NextPosition, KEY & out_NextKey, VALUE & out_NextValue ) const;
-
-//////////////////////////////////////////////////////////////////////////
-// Overrides
-//////////////////////////////////////////////////////////////////////////
-protected:
-
-    /**
-     * \brief	Calculates 32-bit and return the Hash Key value
-     *          of the given Key object. The Hash Key value differs
-     *          from Hash value stored in every element.
-     *          The hash key value is used to calculate hash index
-     *          of element in Hash Table.
-     * \param	Key	    The key object to get hash key value
-     * \return	Returns 32-bit hash key value
-     **/
-    inline unsigned int getHashKey( KEY_TYPE Key ) const;
-
-    /**
-     * \brief   Called when comparing 2 keys.
-     *          Overwrite method when need to change comparison.
-     * \param   key1    Key on left side to compare
-     * \param   key2    Key on right side to compare
-     * \return  If function returns true, 2 keys are equal.
-     *          Otherwise, they are not equal.
-     **/
-    inline bool isEqualKeys( KEY_TYPE key1, KEY_TYPE key2 ) const;
-
-    /**
-     * \brief   Called when comparing 2 values of element.
-     *          Overwrite method when need to change comparison.
-     * \param   value1  Value on left side to compare.
-     * \param   value2  Value on right side to compare.
-     * \return  If function returns true, 2 values are equal.
-     *          Otherwise, they are not equal.
-     **/
-    inline bool isEqualValues( VALUE_TYPE value1, VALUE_TYPE value2) const;
-
-//////////////////////////////////////////////////////////////////////////
-// Protected / internal operations
-//////////////////////////////////////////////////////////////////////////
-    /**
-     * \brief	Initialize the Hash Table object.
-     * \param	sizeHashTable	The initial size of hash table. By default it is MAP_DEFAULT_HASH_SIZE (48)
-     **/
-    void initHashTable( int sizeHashTable = NECommon::MAP_DEFAULT_HASH_SIZE );
-
-    /**
-     * \brief   Creates block list (mBlockSize elements contained in Block List)
-     *          and initialize entries of elements in Block List
-     **/
-    void createBlockList( void );
-
-    /**
-     * \brief   Delete Block List entries
-     **/
-    void deleteBlockList( void );
-
-    /**
-     * \brief   Free given block and place in Free List
-     * \param block The block to free and link with Free List
-     **/
-    void freeBlock( Block * block );
-
-    /**
-     * \brief	Finds and returns pointer to block object by given Key if element by key exists.
-     *          Otherwise, it returns nullptr.
-     *          On output, 'outHash' contains hash value, which is defining index in Hash Table.
-     * \param	Key	        The Key to search
-     * \param	out_Hash    The Hash value of entry within Hash Table
-     * \return	If found Key, returns pointer to Block element, otherwise returns nullptr.
-     **/
-    inline Block * blockAt( KEY_TYPE Key, unsigned int & OUT out_Hash ) const
-    {
-        Block * result = nullptr;
-        out_Hash = getHashKey(Key);
-
-        if ( mHashTable != nullptr )
-        {
-            unsigned int size = static_cast<unsigned int>(mHashTableSize);
-            for ( result  = mHashTable[out_Hash % size]; result != nullptr; result = result->mNext)
-            {
-                if ( out_Hash == result->mHash && isEqualKeys(result->mKey, Key) )
-                    break;
-            }
-        }
-
-        return result;
-    }
-
-    /**
-     * \brief	Finds and returns pointer to pointer of block object by given Key if element by key exists.
-     *          Otherwise it returns nullptr.
-     * \param	Key     The Key to search
-     **/
-    inline Block ** blockAtRef( KEY_TYPE Key ) const
-    {
-        Block ** result = nullptr;
-
-        if ( mHashTable != nullptr )
-        {
-            unsigned int hash = getHashKey(Key);
-            unsigned int size = static_cast<unsigned int>(mHashTableSize);
-            for ( result = &(mHashTable[hash % size]); (*result) != nullptr; result = &((*result)->mNext))
-            {
-                if ( hash == (*result)->mHash && isEqualKeys((*result)->mKey, Key) )
-                    break;
-            }
-        }
-
-        return result;
-    }
-
-    /**
-     * \brief   Returns Block object at the given position.
-     *          If the position object is a first position, it will return first valid block.
-     * \param atPosition    The position of Block
-     **/
-    inline Block * blockAt( MAPPOS atPosition ) const
-    {
-        ASSERT(atPosition != nullptr );
-        return (atPosition == NECommon::START_POSITION ? firstValidBlock() : static_cast<Block *>(atPosition));
-    }
-
-    /**
-     * \brief   Finds and returns reference (pointer to pointer)
-     *          of given block within hash map that changes on Block
-     *          have direct impact on Hash Table elements.
-     *          This speeds up remove procedure.
-     * \param   block   Block to find reference.
-     * \return  Address of pointer of block within hash map space.
-     **/
-    inline Block ** blockReference( const Block & block )
-    {
-
-        Block ** result  = mHashTable != nullptr ? &mHashTable[block.mHash % mHashTableSize] : nullptr;
-
-        if (result != nullptr )
-        {
-            for ( ; *result != nullptr; result = &(*result)->mNext )
-            {
-                if ( block.mHash == (*result)->mHash && isEqualKeys( (*result)->mKey, block.mKey ) )
-                    break;
-            }
-        }
-
-        return result;
-    }
-
-    /**
-     * \brief   Gets the very first valid Block within Hash Table.
-     *          Called if function was called with position parameter
-     *          equal to START_POSITION (0xFFFFFFFF)
-     **/
-    inline Block * firstValidBlock( void ) const
-    {
-        Block* result = nullptr;
-        for ( int idx = 0; (result == nullptr) && (idx < mHashTableSize); ++ idx )
-            result = mHashTable[idx];
-
-        // must find something
-        ASSERT(result != nullptr);
-        return result;
-    }
-
-    /**
-     * \brief   Gets the next valid Block within Hash Table bay given valid pointer to block object.
-     * \param startAt   The pointer to Block object to start searching next entry. It must not be nullptr,
-     *                  otherwise assertion raised
-     **/
-    inline Block * nextValidBlock( const Block * startAt ) const
-    {
-        ASSERT(startAt != nullptr);
-        ASSERT(mElemCount != 0);
-        Block* result = startAt->mNext;
-        if (result == nullptr)
-        {
-            unsigned int size = static_cast<unsigned int>(mHashTableSize);
-            for ( unsigned int idx = startAt->mHash % size + 1; (result == nullptr) && (idx < size); ++ idx )
-                result = mHashTable[idx];
-        }
-        
-        return result;
-    }
-
-    /**
-     * \brief	Initialize new Block entry taken from Free List
-     * \return	Returns pointer to new Block entry
-     **/
-    inline Block * initNewBlock( void )
-    {
-        if (mFreeList == nullptr)
-            createBlockList();
-
-        ASSERT(mFreeList != nullptr);
-        Block* block= mFreeList;
-        mFreeList   = mFreeList->mNext;
-        mElemCount ++;
-        ASSERT(mElemCount > 0);
-        new(&block->mKey)	KEY;
-        new(&block->mValue)VALUE;
-
-        return block;
-    }
-
-    /**
-     * \brief   Removes block in Hash Map
-     * \param   block   Address of pointer of block
-     *                  within Hash Map. Value returned
-     *                  by GetBlockReference() function.
-     **/
-    inline void removeBlock( Block ** block)
-    {
-        Block* nextBlock = (*block)->mNext;
-        freeBlock(*block);
-        *block = nextBlock;
-        if (mElemCount == 0)
-            deleteAllBlocks();
-    }
-
-    /**
-     * \brief   Deletes all blocks, reset all data.
-     **/
-    inline void deleteAllBlocks( void )
-    {
-        deleteBlockList();
-
-        NEMemory::zeroElements<Block *>(mHashTable, mHashTableSize);
-        mElemCount	= 0;
-        mFreeList	= nullptr;
-        mBlockList	= nullptr;
-    }
-
+    inline bool nextEntry(typename MAPPOS & in_out_NextPosition, KEY & out_NextKey, VALUE & out_NextValue ) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Member Variables
 //////////////////////////////////////////////////////////////////////////
 protected:
     /**
-     * \brief   Hash Table object. 
-     *          By default the Hash Table size is MAP_DEFAULT_HASH_SIZE (64)
-     *          and cannot be more than MAP_MAX_TABLE_SIZE (1024)
+     * \brief   Instance of map to store key-value pairs.
      **/
-    Block **    mHashTable;
+    std::unordered_map<KEY, VALUE>  mValueList;
     /**
-     * \brief   Size of Hash Map Table. By default it is MAP_DEFAULT_HASH_SIZE (64)
-     *          and cannot be more than MAP_MAX_TABLE_SIZE (1024)
+     * \brief   Instance of object that compares keys and values.
      **/
-    int         mHashTableSize;
-
-    /**
-     * \brief   Current Block List. 
-     *          By default the size of every block list is MAP_DEFAULT_BLOCK_SIZE (48)
-     *          and cannot be more than MAP_MAX_BLOCK_SIZE (1024).
-     *          Block List is created every time when List of Free Blocks is empty
-     **/
-    Block *   mBlockList;
-    /**
-     * \brief   The size of single Block List. By default it is MAP_DEFAULT_BLOCK_SIZE (48)
-     *          and cannot be more than MAP_MAX_BLOCK_SIZE (1024).
-     **/
-    int         mBlockSize;
-
-    /**
-     * \brief   Number of elements in Hash Map
-     **/
-    int         mElemCount;
-
-    /**
-     * \brief   List of Free Blocks
-     **/
-    Block *     mFreeList;
-    /**
-     * \brief   Instance of object that copares keys and values.
-     **/
-    Implement   mImplement;
+    Implement                       mImplement;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -736,661 +516,483 @@ protected:
 //////////////////////////////////////////////////////////////////////////
 
 //////////////////////////////////////////////////////////////////////////
-// TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::Block class Implement
+// TEHashMap<KEY, VALUE, Implement> class template Implement
 //////////////////////////////////////////////////////////////////////////
 
-template < typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename VALUE_TYPE /*= VALUE */, class Implement /* = HashMapBase */ >
-inline TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::Block::Block( void )
-    : TEPair<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>( )
-    , mNext ( nullptr )
-    , mHash (0)
+template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
+TEHashMap<KEY, VALUE, Implement>::TEHashMap(uint32_t hashSize /* = NECommon::MAP_DEFAULT_HASH_SIZE */)
+    : Constless ( )
+    , mImplement( )
+    , mValueList(hashSize)
 {
 }
 
-template < typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename VALUE_TYPE /*= VALUE */, class Implement /* = HashMapBase */ >
-inline TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::Block::Block(unsigned int hash, KEY_TYPE key, VALUE_TYPE value)
-    : TEPair<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>(key, value)
-    , mNext ( nullptr )
-    , mHash (hash)
+template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
+TEHashMap<KEY, VALUE, Implement>::TEHashMap(const TEHashMap<KEY, VALUE, Implement>& src)
+    : Constless ( )
+    , mImplement( )
+    , mValueList( src.mValueList )
 {
 }
 
-template < typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename VALUE_TYPE /*= VALUE */, class Implement /* = HashMapBase */ >
-inline TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::Block::Block( TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::Block && src ) noexcept
-    : TEPair<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>( static_cast<TEPair<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement> &&>(src) )
-    , mNext ( src.mNext )
-    , mHash ( src.mHash )
-{
-    src.mNext   = nullptr;
-    src.mHash   = NECommon::MAP_INVALID_HASH;
-}
-
-template < typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename VALUE_TYPE /*= VALUE */, class Implement /* = HashMapBase */ >
-TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::Block::~Block( void )
+template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
+TEHashMap<KEY, VALUE, Implement>::TEHashMap( TEHashMap<KEY, VALUE, Implement> && src ) noexcept
+    : Constless ( )
+    , mImplement( )
+    , mValueList(std::move(src.mValueList))
 {
 }
 
-//////////////////////////////////////////////////////////////////////////
-// TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement> class template Implement
-//////////////////////////////////////////////////////////////////////////
-template < typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename VALUE_TYPE /*= VALUE */, class Implement /* = HashMapBase */ >
-TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::TEHashMap( void )
-    : mHashTable    ( nullptr )
-    , mHashTableSize(0)
-    , mBlockList    ( nullptr )
-    , mBlockSize    ( NECommon::MAP_DEFAULT_BLOCK_SIZE)
-    , mElemCount    (0)
-    , mFreeList     ( nullptr )
-    , mImplement    ( )
+template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
+inline TEHashMap<KEY, VALUE, Implement>& TEHashMap<KEY, VALUE, Implement>::operator = ( const TEHashMap<KEY, VALUE, Implement> & src )
 {
-    initHashTable( NECommon::MAP_DEFAULT_HASH_SIZE);
-}
-
-template < typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename VALUE_TYPE /*= VALUE */, class Implement /* = HashMapBase */ >
-TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::TEHashMap(int blockSize, int hashSize)
-    : mHashTable    ( nullptr )
-    , mHashTableSize(0)
-    , mBlockList    ( nullptr )
-    , mBlockSize    (blockSize > 0 && blockSize <= NECommon::MAP_MAX_BLOCK_SIZE ? blockSize : (blockSize < 0 ? NECommon::MAP_DEFAULT_BLOCK_SIZE : NECommon::MAP_MAX_BLOCK_SIZE))
-    , mElemCount    (0)
-    , mFreeList     ( nullptr )
-    , mImplement    ( )
-{
-    initHashTable(hashSize > 0 && hashSize <= NECommon::MAP_MAX_TABLE_SIZE ? hashSize : hashSize < 0 ? NECommon::MAP_DEFAULT_HASH_SIZE : NECommon::MAP_MAX_TABLE_SIZE);
-}
-
-template < typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename VALUE_TYPE /*= VALUE */, class Implement /* = HashMapBase */ >
-TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::TEHashMap(const TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>& src)
-    : mHashTable    ( nullptr )
-    , mHashTableSize(0)
-    , mBlockList    ( nullptr )
-    , mBlockSize    (src.mBlockSize)
-    , mElemCount    (0)
-    , mFreeList     ( nullptr )
-    , mImplement    ( )
-{
-    initHashTable(src.mHashTableSize);
-    MAPPOS pos = src.firstPosition();
-    KEY key;
-    VALUE value;
-    while (pos != NECommon::INVALID_POSITION)
-    {
-        pos = src.nextPosition(pos, key, value);
-        setAt(key, value, false);
-    }
-}
-
-template < typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename VALUE_TYPE /*= VALUE */, class Implement /* = HashMapBase */ >
-TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::TEHashMap( TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement> && src ) noexcept
-    : mHashTable    ( src.mHashTable )
-    , mHashTableSize( src.mHashTableSize )
-    , mBlockList    ( src.mBlockList )
-    , mBlockSize    ( src.mBlockSize )
-    , mElemCount    ( src.mElemCount )
-    , mFreeList     ( src.mFreeList  )
-    , mImplement    ( )
-{
-    src.mBlockList      = nullptr;
-    src.mBlockSize      = 0;
-    src.mElemCount      = 0;
-    src.mFreeList       = nullptr;
-
-    src.mHashTable	    = DEBUG_NEW Block *[src.mHashTableSize];
-    NEMemory::zeroElements<Block *>( mHashTable, mHashTableSize );
-}
-
-template < typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename VALUE_TYPE /*= VALUE */, class Implement /* = HashMapBase */ >
-TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::~TEHashMap( void )
-{
-    removeAll();
-    if (mHashTable != nullptr )
-        delete [] mHashTable;
-
-    mHashTable      = nullptr;
-    mHashTableSize  = 0;
-}
-
-template < typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename VALUE_TYPE /*= VALUE */, class Implement /* = HashMapBase */ >
-TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>& TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::operator = ( const TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement> & src )
-{
-    if (static_cast<const TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement> *>(this) != static_cast<const TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement> *>(&src))
-    {
-        removeAll();
-        mBlockSize  = src.mBlockSize;
-        initHashTable(src.mHashTableSize);
-
-        MAPPOS pos = src.firstPosition();
-        KEY key;
-        VALUE value;
-
-        while (pos != NECommon::INVALID_POSITION)
-        {
-            pos = src.nextPosition(pos, key, value);
-            setAt(key, value, false);
-        }
-    }
+    mValueList = src.mValueList;
     return (*this);
 }
 
-template < typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename VALUE_TYPE /*= VALUE */, class Implement /* = HashMapBase */ >
-TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>& TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::operator = ( TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement> && src ) noexcept
+template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
+inline TEHashMap<KEY, VALUE, Implement>& TEHashMap<KEY, VALUE, Implement>::operator = ( TEHashMap<KEY, VALUE, Implement> && src ) noexcept
 {
-    if ( static_cast<const TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement> *>(this) != static_cast<const TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement> *>(&src) )
-    {
-        removeAll( );
-        if ( mHashTable != nullptr )
-            delete [] mHashTable;
-
-        mHashTable    = src.mHashTable;
-        mHashTableSize= src.mHashTableSize;
-        mBlockList    = src.mBlockList;
-        mBlockSize    = src.mBlockSize;
-        mElemCount    = src.mElemCount;
-        mFreeList     = src.mFreeList;
-
-        src.mHashTable      = nullptr;
-        src.mHashTableSize  = 0;
-        src.mBlockList      = nullptr;
-        src.mBlockSize      = 0;
-        src.mElemCount      = 0;
-        src.mFreeList       = nullptr;
-    }
-
+    mValueList = std::move(src.mValueList);
     return (*this);
 }
 
-template < typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename VALUE_TYPE /*= VALUE */, class Implement /* = HashMapBase */ >
-bool TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::operator == (const TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>& other) const
+template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
+bool TEHashMap<KEY, VALUE, Implement>::operator == (const TEHashMap<KEY, VALUE, Implement>& other) const
 {
-    bool result = true;
-    if ( this != &other )
+    return (mValueList == other.mValueList);
+}
+
+template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
+bool TEHashMap<KEY, VALUE, Implement>::operator != ( const TEHashMap<KEY, VALUE, Implement>& other ) const
+{
+    return (mValueList != other.mValueList);
+}
+
+template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
+inline VALUE & TEHashMap<KEY, VALUE, Implement>::operator [] (const KEY& Key)
+{
+    return mValueList[Key];
+}
+
+template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
+inline const VALUE & TEHashMap<KEY, VALUE, Implement>::operator [] ( const KEY & Key ) const
+{
+    return mValueList[Key];
+}
+
+template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
+inline bool TEHashMap<KEY, VALUE, Implement>::isEmpty(void) const
+{
+    return mValueList.empty();
+}
+
+template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
+inline uint32_t TEHashMap<KEY, VALUE, Implement>::getSize( void ) const
+{
+    return static_cast<uint32_t>(mValueList.size());
+}
+
+template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
+inline uint32_t TEHashMap<KEY, VALUE, Implement>::getTableSize( void ) const
+{
+    return static_cast<uint32_t>(mValueList.bucket_count());
+}
+
+template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
+inline typename TEHashMap<KEY, VALUE, Implement>::MAPPOS TEHashMap<KEY, VALUE, Implement>::firstPosition( void ) const
+{
+    typename std::unordered_map<KEY, VALUE>::const_iterator pos = mValueList.begin();
+    return Constless::iter(mValueList, pos);
+}
+
+template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
+inline typename TEHashMap<KEY, VALUE, Implement>::MAPPOS TEHashMap<KEY, VALUE, Implement>::lastPosition(void) const
+{
+    typename std::unordered_map<KEY, VALUE>::const_iterator pos = mValueList.end();
+    return Constless::iter(mValueList, pos);
+}
+
+template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
+inline bool TEHashMap<KEY, VALUE, Implement>::isEndPosition(const MAPPOS& pos) const
+{
+    return (pos == mValueList.end());
+}
+
+template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
+inline bool TEHashMap<KEY, VALUE, Implement>::isStartPosition(const MAPPOS& pos) const
+{
+    return (pos == mValueList.begin());
+}
+
+template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
+inline bool TEHashMap<KEY, VALUE, Implement>::isValidPosition(const MAPPOS& pos) const
+{
+    return (pos != mValueList.end());
+}
+
+template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
+inline bool TEHashMap<KEY, VALUE, Implement>::checkPosition(const MAPPOS& pos) const
+{
+    bool result = false;
+    typename std::unordered_map<KEY, VALUE>::const_iterator it = mValueList.begin();
+
+    for ( ; it != mValueList.end(); ++it)
     {
-        result = false;
-        if ( other.mElemCount == mElemCount )
+        if (it == pos)
         {
             result = true;
-            KEY otherKey;
-            VALUE otherValue, thisValue;
-
-            for ( MAPPOS otherPos = other.firstPosition( ); result && (otherPos != NECommon::INVALID_POSITION); )
-            {
-                otherPos = other.nextPosition( otherPos, otherKey, otherValue );
-                result = find( otherKey, thisValue ) ? isEqualValues( otherValue, thisValue ) : false;
-            }
+            break;
         }
     }
+
     return result;
 }
 
-template < typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename VALUE_TYPE /*= VALUE */, class Implement /* = HashMapBase */ >
-bool TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::operator != ( const TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>& other ) const
+template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
+inline bool TEHashMap<KEY, VALUE, Implement>::find( const KEY & Key, VALUE & out_Value ) const
 {
     bool result = false;
-    if (this != &other )
+    auto pos = mValueList.find(Key);
+    if (pos != mValueList.end())
+    {
+        out_Value = pos->second;
+        result = true;
+    }
+    
+    return result;
+}
+
+template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
+inline typename TEHashMap<KEY, VALUE, Implement>::MAPPOS TEHashMap<KEY, VALUE, Implement>::find(const KEY& Key) const
+{
+    typename std::unordered_map<KEY, VALUE>::const_iterator cit = mValueList.find(Key);
+    return iter(mValueList, cit);
+}
+
+template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
+inline bool TEHashMap<KEY, VALUE, Implement>::contains(const KEY& Key) const
+{
+    return (mValueList.find(Key) != mValueList.end());
+}
+
+template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
+inline void TEHashMap<KEY, VALUE, Implement>::setAt(const KEY & Key, const VALUE & newValue)
+{
+    mValueList[Key] = newValue;
+}
+
+template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
+inline void TEHashMap<KEY, VALUE, Implement>::setAt( KEY && Key, const VALUE & newValue)
+{
+    mValueList[Key] = newValue;
+}
+
+template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
+inline void TEHashMap<KEY, VALUE, Implement>::setAt(const TEPair<KEY, VALUE, Implement> &newItem)
+{
+    setAt(newItem.mKey, newItem.mValue);
+}
+
+template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
+inline void TEHashMap<KEY, VALUE, Implement>::setAt( TEPair<KEY, VALUE, Implement> && newItem)
+{
+    setAt(std::move(newItem.mKey), newItem.mValue);
+}
+
+template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
+inline void TEHashMap<KEY, VALUE, Implement>::merge(const TEHashMap<KEY, VALUE, Implement>& source)
+{
+    mValueList.merge(source);
+}
+
+template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
+inline void TEHashMap<KEY, VALUE, Implement>::merge(TEHashMap<KEY, VALUE, Implement> && source)
+{
+    mValueList.merge(source);
+}
+
+template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
+inline std::pair<typename TEHashMap<KEY, VALUE, Implement>::MAPPOS, bool> TEHashMap<KEY, VALUE, Implement>::addNew(const KEY& newKey, const VALUE& newValue)
+{
+    return mValueList.insert({ newKey, newValue });
+}
+
+template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
+inline std::pair<typename TEHashMap<KEY, VALUE, Implement>::MAPPOS, bool> TEHashMap<KEY, VALUE, Implement>::addNew( KEY && newKey, VALUE && newValue)
+{
+    return mValueList.insert(std::make_pair(newKey, newValue));
+}
+
+template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
+inline typename TEHashMap<KEY, VALUE, Implement>::MAPPOS TEHashMap<KEY, VALUE, Implement>::updateAt(const KEY & Key, const VALUE & newValue)
+{
+    MAPPOS pos = mValueList.find(Key);
+    if (pos != mValueList.end())
+    {
+        pos->second = newValue;
+    }
+
+    return pos;
+}
+
+template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
+bool TEHashMap<KEY, VALUE, Implement>::removeAt(const KEY& Key)
+{
+    bool result = false;
+    MAPPOS pos = mValueList.find(Key);
+    if (pos != mValueList.end())
     {
         result = true;
-        if (other.mElemCount == mElemCount)
-        {
-            KEY otherKey;
-            VALUE otherValue, thisValue;
-
-            for ( MAPPOS otherPos = other.firstPosition(); result && (otherPos != NECommon::INVALID_POSITION); )
-            {
-                otherPos = other.nextPosition(otherPos, otherKey, otherValue);
-                result = find(otherKey, thisValue) ? isEqualValues( otherValue, thisValue ) == false : true;
-            }
-        }
+        mValueList.erase(pos);
     }
 
     return result;
 }
 
-template < typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename VALUE_TYPE /*= VALUE */, class Implement /* = HashMapBase */ >
-VALUE & TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::operator [] (KEY_TYPE Key)
-{
-    return getAt(Key);
-}
-
-template < typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename VALUE_TYPE /*= VALUE */, class Implement /* = HashMapBase */ >
-inline VALUE_TYPE TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::operator [] ( KEY_TYPE Key ) const
-{
-    return getAt(Key);
-}
-
-template < typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename VALUE_TYPE /*= VALUE */, class Implement /* = HashMapBase */ >
-inline int TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::getSize( void ) const
-{
-    return mElemCount;
-}
-
-template < typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename VALUE_TYPE /*= VALUE */, class Implement /* = HashMapBase */ >
-inline int TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::getTableSize( void ) const
-{
-    return mHashTableSize;
-}
-
-template < typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename VALUE_TYPE /*= VALUE */, class Implement /* = HashMapBase */ >
-inline bool TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::isEmpty( void ) const
-{
-    return (mElemCount == 0);
-}
-
-template < typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename VALUE_TYPE /*= VALUE */, class Implement /* = HashMapBase */ >
-inline MAPPOS TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::firstPosition( void ) const
-{
-    return (mElemCount != 0 ? NECommon::START_POSITION : nullptr);
-}
-
-template < typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename VALUE_TYPE /*= VALUE */, class Implement /* = HashMapBase */ >
-inline bool TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::find( KEY_TYPE Key, VALUE & out_Value ) const
-{
-    bool result     = false;
-    Block **block = blockAtRef(Key);
-    if ( (block != nullptr) && (*block != nullptr) )
-    {
-        out_Value   = (*block)->mValue;
-        result      = true;
-    }
-    
-    return result;
-}
-
-template < typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename VALUE_TYPE /*= VALUE */, class Implement /* = HashMapBase */ >
-inline MAPPOS TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::find(KEY_TYPE Key) const
-{
-    Block** result = blockAtRef(Key);
-    return (result != nullptr ? static_cast<MAPPOS>(*result) : nullptr);
-}
-
-template < typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename VALUE_TYPE /*= VALUE */, class Implement /* = HashMapBase */ >
-MAPPOS TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::setAt(KEY_TYPE Key, VALUE_TYPE newValue, bool searchBeforeInsert /*= true*/)
-{
-    ASSERT(mHashTable != nullptr);
-
-    unsigned int hash = NECommon::MAP_INVALID_HASH;
-    Block* block = nullptr; 
-    
-    if ( searchBeforeInsert )
-    {
-        block = blockAt(Key, hash);
-    }
-    else
-    {
-        hash = getHashKey(Key);
-    }
-
-    if (block == nullptr)
-    {
-        // it doesn't exist, add a new Block
-        unsigned int size = static_cast<unsigned int>(mHashTableSize);
-        unsigned int idx  = hash % size;
-        block       = initNewBlock();
-        block->mHash= hash;
-        block->mKey	= Key;
-        // 'block->mValue' is a constructed object, nothing more put into hash table
-        block->mNext= mHashTable[idx];
-        mHashTable[idx]= block;
-    }
-
-    block->mValue = newValue;
-    return static_cast<MAPPOS>(block);
-}
-
-template < typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename VALUE_TYPE /*= VALUE */, class Implement /* = HashMapBase */ >
-inline MAPPOS TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::setAt(const TEPair<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement> &newItem, bool searchBeforeInsert /*= true*/)
-{
-    return setAt(newItem.mKey, newItem.mValue, searchBeforeInsert);
-}
-
-template < typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename VALUE_TYPE /*= VALUE */, class Implement /* = HashMapBase */ >
-MAPPOS TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::updateAt(KEY_TYPE Key, VALUE_TYPE newValue)
-{
-    ASSERT(mHashTable != nullptr );
-
-    unsigned int hash = NECommon::MAP_INVALID_HASH;
-    Block* block    = blockAt(Key, hash);
-    if (block != nullptr)
-    {
-        // Block exists, update existing key value.
-        block->mValue = newValue;
-    }
-
-    return static_cast<MAPPOS>(block);
-}
-
-template < typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename VALUE_TYPE /*= VALUE */, class Implement /* = HashMapBase */ >
-bool TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::removeAt(KEY_TYPE Key)
+template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
+inline bool TEHashMap<KEY, VALUE, Implement>::removeAt(const KEY & Key, VALUE& out_Value)
 {
     bool result = false;
-    Block** block = blockAtRef(Key);
-    if ((block != nullptr) && (*block != nullptr))
+    MAPPOS pos = mValueList.find(Key);
+    if (pos != mValueList.end())
     {
         result = true;
-        removeBlock(block);
+        out_Value = pos->second;
+        mValueList.erase(pos);
     }
 
     return result;
 }
 
-template < typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename VALUE_TYPE /*= VALUE */, class Implement /* = HashMapBase */ >
-bool TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::removeAt(KEY_TYPE Key, VALUE& out_Value)
+template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
+typename TEHashMap<KEY, VALUE, Implement>::MAPPOS TEHashMap<KEY, VALUE, Implement>::setPosition(typename TEHashMap<KEY, VALUE, Implement>::MAPPOS atPosition, const VALUE & newValue)
+{
+    ASSERT( atPosition != mValueList.end() );
+    atPosition->second = newValue;
+    return (++atPosition);
+}
+
+template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
+typename TEHashMap<KEY, VALUE, Implement>::MAPPOS TEHashMap<KEY, VALUE, Implement>::removePosition(typename TEHashMap<KEY, VALUE, Implement>::MAPPOS curPos, KEY& out_Key, VALUE& out_Value)
+{
+    ASSERT( curPos != mValueList.end());
+    MAPPOS result   = curPos + 1;
+    out_Key         = curPos->first;
+    out_Value       = curPos->second;
+
+    return mValueList.erase(curPos);
+}
+
+template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
+typename TEHashMap<KEY, VALUE, Implement>::MAPPOS TEHashMap<KEY, VALUE, Implement>::removePosition(MAPPOS atPosition)
+{
+    ASSERT(atPosition != mValueList.end());
+    return mValueList.erase(atPosition);
+}
+
+template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
+inline bool TEHashMap<KEY, VALUE, Implement>::removeFirst(KEY& out_Key, VALUE& out_Value)
 {
     bool result = false;
-    Block** block = blockAtRef(Key);
-    if ((block != nullptr) && (*block != nullptr))
+    if (mValueList.empty() == false)
     {
+        auto pos    = mValueList.begin();
+        ASSERT(pos != mValueList.end());
+        out_Key = pos->first;
+        out_Value = pos->second;
+        
+        mValueList.erase(pos);
         result      = true;
-        out_Value   = (*block)->mValue;
-        removeBlock(block);
     }
 
     return result;
 }
 
-template < typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename VALUE_TYPE /*= VALUE */, class Implement /* = HashMapBase */ >
-MAPPOS TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::setPosition(MAPPOS atPosition, VALUE_TYPE newValue)
+template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
+inline bool TEHashMap<KEY, VALUE, Implement>::removeFirst( void )
 {
-    ASSERT( mHashTable != nullptr );
-    ASSERT( atPosition != nullptr );
-
-    Block* block      = blockAt(atPosition);
-    Block* nextBlock  = nextValidBlock(block);
-    block->mValue     = newValue;
-    return static_cast<MAPPOS>(nextBlock);
-}
-
-template < typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename VALUE_TYPE /*= VALUE */, class Implement /* = HashMapBase */ >
-MAPPOS TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::removePosition(MAPPOS curPos, KEY& out_Key, VALUE& out_Value)
-{
-    ASSERT( mHashTable != nullptr );
-    ASSERT( curPos     != nullptr );
-    MAPPOS   result = nullptr;
-    Block* block    = blockAt(curPos);
-    Block* nextBlock= nextValidBlock(block);
-    result      = static_cast<MAPPOS>(nextBlock);
-    out_Key		= block->mKey;
-    out_Value	= block->mValue;
-
-    ASSERT(block != nullptr);
-    removeBlock(blockReference(*block));
-
-    return result;
-}
-
-template < typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename VALUE_TYPE /*= VALUE */, class Implement /* = HashMapBase */ >
-VALUE TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::removePosition(MAPPOS atPosition)
-{
-    ASSERT(mHashTable != nullptr);
-    ASSERT(atPosition != nullptr);
-
-    VALUE result;
-    Block* block = blockAt(atPosition);
-    result = block->mValue;
-    
-    ASSERT(block != nullptr);
-    removeBlock(blockReference(*block));
-    return result;
-}
-
-template < typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename VALUE_TYPE /*= VALUE */, class Implement /* = HashMapBase */ >
-void TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::removeAll( void )
-{
-    Block	*block = nullptr;
-    for (int idx = 0; idx < mHashTableSize; ++ idx)
+    bool result = false;
+    if (mValueList.empty() == false)
     {
-        for (block = mHashTable[idx]; block != nullptr; block = block->mNext)
-        {
-            (&block->mKey)->~KEY();
-            (&block->mValue)->~VALUE();
-        }
+        auto pos = mValueList.begin();
+        ASSERT(pos != mValueList.end());
+        mValueList.erase(pos);
+        result = true;
     }
 
-    deleteAllBlocks();
+    return result;
 }
 
-template < typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename VALUE_TYPE /*= VALUE */, class Implement /* = HashMapBase */ >
-MAPPOS TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::nextPosition(MAPPOS atPosition, KEY& out_Key, VALUE& out_Value) const
+template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
+inline bool TEHashMap<KEY, VALUE, Implement>::removeLast(KEY& out_Key, VALUE& out_Value)
 {
-    ASSERT(mHashTable != nullptr);
-    ASSERT(atPosition != nullptr);
+    bool result = false;
+    if (mValueList.empty() == false)
+    {
+        auto pos = mValueList.cbegin();
+        ASSERT(pos != mValueList.end());
+        out_Key = pos->first;
+        out_Value = pos->second;
 
-    Block* block      = blockAt(atPosition);
-    Block* nextBlock  = nextValidBlock(block);
-    out_Key		      = block->mKey;
-    out_Value	      = block->mValue;
+        mValueList.erase(pos);
+        result = true;
+    }
 
-    return static_cast<MAPPOS>(nextBlock);
+    return result;
 }
 
-template < typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename VALUE_TYPE /*= VALUE */, class Implement /* = HashMapBase */ >
-inline MAPPOS TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::nextPosition(MAPPOS atPosition, TEPair<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement> & out_Element) const
+template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
+inline bool TEHashMap<KEY, VALUE, Implement>::removeLast(void)
+{
+    bool result = false;
+    if (mValueList.empty() == false)
+    {
+        auto pos = mValueList.cbegin();
+        ASSERT(pos != mValueList.end());
+        mValueList.erase(pos);
+        result = true;
+    }
+
+    return result;
+}
+
+template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
+inline void TEHashMap<KEY, VALUE, Implement>::removeAll( void )
+{
+    mValueList.clear();
+}
+
+template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
+inline typename TEHashMap<KEY, VALUE, Implement>::MAPPOS TEHashMap<KEY, VALUE, Implement>::nextPosition(typename TEHashMap<KEY, VALUE, Implement>::MAPPOS atPosition, KEY& out_Key, VALUE& out_Value) const
+{
+    ASSERT(atPosition != mValueList.end());
+
+    MAPPOS result   = atPosition + 1;
+    out_Key		    = atPosition->first;
+    out_Value	    = atPosition->second;
+
+    return result;
+}
+
+template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
+inline typename TEHashMap<KEY, VALUE, Implement>::MAPPOS TEHashMap<KEY, VALUE, Implement>::nextPosition(typename TEHashMap<KEY, VALUE, Implement>::MAPPOS atPosition, TEPair<KEY, VALUE, Implement> & out_Element) const
 {
     return nextPosition(atPosition, out_Element.mKey, out_Element.mValue);
 }
 
-template < typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename VALUE_TYPE /*= VALUE */, class Implement /* = HashMapBase */ >
-inline MAPPOS TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::nextPosition( MAPPOS atPosition ) const
+template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
+inline typename TEHashMap<KEY, VALUE, Implement>::MAPPOS TEHashMap<KEY, VALUE, Implement>::nextPosition(typename TEHashMap<KEY, VALUE, Implement>::MAPPOS atPosition ) const
 {
-    ASSERT(mHashTable != nullptr);
-    ASSERT(atPosition != nullptr);
-    Block* block      = blockAt(atPosition);
-    return static_cast<MAPPOS>( nextValidBlock(block) );
+    ASSERT(atPosition != mValueList.end());
+    return ++ atPosition;
 }
 
-template < typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename VALUE_TYPE /*= VALUE */, class Implement /* = HashMapBase */ >
-inline VALUE& TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::getPosition( const MAPPOS atPosition )
+template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
+inline VALUE & TEHashMap<KEY, VALUE, Implement>::getAt( const KEY & Key )
 {
-    ASSERT( mHashTable != nullptr );
-    ASSERT( atPosition != nullptr );
-
-    Block* block = blockAt( atPosition );
-    return block->mValue;
+    return mValueList.at(Key);
 }
 
-template < typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename VALUE_TYPE /*= VALUE */, class Implement /* = HashMapBase */ >
-inline VALUE_TYPE TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::getPosition( const MAPPOS atPosition ) const
+template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
+inline const VALUE & TEHashMap<KEY, VALUE, Implement>::getAt(const KEY & Key) const
 {
-    ASSERT( mHashTable != nullptr );
-    ASSERT( atPosition != nullptr );
-
-    Block* block = blockAt( atPosition );
-    return block->mValue;
+    return mValueList.at(Key);
 }
 
-template < typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename VALUE_TYPE /*= VALUE */, class Implement /* = HashMapBase */ >
-VALUE& TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::getAt( KEY_TYPE Key )
+template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
+inline void TEHashMap<KEY, VALUE, Implement>::getAtPosition(typename TEHashMap<KEY, VALUE, Implement>::MAPPOS atPosition, KEY & out_Key, VALUE & out_Value) const
 {
-    ASSERT( mHashTable != nullptr );
-
-    unsigned int hash   = NECommon::MAP_INVALID_HASH;
-    Block *list = blockAt( Key, hash );
-    if ( list == nullptr )
-    {
-        // add new list
-        int idx     = static_cast<int>(hash % mHashTableSize);
-        list        = initNewBlock( );
-        list->mHash = hash;
-        list->mKey	= Key;
-        list->mNext	= mHashTable[idx];
-        mHashTable[idx] = list;
-    }
-
-    return list->mValue;
+    ASSERT(atPosition != mValueList.end());
+    out_Key     = atPosition->first;
+    out_Value   = atPosition->second;
 }
 
-template < typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename VALUE_TYPE /*= VALUE */, class Implement /* = HashMapBase */ >
-inline VALUE_TYPE TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::getAt(KEY_TYPE Key) const
-{
-    Block ** block  = blockAtRef(Key);
-    ASSERT((block != nullptr) && (*block != nullptr));
-    return (*block)->mValue;
-}
-
-template < typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename VALUE_TYPE /*= VALUE */, class Implement /* = HashMapBase */ >
-inline void TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::getAtPosition(MAPPOS atPosition, KEY & out_Key, VALUE & out_Value) const
-{
-    ASSERT(mHashTable != nullptr);
-    ASSERT(atPosition != nullptr);
-
-    Block* block    = blockAt(atPosition);
-    out_Key   = block->mKey;
-    out_Value= block->mValue;
-}
-
-template < typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename VALUE_TYPE /*= VALUE */, class Implement /* = HashMapBase */ >
-inline void TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::getAtPosition(MAPPOS atPosition, TEPair<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement> & out_Element) const
+template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
+inline void TEHashMap<KEY, VALUE, Implement>::getAtPosition(typename TEHashMap<KEY, VALUE, Implement>::MAPPOS atPosition, TEPair<KEY, VALUE, Implement> & out_Element) const
 {
     getAtPosition(atPosition, out_Element.mKey, out_Element.mValue);
 }
 
-template < typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename VALUE_TYPE /*= VALUE */, class Implement /* = HashMapBase */ >
-inline VALUE_TYPE TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::valueAtPosition( MAPPOS atPosition ) const
+template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
+inline const KEY & TEHashMap<KEY, VALUE, Implement>::keyAtPosition(typename TEHashMap<KEY, VALUE, Implement>::MAPPOS atPosition) const
 {
-    ASSERT( mHashTable != nullptr );
-    ASSERT( atPosition != nullptr );
-
-    Block* block    = blockAt(atPosition);
-    return block->mValue;
+    ASSERT(atPosition != mValueList.end());
+    return atPosition->first;
 }
 
-template < typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename VALUE_TYPE /*= VALUE */, class Implement /* = HashMapBase */ >
-inline KEY_TYPE TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::keyAtPosition( MAPPOS atPosition ) const
+template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
+inline KEY& TEHashMap<KEY, VALUE, Implement>::keyAtPosition(typename TEHashMap<KEY, VALUE, Implement>::MAPPOS atPosition)
 {
-    ASSERT( mHashTable != nullptr );
-    ASSERT( atPosition != nullptr );
-
-    Block* block    = blockAt(atPosition);
-    return block->mKey;
+    ASSERT(atPosition != mValueList.end());
+    return const_cast<KEY &>(atPosition->first);
 }
 
-template < typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename VALUE_TYPE /*= VALUE */, class Implement /* = HashMapBase */ >
-bool TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::nextEntry(MAPPOS & in_out_NextPosition, KEY & out_NextKey, VALUE & out_NextValue) const
+template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
+inline const VALUE & TEHashMap<KEY, VALUE, Implement>::valueAtPosition(typename TEHashMap<KEY, VALUE, Implement>::MAPPOS atPosition ) const
 {
-    ASSERT( mHashTable != nullptr );
-    ASSERT( in_out_NextPosition != nullptr );
+    ASSERT(atPosition != mValueList.end());
+    return atPosition->second;
+}
 
-    bool result     = false;
-    Block* block    = blockAt(in_out_NextPosition);
-    Block* nextBlock= nextValidBlock(block);
-    in_out_NextPosition = static_cast<MAPPOS>(nextBlock);
-    if ( nextBlock != nullptr )
+template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
+inline VALUE& TEHashMap<KEY, VALUE, Implement>::valueAtPosition(typename TEHashMap<KEY, VALUE, Implement>::MAPPOS atPosition)
+{
+    ASSERT(atPosition != mValueList.end());
+    return atPosition->second;
+}
+
+template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
+inline bool TEHashMap<KEY, VALUE, Implement>::nextEntry(typename TEHashMap<KEY, VALUE, Implement>::MAPPOS & in_out_NextPosition, KEY & out_NextKey, VALUE & out_NextValue) const
+{
+    ASSERT( in_out_NextPosition != mValueList.end() );
+    bool result = false;
+    if (++in_out_NextPosition != mValueList.end())
     {
-        out_NextKey     = nextBlock->mKey;
-        out_NextValue   = nextBlock->mValue;
-        result          = true;
+        out_NextKey     = in_out_NextPosition->first;
+        out_NextValue   = in_out_NextPosition->second;
+        result = true;
     }
 
     return result;
 }
 
-template < typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename VALUE_TYPE /*= VALUE */, class Implement /* = HashMapBase */ >
-void TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::initHashTable(int sizeHashTable /*= NECommon::MAP_DEFAULT_HASH_SIZE*/)
-{
-    ASSERT(mElemCount   == 0);
-    ASSERT(sizeHashTable >  0 && sizeHashTable <= NECommon::MAP_MAX_TABLE_SIZE);
-    if (mHashTable != nullptr)
-        delete [] mHashTable;
-
-    mHashTable	    = DEBUG_NEW Block *[static_cast<unsigned int>(sizeHashTable)];
-    mHashTableSize	= mHashTable != nullptr ? sizeHashTable : 0;
-    NEMemory::zeroElements<Block *>( mHashTable, mHashTableSize);
-}
-
-template < typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename VALUE_TYPE /*= VALUE */, class Implement /* = HashMapBase */ >
-void TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::createBlockList( void )
-{
-    // add another block
-    // chain them into free list
-    unsigned int length     = static_cast<unsigned int>(mBlockSize * sizeof(Block) + sizeof(Block *));
-    unsigned char* newBlock = DEBUG_NEW unsigned char[length];
-    if (newBlock != nullptr)
-    {
-        // link blocks, copy the address of last block into
-        // beginning of new block (and skip address part)
-        NEMemory::memCopy(newBlock, static_cast<int>(length), &mBlockList, static_cast<int>(sizeof(Block *)));
-        mBlockList   = reinterpret_cast<Block *>(newBlock);
-        newBlock    += sizeof(Block *);
-        Block* block = reinterpret_cast<Block *>(newBlock);
-        block       += mBlockSize - 1;
-        for (int i = mBlockSize; i > 0; -- i, -- block )
-        {
-            block->mNext= mFreeList;
-            mFreeList   = block;
-        }
-    }
-}
-
-template < typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename VALUE_TYPE /*= VALUE */, class Implement /* = HashMapBase */ >
-void TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::deleteBlockList( void )
-{
-    unsigned char* blocks = reinterpret_cast<unsigned char *>(mBlockList);
-    while (blocks != nullptr)
-    {
-        // copy address of next block, placed during creating blocks.
-        NEMemory::memCopy(&mBlockList, sizeof(Block *), blocks, sizeof(Block *));
-        delete [] blocks;
-        blocks = reinterpret_cast<unsigned char *>(mBlockList);
-    }
-}
-
-template < typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename VALUE_TYPE /*= VALUE */, class Implement /* = HashMapBase */ >
-void TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::freeBlock(Block* block)
-{
-    (&block->mKey)->~KEY();
-    (&block->mValue)->~VALUE();
-    block->mHash = 0;
-    block->mNext = mFreeList;
-    mFreeList = block;
-    mElemCount --;
-    ASSERT(mElemCount >= 0);
-}
-
-template < typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename VALUE_TYPE /*= VALUE */, class Implement /* = HashMapBase */ >
-inline unsigned int TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::getHashKey( KEY_TYPE Key ) const
-{
-    return mImplement.implHashKey(Key);
-}
-
-template < typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename VALUE_TYPE /*= VALUE */, class Implement /* = HashMapBase */>
-inline bool TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::isEqualKeys(KEY_TYPE key1, KEY_TYPE key2) const
-{
-    return mImplement.implEqualKeys(key1, key2);
-}
-
-template < typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename VALUE_TYPE /*= VALUE */, class Implement /* = HashMapBase */>
-inline bool TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::isEqualValues(VALUE_TYPE value1, VALUE_TYPE value2) const
-{
-    return mImplement.implEqualValues(value1, value2);
-}
-
 //////////////////////////////////////////////////////////////////////////
-// TEHashMap<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement> class friend methods
+// TEHashMap<KEY, VALUE, Implement> class friend methods
 //////////////////////////////////////////////////////////////////////////
 
-template < typename K, typename V, typename KT, typename VT, class Impl >
-const IEInStream & operator >> ( const IEInStream & stream, TEHashMap<K, V, KT, VT, Impl> & input )
+template < typename KEY, typename VALUE, class Implement >
+const IEInStream & operator >> ( const IEInStream & stream, TEHashMap<KEY, VALUE, Implement> & input )
 {
-    int size = 0;
+    uint32_t size = 0;
     stream >> size;
-    for (int i = 0; i < size; ++ i)
+    
+    input.mValueList.clear();
+    input.mValueList.reserve(size);
+
+    for (uint32_t i = 0; i < size; ++ i)
     {
-        TEPair<K, V, KT, VT, Impl> mapItem;
-        stream >> mapItem;
-        input.setAt(mapItem, false);
+        KEY key;
+        VALUE value;
+        stream >> key >> value;
+        input.setAt(key, value);
     }
+
     return stream;
 }
 
-template < typename K, typename V, typename KT, typename VT, class Impl>
-IEOutStream & operator << ( IEOutStream & stream, const TEHashMap<K, V, KT, VT, Impl> & output )
+template < typename KEY, typename VALUE, class Implement >
+IEOutStream & operator << ( IEOutStream & stream, const TEHashMap<KEY, VALUE, Implement> & output )
 {
-    int size = output.getSize();
+    uint32_t size = output.getSize();
     stream << size;
     if ( size != 0 )
     {
-        const typename TEHashMap<K, V, KT, VT, Impl>::Block * block = output.firstValidBlock();
-        for ( ; block != nullptr; block = output.nextValidBlock(block))
-            stream << static_cast<const TEPair<K, V, KT, VT, Impl> &>(*block);
+        for (const auto& elem : output.mValueList)
+        {
+            stream << elem.first;
+            stream << elem.second;
+        }
     }
 
     return stream;

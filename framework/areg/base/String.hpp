@@ -756,6 +756,25 @@ private:
 };
 
 //////////////////////////////////////////////////////////////////////////
+// Hasher of String class
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   A template to calculate hash value of the String.
+ */
+namespace std
+{
+    template<>
+    struct hash<String>
+    {
+        //! A function to convert String object to unsigned int.
+        inline unsigned int operator()(const String& key) const
+        {
+            return static_cast<unsigned int>(key);
+        }
+    };
+}
+
+//////////////////////////////////////////////////////////////////////////
 // String class inline function implementation
 //////////////////////////////////////////////////////////////////////////
 

@@ -242,6 +242,25 @@ private:
 };
 
 //////////////////////////////////////////////////////////////////////////
+// Hasher of ServiceAddress class
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   A template to calculate hash value of the ServiceAddress.
+ */
+namespace std
+{
+    template<>
+    struct hash<ServiceAddress>
+    {
+        //! A function to convert ServiceAddress object to unsigned int.
+        inline unsigned int operator()(const ServiceAddress& key) const
+        {
+            return static_cast<unsigned int>(key);
+        }
+    };
+}
+
+//////////////////////////////////////////////////////////////////////////
 // ServiceAddress class inline methods
 //////////////////////////////////////////////////////////////////////////
 

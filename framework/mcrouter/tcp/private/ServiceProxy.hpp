@@ -47,7 +47,7 @@ public:
      * \brief   The remote proxy address to set in object
      * \param   addrProxy   The address of remote proxy object.
      **/
-    explicit ServiceProxy( const ProxyAddress & addrProxy );
+    ServiceProxy( const ProxyAddress & addrProxy );
 
     /**
      * \brief   The remote proxy address to set in object
@@ -56,10 +56,22 @@ public:
     ServiceProxy( ProxyAddress && addrProxy ) noexcept;
 
     /**
+     * \brief   Extracts relevant data from given Stub address and initializes Proxy service object.
+     * \param   addrStub    The Stub address to extract information.
+     **/
+    explicit ServiceProxy(const StubAddress & addrStub);
+
+    /**
+     * \brief   Extracts relevant data from given Stub address and initializes Stub service object.
+     * \param   addrStub    The Stub address to extract information.
+     **/
+    explicit ServiceProxy(StubAddress && addrStub) noexcept;
+
+    /**
      * \brief   Copies data from given source.
      * \param   serviceProxy    The source object to copy data.
      **/
-    explicit ServiceProxy( const ServiceProxy & serviceProxy );
+    ServiceProxy( const ServiceProxy & serviceProxy );
 
     /**
      * \brief   Moves data from given source.

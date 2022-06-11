@@ -185,6 +185,25 @@ private:
     DECLARE_NOCOPY_NOMOVE( TraceScope );
 };
 
+//////////////////////////////////////////////////////////////////////////
+// Hasher of TraceScope class
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   A template to calculate hash value of the TraceScope.
+ */
+namespace std
+{
+    template<>
+    struct hash<TraceScope>
+    {
+        //! A function to convert TraceScope object to unsigned int.
+        inline unsigned int operator()(const TraceScope& key) const
+        {
+            return static_cast<unsigned int>(key);
+        }
+    };
+}
+
 //////////////////////////////////////////////////////////////////////////////
 // TraceScope class inline functions implementation
 //////////////////////////////////////////////////////////////////////////////

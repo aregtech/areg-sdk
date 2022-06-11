@@ -139,6 +139,26 @@ StubAddress::StubAddress( StubAddress && source ) noexcept
 {
 }
 
+StubAddress::StubAddress(const ServiceAddress & source)
+    : ServiceAddress(static_cast<const ServiceAddress&>(source))
+    , mThreadName   (ThreadAddress::INVALID_THREAD_ADDRESS.getThreadName())
+    , mChannel      ( )
+    , mMagicNum     (static_cast<unsigned int>(source))
+{
+    if (ServiceAddress::isValid())
+        mChannel.setCookie(NEService::COOKIE_LOCAL);
+}
+
+StubAddress::StubAddress( ServiceAddress && source)
+    : ServiceAddress(std::move(source))
+    , mThreadName   (ThreadAddress::INVALID_THREAD_ADDRESS.getThreadName())
+    , mChannel      ( )
+    , mMagicNum     (static_cast<unsigned int>(source))
+{
+    if (ServiceAddress::isValid())
+        mChannel.setCookie(NEService::COOKIE_LOCAL);
+}
+
 StubAddress::StubAddress( const IEInStream & stream )
     : ServiceAddress( stream )
     , mThreadName   ( stream )

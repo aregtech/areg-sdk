@@ -59,6 +59,18 @@ ServiceStub::ServiceStub( ServiceStub && stubService ) noexcept
 {
 }
 
+ServiceStub::ServiceStub(const ServiceAddress& addrService)
+    : mStubAddress  (addrService)
+    , mConnectStatus(NEService::eServiceConnection::ServiceConnectionUnknown)
+{
+}
+
+ServiceStub::ServiceStub( ServiceAddress && addrService)
+    : mStubAddress  (std::move(addrService))
+    , mConnectStatus(NEService::eServiceConnection::ServiceConnectionUnknown)
+{
+}
+
 ServiceStub & ServiceStub::operator = ( const StubAddress & addrStub )
 {
     mStubAddress    = addrStub;

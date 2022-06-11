@@ -103,7 +103,7 @@ public:
 //////////////////////////////////////////////////////////////////////////
 public:
 /************************************************************************/
-// Basic operatos ( = , ==, 
+// Basic operators ( = , ==, 
 /************************************************************************/
     /**
      * \brief   Assignment operator.
@@ -142,14 +142,14 @@ public:
  ************************************************************************/
     /**
      * \brief   Overloaded new() operator
-     * \param   size    Size of the memory block to allocate
+     * \param   size    The size of the memory block to allocate
      * \return  Valid pointer to a memory block of size 'size' or nullptr in case of error.
      **/
     void * operator new( size_t size );
 
     /**
      * \brief   Overloaded array new operator
-     * \param   size    Size of the memory block to allocate
+     * \param   size    The size of the memory block to allocate
      * \return  Pointer to a memory block of size 'size' or nullptr in case of error.
      **/
     void * operator new [ ] ( size_t size );
@@ -174,7 +174,7 @@ public:
      * \brief   Overloaded placement new. Stores block type, file name and line number information
      *          Used in debugging version. In other versions, only allocates memory without
      *          containing other information.
-     * \param   size    Size of the memory block to allocate
+     * \param   size    The size of the memory block to allocate
      * \param   block   Not used. Block type. Always passed 1 as a normal block.
      * \param   file    Ignored in non-debug version. Source code file name, normally __FILE__
      * \param   line    Ignored in non-debug version. Source code line number, normally __LINE__
@@ -186,7 +186,7 @@ public:
      * \brief   Overloaded placement new. Stores block type, file name and line number information
      *          Used in debugging version. In other versions, only allocates memory without
      *          containing other information.
-     * \param   size    Size of the memory block to allocate
+     * \param   size    The size of the memory block to allocate
      * \param   block   Not used. Block type. Always passed 1 as a normal block.
      * \param   file    Ignored in non-debug version. Source code file name, normally __FILE__
      * \param   line    Ignored in non-debug version. Source code line number, normally __LINE__
@@ -244,6 +244,25 @@ private:
      **/
    inline const Object& self( void ) const;
 };
+
+//////////////////////////////////////////////////////////////////////////
+// Hasher of Object class
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   A template to calculate hash value of the Object.
+ */
+namespace std
+{
+    template<>
+    struct hash<Object>
+    {
+        //! A function to convert Object to unsigned int.
+        inline unsigned int operator()(const Object& key) const
+        {
+            return static_cast<unsigned int>(key);
+        }
+    };
+}
 
 //////////////////////////////////////////////////////////////////////////
 // Object class inline functions

@@ -205,6 +205,35 @@ private:
 };
 
 //////////////////////////////////////////////////////////////////////////
+// Hasher of ServerInfo class
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   A template to calculate hash value of the ServerInfo.
+ */
+namespace std
+{
+    //! Calculates the hash value of the ServerInfo object
+    template<> struct hash<ServerInfo>
+    {
+        //! A function to convert ServerInfo object to unsigned int.
+        inline unsigned int operator()(const ServerInfo& key) const
+        {
+            return static_cast<unsigned int>(static_cast<const ServiceAddress &>(key.getAddress()));
+        }
+    };
+
+    //!< Compares 2 ServerInfo objects
+    template<> struct equal_to<ServerInfo>
+    {
+        //! A function operator to compare 2 ServerInfo objects.
+        inline bool operator() (const ServerInfo& key1, const ServerInfo& key2) const
+        {
+            return static_cast<const ServiceAddress&>(key1.getAddress()) == static_cast<const ServiceAddress&>(key2.getAddress());
+        }
+    };
+}
+
+//////////////////////////////////////////////////////////////////////////
 // ServerInfo class inline functions implementation
 //////////////////////////////////////////////////////////////////////////
 

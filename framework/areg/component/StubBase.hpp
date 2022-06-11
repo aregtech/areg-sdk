@@ -183,11 +183,11 @@ protected:
     /**
      * \brief   Stub Session map helper class.
      **/
-    using ImplStubSessionMap= TEHashMapImpl<unsigned int, const StubBase::Listener &>;
+    using ImplStubSessionMap= TEHashMapImpl<unsigned int, StubBase::Listener>;
     /**
      * \brief   StubBase::StubSessionMap class defines list of Session IDs and unblocked requests.
      **/
-    using MapStubSession     = TEIntegerHashMap<StubBase::Listener, const StubBase::Listener &, ImplStubSessionMap>;
+    using MapStubSession     = TEIntegerHashMap<StubBase::Listener, ImplStubSessionMap>;
 
     //////////////////////////////////////////////////////////////////////////
     // StubBase resource tracking
@@ -195,7 +195,7 @@ protected:
     /**
      * \brief   Stub resource hash map helper class.
      **/
-    class ImplStubMap	: public TEHashMapImpl<const StubAddress &, StubBase *>
+    class ImplStubMap	: public TEHashMapImpl<StubAddress, StubBase *>
     {
     public:
         /**
@@ -210,7 +210,7 @@ protected:
         }
     };
 
-    using MapStub           = TEHashMap<StubAddress, StubBase*, const StubAddress&, StubBase*, ImplStubMap>;
+    using MapStub           = TEHashMap<StubAddress, StubBase*, ImplStubMap>;
     /**
      * \brief   Stub resource helper definition.
      **/

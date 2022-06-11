@@ -147,9 +147,9 @@ void ConnectionManagerProxy::unregisterServiceListeners( void )
  * Requests.
  ************************************************************************/
  
-unsigned int ConnectionManagerProxy::requestConnet( IENotificationEventConsumer & caller, const String & nickName, const DateTime & dateTime )
+unsigned int ConnectionManagerProxy::requestConnect( IENotificationEventConsumer & caller, const String & nickName, const DateTime & dateTime )
 {
-    static const NEConnectionManager::eMessageIDs msgId = NEConnectionManager::eMessageIDs::MsgId_requestConnet;
+    static const NEConnectionManager::eMessageIDs msgId = NEConnectionManager::eMessageIDs::MsgId_requestConnect;
     EventDataStream args(EventDataStream::eEventData::EventDataExternal);
     IEOutStream & stream = args.getStreamForWrite();
     stream << nickName;
@@ -171,9 +171,9 @@ unsigned int ConnectionManagerProxy::requestRegisterConnection( IENotificationEv
     return mSequenceCount;
 }
     
-void ConnectionManagerProxy::requestDiconnect( const String & nickName, unsigned int cookie, const DateTime & dateTime )
+void ConnectionManagerProxy::requestDisconnect( const String & nickName, unsigned int cookie, const DateTime & dateTime )
 {
-    static const NEConnectionManager::eMessageIDs msgId = NEConnectionManager::eMessageIDs::MsgId_requestDiconnect;
+    static const NEConnectionManager::eMessageIDs msgId = NEConnectionManager::eMessageIDs::MsgId_requestDisconnect;
     EventDataStream args(EventDataStream::eEventData::EventDataExternal);
     IEOutStream & stream = args.getStreamForWrite();
     stream << nickName;

@@ -35,6 +35,18 @@ ServiceProxy::ServiceProxy( ProxyAddress && addrProxy ) noexcept
 {
 }
 
+ServiceProxy::ServiceProxy(const StubAddress & addrStub)
+    : mProxyAddress (static_cast<const ServiceAddress&>(addrStub))
+    , mConnectStatus(NEService::eServiceConnection::ServiceConnectionUnknown)
+{
+}
+
+ServiceProxy::ServiceProxy( StubAddress && addrStub) noexcept
+    : mProxyAddress(static_cast<ServiceAddress &&>(addrStub))
+    , mConnectStatus(NEService::eServiceConnection::ServiceConnectionUnknown)
+{
+}
+
 ServiceProxy::ServiceProxy( const ServiceProxy & serviceProxy )
     : mProxyAddress ( serviceProxy.mProxyAddress )
     , mConnectStatus( serviceProxy.mConnectStatus )

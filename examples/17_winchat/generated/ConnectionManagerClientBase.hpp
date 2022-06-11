@@ -164,22 +164,22 @@ public:
 public:
 
 /************************************************************************
- * Request Connet
+ * Request Connect
  ************************************************************************/
     /**
      * \brief   Request call.
      *          The request to connect to system
      * \param   nickName    The nick name of connecting client service
-     * \param   dateTime    The connecting client connection timestamp in UTC
+     * \param   dateTime    The connecting client connection time-stamp in UTC
      * \return  The sequence count number of call
      * \see     responseConnect
      **/
-    inline unsigned int requestConnet( const String & nickName, const DateTime & dateTime );
+    inline unsigned int requestConnect( const String & nickName, const DateTime & dateTime );
     /**
-     * \brief   Overwrite to handle error of Connet request call.
+     * \brief   Overwrite to handle error of Connect request call.
      * \param   FailureReason   The failure reason value of request call.
      **/
-    virtual void requestConnetFailed( NEService::eResultType FailureReason );
+    virtual void requestConnectFailed( NEService::eResultType FailureReason );
     
 /************************************************************************
  * Request RegisterConnection
@@ -190,7 +190,7 @@ public:
      * \param   nickName        The nick name of connection used in service
      * \param   cookie          The cookie value to set
      * \param   connectCookie   The cookie to use for registration. 
-     * \param   dateRegister    The connection registration timestamp
+     * \param   dateRegister    The connection registration time-stamp
      * \return  The sequence count number of call
      * \see     responseRegisterConnection
      **/
@@ -202,7 +202,7 @@ public:
     virtual void requestRegisterConnectionFailed( NEService::eResultType FailureReason );
     
 /************************************************************************
- * Request Diconnect
+ * Request Disconnect
  ************************************************************************/
     /**
      * \brief   Request call.
@@ -212,12 +212,12 @@ public:
      * \param   dateTime    Disconnect request date-time
      * \see     Has no response
      **/
-    inline void requestDiconnect( const String & nickName, unsigned int cookie, const DateTime & dateTime );
+    inline void requestDisconnect( const String & nickName, unsigned int cookie, const DateTime & dateTime );
     /**
-     * \brief   Overwrite to handle error of Diconnect request call.
+     * \brief   Overwrite to handle error of Disconnect request call.
      * \param   FailureReason   The failure reason value of request call.
      **/
-    virtual void requestDiconnectFailed( NEService::eResultType FailureReason );
+    virtual void requestDisconnectFailed( NEService::eResultType FailureReason );
     
 /************************************************************************
  * Response Connect
@@ -229,9 +229,9 @@ public:
      *          This call will be automatically triggered, on every appropriate request call
      * \param   nickName    Client connection data, which contains nick name and connection date-time
      * \param   cookie      Connection assigned cookie for client service
-     * \param   dateTime    The client service connection timestamp in UTC
+     * \param   dateTime    The client service connection time-stamp in UTC
      * \param   result      The connection operation result
-     * \see     requestConnet
+     * \see     requestConnect
      **/
     virtual void responseConnect( const String & nickName, unsigned int cookie, const DateTime & dateTime, NEConnectionManager::eConnectionResult result );
     /**
@@ -540,10 +540,10 @@ inline void ConnectionManagerClientBase::notifyOnConnectionListUpdate( bool noti
  * Request calls
  ************************************************************************/
 
-inline unsigned int ConnectionManagerClientBase::requestConnet( const String & nickName, const DateTime & dateTime )
+inline unsigned int ConnectionManagerClientBase::requestConnect( const String & nickName, const DateTime & dateTime )
 {
     ASSERT(mProxy != nullptr);
-    return mProxy->requestConnet( static_cast<IENotificationEventConsumer &>(self()), nickName, dateTime );
+    return mProxy->requestConnect( static_cast<IENotificationEventConsumer &>(self()), nickName, dateTime );
 }
 
 inline unsigned int ConnectionManagerClientBase::requestRegisterConnection( const String & nickName, unsigned int cookie, unsigned int connectCookie, const DateTime & dateRegister )
@@ -552,10 +552,10 @@ inline unsigned int ConnectionManagerClientBase::requestRegisterConnection( cons
     return mProxy->requestRegisterConnection( static_cast<IENotificationEventConsumer &>(self()), nickName, cookie, connectCookie, dateRegister );
 }
 
-inline void ConnectionManagerClientBase::requestDiconnect( const String & nickName, unsigned int cookie, const DateTime & dateTime )
+inline void ConnectionManagerClientBase::requestDisconnect( const String & nickName, unsigned int cookie, const DateTime & dateTime )
 {
     ASSERT(mProxy != nullptr);
-    mProxy->requestDiconnect( nickName, cookie, dateTime );
+    mProxy->requestDisconnect( nickName, cookie, dateTime );
 }
 
 /************************************************************************

@@ -15,7 +15,6 @@
  ************************************************************************/
 #include "areg/base/SynchObjects.hpp"
 #include "areg/base/NEMemory.hpp"
-#include "areg/base/Thread.hpp"
 
 //////////////////////////////////////////////////////////////////////////
 // IEResourceLock class implementation

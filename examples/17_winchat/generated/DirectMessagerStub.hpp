@@ -115,7 +115,7 @@ public:
      * \brief   Request call.
      *          Request to join chat. The participant should be in the list of connections
      * \param   participant The participant to join chat. The participant should be in the connection list.
-     * \param   timeConnect The timestamp when the request was sent.
+     * \param   timeConnect The time-stamp when the request was sent.
      * \see     responseChatJoin
      **/
     virtual void requestChatJoin( const NEDirectMessager::sParticipant & participant, const DateTime & timeConnect ) = 0;
@@ -125,7 +125,7 @@ public:
      *          Request to send a message, has no response
      * \param   sender      The participant structure of message sender
      * \param   msgText     The text message to send
-     * \param   timeSent    The timestamp when the message is requested to send.
+     * \param   timeSent    The time-stamp when the message is requested to send.
      * \note    Has no response
      **/
     virtual void requestMessageSend( const NEDirectMessager::sParticipant & sender, const String & msgText, const DateTime & timeSent ) = 0;
@@ -143,7 +143,7 @@ public:
      * \brief   Request call.
      *          The request to leave chat-room. Has no response.
      * \param   participant The structure of chat-room participant.
-     * \param   timeLeave   Timestamp when it was requested to leave chat-room.
+     * \param   timeLeave   Time-stamp when it was requested to leave chat-room.
      * \note    Has no response
      **/
     virtual void requestChatLeave( const NEDirectMessager::sParticipant & participant, const DateTime & timeLeave ) = 0;
@@ -158,8 +158,8 @@ public:
      *          Response to join chat
      * \param   succeed         Flag, indicating whether connection is accepted or not.
      * \param   listParticipant The list of participants.
-     * \param   timeConnect     Timestamp when it was requested to join chat
-     * \param   timeConnected   Timestamp when the request to join was accepted and new participants was registered.
+     * \param   timeConnect     Time-stamp when it was requested to join chat
+     * \param   timeConnected   Time-stamp when the request to join was accepted and new participants was registered.
      * \see     requestChatJoin
      **/
     virtual void responseChatJoin( bool succeed, const NEDirectMessager::ListParticipants & listParticipant, const DateTime & timeConnect, const DateTime & timeConnected );
@@ -174,7 +174,7 @@ public:
      *          Informs all connected servicing clients that the message is sent.
      * \param   sender      The structure of participant, who sent the message.
      * \param   msgText     The message, which was sent.
-     * \param   timeSent    The timestamp when the message was sent.
+     * \param   timeSent    The time-stamp when the message was sent.
      **/
     virtual void broadcastMessageSent( const NEDirectMessager::sParticipant & sender, const String & msgText, const DateTime & timeSent );
 
@@ -190,7 +190,7 @@ public:
      * \brief   Broadcast call.
      *          Informs new participant joined chat-room
      * \param   participant The structure of participant, joined chat-room.
-     * \param   timeJoined  Timestamp when participant joined the chat-room
+     * \param   timeJoined  Time-stamp when participant joined the chat-room
      **/
     virtual void broadcastParticipantJoined( const NEDirectMessager::sParticipant & participant, const DateTime & timeJoined );
 
@@ -198,7 +198,7 @@ public:
      * \brief   Broadcast call.
      *          Informs that a participant left chat-room.
      * \param   participant The structure of participant, who left the chat-room.
-     * \param   timeLeft    The timestamp when the participant left chat-room.
+     * \param   timeLeft    The time-stamp when the participant left chat-room.
      **/
     virtual void broadcastParticipantLeft( const NEDirectMessager::sParticipant & participant, const DateTime & timeLeft );
 

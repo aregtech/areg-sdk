@@ -50,13 +50,13 @@ private:
     /**
      * \brief   Remote servicing map helper class.
      **/
-    using ImplMapConfiguration	= TEHashMapImpl<NERemoteService::eServiceConnection, const ListProperties &>;
+    using ImplMapConfiguration	= TEHashMapImpl<NERemoteService::eServiceConnection, ListProperties>;
     /**
      * \brief   Map of configuration type and list of configuration properties.
      * \tparam  NERemoteService::eServiceConnection         The section / type of configuration.
      * \tparam  ConnectionConfiguration::ListProperties   The list of configuration properties.
      **/
-    using MapConfiguration		= TEHashMap<NERemoteService::eServiceConnection, ListProperties, NERemoteService::eServiceConnection, const ListProperties &, ImplMapConfiguration>;
+    using MapConfiguration		= TEHashMap<NERemoteService::eServiceConnection, ListProperties, ImplMapConfiguration>;
 
     /**
      * \brief   Connection configuration property indexes.
@@ -216,7 +216,7 @@ private:
 #if defined(_MSC_VER) && (_MSC_VER > 1200)
     #pragma warning(disable: 4251)
 #endif  // _MSC_VER
-    MapConfiguration    mMapConfig;     //!< The configuratio map where the keys are configuration section types and value is property list.
+    MapConfiguration    mMapConfig;     //!< The configuration map where the keys are configuration section types and value is property list.
 #if defined(_MSC_VER) && (_MSC_VER > 1200)
     #pragma warning(default: 4251)
 #endif  // _MSC_VER

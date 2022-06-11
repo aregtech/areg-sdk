@@ -48,7 +48,7 @@ class AREG_API RuntimeClassID
      * \brief   Declare friend classes to access private default constructor
      *          required to initialize runtime class ID in hash map blocks.
      **/
-    template < typename KEY, typename VALUE, typename KEY_TYPE, typename VALUE_TYPE, class Implement >
+    template < typename KEY, typename VALUE, class Implement >
     friend class TEHashMap;
     template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Implement>
     friend class TEResourceMap;
@@ -241,6 +241,25 @@ private:
      **/
     unsigned int    mMagicNum;
 };
+
+//////////////////////////////////////////////////////////////////////////
+// Hasher of RuntimeClassID class
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   A template to calculate hash value of the RuntimeClassID.
+ */
+namespace std
+{
+    template<>
+    struct hash<RuntimeClassID>
+    {
+        //! A function to convert String object to unsigned int.
+        inline unsigned int operator()(const RuntimeClassID& key) const
+        {
+            return static_cast<unsigned int>(key);
+        }
+    };
+}
 
 //////////////////////////////////////////////////////////////////////////
 // RuntimeClassID class inline function implementation

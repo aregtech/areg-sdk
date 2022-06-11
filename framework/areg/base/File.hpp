@@ -483,17 +483,17 @@ public:
 
     /**
      * \brief   1.  Normalizes file path, replaces current and parent folder symbols like "." or "..".
-     *          2.  Generates file name setting timestamp on the name of file 
-     *              timestamp in format yyyy_mm_dd_hh_mm_ss_ms keeping the file extension.
+     *          2.  Generates file name setting time-stamp on the name of file 
+     *              time-stamp in format yyyy_mm_dd_hh_mm_ss_ms keeping the file extension.
      *              If passed file name has keyword "%time%" it will replace with mentioned
-     *              timestamp format.
+     *              time-stamp format.
      *          3.  Replaces special folder masks such as user home or temp.
      *
      *          Examples:
      *              a. "./dir1/dir2/..\\dir4\\file.dat" ==> converted to "<current dir>/dir1/dir4/file.dat",
      *                  where <current dir> is current working directory.
      *
-     *              2.  ".logs/logs_%timestamp%.dat" ==> converted to "<current dir>/logs_yyyy_mm_dd_hh_mm_ss_ms.dat",
+     *              2.  ".logs/logs_%time-stamp%.dat" ==> converted to "<current dir>/logs_yyyy_mm_dd_hh_mm_ss_ms.dat",
      *                  where <current dir> is current working directory and "yyyy_mm_dd_hh_mm_ss_ms" is a data-time format.
      *
      *              3.  "%personal%/my_file.dat" ==> converted to "<user document dir>/my_file.dat", where
