@@ -195,21 +195,23 @@ ExpiredTimerInfo & ExpiredTimerInfo::operator = ( ExpiredTimerInfo && src ) noex
 // ExpiredTimers class implementation
 //////////////////////////////////////////////////////////////////////////
 
-LISTPOS ExpiredTimers::findTimer(Timer * whichTimer, LISTPOS searchAfter /*= nullptr*/)
+ExpiredTimers::LISTPOS ExpiredTimers::findTimer(Timer* whichTimer)
 {
-    TELinkedList<ExpiredTimerInfo, const ExpiredTimerInfo &>::Block * block = mHead;
-    if ( (searchAfter != nullptr) && (mCount != 0) )
-    {
-        block = reinterpret_cast<TELinkedList<ExpiredTimerInfo, const ExpiredTimerInfo &>::Block *>(searchAfter)->mNext;
-    }
+    return findTimer(whichTimer, ExpiredTimersBase::invalidPosition());
+}
 
-    for ( ; block != nullptr; block = block->mNext )
+ExpiredTimers::LISTPOS ExpiredTimers::findTimer(Timer * whichTimer, LISTPOS searchAfter)
+{
+    LISTPOS end = ExpiredTimersBase::invalidPosition();
+    LISTPOS pos = searchAfter == end ? ExpiredTimersBase::firstPosition() : ++searchAfter;
+
+    for (; pos != end; pos = ExpiredTimersBase::nextPosition(pos))
     {
-        if ( block->mValue.mTimer == whichTimer )
+        if (valueAtPosition(pos).mTimer == whichTimer)
             break;
     }
 
-    return reinterpret_cast<LISTPOS>(block);
+    return pos;
 }
 
 int ExpiredTimers::removeAllTimers( Timer * whichTimer )
@@ -218,18 +220,19 @@ int ExpiredTimers::removeAllTimers( Timer * whichTimer )
 
     if (whichTimer != nullptr)
     {
-        TELinkedList<ExpiredTimerInfo, const ExpiredTimerInfo &>::Block * block = mHead;
-
-        while (block != nullptr)
+        LISTPOS end = invalidPosition();
+        LISTPOS pos = firstPosition();
+        while (pos != end)
         {
-            TELinkedList<ExpiredTimerInfo, const ExpiredTimerInfo &>::Block * next = block->mNext;
-            if ( block->mValue.mTimer == whichTimer )
+            if (pos->mTimer == whichTimer)
             {
-                TELinkedList<ExpiredTimerInfo, const ExpiredTimerInfo &>::removeAt( reinterpret_cast<LISTPOS>(block) );
+                pos = removeAt(pos);
                 ++ result;
             }
-
-            block = next;
+            else
+            {
+                ++pos;
+            }
         }
     }
 

@@ -111,7 +111,7 @@ private:
      * \brief   The list of logging properties
      * \tparam  Value   The value is a property
      **/
-    using ListProperties    = TELinkedList<TraceProperty, const TraceProperty &>;
+    using ListProperties    = TELinkedList<TraceProperty>;
 
     //!< The thread name of tracer
     static constexpr std::string_view   TRACER_THREAD_NAME          { "_AREG_TRACER_THREAD_" };

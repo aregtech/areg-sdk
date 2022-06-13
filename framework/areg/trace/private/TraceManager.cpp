@@ -352,8 +352,8 @@ bool TraceManager::loadConfiguration( const FileBase & configFile )
             if ( newProperty.parseProperty(line) )
             {
                 // search, whether the property is already set
-                LISTPOS pos = mPropertyList.find(newProperty, nullptr);
-                if ( pos != nullptr )
+                ListProperties::LISTPOS pos = mPropertyList.find(newProperty);
+                if ( mPropertyList.isValidPosition(pos) )
                 {
                     mPropertyList.setAt( pos, newProperty );
                 }
@@ -409,9 +409,9 @@ bool TraceManager::initializeConfig(void)
     Lock lock(mLock);
 
     String moduleName      = Process::getInstance().getAppName();
-    for ( LISTPOS pos = mPropertyList.firstPosition(); pos != nullptr; pos = mPropertyList.nextPosition(pos) )
+    for (ListProperties::LISTPOS pos = mPropertyList.firstPosition(); mPropertyList.isValidPosition(pos); pos = mPropertyList.nextPosition(pos) )
     {
-        const TraceProperty &     prop    = mPropertyList.getAt(pos);
+        const TraceProperty &     prop    = mPropertyList.valueAtPosition(pos);
         const TracePropertyKey &  Key     = prop.getKey();
 
         // For any property, either global setting is set, or local
@@ -647,8 +647,8 @@ void TraceManager::onUpdateScopes(SortedStringList & scopeList)
             if ( Key.getLogConfig() == NELogConfig::eLogConfig::ConfigScope)
             {
                 // first, save property in property list
-                LISTPOS pos = mPropertyList.find(scopeProperty, nullptr);
-                if ( pos != nullptr )
+                ListProperties::LISTPOS pos = mPropertyList.find(scopeProperty);
+                if ( mPropertyList.isValidPosition(pos) )
                 {
                     mPropertyList.setAt(pos, scopeProperty);
                 }

@@ -185,7 +185,7 @@ int EventDispatcherBase::removeConsumer( IEEventConsumer & whichConsumer )
     OUTPUT_DBG("[ %s ] dispatcher: Removing Consumer [ %p ] from Consumer Map", mDispatcherName.getString(), static_cast<void *>(&whichConsumer));
 
     int result = 0;
-    TELinkedList<RuntimeClassID, const RuntimeClassID &> removedList;
+    TELinkedList<RuntimeClassID> removedList;
     RuntimeClassID     Key(RuntimeClassID::createEmptyClassID());
     EventConsumerList* Value = nullptr;
 
@@ -208,7 +208,8 @@ int EventDispatcherBase::removeConsumer( IEEventConsumer & whichConsumer )
 
     while (removedList.isEmpty() == false)
     {
-        Key     = removedList.removeLast();
+        Key = removedList.getLastEntry();
+        removedList.removeLast();
         Value   = mConsumerMap.unregisterResourceObject(Key);
         ASSERT(Value != nullptr);
         delete Value;
@@ -331,8 +332,8 @@ bool EventDispatcherBase::dispatchEvent( Event& eventElem )
         mConsumerMap.unlock();
     }
 
-    LISTPOS pos = processingList.firstPosition();
-    while (pos != nullptr)
+    EventConsumerList::LISTPOS pos = processingList.firstPosition();
+    while (processingList.isValidPosition(pos))
     {
         consumer = processingList.getNext(pos);
         eventElem.dispatchSelf(consumer);

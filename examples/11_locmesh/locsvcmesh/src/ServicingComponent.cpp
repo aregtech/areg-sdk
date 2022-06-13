@@ -51,11 +51,11 @@ void ServicingComponent::requestHelloWorld(const String & roleName, const String
     TRACE_SCOPE(examples_11_locsvcmesh_ServicingComponent_requestHelloWorld);
 
     NEHelloWorld::ConnectionList & list = getConnectedClients();
-    LISTPOS pos = list.firstPosition();
+    NEHelloWorld::ConnectionList::LISTPOS pos = list.firstPosition();
     NEHelloWorld::sConnectedClient cl;
-    for ( ; pos != nullptr; pos = list.nextPosition(pos))
+    for ( ; list.isValidPosition(pos); pos = list.nextPosition(pos))
     {
-        const NEHelloWorld::sConnectedClient & client = list.getAt(pos);
+        const NEHelloWorld::sConnectedClient & client = list.valueAtPosition(pos);
         if (roleName == client.ccName)
         {
             TRACE_DBG("Component [ %s ] found client [ %s ] with ID [ %u ] in the list.", getRoleName().getString(), client.ccName.getString(), client.ccID);
@@ -66,7 +66,7 @@ void ServicingComponent::requestHelloWorld(const String & roleName, const String
         }
     }
 
-    if (pos == nullptr )
+    if (list.isEndPosition(pos))
     {
         cl.ccID     = ++ mGnerateID;
         cl.ccName   = roleName;
@@ -119,11 +119,11 @@ void ServicingComponent::requestClientShutdown(unsigned int clientID, const Stri
 
     TRACE_DBG("A client [ %s ] with ID [ %u ] notified shutdown.", roleName.getString(), clientID);
     NEHelloWorld::ConnectionList & list = getConnectedClients();
-    LISTPOS pos = list.firstPosition();
+    NEHelloWorld::ConnectionList::LISTPOS pos = list.firstPosition();
 
-    for ( ; pos != nullptr; pos = list.nextPosition(pos))
+    for ( ; list.isValidPosition(pos); pos = list.nextPosition(pos))
     {
-        const NEHelloWorld::sConnectedClient & client = list.getAt(pos);
+        const NEHelloWorld::sConnectedClient & client = list.valueAtPosition(pos);
         if (client.ccID == clientID)
         {
             TRACE_DBG("Client [ %s ] with ID [ %d ] in component [ %s ] is removed", roleName.getString(), clientID, getRoleName().getString());
@@ -133,8 +133,6 @@ void ServicingComponent::requestClientShutdown(unsigned int clientID, const Stri
             break;
         }
     }
-
-    ASSERT(pos != nullptr );
 
     if (mIsMain && list.isEmpty() && getRemainOutput() == 0)
     {

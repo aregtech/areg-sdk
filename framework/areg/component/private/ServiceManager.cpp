@@ -224,8 +224,8 @@ void ServiceManager::_registerServer( const StubAddress & whichServer )
     mServerList.registerServer(whichServer, clientList);
 #endif  // !ENABLE_TRACES
 
-    for ( LISTPOS pos = clientList.firstPosition(); pos != nullptr; pos = clientList.nextPosition(pos) )
-        _sendClientConnectedEvent( clientList.getAt(pos), whichServer );
+    for (ClientList::LISTPOS pos = clientList.firstPosition(); clientList.isValidPosition(pos); pos = clientList.nextPosition(pos) )
+        _sendClientConnectedEvent( clientList.valueAtPosition(pos), whichServer );
 }
 
 void ServiceManager::_unregisterServer( const StubAddress & whichServer )
@@ -243,8 +243,8 @@ void ServiceManager::_unregisterServer( const StubAddress & whichServer )
                 , NEService::getString(server.getConnectionStatus())
                 , clientList.getSize());
 
-    for ( LISTPOS pos = clientList.firstPosition(); pos != nullptr; pos = clientList.nextPosition(pos))
-        _sendClientDisconnectedEvent(clientList.getAt(pos), whichServer);
+    for (ClientList::LISTPOS pos = clientList.firstPosition(); clientList.isValidPosition(pos); pos = clientList.nextPosition(pos))
+        _sendClientDisconnectedEvent(clientList.valueAtPosition(pos), whichServer);
 }
 
 void ServiceManager::_registerClient( const ProxyAddress & whichClient )
@@ -375,12 +375,12 @@ void ServiceManager::processEvent( const ServiceManagerEventData & data )
             for (ServerList::MAPPOS pos = mServerList.firstPosition(); mServerList.isValidPosition(pos); pos = mServerList.nextPosition(pos) )
             {
                 ServerInfo si;
-                ClientList cList;
+                ClientList clientList;
 
-                mServerList.getAtPosition(pos, si, cList);
-                for ( LISTPOS pos = cList.firstPosition(); pos != nullptr; pos = cList.nextPosition(pos))
+                mServerList.getAtPosition(pos, si, clientList);
+                for (ClientList::LISTPOS pos = clientList.firstPosition(); clientList.isValidPosition(pos); pos = clientList.nextPosition(pos))
                 {
-                    const ClientInfo & client = cList.getAt(pos);
+                    const ClientInfo & client = clientList.valueAtPosition(pos);
                     _sendClientDisconnectedEvent(client, si.getAddress());
                 }
             }
@@ -498,14 +498,14 @@ void ServiceManager::processEvent( const ServiceManagerEventData & data )
             for (ServerList::MAPPOS posMap = mServerList.firstPosition(); mServerList.isValidPosition(posMap); posMap = mServerList.nextPosition(posMap) )
             {
                 const StubAddress & server = mServerList.keyAtPosition(posMap).getAddress();
-                const ClientList & listClients = mServerList.valueAtPosition(posMap);
+                const ClientList & clientList = mServerList.valueAtPosition(posMap);
 
                 if ( server.isServicePublic() && server.isLocalAddress() && server.isValid() )
                     mConnectService.registerService(server);
 
-                for ( LISTPOS posList = listClients.firstPosition(); posList != nullptr; posList = listClients.nextPosition(posList) )
+                for (ClientList::LISTPOS pos = clientList.firstPosition(); clientList.isValidPosition(pos); pos = clientList.nextPosition(pos))
                 {
-                    const ProxyAddress & proxy = listClients.getAt(posList).getAddress();
+                    const ProxyAddress & proxy = clientList.valueAtPosition(pos).getAddress();
                     if ( proxy.isServicePublic() && proxy.isLocalAddress() && proxy.isValid() )
                         mConnectService.registerServiceClient(proxy);
                 }
@@ -521,14 +521,14 @@ void ServiceManager::processEvent( const ServiceManagerEventData & data )
             for (ServerList::MAPPOS posMap = mServerList.firstPosition(); mServerList.isValidPosition(posMap); posMap = mServerList.nextPosition(posMap) )
             {
                 const StubAddress & server = mServerList.keyAtPosition(posMap).getAddress();
-                const ClientList & listClients = mServerList.valueAtPosition(posMap);
+                const ClientList & clientList = mServerList.valueAtPosition(posMap);
 
                 if ( server.isServicePublic() && server.isRemoteAddress() && server.isValid() )
                     stubList.add(server);
 
-                for ( LISTPOS posList = listClients.firstPosition(); posList != nullptr; posList = listClients.nextPosition(posList) )
+                for (ClientList::LISTPOS pos = clientList.firstPosition(); clientList.isValidPosition(pos); pos = clientList.nextPosition(pos))
                 {
-                    const ProxyAddress & proxy = listClients.getAt(posList).getAddress();
+                    const ProxyAddress & proxy = clientList.valueAtPosition(pos).getAddress();
                     if ( proxy.isServicePublic() && proxy.isRemoteAddress() && proxy.isValid() )
                         proxyList.add(proxy);
                 }
@@ -620,7 +620,7 @@ void ServiceManager::getServiceList( ITEM_ID cookie, TEArrayList<StubAddress> & 
     for (ServerList::MAPPOS posMap = mServerList.firstPosition(); mServerList.isValidPosition(posMap); posMap = mServerList.nextPosition(posMap) )
     {
         const StubAddress & server      = mServerList.keyAtPosition(posMap).getAddress();
-        const ClientList & listClients  = mServerList.valueAtPosition(posMap);
+        const ClientList & clientList   = mServerList.valueAtPosition(posMap);
 
         if ( server.isValid() && ((cookie == NEService::COOKIE_ANY) || (server.getCookie() == cookie)) )
         {
@@ -628,9 +628,9 @@ void ServiceManager::getServiceList( ITEM_ID cookie, TEArrayList<StubAddress> & 
             out_listStubs.add(server);
         }
 
-        for ( LISTPOS posList = listClients.firstPosition(); posList != nullptr; posList = listClients.nextPosition(posList) )
+        for (ClientList::LISTPOS pos = clientList.firstPosition(); clientList.isValidPosition(pos); pos = clientList.nextPosition(pos))
         {
-            const ProxyAddress & proxy = listClients.getAt(posList).getAddress();
+            const ProxyAddress & proxy = clientList.valueAtPosition(pos).getAddress();
             if ( proxy.isValid() && ((cookie == NEService::COOKIE_ANY) || (proxy.getCookie() == cookie)) )
             {
                 TRACE_DBG("Found proxy [ %s ] of cookie [ %u ]", ProxyAddress::convAddressToPath(proxy).getString(), cookie);

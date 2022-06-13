@@ -44,11 +44,11 @@ void LocalServicingComponent::requestHelloWorld(const String & roleName, const S
     TRACE_SCOPE(examples_13_shareipcmix_LocalServicingComponent_requestHelloWorld);
 
     NELocalHelloWorld::ConnectionList & list = getConnectedClients();
-    LISTPOS pos = list.firstPosition();
+    NELocalHelloWorld::ConnectionList::LISTPOS pos = list.firstPosition();
     NELocalHelloWorld::sConnectedClient cl;
-    for ( ; pos != nullptr; pos = list.nextPosition(pos))
+    for ( ; list.isValidPosition(pos); pos = list.nextPosition(pos))
     {
-        const NELocalHelloWorld::sConnectedClient & client = list.getAt(pos);
+        const NELocalHelloWorld::sConnectedClient & client = list.valueAtPosition(pos);
         if (roleName == client.ccName)
         {
             TRACE_DBG("Component [ %s ] found client [ %s ] with ID [ %u ] in the list.", getRoleName().getString(), client.ccName.getString(), client.ccID);
@@ -59,7 +59,7 @@ void LocalServicingComponent::requestHelloWorld(const String & roleName, const S
         }
     }
 
-    if (pos == nullptr )
+    if (list.isEndPosition(pos))
     {
         cl.ccID     = ++ mGnerateID;
         cl.ccName   = roleName;

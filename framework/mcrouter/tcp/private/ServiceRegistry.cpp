@@ -80,7 +80,7 @@ NEService::eServiceConnection ServiceRegistry::getServiceStatus(const ProxyAddre
 const ServiceStub & ServiceRegistry::registerServiceProxy(const ProxyAddress & addrProxy, ServiceProxy & out_proxyService)
 {
     TRACE_SCOPE(mcrouter_tcp_private_ServiceRegistry_registerServiceProxy);
-    std::pair<MAPPOS, bool> pos = addNew(ServiceStub(addrProxy), ServiceRegistry::EmptyProxiesList);
+    std::pair<MAPPOS, bool> pos = addIfNew(ServiceStub(addrProxy), ServiceRegistry::EmptyProxiesList);
     ASSERT(isValidPosition(pos.first));
 
     const ServiceStub & result = keyAtPosition(pos.first);
@@ -143,7 +143,7 @@ const ServiceStub & ServiceRegistry::registerServiceStub(const StubAddress & add
 {
     TRACE_SCOPE(mcrouter_tcp_private_ServiceRegistry_registerServiceStub);
 
-    std::pair<MAPPOS, bool> pos = addNew( ServiceStub(addrStub), ServiceRegistry::EmptyProxiesList);
+    std::pair<MAPPOS, bool> pos = addIfNew( ServiceStub(addrStub), ServiceRegistry::EmptyProxiesList);
     ASSERT(isValidPosition(pos.first));
     ServiceStub& result = keyAtPosition(pos.first);
     ListServiceProxies& proxies = valueAtPosition(pos.first);
@@ -213,7 +213,7 @@ void ServiceRegistry::getServiceList( ITEM_ID cookie , TEArrayList<StubAddress> 
     TRACE_SCOPE(mcrouter_tcp_private_ServiceRegistry_getServiceList);
     TRACE_DBG("Filter service list for cookie [ %u ]", static_cast<unsigned int>(cookie));
 
-    for ( MAPPOS posMap = firstPosition(); isValidPosition(posMap); posMap = nextPosition(posMap) )
+    for (ServiceRegistryBase::MAPPOS posMap = firstPosition(); isValidPosition(posMap); posMap = nextPosition(posMap) )
     {
         const ServiceStub & svcStub  = keyAtPosition(posMap);
         const StubAddress & addrStub = svcStub.getServiceAddress();
@@ -236,9 +236,9 @@ void ServiceRegistry::getServiceList( ITEM_ID cookie , TEArrayList<StubAddress> 
                         , NEService::getString(svcStub.getServiceStatus()));
         }
 
-        for ( LISTPOS posList = listProxies.firstPosition(); posList != nullptr; posList = listProxies.nextPosition(posList) )
+        for (ListServiceProxiesBase::LISTPOS posList = listProxies.firstPosition(); listProxies.isValidPosition(posList); posList = listProxies.nextPosition(posList) )
         {
-            const ServiceProxy & svcProxy   = listProxies.getAt(posList);
+            const ServiceProxy & svcProxy   = listProxies.valueAtPosition(posList);
             const ProxyAddress & addrProxy  = svcProxy.getServiceAddress();
             if ( svcProxy.isValid() && ((cookie == NEService::COOKIE_ANY) || (addrProxy.getCookie() == cookie)) )
             {
@@ -265,7 +265,7 @@ void ServiceRegistry::getServiceSources(ITEM_ID cookie, TEArrayList<StubAddress>
     TRACE_SCOPE(mcrouter_tcp_private_ServiceRegistry_getServiceSources);
     TRACE_DBG("Pickup services with [ %u ] sources ", static_cast<unsigned int>(cookie));
 
-    for ( MAPPOS posMap = firstPosition(); isValidPosition(posMap); posMap = nextPosition(posMap) )
+    for (ServiceRegistry::MAPPOS posMap = firstPosition(); isValidPosition(posMap); posMap = nextPosition(posMap) )
     {
         const ServiceStub & svcStub  = keyAtPosition(posMap);
         const StubAddress & addrStub = svcStub.getServiceAddress();
@@ -283,9 +283,9 @@ void ServiceRegistry::getServiceSources(ITEM_ID cookie, TEArrayList<StubAddress>
                         , static_cast<unsigned int>(cookie));
         }
 
-        for ( LISTPOS posList = listProxies.firstPosition(); posList != nullptr; posList = listProxies.nextPosition(posList) )
+        for (ListServiceProxiesBase::LISTPOS posList = listProxies.firstPosition(); listProxies.isValidPosition(posList); posList = listProxies.nextPosition(posList) )
         {
-            const ServiceProxy & svcProxy   = listProxies.getAt(posList);
+            const ServiceProxy & svcProxy   = listProxies.valueAtPosition(posList);
             const ProxyAddress & addrProxy  = svcProxy.getServiceAddress();
 
             if (svcProxy.isValid() && (cookie == addrProxy.getSource()))

@@ -69,6 +69,7 @@ bool ConnectionHandler::RemoveConnection(const NECommon::sConnection & connectio
     int pos = findConnection(connection);
     if ( pos != NECommon::INVALID_INDEX )
         mListConnections.removeAt(pos);
+
     return (pos != NECommon::INVALID_INDEX);
 }
 

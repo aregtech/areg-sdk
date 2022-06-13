@@ -59,7 +59,7 @@ class SynchLockAndWaitIX
     /**
      * \brief   The list of LockAndWait objects.
      **/
-    using ListLockAndWait       = TELinkedList<SynchLockAndWaitIX *, SynchLockAndWaitIX *, ImplListLockAndWait>;
+    using ListLockAndWait       = TELinkedList<SynchLockAndWaitIX *, ImplListLockAndWait>;
     /**
      * \brief   Declaration of hash map helper object.
      **/

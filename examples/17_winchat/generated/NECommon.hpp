@@ -264,7 +264,7 @@ namespace NECommon
 
 	/**
 	 * \brief	NECommon::ListConnections
-	 *			Internal custom type definition of TEArrayList<sConnection, const sConnection &> 
+	 *			Internal custom type definition of TEArrayList<sConnection> 
 	 **/
 	using ListParticipants  = TEArrayList<sParticipant>;
 

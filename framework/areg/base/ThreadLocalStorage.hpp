@@ -64,10 +64,10 @@ private:
     using StorageItem       = TEPair<String, NEMemory::uAlign, const String &, NEMemory::uAlign, ImplStorageItem>;
 
     //!< Definition of storage list helper object to compare values.
-    using ImplStorageList   = TEListImpl<const ThreadLocalStorage::StorageItem &>;
+    using ImplStorageList   = TEListImpl<ThreadLocalStorage::StorageItem>;
 
     //!< Definition of storage list object to store items.
-    using StorageList       = TELinkedList<ThreadLocalStorage::StorageItem, const ThreadLocalStorage::StorageItem &, ImplStorageList>;
+    using StorageList       = TELinkedList<ThreadLocalStorage::StorageItem, ImplStorageList>;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -114,7 +114,7 @@ public:
      * \brief   Returns the size of a thread local storage, 
      *          i.e. the number of items saved in storage.
      **/
-    inline int getSize( void ) const;
+    inline uint32_t getSize( void ) const;
 
     /**
      * \brief   Returns the element value, saved in the 
@@ -242,12 +242,12 @@ inline Thread & ThreadLocalStorage::getOwnerThread( void ) const
     return mOwningThread;
 }
 
-inline int ThreadLocalStorage::getSize( void ) const
+inline uint32_t ThreadLocalStorage::getSize( void ) const
 {
     return mStorageList.getSize();
 }
 
 inline void ThreadLocalStorage::removeAll( void )
 {
-    return mStorageList.removeAll();
+    mStorageList.removeAll();
 }

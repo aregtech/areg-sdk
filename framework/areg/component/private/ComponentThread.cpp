@@ -123,7 +123,8 @@ void ComponentThread::destroyComponents( void )
     OUTPUT_DBG("Going to destroy components in thread [ %s ]. There are [ %d ] components in the thread.", getName().getString(), mListComponent.getSize());
     while (mListComponent.isEmpty() == false)
     {
-        Component* comObj = mListComponent.removeLast();
+        Component* comObj = mListComponent.getLastEntry();
+        mListComponent.removeLast();
         if (comObj != nullptr)
         {
             OUTPUT_DBG("Destroying component [ %s ] in thread [ %s ]...", comObj->getRoleName().getString(), getName().getString());
@@ -143,8 +144,8 @@ void ComponentThread::destroyComponents( void )
 void ComponentThread::startComponents( void )
 {
     OUTPUT_DBG("Starting components in thread [ %s ].", getName().getString());
-    LISTPOS pos = mListComponent.lastPosition();
-    while (pos != nullptr)
+    ListComponent::LISTPOS pos = mListComponent.lastPosition();
+    while (mListComponent.isValidPosition(pos))
     {
         Component* comObj = mListComponent.getPrev(pos);
         ASSERT(comObj != nullptr);
@@ -166,8 +167,8 @@ void ComponentThread::shutdownComponents( void )
         proxy->stopProxy();
     }
 
-    LISTPOS pos = mListComponent.firstPosition();
-    while (pos != nullptr)
+    ListComponent::LISTPOS pos = mListComponent.firstPosition();
+    while (mListComponent.isValidPosition(pos))
     {
         Component* comObj = mListComponent.getNext(pos);
         ASSERT(comObj != nullptr);
@@ -181,8 +182,8 @@ DispatcherThread* ComponentThread::getEventConsumerThread( const RuntimeClassID&
     DispatcherThread* result = hasRegisteredConsumer(whichClass) ? static_cast<DispatcherThread *>(this) : nullptr;
     if (result == nullptr)
     {
-        LISTPOS pos = mListComponent.firstPosition();
-        while (pos != nullptr && result == nullptr)
+        ListComponent::LISTPOS pos = mListComponent.firstPosition();
+        while (mListComponent.isValidPosition(pos) && (result == nullptr))
         {
             Component* comObj = mListComponent.getNext(pos);
             ASSERT(comObj != nullptr);
@@ -194,8 +195,8 @@ DispatcherThread* ComponentThread::getEventConsumerThread( const RuntimeClassID&
 
 void ComponentThread::shutdownThread( void )
 {
-    LISTPOS pos = mListComponent.firstPosition();
-    while (pos != nullptr)
+    ListComponent::LISTPOS pos = mListComponent.firstPosition();
+    while (mListComponent.isValidPosition(pos))
     {
         Component* comObj = mListComponent.getNext(pos);
         ASSERT(comObj != nullptr);
@@ -207,8 +208,8 @@ void ComponentThread::shutdownThread( void )
 
 bool ComponentThread::completionWait( unsigned int waitForCompleteMs /*= NECommon::WAIT_INFINITE */ )
 {
-    LISTPOS pos = mListComponent.firstPosition();
-    while ( pos != nullptr )
+    ListComponent::LISTPOS pos = mListComponent.firstPosition();
+    while ( mListComponent.isValidPosition(pos) )
     {
         Component* comObj = mListComponent.getNext(pos);
         ASSERT(comObj != nullptr);

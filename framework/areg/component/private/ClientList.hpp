@@ -45,7 +45,7 @@ public:
     }
 };
 
-using ClientListBse = TELinkedList<ClientInfo, const ClientInfo &, ImplClientList>;
+using ClientListBse = TELinkedList<ClientInfo, ImplClientList>;
 
 /**
  * \brief   ClientList is a linked list object containing the list

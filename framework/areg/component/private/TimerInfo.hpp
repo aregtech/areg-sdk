@@ -467,12 +467,14 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // ExpiredTimers class declaration
 //////////////////////////////////////////////////////////////////////////
+using ExpiredTimersBase = TELinkedList<ExpiredTimerInfo>;
+
 /**
  * \brief   Expired Timer List contains information of expired timers.
  *          If timer is valid, it will be processed and the event will be
  *          sent to appropriate owning thread.
  **/
-class ExpiredTimers  : private TELinkedList<ExpiredTimerInfo, const ExpiredTimerInfo &>
+class ExpiredTimers  : private ExpiredTimersBase
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -500,7 +502,7 @@ public:
     /**
      * \brief   Returns number of entries in the list.
      **/
-    inline int getSize( void ) const;
+    inline uint32_t getSize( void ) const;
 
     /**
      * \brief   Push expired timer information to the list.
@@ -526,7 +528,8 @@ public:
      *                          Otherwise, searches from specified valid position.
      * \return  Returns valid position if found an entry. Otherwise, returns nullptr.
      **/
-    LISTPOS findTimer(Timer * whichTimer, LISTPOS searchAfter = nullptr);
+    LISTPOS findTimer(Timer* whichTimer);
+    LISTPOS findTimer(Timer * whichTimer, LISTPOS searchAfter);
 
     /**
      * \brief   Removes all matches of specified timer in the list. The expired timer list
@@ -594,27 +597,29 @@ inline void MapTimerTable::removeAll(void)
 
 inline bool ExpiredTimers::isEmpty(void) const
 {
-    return TELinkedList<ExpiredTimerInfo, const ExpiredTimerInfo &>::isEmpty();
+    return ExpiredTimersBase::isEmpty();
 }
 
-inline int ExpiredTimers::getSize( void ) const
+inline uint32_t ExpiredTimers::getSize( void ) const
 {
-    return TELinkedList<ExpiredTimerInfo, const ExpiredTimerInfo &>::getSize( );
+    return ExpiredTimersBase::getSize( );
 }
 
 inline void ExpiredTimers::pushTimer(ExpiredTimerInfo & timerInfo)
 {
-    TELinkedList<ExpiredTimerInfo, const ExpiredTimerInfo &>::pushLast( timerInfo );
+    ExpiredTimersBase::pushLast( timerInfo );
 }
 
 inline ExpiredTimerInfo ExpiredTimers::popTimer(void)
 {
-    return TELinkedList<ExpiredTimerInfo, const ExpiredTimerInfo &>::removeFirst();
+    ExpiredTimerInfo result = getFirstEntry();
+    ExpiredTimersBase::removeFirst();
+    return result;
 }
 
 inline void ExpiredTimers::removeAll(void)
 {
-    return TELinkedList<ExpiredTimerInfo, const ExpiredTimerInfo &>::removeAll();
+    return ExpiredTimersBase::removeAll();
 }
 
 //////////////////////////////////////////////////////////////////////////

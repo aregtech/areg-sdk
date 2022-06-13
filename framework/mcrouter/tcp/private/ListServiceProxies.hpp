@@ -26,7 +26,7 @@
  ************************************************************************/
 class ServiceStub;
 
-using ListServiceProxiesBase = TELinkedList<ServiceProxy, const ServiceProxy &>;
+using ListServiceProxiesBase = TELinkedList<ServiceProxy>;
 //////////////////////////////////////////////////////////////////////////
 // ListServiceProxies class declaration
 //////////////////////////////////////////////////////////////////////////
@@ -195,5 +195,5 @@ private:
 
 inline bool ListServiceProxies::isServiceRegistered( const ProxyAddress & addrProxy ) const
 {
-    return ( _findProxy(addrProxy) != nullptr );
+    return ListServiceProxiesBase::isValidPosition(_findProxy(addrProxy));
 }

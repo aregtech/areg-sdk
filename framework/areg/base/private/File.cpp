@@ -295,15 +295,14 @@ String File::normalizePath( const char * fileName )
     File::splitPath(fileName, list);
 
     bool isInvalid  = false;
-    for (LISTPOS pos = list.firstPosition(); pos != nullptr; )
+    for (StringList::LISTPOS pos = list.firstPosition(); list.isValidPosition(pos); )
     {
-        const String & node = list.getAt(pos);
+        const String & node = list.valueAtPosition(pos);
         if (File::_nameHasParentFolder(node, true))
         {
-            LISTPOS next = list.nextPosition(pos);
-            LISTPOS prev = list.prevPosition(pos);
-            list.removeAt(pos);
-            if (prev != nullptr)
+            pos = list.removeAt(pos);
+            StringList::LISTPOS prev = list.prevPosition(pos);
+            if (list.isValidPosition(prev))
             {
                 list.removeAt(prev);
             }
@@ -312,14 +311,10 @@ String File::normalizePath( const char * fileName )
                 isInvalid = true;
                 break;
             }
-            
-            pos = next;
         }
         else if (File::_nameHasCurrentFolder(node, true))
         {
-            LISTPOS next = list.nextPosition(pos);
-            list.removeAt(pos);
-            pos = next;
+            pos = list.removeAt(pos);
         }
         else
         {
@@ -330,7 +325,8 @@ String File::normalizePath( const char * fileName )
     if (isInvalid || list.isEmpty())
         return result;
 
-    String first = list.removeFirst();
+    String first = list.getFirstEntry();
+    list.removeFirst();
 #ifndef WINDOWS
     if (first == _PSEUDO_ROOT)
     {
@@ -341,10 +337,10 @@ String File::normalizePath( const char * fileName )
 #endif // !WINDOWS
 
     result += first;
-    for (LISTPOS pos = list.firstPosition(); pos != nullptr; pos = list.nextPosition(pos))
+    for (StringList::LISTPOS pos = list.firstPosition(); list.isValidPosition(pos); pos = list.nextPosition(pos))
     {
         result += File::PATH_SEPARATOR;
-        result += list.getAt(pos);
+        result += list.valueAtPosition(pos);
     }
 
     FileBase::normalizeName(result);

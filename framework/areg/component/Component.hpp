@@ -78,13 +78,6 @@ class AREG_API Component   : public    RuntimeObject
      * \tparam  TEStringHashMap<Component *, Component *>  The type of Hash Map, it is string-to-pointer hash map
      **/
     using MapComponentResource  = TELockResourceMap<unsigned int, Component, MaComponentContainer, ImplComponentResource>;
-    /**
-     * \brief   Component::ListServers
-     *          The list of addresses of Servers.
-     * \tparam  StubBase  The pointer to base class of Stub objects.
-     **/
-    using ListServers           = TELinkedList<StubBase*, StubBase*>;
-
 //////////////////////////////////////////////////////////////////////////
 // Declare as runtime object
 //////////////////////////////////////////////////////////////////////////
@@ -94,6 +87,13 @@ class AREG_API Component   : public    RuntimeObject
 // Static methods
 //////////////////////////////////////////////////////////////////////////
 public:
+    /**
+     * \brief   Component::ListServers
+     *          The list of addresses of Servers.
+     * \tparam  StubBase  The pointer to base class of Stub objects.
+     **/
+    using ListServers           = TELinkedList<StubBase*>;
+
 /************************************************************************/
 // static functions to load / unload component
 /************************************************************************/
@@ -291,7 +291,7 @@ public:
     /**
      * \brief   Returns the list of registered (provided) Server Service list.
      **/
-    inline const TELinkedList<StubBase*, StubBase*> & getServiceList( void ) const;
+    inline const ListServers & getServiceList( void ) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Protected members.
@@ -402,9 +402,9 @@ inline const ComponentAddress& Component::getAddress( void ) const
     return mComponentInfo.getAddress();
 }
 
-inline const TELinkedList<StubBase*, StubBase*> & Component::getServiceList( void ) const
+inline const Component::ListServers & Component::getServiceList( void ) const
 {
-    return static_cast<const TELinkedList<StubBase*, StubBase*> &>(mServerList);
+    return mServerList;
 }
 
 inline Component& Component::self( void )

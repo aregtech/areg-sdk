@@ -178,11 +178,9 @@ void Component::deleteWorkerThread( const char* threadName )
 
 void Component::startupComponent( ComponentThread& /* comThread */ )
 {
-    LISTPOS pos = nullptr;
-    
-    for (pos = mServerList.firstPosition(); pos != nullptr; pos = mServerList.nextPosition(pos))
+    for (ListServers::LISTPOS pos = mServerList.firstPosition(); mServerList.isValidPosition(pos); pos = mServerList.nextPosition(pos))
     {
-        StubBase * stub = mServerList[pos];
+        StubBase * stub = mServerList.valueAtPosition(pos);
         ASSERT( stub != nullptr );
         stub->startupServiceInterface(self());
         ServiceManager::requestRegisterServer(stub->getAddress());
@@ -191,13 +189,11 @@ void Component::startupComponent( ComponentThread& /* comThread */ )
 
 void Component::shutdownComponent( ComponentThread& /* comThread */ )
 {
-    LISTPOS pos = nullptr;
-
-    for (pos = mServerList.firstPosition(); pos != nullptr; pos = mServerList.nextPosition(pos))
+    for (ListServers::LISTPOS pos = mServerList.firstPosition(); mServerList.isValidPosition(pos); pos = mServerList.nextPosition(pos))
     {
-        StubBase * stub = mServerList[pos];
+        StubBase * stub = mServerList.valueAtPosition(pos);
         ASSERT(stub != nullptr);
-        OUTPUT_INFO("Shutting down Service Interface [ %s ] of component [ %s ]", stub->getAddress().getServiceName().getString(), getRoleName().getBuffer());
+        OUTPUT_INFO("Shutting down Service Interface [ %s ] of component [ %s ]", stub->getAddress().getServiceName().getString(), getRoleName().getString());
         stub->shutdownServiceIntrface(self());
         ServiceManager::requestUnregisterServer(stub->getAddress());
     }
@@ -206,7 +202,7 @@ void Component::shutdownComponent( ComponentThread& /* comThread */ )
     WorkerThread * workerThread = mComponentInfo.getFirstWorkerThread(addrThread);
     while (workerThread != nullptr)
     {
-        OUTPUT_INFO("Sutting down worker thread [ %s ] of component [ %s ]", workerThread->getName().getString(), getRoleName().getBuffer());
+        OUTPUT_INFO("Shutting down worker thread [ %s ] of component [ %s ]", workerThread->getName().getString(), getRoleName().getString());
         workerThread->shutdownThread();
         workerThread = mComponentInfo.getNextWorkerThread(addrThread);
     }
@@ -218,7 +214,7 @@ void Component::notifyComponentShutdown( ComponentThread& /*comThread */ )
     WorkerThread * workerThread = mComponentInfo.getFirstWorkerThread(addrThread);
     while (workerThread != nullptr)
     {
-        OUTPUT_INFO("Sutting down worker thread [ %s ] of component [ %s ]", workerThread->getName().getString(), getRoleName().getBuffer());
+        OUTPUT_INFO("Shutting down worker thread [ %s ] of component [ %s ]", workerThread->getName().getString(), getRoleName().getString());
         workerThread->shutdownThread();
         workerThread = mComponentInfo.getNextWorkerThread(addrThread);
     }
@@ -232,10 +228,9 @@ void Component::registerServerItem( StubBase& server )
 StubBase* Component::findServerByName( const char* serviceName )
 {
     StubBase* result = nullptr;
-    LISTPOS pos = mServerList.firstPosition();
-    for ( ; pos != nullptr; pos = mServerList.nextPosition(pos))
+    for (ListServers::LISTPOS  pos = mServerList.firstPosition(); mServerList.isValidPosition(pos); pos = mServerList.nextPosition(pos))
     {
-        StubBase* stub = mServerList.getAt(pos);
+        StubBase* stub = mServerList.valueAtPosition(pos);
         ASSERT(stub != nullptr);
         if (stub->getAddress().getServiceName() == serviceName)
         {
@@ -243,6 +238,7 @@ StubBase* Component::findServerByName( const char* serviceName )
             break;
         }
     }
+
     return result;
 }
 

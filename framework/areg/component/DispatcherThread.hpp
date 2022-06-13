@@ -56,7 +56,7 @@ class AREG_API DispatcherThread : public Thread
      * \brief   DispatcherList
      *          List of Dispatcher Thread type.
      **/
-    using DispatcherList    = TELinkedList<DispatcherThread *, DispatcherThread *>;
+    using DispatcherList    = TELinkedList<DispatcherThread *>;
 
 //////////////////////////////////////////////////////////////////////////
 // Internal types, constants, etc.

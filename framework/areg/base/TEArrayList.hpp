@@ -194,6 +194,11 @@ public:
      **/
     inline uint32_t getSize( void ) const;
 
+    /**
+     * \brief   Returns the invalid position of the array list.
+     */
+    ARRAYPOS invalidPosition(void) const;
+
 //////////////////////////////////////////////////////////////////////////
 // Operations
 //////////////////////////////////////////////////////////////////////////
@@ -485,6 +490,12 @@ template<typename VALUE, class Implement /*= TEListImpl<const VALUE &>*/>
 inline uint32_t TEArrayList<VALUE, Implement>::getSize( void ) const
 {
     return static_cast<uint32_t>(mValueList.size());
+}
+
+template<typename VALUE, class Implement /*= TEListImpl<const VALUE &>*/>
+inline typename TEArrayList<VALUE, Implement>::ARRAYPOS TEArrayList<VALUE, Implement>::invalidPosition(void) const
+{
+    return Constless::iter(mValueList, mValueList.end());
 }
 
 template<typename VALUE, class Implement /*= TEListImpl<const VALUE &>*/>
@@ -903,21 +914,23 @@ inline bool TEArrayList<VALUE, Implement>::isEqualValues(const VALUE & value1, c
 template<typename VALUE, class Implement /*= TEListImpl<const VALUE &>*/>
 inline const typename TEArrayList<VALUE, Implement>::ARRAYPOS TEArrayList<VALUE, Implement>::getPosition(uint32_t index) const
 {
-    std::vector<VALUE>::const_iterator result = mValueList.begin();
-    for (; (index != 0) && (result != mValueList.end()); --index)
-        ++ result;
+    std::vector<VALUE>::const_iterator pos = index < static_cast<uint32_t>(mValueList.size()) ? mValueList.begin() : mValueList.end();
+    uint32_t count = index + 1;
+    for (uint32_t i = 1; i < count; ++i)
+        ++pos;
 
-    return Constless::iter(mValueList, result);
+    return Constless::iter(mValueList, pos);
 }
 
 template<typename VALUE, class Implement /*= TEListImpl<const VALUE &>*/>
 inline typename TEArrayList<VALUE, Implement>::ARRAYPOS TEArrayList<VALUE, Implement>::getPosition(uint32_t index)
 {
-    std::vector<VALUE>::iterator result = mValueList.begin();
-    for (; (index != 0) && (result != mValueList.end()); --index)
-        ++result;
+    std::vector<VALUE>::const_iterator pos = index < static_cast<uint32_t>(mValueList.size()) ? mValueList.begin() : mValueList.end();
+    uint32_t count = index + 1;
+    for (uint32_t i = 1; i < count; ++i)
+        ++pos;
 
-    return result;
+    return Constless::iter(mValueList, pos);
 }
 
 //////////////////////////////////////////////////////////////////////////

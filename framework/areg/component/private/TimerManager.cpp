@@ -339,7 +339,7 @@ void TimerManager::_startSystemTimer( Timer* whichTimer )
     }
     else
     {
-        TRACE_ERR("Invalid nullptr pointer ot Timer object. Ignoring starting timer.");
+        TRACE_ERR("Invalid nullptr pointer to Timer object. Ignoring starting timer.");
     }
 }
 

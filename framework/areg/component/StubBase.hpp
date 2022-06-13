@@ -175,7 +175,7 @@ protected:
     /**
      * \brief   StubBase::StubListenerList class defines list of pending listeners.
      **/
-    using StubListenerList  = TELinkedList<StubBase::Listener, const StubBase::Listener &>;
+    using StubListenerList  = TELinkedList<StubBase::Listener>;
 
     //////////////////////////////////////////////////////////////////////////
     // StubBase session tracking
@@ -680,15 +680,15 @@ protected:
      **/
     StubBase::StubListenerList          mListListener;
 
-#if defined(_MSC_VER) && (_MSC_VER > 1200)
-    #pragma warning(default: 4251)
-#endif  // _MSC_VER
-
 private:
     /**
      * \brief   The position of current listener, which is processing. When canceled, it sets nullptr.
      **/
-    LISTPOS                             mCurrListener;
+    StubListenerList::LISTPOS           mCurrListener;
+
+#if defined(_MSC_VER) && (_MSC_VER > 1200)
+    #pragma warning(default: 4251)
+#endif  // _MSC_VER
 
     /**
      * \brief   Used to generate unique session ID. The uniqueness is provided within single stub object scope

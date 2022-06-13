@@ -255,6 +255,7 @@ void DirectConnectionService::requestRemoveParticipant( const NEDirectConnection
             {
                 mapParticpants.setAt(initiator, listRegistered);
             }
+
             responseRemoveParticipant( true, listRegistered );
             NEDirectConnection::sInitiator      * wParam = new NEDirectConnection::sInitiator(initiator);
             NEDirectConnection::ListParticipants* lParam = new NEDirectConnection::ListParticipants(listRegistered);

@@ -45,7 +45,7 @@ class IEEventConsumer;
 // EventConsumerList class declaration
 //////////////////////////////////////////////////////////////////////////
 using ImplEventConsumerList = TEListImpl<IEEventConsumer *>;
-using EventConsumerListBase	= TELinkedList<IEEventConsumer *, IEEventConsumer *, ImplEventConsumerList>;
+using EventConsumerListBase	= TELinkedList<IEEventConsumer *, ImplEventConsumerList>;
 
 /**
  * \brief   Event Consumer List is a helper class containing 
@@ -165,5 +165,5 @@ using EventConsumerMap  = TELockRuntimeResourceMap<EventConsumerList, ImplEventC
 //////////////////////////////////////////////////////////////////////////
 inline bool EventConsumerList::existConsumer( IEEventConsumer & whichConsumer ) const
 {
-    return (EventConsumerListBase::find( &whichConsumer, nullptr) != nullptr);
+    return EventConsumerListBase::contains( &whichConsumer);
 }

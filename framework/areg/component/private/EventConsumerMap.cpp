@@ -36,7 +36,7 @@ EventConsumerList::~EventConsumerList( void )
 bool EventConsumerList::addConsumer( IEEventConsumer& whichConsumer )
 {
     bool result = false;
-    if (EventConsumerListBase::pushLast(&whichConsumer) != nullptr)
+    if (EventConsumerListBase::pushLastIfNew(&whichConsumer))
     {
         result = true;
         whichConsumer.consumerRegistered(true);
@@ -48,7 +48,7 @@ bool EventConsumerList::addConsumer( IEEventConsumer& whichConsumer )
 bool EventConsumerList::removeConsumer( IEEventConsumer& whichConsumer )
 {
     bool result = false;
-    if ( EventConsumerListBase::removeEntry(&whichConsumer, nullptr) )
+    if ( EventConsumerListBase::removeEntry(&whichConsumer) )
     {
         result = true;
         whichConsumer.consumerRegistered(false);
@@ -59,13 +59,14 @@ bool EventConsumerList::removeConsumer( IEEventConsumer& whichConsumer )
 
 void EventConsumerList::removeAllConsumers( void )
 {
-    while (EventConsumerListBase::isEmpty() == false)
+    EventConsumerListBase::LISTPOS pos = EventConsumerListBase::firstPosition();
+    for (; isValidPosition(pos); pos = nextPosition(pos))
     {
-        IEEventConsumer *consumer = EventConsumerListBase::removeFirst();
+        IEEventConsumer* consumer = valueAtPosition(pos);
         ASSERT(consumer != nullptr);
         consumer->consumerRegistered(false);
     }
-    
+
     EventConsumerListBase::removeAll();
 }
 

@@ -424,17 +424,17 @@ using PointerToPointergMap  = TEPointerHashMap<void *, ImplPointerToPointergMap>
 /**
  * \brief   Linked List where values are integers.
  **/
-using IntegerList   = TELinkedList<unsigned int, unsigned int, ImplIntegerList>;
+using IntegerList   = TELinkedList<unsigned int, ImplIntegerList>;
 
 /**
  * \brief   Linked List where values are strings.
  **/
-using StringList    = TELinkedList<String, const String &, ImplStringList>;
+using StringList    = TELinkedList<String, ImplStringList>;
 
 /**
  * \brief   Linked List where values are pointers
  **/
-using PointerList   = TELinkedList<void *, void *, ImplPointerList>;
+using PointerList   = TELinkedList<void *, ImplPointerList>;
 
 /**
  * \brief   Sorted List class where values are integers.

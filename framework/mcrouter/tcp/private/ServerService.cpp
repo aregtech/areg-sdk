@@ -344,7 +344,7 @@ void ServerService::processEvent(const ServerServiceEventData & data)
                     msgReceived >> cookie;
                     mServerConnection.closeConnection(cookie);
 
-                    TEArrayList<StubAddress>   listStubs;
+                    TEArrayList<StubAddress>  listStubs;
                     TEArrayList<ProxyAddress> listProxies;
                     mServiceRegistry.getServiceSources(cookie, listStubs, listProxies);
 
@@ -520,7 +520,7 @@ void ServerService::stopConnection(void)
     mThreadReceive.triggerExitEvent();
     mThreadReceive.destroyThread( NECommon::DO_NOT_WAIT );
 
-    TEArrayList<StubAddress> stubList;
+    TEArrayList<StubAddress>  stubList;
     TEArrayList<ProxyAddress> proxyList;
     getServiceList(NEService::COOKIE_ANY, stubList, proxyList);
 
@@ -563,9 +563,9 @@ void ServerService::registerRemoteStub(const StubAddress & stub)
             
             TEArrayList<ITEM_ID> sendList;
 
-            for ( LISTPOS pos = listProxies.firstPosition(); pos != nullptr; pos = listProxies.nextPosition(pos) )
+            for (ListServiceProxiesBase::LISTPOS pos = listProxies.firstPosition(); listProxies.isValidPosition(pos); pos = listProxies.nextPosition(pos) )
             {
-                const ServiceProxy & proxyService = listProxies.getAt(pos);
+                const ServiceProxy & proxyService = listProxies.valueAtPosition(pos);
                 const ProxyAddress & addrProxy    = proxyService.getServiceAddress();
                 if ( (proxyService.getServiceStatus() == NEService::eServiceConnection::ServiceConnected) && (addrProxy.getSource() != stub.getSource()) )
                 {
@@ -687,9 +687,9 @@ void ServerService::unregisterRemoteStub(const StubAddress & stub, ITEM_ID cooki
         TRACE_DBG("Filter sources [ %u ] of proxy list", static_cast<unsigned int>(cookie));
 
         TEArrayList<ITEM_ID> sendList;
-        for ( LISTPOS pos = listProxies.firstPosition(); pos != nullptr; pos = listProxies.nextPosition(pos) )
+        for (ListServiceProxiesBase::LISTPOS pos = listProxies.firstPosition(); listProxies.isValidPosition(pos); pos = listProxies.nextPosition(pos) )
         {
-            const ServiceProxy & proxyService = listProxies.getAt(pos);
+            const ServiceProxy & proxyService = listProxies.valueAtPosition(pos);
             const ProxyAddress & addrProxy    = proxyService.getServiceAddress();
 
             if ( (cookie == NEService::COOKIE_ANY) || (addrProxy.getSource() != cookie) )

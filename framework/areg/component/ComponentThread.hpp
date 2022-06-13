@@ -50,7 +50,7 @@ private:
      * \brief   ComponentThread::ListComponent;
      *          Linked List of instantiated components in the Component Thread.
      **/
-    using ListComponent     = TELinkedList<Component*, Component*>;
+    using ListComponent     = TELinkedList<Component*>;
 
 //////////////////////////////////////////////////////////////////////////
 // Declare as Runtime instance

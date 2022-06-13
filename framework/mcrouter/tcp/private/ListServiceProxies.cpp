@@ -20,38 +20,39 @@ const ServiceProxy     ListServiceProxies::InvalidProxyService;
 
 const ServiceProxy & ListServiceProxies::getService( const ProxyAddress & addrProxy ) const
 {
-    LISTPOS pos = _findProxy(addrProxy);
-    return ( pos != nullptr ? static_cast<const ServiceProxy &>(getAt(pos)) : ListServiceProxies::InvalidProxyService );
+    ListServiceProxies::LISTPOS pos = _findProxy(addrProxy);
+    return ( isValidPosition(pos) ? static_cast<const ServiceProxy &>(valueAtPosition(pos)) : ListServiceProxies::InvalidProxyService );
 }
 
 ServiceProxy * ListServiceProxies::getService( const ProxyAddress & addrProxy )
 {
-    LISTPOS pos = _findProxy(addrProxy);
-    ListServiceProxies::Block * block = reinterpret_cast<ListServiceProxies::Block *>(pos);
-    return ( block != nullptr ? static_cast<ServiceProxy *>(&(block->mValue)) : nullptr );
+    ListServiceProxies::LISTPOS pos = _findProxy(addrProxy);
+    return ( isValidPosition(pos) ? static_cast<ServiceProxy *>(&valueAtPosition(pos)) : nullptr );
 }
 
 ServiceProxy & ListServiceProxies::registerService( const ProxyAddress & addrProxy )
 {
-    LISTPOS pos = _findProxy(addrProxy);
-    if ( pos == nullptr )
+    ListServiceProxies::LISTPOS pos = _findProxy(addrProxy);
+    if ( isEndPosition(pos) )
     {
-        pos = pushLast( ServiceProxy( addrProxy ) );
+        pushLast(ServiceProxy(addrProxy));
+        pos = lastPosition();
     }
 
-    return static_cast<ServiceProxy &>(getAt(pos));
+    return static_cast<ServiceProxy &>(valueAtPosition(pos));
 }
 
 ServiceProxy & ListServiceProxies::registerService(const ProxyAddress & addrProxy, const ServiceStub & stubService)
 {
-    LISTPOS pos = _findProxy(addrProxy);
-    if ( pos == nullptr )
+    ListServiceProxies::LISTPOS pos = _findProxy(addrProxy);
+    if (isEndPosition(pos))
     {
-        pos = pushLast( ServiceProxy( addrProxy ) );
+        pushLast(ServiceProxy(addrProxy));
+        pos = lastPosition();
     }
 
     const StubAddress & addrStub = stubService.getServiceAddress();
-    ServiceProxy & proxyService = getAt(pos);
+    ServiceProxy & proxyService = valueAtPosition(pos);
     if ( addrStub == addrProxy)
     {
         if ( stubService.getServiceStatus() == NEService::eServiceConnection::ServiceConnected )
@@ -69,9 +70,9 @@ ServiceProxy & ListServiceProxies::registerService(const ProxyAddress & addrProx
 ServiceProxy ListServiceProxies::unregisterService( const ProxyAddress & addrProxy )
 {
     ServiceProxy result;
-    for ( LISTPOS pos = firstPosition( ); pos != nullptr; pos = nextPosition(pos) )
+    for (ListServiceProxies::LISTPOS pos = firstPosition( ); isValidPosition(pos); pos = nextPosition(pos) )
     {
-        const ServiceProxy & proxyService = getAt(pos);
+        const ServiceProxy & proxyService = valueAtPosition(pos);
         if ( proxyService == addrProxy )
         {
             result = proxyService;
@@ -79,26 +80,28 @@ ServiceProxy ListServiceProxies::unregisterService( const ProxyAddress & addrPro
             break;
         }
     }
+
     return result;
 }
 
 int ListServiceProxies::stubServiceAvailable( const StubAddress & addrStub )
 {
     int result = 0;
-    for ( LISTPOS pos = firstPosition(); pos != nullptr; pos = nextPosition(pos) )
+    for ( LISTPOS pos = firstPosition(); isValidPosition(pos); pos = nextPosition(pos) )
     {
-        ServiceProxy & proxyService = getAt(pos);
+        ServiceProxy & proxyService = valueAtPosition(pos);
         result += proxyService.stubAvailable(addrStub) ? 1 : 0;
     }
+
     return result;
 }
 
 int ListServiceProxies::stubServiceUnavailable( void )
 {
     int result = 0;
-    for ( LISTPOS pos = firstPosition(); pos != nullptr; pos = nextPosition(pos) )
+    for ( LISTPOS pos = firstPosition(); isValidPosition(pos); pos = nextPosition(pos) )
     {
-        ServiceProxy & proxyService = getAt(pos);
+        ServiceProxy & proxyService = valueAtPosition(pos);
         result += proxyService.stubUnavailable() ? 1 : 0;
     }
     return result;
@@ -107,9 +110,9 @@ int ListServiceProxies::stubServiceUnavailable( void )
 int ListServiceProxies::getSpecificService(ListServiceProxies & out_listProxies, ITEM_ID cookie)
 {
     int result = 0;
-    for ( LISTPOS pos = firstPosition( ); pos != nullptr; pos = nextPosition(pos) )
+    for ( LISTPOS pos = firstPosition( ); isValidPosition(pos); pos = nextPosition(pos) )
     {
-        ServiceProxy & proxyService = getAt(pos);
+        ServiceProxy & proxyService = valueAtPosition(pos);
         if ( proxyService.getServiceAddress().getCookie() == cookie )
         {
             result += 1;
@@ -119,13 +122,14 @@ int ListServiceProxies::getSpecificService(ListServiceProxies & out_listProxies,
     return result;
 }
 
-LISTPOS ListServiceProxies::_findProxy(const ProxyAddress & addrProxy) const
+ListServiceProxies::LISTPOS ListServiceProxies::_findProxy(const ProxyAddress & addrProxy) const
 {
     LISTPOS pos = firstPosition( );
-    for ( ; pos != nullptr; pos = nextPosition(pos) )
+    for ( ; isValidPosition(pos); pos = nextPosition(pos))
     {
-        if ( getAt(pos) == addrProxy )
+        if ( valueAtPosition(pos) == addrProxy )
             break;
     }
+
     return pos;
 }

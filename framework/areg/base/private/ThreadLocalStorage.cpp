@@ -42,12 +42,13 @@ NEMemory::uAlign ThreadLocalStorage::getStorageItem( const char * Key ) const
 {
     NEMemory::uAlign result = NEMemory::InvalidElement;
 
-    LISTPOS pos = mStorageList.firstPosition();
-    for ( ; pos != nullptr; pos = mStorageList.nextPosition(pos))
+    StorageList::LISTPOS pos = mStorageList.firstPosition();
+    for ( ; mStorageList.isValidPosition(pos); pos = mStorageList.nextPosition(pos))
     {
-        if (mStorageList.getAt(pos).mKey == Key)
+        const ThreadLocalStorage::StorageItem& value = mStorageList.valueAtPosition(pos);
+        if (value.mKey == Key)
         {
-            result = mStorageList.getAt(pos).mValue;
+            result = value.mValue;
             break;
         }
     }
@@ -91,12 +92,14 @@ void ThreadLocalStorage::setStorageItem( const char * Key, double Value )
 NEMemory::uAlign ThreadLocalStorage::removeStoragteItem( const char * Key )
 {
     NEMemory::uAlign result = {0};
-    LISTPOS pos = mStorageList.firstPosition();
-    for ( ; pos != nullptr; pos = mStorageList.nextPosition(pos))
+    StorageList::LISTPOS pos = mStorageList.firstPosition();
+    for ( ; mStorageList.isValidPosition(pos); pos = mStorageList.nextPosition(pos))
     {
-        if (mStorageList.getAt(pos).mKey == Key)
+        const ThreadLocalStorage::StorageItem & value = mStorageList.valueAtPosition(pos);
+        if (value.mKey == Key)
         {
-            result = mStorageList.removeAt(pos).mValue;
+            result = value.mValue;
+            mStorageList.removeAt(pos);
             break;
         }
     }
@@ -106,14 +109,14 @@ NEMemory::uAlign ThreadLocalStorage::removeStoragteItem( const char * Key )
 
 bool ThreadLocalStorage::existKey( const char* Key ) const
 {
-    LISTPOS pos = mStorageList.firstPosition();
-    for ( ; pos != nullptr; pos = mStorageList.nextPosition(pos))
+    StorageList::LISTPOS pos = mStorageList.firstPosition();
+    for ( ; mStorageList.isValidPosition(pos); pos = mStorageList.nextPosition(pos))
     {
-        if (mStorageList.getAt(pos).mKey == Key)
+        if (mStorageList.valueAtPosition(pos).mKey == Key)
             break;
     }
 
-    return (pos != nullptr);
+    return mStorageList.isValidPosition(pos);
 }
 
 const String & ThreadLocalStorage::getName( void ) const

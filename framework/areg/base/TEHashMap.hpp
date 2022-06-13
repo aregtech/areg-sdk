@@ -97,13 +97,13 @@ public:
      * \brief   Copy constructor.
      * \param   src     The source to copy data.
      **/
-    TEHashMap( const TEHashMap<KEY, VALUE, Implement> & src );
+    TEHashMap( const TEHashMap<KEY, VALUE, Implement> & src ) = default;
 
     /**
      * \brief   Move constructor.
      * \param   src     The source to move data.
      **/
-    TEHashMap( TEHashMap<KEY, VALUE, Implement> && src ) noexcept;
+    TEHashMap( TEHashMap<KEY, VALUE, Implement> && src ) noexcept = default;
 
     /**
      * \brief   Destructor
@@ -121,12 +121,12 @@ public:
     /**
      * \brief	Assigning operator. It copies all elements from source map
      **/
-    inline TEHashMap<KEY, VALUE, Implement>& operator = ( const TEHashMap<KEY, VALUE, Implement> & src );
+    TEHashMap<KEY, VALUE, Implement>& operator = ( const TEHashMap<KEY, VALUE, Implement> & src ) = default;
 
     /**
      * \brief	Move operator. It moves all elements from source map
      **/
-    inline TEHashMap<KEY, VALUE, Implement>& operator = ( TEHashMap<KEY, VALUE, Implement> && src ) noexcept;
+    TEHashMap<KEY, VALUE, Implement>& operator = ( TEHashMap<KEY, VALUE, Implement> && src ) noexcept = default;
 
     /**
      * \brief   Checks equality of 2 hash-map objects, and returns true if they are equal.
@@ -202,11 +202,6 @@ public:
     inline uint32_t getSize( void ) const;
 
     /**
-     * \brief	Returns the size of hash table
-     **/
-    inline uint32_t getTableSize( void ) const;
-
-    /**
      * \brief	Returns the first position of the hash map, which is not invalid if
      *          the hash map is not empty. Otherwise, it is equal to the last position
      *          and not valid.
@@ -248,6 +243,11 @@ public:
      * \return  Returns true if specified position points to the valid entry in the hash map.
      */
     inline bool checkPosition(const MAPPOS& pos) const;
+
+    /**
+     * \brief   Returns invalid position object.
+     **/
+    inline MAPPOS invalidPosition( void ) const;
 
 /************************************************************************/
 // Operations
@@ -316,8 +316,8 @@ public:
      *              -   'bool' equal to 'true' indicates that new entry is created.
      *                  If this value is 'false' no new entry is created.
      */
-    inline std::pair<MAPPOS, bool> addNew(const KEY & newKey, const VALUE & newValue);
-    inline std::pair<MAPPOS, bool> addNew(KEY && newKey, VALUE && newValue);
+    inline std::pair<MAPPOS, bool> addIfNew(const KEY & newKey, const VALUE & newValue);
+    inline std::pair<MAPPOS, bool> addIfNew(KEY && newKey, VALUE && newValue);
 
     /**
      * \brief   Updates Existing Key and returns the position in the map.
@@ -528,36 +528,6 @@ TEHashMap<KEY, VALUE, Implement>::TEHashMap(uint32_t hashSize /* = NECommon::MAP
 }
 
 template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
-TEHashMap<KEY, VALUE, Implement>::TEHashMap(const TEHashMap<KEY, VALUE, Implement>& src)
-    : Constless ( )
-    , mImplement( )
-    , mValueList( src.mValueList )
-{
-}
-
-template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
-TEHashMap<KEY, VALUE, Implement>::TEHashMap( TEHashMap<KEY, VALUE, Implement> && src ) noexcept
-    : Constless ( )
-    , mImplement( )
-    , mValueList(std::move(src.mValueList))
-{
-}
-
-template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
-inline TEHashMap<KEY, VALUE, Implement>& TEHashMap<KEY, VALUE, Implement>::operator = ( const TEHashMap<KEY, VALUE, Implement> & src )
-{
-    mValueList = src.mValueList;
-    return (*this);
-}
-
-template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
-inline TEHashMap<KEY, VALUE, Implement>& TEHashMap<KEY, VALUE, Implement>::operator = ( TEHashMap<KEY, VALUE, Implement> && src ) noexcept
-{
-    mValueList = std::move(src.mValueList);
-    return (*this);
-}
-
-template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
 bool TEHashMap<KEY, VALUE, Implement>::operator == (const TEHashMap<KEY, VALUE, Implement>& other) const
 {
     return (mValueList == other.mValueList);
@@ -594,12 +564,6 @@ inline uint32_t TEHashMap<KEY, VALUE, Implement>::getSize( void ) const
 }
 
 template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
-inline uint32_t TEHashMap<KEY, VALUE, Implement>::getTableSize( void ) const
-{
-    return static_cast<uint32_t>(mValueList.bucket_count());
-}
-
-template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
 inline typename TEHashMap<KEY, VALUE, Implement>::MAPPOS TEHashMap<KEY, VALUE, Implement>::firstPosition( void ) const
 {
     typename std::unordered_map<KEY, VALUE>::const_iterator pos = mValueList.begin();
@@ -609,7 +573,7 @@ inline typename TEHashMap<KEY, VALUE, Implement>::MAPPOS TEHashMap<KEY, VALUE, I
 template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
 inline typename TEHashMap<KEY, VALUE, Implement>::MAPPOS TEHashMap<KEY, VALUE, Implement>::lastPosition(void) const
 {
-    typename std::unordered_map<KEY, VALUE>::const_iterator pos = mValueList.end();
+    typename std::unordered_map<KEY, VALUE>::const_iterator pos = mValueList.empty() == false ? -- mValueList.end() : mValueList.end();
     return Constless::iter(mValueList, pos);
 }
 
@@ -634,20 +598,19 @@ inline bool TEHashMap<KEY, VALUE, Implement>::isValidPosition(const MAPPOS& pos)
 template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
 inline bool TEHashMap<KEY, VALUE, Implement>::checkPosition(const MAPPOS& pos) const
 {
-    bool result = false;
     typename std::unordered_map<KEY, VALUE>::const_iterator it = mValueList.begin();
+    while ((it != mValueList.end()) && (it != pos))
+        ++it;
 
-    for ( ; it != mValueList.end(); ++it)
-    {
-        if (it == pos)
-        {
-            result = true;
-            break;
-        }
-    }
-
-    return result;
+    return (it != mValueList.end());
 }
+
+template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
+inline typename TEHashMap<KEY, VALUE, Implement>::MAPPOS TEHashMap<KEY, VALUE, Implement>::invalidPosition(void) const
+{
+    return iter(mValueList.end());
+}
+
 
 template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
 inline bool TEHashMap<KEY, VALUE, Implement>::find( const KEY & Key, VALUE & out_Value ) const
@@ -703,23 +666,23 @@ inline void TEHashMap<KEY, VALUE, Implement>::setAt( TEPair<KEY, VALUE, Implemen
 template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
 inline void TEHashMap<KEY, VALUE, Implement>::merge(const TEHashMap<KEY, VALUE, Implement>& source)
 {
-    mValueList.merge(source);
+    mValueList.merge(source.mValueList);
 }
 
 template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
 inline void TEHashMap<KEY, VALUE, Implement>::merge(TEHashMap<KEY, VALUE, Implement> && source)
 {
-    mValueList.merge(source);
+    mValueList.merge(std::move(source.mValueList));
 }
 
 template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
-inline std::pair<typename TEHashMap<KEY, VALUE, Implement>::MAPPOS, bool> TEHashMap<KEY, VALUE, Implement>::addNew(const KEY& newKey, const VALUE& newValue)
+inline std::pair<typename TEHashMap<KEY, VALUE, Implement>::MAPPOS, bool> TEHashMap<KEY, VALUE, Implement>::addIfNew(const KEY& newKey, const VALUE& newValue)
 {
     return mValueList.insert({ newKey, newValue });
 }
 
 template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
-inline std::pair<typename TEHashMap<KEY, VALUE, Implement>::MAPPOS, bool> TEHashMap<KEY, VALUE, Implement>::addNew( KEY && newKey, VALUE && newValue)
+inline std::pair<typename TEHashMap<KEY, VALUE, Implement>::MAPPOS, bool> TEHashMap<KEY, VALUE, Implement>::addIfNew( KEY && newKey, VALUE && newValue)
 {
     return mValueList.insert(std::make_pair(newKey, newValue));
 }
@@ -830,7 +793,7 @@ inline bool TEHashMap<KEY, VALUE, Implement>::removeLast(KEY& out_Key, VALUE& ou
     bool result = false;
     if (mValueList.empty() == false)
     {
-        auto pos = mValueList.cbegin();
+        auto pos = mValueList.rbegin();
         ASSERT(pos != mValueList.end());
         out_Key = pos->first;
         out_Value = pos->second;
@@ -848,7 +811,7 @@ inline bool TEHashMap<KEY, VALUE, Implement>::removeLast(void)
     bool result = false;
     if (mValueList.empty() == false)
     {
-        auto pos = mValueList.cbegin();
+        auto pos = mValueList.rbegin();
         ASSERT(pos != mValueList.end());
         mValueList.erase(pos);
         result = true;
