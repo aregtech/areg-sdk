@@ -324,7 +324,6 @@
     <ClInclude Include="areg\base\TEFixedArray.hpp" />
     <ClInclude Include="areg\base\TEHashMap.hpp" />
     <ClInclude Include="areg\base\TELinkedList.hpp" />
-    <ClInclude Include="areg\base\TEPair.hpp" />
     <ClInclude Include="areg\base\TEResourceMap.hpp" />
     <ClInclude Include="areg\base\TERuntimeResourceMap.hpp" />
     <ClInclude Include="areg\base\TEStack.hpp" />

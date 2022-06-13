@@ -22,7 +22,6 @@
 #include "areg/base/GEGlobal.h"
 
 #include "areg/base/TETemplateBase.hpp"
-#include "areg/base/TEPair.hpp"
 #include "areg/base/IEIOStream.hpp"
 #include "areg/base/NEMemory.hpp"
 
@@ -290,8 +289,8 @@ public:
      * \brief	Update existing element value or inserts new element in the Hash Map.
      * \param	newElement	        The Key and Value pair of element to set or insert.
      **/
-    inline void setAt( const TEPair<KEY, VALUE, Implement> & newElement );
-    inline void setAt( TEPair<KEY, VALUE, Implement> && newElement);
+    inline void setAt( const std::pair<KEY, VALUE> & newElement );
+    inline void setAt( std::pair<KEY, VALUE> && newElement);
 
     /**
      * \brief   Extracts elements from the given source and inserts into the hash map.
@@ -423,7 +422,7 @@ public:
      * \param	out_Element On output, this element contains pair of Key and Value
      * \return	Next position of element or next if it is last element in hash map.
      **/
-    inline MAPPOS nextPosition(typename MAPPOS atPosition, TEPair<KEY, VALUE, Implement> & out_Element ) const;
+    inline MAPPOS nextPosition(typename MAPPOS atPosition, std::pair<KEY, VALUE> & out_Element ) const;
     /**
      * \brief	By given position value, returns next position
      * \param	atPosition  Starting Position to get next position of element
@@ -455,7 +454,7 @@ public:
      * \param	atPosition	The position of element to retrieve key and value
      * \param	out_Element On output, contains Key and Value pair of element of given position
      **/
-    inline void getAtPosition(typename MAPPOS atPosition, TEPair<KEY, VALUE, Implement> & out_Element) const;
+    inline void getAtPosition(typename MAPPOS atPosition, std::pair<KEY, VALUE> & out_Element) const;
 
     /**
      * \brief   Returns the Key object value at the given position.
@@ -652,15 +651,15 @@ inline void TEHashMap<KEY, VALUE, Implement>::setAt( KEY && Key, const VALUE & n
 }
 
 template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
-inline void TEHashMap<KEY, VALUE, Implement>::setAt(const TEPair<KEY, VALUE, Implement> &newItem)
+inline void TEHashMap<KEY, VALUE, Implement>::setAt(const std::pair<KEY, VALUE>& newItem)
 {
-    setAt(newItem.mKey, newItem.mValue);
+    setAt(newItem.first, newItem.second);
 }
 
 template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
-inline void TEHashMap<KEY, VALUE, Implement>::setAt( TEPair<KEY, VALUE, Implement> && newItem)
+inline void TEHashMap<KEY, VALUE, Implement>::setAt( std::pair<KEY, VALUE> && newItem)
 {
-    setAt(std::move(newItem.mKey), newItem.mValue);
+    setAt(std::move(newItem.first), newItem.second);
 }
 
 template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
@@ -839,7 +838,9 @@ inline typename TEHashMap<KEY, VALUE, Implement>::MAPPOS TEHashMap<KEY, VALUE, I
 }
 
 template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
-inline typename TEHashMap<KEY, VALUE, Implement>::MAPPOS TEHashMap<KEY, VALUE, Implement>::nextPosition(typename TEHashMap<KEY, VALUE, Implement>::MAPPOS atPosition, TEPair<KEY, VALUE, Implement> & out_Element) const
+inline typename TEHashMap<KEY, VALUE, Implement>::MAPPOS 
+TEHashMap<KEY, VALUE, Implement>::nextPosition( typename TEHashMap<KEY, VALUE, Implement>::MAPPOS atPosition
+                                              , std::pair<KEY, VALUE> & out_Element) const
 {
     return nextPosition(atPosition, out_Element.mKey, out_Element.mValue);
 }
@@ -872,7 +873,8 @@ inline void TEHashMap<KEY, VALUE, Implement>::getAtPosition(typename TEHashMap<K
 }
 
 template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
-inline void TEHashMap<KEY, VALUE, Implement>::getAtPosition(typename TEHashMap<KEY, VALUE, Implement>::MAPPOS atPosition, TEPair<KEY, VALUE, Implement> & out_Element) const
+inline void TEHashMap<KEY, VALUE, Implement>::getAtPosition( typename TEHashMap<KEY, VALUE, Implement>::MAPPOS atPosition
+                                                           , std::pair<KEY, VALUE> & out_Element) const
 {
     getAtPosition(atPosition, out_Element.mKey, out_Element.mValue);
 }

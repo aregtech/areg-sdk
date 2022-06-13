@@ -282,66 +282,66 @@ namespace std
 
 inline TraceProperty & TraceProperty::operator = ( const char * newValue )
 {
-    mProperty.mValue= newValue;
+    mProperty.mValue.second = newValue;
     return (*this);
 }
 
 inline TraceProperty & TraceProperty::operator = ( unsigned int newValue )
 {
-    mProperty.mValue= newValue;
+    mProperty.mValue.second = newValue;
     return (*this);
 }
 
 inline TraceProperty & TraceProperty::operator = ( NETrace::eLogPriority newValue )
 {
-    mProperty.mValue= newValue;
+    mProperty.mValue.second = newValue;
     return (*this);
 }
 
 inline TraceProperty & TraceProperty::operator = ( bool newValue )
 {
-    mProperty.mValue= newValue;
+    mProperty.mValue.second = newValue;
     return (*this);
 }
 
 inline TraceProperty::operator const char * ( void ) const
 {
-    return static_cast<const char *>(mProperty.mValue);
+    return static_cast<const char *>(mProperty.mValue.second);
 }
 
 inline TraceProperty::operator const String & ( void ) const
 {
-    return static_cast<const String &>(mProperty.mValue);
+    return static_cast<const String &>(mProperty.mValue.second);
 }
 
 inline TraceProperty::operator unsigned int ( void ) const
 {
-    return static_cast<unsigned int>(mProperty.mValue);
+    return static_cast<unsigned int>(mProperty.mValue.second);
 }
 
 inline TraceProperty::operator NETrace::eLogPriority ( void ) const
 {
-    return static_cast<NETrace::eLogPriority>(mProperty.mValue);
+    return static_cast<NETrace::eLogPriority>(mProperty.mValue.second);
 }
 
 inline TraceProperty::operator bool( void ) const
 {
-    return static_cast<bool>(mProperty.mValue);
+    return static_cast<bool>(mProperty.mValue.second);
 }
 
 inline const TracePropertyKey & TraceProperty::getKey( void ) const
 {
-    return mProperty.mKey;
+    return mProperty.mValue.first;
 }
 
 inline const TracePropertyValue & TraceProperty::getValue( void ) const
 {
-    return mProperty.mValue;
+    return mProperty.mValue.second;
 }
 
 inline TracePropertyValue & TraceProperty::getValue( void )
 {
-    return mProperty.mValue;
+    return mProperty.mValue.second;
 }
 
 inline const String & TraceProperty::getComment( void ) const
@@ -351,5 +351,5 @@ inline const String & TraceProperty::getComment( void ) const
 
 inline bool TraceProperty::isValid(void) const
 {
-    return (mProperty.mKey.isValidKey() && mProperty.mValue.isValid());
+    return (mProperty.mValue.first.isValidKey() && mProperty.mValue.second.isValid());
 }

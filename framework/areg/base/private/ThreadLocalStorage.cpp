@@ -46,9 +46,9 @@ NEMemory::uAlign ThreadLocalStorage::getStorageItem( const char * Key ) const
     for ( ; mStorageList.isValidPosition(pos); pos = mStorageList.nextPosition(pos))
     {
         const ThreadLocalStorage::StorageItem& value = mStorageList.valueAtPosition(pos);
-        if (value.mKey == Key)
+        if (value.first == Key)
         {
-            result = value.mValue;
+            result = value.second;
             break;
         }
     }
@@ -96,9 +96,9 @@ NEMemory::uAlign ThreadLocalStorage::removeStoragteItem( const char * Key )
     for ( ; mStorageList.isValidPosition(pos); pos = mStorageList.nextPosition(pos))
     {
         const ThreadLocalStorage::StorageItem & value = mStorageList.valueAtPosition(pos);
-        if (value.mKey == Key)
+        if (value.first == Key)
         {
-            result = value.mValue;
+            result = value.second;
             mStorageList.removeAt(pos);
             break;
         }
@@ -112,7 +112,7 @@ bool ThreadLocalStorage::existKey( const char* Key ) const
     StorageList::LISTPOS pos = mStorageList.firstPosition();
     for ( ; mStorageList.isValidPosition(pos); pos = mStorageList.nextPosition(pos))
     {
-        if (mStorageList.valueAtPosition(pos).mKey == Key)
+        if (mStorageList.valueAtPosition(pos).first== Key)
             break;
     }
 

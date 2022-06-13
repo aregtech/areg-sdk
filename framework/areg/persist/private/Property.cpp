@@ -70,57 +70,57 @@ bool Property::operator != (const Property & other) const
 
 Property::operator unsigned int ( void ) const
 {
-    return static_cast<unsigned int>(mProperty.mKey);
+    return static_cast<unsigned int>(mProperty.mValue.first);
 }
 
 void Property::parseKey(const char * keySet)
 {
-    mProperty.mKey.parseKey(keySet);
+    mProperty.mValue.first.parseKey(keySet);
 }
 
 void Property::setKey(const PropertyKey & Key)
 {
-    mProperty.mKey = Key;
+    mProperty.mValue.first = Key;
 }
 
 void Property::setKey( PropertyKey && Key )
 {
-    mProperty.mKey = static_cast<PropertyKey &&>(Key);
+    mProperty.mValue.first = static_cast<PropertyKey &&>(Key);
 }
 
 const PropertyKey & Property::getKey(void) const
 {
-    return mProperty.mKey;
+    return mProperty.mValue.first;
 }
 
 String Property::getKeyString(void) const
 {
-    return mProperty.mKey.convToString();
+    return mProperty.mValue.first.convToString();
 }
 
 void Property::parseValue(const char * valueSet)
 {
-    mProperty.mValue.parseValue(valueSet);
+    mProperty.mValue.second.parseValue(valueSet);
 }
 
 void Property::setValue(const PropertyValue & Value)
 {
-    mProperty.mValue = Value;
+    mProperty.mValue.second = Value;
 }
 
 void Property::setValue( PropertyValue && Value )
 {
-    mProperty.mValue = static_cast<PropertyValue &&>(Value);
+    mProperty.mValue.second = static_cast<PropertyValue &&>(Value);
 }
 
 const PropertyValue & Property::getValue(void) const
 {
-    return mProperty.mValue;
+    return mProperty.mValue.second;
 }
 
 String Property::getValueString(void) const
 {
-    return mProperty.mValue.getString();
+    return mProperty.mValue.second.getString();
 }
 
 void Property::setComment(const char * comment)
@@ -167,7 +167,7 @@ const Property::Entry & Property::getPropertyPair(void) const
 
 bool Property::isValid(void) const
 {
-    return mProperty.mKey.isValid();
+    return mProperty.mValue.first.isValid();
 }
 
 bool Property::parseProperty(const char * strProperties)
@@ -188,14 +188,14 @@ bool Property::parseProperty(const char * strProperties)
             const char * value  = nullptr;
             String key        = String::getSubstring(values.getString(), NEPersistence::SYNTAX_EQUAL.data(), &value);
 
-            mProperty.mKey.parseKey(key.getString());
-            mProperty.mValue.parseValue(value);
+            mProperty.mValue.first.parseKey(key.getString());
+            mProperty.mValue.second.parseValue(value);
         }
 
-        if ( mProperty.mKey.isValid() == false )
+        if ( mProperty.mValue.first.isValid() == false )
         {
-            mProperty.mKey.resetKey();
-            mProperty.mValue.resetValue();
+            mProperty.mValue.first.resetKey();
+            mProperty.mValue.second.resetValue();
         }
     }
     else
@@ -209,9 +209,9 @@ bool Property::parseProperty(const char * strProperties)
 String Property::convToString(void) const
 {
     String result = "";
-    String key     = mProperty.mKey.convToString();
-    String value   = mProperty.mValue.convToString();
-    if ( (key.isEmpty() == false) && (value.isEmpty() == false) )
+    String key     = mProperty.mValue.first.convToString();
+    String value   = mProperty.mValue.second.convToString();
+    if ( !key.isEmpty() && !value.isEmpty() )
     {
         key += NEPersistence::SYNTAX_WHITESPACE_DELIMITER;
         key += NEPersistence::SYNTAX_EQUAL.data();
@@ -244,7 +244,7 @@ String Property::convToString(void) const
 
 void Property::resetData(void)
 {
-    mProperty.mKey.resetKey();
-    mProperty.mValue.resetValue();
+    mProperty.mValue.first.resetKey();
+    mProperty.mValue.second.resetValue();
     mComment.clear();
 }

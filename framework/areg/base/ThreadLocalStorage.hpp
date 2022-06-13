@@ -22,7 +22,6 @@
 
 #include "areg/base/NEMemory.hpp"
 #include "areg/base/String.hpp"
-#include "areg/base/TEPair.hpp"
 #include "areg/base/TELinkedList.hpp"
 
 /************************************************************************
@@ -57,11 +56,8 @@ private:
     // ThreadLocalStorage::StorageItem class declaration
     //////////////////////////////////////////////////////////////////////////
 
-    //!< Definition of storage helper object to compare keys and values.
-    using ImplStorageItem   = TEPairImpl<const String &, NEMemory::uAlign>;
-
     //!< Definition of storage item to store.
-    using StorageItem       = TEPair<String, NEMemory::uAlign, const String &, NEMemory::uAlign, ImplStorageItem>;
+    using StorageItem       = std::pair<String, NEMemory::uAlign>;
 
     //!< Definition of storage list helper object to compare values.
     using ImplStorageList   = TEListImpl<ThreadLocalStorage::StorageItem>;

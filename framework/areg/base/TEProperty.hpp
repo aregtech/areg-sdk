@@ -17,20 +17,17 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
-#include "areg/base/TEPair.hpp"
 
 /**
- * \brief   Class template of properties. It is an extension of TEPair class.
- *          For more details has a look description of TEPair
- * \tparam  KEY         The type of property Key. Should be unique.
- * \tparam  VALUE       The type of property Value.
- * \tparam  KEY_TYPE    The type of Key. By default is same as KEY.
- * \tparam  VALUE_TYPE  By default same as VALUE.
- * \tparam  Implement   The name of class that implements methods to check equality of Key or Value.
- * \see     TEPair
+ * \brief   Class template of properties. It contains a pair of data, where
+ *          the member 'first' is used as a Key and the member 'second' is
+ *          used as a Value. The Key is used in property list and
+ *          should be unique.
+ * \tparam  KEY     The type of property Key. Should be unique.
+ * \tparam  VALUE   The type of property Value.
  **/
-template <typename KEY, typename VALUE, typename KEY_TYPE = KEY, typename VALUE_TYPE = VALUE, class Implement = TEPairImpl<KEY_TYPE, VALUE_TYPE>>
-class TEProperty   : public TEPair<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>
+template <typename KEY, typename VALUE>
+class TEProperty
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
@@ -42,23 +39,30 @@ public:
     TEProperty( void ) = default;
 
     /**
-     * \brief   Initializes key and value pairs
+     * \brief   Initializes key and value pairs.
      * \param   Key     The initial property key to set.
      * \param   Value   The initial property value to set.
      **/
-    TEProperty( KEY_TYPE Key, VALUE_TYPE Value );
+    TEProperty( const KEY & Key, const VALUE & Value );
+
+    /**
+     * \brief   Initializes key and value pairs.
+     * \param   Key     The initial property key to set.
+     * \param   Value   The initial property value to set.
+     **/
+    TEProperty(KEY && Key, VALUE && Value);
 
     /**
      * \brief   Copy constructor.
      * \param   src     The source to copy data.
      **/
-    TEProperty( const TEProperty<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement> & src ) = default;
+    TEProperty( const TEProperty<KEY, VALUE> & src ) = default;
 
     /**
      * \brief   Move constructor.
      * \param   src     The source to move data.
      **/
-    TEProperty( TEProperty<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement> && src )  noexcept = default;
+    TEProperty( TEProperty<KEY, VALUE> && src )  noexcept = default;
 
     /**
      * \brief   Destructor
@@ -71,49 +75,250 @@ public:
 public:
     /**
      * \brief   Assignment operator. Copies data from given source.
-     */
-    TEProperty<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement> & operator = (const TEProperty<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement> & src) = default;
+     **/
+    inline TEProperty<KEY, VALUE> & operator = (const TEProperty<KEY, VALUE> & src);
 
     /**
      * \brief   Move operator. Moves data from given source.
-     */
-    TEProperty<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement> & operator = ( TEProperty<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement> && src ) noexcept = default;
+     **/
+    inline TEProperty<KEY, VALUE> & operator = ( TEProperty<KEY, VALUE> && src ) noexcept;
 
     /**
      * \brief	Checks equality of 2 property objects, and returns true if they are equal.
      * \param	other	The property object to compare.
      **/
-    inline bool operator == ( const TEProperty<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement> & other ) const;
+    inline bool operator == ( const TEProperty<KEY, VALUE> & other ) const;
 
     /**
      * \brief	Checks inequality of 2 property objects, and returns true if they are not equal.
      * \param	other	The property object to compare.
      **/
-    inline bool operator != ( const TEProperty<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement> & other ) const;
+    inline bool operator != ( const TEProperty<KEY, VALUE> & other ) const;
+
+//////////////////////////////////////////////////////////////////////////
+// Operations
+//////////////////////////////////////////////////////////////////////////
+protected:
+
+    /**
+     * \brief   Copies the key and value data of the pair from the given source.
+     * \param   Key     The key data to set in the pair.
+     * \param   Value   The value data to set in the pair.
+     **/
+    inline void setData(const KEY & Key, const VALUE & Value);
+
+    /**
+     * \brief   Moves the key and value data of the pair from the given source.
+     * \param   Key     The key data to set in the pair.
+     * \param   Value   The value data to set in the pair.
+     **/
+    inline void setData(KEY && Key, VALUE && Value);
+
+    /**
+     * \brief   Sets the key data of the pair from the given source.
+     * \param   Key     The key data to set in the pair.
+     **/
+    inline void setKey(const KEY & Key);
+    inline void setKey(KEY && Key);
+
+    /**
+     * \brief   Returns the Key data of the pair object.
+     **/
+    inline const KEY & getKey( void ) const;
+    inline KEY & getKey( void );
+
+    /**
+     * \brief   Sets the Value data of the pair from the given source.
+     * \param   Value   The key data to set in the pair.
+     **/
+    inline void setValue(const VALUE & Value);
+    inline void setValue(VALUE && Value);
+
+    /**
+     * \brief   Returns the Value data of the pair object.
+     **/
+    inline const VALUE& getValue(void) const;
+    inline VALUE& getValue(void);
+
+//////////////////////////////////////////////////////////////////////////
+// Protected methods
+//////////////////////////////////////////////////////////////////////////
+protected:
+    /**
+     * \brief   Called when comparing 2 keys.
+     *          Overwrite method when need to change comparison.
+     * \param   key1    Key on left side to compare
+     * \param   key2    Key on right side to compare
+     * \return  If function returns true, 2 keys are equal.
+     *          Otherwise, they are not equal.
+     **/
+    inline bool isEqualKeys( const KEY & key1, const KEY & key2 ) const;
+
+    /**
+     * \brief   Called when comparing 2 values of element.
+     *          Overwrite method when need to change comparison.
+     * \param   value1  Value on left side to compare.
+     * \param   value2  Value on right side to compare.
+     * \return  If function returns true, 2 values are equal.
+     *          Otherwise, they are not equal.
+     **/
+    inline bool isEqualValues( const VALUE & value1, const VALUE & value2) const;
+
+//////////////////////////////////////////////////////////////////////////
+// Member variable
+//////////////////////////////////////////////////////////////////////////
+public:
+    //! The pair object. Declared public for the fast access because
+    //! this object does not contain any special logic, except comparing
+    //! 2 object, where only keys are compared and values are ignored.
+    std::pair<KEY, VALUE>   mValue;
 };
 
 //////////////////////////////////////////////////////////////////////////
 // Function Implementation
 //////////////////////////////////////////////////////////////////////////
 
+/**
+ * \brief   Reads out from the stream Key and Value pair.
+ *          There should be possibility to initialize Key and Value elements from streaming object and
+ *          if KEY and VALUE are not primitives, they should have implemented streaming operator.
+ * \param   stream  The streaming object to read values
+ * \param   input   The Pair object to save values.
+ **/
+template <typename KEY, typename VALUE>
+const IEInStream& operator >> (const IEInStream& stream, std::pair<KEY, VALUE>& input)
+{
+    stream >> input.first;
+    stream >> input.second;
+    return stream;
+}
+
+/**
+ * \brief   Writes to the stream Key and Value of Pair.
+ *          If KEY and VALUE are not primitives, they should have implemented streaming operator.
+ * \param   stream  The streaming object to write values
+ * \param   output  The Pair object, which contains key and value pair.
+ **/
+template <typename KEY, typename VALUE>
+IEOutStream& operator << (IEOutStream& stream, const std::pair<KEY, VALUE>& output)
+{
+    stream << output.first;
+    stream << output.second;
+    return stream;
+}
+
 //////////////////////////////////////////////////////////////////////////
-// TEProperty<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement> class implementation
+// TEProperty<KEY, VALUE> class implementation
 //////////////////////////////////////////////////////////////////////////
 
-template <typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename VALUE_TYPE /*= VALUE*/, class Implement /* = TEPairImpl<KEY_TYPE, VALUE_TYPE> */>
-TEProperty<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::TEProperty( KEY_TYPE Key, VALUE_TYPE Value )
-    : TEPair<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement> ( Key, Value )
+template <typename KEY, typename VALUE>
+TEProperty<KEY, VALUE>::TEProperty( const KEY & Key, const VALUE & Value )
+    : mValue( Key, Value )
 {
 }
 
-template <typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename VALUE_TYPE /*= VALUE*/, class Implement /* = TEPairImpl<KEY_TYPE, VALUE_TYPE> */>
-inline bool TEProperty<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::operator == ( const TEProperty<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement> & other ) const
+template <typename KEY, typename VALUE>
+TEProperty<KEY, VALUE>::TEProperty(KEY && Key, VALUE && Value)
+    : mValue( std::move(Key), std::move(Value) )
 {
-    return (this == &other ? TEPair<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::isEqualKeys(this->mKey, other.mKey) : true);
 }
 
-template <typename KEY, typename VALUE, typename KEY_TYPE /*= KEY*/, typename VALUE_TYPE /*= VALUE*/, class Implement /* = TEPairImpl<KEY_TYPE, VALUE_TYPE> */>
-inline bool TEProperty<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::operator != ( const TEProperty<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement> & other ) const
+template <typename KEY, typename VALUE>
+inline TEProperty<KEY, VALUE>& TEProperty<KEY, VALUE>::operator = (const TEProperty<KEY, VALUE>& src)
 {
-    return (this != &other ? TEPair<KEY, VALUE, KEY_TYPE, VALUE_TYPE, Implement>::isEqualKeys(this->mKey, other.mKey) == false: false);
+    mValue = src.mValue;
+    return (*this);
+}
+
+template <typename KEY, typename VALUE>
+inline TEProperty<KEY, VALUE>& TEProperty<KEY, VALUE>::operator = (TEProperty<KEY, VALUE> && src) noexcept
+{
+    mValue = std::move(src.mValue);
+    return (*this);
+}
+
+template <typename KEY, typename VALUE>
+inline bool TEProperty<KEY, VALUE>::operator == ( const TEProperty<KEY, VALUE> & other ) const
+{
+    return ((this == &other) || isEqualKeys(mValue.first, other.mValue.first));
+}
+
+template <typename KEY, typename VALUE>
+inline bool TEProperty<KEY, VALUE>::operator != ( const TEProperty<KEY, VALUE> & other ) const
+{
+    return ((this != &other) && !isEqualKeys(mValue.first, other.mValue.first));
+}
+
+template <typename KEY, typename VALUE>
+inline void TEProperty<KEY, VALUE>::setData(const KEY& Key, const VALUE& Value)
+{
+    mValue.first    = Key;
+    mValue.second   = Value;
+}
+
+template <typename KEY, typename VALUE>
+inline void TEProperty<KEY, VALUE>::setData(KEY && Key, VALUE && Value)
+{
+    mValue.first    = std::move(Key);
+    mValue.second   = std::move(Value);
+}
+
+template <typename KEY, typename VALUE>
+inline void TEProperty<KEY, VALUE>::setKey(const KEY& Key)
+{
+    mValue.first = Key;
+}
+
+template <typename KEY, typename VALUE>
+inline void TEProperty<KEY, VALUE>::setKey(KEY && Key)
+{
+    mValue.first = std::move(Key);
+}
+
+template <typename KEY, typename VALUE>
+inline const KEY& TEProperty<KEY, VALUE>::getKey(void) const
+{
+    return mValue.first;
+}
+
+template <typename KEY, typename VALUE>
+inline KEY& TEProperty<KEY, VALUE>::getKey(void)
+{
+    return mValue.first;
+}
+
+template <typename KEY, typename VALUE>
+inline void TEProperty<KEY, VALUE>::setValue(const VALUE& Value)
+{
+    mValue.second = Value;
+}
+
+template <typename KEY, typename VALUE>
+inline void TEProperty<KEY, VALUE>::setValue(VALUE && Value)
+{
+    mValue.second = std::move(Value);
+}
+
+template <typename KEY, typename VALUE>
+inline const VALUE& TEProperty<KEY, VALUE>::getValue(void) const
+{
+    return mValue.second;
+}
+
+template <typename KEY, typename VALUE>
+inline VALUE& TEProperty<KEY, VALUE>::getValue(void)
+{
+    return mValue.second;
+}
+
+template <typename KEY, typename VALUE>
+inline bool TEProperty<KEY, VALUE>::isEqualKeys(const KEY& key1, const KEY& key2) const
+{
+    return (key1 == key2);
+}
+
+template <typename KEY, typename VALUE>
+inline bool TEProperty<KEY, VALUE>::isEqualValues(const VALUE& value1, const VALUE& value2) const
+{
+    return (value1 == value2);
 }

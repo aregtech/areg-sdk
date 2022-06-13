@@ -593,9 +593,6 @@
     <ClInclude Include="areg\base\TELinkedList.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\base\TEPair.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="areg\base\TEProperty.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>

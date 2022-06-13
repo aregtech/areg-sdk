@@ -177,7 +177,7 @@ public:
      *                              of first element in resource map.
      * \return  Returns true if successfully removed first element.
      **/
-    inline bool removeResourceFirstElement( TEPair<RESOURCE_KEY, RESOURCE_OBJECT *> out_FirstElement );
+    inline bool removeResourceFirstElement( std::pair<RESOURCE_KEY, RESOURCE_OBJECT *> out_FirstElement );
 
     /**
      * \brief   Returns resource object of first element and its Key.
@@ -474,7 +474,7 @@ inline void TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::remo
 }
 
 template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Deleter>
-inline bool TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::removeResourceFirstElement( TEPair<RESOURCE_KEY, RESOURCE_OBJECT *> out_FirstElement )
+inline bool TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::removeResourceFirstElement(std::pair<RESOURCE_KEY, RESOURCE_OBJECT *> out_FirstElement )
 {
     Lock lock(mSynchObj);
     bool result = false;
@@ -482,7 +482,7 @@ inline bool TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::remo
     if (HashMap::isValidPosition(pos))
     {
         result = true;
-        HashMap::removePosition(pos, out_FirstElement.mKey, out_FirstElement.mValue);
+        HashMap::removePosition(pos, out_FirstElement.first, out_FirstElement.second);
     }
 
     return result;
