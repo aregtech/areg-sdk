@@ -646,7 +646,7 @@ public:
     inline CharType *  getUnsafeBuffer( void ) ;
 
 /************************************************************************/
-// Methods that can be overwritten in Helperation class template
+// Methods that can be overwritten in Helper class template
 /************************************************************************/
 protected:
 

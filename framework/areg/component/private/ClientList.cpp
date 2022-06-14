@@ -40,7 +40,7 @@ const ClientInfo & ClientList::registerClient( const ProxyAddress & whichClient,
 {
     ClientInfo clInfo(whichClient);
     LISTPOS pos = find(clInfo);
-    if (isEndPosition(pos))
+    if (isInvalidPosition(pos))
     {
         pushLast(std::move(clInfo));
         pos = lastPosition();

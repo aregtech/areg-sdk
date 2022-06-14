@@ -125,7 +125,7 @@ void StubBase::prepareResponse( SessionID sessionId )
 void StubBase::prepareRequest( Listener & listener, unsigned int seqNr, unsigned int responseId )
 {
     listener.mMessageId = responseId;
-    listener.mSequenceNr= mListListener.isEndPosition(mListListener.find(listener)) ? seqNr : static_cast<unsigned int>(-1 * static_cast<int>(seqNr));
+    listener.mSequenceNr= mListListener.isInvalidPosition(mListListener.find(listener)) ? seqNr : static_cast<unsigned int>(-1 * static_cast<int>(seqNr));
     mListListener.pushFirst(listener);
     mCurrListener = mListListener.firstPosition();
 }

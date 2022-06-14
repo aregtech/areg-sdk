@@ -33,7 +33,7 @@ ServiceProxy * ListServiceProxies::getService( const ProxyAddress & addrProxy )
 ServiceProxy & ListServiceProxies::registerService( const ProxyAddress & addrProxy )
 {
     ListServiceProxies::LISTPOS pos = _findProxy(addrProxy);
-    if ( isEndPosition(pos) )
+    if ( isInvalidPosition(pos) )
     {
         pushLast(ServiceProxy(addrProxy));
         pos = lastPosition();
@@ -45,7 +45,7 @@ ServiceProxy & ListServiceProxies::registerService( const ProxyAddress & addrPro
 ServiceProxy & ListServiceProxies::registerService(const ProxyAddress & addrProxy, const ServiceStub & stubService)
 {
     ListServiceProxies::LISTPOS pos = _findProxy(addrProxy);
-    if (isEndPosition(pos))
+    if (isInvalidPosition(pos))
     {
         pushLast(ServiceProxy(addrProxy));
         pos = lastPosition();

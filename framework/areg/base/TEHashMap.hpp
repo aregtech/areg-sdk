@@ -217,7 +217,7 @@ public:
      * \param   pos     The position to check.
      * \return  Returns true if specified position reached the end of the hash map.
      **/
-    inline bool isEndPosition(const MAPPOS & pos) const;
+    inline bool isInvalidPosition(const MAPPOS & pos) const;
 
     /**
      * \brief   Returns true if specified position pointing start of the hash map.
@@ -577,7 +577,7 @@ inline typename TEHashMap<KEY, VALUE, Implement>::MAPPOS TEHashMap<KEY, VALUE, I
 }
 
 template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
-inline bool TEHashMap<KEY, VALUE, Implement>::isEndPosition(const MAPPOS& pos) const
+inline bool TEHashMap<KEY, VALUE, Implement>::isInvalidPosition(const MAPPOS& pos) const
 {
     return (pos == mValueList.end());
 }

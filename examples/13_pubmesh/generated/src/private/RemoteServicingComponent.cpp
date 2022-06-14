@@ -62,7 +62,7 @@ void RemoteServicingComponent::requestRegister( const String & name, const Servi
         }
     }
 
-    if (list.isEndPosition(pos))
+    if (list.isInvalidPosition(pos))
     {
         newClient.crID      = ++ mGnerateID;
         newClient.crName    = name;

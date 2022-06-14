@@ -35,7 +35,7 @@ class Thread;
 /**
  * \brief   A local storage of a thread.
  *          When thread starts, it initializes local storage.
- *          Any object of local threadcan save an entry in thread local storage
+ *          Any object of local thread can save an entry in thread local storage
  *          accessed by unique name. By default, every local storage ot a Thread
  *          contains the entry of the thread consumer. The entries of the 
  *          local storage are access by name.
@@ -119,7 +119,7 @@ public:
      *          Otherwise it will return NEMemory::InvalidElement element,
      *          which is defining invalid element.
      *          If element was not found, it will raise assertion in Debug version.
-     *          In release version either call existKey() before calling thie method,
+     *          In release version either call existKey() before calling the method,
      *          or check the address of returned element with NEMemory::InvalidElement
      * \param   Key     The name of a local storage item.
      * \return  Returns local storage element if Key exists. 
@@ -208,7 +208,7 @@ private:
 #endif  // _MSC_VER
 
     /**
-     * \brief   The storage list object, which contains (key; value) pair entrier
+     * \brief   The storage list object, which contains (key; value) pair entries
      **/
     StorageList mStorageList;
 

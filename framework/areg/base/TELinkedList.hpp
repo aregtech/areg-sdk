@@ -215,18 +215,30 @@ public:
     inline LISTPOS lastPosition(void) const;
 
     /**
+     * \brief   Returns invalid position object.
+     **/
+    inline LISTPOS invalidPosition(void) const;
+
+    /**
+     * \brief   Returns true if specified position pointing start of the linked list.
+     * \param   pos     The position to check.
+     * \return  Returns true if specified position pointing start of the linked list.
+     **/
+    inline bool isStartPosition(const LISTPOS& pos) const;
+
+    /**
+     * \brief   Returns true if specified position pointing start of the linked list.
+     * \param   pos     The position to check.
+     * \return  Returns true if specified position pointing start of the linked list.
+     **/
+    inline bool isLastPosition(const LISTPOS& pos) const;
+
+    /**
      * \brief   Returns true if specified position reached the end of the hash map.
      * \param   pos     The position to check.
      * \return  Returns true if specified position reached the end of the hash map.
      **/
-    inline bool isEndPosition(const LISTPOS& pos) const;
-
-    /**
-     * \brief   Returns true if specified position pointing start of the hash map.
-     * \param   pos     The position to check.
-     * \return  Returns true if specified position pointing start of the hash map.
-     **/
-    inline bool isStartPosition(const LISTPOS& pos) const;
+    inline bool isInvalidPosition(const LISTPOS& pos) const;
 
     /**
      * \brief   Returns true if specified position is not pointing the end of the hash map.
@@ -244,11 +256,6 @@ public:
      * \return  Returns true if specified position points to the valid entry in the hash map.
      */
     inline bool checkPosition(const LISTPOS& pos) const;
-
-    /**
-     * \brief   Returns invalid position object.
-     **/
-    inline LISTPOS invalidPosition(void) const;
 
 /************************************************************************/
 // Operations
@@ -445,6 +452,20 @@ public:
     bool pushLastIfNew(VALUE&& newElement);
 
     /**
+     * \brief   Pops the element at the head of linked list and returns the stored value.
+     *          The linked list must not be empty.
+     * \return  The popped out element from the header of the linked list.
+     */
+    VALUE popFirst(void);
+
+    /**
+     * \brief   Pops the element at the tails of linked list and returns the stored value.
+     *          The linked list must not be empty.
+     * \return  The popped out element from the tail of the linked list.
+     */
+    VALUE popLast(void);
+
+    /**
      * \brief	Inserts new element before given position. 
      *          If given position is head element, it will add new head element
      * \param	beforePosition  The Linked List element position before new element should be inserted
@@ -518,9 +539,9 @@ public:
      * \brief	Searches position of element by given value. If searchAfter is valid, the searching will be started
      *          from given position and will move to next element.
      * \param	searchValue	Value of element to search
-     * \param	searchAfter	If valid value, the position to start searching. 
-     *                      Otherwise searching will be started from position head element
-     * \return	Returns true if element was found in Linked List
+     * \param	searchAfter	If valid position, the searching starts from next element specified by position. 
+     *                      If invalid position, the searching starts from the beginning of the linked list.
+     * \return	Returns position of the element in the linked list.
      **/
     LISTPOS find(const VALUE& searchValue) const;
     LISTPOS find( const VALUE & searchValue, LISTPOS searchAfter ) const;
@@ -735,7 +756,7 @@ inline typename TELinkedList<VALUE, Implement>::LISTPOS TELinkedList<VALUE, Impl
 }
 
 template <typename VALUE, class Implement /* = TEListImpl<VALUE> */>
-inline bool TELinkedList<VALUE, Implement>::isEndPosition(const LISTPOS& pos) const
+inline bool TELinkedList<VALUE, Implement>::isInvalidPosition(const LISTPOS& pos) const
 {
     return (pos == mValueList.end());
 }
@@ -744,6 +765,12 @@ template <typename VALUE, class Implement /* = TEListImpl<VALUE> */>
 inline bool TELinkedList<VALUE, Implement>::isStartPosition(const LISTPOS& pos) const
 {
     return (pos == mValueList.begin());
+}
+
+template <typename VALUE, class Implement /* = TEListImpl<VALUE> */>
+inline bool TELinkedList<VALUE, Implement>::isLastPosition(const LISTPOS& pos) const
+{
+    return ((mValueList.empty() == false) && (pos == --mValueList.end()));
 }
 
 template <typename VALUE, class Implement /* = TEListImpl<VALUE> */>
@@ -997,6 +1024,24 @@ bool TELinkedList<VALUE, Implement>::pushLastIfNew(VALUE&& newElement)
     }
 
     return add;
+}
+
+template <typename VALUE, class Implement /* = TEListImpl<VALUE> */>
+VALUE TELinkedList<VALUE, Implement>::popFirst(void)
+{
+    ASSERT(mValueList.empty() == false);
+    VALUE result = mValueList.front();
+    mValueList.pop_front();
+    return result;
+}
+
+template <typename VALUE, class Implement /* = TEListImpl<VALUE> */>
+VALUE TELinkedList<VALUE, Implement>::popLast(void)
+{
+    ASSERT(mValueList.empty() == false);
+    VALUE result = mValueList.back();
+    mValueList.pop_back();
+    return result;
 }
 
 template <typename VALUE, class Implement /* = TEListImpl<VALUE> */>

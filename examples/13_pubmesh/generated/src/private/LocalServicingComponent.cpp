@@ -59,7 +59,7 @@ void LocalServicingComponent::requestHelloWorld(const String & roleName, const S
         }
     }
 
-    if (list.isEndPosition(pos))
+    if (list.isInvalidPosition(pos))
     {
         cl.ccID     = ++ mGnerateID;
         cl.ccName   = roleName;

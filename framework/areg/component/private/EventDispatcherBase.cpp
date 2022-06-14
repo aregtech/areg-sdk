@@ -50,9 +50,9 @@ EventDispatcherBase::~EventDispatcherBase( void )
 //////////////////////////////////////////////////////////////////////////
 // EventDispatcherBase class, methods
 //////////////////////////////////////////////////////////////////////////
-void EventDispatcherBase::signalEvent( int eventCount )
+void EventDispatcherBase::signalEvent( uint32_t eventCount )
 {
-    eventCount > 0 ? mEventQueue.setEvent() : mEventQueue.resetEvent();
+    eventCount != 0 ? mEventQueue.setEvent() : mEventQueue.resetEvent();
 }
 
 bool EventDispatcherBase::startDispatcher( void )

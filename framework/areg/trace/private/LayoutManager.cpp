@@ -148,7 +148,7 @@ bool LayoutManager::createLayouts( const char * layoutFormat )
 
 void LayoutManager::deleteLayouts(void)
 {
-    for ( STACKPOS pos = mLayoutList.firstPosition(); pos != nullptr; pos = mLayoutList.nextPosition(pos))
+    for (ListLayouts::STACKPOS pos = mLayoutList.firstPosition(); mLayoutList.isValidPosition(pos); pos = mLayoutList.nextPosition(pos))
         delete static_cast<IELayout *>(mLayoutList.getAt(pos));
 
     mLayoutList.removeAll();
@@ -165,7 +165,7 @@ bool LayoutManager::logMessage(const NETrace::sLogMessage & logMsg, IEOutStream 
         }
         else
         {
-            for ( LISTPOS pos = mLayoutList.firstPosition(); pos != nullptr; pos = mLayoutList.nextPosition(pos) )
+            for (ListLayouts::STACKPOS pos = mLayoutList.firstPosition(); mLayoutList.isValidPosition(pos); pos = mLayoutList.nextPosition(pos) )
                 mLayoutList.getAt(pos)->logMessage(logMsg, stream);
         }
 

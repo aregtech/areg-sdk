@@ -11,7 +11,7 @@
  * \file        areg/component/private/EventQueue.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
  * \author      Artak Avetyan
- * \brief       AREG Platform, Event queue class decration
+ * \brief       AREG Platform, Event queue class declaration
  *
  ************************************************************************/
 
@@ -53,7 +53,7 @@ public:
      *                          the Queue is empty.
      * \param   eventQueue      The instance of event queue object, which will keep event elements.
      **/
-    EventQueue( IEQueueListener & eventListener, TEStack<Event *, Event *> & eventQueue );
+    EventQueue( IEQueueListener & eventListener, TEStack<Event *> & eventQueue );
 
     /**
      * \brief   Destructor
@@ -87,7 +87,7 @@ public:
     /**
      * \brief   Returns number of pending Events in the Queue.
      **/
-    inline int getSize( void ) const;
+    inline uint32_t getSize( void ) const;
 
     /**
      * \brief   Pushes new Event in the Queue and notifies Event Listener
@@ -159,11 +159,11 @@ private:
      * \brief   Queue Listener object, which is signaled every time 
      *          new Event is pushed or removed.
      **/
-    IEQueueListener &           mEventListener;
+    IEQueueListener &   mEventListener;
     /**
      * \brief   Event queue stack object, which stores event elements
      **/
-    TEStack<Event *, Event *> & mEventQueue;
+    TEStack<Event *> &  mEventQueue;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden method calls.
@@ -177,12 +177,14 @@ private:
 // ExternalEventQueue class declaration
 //////////////////////////////////////////////////////////////////////////
 
+#if defined(_MSC_VER) && (_MSC_VER > 1200)
+    #pragma warning(disable: 4251)
+#endif  // _MSC_VER
 /**
  * \brief   External event queue class declaration, which is accessed from many threads.
  *          Used to queue external types of event. 
  **/
 class AREG_API ExternalEventQueue   : public    EventQueue
-                                    , private   TELockStack<Event *, Event *>
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -204,13 +206,17 @@ public:
     virtual ~ExternalEventQueue( void );
 
 //////////////////////////////////////////////////////////////////////////
-// Hidden methods
+// members
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief   Returns instance of ExternalEventQueue object
-     **/
-    inline ExternalEventQueue & self( void );
+#if defined(_MSC_VER) && (_MSC_VER > 1200)
+    #pragma warning(disable: 4251)
+#endif  // _MSC_VER
+    //! The stack to store queued elements.
+    TELockStack<Event*>     mStack;
+#if defined(_MSC_VER) && (_MSC_VER > 1200)
+    #pragma warning(default: 4251)
+#endif  // _MSC_VER
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden method calls.
@@ -228,7 +234,6 @@ private:
  *          Used to queue external types of event. 
  **/
 class AREG_API InternalEventQueue   : public    EventQueue
-                                    , private   TENolockStack<Event *, Event *>
                                     , private   IEQueueListener
 {
 //////////////////////////////////////////////////////////////////////////
@@ -260,13 +265,19 @@ private:
      *                      If zero, queue is empty, dispatcher can be suspended.
      * \return  
      **/
-    virtual void signalEvent( int eventCount ) override;
+    virtual void signalEvent(uint32_t eventCount ) override;
 
 private:
-    /**
-     * \brief   Returns instance of InternalEventQueue object
-     **/
-    inline InternalEventQueue & self( void );
+#if defined(_MSC_VER) && (_MSC_VER > 1200)
+    #pragma warning(disable: 4251)
+#endif  // _MSC_VER
+    //! The stack to store queued elements.
+    TENolockStack<Event*>   mStack;
+#if defined(_MSC_VER) && (_MSC_VER > 1200)
+    #pragma warning(default: 4251)
+#endif  // _MSC_VER
+
+    inline InternalEventQueue& self(void);
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden method calls.
@@ -293,7 +304,7 @@ inline bool EventQueue::isEmpty( void ) const
     return mEventQueue.isEmpty();
 }
 
-inline int EventQueue::getSize( void ) const
+inline uint32_t EventQueue::getSize( void ) const
 {
     return mEventQueue.getSize();
 }

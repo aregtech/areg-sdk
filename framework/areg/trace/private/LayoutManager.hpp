@@ -43,7 +43,7 @@ class LayoutManager
 // Local types and constants.
 //////////////////////////////////////////////////////////////////////////
 private:
-    using ListLayouts   = TENolockStack<IELayout *, IELayout *>;
+    using ListLayouts   = TENolockStack<IELayout *>;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor

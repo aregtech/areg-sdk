@@ -67,7 +67,7 @@ public:
      *                      If zero, queue is empty, dispatcher can be suspended.
      * \return  
      **/
-    virtual void signalEvent( int eventCount ) = 0;
+    virtual void signalEvent(uint32_t eventCount ) = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden / Forbidden method calls.

@@ -66,7 +66,7 @@ void ServicingComponent::requestHelloWorld(const String & roleName, const String
         }
     }
 
-    if (list.isEndPosition(pos))
+    if (list.isInvalidPosition(pos))
     {
         cl.ccID     = ++ mGnerateID;
         cl.ccName   = roleName;

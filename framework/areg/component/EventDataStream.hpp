@@ -38,7 +38,7 @@
  **/
 class AREG_API EventDataStream : public IEIOStream
 {
-    using SharedList    = TENolockStack<SharedBuffer, const SharedBuffer &>;
+    using SharedList    = TENolockStack<SharedBuffer>;
 
 //////////////////////////////////////////////////////////////////////////
 // Internal constants and types public
