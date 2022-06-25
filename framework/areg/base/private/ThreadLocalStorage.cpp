@@ -32,7 +32,7 @@ ThreadLocalStorage::ThreadLocalStorage(Thread & owningThread)
 
 ThreadLocalStorage::~ThreadLocalStorage( void )
 {
-    mStorageList.removeAll();
+    mStorageList.clear();
 }
 
 //////////////////////////////////////////////////////////////////////////

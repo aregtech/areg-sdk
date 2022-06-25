@@ -259,7 +259,7 @@ static void stopTimerThread( TimerDispatcher & aThread )
     TRACE_INFO("Stopping timers of thread [ %s ]", aThread.getName().getString());
     aThread.stopTimers();
 
-    TRACE_DBG("Comleted demo, going to stop and exit dispatcher thread [ %s ]", aThread.getName().getString());
+    TRACE_DBG("Completed demo, going to stop and exit dispatcher thread [ %s ]", aThread.getName().getString());
     aThread.triggerExitEvent();
     aThread.completionWait(NECommon::WAIT_INFINITE);
 

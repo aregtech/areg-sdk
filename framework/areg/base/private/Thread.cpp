@@ -128,7 +128,7 @@ ThreadLocalStorage* Thread::_getThreadLocalStorage( Thread* ownThread /*= Thread
         // the object should be deleted.
         ASSERT(ownThread == nullptr );
         ASSERT(_localStorage != nullptr );
-        _localStorage->removeAll();
+        _localStorage->clear();
         delete _localStorage;
         _localStorage = nullptr;
     }

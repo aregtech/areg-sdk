@@ -93,7 +93,7 @@ String ServiceItem::convToString(void) const
     result += NECommon::COMPONENT_PATH_SEPARATOR.data();
     result += mServiceVersion.convToString();
     result += NECommon::COMPONENT_PATH_SEPARATOR.data();
-    result += String::int32ToString(static_cast<int>(mServiceType), NEString::eRadix::RadixDecimal);
+    result += String::toString(static_cast<int>(mServiceType), NEString::eRadix::RadixDecimal);
 
     return result;
 }
@@ -104,7 +104,7 @@ void ServiceItem::convFromString(  const char* pathService, const char** out_nex
     mServiceName        = String::getSubstring(strSource, NECommon::COMPONENT_PATH_SEPARATOR.data( ), &strSource);
     mServiceVersion     = String::getSubstring(strSource, NECommon::COMPONENT_PATH_SEPARATOR.data( ), &strSource);
     String serviceType  = String::getSubstring(strSource, NECommon::COMPONENT_PATH_SEPARATOR.data( ), &strSource);
-    mServiceType        = static_cast<NEService::eServiceType>(serviceType.convToInt32());
+    mServiceType        = static_cast<NEService::eServiceType>(serviceType.toInt32());
     mMagicNum           = ServiceItem::_magicNumber(*this);
 
     if (out_nextPart != nullptr)

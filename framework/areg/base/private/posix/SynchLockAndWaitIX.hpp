@@ -87,7 +87,7 @@ class SynchLockAndWaitIX
          **/
         inline void implCleanResourceList( IEWaitableBaseIX * & /* Key */, ListLockAndWait & List )
         {
-        	List.removeAll();
+        	List.clear();
         }
 
         /**

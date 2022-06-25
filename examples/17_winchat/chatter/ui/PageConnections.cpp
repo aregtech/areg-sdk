@@ -254,7 +254,7 @@ inline void PageConnections::addConnection( const NEConnectionManager::sConnecti
 
 inline int PageConnections::getSelectedConnections( NEDirectConnection::sInitiator & outParticipant, NEDirectConnection::ListParticipants & outListParticipants )
 {
-    outListParticipants.removeAll();
+    outListParticipants.clear();
     UINT selected = mCtrlConnections.GetSelectedCount();
     int count = 0;
     if (selected != 0)

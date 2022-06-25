@@ -67,7 +67,7 @@ void EventConsumerList::removeAllConsumers( void )
         consumer->consumerRegistered(false);
     }
 
-    EventConsumerListBase::removeAll();
+    EventConsumerListBase::clear();
 }
 
 //////////////////////////////////////////////////////////////////////////

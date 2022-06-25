@@ -178,35 +178,6 @@ public:
 // Function Implementation
 //////////////////////////////////////////////////////////////////////////
 
-/**
- * \brief   Reads out from the stream Key and Value pair.
- *          There should be possibility to initialize Key and Value elements from streaming object and
- *          if KEY and VALUE are not primitives, they should have implemented streaming operator.
- * \param   stream  The streaming object to read values
- * \param   input   The Pair object to save values.
- **/
-template <typename KEY, typename VALUE>
-const IEInStream& operator >> (const IEInStream& stream, std::pair<KEY, VALUE>& input)
-{
-    stream >> input.first;
-    stream >> input.second;
-    return stream;
-}
-
-/**
- * \brief   Writes to the stream Key and Value of Pair.
- *          If KEY and VALUE are not primitives, they should have implemented streaming operator.
- * \param   stream  The streaming object to write values
- * \param   output  The Pair object, which contains key and value pair.
- **/
-template <typename KEY, typename VALUE>
-IEOutStream& operator << (IEOutStream& stream, const std::pair<KEY, VALUE>& output)
-{
-    stream << output.first;
-    stream << output.second;
-    return stream;
-}
-
 //////////////////////////////////////////////////////////////////////////
 // TEProperty<KEY, VALUE> class implementation
 //////////////////////////////////////////////////////////////////////////

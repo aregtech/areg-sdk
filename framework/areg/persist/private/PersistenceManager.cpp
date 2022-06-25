@@ -31,13 +31,13 @@ PersistenceManager::PersistenceManager(void)
 
 PersistenceManager::~PersistenceManager(void)
 {
-    mMapReadOnly.removeAll();
-    mMapWritable.removeAll();
+    mMapReadOnly.clear();
+    mMapWritable.clear();
 }
 
 bool PersistenceManager::parseReadable(const char * filePath)
 {
-    mMapReadOnly.removeAll();
+    mMapReadOnly.clear();
     mFileReadOnly = NEString::isEmpty<char>(filePath) == false ? File::getFileFullPath(filePath) : String("");
     if ( mFileReadOnly.isEmpty() == false )
     {
@@ -73,7 +73,7 @@ bool PersistenceManager::parseReadable(const char * filePath)
 
 bool PersistenceManager::parseWritable(const char * filePath)
 {
-    mMapWritable.removeAll();
+    mMapWritable.clear();
     mFileWritable = NEString::isEmpty<char>(filePath) == false ? File::getFileFullPath(filePath) : String("");
     if ( mFileReadOnly.isEmpty() == false )
     {

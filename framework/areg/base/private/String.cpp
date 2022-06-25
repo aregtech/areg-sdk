@@ -133,230 +133,112 @@ namespace
         return count;
     }
 
+    inline bool isEqual(const char* str, const wchar_t* wstr)
+    {
+        while ((*str != TEString<char>::EmptyChar) && (*wstr++ == static_cast<wchar_t>(*str++)))
+            ;
+
+        return (*str == TEString<char>::EmptyChar);
+    }
+
 } // namespace
-
-//////////////////////////////////////////////////////////////////////////
-// Friend methods
-//////////////////////////////////////////////////////////////////////////
-
-AREG_API String operator + (const String & lhs, const String & rhs)
-{
-    String result(lhs);
-    result += rhs;
-    return result;
-}
-
-AREG_API String operator + (const String & lhs, const char * rhs)
-{
-    String result(lhs);
-    result += rhs;
-    return result;
-}
-
-AREG_API String operator + (const char * lhs, const String & rhs)
-{
-    String result(lhs);
-    result += rhs;
-    return result;
-}
-
-AREG_API String operator + (const String & lhs, char chRhs)
-{
-    String result(lhs);
-    result += chRhs;
-    return result;
-}
-
-AREG_API String operator + (char chLhs, const String & rhs)
-{
-    String result(chLhs);
-    result += rhs;
-    return result;
-}
-
-AREG_API const IEInStream & operator >> (const IEInStream & stream, String & input)
-{
-    input.readStream(stream);
-    return stream;
-}
-
-AREG_API IEOutStream & operator << (IEOutStream & stream, const String & output)
-{
-    output.writeStream(stream);
-    return stream;
-}
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
 String::String(const WideString & source)
-    : TEString<char>(NULL_STRING, source.getLength())
+    : TEString<char>( )
 {
-    NEString::copyString<char, wchar_t>(getDataString(), source.getString(), NEString::START_POS, source.getLength());
-#ifdef DEBUG
-    mString = mData != nullptr ? mData->strBuffer : nullptr;
-#endif // DEBUG
+    assign(source.getString(), source.getLength());
 }
 
 String::String( const IEInStream & stream )
     : TEString<char>( )
 {
     readStream(stream);
-#ifdef DEBUG
-    mString = mData != nullptr ? mData->strBuffer : nullptr;
-#endif // DEBUG
 }
 
 //////////////////////////////////////////////////////////////////////////
 // operators / operations
 //////////////////////////////////////////////////////////////////////////
-String & String::operator = (const String & src)
-{
-    if (this != &src)
-    {
-        release();
-        if ( src.isEmpty() == false)
-        {
-            mData = NEString::initString<char, char>(src.getString(), src.getLength());
-        }
-
-#ifdef DEBUG
-        mString = mData != nullptr ? mData->strBuffer : nullptr;
-#endif // DEBUG
-    }
-
-    return (*this);
-}
-
-String & String::operator = ( String && src ) noexcept
-{
-    if ( this != &src )
-    {
-        release( );
-        mData = src.mData;
-        src.mData = nullptr;
-
-#ifdef DEBUG
-        mString = mData != nullptr ? mData->strBuffer : nullptr;
-        src.mString = nullptr;
-#endif // DEBUG
-    }
-
-    return (*this);
-}
-
-String & String::operator = (const char * src)
-{
-    if (getString() != src)
-    {
-        NEString::SString<char> * temp = mData;
-        mData = NEString::initString<char, char>( src, NEString::COUNT_ALL );
-        NEString::releaseSpace<char>(temp);
-
-#ifdef DEBUG
-        mString = mData != nullptr ? mData->strBuffer : nullptr;
-#endif // DEBUG
-    }
-
-    return (*this);
-}
-
-String & String::operator = (char chSource)
-{
-    release( );
-    mData = NEString::initString<char, char>( &chSource, 1 );
-
-#ifdef DEBUG
-    mString = mData != nullptr ? mData->strBuffer : nullptr;
-#endif // DEBUG
-
-    return (*this);
-}
-
-String & String::operator = ( const wchar_t * src )
-{
-    release( );
-    mData = NEString::initString<char, wchar_t>( src, NEString::COUNT_ALL );
-
-#ifdef DEBUG
-    mString = mData != nullptr ? mData->strBuffer : nullptr;
-#endif // DEBUG
-
-    return (*this);
-}
 
 String & String::operator = (const WideString & src)
 {
-    release();
-    mData = NEString::initString<char, wchar_t>(src.getString(), src.getLength());
-
-#ifdef DEBUG
-    mString = mData != nullptr ? mData->strBuffer : nullptr;
-#endif // DEBUG
-
+    assign(src.getString(), src.getLength());
     return (*this);
 }
 
-bool String::operator == (const WideString & other) const
+bool String::operator == (const WideString& other) const
 {
-    int len = getLength();
-    if ( len == other.getLength() )
+    bool result = false;
+    if (getLength() == other.getLength())
     {
-        return (NEString::compareFast<char, wchar_t>( getString( ), other.getString( ) ) == 0);
-    }
-    else
-    {
-        return false;
-    }
-}
-
-String & String::operator += (const String & src)
-{
-    append(src.getString(), src.getLength());
-    return (*this);
-}
-
-String & String::operator += (const char * src)
-{
-    append( src, NEString::getStringLength<char>( src ) );
-    return (*this);
-}
-
-String & String::operator += (const wchar_t * src)
-{
-    NEString::CharCount charCount = NEString::getStringLength<wchar_t>( src );
-    resize( getLength( ) + charCount );
-    if ( isValid( ) )
-    {
-        NEString::appendString<char, wchar_t>( *mData, src, charCount );
+        result = isEqual(getString(), other.getString());
     }
 
-#ifdef DEBUG
-    mString = mData != nullptr ? mData->strBuffer : nullptr;
-#endif // DEBUG
+    return result;
+}
 
-    return (*this);
+bool String::operator == (const std::wstring& other) const
+{
+    bool result = false;
+    if (getLength() == static_cast<NEString::CharCount>(other.length()))
+    {
+        result = isEqual(getString(), other.c_str());
+    }
+
+    return result;
+}
+
+bool String::operator == (const wchar_t* other) const
+{
+    bool result = false;
+    uint32_t len = static_cast<uint32_t>(wcslen(other));
+    if (getLength() == len)
+    {
+        result = isEqual(getString(), other);
+    }
+
+    return result;
+}
+
+bool String::operator != (const wchar_t* other) const
+{
+    bool result = true;
+    uint32_t len = static_cast<uint32_t>(wcslen(other));
+    if (getLength() == len)
+    {
+        result = isEqual(getString(), other) == false;
+    }
+
+    return result;
+}
+
+bool String::operator != (const std::wstring& other) const
+{
+    bool result = true;
+    if (getLength() == static_cast<NEString::CharCount>(other.length()))
+    {
+        result = isEqual(getString(), other.c_str()) == false;
+    }
+
+    return result;
+}
+
+bool String::operator != (const WideString& other) const
+{
+    bool result = true;
+    if (getLength() == other.getLength())
+    {
+        result = isEqual(getString(), other.getString()) == false;
+    }
+
+    return result;
 }
 
 String & String::operator += (const WideString & src)
 {
-    NEString::CharCount charCount = src.getLength();
-    resize(getLength() + charCount);
-    if (isValid())
-    {
-        NEString::appendString<char, wchar_t>(*mData, src.getString(), charCount);
-    }
-
-#ifdef DEBUG
-    mString = mData != nullptr ? mData->strBuffer : nullptr;
-#endif // DEBUG
-
-    return (*this);
-}
-
-String & String::operator += (char chSource)
-{
-    append(&chSource, 1);
+    append(src.getString(), src.getLength());
     return (*this);
 }
 
@@ -365,51 +247,16 @@ String String::getSubstring(const char * src, const char * strPhrase, const char
     String result;
     if ( out_next != nullptr )
     {
-        *out_next = NULL_STRING;
+        *out_next = EmptyChar;
     }
 
     if (NEString::isEmpty<char>(src) == false)
     {
-        NEString::CharPos pos = NEString::findFirstOf<char>(strPhrase, src, NEString::START_POS, out_next);
-        result.copy(src, pos != NEString::INVALID_POS ? pos : NEString::COUNT_ALL);
+        NEString::CharPos pos = NEString::findFirst<char>(strPhrase, src, NEString::START_POS, out_next);
+        result.assign(src, NEString::isPositionValid(pos) ? pos : NEString::COUNT_ALL);
     }
 
     return result;
-}
-
-void String::readStream(const IEInStream & stream)
-{
-    stream.read( *this );
-}
-
-void String::writeStream(IEOutStream & stream) const
-{
-    stream.write(*this);
-}
-
-char String::operator [ ] (int atPos) const
-{
-    ASSERT(isValid());
-    ASSERT(canRead(atPos));
-    return mData->strBuffer[atPos];
-}
-
-String::operator unsigned int (void) const
-{
-    const char * str = getBuffer();
-    if ( getLength( ) > 4 )
-    {
-        const unsigned int * buf = reinterpret_cast<const unsigned int *>(str);
-        return (*buf);
-    }
-    else if ( isValid() )
-    {
-        return NEMath::crc32Calculate( str );
-    }
-    else
-    {
-        return NEMath::CHECKSUM_IGNORE;
-    }
 }
 
 int32_t String::makeInt32( const char * strDigit, NEString::eRadix radix /*= NEString::RadixDecimal*/, const char ** end /*= nullptr*/ )
@@ -490,12 +337,12 @@ bool String::makeBool( const char * strBoolean, const char ** end /*= nullptr*/ 
     int lenSkip = 0;
     int lenTrue = static_cast<int>(NECommon::BOOLEAN_TRUE.length());
     int lenFalse= static_cast<int>(NECommon::BOOLEAN_FALSE.length());
-    if ( NEString::compareStrings<char, char>(strBoolean, NECommon::BOOLEAN_TRUE.data(), lenTrue, false) == 0)
+    if ( NEString::compareStrings<char, char>(strBoolean, NECommon::BOOLEAN_TRUE.data(), lenTrue, false) == NEMath::eCompare::Equal)
     {
         result = true;
         lenSkip= lenTrue;
     }
-    else if ( NEString::compareStrings<char, char>(strBoolean, NECommon::BOOLEAN_FALSE.data(), lenFalse, false) == 0)
+    else if ( NEString::compareStrings<char, char>(strBoolean, NECommon::BOOLEAN_FALSE.data(), lenFalse, false) == NEMath::eCompare::Equal)
     {
         result = false;
         lenSkip= lenFalse;
@@ -509,7 +356,7 @@ bool String::makeBool( const char * strBoolean, const char ** end /*= nullptr*/ 
     return result;
 }
 
-String String::int32ToString(int32_t number, NEString::eRadix radix /*= NEString::RadixDecimal */)
+String String::toString(int32_t number, NEString::eRadix radix /*= NEString::RadixDecimal */)
 {
     String result;
 
@@ -542,7 +389,7 @@ String String::int32ToString(int32_t number, NEString::eRadix radix /*= NEString
     return result;
 }
 
-String String::uint32ToString(uint32_t number, NEString::eRadix radix /*= NEString::RadixDecimal */)
+String String::toString(uint32_t number, NEString::eRadix radix /*= NEString::RadixDecimal */)
 {
     String result;
 
@@ -569,7 +416,7 @@ String String::uint32ToString(uint32_t number, NEString::eRadix radix /*= NEStri
     return result;
 }
 
-String String::int64ToString(int64_t number, NEString::eRadix radix /*= NEString::RadixDecimal */)
+String String::toString(int64_t number, NEString::eRadix radix /*= NEString::RadixDecimal */)
 {
     String result;
 
@@ -602,7 +449,7 @@ String String::int64ToString(int64_t number, NEString::eRadix radix /*= NEString
     return result;
 }
 
-String String::uint64ToString(uint64_t number, NEString::eRadix radix /*= NEString::RadixDecimal */)
+String String::toString(uint64_t number, NEString::eRadix radix /*= NEString::RadixDecimal */)
 {
     String result;
 
@@ -629,21 +476,21 @@ String String::uint64ToString(uint64_t number, NEString::eRadix radix /*= NEStri
     return result;
 }
 
-String String::floatToString(float number)
+String String::toString(float number)
 {
     String result;
     _formatDigit<float, 32>( result, "%f", number );
     return result;
 }
 
-String String::doubleToString(double number)
+String String::toString(double number)
 {
     String result;
     _formatDigit<double, 64>( result, "%g", number );
     return result;
 }
 
-String String::boolToString( bool value )
+String String::toString( bool value )
 {
     return (value ? String(NECommon::BOOLEAN_TRUE.data(),  static_cast<int>(NECommon::BOOLEAN_TRUE.length() )) :
                     String(NECommon::BOOLEAN_FALSE.data(), static_cast<int>(NECommon::BOOLEAN_FALSE.length())) );
@@ -672,7 +519,7 @@ const String & String::formatString(const char * format, ...)
     
     va_end(argptr);
 
-    return self();
+    return (*this);
 }
 
 const String & String::formatList(const char * format, va_list argptr)
@@ -680,22 +527,58 @@ const String & String::formatList(const char * format, va_list argptr)
     clear();
     if (format != nullptr)
     {
-        if ( _formatStringList<_MIN_BUF_SIZE>( self( ), format, argptr ) < 0 )
+        if ( _formatStringList<_MIN_BUF_SIZE>( *this, format, argptr ) < 0 )
         {
-            if ( _formatStringList<_BUF_SIZE>( self( ), format, argptr ) < 0 )
+            if ( _formatStringList<_BUF_SIZE>(*this, format, argptr ) < 0 )
             {
-                if ( _formatStringList<_MAX_BUF_SIZE>( self( ), format, argptr ) < 0 )
+                if ( _formatStringList<_MAX_BUF_SIZE>(*this, format, argptr ) < 0 )
                 {
-                    _formatStringList<_EXTRA_BUF_SIZE>( self( ), format, argptr );
+                    _formatStringList<_EXTRA_BUF_SIZE>(*this, format, argptr );
                 }
             }
         }
     }
-    return self( );
+
+    return (*this);
 }
 
-int String::setString( const unsigned char * buffer )
+void String::assign(const wchar_t* source, NEString::CharCount count /*= NEString::COUNT_ALL*/)
 {
-    (*this) = reinterpret_cast<const char *>(buffer);
-    return getLength();
+    mData.clear();
+
+    if (NEString::isEmpty<wchar_t>(source) == false)
+    {
+        count = count == NEString::COUNT_ALL ? static_cast<NEString::CharCount>(wcslen(source)) : count;
+        mData.resize(count);
+        char* dst = mData.data();
+        while (--count >= 0)
+            *dst++ = static_cast<char>(*source++);
+
+        *dst = EmptyChar;
+    }
+}
+
+void String::append(const wchar_t* source, NEString::CharCount count /*= NEString::COUNT_ALL*/)
+{
+    if (NEString::isEmpty<wchar_t>(source) == false)
+    {
+        uint32_t len = static_cast<uint32_t>(mData.length());
+        count = count == NEString::COUNT_ALL ? static_cast<NEString::CharCount>(wcslen(source)) : count;
+        mData.resize(count + len);
+        char* dst = mData.data() + len;
+        while (--count >= 0)
+            *dst++ = static_cast<char>(*source++);
+
+        *dst = EmptyChar;
+    }
+}
+
+void String::readStream(const IEInStream& stream)
+{
+    stream.read(*this);
+}
+
+void String::writeStream(IEOutStream& stream) const
+{
+    stream.write(*this);
 }

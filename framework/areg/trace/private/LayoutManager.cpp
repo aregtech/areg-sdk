@@ -151,7 +151,7 @@ void LayoutManager::deleteLayouts(void)
     for (ListLayouts::STACKPOS pos = mLayoutList.firstPosition(); mLayoutList.isValidPosition(pos); pos = mLayoutList.nextPosition(pos))
         delete static_cast<IELayout *>(mLayoutList.getAt(pos));
 
-    mLayoutList.removeAll();
+    mLayoutList.clear();
 }
 
 bool LayoutManager::logMessage(const NETrace::sLogMessage & logMsg, IEOutStream & stream) const

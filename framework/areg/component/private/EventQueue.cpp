@@ -178,7 +178,7 @@ ExternalEventQueue::ExternalEventQueue( IEQueueListener & eventListener )
 ExternalEventQueue::~ExternalEventQueue(void)
 {
     removePendingEvents( false );
-    mStack.removeAll();
+    mStack.clear();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -194,7 +194,7 @@ InternalEventQueue::InternalEventQueue(void)
 InternalEventQueue::~InternalEventQueue(void)
 {
     removePendingEvents( false );
-    mStack.removeAll();
+    mStack.clear();
 }
 
 void InternalEventQueue::signalEvent(uint32_t /* eventCount */)

@@ -24,6 +24,15 @@
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
 
+#include <deque>
+#include <list>
+#include <map>
+#include <queue>
+#include <string>
+#include <string_view>
+#include <unordered_map>
+#include <vector>
+
 /************************************************************************
  * Declared classes
  ************************************************************************/
@@ -382,6 +391,84 @@ public:
      **/
     friend inline IEOutStream & operator << (IEOutStream & stream, const wchar_t * output);
 
+    /**
+     * \brief   Writes STL string into the stream.
+     **/
+    template<typename CharType>
+    friend inline IEOutStream& operator << (IEOutStream& stream, const std::basic_string<CharType>& output);
+    template<typename CharType>
+    friend inline IEOutStream& operator << (IEOutStream& stream, const std::basic_string_view<CharType>& output);
+
+    /**
+     * \brief   Writes STL string into the stream.
+     **/
+    template<typename CharType>
+    friend inline IEInStream& operator >> (const IEInStream& stream, std::basic_string<CharType>& output);
+
+    /**
+     * \brief   Reads and writes std::deque object to the stream.
+     *          Each element in the container must be streamable.
+     **/
+    template<typename ElemType>
+    friend inline IEOutStream& operator << (IEOutStream& stream, const std::deque<ElemType>& output);
+    template<typename ElemType>
+    friend inline IEInStream& operator >> (const IEInStream& stream, std::deque<ElemType>& output);
+
+    /**
+     * \brief   Reads and writes std::list object to the stream.
+     *          Each element in the container must be streamable.
+     **/
+    template<typename ElemType>
+    friend inline IEOutStream& operator << (IEOutStream& stream, const std::list<ElemType>& output);
+    template<typename ElemType>
+    friend inline IEInStream& operator >> (const IEInStream& stream, std::list<ElemType>& output);
+
+    /**
+     * \brief   Reads and writes std::queue object to the stream.
+     *          Each element in the container must be streamable.
+     **/
+    template<typename ElemType>
+    friend inline IEOutStream& operator << (IEOutStream& stream, const std::queue<ElemType>& output);
+    template<typename ElemType>
+    friend inline IEInStream& operator >> (const IEInStream& stream, std::queue<ElemType>& output);
+
+    /**
+     * \brief   Reads and writes std::vector object to the stream.
+     *          Each element in the container must be streamable. 
+     **/
+    template<typename ElemType>
+    friend inline IEOutStream& operator << (IEOutStream& stream, const std::vector<ElemType>& output);
+    template<typename ElemType>
+    friend inline IEInStream& operator >> (const IEInStream& stream, std::vector<ElemType>& output);
+
+    /**
+     * \brief   Reads and writes std::pair object to the stream.
+     *          Each element in the container must be streamable.
+     **/
+    template<typename Key, typename Value>
+    friend inline IEOutStream& operator << (IEOutStream& stream, const std::pair<Key, Value>& output);
+    template<typename Key, typename Value>
+    friend inline IEInStream& operator >> (const IEInStream& stream, std::pair<Key, Value>& output);
+
+    /**
+     * \brief   Reads and writes std::map object to the stream.
+     *          Each element in the container must be streamable.
+     **/
+    template<typename Key, typename Value>
+    friend inline IEOutStream& operator << (IEOutStream& stream, const std::map<Key, Value>& output);
+    template<typename Key, typename Value>
+    friend inline IEInStream& operator >> (const IEInStream& stream, std::map<Key, Value>& output);
+
+    /**
+     * \brief   Reads and writes std::unordered_map object to the stream.
+     *          Each element in the container must be streamable.
+     **/
+    template<typename Key, typename Value>
+    friend inline IEOutStream& operator << (IEOutStream& stream, const std::unordered_map<Key, Value>& output);
+    template<typename Key, typename Value>
+    friend inline IEInStream& operator >> (const IEInStream& stream, std::unordered_map<Key, Value>& output);
+
+
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
@@ -440,6 +527,212 @@ inline IEOutStream & operator << (IEOutStream & stream, const wchar_t * output)
         }
 
         stream.write(reinterpret_cast<const unsigned char *>(output), (length + 1) * single);
+    }
+
+    return stream;
+}
+
+template<typename CharType>
+inline IEOutStream& operator << (IEOutStream& stream, const std::basic_string<CharType>& output)
+{
+    constexpr unsigned int single = sizeof(CharType);
+    stream.write(reinterpret_cast<const unsigned char*>(output.c_str()), (output.length() + 1) * single);
+    return stream;
+}
+
+template<typename CharType>
+inline IEOutStream& operator << (IEOutStream& stream, const std::basic_string_view<CharType>& output)
+{
+    constexpr unsigned int single = sizeof(CharType);
+    stream.write(reinterpret_cast<const unsigned char*>(output.data()), (output.length() + 1) * single);
+    return stream;
+}
+
+template<typename CharType>
+inline IEInStream& operator >> (const IEInStream& stream, std::basic_string<CharType>& output)
+{
+    output.clear();
+
+    CharType ch;
+    stream >> ch;
+    while (ch != static_cast<CharType>('\0'))
+    {
+        output += ch;
+        stream >> ch;
+    }
+
+    return stream;
+}
+
+template<typename ElemType>
+inline IEOutStream& operator << (IEOutStream& stream, const std::deque<ElemType>& output)
+{
+    stream << static_cast<unsigned int>(output.size());
+    for (const auto& elem : output)
+    {
+        strean << elem;
+    }
+
+    return stream;
+}
+
+template<typename ElemType>
+inline IEInStream& operator >> (const IEInStream& stream, std::deque<ElemType>& output)
+{
+    unsigned int size = 0;
+    stream >> size;
+    output.resize(size);
+    for (auto& elem : output)
+    {
+        stream >> elem;
+    }
+
+    return stream;
+}
+
+template<typename ElemType>
+inline IEOutStream& operator << (IEOutStream& stream, const std::list<ElemType>& output)
+{
+    stream << static_cast<unsigned int>(output.size());
+    for (const auto& elem : output)
+    {
+        stream << elem;
+    }
+
+    return stream;
+}
+
+template<typename ElemType>
+inline IEInStream& operator >> (const IEInStream& stream, std::list<ElemType>& output)
+{
+    unsigned int size = 0;
+    stream >> size;
+    output.resize(size);
+    for (auto& elem : output)
+    {
+        stream >> elem;
+    }
+
+    return stream;
+}
+
+template<typename ElemType>
+inline IEOutStream& operator << (IEOutStream& stream, const std::queue<ElemType>& output)
+{
+    stream << static_cast<unsigned int>(output.size());
+    for (const auto& elem : output)
+    {
+        stream << elem;
+    }
+
+    return stream;
+}
+
+template<typename ElemType>
+inline IEInStream& operator >> (const IEInStream& stream, std::queue<ElemType>& output)
+{
+    unsigned int size = 0;
+    stream >> size;
+    output.resize(size);
+    for (auto& elem : output)
+    {
+        stream >> elem;
+    }
+
+    return stream;
+}
+
+template<typename ElemType>
+inline IEOutStream& operator << (IEOutStream& stream, const std::vector<ElemType>& output)
+{
+    stream << static_cast<unsigned int>(output.size());
+    for (const auto& elem : output)
+    {
+        stream << elem;
+    }
+
+    return stream;
+}
+
+template<typename ElemType>
+inline IEInStream& operator >> (const IEInStream& stream, std::vector<ElemType>& output)
+{
+    unsigned int size = 0;
+    stream >> size;
+    output.resize(size);
+    for (auto& elem : output)
+    {
+        stream >> elem;
+    }
+
+    return stream;
+}
+
+template<typename Key, typename Value>
+inline IEOutStream& operator << (IEOutStream& stream, const std::pair<Key, Value>& output)
+{
+    stream << output.first;
+    stream << output.second;
+    return stream;
+}
+
+template<typename Key, typename Value>
+inline IEInStream& operator >> (const IEInStream& stream, std::pair<Key, Value>& output)
+{
+    stream >> output.first;
+    stream >> output.second;
+    return stream;
+}
+
+template<typename Key, typename Value>
+inline IEOutStream& operator << (IEOutStream& stream, const std::map<Key, Value>& output)
+{
+    stream << static_cast<unsigned int>(output.size());
+    for (const std::pair<Key, Value> & elem : output)
+    {
+        stream << elem;
+    }
+
+    return stream;
+}
+
+template<typename Key, typename Value>
+inline IEInStream& operator >> (const IEInStream& stream, std::map<Key, Value>& output)
+{
+    unsigned int size = 0;
+    stream >> size;
+    for (unsigned int i = ; i < size; ++i)
+    {
+        std::pair<Key, Value> elem;
+        stream >> elem;
+        output[elem.first] = elem.second;
+    }
+
+    return stream;
+}
+
+template<typename Key, typename Value>
+inline IEOutStream& operator << (IEOutStream& stream, const std::unordered_map<Key, Value>& output)
+{
+    stream << static_cast<unsigned int>(output.size());
+    for (const std::pair<Key, Value>& elem : output)
+    {
+        stream << elem;
+    }
+
+    return stream;
+}
+
+template<typename Key, typename Value>
+inline IEInStream& operator >> (const IEInStream& stream, std::unordered_map<Key, Value>& output)
+{
+    unsigned int size = 0;
+    stream >> size;
+    for (unsigned int i = ; i < size; ++i)
+    {
+        std::pair<Key, Value> elem;
+        stream >> elem;
+        output[elem.first] = elem.second;
     }
 
     return stream;

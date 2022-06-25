@@ -401,7 +401,7 @@ public:
     /**
      * \brief   Removes all timer entries from hash map.
      **/
-    inline void removeAll( void );
+    inline void clear(void );
 
     /**
      * \brief   Registers specified TimerInfor data in the hash map, where the key
@@ -517,7 +517,7 @@ public:
     /**
      * \brief   Removes of all entries from the list, makes it empty.
      **/
-    inline void removeAll( void );
+    inline void clear(void );
 
     /**
      * \brief   Searches specified timer in the list of expired timers and returns
@@ -586,9 +586,9 @@ inline TimerInfo * MapTimerTable::findObject(Timer * key)
     return result;
 }
 
-inline void MapTimerTable::removeAll(void)
+inline void MapTimerTable::clear(void)
 {
-    TimerTableBase::removeAll();
+    TimerTableBase::clear();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -617,9 +617,9 @@ inline ExpiredTimerInfo ExpiredTimers::popTimer(void)
     return result;
 }
 
-inline void ExpiredTimers::removeAll(void)
+inline void ExpiredTimers::clear(void)
 {
-    return ExpiredTimersBase::removeAll();
+    return ExpiredTimersBase::clear();
 }
 
 //////////////////////////////////////////////////////////////////////////

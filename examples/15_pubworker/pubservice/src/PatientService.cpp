@@ -38,7 +38,7 @@ inline PatientService & PatientService::self( void )
 
 IEWorkerThreadConsumer * PatientService::workerThreadConsumer(const char* consumerName, const char* workerThreadName)
 {
-    if ( NEString::compareFast<char, char>(mWorkerConsumer.getConsumerName().getString(), consumerName) == 0 )
+    if ( NEString::compareFast<char, char>(mWorkerConsumer.getConsumerName().getString(), consumerName) == NEMath::eCompare::Equal)
     {
         return &mWorkerConsumer;
     }

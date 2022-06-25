@@ -328,7 +328,7 @@ void ProxyBase::freeProxy( IEProxyListener & connect )
         {
             stopAllServiceNotifications( );
             unregisterServiceListeners( );
-            mListenerList.removeAll();
+            mListenerList.clear();
 
             ServiceManager::requestUnregisterClient( getProxyAddress( ) );
             mDispatcherThread.removeConsumer( *this );
@@ -635,14 +635,14 @@ void ProxyBase::stopProxy(void)
             listener->serviceConnected(false, *this);
         }
 
-        mListConnect.removeAll();
+        mListConnect.clear();
 
         mIsConnected = false;
         mIsStopped   = true;
 
         stopAllServiceNotifications( );
         unregisterServiceListeners( );
-        mListenerList.removeAll();
+        mListenerList.clear();
         ServiceManager::requestUnregisterClient( getProxyAddress( ) );
         mDispatcherThread.removeConsumer( *this );
 

@@ -23,71 +23,71 @@ NELogConfig::eLogConfig NELogConfig::convFromString( const char * cmdSyntax )
 
     if ( NEString::isEmpty<char>(cmdSyntax) == false )
     {
-        if ( NEString::compareStrings<char, char>(cmdSyntax, SYNTAX_CMD_LOG_VERSION.data(), static_cast<int>(SYNTAX_CMD_LOG_VERSION.length()), false) == 0 )
+        if ( NEString::compareStrings<char, char>(cmdSyntax, SYNTAX_CMD_LOG_VERSION.data(), static_cast<int>(SYNTAX_CMD_LOG_VERSION.length()), false) == NEMath::eCompare::Equal)
         {
             result = NELogConfig::eLogConfig::ConfigLogVersion;
         }
-        else if ( NEString::compareStrings<char, char>(cmdSyntax, SYNTAX_CMD_LOG_FILE.data(), static_cast<int>(SYNTAX_CMD_LOG_FILE.length()), false) == 0 )
+        else if ( NEString::compareStrings<char, char>(cmdSyntax, SYNTAX_CMD_LOG_FILE.data(), static_cast<int>(SYNTAX_CMD_LOG_FILE.length()), false) == NEMath::eCompare::Equal)
         {
             result = NELogConfig::eLogConfig::ConfigLogFile;
         }
-        else if ( NEString::compareStrings<char, char>(cmdSyntax, SYNTAX_CMD_LOG_REMOTE_HOST.data(), static_cast<int>(SYNTAX_CMD_LOG_REMOTE_HOST.length()), false) == 0 )
+        else if ( NEString::compareStrings<char, char>(cmdSyntax, SYNTAX_CMD_LOG_REMOTE_HOST.data(), static_cast<int>(SYNTAX_CMD_LOG_REMOTE_HOST.length()), false) == NEMath::eCompare::Equal)
         {
             result = NELogConfig::eLogConfig::ConfigLogRemoteHost;
         }
-        else if ( NEString::compareStrings<char, char>(cmdSyntax, SYNTAX_CMD_LOG_REMOTE_PORT.data(), static_cast<int>(SYNTAX_CMD_LOG_REMOTE_PORT.length()), false) == 0 )
+        else if ( NEString::compareStrings<char, char>(cmdSyntax, SYNTAX_CMD_LOG_REMOTE_PORT.data(), static_cast<int>(SYNTAX_CMD_LOG_REMOTE_PORT.length()), false) == NEMath::eCompare::Equal)
         {
             result = NELogConfig::eLogConfig::ConfigLogRemotePort;
         }
-        else if ( NEString::compareStrings<char, char>(cmdSyntax, SYNTAX_CMD_LOG_DB_DRIVER.data(), static_cast<int>(SYNTAX_CMD_LOG_DB_DRIVER.length()), false) == 0 )
+        else if ( NEString::compareStrings<char, char>(cmdSyntax, SYNTAX_CMD_LOG_DB_DRIVER.data(), static_cast<int>(SYNTAX_CMD_LOG_DB_DRIVER.length()), false) == NEMath::eCompare::Equal)
         {
             result = NELogConfig::eLogConfig::ConfigLogDatabaseDriver;
         }
-        else if ( NEString::compareStrings<char, char>(cmdSyntax, SYNTAX_CMD_LOG_DB_HOST.data(), static_cast<int>(SYNTAX_CMD_LOG_DB_HOST.length()), false) == 0 )
+        else if ( NEString::compareStrings<char, char>(cmdSyntax, SYNTAX_CMD_LOG_DB_HOST.data(), static_cast<int>(SYNTAX_CMD_LOG_DB_HOST.length()), false) == NEMath::eCompare::Equal)
         {
             result = NELogConfig::eLogConfig::ConfigLogDatabaseHost;
         }
-        else if ( NEString::compareStrings<char, char>(cmdSyntax, SYNTAX_CMD_LOG_DB_USER.data(), static_cast<int>(SYNTAX_CMD_LOG_DB_USER.length()), false) == 0 )
+        else if ( NEString::compareStrings<char, char>(cmdSyntax, SYNTAX_CMD_LOG_DB_USER.data(), static_cast<int>(SYNTAX_CMD_LOG_DB_USER.length()), false) == NEMath::eCompare::Equal)
         {
             result = NELogConfig::eLogConfig::ConfigLogDatabaseUser;
         }
-        else if ( NEString::compareStrings<char, char>(cmdSyntax, SYNTAX_CMD_LOG_DB_PASSWORD.data(), static_cast<int>(SYNTAX_CMD_LOG_DB_PASSWORD.length()), false) == 0 )
+        else if ( NEString::compareStrings<char, char>(cmdSyntax, SYNTAX_CMD_LOG_DB_PASSWORD.data(), static_cast<int>(SYNTAX_CMD_LOG_DB_PASSWORD.length()), false) == NEMath::eCompare::Equal)
         {
             result = NELogConfig::eLogConfig::ConfigLogDatabasePwd;
         }
-        else if ( NEString::compareStrings<char, char>(cmdSyntax, SYNTAX_CMD_LOG_DB_NAME.data(), static_cast<int>(SYNTAX_CMD_LOG_DB_NAME.length()), false) == 0 )
+        else if ( NEString::compareStrings<char, char>(cmdSyntax, SYNTAX_CMD_LOG_DB_NAME.data(), static_cast<int>(SYNTAX_CMD_LOG_DB_NAME.length()), false) == NEMath::eCompare::Equal)
         {
             result = NELogConfig::eLogConfig::ConfigLogDatabaseName;
         }
-        else if ( NEString::compareStrings<char, char>(cmdSyntax, SYNTAX_CMD_LOG_DEBUG.data(), static_cast<int>(SYNTAX_CMD_LOG_DEBUG.length()), false) == 0 )
+        else if ( NEString::compareStrings<char, char>(cmdSyntax, SYNTAX_CMD_LOG_DEBUG.data(), static_cast<int>(SYNTAX_CMD_LOG_DEBUG.length()), false) == NEMath::eCompare::Equal)
         {
             result = NELogConfig::eLogConfig::ConfigLogDebug;
         }
-        else if ( NEString::compareStrings<char, char>(cmdSyntax, SYNTAX_CMD_LOG_APPEND.data( ), static_cast<int>(SYNTAX_CMD_LOG_APPEND.length()), false) == 0 )
+        else if ( NEString::compareStrings<char, char>(cmdSyntax, SYNTAX_CMD_LOG_APPEND.data( ), static_cast<int>(SYNTAX_CMD_LOG_APPEND.length()), false) == NEMath::eCompare::Equal)
         {
             result = NELogConfig::eLogConfig::ConfigLogAppend;
         }
-        else if ( NEString::compareStrings<char, char>(cmdSyntax, SYNTAX_CMD_LOG_STACK.data( ), static_cast<int>(SYNTAX_CMD_LOG_STACK.length()), false) == 0 )
+        else if ( NEString::compareStrings<char, char>(cmdSyntax, SYNTAX_CMD_LOG_STACK.data( ), static_cast<int>(SYNTAX_CMD_LOG_STACK.length()), false) == NEMath::eCompare::Equal)
         {
             result = NELogConfig::eLogConfig::ConfigLogStack;
         }
-        else if ( NEString::compareStrings<char, char>(cmdSyntax, SYNTAX_CMD_LOG_ENABLE.data( ), static_cast<int>(SYNTAX_CMD_LOG_ENABLE.length()), false) == 0 )
+        else if ( NEString::compareStrings<char, char>(cmdSyntax, SYNTAX_CMD_LOG_ENABLE.data( ), static_cast<int>(SYNTAX_CMD_LOG_ENABLE.length()), false) == NEMath::eCompare::Equal)
         {
             result = NELogConfig::eLogConfig::ConfigLogEnable;
         }
-        else if ( NEString::compareStrings<char, char>(cmdSyntax, SYNTAX_CMD_LOG_LAYOUT_ENTER.data( ), static_cast<int>(SYNTAX_CMD_LOG_LAYOUT_ENTER.length()), false) == 0 )
+        else if ( NEString::compareStrings<char, char>(cmdSyntax, SYNTAX_CMD_LOG_LAYOUT_ENTER.data( ), static_cast<int>(SYNTAX_CMD_LOG_LAYOUT_ENTER.length()), false) == NEMath::eCompare::Equal)
         {
             result = NELogConfig::eLogConfig::ConfigLogLayoutEnter;
         }
-        else if ( NEString::compareStrings<char, char>(cmdSyntax, SYNTAX_CMD_LOG_LAYOUT_MESSAGE.data( ), static_cast<int>(SYNTAX_CMD_LOG_LAYOUT_MESSAGE.length()), false) == 0 )
+        else if ( NEString::compareStrings<char, char>(cmdSyntax, SYNTAX_CMD_LOG_LAYOUT_MESSAGE.data( ), static_cast<int>(SYNTAX_CMD_LOG_LAYOUT_MESSAGE.length()), false) == NEMath::eCompare::Equal)
         {
             result = NELogConfig::eLogConfig::ConfigLogLayoutMessage;
         }
-        else if ( NEString::compareStrings<char, char>(cmdSyntax, SYNTAX_CMD_LOG_LAYOUT_EXIT.data( ), static_cast<int>(SYNTAX_CMD_LOG_LAYOUT_EXIT.length()), false) == 0 )
+        else if ( NEString::compareStrings<char, char>(cmdSyntax, SYNTAX_CMD_LOG_LAYOUT_EXIT.data( ), static_cast<int>(SYNTAX_CMD_LOG_LAYOUT_EXIT.length()), false) == NEMath::eCompare::Equal)
         {
             result = NELogConfig::eLogConfig::ConfigLogLayoutExit;
         }
-        else if ( NEString::compareStrings<char, char>(cmdSyntax, SYNTAX_CMD_LOG_SCOPE.data( ), static_cast<int>(SYNTAX_CMD_LOG_SCOPE.length()), false) == 0 )
+        else if ( NEString::compareStrings<char, char>(cmdSyntax, SYNTAX_CMD_LOG_SCOPE.data( ), static_cast<int>(SYNTAX_CMD_LOG_SCOPE.length()), false) == NEMath::eCompare::Equal)
         {
             result = NELogConfig::eLogConfig::ConfigScope;
         }

@@ -41,18 +41,18 @@ void Process::_initPaths( const char * fullPath )
     mProcessFullPath= fullPath;
 
 
-    NEString::CharPos pos = mProcessFullPath.findLastOf(File::PATH_SEPARATOR);
-    if ( pos != NEString::INVALID_POS )
+    NEString::CharPos pos = mProcessFullPath.findLast(File::PATH_SEPARATOR);
+    if (mProcessFullPath.isValidPosition(pos))
     {
-        mProcessPath   = mProcessFullPath.substring(NEString::START_POS, static_cast<NEString::CharCount>(pos));
-        mProcessName   = mProcessFullPath.substring(pos + 1, NEString::END_POS);
+        mProcessFullPath.substring(mProcessPath, NEString::START_POS, static_cast<NEString::CharCount>(pos));
+        mProcessFullPath.substring(mProcessName, pos + 1, NEString::END_POS);
         mAppName       = mProcessName;     // initial value
     }
 
-    pos = mProcessName.findLastOf(File::EXTENSION_SEPARATOR);
-    if ( pos != NEString::INVALID_POS )
+    pos = mProcessName.findLast(File::EXTENSION_SEPARATOR);
+    if ( mProcessName.isValidPosition(pos) )
     {
-        mAppName    = mProcessName.substring(NEString::START_POS, static_cast<NEString::CharCount>(pos));
-        mProcessExt = mProcessName.substring(pos + 1, NEString::END_POS);
+        mProcessName.substring(mAppName, NEString::START_POS, static_cast<NEString::CharCount>(pos));
+        mProcessName.substring(mProcessExt, pos + 1, NEString::END_POS);
     }
 }

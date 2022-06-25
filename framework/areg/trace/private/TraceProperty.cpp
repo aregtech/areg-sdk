@@ -118,19 +118,27 @@ bool TraceProperty::parseProperty( const char * logSetting )
 
 bool TraceProperty::parseProperty( String & line)
 {
-    NEString::CharPos posComment  = line.findFirstOf(NELogConfig::SYNTAX_COMMENT);
-    if (posComment != NEString::INVALID_POS)
+    NEString::CharPos posComment  = line.findFirst(NELogConfig::SYNTAX_COMMENT);
+    bool isValidPos = false;
+    if (line.isValidPosition(posComment))
     {
-        mComment   += line.substring(posComment);
+        isValidPos = true;
+        line.substring(mComment, posComment);
         mComment   += NELogConfig::SYNTAX_LINEEND;
-        line        = line.substring(0, posComment);
+        
+        line.substring(0, posComment);
     }
 
-    NEString::CharPos posEqual    = line.findFirstOf(NELogConfig::SYNTAX_EQUAL);
-    if ( (posEqual != NEString::INVALID_POS) && ((posComment == NEString::INVALID_POS) || (posEqual < posComment))  )
+    NEString::CharPos posEqual    = line.findFirst(NELogConfig::SYNTAX_EQUAL);
+    if ( line.isValidPosition(posEqual) && ((isValidPos == false) || (posEqual < posComment))  )
     {
-        mProperty.mValue.first  = line.substring(NEString::START_POS, posEqual).getString();
-        mProperty.mValue.second = line.substring( posEqual + 1, posComment != NEString::INVALID_POS ? posComment - posEqual : NEString::END_POS).getString();
+        String temp;
+
+        line.substring(temp, NEString::START_POS, posEqual);
+        mProperty.mValue.first = temp.getString();
+
+        line.substring(temp, posEqual + 1, isValidPos ? posComment - posEqual : NEString::END_POS);
+        mProperty.mValue.second = temp.getString();
     }
     return isValid();
 }

@@ -149,13 +149,13 @@ String DateTime::formatTime( const std::string_view & formatName /*= DateTime::T
 
         unsigned short milli = sysTime.stMillisecs;
 
-        String str = formatName.empty() == false ? formatName.data() : DateTime::TIME_FORMAT_ISO8601_OUTPUT.data();
-        NEString::CharPos ms = str.findFirstOf( FORMAT_MILLISECOND.data() );
-        if ( ms != NEString::INVALID_POS )
+        String str = formatName.empty() == false ? formatName : DateTime::TIME_FORMAT_ISO8601_OUTPUT;
+        NEString::CharPos ms = str.findFirst( FORMAT_MILLISECOND.data() );
+        if ( str.isValidPosition(ms) )
         {
             char buf[12];
             String::formatString( buf, 12, "%03d", milli );
-            str.replace( buf, ms, static_cast<NEString::CharCount>(FORMAT_MILLISECOND.length()) );
+            str.replace( ms, static_cast<NEString::CharCount>(FORMAT_MILLISECOND.length()), buf);
         }
 
         strftime( buffer, 128, str.getString(), &conv );

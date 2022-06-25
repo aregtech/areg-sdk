@@ -97,15 +97,15 @@ void TracePropertyKey::setKey(const char * fullKey)
         int len = static_cast<int>(NELogConfig::ValidSytaxList[static_cast<int>(mLogConfig)].length());
         if ( mKeyName.getLength() > len )
         {
-            NEString::CharPos pos = mKeyName.findFirstOf(NELogConfig::SYNTAX_OBJECT_SEPARATOR, len + 1);
-            if ( (pos != NEString::INVALID_POS) && (pos > len) )
+            NEString::CharPos pos = mKeyName.findFirst(NELogConfig::SYNTAX_OBJECT_SEPARATOR, len + 1);
+            if (mKeyName.isValidPosition(pos) && (pos > len) )
             {
-                mModuleName = mKeyName.substring(len + 1, pos - len - 1);
-                mModuleData = mKeyName.substring(pos + 1);
+                mKeyName.substring(mModuleName, len + 1, pos - len - 1);
+                mKeyName.substring(mModuleData, pos + 1);
             }
             else
             {
-                mModuleName = mKeyName.substring( len + 1);
+                mKeyName.substring(mModuleName, len + 1);
                 mModuleData = String::EmptyString.data();
             }
 
@@ -114,9 +114,9 @@ void TracePropertyKey::setKey(const char * fullKey)
 
             if ( false && mModuleName.isEmpty() == false )
             {
-                pos = mModuleName.findFirstOf(NELogConfig::SYNTAX_OBJECT_SEPARATOR, len + 1);
-                if ( pos != NEString::INVALID_POS )
-                    mModuleName = mModuleName.substring(pos);
+                pos = mModuleName.findFirst(NELogConfig::SYNTAX_OBJECT_SEPARATOR, len + 1);
+                if (mModuleName.isValidPosition(pos))
+                    mModuleName.substring(pos);
             }
         }
         else

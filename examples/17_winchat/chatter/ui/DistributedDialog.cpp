@@ -554,7 +554,7 @@ void DistributedDialog::RemoveAllChatPages( void )
             delete chatPage;
         }
     }
-    mMapChatPages.removeAll();
+    mMapChatPages.clear();
 }
 
 LRESULT DistributedDialog::OnCmdSetDirectConnection( WPARAM wParam, LPARAM lParam )

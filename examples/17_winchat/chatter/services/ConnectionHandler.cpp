@@ -99,7 +99,7 @@ void ConnectionHandler::ResetConnectionList( void )
 {
     Lock lock( mLock );
 
-    mListConnections.removeAll( );
+    mListConnections.clear( );
     mNickName.clear( );
     
     mCookie         = NEConnectionManager::InvalidCookie;

@@ -27,42 +27,37 @@ int _getProcIdByName(const char * procName)
     constexpr char const dirProc[]    { "/proc" };
     int pid = -1;
 
-    if (NEString::isEmpty<char>(procName) == false)
+    char* buffer = dir != nullptr ? DEBUG_NEW char[File::MAXIMUM_PATH + 1] : nullptr;
+    if ((buffer == nullptr) || NEString::isEmpty<char>(procName))
+        return pid;
+
+    DIR* dir = opendir(dirProc);
+    for (struct dirent* dirEntry = readdir(dir); (pid < 0) && (dirEntry != nullptr); dirEntry = readdir(dir))
     {
-        DIR * dir       = opendir(dirProc);
-        char * buffer   = dir != nullptr ? DEBUG_NEW char[File::MAXIMUM_PATH + 1] : nullptr;
-        if (buffer != nullptr)
+        // skip non-numeric directories.
+        if ((dirEntry->d_type == DT_REG) && (NEString::isNumeric<char>(dirEntry->d_name[0])))
         {
-            for (struct dirent * dirEntry = readdir(dir); (pid < 0) && (dirEntry != nullptr); dirEntry = readdir(dir))
+            String name;
+            name.formatString(fmt, dirEntry->d_name);
+            FILE* file = fopen(name.getBuffer(), "r");
+            if (file != nullptr)
             {
-                // skip non-numeric directories.
-                if ((dirEntry->d_type == DT_REG) && (NEString::isNumeric<char>(dirEntry->d_name[0])))
+                if (fgets(buffer, File::MAXIMUM_PATH + 1, file) != nullptr)
                 {
-                    sprintf(buffer, fmt, dirEntry->d_name);
-                    FILE * file = fopen(buffer, "r");
-                    if (file != nullptr)
+                    NEString::CharPos pos = NEString::findLast<char>(File::PATH_SEPARATOR, buffer);
+                    if (NEString::isPositionValid(pos))
                     {
-                        if (fgets(buffer, File::MAXIMUM_PATH + 1, file) != nullptr)
+                        char* name = buffer + pos + 1;
+                        if (NEString::compareFastIgnoreCase<char, char>(procName, name) == 0)
                         {
-                            NEString::CharPos pos = NEString::findLastOf<char>(File::PATH_SEPARATOR, buffer);
-                            if ( pos != NEString::INVALID_POS )
-                            {
-                                char * name = buffer + pos + 1;
-                                if (NEString::compareFastIgnoreCase<char, char>(procName, name) == 0)
-                                {
-                                    pid = NEString::makeInteger<char>(dirEntry->d_name, nullptr);
-                                }
-                            }
+                            pid = NEString::makeInteger<char>(dirEntry->d_name, nullptr);
                         }
-
-                        fclose(file);
                     }
-
                 }
+
+                fclose(file);
             }
         }
-
-        delete[] buffer;
     }
 
     return pid;

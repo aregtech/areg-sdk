@@ -41,12 +41,12 @@ PropertyValue::PropertyValue( const char * value )
 }
 
 PropertyValue::PropertyValue(unsigned int intValue)
-    : mValue    ( String::uint32ToString(intValue, NEString::eRadix::RadixDecimal) )
+    : mValue    ( String::toString(intValue, NEString::eRadix::RadixDecimal) )
 {
 }
 
 PropertyValue::PropertyValue(double dValue)
-    : mValue( String::doubleToString( dValue ) )
+    : mValue( String::toString( dValue ) )
 {
 }
 
@@ -76,13 +76,13 @@ PropertyValue & PropertyValue::operator = ( const String & value )
 
 PropertyValue & PropertyValue::operator = (unsigned int intValue)
 {
-    mValue.convFromUInt32(intValue);
+    mValue.fromUInt32(intValue);
     return (*this);
 }
 
 PropertyValue & PropertyValue::operator = (double dValue)
 {
-    mValue.convFromDouble(dValue);
+    mValue.fromDouble(dValue);
     return (*this);
 }
 
@@ -129,12 +129,12 @@ const char * PropertyValue::getString(void) const
 
 unsigned int PropertyValue::getInteger( NEString::eRadix radix /*= NEString::RadixDecimal*/ ) const
 {
-    return mValue.convToUInt32( static_cast<NEString::eRadix>(radix) );
+    return mValue.toUInt32( static_cast<NEString::eRadix>(radix) );
 }
 
 double PropertyValue::getDouble(void) const
 {
-    return mValue.convToDouble( );
+    return mValue.toDouble( );
 }
 
 unsigned int PropertyValue::getIndetifier( const TEArrayList<Identifier> idList ) const
@@ -153,7 +153,7 @@ unsigned int PropertyValue::getIndetifier( const TEArrayList<Identifier> idList 
             {
                 // found identifier
                 result |= idList[i].getValue();
-                temp = temp.substring(NEString::START_POS, NEString::getStringLength<char>(idName));
+                temp.substring(NEString::START_POS, NEString::getStringLength<char>(idName));
                 if ( temp.isEmpty() == false )
                 {
                     const char * next = nullptr;
@@ -176,12 +176,12 @@ void PropertyValue::setString(const char * value)
 
 void PropertyValue::setInteger(unsigned int intValue, NEString::eRadix radix /*= NEString::RadixDecimal*/ )
 {
-    mValue = String::uint32ToString(intValue, radix);
+    mValue = String::toString(intValue, radix);
 }
 
 void PropertyValue::setDouble(double dValue)
 {
-    mValue = String::doubleToString( dValue );
+    mValue = String::toString( dValue );
 }
 
 void PropertyValue::setIndentifier(const TEArrayList<Identifier> idList)
@@ -205,7 +205,7 @@ void PropertyValue::parseValue(const char * value)
     mValue.trimAll();
     int len = mValue.getLength();
     for ( ; mValue[len - 1] == NEPersistence::SYNTAX_END_COMMAND && len > 0; -- len)
-        mValue = mValue.substring(0, len - 1);
+        mValue.substring(0, len - 1);
 }
 
 void PropertyValue::parseValue( const String & value )
@@ -214,7 +214,7 @@ void PropertyValue::parseValue( const String & value )
     mValue.trimAll( );
     int len = mValue.getLength( );
     for ( ; mValue[len - 1] == NEPersistence::SYNTAX_END_COMMAND && len > 0; -- len )
-        mValue = mValue.substring( 0, len - 1 );
+        mValue.substring( 0, len - 1 );
 }
 
 void PropertyValue::parseValue( String && value )
@@ -223,7 +223,7 @@ void PropertyValue::parseValue( String && value )
     mValue.trimAll( );
     int len = mValue.getLength( );
     for ( ; mValue[len - 1] == NEPersistence::SYNTAX_END_COMMAND && len > 0; -- len )
-        mValue = mValue.substring( 0, len - 1 );
+        mValue.substring( 0, len - 1 );
 }
 
 void PropertyValue::resetValue(void)

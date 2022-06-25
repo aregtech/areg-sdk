@@ -195,28 +195,68 @@ public:
     inline uint32_t getSize( void ) const;
 
     /**
+     * \brief   Returns true if the specified index is valid.
+     **/
+    inline bool isValidIndex(const uint32_t index) const;
+
+    /**
+     * \brief   Returns true if specified position pointing start of the array.
+     * \param   pos     The position to check.
+     * \return  Returns true if specified position pointing start of the array.
+     **/
+    inline bool isStartPosition(const LISTPOS pos) const;
+
+    /**
+     * \brief   Returns true if specified position pointing start of the array.
+     * \param   pos     The position to check.
+     * \return  Returns true if specified position pointing start of the array.
+     **/
+    inline bool isLastPosition(const LISTPOS pos) const;
+
+    /**
      * \brief   Returns the invalid position of the array list.
      */
     ARRAYPOS invalidPosition(void) const;
 
+    /**
+     * \brief   Returns true if specified position is invalid, i.e. points the end of the array.
+     **/
+    bool isInvalidPosition(const ARRAYPOS pos) const;
+
+    /**
+     * \brief   Returns true if the given position is valid, i.e. is not pointing the end of array.
+     *          Note, it does not check whether there is a such position in the array,
+     *          The method ensures that the position is not pointing to the invalid value.
+     **/
+    inline bool isValidPosition(const ARRAYPOS pos) const;
+
+    /**
+     * \brief   Checks and ensures that specified position is pointing the valid entry in the array.
+     *          The duration of checkup depends on the location of the position in the array.
+     * \param pos       The position to check.
+     * \return  Returns true if specified position points to the valid entry in the array.
+     */
+    inline bool checkPosition(const ARRAYPOS pos) const;
+
 //////////////////////////////////////////////////////////////////////////
 // Operations
 //////////////////////////////////////////////////////////////////////////
-    /**
-     * \brief   Delete extra entries in array
-     **/
-    inline void freeExtra( void );
-
-    /**
-     * \brief   Returns true if the specified index is valid.
-     **/
-    inline bool isValidIndex( uint32_t index ) const;
 
     /**
      * \brief   Remove all entries of array
      **/
-    inline void removeAll( void );
-    
+    inline void clear(void);
+
+    /**
+     * \brief   Delete extra entries in array.
+     **/
+    inline void freeExtra( void );
+
+    /**
+     * \brief   Sets the size of array to zero and deletes all capacity space.
+     **/
+    inline void release(void);
+
     /**
      * \brief   Returns element value by valid index. 
      *          If index is not valid, assertion is raised.
@@ -493,9 +533,55 @@ inline uint32_t TEArrayList<VALUE, Implement>::getSize( void ) const
 }
 
 template<typename VALUE, class Implement /*= TEListImpl<const VALUE &>*/>
+inline bool TEArrayList<VALUE, Implement>::isValidIndex(uint32_t index) const
+{
+    return (index < static_cast<uint32_t>(mValueList.size()));
+}
+
+template<typename VALUE, class Implement /*= TEListImpl<const VALUE &>*/>
+inline bool TEArrayList<VALUE, Implement>::isStartPosition(const LISTPOS pos) const
+{
+    return (pos == mValueList.begin());
+}
+
+template<typename VALUE, class Implement /*= TEListImpl<const VALUE &>*/>
+inline bool TEArrayList<VALUE, Implement>::isLastPosition(const LISTPOS pos) const
+{
+    return ((mValueList.empty() == false) && (pos == --mValueList.end()));
+}
+
+template<typename VALUE, class Implement /*= TEListImpl<const VALUE &>*/>
 inline typename TEArrayList<VALUE, Implement>::ARRAYPOS TEArrayList<VALUE, Implement>::invalidPosition(void) const
 {
     return Constless::iter(mValueList, mValueList.end());
+}
+
+template<typename VALUE, class Implement /*= TEListImpl<const VALUE &>*/>
+inline bool TEArrayList<VALUE, Implement>::isInvalidPosition(const ARRAYPOS pos) const
+{
+    return (pos == mValueList.end());
+}
+
+template<typename VALUE, class Implement /*= TEListImpl<const VALUE &>*/>
+inline bool TEArrayList<VALUE, Implement>::isValidPosition(const ARRAYPOS pos) const
+{
+    return (pos != mValueList.end());
+}
+
+template<typename VALUE, class Implement /*= TEListImpl<const VALUE &>*/>
+inline bool TEArrayList<VALUE, Implement>::checkPosition(const ARRAYPOS pos) const
+{
+    std::vector<VALUE>::const_iterator it = mValueList.begin();
+    while ((it != mValueList.end()) && (it != pos))
+        ++it;
+
+    return (it != mValueList.end());
+}
+
+template<typename VALUE, class Implement /*= TEListImpl<const VALUE &>*/>
+inline void TEArrayList<VALUE, Implement>::clear(void)
+{
+    mValueList.clear();
 }
 
 template<typename VALUE, class Implement /*= TEListImpl<const VALUE &>*/>
@@ -505,15 +591,10 @@ inline void TEArrayList<VALUE, Implement>::freeExtra( void )
 }
 
 template<typename VALUE, class Implement /*= TEListImpl<const VALUE &>*/>
-inline bool TEArrayList<VALUE, Implement>::isValidIndex(uint32_t index ) const
+inline void TEArrayList<VALUE, Implement>::release(void)
 {
-    return ( index < static_cast<uint32_t>(mValueList.size()) );
-}
-
-template<typename VALUE, class Implement /*= TEListImpl<const VALUE &>*/>
-inline void TEArrayList<VALUE, Implement>::removeAll( void )
-{
-    mValueList.clear();
+    mValudList.clear();
+    mValueList.shrink_to_fit();
 }
 
 template<typename VALUE, class Implement /*= TEListImpl<const VALUE &>*/>

@@ -329,6 +329,11 @@ namespace NETrace
      *          the system ignores logging.
      **/
     AREG_API bool isEnabled( void );
+
+    /**
+     * \brief   Returns the logging config file name.
+     **/
+    AREG_API const String& getConfigFile( void );
 }
 
 //////////////////////////////////////////////////////////////////////////////

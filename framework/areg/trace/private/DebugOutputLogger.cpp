@@ -176,7 +176,7 @@ unsigned int DebugOutputLogger::write( const String & asciiString )
 #if defined(_OUTPUT_DEBUG)
     mOutputMessageA += asciiString;
 #endif  // defined(_OUTPUT_DEBUG)
-    return asciiString.getUsedSpace();
+    return asciiString.getSpace();
 }
 
 unsigned int DebugOutputLogger::write( const WideString & wideString )
@@ -184,7 +184,7 @@ unsigned int DebugOutputLogger::write( const WideString & wideString )
 #if defined(_OUTPUT_DEBUG)
     mOutputMessageA += wideString;
 #endif  // !defined(_OUTPUT_DEBUG)
-    return wideString.getUsedSpace();
+    return wideString.getSpace();
 }
 
 void DebugOutputLogger::flush(void)

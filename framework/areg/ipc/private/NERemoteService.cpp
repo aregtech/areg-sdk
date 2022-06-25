@@ -30,7 +30,7 @@ AREG_API const char * NERemoteService::getServiceConnectionTypeString(NERemoteSe
 
 AREG_API NERemoteService::eServiceConnection NERemoteService::getServiceConnectionType(const char * connectionType, bool caseSensitive /* = true */ )
 {
-    if ( NEString::compareStrings<char, char>(NERemoteService::STR_CONNECTION_TYPE_TCPIP.data(), connectionType, NEString::COUNT_ALL, caseSensitive ) == 0)
+    if ( NEString::compareStrings<char, char>(NERemoteService::STR_CONNECTION_TYPE_TCPIP.data(), connectionType, NEString::COUNT_ALL, caseSensitive ) == NEMath::eCompare::Equal)
     {
         return NERemoteService::eServiceConnection::ConnectionTcpip;
     }

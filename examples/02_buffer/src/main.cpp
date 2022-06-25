@@ -113,6 +113,79 @@ void HelloThread::onThreadRuns( void )
     printf( "The thread [ %s ] completed job...\n", getName().getString() );
 }
 
+void searchChar(String str, char ch)
+{
+    NEString::CharPos prev{ NEString::START_POS };
+    NEString::CharPos next{ NEString::INVALID_POS };
+
+    std::cout << "void searchChar(String " << str.getObject() << ", char " << ch << ")\n";
+    std::cout << "------------------------------------\n";
+    do
+    {
+        next = str.findFirst(ch, prev);
+        String temp;
+        str.substring(temp, prev, next != NEString::END_POS ? next - prev : NEString::END_POS);
+
+        std::cout << temp.getObject() << '\n';
+        prev = next + 1;
+    } while (str.isValidPosition(next));
+}
+
+void searchPhrase(String str, const char* phrase, bool sensitive, bool word)
+{
+    NEString::CharPos prev{ NEString::START_POS };
+    NEString::CharPos next{ NEString::INVALID_POS };
+    // uint32_t len = strlen(phrase);
+
+    std::cout << "void searchPhrase(String " << str.getObject() << ", const char* " << phrase << ", bool " << sensitive << ", bool " << word << ")\n";
+    std::cout << "------------------------------------\n";
+    do
+    {
+        next = str.findFirst(phrase, prev, sensitive, word);
+        String temp;
+        str.substring(temp, prev, next != NEString::END_POS ? next - prev : NEString::END_POS);
+
+        std::cout << temp.getObject() << '\n';
+        prev = next + 1;
+    } while (str.isValidPosition(next));
+}
+
+void searchLine(String str)
+{
+    NEString::CharPos prev{ NEString::START_POS };
+    NEString::CharPos next{ NEString::INVALID_POS };
+    // uint32_t len = strlen(phrase);
+
+    std::cout << "void searchLine(String " << str.getObject() << ")\n";
+    std::cout << "------------------------------------\n";
+    do
+    {
+        String line;
+        next = str.readLine(line, prev);
+        std::cout << line.getObject() << '\n';
+        prev = next;
+    } while (str.isValidPosition(next));
+}
+
+
+void runString()
+{
+    constexpr std::string_view str{ "123 456, 7890. 10 11 12 abc def ghi jkl mnop qrst uvw xyz ABC DEF GHI JKL MNOP QRST UVW XYZ = True;"
+                                    "\n\r\r\n "
+                                    "FalSe = abc def ghi jkl mnop qrst uvw xyz ABC DEF GHI JKL MNOP QRST UVW XYZ 123456 7890" };
+    String test(str);
+
+    searchChar(test, '=');
+    searchChar(test, ' ');
+
+    searchPhrase(test, "123", true, false);
+    searchPhrase(test, "ab", true, false);
+    searchPhrase(test, "de", false, false);
+    searchPhrase(test, "abc", false, true);
+    searchPhrase(test, " 7890", false, true);
+    searchLine(test);
+}
+
 //////////////////////////////////////////////////////////////////////////
 // Demo
 //////////////////////////////////////////////////////////////////////////
@@ -121,6 +194,8 @@ void HelloThread::onThreadRuns( void )
  */
 int main()
 {
+    runString();
+
     SharedBuffer buffer;
 
     buffer << static_cast<int>(1234);

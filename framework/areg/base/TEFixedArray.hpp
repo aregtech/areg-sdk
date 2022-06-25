@@ -240,7 +240,7 @@ public:
     /**
      * \brief   Clears all elements of array
      **/
-    inline void removeAll( void );
+    inline void clear( void );
 
 //////////////////////////////////////////////////////////////////////////////
 // Protected methods
@@ -312,7 +312,7 @@ TEFixedArray<VALUE, VALUE_TYPE, Implement>::TEFixedArray( TEFixedArray<VALUE, VA
 template<typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /* = TEListImpl<VALUE_TYPE> */>
 TEFixedArray<VALUE, VALUE_TYPE, Implement>::~TEFixedArray( void )
 {
-    removeAll();
+    clear();
 }
 
 template<typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /* = TEListImpl<VALUE_TYPE> */>
@@ -322,7 +322,7 @@ inline TEFixedArray<VALUE, VALUE_TYPE, Implement> & TEFixedArray<VALUE, VALUE_TY
     {
         if (mElemCount != src.getSize())
         {
-            removeAll();
+            clear();
             mValueList    = src.getSize() > 0 ? DEBUG_NEW VALUE[src.getSize()] : nullptr;
             mElemCount    = mValueList != nullptr ? src.getSize() : 0;
         }
@@ -463,7 +463,7 @@ inline bool TEFixedArray<VALUE, VALUE_TYPE, Implement>::isEqualValues(VALUE_TYPE
 }
 
 template<typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Implement /* = TEListImpl<VALUE_TYPE> */>
-inline void TEFixedArray<VALUE, VALUE_TYPE, Implement>::removeAll( void )
+inline void TEFixedArray<VALUE, VALUE_TYPE, Implement>::clear( void )
 {
     delete [] mValueList;
     mValueList  = nullptr;
@@ -493,7 +493,7 @@ const IEInStream & operator >> ( const IEInStream & stream, TEFixedArray<VALUE, 
 {
     uint32_t size = 0;
     stream >> size;
-    input.removeAll();
+    input.clear();
     input.resize(size);
 
     for (uint32_t i = 0; i < input.mElemCount; ++ i )

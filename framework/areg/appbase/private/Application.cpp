@@ -189,7 +189,7 @@ bool Application::startTracer(const char * configFile /*= nullptr*/, bool force 
         {
             OUTPUT_DBG("Succeeded to start tracer, setting flags and config file name [ %s ]", config);
             theApp.mStartTracer     = true;
-            theApp.mConfigTracer    = configFile;
+            theApp.mConfigTracer    = NETrace::getConfigFile();
             result = true;
         }
         else if (force)
@@ -199,8 +199,8 @@ bool Application::startTracer(const char * configFile /*= nullptr*/, bool force 
             if ( NETrace::forceStartLogging() )
             {
                 OUTPUT_INFO("Succeeded to start forced tracer!!!");
-                theApp.mStartTracer     = true;
-                theApp.mConfigTracer    = "";
+                theApp.mStartTracer = true;
+                theApp.mConfigTracer= "";
                 result = true;
             }
         }

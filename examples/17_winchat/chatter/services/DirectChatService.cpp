@@ -105,7 +105,7 @@ void DirectChatService::shutdownComponent( ComponentThread & comThread )
         DirectConnectionClient * client = mListClients[i];
         delete client;
     }
-    mListClients.removeAll();
+    mListClients.clear();
 
     Component::shutdownComponent(comThread);
 }

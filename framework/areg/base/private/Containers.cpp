@@ -41,7 +41,7 @@ void Tokenizer::tokenize( const String & str, const String & delimiters, bool ke
     NEString::CharPos lastPos   = 0;
     NEString::CharCount length  = str.getLength();
     // empty self
-    mTokens.removeAll();
+    mTokens.clear();
     while (lastPos <= length)
     {
         NEString::CharPos pos = str.findOneOf(delimiters, lastPos);
@@ -49,7 +49,11 @@ void Tokenizer::tokenize( const String & str, const String & delimiters, bool ke
            pos = length;
 
         if (pos != lastPos || keepEmpty)
-            mTokens.add(str.substring(lastPos, pos - lastPos));
+        {
+            String temp;
+            str.substring(temp, lastPos, pos - lastPos);
+            mTokens.add(temp);
+        }
         
         lastPos = pos + 1;
     }

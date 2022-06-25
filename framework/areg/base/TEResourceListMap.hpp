@@ -526,7 +526,7 @@ inline void TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, ResourceLi
         cleanResourceList(pos->first, pos->second);
     }
 
-    HashMap::removeAll( );
+    HashMap::clear( );
 }
 
 template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class ResourceList, class Tracker>

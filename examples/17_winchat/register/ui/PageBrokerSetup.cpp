@@ -66,7 +66,7 @@ void PageBrokerSetup::OnBnClickedBrokerConnect( )
     String check( port.GetBuffer( ) );
     if ( (check.isNumeric( false ) == true) && (mCtrlAddress.GetAddress( ip1, ip2, ip3, ip4 ) == 4) )
     {
-        uint32_t temp = check.convToUInt32( );
+        uint32_t temp = check.toUInt32( );
         if ( (temp != NESocket::InvalidPort) && (temp < 0xFFFFu) )
         {
             mBrokerPort = temp;
@@ -107,7 +107,7 @@ void PageBrokerSetup::OnBnUpdateBrokerConnect( CCmdUI* pCmdUI )
     String check( port.GetBuffer( ) );
     if ( (check.isNumeric( false ) == true) && (mCtrlAddress.GetAddress( ip1, ip2, ip3, ip4 ) == 4) )
     {
-        uint32_t temp = check.convToUInt32();
+        uint32_t temp = check.toUInt32();
         mBrokerPort = temp > 0xFFFFu ? 0xFFFFu : temp;
     }
     else
@@ -174,7 +174,7 @@ BOOL PageBrokerSetup::OnInitDialog( )
         if ( config.getConnectionHostIpAddress(field0, field1, field2, field3, NERemoteService::eServiceConnection::ConnectionTcpip) )
         {
             mBrokerPort = static_cast<USHORT>( config.getConnectionPort(NERemoteService::eServiceConnection::ConnectionTcpip) );
-            CString port ( String::uint32ToString(mBrokerPort).getString() );
+            CString port ( String::toString(mBrokerPort).getString() );
             mCtrlAddress.SetAddress(field0, field1, field2, field3);
             mCtrlPort.SetWindowText( port );
         }

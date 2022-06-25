@@ -55,10 +55,10 @@ void ServerConnection::closeAllConnections(void)
         sendMessage(msgBeyClient, clientConnection);
     }
 
-    mMasterList.removeAll();
-    mCookieToSocket.removeAll();
-    mSocketToCookie.removeAll();
-    mAcceptedConnections.removeAll();
+    mMasterList.clear();
+    mCookieToSocket.clear();
+    mSocketToCookie.clear();
+    mAcceptedConnections.clear();
 
     mCookieGenerator    = static_cast<ITEM_ID>(NEService::eCookies::CookieFirstValid);
 }

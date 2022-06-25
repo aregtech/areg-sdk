@@ -10,7 +10,7 @@
  * \file        areg/base/private/WideString.cpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
  * \author      Artak Avetyan
- * \brief       AREG Platform, String Class to handle basic
+ * \brief       AREG Platform, WideString Class to handle basic
  *              null-terminated string operations.
  ************************************************************************/
 #include "areg/base/WideString.hpp"
@@ -46,7 +46,7 @@ namespace
     constexpr wchar_t const _formatRadixBinary[] = { L'0', L'1', L'\0' };
 
 //////////////////////////////////////////////////////////////////////////
-// String class implementation
+// WideString class implementation
 //////////////////////////////////////////////////////////////////////////
 
     template<typename DigitType>
@@ -67,7 +67,7 @@ namespace
             number /= base;
         } while ( number != 0 );
 
-        *dst    = static_cast<char>(NEString::EndOfString);
+        *dst    = static_cast<wchar_t>(NEString::EndOfString);
         int32_t count = static_cast<int32_t>(dst - buffer);
         NEString::swapString<wchar_t>(buffer, count);
         result = WideString::EmptyChar;
@@ -85,7 +85,7 @@ namespace
     inline int32_t _formatDigit( WideString & result, const wchar_t * format, DigitType number )
     {
         wchar_t buffer[CharCount];
-        buffer[0] = static_cast<char>(NEString::EndOfString);
+        buffer[0] = static_cast<wchar_t>(NEString::EndOfString);
 
         int32_t count = -1;
 #ifdef _WIN32
@@ -101,7 +101,7 @@ namespace
     {
 
         int result = -1;
-        if ( buffer != NULL_STRING_W )
+        if ( buffer != nullptr )
         {
             *buffer = static_cast<wchar_t>(NEString::EndOfString);
 #ifdef  WIN32
@@ -133,283 +133,130 @@ namespace
         return count;
     }
 
+    inline bool isEqual(const wchar_t* str, const char* wstr)
+    {
+        while ((*str != TEString<wchar_t>::EmptyChar) && (*wstr++ == static_cast<char>(*str++)))
+            ;
+
+        return (*str == TEString<wchar_t>::EmptyChar);
+    }
+
 } // namespace
-
-//////////////////////////////////////////////////////////////////////////
-// Friend methods
-//////////////////////////////////////////////////////////////////////////
-
-AREG_API WideString operator + (const WideString & lhs, const WideString & rhs)
-{
-    WideString result(lhs);
-    result += rhs;
-    return result;
-}
-
-AREG_API WideString operator + (const WideString & lhs, const wchar_t * rhs)
-{
-    WideString result(lhs);
-    result += rhs;
-    return result;
-}
-
-AREG_API WideString operator + (const wchar_t * lhs, const WideString & rhs)
-{
-    WideString result(lhs);
-    result += rhs;
-    return result;
-}
-
-AREG_API WideString operator + (const WideString & lhs, wchar_t chRhs)
-{
-    WideString result(lhs);
-    result += chRhs;
-    return result;
-}
-
-AREG_API WideString operator + (wchar_t chLhs, const WideString & rhs)
-{
-    WideString result(chLhs);
-    result += rhs;
-    return result;
-}
-
-AREG_API const IEInStream & operator >> (const IEInStream & stream, WideString & input)
-{
-    input.readStream(stream);
-    return stream;
-}
-
-AREG_API IEOutStream & operator << (IEOutStream & stream, const WideString & output)
-{
-    output.writeStream(stream);
-    return stream;
-}
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
 WideString::WideString(const String & source)
-    : TEString<wchar_t>(NULL_STRING_W, source.getLength())
+    : TEString<wchar_t>( )
 {
-    NEString::copyString<wchar_t, char>(getDataString(), source.getString(), NEString::START_POS, source.getLength());
-#ifdef DEBUG
-    mString = mData != nullptr ? mData->strBuffer : nullptr;
-#endif // DEBUG
+    assign(source.getString(), source.getLength());
 }
 
 WideString::WideString( const IEInStream & stream )
     : TEString<wchar_t>( )
 {
     readStream(stream);
-#ifdef DEBUG
-    mString = mData != nullptr ? mData->strBuffer : nullptr;
-#endif // DEBUG
 }
 
 //////////////////////////////////////////////////////////////////////////
 // operators / operations
 //////////////////////////////////////////////////////////////////////////
-WideString & WideString::operator = (const WideString & src)
-{
-    if (this != &src)
-    {
-        release();
-        if ( src.isEmpty() == false)
-        {
-            mData = NEString::initString<wchar_t, wchar_t>(src.getString(), src.getLength());
-        }
-
-#ifdef DEBUG
-        mString = mData != nullptr ? mData->strBuffer : nullptr;
-#endif // DEBUG
-    }
-
-    return (*this);
-}
-
-WideString & WideString::operator = ( WideString && src ) noexcept
-{
-    if ( this != &src )
-    {
-        release( );
-        mData = src.mData;
-        src.mData = nullptr;
-
-#ifdef DEBUG
-        mString = mData != nullptr ? mData->strBuffer : nullptr;
-        src.mString = nullptr;
-#endif // DEBUG
-    }
-
-    return (*this);
-}
-
-WideString & WideString::operator = (const wchar_t * src)
-{
-    if (getString() != src)
-    {
-        NEString::SString<wchar_t> * temp = mData;
-        mData = NEString::initString<wchar_t, wchar_t>( src, NEString::COUNT_ALL );
-        NEString::releaseSpace<wchar_t>(temp);
-
-#ifdef DEBUG
-        mString = mData != nullptr ? mData->strBuffer : nullptr;
-#endif // DEBUG
-    }
-
-    return (*this);
-}
-
-WideString & WideString::operator = (wchar_t chSource)
-{
-    release( );
-    mData = NEString::initString<wchar_t, wchar_t>( &chSource, 1 );
-
-#ifdef DEBUG
-    mString = mData != nullptr ? mData->strBuffer : nullptr;
-#endif // DEBUG
-
-    return (*this);
-}
-
-WideString & WideString::operator = ( const char * src )
-{
-    release( );
-    mData = NEString::initString<wchar_t, char>( src, NEString::COUNT_ALL );
-
-#ifdef DEBUG
-    mString = mData != nullptr ? mData->strBuffer : nullptr;
-#endif // DEBUG
-
-    return (*this);
-}
 
 WideString & WideString::operator = (const String & src)
 {
-    release();
-    mData = NEString::initString<wchar_t, char>(src.getString(), src.getLength());
-
-#ifdef DEBUG
-    mString = mData != nullptr ? mData->strBuffer : nullptr;
-#endif // DEBUG
-
+    assign(src.getString(), src.getLength());
     return (*this);
 }
 
-bool WideString::operator == (const String & other) const
+bool WideString::operator == (const String& other) const
 {
-    int len = getLength();
-    if ( len == other.getLength() )
+    bool result = false;
+    if (getLength() == other.getLength())
     {
-        return (NEString::compareFast<wchar_t, char>( getString( ), other.getString( ) ) == 0);
-    }
-    else
-    {
-        return false;
-    }
-}
-
-WideString & WideString::operator += (const WideString & src)
-{
-    append(src.getString(), src.getLength());
-    return (*this);
-}
-
-WideString & WideString::operator += (const wchar_t * src)
-{
-    append( src, NEString::getStringLength<wchar_t>( src ) );
-    return (*this);
-}
-
-WideString & WideString::operator += (const char * src)
-{
-    NEString::CharCount charCount = NEString::getStringLength<char>( src );
-    resize( getLength( ) + charCount );
-    if ( isValid( ) )
-    {
-        NEString::appendString<wchar_t, char>( *mData, src, charCount );
-    }
-
-#ifdef DEBUG
-    mString = mData != nullptr ? mData->strBuffer : nullptr;
-#endif // DEBUG
-
-    return (*this);
-}
-
-WideString & WideString::operator += (const String & src)
-{
-    NEString::CharCount charCount = src.getLength();
-    resize(getLength() + charCount);
-    if (isValid())
-    {
-        NEString::appendString<wchar_t, char>(*mData, src.getString(), charCount);
-    }
-
-#ifdef DEBUG
-    mString = mData != nullptr ? mData->strBuffer : nullptr;
-#endif // DEBUG
-
-    return (*this);
-}
-
-WideString & WideString::operator += (wchar_t chSource)
-{
-    append(&chSource, 1);
-    return (*this);
-}
-
-WideString WideString::getSubstring(const wchar_t * src, const wchar_t * strPhrase, const wchar_t ** out_next /*= nullptr */)
-{
-    WideString result;
-    if ( out_next != nullptr )
-    {
-        *out_next = NULL_STRING_W;
-    }
-
-    if (NEString::isEmpty<wchar_t>(src) == false)
-    {
-        NEString::CharPos pos = NEString::findFirstOf<wchar_t>(strPhrase, src, NEString::START_POS, out_next);
-        result.copy(src, pos != NEString::INVALID_POS ? pos : NEString::COUNT_ALL);
+        result = isEqual(getString(), other.getString());
     }
 
     return result;
 }
 
-void WideString::readStream(const IEInStream & stream)
+bool WideString::operator == (const std::string& other) const
 {
-    stream.read( *this );
+    bool result = false;
+    if (getLength() == static_cast<NEString::CharCount>(other.length()))
+    {
+        result = isEqual(getString(), other.c_str());
+    }
+
+    return result;
 }
 
-void WideString::writeStream(IEOutStream & stream) const
+bool WideString::operator == (const char* other) const
 {
-    stream.write(*this);
+    bool result = false;
+    uint32_t len = static_cast<uint32_t>(strlen(other));
+    if (getLength() == len)
+    {
+        result = isEqual(getString(), other);
+    }
+
+    return result;
 }
 
-wchar_t WideString::operator [ ] (int atPos) const
+bool WideString::operator != (const char* other) const
 {
-    ASSERT(isValid());
-    ASSERT(canRead(atPos));
-    return mData->strBuffer[atPos];
+    bool result = true;
+    uint32_t len = static_cast<uint32_t>(strlen(other));
+    if (getLength() == len)
+    {
+        result = isEqual(getString(), other) == false;
+    }
+
+    return result;
 }
 
-WideString::operator unsigned int (void) const
+bool WideString::operator != (const std::string& other) const
 {
-    const wchar_t * str = getBuffer();
-    if ( getLength( ) > 2 )
+    bool result = true;
+    if (getLength() == static_cast<NEString::CharCount>(other.length()))
     {
-        const unsigned int * buf = reinterpret_cast<const unsigned int *>(str);
-        return (*buf);
+        result = isEqual(getString(), other.c_str()) == false;
     }
-    else if ( isValid() )
+
+    return result;
+}
+
+bool WideString::operator != (const String& other) const
+{
+    bool result = true;
+    if (getLength() == other.getLength())
     {
-        return NEMath::crc32Calculate( str );
+        result = isEqual(getString(), other.getString()) == false;
     }
-    else
+
+    return result;
+}
+
+WideString & WideString::operator += (const String & src)
+{
+    append(src.getString(), src.getLength());
+    return (*this);
+}
+
+WideString WideString::getSubstring(const wchar_t * src, const wchar_t * strPhrase, const wchar_t ** out_next /*= nullptr*/)
+{
+    WideString result;
+    if ( out_next != nullptr )
     {
-        return NEMath::CHECKSUM_IGNORE;
+        *out_next = EmptyChar;
     }
+
+    if (NEString::isEmpty<wchar_t>(src) == false)
+    {
+        NEString::CharPos pos = NEString::findFirst<wchar_t>(strPhrase, src, NEString::START_POS, out_next);
+        result.assign(src, NEString::isPositionValid(pos) ? pos : NEString::COUNT_ALL);
+    }
+
+    return result;
 }
 
 int32_t WideString::makeInt32( const wchar_t * strDigit, NEString::eRadix radix /*= NEString::RadixDecimal*/, const wchar_t ** end /*= nullptr*/ )
@@ -490,12 +337,12 @@ bool WideString::makeBool( const wchar_t * strBoolean, const wchar_t ** end /*= 
     int lenSkip = 0;
     int lenTrue = static_cast<int>(NECommon::BOOLEAN_TRUE.length());
     int lenFalse= static_cast<int>(NECommon::BOOLEAN_FALSE.length());
-    if ( NEString::compareStrings<wchar_t, char>(strBoolean, NECommon::BOOLEAN_TRUE.data(), lenTrue, false) == 0)
+    if ( NEString::compareStrings<wchar_t, char>(strBoolean, NECommon::BOOLEAN_TRUE.data(), lenTrue, false) == NEMath::eCompare::Equal)
     {
         result = true;
         lenSkip= lenTrue;
     }
-    else if ( NEString::compareStrings<wchar_t, char>(strBoolean, NECommon::BOOLEAN_FALSE.data(), lenFalse, false) == 0)
+    else if ( NEString::compareStrings<wchar_t, char>(strBoolean, NECommon::BOOLEAN_FALSE.data(), lenFalse, false) == NEMath::eCompare::Equal)
     {
         result = false;
         lenSkip= lenFalse;
@@ -509,7 +356,7 @@ bool WideString::makeBool( const wchar_t * strBoolean, const wchar_t ** end /*= 
     return result;
 }
 
-WideString WideString::int32ToString(int32_t number, NEString::eRadix radix /*= NEString::RadixDecimal */)
+WideString WideString::toString(int32_t number, NEString::eRadix radix /*= NEString::RadixDecimal */)
 {
     WideString result;
 
@@ -542,7 +389,7 @@ WideString WideString::int32ToString(int32_t number, NEString::eRadix radix /*= 
     return result;
 }
 
-WideString WideString::uint32ToString(uint32_t number, NEString::eRadix radix /*= NEString::RadixDecimal */)
+WideString WideString::toString(uint32_t number, NEString::eRadix radix /*= NEString::RadixDecimal */)
 {
     WideString result;
 
@@ -569,7 +416,7 @@ WideString WideString::uint32ToString(uint32_t number, NEString::eRadix radix /*
     return result;
 }
 
-WideString WideString::int64ToString(int64_t number, NEString::eRadix radix /*= NEString::RadixDecimal */)
+WideString WideString::toString(int64_t number, NEString::eRadix radix /*= NEString::RadixDecimal */)
 {
     WideString result;
 
@@ -602,7 +449,7 @@ WideString WideString::int64ToString(int64_t number, NEString::eRadix radix /*= 
     return result;
 }
 
-WideString WideString::uint64ToString(uint64_t number, NEString::eRadix radix /*= NEString::RadixDecimal */)
+WideString WideString::toString(uint64_t number, NEString::eRadix radix /*= NEString::RadixDecimal */)
 {
     WideString result;
 
@@ -629,21 +476,21 @@ WideString WideString::uint64ToString(uint64_t number, NEString::eRadix radix /*
     return result;
 }
 
-WideString WideString::floatToString(float number)
+WideString WideString::toString(float number)
 {
     WideString result;
     _formatDigit<float, 32>( result, L"%f", number );
     return result;
 }
 
-WideString WideString::doubleToString(double number)
+WideString WideString::toString(double number)
 {
     WideString result;
     _formatDigit<double, 64>( result, L"%g", number );
     return result;
 }
 
-WideString WideString::boolToString( bool value )
+WideString WideString::toString( bool value )
 {
     return (value ? WideString(NECommon::BOOLEAN_TRUE.data(),  static_cast<int>(NECommon::BOOLEAN_TRUE.length() )) :
                     WideString(NECommon::BOOLEAN_FALSE.data(), static_cast<int>(NECommon::BOOLEAN_FALSE.length())) );
@@ -672,7 +519,7 @@ const WideString & WideString::formatString(const wchar_t * format, ...)
     
     va_end(argptr);
 
-    return self();
+    return (*this);
 }
 
 const WideString & WideString::formatList(const wchar_t * format, va_list argptr)
@@ -680,48 +527,56 @@ const WideString & WideString::formatList(const wchar_t * format, va_list argptr
     clear();
     if (format != nullptr)
     {
-        if ( _formatStringList<_MIN_BUF_SIZE>( self( ), format, argptr ) < 0 )
+        if ( _formatStringList<_MIN_BUF_SIZE>( *this, format, argptr ) < 0 )
         {
-            if ( _formatStringList<_BUF_SIZE>( self( ), format, argptr ) < 0 )
+            if ( _formatStringList<_BUF_SIZE>(*this, format, argptr ) < 0 )
             {
-                if ( _formatStringList<_MAX_BUF_SIZE>( self( ), format, argptr ) < 0 )
+                if ( _formatStringList<_MAX_BUF_SIZE>(*this, format, argptr ) < 0 )
                 {
-                    _formatStringList<_EXTRA_BUF_SIZE>( self( ), format, argptr );
+                    _formatStringList<_EXTRA_BUF_SIZE>(*this, format, argptr );
                 }
             }
         }
     }
-    return self( );
+
+    return (*this);
 }
 
-int WideString::setString( const unsigned char * buffer )
+void WideString::assign(const char* source, NEString::CharCount count /*= NEString::COUNT_ALL*/)
 {
-    int result = 0;
-
-    release( );
-
-    const unsigned char * src = buffer;
-    while ( (* ++src != static_cast<unsigned char>(NEString::EndOfString)) && (* ++src != static_cast<unsigned char>(NEString::EndOfString)) )
+    if (NEString::isEmpty<char>(source) == false)
     {
-        ++ result;
-    }
+        count = count == NEString::COUNT_ALL ? static_cast<NEString::CharCount>(strlen(source)) : count;
+        mData.resize(count);
+        wchar_t* dst = mData.data();
+        while (--count >= 0)
+            *dst++ = static_cast<wchar_t>(*source++);
 
-    if (result != 0)
+        *dst = EmptyChar;
+    }
+}
+
+void WideString::append(const char* source, NEString::CharCount count /*= NEString::COUNT_ALL*/)
+{
+    if (NEString::isEmpty<char>(source) == false)
     {
-        mData = NEString::initString<wchar_t>(result);
-        if (mData != nullptr)
-        {
-#ifdef DEBUG
-            mString = mData->strBuffer;
-#endif // DEBUG
+        uint32_t len = static_cast<uint32_t>(mData.length());
+        count = count == NEString::COUNT_ALL ? static_cast<NEString::CharCount>(strlen(source)) : count;
+        mData.resize(count + len);
+        wchar_t* dst = mData.data() + len;
+        while (--count >= 0)
+            *dst++ = static_cast<wchar_t>(*source++);
 
-            int len = (result + 1) * sizeof(wchar_t);
-            wchar_t *dst = getUnsafeBuffer( );
-
-            NEMemory::memCopy( reinterpret_cast<void *>(dst), len, reinterpret_cast<const void *>(buffer), len);
-            dst[result] = static_cast<wchar_t>(NEString::EndOfString);
-        }
+        *dst = EmptyChar;
     }
+}
 
-    return result;
+void WideString::readStream(const IEInStream& stream)
+{
+    stream.read(*this);
+}
+
+void WideString::writeStream(IEOutStream& stream) const
+{
+    stream.write(*this);
 }

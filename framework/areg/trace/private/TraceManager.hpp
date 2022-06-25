@@ -223,6 +223,11 @@ public:
     static bool isLoggingEnabled( void );
 
     /**
+     * \brief   Returns the logging config file name set in the system.
+     **/
+    static const String& getConfigFile( void );
+
+    /**
      * \brief   Call to force to activate logging with default settings.
      *          The logging will be activated only if logging is not running and
      *          only in debug build. For release, please use real logging configuration.

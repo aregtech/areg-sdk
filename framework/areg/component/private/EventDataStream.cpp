@@ -89,7 +89,7 @@ EventDataStream::EventDataStream(const IEInStream & stream)
 
 EventDataStream::~EventDataStream( void )
 {
-    mSharedList.removeAll();
+    mSharedList.clear();
     mDataBuffer.invalidate();
 }
 

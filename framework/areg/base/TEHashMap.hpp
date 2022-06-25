@@ -213,18 +213,30 @@ public:
     inline MAPPOS lastPosition(void) const;
 
     /**
-     * \brief   Returns true if specified position reached the end of the hash map.
-     * \param   pos     The position to check.
-     * \return  Returns true if specified position reached the end of the hash map.
-     **/
-    inline bool isInvalidPosition(const MAPPOS & pos) const;
-
-    /**
      * \brief   Returns true if specified position pointing start of the hash map.
      * \param   pos     The position to check.
      * \return  Returns true if specified position pointing start of the hash map.
      **/
-    inline bool isStartPosition(const MAPPOS& pos) const;
+    inline bool isStartPosition(const MAPPOS pos) const;
+
+    /**
+     * \brief   Returns true if specified position pointing start of the stack.
+     * \param   pos     The position to check.
+     * \return  Returns true if specified position pointing start of the stack.
+     **/
+    inline bool isLastPosition(const MAPPOS pos) const;
+
+    /**
+     * \brief   Returns invalid position object.
+     **/
+    inline MAPPOS invalidPosition(void) const;
+
+    /**
+     * \brief   Returns true if specified position reached the end of the hash map.
+     * \param   pos     The position to check.
+     * \return  Returns true if specified position reached the end of the hash map.
+     **/
+    inline bool isInvalidPosition(const MAPPOS pos) const;
 
     /**
      * \brief   Returns true if specified position is not pointing the end of the hash map.
@@ -233,24 +245,34 @@ public:
      * \param pos       The position to check.
      * \return Returns true if specified position is not pointing the end of the hash map.
      */
-    inline bool isValidPosition(const MAPPOS& pos) const;
+    inline bool isValidPosition(const MAPPOS pos) const;
 
     /**
      * \brief   Checks and ensures that specified position is pointing the valid entry in the hash map.
-     *          The duration of checkup depends on the location of the position in the map and may run long.
+     *          The duration of checkup depends on the location of the position in the map.
      * \param pos       The position to check.
      * \return  Returns true if specified position points to the valid entry in the hash map.
      */
-    inline bool checkPosition(const MAPPOS& pos) const;
-
-    /**
-     * \brief   Returns invalid position object.
-     **/
-    inline MAPPOS invalidPosition( void ) const;
+    inline bool checkPosition(const MAPPOS pos) const;
 
 /************************************************************************/
 // Operations
 /************************************************************************/
+
+    /**
+     * \brief   Remove all entries of the hash map.
+     **/
+    inline void clear(void);
+
+    /**
+     * \brief   Delete extra entries in the hash map.
+     **/
+    inline void freeExtra(void);
+
+    /**
+     * \brief   Sets the size of the hash map to zero and deletes all capacity space.
+     */
+    inline void release(void);
 
     /**
      * \brief	Searches element by given key. 
@@ -402,11 +424,6 @@ public:
      * \return  Returns true if could remove first element in the hash map.
      **/
     inline bool removeLast(void);
-
-    /**
-     * \brief   Removes all elements in hash map, sets size zero
-     **/
-    inline void removeAll( void );
 
     /**
      * \brief	By given position value, retrieves key and value of element, and returns next position
@@ -577,25 +594,37 @@ inline typename TEHashMap<KEY, VALUE, Implement>::MAPPOS TEHashMap<KEY, VALUE, I
 }
 
 template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
-inline bool TEHashMap<KEY, VALUE, Implement>::isInvalidPosition(const MAPPOS& pos) const
-{
-    return (pos == mValueList.end());
-}
-
-template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
-inline bool TEHashMap<KEY, VALUE, Implement>::isStartPosition(const MAPPOS& pos) const
+inline bool TEHashMap<KEY, VALUE, Implement>::isStartPosition(const MAPPOS pos) const
 {
     return (pos == mValueList.begin());
 }
 
 template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
-inline bool TEHashMap<KEY, VALUE, Implement>::isValidPosition(const MAPPOS& pos) const
+inline bool TEHashMap<KEY, VALUE, Implement>::isLastPosition(const MAPPOS pos) const
+{
+    return (mValueList.empty() == false) && (pos == --mValueList.end());
+}
+
+template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
+inline typename TEHashMap<KEY, VALUE, Implement>::MAPPOS TEHashMap<KEY, VALUE, Implement>::invalidPosition(void) const
+{
+    return iter(mValueList.end());
+}
+
+template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
+inline bool TEHashMap<KEY, VALUE, Implement>::isInvalidPosition(const MAPPOS pos) const
+{
+    return (pos == mValueList.end());
+}
+
+template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
+inline bool TEHashMap<KEY, VALUE, Implement>::isValidPosition(const MAPPOS pos) const
 {
     return (pos != mValueList.end());
 }
 
 template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
-inline bool TEHashMap<KEY, VALUE, Implement>::checkPosition(const MAPPOS& pos) const
+inline bool TEHashMap<KEY, VALUE, Implement>::checkPosition(const MAPPOS pos) const
 {
     typename std::unordered_map<KEY, VALUE>::const_iterator it = mValueList.begin();
     while ((it != mValueList.end()) && (it != pos))
@@ -605,11 +634,22 @@ inline bool TEHashMap<KEY, VALUE, Implement>::checkPosition(const MAPPOS& pos) c
 }
 
 template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
-inline typename TEHashMap<KEY, VALUE, Implement>::MAPPOS TEHashMap<KEY, VALUE, Implement>::invalidPosition(void) const
+inline void TEHashMap<KEY, VALUE, Implement>::clear(void)
 {
-    return iter(mValueList.end());
+    mValueList.clear();
 }
 
+template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
+inline void TEHashMap<KEY, VALUE, Implement>::freeExtra(void)
+{
+    mValueList.clear();
+}
+
+template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
+inline void TEHashMap<KEY, VALUE, Implement>::release(void)
+{
+    mValueList.clear();
+}
 
 template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
 inline bool TEHashMap<KEY, VALUE, Implement>::find( const KEY & Key, VALUE & out_Value ) const
@@ -817,12 +857,6 @@ inline bool TEHashMap<KEY, VALUE, Implement>::removeLast(void)
     }
 
     return result;
-}
-
-template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
-inline void TEHashMap<KEY, VALUE, Implement>::removeAll( void )
-{
-    mValueList.clear();
 }
 
 template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >

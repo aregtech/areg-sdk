@@ -52,19 +52,19 @@ AREG_API NETrace::eLogPriority NETrace::convFromString( const char * strPrio )
 {
     if ( NEString::isEmpty<char>(strPrio) == false )
     {
-        if ( NEString::compareIgnoreCase<char, char>( strPrio, NETrace::PRIO_NOTSET_STR.data( ) ) == 0 )
+        if ( NEString::compareIgnoreCase<char, char>( strPrio, NETrace::PRIO_NOTSET_STR.data( ) ) == NEMath::eCompare::Equal)
             return NETrace::eLogPriority::PrioNotset;
-        else if ( NEString::compareIgnoreCase(strPrio, NETrace::PRIO_SCOPE_STR.data( ) ) == 0 )
+        else if ( NEString::compareIgnoreCase(strPrio, NETrace::PRIO_SCOPE_STR.data( ) ) == NEMath::eCompare::Equal)
             return NETrace::eLogPriority::PrioScope;
-        else if ( NEString::compareIgnoreCase(strPrio, NETrace::PRIO_DEBUG_STR.data( ) ) == 0 )
+        else if ( NEString::compareIgnoreCase(strPrio, NETrace::PRIO_DEBUG_STR.data( ) ) == NEMath::eCompare::Equal)
             return NETrace::eLogPriority::PrioDebug;
-        else if ( NEString::compareIgnoreCase(strPrio, NETrace::PRIO_INFO_STR.data( ) ) == 0 )
+        else if ( NEString::compareIgnoreCase(strPrio, NETrace::PRIO_INFO_STR.data( ) ) == NEMath::eCompare::Equal)
             return NETrace::eLogPriority::PrioInfo;
-        else if ( NEString::compareIgnoreCase(strPrio, NETrace::PRIO_WARNING_STR.data( ) ) == 0 )
+        else if ( NEString::compareIgnoreCase(strPrio, NETrace::PRIO_WARNING_STR.data( ) ) == NEMath::eCompare::Equal)
             return NETrace::eLogPriority::PrioWarning;
-        else if ( NEString::compareIgnoreCase(strPrio, NETrace::PRIO_ERROR_STR.data( ) ) == 0 )
+        else if ( NEString::compareIgnoreCase(strPrio, NETrace::PRIO_ERROR_STR.data( ) ) == NEMath::eCompare::Equal)
             return NETrace::eLogPriority::PrioError;
-        else if ( NEString::compareIgnoreCase(strPrio, NETrace::PRIO_FATAL_STR.data( ) ) == 0 )
+        else if ( NEString::compareIgnoreCase(strPrio, NETrace::PRIO_FATAL_STR.data( ) ) == NEMath::eCompare::Equal)
             return NETrace::eLogPriority::PrioFatal;
     }
 
@@ -226,6 +226,11 @@ AREG_API bool NETrace::configureLoging(const char * fileConfig)
 AREG_API bool NETrace::isEnabled(void)
 {
     return TraceManager::isLoggingEnabled();
+}
+
+AREG_API const String& NETrace::getConfigFile(void)
+{
+    return TraceManager::getConfigFile();
 }
 
 AREG_API bool NETrace::forceStartLogging(void)

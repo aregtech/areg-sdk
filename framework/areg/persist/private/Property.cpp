@@ -175,20 +175,20 @@ bool Property::parseProperty(const char * strProperties)
     if ( NEString::isEmpty<char>(strProperties) == false )
     {
         String values         = strProperties != nullptr ? strProperties : "";
-        NEString::CharPos pos   = values.findFirstOf(NEPersistence::SYNTAX_COMMENT.data());
+        NEString::CharPos pos = values.findFirst(NEPersistence::SYNTAX_COMMENT.data());
 
-        if ( pos != NEString::INVALID_POS)
+        if (values.isValidPosition(pos))
         {
             addComment( strProperties + static_cast<int>(pos));
-            values = values.substring(0, pos);
+            values.substring(0, pos);
         }
 
         if ( values.isEmpty() == false )
         {
             const char * value  = nullptr;
-            String key        = String::getSubstring(values.getString(), NEPersistence::SYNTAX_EQUAL.data(), &value);
+            String key          = String::getSubstring(values.getString(), NEPersistence::SYNTAX_EQUAL.data(), &value);
 
-            mProperty.mValue.first.parseKey(key.getString());
+            mProperty.mValue.first.parseKey(key);
             mProperty.mValue.second.parseValue(value);
         }
 
@@ -221,7 +221,7 @@ String Property::convToString(void) const
 
     if ( mComment.isEmpty() == false )
     {
-        if ((mComment.findFirstOf(NEPersistence::SYNTAX_LINEEND.data()) != NEString::INVALID_POS) || (mComment.getLength() >= 64))
+        if (mComment.isValidPosition(mComment.findFirst(NEPersistence::SYNTAX_LINEEND.data())) || (mComment.getLength() >= 64))
         {
             result += mComment;
             result += NEPersistence::SYNTAX_LINEEND.data();

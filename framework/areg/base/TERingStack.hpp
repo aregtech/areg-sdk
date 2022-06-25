@@ -207,7 +207,7 @@ public:
      * \brief   Removes all elements from Ring stack and makes it empty.
      *          The capacity of stack remains unchanged. The change capacity value, resize stack.
      **/
-    inline void removeAll( void );
+    inline void clear( void );
 
     /**
      * \brief   Copies elements from given source. The elements will be copied at the end of stack.
@@ -578,7 +578,7 @@ inline bool TERingStack<VALUE, VALUE_TYPE, Compare>::isFull( void ) const
 }
 
 template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Compare /*= TEListImpl<VALUE_TYPE>*/>
-void TERingStack<VALUE, VALUE_TYPE, Compare>::removeAll( void )
+void TERingStack<VALUE, VALUE_TYPE, Compare>::clear( void )
 {
     Lock lock(mSynchObject);
     _emptyStack();

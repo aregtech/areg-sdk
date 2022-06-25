@@ -82,9 +82,9 @@ const Channel & Channel::convFromString(const char * channel)
     pos = temp.substring( target, NECommon::OBJECT_SEPARATOR, pos );
     pos = temp.substring( cookie, NECommon::OBJECT_SEPARATOR, pos );
 
-    mSource = static_cast<ITEM_ID>( source.convToUInt64() );
-    mTarget = static_cast<ITEM_ID>( target.convToUInt64() );
-    mCookie = static_cast<ITEM_ID>( cookie.convToUInt64() );
+    mSource = static_cast<ITEM_ID>( source.toUInt64() );
+    mTarget = static_cast<ITEM_ID>( target.toUInt64() );
+    mCookie = static_cast<ITEM_ID>( cookie.toUInt64() );
 
     return (*this);
 }

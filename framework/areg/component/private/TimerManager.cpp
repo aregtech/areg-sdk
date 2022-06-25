@@ -212,8 +212,8 @@ void TimerManager::_removeAllTimers( void )
             TimerManager::_destroyWaitableTimer( timerInfo.getHandle( ), true );
         }
 
-        mTimerTable.removeAll();
-        mExpiredTimers.removeAll();
+        mTimerTable.clear();
+        mExpiredTimers.clear();
     } while (false);
     
 }

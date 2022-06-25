@@ -45,7 +45,7 @@ PageConnections::~PageConnections()
         delete data;
     }
 
-    mTypingList.removeAll();
+    mTypingList.clear();
 }
 
 void PageConnections::ServiceConnected( bool isConnected )

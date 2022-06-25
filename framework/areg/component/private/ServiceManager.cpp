@@ -363,7 +363,7 @@ void ServiceManager::processEvent( const ServiceManagerEventData & data )
     case ServiceManagerEventData::eServiceManagerCommands::CMD_ShutdownService:
         {
             removeAllEvents();
-            mServerList.removeAll();
+            mServerList.clear();
             mConnectService.stopRemoteServicing();
             DispatcherThread::removeEvents(false);
             DispatcherThread::triggerExitEvent();
@@ -385,7 +385,7 @@ void ServiceManager::processEvent( const ServiceManagerEventData & data )
                 }
             }
 
-            mServerList.removeAll();
+            mServerList.clear();
             mConnectService.stopRemoteServicing();
             DispatcherThread::removeEvents(false);
             pulseExit();
@@ -614,8 +614,8 @@ void ServiceManager::getServiceList( ITEM_ID cookie, TEArrayList<StubAddress> & 
     TRACE_SCOPE(areg_component_private_ServiceManager_getServiceList);
     Lock lock( mLock );
 
-    out_listStubs.removeAll();
-    out_lisProxies.removeAll();
+    out_listStubs.clear();
+    out_lisProxies.clear();
 
     for (ServerList::MAPPOS posMap = mServerList.firstPosition(); mServerList.isValidPosition(posMap); posMap = mServerList.nextPosition(posMap) )
     {

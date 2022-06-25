@@ -89,13 +89,13 @@ Version & Version::convFromString( const char * version )
 
     String temp(version), major, minor, patch;
     NEString::CharPos pos = NEString::START_POS;
-    pos = temp.substring( major, NECommon::OBJECT_SEPARATOR, pos );
-    pos = temp.substring( minor, NECommon::OBJECT_SEPARATOR, pos );
-    pos = temp.substring( patch, NECommon::OBJECT_SEPARATOR, pos );
+    pos = temp.substring( major, NECommon::OBJECT_SEPARATOR, pos);
+    pos = temp.substring( minor, NECommon::OBJECT_SEPARATOR, pos);
+    pos = temp.substring( patch, NECommon::OBJECT_SEPARATOR, pos);
 
-    mMajor  = major.convToUInt32();;
-    mMinor  = minor.convToUInt32();
-    mPatch  = (mMajor != 0) && (mMinor != 0) ? patch.convToUInt32() : 0;
+    mMajor  = major.toUInt32();;
+    mMinor  = minor.toUInt32();
+    mPatch  = (mMajor != 0) && (mMinor != 0) ? patch.toUInt32() : 0;
 
     return (*this);
 }

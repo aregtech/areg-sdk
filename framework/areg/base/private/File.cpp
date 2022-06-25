@@ -175,9 +175,11 @@ String File::getFileNameWithExtension( const char* filePath )
         int len = NEString::getStringLength<char>(filePath);
         if (filePath[len - 1] != File::PATH_SEPARATOR)
         {
-            NEString::CharPos pos = NEString::findLastOf<char>(File::PATH_SEPARATOR, filePath, NEString::END_POS, nullptr);
-            if (pos != NEString::INVALID_POS)
+            NEString::CharPos pos = NEString::findLast<char>(File::PATH_SEPARATOR, filePath, NEString::END_POS, nullptr);
+            if (NEString::isPositionValid(pos))
+            {
                 result = filePath + pos + 1;
+            }
         }
     }
 
@@ -188,10 +190,10 @@ String File::getFileName( const char* filePath )
 {
     String result;
     String fileName = File::getFileNameWithExtension(filePath);
-    NEString::CharPos pos = fileName.findLastOf(File::EXTENSION_SEPARATOR, NEString::END_POS, true);
-    if (pos != NEString::INVALID_POS && NEString::isAlphanumeric<char>(fileName.getAt(pos + 1)) )
+    NEString::CharPos pos = fileName.findLast(File::EXTENSION_SEPARATOR, NEString::END_POS, true);
+    if (NEString::isPositionValid(pos) && NEString::isAlphanumeric<char>(fileName.getAt(pos + 1)) )
     {
-        result = fileName.substring( 0, pos );
+        fileName.substring(result, 0, pos);
     }
 
     return result;
@@ -201,10 +203,10 @@ String File::getFileExtension( const char* filePath )
 {
     String result;
     String fileName = File::getFileNameWithExtension(filePath);
-    NEString::CharPos pos = fileName.findLastOf(File::EXTENSION_SEPARATOR, NEString::END_POS, true);
-    if (pos != NEString::INVALID_POS && NEString::isAlphanumeric<char>(fileName.getAt(pos + 1)) )
+    NEString::CharPos pos = fileName.findLast(File::EXTENSION_SEPARATOR, NEString::END_POS, true);
+    if (NEString::isPositionValid(pos) && NEString::isAlphanumeric<char>(fileName.getAt(pos + 1)) )
     {
-        result = fileName.substring( pos, NEString::COUNT_ALL );
+        fileName.substring(result, pos, NEString::COUNT_ALL);
     }
 
     return result;
@@ -212,7 +214,7 @@ String File::getFileExtension( const char* filePath )
 
 String File::getFileDirectory(const char* filePath)
 {
-    NEString::CharPos pos = NEString::isEmpty<char>(filePath) ? NEString::INVALID_POS : NEString::findLastOf<char>(File::PATH_SEPARATOR, filePath, NEString::END_POS, nullptr);
+    NEString::CharPos pos = NEString::isEmpty<char>(filePath) ? NEString::INVALID_POS : NEString::findLast<char>(File::PATH_SEPARATOR, filePath, NEString::END_POS, nullptr);
     return (pos > 0 ? String(filePath, pos) : String(String::EmptyString.data(), 0));
 }
 
@@ -370,7 +372,7 @@ bool File::findParent(const char * filePath, const char ** nextPos, const char *
 
         if (length != 0)
         {
-            int pos = NEString::findLastOf(File::PATH_SEPARATOR, filePath, NEString::END_POS, nextPos);
+            int pos = NEString::findLast(File::PATH_SEPARATOR, filePath, NEString::END_POS, nextPos);
             if ((pos > 0) && (pos < length))
             {
                 result = true;
@@ -389,7 +391,7 @@ String File::getParentDir(const char * filePath)
     const char * end = nullptr;
     if (File::findParent(filePath, &end))
     {
-        result.copy(filePath, static_cast<NEString::CharCount>(end - filePath));
+        result.assign(filePath, static_cast<NEString::CharCount>(end - filePath));
     }
 
     return result;

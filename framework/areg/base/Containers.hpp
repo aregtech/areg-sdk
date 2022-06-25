@@ -67,15 +67,7 @@ public:
      **/
     inline bool implEqualValues( const String & Value1, const String & Value2 ) const
     {
-        int len = Value1.getLength( );
-        if ( len == Value2.getLength( ) )
-        {
-            return (NEString::compareFast<char>( Value1.getString( ), Value2.getString( ), len ) == static_cast<int>(NEMath::eCompare::Equal));
-        }
-        else
-        {
-            return false;
-        }
+        return (Value1 == Value2);
     }
 
     /**

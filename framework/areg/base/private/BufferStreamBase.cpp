@@ -94,7 +94,8 @@ unsigned int BufferStreamBase::read( String & asciiString ) const
     const unsigned char* data = getBufferToRead();
     if ( data != nullptr )
     {
-        result = (asciiString.setString(data) + 1) * sizeof(char);
+        asciiString.assign(reinterpret_cast<const char*>(data));
+        result = asciiString.getSpace();
         mReadPosition.setPosition(static_cast<int>(curPos + result), IECursorPosition::eCursorPosition::PositionBegin);
     }
 
@@ -113,7 +114,8 @@ unsigned int BufferStreamBase::read( WideString & wideString ) const
     const unsigned char* data = getBufferToRead();
     if ( data != nullptr )
     {
-        result = (wideString.setString(data) + 1) * sizeof(wchar_t);
+        wideString.assign(reinterpret_cast<const wchar_t*>(data));
+        result = wideString.getSpace();
         mReadPosition.setPosition(static_cast<int>(curPos + result), IECursorPosition::eCursorPosition::PositionBegin);
     }
 
@@ -167,11 +169,7 @@ unsigned int BufferStreamBase::write( const IEByteBuffer & buffer )
  **/
 unsigned int BufferStreamBase::write( const String & asciiString )
 {
-    const char * buffer = asciiString.getString();
-    buffer = buffer != NULL_STRING ? buffer : String::EmptyString.data();
-    unsigned int len = static_cast<unsigned int>(asciiString.getLength() + 1);
-
-    return write( reinterpret_cast<const unsigned char *>(buffer), len * sizeof(char) );
+    return write( reinterpret_cast<const unsigned char *>(asciiString.getString()), asciiString.getSpace() );
 }
 
 /**
@@ -179,11 +177,7 @@ unsigned int BufferStreamBase::write( const String & asciiString )
  **/
 unsigned int BufferStreamBase::write( const WideString & wideString )
 {
-    const wchar_t * buffer = wideString.getString();
-    buffer = buffer != NULL_STRING_W ? buffer : WideString::EmptyString.data();
-    unsigned int len = static_cast<unsigned int>(wideString.getLength() + 1);
-
-    return write( reinterpret_cast<const unsigned char *>(buffer), len * sizeof(wchar_t) );
+    return write(reinterpret_cast<const unsigned char*>(wideString.getString()), wideString.getSpace());
 }
 
 /**

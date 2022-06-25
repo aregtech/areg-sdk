@@ -221,7 +221,7 @@ void ComponentLoader::removeComponentModel(const char * modelName /*= nullptr */
     }
     else
     {
-        loader.mModelList.removeAll();
+        loader.mModelList.clear();
     }
 }
 
@@ -237,7 +237,7 @@ ComponentLoader::ComponentLoader( void )
 
 ComponentLoader::~ComponentLoader( void )
 {
-    mModelList.removeAll();
+    mModelList.clear();
     mDefaultModel   = NEString::EmptyStringA.data( );
 }
 

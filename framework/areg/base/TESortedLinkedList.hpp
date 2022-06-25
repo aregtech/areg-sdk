@@ -363,7 +363,7 @@ public:
     /**
      * \brief   Removes all element in Linked List. After call, Linked List is empty.
      **/
-    inline void removeAll( void );
+    inline void clear( void );
 
     /**
      * \brief	Removes element at given position and returns value of removed element.
@@ -598,7 +598,7 @@ TESortedLinkedList<VALUE, VALUE_TYPE, Sorter>::TESortedLinkedList( TESortedLinke
 template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Sorter /*= TESortImpl<VALUE_TYPE>*/>
 TESortedLinkedList<VALUE, VALUE_TYPE, Sorter>::~TESortedLinkedList( void )
 {
-    removeAll();
+    clear();
 }
 
 template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Sorter /*= TESortImpl<VALUE_TYPE>*/>
@@ -606,7 +606,7 @@ TESortedLinkedList<VALUE, VALUE_TYPE, Sorter> & TESortedLinkedList<VALUE, VALUE_
 {
     if ( static_cast<const TESortedLinkedList<VALUE, VALUE_TYPE, Sorter> *>(this) != &src)
     {
-        removeAll();
+        clear();
         mSorting    = src.mSorting;
         LISTPOS pos = nullptr;
         const TESortedLinkedList<VALUE, VALUE_TYPE, Sorter>::Block * block = src.mHead;
@@ -622,7 +622,7 @@ TESortedLinkedList<VALUE, VALUE_TYPE, Sorter> & TESortedLinkedList<VALUE, VALUE_
 {
     if ( (static_cast<const TESortedLinkedList<VALUE, VALUE_TYPE, Sorter> *>(this) != &src) && (mSorting == src.mSorting) )
     {
-        removeAll( );
+        clear( );
         mCount  = src.mCount;
         mHead   = src.mHead;
         mTail   = src.mTail;
@@ -878,7 +878,7 @@ inline LISTPOS TESortedLinkedList<VALUE, VALUE_TYPE, Sorter>::add(VALUE_TYPE new
 }
 
 template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Sorter /*= TESortImpl<VALUE_TYPE>*/>
-inline void TESortedLinkedList<VALUE, VALUE_TYPE, Sorter>::removeAll( void )
+inline void TESortedLinkedList<VALUE, VALUE_TYPE, Sorter>::clear( void )
 {
     TESortedLinkedList<VALUE, VALUE_TYPE, Sorter>::Block * block = mHead;
     while (block != nullptr)
@@ -1231,7 +1231,7 @@ inline NEMath::eCompare TESortedLinkedList<VALUE, VALUE_TYPE, Sorter>::compareVa
 template <typename V, typename VT, class Impl> 
 const IEInStream & operator >> ( const IEInStream & stream, TESortedLinkedList<V, VT, Impl> & input )
 {
-    input.removeAll();
+    input.clear();
 
     int size = 0;
     stream >> size;

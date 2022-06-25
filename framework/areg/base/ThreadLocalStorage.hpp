@@ -197,7 +197,7 @@ public:
     /**
      * \brief   Removes all items in thread local storage
      **/
-    inline void removeAll( void );
+    inline void clear( void );
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -243,7 +243,7 @@ inline uint32_t ThreadLocalStorage::getSize( void ) const
     return mStorageList.getSize();
 }
 
-inline void ThreadLocalStorage::removeAll( void )
+inline void ThreadLocalStorage::clear(void )
 {
-    mStorageList.removeAll();
+    mStorageList.clear();
 }

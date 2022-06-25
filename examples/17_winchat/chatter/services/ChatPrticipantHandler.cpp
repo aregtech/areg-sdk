@@ -113,7 +113,7 @@ bool ChatPrticipantHandler::IsEmpty(void) const
 void ChatPrticipantHandler::Invalidate( void )
 {
     Lock lock( mLock );
-    mListParticipants.removeAll();
+    mListParticipants.clear();
     mOwnerConnection    = NECommon::sParticipant();
     mInitiator          = NECommon::sInitiator();
     mConnectionService  = nullptr;

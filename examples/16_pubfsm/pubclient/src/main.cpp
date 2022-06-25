@@ -87,12 +87,14 @@ int main()
     }
 
     // Check whether the right option is selected.
-    if ( (NEString::compareFastIgnoreCase(buffer, "sn") == 0) || (NEString::compareFast(buffer, "1") == 0) )
+    if ( (NEString::compareFastIgnoreCase(buffer, "sn") == NEMath::eCompare::Equal) || 
+         (NEString::compareFast(buffer, "1") == NEMath::eCompare::Equal) )
     {
         isEastWest = false;
         printf("\nSelected Choice: South-North traffic.\n");
     }
-    else if ( (NEString::compareFastIgnoreCase(buffer, "ew") == 0) || (NEString::compareFast(buffer, "2") == 0) )
+    else if ((NEString::compareFastIgnoreCase(buffer, "ew") == NEMath::eCompare::Equal) || 
+             (NEString::compareFast(buffer, "2") == NEMath::eCompare::Equal) )
     {
         isEastWest = true;
         printf("\nSelected Choice: East-West traffic.\n");

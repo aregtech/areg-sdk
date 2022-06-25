@@ -264,7 +264,7 @@ inline TracePropertyValue & TracePropertyValue::operator = ( const char * newVal
 
 inline TracePropertyValue & TracePropertyValue::operator = ( unsigned int newValue )
 {
-    mValue = String::uint32ToString( newValue, NEString::eRadix::RadixDecimal );
+    mValue = String::toString( newValue, NEString::eRadix::RadixDecimal );
     return (*this);
 }
 

@@ -215,30 +215,30 @@ public:
     inline LISTPOS lastPosition(void) const;
 
     /**
+     * \brief   Returns true if specified position pointing start of the linked list.
+     * \param   pos     The position to check.
+     * \return  Returns true if specified position pointing start of the linked list.
+     **/
+    inline bool isStartPosition(const LISTPOS pos) const;
+
+    /**
+     * \brief   Returns true if specified position pointing start of the linked list.
+     * \param   pos     The position to check.
+     * \return  Returns true if specified position pointing start of the linked list.
+     **/
+    inline bool isLastPosition(const LISTPOS pos) const;
+
+    /**
      * \brief   Returns invalid position object.
      **/
     inline LISTPOS invalidPosition(void) const;
-
-    /**
-     * \brief   Returns true if specified position pointing start of the linked list.
-     * \param   pos     The position to check.
-     * \return  Returns true if specified position pointing start of the linked list.
-     **/
-    inline bool isStartPosition(const LISTPOS& pos) const;
-
-    /**
-     * \brief   Returns true if specified position pointing start of the linked list.
-     * \param   pos     The position to check.
-     * \return  Returns true if specified position pointing start of the linked list.
-     **/
-    inline bool isLastPosition(const LISTPOS& pos) const;
 
     /**
      * \brief   Returns true if specified position reached the end of the hash map.
      * \param   pos     The position to check.
      * \return  Returns true if specified position reached the end of the hash map.
      **/
-    inline bool isInvalidPosition(const LISTPOS& pos) const;
+    inline bool isInvalidPosition(const LISTPOS pos) const;
 
     /**
      * \brief   Returns true if specified position is not pointing the end of the hash map.
@@ -247,19 +247,34 @@ public:
      * \param pos       The position to check.
      * \return Returns true if specified position is not pointing the end of the hash map.
      */
-    inline bool isValidPosition(const LISTPOS& pos) const;
+    inline bool isValidPosition(const LISTPOS pos) const;
 
     /**
-     * \brief   Checks and ensures that specified position is pointing the valid entry in the hash map.
-     *          The duration of checkup depends on the location of the position in the map and may run long.
+     * \brief   Checks and ensures that specified position is pointing the valid entry in the linked list.
+     *          The duration of checkup depends on the location of the position in the linked list.
      * \param pos       The position to check.
-     * \return  Returns true if specified position points to the valid entry in the hash map.
+     * \return  Returns true if specified position points to the valid entry in the linked list.
      */
-    inline bool checkPosition(const LISTPOS& pos) const;
+    inline bool checkPosition(const LISTPOS pos) const;
 
 /************************************************************************/
 // Operations
 /************************************************************************/
+
+    /**
+     * \brief   Remove all entries of the linked list.
+     **/
+    inline void clear(void);
+
+    /**
+     * \brief   Delete extra entries in the linked list.
+     **/
+    inline void freeExtra(void);
+
+    /**
+     * \brief   Sets the size of the linked list to zero and deletes all capacity space.
+     */
+    inline void release(void);
 
     /**
      * \brief   Returns value of head element in Linked List container.
@@ -512,11 +527,6 @@ public:
     LISTPOS removeAt( LISTPOS atPosition, VALUE & out_Value );
 
     /**
-     * \brief   Removes all element in Linked List. After call, Linked List is empty.
-     **/
-    void removeAll( void );
-
-    /**
      * \brief	Searches and removes first match of given element from Linked List.
      *          If 'searchAfter' is nullptr, it will start searching element from head.
      *          And returns true if element was found and successfully removed from Linked List.
@@ -688,12 +698,6 @@ inline uint32_t TELinkedList<VALUE, Implement>::getSize( void ) const
 }
 
 template <typename VALUE, class Implement /* = TEListImpl<VALUE> */>
-inline bool TELinkedList<VALUE, Implement>::isValidPosition(const LISTPOS& pos) const
-{
-    return (pos != mValueList.end());
-}
-
-template <typename VALUE, class Implement /* = TEListImpl<VALUE> */>
 inline typename TELinkedList<VALUE, Implement>::LISTPOS TELinkedList<VALUE, Implement>::firstPosition( void ) const
 {
     std::list<VALUE>::const_iterator cit = mValueList.begin();
@@ -705,6 +709,64 @@ inline typename TELinkedList<VALUE, Implement>::LISTPOS TELinkedList<VALUE, Impl
 {
     std::list<VALUE>::const_iterator cit = mValueList.empty() == false ? --mValueList.end() : mValueList.end();
     return iter(mValueList, cit);
+}
+
+template <typename VALUE, class Implement /* = TEListImpl<VALUE> */>
+inline bool TELinkedList<VALUE, Implement>::isStartPosition(const LISTPOS pos) const
+{
+    return (pos == mValueList.begin());
+}
+
+template <typename VALUE, class Implement /* = TEListImpl<VALUE> */>
+inline bool TELinkedList<VALUE, Implement>::isLastPosition(const LISTPOS pos) const
+{
+    return ((mValueList.empty() == false) && (pos == --mValueList.end()));
+}
+
+template <typename VALUE, class Implement /* = TEListImpl<VALUE> */>
+inline typename TELinkedList<VALUE, Implement>::LISTPOS TELinkedList<VALUE, Implement>::invalidPosition(void) const
+{
+    return Constless::iter(mValueList, mValueList.end());
+}
+
+template <typename VALUE, class Implement /* = TEListImpl<VALUE> */>
+inline bool TELinkedList<VALUE, Implement>::isInvalidPosition(const LISTPOS pos) const
+{
+    return (pos == mValueList.end());
+}
+
+template <typename VALUE, class Implement /* = TEListImpl<VALUE> */>
+inline bool TELinkedList<VALUE, Implement>::isValidPosition(const LISTPOS pos) const
+{
+    return (pos != mValueList.end());
+}
+
+template <typename VALUE, class Implement /* = TEListImpl<VALUE> */>
+inline bool TELinkedList<VALUE, Implement>::checkPosition(const LISTPOS pos) const
+{
+    std::list<VALUE>::const_iterator it = mValueList.begin();
+    while ((it != mValueList.end()) && (it != pos))
+        ++it;
+
+    return (it != mValueList.end());
+}
+
+template <typename VALUE, class Implement /* = TEListImpl<VALUE> */>
+void TELinkedList<VALUE, Implement>::clear(void)
+{
+    mValueList.clear();
+}
+
+template <typename VALUE, class Implement /* = TEListImpl<VALUE> */>
+void TELinkedList<VALUE, Implement>::freeExtra(void)
+{
+    mValueList.clear();
+}
+
+template <typename VALUE, class Implement /* = TEListImpl<VALUE> */>
+void TELinkedList<VALUE, Implement>::release(void)
+{
+    mValueList.clear();
 }
 
 template <typename VALUE, class Implement /* = TEListImpl<VALUE> */>
@@ -753,40 +815,6 @@ inline typename TELinkedList<VALUE, Implement>::LISTPOS TELinkedList<VALUE, Impl
 {
     ASSERT(atPosition != mValueList.end());
     return ++atPosition;
-}
-
-template <typename VALUE, class Implement /* = TEListImpl<VALUE> */>
-inline bool TELinkedList<VALUE, Implement>::isInvalidPosition(const LISTPOS& pos) const
-{
-    return (pos == mValueList.end());
-}
-
-template <typename VALUE, class Implement /* = TEListImpl<VALUE> */>
-inline bool TELinkedList<VALUE, Implement>::isStartPosition(const LISTPOS& pos) const
-{
-    return (pos == mValueList.begin());
-}
-
-template <typename VALUE, class Implement /* = TEListImpl<VALUE> */>
-inline bool TELinkedList<VALUE, Implement>::isLastPosition(const LISTPOS& pos) const
-{
-    return ((mValueList.empty() == false) && (pos == --mValueList.end()));
-}
-
-template <typename VALUE, class Implement /* = TEListImpl<VALUE> */>
-inline bool TELinkedList<VALUE, Implement>::checkPosition(const LISTPOS& pos) const
-{
-    std::list<VALUE>::const_iterator it = mValueList.begin();
-    while ((it != mValueList.end()) && (it != pos))
-        ++it;
-
-    return (it != mValueList.end());
-}
-
-template <typename VALUE, class Implement /* = TEListImpl<VALUE> */>
-inline typename TELinkedList<VALUE, Implement>::LISTPOS TELinkedList<VALUE, Implement>::invalidPosition(void) const
-{
-    return Constless::iter(mValueList, mValueList.end());
 }
 
 template <typename VALUE, class Implement /* = TEListImpl<VALUE> */>
@@ -1102,12 +1130,6 @@ inline void TELinkedList<VALUE, Implement>::setAt(LISTPOS atPosition, const VALU
 }
 
 template <typename VALUE, class Implement /* = TEListImpl<VALUE> */>
-void TELinkedList<VALUE, Implement>::removeAll( void )
-{
-    mValueList.clear();
-}
-
-template <typename VALUE, class Implement /* = TEListImpl<VALUE> */>
 typename TELinkedList<VALUE, Implement>::LISTPOS TELinkedList<VALUE, Implement>::removeAt(LISTPOS atPosition)
 {
     ASSERT(atPosition != mValueList.end());
@@ -1254,7 +1276,7 @@ inline typename TELinkedList<VALUE, Implement>::LISTPOS TELinkedList<VALUE, Impl
 template <typename VALUE, class Implement> 
 const IEInStream & operator >> ( const IEInStream & stream, TELinkedList<VALUE, Implement> & input )
 {
-    input.removeAll();
+    input.clear();
 
     uint32_t size = 0;
     stream >> size;

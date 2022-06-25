@@ -104,8 +104,9 @@ inline int _readLine(const FileBase & file, ClassType & outValue)
             length = readLength;
             if ( readLength != 0 )
             {
+                readLength = NEString::removeChar<CharType>(static_cast<CharType>('\r'), buffer, static_cast<NEString::CharCount>(readLength), true);
                 const CharType * str = NEString::getLine<CharType>( buffer, static_cast<NEString::CharCount>(readLength), &context );
-                length   = context != nullptr ? MACRO_ELEM_COUNT(buffer, context) : readLength;
+                length   = context != nullptr ? MACRO_ELEM_COUNT(buffer, context) + 1 : readLength;
                 outValue+= str;
                 result  += length;
                 int newPos  = static_cast<int>( (result * sizeof(CharType)) + oldPos );
@@ -541,7 +542,7 @@ unsigned int FileBase::write(const IEByteBuffer & buffer)
 unsigned int FileBase::write(const String & asciiString)
 {
     const char * buffer = asciiString.getString();
-    unsigned int space  = isTextMode() != 0 ? asciiString.getLength() * sizeof(char) : asciiString.getUsedSpace();
+    unsigned int space  = isTextMode() != 0 ? asciiString.getLength() * sizeof(char) : asciiString.getSpace();
 
     return write(reinterpret_cast<const unsigned char *>(buffer), space);
 }
@@ -549,7 +550,7 @@ unsigned int FileBase::write(const String & asciiString)
 unsigned int FileBase::write(const WideString & wideString)
 {
     const wchar_t * buffer  = wideString.getString();
-    unsigned int space      = isTextMode() != 0 ? wideString.getLength() * sizeof(wchar_t) : wideString.getUsedSpace();
+    unsigned int space      = isTextMode() != 0 ? wideString.getLength() * sizeof(wchar_t) : wideString.getSpace();
 
     return write(reinterpret_cast<const unsigned char *>(buffer), space);
 }
@@ -576,18 +577,9 @@ void FileBase::normalizeName(String & name)
     NEUtilities::sSystemTime st;
     DateTime::getNow(st, true);
     String::formatString(fmt, 32, FileBase::TIMESTAMP_FORMAT.data(), st.stYear, st.stMonth, st.stDay, st.stHour, st.stMinute, st.stSecond, st.stMillisecs);
-
-    NEString::CharPos index = NEString::INVALID_POS;
-
-    while ( (index = name.findFirstOf(FileBase::FILE_MASK_TIMESTAMP.data(), 0, false)) != NEString::INVALID_POS)
-    {
-        name.replace(fmt, index, static_cast<NEString::CharCount>(FileBase::FILE_MASK_TIMESTAMP.length()) );
-    }
+    name.replace(FileBase::FILE_MASK_TIMESTAMP.data(), fmt, NEString::START_POS, NEString::COUNT_ALL, true);
 
     // replace all "%appname%"
     String appName = Process::getInstance().getAppName();
-    while ( (index = name.findFirstOf(FileBase::FILE_MASK_APPNAME.data(), 0, false)) != NEString::INVALID_POS )
-    {
-        name.replace(appName, index, static_cast<NEString::CharCount>(FileBase::FILE_MASK_APPNAME.length()) );
-    }
+    name.replace(FileBase::FILE_MASK_APPNAME.data(), appName, NEString::START_POS, NEString::COUNT_ALL, true);
 }

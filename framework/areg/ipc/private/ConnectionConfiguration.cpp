@@ -45,7 +45,7 @@ bool ConnectionConfiguration::loadConfiguration(const char * filePath /* = nullp
 
 bool ConnectionConfiguration::loadConfiguration(FileBase & file)
 {
-    mMapConfig.removeAll();
+    mMapConfig.clear();
 
     if (file.isOpened())
     {
@@ -97,7 +97,7 @@ NERemoteService::eServiceConnection ConnectionConfiguration::_parseConnectionPro
 
 bool ConnectionConfiguration::_parseConnectionConfig(ListProperties & listProp, FileBase & file, String & inLine, const String & headModule )
 {
-    listProp.removeAll();
+    listProp.clear();
     listProp.resize( static_cast<int>(ConnectionConfiguration::PropertyLen) );
 
     Property prop;
@@ -147,13 +147,13 @@ bool ConnectionConfiguration::getConnectionEnableFlag( NERemoteService::eService
     String enabled = _getPropertyValue( section
                                       , ConnectionConfiguration::eConnectionProperty::PropertyEnabled
                                       , NEConnection::DEFAULT_REMOVE_SERVICE_ENABLED ? NECommon::BOOLEAN_TRUE.data() : NECommon::BOOLEAN_FALSE.data());
-    return enabled.convToBool();
+    return enabled.toBool();
 }
 
 unsigned short ConnectionConfiguration::getConnectionPort( NERemoteService::eServiceConnection section /*= NERemoteService::eServiceConnection::ConnectionTcpip */ ) const
 {
-    String port = _getPropertyValue( section, ConnectionConfiguration::PropertyPort, String::uint32ToString(NEConnection::DEFAULT_REMOTE_SERVICE_PORT) );
-    return static_cast<unsigned short>(port.convToUInt32( ));
+    String port = _getPropertyValue( section, ConnectionConfiguration::PropertyPort, String::toString(NEConnection::DEFAULT_REMOTE_SERVICE_PORT) );
+    return static_cast<unsigned short>(port.toUInt32( ));
 }
 
 bool ConnectionConfiguration::getConnectionHostIpAddress( unsigned char & OUT field0

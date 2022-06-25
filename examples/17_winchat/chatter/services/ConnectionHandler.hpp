@@ -172,7 +172,7 @@ inline bool ConnectionHandler::CanConnect(void) const
 inline void ConnectionHandler::RemoveConnections(void)
 {
     Lock lock(mLock);
-    mListConnections.removeAll();
+    mListConnections.clear();
 }
 
 inline const NECommon::ListConnections & ConnectionHandler::GetConnectionList(void) const

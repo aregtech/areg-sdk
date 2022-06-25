@@ -104,19 +104,20 @@ int main()
         }
 
 
-        if ( NEString::compareFastIgnoreCase<char, char>("start", command) == 0 )
+        if ( NEString::compareFastIgnoreCase<char, char>("start", command) == NEMath::eCompare::Equal)
         {
             // It is 'start' --> start the traffic light.
             DispatcherThread * dispatcher = static_cast<DispatcherThread *>(thread);
             TrafficSwitchEvent::sendEvent( TrafficSwitchData(true), *dispatcher);
         }
-        else if ( NEString::compareFastIgnoreCase<char, char>("stop", command) == 0 )
+        else if ( NEString::compareFastIgnoreCase<char, char>("stop", command) == NEMath::eCompare::Equal)
         {
             // It is 'stop' --> stop the traffic light.
             DispatcherThread * dispatcher = static_cast<DispatcherThread *>(thread);
             TrafficSwitchEvent::sendEvent( TrafficSwitchData(false), *dispatcher);
         }
-        else if ( (NEString::compareFastIgnoreCase<char, char>("quit", command) == 0 ) || (NEString::compareFastIgnoreCase<char, char>("q", command) == 0 ) )
+        else if ( (NEString::compareFastIgnoreCase<char, char>("quit", command) == NEMath::eCompare::Equal) || 
+                  (NEString::compareFastIgnoreCase<char, char>("q", command) == NEMath::eCompare::Equal) )
         {
             // It is 'quit' --> quit application(s).
             DispatcherThread * dispatcher = static_cast<DispatcherThread *>(thread);

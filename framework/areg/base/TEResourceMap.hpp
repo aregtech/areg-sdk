@@ -470,7 +470,7 @@ inline void TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::remo
         cleanResourceEntry(Key, Value);
     }
 
-    HashMap::removeAll();
+    HashMap::clear();
 }
 
 template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Deleter>

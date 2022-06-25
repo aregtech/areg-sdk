@@ -112,24 +112,26 @@ bool PropertyKey::parseKey( const String & key )
     key.trimAll(temp);
     if ( temp.isEmpty() == false )
     {
-        NEString::CharPos pos   = temp.findFirstOf( NEPersistence::SYNTAX_OBJECT_SEPARATOR );
+        NEString::CharPos pos   = temp.findFirst( NEPersistence::SYNTAX_OBJECT_SEPARATOR );
         NEString::CharPos oldPos= NEString::START_POS;
-        if ( pos != NEString::INVALID_POS )
+        if (temp.isValidPosition(pos))
         {
-            mSection    = temp.substring(oldPos, pos - oldPos);
-            oldPos      = pos + 1;
-            pos         = temp.findFirstOf( NEPersistence::SYNTAX_OBJECT_SEPARATOR, oldPos );
-            if ( pos != NEString::INVALID_POS )
+            temp.substring(mSection, oldPos, pos - oldPos);
+
+            oldPos  = pos + 1;
+            pos     = temp.findFirst( NEPersistence::SYNTAX_OBJECT_SEPARATOR, oldPos );
+            if (temp.isValidPosition(pos))
             {
-                mProperty   = temp.substring(oldPos, pos - oldPos);
-                oldPos      = pos + 1;
-                pos         = temp.findFirstOf( NEPersistence::SYNTAX_OBJECT_SEPARATOR, oldPos );
-                if ( pos != NEString::INVALID_POS )
+                temp.substring(mProperty, oldPos, pos - oldPos);
+                oldPos  = pos + 1;
+                pos     = temp.findFirst( NEPersistence::SYNTAX_OBJECT_SEPARATOR, oldPos );
+                if (temp.isValidPosition(pos))
                 {
-                    mModule     = temp.substring(oldPos, pos - oldPos);
-                    oldPos      = pos + 1;
-                    pos         = temp.findFirstOf( NEPersistence::SYNTAX_OBJECT_SEPARATOR, oldPos );
-                    mPosition   = pos != NEString::INVALID_POS ? temp.substring( oldPos, pos - oldPos ) : temp.substring(oldPos);
+                    temp.substring(mModule, oldPos, pos - oldPos);
+                    oldPos  = pos + 1;
+                    pos     = temp.findFirst( NEPersistence::SYNTAX_OBJECT_SEPARATOR, oldPos );
+
+                    temp.substring(mPosition, oldPos, temp.isValidPosition(pos) ? pos - oldPos : NEString::COUNT_ALL);
                 }
                 else
                 {

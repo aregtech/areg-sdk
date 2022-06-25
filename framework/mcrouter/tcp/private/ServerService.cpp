@@ -58,7 +58,7 @@ ServerService::ServerService( void )
 bool ServerService::configureRemoteServicing(const char * configFile)
 {
     ConnectionConfiguration configConnect;
-    if ( configConnect.loadConfiguration(configFile) )
+     if ( configConnect.loadConfiguration(configFile) )
     {
         mConfigFile             = configConnect.getConfigFileName();
         mIsServiceEnabled       = configConnect.getConnectionEnableFlag(CONNECT_TYPE);

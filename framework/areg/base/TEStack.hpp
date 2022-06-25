@@ -167,21 +167,62 @@ public:
     inline bool isEmpty( void ) const;
 
     /**
+     * \brief   Returns true if specified position pointing start of the stack.
+     * \param   pos     The position to check.
+     * \return  Returns true if specified position pointing start of the stack.
+     **/
+    inline bool isStartPosition(const STACKPOS pos) const;
+
+    /**
+     * \brief   Returns true if specified position pointing start of the stack.
+     * \param   pos     The position to check.
+     * \return  Returns true if specified position pointing start of the stack.
+     **/
+    inline bool isLastPosition(const STACKPOS pos) const;
+
+    /**
      * \brief   Returns the invalid position of the stack.
      **/
     STACKPOS invalidPosition( void ) const;
 
     /**
-     * \brief   Returns true if the given position is valid, i.e. is not pointing the end of stack.
+     * \brief   Returns true if the given position is valid, i.e. is not pointing the end of the stack.
      *          Note, it does not check whether there is a such position in the stack,
      *          The method ensures that the position is not pointing to the invalid value.
      **/
-    bool isValidPosition(STACKPOS pos) const;
+    bool isValidPosition(const STACKPOS pos) const;
 
     /**
      * \brief   Returns true if specified position is invalid, i.e. points the end of the stack.
      **/
-    bool isInvalidPosition(STACKPOS pos) const;
+    bool isInvalidPosition(const STACKPOS pos) const;
+
+    /**
+     * \brief   Checks and ensures that specified position is pointing the valid entry in the stack.
+     *          The duration of checkup depends on the location of the position in the stack.
+     * \param pos       The position to check.
+     * \return  Returns true if specified position points to the valid entry in the stack.
+     */
+    inline bool checkPosition(const STACKPOS pos) const;
+
+/************************************************************************/
+// Operations
+/************************************************************************/
+
+    /**
+     * \brief   Removes all elements from stack and makes it empty.
+     **/
+    inline void clear(void);
+
+    /**
+     * \brief   Delete extra entries in array.
+     **/
+    inline void freeExtra( void );
+
+    /**
+     * \brief   Sets the size of array to zero and deletes all unused capacity of the string.
+     */
+    inline void release(void);
 
     /**
      * \brief   Locks stack that methods can be accessed only from locking thread.
@@ -238,11 +279,6 @@ public:
      * \return	Returns Element from stack.
      **/
     inline VALUE popFirst( void );
-
-    /**
-     * \brief   Removes all elements from stack and makes it empty.
-     **/
-    inline void removeAll( void );
 
     /**
      * \brief   Copies all elements from given source and returns the number of copied elements.
@@ -577,6 +613,20 @@ inline bool TEStack<VALUE, Compare>::isEmpty( void ) const
 }
 
 template <typename VALUE, class Compare /*= TEListImpl<VALUE>*/>
+inline bool TEStack<VALUE, Compare>::isStartPosition(STACKPOS pos) const
+{
+    Lock lock(mSynchObject);
+    return (pos = mValueList.begin());
+}
+
+template <typename VALUE, class Compare /*= TEListImpl<VALUE>*/>
+inline bool TEStack<VALUE, Compare>::isLastPosition(STACKPOS pos) const
+{
+    Lock lock(mSynchObject);
+    return (mValueList.empty() == false) && (pos = --mValueList.end());
+}
+
+template <typename VALUE, class Compare /*= TEListImpl<VALUE>*/>
 inline typename TEStack<VALUE, Compare>::STACKPOS TEStack<VALUE, Compare>::invalidPosition(void) const
 {
     Lock lock(mSynchObject);
@@ -595,6 +645,39 @@ inline bool TEStack<VALUE, Compare>::isInvalidPosition(STACKPOS pos) const
 {
     Lock lock(mSynchObject);
     return (pos == mValueList.end());
+}
+
+template <typename VALUE, class Compare /*= TEListImpl<VALUE>*/>
+inline bool TEStack<VALUE, Compare>::checkPosition(STACKPOS pos) const
+{
+    Lock lock(mSynchObject);
+    std::deque<VALUE>::const_iterator it = mValueList.begin();
+    while ((it != mValueList.end()) && (it != pos))
+        ++it;
+
+    return (it != mValueList.end());
+}
+
+template <typename VALUE, class Compare /*= TEListImpl<VALUE>*/>
+inline void TEStack<VALUE, Compare>::clear(void)
+{
+    Lock lock(mSynchObject);
+    mValueList.clear();
+}
+
+template <typename VALUE, class Compare /*= TEListImpl<VALUE>*/>
+inline void TEStack<VALUE, Compare>::freeExtra(void)
+{
+    Lock lock(mSynchObject);
+    mValueList.shrink_to_fit();
+}
+
+template <typename VALUE, class Compare /*= TEListImpl<VALUE>*/>
+inline void TEStack<VALUE, Compare>::release(void)
+{
+    Lock lock(mSynchObject);
+    mValueList.clear();
+    mValueList.shrink_to_fit();
 }
 
 template <typename VALUE, class Compare /*= TEListImpl<VALUE>*/>
@@ -683,13 +766,6 @@ VALUE TEStack<VALUE, Compare>::popFirst( void )
     VALUE result = mValueList.front();
     mValueList.pop_front();
     return result;
-}
-
-template <typename VALUE, class Compare /*= TEListImpl<VALUE>*/>
-inline void TEStack<VALUE, Compare>::removeAll( void )
-{
-    Lock lock(mSynchObject);
-    mValueList.clear();
 }
 
 template <typename VALUE, class Compare /*= TEListImpl<VALUE>*/>
