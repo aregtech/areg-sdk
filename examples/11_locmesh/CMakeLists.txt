@@ -18,7 +18,7 @@ include(${11_locmesh_BASE}/locsvcmesh/CMakeLists.txt)
 add_executable(${projName} ${SRC})
 
 # Setting up appropriate flags
-setopt(${projName})
 setLibOpt(${gen_projName} ${11_generated_SRC})
+setopt(${projName})
 
 target_link_libraries(${projName} ${gen_projName})

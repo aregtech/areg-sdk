@@ -25,13 +25,13 @@ endfunction(setOpt item)
 function(setLibOpt item)
 	if($(AREG_BINARY) MATCHES "shared")
 		add_library(${item} SHARED ${ARGN})
+		set_property(TARGET ${item} PROPERTY LIBRARY_OUTPUT_DIRECTORY ${ProjBinDir})
 	else()
 		add_library(${item} STATIC ${ARGN})
+		set_property(TARGET ${item} PROPERTY ARCHIVE_OUTPUT_DIRECTORY ${ProjLibDir})
 	endif()
 
 	set_property(TARGET ${item} PROPERTY CXX_STANDARD 17)
-	set_property(TARGET ${item} PROPERTY LIBRARY_OUTPUT_DIRECTORY ${ProjBinDir})
-	set_property(TARGET ${item} PROPERTY ARCHIVE_OUTPUT_DIRECTORY ${ProjLibDir})
 
 endfunction(setLibOpt item)
 
@@ -50,6 +50,7 @@ list(APPEND fileList
 
 include(${AREG_EXAMPLES}/10_locsvc/CMakeLists.txt)
 include(${AREG_EXAMPLES}/11_locmesh/CMakeLists.txt)
+include(${AREG_EXAMPLES}/12_pubsvc/CMakeLists.txt)
 
 
 # Iterating over fileList and extract each source file,
