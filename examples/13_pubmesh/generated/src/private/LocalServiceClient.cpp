@@ -99,11 +99,11 @@ void LocalServiceClient::processTimer(Timer & timer)
 inline String LocalServiceClient::timerName( Component & owner ) const
 {
     String result = "";
-    result += owner.getRoleName();
-    result += NECommon::DEFAULT_SPECIAL_CHAR.data();
-    result += LocalHelloWorldClientBase::getServiceRole();
-    result += NECommon::DEFAULT_SPECIAL_CHAR.data();
-    result += LocalHelloWorldClientBase::getServiceName();
+    result.append(owner.getRoleName())
+          .append(NECommon::DEFAULT_SPECIAL_CHAR)
+          .append(LocalHelloWorldClientBase::getServiceRole())
+          .append(NECommon::DEFAULT_SPECIAL_CHAR)
+          .append(LocalHelloWorldClientBase::getServiceName());
     
     return result;
 }

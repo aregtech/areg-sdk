@@ -758,8 +758,7 @@ void ServerService::unregisterRemoteProxy(const ProxyAddress & proxy, ITEM_ID co
     }
     else
     {
-        TRACE_DBG("Ignore notifying stub [ %s ] proxy [ %s ] disconnect"
-                        , addrStub.convToString().getString()
+        TRACE_DBG("Ignore notifying proxy [ %s ] disconnect"
                         , proxy.convToString().getString());
     }
 }

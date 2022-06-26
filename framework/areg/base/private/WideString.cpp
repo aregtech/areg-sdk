@@ -335,14 +335,14 @@ bool WideString::makeBool( const wchar_t * strBoolean, const wchar_t ** end /*= 
 {
     bool result = false;
     int lenSkip = 0;
-    int lenTrue = static_cast<int>(NECommon::BOOLEAN_TRUE.length());
-    int lenFalse= static_cast<int>(NECommon::BOOLEAN_FALSE.length());
-    if ( NEString::compareStrings<wchar_t, char>(strBoolean, NECommon::BOOLEAN_TRUE.data(), lenTrue, false) == NEMath::eCompare::Equal)
+    int lenTrue = static_cast<int>(NECommon::BOOLEAN_TRUE_W.length());
+    int lenFalse= static_cast<int>(NECommon::BOOLEAN_FALSE_W.length());
+    if ( NEString::compareStrings<wchar_t, wchar_t>(strBoolean, NECommon::BOOLEAN_TRUE_W.data(), lenTrue, false) == NEMath::eCompare::Equal)
     {
         result = true;
         lenSkip= lenTrue;
     }
-    else if ( NEString::compareStrings<wchar_t, char>(strBoolean, NECommon::BOOLEAN_FALSE.data(), lenFalse, false) == NEMath::eCompare::Equal)
+    else if ( NEString::compareStrings<wchar_t, wchar_t>(strBoolean, NECommon::BOOLEAN_FALSE_W.data(), lenFalse, false) == NEMath::eCompare::Equal)
     {
         result = false;
         lenSkip= lenFalse;
@@ -542,8 +542,10 @@ const WideString & WideString::formatList(const wchar_t * format, va_list argptr
     return (*this);
 }
 
-void WideString::assign(const char* source, NEString::CharCount count /*= NEString::COUNT_ALL*/)
+WideString& WideString::assign(const char* source, NEString::CharCount count /*= NEString::COUNT_ALL*/)
 {
+    mData.clear();
+
     if (NEString::isEmpty<char>(source) == false)
     {
         count = count == NEString::COUNT_ALL ? static_cast<NEString::CharCount>(strlen(source)) : count;
@@ -554,9 +556,11 @@ void WideString::assign(const char* source, NEString::CharCount count /*= NEStri
 
         *dst = EmptyChar;
     }
+
+    return (*this);
 }
 
-void WideString::append(const char* source, NEString::CharCount count /*= NEString::COUNT_ALL*/)
+WideString& WideString::append(const char* source, NEString::CharCount count /*= NEString::COUNT_ALL*/)
 {
     if (NEString::isEmpty<char>(source) == false)
     {
@@ -569,6 +573,8 @@ void WideString::append(const char* source, NEString::CharCount count /*= NEStri
 
         *dst = EmptyChar;
     }
+
+    return (*this);
 }
 
 void WideString::readStream(const IEInStream& stream)

@@ -114,6 +114,14 @@ public:
     inline String( char ch );
 
     /**
+     * \brief   Initializes string and reserves a space for specified amount of characters.
+     *          Note, the size of string remains zero.
+     *
+     * \param   count   The space to reserve.
+     */
+    explicit inline String(uint32_t count);
+
+    /**
      * \brief   Constructor, initializes string from streaming object
      **/
     String( const IEInStream & stream );
@@ -427,29 +435,33 @@ public:
     /**
      * \brief   Copies given amount of characters of given string and returns the amount of copied characters.
      *          If string has not enough space to copy characters, it will reallocate the space.
+     *
      * \param   source  The source of string to copy characters.
      * \param   pos     The position in source string to start to copy.
      * \param   count   The number of characters to copy. By default, it copies all characters.
+     * \return  Returns modified string.
      **/
-    void assign(const wchar_t* source, NEString::CharCount count = NEString::COUNT_ALL);
-    inline void assign(const char* source, NEString::CharCount count = NEString::COUNT_ALL);
-    inline void assign(const std::string& source, NEString::CharPos pos = NEString::START_POS, NEString::CharCount count = NEString::COUNT_ALL);
-    inline void assign(const std::string_view& source, NEString::CharPos pos = NEString::START_POS, NEString::CharCount count = NEString::COUNT_ALL);
-    inline void assign(const String& source, NEString::CharPos pos = NEString::START_POS, NEString::CharCount count = NEString::COUNT_ALL);
+    String& assign(const wchar_t* source, NEString::CharCount count = NEString::COUNT_ALL);
+    inline String& assign(const char* source, NEString::CharCount count = NEString::COUNT_ALL);
+    inline String& assign(const std::string& source, NEString::CharPos pos = NEString::START_POS, NEString::CharCount count = NEString::COUNT_ALL);
+    inline String& assign(const std::string_view& source, NEString::CharPos pos = NEString::START_POS, NEString::CharCount count = NEString::COUNT_ALL);
+    inline String& assign(const String& source, NEString::CharPos pos = NEString::START_POS, NEString::CharCount count = NEString::COUNT_ALL);
 
     /**
-     * \brief   Appends given amount of characters of given string at the end of the string
-     *          and returns the amount of appended characters. If string has not enough space
-     *          to append characters, it will reallocate the space.
+     * \brief   Appends given string at the end. The given string can be limited by zero-based valid position
+     *          and by amount of characters to append.
+     *
      * \param   source  The source of string to append characters.
-     * \param   pos     The position in source string to start to copy.
-     * \param   count   The number of characters to append. By default, it copies all characters.
+     * \param   pos     If specified the valid zero-based position in the given string to append.
+     *                  Otherwise, it append starting from the beginning.
+     * \param   count   If specified, the number of characters to append. By default, it appends all characters.
+     * \return  Returns modified string.
      **/
-    void append(const wchar_t* source, NEString::CharCount count = NEString::COUNT_ALL);
-    inline void append(const char* source, NEString::CharCount count = NEString::COUNT_ALL);
-    inline void append(const std::string& source, NEString::CharPos pos = NEString::START_POS, NEString::CharCount count = NEString::COUNT_ALL);
-    inline void append(const std::string_view& source, NEString::CharPos pos = NEString::START_POS, NEString::CharCount count = NEString::COUNT_ALL);
-    inline void append(const String& source, NEString::CharPos pos = NEString::START_POS, NEString::CharCount count = NEString::COUNT_ALL);
+    String& append(const wchar_t* source, NEString::CharCount count = NEString::COUNT_ALL);
+    inline String& append(const char* source, NEString::CharCount count = NEString::COUNT_ALL);
+    inline String& append(const std::string& source, NEString::CharPos pos = NEString::START_POS, NEString::CharCount count = NEString::COUNT_ALL);
+    inline String& append(const std::string_view& source, NEString::CharPos pos = NEString::START_POS, NEString::CharCount count = NEString::COUNT_ALL);
+    inline String& append(const String& source, NEString::CharPos pos = NEString::START_POS, NEString::CharCount count = NEString::COUNT_ALL);
 
     /**
      * \brief   Converts string of digits to 32-bit integer
@@ -562,15 +574,15 @@ public:
 /************************************************************************/
 protected:
     /**
-    * \brief   Reads string data from streaming object.
-    * \param   stream  The streaming object, which contains string source data
-    **/
+     * \brief   Reads string data from streaming object.
+     * \param   stream  The streaming object, which contains string source data
+     **/
     void readStream(const IEInStream & stream);
 
     /**
-    * \brief   Writes string data to streaming object.
-    * \param   stream  The streaming object to write string data.
-    **/
+     * \brief   Writes string data to streaming object.
+     * \param   stream  The streaming object to write string data.
+     **/
     void writeStream(IEOutStream & stream) const;
 };
 #if defined(_MSC_VER) && (_MSC_VER > 1200)
@@ -646,6 +658,11 @@ inline String::String(const wchar_t* source, uint32_t charCount)
 
 inline String::String( char ch )
     : TEString<char>( ch )
+{
+}
+
+inline String::String(uint32_t count)
+    : TEString<char>( static_cast<uint32_t>(count) )
 {
 }
 
@@ -968,42 +985,50 @@ inline String & String::fromBool( bool value )
     return (*this);
 }
 
-inline void String::assign(const char* source, NEString::CharCount count /*= NEString::COUNT_ALL*/)
+inline String& String::assign(const char* source, NEString::CharCount count /*= NEString::COUNT_ALL*/)
 {
     Base::assign(source, count);
+    return (*this);
 }
 
-inline void String::assign(const std::string& source, NEString::CharPos pos /*= NEString::START_POS*/, NEString::CharCount count /*= NEString::COUNT_ALL*/)
+inline String& String::assign(const std::string& source, NEString::CharPos pos /*= NEString::START_POS*/, NEString::CharCount count /*= NEString::COUNT_ALL*/)
 {
     Base::assign(static_cast<const std::basic_string<char> &>(source), pos, count);
+    return (*this);
 }
 
-inline void String::assign(const std::string_view& source, NEString::CharPos pos /*= NEString::START_POS*/, NEString::CharCount count /*= NEString::COUNT_ALL*/)
+inline String& String::assign(const std::string_view& source, NEString::CharPos pos /*= NEString::START_POS*/, NEString::CharCount count /*= NEString::COUNT_ALL*/)
 {
     Base::assign(static_cast<const std::basic_string_view<char> &>(source), pos, count);
+    return (*this);
 }
 
-inline void String::assign(const String& source, NEString::CharPos pos /*= NEString::START_POS*/, NEString::CharCount count /*= NEString::COUNT_ALL*/)
+inline String& String::assign(const String& source, NEString::CharPos pos /*= NEString::START_POS*/, NEString::CharCount count /*= NEString::COUNT_ALL*/)
 {
     Base::assign(source, pos, count);
+    return (*this);
 }
 
-inline void String::append(const char* source, NEString::CharCount count /*= NEString::COUNT_ALL*/)
+inline String& String::append(const char* source, NEString::CharCount count /*= NEString::COUNT_ALL*/)
 {
     Base::append(source, count);
+    return (*this);
 }
 
-inline void String::append(const std::string& source, NEString::CharPos pos /*= NEString::START_POS*/, NEString::CharCount count /*= NEString::COUNT_ALL*/)
+inline String& String::append(const std::string& source, NEString::CharPos pos /*= NEString::START_POS*/, NEString::CharCount count /*= NEString::COUNT_ALL*/)
 {
     Base::append(static_cast<const std::basic_string<char>&>(source), pos, count);
+    return (*this);
 }
 
-inline void String::append(const std::string_view& source, NEString::CharPos pos /*= NEString::START_POS*/, NEString::CharCount count /*= NEString::COUNT_ALL*/)
+inline String& String::append(const std::string_view& source, NEString::CharPos pos /*= NEString::START_POS*/, NEString::CharCount count /*= NEString::COUNT_ALL*/)
 {
     Base::append(static_cast<const std::basic_string_view<char>&>(source), pos, count);
+    return (*this);
 }
 
-inline void String::append(const String& source, NEString::CharPos pos /*= NEString::START_POS*/, NEString::CharCount count /*= NEString::COUNT_ALL*/)
+inline String& String::append(const String& source, NEString::CharPos pos /*= NEString::START_POS*/, NEString::CharCount count /*= NEString::COUNT_ALL*/)
 {
     Base::append(static_cast<const Base&>(source), pos, count);
+    return (*this);
 }

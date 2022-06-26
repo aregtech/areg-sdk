@@ -238,7 +238,7 @@ void PageNetworkSetup::OnUpdateEditNickname()
 {
     UpdateData( TRUE );
     String nickName(mNickName.GetString());
-    if (mNickName.GetLength() != static_cast<int>(nickName.makeAlphanumeric()))
+    if (mNickName.GetLength() != nickName.makeAlphanumeric().getLength())
     {
         mNickName = nickName.getBuffer();
         UpdateData(FALSE);

@@ -235,15 +235,15 @@ bool StubAddress::isValid( void ) const
 
 String StubAddress::convToString(void) const
 {
-    String result = "";
+    String result(static_cast<uint32_t>(0xFF));
 
-    result += EXTENTION_STUB.data();
-    result += NECommon::COMPONENT_PATH_SEPARATOR.data();
-    result += ServiceAddress::convToString( );
-    result += NECommon::COMPONENT_PATH_SEPARATOR.data();
-    result += mThreadName;
-    result += NECommon::COMPONENT_PATH_SEPARATOR.data();
-    result += mChannel.convToString();
+    result.append(EXTENTION_STUB)
+          .append(NECommon::COMPONENT_PATH_SEPARATOR)
+          .append(ServiceAddress::convToString())
+          .append(NECommon::COMPONENT_PATH_SEPARATOR)
+          .append(mThreadName)
+          .append(NECommon::COMPONENT_PATH_SEPARATOR)
+          .append(mChannel.convToString());
 
     return result;
 }

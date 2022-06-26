@@ -191,10 +191,11 @@ void PropertyValue::setIndentifier(const TEArrayList<Identifier> idList)
     {
         if ( mValue.isEmpty() == false )
         {
-            mValue += NEPersistence::SYNTAX_WHITESPACE_DELIMITER;
-            mValue += NEPersistence::SYNTAX_LOGICAL_OR;
-            mValue += NEPersistence::SYNTAX_WHITESPACE_DELIMITER;
+            mValue.append(NEPersistence::SYNTAX_WHITESPACE_DELIMITER)
+                  .append(NEPersistence::SYNTAX_LOGICAL_OR)
+                  .append(NEPersistence::SYNTAX_WHITESPACE_DELIMITER);
         }
+
         mValue += idList[i].getName();
     }
 }

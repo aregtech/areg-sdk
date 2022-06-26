@@ -542,7 +542,7 @@ const String & String::formatList(const char * format, va_list argptr)
     return (*this);
 }
 
-void String::assign(const wchar_t* source, NEString::CharCount count /*= NEString::COUNT_ALL*/)
+String& String::assign(const wchar_t* source, NEString::CharCount count /*= NEString::COUNT_ALL*/)
 {
     mData.clear();
 
@@ -556,9 +556,11 @@ void String::assign(const wchar_t* source, NEString::CharCount count /*= NEStrin
 
         *dst = EmptyChar;
     }
+
+    return (*this);
 }
 
-void String::append(const wchar_t* source, NEString::CharCount count /*= NEString::COUNT_ALL*/)
+String& String::append(const wchar_t* source, NEString::CharCount count /*= NEString::COUNT_ALL*/)
 {
     if (NEString::isEmpty<wchar_t>(source) == false)
     {
@@ -571,6 +573,8 @@ void String::append(const wchar_t* source, NEString::CharCount count /*= NEStrin
 
         *dst = EmptyChar;
     }
+
+    return (*this);
 }
 
 void String::readStream(const IEInStream& stream)

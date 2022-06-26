@@ -103,10 +103,11 @@ bool Application::_startRouterService( void )
     {
         constexpr char const argv0[] { "--console" };
         
-        String fileName = String::EmptyString.data();
-        fileName += Process::getInstance().getPath();
-        fileName += File::PATH_SEPARATOR;
-        fileName += NEApplication::DEFAULT_ROUTER_SERVICE_NAME.data();
+        String fileName = String::EmptyString;
+        fileName.append(Process::getInstance().getPath())
+                .append(File::PATH_SEPARATOR)
+                .append(NEApplication::DEFAULT_ROUTER_SERVICE_NAME);
+
         result = execl(fileName.getString(), fileName.getString(), argv0, nullptr) > 0;
     }
 

@@ -149,23 +149,21 @@ bool PropertyKey::parseKey( const String & key )
 
 String PropertyKey::convToString(void) const
 {
-    String result("");
+    String result(static_cast<uint32_t>(0xFF));
     if ( isValid() )
     {
-        result += mSection;
-        result += NEPersistence::SYNTAX_OBJECT_SEPARATOR;
-        result += mProperty;
+        result.append(mSection).append(NEPersistence::SYNTAX_OBJECT_SEPARATOR).append(mProperty);
+
         if ( mModule.isEmpty() == false )
         {
-            result += NEPersistence::SYNTAX_OBJECT_SEPARATOR;
-            result += mModule;
+            result.append(NEPersistence::SYNTAX_OBJECT_SEPARATOR).append(mModule);
             if ( mPosition.isEmpty() == false )
             {
-                result += NEPersistence::SYNTAX_OBJECT_SEPARATOR;
-                result += mPosition;
+                result.append(NEPersistence::SYNTAX_OBJECT_SEPARATOR).append(mPosition);
             }
         }
     }
+
     return result;
 }
 

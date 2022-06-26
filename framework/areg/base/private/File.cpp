@@ -341,8 +341,7 @@ String File::normalizePath( const char * fileName )
     result += first;
     for (StringList::LISTPOS pos = list.firstPosition(); list.isValidPosition(pos); pos = list.nextPosition(pos))
     {
-        result += File::PATH_SEPARATOR;
-        result += list.valueAtPosition(pos);
+        result.append(File::PATH_SEPARATOR).append(list.valueAtPosition(pos));
     }
 
     FileBase::normalizeName(result);

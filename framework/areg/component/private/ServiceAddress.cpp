@@ -104,9 +104,8 @@ ServiceAddress::ServiceAddress( ServiceAddress && source ) noexcept
 
 String ServiceAddress::convToString(void) const
 {
-    String result = ServiceItem::convToString();
-    result += NECommon::COMPONENT_PATH_SEPARATOR.data();
-    result += mRoleName;
+    String result( ServiceItem::convToString() );
+    result.append(NECommon::COMPONENT_PATH_SEPARATOR).append(mRoleName);
 
     return result;
 }

@@ -87,13 +87,13 @@ ServiceItem::ServiceItem( ServiceItem && source ) noexcept
 
 String ServiceItem::convToString(void) const
 {
-    String result;
+    String result(static_cast<uint32_t>(0xFF));
 
-    result += mServiceName;
-    result += NECommon::COMPONENT_PATH_SEPARATOR.data();
-    result += mServiceVersion.convToString();
-    result += NECommon::COMPONENT_PATH_SEPARATOR.data();
-    result += String::toString(static_cast<int>(mServiceType), NEString::eRadix::RadixDecimal);
+    result.append(mServiceName)
+          .append(NECommon::COMPONENT_PATH_SEPARATOR)
+          .append(mServiceVersion.convToString())
+          .append(NECommon::COMPONENT_PATH_SEPARATOR)
+          .append(String::toString(static_cast<int>(mServiceType), NEString::eRadix::RadixDecimal));
 
     return result;
 }

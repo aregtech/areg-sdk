@@ -124,11 +124,11 @@ bool ComponentAddress::isValid( void ) const
 
 String ComponentAddress::convToString(void) const
 {
-    String result = "";
+    String result;
 
-    result += mRoleName;
-    result += NECommon::COMPONENT_PATH_SEPARATOR.data();
-    result += ThreadAddress::convAddressToPath(mThreadAddress);
+    result.append(mRoleName)
+          .append(NECommon::COMPONENT_PATH_SEPARATOR)
+          .append(ThreadAddress::convAddressToPath(mThreadAddress));
 
     return result;
 }

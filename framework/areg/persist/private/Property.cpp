@@ -213,26 +213,22 @@ String Property::convToString(void) const
     String value   = mProperty.mValue.second.convToString();
     if ( !key.isEmpty() && !value.isEmpty() )
     {
-        key += NEPersistence::SYNTAX_WHITESPACE_DELIMITER;
-        key += NEPersistence::SYNTAX_EQUAL.data();
-        key += NEPersistence::SYNTAX_WHITESPACE_DELIMITER;
-        key += value;
+        key.append(NEPersistence::SYNTAX_WHITESPACE_DELIMITER)
+           .append(NEPersistence::SYNTAX_EQUAL)
+           .append(NEPersistence::SYNTAX_WHITESPACE_DELIMITER)
+           .append(value);
     }
 
     if ( mComment.isEmpty() == false )
     {
         if (mComment.isValidPosition(mComment.findFirst(NEPersistence::SYNTAX_LINEEND.data())) || (mComment.getLength() >= 64))
         {
-            result += mComment;
-            result += NEPersistence::SYNTAX_LINEEND.data();
-            result += key;
+            result.append(mComment).append(NEPersistence::SYNTAX_LINEEND).append(key);
         }
     }
     else if ( mComment.isEmpty() == false )
     {
-        result += key;
-        result += NEPersistence::SYNTAX_WHITESPACE_DELIMITER;
-        result += mComment;
+        result.append(key).append(NEPersistence::SYNTAX_WHITESPACE_DELIMITER).append(mComment);
     }
     else
     {

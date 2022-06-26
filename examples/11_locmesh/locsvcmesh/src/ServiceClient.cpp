@@ -138,11 +138,11 @@ void ServiceClient::processTimer(Timer & timer)
 inline String ServiceClient::timerName( Component & owner ) const
 {
     String result = "";
-    result += owner.getRoleName();
-    result += NECommon::DEFAULT_SPECIAL_CHAR.data();
-    result += getServiceRole();
-    result += NECommon::DEFAULT_SPECIAL_CHAR.data();
-    result += getServiceName();
+    result.append(owner.getRoleName())
+          .append(NECommon::DEFAULT_SPECIAL_CHAR)
+          .append(getServiceRole())
+          .append(NECommon::DEFAULT_SPECIAL_CHAR)
+          .append(getServiceName());
     
     return result;
 }
