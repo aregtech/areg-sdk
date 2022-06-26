@@ -16,6 +16,8 @@ list(APPEND fileList
 	09_svcmulti
 )
 
+include(${AREG_EXAMPLES}/10_locsvc/CMakeLists.txt)
+
 # Iterating over fileList and extract each source file,
 # to create separate target and executable.
 foreach(item IN LISTS fileList)
