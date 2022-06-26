@@ -1,31 +1,30 @@
-
 # SRC lists
 unset(SRC)
-unset(10_generated_SRC)
+unset(11_generated_SRC)
 
 # Project names
-set(gen_projName 10_generated)
-set(projName 10_locsvc_locservice)
+set(gen_projName 11_generated)
+set(projName 11_locsvcmesh)
 
-set(10_locsvc_BASE ${AREG_EXAMPLES}/10_locsvc)
+set(11_locmesh_BASE ${AREG_EXAMPLES}/11_locmesh)
 
-include_directories(${AREG_EXAMPLES}/10_locsvc)
+include_directories(${AREG_EXAMPLES}/11_locmesh)
 
 # Filling SRCs up
-include(${10_locsvc_BASE}/generated/CMakeLists.txt)
-include(${AREG_EXAMPLES}/10_locsvc/locservice/CMakeLists.txt)
+include(${11_locmesh_BASE}/generated/CMakeLists.txt)
+include(${11_locmesh_BASE}/locsvcmesh/CMakeLists.txt)
 
 # Adding targets
 add_executable(${projName} ${SRC})
 
 # Setting up appropriate flags
 if($(AREG_BINARY) MATCHES "shared")
-    add_library(${gen_projName} SHARED ${10_generated_SRC})
+    add_library(${gen_projName} SHARED ${11_generated_SRC})
 
     target_compile_definitions(${projName} PRIVATE IMP_AREG_DLL)
     target_compile_options(${projName} PRIVATE ${CompileOptShared})
 else()
-    add_library(${gen_projName} STATIC ${10_generated_SRC})
+    add_library(${gen_projName} STATIC ${11_generated_SRC})
 
     target_compile_definitions(${projName} PRIVATE IMP_AREG_LIB)
     target_compile_options(${projName} PRIVATE ${CompileOptStatic})
