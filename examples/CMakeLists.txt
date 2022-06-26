@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 
 # Compile Options
 set(CompileOptShared "Wl,-rpath=${AREG_OUTPUT_BIN} -L ${AREG_OUTPUT_BIN}")
@@ -65,4 +66,3 @@ foreach(item IN LISTS fileList)
 	add_executable(${item} ${SRC})
 	setopt(${item})
 endforeach()
-
