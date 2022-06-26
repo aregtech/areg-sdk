@@ -4,13 +4,13 @@ include("${AREG_BASE}/mcrouter/CMakeLists.txt")
 
 if(AREG_BINARY MATCHES static)
     add_library(areg STATIC ${areg_SRC} ${mcrouter_SRC})
+    set_property(TARGET areg PROPERTY ARCHIVE_OUTPUT_DIRECTORY ${ProjLibDir})
 else()
     add_library(areg SHARED ${areg_SRC} ${mcrouter_SRC})
+    set_property(TARGET areg PROPERTY LIBRARY_OUTPUT_DIRECTORY ${ProjBinDir})
 endif()
 # Library configs
 set_property(TARGET areg PROPERTY CXX_STANDARD 17)
-set_property(TARGET areg PROPERTY LIBRARY_OUTPUT_DIRECTORY ${ProjBinDir})
-set_property(TARGET areg PROPERTY ARCHIVE_OUTPUT_DIRECTORY ${ProjLibDir})
 
 # Adding  source files to a single executable.
 set(EXE mcrouter${AREG_BIN_EXT})

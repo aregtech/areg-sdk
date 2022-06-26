@@ -18,24 +18,7 @@ include(${11_locmesh_BASE}/locsvcmesh/CMakeLists.txt)
 add_executable(${projName} ${SRC})
 
 # Setting up appropriate flags
-if($(AREG_BINARY) MATCHES "shared")
-    add_library(${gen_projName} SHARED ${11_generated_SRC})
+setopt(${projName})
+setLibOpt(${gen_projName} ${11_generated_SRC})
 
-    target_compile_definitions(${projName} PRIVATE IMP_AREG_DLL)
-    target_compile_options(${projName} PRIVATE ${CompileOptShared})
-else()
-    add_library(${gen_projName} STATIC ${11_generated_SRC})
-
-    target_compile_definitions(${projName} PRIVATE IMP_AREG_LIB)
-    target_compile_options(${projName} PRIVATE ${CompileOptStatic})
-endif()
-
-set_property(TARGET ${gen_projName} PROPERTY CXX_STANDARD 17)
-set_property(TARGET ${gen_projName} PROPERTY ARCHIVE_OUTPUT_DIRECTORY ${ProjLibDir})
-
-target_link_libraries(${projName} ${exampleLDFlags} ${LDFLAGS} ${gen_projName})
-set_target_properties(${projName}
-    PROPERTIES
-    CXX_STANDARD ${exampleCXXStandard}
-    CXX_STANDARD_REQUIRED ON
-    )
+target_link_libraries(${projName} ${gen_projName})
