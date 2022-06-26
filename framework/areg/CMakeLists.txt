@@ -1,7 +1,7 @@
 
 set(areg_BASE "${AREG_BASE}/areg")
 set(areg_OUTPUT_OBJ "${AREG_OUTPUT_OBJ}/${PROJECT_NAME}")
-set(areg_OUTPUT_LIB "${AREG_BASE}/areg") 
+set(areg_OUTPUT_LIB "${AREG_BASE}/areg")
 set(areg_OUTPUT_BIN "${AREG_BASE}/areg")
 
 set(areg_OBJS)

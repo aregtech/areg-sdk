@@ -16,35 +16,26 @@ include(${10_locsvc_BASE}/generated/CMakeLists.txt)
 include(${AREG_EXAMPLES}/10_locsvc/locservice/CMakeLists.txt)
 
 # Adding targets
-add_executable(${gen_projName} ${10_generated_SRC})
-add_executable(${projName} ${SRC} ${10_generated_SRC})
+add_executable(${projName} ${SRC})
 
 # Setting up appropriate flags
 if($(AREG_BINARY) MATCHES "shared")
-    # Generated project
-    target_compile_definitions(${gen_projName} PRIVATE IMP_AREG_DLL)
-    target_compile_options(${gen_projName} PRIVATE ${CompileOptShared})
+    add_library(${gen_projName} SHARED ${10_generated_SRC})
 
     target_compile_definitions(${projName} PRIVATE IMP_AREG_DLL)
     target_compile_options(${projName} PRIVATE ${CompileOptShared})
 else()
-    # Generated project
-    target_compile_definitions(${gen_projName} PRIVATE IMP_AREG_LIB)
-    target_compile_options(${gen_projName} PRIVATE ${CompileOptStatic})
+    add_library(${gen_projName} STATIC ${10_generated_SRC})
 
     target_compile_definitions(${projName} PRIVATE IMP_AREG_LIB)
     target_compile_options(${projName} PRIVATE ${CompileOptStatic})
 endif()
 
-# Generated project
-target_link_libraries(${gen_projName} ${exampleLDFlags} ${LDFLAGS})
-set_target_properties(${gen_projName}
-    PROPERTIES
-    CXX_STANDARD ${exampleCXXStandard}
-    CXX_STANDARD_REQUIRED ON
-    )
+set_property(TARGET ${gen_projName} PROPERTY CXX_STANDARD 17)
+set_property(TARGET 10_generated PROPERTY ARCHIVE_OUTPUT_DIRECTORY ${ProjLibDir})
+message(${ProjLibDir})
 
-target_link_libraries(${projName} ${exampleLDFlags} ${LDFLAGS})
+target_link_libraries(${projName} ${exampleLDFlags} ${LDFLAGS} ${gen_projName})
 set_target_properties(${projName}
     PROPERTIES
     CXX_STANDARD ${exampleCXXStandard}

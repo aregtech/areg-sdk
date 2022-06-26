@@ -58,11 +58,11 @@ set(ProjOutputDir "${AregRoot}/${UserDefOutput}/${ProjBuildPath}")
 
 set(ProjGenDir "${AregRoot}/${UserDefOutput}/generate")
 
-set(ProObjDir "${ProjOutputDir}/obj")
+set(ProjObjDir "${ProjOutputDir}/obj")
 
-set(ProLibDir "${ProjOutputDir}/lib")
+set(ProjLibDir "${ProjOutputDir}/lib")
 
-set(ProBinDir "${ProjOutputDir}/bin")
+set(ProjBinDir "${ProjOutputDir}/bin")
 
 
 set(ProjIncludes "${ProjIncludes} -I${AregInclude}")
