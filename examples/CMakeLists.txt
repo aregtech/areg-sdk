@@ -51,6 +51,7 @@ include(${AREG_EXAMPLES}/10_locsvc/CMakeLists.txt)
 include(${AREG_EXAMPLES}/11_locmesh/CMakeLists.txt)
 include(${AREG_EXAMPLES}/12_pubsvc/CMakeLists.txt)
 include(${AREG_EXAMPLES}/13_pubmesh/CMakeLists.txt)
+include(${AREG_EXAMPLES}/14_pubtraffic/CMakeLists.txt)
 
 
 # Iterating over fileList and extract each source file,
