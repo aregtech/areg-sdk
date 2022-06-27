@@ -9,8 +9,6 @@ set(projName 10_locsvc_locservice)
 
 set(10_locsvc_BASE ${AREG_EXAMPLES}/10_locsvc)
 
-include_directories(${AREG_EXAMPLES}/10_locsvc)
-
 # Filling SRCs up
 include(${10_locsvc_BASE}/generated/CMakeLists.txt)
 include(${AREG_EXAMPLES}/10_locsvc/locservice/CMakeLists.txt)
@@ -23,3 +21,6 @@ setopt(${projName})
 setLibOpt(${gen_projName} ${10_generated_SRC})
 
 target_link_libraries(${projName} ${gen_projName})
+
+target_include_directories(${gen_projName} BEFORE PRIVATE ${10_locsvc_BASE})
+target_include_directories(${projName} BEFORE PRIVATE ${10_locsvc_BASE})
