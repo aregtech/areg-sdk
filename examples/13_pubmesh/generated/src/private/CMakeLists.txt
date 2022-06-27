@@ -1,0 +1,23 @@
+list(APPEND generated_SRC
+${subProjDir}/LocalHelloWorldClientBase.cpp
+${subProjDir}/LocalHelloWorldEvents.cpp
+${subProjDir}/LocalHelloWorldProxy.cpp
+${subProjDir}/LocalHelloWorldStub.cpp
+${subProjDir}/LocalServiceClient.cpp
+${subProjDir}/LocalServicingComponent.cpp
+${subProjDir}/MainRemoteServiceClient.cpp
+${subProjDir}/MainServicingComponent.cpp
+${subProjDir}/NELocalHelloWorld.cpp
+${subProjDir}/NERemoteRegistry.cpp
+${subProjDir}/NESystemShutdown.cpp
+${subProjDir}/RemoteRegistryClientBase.cpp
+${subProjDir}/RemoteRegistryEvents.cpp
+${subProjDir}/RemoteRegistryProxy.cpp
+${subProjDir}/RemoteRegistryStub.cpp
+${subProjDir}/RemoteServiceClient.cpp
+${subProjDir}/RemoteServicingComponent.cpp
+${subProjDir}/SystemShutdownClientBase.cpp
+${subProjDir}/SystemShutdownEvents.cpp
+${subProjDir}/SystemShutdownProxy.cpp
+${subProjDir}/SystemShutdownStub.cpp
+)
