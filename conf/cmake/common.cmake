@@ -79,3 +79,14 @@ endif()
 # Examples LD flags (-l is not necessary)
 list(APPEND exampleLDFlags areg m  stdc++ rt pthread)
 set(exampleCXXStandard "17")
+
+# Adding areg/product directory for clean-up
+set_property(
+    DIRECTORY
+    APPEND
+    PROPERTY ADDITIONAL_CLEAN_FILES ${ProjOutputDir}
+)
+# Setting output directories
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${ProjLibDir})
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${ProjBinDir})
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${ProjBinDir})
