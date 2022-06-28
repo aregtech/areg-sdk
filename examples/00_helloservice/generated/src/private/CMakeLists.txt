@@ -1,4 +1,4 @@
-list(APPEND generated_SRC
+list(APPEND 00_generated_SRC
     ${subProjDir}/HelloServiceClientBase.cpp
     ${subProjDir}/HelloServiceEvents.cpp
     ${subProjDir}/HelloServiceProxy.cpp
