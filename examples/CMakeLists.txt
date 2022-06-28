@@ -1,10 +1,13 @@
 # Compile Options
-set(CompileOptShared "Wl,-rpath=${AREG_OUTPUT_BIN} -L ${AREG_OUTPUT_BIN}")
+set(CompileOptShared "-Wl,-rpath=${AREG_OUTPUT_BIN} -L ${AREG_OUTPUT_BIN}")
 set(CompileOptStatic "-L ${AREG_OUTPUT_LIB} -Wl,-Bstatic -Wl,-Bdynamic")
 
+# This function will be used for all targets which created by add_executable(),
+# to set proper compile options and linkage flags
 function(setOpt item)
-	# including specific flags to each target.
-	if($(AREG_BINARY) MATCHES "shared")
+
+	# Adding compile options to target in respect to ${AREG_BINARY}
+	if(AREG_BINARY MATCHES shared)
 		target_compile_definitions(${item} PRIVATE IMP_AREG_DLL)
 		target_compile_options(${item} PRIVATE ${CompileOptShared})
 	else()
@@ -12,8 +15,10 @@ function(setOpt item)
 		target_compile_options(${item} PRIVATE ${CompileOptStatic})
 	endif()
 
-	# -l options for compiler
+	# Linking flags
 	target_link_libraries(${item} ${exampleLDFlags} ${LDFLAGS})
+
+	# Adjusting CPP standard for target
 	set_target_properties(${item}
 		PROPERTIES
 		CXX_STANDARD ${exampleCXXStandard}
@@ -22,7 +27,9 @@ function(setOpt item)
 endfunction(setOpt item)
 
 function(setLibOpt item)
-	if($(AREG_BINARY) MATCHES "shared")
+
+	# Setting libxxx properties (static or shared)
+	if(AREG_BINARY MATCHES shared)
 		add_library(${item} SHARED ${ARGN})
 		set_property(TARGET ${item} PROPERTY LIBRARY_OUTPUT_DIRECTORY ${ProjBinDir})
 	else()
@@ -30,11 +37,12 @@ function(setLibOpt item)
 		set_property(TARGET ${item} PROPERTY ARCHIVE_OUTPUT_DIRECTORY ${ProjLibDir})
 	endif()
 
+	# Adjusting CPP standard for target
 	set_property(TARGET ${item} PROPERTY CXX_STANDARD 17)
 
 endfunction(setLibOpt item)
 
-# Add examples here in this list
+# Examples which has similar building structure
 list(APPEND fileList
 	01_hello
 	02_buffer
@@ -47,6 +55,7 @@ list(APPEND fileList
 	09_svcmulti
 )
 
+# Examples with specific design must be included one by one.
 include(${AREG_EXAMPLES}/00_helloservice/CMakeLists.txt)
 include(${AREG_EXAMPLES}/10_locsvc/CMakeLists.txt)
 include(${AREG_EXAMPLES}/11_locmesh/CMakeLists.txt)
