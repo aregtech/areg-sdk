@@ -1,6 +1,6 @@
 # SRC lists
+unset(generated_SRC)
 unset(SRC)
-unset(11_generated_SRC)
 
 # Project names
 set(gen_projName 11_generated)
@@ -16,7 +16,7 @@ include(${11_locmesh_BASE}/locsvcmesh/CMakeLists.txt)
 add_executable(${projName} ${SRC})
 
 # Setting up appropriate flags
-setLibOpt(${gen_projName} ${11_generated_SRC})
+setLibOpt(${gen_projName} ${generated_SRC})
 setopt(${projName})
 
 target_link_libraries(${projName} ${gen_projName})

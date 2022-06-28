@@ -1,11 +1,10 @@
-
 # SRC lists
+unset(generated_SRC)
 unset(SRC)
-unset(10_generated_SRC)
 
 # Project names
 set(gen_projName 10_generated)
-set(projName 10_locsvc_locservice)
+set(projName 10_locservice)
 
 set(10_locsvc_BASE ${AREG_EXAMPLES}/10_locsvc)
 
@@ -18,7 +17,7 @@ add_executable(${projName} ${SRC})
 
 # Setting up appropriate flags
 setopt(${projName})
-setLibOpt(${gen_projName} ${10_generated_SRC})
+setLibOpt(${gen_projName} ${generated_SRC})
 
 target_link_libraries(${projName} ${gen_projName})
 
