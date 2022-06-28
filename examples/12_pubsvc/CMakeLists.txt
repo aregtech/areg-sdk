@@ -1,7 +1,7 @@
 # SRC lists
-unset(generated_SRC)
-unset(SRC1)
-unset(SRC2)
+unset(12_generated_SRC)
+unset(12_SRC1)
+unset(12_SRC2)
 
 # Project names
 set(gen_projName 12_generated)
@@ -14,13 +14,13 @@ include(${12_pubsvc_BASE}/generated/CMakeLists.txt)
 include(${12_pubsvc_BASE}/pubclient/CMakeLists.txt)
 include(${12_pubsvc_BASE}/pubservice/CMakeLists.txt)
 
-add_executable(${projName1} ${SRC1})
-add_executable(${projName2} ${SRC2})
+add_executable(${projName1} ${12_SRC1})
+add_executable(${projName2} ${12_SRC2})
 
 # Setting up appropriate flags
-setLibOpt(${gen_projName} ${generated_SRC})
-setopt(${projName1})
-setopt(${projName2})
+setLibOpt(${gen_projName} ${12_generated_SRC})
+setOpt(${projName1})
+setOpt(${projName2})
 
 target_include_directories(${gen_projName} BEFORE PRIVATE ${12_pubsvc_BASE})
 target_include_directories(${projName1} BEFORE PRIVATE ${12_pubsvc_BASE})

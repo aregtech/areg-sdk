@@ -1,4 +1,4 @@
-list(APPEND SRC
+list(APPEND 11_SRC
     ${subProjDir}/main.cpp
     ${subProjDir}/ServicingComponent.cpp
     ${subProjDir}/ServiceClient.cpp

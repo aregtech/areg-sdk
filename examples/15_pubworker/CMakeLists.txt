@@ -1,7 +1,7 @@
 # SRC lists
-unset(generated_SRC)
-unset(SRC1)
-unset(SRC2)
+unset(15_generated_SRC)
+unset(15_SRC1)
+unset(15_SRC2)
 
 # Project names
 set(gen_projName 15_generated)
@@ -14,13 +14,13 @@ include(${15_pubworker_BASE}/generated/CMakeLists.txt)
 include(${15_pubworker_BASE}/pubclient/CMakeLists.txt)
 include(${15_pubworker_BASE}/pubservice/CMakeLists.txt)
 
-add_executable(${projName1} ${SRC1})
-add_executable(${projName2} ${SRC2})
+add_executable(${projName1} ${15_SRC1})
+add_executable(${projName2} ${15_SRC2})
 
 # Setting up appropriate flags
-setLibOpt(${gen_projName} ${generated_SRC})
-setopt(${projName1})
-setopt(${projName2})
+setLibOpt(${gen_projName} ${15_generated_SRC})
+setOpt(${projName1})
+setOpt(${projName2})
 
 target_link_libraries(${projName1} ${gen_projName})
 target_link_libraries(${projName2} ${gen_projName})

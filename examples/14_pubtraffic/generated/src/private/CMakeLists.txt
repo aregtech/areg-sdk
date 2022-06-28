@@ -1,4 +1,4 @@
-list(APPEND generated_SRC
+list(APPEND 14_generated_SRC
     ${subProjDir}/NESimpleTrafficLight.cpp
     ${subProjDir}/NESimpleTrafficSwitch.cpp
     ${subProjDir}/SimpleTrafficLightClientBase.cpp

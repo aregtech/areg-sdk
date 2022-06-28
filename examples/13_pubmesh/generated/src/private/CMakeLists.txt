@@ -1,4 +1,4 @@
-list(APPEND generated_SRC
+list(APPEND 13_generated_SRC
 ${subProjDir}/LocalHelloWorldClientBase.cpp
 ${subProjDir}/LocalHelloWorldEvents.cpp
 ${subProjDir}/LocalHelloWorldProxy.cpp

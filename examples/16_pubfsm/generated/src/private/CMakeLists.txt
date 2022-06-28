@@ -1,4 +1,4 @@
-list(APPEND generated_SRC
+list(APPEND 16_generated_SRC
     ${subProjDir}/IETrafficLightActionHandler.cpp
     ${subProjDir}/NEPowerManager.cpp
     ${subProjDir}/NETrafficController.cpp

@@ -1,6 +1,6 @@
 # SRC lists
-unset(generated_SRC)
-unset(SRC)
+unset(10_generated_SRC)
+unset(10_SRC)
 
 # Project names
 set(gen_projName 10_generated)
@@ -13,11 +13,11 @@ include(${10_locsvc_BASE}/generated/CMakeLists.txt)
 include(${AREG_EXAMPLES}/10_locsvc/locservice/CMakeLists.txt)
 
 # Adding targets
-add_executable(${projName} ${SRC})
+add_executable(${projName} ${10_SRC})
 
 # Setting up appropriate flags
-setopt(${projName})
-setLibOpt(${gen_projName} ${generated_SRC})
+setOpt(${projName})
+setLibOpt(${gen_projName} ${10_generated_SRC})
 
 target_link_libraries(${projName} ${gen_projName})
 
