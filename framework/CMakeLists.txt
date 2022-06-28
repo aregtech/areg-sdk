@@ -9,7 +9,6 @@ else()
 endif()
 # Library configs
 set_property(TARGET areg PROPERTY CXX_STANDARD 17)
-set_property(TARGET areg PROPERTY LIBRARY_OUTPUT_DIRECTORY ${ProBinDir})
 
 # Adding  source files to a single executable.
 set(EXE mcrouter${AREG_BIN_EXT})
