@@ -1,0 +1,1 @@
+include(${subProjDir}/CMakeLists.txt)
