@@ -65,10 +65,8 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // TraceManager::TraceScopeMap class declaration
 //////////////////////////////////////////////////////////////////////////
-    //!< Scope hash map helper
-    using ImplMapTraceScope	= TEHashMapImpl<unsigned int, TraceScope *>;
     //!< Scope hash map
-    using MapTraceScope     = TEHashMap<unsigned int, TraceScope *, ImplMapTraceScope>;
+    using MapTraceScope     = TEHashMap<unsigned int, TraceScope *>;
     //!< Scope resource map helper
     using ImplTraceScope    = TEResourceMapImpl<unsigned int, TraceScope>;
     /**

@@ -30,12 +30,12 @@
 /************************************************************************
  * Hierarchies. Following class are declared.
  ************************************************************************/
-template <typename VALUE, typename VALUE_TYPE, class Compare> class TERingStack;
-    template <typename VALUE, typename VALUE_TYPE, class Compare> class TELockRingStack;
-    template <typename VALUE, typename VALUE_TYPE, class Compare> class TENolockRingStack;
+template <typename VALUE> class TERingStack;
+    template <typename VALUE> class TELockRingStack;
+    template <typename VALUE> class TENolockRingStack;
 
 //////////////////////////////////////////////////////////////////////////
-// TEStack<VALUE, VALUE_TYPE, Compare> class template declaration
+// TEStack<VALUE> class template declaration
 //////////////////////////////////////////////////////////////////////////
 /**
  * \brief   Ring FIFO Stack base object to queue elements, insert and access 
@@ -45,7 +45,7 @@ template <typename VALUE, typename VALUE_TYPE, class Compare> class TERingStack;
  * 
  *          The capacity might be changed depending on overlapping flag. 
  *          If ring stack is full, whether the capacity remains same or not,
- *          whether new element is pushed or not, depends on overlappin flag.
+ *          whether new element is pushed or not, depends on overlapping flag.
  *          For more details of capacity flag see NECommon::eRingOverlap 
  *          description. In Ring Stack the start and end position might point
  *          any index withing stack, but they cannot be more than capacity value.
@@ -57,12 +57,9 @@ template <typename VALUE, typename VALUE_TYPE, class Compare> class TERingStack;
  * \tparam  VALUE       The type of stored items. Either should be 
  *                      primitive or should have default constructor 
  *                      and valid assigning operator. Also, should be 
- *                      possible to convert to type VALUE_TYPE.
- * \tparam  VALUE_TYPE  By default same as VALUE, but can be any other
- *                      type, which is converted from type VALUE.
- * \tparam  Compare     Contains implementation of method to compare 2 elements.
+ *                      possible to convert to type const VALUE&.
  **/
-template <typename VALUE, typename VALUE_TYPE = VALUE, class Compare = TEListImpl<VALUE_TYPE>>
+template <typename VALUE>
 class TERingStack
 {
 //////////////////////////////////////////////////////////////////////////
@@ -72,7 +69,7 @@ public:
     /**
      * \brief   Ring Stack initialization. Gets instance of synchronization object,
      *          initial capacity value and the overlapping flag, used when
-     *          ring stack is full and new element sould be pushed.
+     *          ring stack is full and new element should be pushed.
      * \param   synchObject     Reference to synchronization object.
      * \param   initCapacity    The initial capacity size of ring stack.
      * \param   onOverlap       Overlapping flag, used when ring stack is full and 
@@ -96,7 +93,7 @@ public:
      * \param   source  The source of ring stack entries to get entries.
      * \return  Returns ring stack object
      **/
-    TERingStack<VALUE, VALUE_TYPE, Compare> & operator = ( const TERingStack<VALUE, VALUE_TYPE, Compare> & source );
+    TERingStack<VALUE> & operator = ( const TERingStack<VALUE> & source );
 
 /************************************************************************/
 // Friend global operators to make Stack streamable
@@ -114,8 +111,8 @@ public:
      * \param   stream  The streaming object for reading values
      * \param   input   The Ring Stack object to save initialized values.
      **/
-    template<typename V, typename VT, class Impl>
-    friend const IEInStream & operator >> ( const IEInStream & stream, TERingStack<V, VT, Impl> & input );
+    template<typename VALUE>
+    friend const IEInStream & operator >> ( const IEInStream & stream, TERingStack<VALUE> & input );
     /**
      * \brief   Writes to the stream Ring Stack values.
      *          The values will be written to the stream starting from head position.
@@ -124,8 +121,8 @@ public:
      * \param   stream  The streaming object to write values
      * \param   input   The Stack object to read out values.
      **/
-    template<typename V, typename VT, class Impl>
-    friend IEOutStream & operator << ( IEOutStream & stream, const TERingStack<V, VT, Impl> & output );
+    template<typename VALUE>
+    friend IEOutStream & operator << ( IEOutStream & stream, const TERingStack<VALUE> & output );
 
 //////////////////////////////////////////////////////////////////////////
 // Operations and Attributes
@@ -180,7 +177,7 @@ public:
      * \param   newElement  New element to set at the end of Ring Stack.
      * \return  Returns size of stack.
      **/
-    int pushLast( VALUE_TYPE newElement );
+    int pushLast( const VALUE& newElement );
 
     /**
      * \brief   Sets element at the head of ring stack that on pop call, the element will be
@@ -194,7 +191,7 @@ public:
      * \param   newElement  New element to set at the head of stack.
      * \return  Returns size of stack.
      **/
-    int pushFirst( VALUE_TYPE newElement );
+    int pushFirst( const VALUE& newElement );
 
     /**
      * \brief   Removes element from head and returns value, decreases number of element by one.
@@ -216,7 +213,7 @@ public:
      *          1.  If overlap flag is StopOnOverlap, the elements will be copied until the stack is not full.
      *              When stack is full, no more elements will be copied.
      *          2.  If overlap flag is ShiftOnOverlap, the element will be copied until the stack is not full.
-     *              Then the elements will be set by removing head of of stack until all elements from given source
+     *              Then the elements will be set by removing head of stack until all elements from given source
      *              are not copied. The capacity of stack will remain unchanged. If during copying stack is full,
      *              the elements at head are lost.
      *          3.  If overlap flag is ResizeOnOvelap and if elements in source are bigger than capacity of stack,
@@ -226,7 +223,7 @@ public:
      * \return  Returns number of elements copied in to the stack. The number of copied elements and elements in stack
      *          might differ depending on overlapping flag.
      **/
-    int copy( const TERingStack<VALUE, VALUE_TYPE, Compare> & source );
+    int copy( const TERingStack<VALUE> & source );
 
     /**
      * \brief   Resizes the capacity of stack. The operation will copy saved elements if 
@@ -250,22 +247,7 @@ public:
      * \return  If found element, returns valid position (index).
      *          Otherwise, it returns NECommon::INVALID_INDEX.
      **/
-    int find(VALUE_TYPE elem, int startAt = NECommon::RING_START_POSITION) const;
-
-//////////////////////////////////////////////////////////////////////////
-// Protected methods
-//////////////////////////////////////////////////////////////////////////
-protected:
-
-    /**
-     * \brief   Compares and returns true if 2 values are equal.
-     *          Specify own implEqualValues() method of TEListImpl
-     *          class template for custom comparing method.
-     * \param   Value1  Left-side value to compare.
-     * \param   Value2  Right-side value to compare.
-     * \return  Returns true if 2 value are equal.
-     **/
-    inline bool isEqualValues(VALUE_TYPE Value1, VALUE_TYPE Value2) const;
+    int find(const VALUE& elem, int startAt = NECommon::RING_START_POSITION) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -306,10 +288,6 @@ protected:
      * \brief   The index of tail element in array of stack
      **/
     int                     mLastPosition;
-    /**
-     * \brief   Instance of helper object to compare values
-     **/
-    Compare                 mHelper;
 
 //////////////////////////////////////////////////////////////////////////
 // private methods
@@ -327,13 +305,13 @@ private:
 //////////////////////////////////////////////////////////////////////////
 private:
     TERingStack( void ) = delete;
-    TERingStack( const TERingStack<VALUE, VALUE_TYPE, Compare> & /*src*/ ) = delete;
-    TERingStack( TERingStack<VALUE, VALUE_TYPE, Compare> && /*src*/ ) noexcept = delete;
-    TERingStack<VALUE, VALUE_TYPE, Compare> & operator = ( TERingStack<VALUE, VALUE_TYPE, Compare> && /*src*/ ) noexcept = delete;
+    TERingStack( const TERingStack<VALUE> & /*src*/ ) = delete;
+    TERingStack( TERingStack<VALUE> && /*src*/ ) noexcept = delete;
+    TERingStack<VALUE> & operator = ( TERingStack<VALUE> && /*src*/ ) noexcept = delete;
 };
 
 //////////////////////////////////////////////////////////////////////////
-// TELockRingStack<VALUE, VALUE_TYPE, Compare> class template declaration
+// TELockRingStack<VALUE> class template declaration
 //////////////////////////////////////////////////////////////////////////
 /**
  * \brief       Thread safe FIFO ring stack class template declaration.
@@ -343,13 +321,10 @@ private:
  * \tparam  VALUE       The type of stored elements. Either should be
  *                      primitive or should have default constructor
  *                      and valid assigning operator. Also, should be
- *                      possible to convert to type VALUE_TYPE.
- * \tparam  VALUE_TYPE  By default same as VALUE, but can be any other
- *                      type, which is converted from type VALUE.
- * \tparam  Compare     Contains implementation of method to compare 2 elements.
+ *                      possible to convert to type const VALUE&.
  **/
-template <typename VALUE, typename VALUE_TYPE = VALUE, class Compare = TEListImpl<VALUE_TYPE>> 
-class TELockRingStack  : public TERingStack<VALUE, VALUE_TYPE, Compare>
+template <typename VALUE> 
+class TELockRingStack  : public TERingStack<VALUE>
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -368,7 +343,7 @@ public:
      * \brief   Copy constructor.
      * \param   source  The source to copy data.
      **/
-    TELockRingStack( const TERingStack<VALUE, VALUE_TYPE, Compare> & source );
+    TELockRingStack( const TERingStack<VALUE> & source );
 
     /**
      * \brief   Destructor
@@ -385,7 +360,7 @@ public:
      * \param   source  The source of ring stack entries to get entries.
      * \return  Returns ring stack object
      **/
-    inline TELockRingStack<VALUE, VALUE_TYPE, Compare> & operator = ( const TERingStack<VALUE, VALUE_TYPE, Compare> & source );
+    inline TELockRingStack<VALUE> & operator = ( const TERingStack<VALUE> & source );
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -404,7 +379,7 @@ private:
 };
 
 //////////////////////////////////////////////////////////////////////////
-// TENolockRingStack<VALUE, VALUE_TYPE, Compare> class template declaration
+// TENolockRingStack<VALUE> class template declaration
 //////////////////////////////////////////////////////////////////////////
 /**
  * \brief   No blocking FIFO ring stack class template declaration.
@@ -415,13 +390,10 @@ private:
  * \tparam  VALUE       The type of stored items. Either should be
  *                      primitive or should have default constructor
  *                      and valid assigning operator. Also, should be
- *                      possible to convert to type VALUE_TYPE.
- * \tparam  VALUE_TYPE  By default same as VALUE, but can be any other
- *                      type, which is converted from type VALUE.
- * \tparam  Compare     Contains implementation of method to compare 2 elements.
+ *                      possible to convert to type const VALUE&.
  **/
-template <typename VALUE, typename VALUE_TYPE = VALUE, class Compare = TEListImpl<VALUE_TYPE>> 
-class TENolockRingStack    : public TERingStack<VALUE, VALUE_TYPE, Compare>
+template <typename VALUE> 
+class TENolockRingStack    : public TERingStack<VALUE>
 {
 public:
     /**
@@ -437,7 +409,7 @@ public:
      * \brief   Copy constructor.
      * \param   source  The source to copy data.
      **/
-    TENolockRingStack( const TERingStack<VALUE, VALUE_TYPE, Compare> & source );
+    TENolockRingStack( const TERingStack<VALUE> & source );
 
     /**
      * \brief   Destructor
@@ -454,7 +426,7 @@ public:
      * \param   source  The source of ring stack entries to get entries.
      * \return  Returns ring stack object
      **/
-    inline TENolockRingStack<VALUE, VALUE_TYPE, Compare> & operator = ( const TERingStack<VALUE, VALUE_TYPE, Compare> & source );
+    inline TENolockRingStack<VALUE> & operator = ( const TERingStack<VALUE> & source );
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -477,10 +449,10 @@ private:
 //////////////////////////////////////////////////////////////////////////
 
 //////////////////////////////////////////////////////////////////////////
-// TERingStack<VALUE, VALUE_TYPE, Compare> class template implementation
+// TERingStack<VALUE> class template implementation
 //////////////////////////////////////////////////////////////////////////
-template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Compare /*= TEListImpl<VALUE_TYPE>*/>
-TERingStack<VALUE, VALUE_TYPE, Compare>::TERingStack( IEResourceLock & synchObject, int initCapacity /*= 0*/, NECommon::eRingOverlap onOverlap /*= NECommon::eRingOverlap::StopOnOverlap*/ )
+template <typename VALUE>
+TERingStack<VALUE>::TERingStack( IEResourceLock & synchObject, int initCapacity /*= 0*/, NECommon::eRingOverlap onOverlap /*= NECommon::eRingOverlap::StopOnOverlap*/ )
     : mSynchObject  ( synchObject )
     , mOnOverlap    ( onOverlap )
     , mStackList    ( nullptr )
@@ -488,7 +460,6 @@ TERingStack<VALUE, VALUE_TYPE, Compare>::TERingStack( IEResourceLock & synchObje
     , mCapacity     ( 0 )
     , mStartPosition( 0 )
     , mLastPosition ( 0 )
-    , mHelper       ( )
 {
     if ( initCapacity > 0 )
     {
@@ -497,23 +468,18 @@ TERingStack<VALUE, VALUE_TYPE, Compare>::TERingStack( IEResourceLock & synchObje
     }
 }
 
-template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Compare /*= TEListImpl<VALUE_TYPE>*/>
-TERingStack<VALUE, VALUE_TYPE, Compare>::~TERingStack( void )
+template <typename VALUE>
+TERingStack<VALUE>::~TERingStack( void )
 {
     _emptyStack();
-
-    if ( mStackList != nullptr )
-    {
-        delete[] reinterpret_cast<unsigned char *>(mStackList);
-    }
-
+    delete[] reinterpret_cast<unsigned char*>(mStackList);
     mStackList = nullptr;
 }
 
-template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Compare /*= TEListImpl<VALUE_TYPE>*/>
-TERingStack<VALUE, VALUE_TYPE, Compare> & TERingStack<VALUE, VALUE_TYPE, Compare>::operator = ( const TERingStack<VALUE, VALUE_TYPE, Compare> & source )
+template <typename VALUE>
+TERingStack<VALUE> & TERingStack<VALUE>::operator = ( const TERingStack<VALUE> & source )
 {
-    if (static_cast<const TERingStack<VALUE, VALUE_TYPE, Compare> *>(this) != &source)
+    if (static_cast<const TERingStack<VALUE> *>(this) != &source)
     {
         Lock lock(mSynchObject);
 
@@ -537,55 +503,55 @@ TERingStack<VALUE, VALUE_TYPE, Compare> & TERingStack<VALUE, VALUE_TYPE, Compare
     return (*this);
 }
 
-template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Compare /*= TEListImpl<VALUE_TYPE>*/>
-inline int TERingStack<VALUE, VALUE_TYPE, Compare>::getSize( void ) const
+template <typename VALUE>
+inline int TERingStack<VALUE>::getSize( void ) const
 {
     Lock lock( mSynchObject );
     return mElemCount;
 }
 
-template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Compare /*= TEListImpl<VALUE_TYPE>*/>
-inline bool TERingStack<VALUE, VALUE_TYPE, Compare>::isEmpty( void ) const
+template <typename VALUE>
+inline bool TERingStack<VALUE>::isEmpty( void ) const
 {
     Lock lock( mSynchObject );
     return (mElemCount == 0);
 }
 
-template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Compare /*= TEListImpl<VALUE_TYPE>*/>
-inline bool TERingStack<VALUE, VALUE_TYPE, Compare>::lock( void ) const
+template <typename VALUE>
+inline bool TERingStack<VALUE>::lock( void ) const
 {
     return mSynchObject.lock(NECommon::WAIT_INFINITE);
 }
 
-template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Compare /*= TEListImpl<VALUE_TYPE>*/>
-inline bool TERingStack<VALUE, VALUE_TYPE, Compare>::unlock( void ) const
+template <typename VALUE>
+inline bool TERingStack<VALUE>::unlock( void ) const
 {
     return mSynchObject.unlock();
 }
 
-template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Compare /*= TEListImpl<VALUE_TYPE>*/>
-inline int TERingStack<VALUE, VALUE_TYPE, Compare>::capacity( void ) const
+template <typename VALUE>
+inline int TERingStack<VALUE>::capacity( void ) const
 {
     Lock lock(mSynchObject);
     return mCapacity;
 }
 
-template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Compare /*= TEListImpl<VALUE_TYPE>*/>
-inline bool TERingStack<VALUE, VALUE_TYPE, Compare>::isFull( void ) const
+template <typename VALUE>
+inline bool TERingStack<VALUE>::isFull( void ) const
 {
     Lock lock(mSynchObject);
     return (mElemCount == mCapacity);
 }
 
-template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Compare /*= TEListImpl<VALUE_TYPE>*/>
-void TERingStack<VALUE, VALUE_TYPE, Compare>::clear( void )
+template <typename VALUE>
+void TERingStack<VALUE>::clear( void )
 {
     Lock lock(mSynchObject);
     _emptyStack();
 }
 
-template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Compare /*= TEListImpl<VALUE_TYPE>*/>
-int TERingStack<VALUE, VALUE_TYPE, Compare>::pushLast( VALUE_TYPE newElement )
+template <typename VALUE>
+int TERingStack<VALUE>::pushLast( const VALUE& newElement )
 {
     Lock lock(mSynchObject);
 
@@ -648,8 +614,8 @@ int TERingStack<VALUE, VALUE_TYPE, Compare>::pushLast( VALUE_TYPE newElement )
     return mElemCount;
 }
 
-template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Compare /*= TEListImpl<VALUE_TYPE>*/>
-int TERingStack<VALUE, VALUE_TYPE, Compare>::pushFirst( VALUE_TYPE newElement )
+template <typename VALUE>
+int TERingStack<VALUE>::pushFirst( const VALUE& newElement )
 {
     Lock lock(mSynchObject);
 
@@ -714,8 +680,8 @@ int TERingStack<VALUE, VALUE_TYPE, Compare>::pushFirst( VALUE_TYPE newElement )
     return mElemCount;
 }
 
-template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Compare /*= TEListImpl<VALUE_TYPE>*/>
-VALUE TERingStack<VALUE, VALUE_TYPE, Compare>::popFirst( void )
+template <typename VALUE>
+VALUE TERingStack<VALUE>::popFirst( void )
 {
     Lock lock(mSynchObject);
     ASSERT( isEmpty() == false );
@@ -740,12 +706,12 @@ VALUE TERingStack<VALUE, VALUE_TYPE, Compare>::popFirst( void )
     return result;
 }
 
-template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Compare /*= TEListImpl<VALUE_TYPE>*/>
-int TERingStack<VALUE, VALUE_TYPE, Compare>::copy( const TERingStack<VALUE, VALUE_TYPE, Compare> & source )
+template <typename VALUE>
+int TERingStack<VALUE>::copy( const TERingStack<VALUE> & source )
 {
     Lock lock(mSynchObject);
     int result = 0;
-    if ( static_cast<const TERingStack<VALUE, VALUE_TYPE, Compare> *>(this) != &source )
+    if ( static_cast<const TERingStack<VALUE> *>(this) != &source )
     {
         Lock lock2(source.mSynchObject);
 
@@ -823,8 +789,8 @@ int TERingStack<VALUE, VALUE_TYPE, Compare>::copy( const TERingStack<VALUE, VALU
     return result;
 }
 
-template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Compare /*= TEListImpl<VALUE_TYPE>*/>
-int TERingStack<VALUE, VALUE_TYPE, Compare>::resize( int newCapacity )
+template <typename VALUE>
+int TERingStack<VALUE>::resize( int newCapacity )
 {
     Lock lock(mSynchObject);
 
@@ -861,8 +827,8 @@ int TERingStack<VALUE, VALUE_TYPE, Compare>::resize( int newCapacity )
     return mCapacity;
 }
 
-template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Compare /*= TEListImpl<VALUE_TYPE>*/>
-int TERingStack<VALUE, VALUE_TYPE, Compare>::find(VALUE_TYPE elem, int startAt /*= NECommon::RING_START_POSITION*/) const
+template <typename VALUE>
+int TERingStack<VALUE>::find(const VALUE& elem, int startAt /*= NECommon::RING_START_POSITION*/) const
 {
     Lock lock(mSynchObject);
 
@@ -872,7 +838,7 @@ int TERingStack<VALUE, VALUE_TYPE, Compare>::find(VALUE_TYPE elem, int startAt /
     {
         while (pos <= mLastPosition)
         {
-            if (isEqualValues(elem, mStackList[pos]))
+            if (elem == mStackList[pos])
             {
                 result = pos;
                 break;
@@ -885,7 +851,7 @@ int TERingStack<VALUE, VALUE_TYPE, Compare>::find(VALUE_TYPE elem, int startAt /
     {
         while (pos < mElemCount)
         {
-            if (isEqualValues(elem, mStackList[pos]))
+            if (elem == mStackList[pos])
             {
                 result = pos;
                 break;
@@ -899,7 +865,7 @@ int TERingStack<VALUE, VALUE_TYPE, Compare>::find(VALUE_TYPE elem, int startAt /
             pos = 0;
             while (pos <= mLastPosition)
             {
-                if (isEqualValues(elem, mStackList[pos]))
+                if (elem == mStackList[pos])
                 {
                     result = pos;
                     break;
@@ -913,14 +879,8 @@ int TERingStack<VALUE, VALUE_TYPE, Compare>::find(VALUE_TYPE elem, int startAt /
     return result;
 }
 
-template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Compare /*= TEListImpl<VALUE_TYPE>*/>
-inline bool TERingStack<VALUE, VALUE_TYPE, Compare>::isEqualValues(VALUE_TYPE Value1, VALUE_TYPE Value2) const
-{
-    return mHelper.implEqualVales(Value1, Value2);
-}
-
-template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Compare /*= TEListImpl<VALUE_TYPE>*/>
-void TERingStack<VALUE, VALUE_TYPE, Compare>::_emptyStack( void )
+template <typename VALUE>
+void TERingStack<VALUE>::_emptyStack( void )
 {
     // do not delete stack, only remove elements and reset data.
     // keep capacity same
@@ -939,59 +899,59 @@ void TERingStack<VALUE, VALUE_TYPE, Compare>::_emptyStack( void )
 }
 
 //////////////////////////////////////////////////////////////////////////
-// TELockRingStack<VALUE, VALUE_TYPE, Compare> class template implementation
+// TELockRingStack<VALUE> class template implementation
 //////////////////////////////////////////////////////////////////////////
-template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Compare /*= TEListImpl<VALUE_TYPE>*/>
-TELockRingStack<VALUE, VALUE_TYPE, Compare>::TELockRingStack( int initCapacity /*= 0*/, NECommon::eRingOverlap onOverlap /*= NECommon::eRingOverlap::StopOnOverlap*/ )
-    : TERingStack<VALUE, VALUE_TYPE, Compare>    ( mLock, initCapacity, onOverlap )
+template <typename VALUE>
+TELockRingStack<VALUE>::TELockRingStack( int initCapacity /*= 0*/, NECommon::eRingOverlap onOverlap /*= NECommon::eRingOverlap::StopOnOverlap*/ )
+    : TERingStack<VALUE>    ( mLock, initCapacity, onOverlap )
     , mLock ( false )
 {
 }
 
-template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Compare /*= TEListImpl<VALUE_TYPE>*/>
-TELockRingStack<VALUE, VALUE_TYPE, Compare>::TELockRingStack( const TERingStack<VALUE, VALUE_TYPE, Compare> & source )
-    : TERingStack<VALUE, VALUE_TYPE, Compare>    ( mLock, source )
+template <typename VALUE>
+TELockRingStack<VALUE>::TELockRingStack( const TERingStack<VALUE> & source )
+    : TERingStack<VALUE>    ( mLock, source )
     , mLock ( false )
 {
 }
 
-template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Compare /*= TEListImpl<VALUE_TYPE>*/>
-inline TELockRingStack<VALUE, VALUE_TYPE, Compare> & TELockRingStack<VALUE, VALUE_TYPE, Compare>::operator = ( const TERingStack<VALUE, VALUE_TYPE, Compare> & source )
+template <typename VALUE>
+inline TELockRingStack<VALUE> & TELockRingStack<VALUE>::operator = ( const TERingStack<VALUE> & source )
 {
-    static_cast<TERingStack<VALUE, VALUE_TYPE, Compare> &>(*this) = source;
+    static_cast<TERingStack<VALUE> &>(*this) = source;
     return (*this);
 }
 
 //////////////////////////////////////////////////////////////////////////
-// TENolockRingStack<VALUE, VALUE_TYPE, Compare> class template implementation
+// TENolockRingStack<VALUE> class template implementation
 //////////////////////////////////////////////////////////////////////////
-template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Compare /*= TEListImpl<VALUE_TYPE>*/>
-TENolockRingStack<VALUE, VALUE_TYPE, Compare>::TENolockRingStack( int initCapacity /*= 0*/, NECommon::eRingOverlap onOverlap /*= NECommon::eRingOverlap::StopOnOverlap*/ )
-    : TERingStack<VALUE, VALUE_TYPE, Compare>    ( mNoLock, initCapacity, onOverlap )
+template <typename VALUE>
+TENolockRingStack<VALUE>::TENolockRingStack( int initCapacity /*= 0*/, NECommon::eRingOverlap onOverlap /*= NECommon::eRingOverlap::StopOnOverlap*/ )
+    : TERingStack<VALUE>    ( mNoLock, initCapacity, onOverlap )
     , mNoLock   ( )
 {
 }
 
-template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Compare /*= TEListImpl<VALUE_TYPE>*/>
-TENolockRingStack<VALUE, VALUE_TYPE, Compare>::TENolockRingStack( const TERingStack<VALUE, VALUE_TYPE, Compare> & source )
-    : TERingStack<VALUE, VALUE_TYPE, Compare>    ( mNoLock, source )
+template <typename VALUE>
+TENolockRingStack<VALUE>::TENolockRingStack( const TERingStack<VALUE> & source )
+    : TERingStack<VALUE>    ( mNoLock, source )
     , mNoLock   ( )
 {
 }
 
-template <typename VALUE, typename VALUE_TYPE /*= VALUE*/, class Compare /*= TEListImpl<VALUE_TYPE>*/>
-inline TENolockRingStack<VALUE, VALUE_TYPE, Compare> & TENolockRingStack<VALUE, VALUE_TYPE, Compare>::operator = ( const TERingStack<VALUE, VALUE_TYPE, Compare> & source )
+template <typename VALUE>
+inline TENolockRingStack<VALUE> & TENolockRingStack<VALUE>::operator = ( const TERingStack<VALUE> & source )
 {
-    static_cast<TERingStack<VALUE, VALUE_TYPE, Compare> &>(*this) = source;
+    static_cast<TERingStack<VALUE> &>(*this) = source;
     return (*this);
 }
 
 //////////////////////////////////////////////////////////////////////////
-// TERingStack<VALUE, VALUE_TYPE, Compare> class template friend operators
+// TERingStack<VALUE> class template friend operators
 //////////////////////////////////////////////////////////////////////////
 
-template<typename V, typename VT, class Impl>
-const IEInStream & operator >> ( const IEInStream & stream, TERingStack<V, VT, Impl> & input )
+template <typename VALUE>
+const IEInStream & operator >> ( const IEInStream & stream, TERingStack<VALUE> & input )
 {
     Lock lock(input.mSynchObject);
 
@@ -1012,8 +972,8 @@ const IEInStream & operator >> ( const IEInStream & stream, TERingStack<V, VT, I
     return stream;
 }
 
-template<typename V, typename VT, class Impl>
-IEOutStream & operator << ( IEOutStream & stream, const TERingStack<V, VT, Impl> & output )
+template <typename VALUE>
+IEOutStream & operator << ( IEOutStream & stream, const TERingStack<VALUE> & output )
 {
     Lock lock(output.mSynchObject);
 

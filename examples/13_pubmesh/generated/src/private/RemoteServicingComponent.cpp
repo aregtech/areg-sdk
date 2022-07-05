@@ -122,7 +122,8 @@ void RemoteServicingComponent::requestHelloWorld( unsigned int clientID, const S
     if ( list.isValidPosition(pos))
     {
         unsigned int outputs   = getRemainOutputs();
-        printf(">>> REMOTE client [ %s ] says \"!Hello World!\". Remain [ %d ].\n", list.valueAtPosition(pos).crName.getString(), outputs);
+        printf(">>> REMOTE client [ %s ]:\n", list.valueAtPosition(pos).crName.getString());
+        printf("    Says: \"!Hello World!\". Remain [ %d ].\n", outputs);
         if (addMessage.isEmpty() == false)
         {
             printf("\t>>> The additional message: %s.\n", addMessage.getString());

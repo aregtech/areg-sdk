@@ -64,7 +64,7 @@ StreamableEvent * RemoteEventFactory::createEventFromStream( const RemoteMessage
                     eventRequest->setTargetChannel(chTarget);
                     eventRequest->setSourceChannel(chSource);
 
-                    TRACE_DBG("Created event Event::eEventType::EventRemoteServiceRequest for target stub [ %s ] from source proxy [ %s ]."
+                    TRACE_DBG("Created Event::eEventType::EventRemoteServiceRequest for target stub [ %s ] from source proxy [ %s ]."
                                 , StubAddress::convAddressToPath(eventRequest->getTargetStub()).getString()
                                 , ProxyAddress::convAddressToPath(eventRequest->getEventSource()).getString());
                 }
@@ -97,7 +97,7 @@ StreamableEvent * RemoteEventFactory::createEventFromStream( const RemoteMessage
                     eventNotify->setTargetChannel(chTarget);
                     eventNotify->setSourceChannel(chSource);
 
-                    TRACE_DBG("Created event Event::eEventType::EventRemoteNotifyRequest for target stub [ %s ] from source proxy [ %s ]."
+                    TRACE_DBG("Created Event::eEventType::EventRemoteNotifyRequest for target stub [ %s ] from source proxy [ %s ]."
                                 , StubAddress::convAddressToPath(eventNotify->getTargetStub()).getString()
                                 , ProxyAddress::convAddressToPath(eventNotify->getEventSource()).getString());
                 }
@@ -123,7 +123,7 @@ StreamableEvent * RemoteEventFactory::createEventFromStream( const RemoteMessage
                     Channel chTarget( proxy->getProxyAddress().getChannel() );
                     eventResponse->setTargetChannel(chTarget);
 
-                    TRACE_DBG("Created event Event::eEventType::EventRemoteServiceResponse for target proxy [ %s ]."
+                    TRACE_DBG("Created Event::eEventType::EventRemoteServiceResponse for target proxy [ %s ]."
                                 , ProxyAddress::convAddressToPath(eventResponse->getTargetProxy()).getString());
                 }
                 result = static_cast<StreamableEvent *>(eventResponse);

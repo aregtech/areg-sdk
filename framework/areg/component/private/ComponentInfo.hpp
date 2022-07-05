@@ -49,11 +49,6 @@ class AREG_API ComponentInfo
 // Internal class and types
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief   Helper class for worker thread map.
-     **/
-    using _ImplWorkerThreadMap  = TEHashMapImpl<ThreadAddress, WorkerThread *>;
-
     //////////////////////////////////////////////////////////////////////////
     // ComponentInfo::_WorkerThreadMap type declaration
     //////////////////////////////////////////////////////////////////////////
@@ -61,7 +56,7 @@ private:
      * \brief   The Hash Map object to save information of threads
      *          saved in specified Component Info object.
      **/
-    using _WorkerThreadMap  = TEHashMap<ThreadAddress, WorkerThread*, _ImplWorkerThreadMap>;
+    using _WorkerThreadMap  = TEHashMap<ThreadAddress, WorkerThread*>;
 
     /**
      * \brief   Resource mapping object type. 

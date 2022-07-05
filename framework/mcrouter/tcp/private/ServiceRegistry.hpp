@@ -26,24 +26,7 @@
 //////////////////////////////////////////////////////////////////////////
 // ServiceRegistry class declaration
 //////////////////////////////////////////////////////////////////////////
-/**
- * \brief   Service registry map helper class.
- **/
-class ImplServiceRegistry  : public TEHashMapImpl<ServiceStub, ListServiceProxies>
-{
-public:
-    /**
-     * \brief   Called to calculate the 32-bit hash key value.
-     * \ param  Key     The object to calculate 32-bit hash key.
-     * \return  Returns 32-bit hash key value.
-     **/
-    inline unsigned int implHashKey( const ServiceStub & Key ) const
-    {
-        return static_cast<unsigned int>(static_cast<const ServiceAddress &>(Key.getServiceAddress()));
-    }
-};
-
-using ServiceRegistryBase = TEHashMap<ServiceStub, ListServiceProxies, ImplServiceRegistry>;
+using ServiceRegistryBase = TEHashMap<ServiceStub, ListServiceProxies>;
 
 /**
  * \brief   The remote services registration map, which is a map of stub and list of connected proxies.

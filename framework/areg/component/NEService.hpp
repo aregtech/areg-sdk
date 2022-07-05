@@ -388,11 +388,11 @@ namespace NEService
 
         // Reserved system calls.
 
-        //!< The service registratio call. Service calls should start from this ID.
+        //!< The service registration call. Service calls should start from this ID.
         , ServiceRequestRegister= SERVICE_ID_FIRST
         //!< Sent by client to Stub to get supported version information
         , ServiceRequestVersion
-        //!< Sent by Stub to clients as a reply to get service version and notifies interface implementated version
+        //!< Sent by Stub to clients as a reply to get service version and notifies interface implemented version
         , ServiceNotifyVersion
         //!< Sent by client or stub to request service manager connection.
         , ServiceRequestConnection
@@ -408,7 +408,7 @@ namespace NEService
         , ServiceRouterRegister
         //!< Called by service manager to routing service to query registration status of services.
         , ServiceRouterQuery
-        //!< Sent by Routing Service as a reply to register service and notifies the the registered service availability
+        //!< Sent by Routing Service as a reply to register service and notifies the registered service availability
         , ServiceRouterNotifyRegister
         //!< The last ID of service calls.
         , ServiceLastId         = SERVICE_ID_LAST  //!< Servicing call last ID
@@ -465,8 +465,7 @@ namespace NEService
     //////////////////////////////////////////////////////////////////////////
     // StateArray class declaration
     //////////////////////////////////////////////////////////////////////////
-    using ImplStateArray    = TEListImpl<NEService::eDataStateType>;
-    using StateArrayBase    = TEFixedArray<NEService::eDataStateType, NEService::eDataStateType, ImplStateArray>;
+    using StateArrayBase    = TEFixedArray<NEService::eDataStateType>;
     /**
      * \brief   StateArray class. Keeps data state information
      **/
@@ -548,10 +547,7 @@ namespace NEService
     //////////////////////////////////////////////////////////////////////////
     private:
         StateArray(void) = delete;
-        StateArray(const StateArray& src) = delete;
-        StateArray(StateArray&& src) noexcept = delete;
-        StateArray& operator = (const StateArray& src) = delete;
-        StateArray& operator = (StateArray&& src) noexcept = delete;
+        DECLARE_NOCOPY_NOMOVE(StateArray);
     };
 
     //////////////////////////////////////////////////////////////////////////
@@ -577,7 +573,7 @@ namespace NEService
         /**
          * \brief   The service type. Either local or remote
          **/
-        eServiceType        idServiceType;      // local or publis service type
+        eServiceType        idServiceType;      // local or public service type
 
         /**
          * \brief   Number of requests in service interface

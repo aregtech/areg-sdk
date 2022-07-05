@@ -35,8 +35,7 @@ class ProxyAddress;
 /**
  * \brief   Server List helper class.
  **/
-using ImplServerList    = TEHashMapImpl<ServerInfo, ClientList>;
-using ServerListBase    = TEHashMap<ServerInfo, ClientList, ImplServerList>;
+using ServerListBase    = TEHashMap<ServerInfo, ClientList>;
 
 /**
  * \brief   Server List is a Hash Map class containing information
@@ -47,7 +46,7 @@ using ServerListBase    = TEHashMap<ServerInfo, ClientList, ImplServerList>;
  *          The controlling of server and connected clients done via
  *          registration of client(s).
  **/
-class ServerList  : public TEHashMap<ServerInfo, ClientList, ImplServerList>
+class ServerList  : public ServerListBase
 {
 
 //////////////////////////////////////////////////////////////////////////

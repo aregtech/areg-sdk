@@ -42,11 +42,11 @@
         class Tokenizer;
 
 /* class TEHashMap */
-    template <typename VALUE, class Implement>
+    template <typename VALUE>
     class TEIntegerHashMap;
-    template <typename VALUE, class Implement>
+    template <typename VALUE>
     class TEStringHashMap;
-    template <typename VALUE, class Implement>
+    template <typename VALUE>
     class TEPointerHashMap;
 
 //////////////////////////////////////////////////////////////////////////
@@ -111,8 +111,8 @@ public:
  * \tparam  VALUE       The type of value to store in map
  * \tparam  VALUE_TYPE  The type when get or set value
  **/
-template <typename VALUE, class Implement = TEHashMapImpl<unsigned int, VALUE>>
-class TEIntegerHashMap  : public TEHashMap<unsigned int, VALUE, Implement>
+template <typename VALUE>
+class TEIntegerHashMap  : public TEHashMap<unsigned int, VALUE>
 {
     //////////////////////////////////////////////////////////////////////////
     // Constructor / Destructor
@@ -136,13 +136,13 @@ public:
      * \brief   Copies hash-map data from given sources.
      * \param   src     The source to copy data.
      **/
-    TEIntegerHashMap( const TEIntegerHashMap<VALUE, Implement> & src ) = default;
+    TEIntegerHashMap( const TEIntegerHashMap<VALUE> & src ) = default;
 
     /**
      * \brief   Copies hash-map data from given sources.
      * \param   src     The source to copy data.
      **/
-    TEIntegerHashMap( TEIntegerHashMap<VALUE, Implement> && src ) noexcept = default;
+    TEIntegerHashMap( TEIntegerHashMap<VALUE> && src ) noexcept = default;
 
     /**
      * \brief   Destructor
@@ -159,8 +159,8 @@ public:
  *          keep control of resources. So that, there will be no other implementation. Because
  *          resources are mainly pointers and they would need individual solutions.
  **/
-template <typename VALUE, class Implement = TEHashMapImpl<id_type, VALUE>>
-class TEIdHashMap: public TEHashMap<id_type, VALUE, Implement>
+template <typename VALUE>
+class TEIdHashMap: public TEHashMap<id_type, VALUE>
 {
     //////////////////////////////////////////////////////////////////////////
     // Constructor / Destructor
@@ -184,13 +184,13 @@ public:
      * \brief   Copies hash map data from given source.
      * \param   src     The source to copy data.
      **/
-    TEIdHashMap( const TEIdHashMap<VALUE, Implement> & src ) = default;
+    TEIdHashMap( const TEIdHashMap<VALUE> & src ) = default;
 
     /**
      * \brief   Moves hash map data from given source.
      * \param   src     The source to move data.
      **/
-    TEIdHashMap( TEIdHashMap<VALUE, Implement> && src ) noexcept = default;
+    TEIdHashMap( TEIdHashMap<VALUE> && src ) noexcept = default;
 
     /**
      * \brief   Destructor
@@ -206,8 +206,8 @@ public:
  * \tparam  VALUE       The type of value to store in map
  * \tparam  VALUE_TYPE  The type when get or set value
  **/
-template <typename VALUE, class Implement = TEHashMapImpl<const String &, VALUE>>
-class TEStringHashMap: public TEHashMap<String, VALUE, Implement>
+template <typename VALUE>
+class TEStringHashMap: public TEHashMap<String, VALUE>
 {
     //////////////////////////////////////////////////////////////////////////
     // Constructor / Destructor
@@ -231,13 +231,13 @@ public:
      * \brief   Copies hash-map values from given source.
      * \param   src     The source to copy data.
      **/
-    TEStringHashMap( const TEStringHashMap<VALUE, Implement> & src ) = default;
+    TEStringHashMap( const TEStringHashMap<VALUE> & src ) = default;
 
     /**
      * \brief   Moves hash-map values from given source.
      * \param   src     The source to move data.
      **/
-    TEStringHashMap( TEStringHashMap<VALUE, Implement> && src ) noexcept = default;
+    TEStringHashMap( TEStringHashMap<VALUE> && src ) noexcept = default;
 
     /**
      * \brief   Destructor
@@ -254,8 +254,8 @@ public:
  * \tparam  VALUE       The type of value to store in map
  * \tparam  VALUE_TYPE  The type when get or set value
  **/
-template <typename VALUE, class Implement = TEPointerHashMapImpl<void *, VALUE>>
-class TEPointerHashMap: public TEHashMap<void *, VALUE, Implement>
+template <typename VALUE>
+class TEPointerHashMap: public TEHashMap<void *, VALUE>
 {
     //////////////////////////////////////////////////////////////////////////
     // Constructor / Destructor
@@ -279,13 +279,13 @@ public:
      * \brief   Copies hash map entries from given source.
      * \param   src     The source to copy data.
      **/
-    TEPointerHashMap( const TEPointerHashMap<VALUE, Implement> & src ) = default;
+    TEPointerHashMap( const TEPointerHashMap<VALUE> & src ) = default;
 
     /**
      * \brief   Moves hash map entries from given source.
      * \param   src     The source to move data.
      **/
-    TEPointerHashMap( TEPointerHashMap<VALUE, Implement> && src ) noexcept = default;
+    TEPointerHashMap( TEPointerHashMap<VALUE> && src ) noexcept = default;
 
     /**
      * \brief   Destructor
@@ -301,135 +301,87 @@ public:
  * \brief   Type for sorted list and array of integers
  **/
 using ImplIntegerSortList       = TESortImpl<unsigned int>;
-/**
- * \brief   Type for hash map where keys and values are integers.
- **/
-using ImplIntegerToIntegerMap   = TEHashMapImpl<unsigned int, unsigned int>;
-/**
- * \brief   Type for hash map where keys are integers and values are strings.
- **/
-using ImplIntegerToStringMap    = TEHashMapImpl<unsigned int, const String &>;
-/**
- * \brief   Type for Hash Map where keys are integers and values are pointers.
- **/
-using ImplIntegerToPointergMap  = TEHashMapImpl<unsigned int, void *>;
-/**
- * \brief   Type for Hash Map where keys are strings and values are integers.
- **/
-using ImplStringToIntegerMap    = TEHashMapImpl<const String &, unsigned int>;
-/**
- * \brief   Type for Hash Map where keys are strings and values are strings.
- **/
-using ImplStringToStringMap     = TEHashMapImpl<const String &, const String &>;
-/**
- * \brief   Type for Hash Map where keys are strings and values are pointers.
- **/
-using ImplStringToPointergMap   = TEHashMapImpl<const String &, void *>;
-/**
- * \brief   Type for Hash Map where keys are pointers and values are integers.
- **/
-using ImplPointerToIntegerMap   = TEPointerHashMapImpl<void *, unsigned int>;
-/**
- * \brief   Hash Map where keys are pointers and values are strings.
- **/
-using ImplPointerToStringMap    = TEPointerHashMapImpl<void *, const String &>;
-/**
- * \brief   Type for Hash Map where keys are pointers and values are pointers.
- **/
-using ImplPointerToPointergMap  = TEPointerHashMapImpl<void *, void *>;
-/**
- * \brief   Type for array and list of integers.
- **/
-using ImplIntegerList           = TEListImpl<unsigned int>;
-/**
- * \brief   Type for list and array of strings.
- **/
-using ImplStringList            = TEListImpl<const String &>;
-/**
- * \brief   Type for list and array of pointers
- **/
-using ImplPointerList           = TEListImpl<void *>;
 
-//////////////////////////////////////////////////////////////////////////
+/// //////////////////////////////////////////////////////////////////////////
 // Declaration of container class aliases
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   Array of integer elements
+  * \brief   Array of integer elements
  **/
-using IntegerArray  = TEArrayList<unsigned int, ImplIntegerList>;
+using IntegerArray  = TEArrayList<unsigned int>;
 
 /**
  * \brief   Array of string elements
  **/
-using StringArray   = TEArrayList<String, ImplStringList>;
+using StringArray   = TEArrayList<String>;
 
 /**
  * \brief   Array of pointer elements
  **/
-using PointerArray  = TEArrayList<void *, ImplPointerList>;
+using PointerArray  = TEArrayList<void *>;
 
 /**
  * \brief   Hash Map where keys are values are integers.
  **/
-using IntegerToIntegerMap   = TEIntegerHashMap<unsigned int, ImplIntegerToIntegerMap>;
+using IntegerToIntegerMap   = TEIntegerHashMap<unsigned int>;
 
 /**
  * \brief   Hash Map where keys are integers and values are strings
  **/
-using IntegerToStringMap    = TEIntegerHashMap<String, ImplIntegerToStringMap>;
+using IntegerToStringMap    = TEIntegerHashMap<String>;
 
 /**
  * \brief   Hash Map where keys are integers and values are pointers.
  **/
-using IntegerToPointergMap  = TEIntegerHashMap<void *, ImplIntegerToPointergMap>;
+using IntegerToPointergMap  = TEIntegerHashMap<void *>;
 
 /**
  * \brief   Hash Map where keys are strings and values are integers.
  **/
-using StringToIntegerMap    = TEStringHashMap<unsigned int, ImplStringToIntegerMap>;
+using StringToIntegerMap    = TEStringHashMap<unsigned int>;
 
 /**
  * \brief   Hash Map where keys are strings and values are strings.
  **/
-using StringToStringMap     = TEStringHashMap<String, ImplStringToStringMap>;
+using StringToStringMap     = TEStringHashMap<String>;
 
 /**
  * \brief   Hash Map where keys are strings and values are pointers.
  **/
-using StringToPointergMap   = TEStringHashMap<void *, ImplStringToPointergMap>;
+using StringToPointergMap   = TEStringHashMap<void *>;
 
 /**
  * \brief   Hash Map where keys are pointers and values are integers.
  **/
-using PointerToIntegerMap   = TEPointerHashMap<unsigned int, ImplPointerToIntegerMap>;
+using PointerToIntegerMap   = TEPointerHashMap<unsigned int>;
 
 /**
  * \brief   Hash Map where keys are pointers and values are strings.
  **/
-using PointerToStringMap    = TEPointerHashMap<String, ImplPointerToStringMap>;
+using PointerToStringMap    = TEPointerHashMap<String>;
 
 /**
  * \brief   Hash Map where keys are pointers and values are pointers.
  **/
-using PointerToPointergMap  = TEPointerHashMap<void *, ImplPointerToPointergMap>;
+using PointerToPointergMap  = TEPointerHashMap<void *>;
 
 /**
  * \brief   Linked List where values are integers.
  **/
-using IntegerList   = TELinkedList<unsigned int, ImplIntegerList>;
+using IntegerList   = TELinkedList<unsigned int>;
 
 /**
  * \brief   Linked List where values are strings.
  **/
-using StringList    = TELinkedList<String, ImplStringList>;
+using StringList    = TELinkedList<String>;
 
 /**
  * \brief   Linked List where values are pointers
  **/
-using PointerList   = TELinkedList<void *, ImplPointerList>;
+using PointerList   = TELinkedList<void *>;
 
 /**
- * \brief   Sorted List class where values are integers.
+* \brief   Sorted List class where values are integers.
  **/
 using SortedIntegerList = TESortedLinkedList<unsigned int, unsigned int, ImplIntegerSortList>;
 
@@ -514,9 +466,9 @@ private:
 // TEIntegerHashMap<VALUE, VALUE_TYPE> class implementation
 //////////////////////////////////////////////////////////////////////////
 
-template <typename VALUE, class Implement>
-TEIntegerHashMap<VALUE, Implement>::TEIntegerHashMap(uint32_t hashSize)
-    : TEHashMap<unsigned int, VALUE, Implement> (hashSize)
+template <typename VALUE>
+TEIntegerHashMap<VALUE>::TEIntegerHashMap(uint32_t hashSize)
+    : TEHashMap<unsigned int, VALUE> (hashSize)
 {
 }
 
@@ -524,9 +476,9 @@ TEIntegerHashMap<VALUE, Implement>::TEIntegerHashMap(uint32_t hashSize)
 // TEIdHashMap<VALUE, VALUE_TYPE> class implementation
 //////////////////////////////////////////////////////////////////////////
 
-template <typename VALUE, class Implement>
-TEIdHashMap<VALUE, Implement>::TEIdHashMap(uint32_t hashSize)
-    : TEHashMap<id_type, VALUE, Implement> (hashSize)
+template <typename VALUE>
+TEIdHashMap<VALUE>::TEIdHashMap(uint32_t hashSize)
+    : TEHashMap<id_type, VALUE> (hashSize)
 {
 }
 
@@ -534,9 +486,9 @@ TEIdHashMap<VALUE, Implement>::TEIdHashMap(uint32_t hashSize)
 // TEStringHashMap<VALUE, VALUE_TYPE> class implementation
 //////////////////////////////////////////////////////////////////////////
 
-template <typename VALUE, class Implement>
-TEStringHashMap<VALUE, Implement>::TEStringHashMap( uint32_t hashSize )
-    : TEHashMap<String, VALUE, Implement>   (hashSize)
+template <typename VALUE>
+TEStringHashMap<VALUE>::TEStringHashMap( uint32_t hashSize )
+    : TEHashMap<String, VALUE>   (hashSize)
 {
 }
 
@@ -544,8 +496,8 @@ TEStringHashMap<VALUE, Implement>::TEStringHashMap( uint32_t hashSize )
 // TEPointerHashMap<VALUE, VALUE_TYPE> class implementation
 //////////////////////////////////////////////////////////////////////////
 
-template <typename VALUE, class Implement>
-TEPointerHashMap<VALUE, Implement>::TEPointerHashMap( uint32_t hashSize )
-    : TEHashMap<void *, VALUE, Implement>(hashSize)
+template <typename VALUE>
+TEPointerHashMap<VALUE>::TEPointerHashMap( uint32_t hashSize )
+    : TEHashMap<void *, VALUE>(hashSize)
 {
 }

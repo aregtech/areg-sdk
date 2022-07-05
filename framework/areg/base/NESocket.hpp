@@ -461,6 +461,6 @@ inline unsigned short NESocket::SocketAddress::getHostPort( void ) const
 
 inline void NESocket::SocketAddress::resetAddress( void )
 {
-    mIpAddr = String::EmptyString.data();
+    mIpAddr = String::EmptyString;
     mPortNr = NESocket::InvalidPort;
 }

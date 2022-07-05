@@ -48,7 +48,7 @@ class AREG_API RuntimeClassID
      * \brief   Declare friend classes to access private default constructor
      *          required to initialize runtime class ID in hash map blocks.
      **/
-    template < typename KEY, typename VALUE, class Implement >
+    template < typename KEY, typename VALUE >
     friend class TEHashMap;
     template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Implement>
     friend class TEResourceMap;

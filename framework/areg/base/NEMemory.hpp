@@ -215,8 +215,8 @@ namespace NEMemory
           ResultUnknownError        = -1    //!< Error, unknown type
         , ResultSucceed             =  0    //!< No error
         , ResultNoConnection        =  1    //!< Error, there is no connection
-        , ServiceUnavailable          //!< Error, service is unavailable
-        , ServiceRejected             //!< Error, service is rejected
+        , ServiceUnavailable                //!< Error, service is unavailable
+        , ServiceRejected                   //!< Error, service is rejected
         , ResultTargetUnavailable           //!< Error, the target object is unavailable
     } eMessageResult;
     /**
@@ -263,7 +263,7 @@ namespace NEMemory
     constexpr unsigned int      INVALID_VALUE   { ~0u };
     /**
      * \brief   NEMemory::MESSAGE_SUCCESS
-     *          Constants. Defines the message result succeess.
+     *          Constants. Defines the message result success.
      **/
     constexpr unsigned int      MESSAGE_SUCCESS { static_cast<unsigned int>(NEMemory::eMessageResult::ResultSucceed) };
 
@@ -488,7 +488,7 @@ namespace NEMemory
      *              - it must be possible to convert from ELEM_SRC to ELEM_DST to apply static_cast;
      *              - the ELEM_SRC should support assigning operator ( operator = ).
      **/
-    template <typename ELEM_DST, typename ELEM_SRC>
+    template <typename ELEM_DST, typename ELEM_SRC = ELEM_DST>
     inline void copyElems(ELEM_DST *destination, const ELEM_SRC *source, int elemCount);
 
     /**
@@ -524,7 +524,7 @@ namespace NEMemory
      *          MyStruct zero = {0};    // <= create one element with value
      *          NEMemory::SetMemory<MyStruct, const MyStruct &>(buffer, zero, 100); // <= sets same value to all entries.
      **/
-    template <typename ELEM, typename ELEM_TYPE>
+    template <typename ELEM, typename ELEM_TYPE = ELEM>
     inline void setMemory(ELEM * begin, ELEM_TYPE elemValue, int elemCount);
 
     /**
@@ -559,7 +559,7 @@ namespace NEMemory
      *          ELEM_LEFT should have valid comparing operator (operator ==).
      * \see     NEMemory::memEqual, NEMemory::equalElement
      **/
-    template <typename ELEM_LEFT, typename ELEM_RIGHT>
+    template <typename ELEM_LEFT, typename ELEM_RIGHT = ELEM_LEFT>
     bool equalElements(const ELEM_LEFT * lhs, const ELEM_RIGHT * rhs, int count);
 
     /**
@@ -646,35 +646,23 @@ namespace NEMemory
     inline bool memEqual( const void * memLeft, const void * memRight, int count);
 
     /**
-     * \brief   Buffer allocator. Allocates totalSize of buffer and returns type of BufType object
-     *          with continues data buffer. The 'continues data buffer' means that data buffer
-     *          follows immediately after buffer header. As for example sByteBuffer.
-     * \param   totalSize   The total size in bytes to allocate for buffer with continues data buffer.
-     *                      The parameter should be bigger than the header of buffer. The size is
-     *                      size of buffer header and the size of data to allocate.
-     * \return  If succeeded, returns the valid pointer of type BufType where the buffer data folows
-     *          immediately after buffer header.
-     * \tparam  BufType     The type of buffer to create. Currently there is only byte buffer or remote buffer.
-     * \note    Note, the totalSize should contain the size of buffer header and the size of data buffer.
+     * \brief   The custom buffer allocator.
      **/
     template<typename BufType>
-    BufType * bufferAllocator( unsigned int totalSize );
-
-    /**
-     * \brief   Deletes the buffer object previoucesly allocated via bufferAllocator method.
-     * \param   buffer      The pointer to buffer object to delete.
-     * \tparam  BufType     The type of buffer to delete. Currently, there are only internal and remote.
-     **/
-    template<typename BufType>
-    void bufferDeleter( BufType * buffer );
-
-    /**
-     * \brief   The custom buffer deleter object used in shared-pointer objects.
-     **/
-    template<typename BufType>
-    class BufferDeleter
+    struct BufferAllocator
     {
-    public:
+        /**
+         * \brief   The operator is called when buffer object should be allocated.
+         **/
+        BufType* operator ( ) (uint32_t space);
+    };
+
+    /**
+     * \brief   The custom buffer deleter.
+     **/
+    template<typename BufType>
+    struct BufferDeleter
+    {
         /**
          * \brief   The operator is called when buffer object should be deleted.
          **/
@@ -886,7 +874,7 @@ inline void NEMemory::destroyElems(ELEM_TYPE *begin, int elemCount)
     }
 }
 
-template <typename ELEM_DST, typename ELEM_SRC>
+template <typename ELEM_DST, typename ELEM_SRC /*= ELEM_DST*/>
 inline void NEMemory::copyElems(ELEM_DST *destination, const ELEM_SRC *source, int elemCount)
 {
     if ((destination != source) && (destination != nullptr) && (source != nullptr) )
@@ -918,7 +906,7 @@ void NEMemory::moveElems(ELEM_TYPE *destination, const ELEM_TYPE *source, int el
     }
 }
 
-template <typename ELEM, typename ELEM_TYPE>
+template <typename ELEM, typename ELEM_TYPE /*= ELEM*/>
 inline void NEMemory::setMemory(ELEM* begin, ELEM_TYPE elemValue, int elemCount)
 {
     if (begin != nullptr )
@@ -937,7 +925,7 @@ inline bool NEMemory::equalElements(const ELEM * lhs, const ELEM * rhs, int coun
 }
 
 
-template <typename ELEM_LEFT, typename ELEM_RIGHT>
+template <typename ELEM_LEFT, typename ELEM_RIGHT /*= ELEM_LEFT*/>
 inline bool NEMemory::equalElements(const ELEM_LEFT* lhs, const ELEM_RIGHT* rhs, int count)
 {
     bool result = false;
@@ -975,18 +963,10 @@ inline void NEMemory::zeroElements( ELEM * elemList, int elemCount )
 }
 
 template<typename BufType>
-BufType * NEMemory::bufferAllocator( unsigned int totalSize )
+BufType* NEMemory::BufferAllocator<BufType>::operator ( ) (uint32_t space)
 {
-    return DEBUG_NEW unsigned char [totalSize];
-}
-
-template<typename BufType>
-void NEMemory::bufferDeleter( BufType * buffer )
-{
-    if ( buffer != nullptr )
-    {
-        delete [] reinterpret_cast<unsigned char *>(buffer);
-    }
+    unsigned char* result = DEBUG_NEW unsigned char[space];
+    return ::new(result) BufType;
 }
 
 template<typename BufType>

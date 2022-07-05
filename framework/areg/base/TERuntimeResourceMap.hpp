@@ -41,18 +41,6 @@
                 template <class RUNTIME_DELEGATE, class Implement> class TELockRuntimeResourceMap;
 
 //////////////////////////////////////////////////////////////////////////
-// TERuntimeHashMapImpl<RUNTIME_DELEGATE> class template declaration
-//////////////////////////////////////////////////////////////////////////
-/**
- * \brief   An hash map class template helper object used to call methods
- *          to get hash-value, and compare key and value elements.
- **/
-template <typename RUNTIME_DELEGATE>
-class TERuntimeHashMapImpl  : public TEHashMapImpl<RuntimeClassID, RUNTIME_DELEGATE *>
-{
-};
-
-//////////////////////////////////////////////////////////////////////////
 // TERuntimeHashMap<RUNTIME_DELEGATE, Implement> class template declaration
 //////////////////////////////////////////////////////////////////////////
 /**
@@ -63,7 +51,7 @@ class TERuntimeHashMapImpl  : public TEHashMapImpl<RuntimeClassID, RUNTIME_DELEG
  * \tparam  RUNTIME_DELEGATE    The type of runtime object to store in runtime resource map.
  **/
 template <typename RUNTIME_DELEGATE>
-class TERuntimeHashMap : public TEHashMap<RuntimeClassID, RUNTIME_DELEGATE *, TERuntimeHashMapImpl<RUNTIME_DELEGATE>>
+class TERuntimeHashMap : public TEHashMap<RuntimeClassID, RUNTIME_DELEGATE *>
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor

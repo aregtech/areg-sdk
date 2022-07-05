@@ -217,7 +217,7 @@ ProxyBase * ProxyBase::findOrCreateProxy( const char * roleName
             }
             else
             {
-                TRACE_WARN("The client [ %p ] is already registeref foro service connection notification", &connect);
+                TRACE_WARN("The client [ %p ] is already registered for service connection notification", &connect);
             }
         }
     }

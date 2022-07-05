@@ -45,7 +45,7 @@ public:
      *          Bad Identifier object, which integer value is BAD_IDENTIFIER_VALUE
      *          and string value is BAD_IDENTIFIER_NAME
      **/
-    static const Identifier             BAD_IDENTIFIER          /* = {BAD_IDENTIFIER_VALUE, BAD_IDENTIFIER_NAME.data()} */;
+    static const Identifier             BAD_IDENTIFIER          /* = {BAD_IDENTIFIER_VALUE, BAD_IDENTIFIER_NAME} */;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -63,7 +63,9 @@ public:
      * \param   idValue     The integer value of identifier
      * \param   idName      The name of identifier associated with integer value.
      **/
-    Identifier(unsigned int idValue, const char * idName);
+    Identifier(unsigned int idValue, const char* idName);
+    Identifier(unsigned int idValue, const std::string_view& idName);
+    Identifier(unsigned int idValue, const String& idName);
 
     /**
      * \brief   Copy constructor.

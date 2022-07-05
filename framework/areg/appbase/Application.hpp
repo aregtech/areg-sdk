@@ -49,8 +49,7 @@ class AREG_API Application
      *          by given names. If a stored element is created by manually allocating memory, the memory
      *          should be as well manually freed.
      **/
-    using ImplStringHashMap = TEHashMapImpl<String, NEMemory::uAlign>;
-    using MapAppStorage     = TEStringHashMap<NEMemory::uAlign, ImplStringHashMap>;
+    using MapAppStorage     = TEStringHashMap<NEMemory::uAlign>;
 
 //////////////////////////////////////////////////////////////////////////
 // Constants and statics

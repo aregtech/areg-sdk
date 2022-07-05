@@ -197,21 +197,32 @@ ExpiredTimerInfo & ExpiredTimerInfo::operator = ( ExpiredTimerInfo && src ) noex
 
 ExpiredTimers::LISTPOS ExpiredTimers::findTimer(Timer* whichTimer)
 {
-    return findTimer(whichTimer, ExpiredTimersBase::invalidPosition());
+    ExpiredTimers::LISTPOS result = invalidPosition();
+    for (ExpiredTimers::LISTPOS pos = firstPosition(); pos != result; ++pos)
+    {
+        if (valueAtPosition(pos).mTimer == whichTimer)
+        {
+            result = pos;
+            break;
+        }
+    }
+
+    return result;
 }
 
 ExpiredTimers::LISTPOS ExpiredTimers::findTimer(Timer * whichTimer, LISTPOS searchAfter)
 {
-    LISTPOS end = ExpiredTimersBase::invalidPosition();
-    LISTPOS pos = searchAfter == end ? ExpiredTimersBase::firstPosition() : ++searchAfter;
-
-    for (; pos != end; pos = ExpiredTimersBase::nextPosition(pos))
+    LISTPOS result = invalidPosition();
+    for (ExpiredTimers::LISTPOS pos = searchAfter; pos != result; ++pos)
     {
         if (valueAtPosition(pos).mTimer == whichTimer)
+        {
+            result = pos;
             break;
+        }
     }
 
-    return pos;
+    return result;
 }
 
 int ExpiredTimers::removeAllTimers( Timer * whichTimer )

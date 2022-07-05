@@ -331,8 +331,7 @@ public:
 /**
  * \brief   Overrides methods required by Time Table hash map object.
  **/
-using ImplTimerTable    = TEPointerHashMapImpl<Timer *, TimerInfo>;
-using TimerTableBase    = TEHashMap<Timer*, TimerInfo, ImplTimerTable>;
+using TimerTableBase    = TEHashMap<Timer*, TimerInfo>;
 
 /**
  * \brief   Timer Table Hash Map contains list of registered timers. 

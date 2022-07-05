@@ -44,8 +44,7 @@ class IEEventConsumer;
 //////////////////////////////////////////////////////////////////////////
 // EventConsumerList class declaration
 //////////////////////////////////////////////////////////////////////////
-using ImplEventConsumerList = TEListImpl<IEEventConsumer *>;
-using EventConsumerListBase	= TELinkedList<IEEventConsumer *, ImplEventConsumerList>;
+using EventConsumerListBase	= TELinkedList<IEEventConsumer *>;
 
 /**
  * \brief   Event Consumer List is a helper class containing 
@@ -144,7 +143,7 @@ public:
      * \param	Key	        The Key value of resource
      * \param	Resource	Pointer to resource object
      **/
-    void implCleanResource( RuntimeClassID & Key, EventConsumerList * Resource );
+    inline void implCleanResource( RuntimeClassID & Key, EventConsumerList * Resource );
 };
 /**
  * \brief   Event Consumer Map is a helper class containing 

@@ -53,21 +53,13 @@ class SynchLockAndWaitIX;
 class SynchLockAndWaitIX
 {
     /**
-     * \brief   Declaration of list helper object.
-     **/
-    using ImplListLockAndWait   = TEListImpl<SynchLockAndWaitIX>;
-    /**
      * \brief   The list of LockAndWait objects.
      **/
-    using ListLockAndWait       = TELinkedList<SynchLockAndWaitIX *, ImplListLockAndWait>;
-    /**
-     * \brief   Declaration of hash map helper object.
-     **/
-    using ImplMapLockAndWait    = TEPointerHashMapImpl<IEWaitableBaseIX *, ListLockAndWait>;
+    using ListLockAndWait       = TELinkedList<SynchLockAndWaitIX *>;
     /**
      * \brief   The hash map container of waitable object and LockAndWait lists.
      **/
-    using MapLockAndWait        = TEHashMap<IEWaitableBaseIX *, ListLockAndWait, ImplMapLockAndWait>;
+    using MapLockAndWait        = TEHashMap<IEWaitableBaseIX *, ListLockAndWait>;
 
 //////////////////////////////////////////////////////////////////////////
 // SynchWaitableMapIX class declaration
@@ -122,13 +114,9 @@ class SynchLockAndWaitIX
 // The resource map for timer.
 //////////////////////////////////////////////////////////////////////////
     /**
-     * \brief   Helper class of hash map basic methods implementation.
-     **/
-    using ImplMapWaitID     = TEHashMapImpl<id_type, SynchLockAndWaitIX * >;
-    /**
      * \brief   The resource map of waitable, where keys are id_type and the values are WaitAndLock objects
      **/
-    using MapWaitID         = TEIdHashMap<SynchLockAndWaitIX *, ImplMapWaitID>;
+    using MapWaitID         = TEIdHashMap<SynchLockAndWaitIX *>;
     /**
      * \brief   Helper object for resource map basic method implementations
      **/
@@ -174,7 +162,7 @@ private:
     /**
      * \brief   The fixed array of waitable. The maximum size of array is NECommon::MAXIMUM_WAITING_OBJECTS
      **/
-    using WaitingList   = TEFixedArray<IEWaitableBaseIX *, IEWaitableBaseIX *>;
+    using WaitingList   = TEFixedArray<IEWaitableBaseIX *>;
 
 //////////////////////////////////////////////////////////////////////////
 // Public static methods.

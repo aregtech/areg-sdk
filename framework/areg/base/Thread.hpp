@@ -583,24 +583,21 @@ private:
      * \brief   Thread resource mapping by thread ID.
      *          The unique thread ID is set when thread is created
      **/
-    using   ImplMapThreadID         = TEHashMapImpl<id_type, Thread *>;
-    using   MapThreadID             = TEIdHashMap<Thread *, ImplMapThreadID>;
+    using   MapThreadID             = TEIdHashMap< Thread* >;
     using   ImplThreadIDResource    = TEResourceMapImpl<id_type, Thread>;
     using   MapThreadIDResource     = TELockResourceMap<id_type, Thread, MapThreadID,ImplThreadIDResource>;
     /**
      * \brief   Thread resource mapping by thread handle. 
      *          The unique thread handle can be used to access thread object.
      **/
-    using   ImplMapThreadHandle     = TEPointerHashMapImpl<void *, Thread *>;
-    using   MapThreadPoiters        = TEPointerHashMap<Thread *, ImplMapThreadHandle>;
-    using   ImplThreadHandleResource= TEResourceMapImpl<void *, Thread>;
-    using   MapThreadHandleResource = TELockResourceMap<void *, Thread, MapThreadPoiters,ImplThreadHandleResource>;
+    using   MapThreadPoiters        = TEPointerHashMap< Thread* >;
+    using   ImplThreadHandleResource= TEResourceMapImpl< void *, Thread >;
+    using   MapThreadHandleResource = TELockResourceMap< void *, Thread, MapThreadPoiters,ImplThreadHandleResource >;
     /**
      * \brief   Thread resource mapping by thread name. 
      *          The unique thread name can be used to access thread object.
      **/
-    using   ImplMapThreadName       = TEHashMapImpl<String, Thread *>;
-    using   MapThreadName           = TEStringHashMap<Thread *, ImplMapThreadName>;
+    using   MapThreadName           = TEStringHashMap<Thread *>;
     using   ImplThreadNameResource  = TEResourceMapImpl<String, Thread>;
     using   MapThreadNameResource   = TELockResourceMap<String, Thread, MapThreadName, ImplThreadNameResource>;
 

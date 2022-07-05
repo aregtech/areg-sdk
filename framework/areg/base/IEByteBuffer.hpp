@@ -42,9 +42,9 @@ class AREG_API IEByteBuffer
 protected:
 
     /**
-     * \brief   Shared pointer deleter.
+     * \brief   Shared pointer allocator / deleter.
      **/
-    using ByteBufferDeleter = NEMemory::BufferDeleter<NEMemory::sByteBuffer>;
+    using ByteBufferDeleter     = NEMemory::BufferDeleter<NEMemory::sByteBuffer>;
 
     /**
      * \brief   IEByteBuffer::MAX_BUF_LENGTH

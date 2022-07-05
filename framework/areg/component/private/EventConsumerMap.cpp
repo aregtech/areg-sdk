@@ -77,7 +77,7 @@ void EventConsumerList::removeAllConsumers( void )
 // ImplEventConsumerMap class, methods
 //////////////////////////////////////////////////////////////////////////
 #if defined(DEBUG) && defined(OUTPUT_DEBUG_LEVEL) && (OUTPUT_DEBUG_LEVEL >= OUTPUT_DEBUG_LEVEL_DEBUG)
-void ImplEventConsumerMap::implCleanResource( RuntimeClassID & Key, EventConsumerList * Resource )
+inline void ImplEventConsumerMap::implCleanResource( RuntimeClassID & Key, EventConsumerList * Resource )
 {
     OUTPUT_DBG("Resource [ %s ]: Removing all consumers and deleting resource at address [ %p ]", Key.getName(), Resource);
     ASSERT(Resource != nullptr);
@@ -86,7 +86,7 @@ void ImplEventConsumerMap::implCleanResource( RuntimeClassID & Key, EventConsume
 }
 
 #else
-void ImplEventConsumerMap::implCleanResource( RuntimeClassID & /*Key*/, EventConsumerList * Resource )
+inline void ImplEventConsumerMap::implCleanResource( RuntimeClassID & /*Key*/, EventConsumerList * Resource )
 {
     Resource->removeAllConsumers();
     delete Resource;

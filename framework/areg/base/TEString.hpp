@@ -1008,8 +1008,9 @@ inline TEString<CharType>::TEString(TEString<CharType>&& source) noexcept
 
 template<typename CharType>
 inline TEString<CharType>::TEString(uint32_t count)
-    : mData  ( count, EmptyChar)
+    : mData  ( )
 {
+    mData.reserve(count);
 }
 
 template<typename CharType>
@@ -1222,21 +1223,29 @@ inline bool TEString<CharType>::operator <= (const CharType* other) const
 template<typename CharType>
 inline TEString<CharType>& TEString<CharType>::operator += (const TEString<CharType>& src)
 {
-    mData.append(src.mData);
+    mData += src.mData;
     return (*this);
 }
 
 template<typename CharType>
 inline TEString<CharType>& TEString<CharType>::operator += (const std::basic_string<CharType>& src)
 {
-    mData.append(src);
+    mData += src;
     return (*this);
 }
 
 template<typename CharType>
 inline TEString<CharType>& TEString<CharType>::operator += (const std::basic_string_view<CharType>& src)
 {
-    mData.append(src.data(), src.length());
+    if (mData.empty())
+    {
+        mData.assign(src.data(), src.length());
+    }
+    else
+    {
+        mData.append(src.data(), src.length());
+    }
+
     return (*this);
 }
 
@@ -1879,7 +1888,16 @@ inline TEString<CharType>& TEString<CharType>::assign(const TEString<CharType>& 
 template<typename CharType>
 inline TEString<CharType>& TEString<CharType>::append(const CharType* source, NEString::CharCount count /*= NEString::COUNT_ALL*/)
 {
-    mData.append(source, count == NEString::COUNT_ALL ? NEString::getStringLength<CharType>(source) : count);
+    count = count == NEString::COUNT_ALL ? NEString::getStringLength<CharType>(source) : count;
+    if (mData.empty())
+    {
+        mData.assign(source, count);
+    }
+    else
+    {
+        mData.append(source, count);
+    }
+
     return (*this);
 }
 
@@ -2190,12 +2208,12 @@ template<typename CharType>
 inline bool TEString<CharType>::setAt(CharType ch, NEString::CharPos atPos /*= NEString::END_POS*/)
 {
     bool result = false;
-    if (atPos == NEString::END_POS)
+    if (atPos < static_cast<NEString::CharPos>(mData.size()))
     {
         mData.at(static_cast<uint32_t>(atPos)) = ch;
         result = true;
     }
-    else if (isValidPosition(atPos))
+    else if (atPos == NEString::END_POS)
     {
         mData.append(1, ch);
         result = true;

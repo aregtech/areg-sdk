@@ -545,7 +545,7 @@ bool SynchLockAndWaitIX::_requestOwnership( const NESynchTypesIX::eSynchObjectFi
 #ifdef DEBUG
         if (waitable == nullptr)
         {
-            OUTPUT_ERR("Atention! A waitable at index [ %d ] in the list [ %p ] having size [ %d] of thread [ %p ] has address [ %p ]"
+            OUTPUT_ERR("Attention! A waitable at index [ %d ] in the list [ %p ] having size [ %d] of thread [ %p ] has address [ %p ]"
                         , static_cast<int>(firedEvent)
                         , this
                         , mWaitingList.getSize()

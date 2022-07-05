@@ -75,8 +75,7 @@ private:
      **/
     static constexpr std::string_view TIMER_THREAD_NAME { "_AREG_TIMER_THREAD_NAME_" };
 
-    using ImplHandleHashMap = TEPointerHashMapImpl<TIMERHANDLE, Timer*>;
-    using MapTimerResource  = TEHashMap<TIMERHANDLE, Timer*, ImplHandleHashMap>;
+    using MapTimerResource  = TEHashMap<TIMERHANDLE, Timer*>;
     using TimerResource     = TELockResourceMap<TIMERHANDLE, Timer, MapTimerResource>;
 
 //////////////////////////////////////////////////////////////////////////

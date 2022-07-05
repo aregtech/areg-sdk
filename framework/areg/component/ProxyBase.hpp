@@ -220,28 +220,9 @@ private:
      *          and value is instance of Proxy.
      ************************************************************************/
     /**
-     * \brief   Proxy map helper functions implementation.
-     **/
-    class ImplProxyMap   : public TEHashMapImpl<ProxyAddress, ProxyBase *>
-    {
-    public:
-
-        /**
-         * \brief   Compares 2 keys, returns true if they are equal.
-         * \param   Value1  The key of right-side object to compare.
-         * \param   Value2  The key of left-side object to compare.
-         * \return  Returns true if 2 keys are equal.
-         **/
-        inline bool implEqualKeys( const ProxyAddress & Key1, const ProxyAddress & Key2 ) const
-        {
-            return ( (static_cast<const ServiceAddress &>(Key1) == static_cast<const ServiceAddress &>(Key2)) && (Key1.getThread() == Key2.getThread()) );
-        }
-    };
-
-    /**
      * \brief   Proxy hash map
      **/
-    using MapProxy          = TEHashMap<ProxyAddress, ProxyBase *, ImplProxyMap>;
+    using MapProxy          = TEHashMap<ProxyAddress, ProxyBase *>;
     /**
      * \brief   Proxy resource map helper.
      **/
@@ -312,7 +293,7 @@ private:
      * \brief   ProxyBase::MapThreadProxy
      *          The string hash map which values are list of proxies.
      **/
-    using MapThreadProxy    = TEStringHashMap<ThreadProxyList, const ThreadProxyList>;
+    using MapThreadProxy    = TEStringHashMap<ThreadProxyList>;
 
     /**
      * \brief   ProxyBase::MapThreadProxyList

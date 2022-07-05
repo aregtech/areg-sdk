@@ -58,12 +58,8 @@ private:
 
     //!< Definition of storage item to store.
     using StorageItem       = std::pair<String, NEMemory::uAlign>;
-
-    //!< Definition of storage list helper object to compare values.
-    using ImplStorageList   = TEListImpl<ThreadLocalStorage::StorageItem>;
-
     //!< Definition of storage list object to store items.
-    using StorageList       = TELinkedList<ThreadLocalStorage::StorageItem, ImplStorageList>;
+    using StorageList       = TELinkedList<ThreadLocalStorage::StorageItem>;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor

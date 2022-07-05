@@ -37,8 +37,7 @@ class PersistenceManager
     /**
      * \brief   The map of saved properties.
      **/
-    using ImplDataMap	= TEHashMapImpl<unsigned int, Property>;
-    using DataMap       = TEIntegerHashMap<Property, ImplDataMap>;
+    using DataMap       = TEIntegerHashMap<Property>;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden constructor / destructor

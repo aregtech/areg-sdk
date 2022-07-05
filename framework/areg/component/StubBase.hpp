@@ -181,36 +181,14 @@ protected:
     // StubBase session tracking
     //////////////////////////////////////////////////////////////////////////
     /**
-     * \brief   Stub Session map helper class.
-     **/
-    using ImplStubSessionMap= TEHashMapImpl<unsigned int, StubBase::Listener>;
-    /**
      * \brief   StubBase::StubSessionMap class defines list of Session IDs and unblocked requests.
      **/
-    using MapStubSession     = TEIntegerHashMap<StubBase::Listener, ImplStubSessionMap>;
+    using MapStubSession     = TEIntegerHashMap<StubBase::Listener>;
 
     //////////////////////////////////////////////////////////////////////////
     // StubBase resource tracking
     //////////////////////////////////////////////////////////////////////////
-    /**
-     * \brief   Stub resource hash map helper class.
-     **/
-    class ImplStubMap	: public TEHashMapImpl<StubAddress, StubBase *>
-    {
-    public:
-        /**
-         * \brief   Compares 2 keys, returns true if they are equal.
-         * \param   Value1  The key of right-side object to compare.
-         * \param   Value2  The key of left-side object to compare.
-         * \return  Returns true if 2 keys are equal.
-         **/
-        inline bool implEqualKeys( const StubAddress & Key1, const StubAddress & Key2 ) const
-        {
-            return ( static_cast<const ServiceAddress &>(Key1) == static_cast<const ServiceAddress &>(Key2) && Key1.getThread() == Key2.getThread() );
-        }
-    };
-
-    using MapStub           = TEHashMap<StubAddress, StubBase*, ImplStubMap>;
+    using MapStub           = TEHashMap<StubAddress, StubBase*>;
     /**
      * \brief   Stub resource helper definition.
      **/

@@ -44,7 +44,7 @@ int SocketConnectionBase::sendMessage(const RemoteMessage & in_message, const So
                         , buffer.rbhBufHeader.biLength
                         , buffer.rbhChecksum);
 
-        TRACE_DBG("Sending message [ %p ] of [ %d ] bytes of header data, follow data is [ ] bytes."
+        TRACE_DBG("Sending message [ %p ] of [ %d ] bytes of header data, follow data is [ %d ] bytes."
                             , in_message.getMessageId()
                             , sizeof(NEMemory::sRemoteMessageHeader)
                             , buffer.rbhBufHeader.biUsed);

@@ -28,7 +28,7 @@
 #include <unordered_map>
 
 //////////////////////////////////////////////////////////////////////////
-// TEHashMap<KEY, VALUE, Implement> class template declaration
+// TEHashMap<KEY, VALUE> class template declaration
 //////////////////////////////////////////////////////////////////////////
 
 /**
@@ -60,16 +60,8 @@
  *                      primitive or should have default constructor 
  *                      and valid assigning operator. Also, should be 
  *                      possible to convert to type VALUE_TYPE.
- * \tparam  KEY_TYPE    The type of Key. By default is same as KEY.
- *                      If different, should be possible to convert 
- *                      and assign to KEY type.
- * \tparam  VALUE_TYPE  By default same as VALUE, but can be any other
- *                      type, which is converted and assign to VALUE type.
- * \tparam  Implement   The class that contains methods to get hash key value,
- *                      compare keys and values of the map. Pass own implementation
- *                      if default methods needs to be changed.
  **/
-template < typename KEY, typename VALUE, class Implement = TEHashMapImpl<KEY, VALUE> >
+template < typename KEY, typename VALUE>
 class TEHashMap : protected Constless<std::unordered_map<KEY, VALUE>>
 {
 //////////////////////////////////////////////////////////////////////////
@@ -96,13 +88,13 @@ public:
      * \brief   Copy constructor.
      * \param   src     The source to copy data.
      **/
-    TEHashMap( const TEHashMap<KEY, VALUE, Implement> & src ) = default;
+    TEHashMap( const TEHashMap<KEY, VALUE> & src ) = default;
 
     /**
      * \brief   Move constructor.
      * \param   src     The source to move data.
      **/
-    TEHashMap( TEHashMap<KEY, VALUE, Implement> && src ) noexcept = default;
+    TEHashMap( TEHashMap<KEY, VALUE> && src ) noexcept = default;
 
     /**
      * \brief   Destructor
@@ -120,26 +112,26 @@ public:
     /**
      * \brief	Assigning operator. It copies all elements from source map
      **/
-    TEHashMap<KEY, VALUE, Implement>& operator = ( const TEHashMap<KEY, VALUE, Implement> & src ) = default;
+    TEHashMap<KEY, VALUE>& operator = ( const TEHashMap<KEY, VALUE> & src ) = default;
 
     /**
      * \brief	Move operator. It moves all elements from source map
      **/
-    TEHashMap<KEY, VALUE, Implement>& operator = ( TEHashMap<KEY, VALUE, Implement> && src ) noexcept = default;
+    TEHashMap<KEY, VALUE>& operator = ( TEHashMap<KEY, VALUE> && src ) noexcept = default;
 
     /**
      * \brief   Checks equality of 2 hash-map objects, and returns true if they are equal.
      *          There should be possible to compare KEY and VALUE types of hash map.
      * \param   other   The hash-map object to compare
      **/
-    inline bool operator == ( const TEHashMap<KEY, VALUE, Implement> & other ) const;
+    inline bool operator == ( const TEHashMap<KEY, VALUE> & other ) const;
 
     /**
      * \brief   Checks inequality of 2 hash-map objects, and returns true if they are not equal.
      *          There should be possible to compare KEY and VALUE types of hash map.
      * \param   other   The hash-map object to compare
      **/
-    inline bool operator != ( const TEHashMap<KEY, VALUE, Implement> & other ) const;
+    inline bool operator != ( const TEHashMap<KEY, VALUE> & other ) const;
 
     /**
      * \brief	Subscript operator. Returns reference to value of element by given key.
@@ -169,8 +161,8 @@ public:
      * \param   stream  The streaming object for reading values
      * \param   input   The Hash Map object to save initialized values.
      **/
-    template < typename KEY, typename VALUE, class Implement >
-    friend const IEInStream & operator >> ( const IEInStream & stream, TEHashMap<KEY, VALUE, Implement> & input);
+    template < typename KEY, typename VALUE >
+    friend const IEInStream & operator >> ( const IEInStream & stream, TEHashMap<KEY, VALUE> & input);
     /**
      * \brief   Writes to the stream Hash Map values.
      *          The Elements of Hash Map will be written to the stream starting from start position.
@@ -179,8 +171,8 @@ public:
      * \param   stream  The streaming object to write values
      * \param   input   The Hash Map object to read out values.
      **/
-    template < typename KEY, typename VALUE, class Implement >
-    friend IEOutStream & operator << ( IEOutStream & stream, const TEHashMap<KEY, VALUE, Implement> & output );
+    template < typename KEY, typename VALUE >
+    friend IEOutStream & operator << ( IEOutStream & stream, const TEHashMap<KEY, VALUE> & output );
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -320,8 +312,8 @@ public:
      *          then that element is not extracted from the source and remains unchanged.
      * \param   source  The source of hash map to merge.
      */
-    inline void merge( const TEHashMap<KEY, VALUE, Implement> & source );
-    inline void merge( TEHashMap<KEY, VALUE, Implement> && source );
+    inline void merge( const TEHashMap<KEY, VALUE> & source );
+    inline void merge( TEHashMap<KEY, VALUE> && source );
 
     /**
      * \brief   Adds new entry with the specified key in the hash map if it is not existing.
@@ -521,10 +513,6 @@ protected:
      * \brief   Instance of map to store key-value pairs.
      **/
     std::unordered_map<KEY, VALUE>  mValueList;
-    /**
-     * \brief   Instance of object that compares keys and values.
-     **/
-    Implement                       mImplement;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -532,99 +520,98 @@ protected:
 //////////////////////////////////////////////////////////////////////////
 
 //////////////////////////////////////////////////////////////////////////
-// TEHashMap<KEY, VALUE, Implement> class template Implement
+// TEHashMap<KEY, VALUE> class template Implement
 //////////////////////////////////////////////////////////////////////////
 
-template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
-TEHashMap<KEY, VALUE, Implement>::TEHashMap(uint32_t hashSize /* = NECommon::MAP_DEFAULT_HASH_SIZE */)
+template < typename KEY, typename VALUE >
+TEHashMap<KEY, VALUE>::TEHashMap(uint32_t hashSize /* = NECommon::MAP_DEFAULT_HASH_SIZE */)
     : Constless ( )
-    , mImplement( )
     , mValueList(hashSize)
 {
 }
 
-template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
-bool TEHashMap<KEY, VALUE, Implement>::operator == (const TEHashMap<KEY, VALUE, Implement>& other) const
+template < typename KEY, typename VALUE >
+bool TEHashMap<KEY, VALUE>::operator == (const TEHashMap<KEY, VALUE>& other) const
 {
     return (mValueList == other.mValueList);
 }
 
-template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
-bool TEHashMap<KEY, VALUE, Implement>::operator != ( const TEHashMap<KEY, VALUE, Implement>& other ) const
+template < typename KEY, typename VALUE >
+bool TEHashMap<KEY, VALUE>::operator != ( const TEHashMap<KEY, VALUE>& other ) const
 {
     return (mValueList != other.mValueList);
 }
 
-template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
-inline VALUE & TEHashMap<KEY, VALUE, Implement>::operator [] (const KEY& Key)
+template < typename KEY, typename VALUE >
+inline VALUE & TEHashMap<KEY, VALUE>::operator [] (const KEY& Key)
 {
     return mValueList[Key];
 }
 
-template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
-inline const VALUE & TEHashMap<KEY, VALUE, Implement>::operator [] ( const KEY & Key ) const
+template < typename KEY, typename VALUE >
+inline const VALUE & TEHashMap<KEY, VALUE>::operator [] ( const KEY & Key ) const
 {
     return mValueList[Key];
 }
 
-template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
-inline bool TEHashMap<KEY, VALUE, Implement>::isEmpty(void) const
+template < typename KEY, typename VALUE >
+inline bool TEHashMap<KEY, VALUE>::isEmpty(void) const
 {
     return mValueList.empty();
 }
 
-template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
-inline uint32_t TEHashMap<KEY, VALUE, Implement>::getSize( void ) const
+template < typename KEY, typename VALUE >
+inline uint32_t TEHashMap<KEY, VALUE>::getSize( void ) const
 {
     return static_cast<uint32_t>(mValueList.size());
 }
 
-template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
-inline typename TEHashMap<KEY, VALUE, Implement>::MAPPOS TEHashMap<KEY, VALUE, Implement>::firstPosition( void ) const
+template < typename KEY, typename VALUE >
+inline typename TEHashMap<KEY, VALUE>::MAPPOS TEHashMap<KEY, VALUE>::firstPosition( void ) const
 {
     typename std::unordered_map<KEY, VALUE>::const_iterator pos = mValueList.begin();
     return Constless::iter(mValueList, pos);
 }
 
-template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
-inline typename TEHashMap<KEY, VALUE, Implement>::MAPPOS TEHashMap<KEY, VALUE, Implement>::lastPosition(void) const
+template < typename KEY, typename VALUE >
+inline typename TEHashMap<KEY, VALUE>::MAPPOS TEHashMap<KEY, VALUE>::lastPosition(void) const
 {
     typename std::unordered_map<KEY, VALUE>::const_iterator pos = mValueList.empty() == false ? -- mValueList.end() : mValueList.end();
     return Constless::iter(mValueList, pos);
 }
 
-template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
-inline bool TEHashMap<KEY, VALUE, Implement>::isStartPosition(const MAPPOS pos) const
+template < typename KEY, typename VALUE >
+inline bool TEHashMap<KEY, VALUE>::isStartPosition(const MAPPOS pos) const
 {
     return (pos == mValueList.begin());
 }
 
-template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
-inline bool TEHashMap<KEY, VALUE, Implement>::isLastPosition(const MAPPOS pos) const
+template < typename KEY, typename VALUE >
+inline bool TEHashMap<KEY, VALUE>::isLastPosition(const MAPPOS pos) const
 {
     return (mValueList.empty() == false) && (pos == --mValueList.end());
 }
 
-template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
-inline typename TEHashMap<KEY, VALUE, Implement>::MAPPOS TEHashMap<KEY, VALUE, Implement>::invalidPosition(void) const
+template < typename KEY, typename VALUE >
+inline typename TEHashMap<KEY, VALUE>::MAPPOS TEHashMap<KEY, VALUE>::invalidPosition(void) const
 {
     return iter(mValueList.end());
 }
 
-template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
-inline bool TEHashMap<KEY, VALUE, Implement>::isInvalidPosition(const MAPPOS pos) const
+template < typename KEY, typename VALUE >
+inline bool TEHashMap<KEY, VALUE>::isInvalidPosition(const MAPPOS pos) const
 {
     return (pos == mValueList.end());
 }
 
-template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
-inline bool TEHashMap<KEY, VALUE, Implement>::isValidPosition(const MAPPOS pos) const
+template < typename KEY, typename VALUE >
+inline bool TEHashMap<KEY, VALUE>::isValidPosition(const MAPPOS pos) const
 {
     return (pos != mValueList.end());
 }
 
-template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
-inline bool TEHashMap<KEY, VALUE, Implement>::checkPosition(const MAPPOS pos) const
+template < typename KEY, typename VALUE >
+inline bool TEHashMap<KEY, VALUE>::checkPosition(const MAPPOS pos) const
 {
     typename std::unordered_map<KEY, VALUE>::const_iterator it = mValueList.begin();
     while ((it != mValueList.end()) && (it != pos))
@@ -633,26 +620,26 @@ inline bool TEHashMap<KEY, VALUE, Implement>::checkPosition(const MAPPOS pos) co
     return (it != mValueList.end());
 }
 
-template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
-inline void TEHashMap<KEY, VALUE, Implement>::clear(void)
+template < typename KEY, typename VALUE >
+inline void TEHashMap<KEY, VALUE>::clear(void)
 {
     mValueList.clear();
 }
 
-template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
-inline void TEHashMap<KEY, VALUE, Implement>::freeExtra(void)
+template < typename KEY, typename VALUE >
+inline void TEHashMap<KEY, VALUE>::freeExtra(void)
 {
     mValueList.clear();
 }
 
-template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
-inline void TEHashMap<KEY, VALUE, Implement>::release(void)
+template < typename KEY, typename VALUE >
+inline void TEHashMap<KEY, VALUE>::release(void)
 {
     mValueList.clear();
 }
 
-template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
-inline bool TEHashMap<KEY, VALUE, Implement>::find( const KEY & Key, VALUE & out_Value ) const
+template < typename KEY, typename VALUE >
+inline bool TEHashMap<KEY, VALUE>::find( const KEY & Key, VALUE & out_Value ) const
 {
     bool result = false;
     auto pos = mValueList.find(Key);
@@ -665,69 +652,69 @@ inline bool TEHashMap<KEY, VALUE, Implement>::find( const KEY & Key, VALUE & out
     return result;
 }
 
-template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
-inline typename TEHashMap<KEY, VALUE, Implement>::MAPPOS TEHashMap<KEY, VALUE, Implement>::find(const KEY& Key) const
+template < typename KEY, typename VALUE >
+inline typename TEHashMap<KEY, VALUE>::MAPPOS TEHashMap<KEY, VALUE>::find(const KEY& Key) const
 {
     typename std::unordered_map<KEY, VALUE>::const_iterator cit = mValueList.find(Key);
     return iter(mValueList, cit);
 }
 
-template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
-inline bool TEHashMap<KEY, VALUE, Implement>::contains(const KEY& Key) const
+template < typename KEY, typename VALUE >
+inline bool TEHashMap<KEY, VALUE>::contains(const KEY& Key) const
 {
     return (mValueList.find(Key) != mValueList.end());
 }
 
-template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
-inline void TEHashMap<KEY, VALUE, Implement>::setAt(const KEY & Key, const VALUE & newValue)
+template < typename KEY, typename VALUE >
+inline void TEHashMap<KEY, VALUE>::setAt(const KEY & Key, const VALUE & newValue)
 {
     mValueList[Key] = newValue;
 }
 
-template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
-inline void TEHashMap<KEY, VALUE, Implement>::setAt( KEY && Key, const VALUE & newValue)
+template < typename KEY, typename VALUE >
+inline void TEHashMap<KEY, VALUE>::setAt( KEY && Key, const VALUE & newValue)
 {
     mValueList[Key] = newValue;
 }
 
-template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
-inline void TEHashMap<KEY, VALUE, Implement>::setAt(const std::pair<KEY, VALUE>& newItem)
+template < typename KEY, typename VALUE >
+inline void TEHashMap<KEY, VALUE>::setAt(const std::pair<KEY, VALUE>& newItem)
 {
     setAt(newItem.first, newItem.second);
 }
 
-template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
-inline void TEHashMap<KEY, VALUE, Implement>::setAt( std::pair<KEY, VALUE> && newItem)
+template < typename KEY, typename VALUE >
+inline void TEHashMap<KEY, VALUE>::setAt( std::pair<KEY, VALUE> && newItem)
 {
     setAt(std::move(newItem.first), newItem.second);
 }
 
-template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
-inline void TEHashMap<KEY, VALUE, Implement>::merge(const TEHashMap<KEY, VALUE, Implement>& source)
+template < typename KEY, typename VALUE >
+inline void TEHashMap<KEY, VALUE>::merge(const TEHashMap<KEY, VALUE>& source)
 {
     mValueList.merge(source.mValueList);
 }
 
-template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
-inline void TEHashMap<KEY, VALUE, Implement>::merge(TEHashMap<KEY, VALUE, Implement> && source)
+template < typename KEY, typename VALUE >
+inline void TEHashMap<KEY, VALUE>::merge(TEHashMap<KEY, VALUE> && source)
 {
     mValueList.merge(std::move(source.mValueList));
 }
 
-template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
-inline std::pair<typename TEHashMap<KEY, VALUE, Implement>::MAPPOS, bool> TEHashMap<KEY, VALUE, Implement>::addIfNew(const KEY& newKey, const VALUE& newValue)
+template < typename KEY, typename VALUE >
+inline std::pair<typename TEHashMap<KEY, VALUE>::MAPPOS, bool> TEHashMap<KEY, VALUE>::addIfNew(const KEY& newKey, const VALUE& newValue)
 {
     return mValueList.insert({ newKey, newValue });
 }
 
-template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
-inline std::pair<typename TEHashMap<KEY, VALUE, Implement>::MAPPOS, bool> TEHashMap<KEY, VALUE, Implement>::addIfNew( KEY && newKey, VALUE && newValue)
+template < typename KEY, typename VALUE >
+inline std::pair<typename TEHashMap<KEY, VALUE>::MAPPOS, bool> TEHashMap<KEY, VALUE>::addIfNew( KEY && newKey, VALUE && newValue)
 {
     return mValueList.insert(std::make_pair(newKey, newValue));
 }
 
-template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
-inline typename TEHashMap<KEY, VALUE, Implement>::MAPPOS TEHashMap<KEY, VALUE, Implement>::updateAt(const KEY & Key, const VALUE & newValue)
+template < typename KEY, typename VALUE >
+inline typename TEHashMap<KEY, VALUE>::MAPPOS TEHashMap<KEY, VALUE>::updateAt(const KEY & Key, const VALUE & newValue)
 {
     MAPPOS pos = mValueList.find(Key);
     if (pos != mValueList.end())
@@ -738,8 +725,8 @@ inline typename TEHashMap<KEY, VALUE, Implement>::MAPPOS TEHashMap<KEY, VALUE, I
     return pos;
 }
 
-template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
-bool TEHashMap<KEY, VALUE, Implement>::removeAt(const KEY& Key)
+template < typename KEY, typename VALUE >
+bool TEHashMap<KEY, VALUE>::removeAt(const KEY& Key)
 {
     bool result = false;
     MAPPOS pos = mValueList.find(Key);
@@ -752,8 +739,8 @@ bool TEHashMap<KEY, VALUE, Implement>::removeAt(const KEY& Key)
     return result;
 }
 
-template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
-inline bool TEHashMap<KEY, VALUE, Implement>::removeAt(const KEY & Key, VALUE& out_Value)
+template < typename KEY, typename VALUE >
+inline bool TEHashMap<KEY, VALUE>::removeAt(const KEY & Key, VALUE& out_Value)
 {
     bool result = false;
     MAPPOS pos = mValueList.find(Key);
@@ -767,16 +754,16 @@ inline bool TEHashMap<KEY, VALUE, Implement>::removeAt(const KEY & Key, VALUE& o
     return result;
 }
 
-template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
-typename TEHashMap<KEY, VALUE, Implement>::MAPPOS TEHashMap<KEY, VALUE, Implement>::setPosition(typename TEHashMap<KEY, VALUE, Implement>::MAPPOS atPosition, const VALUE & newValue)
+template < typename KEY, typename VALUE >
+typename TEHashMap<KEY, VALUE>::MAPPOS TEHashMap<KEY, VALUE>::setPosition(typename TEHashMap<KEY, VALUE>::MAPPOS atPosition, const VALUE & newValue)
 {
     ASSERT( atPosition != mValueList.end() );
     atPosition->second = newValue;
     return (++atPosition);
 }
 
-template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
-typename TEHashMap<KEY, VALUE, Implement>::MAPPOS TEHashMap<KEY, VALUE, Implement>::removePosition(typename TEHashMap<KEY, VALUE, Implement>::MAPPOS curPos, KEY& out_Key, VALUE& out_Value)
+template < typename KEY, typename VALUE >
+typename TEHashMap<KEY, VALUE>::MAPPOS TEHashMap<KEY, VALUE>::removePosition(typename TEHashMap<KEY, VALUE>::MAPPOS curPos, KEY& out_Key, VALUE& out_Value)
 {
     ASSERT( curPos != mValueList.end());
     MAPPOS result   = curPos + 1;
@@ -786,15 +773,15 @@ typename TEHashMap<KEY, VALUE, Implement>::MAPPOS TEHashMap<KEY, VALUE, Implemen
     return mValueList.erase(curPos);
 }
 
-template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
-typename TEHashMap<KEY, VALUE, Implement>::MAPPOS TEHashMap<KEY, VALUE, Implement>::removePosition(MAPPOS atPosition)
+template < typename KEY, typename VALUE >
+typename TEHashMap<KEY, VALUE>::MAPPOS TEHashMap<KEY, VALUE>::removePosition(MAPPOS atPosition)
 {
     ASSERT(atPosition != mValueList.end());
     return mValueList.erase(atPosition);
 }
 
-template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
-inline bool TEHashMap<KEY, VALUE, Implement>::removeFirst(KEY& out_Key, VALUE& out_Value)
+template < typename KEY, typename VALUE >
+inline bool TEHashMap<KEY, VALUE>::removeFirst(KEY& out_Key, VALUE& out_Value)
 {
     bool result = false;
     if (mValueList.empty() == false)
@@ -811,8 +798,8 @@ inline bool TEHashMap<KEY, VALUE, Implement>::removeFirst(KEY& out_Key, VALUE& o
     return result;
 }
 
-template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
-inline bool TEHashMap<KEY, VALUE, Implement>::removeFirst( void )
+template < typename KEY, typename VALUE >
+inline bool TEHashMap<KEY, VALUE>::removeFirst( void )
 {
     bool result = false;
     if (mValueList.empty() == false)
@@ -826,8 +813,8 @@ inline bool TEHashMap<KEY, VALUE, Implement>::removeFirst( void )
     return result;
 }
 
-template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
-inline bool TEHashMap<KEY, VALUE, Implement>::removeLast(KEY& out_Key, VALUE& out_Value)
+template < typename KEY, typename VALUE >
+inline bool TEHashMap<KEY, VALUE>::removeLast(KEY& out_Key, VALUE& out_Value)
 {
     bool result = false;
     if (mValueList.empty() == false)
@@ -844,8 +831,8 @@ inline bool TEHashMap<KEY, VALUE, Implement>::removeLast(KEY& out_Key, VALUE& ou
     return result;
 }
 
-template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
-inline bool TEHashMap<KEY, VALUE, Implement>::removeLast(void)
+template < typename KEY, typename VALUE >
+inline bool TEHashMap<KEY, VALUE>::removeLast(void)
 {
     bool result = false;
     if (mValueList.empty() == false)
@@ -859,8 +846,8 @@ inline bool TEHashMap<KEY, VALUE, Implement>::removeLast(void)
     return result;
 }
 
-template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
-inline typename TEHashMap<KEY, VALUE, Implement>::MAPPOS TEHashMap<KEY, VALUE, Implement>::nextPosition(typename TEHashMap<KEY, VALUE, Implement>::MAPPOS atPosition, KEY& out_Key, VALUE& out_Value) const
+template < typename KEY, typename VALUE >
+inline typename TEHashMap<KEY, VALUE>::MAPPOS TEHashMap<KEY, VALUE>::nextPosition(typename TEHashMap<KEY, VALUE>::MAPPOS atPosition, KEY& out_Key, VALUE& out_Value) const
 {
     ASSERT(atPosition != mValueList.end());
 
@@ -871,78 +858,78 @@ inline typename TEHashMap<KEY, VALUE, Implement>::MAPPOS TEHashMap<KEY, VALUE, I
     return result;
 }
 
-template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
-inline typename TEHashMap<KEY, VALUE, Implement>::MAPPOS 
-TEHashMap<KEY, VALUE, Implement>::nextPosition( typename TEHashMap<KEY, VALUE, Implement>::MAPPOS atPosition
+template < typename KEY, typename VALUE >
+inline typename TEHashMap<KEY, VALUE>::MAPPOS 
+TEHashMap<KEY, VALUE>::nextPosition( typename TEHashMap<KEY, VALUE>::MAPPOS atPosition
                                               , std::pair<KEY, VALUE> & out_Element) const
 {
     return nextPosition(atPosition, out_Element.mKey, out_Element.mValue);
 }
 
-template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
-inline typename TEHashMap<KEY, VALUE, Implement>::MAPPOS TEHashMap<KEY, VALUE, Implement>::nextPosition(typename TEHashMap<KEY, VALUE, Implement>::MAPPOS atPosition ) const
+template < typename KEY, typename VALUE >
+inline typename TEHashMap<KEY, VALUE>::MAPPOS TEHashMap<KEY, VALUE>::nextPosition(typename TEHashMap<KEY, VALUE>::MAPPOS atPosition ) const
 {
     ASSERT(atPosition != mValueList.end());
     return ++ atPosition;
 }
 
-template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
-inline VALUE & TEHashMap<KEY, VALUE, Implement>::getAt( const KEY & Key )
+template < typename KEY, typename VALUE >
+inline VALUE & TEHashMap<KEY, VALUE>::getAt( const KEY & Key )
 {
     return mValueList.at(Key);
 }
 
-template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
-inline const VALUE & TEHashMap<KEY, VALUE, Implement>::getAt(const KEY & Key) const
+template < typename KEY, typename VALUE >
+inline const VALUE & TEHashMap<KEY, VALUE>::getAt(const KEY & Key) const
 {
     return mValueList.at(Key);
 }
 
-template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
-inline void TEHashMap<KEY, VALUE, Implement>::getAtPosition(typename TEHashMap<KEY, VALUE, Implement>::MAPPOS atPosition, KEY & out_Key, VALUE & out_Value) const
+template < typename KEY, typename VALUE >
+inline void TEHashMap<KEY, VALUE>::getAtPosition(typename TEHashMap<KEY, VALUE>::MAPPOS atPosition, KEY & out_Key, VALUE & out_Value) const
 {
     ASSERT(atPosition != mValueList.end());
     out_Key     = atPosition->first;
     out_Value   = atPosition->second;
 }
 
-template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
-inline void TEHashMap<KEY, VALUE, Implement>::getAtPosition( typename TEHashMap<KEY, VALUE, Implement>::MAPPOS atPosition
+template < typename KEY, typename VALUE >
+inline void TEHashMap<KEY, VALUE>::getAtPosition( typename TEHashMap<KEY, VALUE>::MAPPOS atPosition
                                                            , std::pair<KEY, VALUE> & out_Element) const
 {
     getAtPosition(atPosition, out_Element.mKey, out_Element.mValue);
 }
 
-template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
-inline const KEY & TEHashMap<KEY, VALUE, Implement>::keyAtPosition(typename TEHashMap<KEY, VALUE, Implement>::MAPPOS atPosition) const
+template < typename KEY, typename VALUE >
+inline const KEY & TEHashMap<KEY, VALUE>::keyAtPosition(typename TEHashMap<KEY, VALUE>::MAPPOS atPosition) const
 {
     ASSERT(atPosition != mValueList.end());
     return atPosition->first;
 }
 
-template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
-inline KEY& TEHashMap<KEY, VALUE, Implement>::keyAtPosition(typename TEHashMap<KEY, VALUE, Implement>::MAPPOS atPosition)
+template < typename KEY, typename VALUE >
+inline KEY& TEHashMap<KEY, VALUE>::keyAtPosition(typename TEHashMap<KEY, VALUE>::MAPPOS atPosition)
 {
     ASSERT(atPosition != mValueList.end());
     return const_cast<KEY &>(atPosition->first);
 }
 
-template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
-inline const VALUE & TEHashMap<KEY, VALUE, Implement>::valueAtPosition(typename TEHashMap<KEY, VALUE, Implement>::MAPPOS atPosition ) const
+template < typename KEY, typename VALUE >
+inline const VALUE & TEHashMap<KEY, VALUE>::valueAtPosition(typename TEHashMap<KEY, VALUE>::MAPPOS atPosition ) const
 {
     ASSERT(atPosition != mValueList.end());
     return atPosition->second;
 }
 
-template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
-inline VALUE& TEHashMap<KEY, VALUE, Implement>::valueAtPosition(typename TEHashMap<KEY, VALUE, Implement>::MAPPOS atPosition)
+template < typename KEY, typename VALUE >
+inline VALUE& TEHashMap<KEY, VALUE>::valueAtPosition(typename TEHashMap<KEY, VALUE>::MAPPOS atPosition)
 {
     ASSERT(atPosition != mValueList.end());
     return atPosition->second;
 }
 
-template < typename KEY, typename VALUE, class Implement /* = HashMapBase */ >
-inline bool TEHashMap<KEY, VALUE, Implement>::nextEntry(typename TEHashMap<KEY, VALUE, Implement>::MAPPOS & in_out_NextPosition, KEY & out_NextKey, VALUE & out_NextValue) const
+template < typename KEY, typename VALUE >
+inline bool TEHashMap<KEY, VALUE>::nextEntry(typename TEHashMap<KEY, VALUE>::MAPPOS & in_out_NextPosition, KEY & out_NextKey, VALUE & out_NextValue) const
 {
     ASSERT( in_out_NextPosition != mValueList.end() );
     bool result = false;
@@ -957,11 +944,11 @@ inline bool TEHashMap<KEY, VALUE, Implement>::nextEntry(typename TEHashMap<KEY, 
 }
 
 //////////////////////////////////////////////////////////////////////////
-// TEHashMap<KEY, VALUE, Implement> class friend methods
+// TEHashMap<KEY, VALUE> class friend methods
 //////////////////////////////////////////////////////////////////////////
 
-template < typename KEY, typename VALUE, class Implement >
-const IEInStream & operator >> ( const IEInStream & stream, TEHashMap<KEY, VALUE, Implement> & input )
+template < typename KEY, typename VALUE >
+const IEInStream & operator >> ( const IEInStream & stream, TEHashMap<KEY, VALUE> & input )
 {
     uint32_t size = 0;
     stream >> size;
@@ -980,8 +967,8 @@ const IEInStream & operator >> ( const IEInStream & stream, TEHashMap<KEY, VALUE
     return stream;
 }
 
-template < typename KEY, typename VALUE, class Implement >
-IEOutStream & operator << ( IEOutStream & stream, const TEHashMap<KEY, VALUE, Implement> & output )
+template < typename KEY, typename VALUE >
+IEOutStream & operator << ( IEOutStream & stream, const TEHashMap<KEY, VALUE> & output )
 {
     uint32_t size = output.getSize();
     stream << size;

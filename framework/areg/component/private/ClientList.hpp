@@ -27,32 +27,14 @@
 class ProxyAddress;
 class ServerInfo;
 
-//////////////////////////////////////////////////////////////////////////
-// ClientList class declaration
-//////////////////////////////////////////////////////////////////////////
-class ImplClientList	: public TEListImpl<const ClientInfo &>
-{
-public:
-    /**
-     * \brief   Compares 2 values, returns true if they are equal.
-     * \param   Value1  The right-side value to compare.
-     * \param   Value2  The left-side value to compare.
-     * \return  Returns true if 2 values are equal.
-     **/
-    inline bool implEqualValues( const ClientInfo & value1, const ClientInfo & value2) const
-    {
-        return ( value1.getAddress() == value2.getAddress() );
-    }
-};
-
-using ClientListBse = TELinkedList<ClientInfo, ImplClientList>;
+using ClientListBase = TELinkedList<ClientInfo>;
 
 /**
  * \brief   ClientList is a linked list object containing the list
  *          of Client Info objects related to one server Stub address.
  *          The object is used in Router Service to control clients.
  **/
-class ClientList    : public ClientListBse
+class ClientList    : public ClientListBase
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -168,3 +150,7 @@ public:
      **/
     void serverUnavailable( ClientList & out_clientList );
 };
+
+//////////////////////////////////////////////////////////////////////////
+// ClientList inline methods implementation
+//////////////////////////////////////////////////////////////////////////

@@ -48,15 +48,11 @@ private:
      **/
     using ListProperties        = TEArrayList<Property>;
     /**
-     * \brief   Remote servicing map helper class.
-     **/
-    using ImplMapConfiguration	= TEHashMapImpl<NERemoteService::eServiceConnection, ListProperties>;
-    /**
      * \brief   Map of configuration type and list of configuration properties.
      * \tparam  NERemoteService::eServiceConnection         The section / type of configuration.
      * \tparam  ConnectionConfiguration::ListProperties   The list of configuration properties.
      **/
-    using MapConfiguration		= TEHashMap<NERemoteService::eServiceConnection, ListProperties, ImplMapConfiguration>;
+    using MapConfiguration		= TEHashMap<NERemoteService::eServiceConnection, ListProperties>;
 
     /**
      * \brief   Connection configuration property indexes.

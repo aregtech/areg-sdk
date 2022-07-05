@@ -251,9 +251,9 @@ public:                                                                         
     /**                                                                                                                     **/                     \
     static inline bool sendEvent(const DATA_CLASS & data, __##ConsumerClass<DATA_CLASS> & listener, Event::eEventType eventType);                   \
     /**                                                                                                                     **/                     \
-    /** \brief  Sends event to specified dispatcher thread, which should alredy have registered event consumer.             **/                     \
+    /** \brief  Sends event to specified dispatcher thread, which should already have registered event consumer.            **/                     \
     /**         Call this method if sure that event should be processed within specified thread scope and                   **/                     \
-    /**         the dispatcher thread has reigistered consumer for the event.                                               **/                     \
+    /**         the dispatcher thread has registered consumer for the event.                                                **/                     \
     /**         Returns true if could send event.                                                                           **/                     \
     /**         It creates event object and pushes it into thread event queue for further processing.                       **/                     \
     /** \param  data        The data object to send as an event.                                                            **/                     \
@@ -367,7 +367,7 @@ private:                                                                        
 /*****************************************************************************************************************************/                     \
 typedef __##EventClass<DATA_CLASS>       EventClass;                                                                                                \
 /*****************************************************************************************************************************/                     \
-/** Event class implementatation                                                                                            **/                     \
+/** Event class implementation                                                                                              **/                     \
 /*****************************************************************************************************************************/                     \
 /**                                                                                                                         **/                     \
 /** Implement Runtime Object overrides and get Runtime Class ID                                                             **/                     \

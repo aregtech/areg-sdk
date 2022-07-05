@@ -108,8 +108,8 @@ void Application::releaseApplication(void)
     theApp.mStartService    = false;
     theApp.mStartTimer      = false;
     theApp.mStartRouting    = false;
-    theApp.mConfigTracer    = String::EmptyString.data();
-    theApp.mConfigService   = String::EmptyString.data();
+    theApp.mConfigTracer    = String::EmptyString;
+    theApp.mConfigService   = String::EmptyString;
 
     Application::_setAppState(Application::eAppState::AppStateStopped);
 }

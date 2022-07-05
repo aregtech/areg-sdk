@@ -52,20 +52,17 @@ protected:
     /**
      * \brief   The container of accepted socket objects where the keys are socket handle.
      **/
-    using ImplMapSocketToObject	= TEHashMapImpl<SOCKETHANDLE, SocketAccepted>;
-    using MapSocketToObject 	= TEHashMap<SOCKETHANDLE, SocketAccepted, ImplMapSocketToObject>;
+    using MapSocketToObject 	= TEHashMap<SOCKETHANDLE, SocketAccepted>;
 
     /**
      * \brief   The container of socket handles where the keys are cookie values.
      **/
-    using ImplMapCookieToSocket	= TEHashMapImpl<ITEM_ID, SOCKETHANDLE>;
-    using MapCookieToSocket		= TEHashMap<ITEM_ID, SOCKETHANDLE, ImplMapCookieToSocket>;
+    using MapCookieToSocket		= TEHashMap<ITEM_ID, SOCKETHANDLE>;
 
     /**
      * \brief   The container of cookie values where the keys are socket handles.
      **/
-    using ImplMapSocketToCookie	= TEHashMapImpl<SOCKETHANDLE, ITEM_ID>;
-    using MapSocketToCookie		= TEHashMap<SOCKETHANDLE, ITEM_ID, ImplMapSocketToCookie>;
+    using MapSocketToCookie		= TEHashMap<SOCKETHANDLE, ITEM_ID>;
 
     /**
      * \brief   The list of accepted sockets.

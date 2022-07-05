@@ -72,7 +72,7 @@ void MainServicingComponent::requestHelloWorld(unsigned int clientID, const Stri
 
         if (getRemainOutputs() == 0)
         {
-            TRACE_WARN("The maximum of output messages have been reached, the service is not available anymore, going to start shutdown procedure.");
+            TRACE_WARN("The maximum of output messages has been reached, the service is not available anymore, going to start shutdown procedure.");
 
             setServiceState(NESystemShutdown::eServiceState::ServiceUnavailable);
             broadcastServiceUnavailable();

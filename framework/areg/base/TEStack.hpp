@@ -32,12 +32,12 @@
 /************************************************************************
  * Hierarchies. Following class are declared.
  ************************************************************************/
-template <typename VALUE, class Compare> class TEStack;
-    template <typename VALUE, class Compare> class TELockStack;
-    template <typename VALUE, class Compare> class TENolockStack;
+template <typename VALUE> class TEStack;
+    template <typename VALUE> class TELockStack;
+    template <typename VALUE> class TENolockStack;
 
 //////////////////////////////////////////////////////////////////////////
-// TEStack<VALUE, Compare> class template declaration
+// TEStack<VALUE> class template declaration
 //////////////////////////////////////////////////////////////////////////
 /**
  * \brief   Simple FIFO Stack base object to queue elements, insert and 
@@ -49,10 +49,8 @@ template <typename VALUE, class Compare> class TEStack;
  * \tparam  VALUE       The type of stored items. Either should be primitive 
  *                      or should have default constructor and valid assigning 
  *                      operator. And should be possible to convert to type const VALUE &.
- * \tparam  const VALUE &  By default same as VALUE.
- * \tparam  Compare     A helper class to compare elements.
  **/
-template <typename VALUE, class Compare = TEListImpl<VALUE>>
+template <typename VALUE>
 class TEStack   : private Constless<std::deque<VALUE>>
 {
 //////////////////////////////////////////////////////////////////////////
@@ -81,14 +79,14 @@ protected:
      * \param   synchObject     The instance of synchronization object
      * \param   source          The Stack source, which contains elements to copy.
      **/
-    TEStack( IEResourceLock & synchObject, const TEStack<VALUE, Compare> & source );
+    TEStack( IEResourceLock & synchObject, const TEStack<VALUE> & source );
 
     /**
      * \brief   Initializes the resource lock object and move elements from given source.
      * \param   synchObject     The instance of synchronization object
      * \param   source          The Stack source, which contains elements to move.
      **/
-    TEStack( IEResourceLock & synchObject, TEStack<VALUE, Compare> && source ) noexcept;
+    TEStack( IEResourceLock & synchObject, TEStack<VALUE> && source ) noexcept;
 
     /**
      * \brief   Destructor. Public
@@ -106,7 +104,7 @@ public:
      * \param   source  The instance of source to get stack entries.
      * \return  Returns stack object.
      **/
-    inline TEStack<VALUE, Compare> & operator = ( const TEStack<VALUE, Compare> & source );
+    inline TEStack<VALUE> & operator = ( const TEStack<VALUE> & source );
 
     /**
      * \brief   Assigning operator. It is moves stack elements from given source
@@ -115,7 +113,7 @@ public:
      * \param   source  The instance of source to get stack entries.
      * \return  Returns stack object.
      **/
-    inline TEStack<VALUE, Compare> & operator = ( TEStack<VALUE, Compare> && source ) noexcept;
+    inline TEStack<VALUE> & operator = ( TEStack<VALUE> && source ) noexcept;
 
     /**
      * \brief   Returns element at specified position.
@@ -138,8 +136,8 @@ public:
      * \param   stream  The streaming object for reading values
      * \param   input   The Stack object to save initialized values.
      **/
-    template<typename VALUE, class Compare>
-    friend const IEInStream & operator >> (const IEInStream & stream, TEStack<VALUE, Compare> & input);
+    template<typename VALUE>
+    friend const IEInStream & operator >> (const IEInStream & stream, TEStack<VALUE> & input);
     /**
      * \brief   Writes to the stream Stack values.
      *          The values will be written to the stream starting from head position.
@@ -148,8 +146,8 @@ public:
      * \param   stream  The streaming object to write values
      * \param   input   The Stack object to read out values.
      **/
-    template<typename VALUE, class Compare>
-    friend IEOutStream & operator << (IEOutStream & stream, const TEStack<VALUE, Compare> & output);
+    template<typename VALUE>
+    friend IEOutStream & operator << (IEOutStream & stream, const TEStack<VALUE> & output);
 
 //////////////////////////////////////////////////////////////////////////
 // Operations and Attributes
@@ -286,7 +284,7 @@ public:
      * \param   source  The stack source to copy elements.
      * \return  Returns the number of copied elements.
      **/
-    inline uint32_t copy( const TEStack<VALUE, Compare> & source );
+    inline uint32_t copy( const TEStack<VALUE> & source );
 
     /**
      * \brief   Moves all elements from given source and returns the number of moved elements.
@@ -294,7 +292,7 @@ public:
      * \param   source  The stack source to copy elements.
      * \return  Returns the number of copied elements.
      **/
-    inline uint32_t move( TEStack<VALUE, Compare> && source ) noexcept;
+    inline uint32_t move( TEStack<VALUE> && source ) noexcept;
 
     /**
      * \brief   Searches element in the stack starting at given position.
@@ -331,21 +329,6 @@ public:
     inline STACKPOS nextPosition( STACKPOS pos ) const;
 
 //////////////////////////////////////////////////////////////////////////
-// Protected methods
-//////////////////////////////////////////////////////////////////////////
-protected:
-
-    /**
-     * \brief   Compares and returns true if 2 values are equal.
-     *          Specify own implEqualValues() method of TEListImpl
-     *          class template for custom comparing method.
-     * \param   Value1  Left-side value to compare.
-     * \param   Value2  Right-side value to compare.
-     * \return  Returns true if 2 value are equal.
-     **/
-    inline bool isEqualValues(const VALUE & Value1, const VALUE & Value2) const;
-
-//////////////////////////////////////////////////////////////////////////
 // Member variables
 //////////////////////////////////////////////////////////////////////////
 protected:
@@ -355,32 +338,25 @@ protected:
      //! The instance of synchronization object to be used to make object thread-safe.
     IEResourceLock &    mSynchObject;
 
-    //! THe Instance of helper object to compare values.
-    Compare             mHelper;
-
-//////////////////////////////////////////////////////////////////////////
-// private methods
-//////////////////////////////////////////////////////////////////////////
-private:
 //////////////////////////////////////////////////////////////////////////
 // Hidden / Forbidden method calls
 //////////////////////////////////////////////////////////////////////////
 private:
     TEStack( void ) = delete;
-    TEStack( const TEStack<VALUE, Compare> & /* source */ ) = delete;
-    TEStack( TEStack<VALUE, Compare> && /* source */ ) = delete;
+    TEStack( const TEStack<VALUE> & /* source */ ) = delete;
+    TEStack( TEStack<VALUE> && /* source */ ) = delete;
 };
 
 //////////////////////////////////////////////////////////////////////////
-// TELockStack<VALUE, Compare> class template declaration
+// TELockStack<VALUE> class template declaration
 //////////////////////////////////////////////////////////////////////////
 /**
  * \brief   Thread safe FIFO stack class template declaration, where accessing
  *          data is synchronized by resource lock. Use this object if elements 
  *          of stack are accessed by more than one thread.
  **/
-template <typename VALUE, class Compare = TEListImpl<VALUE>>
-class TELockStack  : public TEStack<VALUE, Compare>
+template <typename VALUE>
+class TELockStack  : public TEStack<VALUE>
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -395,25 +371,25 @@ public:
      * \brief   Copies data from given source.
      * \param   source  The source to copy data.
      **/
-    explicit TELockStack( const TEStack<VALUE, Compare> & source );
+    explicit TELockStack( const TEStack<VALUE> & source );
 
     /**
      * \brief   Moves data from given source.
      * \param   source  The source to move data.
      **/
-    explicit TELockStack( TEStack<VALUE, Compare> && source ) noexcept;
+    explicit TELockStack( TEStack<VALUE> && source ) noexcept;
 
     /**
      * \brief   Copies data from given source.
      * \param   source  The source to copy data.
      **/
-    TELockStack( const TELockStack<VALUE, Compare> & source );
+    TELockStack( const TELockStack<VALUE> & source );
 
     /**
      * \brief   Moves data from given source.
      * \param   source  The source to move data.
      **/
-    TELockStack( TELockStack<VALUE, Compare> && source ) noexcept;
+    TELockStack( TELockStack<VALUE> && source ) noexcept;
 
     /**
      * \brief   Destructor
@@ -431,7 +407,7 @@ public:
      * \param   source  The instance of source to copy stack entries.
      * \return  Returns stack object.
      **/
-    inline TELockStack<VALUE, Compare> & operator = ( const TELockStack<VALUE, Compare> & source );
+    inline TELockStack<VALUE> & operator = ( const TELockStack<VALUE> & source );
 
     /**
      * \brief   Moves entries from given sources. If stack had entries
@@ -439,7 +415,7 @@ public:
      * \param   source  The instance of source to move stack entries.
      * \return  Returns stack object.
      **/
-    inline TELockStack<VALUE, Compare> & operator = ( TELockStack<VALUE, Compare> && source ) noexcept;
+    inline TELockStack<VALUE> & operator = ( TELockStack<VALUE> && source ) noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -452,15 +428,15 @@ private:
 };
 
 //////////////////////////////////////////////////////////////////////////
-// TENolockStack<VALUE, Compare> class template declaration
+// TENolockStack<VALUE> class template declaration
 //////////////////////////////////////////////////////////////////////////
 /**
  * \brief   No thread safe FIFO stack class template declaration, where accessing
  *          data is not synchronized. Use this object if elements of stack 
  *          are accessed only by one thread.
  **/
-template <typename VALUE, class Compare = TEListImpl<VALUE>>
-class TENolockStack    : public TEStack<VALUE, Compare>
+template <typename VALUE>
+class TENolockStack    : public TEStack<VALUE>
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -475,25 +451,25 @@ public:
      * \brief   Copies data from given source.
      * \param   source  The source to copy data.
      **/
-    explicit TENolockStack( const TEStack<VALUE, Compare> & source );
+    explicit TENolockStack( const TEStack<VALUE> & source );
 
     /**
      * \brief   Moves data from given source.
      * \param   source  The source to move data.
      **/
-    explicit TENolockStack( TEStack<VALUE, Compare> && source ) noexcept;
+    explicit TENolockStack( TEStack<VALUE> && source ) noexcept;
 
     /**
      * \brief   Copies data from given source.
      * \param   source  The source to copy data.
      **/
-    TENolockStack( const TENolockStack<VALUE, Compare> & source );
+    TENolockStack( const TENolockStack<VALUE> & source );
 
     /**
      * \brief   Moves data from given source.
      * \param   source  The source to move data.
      **/
-    TENolockStack( TENolockStack<VALUE, Compare> && source ) noexcept;
+    TENolockStack( TENolockStack<VALUE> && source ) noexcept;
 
     /**
      * \brief   Destructor
@@ -511,7 +487,7 @@ public:
      * \param   source  The instance of source to copy stack entries.
      * \return  Returns stack object.
      **/
-    inline TENolockStack<VALUE, Compare> & operator = ( const TENolockStack<VALUE, Compare> & source );
+    inline TENolockStack<VALUE> & operator = ( const TENolockStack<VALUE> & source );
 
     /**
      * \brief   Moves entries from given sources. If stack had entries
@@ -519,7 +495,7 @@ public:
      * \param   source  The instance of source to move stack entries.
      * \return  Returns stack object.
      **/
-    inline TENolockStack<VALUE, Compare> & operator = ( TENolockStack<VALUE, Compare> && source ) noexcept;
+    inline TENolockStack<VALUE> & operator = ( TENolockStack<VALUE> && source ) noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -536,119 +512,116 @@ private:
 //////////////////////////////////////////////////////////////////////////
 
 //////////////////////////////////////////////////////////////////////////
-// TEStack<VALUE, Compare> class template implementation
+// TEStack<VALUE> class template implementation
 //////////////////////////////////////////////////////////////////////////
-template <typename VALUE, class Compare /*= TEListImpl<VALUE>*/>
-TEStack<VALUE, Compare>::TEStack( IEResourceLock & synchObject )
+template <typename VALUE>
+TEStack<VALUE>::TEStack( IEResourceLock & synchObject )
     : mValueList    ( )
     , mSynchObject  ( synchObject )
-    , mHelper       ( )
 {
 }
 
-template <typename VALUE, class Compare /*= TEListImpl<VALUE>*/>
-TEStack<VALUE, Compare>::TEStack( IEResourceLock & synchObject, const TEStack<VALUE, Compare> & source )
+template <typename VALUE>
+TEStack<VALUE>::TEStack( IEResourceLock & synchObject, const TEStack<VALUE> & source )
     : mValueList    ( source.mValueList )
     , mSynchObject  ( synchObject )
-    , mHelper       ( )
 {
 }
 
-template <typename VALUE, class Compare /*= TEListImpl<VALUE>*/>
-TEStack<VALUE, Compare>::TEStack( IEResourceLock & synchObject, TEStack<VALUE, Compare> && source ) noexcept
+template <typename VALUE>
+TEStack<VALUE>::TEStack( IEResourceLock & synchObject, TEStack<VALUE> && source ) noexcept
     : mValueList    ( std::move(source.mValueList) )
     , mSynchObject  ( synchObject )
-    , mHelper       ( )
 {
 }
 
-template <typename VALUE, class Compare /*= TEListImpl<VALUE>*/>
-TEStack<VALUE, Compare>::~TEStack( void )
+template <typename VALUE>
+TEStack<VALUE>::~TEStack( void )
 {
     mSynchObject.lock();
     mValueList.clear();
     mSynchObject.unlock();
 }
 
-template <typename VALUE, class Compare /*= TEListImpl<VALUE>*/>
-inline TEStack<VALUE, Compare> & TEStack<VALUE, Compare>::operator = ( const TEStack<VALUE, Compare> & source )
+template <typename VALUE>
+inline TEStack<VALUE> & TEStack<VALUE>::operator = ( const TEStack<VALUE> & source )
 {
     copy(source);
     return (*this);
 }
 
-template <typename VALUE, class Compare /*= TEListImpl<VALUE>*/>
-inline TEStack<VALUE, Compare> & TEStack<VALUE, Compare>::operator = ( TEStack<VALUE, Compare> && source ) noexcept
+template <typename VALUE>
+inline TEStack<VALUE> & TEStack<VALUE>::operator = ( TEStack<VALUE> && source ) noexcept
 {
     move( std::move(source) );
     return (*this);
 }
 
-template <typename VALUE, class Compare /*= TEListImpl<VALUE>*/>
-inline const VALUE& TEStack<VALUE, Compare>::operator [] (STACKPOS atPosition) const
+template <typename VALUE>
+inline const VALUE& TEStack<VALUE>::operator [] (STACKPOS atPosition) const
 {
     Lock lock(mSynchObject);
     return (*atPosition);
 }
 
-template <typename VALUE, class Compare /*= TEListImpl<VALUE>*/>
-inline VALUE& TEStack<VALUE, Compare>::operator [] (STACKPOS atPosition)
+template <typename VALUE>
+inline VALUE& TEStack<VALUE>::operator [] (STACKPOS atPosition)
 {
     Lock lock(mSynchObject);
     return (*atPosition);
 }
 
-template <typename VALUE, class Compare /*= TEListImpl<VALUE>*/>
-inline uint32_t TEStack<VALUE, Compare>::getSize( void ) const
+template <typename VALUE>
+inline uint32_t TEStack<VALUE>::getSize( void ) const
 {
     Lock lock( mSynchObject );
     return static_cast<uint32_t>(mValueList.size());
 }
 
-template <typename VALUE, class Compare /*= TEListImpl<VALUE>*/>
-inline bool TEStack<VALUE, Compare>::isEmpty( void ) const
+template <typename VALUE>
+inline bool TEStack<VALUE>::isEmpty( void ) const
 {
     Lock lock( mSynchObject );
     return mValueList.empty();
 }
 
-template <typename VALUE, class Compare /*= TEListImpl<VALUE>*/>
-inline bool TEStack<VALUE, Compare>::isStartPosition(STACKPOS pos) const
+template <typename VALUE>
+inline bool TEStack<VALUE>::isStartPosition(STACKPOS pos) const
 {
     Lock lock(mSynchObject);
     return (pos = mValueList.begin());
 }
 
-template <typename VALUE, class Compare /*= TEListImpl<VALUE>*/>
-inline bool TEStack<VALUE, Compare>::isLastPosition(STACKPOS pos) const
+template <typename VALUE>
+inline bool TEStack<VALUE>::isLastPosition(STACKPOS pos) const
 {
     Lock lock(mSynchObject);
     return (mValueList.empty() == false) && (pos = --mValueList.end());
 }
 
-template <typename VALUE, class Compare /*= TEListImpl<VALUE>*/>
-inline typename TEStack<VALUE, Compare>::STACKPOS TEStack<VALUE, Compare>::invalidPosition(void) const
+template <typename VALUE>
+inline typename TEStack<VALUE>::STACKPOS TEStack<VALUE>::invalidPosition(void) const
 {
     Lock lock(mSynchObject);
     return Constless::iter(mValueList, mValueList.end());
 }
 
-template <typename VALUE, class Compare /*= TEListImpl<VALUE>*/>
-inline bool TEStack<VALUE, Compare>::isValidPosition(STACKPOS pos) const
+template <typename VALUE>
+inline bool TEStack<VALUE>::isValidPosition(STACKPOS pos) const
 {
     Lock lock(mSynchObject);
     return (pos != mValueList.end());
 }
 
-template <typename VALUE, class Compare /*= TEListImpl<VALUE>*/>
-inline bool TEStack<VALUE, Compare>::isInvalidPosition(STACKPOS pos) const
+template <typename VALUE>
+inline bool TEStack<VALUE>::isInvalidPosition(STACKPOS pos) const
 {
     Lock lock(mSynchObject);
     return (pos == mValueList.end());
 }
 
-template <typename VALUE, class Compare /*= TEListImpl<VALUE>*/>
-inline bool TEStack<VALUE, Compare>::checkPosition(STACKPOS pos) const
+template <typename VALUE>
+inline bool TEStack<VALUE>::checkPosition(STACKPOS pos) const
 {
     Lock lock(mSynchObject);
     std::deque<VALUE>::const_iterator it = mValueList.begin();
@@ -658,56 +631,56 @@ inline bool TEStack<VALUE, Compare>::checkPosition(STACKPOS pos) const
     return (it != mValueList.end());
 }
 
-template <typename VALUE, class Compare /*= TEListImpl<VALUE>*/>
-inline void TEStack<VALUE, Compare>::clear(void)
+template <typename VALUE>
+inline void TEStack<VALUE>::clear(void)
 {
     Lock lock(mSynchObject);
     mValueList.clear();
 }
 
-template <typename VALUE, class Compare /*= TEListImpl<VALUE>*/>
-inline void TEStack<VALUE, Compare>::freeExtra(void)
+template <typename VALUE>
+inline void TEStack<VALUE>::freeExtra(void)
 {
     Lock lock(mSynchObject);
     mValueList.shrink_to_fit();
 }
 
-template <typename VALUE, class Compare /*= TEListImpl<VALUE>*/>
-inline void TEStack<VALUE, Compare>::release(void)
+template <typename VALUE>
+inline void TEStack<VALUE>::release(void)
 {
     Lock lock(mSynchObject);
     mValueList.clear();
     mValueList.shrink_to_fit();
 }
 
-template <typename VALUE, class Compare /*= TEListImpl<VALUE>*/>
-inline bool TEStack<VALUE, Compare>::lock( void ) const
+template <typename VALUE>
+inline bool TEStack<VALUE>::lock( void ) const
 {
     return mSynchObject.lock(NECommon::WAIT_INFINITE);
 }
 
-template <typename VALUE, class Compare /*= TEListImpl<VALUE>*/>
-inline bool TEStack<VALUE, Compare>::unlock( void ) const
+template <typename VALUE>
+inline bool TEStack<VALUE>::unlock( void ) const
 {
     return mSynchObject.unlock();
 }
 
-template <typename VALUE, class Compare /*= TEListImpl<VALUE>*/>
-inline const VALUE & TEStack<VALUE, Compare>::firstEntry( void ) const
+template <typename VALUE>
+inline const VALUE & TEStack<VALUE>::firstEntry( void ) const
 {
     Lock lock(mSynchObject);
     return mValueList.front();
 }
 
-template <typename VALUE, class Compare /*= TEListImpl<VALUE>*/>
-inline const VALUE & TEStack<VALUE, Compare>::lastEntry( void ) const
+template <typename VALUE>
+inline const VALUE & TEStack<VALUE>::lastEntry( void ) const
 {
     Lock lock(mSynchObject);
     return mValueList.back();
 }
 
-template <typename VALUE, class Compare /*= TEListImpl<VALUE>*/>
-inline uint32_t TEStack<VALUE, Compare>::copy( const TEStack<VALUE, Compare> & source )
+template <typename VALUE>
+inline uint32_t TEStack<VALUE>::copy( const TEStack<VALUE> & source )
 {
     Lock lock(mSynchObject);
     Lock lockSource(source.mSynchObject);
@@ -716,8 +689,8 @@ inline uint32_t TEStack<VALUE, Compare>::copy( const TEStack<VALUE, Compare> & s
     return static_cast<uint32_t>(mValueList.size());
 }
 
-template <typename VALUE, class Compare /*= TEListImpl<VALUE>*/>
-inline uint32_t TEStack<VALUE, Compare>::move( TEStack<VALUE, Compare> && source ) noexcept
+template <typename VALUE>
+inline uint32_t TEStack<VALUE>::move( TEStack<VALUE> && source ) noexcept
 {
     Lock lock(mSynchObject);
     Lock lockSource(source.mSynchObject);
@@ -726,40 +699,40 @@ inline uint32_t TEStack<VALUE, Compare>::move( TEStack<VALUE, Compare> && source
     return static_cast<uint32_t>(mValueList.size());
 }
 
-template <typename VALUE, class Compare /*= TEListImpl<VALUE>*/>
-inline uint32_t TEStack<VALUE, Compare>::pushLast( const VALUE & newElement )
+template <typename VALUE>
+inline uint32_t TEStack<VALUE>::pushLast( const VALUE & newElement )
 {
     Lock lock(mSynchObject);
     mValueList.push_back(newElement);
     return static_cast<uint32_t>(mValueList.size());
 }
 
-template <typename VALUE, class Compare /*= TEListImpl<VALUE>*/>
-inline uint32_t TEStack<VALUE, Compare>::pushLast(VALUE && newElement)
+template <typename VALUE>
+inline uint32_t TEStack<VALUE>::pushLast(VALUE && newElement)
 {
     Lock lock(mSynchObject);
     mValueList.push_back(std::move(newElement));
     return static_cast<uint32_t>(mValueList.size());
 }
 
-template <typename VALUE, class Compare /*= TEListImpl<VALUE>*/>
-inline uint32_t TEStack<VALUE, Compare>::pushFirst( const VALUE & newElement )
+template <typename VALUE>
+inline uint32_t TEStack<VALUE>::pushFirst( const VALUE & newElement )
 {
     Lock lock(mSynchObject);
     mValueList.push_front(newElement);
     return static_cast<uint32_t>(mValueList.size());
 }
 
-template <typename VALUE, class Compare /*= TEListImpl<VALUE>*/>
-inline uint32_t TEStack<VALUE, Compare>::pushFirst(VALUE && newElement)
+template <typename VALUE>
+inline uint32_t TEStack<VALUE>::pushFirst(VALUE && newElement)
 {
     Lock lock(mSynchObject);
     mValueList.push_front(std::move(newElement));
     return static_cast<uint32_t>(mValueList.size());
 }
 
-template <typename VALUE, class Compare /*= TEListImpl<VALUE>*/>
-VALUE TEStack<VALUE, Compare>::popFirst( void )
+template <typename VALUE>
+VALUE TEStack<VALUE>::popFirst( void )
 {
     Lock lock(mSynchObject);
 
@@ -768,36 +741,31 @@ VALUE TEStack<VALUE, Compare>::popFirst( void )
     return result;
 }
 
-template <typename VALUE, class Compare /*= TEListImpl<VALUE>*/>
-inline typename TEStack<VALUE, Compare>::STACKPOS TEStack<VALUE, Compare>::find(const VALUE& Value) const
-{
-    return find(Value, invalidPosition());
-}
-
-template <typename VALUE, class Compare /*= TEListImpl<VALUE>*/>
-inline typename TEStack<VALUE, Compare>::STACKPOS TEStack<VALUE, Compare>::find(const VALUE & Value, STACKPOS searchAfter ) const
+template <typename VALUE>
+inline typename TEStack<VALUE>::STACKPOS TEStack<VALUE>::find(const VALUE& Value) const
 {
     Lock lock(mSynchObject);
-
-    STACKPOS pos = searchAfter == invalidPosition() ? Constless::iter(mValueList.begin()) : ++searchAfter;
-    for (; pos != mValueList.end(); ++pos)
-    {
-        if (*pos == Value)
-            break;
-    }
-
-    return pos;
+    auto it = std::find(mValueList.begin(), mValueList.end(), Value);
+    return Constless::iter(it);
 }
 
-template <typename VALUE, class Compare /*= TEListImpl<VALUE>*/>
-inline typename TEStack<VALUE, Compare>::STACKPOS TEStack<VALUE, Compare>::firstPosition( void ) const
+template <typename VALUE>
+inline typename TEStack<VALUE>::STACKPOS TEStack<VALUE>::find(const VALUE & Value, STACKPOS searchAfter ) const
+{
+    Lock lock(mSynchObject);
+    STACKPOS end = invalidPosition();
+    return (searchAfter != end ? std::find(++searchAfter, end, Value) : end);
+}
+
+template <typename VALUE>
+inline typename TEStack<VALUE>::STACKPOS TEStack<VALUE>::firstPosition( void ) const
 {
     Lock lock(mSynchObject);
     return Constless::iter(mValueList, mValueList.begin());
 }
 
-template <typename VALUE, class Compare /*= TEListImpl<VALUE>*/>
-inline const VALUE & TEStack<VALUE, Compare>::getAt( const STACKPOS pos ) const
+template <typename VALUE>
+inline const VALUE & TEStack<VALUE>::getAt( const STACKPOS pos ) const
 {
     Lock lock(mSynchObject);
 
@@ -805,8 +773,8 @@ inline const VALUE & TEStack<VALUE, Compare>::getAt( const STACKPOS pos ) const
     return (*pos);
 }
 
-template <typename VALUE, class Compare /*= TEListImpl<VALUE>*/>
-inline VALUE & TEStack<VALUE, Compare>::getAt( STACKPOS pos )
+template <typename VALUE>
+inline VALUE & TEStack<VALUE>::getAt( STACKPOS pos )
 {
     Lock lock(mSynchObject);
 
@@ -814,8 +782,8 @@ inline VALUE & TEStack<VALUE, Compare>::getAt( STACKPOS pos )
     return (*pos);
 }
 
-template <typename VALUE, class Compare /*= TEListImpl<VALUE>*/>
-inline typename TEStack<VALUE, Compare>::STACKPOS TEStack<VALUE, Compare>::nextPosition( STACKPOS pos ) const
+template <typename VALUE>
+inline typename TEStack<VALUE>::STACKPOS TEStack<VALUE>::nextPosition( STACKPOS pos ) const
 {
     Lock lock(mSynchObject);
 
@@ -823,142 +791,134 @@ inline typename TEStack<VALUE, Compare>::STACKPOS TEStack<VALUE, Compare>::nextP
     return (++pos);
 }
 
-template <typename VALUE, class Compare /*= TEListImpl<VALUE>*/>
-inline bool TEStack<VALUE, Compare>::isEqualValues(const VALUE & Value1, const VALUE & Value2) const
-{
-    return mHelper.implEqualValues(Value1, Value2);
-}
-
 //////////////////////////////////////////////////////////////////////////
-// TELockStack<VALUE, Compare> class template implementation
+// TELockStack<VALUE> class template implementation
 //////////////////////////////////////////////////////////////////////////
 
-template <typename VALUE, class Compare /*= TEListImpl<VALUE>*/>
-TELockStack<VALUE, Compare>::TELockStack( void )
-    : TEStack<VALUE, Compare>(mLock)
+template <typename VALUE>
+TELockStack<VALUE>::TELockStack( void )
+    : TEStack<VALUE>(mLock)
     , mLock ( )
 {
 }
 
-template <typename VALUE, class Compare /*= TEListImpl<VALUE>*/>
-TELockStack<VALUE, Compare>::TELockStack( const TEStack<VALUE, Compare> & source )
-    : TEStack<VALUE, Compare>( mLock, source )
+template <typename VALUE>
+TELockStack<VALUE>::TELockStack( const TEStack<VALUE> & source )
+    : TEStack<VALUE>( mLock, source )
     , mLock ( )
 {
 }
 
-template <typename VALUE, class Compare /*= TEListImpl<VALUE>*/>
-TELockStack<VALUE, Compare>::TELockStack( TEStack<VALUE, Compare> && source ) noexcept
-    : TEStack<VALUE, Compare>( mLock, static_cast<TEStack<VALUE, Compare> &&>(source) )
+template <typename VALUE>
+TELockStack<VALUE>::TELockStack( TEStack<VALUE> && source ) noexcept
+    : TEStack<VALUE>( mLock, static_cast<TEStack<VALUE> &&>(source) )
     , mLock ( )
 {
 }
 
-template <typename VALUE, class Compare /*= TEListImpl<VALUE>*/>
-TELockStack<VALUE, Compare>::TELockStack( const TELockStack<VALUE, Compare> & source )
-    : TEStack<VALUE, Compare>( mLock, source )
+template <typename VALUE>
+TELockStack<VALUE>::TELockStack( const TELockStack<VALUE> & source )
+    : TEStack<VALUE>( mLock, source )
     , mLock ( )
 {
 }
 
-template <typename VALUE, class Compare /*= TEListImpl<VALUE>*/>
-TELockStack<VALUE, Compare>::TELockStack( TELockStack<VALUE, Compare> && source ) noexcept
-    : TEStack<VALUE, Compare>( mLock, static_cast<TEStack<VALUE, Compare> &&>(source) )
+template <typename VALUE>
+TELockStack<VALUE>::TELockStack( TELockStack<VALUE> && source ) noexcept
+    : TEStack<VALUE>( mLock, static_cast<TEStack<VALUE> &&>(source) )
     , mLock ( )
 {
 }
 
-template <typename VALUE, class Compare /*= TEListImpl<VALUE>*/>
-inline TELockStack<VALUE, Compare> & TELockStack<VALUE, Compare>::operator = ( const TELockStack<VALUE, Compare> & source )
+template <typename VALUE>
+inline TELockStack<VALUE> & TELockStack<VALUE>::operator = ( const TELockStack<VALUE> & source )
 {
-    static_cast<TEStack<VALUE, Compare> &>(*this) = source;
+    static_cast<TEStack<VALUE> &>(*this) = source;
     return (*this);
 }
 
-template <typename VALUE, class Compare /*= TEListImpl<VALUE>*/>
-inline TELockStack<VALUE, Compare> & TELockStack<VALUE, Compare>::operator = ( TELockStack<VALUE, Compare> && source ) noexcept
+template <typename VALUE>
+inline TELockStack<VALUE> & TELockStack<VALUE>::operator = ( TELockStack<VALUE> && source ) noexcept
 {
-    static_cast<TEStack<VALUE, Compare> &>(*this) = static_cast<TEStack<VALUE, Compare> &&>(source);
+    static_cast<TEStack<VALUE> &>(*this) = static_cast<TEStack<VALUE> &&>(source);
     return (*this);
 }
 
 //////////////////////////////////////////////////////////////////////////
-// TENolockStack<VALUE, Compare> class template implementation
+// TENolockStack<VALUE> class template implementation
 //////////////////////////////////////////////////////////////////////////
 
-template <typename VALUE, class Compare /*= TEListImpl<VALUE>*/>
-TENolockStack<VALUE, Compare>::TENolockStack( void )
-    : TEStack<VALUE, Compare>(mNoLock)
+template <typename VALUE>
+TENolockStack<VALUE>::TENolockStack( void )
+    : TEStack<VALUE>(mNoLock)
     , mNoLock   ( )
 {
 }
 
-template <typename VALUE, class Compare /*= TEListImpl<VALUE>*/>
-TENolockStack<VALUE, Compare>::TENolockStack( const TEStack<VALUE, Compare> & source )
-    : TEStack<VALUE, Compare>( mNoLock, source )
+template <typename VALUE>
+TENolockStack<VALUE>::TENolockStack( const TEStack<VALUE> & source )
+    : TEStack<VALUE>( mNoLock, source )
     , mNoLock   ( )
 {
 }
 
-template <typename VALUE, class Compare /*= TEListImpl<VALUE>*/>
-TENolockStack<VALUE, Compare>::TENolockStack( TEStack<VALUE, Compare> && source ) noexcept
-    : TEStack<VALUE, Compare>( mNoLock, static_cast<TEStack<VALUE, Compare> &&>(source) )
+template <typename VALUE>
+TENolockStack<VALUE>::TENolockStack( TEStack<VALUE> && source ) noexcept
+    : TEStack<VALUE>( mNoLock, static_cast<TEStack<VALUE> &&>(source) )
     , mNoLock   ( )
 {
 }
 
-template <typename VALUE, class Compare /*= TEListImpl<VALUE>*/>
-TENolockStack<VALUE, Compare>::TENolockStack( const TENolockStack<VALUE, Compare> & source )
-    : TEStack<VALUE, Compare>( mNoLock, source )
+template <typename VALUE>
+TENolockStack<VALUE>::TENolockStack( const TENolockStack<VALUE> & source )
+    : TEStack<VALUE>( mNoLock, source )
     , mNoLock   ( )
 {
 }
 
-template <typename VALUE, class Compare /*= TEListImpl<VALUE>*/>
-TENolockStack<VALUE, Compare>::TENolockStack( TENolockStack<VALUE, Compare> && source ) noexcept
-    : TEStack<VALUE, Compare>( mNoLock, static_cast<TEStack<VALUE, Compare> &&>(source) )
+template <typename VALUE>
+TENolockStack<VALUE>::TENolockStack( TENolockStack<VALUE> && source ) noexcept
+    : TEStack<VALUE>( mNoLock, static_cast<TEStack<VALUE> &&>(source) )
     , mNoLock   ( )
 {
 }
 
-template <typename VALUE, class Compare /*= TEListImpl<VALUE>*/>
-inline TENolockStack<VALUE, Compare> & TENolockStack<VALUE, Compare>::operator = ( const TENolockStack<VALUE, Compare> & source )
+template <typename VALUE>
+inline TENolockStack<VALUE> & TENolockStack<VALUE>::operator = ( const TENolockStack<VALUE> & source )
 {
-    static_cast<TEStack<VALUE, Compare> &>(*this) = source;
+    static_cast<TEStack<VALUE> &>(*this) = source;
     return (*this);
 }
 
-template <typename VALUE, class Compare /*= TEListImpl<VALUE>*/>
-inline TENolockStack<VALUE, Compare> & TENolockStack<VALUE, Compare>::operator = ( TENolockStack<VALUE, Compare> && source ) noexcept
+template <typename VALUE>
+inline TENolockStack<VALUE> & TENolockStack<VALUE>::operator = ( TENolockStack<VALUE> && source ) noexcept
 {
-    static_cast<TEStack<VALUE, Compare> &>(*this) = static_cast<TEStack<VALUE, Compare> &&>(source);
+    static_cast<TEStack<VALUE> &>(*this) = static_cast<TEStack<VALUE> &&>(source);
     return (*this);
 }
 
 //////////////////////////////////////////////////////////////////////////
-// TEStack<VALUE, Compare> friend operators implementation
+// TEStack<VALUE> friend operators implementation
 //////////////////////////////////////////////////////////////////////////
-template<typename VALUE, class Compare>
-const IEInStream & operator >> ( const IEInStream & stream, TEStack<VALUE, Compare> & input )
+template<typename VALUE>
+const IEInStream & operator >> ( const IEInStream & stream, TEStack<VALUE> & input )
 {
     Lock lock(input.mSynchObject);
 
     input.mValueList.clear();
     uint32_t size = 0;
     stream >> size;
-
-    for (uint32_t i = 0; i < size; ++ i)
+    input.mValueList.resize(size);
+    for (auto& elem : input.mValueList)
     {
-        VALUE value;
-        stream >> value;
-        input.mValueList.push_back(std::move(value));
+        stream >> elem;
     }
 
     return stream;
 }
 
-template<typename VALUE, class Compare>
-IEOutStream & operator << ( IEOutStream & stream, const TEStack<VALUE, Compare> & output )
+template<typename VALUE>
+IEOutStream & operator << ( IEOutStream & stream, const TEStack<VALUE> & output )
 {
     Lock lock(output.mSynchObject);
 

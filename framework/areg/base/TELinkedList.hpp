@@ -32,7 +32,7 @@
 #include <list>
 
 //////////////////////////////////////////////////////////////////////////
-// TELinkedList<VALUE, Implement> class template declaration
+// TELinkedList<VALUE> class template declaration
 //////////////////////////////////////////////////////////////////////////
 /**
  * \brief   Bi-direction Linked List class template access, where insert and 
@@ -51,10 +51,8 @@
  *                      primitive or should have default constructor 
  *                      and valid assigning operator. Also, should be 
  *                      possible to convert to type const VALUE &.
- * \tparam  const VALUE &  By default same as VALUE, but can be any other
- *                      type, which is converted from type VALUE.
  **/
-template <typename VALUE, class Implement = TEListImpl<VALUE>> 
+template <typename VALUE> 
 class TELinkedList  : private Constless<std::list<VALUE>>
 {
 //////////////////////////////////////////////////////////////////////////
@@ -76,13 +74,13 @@ public:
      * \brief   Copy constructor.
      * \param   src     The source to copy data.
      **/
-    TELinkedList( const TELinkedList<VALUE, Implement> & src ) = default;
+    TELinkedList( const TELinkedList<VALUE> & src ) = default;
     
     /**
      * \brief   Move constructor.
      * \param   src     The source to copy data.
      **/
-    TELinkedList( TELinkedList<VALUE, Implement> && src ) noexcept = default;
+    TELinkedList( TELinkedList<VALUE> && src ) noexcept = default;
 
     /**
      * \brief   Destructor
@@ -101,27 +99,27 @@ public:
      * \brief	Assigning operator, assigns elements of src to the Linked List
      * \param	src	Source Linked List to get elements.
      **/
-    TELinkedList<VALUE, Implement> & operator = ( const TELinkedList<VALUE, Implement> & src );
+    TELinkedList<VALUE> & operator = ( const TELinkedList<VALUE> & src );
 
     /**
      * \brief	Move operator, moves elements of src to the Linked List
      * \param	src	Source Linked List to get elements.
      **/
-    TELinkedList<VALUE, Implement> & operator = ( TELinkedList<VALUE, Implement> && src ) noexcept;
+    TELinkedList<VALUE> & operator = ( TELinkedList<VALUE> && src ) noexcept;
 
     /**
      * \brief   Checks equality of 2 linked-list objects, and returns true if they are equal.
      *          There should be possible to compare VALUE types entries of linked list.
      * \param   other   The linked-list object to compare
      **/
-    bool operator == ( const TELinkedList<VALUE, Implement> & other ) const;
+    bool operator == ( const TELinkedList<VALUE> & other ) const;
 
     /**
      * \brief   Checks inequality of 2 linked-list objects, and returns true if they are not equal.
      *          There should be possible to compare VALUE types entries of linked list.
      * \param   other   The linked-list object to compare
      **/
-    bool operator != ( const TELinkedList<VALUE, Implement> & other ) const;
+    bool operator != ( const TELinkedList<VALUE> & other ) const;
 
     /**
      * \brief   Subscript operator. Returns reference to value of element 
@@ -171,8 +169,8 @@ public:
      * \param   stream  The streaming object for reading values
      * \param   input   The Linked List object to save initialized values.
      **/
-    template<typename VALUE, class Implement>
-    friend const IEInStream & operator >> ( const IEInStream & stream, TELinkedList<VALUE, Implement> & input );
+    template<typename VALUE>
+    friend const IEInStream & operator >> ( const IEInStream & stream, TELinkedList<VALUE> & input );
     /**
      * \brief   Writes to the stream Linked List values.
      *          The values will be written to the stream starting from head position.
@@ -181,8 +179,8 @@ public:
      * \param   stream  The streaming object to write values
      * \param   input   The Linked List object to read out values.
      **/
-    template<typename VALUE, class Implement>
-    friend IEOutStream & operator << ( IEOutStream & stream, const TELinkedList<VALUE, Implement> & output );
+    template<typename VALUE>
+    friend IEOutStream & operator << ( IEOutStream & stream, const TELinkedList<VALUE> & output );
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -586,20 +584,10 @@ public:
      *          No elements are copied. The container other becomes empty after the operation.
      * \param   source  The source of linked list to merge.
      */
-    inline void merge(const TELinkedList<VALUE, Implement> & source);
-    inline void merge(TELinkedList<VALUE, Implement> && source);
+    inline void merge(const TELinkedList<VALUE> & source);
+    inline void merge(TELinkedList<VALUE> && source);
 
 protected:
-
-    /**
-     * \brief   Called when comparing 2 values of element.
-     *          Overwrite method when need to change comparison.
-     * \param   value1  Value on left side to compare.
-     * \param   value2  Value on right side to compare.
-     * \return  If function returns true, 2 values are equal.
-     *          Otherwise, they are not equal.
-     **/
-    inline bool isEqualValues( const VALUE & value1, const VALUE & value2) const;
 
     /**
      * \brief   Returns the position of the element at the given index.
@@ -625,124 +613,120 @@ protected:
      * \brief   The linked list object
      **/
     std::list<VALUE>    mValueList;
-    /**
-     * \brief   Instance of object that compares values.
-     **/
-    Implement   mImplement;
 };
 
 //////////////////////////////////////////////////////////////////////////
-// TELinkedList<VALUE, Implement> class template implementation
+// TELinkedList<VALUE> class template implementation
 //////////////////////////////////////////////////////////////////////////
 
-template <typename VALUE, class Implement /* = TEListImpl<VALUE> */>
-TELinkedList<VALUE, Implement>& TELinkedList<VALUE, Implement>::operator = (const TELinkedList<VALUE, Implement>& src)
+template <typename VALUE >
+TELinkedList<VALUE>& TELinkedList<VALUE>::operator = (const TELinkedList<VALUE>& src)
 {
     mValueList = src.mValueList;
     return (*this);
 }
 
-template <typename VALUE, class Implement /* = TEListImpl<VALUE> */>
-TELinkedList<VALUE, Implement>& TELinkedList<VALUE, Implement>::operator = (TELinkedList<VALUE, Implement>&& src) noexcept
+template <typename VALUE >
+TELinkedList<VALUE>& TELinkedList<VALUE>::operator = (TELinkedList<VALUE>&& src) noexcept
 {
     mValueList = std::move(src.mValueList);
     return (*this);
 }
 
-template <typename VALUE, class Implement /* = TEListImpl<VALUE> */>
-bool TELinkedList<VALUE, Implement>::operator == (const TELinkedList<VALUE, Implement>& other) const
+template <typename VALUE >
+bool TELinkedList<VALUE>::operator == (const TELinkedList<VALUE>& other) const
 {
     return (mValueList == other.mValueList);
 }
 
-template <typename VALUE, class Implement /* = TEListImpl<VALUE> */>
-bool TELinkedList<VALUE, Implement>::operator != (const TELinkedList<VALUE, Implement>& other) const
+template <typename VALUE >
+bool TELinkedList<VALUE>::operator != (const TELinkedList<VALUE>& other) const
 {
     return (mValueList != other.mValueList);
 }
 
-template <typename VALUE, class Implement /* = TEListImpl<VALUE> */>
-inline VALUE & TELinkedList<VALUE, Implement>::operator []( int atIndex )
+template <typename VALUE >
+inline VALUE & TELinkedList<VALUE>::operator []( int atIndex )
 {
     return getAt(atIndex);
 }
 
-template <typename VALUE, class Implement /* = TEListImpl<VALUE> */>
-inline VALUE & TELinkedList<VALUE, Implement>::operator []( LISTPOS atPosition )
+template <typename VALUE >
+inline VALUE & TELinkedList<VALUE>::operator []( LISTPOS atPosition )
 {
     return valueAtPosition(atPosition);
 }
 
-template <typename VALUE, class Implement /* = TEListImpl<VALUE> */>
-inline const VALUE & TELinkedList<VALUE, Implement>::operator []( int atIndex ) const
+template <typename VALUE >
+inline const VALUE & TELinkedList<VALUE>::operator []( int atIndex ) const
 {
     return getAt(atIndex);
 }
 
-template <typename VALUE, class Implement /* = TEListImpl<VALUE> */>
-inline const VALUE & TELinkedList<VALUE, Implement>::operator [] ( const LISTPOS atPosition ) const
+template <typename VALUE >
+inline const VALUE & TELinkedList<VALUE>::operator [] ( const LISTPOS atPosition ) const
 {
     return valueAtPosition(atPosition);
 }
 
-template <typename VALUE, class Implement /* = TEListImpl<VALUE> */>
-inline bool TELinkedList<VALUE, Implement>::isEmpty( void ) const	
+template <typename VALUE >
+inline bool TELinkedList<VALUE>::isEmpty( void ) const	
 {
     return mValueList.empty();
 }
 
-template <typename VALUE, class Implement /* = TEListImpl<VALUE> */>
-inline uint32_t TELinkedList<VALUE, Implement>::getSize( void ) const	
+template <typename VALUE >
+inline uint32_t TELinkedList<VALUE>::getSize( void ) const	
 {
     return static_cast<uint32_t>(mValueList.size());
 }
 
-template <typename VALUE, class Implement /* = TEListImpl<VALUE> */>
-inline typename TELinkedList<VALUE, Implement>::LISTPOS TELinkedList<VALUE, Implement>::firstPosition( void ) const
+template <typename VALUE >
+inline typename TELinkedList<VALUE>::LISTPOS TELinkedList<VALUE>::firstPosition( void ) const
 {
     std::list<VALUE>::const_iterator cit = mValueList.begin();
     return iter(mValueList, cit);
 }
 
-template <typename VALUE, class Implement /* = TEListImpl<VALUE> */>
-inline typename TELinkedList<VALUE, Implement>::LISTPOS TELinkedList<VALUE, Implement>::lastPosition( void ) const
+template <typename VALUE >
+inline typename TELinkedList<VALUE>::LISTPOS TELinkedList<VALUE>::lastPosition( void ) const
 {
     std::list<VALUE>::const_iterator cit = mValueList.empty() == false ? --mValueList.end() : mValueList.end();
     return iter(mValueList, cit);
 }
 
-template <typename VALUE, class Implement /* = TEListImpl<VALUE> */>
-inline bool TELinkedList<VALUE, Implement>::isStartPosition(const LISTPOS pos) const
+template <typename VALUE >
+inline bool TELinkedList<VALUE>::isStartPosition(const LISTPOS pos) const
 {
     return (pos == mValueList.begin());
 }
 
-template <typename VALUE, class Implement /* = TEListImpl<VALUE> */>
-inline bool TELinkedList<VALUE, Implement>::isLastPosition(const LISTPOS pos) const
+template <typename VALUE >
+inline bool TELinkedList<VALUE>::isLastPosition(const LISTPOS pos) const
 {
     return ((mValueList.empty() == false) && (pos == --mValueList.end()));
 }
 
-template <typename VALUE, class Implement /* = TEListImpl<VALUE> */>
-inline typename TELinkedList<VALUE, Implement>::LISTPOS TELinkedList<VALUE, Implement>::invalidPosition(void) const
+template <typename VALUE >
+inline typename TELinkedList<VALUE>::LISTPOS TELinkedList<VALUE>::invalidPosition(void) const
 {
     return Constless::iter(mValueList, mValueList.end());
 }
 
-template <typename VALUE, class Implement /* = TEListImpl<VALUE> */>
-inline bool TELinkedList<VALUE, Implement>::isInvalidPosition(const LISTPOS pos) const
+template <typename VALUE >
+inline bool TELinkedList<VALUE>::isInvalidPosition(const LISTPOS pos) const
 {
     return (pos == mValueList.end());
 }
 
-template <typename VALUE, class Implement /* = TEListImpl<VALUE> */>
-inline bool TELinkedList<VALUE, Implement>::isValidPosition(const LISTPOS pos) const
+template <typename VALUE >
+inline bool TELinkedList<VALUE>::isValidPosition(const LISTPOS pos) const
 {
     return (pos != mValueList.end());
 }
 
-template <typename VALUE, class Implement /* = TEListImpl<VALUE> */>
-inline bool TELinkedList<VALUE, Implement>::checkPosition(const LISTPOS pos) const
+template <typename VALUE >
+inline bool TELinkedList<VALUE>::checkPosition(const LISTPOS pos) const
 {
     std::list<VALUE>::const_iterator it = mValueList.begin();
     while ((it != mValueList.end()) && (it != pos))
@@ -751,74 +735,74 @@ inline bool TELinkedList<VALUE, Implement>::checkPosition(const LISTPOS pos) con
     return (it != mValueList.end());
 }
 
-template <typename VALUE, class Implement /* = TEListImpl<VALUE> */>
-void TELinkedList<VALUE, Implement>::clear(void)
+template <typename VALUE >
+void TELinkedList<VALUE>::clear(void)
 {
     mValueList.clear();
 }
 
-template <typename VALUE, class Implement /* = TEListImpl<VALUE> */>
-void TELinkedList<VALUE, Implement>::freeExtra(void)
+template <typename VALUE >
+void TELinkedList<VALUE>::freeExtra(void)
 {
     mValueList.clear();
 }
 
-template <typename VALUE, class Implement /* = TEListImpl<VALUE> */>
-void TELinkedList<VALUE, Implement>::release(void)
+template <typename VALUE >
+void TELinkedList<VALUE>::release(void)
 {
     mValueList.clear();
 }
 
-template <typename VALUE, class Implement /* = TEListImpl<VALUE> */>
-inline const VALUE & TELinkedList<VALUE, Implement>::getFirstEntry( void ) const
+template <typename VALUE >
+inline const VALUE & TELinkedList<VALUE>::getFirstEntry( void ) const
 {
     ASSERT(mValueList.empty() == false);
     return mValueList.front();
 }
 
-template <typename VALUE, class Implement /* = TEListImpl<VALUE> */>
-inline VALUE& TELinkedList<VALUE, Implement>::getFirstEntry(void)
+template <typename VALUE >
+inline VALUE& TELinkedList<VALUE>::getFirstEntry(void)
 {
     ASSERT(mValueList.empty() == false);
     return mValueList.front();
 }
 
-template <typename VALUE, class Implement /* = TEListImpl<VALUE> */>
-inline const VALUE & TELinkedList<VALUE, Implement>::getLastEntry( void ) const	
+template <typename VALUE >
+inline const VALUE & TELinkedList<VALUE>::getLastEntry( void ) const	
 {
     ASSERT(mValueList.empty() == false);
     return mValueList.back();
 }
 
-template <typename VALUE, class Implement /* = TEListImpl<VALUE> */>
-inline VALUE& TELinkedList<VALUE, Implement>::getLastEntry(void)
+template <typename VALUE >
+inline VALUE& TELinkedList<VALUE>::getLastEntry(void)
 {
     ASSERT(mValueList.empty() == false);
     return mValueList.back();
 }
 
-template <typename VALUE, class Implement /* = TEListImpl<VALUE> */>
-inline const VALUE & TELinkedList<VALUE, Implement>::getNext(LISTPOS &in_out_NextPosition) const
+template <typename VALUE >
+inline const VALUE & TELinkedList<VALUE>::getNext(LISTPOS &in_out_NextPosition) const
 {
     return *in_out_NextPosition++;
 }
 
-template <typename VALUE, class Implement /* = TEListImpl<VALUE> */>
-inline VALUE& TELinkedList<VALUE, Implement>::getNext(LISTPOS& in_out_NextPosition)
+template <typename VALUE >
+inline VALUE& TELinkedList<VALUE>::getNext(LISTPOS& in_out_NextPosition)
 {
     LISTPOS pos = in_out_NextPosition++;
     return *pos;
 }
 
-template <typename VALUE, class Implement /* = TEListImpl<VALUE> */>
-inline typename TELinkedList<VALUE, Implement>::LISTPOS TELinkedList<VALUE, Implement>::nextPosition(LISTPOS atPosition) const
+template <typename VALUE >
+inline typename TELinkedList<VALUE>::LISTPOS TELinkedList<VALUE>::nextPosition(LISTPOS atPosition) const
 {
     ASSERT(atPosition != mValueList.end());
     return ++atPosition;
 }
 
-template <typename VALUE, class Implement /* = TEListImpl<VALUE> */>
-inline const VALUE & TELinkedList<VALUE, Implement>::getPrev(LISTPOS & in_out_PrevPosition) const
+template <typename VALUE >
+inline const VALUE & TELinkedList<VALUE>::getPrev(LISTPOS & in_out_PrevPosition) const
 {
     ASSERT(in_out_PrevPosition != mValueList.end());
     LISTPOS pos = in_out_PrevPosition;
@@ -826,8 +810,8 @@ inline const VALUE & TELinkedList<VALUE, Implement>::getPrev(LISTPOS & in_out_Pr
     return *pos;
 }
 
-template <typename VALUE, class Implement /* = TEListImpl<VALUE> */>
-inline VALUE & TELinkedList<VALUE, Implement>::getPrev(LISTPOS& in_out_PrevPosition)
+template <typename VALUE >
+inline VALUE & TELinkedList<VALUE>::getPrev(LISTPOS& in_out_PrevPosition)
 {
     ASSERT(in_out_PrevPosition != mValueList.end());
     LISTPOS pos = in_out_PrevPosition;
@@ -835,29 +819,29 @@ inline VALUE & TELinkedList<VALUE, Implement>::getPrev(LISTPOS& in_out_PrevPosit
     return *pos;
 }
 
-template <typename VALUE, class Implement /* = TEListImpl<VALUE> */>
-inline typename TELinkedList<VALUE, Implement>::LISTPOS TELinkedList<VALUE, Implement>::prevPosition(LISTPOS atPosition) const
+template <typename VALUE >
+inline typename TELinkedList<VALUE>::LISTPOS TELinkedList<VALUE>::prevPosition(LISTPOS atPosition) const
 {
     ASSERT(atPosition != mValueList.end());
     return (atPosition == mValueList.begin() ? invalidPosition() : --atPosition);
 }
 
-template <typename VALUE, class Implement /* = TEListImpl<VALUE> */>
-inline const VALUE & TELinkedList<VALUE, Implement>::valueAtPosition( LISTPOS atPosition ) const
+template <typename VALUE >
+inline const VALUE & TELinkedList<VALUE>::valueAtPosition( LISTPOS atPosition ) const
 {
     ASSERT(atPosition != mValueList.end());
     return *atPosition;
 }
 
-template <typename VALUE, class Implement /* = TEListImpl<VALUE> */>
-inline VALUE & TELinkedList<VALUE, Implement>::valueAtPosition(LISTPOS atPosition)
+template <typename VALUE >
+inline VALUE & TELinkedList<VALUE>::valueAtPosition(LISTPOS atPosition)
 {
     ASSERT(atPosition != mValueList.end());
     return *atPosition;
 }
 
-template <typename VALUE, class Implement /* = TEListImpl<VALUE> */>
-const VALUE & TELinkedList<VALUE, Implement>::getAt(uint32_t index) const
+template <typename VALUE >
+const VALUE & TELinkedList<VALUE>::getAt(uint32_t index) const
 {
     LISTPOS pos = getPosition(index);
     ASSERT(isValidPosition(pos));
@@ -865,8 +849,8 @@ const VALUE & TELinkedList<VALUE, Implement>::getAt(uint32_t index) const
     return *pos;
 }
 
-template <typename VALUE, class Implement /* = TEListImpl<VALUE> */>
-VALUE & TELinkedList<VALUE, Implement>::getAt(uint32_t index)
+template <typename VALUE >
+VALUE & TELinkedList<VALUE>::getAt(uint32_t index)
 {
     LISTPOS pos = getPosition(index);
     ASSERT(isValidPosition(pos));
@@ -874,8 +858,8 @@ VALUE & TELinkedList<VALUE, Implement>::getAt(uint32_t index)
     return *pos;
 }
 
-template <typename VALUE, class Implement /* = TEListImpl<VALUE> */>
-bool TELinkedList<VALUE, Implement>::nextEntry(LISTPOS & in_out_NextPosition, VALUE & out_NextValue) const
+template <typename VALUE >
+bool TELinkedList<VALUE>::nextEntry(LISTPOS & in_out_NextPosition, VALUE & out_NextValue) const
 {
     bool result = false;
     ASSERT(in_out_NextPosition != mValueList.end());
@@ -889,8 +873,8 @@ bool TELinkedList<VALUE, Implement>::nextEntry(LISTPOS & in_out_NextPosition, VA
     return result;
 }
 
-template <typename VALUE, class Implement /* = TEListImpl<VALUE> */>
-bool TELinkedList<VALUE, Implement>::prevEntry(LISTPOS &in_out_PrevPosition, VALUE & out_PrevValue) const
+template <typename VALUE >
+bool TELinkedList<VALUE>::prevEntry(LISTPOS &in_out_PrevPosition, VALUE & out_PrevValue) const
 {
     bool result = false;
     ASSERT(in_out_PrevPosition != mValueList.end());
@@ -904,15 +888,15 @@ bool TELinkedList<VALUE, Implement>::prevEntry(LISTPOS &in_out_PrevPosition, VAL
     return result;
 }
 
-template <typename VALUE, class Implement /* = TEListImpl<VALUE> */>
-void TELinkedList<VALUE, Implement>::removeFirst( void )
+template <typename VALUE >
+void TELinkedList<VALUE>::removeFirst( void )
 {
     ASSERT(mValueList.empty() == false);
     mValueList.pop_front();
 }
 
-template <typename VALUE, class Implement /* = TEListImpl<VALUE> */>
-bool TELinkedList<VALUE, Implement>::removeFirst(VALUE & value)
+template <typename VALUE >
+bool TELinkedList<VALUE>::removeFirst(VALUE & value)
 {
     bool result = false;
     if (mValueList.empty() == false)
@@ -925,15 +909,15 @@ bool TELinkedList<VALUE, Implement>::removeFirst(VALUE & value)
     return result;
 }
 
-template <typename VALUE, class Implement /* = TEListImpl<VALUE> */>
-void TELinkedList<VALUE, Implement>::removeLast( void )
+template <typename VALUE >
+void TELinkedList<VALUE>::removeLast( void )
 {
     ASSERT(mValueList.empty() == false);
     mValueList.pop_back();
 }
 
-template <typename VALUE, class Implement /* = TEListImpl<VALUE> */>
-bool TELinkedList<VALUE, Implement>::removeLast(VALUE & value)
+template <typename VALUE >
+bool TELinkedList<VALUE>::removeLast(VALUE & value)
 {
     bool result = false;
     if (mValueList.empty() == false)
@@ -946,116 +930,84 @@ bool TELinkedList<VALUE, Implement>::removeLast(VALUE & value)
     return result;
 }
 
-template <typename VALUE, class Implement /* = TEListImpl<VALUE> */>
-void TELinkedList<VALUE, Implement>::pushFirst(const VALUE & newElement)
+template <typename VALUE >
+void TELinkedList<VALUE>::pushFirst(const VALUE & newElement)
 {
     mValueList.push_front(newElement);
 }
 
-template <typename VALUE, class Implement /* = TEListImpl<VALUE> */>
-void TELinkedList<VALUE, Implement>::pushFirst( VALUE && newElement )
+template <typename VALUE >
+void TELinkedList<VALUE>::pushFirst( VALUE && newElement )
 {
     mValueList.push_front(std::move(newElement));
 }
 
-template <typename VALUE, class Implement /* = TEListImpl<VALUE> */>
-bool TELinkedList<VALUE, Implement>::pushFirstIfNew(const VALUE& newElement)
+template <typename VALUE >
+bool TELinkedList<VALUE>::pushFirstIfNew(const VALUE& newElement)
 {
-    bool add = true;
-    for (const VALUE& value : mValueList)
+    bool result{ false };
+    if (std::find(mValueList.begin(), mValueList.end(), newElement) == mValueList.end())
     {
-        if (isEqualValues(value, newElement))
-        {
-            add = false;
-            break;
-        }
-    }
-
-    if (add)
-    {
+        result = true;
         mValueList.push_front(newElement);
     }
 
-    return add;
+    return result;
 }
 
-template <typename VALUE, class Implement /* = TEListImpl<VALUE> */>
-bool TELinkedList<VALUE, Implement>::pushFirstIfNew(VALUE&& newElement)
+template <typename VALUE >
+bool TELinkedList<VALUE>::pushFirstIfNew(VALUE&& newElement)
 {
-    bool add = true;
-    for (const VALUE& value : mValueList)
+    bool result{ false };
+    if (std::find(mValueList.begin(), mValueList.end(), newElement) == mValueList.end())
     {
-        if (isEqualValues(value, newElement))
-        {
-            add = false;
-            break;
-        }
-    }
-
-    if (add)
-    {
+        result = true;
         mValueList.push_front(std::move(newElement));
     }
 
-    return add;
+    return result;
 }
 
-template <typename VALUE, class Implement /* = TEListImpl<VALUE> */>
-void TELinkedList<VALUE, Implement>::pushLast(const VALUE & newElement)
+template <typename VALUE >
+void TELinkedList<VALUE>::pushLast(const VALUE & newElement)
 {
     mValueList.push_back(newElement);
 }
 
-template <typename VALUE, class Implement /* = TEListImpl<VALUE> */>
-void TELinkedList<VALUE, Implement>::pushLast(VALUE && newElement)
+template <typename VALUE >
+void TELinkedList<VALUE>::pushLast(VALUE && newElement)
 {
     mValueList.push_back(std::move(newElement));
 }
 
-template <typename VALUE, class Implement /* = TEListImpl<VALUE> */>
-bool TELinkedList<VALUE, Implement>::pushLastIfNew(const VALUE& newElement)
+template <typename VALUE >
+bool TELinkedList<VALUE>::pushLastIfNew(const VALUE& newElement)
 {
-    bool add = true;
-    for (const VALUE& value : mValueList)
+    bool result{ false };
+    if (std::find(mValueList.rbegin(), mValueList.rend(), newElement) == mValueList.rend())
     {
-        if (isEqualValues(value, newElement))
-        {
-            add = false;
-            break;
-        }
-    }
-
-    if (add)
-    {
+        result = true;
         mValueList.push_back(newElement);
     }
 
-    return add;
+    return result;
 }
 
-template <typename VALUE, class Implement /* = TEListImpl<VALUE> */>
-bool TELinkedList<VALUE, Implement>::pushLastIfNew(VALUE&& newElement)
+template <typename VALUE >
+bool TELinkedList<VALUE>::pushLastIfNew(VALUE&& newElement)
 {
-    bool add = true;
-    for (const VALUE& value : mValueList)
+    bool result{ false };
+    if (std::find(mValueList.rbegin(), mValueList.rend(), newElement) == mValueList.rend())
     {
-        if (isEqualValues(value, newElement))
-        {
-            add = false;
-            break;
-        }
-    }
-
-    if (add)
-    {
+        result = true;
         mValueList.push_back(std::move(newElement));
     }
 
-    return add;
+    return result;
 }
 
-template <typename VALUE, class Implement /* = TEListImpl<VALUE> */>
-VALUE TELinkedList<VALUE, Implement>::popFirst(void)
+template <typename VALUE >
+VALUE TELinkedList<VALUE>::popFirst(void)
 {
     ASSERT(mValueList.empty() == false);
     VALUE result = mValueList.front();
@@ -1063,8 +1015,8 @@ VALUE TELinkedList<VALUE, Implement>::popFirst(void)
     return result;
 }
 
-template <typename VALUE, class Implement /* = TEListImpl<VALUE> */>
-VALUE TELinkedList<VALUE, Implement>::popLast(void)
+template <typename VALUE >
+VALUE TELinkedList<VALUE>::popLast(void)
 {
     ASSERT(mValueList.empty() == false);
     VALUE result = mValueList.back();
@@ -1072,8 +1024,8 @@ VALUE TELinkedList<VALUE, Implement>::popLast(void)
     return result;
 }
 
-template <typename VALUE, class Implement /* = TEListImpl<VALUE> */>
-typename TELinkedList<VALUE, Implement>::LISTPOS TELinkedList<VALUE, Implement>::insertBefore(LISTPOS beforePosition, const VALUE & newElement)
+template <typename VALUE >
+typename TELinkedList<VALUE>::LISTPOS TELinkedList<VALUE>::insertBefore(LISTPOS beforePosition, const VALUE & newElement)
 {
     ASSERT(beforePosition != mValueList.end());
     LISTPOS result = mValueList.end();
@@ -1090,8 +1042,8 @@ typename TELinkedList<VALUE, Implement>::LISTPOS TELinkedList<VALUE, Implement>:
     return result;
 }
 
-template <typename VALUE, class Implement /* = TEListImpl<VALUE> */>
-typename TELinkedList<VALUE, Implement>::LISTPOS TELinkedList<VALUE, Implement>::insertBefore(LISTPOS beforePosition, VALUE && newElement)
+template <typename VALUE >
+typename TELinkedList<VALUE>::LISTPOS TELinkedList<VALUE>::insertBefore(LISTPOS beforePosition, VALUE && newElement)
 {
     ASSERT(beforePosition != mValueList.end());
     LISTPOS result = mValueList.end();
@@ -1108,40 +1060,40 @@ typename TELinkedList<VALUE, Implement>::LISTPOS TELinkedList<VALUE, Implement>:
     return result;
 }
 
-template <typename VALUE, class Implement /* = TEListImpl<VALUE> */>
-typename TELinkedList<VALUE, Implement>::LISTPOS TELinkedList<VALUE, Implement>::insertAfter(LISTPOS afterPosition, const VALUE & newElement)
+template <typename VALUE >
+typename TELinkedList<VALUE>::LISTPOS TELinkedList<VALUE>::insertAfter(LISTPOS afterPosition, const VALUE & newElement)
 {
     ASSERT(afterPosition != mValueList.end());
     return mValueList.insert(afterPosition, newElement);
 }
 
-template <typename VALUE, class Implement /* = TEListImpl<VALUE> */>
-typename TELinkedList<VALUE, Implement>::LISTPOS TELinkedList<VALUE, Implement>::insertAfter(LISTPOS afterPosition, VALUE && newElement)
+template <typename VALUE >
+typename TELinkedList<VALUE>::LISTPOS TELinkedList<VALUE>::insertAfter(LISTPOS afterPosition, VALUE && newElement)
 {
     ASSERT(afterPosition != mValueList.end());
     return mValueList.insert(afterPosition, std::move(newElement));
 }
 
-template <typename VALUE, class Implement /* = TEListImpl<VALUE> */>
-inline void TELinkedList<VALUE, Implement>::setAt(LISTPOS atPosition, const VALUE & newValue)
+template <typename VALUE >
+inline void TELinkedList<VALUE>::setAt(LISTPOS atPosition, const VALUE & newValue)
 {
     ASSERT(atPosition != mValueList.end());
     *atPosition = newValue;
 }
 
-template <typename VALUE, class Implement /* = TEListImpl<VALUE> */>
-typename TELinkedList<VALUE, Implement>::LISTPOS TELinkedList<VALUE, Implement>::removeAt(LISTPOS atPosition)
+template <typename VALUE >
+typename TELinkedList<VALUE>::LISTPOS TELinkedList<VALUE>::removeAt(LISTPOS atPosition)
 {
     ASSERT(atPosition != mValueList.end());
     return mValueList.erase(atPosition);
 }
 
-template <typename VALUE, class Implement /* = TEListImpl<VALUE> */>
-typename TELinkedList<VALUE, Implement>::LISTPOS TELinkedList<VALUE, Implement>::removeAt(LISTPOS atPosition, VALUE &out_value)
+template <typename VALUE >
+typename TELinkedList<VALUE>::LISTPOS TELinkedList<VALUE>::removeAt(LISTPOS atPosition, VALUE &out_value)
 {
     LISTPOS result = invalidPosition();
 
-    if (atPosition != mValueList.end())
+    if (atPosition != result)
     {
         out_value = *atPosition;
         result = mValueList.erase(atPosition);
@@ -1150,80 +1102,66 @@ typename TELinkedList<VALUE, Implement>::LISTPOS TELinkedList<VALUE, Implement>:
     return result;
 }
 
-template <typename VALUE, class Implement /* = TEListImpl<VALUE> */>
-bool TELinkedList<VALUE, Implement>::removeEntry( const VALUE & removeElement )
-{
-    return removeEntry(removeElement, invalidPosition());
-}
-
-template <typename VALUE, class Implement /* = TEListImpl<VALUE> */>
-bool TELinkedList<VALUE, Implement>::removeEntry(const VALUE & removeElement, LISTPOS searchAfter /*= nullptr*/)
+template <typename VALUE >
+bool TELinkedList<VALUE>::removeEntry( const VALUE & removeElement )
 {
     bool result = false;
-    LISTPOS pos = searchAfter == invalidPosition() ? mValueList.begin() : ++ searchAfter;
-    for ( ; pos != mValueList.end(); ++pos)
+    auto it = std::find(mValueList.begin(), mValueList.end(), removeElement);
+    if (it != mValueList.end())
     {
-        if (isEqualValues(*pos, removeElement))
+        mValueList.erase(it);
+        result = true;
+    }
+
+    return result;
+}
+
+template <typename VALUE >
+bool TELinkedList<VALUE>::removeEntry(const VALUE & removeElement, TELinkedList<VALUE>::LISTPOS searchAfter /*= nullptr*/)
+{
+    bool result = false;
+    LISTPOS end = invalidPosition();
+    if (searchAfter != end)
+    {
+        auto it = std::find(++searchAfter, end, removeElement);
+        if (it != mValueList.end())
         {
-            mValueList.erase(pos);
+            mValueList.erase(it);
             result = true;
-            break;
         }
     }
 
     return result;
 }
 
-template <typename VALUE, class Implement /* = TEListImpl<VALUE> */>
-typename TELinkedList<VALUE, Implement>::LISTPOS TELinkedList<VALUE, Implement>::find(const VALUE& searchValue) const
+template <typename VALUE >
+typename TELinkedList<VALUE>::LISTPOS TELinkedList<VALUE>::find(const VALUE& searchValue) const
 {
-    return find(searchValue, invalidPosition());
+    auto it = std::find(mValueList.begin(), mValueList.end(), searchValue);
+    return Constless::iter(mValueList, it);
 }
 
-template <typename VALUE, class Implement /* = TEListImpl<VALUE> */>
-typename TELinkedList<VALUE, Implement>::LISTPOS TELinkedList<VALUE, Implement>::find(const VALUE & searchValue, LISTPOS searchAfter ) const
+template <typename VALUE >
+typename TELinkedList<VALUE>::LISTPOS TELinkedList<VALUE>::find(const VALUE & searchValue, TELinkedList<VALUE>::LISTPOS searchAfter ) const
 {
     LISTPOS end = invalidPosition();
-    LISTPOS pos = searchAfter == end ? firstPosition() : ++searchAfter;
-    for (; pos != end; ++pos)
-    {
-        if (isEqualValues(*pos, searchValue))
-            break;
-    }
-
-    return pos;
+    return (searchAfter != end ? static_cast<LISTPOS>(std::find(++searchAfter, end, searchValue)) : end);
 }
 
-template <typename VALUE, class Implement /* = TEListImpl<VALUE> */>
-bool TELinkedList<VALUE, Implement>::contains(const VALUE & Value) const
+template <typename VALUE >
+bool TELinkedList<VALUE>::contains(const VALUE & Value) const
 {
-    typename std::list<VALUE>::const_iterator end = mValueList.end();
-    typename std::list<VALUE>::const_iterator pos = mValueList.begin();
-    for (; pos != end; ++pos)
-    {
-        if (isEqualValues(*pos, Value))
-            break;
-    }
-
-    return (pos != end);
+    return (std::find(mValueList.begin(), mValueList.end(), Value) != mValueList.end());
 }
 
-template <typename VALUE, class Implement /* = TEListImpl<VALUE> */>
-typename TELinkedList<VALUE, Implement>::LISTPOS TELinkedList<VALUE, Implement>::findIndex(uint32_t index) const
+template <typename VALUE >
+typename TELinkedList<VALUE>::LISTPOS TELinkedList<VALUE>::findIndex(uint32_t index) const
 {
-    typename std::list<VALUE>::const_iterator end = mValueList.end();
-    typename std::list<VALUE>::const_iterator pos = mValueList.begin();
-    for (; pos != end; ++pos)
-    {
-        if (isEqualValues(*pos, Value))
-            break;
-    }
-
-    return (pos != end);
+    return Constless::iter(mValueList, index < static_cast<uint32_t>(mValueList.size()) ? mValueList.begin() + index : mValueList.end());
 }
 
-template <typename VALUE, class Implement /* = TEListImpl<VALUE> */>
-int TELinkedList<VALUE, Implement>::makeIndex(LISTPOS atPosition) const
+template <typename VALUE >
+int TELinkedList<VALUE>::makeIndex(LISTPOS atPosition) const
 {
     int result  = 0;
     LISTPOS pos = mValueList.begin();
@@ -1234,26 +1172,20 @@ int TELinkedList<VALUE, Implement>::makeIndex(LISTPOS atPosition) const
     return (pos != end ? result : NECommon::INVALID_INDEX);
 }
 
-template <typename VALUE, class Implement /* = TEListImpl<VALUE> */>
-inline void TELinkedList<VALUE, Implement>::merge(const TELinkedList<VALUE, Implement>& source)
+template <typename VALUE >
+inline void TELinkedList<VALUE>::merge(const TELinkedList<VALUE>& source)
 {
     mValueList.merge(source.mValueList);
 }
 
-template <typename VALUE, class Implement /* = TEListImpl<VALUE> */>
-inline void TELinkedList<VALUE, Implement>::merge(TELinkedList<VALUE, Implement>&& source)
+template <typename VALUE >
+inline void TELinkedList<VALUE>::merge(TELinkedList<VALUE>&& source)
 {
     mValueList.merge(std::move(source.mValueList));
 }
 
-template <typename VALUE, class Implement /* = TEListImpl<VALUE> */>
-inline bool TELinkedList<VALUE, Implement>::isEqualValues(const VALUE & value1, const VALUE & value2) const
-{
-    return mImplement.implEqualValues(value1, value2);
-}
-
-template <typename VALUE, class Implement /* = TEListImpl<VALUE> */>
-inline typename TELinkedList<VALUE, Implement>::LISTPOS TELinkedList<VALUE, Implement>::getPosition(uint32_t index) const
+template <typename VALUE >
+inline typename TELinkedList<VALUE>::LISTPOS TELinkedList<VALUE>::getPosition(uint32_t index) const
 {
     typename std::list<VALUE>::const_iterator pos = index < static_cast<uint32_t>(mValueList.size()) ? mValueList.begin() : mValueList.end();
     uint32_t count = index + 1;
@@ -1263,44 +1195,41 @@ inline typename TELinkedList<VALUE, Implement>::LISTPOS TELinkedList<VALUE, Impl
     return Constless::iter(mValueList, pos);
 }
 
-template <typename VALUE, class Implement /* = TEListImpl<VALUE> */>
-inline typename TELinkedList<VALUE, Implement>::LISTPOS TELinkedList<VALUE, Implement>::getPosition(uint32_t index)
+template <typename VALUE >
+inline typename TELinkedList<VALUE>::LISTPOS TELinkedList<VALUE>::getPosition(uint32_t index)
 {
-    return static_cast<const TELinkedList<VALUE, Implement> *>(this)->getPosition(index);
+    return static_cast<const TELinkedList<VALUE> *>(this)->getPosition(index);
 }
 
 //////////////////////////////////////////////////////////////////////////
 // Friend function implementation
 //////////////////////////////////////////////////////////////////////////
 
-template <typename VALUE, class Implement> 
-const IEInStream & operator >> ( const IEInStream & stream, TELinkedList<VALUE, Implement> & input )
+template <typename VALUE> 
+const IEInStream & operator >> ( const IEInStream & stream, TELinkedList<VALUE> & input )
 {
     input.clear();
 
     uint32_t size = 0;
     stream >> size;
-    for (uint32_t i = 0; i < size; ++ i)
+    input.mValueList.resize(size);
+    for (auto& elem : input.mValueList)
     {
-        VALUE newValue;
-        stream >> newValue;
-        input.mValueList.push_back(newValue);
+        stream >> elem;
     }
 
     return stream;
 }
 
-template <typename VALUE, class Implement> 
-IEOutStream & operator << ( IEOutStream & stream, const TELinkedList<VALUE, Implement> & output )
+template <typename VALUE> 
+IEOutStream & operator << ( IEOutStream & stream, const TELinkedList<VALUE> & output )
 {
     uint32_t size = output.getSize();
     stream << size;
 
-    typename std::list<VALUE>::const_iterator end = output.mValueList.end();
-    typename std::list<VALUE>::const_iterator cit = output.mValueList.begin();
-    for (; cit != end; ++cit)
+    for (const auto& elem : output.mValueList)
     {
-        stream << static_cast<const VALUE &>(*cit);
+        stream << elem;
     }
 
     return stream;
