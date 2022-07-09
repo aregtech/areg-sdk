@@ -156,7 +156,7 @@ bool TimerDispatcher::postEvent( Event & eventElem )
 void TimerDispatcher::processTimer( Timer & timer )
 {
     TRACE_SCOPE(main_TimerDispatcher_processTimer);
-    TRACE_DBG("The timer [ %s ] has expired. Timeout [ %u ] ms, Event Count [ %u ], processing in Thread [ %s ]", timer.getName( ).getString( ), timer.getTimeout(), timer.getEventCount(), getName().getString());
+    TRACE_DBG("The timer [ %s ] has expired. Timeout [ %u ] ms, Event Count [ %d ], processing in Thread [ %s ]", timer.getName( ).getString( ), timer.getTimeout(), timer.getEventCount(), getName().getString());
 
     printf("[ %s ] : Timer [ %s ] expired...\n", DateTime::getNow().formatTime().getString(), timer.getName().getString());
 

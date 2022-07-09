@@ -206,10 +206,8 @@ int EventDispatcherBase::removeConsumer( IEEventConsumer & whichConsumer )
         Value = mConsumerMap.resourceNextKey(Key);
     }
 
-    while (removedList.isEmpty() == false)
+    while (removedList.removeLast(Key))
     {
-        Key = removedList.getLastEntry();
-        removedList.removeLast();
         Value   = mConsumerMap.unregisterResourceObject(Key);
         ASSERT(Value != nullptr);
         delete Value;

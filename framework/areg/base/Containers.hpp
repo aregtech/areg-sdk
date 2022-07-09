@@ -50,59 +50,6 @@
     class TEPointerHashMap;
 
 //////////////////////////////////////////////////////////////////////////
-// Declaration and implementation of helper classes for sorted lists and arrays
-//////////////////////////////////////////////////////////////////////////
-
-/**
- * \brief   Type for sorted list and array of Strings
- **/
-class ImplSortedStringList: public TESortImpl<const String &>
-{
-public:
-    /**
-     * \brief   Compares 2 values, returns true if they are equal.
-     * \param   Value1  The right-side value to compare.
-     * \param   Value2  The left-side value to compare.
-     * \return  Returns true if 2 values are equal.
-     **/
-    inline bool implEqualValues( const String & Value1, const String & Value2 ) const
-    {
-        return (Value1 == Value2);
-    }
-
-    /**
-     * \brief   Compares 2 values and returns:
-     *              - NEMath::Smaller   if Value1 is smaller than Value2;
-     *              - NEMath::Equal     if Value1 and Value2 are equal;
-     *              - NEMath::Bigger   if Value1 is greater than Value2.
-     *          Make own implementation if comparing has special functionality.
-     * \param   Value1  The left-side value to compare.
-     * \param   Value2  The right-side value to compare.
-     * \return  Returns one of following values:
-     *              - NEMath::Smaller   if Value1 is smaller than Value2;
-     *              - NEMath::Equal     if Value1 and Value2 are equal;
-     *              - NEMath::Bigger   if Value1 is greater than Value2.
-     **/
-    inline NEMath::eCompare implCompareValues( const String & Value1, const String & Value2 ) const
-    {
-        int len1 = Value1.getLength( );
-        int len2 = Value2.getLength( );
-        if ( len1 == len2 )
-        {
-            return static_cast<NEMath::eCompare>(NEString::compareFast<char>( Value1.getString( ), Value2.getString( ), len1 ));
-        }
-        else if ( len1 > len2 )
-        {
-            return NEMath::eCompare::Bigger;
-        }
-        else
-        {
-            return NEMath::eCompare::Smaller;
-        }
-    }
-};
-
-//////////////////////////////////////////////////////////////////////////
 // TEIntegerHashMap class template declaration
 //////////////////////////////////////////////////////////////////////////
 
@@ -298,14 +245,6 @@ public:
 //////////////////////////////////////////////////////////////////////////
 
 /**
- * \brief   Type for sorted list and array of integers
- **/
-using ImplIntegerSortList       = TESortImpl<unsigned int>;
-
-/// //////////////////////////////////////////////////////////////////////////
-// Declaration of container class aliases
-//////////////////////////////////////////////////////////////////////////
-/**
   * \brief   Array of integer elements
  **/
 using IntegerArray  = TEArrayList<unsigned int>;
@@ -383,12 +322,12 @@ using PointerList   = TELinkedList<void *>;
 /**
 * \brief   Sorted List class where values are integers.
  **/
-using SortedIntegerList = TESortedLinkedList<unsigned int, unsigned int, ImplIntegerSortList>;
+using SortedIntegerList = TESortedLinkedList<unsigned int>;
 
 /**
  * \brief   Sorted List class where values are strings.
  **/
-using SortedStringList  = TESortedLinkedList<String, const String &, ImplSortedStringList>;
+using SortedStringList  = TESortedLinkedList<String>;
 
 //////////////////////////////////////////////////////////////////////////
 // Tokenizer class declaration

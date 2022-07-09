@@ -43,6 +43,13 @@ TraceProperty::TraceProperty( const char * Key, bool Value )
     mProperty.mValue.second = Value;
 }
 
+TraceProperty::TraceProperty( String & source )
+    : mProperty()
+    , mComment()
+{
+    _parseProperty(source);
+}
+
 TraceProperty::TraceProperty( const TraceProperty & source )
     : mProperty ( source.mProperty )
     , mComment  ( source.mComment )
@@ -118,32 +125,37 @@ bool TraceProperty::parseProperty( const char * logSetting )
 
 bool TraceProperty::parseProperty( String & line)
 {
-    NEString::CharPos posComment  = line.findFirst(NELogConfig::SYNTAX_COMMENT);
-    bool isValidPos = false;
-    if (line.isValidPosition(posComment))
-    {
-        isValidPos = true;
-        line.substring(mComment, posComment);
-        mComment   += NELogConfig::SYNTAX_LINEEND;
-        
-        line.substring(0, posComment);
-    }
-
-    NEString::CharPos posEqual    = line.findFirst(NELogConfig::SYNTAX_EQUAL);
-    if ( line.isValidPosition(posEqual) && ((isValidPos == false) || (posEqual < posComment))  )
-    {
-        String temp;
-
-        line.substring(temp, NEString::START_POS, posEqual);
-        mProperty.mValue.first = temp.getString();
-
-        line.substring(temp, posEqual + 1, isValidPos ? posComment - posEqual : NEString::END_POS);
-        mProperty.mValue.second = temp.getString();
-    }
+    _parseProperty(line);
     return isValid();
 }
 
 bool TraceProperty::operator == ( const TraceProperty & other ) const
 {
     return mProperty.mValue.first == other.mProperty.mValue.first;
+}
+
+void TraceProperty::_parseProperty(String& source)
+{
+    NEString::CharPos posComment = source.findFirst(NELogConfig::SYNTAX_COMMENT);
+    bool isValidPos = false;
+    if (source.isValidPosition(posComment))
+    {
+        isValidPos = true;
+        source.substring(mComment, posComment);
+        mComment += NELogConfig::SYNTAX_LINEEND;
+
+        source.substring(0, posComment);
+    }
+
+    NEString::CharPos posEqual = source.findFirst(NELogConfig::SYNTAX_EQUAL);
+    if (source.isValidPosition(posEqual) && ((isValidPos == false) || (posEqual < posComment)))
+    {
+        String temp;
+
+        source.substring(temp, NEString::START_POS, posEqual);
+        mProperty.mValue.first = temp.getString();
+
+        source.substring(temp, posEqual + 1, isValidPos ? posComment - posEqual : NEString::END_POS);
+        mProperty.mValue.second = temp.getString();
+    }
 }

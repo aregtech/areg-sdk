@@ -86,6 +86,12 @@ public:
      **/
     TraceProperty( const char * Key, bool Value );
     /**
+     * \brief   Initializes the property parameters by receiving data as a string.
+     *          It parses the string and extracts comments, property key and value pair.
+     * \param source    The source as a string to parse.
+     */
+    TraceProperty( String & source );
+    /**
      * \brief   Copies trance property data from given source.
      * \param   source  The source to copy data
      **/
@@ -242,6 +248,16 @@ public:
      * \param   clearComment    If 'true', the comment is cleared as well.
      **/
     void clearProperty( bool clearComment = true );
+
+//////////////////////////////////////////////////////////////////////////
+// Member variables
+//////////////////////////////////////////////////////////////////////////
+private:
+    /**
+     * \brief   Parses the property as a string and extracts appropriate comment, key and value pairs.
+     * \param   source  The property as a string to pars and extract data.
+     **/
+    void _parseProperty(String& source);
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables

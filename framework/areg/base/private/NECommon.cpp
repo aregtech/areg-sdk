@@ -10,7 +10,7 @@
  * \file        areg/base/private/NECommon.cpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
  * \author      Artak Avetyan
- * \brief       AREG Platform, Common types and constants constants
+ * \brief       AREG Platform, Common types and constants
  *
  ************************************************************************/
 
@@ -18,5 +18,3 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/NECommon.hpp"
-
-AREG_API void *   NECommon::START_POSITION    = reinterpret_cast<void *>(~0);

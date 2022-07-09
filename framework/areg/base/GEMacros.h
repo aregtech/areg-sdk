@@ -43,25 +43,6 @@
  * \brief   An empty MACRO, does nothing
  **/
 #define EMPTY_MACRO
-/**
- * \brief   A MACRO of empty string
- **/
-#define EMPTY_STRING            ""
-
-/**
- * \brief   ASCII nullptr string
- **/
-#define NULL_STRING             static_cast<const char *>(nullptr)
-
-/**
- * \brief   Wide nullptr string
- **/
-#define NULL_STRING_W           static_cast<const wchar_t *>(nullptr)
-
-/**
- * \brief	nullptr buffer
- **/
-#define	NULL_BUF		        static_cast<const unsigned char *>(nullptr)
 
 /**
  * \brief   Success error code. Mainly used in POSIX methods
@@ -208,7 +189,7 @@
 #endif  // CASE_DEFAULT
 
 /**
- * \brief   No copiable class declaration.
+ * \brief   No copyable class declaration.
  **/
 #ifndef DECLARE_NOCOPY
     #define DECLARE_NOCOPY(ClassName)                                       \
@@ -226,7 +207,7 @@
 #endif // !DECLARE_NOMOVE
 
 /**
- * \brief   No copiable and no movable class declaration.
+ * \brief   No copyable and no movable class declaration.
  **/
 #ifndef DECLARE_NOCOPY_NOMOVE
     #define DECLARE_NOCOPY_NOMOVE( ClassName )                              \
@@ -304,7 +285,7 @@
 #endif  // MACRO_MIN
 
 /**
- * \brief   Checks whether the x is in range or rmin and rmax
+ * \brief   Checks whether the x is in range of rmin and rmax
  **/
 #ifndef MACRO_IN_RANGE
     #define MACRO_IN_RANGE(x, rmin, rmax)       ( ((rmin) <= (x)) && ((rmax) >= (x)) )

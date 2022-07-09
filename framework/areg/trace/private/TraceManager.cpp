@@ -429,10 +429,10 @@ bool TraceManager::initializeConfig(void)
                 const TracePropertyValue& Value   = prop.getValue( );
                 ASSERT( Key.isValidKey( ) );
                 unsigned int prio = Value.getPriority( );
-                if ( Key.isGlobalKey( ) )
+                if ( Key.isGlobalKey( ) && Key.getModuleData().isEmpty( ) )
                 {
                     ASSERT( Key.getModule( ).isEmpty( ) );
-                    mConfigScopeGroup.setAt( NELogConfig::MODULE_SCOPE.data( ), prio );
+                    mConfigScopeGroup.setAt(NELogConfig::MODULE_SCOPE.data(), prio);
                 }
                 else if ( Key.getModuleData( ).findLast( NELogConfig::SYNTAX_SCOPE_GROUP ) >= NEString::START_POS )
                 {
@@ -643,11 +643,11 @@ void TraceManager::onUpdateScopes(SortedStringList & scopeList)
 
     String moduleName = Process::getInstance().getAppName();
 
-    while ( scopeList.isEmpty() == false )
+    String line;
+    while (scopeList.removeLast(line))
     {
-        TraceProperty scopeProperty;
-        String line = scopeList.removeLast();
-        if ( scopeProperty.parseProperty( line ) )
+        TraceProperty scopeProperty(line);
+        if ( scopeProperty.isValid() )
         {
             const TracePropertyKey &  Key     = scopeProperty.getKey();
             const TracePropertyValue & Value  = scopeProperty.getValue();
@@ -724,7 +724,6 @@ void TraceManager::activateScope( TraceScope & traceScope, unsigned int defaultP
     }
     else
     {
-
         char groupName[NETrace::LOG_MESSAGE_BUFFER_SIZE];
         NEString::CharCount end = NEString::copyString<char>(groupName, NETrace::LOG_MESSAGE_BUFFER_SIZE, scopeName);
 

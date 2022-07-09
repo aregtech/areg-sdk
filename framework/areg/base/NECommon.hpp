@@ -179,63 +179,22 @@ namespace NECommon
     constexpr uint32_t      MAX_CONTAINER_SIZE      { static_cast<uint32_t>(VALUE_MAX_INT32) };
 
     /**
-     * \brief   NECommon::MAP_INVALID_HASH
-     *          Defines invalid Hash value
-     **/
-    constexpr unsigned int  MAP_INVALID_HASH        { static_cast<unsigned int>(~0) };
-    /**
-     * \brief   NECommon::MAP_DEFAULT_BLOCK_SIZE
-     *          The number of blocks by default created when increase list in map. For hash map internal use
-     **/
-    constexpr int           MAP_DEFAULT_BLOCK_SIZE  { static_cast<int>(64) };
-    /**
-     * \brief   NECommon::MAP_MAX_BLOCK_SIZE
-     *          The number of maximum blocks created at once when increase list in map. For hash map internal use
-     **/
-    constexpr int           MAP_MAX_BLOCK_SIZE      { static_cast<int>(2048) };
-    /**
      * \brief   NECommon::MAP_DEFAULT_HASH_SIZE
      *          The size of hash table by default created in map. For hash map internal use
      **/
     constexpr int           MAP_DEFAULT_HASH_SIZE   { static_cast<int>(64) };
-    /**
-     * \brief   NECommon::MAP_DEFAULT_HASH_SIZE
-     *          The maximum size of hash table created in map. For hash map internal use
-     **/
-    constexpr int           MAP_MAX_TABLE_SIZE      { static_cast<int>(2048) };
-    /**
-     * \brief   NECommon::ARRAY_DEFAULT_MIN_GROW
-     *          The minimum new created entries when grow array
-     **/
-    constexpr int           ARRAY_DEFAULT_MIN_GROW  { static_cast<int>(4) };
-    /**
-     * \brief   NECommon::ARRAY_DEFAULT_MAX_GROW
-     *          The maximum new created entries when grow array
-     **/
-    constexpr int           ARRAY_DEFAULT_MAX_GROW  { static_cast<int>(2048) };
-    /**
-     * \brief   NECommon::ARRAY_DEFAULT_INCREASE
-     *          Defines default increase. When used, default values should be used.
-     **/
-    constexpr int           ARRAY_DEFAULT_INCREASE  { static_cast<int>(~0) };
 
     /**
-     * \brief   NECommon::INVALID_POSITION
-     *          Defines invalid position.
+     * \brief   NECommon::ARRAY_DEFAULT_CAPACITY
+     *          The default capacity of the array.
      **/
-    constexpr void * const  INVALID_POSITION        { nullptr };
+    constexpr int           ARRAY_DEFAULT_CAPACITY  { static_cast<int>(2048) };
 
     /**
      * \brief   NECommon::RING_START_POSITION
      *          Defines first index in the ring.
      **/
     constexpr int           RING_START_POSITION     { static_cast<int>(MIN_INT_32) };
-
-    /**
-     * \brief   NECommon::START_POSITION
-     *          Defines starting position in hash-map
-     **/
-    extern AREG_API void *  START_POSITION          /*= reinterpret_cast<void *>(~0)*/;
 
     /**
      * \brief   NECommon::WAIT_INFINITE
@@ -287,22 +246,22 @@ namespace NECommon
      * \brief   NECommon::WAIT_1_SECOND
      *          Constant, wait for 1 second of created thread startup
      **/
-    constexpr unsigned int      WAIT_1_SECOND          { 1 * 1'000u };
+    constexpr unsigned int  WAIT_1_SECOND           { 1 * 1'000u };
     /**
      * \brief   NECommon::WAIT_5_SECONDS
      *          Constant, wait for 5 seconds of created thread startup
      **/
-    constexpr unsigned int      WAIT_5_SECONDS         { 5 * WAIT_1_SECOND };
+    constexpr unsigned int  WAIT_5_SECONDS          { 5 * WAIT_1_SECOND };
     /**
      * \brief   NECommon::WAIT_10_SECONDS
      *          Constant, wait for 10 seconds of created thread startup
      **/
-    constexpr unsigned int      WAIT_10_SECONDS        { 10 * WAIT_1_SECOND };
+    constexpr unsigned int  WAIT_10_SECONDS         { 10 * WAIT_1_SECOND };
     /**
      * \brief   IESynchObject::WAIT_1_MIN
      *          Waiting time 1 minute
      **/
-    constexpr unsigned int      WAIT_1_MINUTE          { 60 * WAIT_1_SECOND };
+    constexpr unsigned int  WAIT_1_MINUTE           { 60 * WAIT_1_SECOND };
 
     /**
      * \brief   NECommon::COMPONENT_PATH_SEPARATOR
@@ -319,35 +278,26 @@ namespace NECommon
      *          different role names, the named items can differ by
      *          unique role name contained in the named items.
      **/
-    constexpr std::string_view      COMPONENT_ITEM_SEPARATOR    { ":" };
+    constexpr std::string_view  COMPONENT_ITEM_SEPARATOR        { ":" };
     /**
      * \brief   NECommon::DEFAULT_SPECIAL_CHAR
      *          Constant. Defines default special character used in generated names.
      **/
-    constexpr std::string_view      DEFAULT_SPECIAL_CHAR        { "_" };
+    constexpr std::string_view  DEFAULT_SPECIAL_CHAR            { "_" };
     /**
      * \brief   NECommon::BOOLEAN_TRUE
      *          Boolean 'true' value as a string.
      **/
-    constexpr std::string_view      BOOLEAN_TRUE                { "true" };   //!< Boolean value 'true' as string
+    constexpr std::string_view  BOOLEAN_TRUE                    { "true" };   //!< Boolean value 'true' as string
     /**
      * \brief   NECommon::BOOLEAN_FALSE
      *          Boolean 'false' value as a string.
      **/
-    constexpr std::string_view      BOOLEAN_FALSE               { "false" };  //!< Boolean value 'false' as string
-    /**
-     * \brief   NECommon::BOOLEAN_TRUE_W
-     *          Boolean 'true' value as a wide-string.
-     **/
-    constexpr std::wstring_view     BOOLEAN_TRUE_W              { L"true" };   //!< Boolean value 'true' as string
-    /**
-     * \brief   NECommon::BOOLEAN_FALSE_W
-     *          Boolean 'false' value as a wide-string.
-     **/
-    constexpr std::wstring_view     BOOLEAN_FALSE_W             { L"false" };  //!< Boolean value 'false' as string
+    constexpr std::string_view  BOOLEAN_FALSE                   { "false" };  //!< Boolean value 'false' as string
+
     /**
      * \brief   NECommon::OBJECT_SEPARATOR
      *          Object separator such as channel or version numbers.
      **/
-    constexpr char                  OBJECT_SEPARATOR            { '.' };
+    constexpr char              OBJECT_SEPARATOR                { '.' };
 }

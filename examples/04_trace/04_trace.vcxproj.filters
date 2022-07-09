@@ -22,4 +22,7 @@
   <ItemGroup>
     <Text Include="ReadMe.txt" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="config\log.init" />
+  </ItemGroup>
 </Project>

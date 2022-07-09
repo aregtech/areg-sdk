@@ -24,70 +24,9 @@
 #include "areg/base/NEString.hpp"
 #include "areg/base/IEIOStream.hpp"
 
-/**
- * \brief   The class template to implement equality of 2 values used in containers.
- * \tparam  VALUE   The type of value to compare.
- **/
-template <typename VALUE>
-class TEEqualValueImpl
-{
-public:
-    /**
-     * \brief   Compares 2 values, returns true if they are equal.
-     * \param   Value1  The right-side value to compare.
-     * \param   Value2  The left-side value to compare.
-     * \return  Returns true if 2 values are equal.
-     **/
-    inline bool implEqualValues(const VALUE & Value1, const VALUE & Value2) const
-    {
-        return (Value1 == Value2);
-    }
-};
-
-/**
- * \brief   The class template to implement comparing functionality of 2 values used in sorting algorithms.
- * /tparam  VALUE   The type of values to compare.
- **/
-template <typename VALUE>
-class TECompareValueImpl
-{
-public:
-    /**
-     * \brief   Compares 2 values and returns:
-     *              - NEMath::Smaller   if Value1 is smaller than Value2;
-     *              - NEMath::Equal     if Value1 and Value2 are equal;
-     *              - NEMath::Bigger   if Value1 is greater than Value2.
-     *          Make own implementation if comparing has special functionality.
-     * \param   Value1  The left-side value to compare.
-     * \param   Value2  The right-side value to compare.
-     * \return  Returns one of following values:
-     *              - NEMath::Smaller   if Value1 is smaller than Value2;
-     *              - NEMath::Equal     if Value1 and Value2 are equal;
-     *              - NEMath::Bigger   if Value1 is greater than Value2.
-     **/
-    inline NEMath::eCompare implCompareValues(const VALUE & Value1, const VALUE& Value2) const
-    {
-        if (Value1 < Value2)
-            return NEMath::eCompare::Smaller;
-        else if (Value1 == Value2)
-            return NEMath::eCompare::Equal;
-        else
-            return NEMath::eCompare::Bigger;
-    }
-};
-
-/**
- * \brief   The class template used in the list containers that keep values sorted.
- *          Make own implementation if it differs from default implementation.
- * \tparam  VALUE_TYPE  The type of values to compare.
- **/
-template <typename VALUE>
-class TESortImpl    : public TEEqualValueImpl<VALUE>
-                    , public TECompareValueImpl<VALUE>
-{
-
-};
-
+//////////////////////////////////////////////////////////////////////////
+// TEResourceMapImpl class template declaration
+//////////////////////////////////////////////////////////////////////////
 /**
  * \brief   The class template for resource containers that save objects associated with the key.
  *          The methods of class are called when clean-up resource element.
@@ -108,6 +47,9 @@ public:
     {   }
 };
 
+//////////////////////////////////////////////////////////////////////////
+// TEResourceListMapImpl class template declaration
+//////////////////////////////////////////////////////////////////////////
 /**
  * \brief   The class template for resource containers that save list of resources associated with the key.
  *          The methods of class are called when add or remove list, or when remove resource from the list to 
@@ -149,7 +91,9 @@ public:
     }
 };
 
-
+//////////////////////////////////////////////////////////////////////////
+// Constless class template declaration
+//////////////////////////////////////////////////////////////////////////
 /**
  * \brief   Converts the const_iterator type random access iterator into normal iterator.
  * \tparam  Container   The container object type to convert.

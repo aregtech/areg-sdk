@@ -298,7 +298,7 @@ public:
      * \param	newValue	        The value of element to set or insert.
      **/
     inline void setAt( const KEY & Key, const VALUE & newValue );
-    inline void setAt( KEY && Key, const VALUE & newValue);
+    inline void setAt( KEY && Key, VALUE && newValue);
     /**
      * \brief	Update existing element value or inserts new element in the Hash Map.
      * \param	newElement	        The Key and Value pair of element to set or insert.
@@ -396,10 +396,9 @@ public:
     inline bool removeFirst(KEY& out_Key, VALUE& out_Value);
 
     /**
-     * \brief   Removes the first element in the hash map and returns true if removed with success.
-     * \return  Returns true if could remove first element in the hash map.
+     * \brief   Removes the first element in the hash map.
      **/
-    inline bool removeFirst( void );
+    inline void removeFirst( void );
 
     /**
      * \brief   Removes the last entry in the hash map. On output, the
@@ -412,10 +411,9 @@ public:
     inline bool removeLast(KEY& out_Key, VALUE& out_Value);
 
     /**
-     * \brief   Removes the first element in the hash map and returns true if removed with success.
-     * \return  Returns true if could remove first element in the hash map.
+     * \brief   Removes the last element in the hash map.
      **/
-    inline bool removeLast(void);
+    inline void removeLast(void);
 
     /**
      * \brief	By given position value, retrieves key and value of element, and returns next position
@@ -672,9 +670,9 @@ inline void TEHashMap<KEY, VALUE>::setAt(const KEY & Key, const VALUE & newValue
 }
 
 template < typename KEY, typename VALUE >
-inline void TEHashMap<KEY, VALUE>::setAt( KEY && Key, const VALUE & newValue)
+inline void TEHashMap<KEY, VALUE>::setAt( KEY && Key, VALUE && newValue)
 {
-    mValueList[Key] = newValue;
+    mValueList[Key] = std::move(newValue);
 }
 
 template < typename KEY, typename VALUE >
@@ -799,18 +797,14 @@ inline bool TEHashMap<KEY, VALUE>::removeFirst(KEY& out_Key, VALUE& out_Value)
 }
 
 template < typename KEY, typename VALUE >
-inline bool TEHashMap<KEY, VALUE>::removeFirst( void )
+inline void TEHashMap<KEY, VALUE>::removeFirst( void )
 {
-    bool result = false;
     if (mValueList.empty() == false)
     {
         auto pos = mValueList.begin();
         ASSERT(pos != mValueList.end());
         mValueList.erase(pos);
-        result = true;
     }
-
-    return result;
 }
 
 template < typename KEY, typename VALUE >
@@ -832,18 +826,14 @@ inline bool TEHashMap<KEY, VALUE>::removeLast(KEY& out_Key, VALUE& out_Value)
 }
 
 template < typename KEY, typename VALUE >
-inline bool TEHashMap<KEY, VALUE>::removeLast(void)
+inline void TEHashMap<KEY, VALUE>::removeLast(void)
 {
-    bool result = false;
     if (mValueList.empty() == false)
     {
         auto pos = mValueList.rbegin();
         ASSERT(pos != mValueList.end());
         mValueList.erase(pos);
-        result = true;
     }
-
-    return result;
 }
 
 template < typename KEY, typename VALUE >

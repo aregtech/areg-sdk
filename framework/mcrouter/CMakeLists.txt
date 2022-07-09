@@ -14,10 +14,10 @@ set(mcrouter_LDFLAGS)
 set(mcrouter_CXXFLAGS)
 
 if(AREG_BINARY STREQUAL "shared")
-    set(mcrouter_CXXFLAGS "-DIMP_AREG_DLL")
-    set(mcrouter_LDFLAGS "-Wl,-rpath=${AREG_OUTPUT_BIN} -L ${AREG_OUTPUT_BIN} -lareg ${LDFLAGS}")
+    set(mcrouter_CXXFLAGS += "-D_IMP_AREG_DLL=1")
+    set(mcrouter_LDFLAGS  += "-Wl,-rpath=${AREG_OUTPUT_BIN} -L ${AREG_OUTPUT_BIN} -lareg ${LDFLAGS}")
 else()
-	set(mcrouter_CXXFLAGS += "-DIMP_AREG_LIB")
+	set(mcrouter_CXXFLAGS += "-D_IMP_AREG_LIB=1")
 	set(mcrouter_LDFLAGS  += "-L ${AREG_OUTPUT_LIB} -Wl,-Bstatic -lareg -Wl,-Bdynamic ${LDFLAGS}}")
 endif()
 

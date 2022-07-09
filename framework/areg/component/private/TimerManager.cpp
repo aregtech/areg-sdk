@@ -131,7 +131,7 @@ bool TimerManager::_registerTimer(Timer &timer, const DispatcherThread & whichTh
     bool result = false;
     if (timer.isValid() && whichThread.isValid() && whichThread.isRunning() )
     {
-        TIMERHANDLE timerHandle = TimerManager::_createWaitableTimer(timer.hasName() ? timer.getName().getString() : NULL_STRING);
+        TIMERHANDLE timerHandle = TimerManager::_createWaitableTimer(timer.hasName() ? timer.getName().getString() : nullptr);
         if (timerHandle != nullptr)
         {
             TimerManager::getInstance().mTimerResource.registerResourceObject(timerHandle, &timer);

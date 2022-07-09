@@ -394,9 +394,7 @@ public:
     bool prevEntry( LISTPOS & in_out_PrevPosition, VALUE & out_PrevValue ) const;
 
     /**
-     * \brief   Removes head element from Linked List and returns value or removed element.
-     *          On call the Linked List should not be empty. Otherwise assertion is raised.
-     * \return  Returns value of removed element.
+     * \brief   Removes head element from Linked List.
      **/
     void removeFirst( void );
 
@@ -412,9 +410,7 @@ public:
     bool removeFirst( VALUE & value );
 
     /**
-     * \brief   Removes tail element from Linked List and returns value or removed element.
-     *          On call the Linked List should not be empty. Otherwise assertion is raised.
-     * \return  Returns value of removed element.
+     * \brief   Removes tail element from Linked List.
      **/
     void removeLast( void );
 
@@ -1027,51 +1023,42 @@ VALUE TELinkedList<VALUE>::popLast(void)
 template <typename VALUE >
 typename TELinkedList<VALUE>::LISTPOS TELinkedList<VALUE>::insertBefore(LISTPOS beforePosition, const VALUE & newElement)
 {
-    ASSERT(beforePosition != mValueList.end());
-    LISTPOS result = mValueList.end();
-    if (beforePosition == mValueList.begin())
-    {
-        mValueList.push_front(newElement);
-        result = mValueList.begin();
-    }
-    else
-    {
-        result = mValueList.insert(--beforePosition, newElement);
-    }
-
-    return result;
+    return mValueList.insert(beforePosition, std::move(newElement));
 }
 
 template <typename VALUE >
 typename TELinkedList<VALUE>::LISTPOS TELinkedList<VALUE>::insertBefore(LISTPOS beforePosition, VALUE && newElement)
 {
-    ASSERT(beforePosition != mValueList.end());
-    LISTPOS result = mValueList.end();
-    if (beforePosition == mValueList.begin())
-    {
-        mValueList.push_front(std::move(newElement));
-        result = mValueList.begin();
-    }
-    else
-    {
-        result = mValueList.insert(--beforePosition, std::move(newElement));
-    }
-
-    return result;
+    return mValueList.insert(beforePosition, std::move(newElement));
 }
 
 template <typename VALUE >
 typename TELinkedList<VALUE>::LISTPOS TELinkedList<VALUE>::insertAfter(LISTPOS afterPosition, const VALUE & newElement)
 {
-    ASSERT(afterPosition != mValueList.end());
-    return mValueList.insert(afterPosition, newElement);
+    if (afterPosition == mValueList.end())
+    {
+        mValueList.push_back(newElement);
+        return lastPosition();
+    }
+    else
+    {
+        return mValueList.insert(++afterPosition, newElement);
+    }
 }
 
 template <typename VALUE >
 typename TELinkedList<VALUE>::LISTPOS TELinkedList<VALUE>::insertAfter(LISTPOS afterPosition, VALUE && newElement)
 {
-    ASSERT(afterPosition != mValueList.end());
-    return mValueList.insert(afterPosition, std::move(newElement));
+    if (afterPosition == mValueList.end())
+    {
+        mValueList.push_back(newElement);
+        return lastPosition();
+    }
+    else
+    {
+        std::list<VALUE>::const_iterator cit(afterPosition);
+        return mValueList.insert(++cit, std::move(newElement));
+    }
 }
 
 template <typename VALUE >

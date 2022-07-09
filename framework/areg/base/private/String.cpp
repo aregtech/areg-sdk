@@ -101,7 +101,7 @@ namespace
     {
 
         int result = -1;
-        if ( buffer != NULL_STRING )
+        if ( buffer != nullptr )
         {
             *buffer = static_cast<char>(NEString::EndOfString);
 #ifdef  WIN32

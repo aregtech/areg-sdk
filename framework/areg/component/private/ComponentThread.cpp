@@ -123,10 +123,10 @@ void ComponentThread::destroyComponents( void )
     OUTPUT_DBG("Going to destroy components in thread [ %s ]. There are [ %d ] components in the thread.", getName().getString(), mListComponent.getSize());
     while (mListComponent.isEmpty() == false)
     {
-        Component* comObj = mListComponent.getLastEntry();
-        mListComponent.removeLast();
-        if (comObj != nullptr)
+        Component* comObj = nullptr;
+        if (mListComponent.removeLast(comObj))
         {
+            ASSERT(comObj != nullptr);
             OUTPUT_DBG("Destroying component [ %s ] in thread [ %s ]...", comObj->getRoleName().getString(), getName().getString());
             const NERegistry::ComponentEntry& entry = ComponentLoader::findComponentEntry(comObj->getRoleName(), getName());
             if (entry.isValid() && entry.mFuncDelete != nullptr)

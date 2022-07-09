@@ -40,12 +40,13 @@ TIMERHANDLE TimerManager::_createWaitableTimer( const char * timerName )
         NEString::copyString<TCHAR, char>(convertName, MAX_PATH, timerName);
         name = convertName;
     }
+
     result = static_cast<TIMERHANDLE>( ::CreateWaitableTimer( nullptr, FALSE, name ) );
 
 #ifdef _DEBUG
     if ( result == nullptr )
     {
-        OUTPUT_ERR( "Failed creating timer [ %s ], the system error code is [ 0xp ]", timerName != NULL_STRING ? timerName : "nullptr", GetLastError( ) );
+        OUTPUT_ERR( "Failed creating timer [ %s ], the system error code is [ 0xp ]", timerName != nullptr ? timerName : "nullptr", GetLastError( ) );
     }
 #endif // _DEBUG
 

@@ -17,23 +17,35 @@ endif()
 
 
 # Add compiler flags here
-add_compile_options(-g -pthread -Werror)
-
 # Checking Compiler for adding corresponded tweaks and flags
 if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     # Clang compile options
-    add_compile_options(-stdlib=libc++)
+    add_compile_options(-g -pthread -Werror -stdlib=libc++)
+    if (Config MATCHES "Release")
+        add_compile_options(-O2)
+    endif()
+
 elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     # GNU compile options
-    add_compile_options(-Wall ${UserDefines})
+    add_compile_options(-g -pthread -Werror -Wall ${UserDefines})
+    if (Config MATCHES "Release")
+        add_compile_options(-O2)
+    endif()
+
 elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     # Visual Studio C++
+    if(Config MATCHES "Release")
+        add_definitions(-DNDEBUG -DUNICODE)
+    else()
+        add_compile_options(-Od -RTC1)
+        add_definitions(-DDEBUG -DUNICODE)
+    endif()
+
 endif()
 
 
 if(Config MATCHES "Release")
-    add_compile_options(-O2)
-    add_definitions(-DNDEBUG)
+    add_definitions(-DNDEBUG )
 else()
     add_definitions(-DDEBUG)
 endif()
