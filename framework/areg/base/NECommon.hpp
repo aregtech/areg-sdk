@@ -182,19 +182,19 @@ namespace NECommon
      * \brief   NECommon::MAP_DEFAULT_HASH_SIZE
      *          The size of hash table by default created in map. For hash map internal use
      **/
-    constexpr int           MAP_DEFAULT_HASH_SIZE   { static_cast<int>(64) };
+    constexpr uint32_t      MAP_DEFAULT_HASH_SIZE   { static_cast<int>(64) };
 
     /**
      * \brief   NECommon::ARRAY_DEFAULT_CAPACITY
      *          The default capacity of the array.
      **/
-    constexpr int           ARRAY_DEFAULT_CAPACITY  { static_cast<int>(2048) };
+    constexpr uint32_t      ARRAY_DEFAULT_CAPACITY  { static_cast<int>(2048) };
 
     /**
      * \brief   NECommon::RING_START_POSITION
      *          Defines first index in the ring.
      **/
-    constexpr int           RING_START_POSITION     { static_cast<int>(MIN_INT_32) };
+    constexpr uint32_t      RING_START_POSITION     { static_cast<uint32_t>(MAX_UINT_32) };
 
     /**
      * \brief   NECommon::WAIT_INFINITE

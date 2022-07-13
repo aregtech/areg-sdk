@@ -19,11 +19,10 @@
 #include "areg/base/GEGlobal.h"
 
 /**
- * \brief   Class template of properties. It contains a pair of data, where
- *          the member 'first' is used as a Key and the member 'second' is
- *          used as a Value. The Key is used in property list and
- *          should be unique.
- * \tparam  KEY     The type of property Key. Should be unique.
+ * \brief   The TEProperty class template is an implementation of a pair of data,
+ *          where one member plays role of a Key and other is a Value. It is used
+ *          in the Property List where keys are unique entries.
+ * \tparam  KEY     The type of property Key.
  * \tparam  VALUE   The type of property Value.
  **/
 template <typename KEY, typename VALUE>
@@ -34,35 +33,17 @@ class TEProperty
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Default constructor
+     * \brief   Constructors
      **/
     TEProperty( void ) = default;
+    TEProperty(const TEProperty<KEY, VALUE>& src) = default;
+    TEProperty(TEProperty<KEY, VALUE>&& src)  noexcept = default;
 
     /**
      * \brief   Initializes key and value pairs.
-     * \param   Key     The initial property key to set.
-     * \param   Value   The initial property value to set.
      **/
     TEProperty( const KEY & Key, const VALUE & Value );
-
-    /**
-     * \brief   Initializes key and value pairs.
-     * \param   Key     The initial property key to set.
-     * \param   Value   The initial property value to set.
-     **/
     TEProperty(KEY && Key, VALUE && Value);
-
-    /**
-     * \brief   Copy constructor.
-     * \param   src     The source to copy data.
-     **/
-    TEProperty( const TEProperty<KEY, VALUE> & src ) = default;
-
-    /**
-     * \brief   Move constructor.
-     * \param   src     The source to move data.
-     **/
-    TEProperty( TEProperty<KEY, VALUE> && src )  noexcept = default;
 
     /**
      * \brief   Destructor
@@ -74,13 +55,9 @@ public:
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Assignment operator. Copies data from given source.
+     * \brief   Assignment operators.
      **/
     inline TEProperty<KEY, VALUE> & operator = (const TEProperty<KEY, VALUE> & src);
-
-    /**
-     * \brief   Move operator. Moves data from given source.
-     **/
     inline TEProperty<KEY, VALUE> & operator = ( TEProperty<KEY, VALUE> && src ) noexcept;
 
     /**
@@ -141,36 +118,13 @@ protected:
     inline VALUE& getValue(void);
 
 //////////////////////////////////////////////////////////////////////////
-// Protected methods
-//////////////////////////////////////////////////////////////////////////
-protected:
-    /**
-     * \brief   Called when comparing 2 keys.
-     *          Overwrite method when need to change comparison.
-     * \param   key1    Key on left side to compare
-     * \param   key2    Key on right side to compare
-     * \return  If function returns true, 2 keys are equal.
-     *          Otherwise, they are not equal.
-     **/
-    inline bool isEqualKeys( const KEY & key1, const KEY & key2 ) const;
-
-    /**
-     * \brief   Called when comparing 2 values of element.
-     *          Overwrite method when need to change comparison.
-     * \param   value1  Value on left side to compare.
-     * \param   value2  Value on right side to compare.
-     * \return  If function returns true, 2 values are equal.
-     *          Otherwise, they are not equal.
-     **/
-    inline bool isEqualValues( const VALUE & value1, const VALUE & value2) const;
-
-//////////////////////////////////////////////////////////////////////////
 // Member variable
 //////////////////////////////////////////////////////////////////////////
 public:
-    //! The pair object. Declared public for the fast access because
-    //! this object does not contain any special logic, except comparing
-    //! 2 object, where only keys are compared and values are ignored.
+    /**
+     * \brief   The pair object.Declared public for the fast access because
+     *          this object does not contain any special logic.
+     **/
     std::pair<KEY, VALUE>   mValue;
 };
 
@@ -211,13 +165,13 @@ inline TEProperty<KEY, VALUE>& TEProperty<KEY, VALUE>::operator = (TEProperty<KE
 template <typename KEY, typename VALUE>
 inline bool TEProperty<KEY, VALUE>::operator == ( const TEProperty<KEY, VALUE> & other ) const
 {
-    return ((this == &other) || isEqualKeys(mValue.first, other.mValue.first));
+    return ((this == &other) || (mValue.first == other.mValue.first));
 }
 
 template <typename KEY, typename VALUE>
 inline bool TEProperty<KEY, VALUE>::operator != ( const TEProperty<KEY, VALUE> & other ) const
 {
-    return ((this != &other) && !isEqualKeys(mValue.first, other.mValue.first));
+    return ((this != &other) && (mValue.first != other.mValue.first));
 }
 
 template <typename KEY, typename VALUE>
@@ -280,16 +234,4 @@ template <typename KEY, typename VALUE>
 inline VALUE& TEProperty<KEY, VALUE>::getValue(void)
 {
     return mValue.second;
-}
-
-template <typename KEY, typename VALUE>
-inline bool TEProperty<KEY, VALUE>::isEqualKeys(const KEY& key1, const KEY& key2) const
-{
-    return (key1 == key2);
-}
-
-template <typename KEY, typename VALUE>
-inline bool TEProperty<KEY, VALUE>::isEqualValues(const VALUE& value1, const VALUE& value2) const
-{
-    return (value1 == value2);
 }

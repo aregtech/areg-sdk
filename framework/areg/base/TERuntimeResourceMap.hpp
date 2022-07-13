@@ -36,12 +36,12 @@
 // TEHashMap<RuntimeClassID, RUNTIME_DELEGATE *>
     template <typename RUNTIME_DELEGATE> class TERuntimeHashMap;
         // TEResourceMap<RuntimeClassID, RUNTIME_DELEGATE, TERuntimeHashMap<RUNTIME_DELEGATE>>
-            template <class RUNTIME_DELEGATE, class Implement> class TERuntimeResourceMap;
-                template <class RUNTIME_DELEGATE, class Implement> class TENolockRuntimeResourceMap;
-                template <class RUNTIME_DELEGATE, class Implement> class TELockRuntimeResourceMap;
+            template <class RUNTIME_DELEGATE, class Deleter> class TERuntimeResourceMap;
+                template <class RUNTIME_DELEGATE, class Deleter> class TENolockRuntimeResourceMap;
+                template <class RUNTIME_DELEGATE, class Deleter> class TELockRuntimeResourceMap;
 
 //////////////////////////////////////////////////////////////////////////
-// TERuntimeHashMap<RUNTIME_DELEGATE, Implement> class template declaration
+// TERuntimeHashMap<RUNTIME_DELEGATE, Deleter> class template declaration
 //////////////////////////////////////////////////////////////////////////
 /**
  * \brief   A hash map class template to track run-time objects accessed by 
@@ -77,7 +77,7 @@ private:
 };
 
 //////////////////////////////////////////////////////////////////////////
-// TERuntimeResourceMap<RUNTIME_DELEGATE, Implement> class template declaration
+// TERuntimeResourceMap<RUNTIME_DELEGATE, Deleter> class template declaration
 //////////////////////////////////////////////////////////////////////////
 /**
  * \brief   A run-time object resource map base class template to track run-time objects
@@ -88,10 +88,10 @@ private:
  *          which is faster. Otherwise, pass one of instances of resource lock.
  *
  * \tparam  RUNTIME_DELEGATE    The type of runtime object to store in runtime resource map.
- * \tparam  Implement           The implementation of resource clean call.
+ * \tparam  Deleter             The implementation of resource clean call.
  **/
-template <class RUNTIME_DELEGATE, class Implement>
-class TERuntimeResourceMap : public TEResourceMap<RuntimeClassID, RUNTIME_DELEGATE, TERuntimeHashMap<RUNTIME_DELEGATE>, Implement>
+template <class RUNTIME_DELEGATE, class Deleter>
+class TERuntimeResourceMap : public TEResourceMap<RuntimeClassID, RUNTIME_DELEGATE, TERuntimeHashMap<RUNTIME_DELEGATE>, Deleter>
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -114,14 +114,14 @@ protected:
 //////////////////////////////////////////////////////////////////////////
 private:
     TERuntimeResourceMap( void ) = delete;
-    TERuntimeResourceMap(const TERuntimeResourceMap<RUNTIME_DELEGATE, Implement> & /*src*/) = delete;
-    TERuntimeResourceMap<RUNTIME_DELEGATE, Implement> & operator = (const TERuntimeResourceMap<RUNTIME_DELEGATE, Implement> & /*src*/) = delete;
-    TERuntimeResourceMap( TERuntimeResourceMap<RUNTIME_DELEGATE, Implement> && /*src*/ ) noexcept = delete;
-    TERuntimeResourceMap<RUNTIME_DELEGATE, Implement> & operator = ( TERuntimeResourceMap<RUNTIME_DELEGATE, Implement> && /*src*/ ) noexcept = delete;
+    TERuntimeResourceMap(const TERuntimeResourceMap<RUNTIME_DELEGATE, Deleter> & /*src*/) = delete;
+    TERuntimeResourceMap<RUNTIME_DELEGATE, Deleter> & operator = (const TERuntimeResourceMap<RUNTIME_DELEGATE, Deleter> & /*src*/) = delete;
+    TERuntimeResourceMap( TERuntimeResourceMap<RUNTIME_DELEGATE, Deleter> && /*src*/ ) noexcept = delete;
+    TERuntimeResourceMap<RUNTIME_DELEGATE, Deleter> & operator = ( TERuntimeResourceMap<RUNTIME_DELEGATE, Deleter> && /*src*/ ) noexcept = delete;
 };
 
 //////////////////////////////////////////////////////////////////////////
-// TENolockRuntimeResourceMap<RUNTIME_DELEGATE, Implement> class template declaration
+// TENolockRuntimeResourceMap<RUNTIME_DELEGATE, Deleter> class template declaration
 //////////////////////////////////////////////////////////////////////////
 /**
  * \brief   Non thread-safe resource map class template to track run-time objects
@@ -130,10 +130,10 @@ private:
  *          and accessed only within one thread context.
  *
  * \tparam  RUNTIME_DELEGATE    The type of runtime object to store in runtime resource map.
- * \tparam  Implement           The implementation of resource clean call.
+ * \tparam  Deleter           The implementation of resource clean call.
  **/
-template <class RUNTIME_DELEGATE, class Implement>
-class TENolockRuntimeResourceMap   : public TERuntimeResourceMap<RUNTIME_DELEGATE, Implement>
+template <class RUNTIME_DELEGATE, class Deleter>
+class TENolockRuntimeResourceMap   : public TERuntimeResourceMap<RUNTIME_DELEGATE, Deleter>
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -162,14 +162,14 @@ private:
 // Hidden / Forbidden method calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    TENolockRuntimeResourceMap(const TENolockRuntimeResourceMap<RUNTIME_DELEGATE, Implement> & /*src*/) = delete;
-    TENolockRuntimeResourceMap<RUNTIME_DELEGATE, Implement> & operator = (const TENolockRuntimeResourceMap<RUNTIME_DELEGATE, Implement> & /*src*/) = delete;
-    TENolockRuntimeResourceMap( TENolockRuntimeResourceMap<RUNTIME_DELEGATE, Implement> && /*src*/ ) noexcept = delete;
-    TENolockRuntimeResourceMap<RUNTIME_DELEGATE, Implement> & operator = ( TENolockRuntimeResourceMap<RUNTIME_DELEGATE, Implement> && /*src*/) noexcept = delete;
+    TENolockRuntimeResourceMap(const TENolockRuntimeResourceMap<RUNTIME_DELEGATE, Deleter> & /*src*/) = delete;
+    TENolockRuntimeResourceMap<RUNTIME_DELEGATE, Deleter> & operator = (const TENolockRuntimeResourceMap<RUNTIME_DELEGATE, Deleter> & /*src*/) = delete;
+    TENolockRuntimeResourceMap( TENolockRuntimeResourceMap<RUNTIME_DELEGATE, Deleter> && /*src*/ ) noexcept = delete;
+    TENolockRuntimeResourceMap<RUNTIME_DELEGATE, Deleter> & operator = ( TENolockRuntimeResourceMap<RUNTIME_DELEGATE, Deleter> && /*src*/) noexcept = delete;
 };
 
 //////////////////////////////////////////////////////////////////////////
-// TELockRuntimeResourceMap<RUNTIME_DELEGATE, class Implement> class template declaration
+// TELockRuntimeResourceMap<RUNTIME_DELEGATE, class Deleter> class template declaration
 //////////////////////////////////////////////////////////////////////////
 /**
  * \brief   Thread-safe resource map class template to track run-time objects
@@ -179,8 +179,8 @@ private:
  *
  * \tparam      RUNTIME_DELEGATE    The type of runtime object to store in runtime resource map.
  **/
-template <class RUNTIME_DELEGATE, class Implement>
-class TELockRuntimeResourceMap   : public TERuntimeResourceMap<RUNTIME_DELEGATE, Implement>
+template <class RUNTIME_DELEGATE, class Deleter>
+class TELockRuntimeResourceMap   : public TERuntimeResourceMap<RUNTIME_DELEGATE, Deleter>
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -208,10 +208,10 @@ private:
 // Forbidden calls.
 //////////////////////////////////////////////////////////////////////////
 private:
-    TELockRuntimeResourceMap(const TELockRuntimeResourceMap<RUNTIME_DELEGATE, Implement> & /*src*/) = delete;
-    TELockRuntimeResourceMap<RUNTIME_DELEGATE, Implement> & operator = (const TELockRuntimeResourceMap<RUNTIME_DELEGATE, Implement> & /*src*/) = delete;
-    TELockRuntimeResourceMap( TELockRuntimeResourceMap<RUNTIME_DELEGATE, Implement> && /*src*/ ) noexcept = delete;
-    TELockRuntimeResourceMap<RUNTIME_DELEGATE, Implement> & operator = ( TELockRuntimeResourceMap<RUNTIME_DELEGATE, Implement> && /*src*/ ) noexcept = delete;
+    TELockRuntimeResourceMap(const TELockRuntimeResourceMap<RUNTIME_DELEGATE, Deleter> & /*src*/) = delete;
+    TELockRuntimeResourceMap<RUNTIME_DELEGATE, Deleter> & operator = (const TELockRuntimeResourceMap<RUNTIME_DELEGATE, Deleter> & /*src*/) = delete;
+    TELockRuntimeResourceMap( TELockRuntimeResourceMap<RUNTIME_DELEGATE, Deleter> && /*src*/ ) noexcept = delete;
+    TELockRuntimeResourceMap<RUNTIME_DELEGATE, Deleter> & operator = ( TELockRuntimeResourceMap<RUNTIME_DELEGATE, Deleter> && /*src*/ ) noexcept = delete;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -219,31 +219,31 @@ private:
 //////////////////////////////////////////////////////////////////////////
 
 //////////////////////////////////////////////////////////////////////////
-// TERuntimeResourceMap<RUNTIME_DELEGATE, Implement> class template implementation
+// TERuntimeResourceMap<RUNTIME_DELEGATE, Deleter> class template implementation
 //////////////////////////////////////////////////////////////////////////
-template <class RUNTIME_DELEGATE, class Implement>
-TERuntimeResourceMap<RUNTIME_DELEGATE, Implement>::TERuntimeResourceMap( IEResourceLock& synchObject )
-    : TEResourceMap<RuntimeClassID, RUNTIME_DELEGATE, TERuntimeHashMap<RUNTIME_DELEGATE>, Implement> (synchObject)
+template <class RUNTIME_DELEGATE, class Deleter>
+TERuntimeResourceMap<RUNTIME_DELEGATE, Deleter>::TERuntimeResourceMap( IEResourceLock& synchObject )
+    : TEResourceMap<RuntimeClassID, RUNTIME_DELEGATE, TERuntimeHashMap<RUNTIME_DELEGATE>, Deleter> (synchObject)
 {
 }
 
 //////////////////////////////////////////////////////////////////////////
-// TENolockRuntimeResourceMap<RUNTIME_DELEGATE, Implement> class template implementation
+// TENolockRuntimeResourceMap<RUNTIME_DELEGATE, Deleter> class template implementation
 //////////////////////////////////////////////////////////////////////////
-template <class RUNTIME_DELEGATE, class Implement>
-TENolockRuntimeResourceMap<RUNTIME_DELEGATE, Implement>::TENolockRuntimeResourceMap( void )
-    : TERuntimeResourceMap<RUNTIME_DELEGATE, Implement>   (static_cast<IEResourceLock &>(mNoLock))
+template <class RUNTIME_DELEGATE, class Deleter>
+TENolockRuntimeResourceMap<RUNTIME_DELEGATE, Deleter>::TENolockRuntimeResourceMap( void )
+    : TERuntimeResourceMap<RUNTIME_DELEGATE, Deleter>   (static_cast<IEResourceLock &>(mNoLock))
     
     , mNoLock   ( )
 {
 }
 
 //////////////////////////////////////////////////////////////////////////
-// TELockRuntimeResourceMap<RUNTIME_DELEGATE, Implement> class template implementation
+// TELockRuntimeResourceMap<RUNTIME_DELEGATE, Deleter> class template implementation
 //////////////////////////////////////////////////////////////////////////
-template <class RUNTIME_DELEGATE, class Implement>
-TELockRuntimeResourceMap<RUNTIME_DELEGATE, Implement>::TELockRuntimeResourceMap( void )
-    : TERuntimeResourceMap<RUNTIME_DELEGATE, Implement>   (static_cast<IEResourceLock &>(mLock))
+template <class RUNTIME_DELEGATE, class Deleter>
+TELockRuntimeResourceMap<RUNTIME_DELEGATE, Deleter>::TELockRuntimeResourceMap( void )
+    : TERuntimeResourceMap<RUNTIME_DELEGATE, Deleter>   (static_cast<IEResourceLock &>(mLock))
     
     , mLock ( )
 {

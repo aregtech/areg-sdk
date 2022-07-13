@@ -579,7 +579,7 @@ void ServerService::registerRemoteStub(const StubAddress & stub)
                                 , static_cast<uint32_t>(msgRegisterProxy.getSource())
                                 , static_cast<uint32_t>(msgRegisterProxy.getTarget()));
 
-                    if ( sendList.addUnique(addrProxy.getSource()) )
+                    if ( sendList.addIfUnique(addrProxy.getSource()) )
                     {
                         RemoteMessage msgRegisterStub  = NEConnection::createServiceRegisteredNotification(stub, addrProxy.getSource());
                         SendMessageEvent::sendEvent( SendMessageEventData(msgRegisterStub), static_cast<IESendMessageEventConsumer &>(mThreadSend), static_cast<DispatcherThread &>(mThreadSend));
@@ -695,7 +695,7 @@ void ServerService::unregisterRemoteStub(const StubAddress & stub, ITEM_ID cooki
             if ( (cookie == NEService::COOKIE_ANY) || (addrProxy.getSource() != cookie) )
             {
                 // no need to send message to unregistered stub, only to proxy side
-                if (sendList.addUnique(addrProxy.getSource()) )
+                if (sendList.addIfUnique(addrProxy.getSource()) )
                 {
                     RemoteMessage msgRegisterStub = NEConnection::createServiceUnregisteredNotification( stub, addrProxy.getSource( ) );
                     SendMessageEvent::sendEvent( SendMessageEventData(msgRegisterStub), static_cast<IESendMessageEventConsumer &>(mThreadSend), static_cast<DispatcherThread &>(mThreadSend));

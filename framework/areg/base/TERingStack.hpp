@@ -57,7 +57,9 @@ template <typename VALUE> class TERingStack;
  * \tparam  VALUE       The type of stored items. Either should be 
  *                      primitive or should have default constructor 
  *                      and valid assigning operator. Also, should be 
- *                      possible to convert to type const VALUE&.
+ *                      possible to convert to type 'const VALUE&'.
+ * 
+ * \see     TENolockRingStack, TELockRingStack.
  **/
 template <typename VALUE>
 class TERingStack
@@ -74,7 +76,6 @@ public:
      * \param   initCapacity    The initial capacity size of ring stack.
      * \param   onOverlap       Overlapping flag, used when ring stack is full and 
      *                          it is required to insert new element.
-     * \see     TENolockRingStack, TELockRingStack.
      **/
     explicit TERingStack( IEResourceLock & synchObject, int initCapacity = 0, NECommon::eRingOverlap onOverlap = NECommon::eRingOverlap::StopOnOverlap );
 
@@ -100,24 +101,25 @@ public:
 /************************************************************************/
 
     /**
-     * \brief   Reads out from the stream Ring Stack values.
-     *          If Ring Stack previously had values, they will be lost.
-     *          If capacity of Ring Stack is smaller than number of serialized
-     *          elements in streaming object, it will be enlarged.
+     * \brief   Reads out from the stream Ring Stack values. If Ring Stack previously
+     *          had values, they will be lost. If capacity of Ring Stack is smaller than
+     *          the number of serialized elements in streaming object, it will be enlarged.
      *          The values in the Ring Stack will be initialized in the same sequence
      *          as they were written.
      *          There should be possibility to initialize values from streaming object and
      *          if VALUE is not a primitive, but an object, it should have implemented streaming operator.
+     * 
      * \param   stream  The streaming object for reading values
      * \param   input   The Ring Stack object to save initialized values.
      **/
     template<typename VALUE>
     friend const IEInStream & operator >> ( const IEInStream & stream, TERingStack<VALUE> & input );
     /**
-     * \brief   Writes to the stream Ring Stack values.
-     *          The values will be written to the stream starting from head position.
+     * \brief   Writes to the stream Ring Stack values. The values are written into the stream
+     *          starting from head position.
      *          There should be possibility to stream every value of Stack and if VALUE 
      *          is not a primitive, but an object, it should have implemented streaming operator.
+     * 
      * \param   stream  The streaming object to write values
      * \param   input   The Stack object to read out values.
      **/

@@ -59,7 +59,7 @@ const ServerInfo & ServerList::registerClient( const ProxyAddress & whichClient,
 {
     TRACE_SCOPE(areg_component_private_ServerList_registerClient);
 
-    std::pair<ServerListBase::MAPPOS, bool> added = addIfNew(ServerInfo(whichClient), ClientList());
+    std::pair<ServerListBase::MAPPOS, bool> added = addIfUnique(ServerInfo(whichClient), ClientList());
     TRACE_DBG("[ %s ] entry for client [ %s ]"
                 , added.second ? "CREATED NEW" : "EXTRACTED EXISTING"
                 , ProxyAddress::convAddressToPath(whichClient).getString());
@@ -118,7 +118,7 @@ const ServerInfo & ServerList::registerServer( const StubAddress & addrStub, Cli
     ASSERT(addrStub.isValid() );
 
     ServerInfo server(addrStub);
-    std::pair<ServerListBase::MAPPOS, bool> added = addIfNew(server, ClientList());
+    std::pair<ServerListBase::MAPPOS, bool> added = addIfUnique(server, ClientList());
     TRACE_DBG("[ %s ] entry for server [ %s ]"
                 , added.second ? "CREATED NEW" : "EXTRACTED EXISTING"
                 , StubAddress::convAddressToPath(addrStub).getString());

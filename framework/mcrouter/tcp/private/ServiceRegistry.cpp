@@ -80,7 +80,7 @@ NEService::eServiceConnection ServiceRegistry::getServiceStatus(const ProxyAddre
 const ServiceStub & ServiceRegistry::registerServiceProxy(const ProxyAddress & addrProxy, ServiceProxy & out_proxyService)
 {
     TRACE_SCOPE(mcrouter_tcp_private_ServiceRegistry_registerServiceProxy);
-    std::pair<MAPPOS, bool> pos = addIfNew(ServiceStub(addrProxy), ServiceRegistry::EmptyProxiesList);
+    std::pair<MAPPOS, bool> pos = addIfUnique(ServiceStub(addrProxy), ServiceRegistry::EmptyProxiesList);
     ASSERT(isValidPosition(pos.first));
 
     const ServiceStub & result = keyAtPosition(pos.first);
@@ -143,7 +143,7 @@ const ServiceStub & ServiceRegistry::registerServiceStub(const StubAddress & add
 {
     TRACE_SCOPE(mcrouter_tcp_private_ServiceRegistry_registerServiceStub);
 
-    std::pair<MAPPOS, bool> pos = addIfNew( ServiceStub(addrStub), ServiceRegistry::EmptyProxiesList);
+    std::pair<MAPPOS, bool> pos = addIfUnique( ServiceStub(addrStub), ServiceRegistry::EmptyProxiesList);
     ASSERT(isValidPosition(pos.first));
     ServiceStub& result = keyAtPosition(pos.first);
     ListServiceProxies& proxies = valueAtPosition(pos.first);

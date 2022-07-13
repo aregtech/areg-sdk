@@ -46,9 +46,9 @@ template <typename VALUE> class TEStack;
  *          Whether the Stack is thread safe or not, depends on type of
  *          synchronization object passed in stack.
  * 
- * \tparam  VALUE       The type of stored items. Either should be primitive 
- *                      or should have default constructor and valid assigning 
- *                      operator. And should be possible to convert to type const VALUE &.
+ * \tparam  VALUE   The type of stored items. Either should be primitive 
+ *                  or should have default constructor and valid assigning 
+ *                  operator. And should be possible to convert to type const VALUE &.
  **/
 template <typename VALUE>
 class TEStack   : private Constless<std::deque<VALUE>>

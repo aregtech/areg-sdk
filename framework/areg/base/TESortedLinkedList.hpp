@@ -447,8 +447,8 @@ public:
      * \param   newElement   New element to add in Linked List
      * \return  Returns position of the element in Linked List.
      **/
-    LISTPOS addUnique(const VALUE& newElement);
-    LISTPOS addUnique(VALUE&& newElement);
+    LISTPOS addIfUnique(const VALUE& newElement);
+    LISTPOS addIfUnique(VALUE&& newElement);
 
     /**
      * \brief   Pops the element at the head of linked list and returns the stored value.
@@ -958,7 +958,7 @@ typename TESortedLinkedList<VALUE>::LISTPOS TESortedLinkedList<VALUE>::add(VALUE
 }
 
 template <typename VALUE >
-typename TESortedLinkedList<VALUE>::LISTPOS TESortedLinkedList<VALUE>::addUnique(const VALUE& newElement)
+typename TESortedLinkedList<VALUE>::LISTPOS TESortedLinkedList<VALUE>::addIfUnique(const VALUE& newElement)
 {
     std::list<VALUE>::const_iterator it = mValueList.begin();
     if (mSorting == NECommon::eSort::SortAscending)
@@ -980,7 +980,7 @@ typename TESortedLinkedList<VALUE>::LISTPOS TESortedLinkedList<VALUE>::addUnique
 }
 
 template <typename VALUE >
-typename TESortedLinkedList<VALUE>::LISTPOS TESortedLinkedList<VALUE>::addUnique(VALUE&& newElement)
+typename TESortedLinkedList<VALUE>::LISTPOS TESortedLinkedList<VALUE>::addIfUnique(VALUE&& newElement)
 {
     std::list<VALUE>::const_iterator it = mValueList.begin();
     if (mSorting == NECommon::eSort::SortAscending)

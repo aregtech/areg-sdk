@@ -38,17 +38,17 @@
  * \brief   Array List has general functionalities to access, insert, move, find
  *          and copy elements. The elements of array are fast accessed for read
  *          and modification by using index. Use add() method if to add new element.
- *          The ArrayList is not thread save. To synchronize data access between
- *          threads, use synchronization object.
+ * 
+ *          The type VALUE should have at least default constructor, applicable 
+ *          comparing and assigning operators. The TEArrayList object is not 
+ *          thread safe and data access should be synchronized manually.
  * 
  *          For performance issue, it is recommended to pass capacity value
  *          in constructor to define initial reserved space for array.
  *          By default, the capacity is NECommon::ARRAY_DEFAULT_CAPACITY.
- *          The VALUE types should have at least default constructor
- *          and valid public assigning and compare operators.
  *
- * \tparam  VALUE   The type of stored items. Either should be primitive or should 
- *                  have default constructor, valid assigning and compare operators.
+ * \tparam  VALUE   The type of stored elements should be either primitive or have
+ *                  default constructor, applicable comparing and assigning operators.
  **/
 template<typename VALUE>
 class TEArrayList   : private Constless<std::vector<VALUE>>
@@ -70,16 +70,16 @@ public:
      * \brief   Copies entries from given source.
      * \param   src     The source to copy data.
      **/
-    TEArrayList( const TEArrayList< VALUE > & src );
+    TEArrayList( const TEArrayList< VALUE > & src ) = default;
 
     /**
      * \brief   Moves entries from given source.
      * \param   src     The source to move data.
      **/
-    TEArrayList( TEArrayList< VALUE > && src ) noexcept;
+    TEArrayList( TEArrayList< VALUE > && src ) noexcept = default;
 
     /**
-     * \brief   Destructor
+     * \brief   Destructor.
      **/
     ~TEArrayList( void ) = default;
 
@@ -110,7 +110,7 @@ public:
      *          If array previously had values, they will be removed and new values
      *          from source array will be set in the same sequence as they are
      *          present in the source.
-     * \param   src     The source of list of values.
+     * \param   src     The source of array of values.
      **/
     inline TEArrayList< VALUE > & operator = ( const TEArrayList< VALUE > & src );
 
@@ -119,7 +119,7 @@ public:
      *          If Array previously had values, they will be removed and new values
      *          from source Array will be set in the same sequence as they are
      *          present in the source.
-     * \param   src     The source of list of values.
+     * \param   src     The source of array of values.
      **/
     inline TEArrayList< VALUE > & operator = ( TEArrayList< VALUE > && src ) noexcept;
 
@@ -133,7 +133,7 @@ public:
     /**
      * \brief   Checks inequality of 2 array objects, and returns true if they are not equal.
      *          There should be possible to compare VALUE type entries of array.
-     * \param   other   The array object to compare
+     * \param   other   The array object to compare.
      **/
     inline bool operator != ( const TEArrayList< VALUE > & other ) const;
 
@@ -153,7 +153,7 @@ public:
      *          streaming object and if VALUE is not a primitive, but an object, it 
      *          should have implemented streaming operator.
      * \param   stream  The streaming object to read values.
-     * \param   input   The Array object to save initialized values.
+     * \param   input   The array object to save initialized values.
      **/
     template <typename VALUE>
     friend const IEInStream & operator >> (const IEInStream & stream, TEArrayList< VALUE > & input);
@@ -189,39 +189,13 @@ public:
     inline bool isValidIndex(const uint32_t index) const;
 
     /**
-     * \brief   Returns true if specified position pointing first element in the array.
-     * \param   pos     The position to check.
+     * \brief	Checks whether given element exist in the array or not. The elements of type
+     *          VALUE should have comparing operators.
+     * \param	elemSearch	The element to search.
+     * \param	startAt	    The index to start searching.
+     * \return	Returns true if could find element starting at given position.
      **/
-    inline bool isStartPosition(const LISTPOS pos) const;
-
-    /**
-     * \brief   Returns true if specified position pointing last element in the array.
-     * \param   pos     The position to check.
-     **/
-    inline bool isLastPosition(const LISTPOS pos) const;
-
-    /**
-     * \brief   Returns the invalid position of the array list.
-     **/
-    ARRAYPOS invalidPosition(void) const;
-
-    /**
-     * \brief   Returns true if specified position is invalid, i.e. points the end of the array.
-     **/
-    bool isInvalidPosition(const ARRAYPOS pos) const;
-
-    /**
-     * \brief   Returns true if the given position is not pointing the end of the array.
-     *          Note, it does not check whether there is a such position existing in the array.
-     **/
-    inline bool isValidPosition(const ARRAYPOS pos) const;
-
-    /**
-     * \brief   Checks and ensures that specified position is pointing the valid entry in the array.
-     *          The duration of checkup depends on the location of the position in the array.
-     * \param pos       The position to check.
-     */
-    inline bool checkPosition(const ARRAYPOS pos) const;
+    inline bool contains( const VALUE & elemSearch, uint32_t startAt = 0 ) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -243,14 +217,14 @@ public:
     inline void release(void);
 
     /**
-     * \brief   Returns element value by valid index, which can be used by right operation (r-value). 
+     * \brief   Returns element value by valid zero-based index, which can be used by right operation (r-value). 
      *          The index should be valid. 
      **/
     inline const VALUE & getAt( uint32_t index ) const;
 
     /**
-     * \brief   Returns element value by valid index, which can be used by left (l-value) and right operation (r-value).
-     *          The index should be valid.
+     * \brief   Returns element value by valid zero-based index, which can be used by left (l-value) and 
+     *          right operation (r-value). The index should be valid.
      **/
     inline VALUE & getAt( uint32_t index );
 
@@ -258,6 +232,7 @@ public:
      * \brief   Sets new element at given valid index. The index should be valid.
      **/
     inline void setAt( uint32_t index, const VALUE & newElement );
+    inline void setAt(uint32_t index, VALUE && newElement);
 
     /**
      * \brief   Returns array of values, which cannot be modified.
@@ -277,7 +252,7 @@ public:
      *          The VALUE type should have valid comparing operator.
      * \param   newElement  New element to add at the end of array.
      **/
-    inline bool addUnique(const VALUE & newElement);
+    inline bool addIfUnique(const VALUE & newElement);
 
     /**
      * \brief	Appends entries taken from the given source at the end of the array.
@@ -358,15 +333,6 @@ public:
      * \return	If found, returns valid index of element in array. Otherwise, returns -1.
      **/
     inline int find( const VALUE & elemSearch, uint32_t startAt = 0 ) const;
-
-    /**
-     * \brief	Checks whether given element exist in array or not. The elements of type
-     *          VALUE should have comparing operators.
-     * \param	elemSearch	The element to search.
-     * \param	startAt	    The index to start searching.
-     * \return	Returns true if could find element starting at given position.
-     **/
-    inline bool contains( const VALUE & elemSearch, uint32_t startAt = 0 ) const;
 
     /**
      * \brief	Sets new size of array. If needed, either increases or truncates
@@ -454,20 +420,6 @@ TEArrayList< VALUE >::TEArrayList(uint32_t capacity /*= NECommon::ARRAY_DEFAULT_
 }
 
 template<typename VALUE >
-TEArrayList< VALUE >::TEArrayList( const TEArrayList< VALUE > & src )
-    : Constless ( )
-    , mValueList(src.mValueList)
-{
-}
-
-template<typename VALUE >
-TEArrayList< VALUE >::TEArrayList( TEArrayList< VALUE > && src ) noexcept
-    : Constless ( )
-    , mValueList(std::move(src.mValueList))
-{
-}
-
-template<typename VALUE >
 inline bool TEArrayList< VALUE >::isEmpty( void ) const
 {
     return mValueList.empty();
@@ -483,46 +435,6 @@ template<typename VALUE >
 inline bool TEArrayList< VALUE >::isValidIndex(uint32_t index) const
 {
     return (index < static_cast<uint32_t>(mValueList.size()));
-}
-
-template<typename VALUE >
-inline bool TEArrayList< VALUE >::isStartPosition(const LISTPOS pos) const
-{
-    return (pos == mValueList.begin());
-}
-
-template<typename VALUE >
-inline bool TEArrayList< VALUE >::isLastPosition(const LISTPOS pos) const
-{
-    return ((mValueList.empty() == false) && (pos == --mValueList.end()));
-}
-
-template<typename VALUE >
-inline typename TEArrayList< VALUE >::ARRAYPOS TEArrayList< VALUE >::invalidPosition(void) const
-{
-    return Constless::iter(mValueList, mValueList.end());
-}
-
-template<typename VALUE >
-inline bool TEArrayList< VALUE >::isInvalidPosition(const ARRAYPOS pos) const
-{
-    return (pos == mValueList.end());
-}
-
-template<typename VALUE >
-inline bool TEArrayList< VALUE >::isValidPosition(const ARRAYPOS pos) const
-{
-    return (pos != mValueList.end());
-}
-
-template<typename VALUE >
-inline bool TEArrayList< VALUE >::checkPosition(const ARRAYPOS pos) const
-{
-    std::vector<VALUE>::const_iterator it = mValueList.begin();
-    while ((it != mValueList.end()) && (it != pos))
-        ++it;
-
-    return (it != mValueList.end());
 }
 
 template<typename VALUE >
@@ -579,6 +491,26 @@ inline void TEArrayList< VALUE >::setAt(uint32_t index, const VALUE & newElement
 }
 
 template<typename VALUE >
+inline void TEArrayList< VALUE >::setAt(uint32_t index, VALUE && newElement)
+{
+    if (isValidIndex(index))
+    {
+        mValueList[index] = std::move(newElement);
+    }
+    else if (NECommon::MAX_CONTAINER_SIZE > static_cast<uint32_t>(mValueList.size()))
+    {
+        mValueList.push_back(std::move(newElement));
+    }
+#ifdef DEBUG
+    else
+    {
+        ASSERT(false);
+    }
+#endif // DEBUG
+
+}
+
+template<typename VALUE >
 inline void TEArrayList< VALUE >::resize( uint32_t newSize )
 {
     mValueList.resize(newSize > NECommon::MAX_CONTAINER_SIZE ? NECommon::MAX_CONTAINER_SIZE : newSize);
@@ -606,7 +538,7 @@ inline void TEArrayList< VALUE >::add(const VALUE & newElement)
 }
 
 template<typename VALUE >
-inline bool TEArrayList< VALUE >::addUnique(const VALUE & newElement)
+inline bool TEArrayList< VALUE >::addIfUnique(const VALUE & newElement)
 {
     bool result = false;
 

@@ -11,8 +11,8 @@
  * \file        areg/base/TEResourceListMap.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit
  * \author      Artak Avetyan
- * \brief       AREG Platform, Resource Container Map class template.
- *              Use to store resources associated by their Key.
+ * \brief       AREG Platform, Resource List Container Map class template.
+ *              Use to store list of resources associated with the Key.
  *              Here are defined 2 types of resource map:
  *              -   Blocking (thread safe);
  *              -   Non-blocking (no thread safe).
@@ -30,65 +30,69 @@
    * Hierarchies. Following class are declared.
    ************************************************************************/
    // HashMap 
-template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class ResourceList, class Tracker> class TEResourceListMap;
-    template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class ResourceList, class Tracker> class TELockResourceListMap;
-    template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class ResourceList, class Tracker> class TENolockResourceListMap;
+template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class ResourceList, class HashMap, class Tracker> class TEResourceListMap;
+    template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class ResourceList, class HashMap, class Tracker> class TELockResourceListMap;
+    template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class ResourceList, class HashMap, class Tracker> class TENolockResourceListMap;
 
 /************************************************************************
  * \brief   This file contains declarations of following class templates:
  *
- *              1.  TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, ResourceList, Tracker>,
+ *              1.  TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, HashMap, Tracker>,
  *                  which is a generic list of resource map class template;
  *
- *              2.  TENolockResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, ResourceList, Tracker>,
+ *              2.  TENolockResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, HashMap, Tracker>,
  *                  which is a no thread safe list of resource map class template;
  *
- *              3.  TELockResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, ResourceList, Tracker>,
+ *              3.  TELockResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, HashMap, Tracker>,
  *                  which is a thread safe list of resource map class template;
  *
  *          For more information, see descriptions bellow
  ************************************************************************/
 
- //////////////////////////////////////////////////////////////////////////
- // TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap> class template declaration
- //////////////////////////////////////////////////////////////////////////
- /**
-  * \brief  This class is Hash Map container, used to keep control over registered 
-  *         resources in the linked list (ResourceList). The resource can be 
-  *         any type of object that are saved in the ResourceList and accessed by 
-  *         unique resource key. The resource keys should have at least default 
-  *         constructor and should be possible to convert to unsigned int.
-  *         If converting to unsigned int requires special operation, the implementation
-  *         should be done in a class that passed in HashMap of list.
-  *         The resource map is thread safe if synchronization object provides
-  *         locking mechanism. For additional information see TELockResourceListMap and
-  *         TENolockResourceListMap class templates.
-  *
-  * \tparam  RESOURCE_KEY       The type of Key to access resource element
-  * \tparam  RESOURCE_OBJECT    The type of resource objects. Pointer of  this defined types 
-  *                             will be used and resource map.
-  * \tparam  HashMap            HashMap class to inherit, which has possibility to calculate Hash 
-  *                             value from RESOURCE_KEY type.
-  * \tparam ResourceList        The name of class that contains list of resources.
-  * \tparam Tracker             The name of class that tracks resources and contains implementation 
-  *                             of methods called when add, remove and clean resource objects from the resource list.
-  * \see    TELockResourceListMap, TENolockResourceListMap
-  **/
-template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class ResourceList, class Tracker = TEResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>>
+//////////////////////////////////////////////////////////////////////////
+// TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, HashMap, Tracker> class template declaration
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   TEResourceListMap is a class template of Hash Map container used to keep
+ *          control over registered resources in the linked list (ResourceList).
+ *          The resources are objects allocated in the memory and saved in the 
+ *          ResourceList, which are accessed by unique resource key. This means that
+ *          the ResourceList is a container of pointers to the resource objects. 
+ *          The resource keys should have at least default constructor and should have
+ *          implemented hasher std::hash<KEY> to compute hash value. The resource map
+ *          receives a synchronization object to lock and unlock resources during
+ *          runtime if needed. For additional of locking resources see 
+ *          TELockResourceListMap and TENolockResourceListMap class templates.
+ * 
+ *          See TEHashMap for details of computing hash value.
+ *
+ * \tparam  RESOURCE_KEY        The type of Key to access resource element. Should be possible to compute hash.
+ * \tparam  RESOURCE_OBJECT     The type of resource objects, which pointers are saved in the list.
+ * \tparam  ResourceList        The name of class that contains list of resources.
+ * \tparam  HashMap             HashMap class to inherit to implement resource list map.
+ * \tparam  Tracker             Helper class to track the resources when add, remove all clean resource object from the list.
+ * 
+ * \see    TELockResourceListMap, TENolockResourceListMap
+ **/
+template <typename RESOURCE_KEY
+        , typename RESOURCE_OBJECT
+        , class ResourceList = TELinkedList<RESOURCE_OBJECT*>
+        , class HashMap      = TEHashMap<RESOURCE_KEY, ResourceList>
+        , class Tracker      = TEResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>>
 class TEResourceListMap : protected HashMap
                         , protected Tracker
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
-public:
+protected:
     /**
-     * \brief   Default Constructor
+     * \brief   Initializes the locking object.
      **/
     explicit TEResourceListMap( IEResourceLock & synchObject );
 
     /**
-     * \brief   Destructor
+     * \brief   Destructor.
      **/
     ~TEResourceListMap( void ) = default;
 
@@ -96,151 +100,142 @@ public:
 // Operations and attributes
 //////////////////////////////////////////////////////////////////////////
 public:
+
     /**
-     * \brief	Locks the Resource Map, grants ownership to locking thread
+     * \brief	Returns the size of Resource Map
+     **/
+    inline int getSize(void) const;
+
+    /**
+     * \brief   Returns true if resource map is empty.
+     **/
+    inline bool isEmpty(void) const;
+
+    /**
+     * \brief	Checks whether Resource List Map contains entry
+     *          with specified unique Key or not.
+     * \param	Key	    The unique Key of Resource that was registered.
+     * \return	If Resource with unique Key is registered, returns true.
+     *          Otherwise returns false
+     **/
+    inline bool existResource(const RESOURCE_KEY& Key) const;
+
+    /**
+     * \brief	Locks the Resource List Map, grants ownership to locking thread
      *          and blocks any other thread to access resource map data.
-     * \return
      **/
     inline void lock( void ) const;
 
     /**
-     * \brief	Unlocks previously locked Resource Map that other threads
+     * \brief	Unlocks previously locked Resource List Map, so that other threads
      *          can have access to resource map data.
-     * \return
      **/
     inline void unlock( void ) const;
 
     /**
-     * \brief	Tries to lock Resource Map. If succeeds, calling thread
-     *          gets resource locking ownership and any other threads will
-     *          be blocked that do not access Resource Map data.
-     *          The calling thread will not be blocked.
-     *          Check return value to figure out whether calling thread
-     *          locked resource or not.
-     * \return	Returns true if calling thread locked resource.
-     *          Otherwise returns false, but does not block thread execution.
+     * \brief	Tries to lock Resource List Map. If succeeds, calling thread gets resource
+     *          locking ownership and any other threads are blocked and cannot access
+     *          Resource List Map data. Otherwise the calling thread is not blocked and 
+     *          does not get the ownership. Check return value to figure out whether
+     *          calling have got resource ownership or not.
+     * \return	Returns true if calling thread locked resource and have got the ownership.
+     *          Otherwise,  returns false, but does not block thread execution.
      **/
     inline bool tryLock( void ) const;
 
     /**
-     * \brief	Registers Resource in the map and returns true, 
-     *          either is such resource already is registered (i.e. exists),
-     *          or if successfully registered. If the unique Key of resource
-     *          is registered, but the pointer of resources are different, returns false
+     * \brief	Registers resource object in the resource list of the map. 
      * \param	Key	        The unique Key of Resource object.
-     * \param	resource	The pointer to Resource object. 
-     *                      It should remain valid until is unregistered
-     * \return	Returns true if such register resource already exists, or registered
-     *          new resource. If the resource Key is already registered, but 
-     *          resource objects are different, returns false.
+     * \param	Resource	The pointer to Resource object, which should remain
+     *                      valid until it is unregistered.
      **/
-    inline bool registerResourceObject( const RESOURCE_KEY & Key, RESOURCE_OBJECT * Resource );
+    inline void registerResourceObject( const RESOURCE_KEY & Key, RESOURCE_OBJECT * Resource );
 
     /**
-     * \brief	Unregisters Resource from map and if succeeded, returns pointer
-     *          to unregistered resource object.
-     * \param	Key	    Unique Key of resource that was previously registered.
-     * \return	If succeeded, returns pointer to unregistered resource.
-     *          Otherwise returns nullptr.
+     * \brief	Unregisters resource from the resource list of the map.
+     * \param	Key	        Unique Key identifying previously registered resource.
+     * \param   Resource    The valid pointer to the resource to unregister.
+     * \param   removeEmpty If true, will remove the empty list and the entry specified
+     *                      specified by Key. Otherwise, keeps the Key entry with
+     *                      empty resource list.
      **/
-    inline bool unregisterResourceObject(const RESOURCE_KEY & Key, RESOURCE_OBJECT * Resource, bool remEmptyList = true );
+    inline void unregisterResourceObject(const RESOURCE_KEY & Key, RESOURCE_OBJECT * Resource, bool removeEmpty = true );
 
     /**
-     * \brief   Registers resource in the map by given key. If the resources exists,
-     *          it returns instance of existing resource object list.
-     *          Otherwise, it creates new empty list.
+     * \brief   If needed, creates new resource entry in the map. If the resource
+     *          exists, returns the existing resource list. Otherwise, creates new
+     *          entry and returns empty resource list.
      * \param   Key     The unique key of resource to register.
-     * \return  If resource exists, returns instance of existing resource object list.
-     *          Otherwise, creates new empty list of resource objects.
+     * \return  If resource exists, returns existing resource list. Otherwise,
+     *          creates new empty list of resource objects.
      **/
     inline ResourceList & registerResource( const RESOURCE_KEY & Key );
 
     /**
-     * \brief   Unregister the resource in the map and returns the instance
-     *          of registered resource objects list.
+     * \brief   Unregister the resource in the map specified by the given Key and
+     *          returns the copy of existing resource. Otherwise, returns empty list.
+     * 
      * \param   Key     The unique Key of resource to unregister.
      * \return  Returns the list of registered resource objects lists.
      **/
     inline ResourceList unregisterResource( const RESOURCE_KEY & Key );
 
     /**
-     * \brief	Search Resource in Resource Map by give Key
-     *          and if found, return pointer to registered resource
-     * \param	Key	    The unique Key of resource
-     * \return	If could find Resource in Resource Map by unique Key,
-     *          returns pointer to resource. Otherwise returns nullptr.
+     * \brief	Search Resource in Resource Map by give Key.
+     * 
+     * \param	Key	    The unique Key that specifies resource list.
+     * \return	If found, returns valid pointer to the existing resource list.
+     *          Otherwise, returns nullptr.
      **/
     inline ResourceList * findResource( const RESOURCE_KEY & Key );
     inline const ResourceList * findResource( const RESOURCE_KEY & Key ) const;
 
     /**
      * \brief   Returns pointer to the resource list in the map.
-     * \param   Key     The unique key to search resource list.
-     * \return  If there is resource list registered by give key,
-     *          it returns valid pointer to the resource object list.
-     *          Otherwise, returns nullptr.
+     * \param	Key	    The unique Key that specifies resource list.
      **/
     inline ResourceList * getResource( const RESOURCE_KEY & Key );
     inline const ResourceList * getResource( const RESOURCE_KEY & Key ) const;
 
     /**
-     * \brief	Removes Resource from Resource map.
-     *          The function will search resource by checking every entry
-     *          and if finds any match, removes unique Key and resource from map
+     * \brief	Removes Resource object from the resource list of the map.
+     *          The function searches resource by checking every entry in the list.
+     *          If found, removes the entry from the list. It remove empty resource
+     *          list if 'removeEmpty' parameter is true.
      * \param	Resource	The resource object to lookup
-     * \return	If found and removed any such resource, returns true.
-     *          Otherwise returns false.
+     * \param   removeEmpty If true and the resource list is empty, removes the entry.
+     * \return	Returns true if found and removed the resource from the list.
      **/
     inline bool removeResourceObject( RESOURCE_OBJECT * Resource, bool remEmptyList );
 
     /**
-     * \brief	Removes all registered resources one-by-one.
-     *          For every removed resource calls CleanResourceElement() function
-     *          if any additional job should be performed (for example, delete resources)
+     * \brief	Removes all registered resources one-by-one. For every removed 
+     *          resource calls cleanResourceElement() function to perform additional
+     *          cleanup job if needed.
      **/
     inline void removeAllResources( void );
-
-    /**
-     * \brief	Returns the size of Resource Map
-     **/
-    inline int getSize( void ) const;
-
-    /**
-     * \brief   Returns true if resource map is empty.
-     **/
-    inline bool isEmpty( void ) const;
-
-    /**
-     * \brief	Checks whether Resource Map contains entry
-     *          with specified unique Key or not.
-     * \param	Key	    The unique Key of Resource that was registered.
-     * \return	If Resource with unique Key is registered, returns true.
-     *          Otherwise returns false
-     **/
-    inline bool existResource( const RESOURCE_KEY & Key ) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Protected methods.
 //////////////////////////////////////////////////////////////////////////
 protected:
     /**
-     * \brief	Called when all resources are removed.
-     *          This function is called from RemoveAllResources() for every single
-     *          resource being unregistered.
+     * \brief	Called when removing all resources to perform additional cleanups
+     *          for every single resource object stored in the resource list.
      * \param	Key	    The Key value of resource.
-     * \param	List    The list of resource objects.
+     * \param	List    The resource list of objects that are going to be removed.
      **/
-    inline void cleanResourceList( RESOURCE_KEY & Key, ResourceList & List );
+    inline void cleanResourceList( RESOURCE_KEY& Key, ResourceList& List );
 
     /**
-     * \brief	Called when need to add resource object to the list.
+     * \brief	Called when add a resource object into the resource list.
      * \param	List        The list of resource objects.
      * \param   Resource    The resource object to add to the list.
      **/
     inline void addResourceObject( ResourceList & List, RESOURCE_OBJECT * Resource );
 
     /**
-     * \brief	Called when need to remove resource object from the list.
+     * \brief	Called when removes a single resource object from the resource list.
      * \param	List        The list of resource objects.
      * \param   Resource    The resource object to remove from the list.
      **/
@@ -260,10 +255,10 @@ private:
 //////////////////////////////////////////////////////////////////////////
 private:
     TEResourceListMap( void ) = delete;
-    TEResourceListMap( const TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, ResourceList, Tracker> & /*src*/) = delete;
-    TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, ResourceList, Tracker> & operator = ( const TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, ResourceList, Tracker> & /*src*/) = delete;
-    TEResourceListMap( TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, ResourceList, Tracker> && /*src*/ ) noexcept = delete;
-    TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, ResourceList, Tracker> & operator = ( TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, ResourceList, Tracker> && /*src*/ ) noexcept = delete;
+    TEResourceListMap( const TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, HashMap, Tracker> & /*src*/) = delete;
+    TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, HashMap, Tracker> & operator = ( const TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, HashMap, Tracker> & /*src*/) = delete;
+    TEResourceListMap( TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, HashMap, Tracker> && /*src*/ ) noexcept = delete;
+    TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, HashMap, Tracker> & operator = ( TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, HashMap, Tracker> && /*src*/ ) noexcept = delete;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -275,18 +270,20 @@ private:
  *          not synchronizing thread access. Use this class template
  *          if there is no need to control thread access. For thread safe
  *          resource map use TELockResourceListMap class template.
- * \tparam  RESOURCE_KEY    The type of Key to access resource element.
- * \tparam  RESOURCE_OBJECT The type of resource objects. Pointer of
- *                          this defined types are saved in the resource list of the map.
- * \tparam  HashMap         HashMap class to inherit, which has possibility
- *                          to calculate Hash value from RESOURCE_KEY type.
- * \tparam  ResourceList    The name of class which is a resource list.
- * \tparam  Tracker         The name of class that tracks resources and contains implementation
- *                          of methods called when add, remove and clean resource objects from the resource list.
- * \see     TELockResourceListMap
+ * \tparam  RESOURCE_KEY        The type of Key to access resource element. Should be possible to compute hash.
+ * \tparam  RESOURCE_OBJECT     The type of resource objects, which pointers are saved in the list.
+ * \tparam  ResourceList        The name of class that contains list of resources.
+ * \tparam  HashMap             HashMap class to inherit to implement resource list map.
+ * \tparam  Tracker             Helper class to track the resources when add, remove all clean resource object from the list.
+ *
+ * \see    TENolockResourceListMap
  **/
-template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class ResourceList, class Tracker = TEResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>>
-class TENolockResourceListMap  : public TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, ResourceList, Tracker>
+template <typename RESOURCE_KEY
+        , typename RESOURCE_OBJECT
+        , class ResourceList = TELinkedList<RESOURCE_OBJECT*>
+        , class HashMap      = TEHashMap<RESOURCE_KEY, ResourceList>
+        , class Tracker      = TEResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>>
+class TENolockResourceListMap  : public TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, HashMap, Tracker>
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -319,26 +316,26 @@ private:
 };
 
 //////////////////////////////////////////////////////////////////////////
-// TELockResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, ResourceList, Tracker> class template declaration
+// TELockResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, HashMap, Tracker> class template declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   Thread safe Resource Map. It is synchronizing thread access. 
- *          Use this class template if resources are accessed by more than 
- *          one thread that requires synchronization.
- *          Use TENolockResourceListMap if you don't need synchronization and
- *          thread safety is not an issue. The NELockResourceListMap also works
- *          faster than the thread safe analogue.
- * \tparam  RESOURCE_KEY    The type of Key to access resource element.
- * \tparam  RESOURCE_OBJECT The type of resource objects. Pointer of
- *                          this defined types are saved in the resource list of the map.
- * \tparam  HashMap         HashMap class to inherit, which has possibility
- *                          to calculate Hash value from RESOURCE_KEY type.
- * \tparam  ResourceList    The name of class which is a resource list.
- * \tparam  Tracker         The name of class that tracks resources and contains implementation
- *                          of methods called when add, remove and clean resource objects from the resource list.
+ * \brief   Resource list map to use when there is no need to synchronize resource
+ *          access between threads. 
+ * 
+ * \tparam  RESOURCE_KEY        The type of Key to access resource element. Should be possible to compute hash.
+ * \tparam  RESOURCE_OBJECT     The type of resource objects, which pointers are saved in the list.
+ * \tparam  ResourceList        The name of class that contains list of resources.
+ * \tparam  HashMap             HashMap class to inherit to implement resource list map.
+ * \tparam  Tracker             Helper class to track the resources when add, remove all clean resource object from the list.
+ *
+ * \see    TELockResourceListMap
  **/
-template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class ResourceList, class Tracker = TEResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>>
-class TELockResourceListMap    : public TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, ResourceList, Tracker>
+template <typename RESOURCE_KEY
+        , typename RESOURCE_OBJECT
+        , class ResourceList = TELinkedList<RESOURCE_OBJECT*>
+        , class HashMap      = TEHashMap<RESOURCE_KEY, ResourceList>
+        , class Tracker      = TEResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>>
+class TELockResourceListMap    : public TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, HashMap, Tracker>
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -377,8 +374,12 @@ private:
 // TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, ResourceList> class template implementation
 //////////////////////////////////////////////////////////////////////////
 
-template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class ResourceList, class Tracker /*= TEResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>*/>
-TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, ResourceList, Tracker>::TEResourceListMap( IEResourceLock & synchObject )
+template < typename RESOURCE_KEY
+         , typename RESOURCE_OBJECT
+         , class ResourceList   /*= TELinkedList<RESOURCE_OBJECT*>*/
+         , class HashMap        /*= TEHashMap<RESOURCE_KEY, ResourceList>*/
+         , class Tracker        /*= TEResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>*/>
+TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, HashMap, Tracker>::TEResourceListMap( IEResourceLock & synchObject )
     : HashMap   ( )
     , Tracker   ( )
 
@@ -386,65 +387,88 @@ TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, ResourceList, Tracker>
 {
 }
 
-template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class ResourceList, class Tracker /*= TEResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>*/>
-inline void TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, ResourceList, Tracker>::lock( void ) const
+template < typename RESOURCE_KEY
+         , typename RESOURCE_OBJECT
+         , class ResourceList   /*= TELinkedList<RESOURCE_OBJECT*>*/
+         , class HashMap        /*= TEHashMap<RESOURCE_KEY, ResourceList>*/
+         , class Tracker        /*= TEResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>*/>
+inline void TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, HashMap, Tracker>::lock( void ) const
 {
     mSynchObj.lock( NECommon::WAIT_INFINITE );
 }
 
-template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class ResourceList, class Tracker /*= TEResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>*/>
-inline void TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, ResourceList, Tracker>::unlock( void ) const
+template < typename RESOURCE_KEY
+         , typename RESOURCE_OBJECT
+         , class ResourceList   /*= TELinkedList<RESOURCE_OBJECT*>*/
+         , class HashMap        /*= TEHashMap<RESOURCE_KEY, ResourceList>*/
+         , class Tracker        /*= TEResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>*/>
+inline void TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, HashMap, Tracker>::unlock( void ) const
 {
     mSynchObj.unlock( );
 }
 
-template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class ResourceList, class Tracker /*= TEResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>*/>
-inline bool TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, ResourceList, Tracker>::tryLock( void ) const
+template < typename RESOURCE_KEY
+         , typename RESOURCE_OBJECT
+         , class ResourceList   /*= TELinkedList<RESOURCE_OBJECT*>*/
+         , class HashMap        /*= TEHashMap<RESOURCE_KEY, ResourceList>*/
+         , class Tracker        /*= TEResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>*/>
+inline bool TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, HashMap, Tracker>::tryLock( void ) const
 {
     return mSynchObj.tryLock( );
 }
 
-template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class ResourceList, class Tracker /*= TEResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>*/>
-inline bool TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, ResourceList, Tracker>::registerResourceObject( const RESOURCE_KEY & Key, RESOURCE_OBJECT * Resource )
+template < typename RESOURCE_KEY
+         , typename RESOURCE_OBJECT
+         , class ResourceList   /*= TELinkedList<RESOURCE_OBJECT*>*/
+         , class HashMap        /*= TEHashMap<RESOURCE_KEY, ResourceList>*/
+         , class Tracker        /*= TEResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>*/>
+inline void TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, HashMap, Tracker>::registerResourceObject( const RESOURCE_KEY & Key, RESOURCE_OBJECT * Resource )
 {
     Lock lock( mSynchObj );
 
     ResourceList & resourceList = HashMap::operator[](Key);
-    bool result = resourceList.isEmpty();
     addResourceObject( resourceList, Resource );
-    return result;
 }
 
-template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class ResourceList, class Tracker /*= TEResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>*/>
-inline bool TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, ResourceList, Tracker>::unregisterResourceObject( const RESOURCE_KEY & Key, RESOURCE_OBJECT * Resource, bool remEmptyList /*= true*/ )
+template < typename RESOURCE_KEY
+         , typename RESOURCE_OBJECT
+         , class ResourceList   /*= TELinkedList<RESOURCE_OBJECT*>*/
+         , class HashMap        /*= TEHashMap<RESOURCE_KEY, ResourceList>*/
+         , class Tracker        /*= TEResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>*/>
+inline void TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, HashMap, Tracker>::unregisterResourceObject( const RESOURCE_KEY & Key, RESOURCE_OBJECT * Resource, bool removeEmpty /*= true*/ )
 {
     Lock lock( mSynchObj );
 
-    bool result = false;
     HashMap::MAPPOS pos = HashMap::find(Key);
     if (HashMap::isValidPosition(pos))
     {
         ResourceList & resList = HashMap::valueAtPosition(pos);
-        result = removeResourceObject( resList, Resource );
-        if ( remEmptyList && resList.isEmpty())
+        removeResourceObject( resList, Resource );
+        if (removeEmpty && resList.isEmpty())
         {
             HashMap::removePosition(pos);
         }
     }
-
-    return result;
 }
 
-template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class ResourceList, class Tracker /*= TEResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>*/>
-inline ResourceList & TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, ResourceList, Tracker>::registerResource( const RESOURCE_KEY & Key )
+template < typename RESOURCE_KEY
+         , typename RESOURCE_OBJECT
+         , class ResourceList   /*= TELinkedList<RESOURCE_OBJECT*>*/
+         , class HashMap        /*= TEHashMap<RESOURCE_KEY, ResourceList>*/
+         , class Tracker        /*= TEResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>*/>
+inline ResourceList & TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, HashMap, Tracker>::registerResource( const RESOURCE_KEY & Key )
 {
     Lock lock( mSynchObj );
 
     return HashMap::getAt(Key);
 }
 
-template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class ResourceList, class Tracker /*= TEResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>*/>
-inline ResourceList TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, ResourceList, Tracker>::unregisterResource( const RESOURCE_KEY & Key )
+template < typename RESOURCE_KEY
+         , typename RESOURCE_OBJECT
+         , class ResourceList   /*= TELinkedList<RESOURCE_OBJECT*>*/
+         , class HashMap        /*= TEHashMap<RESOURCE_KEY, ResourceList>*/
+         , class Tracker        /*= TEResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>*/>
+inline ResourceList TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, HashMap, Tracker>::unregisterResource( const RESOURCE_KEY & Key )
 {
     Lock lock( mSynchObj );
 
@@ -453,8 +477,12 @@ inline ResourceList TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Re
     return result;
 }
 
-template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class ResourceList, class Tracker /*= TEResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>*/>
-inline ResourceList * TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, ResourceList, Tracker>::findResource( const RESOURCE_KEY & Key )
+template < typename RESOURCE_KEY
+         , typename RESOURCE_OBJECT
+         , class ResourceList   /*= TELinkedList<RESOURCE_OBJECT*>*/
+         , class HashMap        /*= TEHashMap<RESOURCE_KEY, ResourceList>*/
+         , class Tracker        /*= TEResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>*/>
+inline ResourceList * TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, HashMap, Tracker>::findResource( const RESOURCE_KEY & Key )
 {
     Lock lock( mSynchObj );
 
@@ -462,8 +490,12 @@ inline ResourceList * TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, 
     return (HashMap::isValidPosition(pos) ? &HashMap::valueAtPosition(pos) : nullptr);
 }
 
-template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class ResourceList, class Tracker /*= TEResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>*/>
-inline const ResourceList * TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, ResourceList, Tracker>::findResource( const RESOURCE_KEY & Key ) const
+template < typename RESOURCE_KEY
+         , typename RESOURCE_OBJECT
+         , class ResourceList   /*= TELinkedList<RESOURCE_OBJECT*>*/
+         , class HashMap        /*= TEHashMap<RESOURCE_KEY, ResourceList>*/
+         , class Tracker        /*= TEResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>*/>
+inline const ResourceList * TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, HashMap, Tracker>::findResource( const RESOURCE_KEY & Key ) const
 {
     Lock lock( mSynchObj );
 
@@ -471,8 +503,12 @@ inline const ResourceList * TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, Has
     return (HashMap::isValidPosition(pos) ? &HashMap::valueAtPosition(pos) : nullptr);
 }
 
-template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class ResourceList, class Tracker /*= TEResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>*/>
-inline ResourceList * TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, ResourceList, Tracker>::getResource( const RESOURCE_KEY & Key )
+template < typename RESOURCE_KEY
+         , typename RESOURCE_OBJECT
+         , class ResourceList   /*= TELinkedList<RESOURCE_OBJECT*>*/
+         , class HashMap        /*= TEHashMap<RESOURCE_KEY, ResourceList>*/
+         , class Tracker        /*= TEResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>*/>
+inline ResourceList * TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, HashMap, Tracker>::getResource( const RESOURCE_KEY & Key )
 {
     Lock lock( mSynchObj );
 
@@ -480,8 +516,12 @@ inline ResourceList * TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, 
     return (HashMap::isValidPosition(pos) ? &HashMap::valueAtPosition(pos) : nullptr);
 }
 
-template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class ResourceList, class Tracker /*= TEResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>*/>
-inline const ResourceList * TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, ResourceList, Tracker>::getResource( const RESOURCE_KEY & Key ) const
+template < typename RESOURCE_KEY
+         , typename RESOURCE_OBJECT
+         , class ResourceList   /*= TELinkedList<RESOURCE_OBJECT*>*/
+         , class HashMap        /*= TEHashMap<RESOURCE_KEY, ResourceList>*/
+         , class Tracker        /*= TEResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>*/>
+inline const ResourceList * TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, HashMap, Tracker>::getResource( const RESOURCE_KEY & Key ) const
 {
     Lock lock( mSynchObj );
 
@@ -489,8 +529,12 @@ inline const ResourceList * TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, Has
     return (HashMap::isValidPosition(pos) ? &HashMap::valueAtPosition(pos) : nullptr);
 }
 
-template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class ResourceList, class Tracker /*= TEResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>*/>
-inline bool TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, ResourceList, Tracker>::removeResourceObject( RESOURCE_OBJECT * Resource, bool remEmptyList )
+template < typename RESOURCE_KEY
+         , typename RESOURCE_OBJECT
+         , class ResourceList   /*= TELinkedList<RESOURCE_OBJECT*>*/
+         , class HashMap        /*= TEHashMap<RESOURCE_KEY, ResourceList>*/
+         , class Tracker        /*= TEResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>*/>
+inline bool TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, HashMap, Tracker>::removeResourceObject( RESOURCE_OBJECT * Resource, bool remEmptyList )
 {
     Lock lock( mSynchObj );
 
@@ -516,8 +560,12 @@ inline bool TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, ResourceLi
     return result;
 }
 
-template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class ResourceList, class Tracker /*= TEResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>*/>
-inline void TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, ResourceList, Tracker>::removeAllResources( void )
+template < typename RESOURCE_KEY
+         , typename RESOURCE_OBJECT
+         , class ResourceList   /*= TELinkedList<RESOURCE_OBJECT*>*/
+         , class HashMap        /*= TEHashMap<RESOURCE_KEY, ResourceList>*/
+         , class Tracker        /*= TEResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>*/>
+inline void TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, HashMap, Tracker>::removeAllResources( void )
 {
     Lock lock( mSynchObj );
 
@@ -529,41 +577,65 @@ inline void TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, ResourceLi
     HashMap::clear( );
 }
 
-template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class ResourceList, class Tracker /*= TEResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>*/>
-inline int TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, ResourceList, Tracker>::getSize( void ) const
+template < typename RESOURCE_KEY
+         , typename RESOURCE_OBJECT
+         , class ResourceList   /*= TELinkedList<RESOURCE_OBJECT*>*/
+         , class HashMap        /*= TEHashMap<RESOURCE_KEY, ResourceList>*/
+         , class Tracker        /*= TEResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>*/>
+inline int TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, HashMap, Tracker>::getSize( void ) const
 {
     Lock lock( mSynchObj );
     return HashMap::getSize( );
 }
 
-template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class ResourceList, class Tracker /*= TEResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>*/>
-inline bool TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, ResourceList, Tracker>::isEmpty( void ) const
+template < typename RESOURCE_KEY
+         , typename RESOURCE_OBJECT
+         , class ResourceList   /*= TELinkedList<RESOURCE_OBJECT*>*/
+         , class HashMap        /*= TEHashMap<RESOURCE_KEY, ResourceList>*/
+         , class Tracker        /*= TEResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>*/>
+inline bool TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, HashMap, Tracker>::isEmpty( void ) const
 {
     Lock lock( mSynchObj );
     return HashMap::isEmpty( );
 }
 
-template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class ResourceList, class Tracker /*= TEResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>*/>
-inline bool TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, ResourceList, Tracker>::existResource( const RESOURCE_KEY & Key ) const
+template < typename RESOURCE_KEY
+         , typename RESOURCE_OBJECT
+         , class ResourceList   /*= TELinkedList<RESOURCE_OBJECT*>*/
+         , class HashMap        /*= TEHashMap<RESOURCE_KEY, ResourceList>*/
+         , class Tracker        /*= TEResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>*/>
+inline bool TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, HashMap, Tracker>::existResource( const RESOURCE_KEY & Key ) const
 {
     Lock lock( mSynchObj );
     return HashMap::contains( Key );
 }
 
-template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class ResourceList, class Tracker /*= TEResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>*/>
-inline void TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, ResourceList, Tracker>::cleanResourceList( RESOURCE_KEY & Key, ResourceList & List )
+template < typename RESOURCE_KEY
+         , typename RESOURCE_OBJECT
+         , class ResourceList   /*= TELinkedList<RESOURCE_OBJECT*>*/
+         , class HashMap        /*= TEHashMap<RESOURCE_KEY, ResourceList>*/
+         , class Tracker        /*= TEResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>*/>
+inline void TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, HashMap, Tracker>::cleanResourceList( RESOURCE_KEY & Key, ResourceList & List )
 {
     Tracker::implCleanResourceList(Key, List);
 }
 
-template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class ResourceList, class Tracker /*= TEResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>*/>
-inline void TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, ResourceList, Tracker>::addResourceObject( ResourceList & List, RESOURCE_OBJECT * Resource )
+template < typename RESOURCE_KEY
+         , typename RESOURCE_OBJECT
+         , class ResourceList   /*= TELinkedList<RESOURCE_OBJECT*>*/
+         , class HashMap        /*= TEHashMap<RESOURCE_KEY, ResourceList>*/
+         , class Tracker        /*= TEResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>*/>
+inline void TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, HashMap, Tracker>::addResourceObject( ResourceList & List, RESOURCE_OBJECT * Resource )
 {
     Tracker::implAddResource(List, Resource);
 }
 
-template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class ResourceList, class Tracker /*= TEResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>*/>
-inline bool TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, ResourceList, Tracker>::removeResourceObject( ResourceList & List, RESOURCE_OBJECT * Resource )
+template < typename RESOURCE_KEY
+         , typename RESOURCE_OBJECT
+         , class ResourceList   /*= TELinkedList<RESOURCE_OBJECT*>*/
+         , class HashMap        /*= TEHashMap<RESOURCE_KEY, ResourceList>*/
+         , class Tracker        /*= TEResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>*/>
+inline bool TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, HashMap, Tracker>::removeResourceObject( ResourceList & List, RESOURCE_OBJECT * Resource )
 {
     return Tracker::implRemoveResource(List, Resource);
 }
@@ -571,9 +643,13 @@ inline bool TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, ResourceLi
 //////////////////////////////////////////////////////////////////////////
 // TENoLockResourceMap class template implementation
 //////////////////////////////////////////////////////////////////////////
-template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class ResourceList, class Tracker /*= TEResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>*/>
-TENolockResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, ResourceList, Tracker>::TENolockResourceListMap( void )
-    : TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, ResourceList, Tracker>( static_cast<IEResourceLock &>(mNoLock) )
+template < typename RESOURCE_KEY
+         , typename RESOURCE_OBJECT
+         , class ResourceList   /*= TELinkedList<RESOURCE_OBJECT*>*/
+         , class HashMap        /*= TEHashMap<RESOURCE_KEY, ResourceList>*/
+         , class Tracker        /*= TEResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>*/>
+TENolockResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, HashMap, Tracker>::TENolockResourceListMap( void )
+    : TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, HashMap, Tracker>( static_cast<IEResourceLock &>(mNoLock) )
 
     , mNoLock   ( )
 {
@@ -582,9 +658,13 @@ TENolockResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, ResourceList, Tr
 //////////////////////////////////////////////////////////////////////////
 // TELockResourceMap class template implementation
 //////////////////////////////////////////////////////////////////////////
-template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class ResourceList, class Tracker /*= TEResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>*/>
-TELockResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, ResourceList, Tracker>::TELockResourceListMap( void )
-    : TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, ResourceList, Tracker>( static_cast<IEResourceLock &>(mLock) )
+template < typename RESOURCE_KEY
+         , typename RESOURCE_OBJECT
+         , class ResourceList   /*= TELinkedList<RESOURCE_OBJECT*>*/
+         , class HashMap        /*= TEHashMap<RESOURCE_KEY, ResourceList>*/
+         , class Tracker        /*= TEResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>*/>
+TELockResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, HashMap, Tracker>::TELockResourceListMap( void )
+    : TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, HashMap, Tracker>( static_cast<IEResourceLock &>(mLock) )
 
     , mLock ( )
 {

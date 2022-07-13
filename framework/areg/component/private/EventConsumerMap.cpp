@@ -36,7 +36,7 @@ EventConsumerList::~EventConsumerList( void )
 bool EventConsumerList::addConsumer( IEEventConsumer& whichConsumer )
 {
     bool result = false;
-    if (EventConsumerListBase::pushLastIfNew(&whichConsumer))
+    if (EventConsumerListBase::pushLastIfUnique(&whichConsumer))
     {
         result = true;
         whichConsumer.consumerRegistered(true);

@@ -195,7 +195,7 @@ ProxyBase * ProxyBase::findOrCreateProxy( const char * roleName
 
         if (proxy != nullptr)
         {
-            if (proxy->mListConnect.addUnique(&connect))
+            if (proxy->mListConnect.addIfUnique(&connect))
             {
                 TRACE_DBG("Add Service Connect notification for client [ %p ]", &connect);
 
@@ -393,7 +393,7 @@ void ProxyBase::serviceConnectionUpdated( const StubAddress & server, const Chan
             IEProxyListener * listener = static_cast<IEProxyListener *>(conListeners[index].mListener);
             if (mIsConnected)
             {
-                mListConnect.addUnique(listener);
+                mListConnect.addIfUnique(listener);
             }
             else
             {

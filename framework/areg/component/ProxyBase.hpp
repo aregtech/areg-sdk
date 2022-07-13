@@ -274,7 +274,7 @@ private:
         {
             if ( Resource != nullptr )
             {
-                List.addUnique( Resource );
+                List.addIfUnique( Resource );
             }
         }
         
@@ -299,7 +299,7 @@ private:
      * \brief   ProxyBase::MapThreadProxyList
      *          The Map of the lits, where the key is a string and values are list of proxies.
      **/
-    using MapThreadProxyList= TELockResourceListMap<String, ProxyBase, MapThreadProxy, ThreadProxyList, ImplThreadProxyMap>;
+    using MapThreadProxyList= TELockResourceListMap<String, ProxyBase, ThreadProxyList, MapThreadProxy, ImplThreadProxyMap>;
 
 protected:
     //////////////////////////////////////////////////////////////////////////
@@ -1071,7 +1071,7 @@ inline NEService::ProxyData & ProxyBase::getProxyData( void )
 inline bool ProxyBase::addListener( unsigned int msgId, unsigned int seqNr, IENotificationEventConsumer* caller )
 {
     ProxyBase::Listener listener( msgId, seqNr, caller );
-    return mListenerList.addUnique( listener );
+    return mListenerList.addIfUnique( listener );
 }
 
 inline void ProxyBase::removeListener( unsigned int msgId, unsigned int seqNr, IENotificationEventConsumer* caller )
