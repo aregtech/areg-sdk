@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_COMPONENT_IETIMERCONSUMER_HPP
+#define AREG_COMPONENT_IETIMERCONSUMER_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -103,3 +104,5 @@ private:
 private:
     DECLARE_NOCOPY_NOMOVE( IETimerConsumer );
 };
+
+#endif  // AREG_COMPONENT_IETIMERCONSUMER_HPP

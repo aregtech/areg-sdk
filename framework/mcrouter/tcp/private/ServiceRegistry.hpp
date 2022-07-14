@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_MCROUTER_TCP_PRIVATE_SERVICEREGISTRY_HPP
+#define AREG_MCROUTER_TCP_PRIVATE_SERVICEREGISTRY_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -201,3 +202,5 @@ private:
 private:
     DECLARE_NOCOPY_NOMOVE( ServiceRegistry );
 };
+
+#endif  // AREG_MCROUTER_TCP_PRIVATE_SERVICEREGISTRY_HPP

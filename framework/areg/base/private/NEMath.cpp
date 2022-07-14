@@ -153,7 +153,7 @@ static constexpr unsigned char _crc32LookupTable[] = {
     0x1B, 0xDF, 0x05, 0x5A, 0x8D, 0xEF, 0x02, 0x2D, 
 };
 
-NEMath::S_LargeInteger & NEMath::sLargeInteger::operator =  ( const NEMath::S_LargeInteger & src )
+NEMath::S_LargeInteger & NEMath::S_LargeInteger::operator =  ( const NEMath::S_LargeInteger & src )
 {
     hiBits  = src.hiBits;
     loBits  = src.loBits;
@@ -161,7 +161,7 @@ NEMath::S_LargeInteger & NEMath::sLargeInteger::operator =  ( const NEMath::S_La
     return (*this);
 }
 
-NEMath::S_LargeInteger & NEMath::sLargeInteger::operator =  ( NEMath::S_LargeInteger && src ) noexcept
+NEMath::S_LargeInteger & NEMath::S_LargeInteger::operator =  ( NEMath::S_LargeInteger && src ) noexcept
 {
     hiBits  = src.hiBits;
     loBits  = src.loBits;
@@ -180,7 +180,7 @@ AREG_API unsigned int NEMath::getHighBits( const sLargeInteger &num )
     return (num.hiBits);
 }
 
-unsigned int AREG_API NEMath::getLowBits( const sLargeInteger &num )
+AREG_API unsigned int NEMath::getLowBits( const sLargeInteger &num )
 {
     return (num.loBits);
 }

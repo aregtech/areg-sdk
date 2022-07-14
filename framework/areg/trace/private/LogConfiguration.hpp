@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_TRACE_PRIVATE_LOGCONFIGURATION_HPP
+#define AREG_TRACE_PRIVATE_LOGCONFIGURATION_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -472,3 +473,5 @@ inline void LogConfiguration::setDatabasePassword( const TraceProperty & prop )
 {
     mProperties[static_cast<int>(NELogConfig::eLogConfig::ConfigLogDatabasePwd)] = prop;
 }
+
+#endif  // AREG_TRACE_PRIVATE_LOGCONFIGURATION_HPP

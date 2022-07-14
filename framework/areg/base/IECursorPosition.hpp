@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_BASE_IECURSORPOSITION_HPP
+#define AREG_BASE_IECURSORPOSITION_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -150,3 +151,5 @@ inline bool IECursorPosition::moveToEnd( void ) const
 {
     return (setPosition(0, IECursorPosition::eCursorPosition::PositionEnd)   != IECursorPosition::INVALID_CURSOR_POSITION);
 }
+
+#endif  // AREG_BASE_IECURSORPOSITION_HPP

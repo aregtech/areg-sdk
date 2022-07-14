@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_COMPONENT_NESERVICE_HPP
+#define AREG_COMPONENT_NESERVICE_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -561,49 +562,49 @@ namespace NEService
     typedef struct AREG_API S_InterfaceData
     {
         /**
-         * \brief   The name of service (interface)
+         * \brief   The name of service interface.
          **/
-        const char *        idServiceName;      // service (interface) name
+        const char *        idServiceName{ nullptr };
 
         /**
-         * \brief   Implementation version
+         * \brief   Service interface implementation version
          **/
-        Version             idVersion;          // interface version
+        Version             idVersion{ 0, 0, 0 };
 
         /**
-         * \brief   The service type. Either local or remote
+         * \brief   The service type. Should be either local or public / remote.
          **/
-        eServiceType        idServiceType;      // local or public service type
+        eServiceType        idServiceType{ eServiceType::ServiceInvalid };
 
         /**
          * \brief   Number of requests in service interface
          **/
-        unsigned int        idRequestCount;     // number of requests
+        unsigned int        idRequestCount{ 0u };
 
         /**
-         * \brief   Number of responses in service interface
+         * \brief   Number of responses in service interface, including broadcasts
          **/
-        unsigned int        idResponseCount;    // number of responses
+        unsigned int        idResponseCount{ 0u };
 
         /**
          * \brief   Number of attributes in service interface
          **/
-        unsigned int        idAttributeCount;   // number of attributes
+        unsigned int        idAttributeCount{ 0u };
 
         /**
          * \brief   The list of requests. It is nullptr if the list is empty.
          **/
-        const unsigned int* idRequestList;
+        const unsigned int* idRequestList{ nullptr };
 
         /**
          * \brief   The list of responses. It is nullptr if the list is empty.
          **/
-        const unsigned int* idResponseList;
+        const unsigned int* idResponseList{ nullptr };
 
         /**
          * \brief   The list of attributes. It is nullptr if the list is empty.
          **/
-        const unsigned int* idAttributeList;
+        const unsigned int* idAttributeList{ nullptr };
 
         /**
          * \brief   Request to Response map. All requests are accessed by index 
@@ -611,15 +612,16 @@ namespace NEService
          *          ('request ID' - NEService::eFuncIdRange::RequestFirstId)
          *          Every request should have appropriate response value. If request does not
          *          have response, it should have value NEService::RESPONSE_ID_NONE
+         *          The size of this map should be equal to idRequestCount.
          **/
-        const unsigned int* idRequestToResponseMap;     // fixed map of requests and its responses. Must have same size as idRequestCount
+        const unsigned int* idRequestToResponseMap{ nullptr };
 
         /**
          * \brief   Map of parameter count in every response. Every response index
          *          is calculated by formula ('response ID' - NEService::eFuncIdRange::ResponseFirstId)
-         *          The size of this map should be equal to idResponseCount
+         *          The size of this map should be equal to idResponseCount.
          **/
-        const unsigned int* idResponseParamCountMap;    // map of parameter count in every response. Must have same size as idResponseCount
+        const unsigned int* idResponseParamCountMap{ nullptr };
 
     } SInterfaceData;
 
@@ -960,22 +962,22 @@ IMPLEMENT_STREAMABLE(NEService::eFuncIdRange)
 
 inline bool NEService::isRequestId(unsigned int msgId)
 {
-    return (msgId & static_cast<unsigned int>(NEService::eServiceCalls::ServiceCallRequest)) != 0;
+    return ((msgId & static_cast<unsigned int>(NEService::eServiceCalls::ServiceCallRequest)) != 0);
 }
 
 inline bool NEService::isResponseId(unsigned int msgId)
 {
-    return (msgId & static_cast<unsigned int>(NEService::eServiceCalls::ServiceCallResponse)) != 0;
+    return ((msgId & static_cast<unsigned int>(NEService::eServiceCalls::ServiceCallResponse)) != 0);
 }
 
 inline bool NEService::isAttributeId(unsigned int msgId)
 {
-    return (msgId & static_cast<unsigned int>(NEService::eServiceCalls::ServiceCallAttribute)) != 0;
+    return ((msgId & static_cast<unsigned int>(NEService::eServiceCalls::ServiceCallAttribute)) != 0);
 }
 
 inline bool NEService::isRegistrationId( unsigned int msgId )
 {
-    return (msgId & static_cast<unsigned int>(NEService::eServiceCalls::ServiceCallRegister)) != 0;
+    return ((msgId & static_cast<unsigned int>(NEService::eServiceCalls::ServiceCallRegister)) != 0);
 }
 
 inline bool NEService::isEmptyFunctionId(unsigned int msgId)
@@ -1360,3 +1362,5 @@ inline const char * NEService::getString( NEService::eFuncIdRange funcId )
             return "ERR: Unexpected ID";
     }
 }
+
+#endif  // AREG_COMPONENT_NESERVICE_HPP

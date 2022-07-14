@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_COMPONENT_EVENT_HPP
+#define AREG_COMPONENT_EVENT_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -123,7 +124,7 @@ class Thread;
  *          and depending on even type, they are queued either in internal
  *          or external queue. The events are created dynamically in the heap
  *          to remain valid as long until they are processed. After processing
- *          the events are automatically destroied.
+ *          the events are automatically destroyed.
  * 
  *          Before sending Event to the target dispatcher thread, the thread
  *          should have registered event consumer object which processes
@@ -321,7 +322,7 @@ public:
 
     /**
      * \brief   Delivers the event to target thread. If target thread
-     *          is nullptr, it deliveres to current thread.
+     *          is nullptr, it delivers to current thread.
      **/
     virtual void deliverEvent( void );
 
@@ -657,3 +658,5 @@ inline const char* Event::getString(Event::eEventType eventType)
         return "ERR: Undefined Event::eEventType value!";    
     }
 }
+
+#endif  // AREG_COMPONENT_EVENT_HPP

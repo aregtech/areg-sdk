@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_BASE_PRIVATE_WIN32_SPINLOCKWIN32_HPP
+#define AREG_BASE_PRIVATE_WIN32_SPINLOCKWIN32_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -72,7 +73,7 @@ public:
     bool unlock( void );
 
     /**
-     * \brief   Attempts to take the spin-lock ownershipt without blocking thread.
+     * \brief   Attempts to take the spin-lock ownership without blocking thread.
      *          If the call is successful, the calling thread
      *          takes ownership of the spin-lock.
      * \return  If current thread successfully has taken the ownership or the thread
@@ -105,3 +106,5 @@ private:
 #endif // defined (__cplusplus) && (__cplusplus > 201703L)
 
 #endif // _WINDOWS
+
+#endif  // AREG_BASE_PRIVATE_WIN32_SPINLOCKWIN32_HPP

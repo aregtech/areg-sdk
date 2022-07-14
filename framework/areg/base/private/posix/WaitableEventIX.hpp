@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_BASE_PRIVATE_POSIX_WAITABLEEVENTIX_HPP
+#define AREG_BASE_PRIVATE_POSIX_WAITABLEEVENTIX_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -124,7 +125,7 @@ public:
 
     /**
      * \brief   This callback is called to check the signals state of waitable object.
-     * \param   contextThread   The thread ID where the lock and wait happend.
+     * \param   contextThread   The thread ID where the lock and wait happened.
      *                          This parameter not used for waitable event.
      * \return  Returns true if the object is signaled. Otherwise, returns false.
      **/
@@ -187,3 +188,5 @@ inline NESynchTypesIX::eEventResetInfo WaitableEventIX::getResetInfo( void ) con
 }
 
 #endif  // defined(_POSIX) || defined(POSIX)
+
+#endif  // AREG_BASE_PRIVATE_POSIX_WAITABLEEVENTIX_HPP

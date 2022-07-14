@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_IPC_IEREMOTESERVICECONSUMER_HPP
+#define AREG_IPC_IEREMOTESERVICECONSUMER_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -123,3 +124,5 @@ public:
 private:
     DECLARE_NOCOPY_NOMOVE( IERemoteServiceConsumer );
 };
+
+#endif  // AREG_IPC_IEREMOTESERVICECONSUMER_HPP

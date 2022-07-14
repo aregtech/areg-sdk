@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_BASE_PRIVATE_POSIX_MUTEXIX_HPP
+#define AREG_BASE_PRIVATE_POSIX_MUTEXIX_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -239,7 +240,7 @@ private:
     MutexIX & mMutex;
     /**
      * \brief   Flag, indicating whether mutex automatically locked / unlocked or not.
-     *          The automatic locking mutexes are automatically released in desctructor.
+     *          The automatic locking mutexes are automatically released in destructor.
      **/
     const bool  mAutolock;
 
@@ -284,3 +285,5 @@ inline void ObjectLockIX::unlock( void ) const
 }
 
 #endif  // defined(_POSIX) || defined(POSIX)
+
+#endif  // AREG_BASE_PRIVATE_POSIX_MUTEXIX_HPP

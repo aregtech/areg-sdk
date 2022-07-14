@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_BASE_THREADADDRESS_HPP
+#define AREG_BASE_THREADADDRESS_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -285,3 +286,5 @@ inline IEOutStream & operator << (IEOutStream & stream, const ThreadAddress & ou
 {
     return ( stream << output.mThreadName );
 }
+
+#endif  // AREG_BASE_THREADADDRESS_HPP

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_COMPONENT_RESPONSEEVENTS_HPP
+#define AREG_COMPONENT_RESPONSEEVENTS_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -131,7 +132,7 @@ public:
 
     /**
      * \brief   Returns reference of data input streaming object
-     *          to de-serialize parameters.
+     *          to deserialize parameters.
      **/
     inline const IEInStream & getReadStream( void ) const;
 
@@ -400,3 +401,5 @@ inline const Channel & RemoteResponseEvent::getTargetChannel( void ) const
 {
     return mTargetProxyAddress.getChannel();
 }
+
+#endif  // AREG_COMPONENT_RESPONSEEVENTS_HPP

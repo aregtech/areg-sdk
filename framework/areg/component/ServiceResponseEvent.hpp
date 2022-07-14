@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_COMPONENT_SERVICERESPONSEEVENT_HPP
+#define AREG_COMPONENT_SERVICERESPONSEEVENT_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -212,3 +213,5 @@ inline void ServiceResponseEvent::setSequenceNumber( unsigned int newSeqNr )
 {
     mSequenceNr = newSeqNr;
 }
+
+#endif  // AREG_COMPONENT_SERVICERESPONSEEVENT_HPP

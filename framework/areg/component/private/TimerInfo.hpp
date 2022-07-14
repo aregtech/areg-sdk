@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_COMPONENT_PRIVATE_TIMERINFO_HPP
+#define AREG_COMPONENT_PRIVATE_TIMERINFO_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -400,7 +401,7 @@ public:
     /**
      * \brief   Removes all timer entries from hash map.
      **/
-    inline void clear(void );
+    inline void clear( void );
 
     /**
      * \brief   Registers specified TimerInfor data in the hash map, where the key
@@ -726,3 +727,5 @@ inline bool ExpiredTimerInfo::operator == ( const ExpiredTimerInfo & other ) con
 {
     return (mTimer == other.mTimer);
 }
+
+#endif  // AREG_COMPONENT_PRIVATE_TIMERINFO_HPP

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_MCROUTER_TCP_PRIVATE_SERVICESTUB_HPP
+#define AREG_MCROUTER_TCP_PRIVATE_SERVICESTUB_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -264,3 +265,5 @@ inline const StubAddress & ServiceStub::getServiceAddress( void ) const
 {
     return mStubAddress;
 }
+
+#endif  // AREG_MCROUTER_TCP_PRIVATE_SERVICESTUB_HPP

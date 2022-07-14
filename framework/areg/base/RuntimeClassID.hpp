@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_BASE_RUNTIMECLASSID_HPP
+#define AREG_BASE_RUNTIMECLASSID_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -357,3 +358,5 @@ inline bool operator != ( unsigned int lhs, const RuntimeClassID & rhs )
 {
     return rhs.mMagicNum != lhs;
 }
+
+#endif  // AREG_BASE_RUNTIMECLASSID_HPP

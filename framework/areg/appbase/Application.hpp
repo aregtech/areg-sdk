@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_APPBASE_CEAPPLICATION_HPP
+#define AREG_APPBASE_CEAPPLICATION_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -493,3 +494,5 @@ inline Application & Application::getInstance( void )
 {
     return Application::_theApplication;
 }
+
+#endif  // AREG_APPBASE_CEAPPLICATION_HPP

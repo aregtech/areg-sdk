@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_BASE_SOCKETACPTED_HPP
+#define AREG_BASE_SOCKETACPTED_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -55,7 +56,7 @@ public:
 
     /**
      * \brief	Move constructor
-     * \source	The sourse to move data.
+     * \source	The source to move data.
      **/
     SocketAccepted( SocketAccepted && source ) noexcept = default;
 
@@ -67,7 +68,7 @@ public:
 public:
 
     /**
-     * \brief	Assignes socket data from given source.
+     * \brief	Assigns socket data from given source.
      * \param	src		The source of socket to assign.
      **/
     SocketAccepted & operator = ( const SocketAccepted & src ) = default;
@@ -123,3 +124,5 @@ private:
      **/
     void setAddress( const NESocket::SocketAddress & newAddress );
 };
+
+#endif  // AREG_BASE_SOCKETACPTED_HPP

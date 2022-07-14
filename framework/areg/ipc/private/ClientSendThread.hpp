@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_IPC_PRIVATE_CLIENTSENDTHREAD_HPP
+#define AREG_IPC_PRIVATE_CLIENTSENDTHREAD_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -114,3 +115,5 @@ private:
     ClientSendThread( void ) = delete;
     DECLARE_NOCOPY_NOMOVE( ClientSendThread );
 };
+
+#endif  // AREG_IPC_PRIVATE_CLIENTSENDTHREAD_HPP

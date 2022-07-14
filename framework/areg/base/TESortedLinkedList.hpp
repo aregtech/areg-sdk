@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_BASE_TESORTEDLINKEDLIST_HPP
+#define AREG_BASE_TESORTEDLINKEDLIST_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -660,6 +661,18 @@ inline uint32_t TESortedLinkedList<VALUE>::getSize(void) const
     return static_cast<uint32_t>(mValueList.size());
 }
 
+template<typename VALUE>
+inline bool TESortedLinkedList<VALUE>::isAscending( void ) const
+{
+    return (mSorting == NECommon::eSort::SortAcceding);
+}
+
+template<typename VALUE>
+inline bool TESortedLinkedList<VALUE>::isDescending(void) const
+{
+    return (mSorting == NECommon::eSort::SortDescending);
+}
+
 template <typename VALUE >
 inline typename TESortedLinkedList<VALUE>::LISTPOS TESortedLinkedList<VALUE>::firstPosition(void) const
 {
@@ -1184,3 +1197,5 @@ IEOutStream& operator << (IEOutStream& stream, const TESortedLinkedList<VALUE>& 
 
     return stream;
 }
+
+#endif  // AREG_BASE_TESORTEDLINKEDLIST_HPP

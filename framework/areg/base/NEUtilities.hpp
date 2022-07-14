@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_BASE_NEUTILITIES_HPP
+#define AREG_BASE_NEUTILITIES_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -69,49 +70,49 @@ namespace   NEUtilities
      * \brief   NEUtilities::WIN_TO_POSIX_EPOCH_BIAS_MICROSECS
      *          The difference in microseconds between Windows and Unix epoch.
      **/
-    constexpr uint64_t              WIN_TO_POSIX_EPOCH_BIAS_MICROSECS {11644473600000000LL};
+    constexpr TIME64                WIN_TO_POSIX_EPOCH_BIAS_MICROSECS {11644473600000000LL};
 
     /**
      * \brief   NEUtilities::SEC_TO_MILLISECS
      *          Milliseconds in 1 second.
      **/
-    constexpr uint64_t              SEC_TO_MILLISECS                    { 1'000LL };
+    constexpr TIME64                SEC_TO_MILLISECS                    { 1'000LL };
 
     /**
      * \brief   NEUtilities::SEC_TO_MICROSECS
      *          Microseconds in 1 second.
      **/
-    constexpr uint64_t              SEC_TO_MICROSECS                    { 1'000'000LL };
+    constexpr TIME64                SEC_TO_MICROSECS                    { 1'000'000LL };
 
     /**
      * \brief   NEUtilities::MILLISEC_TO_MICROSECS
      *          Microseconds in 1 millisecond.
      **/
-    constexpr uint64_t              MILLISEC_TO_MICROSECS               { 1'000LL };
+    constexpr TIME64                MILLISEC_TO_MICROSECS               { 1'000LL };
 
     /**
      * \brief   NEUtilities::MILLISEC_TO_100NS
      *          100 nanoseconds in 1 millisecond.
      **/
-    constexpr uint64_t              MILLISEC_TO_100NS                   { 10'000LL };
+    constexpr TIME64                MILLISEC_TO_100NS                   { 10'000LL };
 
     /**
      * \brief   NEUtilities::MILLISEC_TO_NS
      *          Nanoseconds in 1 millisecond.
      **/
-    constexpr uint64_t              MILLISEC_TO_NS                      { 1'000'000LL };
+    constexpr TIME64                MILLISEC_TO_NS                      { 1'000'000LL };
 
     /**
      * \brief   NEUtilities::MICROSEC_TO_100NS
      *          100-nanoseconds in 1 microsecond.
      **/
-    constexpr uint64_t              MICROSEC_TO_100NS                   { 10LL };
+    constexpr TIME64                MICROSEC_TO_100NS                   { 10LL };
 
     /**
      * \brief   NEUtilities::MICROSEC_TO_NS
      *          Nanoseconds in 1 microsecond.
      **/
-    const uint64_t              MICROSEC_TO_NS                          { 1'000LL };
+    constexpr TIME64                MICROSEC_TO_NS                          { 1'000LL };
 
 /************************************************************************/
 // NEUtilities namespace utility types
@@ -193,7 +194,7 @@ namespace   NEUtilities
      * \param   timeValue       64-bit value as microseconds passed since January 1 1970.
      * \param   out_fileTime    On output the file-time parameter contains date-time of converted time.
      **/
-    AREG_API void convToFileTime( const TIME64 &  timeValue, sFileTime & out_fileTime );
+    AREG_API void convToFileTime( const TIME64 &  timeValue, sFileTime & OUT out_fileTime );
 
     /**
      * \brief   Converts given file-time data structure into system time data structure.
@@ -255,7 +256,7 @@ namespace   NEUtilities
      * \param   time            Contains date-time of converted system time without information of milliseconds.
      * \param   out_sysTime     On output, the parameter contains date-time information in system-time data structure format without millisecond information.
      **/
-    AREG_API void convToSystemTime( const tm & time, sSystemTime & out_sysTime );
+    AREG_API void convToSystemTime( const tm & time, sSystemTime & OUT out_sysTime );
 
     /**
      * \brief   Localizes the UTC time data value. On output the passed structure contains values in UTC timezone.
@@ -267,7 +268,7 @@ namespace   NEUtilities
     /**
      * \brief   Returns the tick counts information in milliseconds since process has started.
      **/
-    AREG_API uint64_t getTickCount( void );
+    AREG_API TIME64 getTickCount( void );
 
     /**
      * \brief   Converts the system UTC time to local time.
@@ -348,3 +349,5 @@ namespace   NEUtilities
      **/
     AREG_API unsigned int generateUniqueId( void );
 }
+
+#endif  // AREG_BASE_NEUTILITIES_HPP

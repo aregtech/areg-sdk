@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_APPBASE_NEAPPLICATION_HPP
+#define AREG_APPBASE_NEAPPLICATION_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -64,3 +65,5 @@ namespace NEApplication
      **/
     constexpr std::string_view  DEFAULT_ROUTER_SERVICE_NAME     { "mcrouter" };
 }
+
+#endif // AREG_APPBASE_NEAPPLICATION_HPP

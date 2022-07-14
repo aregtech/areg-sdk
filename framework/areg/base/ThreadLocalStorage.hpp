@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_BASE_THREADLOCALSTORAGE_HPP
+#define AREG_BASE_THREADLOCALSTORAGE_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -36,7 +37,7 @@ class Thread;
  * \brief   A local storage of a thread.
  *          When thread starts, it initializes local storage.
  *          Any object of local thread can save an entry in thread local storage
- *          accessed by unique name. By default, every local storage ot a Thread
+ *          accessed by unique name. By default, every local storage of a Thread
  *          contains the entry of the thread consumer. The entries of the 
  *          local storage are access by name.
  * \see     Thread
@@ -243,3 +244,5 @@ inline void ThreadLocalStorage::clear(void )
 {
     mStorageList.clear();
 }
+
+#endif  // AREG_BASE_THREADLOCALSTORAGE_HPP

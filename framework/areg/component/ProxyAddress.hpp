@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_COMPONENT_PROXYADDRESS_HPP
+#define AREG_COMPONENT_PROXYADDRESS_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -487,3 +488,5 @@ inline void ProxyAddress::setTarget( ITEM_ID target )
 {
     return mChannel.setTarget(target);
 }
+
+#endif  // AREG_COMPONENT_PROXYADDRESS_HPP

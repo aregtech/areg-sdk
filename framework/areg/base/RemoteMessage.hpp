@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_BASE_REMOTEMESSAGE_HPP
+#define AREG_BASE_REMOTEMESSAGE_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -76,7 +77,7 @@ public:
 
     /**
      * \brief	Move the data from given source.
-     * \param	src     The source of of data.
+     * \param	src     The source of data.
      **/
     RemoteMessage( RemoteMessage && src ) noexcept = default;
 
@@ -393,3 +394,5 @@ inline IEOutStream & operator << (IEOutStream & stream, const RemoteMessage & ou
     
     return stream;
 }
+
+#endif  // AREG_BASE_REMOTEMESSAGE_HPP

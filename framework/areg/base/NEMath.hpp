@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_BASE_NEMATH_HPP
+#define AREG_BASE_NEMATH_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -258,7 +259,7 @@ namespace NEMath
 /************************************************************************/
     /**
      * \brief   Returns minimum of 2 values passed to function.
-     *          The type Type should support operator less ( operator < )
+     *          The Type should support operator less ( operator < )
      * \param   a       The left-side object to compare
      * \param   b       The right-side object to compare
      * \return  Returns the minimum object of 2 given.
@@ -270,7 +271,7 @@ namespace NEMath
 
     /**
      * \brief   Returns maximum of 2 values passed to function.
-     *          The type Type should support operator more ( operator < )
+     *          The Type should support operator more ( operator < )
      * \param   a       The left-side object to compare
      * \param   b       The right-side object to compare
      * \return  Returns the maximum object of 2 given.
@@ -328,7 +329,7 @@ namespace NEMath
      *          standard IEEE 802.3, using lookup table (fast calculate).
      *          Calculates and returns 32-bit CRC value of a binary data in one step.
      * \param	data	Pointer to data to calculate CRC
-     * \param	size	Size in bytes of given buffer
+     * \param	size	The size in bytes of given buffer
      * \return	32-bit value of Cyclic Redundancy Check (CRC)
      **/
     AREG_API unsigned int crc32Calculate( const unsigned char * data, int size );
@@ -366,7 +367,7 @@ namespace NEMath
      *                      If unction is called cyclic, on next steps this
      *                      should be same value returned by this function.
      * \param	data	    Pointer to binary data to calculate 32-bit CRC
-     * \param	size	    Size of given buffer
+     * \param	size	    The size in bytes of given buffer.
      * \return	32-bit value.
      **/
     AREG_API unsigned int crc32Start( unsigned int crcInit, const unsigned char * data, int size );
@@ -385,7 +386,7 @@ namespace NEMath
      *                      If unction is called cyclic, on next steps this
      *                      should be same value returned by this function.
      * \param	data	    Pointer to binary data to calculate 32-bit CRC
-     * \param	size	    Size of given buffer
+     * \param	size	    The size in bytes of given buffer.
      * \return	32-bit value.
      **/
     AREG_API unsigned int crc32Start( unsigned int crcInit, const char * data );
@@ -402,7 +403,7 @@ namespace NEMath
      *                      If unction is called cyclic, on next steps this
      *                      should be same value returned by this function.
      * \param	data	    Pointer to binary data to calculate 32-bit CRC
-     * \param	size	    Size of given buffer
+     * \param	size	    The size in bytes of given buffer
      * \return	32-bit value.
      **/
     AREG_API unsigned int crc32Start( unsigned int crcInit, unsigned char uch );
@@ -423,7 +424,7 @@ namespace NEMath
 
     /**
      * \brief   Returns absolute value of passed parameter.
-     *          The type Type should support operator less to compare with 0
+     *          The Type should support operator less to compare with 0
      *          and multiplication.
      * \param   val     A parameter to get absolute value
      * \tparam  Type    The type of object. Can be primitive or an object,
@@ -528,67 +529,67 @@ inline NEMath::S_LargeInteger::operator uint64_t ( void ) const
     return MACRO_MAKE_64(hiBits, loBits);
 }
 
-inline NEMath::S_LargeInteger & NEMath::sLargeInteger::operator = ( const uint64_t src )
+inline NEMath::S_LargeInteger & NEMath::S_LargeInteger::operator = ( const uint64_t src )
 {
     hiBits  = MACRO_64_HI_BYTE32(src); loBits  = MACRO_64_LO_BYTE32(src); return (*this);
 }
 
-inline uint64_t NEMath::sLargeInteger::operator + ( const NEMath::S_LargeInteger & rhs ) const
+inline uint64_t NEMath::S_LargeInteger::operator + ( const NEMath::S_LargeInteger & rhs ) const
 {
     return ( static_cast<uint64_t>(*this) + static_cast<uint64_t>(rhs) );
 }
 
-inline uint64_t NEMath::sLargeInteger::operator + ( uint64_t rhs ) const
+inline uint64_t NEMath::S_LargeInteger::operator + ( uint64_t rhs ) const
 {
     return ( (static_cast<uint64_t>(*this) + rhs) );
 }
 
-inline const NEMath::S_LargeInteger & NEMath::sLargeInteger::operator += ( const NEMath::S_LargeInteger & rhs )
+inline const NEMath::S_LargeInteger & NEMath::S_LargeInteger::operator += ( const NEMath::S_LargeInteger & rhs )
 {
     return (*this = static_cast<uint64_t>(*this) + static_cast<uint64_t>(rhs));
 }
 
-inline const NEMath::S_LargeInteger & NEMath::sLargeInteger::operator += ( uint64_t rhs )
+inline const NEMath::S_LargeInteger & NEMath::S_LargeInteger::operator += ( uint64_t rhs )
 {
     return ( *this = static_cast<uint64_t>(*this) + rhs );
 }
 
-inline uint64_t NEMath::sLargeInteger::operator - ( const NEMath::S_LargeInteger & rhs ) const
+inline uint64_t NEMath::S_LargeInteger::operator - ( const NEMath::S_LargeInteger & rhs ) const
 {
     return ( static_cast<uint64_t>(*this) - static_cast<uint64_t>(rhs) );
 }
 
-inline uint64_t NEMath::sLargeInteger::operator - ( uint64_t rhs ) const
+inline uint64_t NEMath::S_LargeInteger::operator - ( uint64_t rhs ) const
 {
     return ( static_cast<uint64_t>(*this) - rhs );
 }
 
-inline const NEMath::S_LargeInteger & NEMath::sLargeInteger::operator -= ( const NEMath::S_LargeInteger & rhs )
+inline const NEMath::S_LargeInteger & NEMath::S_LargeInteger::operator -= ( const NEMath::S_LargeInteger & rhs )
 {
     return ( *this = static_cast<uint64_t>(*this) - static_cast<uint64_t>(rhs) );
 }
 
-inline const NEMath::S_LargeInteger & NEMath::sLargeInteger::operator -= ( uint64_t rhs )
+inline const NEMath::S_LargeInteger & NEMath::S_LargeInteger::operator -= ( uint64_t rhs )
 {
     return ( *this = static_cast<uint64_t>(*this) - rhs );
 }
 
-inline bool NEMath::sLargeInteger::operator == ( const NEMath::S_LargeInteger & other ) const
+inline bool NEMath::S_LargeInteger::operator == ( const NEMath::S_LargeInteger & other ) const
 {
-    return (this != &other ? hiBits == other.hiBits && loBits == other.loBits : true );
+    return ((this == &other) || ((hiBits == other.hiBits) && (loBits == other.loBits)));
 }
 
-inline bool NEMath::sLargeInteger::operator == ( uint64_t other ) const
+inline bool NEMath::S_LargeInteger::operator == ( uint64_t other ) const
 {
     return ( static_cast<uint64_t>(*this) == other );
 }
 
-inline bool NEMath::sLargeInteger::operator != ( const NEMath::S_LargeInteger & other ) const
+inline bool NEMath::S_LargeInteger::operator != (const NEMath::S_LargeInteger& other) const
 {
-    return (this != &other ? hiBits != other.hiBits || loBits != other.loBits : false );
+    return ((this != &other) && ((hiBits != other.hiBits) || (loBits != other.loBits)));
 }
 
-inline bool NEMath::sLargeInteger::operator != ( uint64_t other ) const
+inline bool NEMath::S_LargeInteger::operator != (uint64_t other) const
 {
     return ( static_cast<uint64_t>(*this) != other );
 }
@@ -597,3 +598,5 @@ inline bool NEMath::sLargeInteger::operator != ( uint64_t other ) const
 // NEMath::sLargeInteger declare global operators to make streamable
 /************************************************************************/
 IMPLEMENT_STREAMABLE(NEMath::S_LargeInteger)
+
+#endif  // AREG_BASE_NEMATH_HPP

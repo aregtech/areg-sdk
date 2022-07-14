@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_BASE_FILEBASE_HPP
+#define AREG_BASE_FILEBASE_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -1078,3 +1079,5 @@ inline const FileBase & operator >> ( const FileBase & stream, WideString & OUT 
     stream.read(wide);
     return stream;
 }
+
+#endif  // AREG_BASE_FILEBASE_HPP

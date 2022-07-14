@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_COMPONENT_NOTIFICATIONEVENT_HPP
+#define AREG_COMPONENT_NOTIFICATIONEVENT_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -401,3 +402,5 @@ inline NotificationEventData & NotificationEvent::getData( void )
 {
     return mData;
 }
+
+#endif  // AREG_COMPONENT_NOTIFICATIONEVENT_HPP

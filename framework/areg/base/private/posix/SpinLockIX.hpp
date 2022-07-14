@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_BASE_PRIVATE_POSIX_SPINLOCKIX_HPP
+#define AREG_BASE_PRIVATE_POSIX_SPINLOCKIX_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -28,7 +29,7 @@
 // SpinLockIX class declaration.
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   POSIX spcific recursive spin-lock with atomic operations.
+ * \brief   POSIX specific recursive spin-lock with atomic operations.
  **/
 class SpinLockIX
 {
@@ -72,7 +73,7 @@ public:
     bool unlock( void );
 
     /**
-     * \brief   Attempts to take the spin-lock ownershipt without blocking thread.
+     * \brief   Attempts to take the spin-lock ownership without blocking thread.
      *          If the call is successful, the calling thread
      *          takes ownership of the spin-lock.
      * \return  If current thread successfully has taken the ownership or the thread
@@ -119,11 +120,11 @@ private:
 //////////////////////////////////////////////////////////////////////////
 private:
 
-    pthread_spinlock_t      mSpinLock;  //!< The POSIX spin lock to synchronize multithreading access of critical section.
+    pthread_spinlock_t      mSpinLock;  //!< The POSIX spin lock to synchronize multi-threading access of critical section.
     pthread_spinlock_t      mInternLock;//!< The POSIX spin lock to synchronize internal structure resources.
     std::atomic<pthread_t>  mSpinOwner; //!< The spin-lock owner POSIX thread
     std::atomic<uint32_t>   mLockCount; //!< The lock counter to release spin lock when counter reaches zero.
-    std::atomic<bool>       mIsValid;   //!< Flag, indicating whether the elements are intiailized or not.
+    std::atomic<bool>       mIsValid;   //!< Flag, indicating whether the elements are initialized or not.
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden method calls
@@ -214,3 +215,5 @@ inline bool SpinLockIX::isValid( void ) const
 }
 
 #endif  // defined(_POSIX) || defined(POSIX)
+
+#endif  // AREG_BASE_PRIVATE_POSIX_SPINLOCKIX_HPP

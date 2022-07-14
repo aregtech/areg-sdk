@@ -540,7 +540,7 @@ void ServerService::stopConnection(void)
     mServerConnection.closeSocket();
 }
 
-void ServerService::getServiceList(ITEM_ID cookie, TEArrayList<StubAddress> & out_listStubs, TEArrayList<ProxyAddress> & out_lisProxies) const
+void ServerService::getServiceList(ITEM_ID IN cookie, TEArrayList<StubAddress> & OUT out_listStubs, TEArrayList<ProxyAddress> & OUT out_lisProxies) const
 {
     mServiceRegistry.getServiceList(cookie, out_listStubs, out_lisProxies);
 }

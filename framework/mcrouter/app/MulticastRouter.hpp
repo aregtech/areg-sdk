@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_MCROUTER_APP_MULTICASTROUTER_HPP
+#define AREG_MCROUTER_APP_MULTICASTROUTER_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -11,7 +12,7 @@
  * \file        mcrouter/app/MulticastRouter.hpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
  * \author      Artak Avetyan
- * \brief       AREG Platform, Multicast routing to run as process or service.
+ * \brief       AREG Platform, Multi-cast routing to run as process or service.
  ************************************************************************/
 
 /************************************************************************
@@ -69,7 +70,7 @@ public:
     bool serviceInstall( void );
 
     /**
-     * \brief   Call to un-install (unregister) message router service in the system.
+     * \brief   Call to uninstall (unregister) message router service in the system.
      **/
     void serviceUninstall( void );
 
@@ -221,3 +222,5 @@ inline MulticastRouter & MulticastRouter::self( void )
 {
     return (*this);
 }
+
+#endif  // AREG_MCROUTER_APP_MULTICASTROUTER_HPP

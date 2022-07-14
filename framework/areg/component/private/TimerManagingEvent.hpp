@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_COMPONENT_PRIVATE_TIMERMANAGINGEVENT_HPP
+#define AREG_COMPONENT_PRIVATE_TIMERMANAGINGEVENT_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -82,7 +83,7 @@ public:
 
     /**
      * \brief   TimerManagingEventData::getString()
-     *          Retunrs the string value of TimerManagingEventData::eTimerAction type
+     *          Returns the string value of TimerManagingEventData::eTimerAction type
      **/
     static inline const char * getString( TimerManagingEventData::eTimerAction timerAction );
 
@@ -268,3 +269,5 @@ inline const char * TimerManagingEventData::getString( TimerManagingEventData::e
     CASE_DEFAULT("ERR: Undefined TimerManagingEventData::eTimerAction value!");
     }
 }
+
+#endif  // AREG_COMPONENT_PRIVATE_TIMERMANAGINGEVENT_HPP

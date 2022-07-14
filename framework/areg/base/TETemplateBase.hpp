@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_BASE_ETEMPLATEBASE_HPP
+#define AREG_BASE_ETEMPLATEBASE_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -118,3 +119,5 @@ public:
         return c.erase(cit, cit);
     }
 };
+
+#endif  // AREG_BASE_ETEMPLATEBASE_HPP

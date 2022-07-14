@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_MCROUTER_TCP_PRIVATE_SERVERCONNECTION_HPP
+#define AREG_MCROUTER_TCP_PRIVATE_SERVERCONNECTION_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -205,3 +206,5 @@ inline int ServerConnection::receiveMessage(RemoteMessage & out_message, ITEM_ID
 {
     return SocketConnectionBase::receiveMessage(out_message,getClientByCookie(clientCookie));
 }
+
+#endif  // AREG_MCROUTER_TCP_PRIVATE_SERVERCONNECTION_HPP

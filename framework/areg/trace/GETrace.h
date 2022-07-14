@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_TRACE_GETRACE_H
+#define AREG_TRACE_GETRACE_H
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -260,3 +261,5 @@
     #define GLOBAL_FATAL(...)
 
 #endif  // (defined(ENABLE_TRACES) && defined(_ENABLE_TRACES))
+
+#endif  // AREG_TRACE_GETRACE_H

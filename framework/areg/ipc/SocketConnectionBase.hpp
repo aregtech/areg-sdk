@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_IPC_PRIVATE_SOCKETCONNECTIONBASEE_HPP
+#define AREG_IPC_PRIVATE_SOCKETCONNECTIONBASEE_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -8,7 +9,7 @@
  * If not, please contact to info[at]aregtech.com
  *
  * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
- * \file        areg/ipc/private/SocketConnectionBase.hpp
+ * \file        areg/ipc/SocketConnectionBase.hpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
  * \author      Artak Avetyan
  * \brief       AREG Platform Connection Base class declaration.
@@ -96,3 +97,5 @@ protected:
 private:
     DECLARE_NOCOPY_NOMOVE( SocketConnectionBase );
 };
+
+#endif  // AREG_IPC_PRIVATE_SOCKETCONNECTIONBASEE_HPP

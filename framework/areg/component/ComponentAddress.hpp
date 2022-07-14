@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_COMPONENT_COMPONENTADDRESS_HPP
+#define AREG_COMPONENT_COMPONENTADDRESS_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -355,3 +356,5 @@ inline IEOutStream & operator << (IEOutStream & stream, const ComponentAddress &
     stream << output.mThreadAddress;
     return stream;
 }
+
+#endif  // AREG_COMPONENT_COMPONENTADDRESS_HPP

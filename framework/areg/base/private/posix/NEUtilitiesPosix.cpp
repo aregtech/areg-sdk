@@ -28,7 +28,7 @@ namespace NEUtilities
 {
 
     /**
-     * \brief   Generates a name, sets the timestapt of now.
+     * \brief   Generates a name, sets the timestamp of now.
      * 
      * \param   prefix          The prefix to add to name.
      * \param   out_buffer[out] On output, this contains the result.
@@ -75,7 +75,7 @@ namespace NEUtilities
     }
 }   // namespace
 
-AREG_API bool NEUtilities::convToLocalTime( const TIME64 & inUtcTime, sSystemTime & outLocalTime )
+AREG_API bool NEUtilities::convToLocalTime( const TIME64 & inUtcTime, sSystemTime & OUT outLocalTime )
 {
     bool result = false;
 
@@ -107,7 +107,7 @@ AREG_API bool NEUtilities::convToLocalTime( const TIME64 & inUtcTime, sSystemTim
     return result;
 }
 
-AREG_API bool NEUtilities::convToLocalTime( const sSystemTime &inUtcTime, sSystemTime & outLocalTime )
+AREG_API bool NEUtilities::convToLocalTime( const sSystemTime &inUtcTime, sSystemTime & OUT outLocalTime )
 {
     bool result = false;
     TIME64 quad = NEUtilities::convToTime(inUtcTime);
@@ -149,7 +149,7 @@ AREG_API uint64_t NEUtilities::getTickCount( void )
     return result;
 }
 
-AREG_API void NEUtilities::systemTimeNow( NEUtilities::sSystemTime & out_sysTime, bool localTime )
+AREG_API void NEUtilities::systemTimeNow( NEUtilities::sSystemTime & OUT out_sysTime, bool localTime )
 {
     struct timespec ts;
     struct tm now;
@@ -181,7 +181,7 @@ AREG_API void NEUtilities::systemTimeNow( NEUtilities::sSystemTime & out_sysTime
     out_sysTime.stMicrosecs = micro;
 }
 
-AREG_API void NEUtilities::systemTimeNow( NEUtilities::sFileTime & out_fileTime, bool localTime )
+AREG_API void NEUtilities::systemTimeNow( NEUtilities::sFileTime & OUT out_fileTime, bool localTime )
 {
     struct timespec ts;
     clock_gettime(CLOCK_REALTIME, &ts);

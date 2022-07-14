@@ -26,7 +26,7 @@
 namespace NEUtilities {
 
     /**
-     * \brief   Generates a name, sets the timestapt of now.
+     * \brief   Generates a name, sets the timestamp of now.
      *
      * \param   prefix          The prefix to add to name.
      * \param   out_buffer[out] On output, this contains the result.
@@ -70,7 +70,7 @@ namespace NEUtilities {
         aregTime.stMicrosecs    = 0;
     }
 
-    //!< Converts areg specific time structure to Windos system time.
+    //!< Converts areg specific time structure to Windows system time.
     inline void _convAregSysTime2WinSysTime( const NEUtilities::sSystemTime & IN aregTime, SYSTEMTIME & OUT winTime )
     {
         winTime.wYear           = aregTime.stYear;
@@ -109,7 +109,7 @@ namespace NEUtilities {
         // winTime.dwHighDateTime  = MACRO_64_HI_BYTE32(quad);
     }
 
-    //!< Converts windows 64-bit file strcutre to areg 64-bit time.
+    //!< Converts windows 64-bit file structure to areg 64-bit time.
     inline void _convWinFileTime2AregTime( const FILETIME & IN winTime, TIME64 & OUT aregTime)
     {
         aregTime = MACRO_MAKE_64(winTime.dwHighDateTime, winTime.dwLowDateTime);
@@ -172,7 +172,7 @@ AREG_API bool NEUtilities::convToLocalTime( const TIME64 & inUtcTime, sSystemTim
     return convToLocalTime(sysTime, outLocalTime);
 }
 
-AREG_API void NEUtilities::systemTimeNow( NEUtilities::sSystemTime & out_sysTime, bool localTime )
+AREG_API void NEUtilities::systemTimeNow( NEUtilities::sSystemTime & OUT out_sysTime, bool localTime )
 {
     SYSTEMTIME st;
     NEMemory::zeroElement<SYSTEMTIME>(st);
@@ -195,7 +195,7 @@ AREG_API void NEUtilities::systemTimeNow( NEUtilities::sSystemTime & out_sysTime
     }
 }
 
-AREG_API void NEUtilities::systemTimeNow( NEUtilities::sFileTime & out_fileTime, bool localTime )
+AREG_API void NEUtilities::systemTimeNow( NEUtilities::sFileTime & OUT out_fileTime, bool localTime )
 {
     SYSTEMTIME st, local;
     SYSTEMTIME *src = &st;

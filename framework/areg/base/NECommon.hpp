@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_BASE_NECOMMON_HPP
+#define AREG_BASE_NECOMMON_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -301,3 +302,5 @@ namespace NECommon
      **/
     constexpr char              OBJECT_SEPARATOR                { '.' };
 }
+
+#endif  // AREG_BASE_NECOMMON_HPP

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_BASE_PRIVATE_NEDEBUG_HPP
+#define AREG_BASE_PRIVATE_NEDEBUG_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -51,7 +52,7 @@ namespace NEDebug
      **/
     typedef enum class E_DegubPrio : int
     {
-          PrioNone  = OUTPUT_DEBUG_LEVEL_NONE   //!< No priority, output message shoud be ignored.
+          PrioNone  = OUTPUT_DEBUG_LEVEL_NONE   //!< No priority, output message should be ignored.
         , PrioDbg   = OUTPUT_DEBUG_LEVEL_DEBUG  //!< Priority Debug, outputs "DBG:" string in front of message
         , PrioInfo  = OUTPUT_DEBUG_LEVEL_INFO   //!< Priority Information, outputs "INF:" string in front of message
         , PrioWarn  = OUTPUT_DEBUG_LEVEL_WARN   //!< Priority Warning, outputs "WRN:" string in front of message
@@ -144,3 +145,5 @@ inline const char* NEDebug::getPrioPrefix( NEDebug::eDegubPrio priority )
         return NEDebug::PREFIX_DBG_PRIORITIES[static_cast<int>(NEDebug::eDegubPrio::PrioDbg)].data( );
     }
 }
+
+#endif  // AREG_BASE_PRIVATE_NEDEBUG_HPP

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_COMPONENT_COMPONENT_HPP
+#define AREG_COMPONENT_COMPONENT_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -407,3 +408,5 @@ inline Component& Component::self( void )
 {
     return (*this);
 }
+
+#endif  // AREG_COMPONENT_COMPONENT_HPP

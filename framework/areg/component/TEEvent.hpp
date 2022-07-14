@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_COMPONENT_TEEVENT_HPP
+#define AREG_COMPONENT_TEEVENT_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -464,7 +465,7 @@ inline bool __##EventClass<DATA_CLASS>::addListener(__##ConsumerClass<DATA_CLASS
 /** Returns false if failed to register consumer or consumer was already registered for specified event                     **/                     \
 /**                                                                                                                         **/                     \
 template <class DATA_CLASS>                                                                                                                         \
-inline bool __##EventClass<DATA_CLASS>::addListener(__##ConsumerClass<DATA_CLASS> & listener, id_type whichThread)                              \
+inline bool __##EventClass<DATA_CLASS>::addListener(__##ConsumerClass<DATA_CLASS> & listener, id_type whichThread)                                  \
 {   return Event::addListener(__##EventClass<DATA_CLASS>::_getClassId(), listener, whichThread);                                    }               \
 /**                                                                                                                         **/                     \
 /** Adds listener (registers consumer) for specified dispatcher thread. The thread should be already running.               **/                     \
@@ -742,3 +743,5 @@ __##ConsumerClass##Extended<DATA_CLASS>::__##ConsumerClass##Extended( void )    
  **/
 #define DECLARE_EVENT_EX(DataClass, EventClass, ConsumerClass, ConsumerThreadName)                                                                  \
     DECLARE_EXTERNAL_EVENT_EXTENDED(DataClass, EventClass, ConsumerClass, ConsumerThreadName)
+
+#endif  // AREG_COMPONENT_TEEVENT_HPP

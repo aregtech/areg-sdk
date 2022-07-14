@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_TRACE_PRIVATE_DEBUGOUTPUTLOGGER_HPP
+#define AREG_TRACE_PRIVATE_DEBUGOUTPUTLOGGER_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -175,3 +176,5 @@ private:
     DebugOutputLogger( void ) = delete;
     DECLARE_NOCOPY_NOMOVE( DebugOutputLogger );
 };
+
+#endif  // AREG_TRACE_PRIVATE_DEBUGOUTPUTLOGGER_HPP

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_BASE_TESTRING_HPP
+#define AREG_BASE_TESTRING_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -2685,3 +2686,5 @@ inline bool TEString<CharType>::isValidNameChar(const CharType checkChar, std::l
     constexpr CharType symbols[] = { '_', '\0' };
     return std::isalnum(checkChar, loc) || NEString::isOneOf<CharType>(checkChar, symbols);
 }
+
+#endif  // AREG_BASE_TESTRING_HPP

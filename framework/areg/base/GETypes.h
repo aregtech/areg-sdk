@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_BASE_GETYPES_H
+#define AREG_BASE_GETYPES_H
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -143,3 +144,5 @@ typedef uint64_t        TIME64;
  * \brief   The message ID type.
  **/
 typedef uint32_t        msg_id;
+
+#endif  // AREG_BASE_GETYPES_H

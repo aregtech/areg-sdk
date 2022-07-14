@@ -91,7 +91,7 @@ String ThreadAddress::convAddressToPath( const ThreadAddress& threadAddress )
     return threadAddress.convToString();
 }
 
-ThreadAddress ThreadAddress::convPathToAddress( const char* threadPath, const char** out_nextPart /*= nullptr*/ )
+ThreadAddress ThreadAddress::convPathToAddress( const char* threadPath, const char** OUT out_nextPart /*= nullptr*/ )
 {
     ThreadAddress result;
     result.convFromString(threadPath, out_nextPart);

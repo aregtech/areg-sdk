@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_BASE_PRIVATE_POSIX_WAITABLEMUTEXIX_HPP
+#define AREG_BASE_PRIVATE_POSIX_WAITABLEMUTEXIX_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -161,3 +162,5 @@ inline pthread_t WaitableMutexIX::getOwningThreadId(void) const
 }
 
 #endif  // defined(_POSIX) || defined(POSIX)
+
+#endif  // AREG_BASE_PRIVATE_POSIX_WAITABLEMUTEXIX_HPP

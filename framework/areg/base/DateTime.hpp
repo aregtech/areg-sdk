@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_BASE_DATETIME_HPP
+#define AREG_BASE_DATETIME_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -178,9 +179,9 @@ public:
     bool operator <= ( const DateTime & other ) const;
 
     /**
-     * \brief   Reads (de-serializes) date and time value from streaming object.
+     * \brief   Reads (deserializes) date and time value from streaming object.
      * \param   stream  Streaming object, which contains serialized date and time value
-     * \param   input   Date and time object, which is initialized by de-serializing 
+     * \param   input   Date and time object, which is initialized by deserializing 
      *                  date and time value from stream
      **/
     friend AREG_API const IEInStream & operator >> ( const IEInStream & stream, DateTime & input );
@@ -295,3 +296,5 @@ inline bool DateTime::isValid( void ) const
 {
     return (mDateTime != 0);
 }
+
+#endif  // AREG_BASE_DATETIME_HPP

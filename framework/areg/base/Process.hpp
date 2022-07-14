@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_BASE_PROCESS_HPP
+#define AREG_BASE_PROCESS_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -200,7 +201,7 @@ private:
      **/
     bool 			mIsInitialized;
     /**
-     * \brief	The singletone instance of Process object.
+     * \brief	The singleton instance of Process object.
      */
     static Process	_theProcess;
 
@@ -269,3 +270,5 @@ inline const char * Process::getString( Process::eProcEnv  val )
         return "ERR: Unexpected Process::eProcEnv value";
     }
 }
+
+#endif  // AREG_BASE_PROCESS_HPP

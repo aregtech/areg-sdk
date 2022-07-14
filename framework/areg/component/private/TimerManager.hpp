@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_COMPONENT_PRIVATE_TIMERMANAGER_HPP
+#define AREG_COMPONENT_PRIVATE_TIMERMANAGER_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -370,3 +371,5 @@ inline TimerManager& TimerManager::self( void )
 {
     return (*this);
 }
+
+#endif  // AREG_COMPONENT_PRIVATE_TIMERMANAGER_HPP

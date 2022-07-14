@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_BASE_OBJECT_HPP
+#define AREG_BASE_OBJECT_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -267,3 +268,5 @@ namespace std
 //////////////////////////////////////////////////////////////////////////
 // Object class inline functions
 //////////////////////////////////////////////////////////////////////////
+
+#endif  // AREG_BASE_OBJECT_HPP

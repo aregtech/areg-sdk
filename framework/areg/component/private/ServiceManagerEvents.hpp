@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_COMPONENT_PRIVATE_SERVICEMANAGEREVENTS_HPP
+#define AREG_COMPONENT_PRIVATE_SERVICEMANAGEREVENTS_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -322,3 +323,5 @@ inline const char * ServiceManagerEventData::getString( ServiceManagerEventData:
         return "ERR: undefined ServiceManagerEventData::eServiceManagerCommands value!!!";
     }
 }
+
+#endif  // AREG_COMPONENT_PRIVATE_SERVICEMANAGEREVENTS_HPP

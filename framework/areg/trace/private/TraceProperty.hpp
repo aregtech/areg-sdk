@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_TRACE_PRIVATE_TRACEPROPERTY_HPP
+#define AREG_TRACE_PRIVATE_TRACEPROPERTY_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -369,3 +370,5 @@ inline bool TraceProperty::isValid(void) const
 {
     return (mProperty.mValue.first.isValidKey() && mProperty.mValue.second.isValid());
 }
+
+#endif  // AREG_TRACE_PRIVATE_TRACEPROPERTY_HPP

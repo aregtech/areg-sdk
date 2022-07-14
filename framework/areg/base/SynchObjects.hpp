@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_BASE_SYNCHOBJECTS_HPP
+#define AREG_BASE_SYNCHOBJECTS_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -157,8 +158,9 @@ public:
      *          thread, the current thread will wait timeout milliseconds
      *          and will resume execution.
      *          If timeout is WAIT_INFINITE, current thread will wait
-     *          as long, as mutex ownership is not released by owning thread
-     * \param	timeout	Timeout in milliseconds to wait.
+     *          as long, as mutex ownership is not released by owning thread.
+     * 
+     * \param	timeout	The timeout in milliseconds to wait.
      * \return	Returns true if current thread successfully got mutex ownership
      **/
     virtual bool lock( unsigned int timeout = NECommon::WAIT_INFINITE ) override;
@@ -199,7 +201,7 @@ private:
 
     /**
      * \brief   Locks the mutex, takes the ownership.
-     * \param   timeout     The timeout in milliseconds to wait for mutext to lock.
+     * \param   timeout     The timeout in milliseconds to wait for mutex to lock.
      **/
     bool _lockMutex( unsigned int timeout );
 
@@ -292,7 +294,7 @@ public:
      *          or until timeout is expired. If Timeout is WAIT_INFINITE, thread
      *          will be unlocked only when event signaled / unlocked.
      *          If Event is auto-reset, this call automatically set to non-signaled state 
-     * \param	timeout	    Timeout in milliseconds to wait until Event is not
+     * \param	timeout	    The timeout in milliseconds to wait until Event is not
      *                      signaled / unlocked. If WAIT_INFINITE, 
      *                      specify that the wait will not time out. 
      * \return	Returns true if Event was unlocked / signaled and thread was unblock
@@ -321,7 +323,7 @@ public:
     bool resetEvent( void );
 
     /**
-     * \brief   Pulse event once. It it was not set, it will set once and immediately
+     * \brief   Pulse event once. If it was not set, it sets once and immediately
      *          reset to non-signaled state.
      **/
     void pulseEvent( void );
@@ -627,7 +629,7 @@ public:
     virtual bool unlock( void ) override;
 
     /**
-     * \brief   Attempts to take the spin-lock ownershipt without blocking thread.
+     * \brief   Attempts to take the spin-lock ownership without blocking thread.
      *          If the call is successful, the calling thread
      *          takes ownership of the spin-lock.
      * \return  If current thread successfully has taken the ownership or the thread
@@ -697,7 +699,7 @@ public:
     virtual bool unlock( void ) override;
 
     /**
-     * \brief   Attempts to take the resource lock ownershipt without blocking thread.
+     * \brief   Attempts to take the resource lock ownership without blocking thread.
      *          If the call is succeeds, the calling thread takes the ownership 
      *          of the resource lock object.
      * \return  If current thread successfully has taken the ownership or the resource lock
@@ -922,11 +924,11 @@ private:
  * \example Mutex use
  *
  *          In this example bellow MyClass contains Mutex as a synchronization object
- *          Any time thread is calling foo() or bar() methods ot MyClass, on funtion entry
+ *          Any time thread is calling foo() or bar() methods of MyClass, on function entry
  *          Single Synchronization Object Locking instance is created,
  *          which gets a reference to the Mutex object.
  *          By default, the auto-locking is enable, and by this current thread will try
- *          to get Mutext ownership and will call lock() function during initialization.
+ *          to get Mutex ownership and will call lock() function during initialization.
  *          As soon as thread gets ownership, it will continue code execution in foo() and bar()
  *          function. And as soon as thread leaves these function, i.e. gets out of function scope,
  *          the destructor of locking object will automatically release mutex ownership
@@ -1122,7 +1124,7 @@ public:
      *          The call of function can block calling thread either until
      *          at least one object is signaled or all of them, depending on
      *          passed flag.
-     * \param	timeout	    Timeout to wait for signaled objects
+     * \param	timeout	    The timeout to wait for signaled objects
      * \param	waitForAll	If true, it will wait until all objects are signaled
      * \param   isAlertable If this parameter is true and the thread is in the 
      *                      waiting state, the function returns when the system 
@@ -1275,3 +1277,5 @@ inline bool Lock::unlock( void )
 {
     return mSynchObject.unlock();
 }
+
+#endif  // AREG_BASE_SYNCHOBJECTS_HPP

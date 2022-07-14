@@ -50,8 +50,7 @@ namespace NEUtilities
 /************************************************************************/
 // NEUtilities namespace global functions
 /************************************************************************/
-
-AREG_API NEMath::eCompare NEUtilities::compareTimes( const uint64_t & lsh, const uint64_t & rhs )
+AREG_API NEMath::eCompare NEUtilities::compareTimes( const TIME64 & lsh, const TIME64 & rhs )
 {
     NEMath::uLargeInteger lshLi, rshLi;
     lshLi.quadPart  = lsh;
@@ -60,7 +59,7 @@ AREG_API NEMath::eCompare NEUtilities::compareTimes( const uint64_t & lsh, const
     return NEUtilities::compareLargeIntegers(lshLi, rshLi);
 }
 
-AREG_API void NEUtilities::convToTm(const sSystemTime & sysTime, tm & out_time)
+AREG_API void NEUtilities::convToTm(const sSystemTime & sysTime, tm & OUT out_time)
 {
     if (sysTime.stYear >= 1900)
     {
@@ -91,7 +90,7 @@ AREG_API void NEUtilities::makeTmLocal( struct tm & IN OUT utcTime )
 #endif  // _WIN32
 }
 
-AREG_API void NEUtilities::convToSystemTime(const tm & time, sSystemTime & out_sysTime)
+AREG_API void NEUtilities::convToSystemTime(const tm & time, sSystemTime & OUT out_sysTime)
 {
     out_sysTime.stSecond    = static_cast<unsigned short>(time.tm_sec);
     out_sysTime.stMinute    = static_cast<unsigned short>(time.tm_min);
@@ -102,7 +101,7 @@ AREG_API void NEUtilities::convToSystemTime(const tm & time, sSystemTime & out_s
     out_sysTime.stDayOfWeek = static_cast<unsigned short>(time.tm_wday);
 }
 
-AREG_API void NEUtilities::convToFileTime( const uint64_t &  timeValue, NEUtilities::sFileTime & out_fileTime )
+AREG_API void NEUtilities::convToFileTime( const TIME64 &  timeValue, NEUtilities::sFileTime & out_fileTime )
 {
     uint64_t quad = timeValue + WIN_TO_POSIX_EPOCH_BIAS_MICROSECS;
 
@@ -131,7 +130,7 @@ AREG_API NEMath::eCompare NEUtilities::compareTimes( const NEUtilities::sFileTim
     return NEUtilities::compareLargeIntegers( lshLi, rshLi );
 }
 
-AREG_API uint64_t NEUtilities::convToTime( const NEUtilities::sFileTime & fileTime )
+AREG_API TIME64 NEUtilities::convToTime( const NEUtilities::sFileTime & fileTime )
 {
     NEMath::uLargeInteger li;
     li.u.lowPart    = fileTime.ftLowDateTime;
@@ -165,12 +164,12 @@ AREG_API String NEUtilities::generateName( const char* prefix )
     return String(buffer);
 }
 
-AREG_API const char * NEUtilities::generateName(const char * prefix, char * out_buffer, int length)
+AREG_API const char * NEUtilities::generateName(const char * prefix, char * OUT out_buffer, int length)
 {
     return NEUtilities::generateName(prefix, out_buffer, length, NECommon::DEFAULT_SPECIAL_CHAR.data());
 }
 
-AREG_API const char * NEUtilities::generateName(const char * prefix, char * out_buffer, int length, const char * specChar)
+AREG_API const char * NEUtilities::generateName(const char * prefix, char * OUT out_buffer, int length, const char * specChar)
 {
     return NEUtilities::_generateName(prefix, out_buffer, length, specChar);
 }

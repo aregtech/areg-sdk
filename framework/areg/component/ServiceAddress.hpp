@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_COMPONENT_SERVICEADDRESS_HPP
+#define AREG_COMPONENT_SERVICEADDRESS_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -344,3 +345,5 @@ inline IEOutStream & operator << ( IEOutStream & stream, const ServiceAddress & 
     stream << output.mRoleName;
     return stream;
 }
+
+#endif  // AREG_COMPONENT_SERVICEADDRESS_HPP

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_COMPONENT_STREAMABLEEVENT_HPP
+#define AREG_COMPONENT_STREAMABLEEVENT_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -26,7 +27,7 @@
 //////////////////////////////////////////////////////////////////////////
 /**
  * \brief   Streamable Event is communication event and provides 
- *          possibility to serialize and de-serialize event data in the 
+ *          possibility to serialize and deserialize event data in the 
  *          streaming object. All Events used to transfer data are
  *          declared as streamable Event. The Streamable Event is not
  *          created and used directly. Instead, one of derived classes
@@ -92,3 +93,5 @@ private:
     StreamableEvent( void ) = delete;
     DECLARE_NOCOPY_NOMOVE( StreamableEvent );
 };
+
+#endif  // AREG_COMPONENT_STREAMABLEEVENT_HPP

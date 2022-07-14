@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_TRACE_PRIVATE_TRACEMANAGER_HPP
+#define AREG_TRACE_PRIVATE_TRACEMANAGER_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -826,3 +827,5 @@ inline int TraceManager::removeScopeGroupPriority(const char * scopeGroupName, c
 {
     return removeScopeGroupPriority(scopeGroupName, NETrace::convFromString(remPrio) );
 }
+
+#endif  // AREG_TRACE_PRIVATE_TRACEMANAGER_HPP

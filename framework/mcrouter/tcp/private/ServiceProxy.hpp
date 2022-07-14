@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_MCROUTER_TCP_PRIVATE_SERVICEPROXY_HPP
+#define AREG_MCROUTER_TCP_PRIVATE_SERVICEPROXY_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -244,3 +245,5 @@ inline bool ServiceProxy::isWaiting( void ) const
 {
     return ( mConnectStatus == NEService::eServiceConnection::ServicePending );
 }
+
+#endif  // AREG_MCROUTER_TCP_PRIVATE_SERVICEPROXY_HPP

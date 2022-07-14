@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_COMPONENT_EVENTDISPATCHER_HPP
+#define AREG_COMPONENT_EVENTDISPATCHER_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -69,7 +70,7 @@ public:
      *          than function run() is called.
      * \param	threadObj	The new created Thread object, 
      *                      which contains this consumer.
-     * \return	Return true if thread should run. Return false, it it should not run.
+     * \return	Return true if thread should run. Return false, it should not run.
      **/
     virtual bool onThreadRegistered( Thread * threadObj ) override;
 
@@ -150,3 +151,5 @@ inline bool EventDispatcher::hasMoreEvents( void ) const
 {
     return (static_cast<const EventQueue &>(mExternaEvents).getSize() > 0);
 }
+
+#endif  // AREG_COMPONENT_EVENTDISPATCHER_HPP

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_TRACE_PRIVATE_LAYOUTMANAGER_HPP
+#define AREG_TRACE_PRIVATE_LAYOUTMANAGER_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -112,3 +113,5 @@ inline bool LayoutManager::isValid( void ) const
 {
     return (mLayoutList.isEmpty() == false);
 }
+
+#endif  // AREG_TRACE_PRIVATE_LAYOUTMANAGER_HPP

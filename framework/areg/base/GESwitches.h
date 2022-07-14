@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_BASE_GESWITCHES_H
+#define AREG_BASE_GESWITCHES_H
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -158,3 +159,5 @@
 #ifndef AREG_API
    #define AREG_API
 #endif  // AREG_API
+
+#endif  // AREG_BASE_GESWITCHES_H

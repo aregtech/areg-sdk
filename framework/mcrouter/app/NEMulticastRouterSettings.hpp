@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_MCROUTER_APP_NEMULTICASTROUTERSETTINGS_HPP
+#define AREG_MCROUTER_APP_NEMULTICASTROUTERSETTINGS_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -11,7 +12,7 @@
  * \file        mcrouter/app/NEMulticastRouterSettings.hpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
  * \author      Artak Avetyan
- * \brief       AREG Platform, Multicast routing settings.
+ * \brief       AREG Platform, Multi-cast routing settings.
  ************************************************************************/
 
 /************************************************************************
@@ -26,7 +27,7 @@ namespace NEMulticastRouterSettings
 {
     /**
      * \brief   NEMulticastRouterSettings::eRouterState
-     *          Describes the multicast router state.
+     *          Describes the multi-cast router state.
      **/
     typedef enum class E_RouterState
     {
@@ -90,7 +91,7 @@ namespace NEMulticastRouterSettings
     constexpr sServiceCommand   ServiceCommands[]   
     {
           {"--install"  , "-i", eServiceCommand::CMD_Install}   //!< Command to install service. Valid for Windows OS.
-        , {"--uninstall", "-u", eServiceCommand::CMD_Uninstall} //!< Command to unistall service. Valid for Windows OS.
+        , {"--uninstall", "-u", eServiceCommand::CMD_Uninstall} //!< Command to uninstall service. Valid for Windows OS.
         , {"--service"  , "-s", eServiceCommand::CMD_Service}   //!< Command to run process as a system service process.
         , {"--console"  , "-c", eServiceCommand::CMD_Console}   //!< Command to run process as a console application.
         , {""           , ""  , eServiceCommand::CMD_Undefined} //!< Any other command.
@@ -179,3 +180,5 @@ inline NEMulticastRouterSettings::eServiceCommand NEMulticastRouterSettings::par
 
     return result;
 }
+
+#endif  // AREG_MCROUTER_APP_NEMULTICASTROUTERSETTINGS_HPP

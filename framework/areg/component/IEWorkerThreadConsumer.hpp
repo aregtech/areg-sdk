@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_COMPONENT_IEWORKERTHREADCONSUMER_HPP
+#define AREG_COMPONENT_IEWORKERTHREADCONSUMER_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -42,7 +43,7 @@ class WorkerThread;
  *          If an object is an instance of Worker Thread Consumer, it will 
  *          get register / unregister calls to notify Thread Start / Stop.
  *          Set listeners in register method to be able to receive notification
- *          messages. Each consumer should have name to differentiat the
+ *          messages. Each consumer should have name to differentiate the
  *          consumers if a component has more than one worker thread.
  **/
 class AREG_API IEWorkerThreadConsumer
@@ -136,3 +137,5 @@ inline bool IEWorkerThreadConsumer::isEqualName( const char * consumerName ) con
 {
     return ((consumerName != nullptr) && (mConsumerName == consumerName));
 }
+
+#endif  // AREG_COMPONENT_IEWORKERTHREADCONSUMER_HPP

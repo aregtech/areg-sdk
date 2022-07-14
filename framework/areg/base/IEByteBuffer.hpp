@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_BASE_IEBYTEBUFFER_HPP
+#define AREG_BASE_IEBYTEBUFFER_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -119,7 +120,7 @@ public:
      *              to write data. Because if data is shared between different instances
      *              of byte-buffer, the size of buffer should not be changed.
      *
-     * \param	size	Size in bytes to reserve
+     * \param	size	The size in bytes to reserve
      * \param	copy    If true and the existing buffer is valid, it will copy data
      * \return	Returns the size available to use (i.e. remaining space).
      **/
@@ -328,3 +329,5 @@ inline unsigned char * IEByteBuffer::getEndOfBuffer(void)
 {
     return (isValid() ? NEMemory::getBufferDataWrite(mByteBuffer.get()) + mByteBuffer->bufHeader.biUsed : nullptr);
 }
+
+#endif  // AREG_BASE_IEBYTEBUFFER_HPP

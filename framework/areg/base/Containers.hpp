@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_BASE_CONTAINERS_HPP
+#define  AREG_BASE_CONTAINERS_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -440,3 +441,5 @@ TEPointerHashMap<VALUE>::TEPointerHashMap( uint32_t hashSize )
     : TEHashMap<void *, VALUE>(hashSize)
 {
 }
+
+#endif  // AREG_BASE_CONTAINERS_HPP

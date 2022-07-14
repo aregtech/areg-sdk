@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_COMPONENT_PRIVATE_SERVERLIST_HPP
+#define AREG_COMPONENT_PRIVATE_SERVERLIST_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -183,6 +184,4 @@ private:
     DECLARE_NOCOPY_NOMOVE( ServerList );
 };
 
-//////////////////////////////////////////////////////////////////////////
-// ServerList class inline functions
-//////////////////////////////////////////////////////////////////////////
+#endif  // AREG_COMPONENT_PRIVATE_SERVERLIST_HPP

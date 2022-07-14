@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_BASE_TESTACK_HPP
+#define AREG_BASE_TESTACK_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -932,3 +933,5 @@ IEOutStream & operator << ( IEOutStream & stream, const TEStack<VALUE> & output 
 
     return stream;
 }
+
+#endif  // AREG_BASE_TESTACK_HPP

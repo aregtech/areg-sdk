@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_COMPONENT_PRIVATE_POSIX_TIMERPOSIX_HPP
+#define AREG_COMPONENT_PRIVATE_POSIX_TIMERPOSIX_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -91,7 +92,7 @@ public:
     inline const timespec & getDueTime( void ) const;
 
     /**
-     * \brief   Returns period. If zero, the timer is nnot run. If TimerPosix::TIMER_PERIOD_ENDLESS 
+     * \brief   Returns period. If zero, the timer does not run. If TimerPosix::TIMER_PERIOD_ENDLESS 
      *          the timer is endless until it is not stopped. Any other value specifies the remaining
      *          period to run timer.
      **/
@@ -113,7 +114,7 @@ public:
     /**
      * \brief   Creates and starts timer with timeout and period count values specified in
      *          the give Timer object. If the specified timeout or period values in
-     *          the Timer object are zero, the timer is created, but not not started.
+     *          the Timer object are zero, the timer is created, but not started.
      *          This function creates a timer to handle in a separate thread.
      * \param   context     The timer object that contains timeout and period information.
      * \param   funcTimer   Pointer to the timer handling function triggered when timer expires.
@@ -292,3 +293,5 @@ inline bool TimerPosix::_isStarted(void) const
 }
 
 #endif  // defined(_POSIX) || defined(POSIX)
+
+#endif  // AREG_COMPONENT_PRIVATE_POSIX_TIMERPOSIX_HPP

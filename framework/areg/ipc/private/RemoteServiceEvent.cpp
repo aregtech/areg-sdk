@@ -27,6 +27,12 @@ SendMessageEventData::SendMessageEventData( SendMessageEventData && source ) noe
 {
 }
 
+SendMessageEventData& SendMessageEventData::operator = (const SendMessageEventData& source)
+{
+    mRemoteMessage = source.mRemoteMessage;
+    return (*this);
+}
+
 SendMessageEventData & SendMessageEventData::operator = ( SendMessageEventData && source ) noexcept
 {
     mRemoteMessage  = std::move(source.mRemoteMessage);

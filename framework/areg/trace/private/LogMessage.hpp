@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_TRACE_PRIVATE_LOGMESSAGE_HPP
+#define AREG_TRACE_PRIVATE_LOGMESSAGE_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -289,3 +290,5 @@ inline IEOutStream & operator << ( IEOutStream & stream, const LogMessage & outp
     stream << static_cast<const NETrace::sLogMessage &>(output);
     return stream;
 }
+
+#endif  // AREG_TRACE_PRIVATE_LOGMESSAGE_HPP

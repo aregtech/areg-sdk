@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_APPBASE_PRIVATE_CONFIGURE_HPP
+#define AREG_APPBASE_PRIVATE_CONFIGURE_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -19,3 +20,5 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
+
+#endif  // AREG_APPBASE_PRIVATE_CONFIGURE_HPP

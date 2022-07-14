@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_COMPONENT_CHANNEL_HPP
+#define AREG_COMPONENT_CHANNEL_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -269,3 +270,5 @@ inline void Channel::invalidate( void )
     mTarget = NEService::TARGET_UNKNOWN;
     mCookie = NEService::COOKIE_UNKNOWN;
 }
+
+#endif  // AREG_COMPONENT_CHANNEL_HPP

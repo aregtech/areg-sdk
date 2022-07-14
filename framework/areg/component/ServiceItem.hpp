@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_COMPONENT_SERVICEITEM_HPP
+#define AREG_COMPONENT_SERVICEITEM_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -393,3 +394,5 @@ inline bool ServiceItem::isServiceCompatible( const ServiceItem & other ) const
 {
     return ((mMagicNum == other.mMagicNum) && mServiceVersion.isCompatible(other.mServiceVersion));
 }
+
+#endif  // AREG_COMPONENT_SERVICEITEM_HPP

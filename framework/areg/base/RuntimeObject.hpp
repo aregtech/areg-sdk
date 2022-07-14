@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_BASE_RUNTIMEOBJECT_HPP
+#define AREG_BASE_RUNTIMEOBJECT_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -83,14 +84,14 @@ public:                                                                         
     /** \brief   Returns the calculated number of runtime class.    **/                                 \
     virtual unsigned int getRuntimeClassNumber( void ) const override;                                  \
     /** \brief   Checks class instance by Class Identifier          **/                                 \
-    /**          Checking is done hiearchically and if any class    **/                                 \
-    /**          in base hierarchi has same RuntimeClassID,         **/                                 \
+    /**          Checking is done hierarchically and if any class   **/                                 \
+    /**          in base hierarchy has same RuntimeClassID,         **/                                 \
     /**          returns true. Otherwise, return false.             **/                                 \
     /** \param   classId    The Class Identifier to check.          **/                                 \
     virtual bool isInstanceOfRuntimeClass(const RuntimeClassID & classId) const override;               \
     /** \brief   Checks class instance by given name                **/                                 \
-    /**          Checking is done hiearchically and if any class    **/                                 \
-    /**          in base hierarchi has same name, returns true.     **/                                 \
+    /**          Checking is done hierarchically and if any class   **/                                 \
+    /**          in base hierarchy has same name, returns true.     **/                                 \
     /**          Otherwise, return false.                           **/                                 \
     /** \param   className  The name of class to check.             **/                                 \
     virtual bool isInstanceOfRuntimeClass(const char * className) const override;                       \
@@ -359,3 +360,5 @@ inline const RuntimeObject* RuntimeCast(const RuntimeObject* ptr, unsigned int c
 {
     return (ptr != nullptr ? ptr->runtimeCast(classNumber) : nullptr);
 }
+
+#endif  // AREG_BASE_RUNTIMEOBJECT_HPP

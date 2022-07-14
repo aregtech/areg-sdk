@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_COMPONENT_PRIVATE_TIMEREVENTDATA_HPP
+#define AREG_COMPONENT_PRIVATE_TIMEREVENTDATA_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -230,3 +231,5 @@ inline TimerEventData & TimerEventData::operator = ( TimerEventData && src ) noe
 
     return (*this);
 }
+
+#endif  // AREG_COMPONENT_PRIVATE_TIMEREVENTDATA_HPP

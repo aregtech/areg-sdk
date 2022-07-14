@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_TRACE_NETRACE_HPP
+#define AREG_TRACE_NETRACE_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -346,8 +347,7 @@ IMPLEMENT_STREAMABLE(NETrace::sLogMessage)
 //////////////////////////////////////////////////////////////////////////////
 // NETrace namespace inline functions
 //////////////////////////////////////////////////////////////////////////////
-
-inline const char * NETrace::getString( NETrace::eLogPriority prio )
+inline const char* NETrace::getString(NETrace::eLogPriority prio)
 {
     switch ( prio )
     {
@@ -376,3 +376,5 @@ inline const char * NETrace::getString( NETrace::eLogPriority prio )
         return "ERR: Unexpected NETrace::eLogPrior value";
     }
 }
+
+#endif  // AREG_TRACE_NETRACE_HPP

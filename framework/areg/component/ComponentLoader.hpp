@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_COMPONENT_COMPONENTLOADER_HPP
+#define AREG_COMPONENT_COMPONENTLOADER_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -142,9 +143,9 @@
  *                          Can be repeated within different component scopes
  *                          in different threads. Cannot be repeat within same
  *                          component scope
- * \param   major           Major version number of implemented service interface
- * \param   minor           Minor version number of implemented service interface
- * \param   patch           Patch version number of implemented service interface
+ * \param   major           The major version number of implemented service interface
+ * \param   minor           The minor version number of implemented service interface
+ * \param   patch           The patch version number of implemented service interface
  **/
 #define REGISTER_IMPLEMENT_SERVICE(service_name, implemented_version)                                           \
                 /*  Register implemented service in component                       */                          \
@@ -619,6 +620,4 @@ private:
     DECLARE_NOCOPY_NOMOVE( ComponentLoader );
 };
 
-//////////////////////////////////////////////////////////////////////////
-// ComponentLoader class inline function implementation
-//////////////////////////////////////////////////////////////////////////
+#endif  // AREG_COMPONENT_COMPONENTLOADER_HPP

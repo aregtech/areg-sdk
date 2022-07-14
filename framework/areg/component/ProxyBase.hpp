@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_COMPONENT_PROXYBASE_HPP
+#define AREG_COMPONENT_PROXYBASE_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -1099,3 +1100,5 @@ inline DispatcherThread & ProxyBase::getProxyDispatcherThread( void ) const
 {
     return mDispatcherThread;
 }
+
+#endif  // AREG_COMPONENT_PROXYBASE_HPP

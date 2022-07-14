@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_COMPONENT_NEREGISTRY_HPP
+#define AREG_COMPONENT_NEREGISTRY_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -305,7 +306,7 @@ namespace NERegistry
         const NERegistry::ServiceEntry & getService( const char* serviceName ) const;
 
         /**
-         * \brief   Searches Service Entry by given Service Name name and returns
+         * \brief   Searches Service Entry by given Service Name and returns
          *          zero-based valid index if found. The valid index is not negative.
          * \param   serviceName The Service Name of Service Entry to search.
          * \return  Returns zero-based valid index if found entry. 
@@ -1927,3 +1928,5 @@ inline const NERegistry::ComponentThreadEntry& NERegistry::ComponentThreadList::
 {
     return (mListThreads.isValidIndex(index) ? mListThreads[index] : NERegistry::INVALID_THREAD_ENTRY);
 }
+
+#endif  // AREG_COMPONENT_NEREGISTRY_HPP

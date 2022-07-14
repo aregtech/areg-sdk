@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_COMPONENT_EVENTDATASTREAM_HPP
+#define AREG_COMPONENT_EVENTDATASTREAM_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -12,7 +13,7 @@
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
  * \author      Artak Avetyan
  * \brief       AREG Platform, Event data streaming object.
- *              This object is used to serialize and de-serialize
+ *              This object is used to serialize and deserialize
  *              data when service event is passed.
  *
  ************************************************************************/
@@ -30,7 +31,7 @@
 // EventDataStream class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief       This object is used to serialize and de-serialize event
+ * \brief       This object is used to serialize and deserialize event
  *              data. Every instance of Component and Proxy event
  *              contains data, which has a streaming object and which
  *              contains at least information of function parameters,
@@ -344,3 +345,5 @@ inline IEOutStream & EventDataStream::getStreamForWrite( void )
 {
     return static_cast<IEOutStream &>(*this);
 }
+
+#endif  // AREG_COMPONENT_EVENTDATASTREAM_HPP

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_BASE_STRING_HPP
+#define AREG_BASE_STRING_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -1032,3 +1033,5 @@ inline String& String::append(const String& source, NEString::CharPos pos /*= NE
     Base::append(static_cast<const Base&>(source), pos, count);
     return (*this);
 }
+
+#endif  // AREG_BASE_STRING_HPP

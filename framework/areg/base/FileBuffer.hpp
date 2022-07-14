@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_BASE_FILEBUFFER_HPP
+#define AREG_BASE_FILEBUFFER_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -68,14 +69,14 @@ public:
 
     /**
      * \brief	Constructor to set by default attached mode
-     * \param	buffer	The referenced object to shared bufferto attach. 
+     * \param	buffer	The referenced object to shared buffer to attach. 
      * \param	name	The name of file object. Can be nullptr.
      **/
     FileBuffer(SharedBuffer & sharedBuffer, const char * name = nullptr);
 
     /**
      * \brief	Constructor to set by default attached mode
-     * \param	buffer	The referenced object to shared bufferto attach.
+     * \param	buffer	The referenced object to shared buffer to attach.
      * \param	name	The name of file object. Can be nullptr.
      **/
     FileBuffer(const SharedBuffer & sharedBuffer, const char* name = nullptr);
@@ -125,7 +126,7 @@ public:
     inline bool isValid( void ) const;
 
     /**
-     * \brief	If file object was opened and the the size is not zero (i.e. data was written / read) 
+     * \brief	If file object was opened and the size is not zero (i.e. data was written / read) 
      *          it returns the pointer of buffer. Otherwise it will return nullptr.
      **/
     inline const unsigned char * getDataBuffer( void ) const;
@@ -429,3 +430,5 @@ inline IEOutStream & operator << ( IEOutStream & stream, const FileBuffer & outp
 {
     return (stream << static_cast<const SharedBuffer &>(output.mSharedBuffer));
 }
+
+#endif  // AREG_BASE_FILEBUFFER_HPP

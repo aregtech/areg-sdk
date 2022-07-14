@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_BASE_PRIVATE_WRITECONVERTER_HPP
+#define AREG_BASE_PRIVATE_WRITECONVERTER_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -154,11 +155,11 @@ public:
     bool appendString( const char * in_value );
 
     /**
-     * \brief   Appends null-terminated wide-char (unicode) string to the writable streaming object.
+     * \brief   Appends null-terminated wide-char (Unicode) string to the writable streaming object.
      *          Unlike SetString() function, no end of string value will be added to the end.
-     *          Call SetEndOfString with parameter 'true', to set wide-char (unicode) end of string value
+     *          Call SetEndOfString with parameter 'true', to set wide-char (Unicode) end of string value
      *          when operation is completed.
-     * \param   in_value[in]    The null-terminated wide-char (unicode) string value to write to writable streaming object
+     * \param   in_value[in]    The null-terminated wide-char (Unicode) string value to write to writable streaming object
      * \return  Returns true if operation succeeded
      **/
     bool appendString( const wchar_t * in_value );
@@ -232,3 +233,5 @@ inline bool WriteConverter::setEndOfString( bool isWideChar )
 {
     return ( isWideChar ? setChar(static_cast<wchar_t>('\0')) : setChar(static_cast<char>('\0')) );
 }
+
+#endif  // AREG_BASE_PRIVATE_WRITECONVERTER_HPP

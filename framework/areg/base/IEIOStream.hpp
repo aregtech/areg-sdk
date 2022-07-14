@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_BASE_IEIOSTREAM_HPP
+#define AREG_BASE_IEIOSTREAM_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -294,7 +295,7 @@ public:
      /**
       * \brief	Writes data to output stream object from given buffer and 
       *         returns the size in bytes of written data.
-      * \param	buffer	The pointer to buffer as a data sourse.
+      * \param	buffer	The pointer to buffer as a data source.
       * \param	size	The size in bytes of data buffer.
       * \return	Returns the size in bytes of written data.
       **/
@@ -311,7 +312,7 @@ public:
      /**
       * \brief	Writes data to output stream object from given ASCII-string object and
       *         returns the size in bytes of written data.
-      * \param	ascii	The instance of ASCII-strin object as a data source.
+      * \param	ascii	The instance of ASCII-string object as a data source.
       * \return	Returns the size in bytes of written data.
       **/
     virtual unsigned int write( const String & ascii )  = 0;
@@ -319,7 +320,7 @@ public:
     /**
      * \brief	Writes data to output stream object from given wide-string object and
      *         returns the size in bytes of written data.
-     * \param	ascii	The instance of wide-strin object as a data source.
+     * \param	ascii	The instance of wide-string object as a data source.
      * \return	Returns the size in bytes of written data.
      **/
     virtual unsigned int write( const WideString & wideString ) = 0;
@@ -737,3 +738,5 @@ inline IEInStream& operator >> (const IEInStream& stream, std::unordered_map<Key
 
     return stream;
 }
+
+#endif  // AREG_BASE_IEIOSTREAM_HPP

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_BASE_IESYNCHOBJECT_HPP
+#define AREG_BASE_IESYNCHOBJECT_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -106,7 +107,7 @@ public:
      *          The thread is locked if it successfully owns synchronization object.
      *          For different Synchronization objects, this function call may
      *          perform different actions.
-     * \param	timeout	    Timeout in milliseconds to wait if synchronization
+     * \param	timeout	    The timeout in milliseconds to wait if synchronization
      *                      object cannot be owned by thread. Otherwise function
      *                      returns immediately.
      *                      WAIT_INFINITE means endless timeout to wait to
@@ -178,3 +179,5 @@ inline bool IESynchObject::isValid( void ) const
 {
     return (mSynchObjectType == IESynchObject::eSyncObject::SoNolock) || (mSynchObject != nullptr);
 }
+
+#endif  // AREG_BASE_IESYNCHOBJECT_HPP

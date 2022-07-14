@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_MCROUTER_TCP_PRIVATE_SERVERRECEIVETHREAD_HPP
+#define AREG_MCROUTER_TCP_PRIVATE_SERVERRECEIVETHREAD_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -91,3 +92,5 @@ private:
     ServerReceiveThread( void ) = delete;
     DECLARE_NOCOPY_NOMOVE( ServerReceiveThread );
 };
+
+#endif  // AREG_MCROUTER_TCP_PRIVATE_SERVERRECEIVETHREAD_HPP

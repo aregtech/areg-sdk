@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_BASE_NESOCKET_HPP
+#define AREG_BASE_NESOCKET_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -464,3 +465,5 @@ inline void NESocket::SocketAddress::resetAddress( void )
     mIpAddr = String::EmptyString;
     mPortNr = NESocket::InvalidPort;
 }
+
+#endif  // AREG_BASE_NESOCKET_HPP

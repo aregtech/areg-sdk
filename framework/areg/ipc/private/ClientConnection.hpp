@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_IPC_PRIVATE_CLIENTCONNECTION_HPP
+#define AREG_IPC_PRIVATE_CLIENTCONNECTION_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -303,3 +304,5 @@ inline int ClientConnection::receiveMessage(RemoteMessage & out_message) const
 {
     return SocketConnectionBase::receiveMessage(out_message, mClientSocket);
 }
+
+#endif  // AREG_IPC_PRIVATE_CLIENTCONNECTION_HPP

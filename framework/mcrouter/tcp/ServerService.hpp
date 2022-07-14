@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_MCROUTER_TCP_SERVERSERVICE_HPP
+#define AREG_MCROUTER_TCP_SERVERSERVICE_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -285,7 +286,7 @@ protected:
      * \param   out_listStubs   On output this will contain list of remote stub addresses connected with specified cookie value.
      * \param   out_lisProxies  On output this will contain list of remote proxy addresses connected with specified cookie value.
      **/
-    virtual void getServiceList( ITEM_ID cookie, TEArrayList<StubAddress> & OUT out_listStubs, TEArrayList<ProxyAddress> & OUT out_lisProxies ) const override;
+    virtual void getServiceList( ITEM_ID IN cookie, TEArrayList<StubAddress> & OUT out_listStubs, TEArrayList<ProxyAddress> & OUT out_lisProxies ) const override;
 
     /**
      * \brief   Registers remote stub in the current process.
@@ -495,3 +496,5 @@ inline void ServerService::removeBlackList(const NESocket::SocketAddress & addrC
 {
     mBlackList.removeElem( addrClient.getHostAddress(), 0);
 }
+
+#endif  // AREG_MCROUTER_TCP_SERVERSERVICE_HPP

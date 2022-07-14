@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_TRACE_PRIVATE_TRACEPROPERTYKEY_HPP
+#define AREG_TRACE_PRIVATE_TRACEPROPERTYKEY_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -255,3 +256,5 @@ inline bool TracePropertyKey::isValidKey( void ) const
 {
     return ( mConfigKey != NELogConfig::eConfigKey::KeyUndefined );
 }
+
+#endif  // AREG_TRACE_PRIVATE_TRACEPROPERTYKEY_HPP

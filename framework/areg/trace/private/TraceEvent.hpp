@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_TRACE_PRIVATE_TRACEEVENT_HPP
+#define AREG_TRACE_PRIVATE_TRACEEVENT_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -206,3 +207,5 @@ inline const char * TraceEventData::getString( TraceEventData::eTraceAction acti
     CASE_DEFAULT("ERR: Undefined TraceEventData::eTraceAction value!");
     }
 }
+
+#endif  // AREG_TRACE_PRIVATE_TRACEEVENT_HPP

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_TRACE_TRACEMESSAGE_HPP
+#define AREG_TRACE_TRACEMESSAGE_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -36,7 +37,7 @@ class LogMessage;
  * 
  *          The information of enabled logging priority is set in Trace Scope. 
  *          The log message and the priority are part of TraceMessage object.
- *          Bfore the message is generated to output, the system should start
+ *          Before the message is generated to output, the system should start
  *          logging service to specify the message output target (file,
  *          console or remote service). Normally, the logging is tarted
  *          at application startup. If logging did not start, the system
@@ -170,7 +171,7 @@ public:
     inline bool isLogEnabled( void ) const;
 
     /**
-     * \brief   Checks whether the given priority is enabled for for message tracer object.
+     * \brief   Checks whether the given priority is enabled for message tracer object.
      * \param   msgPrio     The priority of message to check.
      * \return  Returns true if given priority is enabled. Otherwise, returns false.
      **/
@@ -248,3 +249,5 @@ inline bool TraceMessage::isPrioEnabled(NETrace::eLogPriority msgPrio) const
 {
     return (msgPrio == NETrace::PrioScope ? mScopePrio &  static_cast<unsigned int>(NETrace::PrioScope) : mScopePrio >= static_cast<unsigned int>(msgPrio)) ;
 }
+
+#endif  // AREG_TRACE_TRACEMESSAGE_HPP

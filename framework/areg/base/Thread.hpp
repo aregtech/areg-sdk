@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_BASE_THREAD_HPP
+#define AREG_BASE_THREAD_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -740,3 +741,5 @@ inline const char * Thread::getString( Thread::eThreadPriority threadPriority )
         return "ERR: Invalid Thread::eThreadPriority value!";
     }
 }
+
+#endif  // AREG_BASE_THREAD_HPP

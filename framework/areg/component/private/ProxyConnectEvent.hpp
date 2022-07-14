@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_COMPONENT_PRIVATE_PROXYCONNECTEVENT_HPP
+#define AREG_COMPONENT_PRIVATE_PROXYCONNECTEVENT_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -148,3 +149,5 @@ inline NEService::eServiceConnection ProxyConnectEvent::getConnectionStatus( voi
 {
     return mConnectionStatus;
 }
+
+#endif  // AREG_COMPONENT_PRIVATE_PROXYCONNECTEVENT_HPP

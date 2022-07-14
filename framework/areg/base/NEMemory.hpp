@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_BASE_NEMEMORY_HPP
+#define AREG_BASE_NEMEMORY_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -178,7 +179,7 @@ namespace NEMemory
      *          Align union, defines possible variation of
      *          primitives. It is used to align buffer allocation
      *          It can be also used for single primitive element 
-     *          serialization / de-serializations.
+     *          serialization / deserialization.
      *          Pointers to class function and variables should be
      *          treated with special care. Do not serialize them.
      **/
@@ -1016,3 +1017,5 @@ inline const char * NEMemory::getString(NEMemory::eBufferType val )
         return "ERR: Invalid NEMemory::eBufferType value!!!";
     }
 }
+
+#endif  // AREG_BASE_NEMEMORY_HPP

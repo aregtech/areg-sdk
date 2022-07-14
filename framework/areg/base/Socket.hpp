@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_BASE_SOCKET_HPP
+#define AREG_BASE_SOCKET_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -83,7 +84,7 @@ protected:
     virtual ~Socket( void );
 
     /**
-     *  \brief	Assignes socket data taken from given source.
+     *  \brief	Assigns socket data taken from given source.
      *  \param	src		The source of socket data.
      **/
     Socket & operator = ( const Socket & src );
@@ -329,3 +330,5 @@ inline bool Socket::disableReceive( void ) const
 {
     return (mSocket.get() != nullptr) && NESocket::disableReceive(*mSocket);
 }
+
+#endif  // AREG_BASE_SOCKET_HPP

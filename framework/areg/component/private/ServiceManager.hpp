@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_COMPONENT_PRIVATE_SERVICEMANAGER_HPP
+#define AREG_COMPONENT_PRIVATE_SERVICEMANAGER_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -42,9 +43,9 @@ class ServiceResponseEvent;
 /**
  * \brief   Service Manager is a singleton module, which should be instantiated
  *          and run on System Startup. The service manager is responsible
- *          for service regustration and automated service disconvery.
+ *          for service registration and automated service discovery.
  * 
- *          All system proxies and serviers are automatically registered at
+ *          All system proxies and servers are automatically registered at
  *          Service Manager. As soon as a service server is available, the
  *          Service Manager generates appropriate events and automatically
  *          sends notifications to proxies to notify service availability, 
@@ -164,7 +165,7 @@ private:
     /**
      * \brief   This function called, when Service Manager should stop activities.
      *          The function is called from application manager when all
-     *          Component Threads are stopped and completed completed.
+     *          Component Threads are stopped and completed.
      **/
     static void _stopServiceManager( void );
 
@@ -489,3 +490,5 @@ inline ServiceManager & ServiceManager::self( void )
 {
     return (*this);
 }
+
+#endif  // AREG_COMPONENT_PRIVATE_SERVICEMANAGER_HPP
