@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.31605.320
+# Visual Studio Version 17
+VisualStudioVersion = 17.2.32616.157
 MinimumVisualStudioVersion = 16.0.0
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "areg", "framework\areg.vcxproj", "{2DF8165C-EDE2-4F76-8D2C-2FFE82CB6CE5}"
 EndProject
@@ -351,6 +351,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "img", "img", "{7BD2AAAA-FA5
 		docs\img\logo-aregtech.svg = docs\img\logo-aregtech.svg
 		docs\img\mist-network.png = docs\img\mist-network.png
 		docs\img\software-layers.png = docs\img\software-layers.png
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "cmake", "cmake", "{5E95D089-DBB0-467A-BC0A-B00B9297023A}"
+	ProjectSection(SolutionItems) = preProject
+		conf\cmake\common.cmake = conf\cmake\common.cmake
+		conf\cmake\pre-project.cmake = conf\cmake\pre-project.cmake
+		conf\cmake\user.cmake = conf\cmake\user.cmake
 	EndProjectSection
 EndProject
 Global
@@ -739,6 +746,7 @@ Global
 		{70CAB882-8FA3-4E1C-930D-53F7DA29D1E4} = {2DF9C20F-08BB-475B-8901-C1A64D88BA8A}
 		{7F508C90-D49D-4E26-B7B0-3CBCA677A272} = {2DF9C20F-08BB-475B-8901-C1A64D88BA8A}
 		{7BD2AAAA-FA5E-4895-837F-4A24C85A851A} = {1D3709F1-9915-4CEA-A9F6-4D3FDFD79965}
+		{5E95D089-DBB0-467A-BC0A-B00B9297023A} = {A9875C78-1248-4693-9310-5C46C73DDCEB}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {1034084F-74DD-4B33-86E3-D8038C748F48}
