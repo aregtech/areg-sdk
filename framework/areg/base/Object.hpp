@@ -20,6 +20,7 @@
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
 #include "areg/base/IEGenericObject.hpp"
+#include <functional>
 
 //////////////////////////////////////////////////////////////////////////
 // Object class declaration

@@ -20,8 +20,10 @@
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
 #include "areg/base/TEString.hpp"
-#include <stdio.h>
+
+#include <functional>
 #include <stdarg.h>
+#include <stdio.h>
 #include <string_view>
 
 /************************************************************************
