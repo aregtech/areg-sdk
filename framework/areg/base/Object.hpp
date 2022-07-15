@@ -10,7 +10,7 @@
  *
  * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/base/Object.hpp
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
+ * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit
  * \author      Artak Avetyan
  * \brief       AREG Platform Generic Object class
  *
@@ -29,7 +29,7 @@
  * \brief   This class inherits IEGenericObject interface.
  *          Used to have common object class to be able to save
  *          pointers in typed template classes. As well as it has
- *          overwritten new and delete operators, and other basic 
+ *          overwritten new and delete operators, and other basic
  *          operators that are used.
  **/
 class AREG_API Object  : public IEGenericObject
@@ -105,7 +105,7 @@ public:
 //////////////////////////////////////////////////////////////////////////
 public:
 /************************************************************************/
-// Basic operators ( = , ==, 
+// Basic operators ( = , ==,
 /************************************************************************/
     /**
      * \brief   Assignment operator.

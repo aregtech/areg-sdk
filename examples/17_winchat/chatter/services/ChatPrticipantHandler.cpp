@@ -11,7 +11,7 @@
 
 ChatPrticipantHandler::ChatPrticipantHandler( const String & serviceName
                                             , const NECommon::sInitiator & initiator
-                                            , const NECommon::ListParticipants & listParticipants 
+                                            , const NECommon::ListParticipants & listParticipants
                                             , const NECommon::sParticipant & ownerConnection )
     : mServiceName      ( serviceName )
     , mOwnerConnection  ( ownerConnection )
@@ -106,8 +106,16 @@ bool ChatPrticipantHandler::ParticipantExist( const NECommon::sParticipant & par
 
 bool ChatPrticipantHandler::IsEmpty(void) const
 {
-    return  ( mListParticipants.getSize() == 0)    ||
-            ((mListParticipants.getSize() == 1) && (mListParticipants[0] == mOwnerConnection));
+    uint32_t size = mListParticipants.getSize( );
+    if (size == 1)
+    {
+        const NECommon::sParticipant & part = mListParticipants[0u];
+        return (mOwnerConnection == part);
+    }
+    else
+    {
+        return (size == 0);
+    }
 }
 
 void ChatPrticipantHandler::Invalidate( void )

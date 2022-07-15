@@ -10,9 +10,9 @@
  *
  * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/base/IEGenericObject.hpp
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
+ * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit
  * \author      Artak Avetyan
- * \brief       AREG Platform, Generic Object Interface and 
+ * \brief       AREG Platform, Generic Object Interface and
  *              Generic Object instance factory.
  *              Following classes are declared here:
  *              IEGenericObject    -- base interface for generic object instances
@@ -36,12 +36,12 @@ template <typename ClassName> class TEObjectFactory;
 /**
  * \brief       Generic objects are supporting such functionalities
  *              as clone and destroy, as well as comparing function.
- * 
+ *
  * \details     Generic objects should support cloning, destroying and
  *              comparing functionalities. To be able to instantiate them
  *              by Object Factory, they should have of public access
- *              at least default and initialization constructor getting 
- *              void data. 
+ *              at least default and initialization constructor getting
+ *              void data.
  *              For more information see declarations of Generic
  *              Object constructors.
  *
@@ -59,7 +59,7 @@ protected:
     /**
      * \brief   Initialization Constructor. Protected.
      **/
-    IEGenericObject( void * objData );
+    explicit IEGenericObject( void * objData );
 
 public:
     /**
@@ -93,7 +93,7 @@ public:
     /**
      * \brief	Compares existing generic object instance with
      *          passed as parameter. Returns true if 2 instances
-     *          are equal. 
+     *          are equal.
      *          Override this method to provide comparing functionality
      * \param	object	The object to compare
      * \return	Returns true if 2 instances are equal.
@@ -118,7 +118,7 @@ public:
  * \brief       Object factory template class. It creates and destroys
  *              instances of generic object. The ClassName type
  *              should be instance of IEGenericObject
- * 
+ *
  * \details     Inherit and overwrite methods if the method to
  *              instantiate and delete generic object instance
  *              should be changed. By default, they are instantiated

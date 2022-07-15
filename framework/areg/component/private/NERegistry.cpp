@@ -8,7 +8,7 @@
  *
  * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/component/private/NERegistry.cpp
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
+ * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit
  * \author      Artak Avetyan
  * \brief       AREG Platform, classes of NCRegistry namespace.
  *
@@ -29,7 +29,7 @@
 //////////////////////////////////////////////////////////////////////////
 
 /**
- * \brief   Predefined invalid Service Entry. 
+ * \brief   Predefined invalid Service Entry.
  **/
 AREG_API const NERegistry::ServiceEntry           NERegistry::INVALID_SERVICE_ENTRY;
 /**
@@ -92,37 +92,14 @@ NERegistry::ServiceEntry::ServiceEntry( const char* serviceName, const Version &
     ASSERT( mName.isEmpty() == false );
 }
 
-NERegistry::ServiceEntry::ServiceEntry( const NERegistry::ServiceEntry & src )
-    : mName     (src.mName)
-    , mVersion  (src.mVersion)
-{
-}
-
-NERegistry::ServiceEntry::ServiceEntry( NERegistry::ServiceEntry && src ) noexcept
-    : mName     ( std::move(src.mName) )
-    , mVersion  ( std::move(src.mVersion) )
-{
-}
-
-NERegistry::ServiceEntry & NERegistry::ServiceEntry::operator = ( const NERegistry::ServiceEntry & src )
-{
-    mName   = src.mName;
-    mVersion= src.mVersion;
-    
-    return (*this);
-}
-
-NERegistry::ServiceEntry & NERegistry::ServiceEntry::operator = ( NERegistry::ServiceEntry && src ) noexcept
-{
-    mName   = std::move(src.mName);
-    mVersion= std::move(src.mVersion);
-
-    return (*this);
-}
-
 bool NERegistry::ServiceEntry::operator == ( const NERegistry::ServiceEntry & other ) const
 {
-    return (this != &other ? mName == other.mName && mVersion == other.mVersion : true);
+    return (this == &other) || ((mName == other.mName) && (mVersion == other.mVersion));
+}
+
+bool NERegistry::ServiceEntry::operator != ( const NERegistry::ServiceEntry & other ) const
+{
+    return (this != &other) && ((mName != other.mName) || (mVersion != other.mVersion));
 }
 
 bool NERegistry::ServiceEntry::isValid( void ) const
@@ -181,37 +158,14 @@ NERegistry::WorkerThreadEntry::WorkerThreadEntry( const char * masterThreadName,
 {
 }
 
-NERegistry::WorkerThreadEntry::WorkerThreadEntry( const NERegistry::WorkerThreadEntry &src )
-    : mThreadName   (src.mThreadName)
-    , mConsumerName (src.mConsumerName)
-{
-}
-
-NERegistry::WorkerThreadEntry::WorkerThreadEntry( NERegistry::WorkerThreadEntry &&src ) noexcept
-    : mThreadName   ( std::move(src.mThreadName) )
-    , mConsumerName ( std::move(src.mConsumerName) )
-{
-}
-
-NERegistry::WorkerThreadEntry & NERegistry::WorkerThreadEntry::operator = ( const NERegistry::WorkerThreadEntry & src )
-{
-    mThreadName     = src.mThreadName;
-    mConsumerName   = src.mConsumerName;
-
-    return (*this);
-}
-
-NERegistry::WorkerThreadEntry & NERegistry::WorkerThreadEntry::operator = ( NERegistry::WorkerThreadEntry && src ) noexcept
-{
-    mThreadName     = std::move(src.mThreadName);
-    mConsumerName   = std::move(src.mConsumerName);
-
-    return (*this);
-}
-
 bool NERegistry::WorkerThreadEntry::operator == ( const NERegistry::WorkerThreadEntry & other ) const
 {
-    return ( this != &other ? mThreadName == other.mThreadName && mConsumerName == other.mConsumerName : true );
+    return ( (this == &other) || ((mThreadName == other.mThreadName) && (mConsumerName == other.mConsumerName)));
+}
+
+bool NERegistry::WorkerThreadEntry::operator != ( const NERegistry::WorkerThreadEntry & other ) const
+{
+    return ((this != &other) && ((mThreadName != other.mThreadName) || (mConsumerName != other.mConsumerName)));
 }
 
 bool NERegistry::WorkerThreadEntry::isValid( void ) const
@@ -270,31 +224,14 @@ NERegistry::DependencyEntry::DependencyEntry( const char* roleName )
 {
 }
 
-NERegistry::DependencyEntry::DependencyEntry( const NERegistry::DependencyEntry& src )
-    : mRoleName(src.mRoleName)
-{
-}
-
-NERegistry::DependencyEntry::DependencyEntry( NERegistry::DependencyEntry && src ) noexcept
-    : mRoleName( std::move(src.mRoleName) )
-{
-}
-
-NERegistry::DependencyEntry & NERegistry::DependencyEntry::operator = ( const DependencyEntry & src )
-{
-    mRoleName = src.mRoleName;
-    return (*this);
-}
-
-NERegistry::DependencyEntry & NERegistry::DependencyEntry::operator = ( DependencyEntry && src ) noexcept
-{
-    mRoleName = std::move(src.mRoleName);
-    return (*this);
-}
-
 bool NERegistry::DependencyEntry::operator == ( const NERegistry::DependencyEntry & other ) const
 {
     return (mRoleName == other.mRoleName);
+}
+
+bool NERegistry::DependencyEntry::operator != ( const NERegistry::DependencyEntry & other ) const
+{
+    return (mRoleName != other.mRoleName);
 }
 
 bool NERegistry::DependencyEntry::isValid( void ) const
@@ -512,8 +449,8 @@ void NERegistry::ComponentEntry::addSupportedService( const NERegistry::ServiceL
 
 NERegistry::ServiceEntry & NERegistry::ComponentEntry::addSupportedService(const char * serviceName, const Version & version)
 {
-    int index = findSupportedService(serviceName);
-    if ( index == NECommon::INVALID_INDEX )
+    uint32_t index = static_cast<uint32_t>(findSupportedService(serviceName));
+    if ( index == static_cast<uint32_t>(NECommon::INVALID_INDEX) )
     {
         index = mSupportedServices.mListServices.getSize();
         mSupportedServices.mListServices.add(NERegistry::ServiceEntry(serviceName, version));
@@ -603,8 +540,8 @@ void NERegistry::ComponentEntry::addDependencyService( const NERegistry::Depende
 
 NERegistry::DependencyEntry & NERegistry::ComponentEntry::addDependencyService(const char * roleName)
 {
-    int index = findDependencyService(roleName);
-    if ( index == NECommon::INVALID_INDEX )
+    uint32_t index = static_cast<uint32_t>(findDependencyService(roleName));
+    if ( index == static_cast<uint32_t>(NECommon::INVALID_INDEX) )
     {
         index = static_cast<int>(mDependencyServices.mListDependencies.getSize());
         mDependencyServices.mListDependencies.add(NERegistry::DependencyEntry(roleName));
@@ -666,7 +603,7 @@ bool NERegistry::ComponentEntry::isValid( void ) const
     return ( (mRoleName.isEmpty() == false) && (mFuncCreate != nullptr) && (mFuncDelete != nullptr) );
 }
 
-void NERegistry::ComponentEntry::setComponentData( NEMemory::uAlign compData )
+void NERegistry::ComponentEntry::setComponentData( const NEMemory::uAlign & compData )
 {
     mComponentData  = compData;
 }
@@ -718,7 +655,7 @@ bool NERegistry::ComponentList::isValid( void ) const
     return (mListComponents.getSize() != 0);
 }
 
-bool NERegistry::ComponentList::setComponentData( const char * roleName, NEMemory::uAlign compData )
+bool NERegistry::ComponentList::setComponentData( const char * roleName, const NEMemory::uAlign & compData )
 {
     bool result = false;
     for (uint32_t i = 0; i < mListComponents.getSize(); ++ i )
@@ -750,37 +687,14 @@ NERegistry::ComponentThreadEntry::ComponentThreadEntry( const char* threadName, 
 {
 }
 
-NERegistry::ComponentThreadEntry::ComponentThreadEntry( const NERegistry::ComponentThreadEntry& src )
-    : mThreadName   (src.mThreadName)
-    , mComponents   (src.mComponents)
-{
-}
-
-NERegistry::ComponentThreadEntry::ComponentThreadEntry( NERegistry::ComponentThreadEntry && src ) noexcept
-    : mThreadName   ( std::move(src.mThreadName) )
-    , mComponents   ( std::move(src.mComponents) )
-{
-}
-
-NERegistry::ComponentThreadEntry & NERegistry::ComponentThreadEntry::operator = ( const NERegistry::ComponentThreadEntry & src )
-{
-    mThreadName = src.mThreadName;
-    mComponents = src.mComponents;
-    
-    return (*this);
-}
-
-NERegistry::ComponentThreadEntry & NERegistry::ComponentThreadEntry::operator = ( NERegistry::ComponentThreadEntry && src ) noexcept
-{
-    mThreadName = std::move(src.mThreadName);
-    mComponents = std::move(src.mComponents);
-    
-    return (*this);
-}
-
 bool NERegistry::ComponentThreadEntry::operator == ( const NERegistry::ComponentThreadEntry & other ) const
 {
-    return (this != &other ? mThreadName == other.mThreadName : true);
+    return ((this == &other) || (mThreadName == other.mThreadName));
+}
+
+bool NERegistry::ComponentThreadEntry::operator != ( const NERegistry::ComponentThreadEntry & other ) const
+{
+    return ((this != &other) && (mThreadName != other.mThreadName));
 }
 
 void NERegistry::ComponentThreadEntry::addComponent( const NERegistry::ComponentEntry & entry )
@@ -797,8 +711,8 @@ void NERegistry::ComponentThreadEntry::addComponent( const NERegistry::Component
 
 NERegistry::ComponentEntry & NERegistry::ComponentThreadEntry::addComponent(const char * roleName, FuncCreateComponent funcCreate, FuncDeleteComponent funcDelete)
 {
-    int index = mComponents.findComponent(roleName);
-    if ( index == NECommon::INVALID_INDEX )
+    uint32_t index = static_cast<uint32_t>(mComponents.findComponent(roleName));
+    if ( index == static_cast<uint32_t>(NECommon::INVALID_INDEX) )
     {
         index = static_cast<int>(mComponents.mListComponents.getSize());
         mComponents.mListComponents.add( NERegistry::ComponentEntry(mThreadName.getString(), roleName, funcCreate, funcDelete));
@@ -839,7 +753,7 @@ bool NERegistry::ComponentThreadEntry::isValid( void ) const
     return ( (mThreadName.isEmpty() == false) && (mComponents.mListComponents.isEmpty() == false) );
 }
 
-bool NERegistry::ComponentThreadEntry::setComponentData( const char * roleName, NEMemory::uAlign compData )
+bool NERegistry::ComponentThreadEntry::setComponentData( const char * roleName, const NEMemory::uAlign & compData )
 {
     return mComponents.setComponentData(roleName, compData);
 }
@@ -911,41 +825,14 @@ NERegistry::Model::Model( const char* modelName, const ComponentThreadList & thr
 {
 }
 
-NERegistry::Model::Model( const Model & src )
-    : mModelName    ( src.mModelName )
-    , mModelThreads ( src.mModelThreads )
-    , mIsLoaded     ( src.mIsLoaded )
-{
-}
-
-NERegistry::Model::Model( Model && src ) noexcept
-    : mModelName    ( std::move(src.mModelName) )
-    , mModelThreads ( std::move(src.mModelThreads) )
-    , mIsLoaded     ( src.mIsLoaded )
-{
-}
-
-NERegistry::Model & NERegistry::Model::operator = ( const NERegistry::Model & src )
-{
-    mModelName      = src.mModelName;
-    mModelThreads   = src.mModelThreads;
-    mIsLoaded       = src.mIsLoaded;
-
-    return (*this);
-}
-
-NERegistry::Model & NERegistry::Model::operator = ( NERegistry::Model && src ) noexcept
-{
-    mModelName      = std::move(src.mModelName);
-    mModelThreads   = std::move(src.mModelThreads);
-    mIsLoaded       = src.mIsLoaded;
-
-    return (*this);
-}
-
 bool NERegistry::Model::operator == ( const NERegistry::Model & other ) const
 {
-    return (this != &other) && (mModelName == other.mModelName) && (mModelThreads.mListThreads == other.mModelThreads.mListThreads);
+    return (this == &other) || ((mModelName == other.mModelName) && (mModelThreads.mListThreads == other.mModelThreads.mListThreads));
+}
+
+bool NERegistry::Model::operator != ( const NERegistry::Model & other ) const
+{
+    return (this != &other) && ((mModelName != other.mModelName) || (mModelThreads.mListThreads != other.mModelThreads.mListThreads));
 }
 
 bool NERegistry::Model::isValid( void ) const
@@ -977,8 +864,8 @@ void NERegistry::Model::addThread( const NERegistry::ComponentThreadList& thread
 
 NERegistry::ComponentThreadEntry & NERegistry::Model::addThread(const char * threadName)
 {
-    int index = findThread(threadName);
-    if (index == NECommon::INVALID_INDEX )
+    uint32_t index = static_cast<uint32_t>(findThread(threadName));
+    if (index == static_cast<uint32_t>(NECommon::INVALID_INDEX) )
     {
         index = static_cast<int>(mModelThreads.mListThreads.getSize());
         mModelThreads.mListThreads.add(NERegistry::ComponentThreadEntry(threadName));
@@ -1047,7 +934,7 @@ const NERegistry::ComponentThreadList & NERegistry::Model::getThreadList( void )
     return mModelThreads;
 }
 
-bool NERegistry::Model::setComponentData( const char * roleName, NEMemory::uAlign compData )
+bool NERegistry::Model::setComponentData( const char * roleName, const NEMemory::uAlign & compData )
 {
     bool result = false;
     for ( uint32_t i = 0; i < mModelThreads.mListThreads.getSize(); ++ i )
