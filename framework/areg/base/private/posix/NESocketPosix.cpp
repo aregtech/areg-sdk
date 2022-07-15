@@ -200,7 +200,7 @@ AREG_API unsigned int NESocket::remainDataRead( SOCKETHANDLE hSocket )
     unsigned int result = 0;
     if ( hSocket != NESocket::InvalidSocketHandle )
     {
-        u_long arg = 0L;
+    	unsigned long arg = 0L;
         if ( RETURNED_OK  == ioctl( hSocket, FIONREAD, &arg) )
         {
             result = static_cast<unsigned int>(arg);

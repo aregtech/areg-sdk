@@ -115,14 +115,14 @@ void Thread::sleep(unsigned int ms)
 
 id_type Thread::getCurrentThreadId( void )
 {
-    return  static_cast<id_type>( pthread_self() );
+    return  reinterpret_cast<id_type>( pthread_self() );
 }
 
 Thread::eCompletionStatus Thread::destroyThread(unsigned int waitForStopMs /* = NECommon::DO_NOT_WAIT */)
 {
     // Initially, the thread is not valid and not running, nothing to destroy
     Thread::eCompletionStatus result = Thread::eCompletionStatus::ThreadInvalid;
-    pthread_t threadId  = static_cast<pthread_t>(Thread::INVALID_THREAD_ID);
+    pthread_t threadId  = reinterpret_cast<pthread_t>(Thread::INVALID_THREAD_ID);
 
     do
     {
@@ -132,7 +132,7 @@ Thread::eCompletionStatus Thread::destroyThread(unsigned int waitForStopMs /* = 
             return Thread::eCompletionStatus::ThreadInvalid;
         }
 
-        threadId = static_cast<pthread_t>(mThreadId);
+        threadId = reinterpret_cast<pthread_t>(mThreadId);
         _unregisterThread();
 
     } while(false);
@@ -180,7 +180,7 @@ bool Thread::_createSystemThread( void )
             {
                 result          = true;
                 mThreadHandle   = static_cast<THREADHANDLE>(handle);
-                mThreadId       = static_cast<id_type>(handle->pthreadId);
+                mThreadId       = reinterpret_cast<id_type>(handle->pthreadId);
                 mThreadPriority = Thread::eThreadPriority::PriorityNormal;
 
                 if (_registerThread() == false)
@@ -216,7 +216,7 @@ Thread::eThreadPriority Thread::setPriority( eThreadPriority newPriority )
     if (_isValidNoLock() && (newPriority != oldPrio))
     {
         int schedPrio       = MIN_INT_32;
-        pthread_t threadId  = static_cast<pthread_t>(mThreadId);
+        pthread_t threadId  = reinterpret_cast<pthread_t>(mThreadId);
         switch (newPriority)
         {
         case Thread::eThreadPriority::PriorityLowest:

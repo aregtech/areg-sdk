@@ -26,16 +26,15 @@
 #include "areg/base/NEUtilities.hpp"
 #include "areg/base/Containers.hpp"
 
-#include <sys/stat.h>
-#include <limits.h>
-#include <unistd.h>
-#include <dirent.h>
 #include <fcntl.h>
+#include <dirent.h>
+#include <errno.h>
 #include <libgen.h>
-
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <errno.h>
+#include <sys/stat.h>
+#include <unistd.h>
 
 //////////////////////////////////////////////////////////////////////////
 // File class implementation
@@ -68,7 +67,7 @@ namespace
 // defined constants
 //////////////////////////////////////////////////////////////////////////
 const char      File::PATH_SEPARATOR    = '/';
-const int       File::MAXIMUM_PATH      = _POSIX_PATH_MAX;
+const int       File::MAXIMUM_PATH      = 256;
 void * const    File::INVALID_HANDLE    = nullptr;
 
 //////////////////////////////////////////////////////////////////////////
@@ -175,7 +174,7 @@ bool File::open( void )
 
             if (mFileMode & FileBase::FOB_TEMP_FILE)
             {
-                file->fd =  ::mkstemp(mFileName.getUnsafeBuffer());
+                file->fd =  ::mkstemp(mFileName.getBuffer());
             }
             else
             {

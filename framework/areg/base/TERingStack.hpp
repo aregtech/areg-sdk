@@ -39,25 +39,25 @@ template <typename VALUE> class TERingStack;
 // TEStack<VALUE> class template declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   Ring FIFO Stack base object to queue elements, insert and access 
- *          by push and pop operations. RingStack requires instance of 
- *          synchronization object to synchronize access of stack elements, 
+ * \brief   Ring FIFO Stack base object to queue elements, insert and access
+ *          by push and pop operations. RingStack requires instance of
+ *          synchronization object to synchronize access of stack elements,
  *          capacity value and overlapping flag.
- * 
- *          The capacity might be changed depending on overlapping flag. 
+ *
+ *          The capacity might be changed depending on overlapping flag.
  *          If ring stack is full, whether the capacity remains same or not,
  *          whether new element is pushed or not, depends on overlapping flag.
- *          For more details of capacity flag see NECommon::eRingOverlap 
+ *          For more details of capacity flag see NECommon::eRingOverlap
  *          description. In Ring Stack the start and end position might point
  *          any index withing stack, but they cannot be more than capacity value.
- * 
+ *
  *          Whether the ring stack is thread safe or not, depends on the
  *          instance of synchronization object passed to ring stack. There
  *          are 2 types of rings: Locking and Non-locking.
  *
- * \tparam  VALUE       The type of stored items. Either should be 
- *                      primitive or should have default constructor 
- *                      and valid assigning operator. Also, should be 
+ * \tparam  VALUE       The type of stored items. Either should be
+ *                      primitive or should have default constructor
+ *                      and valid assigning operator. Also, should be
  *                      possible to convert to type 'const VALUE&'.
  * 
  * \see     TENolockRingStack, TELockRingStack.
@@ -109,23 +109,23 @@ public:
      *          as they were written.
      *          There should be possibility to initialize values from streaming object and
      *          if VALUE is not a primitive, but an object, it should have implemented streaming operator.
-     * 
+     *
      * \param   stream  The streaming object for reading values
      * \param   input   The Ring Stack object to save initialized values.
      **/
-    template<typename VALUE>
-    friend const IEInStream & operator >> ( const IEInStream & stream, TERingStack<VALUE> & input );
+    template<typename V>
+    friend const IEInStream & operator >> ( const IEInStream & stream, TERingStack<V> & input );
     /**
      * \brief   Writes to the stream Ring Stack values. The values are written into the stream
      *          starting from head position.
      *          There should be possibility to stream every value of Stack and if VALUE 
      *          is not a primitive, but an object, it should have implemented streaming operator.
-     * 
+     *
      * \param   stream  The streaming object to write values
      * \param   input   The Stack object to read out values.
      **/
-    template<typename VALUE>
-    friend IEOutStream & operator << ( IEOutStream & stream, const TERingStack<VALUE> & output );
+    template<typename V>
+    friend IEOutStream & operator << ( IEOutStream & stream, const TERingStack<V> & output );
 
 //////////////////////////////////////////////////////////////////////////
 // Operations and Attributes
@@ -229,16 +229,13 @@ public:
     int copy( const TERingStack<VALUE> & source );
 
     /**
-     * \brief   Resizes the capacity of stack. The operation will copy saved elements if 
-     *          given size is more or equal to the size of existing capacity.
-     *          If new capacity is smaller, the operation will copy elements until
-     *          either all elements are not copied or until stack with new capacity is not full.
-     *          If stack is empty, no elements will be copied.
-     *          If new capacity is zero, it will also delete complete stack.
+     * \brief   Reserves the space of given capacity entries. The operation will ensure that
+     * 			that the given capacity is not less than the existing. The existing entries
+     * 			are not lost if reallocates new space.
      * \param   newCapacity     New capacity to set for Ring Stack.
      * \return  Returns capacity size of resized ring stack.
      **/
-    int resize( int newCapacity );
+    int reserve( int newCapacity );
 
     /**
      * \brief   Searches element in the stack starting at given position (index).
@@ -491,7 +488,7 @@ TERingStack<VALUE> & TERingStack<VALUE>::operator = ( const TERingStack<VALUE> &
 
         if ( mCapacity < source.mElemCount )
         {
-            resize( source.mElemCount );
+        	reserve( source.mElemCount );
         }
 
         int pos = source.mStartPosition;
@@ -592,7 +589,7 @@ int TERingStack<VALUE>::pushLast( const VALUE& newElement )
             break;
 
         case NECommon::eRingOverlap::ResizeOnOvelap:
-            if ( resize( (mCapacity > 0 ? mCapacity : 1) * 2 ) > (mElemCount + 1 ))
+            if ( reserve( (mCapacity > 0 ? mCapacity : 1) * 2 ) > (mElemCount + 1 ))
             {
                 ASSERT(mCapacity >= mElemCount + 1);
                 VALUE * block = mStackList + mLastPosition;
@@ -658,7 +655,7 @@ int TERingStack<VALUE>::pushFirst( const VALUE& newElement )
             break;
 
         case NECommon::eRingOverlap::ResizeOnOvelap:
-            if ( resize( (mCapacity > 0 ? mCapacity : 1) * 2 ) > (mElemCount + 1 ))
+            if ( reserve( (mCapacity > 0 ? mCapacity : 1) * 2 ) > (mElemCount + 1 ))
             {
                 ASSERT(mCapacity >= mElemCount + 1);
                 mStartPosition = mStartPosition > 0 ? mStartPosition - 1 : mCapacity - 1;
@@ -758,7 +755,7 @@ int TERingStack<VALUE>::copy( const TERingStack<VALUE> & source )
                 break;
 
             case NECommon::eRingOverlap::ResizeOnOvelap:
-                if ( resize( (mCapacity > 0 ? mCapacity : 1) * 2 ) > (mElemCount + 1 ))
+                if ( reserve( (mCapacity > 0 ? mCapacity : 1) * 2 ) > (mElemCount + 1 ))
                 {
                     ASSERT(mCapacity >= mElemCount + 1);
                     for ( int i = 0; i < source.mElemCount; i ++, result ++ )
@@ -793,11 +790,11 @@ int TERingStack<VALUE>::copy( const TERingStack<VALUE> & source )
 }
 
 template <typename VALUE>
-int TERingStack<VALUE>::resize( int newCapacity )
+int TERingStack<VALUE>::reserve( int newCapacity )
 {
     Lock lock(mSynchObject);
 
-    if ( newCapacity != mCapacity )
+    if ( newCapacity > mCapacity )
     {
         VALUE * newList = newCapacity > 0 ? reinterpret_cast<VALUE *>( DEBUG_NEW unsigned char[ newCapacity ] ) : nullptr;
         int dstLast     = 0;
@@ -953,17 +950,16 @@ inline TENolockRingStack<VALUE> & TENolockRingStack<VALUE>::operator = ( const T
 // TERingStack<VALUE> class template friend operators
 //////////////////////////////////////////////////////////////////////////
 
-template <typename VALUE>
-const IEInStream & operator >> ( const IEInStream & stream, TERingStack<VALUE> & input )
+template <typename V>
+const IEInStream & operator >> ( const IEInStream & stream, TERingStack<V> & input )
 {
     Lock lock(input.mSynchObject);
 
     int size = 0;
     stream >> size;
 
-    input.Remove();
-    if ( input.capacity() < size )
-        input.resize(size);
+    input.clear();
+    input.reserve(size);
 
     for (int i = 0; i < size; i ++)
     {
@@ -975,8 +971,8 @@ const IEInStream & operator >> ( const IEInStream & stream, TERingStack<VALUE> &
     return stream;
 }
 
-template <typename VALUE>
-IEOutStream & operator << ( IEOutStream & stream, const TERingStack<VALUE> & output )
+template <typename V>
+IEOutStream & operator << ( IEOutStream & stream, const TERingStack<V> & output )
 {
     Lock lock(output.mSynchObject);
 

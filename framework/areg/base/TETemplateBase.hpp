@@ -109,14 +109,19 @@ public:
      * \param   cit     The const_iterator object to convert
      * \return  Returns converted iterator type object.
      */
-    inline typename const Container::iterator iter(typename const Container& cont, typename Container::const_iterator& cit) const
+    inline const typename Container::iterator iter(const Container& cont, typename Container::const_iterator& cit) const
     {
         return const_cast<Container &>(cont).erase(cit, cit);
     }
 
-    inline typename Container::iterator iter(typename Container& c, typename Container::const_iterator& cit)
+    inline typename Container::iterator iter(Container& cont, typename Container::const_iterator& cit)
     {
-        return c.erase(cit, cit);
+        return cont.erase(cit, cit);
+    }
+
+    inline typename Container::iterator iter(Container& cont, typename Container::iterator& cit)
+    {
+        return cit;
     }
 };
 

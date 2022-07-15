@@ -182,18 +182,18 @@ void WaitableTimerIX::notifyReleasedThreads(int /* numThreads */)
 inline void WaitableTimerIX::_resetTimer( void )
 {
     _stopTimer();
-    if (mTimerId != nullptr)
+    if (mTimerId != static_cast<timer_t>(0))
     {
         timer_delete(mTimerId);
     }
 
-    mTimerId    = nullptr;
+    mTimerId    = static_cast<timer_t>(0);
     mThreadId   = 0;
 }
 
 inline void WaitableTimerIX::_stopTimer( void )
 {
-    if ((mTimerId != nullptr) && (mTimeout != 0))
+    if ((mTimerId != static_cast<timer_t>(0)) && (mTimeout != 0))
     {
         mDueTime.tv_sec = 0;
         mDueTime.tv_nsec= 0;

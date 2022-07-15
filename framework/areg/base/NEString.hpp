@@ -78,13 +78,14 @@ namespace NEString
      */
     AREG_API unsigned int getISO8859UpperChar( int ch );
 
-    //! Currently installed C locale.
-    static const char* const DEFAULT_LOCALE = "C";
-
+    //! ASCII locale.
     static const char* const LOCALE_ASCII   = "C";
 
     //! en_US.UTF8 locale.
     static const char* const LOCALE_US_UTF8 = "en_US.UTF8";
+
+    //! Currently installed C locale.
+    static const char* const LOCALE_DEFAULT   {LOCALE_ASCII};
 
     /**
      * \brief   Constant, defines count all characters in the string

@@ -83,7 +83,7 @@ bool Mutex::_lockMutex( unsigned int timeout )
     WaitableMutexIX * synchMutex = reinterpret_cast<WaitableMutexIX *>(mSynchObject);
     if ( (synchMutex != nullptr) && (NESynchTypesIX::SynchObject0 == SynchLockAndWaitIX::waitForSingleObject(*synchMutex, timeout)) )
     {
-        mOwnerThreadId.store(synchMutex->getOwningThreadId());
+        mOwnerThreadId.store(reinterpret_cast<id_type>(synchMutex->getOwningThreadId()));
         result = true;
     }
 

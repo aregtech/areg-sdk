@@ -430,7 +430,7 @@ inline bool TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::remo
     Lock lock(mSynchObj);
 
     bool result = false;
-    for ( HashMap::MAPPOS pos = HashMap::firstPosition(); pos != nullptr; pos = HashMap::nextPosition(pos))
+    for ( auto pos = HashMap::firstPosition(); pos != nullptr; pos = HashMap::nextPosition(pos))
     {
         if ( resource == HashMap::valueAtPosition(pos) )
         {
@@ -448,7 +448,7 @@ inline void TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::remo
 {
     Lock lock(mSynchObj);
 
-    for ( HashMap::MAPPOS pos = HashMap::firstPosition(); HashMap::isValidPosition(pos); pos = HashMap::nextPosition(pos))
+    for ( auto pos = HashMap::firstPosition(); HashMap::isValidPosition(pos); pos = HashMap::nextPosition(pos))
     {
         RESOURCE_KEY Key;
         RESOURCE_OBJECT* Value;
@@ -464,7 +464,7 @@ inline bool TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::remo
 {
     Lock lock(mSynchObj);
     bool result = false;
-    HashMap::MAPPOS pos  = HashMap::firstPosition();
+    MAPPOS pos  = HashMap::firstPosition();
     if (HashMap::isValidPosition(pos))
     {
         result = true;
@@ -480,7 +480,7 @@ inline RESOURCE_OBJECT* TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, De
     Lock lock(mSynchObj);
 
     RESOURCE_OBJECT * result = nullptr;
-    MAPPOS pos = HashMap::firstPosition();
+    typename HashMap::MAPPOS pos = HashMap::firstPosition();
     if (HashMap::isValidPosition(pos))
     {
         HashMap::getAtPosition(pos, out_FirstKey, result);
@@ -495,7 +495,7 @@ inline RESOURCE_OBJECT* TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, De
     Lock lock(mSynchObj);
 
     RESOURCE_OBJECT * result = nullptr;
-    MAPPOS pos = HashMap::find(in_out_NextKey);
+    typename HashMap::MAPPOS pos = HashMap::find(in_out_NextKey);
     if (HashMap::isValidPosition(pos))
     {
         HashMap::nextEntry(pos, in_out_NextKey, result);

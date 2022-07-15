@@ -10,7 +10,7 @@
  *
  * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/base/TEHashMap.hpp
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
+ * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit
  * \author      Artak Avetyan
  * \brief       AREG Platform, Hash Map class template.
  *              Hash Map object to store elements by its hash value.
@@ -33,46 +33,46 @@
 //////////////////////////////////////////////////////////////////////////
 
 /**
- * \brief   The Hash Map binds Value with its Key. The Key element is unique. 
+ * \brief   The Hash Map binds Value with its Key. The Key element is unique.
  *          Values are accessed by Key. Key and Value can be of different types.
  *
- *          To access first element in Hash Map, get the first Position (call function 
+ *          To access first element in Hash Map, get the first Position (call function
  *          firstPosition()). Each next element is accessed by calling next position.
- *          The type KEY should be possible to convert to unsigned int type required to 
- *          calculate the Hash. If KEY type is an object it should have implemented 
+ *          The type KEY should be possible to convert to unsigned int type required to
+ *          calculate the Hash. If KEY type is an object it should have implemented
  *          hasher std::hash<KEY>, KEY comparing operator or KEY comparing function
  *          std::equal_to<KEY>. In addition, the KEY and VALUE types should have
  *          at least default constructor and valid assigning operator.
- * 
+ *
  *          For example:
  *          class MyClass {
  *              int     mData;
  *          }
- * 
+ *
  *          namespace std {
- * 
+ *
  *              // Hasher
  *              template<> struct hash<MyClass> {
  *                  unsigned int operator()(const MyClass& my) const
  *                  {   return mData; }
  *              }
- * 
+ *
  *              // Check equality
  *              template<> struct equal_to<MyClass> {
  *                  bool operator()(const MyClass& lhs, const MyClass& rhs) const
  *                  {   return (lhs.mData == rhs.mData); }
  *              }
  *          }
- * 
+ *
  *          The HashMap object is not thread safe and data should be  synchronized manually.
  *
  * \tparam  KEY     The type of Key to identify entries in the hash map. Either should
  *                  be primitive or should have at least default and copy constructors,
- *                  and assigning operator. There should be as well possibility to convert 
- *                  KEY type to the hash by calling std::hash() and compare keys by calling 
+ *                  and assigning operator. There should be as well possibility to convert
+ *                  KEY type to the hash by calling std::hash() and compare keys by calling
  *                  comparing operator or by calling std::equal_to().
- * \tparam  VALUE   The type of stored items. Either should be primitive or should have 
- *                  default constructor and valid assigning operator. Also, should be 
+ * \tparam  VALUE   The type of stored items. Either should be primitive or should have
+ *                  default constructor and valid assigning operator. Also, should be
  *                  possible to convert to type 'const VALUE&'.
  **/
 template < typename KEY, typename VALUE>
@@ -179,8 +179,8 @@ public:
      * \param   stream  The streaming object to read values.
      * \param   input   The hash-map object to save initialized values.
      **/
-    template < typename KEY, typename VALUE >
-    friend inline const IEInStream & operator >> ( const IEInStream & stream, TEHashMap<KEY, VALUE> & input);
+    template < typename K, typename V >
+    friend inline const IEInStream & operator >> ( const IEInStream & stream, TEHashMap<K, V> & input);
 
     /**
      * \brief   Writes to the stream the key and value pairs of hash-map.
@@ -190,8 +190,8 @@ public:
      * \param   stream  The stream to write values.
      * \param   input   The hash-map object containing value to stream.
      **/
-    template < typename KEY, typename VALUE >
-    friend inline IEOutStream & operator << ( IEOutStream & stream, const TEHashMap<KEY, VALUE> & output );
+    template < typename K, typename V >
+    friend inline IEOutStream & operator << ( IEOutStream & stream, const TEHashMap<K, V> & output );
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes
@@ -209,28 +209,16 @@ public:
     inline uint32_t getSize( void ) const;
 
     /**
-     * \brief	Returns the position of the first key and value entry in the hash-map, which is 
+     * \brief	Returns the position of the first key and value entry in the hash-map, which is
      *          not invalid if the hash-map is not empty. Otherwise, returns invalid position.
      **/
     inline MAPPOS firstPosition(void) const;
-
-    /**
-     * \brief	Returns the position of the last key and value entry in the hash-map, which is
-     *          not invalid if the hash-map is not empty. Otherwise, returns invalid position.
-     **/
-    inline MAPPOS lastPosition(void) const;
 
     /**
      * \brief   Returns true if specified position points the first entry in the hash-map.
      * \param   pos     The position to check.
      **/
     inline bool isStartPosition(const MAPPOS pos) const;
-
-    /**
-     * \brief   Returns true if specified position points the last entry in the hash-map.
-     * \param   pos     The position to check.
-     **/
-    inline bool isLastPosition(const MAPPOS pos) const;
 
     /**
      * \brief   Returns the invalid position of the hash-map.
@@ -282,7 +270,7 @@ public:
     inline void release(void);
 
     /**
-     * \brief	Searches an element entry by the given key. 
+     * \brief	Searches an element entry by the given key.
      *          If found element, return true and on exit returns the value of element
      * \param	Key	        The key to search.
      * \param	out_Value   On output, contains value of found element
@@ -375,23 +363,23 @@ public:
      * \return  Returns valid position of the next element or invalid position if there is it updated
      *          the last entry in the hash-map.
      **/
-    inline MAPPOS setPosition(typename MAPPOS atPosition, const VALUE& newValue );
+    inline MAPPOS setPosition(MAPPOS atPosition, const VALUE& newValue );
 
     /**
      * \brief	Removes an element at the given position. The function returns next position of an entry in the hash map.
-     * 
+     *
      * \param	curPos      The valid position of the element in the hash-map to remove.
      * \param	out_Key     On output, this contains the key of the removed element
      * \param	out_Value   On output, this contains the value of the removed element.
      * \return  Returns valid position of the next entry in the hash-map, or returns invalid position if
      *          removed element was the last in the hash-map.
      **/
-    inline MAPPOS removePosition(typename MAPPOS atPosition);
-    inline MAPPOS removePosition(typename MAPPOS IN curPos, KEY & OUT out_Key, VALUE & OUT out_Value );
+    inline MAPPOS removePosition(MAPPOS atPosition);
+    inline MAPPOS removePosition(MAPPOS IN curPos, KEY & OUT out_Key, VALUE & OUT out_Value );
 
     /**
      * \brief   Removes the first entry in the hash map.
-     * 
+     *
      * \param   out_Key     On output it contains the key of the removed element in the hash-map.
      * \param   out_Value   On output it contains the value of the removed element in the hash-map.
      * \return  Returns true if hash-map was not empty and first entry is removed. Otherwise, returns false.
@@ -411,16 +399,16 @@ public:
 
     /**
      * \brief	Returns position of the next entry in the hash-map followed the given position.
-     * 
+     *
      * \param	atPosition  The position of the entry to get next and extract values.
      * \param	out_Key     On output, this contains key of given position.
      * \param	out_Value   On output, this contains value of given position.
      * \param	out_Element On output, this element contains pair of Key and Value specified by given position.
      * \return	Next valid position of the next entry in the hash-map or invalid position if reached end of hash-map.
      **/
-    inline MAPPOS nextPosition(typename MAPPOS IN atPosition) const;
-    inline MAPPOS nextPosition(typename MAPPOS IN atPosition, KEY & OUT out_Key, VALUE & OUT out_Value ) const;
-    inline MAPPOS nextPosition(typename MAPPOS IN atPosition, std::pair<KEY, VALUE> & OUT out_Element ) const;
+    inline MAPPOS nextPosition(MAPPOS IN atPosition) const;
+    inline MAPPOS nextPosition(MAPPOS IN atPosition, KEY & OUT out_Key, VALUE & OUT out_Value ) const;
+    inline MAPPOS nextPosition(MAPPOS IN atPosition, std::pair<KEY, VALUE> & OUT out_Element ) const;
 
     /**
      * \brief	Extract data of the key and value of the entry by given position.
@@ -429,26 +417,26 @@ public:
      * \param	out_Value   On output, contains value of the element at given position.
      * \param	out_Element On output, contains the Key and Value pair of the element at given position
      **/
-    inline void getAtPosition(typename MAPPOS IN atPosition, KEY & OUT out_Key, VALUE & OUT out_Value ) const;
-    inline void getAtPosition(typename MAPPOS IN atPosition, std::pair<KEY, VALUE> & OUT out_Element) const;
+    inline void getAtPosition(MAPPOS IN atPosition, KEY & OUT out_Key, VALUE & OUT out_Value ) const;
+    inline void getAtPosition(MAPPOS IN atPosition, std::pair<KEY, VALUE> & OUT out_Element) const;
 
     /**
      * \brief   Returns the Key of the entry at the given position.
      * \param   atPosition  The position of the element.
      **/
-    inline const KEY & keyAtPosition(typename MAPPOS atPosition ) const;
-    inline KEY& keyAtPosition(typename MAPPOS atPosition);
+    inline const KEY & keyAtPosition(const MAPPOS atPosition ) const;
+    inline KEY& keyAtPosition(MAPPOS atPosition);
 
     /**
      * \brief   Returns the Value of the entry at the given position.
      * \param   atPosition  The position of the element.
      **/
-    inline const VALUE & valueAtPosition(typename MAPPOS atPosition ) const;
-    inline VALUE& valueAtPosition(typename MAPPOS atPosition);
+    inline const VALUE & valueAtPosition(const MAPPOS atPosition ) const;
+    inline VALUE& valueAtPosition(MAPPOS atPosition);
 
     /**
      * \brief	Extracts next position, key and value of the element in the hash-map followed position.
-     * 
+     *
      * \param	in_out_NextPosition	On input this indicates the valid position of the entry in the hash map.
      *                              On output, this parameter points either next valid entry in the hash-map
      *                              or invalid entry if no more entry is following.
@@ -456,7 +444,7 @@ public:
      * \param	out_NextValue       On output, this contain value of the next entry in hash map.
      * \return	Returns true, if there is a next element and the output values are valid.
      **/
-    inline bool nextEntry(typename MAPPOS & IN OUT in_out_NextPosition, KEY & OUT out_NextKey, VALUE & OUT out_NextValue ) const;
+    inline bool nextEntry(MAPPOS & IN OUT in_out_NextPosition, KEY & OUT out_NextKey, VALUE & OUT out_NextValue ) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Member Variables
@@ -478,7 +466,7 @@ protected:
 
 template < typename KEY, typename VALUE >
 TEHashMap<KEY, VALUE>::TEHashMap(uint32_t hashSize /* = NECommon::MAP_DEFAULT_HASH_SIZE */)
-    : Constless ( )
+    : Constless<std::unordered_map<KEY, VALUE>>( )
     , mValueList(hashSize)
 {
 }
@@ -522,15 +510,8 @@ inline uint32_t TEHashMap<KEY, VALUE>::getSize( void ) const
 template < typename KEY, typename VALUE >
 inline typename TEHashMap<KEY, VALUE>::MAPPOS TEHashMap<KEY, VALUE>::firstPosition( void ) const
 {
-    typename std::unordered_map<KEY, VALUE>::const_iterator pos = mValueList.begin();
-    return Constless::iter(mValueList, pos);
-}
-
-template < typename KEY, typename VALUE >
-inline typename TEHashMap<KEY, VALUE>::MAPPOS TEHashMap<KEY, VALUE>::lastPosition(void) const
-{
-    typename std::unordered_map<KEY, VALUE>::const_iterator pos = mValueList.empty() == false ? -- mValueList.end() : mValueList.end();
-    return Constless::iter(mValueList, pos);
+    auto pos = mValueList.begin();
+    return Constless<std::unordered_map<KEY, VALUE>>::iter(mValueList, pos);
 }
 
 template < typename KEY, typename VALUE >
@@ -540,15 +521,10 @@ inline bool TEHashMap<KEY, VALUE>::isStartPosition(const MAPPOS pos) const
 }
 
 template < typename KEY, typename VALUE >
-inline bool TEHashMap<KEY, VALUE>::isLastPosition(const MAPPOS pos) const
-{
-    return (mValueList.empty() == false) && (pos == --mValueList.end());
-}
-
-template < typename KEY, typename VALUE >
 inline typename TEHashMap<KEY, VALUE>::MAPPOS TEHashMap<KEY, VALUE>::invalidPosition(void) const
 {
-    return iter(mValueList.end());
+	auto end = mValueList.end();
+    return Constless<std::unordered_map<KEY, VALUE>>::iter(mValueList, end);
 }
 
 template < typename KEY, typename VALUE >
@@ -566,9 +542,11 @@ inline bool TEHashMap<KEY, VALUE>::isValidPosition(const MAPPOS pos) const
 template < typename KEY, typename VALUE >
 inline bool TEHashMap<KEY, VALUE>::checkPosition(const MAPPOS pos) const
 {
-    typename std::unordered_map<KEY, VALUE>::const_iterator it = mValueList.begin();
+    auto it = mValueList.begin();
     while ((it != mValueList.end()) && (it != pos))
+    {
         ++it;
+    }
 
     return (it != mValueList.end());
 }
@@ -601,15 +579,15 @@ inline bool TEHashMap<KEY, VALUE>::find( const KEY & Key, VALUE & OUT out_Value 
         out_Value = pos->second;
         result = true;
     }
-    
+
     return result;
 }
 
 template < typename KEY, typename VALUE >
 inline typename TEHashMap<KEY, VALUE>::MAPPOS TEHashMap<KEY, VALUE>::find(const KEY& Key) const
 {
-    typename std::unordered_map<KEY, VALUE>::const_iterator cit = mValueList.find(Key);
-    return iter(mValueList, cit);
+    auto cit = mValueList.find(Key);
+    return Constless<std::unordered_map<KEY, VALUE>>::iter(mValueList, cit);
 }
 
 template < typename KEY, typename VALUE >
@@ -719,11 +697,10 @@ template < typename KEY, typename VALUE >
 inline typename TEHashMap<KEY, VALUE>::MAPPOS TEHashMap<KEY, VALUE>::removePosition(typename TEHashMap<KEY, VALUE>::MAPPOS IN curPos, KEY& OUT out_Key, VALUE& OUT out_Value)
 {
     ASSERT( curPos != mValueList.end());
-    MAPPOS result   = curPos + 1;
     out_Key         = curPos->first;
     out_Value       = curPos->second;
 
-    return mValueList.erase(curPos);
+    return mValueList.erase(++curPos);
 }
 
 template < typename KEY, typename VALUE >
@@ -743,7 +720,7 @@ inline bool TEHashMap<KEY, VALUE>::removeFirst(KEY& OUT out_Key, VALUE& OUT out_
         ASSERT(pos != mValueList.end());
         out_Key = pos->first;
         out_Value = pos->second;
-        
+
         mValueList.erase(pos);
         result      = true;
     }
@@ -792,29 +769,28 @@ inline void TEHashMap<KEY, VALUE>::removeLast(void)
 }
 
 template < typename KEY, typename VALUE >
-inline typename TEHashMap<KEY, VALUE>::MAPPOS TEHashMap<KEY, VALUE>::nextPosition(typename TEHashMap<KEY, VALUE>::MAPPOS IN atPosition, KEY& OUT out_Key, VALUE& OUT out_Value) const
+inline typename TEHashMap<KEY, VALUE>::MAPPOS TEHashMap<KEY, VALUE>::nextPosition(TEHashMap<KEY, VALUE>::MAPPOS IN atPosition, KEY& OUT out_Key, VALUE& OUT out_Value) const
 {
     ASSERT(atPosition != mValueList.end());
 
-    MAPPOS result   = atPosition + 1;
     out_Key		    = atPosition->first;
     out_Value	    = atPosition->second;
 
-    return result;
+    return (++ atPosition);
 }
 
 template < typename KEY, typename VALUE >
-inline typename TEHashMap<KEY, VALUE>::MAPPOS 
-TEHashMap<KEY, VALUE>::nextPosition( typename TEHashMap<KEY, VALUE>::MAPPOS IN atPosition, std::pair<KEY, VALUE> & OUT out_Element) const
+inline typename TEHashMap<KEY, VALUE>::MAPPOS
+TEHashMap<KEY, VALUE>::nextPosition( TEHashMap<KEY, VALUE>::MAPPOS IN atPosition, std::pair<KEY, VALUE> & OUT out_Element) const
 {
     return nextPosition(atPosition, out_Element.mKey, out_Element.mValue);
 }
 
 template < typename KEY, typename VALUE >
-inline typename TEHashMap<KEY, VALUE>::MAPPOS TEHashMap<KEY, VALUE>::nextPosition(typename TEHashMap<KEY, VALUE>::MAPPOS IN atPosition ) const
+inline typename TEHashMap<KEY, VALUE>::MAPPOS TEHashMap<KEY, VALUE>::nextPosition(TEHashMap<KEY, VALUE>::MAPPOS IN atPosition ) const
 {
     ASSERT(atPosition != mValueList.end());
-    return ++ atPosition;
+    return (++ atPosition);
 }
 
 template < typename KEY, typename VALUE >
@@ -830,7 +806,7 @@ inline const VALUE & TEHashMap<KEY, VALUE>::getAt(const KEY & Key) const
 }
 
 template < typename KEY, typename VALUE >
-inline void TEHashMap<KEY, VALUE>::getAtPosition(typename TEHashMap<KEY, VALUE>::MAPPOS IN atPosition, KEY & OUT out_Key, VALUE & OUT out_Value) const
+inline void TEHashMap<KEY, VALUE>::getAtPosition(TEHashMap<KEY, VALUE>::MAPPOS IN atPosition, KEY & OUT out_Key, VALUE & OUT out_Value) const
 {
     ASSERT(atPosition != mValueList.end());
     out_Key     = atPosition->first;
@@ -838,41 +814,41 @@ inline void TEHashMap<KEY, VALUE>::getAtPosition(typename TEHashMap<KEY, VALUE>:
 }
 
 template < typename KEY, typename VALUE >
-inline void TEHashMap<KEY, VALUE>::getAtPosition( typename TEHashMap<KEY, VALUE>::MAPPOS IN atPosition, std::pair<KEY, VALUE> & OUT out_Element) const
+inline void TEHashMap<KEY, VALUE>::getAtPosition(TEHashMap<KEY, VALUE>::MAPPOS IN atPosition, std::pair<KEY, VALUE> & OUT out_Element) const
 {
     getAtPosition(atPosition, out_Element.mKey, out_Element.mValue);
 }
 
 template < typename KEY, typename VALUE >
-inline const KEY & TEHashMap<KEY, VALUE>::keyAtPosition(typename TEHashMap<KEY, VALUE>::MAPPOS atPosition) const
+inline const KEY & TEHashMap<KEY, VALUE>::keyAtPosition(const TEHashMap<KEY, VALUE>::MAPPOS atPosition) const
 {
     ASSERT(atPosition != mValueList.end());
     return atPosition->first;
 }
 
 template < typename KEY, typename VALUE >
-inline KEY& TEHashMap<KEY, VALUE>::keyAtPosition(typename TEHashMap<KEY, VALUE>::MAPPOS atPosition)
+inline KEY& TEHashMap<KEY, VALUE>::keyAtPosition(TEHashMap<KEY, VALUE>::MAPPOS atPosition)
 {
     ASSERT(atPosition != mValueList.end());
     return const_cast<KEY &>(atPosition->first);
 }
 
 template < typename KEY, typename VALUE >
-inline const VALUE & TEHashMap<KEY, VALUE>::valueAtPosition(typename TEHashMap<KEY, VALUE>::MAPPOS atPosition ) const
+inline const VALUE & TEHashMap<KEY, VALUE>::valueAtPosition(const TEHashMap<KEY, VALUE>::MAPPOS atPosition ) const
 {
     ASSERT(atPosition != mValueList.end());
     return atPosition->second;
 }
 
 template < typename KEY, typename VALUE >
-inline VALUE& TEHashMap<KEY, VALUE>::valueAtPosition(typename TEHashMap<KEY, VALUE>::MAPPOS atPosition)
+inline VALUE& TEHashMap<KEY, VALUE>::valueAtPosition(TEHashMap<KEY, VALUE>::MAPPOS atPosition)
 {
     ASSERT(atPosition != mValueList.end());
     return atPosition->second;
 }
 
 template < typename KEY, typename VALUE >
-inline bool TEHashMap<KEY, VALUE>::nextEntry(typename TEHashMap<KEY, VALUE>::MAPPOS & IN OUT in_out_NextPosition, KEY & OUT out_NextKey, VALUE & OUT out_NextValue) const
+inline bool TEHashMap<KEY, VALUE>::nextEntry(TEHashMap<KEY, VALUE>::MAPPOS & IN OUT in_out_NextPosition, KEY & OUT out_NextKey, VALUE & OUT out_NextValue) const
 {
     ASSERT( in_out_NextPosition != mValueList.end() );
     bool result = false;
@@ -890,19 +866,19 @@ inline bool TEHashMap<KEY, VALUE>::nextEntry(typename TEHashMap<KEY, VALUE>::MAP
 // TEHashMap<KEY, VALUE> class friend methods
 //////////////////////////////////////////////////////////////////////////
 
-template < typename KEY, typename VALUE >
-inline const IEInStream & operator >> ( const IEInStream & stream, TEHashMap<KEY, VALUE> & input )
+template < typename K, typename V >
+inline const IEInStream & operator >> ( const IEInStream & stream, TEHashMap<K, V> & input )
 {
     uint32_t size = 0;
     stream >> size;
-    
+
     input.mValueList.clear();
     input.mValueList.reserve(size);
 
     for (uint32_t i = 0; i < size; ++ i)
     {
-        KEY key;
-        VALUE value;
+        K key;
+        V value;
         stream >> key >> value;
         input.setAt(key, value);
     }
@@ -910,8 +886,8 @@ inline const IEInStream & operator >> ( const IEInStream & stream, TEHashMap<KEY
     return stream;
 }
 
-template < typename KEY, typename VALUE >
-inline IEOutStream & operator << ( IEOutStream & stream, const TEHashMap<KEY, VALUE> & output )
+template < typename K, typename V >
+inline IEOutStream & operator << ( IEOutStream & stream, const TEHashMap<K, V> & output )
 {
     uint32_t size = output.getSize();
     stream << size;

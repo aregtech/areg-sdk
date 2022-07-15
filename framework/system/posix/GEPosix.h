@@ -24,6 +24,14 @@
     #endif  // _POSIX
 #endif  // POSIX
 
+#ifndef	_POSIX_C_SOURCE
+    #define _POSIX_C_SOURCE  200809L
+#endif	// _POSIX_C_SOURCE
+
+#ifndef _DEFAULT_SOURCE
+    #define _DEFAULT_SOURCE
+#endif	// _DEFAULT_SOURCE
+
 #if defined(BIT32) || defined(_BIT32)
 
     #ifndef BIT32

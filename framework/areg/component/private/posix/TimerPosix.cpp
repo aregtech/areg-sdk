@@ -34,7 +34,7 @@
 namespace
 {
     //!< Timer invalid ID
-    const timer_t	INVALID_POSIX_TIMER_ID	= reinterpret_cast<timer_t>(~0);
+    const timer_t	INVALID_POSIX_TIMER_ID	= reinterpret_cast<timer_t>(~0ul);
 }
 
 //////////////////////////////////////////////////////////////////////////

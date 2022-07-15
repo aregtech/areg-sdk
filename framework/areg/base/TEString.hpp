@@ -19,11 +19,12 @@
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
 
-#include "areg/base/NEString.hpp"
 #include "areg/base/TETemplateBase.hpp"
-
 #include <string>
+
+#include "areg/base/NEString.hpp"
 #include <locale>
+#include <algorithm>
 
 /************************************************************************
  * Dependencies
@@ -35,18 +36,16 @@ class IEOutStream;
 // TEString class template declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   The basic string class template, which contains basic operations 
+ * \brief   The basic string class template, which contains basic operations
  *          to set, append, insert, search and replace string, as well to get substring.
  *          When deriving class, should be paid special attention on string structure
- *          validation. The string should be allocated and released via methods 
+ *          validation. The string should be allocated and released via methods
  *          defined in NEString namespace.
  *          The string class template constructors and destructor are protected.
  *          To be able to instantiate string, the class should be derived to define
  *          basic operations.
- * 
+ *
  * \tparam  CharType    The type of character. Normally, either 8-bit character or 16-bit wide character.
- * \tparam  Helper      The name of class where the basic string alphabetic, comparing and 
- *                      stream read/write operations are Helper.
  **/
 template<typename CharType>
 class TEString
@@ -113,7 +112,7 @@ public:
     /**
      * \brief   Initializes string and reserves a space for specified amount of characters.
      *          Note, the size of string remains zero.
-     * 
+     *
      * \param   count   The space to reserve.
      */
     explicit inline TEString(uint32_t count);
@@ -204,49 +203,49 @@ public:
 
     /**
      * \brief   Operator to concatenate 2 strings.
-     * 
+     *
      * \param   lhs     Left-hand side string object
      * \param   rhs     Right-hand side string object
      * \return  Returns newly constructed string object by concatenating 2 strings
      **/
-    template<typename CharType>
-    friend inline TEString<CharType> operator + (const TEString<CharType>& lhs, const TEString<CharType>& rhs);
-    template<typename CharType>
-    friend inline TEString<CharType> operator + (const TEString<CharType>& lhs, const std::basic_string<CharType>& rhs);
-    template<typename CharType>
-    friend inline TEString<CharType> operator + (const TEString<CharType>& lhs, const std::basic_string_view<CharType>& rhs);
-    template<typename CharType>
-    friend inline TEString<CharType> operator + (const TEString<CharType>& lhs, const CharType* rhs);
-    template<typename CharType>
-    friend inline TEString<CharType> operator + (const TEString<CharType>& lhs, const CharType rhs);
-    template<typename CharType>
-    friend inline TEString<CharType> operator + (const std::basic_string<CharType>& lhs, const TEString<CharType>& rhs);
-    template<typename CharType>
-    friend inline TEString<CharType> operator + (const std::basic_string_view<CharType>& lhs, const TEString<CharType>& rhs);
-    template<typename CharType>
-    friend inline TEString<CharType> operator + (const CharType* lhs, const TEString<CharType>& rhs);
-    template<typename CharType>
-    friend inline TEString<CharType> operator + (const CharType lhs, const TEString<CharType>& rhs);
+    template<typename CT>
+    friend inline TEString<CT> operator + (const TEString<CT>& lhs, const TEString<CT>& rhs);
+    template<typename CT>
+    friend inline TEString<CT> operator + (const TEString<CT>& lhs, const std::basic_string<CT>& rhs);
+    template<typename CT>
+    friend inline TEString<CT> operator + (const TEString<CT>& lhs, const std::basic_string_view<CT>& rhs);
+    template<typename CT>
+    friend inline TEString<CT> operator + (const TEString<CT>& lhs, const CT* rhs);
+    template<typename CT>
+    friend inline TEString<CT> operator + (const TEString<CT>& lhs, const CT rhs);
+    template<typename CT>
+    friend inline TEString<CT> operator + (const std::basic_string<CT>& lhs, const TEString<CT>& rhs);
+    template<typename CT>
+    friend inline TEString<CT> operator + (const std::basic_string_view<CT>& lhs, const TEString<CT>& rhs);
+    template<typename CT>
+    friend inline TEString<CT> operator + (const CT* lhs, const TEString<CT>& rhs);
+    template<typename CT>
+    friend inline TEString<CT> operator + (const CT lhs, const TEString<CT>& rhs);
 
     /**
      * \brief   Streams to input object, i.e. reads data from streaming object to string,
      *          and initialize string data.
-     * 
+     *
      * \param   stream  Streaming object to read string data
      * \param   input   String object to initialize and write string data.
      * \return  Reference to stream object.
      **/
-    template<typename CharType>
-    friend inline const IEInStream & operator >> (const IEInStream & stream, TEString<CharType> & input);
-    
+    template<typename CT>
+    friend inline const IEInStream & operator >> (const IEInStream & stream, TEString<CT> & input);
+
     /**
      * \brief   Streams from output object, i.e. write data from string to streaming object.
      * \param   stream    Streaming object to write data.
      * \param   output    String object to read data from
      * \return  Reference to stream object.
      **/
-    template<typename CharType>
-    friend inline IEOutStream & operator << (IEOutStream & stream, const TEString<CharType> & output);
+    template<typename CT>
+    friend inline IEOutStream & operator << (IEOutStream & stream, const TEString<CT> & output);
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes
@@ -308,7 +307,7 @@ public:
 
     /**
      * \brief   Returns string buffer starting at specified valid position.
-     * 
+     *
      * \param   startAt     The offset of position in string to return buffer.
      *                      By default it returns begin of string buffer.
      * \return  Returns valid pointer of the string buffer at specified position.
@@ -372,13 +371,13 @@ public:
     inline void release(void);
 
     /**
-     * \brief   Searches the whole word in the string at specified 'startAt' position. 
-     *          On output, the 'startAt' and 'endAt' contain start and end of position where each 
-     *          word start and end. The length of the word calculated by 'endAt - startAt' formula. 
-     *          The word is a collection of characters and digits, and allowed in the valid name 
-     *          characters ('_'), which are surrounded by other symbols (whitespace, comma, dot, etc), 
+     * \brief   Searches the whole word in the string at specified 'startAt' position.
+     *          On output, the 'startAt' and 'endAt' contain start and end of position where each
+     *          word start and end. The length of the word calculated by 'endAt - startAt' formula.
+     *          The word is a collection of characters and digits, and allowed in the valid name
+     *          characters ('_'), which are surrounded by other symbols (whitespace, comma, dot, etc),
      *          or if it starts at the beginning or end of the string.
-     * 
+     *
      * \param startAt [in, out] On input, this should be valid position in the string to start to search.
      *                          On output, it contains the next position of the next word.
      * \param endAt [out]       On output, it contains the position where the next word finishes.
@@ -401,10 +400,10 @@ public:
     void getWord(TEString<CharType>& OUT word, NEString::CharPos& IN OUT startAt, NEString::CharPos& OUT endAt) const;
 
     /**
-     * \brief   Find the first occurrence of any of the characters in string buffer 'chars'. 
+     * \brief   Find the first occurrence of any of the characters in string buffer 'chars'.
      *          The search starts at given 'startPos'. Returns valid position if found any.
      *          Otherwise, returns NEString::INVALID_POS.
-     * 
+     *
      * \param   chars       The one or more characters as null-terminated string to search.
      * \param   startPos    The starting position in string to search. Should be valid.
      *                      By default, starts to search at begin of string, i.e. at 'NEString::START_POS'
@@ -416,7 +415,7 @@ public:
     /**
      * \brief   Find the first occurrence of given character in the string. If found, returns valid
      *          position value in the string. Otherwise, it returns NEString::INVALID_POS value.
-     * 
+     *
      * \param   chSearch        The character to search in the string.
      * \param   startPos        The starting position in string to search. Should be valid.
      *                          By default, starts to search at the begin of string, i.e. at 'NEString::START_POS'
@@ -430,7 +429,7 @@ public:
     /**
      * \brief   Find the first occurrence of given phrase in the string. If found, returns valid
      *          position value in the string. Otherwise, it returns NEString::INVALID_POS value.
-     * 
+     *
      * \param   phrase          The phrase to search in the string.
      * \param   startPos        The starting position in string to search. Should be valid.
      *                          By default, starts to search at the begin of string, i.e. at 'NEString::START_POS'
@@ -442,7 +441,7 @@ public:
      *          Otherwise, returns NEString::INVALID_POS value.
      **/
     NEString::CharPos findFirst( const CharType * phrase, NEString::CharPos startPos = NEString::START_POS, bool caseSensitive = true, bool wholeWord = false ) const;
-    
+
     /**
      * \brief   Find the last occurrence of given character in the string. If found, returns valid
      *          position value in the string. Otherwise, it returns NEString::INVALID_POS value.
@@ -476,9 +475,9 @@ public:
     /**
      * \brief   Compares the given string. The comparing is done by certain position, certain amount of characters
      *          or by ignoring upper and lower cases, depending parameters are passed in the function.
-     * 
+     *
      * \param   strOther        The given string to compare.
-     * \param   startAt         If given, compares at specified zero-based position of the string. 
+     * \param   startAt         If given, compares at specified zero-based position of the string.
      *                          Otherwise, it compares at the begin of string (NEString::START_POS).
      * \param   count           The number of characters to compare. By default, it compares until end of string
      * \param   caseSensitive   If true, compares by exact match, i.e. case-sensitive.
@@ -499,7 +498,7 @@ public:
      * \brief   Truncates the starting at zero-based 'startPos' and given number of characters.
      *          If 'startPos' is beginning of the string (NEString::START_POS) and 'count' is
      *          equal to the length of the string or NEString::COUNT_ALL, the string is not modified.
-     * 
+     *
      * \param   startPos    Starting position of the substring to create.
      *                      By default, the substring starts at the begin, i.e. NEString::START_POS
      * \param   count       The number of characters in substring, starting at given starting position.
@@ -586,7 +585,7 @@ public:
     /**
      * \brief   Copies given amount of characters of given string and returns the amount of copied characters.
      *          If string has not enough space to copy characters, it will reallocate the space.
-     * 
+     *
      * \param   source  The source of string to copy characters.
      * \param   pos     The position in source string to start to copy.
      * \param   count   The number of characters to copy. By default, it copies all characters.
@@ -600,7 +599,7 @@ public:
     /**
      * \brief   Appends given string at the end. The given string can be limited by zero-based valid position
      *          and by amount of characters to append.
-     * 
+     *
      * \param   source  The source of string to append characters.
      * \param   pos     If specified the valid zero-based position in the given string to append.
      *                  Otherwise, it append starting from the beginning.
@@ -616,7 +615,7 @@ public:
      * \brief   Moves data inside string buffer starting at specified position.
      *          It moves left if 'moveTo' value is negative and moves right if 'moveTo' is positive.
      *          If 'moveTo' is zero, no change happens.
-     * 
+     *
      * \param   startPos    The valid zero-based position to start moving string.
      * \param   moveTo      Specifies number of characters and direction to move string.
      *                      If negative, moves string to left side. String buffer is not reallocated.
@@ -627,10 +626,10 @@ public:
     TEString<CharType>& moveTo(NEString::CharPos startPos, int moveTo);
 
     /**
-     * \brief   Inserts given source of character at given valid zero-based position in the string. 
-     *          The character can be inserted at any position, including begin of string or 
+     * \brief   Inserts given source of character at given valid zero-based position in the string.
+     *          The character can be inserted at any position, including begin of string or
      *          at the end of string (NEString::END_POS).
-     * 
+     *
      * \param   source  The character to insert.
      * \param   atPos   The position in the string to insert.
      * \param   count   The number of characters to insert. By default, it is one character.
@@ -639,13 +638,13 @@ public:
     inline TEString<CharType>& insertAt( CharType source, NEString::CharPos atPos, NEString::CharCount count = 1 );
 
     /**
-     * \brief   Inserts given source at given valid zero-based position in the string. 
+     * \brief   Inserts given source at given valid zero-based position in the string.
      *          The character can be inserted at any position, including begin of string or
      *          at the end of string (NEString::END_POS).
-     * 
+     *
      * \param   source      The source of character to insert.
      * \param   atDstPos    The position in the destination string to insert.
-     * \param   atSrcPos    If given, the position in source string to take for inserting. 
+     * \param   atSrcPos    If given, the position in source string to take for inserting.
      *                      By default, it is the beginning of source string.
      * \param   count       If given, the number of characters in the source string to insert.
      *                      By default it inserts the complete source of string.
@@ -657,7 +656,7 @@ public:
     /**
      * \brief   Searches and replaces given character by another character. The search and replacement starts at given position.
      *          The method either replaces only first match or all matches.
-     * 
+     *
      * \param   chSearch    The character to be searched to replace.
      * \param   chReplace   The character to set when found 'chSearch'.
      * \param   startPos    The valid zero-based position to start searching character to replace.
@@ -670,7 +669,7 @@ public:
     /**
      * \brief   Searches and replaces given string by another string. The search and replacement starts at given position.
      *          The method either replaces only first match or all matches.
-     * 
+     *
      * \param   strSearch   The string to be searched to replace.
      * \param   strReplace  The string to set when found 'strSearch'.
      * \param   startPos    The valid zero-based position to start searching string to replace.
@@ -685,7 +684,7 @@ public:
 
     /**
      * \brief   At the given position of the string removes specified amount of characters and replaces by the given string.position after replacing string.
-     * 
+     *
      * \param   startPos    The valid zero-based position to start modifying string.
      * \param   charsRemove Amount of characters to remove to replace in string.
      * \param   strReplace  The string to set.
@@ -699,7 +698,7 @@ public:
     /**
      * \brief   Removes specified amount of characters in string at specified starting position.
      *          If 'count' is NEString::COUNT_ALL, it will remove all characters until end of the string.
-     * 
+     *
      * \param   startPos    The valid zero-based starting position to remove string.
      * \param   count       The amount of characters to remove or until end of the string if NEString::COUNT_ALL.
      * \return  Returns modified string.
@@ -709,7 +708,7 @@ public:
     /**
      * \brief   Starting from the given valid zero-based position searches and removes specified character.
      *          If 'removedAll' parameter is true, removes all matches in the string. Otherwise, it removes only first match.
-     * 
+     *
      * \param   chRemove    The character to search and remove.
      * \param   startPos    The valid zero-based position to start to search character.
      * \param   removeAll   If true, will remove all matches. Otherwise, removes first match of the character.
@@ -734,7 +733,7 @@ public:
      * \brief   Resizes the string to contain count characters.
      *          If the current size is less than count, additional characters are appended.
      *          If the current size is greater than count, the string is reduced to its first count elements.
-     * 
+     *
      * \param   count   The maximum length of string.
      * \param   chFill  The characters to fill if new size if longer than the current length.
      **/
@@ -756,7 +755,7 @@ public:
 
     /**
      * \brief   Returns character at specified valid zero-based position.
-     * 
+     *
      * \param   atPos   The position to return character value.
      * \return  Returns character at specified position of string buffer.
      *          Returns NEString::EndOfString if position is invalid or
@@ -766,13 +765,13 @@ public:
 
     /**
      * \brief   Sets character at specified valid zero-based position.
-     * 
+     *
      * \param   ch      The character to set.
      * \param   atPos   The position where to set character.
      *                  If the position is valid, it sets the character at the specified position.
      *                  If the position is NEString::END_POS, it appends a character at the end of the string.
      *                  In all other cases, the operation is ignored.
-     * 
+     *
      * \return  Returns true if operation succeeded and character either is set or append.
      *          Otherwise, returns false.
      **/
@@ -787,7 +786,7 @@ public:
     /**
      * \brief   Copies data into given string without trailing whitespace at the begin of the string.
      *          The existing string remain unmodified.
-     * 
+     *
      * \param   strResult   The destination string to copy result.
      **/
     inline void trimLeft( TEString<CharType> & OUT strResult ) const;
@@ -824,12 +823,12 @@ public:
     void trimAll(std::basic_string<CharType>& OUT strResult) const;
 
     /**
-     * \brief   Reads the string starting from specified position until end of line, 
+     * \brief   Reads the string starting from specified position until end of line,
      *          copies the result into the 'strResult' and returns the next position
      *          where new line begins or returns NEString::END_POS if reached end of string.
      *          NOTE:   If after reading the line there are still empty new lines.
      *                  The returned position value escapes followed empty new lines.
-     * 
+     *
      * \param   strResult   On output the string contains a line.
      * \param   startPos    The valid zero-based position to start copying the line. By default it starts from the begging of string.
      * \return  Returns next position where starts non-empty new line or NEString::END_POS if reached end of string.
@@ -854,7 +853,7 @@ protected:
      *              - NEMath::Equal     if strings have equal
      *              - NEMath::Bigger    if string is more than given string.
      *          The comparing can be done by ignoring case sensitivity.
-     * 
+     *
      * \param   startPos        The Valid zero-based position in the string buffer to start comparing.
      * \param   strOther        The string to compare
      * \param   count           The amount of characters to compare or NEString::COUNT_ALL to compare the complete string.
@@ -900,7 +899,7 @@ protected:
 
     /**
      * \brief   Searches the first phrase in string. The comparing is done by exact match.
-     * 
+     *
      * \param   phrase      The phrase to search.
      * \param   startPos    The valid zero-based position in the string to start searching.
      * \return  If found, returns valid position in the string. If not found, it returns NEString::END_POS.
@@ -933,7 +932,7 @@ protected:
     /**
      * \brief   Returns true if specified character is valid for the names. The names may contain
      *          characters, digits and symbols like '_'.
-     * 
+     *
      * \param   checkChar   Character to check.
      * \param   loc         The locale to use when validating.
      * \return  Returns true if specified character is valid for the names.
@@ -1265,81 +1264,6 @@ inline TEString<CharType>& TEString<CharType>::operator += (const CharType chSou
     return (*this);
 }
 
-template<typename CharType>
-inline TEString<CharType> operator + (const TEString<CharType>& lhs, const TEString<CharType>& rhs)
-{
-    TEString<CharType> result(lhs);
-    return (result += rhs);
-}
-
-template<typename CharType>
-inline TEString<CharType> operator + (const TEString<CharType>& lhs, const std::basic_string<CharType>& rhs)
-{
-    TEString<CharType> result(lhs);
-    return (result += rhs);
-}
-
-template<typename CharType>
-inline TEString<CharType> operator + (const TEString<CharType>& lhs, const std::basic_string_view<CharType>& rhs)
-{
-    TEString<CharType> result(lhs);
-    return (result += rhs);
-}
-
-template<typename CharType>
-inline TEString<CharType> operator + (const TEString<CharType>& lhs, const CharType* rhs)
-{
-    TEString<CharType> result(lhs);
-    return (result += rhs);
-}
-
-template<typename CharType>
-inline TEString<CharType> operator + (const TEString<CharType>& lhs, const CharType rhs)
-{
-    TEString<CharType> result(lhs);
-    return (result += rhs);
-}
-
-template<typename CharType>
-inline TEString<CharType> operator + (const std::basic_string<CharType>& lhs, const TEString<CharType>& rhs)
-{
-    TEString<CharType> result(lhs);
-    return (result += rhs);
-}
-
-template<typename CharType>
-inline TEString<CharType> operator + (const std::basic_string_view<CharType>& lhs, const TEString<CharType>& rhs)
-{
-    TEString<CharType> result(lhs);
-    return (result += rhs);
-}
-
-template<typename CharType>
-inline TEString<CharType> operator + (const CharType* lhs, const TEString<CharType>& rhs)
-{
-    TEString<CharType> result(lhs);
-    return (result += rhs);
-}
-
-template<typename CharType>
-inline TEString<CharType> operator + (const CharType lhs, const TEString<CharType>& rhs)
-{
-    TEString<CharType> result(lhs);
-    return (result += rhs);
-}
-
-template<typename CharType>
-inline const IEInStream& operator >> (const IEInStream& stream, TEString<CharType>& input)
-{
-    return (stream >> input.mData);
-}
-
-template<typename CharType>
-inline IEOutStream& operator << (IEOutStream& stream, const TEString<CharType>& output)
-{
-    return (stream << output.mData);
-}
-
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations
 //////////////////////////////////////////////////////////////////////////
@@ -1375,7 +1299,7 @@ inline bool TEString<CharType>::isNumeric(bool signIgnore /*= true*/) const
     // make sure the string is not empty
     if (*src != EmptyChar)
     {
-        std::locale loc(NEString::DEFAULT_LOCALE);
+        std::locale loc(NEString::LOCALE_DEFAULT);
         while (std::isdigit<CharType>(*src, loc))
             ++src;
 
@@ -1388,7 +1312,7 @@ inline bool TEString<CharType>::isNumeric(bool signIgnore /*= true*/) const
 template<typename CharType>
 inline bool TEString<CharType>::isAlphanumeric(void) const
 {
-    std::locale loc(NEString::DEFAULT_LOCALE);
+    std::locale loc(NEString::LOCALE_DEFAULT );
     const CharType* src = mData.c_str();
     while (std::isalnum<CharType>(*src, loc))
         ++src;
@@ -1401,7 +1325,7 @@ inline bool TEString<CharType>::isValidNameChar(const CharType checkChar) const
 {
     // initialize list of symbols for the valid names.
     constexpr CharType symbols[] = { '_', '\0'};
-    return std::isalnum(checkChar, std::locale(NEString::DEFAULT_LOCALE)) || NEString::isOneOf<CharType>(checkChar, symbols);
+    return std::isalnum(checkChar, std::locale(NEString::LOCALE_DEFAULT)) || NEString::isOneOf<CharType>(checkChar, symbols);
 }
 
 template<typename CharType>
@@ -1596,7 +1520,7 @@ NEString::CharPos TEString<CharType>::findFirst( CharType chSearch
     if (isValidPosition(startPos) == false)
         return NEString::INVALID_POS;
 
-    std::locale loc(NEString::DEFAULT_LOCALE);
+    std::locale loc(NEString::LOCALE_DEFAULT);
     const CharType* str = getBuffer(startPos);
     CharType chUpper = caseSensitive ? chSearch : std::toupper(chSearch, loc);
     CharType chLower = caseSensitive ? chSearch : std::tolower(chSearch, loc);
@@ -1642,7 +1566,7 @@ NEString::CharPos TEString<CharType>::findLast(CharType chSearch, NEString::Char
 
     const CharType* begin = getString();
     const CharType* end = getBuffer(startPos);
-    std::locale loc(NEString::DEFAULT_LOCALE);
+    std::locale loc(NEString::LOCALE_DEFAULT);
     CharType chUpper = caseSensitive ? chSearch : std::toupper(chSearch, loc);
     CharType chLower = caseSensitive ? chSearch : std::tolower(chSearch, loc);
 
@@ -2069,7 +1993,7 @@ TEString<CharType>& TEString<CharType>::replace( const std::basic_string<CharTyp
             pos = static_cast<uint32_t>(mData.find(strSearch, pos));
         }
     }
-    
+
     return (*this);
 }
 
@@ -2229,7 +2153,7 @@ inline TEString<CharType>& TEString<CharType>::trimLeft(void)
     if (mData.empty() == false)
     {
         uint32_t count = 0;
-        std::locale loc(NEString::DEFAULT_LOCALE);
+        std::locale loc(NEString::LOCALE_DEFAULT);
         for (const auto& ch : mData)
         {
             if (std::isspace<CharType>(ch, loc) == false)
@@ -2260,7 +2184,7 @@ inline void TEString<CharType>::trimLeft(std::basic_string<CharType>& OUT strRes
     if (mData.empty() == false)
     {
         uint32_t count = 0;
-        std::locale loc(NEString::DEFAULT_LOCALE);
+        std::locale loc(NEString::LOCALE_DEFAULT);
         for (const auto& ch : mData)
         {
             if (std::isspace<CharType>(ch, loc) == false)
@@ -2282,7 +2206,7 @@ inline TEString<CharType>& TEString<CharType>::trimRight(void)
     if (mData.empty() == false)
     {
         uint32_t count = 0;
-        std::locale loc(NEString::DEFAULT_LOCALE);
+        std::locale loc(NEString::LOCALE_DEFAULT);
         for (auto cit = mData.crbegin(); cit != mData.crend(); ++cit)
         {
             if (std::isspace<CharType>(*cit, loc) == false)
@@ -2313,7 +2237,7 @@ inline void TEString<CharType>::trimRight(std::basic_string<CharType>& OUT strRe
     if (mData.empty() == false)
     {
         uint32_t count = 0;
-        std::locale loc(NEString::DEFAULT_LOCALE);
+        std::locale loc(NEString::LOCALE_DEFAULT);
         for (auto cit = mData.crbegin(); cit != mData.crend(); ++cit)
         {
             if (std::isspace<CharType>(*cit, loc) == false)
@@ -2335,7 +2259,7 @@ inline TEString<CharType>& TEString<CharType>::trimAll(void)
     if (mData.empty() == false)
     {
         uint32_t length = static_cast<uint32_t>(mData.length());
-        std::locale loc(NEString::DEFAULT_LOCALE);
+        std::locale loc(NEString::LOCALE_DEFAULT);
 
         uint32_t left = 0;
         for (auto cit = mData.cbegin(); cit != mData.cend(); ++cit)
@@ -2381,7 +2305,7 @@ inline void TEString<CharType>::trimAll(std::basic_string<CharType>& OUT strResu
     if (mData.empty() == false)
     {
         uint32_t length = static_cast<uint32_t>(mData.length());
-        std::locale loc(NEString::DEFAULT_LOCALE);
+        std::locale loc(NEString::LOCALE_DEFAULT);
 
         uint32_t left = 0;
         for (auto cit = mData.cbegin(); cit != mData.cend(); ++cit)
@@ -2513,7 +2437,7 @@ inline NEMath::eCompare TEString<CharType>::compareString( NEString::CharPos sta
             }
             else
             {
-                std::locale loc(NEString::DEFAULT_LOCALE);
+                std::locale loc(NEString::LOCALE_DEFAULT);
 
                 while (count-- > 0)
                 {
@@ -2601,7 +2525,7 @@ inline NEString::CharPos TEString<CharType>::findFirstPhraseIgnoreCase(const std
     else if ((mData.length() - startPos) < phrase.length())
         return NEString::END_POS;
 
-    std::locale loc(NEString::DEFAULT_LOCALE);
+    std::locale loc(NEString::LOCALE_DEFAULT);
     auto it = std::search( mData.begin() + static_cast<uint32_t>(startPos), mData.end()
                          , phrase.begin(), phrase.end()
                          , [&](const CharType& ch1, const CharType& ch2) { return (std::tolower(ch1, loc) == std::tolower(ch2, loc)); }
@@ -2626,7 +2550,7 @@ inline NEString::CharPos TEString<CharType>::findFirstWord(const std::basic_stri
     else if ((mData.length() - startPos) < word.length())
         return NEString::END_POS;
 
-    std::locale loc(NEString::DEFAULT_LOCALE);
+    std::locale loc(NEString::LOCALE_DEFAULT);
 
     NEString::CharPos result = NEString::END_POS;
     while (result == NEString::END_POS)
@@ -2685,6 +2609,84 @@ inline bool TEString<CharType>::isValidNameChar(const CharType checkChar, std::l
     // initialize list of symbols for the valid names.
     constexpr CharType symbols[] = { '_', '\0' };
     return std::isalnum(checkChar, loc) || NEString::isOneOf<CharType>(checkChar, symbols);
+}
+
+//////////////////////////////////////////////////////////////////////////
+// TEString friend operators
+//////////////////////////////////////////////////////////////////////////
+template<typename CT>
+inline TEString<CT> operator + (const TEString<CT>& lhs, const TEString<CT>& rhs)
+{
+    TEString<CT> result(lhs);
+    return (result += rhs);
+}
+
+template<typename CT>
+inline TEString<CT> operator + (const TEString<CT>& lhs, const std::basic_string<CT>& rhs)
+{
+    TEString<CT> result(lhs);
+    return (result += rhs);
+}
+
+template<typename CT>
+inline TEString<CT> operator + (const TEString<CT>& lhs, const std::basic_string_view<CT>& rhs)
+{
+    TEString<CT> result(lhs);
+    return (result += rhs);
+}
+
+template<typename CT>
+inline TEString<CT> operator + (const TEString<CT>& lhs, const CT* rhs)
+{
+    TEString<CT> result(lhs);
+    return (result += rhs);
+}
+
+template<typename CT>
+inline TEString<CT> operator + (const TEString<CT>& lhs, const CT rhs)
+{
+    TEString<CT> result(lhs);
+    return (result += rhs);
+}
+
+template<typename CT>
+inline TEString<CT> operator + (const std::basic_string<CT>& lhs, const TEString<CT>& rhs)
+{
+    TEString<CT> result(lhs);
+    return (result += rhs);
+}
+
+template<typename CT>
+inline TEString<CT> operator + (const std::basic_string_view<CT>& lhs, const TEString<CT>& rhs)
+{
+    TEString<CT> result(lhs);
+    return (result += rhs);
+}
+
+template<typename CT>
+inline TEString<CT> operator + (const CT* lhs, const TEString<CT>& rhs)
+{
+    TEString<CT> result(lhs);
+    return (result += rhs);
+}
+
+template<typename CT>
+inline TEString<CT> operator + (const CT lhs, const TEString<CT>& rhs)
+{
+    TEString<CT> result(lhs);
+    return (result += rhs);
+}
+
+template<typename CT>
+inline const IEInStream& operator >> (const IEInStream& stream, TEString<CT>& input)
+{
+    return (stream >> input.mData);
+}
+
+template<typename CT>
+inline IEOutStream& operator << (IEOutStream& stream, const TEString<CT>& output)
+{
+    return (stream << output.mData);
 }
 
 #endif  // AREG_BASE_TESTRING_HPP

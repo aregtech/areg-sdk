@@ -797,7 +797,7 @@ void NERegistry::ComponentThreadEntry::addComponent( const NERegistry::Component
 
 NERegistry::ComponentEntry & NERegistry::ComponentThreadEntry::addComponent(const char * roleName, FuncCreateComponent funcCreate, FuncDeleteComponent funcDelete)
 {
-    uint32_t index = mComponents.findComponent(roleName);
+    int index = mComponents.findComponent(roleName);
     if ( index == NECommon::INVALID_INDEX )
     {
         index = static_cast<int>(mComponents.mListComponents.getSize());

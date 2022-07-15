@@ -334,12 +334,15 @@ String File::normalizePath( const char * fileName )
     {
         result = File::PATH_SEPARATOR;
         if (list.isEmpty() == false)
-            first = list.removeFirst();
+        {
+            list.removeFirst(first);
+        }
     }
 #endif // !WINDOWS
 
     result += first;
-    for (StringList::LISTPOS pos = list.firstPosition(); list.isValidPosition(pos); pos = list.nextPosition(pos))
+    StringList::LISTPOS end = list.invalidPosition();
+    for (StringList::LISTPOS pos = list.firstPosition(); pos != end; pos = list.nextPosition(pos))
     {
         result.append(File::PATH_SEPARATOR).append(list.valueAtPosition(pos));
     }

@@ -109,7 +109,7 @@ bool ConnectionConfiguration::_parseConnectionConfig(ListProperties & listProp, 
             eConnectionProperty pos = getPosition( key.getProperty( ) );
             if ( pos != eConnectionProperty::PropertyInvalid )
             {
-                listProp[pos] = prop;
+                listProp[static_cast<uint32_t>(pos)] = prop;
             }
         }
         prop.resetData();
@@ -125,7 +125,7 @@ String ConnectionConfiguration::_getPropertyValue( NERemoteService::eServiceConn
         const ListProperties & listProp = mMapConfig.getAt( key );
         if ( listProp.getSize( ) > static_cast<uint32_t>(entryIndex) )
         {
-            const Property & prop = listProp[static_cast<int>(entryIndex)];
+            const Property & prop = listProp[static_cast<uint32_t>(entryIndex)];
             result = prop.getValue( ).getString( );
         }
     }

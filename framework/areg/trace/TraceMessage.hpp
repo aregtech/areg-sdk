@@ -19,7 +19,7 @@
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
 #include "areg/trace/NETrace.hpp"
-#include <stdio.h>
+#include <stdarg.h>
 
 /************************************************************************
  * Dependencies

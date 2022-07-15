@@ -8,7 +8,7 @@
  *
  * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/component/private/ClientList.cpp
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
+ * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit
  * \author      Artak Avetyan
  * \brief       AREG Platform, Client List implementation
  *
@@ -86,7 +86,7 @@ void ClientList::serverAvailable( const ServerInfo & whichServer, ClientList & o
 }
 
 void ClientList::serverUnavailable( ClientList & out_clientList )
-{    
+{
     for (LISTPOS pos = firstPosition(); isValidPosition(pos); ++pos )
     {
         ClientInfo & client = valueAtPosition( pos );

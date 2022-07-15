@@ -166,8 +166,8 @@ public:
      * \param   stream  The streaming object for reading values
      * \param   input   The Linked List object to save initialized values.
      **/
-    template<typename VALUE>
-    friend const IEInStream& operator >> (const IEInStream& stream, TESortedLinkedList<VALUE>& input);
+    template<typename V>
+    friend const IEInStream& operator >> (const IEInStream& stream, TESortedLinkedList<V>& input);
     /**
      * \brief   Writes to the stream Linked List values.
      *          The values will be written to the stream starting from head position.
@@ -176,8 +176,8 @@ public:
      * \param   stream  The streaming object to write values
      * \param   input   The Linked List object to read out values.
      **/
-    template<typename VALUE>
-    friend IEOutStream& operator << (IEOutStream& stream, const TESortedLinkedList<VALUE>& output);
+    template<typename V>
+    friend IEOutStream& operator << (IEOutStream& stream, const TESortedLinkedList<V>& output);
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -333,25 +333,20 @@ public:
      * \return	If element at given position has previous element, returns position of previous element in Linked List.
      *          Otherwise it returns nullptr
      **/
-    inline LISTPOS prevPosition(LISTPOS atPosition) const;
+    inline LISTPOS prevPosition(const LISTPOS atPosition) const;
 
     /**
      * \brief   Returns value of element at the give position.
-     *          On input, the value of atPosition should be valid.
-     *          Returned value should not be modified.
+     *
      * \param   atPosition  The valid position in Linked List
-     * \return  Returns Value at given position.
-     *          The returned value should not be modified
+     * \return  Returns Value at given position, which should not be modified.
      **/
-    inline const VALUE& valueAtPosition(LISTPOS atPosition) const;
+    inline const VALUE& valueAtPosition(const LISTPOS atPosition) const;
     /**
      * \brief   Returns value of element at the give position.
-     *          On input, the value of in_pos should be valid.
-     *          Otherwise assertion is raised.
-     *          Returned value can be modified.
+     *
      * \param   atPosition  The valid position in Linked List
-     * \return  Returns Value at given position.
-     *          The returned value can be modified
+     * \return  Returns Value at given position, which can be modified.
      **/
     inline VALUE& valueAtPosition(LISTPOS atPosition);
 
@@ -582,7 +577,7 @@ protected:
     /**
      * \brief   The sorting criteria of linked list.
      **/
-    NECommon::eSort mSorting;
+    NECommon::eSort     mSorting;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -591,7 +586,7 @@ protected:
 
 template <typename VALUE >
 TESortedLinkedList<VALUE>::TESortedLinkedList(bool sortAscending /*= true*/)
-    : Constless ( )
+    : Constless<std::list<VALUE>> ( )
     , mValueList( )
     , mSorting  (sortAscending ? NECommon::eSort::SortAscending : NECommon::eSort::SortDescending )
 {
@@ -664,7 +659,7 @@ inline uint32_t TESortedLinkedList<VALUE>::getSize(void) const
 template<typename VALUE>
 inline bool TESortedLinkedList<VALUE>::isAscending( void ) const
 {
-    return (mSorting == NECommon::eSort::SortAcceding);
+    return (mSorting == NECommon::eSort::SortAscending);
 }
 
 template<typename VALUE>
@@ -676,15 +671,15 @@ inline bool TESortedLinkedList<VALUE>::isDescending(void) const
 template <typename VALUE >
 inline typename TESortedLinkedList<VALUE>::LISTPOS TESortedLinkedList<VALUE>::firstPosition(void) const
 {
-    std::list<VALUE>::const_iterator cit = mValueList.begin();
-    return iter(mValueList, cit);
+	auto cit = mValueList.begin();
+    return Constless<std::list<VALUE>>::iter(mValueList, cit);
 }
 
 template <typename VALUE >
 inline typename TESortedLinkedList<VALUE>::LISTPOS TESortedLinkedList<VALUE>::lastPosition(void) const
 {
-    std::list<VALUE>::const_iterator cit = mValueList.empty() == false ? --mValueList.end() : mValueList.end();
-    return iter(mValueList, cit);
+	auto cit = mValueList.empty() == false ? --mValueList.end() : mValueList.end();
+    return Constless<std::list<VALUE>>::iter(mValueList, cit);
 }
 
 template <typename VALUE >
@@ -702,7 +697,7 @@ inline bool TESortedLinkedList<VALUE>::isLastPosition(const TESortedLinkedList<V
 template <typename VALUE >
 inline typename TESortedLinkedList<VALUE>::LISTPOS TESortedLinkedList<VALUE>::invalidPosition(void) const
 {
-    return Constless::iter(mValueList, mValueList.end());
+    return Constless<std::list<VALUE>>::iter(mValueList, mValueList.end());
 }
 
 template <typename VALUE >
@@ -720,7 +715,7 @@ inline bool TESortedLinkedList<VALUE>::isValidPosition(const TESortedLinkedList<
 template <typename VALUE >
 inline bool TESortedLinkedList<VALUE>::checkPosition(const TESortedLinkedList<VALUE>::LISTPOS pos) const
 {
-    std::list<VALUE>::const_iterator it = mValueList.begin();
+	auto it = mValueList.begin();
     while ((it != mValueList.end()) && (it != pos))
         ++it;
 
@@ -819,7 +814,7 @@ inline typename TESortedLinkedList<VALUE>::LISTPOS TESortedLinkedList<VALUE>::pr
 }
 
 template <typename VALUE >
-inline const VALUE& TESortedLinkedList<VALUE>::valueAtPosition(TESortedLinkedList<VALUE>::LISTPOS atPosition) const
+inline const VALUE& TESortedLinkedList<VALUE>::valueAtPosition(const TESortedLinkedList<VALUE>::LISTPOS atPosition) const
 {
     ASSERT(atPosition != mValueList.end());
     return *atPosition;
@@ -870,7 +865,7 @@ bool TESortedLinkedList<VALUE>::prevEntry(TESortedLinkedList<VALUE>::LISTPOS& in
 {
     bool result = false;
     ASSERT(in_out_PrevPosition != mValueList.end());
-    in_out_NextPosition = prevPosition(in_out_PrevPosition);
+    in_out_PrevPosition = prevPosition(in_out_PrevPosition);
     if (in_out_PrevPosition != mValueList.end())
     {
         out_PrevValue = *in_out_PrevPosition;
@@ -925,12 +920,12 @@ bool TESortedLinkedList<VALUE>::removeLast(VALUE& value)
 template <typename VALUE >
 typename TESortedLinkedList<VALUE>::LISTPOS TESortedLinkedList<VALUE>::add(const VALUE& newElement)
 {
-    std::list<VALUE>::const_iterator it = mValueList.begin();
+	auto it = mValueList.begin();
     if ( mSorting == NECommon::eSort::SortAscending )
     {
         for (; it != mValueList.end(); ++it)
         {
-            if (*it > newEleemnet)
+            if (*it > newElement)
                 break;
         }
     }
@@ -949,12 +944,12 @@ typename TESortedLinkedList<VALUE>::LISTPOS TESortedLinkedList<VALUE>::add(const
 template <typename VALUE >
 typename TESortedLinkedList<VALUE>::LISTPOS TESortedLinkedList<VALUE>::add(VALUE&& newElement)
 {
-    std::list<VALUE>::const_iterator it = mValueList.begin();
+	auto it = mValueList.begin();
     if (mSorting == NECommon::eSort::SortAscending)
     {
         for (; it != mValueList.end(); ++it)
         {
-            if (*it > newEleemnet)
+            if (*it > newElement)
                 break;
         }
     }
@@ -973,7 +968,7 @@ typename TESortedLinkedList<VALUE>::LISTPOS TESortedLinkedList<VALUE>::add(VALUE
 template <typename VALUE >
 typename TESortedLinkedList<VALUE>::LISTPOS TESortedLinkedList<VALUE>::addIfUnique(const VALUE& newElement)
 {
-    std::list<VALUE>::const_iterator it = mValueList.begin();
+	auto it = mValueList.begin();
     if (mSorting == NECommon::eSort::SortAscending)
     {
         while ((it != mValueList.end()) && (*it < newElement))
@@ -995,7 +990,7 @@ typename TESortedLinkedList<VALUE>::LISTPOS TESortedLinkedList<VALUE>::addIfUniq
 template <typename VALUE >
 typename TESortedLinkedList<VALUE>::LISTPOS TESortedLinkedList<VALUE>::addIfUnique(VALUE&& newElement)
 {
-    std::list<VALUE>::const_iterator it = mValueList.begin();
+    auto it = mValueList.begin();
     if (mSorting == NECommon::eSort::SortAscending)
     {
         while ((it != mValueList.end()) && (*it < newElement))
@@ -1096,7 +1091,7 @@ template <typename VALUE >
 typename TESortedLinkedList<VALUE>::LISTPOS TESortedLinkedList<VALUE>::find(const VALUE& searchValue) const
 {
     auto it = std::find(mValueList.begin(), mValueList.end(), searchValue);
-    return Constless::iter(mValueList, it);
+    return Constless<std::list<VALUE>>::iter(mValueList, it);
 }
 
 template <typename VALUE >
@@ -1115,7 +1110,7 @@ bool TESortedLinkedList<VALUE>::contains(const VALUE& Value) const
 template <typename VALUE >
 typename TESortedLinkedList<VALUE>::LISTPOS TESortedLinkedList<VALUE>::findIndex(uint32_t index) const
 {
-    return Constless::iter(mValueList, index < static_cast<uint32_t>(mValueList.size()) ? mValueList.begin() + index : mValueList.end());
+    return Constless<std::list<VALUE>>::iter(mValueList, index < static_cast<uint32_t>(mValueList.size()) ? mValueList.begin() + index : mValueList.end());
 }
 
 template <typename VALUE >
@@ -1138,7 +1133,7 @@ void TESortedLinkedList<VALUE>::resort(bool sortAscending /*= true*/)
     {
         std::list<VALUE> temp(std::move(mValueList));
         mValueList.clear();
-        mSorting = newSorting;
+        mSorting = newSort;
 
         for (auto& elem : temp)
         {
@@ -1150,12 +1145,12 @@ void TESortedLinkedList<VALUE>::resort(bool sortAscending /*= true*/)
 template <typename VALUE >
 inline typename TESortedLinkedList<VALUE>::LISTPOS TESortedLinkedList<VALUE>::getPosition(uint32_t index) const
 {
-    typename std::list<VALUE>::const_iterator pos = index < static_cast<uint32_t>(mValueList.size()) ? mValueList.begin() : mValueList.end();
+    auto pos = index < static_cast<uint32_t>(mValueList.size()) ? mValueList.begin() : mValueList.end();
     uint32_t count = index + 1;
     for (uint32_t i = 1; i < count; ++i)
         ++pos;
 
-    return Constless::iter(mValueList, pos);
+    return Constless<std::list<VALUE>>::iter(mValueList, pos);
 }
 
 template <typename VALUE >
@@ -1168,8 +1163,8 @@ inline typename TESortedLinkedList<VALUE>::LISTPOS TESortedLinkedList<VALUE>::ge
 // Friend function implementation
 //////////////////////////////////////////////////////////////////////////
 
-template <typename VALUE>
-const IEInStream& operator >> (const IEInStream& stream, TESortedLinkedList<VALUE>& input)
+template <typename V>
+const IEInStream& operator >> (const IEInStream& stream, TESortedLinkedList<V>& input)
 {
     input.clear();
 
@@ -1184,8 +1179,8 @@ const IEInStream& operator >> (const IEInStream& stream, TESortedLinkedList<VALU
     return stream;
 }
 
-template <typename VALUE>
-IEOutStream& operator << (IEOutStream& stream, const TESortedLinkedList<VALUE>& output)
+template <typename V>
+IEOutStream& operator << (IEOutStream& stream, const TESortedLinkedList<V>& output)
 {
     uint32_t size = output.getSize();
     stream << size;

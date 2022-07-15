@@ -440,7 +440,7 @@ inline void TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, HashM
 {
     Lock lock( mSynchObj );
 
-    HashMap::MAPPOS pos = HashMap::find(Key);
+    typename HashMap::MAPPOS pos = HashMap::find(Key);
     if (HashMap::isValidPosition(pos))
     {
         ResourceList & resList = HashMap::valueAtPosition(pos);
@@ -487,7 +487,7 @@ inline ResourceList * TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, ResourceL
 {
     Lock lock( mSynchObj );
 
-    HashMap::MAPPOS pos = HashMap::find( Key );
+    typename HashMap::MAPPOS pos = HashMap::find( Key );
     return (HashMap::isValidPosition(pos) ? &HashMap::valueAtPosition(pos) : nullptr);
 }
 
@@ -500,7 +500,7 @@ inline const ResourceList * TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, Res
 {
     Lock lock( mSynchObj );
 
-    HashMap::MAPPOS pos = HashMap::find( Key );
+    typename HashMap::MAPPOS pos = HashMap::find( Key );
     return (HashMap::isValidPosition(pos) ? &HashMap::valueAtPosition(pos) : nullptr);
 }
 
@@ -513,7 +513,7 @@ inline ResourceList * TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, ResourceL
 {
     Lock lock( mSynchObj );
 
-    HashMap::MAPPOS pos = HashMap::find( Key );
+    typename HashMap::MAPPOS pos = HashMap::find( Key );
     return (HashMap::isValidPosition(pos) ? &HashMap::valueAtPosition(pos) : nullptr);
 }
 
@@ -526,7 +526,7 @@ inline const ResourceList * TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, Res
 {
     Lock lock( mSynchObj );
 
-    HashMap::MAPPOS pos = HashMap::find( Key );
+    typename HashMap::MAPPOS pos = HashMap::find( Key );
     return (HashMap::isValidPosition(pos) ? &HashMap::valueAtPosition(pos) : nullptr);
 }
 
@@ -540,7 +540,7 @@ inline bool TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, HashM
     Lock lock( mSynchObj );
 
     bool result = false;
-    for (HashMap::MAPPOS pos = HashMap::firstPosition( ); HashMap::isValidPosition(pos); )
+    for (typename HashMap::MAPPOS pos = HashMap::firstPosition( ); HashMap::isValidPosition(pos); )
     {
         ResourceList & list = HashMap::valueAtPosition( pos );
         if ( removeResourceObject(list, Resource) )
@@ -570,7 +570,7 @@ inline void TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, HashM
 {
     Lock lock( mSynchObj );
 
-    for (HashMap::MAPPOS pos = HashMap::firstPosition( ); HashMap::isValidPosition(pos); pos = HashMap::nextPosition( pos ) )
+    for (typename HashMap::MAPPOS pos = HashMap::firstPosition( ); HashMap::isValidPosition(pos); pos = HashMap::nextPosition( pos ) )
     {
         cleanResourceList(pos->first, pos->second);
     }

@@ -9,15 +9,15 @@
 
 #if	defined(_POSIX) || defined(POSIX)
 
-#include <stdio.h>
-#include <dirent.h>
-#include <unistd.h>
 #include "areg/base/File.hpp"
 #include "areg/base/String.hpp"
 #include "areg/base/Process.hpp"
 #include "areg/trace/GETrace.h"
 
+#include <dirent.h>
+#include <stdio.h>
 #include <signal.h>
+#include <unistd.h>
 
 namespace
 {
@@ -27,11 +27,11 @@ int _getProcIdByName(const char * procName)
     constexpr char const dirProc[]    { "/proc" };
     int pid = -1;
 
+    DIR* dir = opendir(dirProc);
     char* buffer = dir != nullptr ? DEBUG_NEW char[File::MAXIMUM_PATH + 1] : nullptr;
     if ((buffer == nullptr) || NEString::isEmpty<char>(procName))
         return pid;
 
-    DIR* dir = opendir(dirProc);
     for (struct dirent* dirEntry = readdir(dir); (pid < 0) && (dirEntry != nullptr); dirEntry = readdir(dir))
     {
         // skip non-numeric directories.
@@ -48,7 +48,7 @@ int _getProcIdByName(const char * procName)
                     if (NEString::isPositionValid(pos))
                     {
                         char* name = buffer + pos + 1;
-                        if (NEString::compareFastIgnoreCase<char, char>(procName, name) == 0)
+                        if (NEString::compareFastIgnoreCase<char, char>(procName, name) == NEMath::eCompare::Equal)
                         {
                             pid = NEString::makeInteger<char>(dirEntry->d_name, nullptr);
                         }

@@ -193,8 +193,7 @@ bool String::operator == (const std::wstring& other) const
 bool String::operator == (const wchar_t* other) const
 {
     bool result = false;
-    uint32_t len = static_cast<uint32_t>(wcslen(other));
-    if (getLength() == len)
+    if (getLength() == static_cast<NEString::CharCount>(wcslen(other)))
     {
         result = isEqual(getString(), other);
     }
@@ -205,8 +204,7 @@ bool String::operator == (const wchar_t* other) const
 bool String::operator != (const wchar_t* other) const
 {
     bool result = true;
-    uint32_t len = static_cast<uint32_t>(wcslen(other));
-    if (getLength() == len)
+    if (getLength() == static_cast<NEString::CharCount>(wcslen(other)))
     {
         result = isEqual(getString(), other) == false;
     }
@@ -247,7 +245,7 @@ String String::getSubstring(const char * src, const char * strPhrase, const char
     String result;
     if ( out_next != nullptr )
     {
-        *out_next = EmptyChar;
+        *out_next = nullptr;
     }
 
     if (NEString::isEmpty<char>(src) == false)

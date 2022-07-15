@@ -159,8 +159,8 @@ public:
      * \param   stream  The streaming object to read values.
      * \param   input   The linked list object to save initialized values.
      **/
-    template<typename VALUE>
-    friend inline const IEInStream & operator >> ( const IEInStream & stream, TELinkedList<VALUE> & input );
+    template<typename V>
+    friend inline const IEInStream & operator >> ( const IEInStream & stream, TELinkedList<V> & input );
 
     /**
      * \brief   Writes to the stream the values of linked list.
@@ -170,8 +170,8 @@ public:
      * \param   stream  The stream to write values.
      * \param   input   The linked list object containing value to stream.
      **/
-    template<typename VALUE>
-    friend inline IEOutStream & operator << ( IEOutStream & stream, const TELinkedList<VALUE> & output );
+    template<typename V>
+    friend inline IEOutStream & operator << ( IEOutStream & stream, const TELinkedList<V> & output );
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -322,7 +322,7 @@ public:
      * \param   atPosition  The valid position in Linked List
      **/
     inline VALUE& valueAtPosition(LISTPOS atPosition);
-    inline const VALUE & valueAtPosition( LISTPOS atPosition ) const;
+    inline const VALUE & valueAtPosition( const LISTPOS atPosition ) const;
 
     /**
      * \brief   Returns element value by valid zero-based index, which can be used by left (l-value) and
@@ -574,13 +574,13 @@ inline const VALUE & TELinkedList<VALUE>::operator [] ( const LISTPOS atPosition
 }
 
 template <typename VALUE >
-inline bool TELinkedList<VALUE>::isEmpty( void ) const	
+inline bool TELinkedList<VALUE>::isEmpty( void ) const
 {
     return mValueList.empty();
 }
 
 template <typename VALUE >
-inline uint32_t TELinkedList<VALUE>::getSize( void ) const	
+inline uint32_t TELinkedList<VALUE>::getSize( void ) const
 {
     return static_cast<uint32_t>(mValueList.size());
 }
@@ -588,15 +588,15 @@ inline uint32_t TELinkedList<VALUE>::getSize( void ) const
 template <typename VALUE >
 inline typename TELinkedList<VALUE>::LISTPOS TELinkedList<VALUE>::firstPosition( void ) const
 {
-    std::list<VALUE>::const_iterator cit = mValueList.begin();
-    return iter(mValueList, cit);
+    auto cit = mValueList.begin();
+    return Constless<std::list<VALUE>>::iter(mValueList, cit);
 }
 
 template <typename VALUE >
 inline typename TELinkedList<VALUE>::LISTPOS TELinkedList<VALUE>::lastPosition( void ) const
 {
-    std::list<VALUE>::const_iterator cit = mValueList.empty() == false ? --mValueList.end() : mValueList.end();
-    return iter(mValueList, cit);
+    auto cit = mValueList.empty() == false ? --mValueList.end() : mValueList.end();
+    return Constless<std::list<VALUE>>::iter(mValueList, cit);
 }
 
 template <typename VALUE >
@@ -614,7 +614,8 @@ inline bool TELinkedList<VALUE>::isLastPosition(const LISTPOS pos) const
 template <typename VALUE >
 inline typename TELinkedList<VALUE>::LISTPOS TELinkedList<VALUE>::invalidPosition(void) const
 {
-    return Constless::iter(mValueList, mValueList.end());
+	auto end = mValueList.end();
+    return Constless<std::list<VALUE>>::iter(mValueList, end);
 }
 
 template <typename VALUE >
@@ -632,7 +633,7 @@ inline bool TELinkedList<VALUE>::isValidPosition(const LISTPOS pos) const
 template <typename VALUE >
 inline bool TELinkedList<VALUE>::checkPosition(const LISTPOS pos) const
 {
-    std::list<VALUE>::const_iterator it = mValueList.begin();
+    auto it = mValueList.begin();
     while ((it != mValueList.end()) && (it != pos))
         ++it;
 
@@ -731,7 +732,7 @@ inline typename TELinkedList<VALUE>::LISTPOS TELinkedList<VALUE>::prevPosition(L
 }
 
 template <typename VALUE >
-inline const VALUE & TELinkedList<VALUE>::valueAtPosition( LISTPOS atPosition ) const
+inline const VALUE & TELinkedList<VALUE>::valueAtPosition( const LISTPOS atPosition ) const
 {
     ASSERT(atPosition != mValueList.end());
     return *atPosition;
@@ -749,7 +750,7 @@ inline const VALUE & TELinkedList<VALUE>::getAt(uint32_t index) const
 {
     LISTPOS pos = getPosition(index);
     ASSERT(isValidPosition(pos));
-    
+
     return *pos;
 }
 
@@ -782,7 +783,7 @@ inline bool TELinkedList<VALUE>::prevEntry(LISTPOS& IN OUT in_out_PrevPosition, 
 {
     bool result = false;
     ASSERT(in_out_PrevPosition != mValueList.end());
-    in_out_NextPosition = prevPosition(in_out_PrevPosition);
+    in_out_PrevPosition = prevPosition(in_out_PrevPosition);
     if (in_out_PrevPosition != mValueList.end())
     {
         out_PrevValue = *in_out_PrevPosition;
@@ -964,7 +965,7 @@ inline typename TELinkedList<VALUE>::LISTPOS TELinkedList<VALUE>::insertAfter(LI
     }
     else
     {
-        std::list<VALUE>::const_iterator cit(afterPosition);
+        auto cit(afterPosition);
         return mValueList.insert(++cit, std::move(newElement));
     }
 }
@@ -1033,7 +1034,7 @@ template <typename VALUE >
 inline typename TELinkedList<VALUE>::LISTPOS TELinkedList<VALUE>::find(const VALUE& searchValue) const
 {
     auto it = std::find(mValueList.begin(), mValueList.end(), searchValue);
-    return Constless::iter(mValueList, it);
+    return Constless<std::list<VALUE>>::iter(mValueList, it);
 }
 
 template <typename VALUE >
@@ -1058,7 +1059,7 @@ inline bool TELinkedList<VALUE>::contains(const VALUE& elemSearch, LISTPOS start
 template <typename VALUE >
 inline typename TELinkedList<VALUE>::LISTPOS TELinkedList<VALUE>::findIndex(uint32_t index) const
 {
-    return Constless::iter(mValueList, index < static_cast<uint32_t>(mValueList.size()) ? mValueList.begin() + index : mValueList.end());
+    return Constless<std::list<VALUE>>::iter(mValueList, index < static_cast<uint32_t>(mValueList.size()) ? mValueList.begin() + index : mValueList.end());
 }
 
 template <typename VALUE >
@@ -1093,7 +1094,7 @@ inline typename TELinkedList<VALUE>::LISTPOS TELinkedList<VALUE>::getPosition(ui
     for (uint32_t i = 1; i < count; ++i)
         ++pos;
 
-    return Constless::iter(mValueList, pos);
+    return Constless<std::list<VALUE>>::iter(mValueList, pos);
 }
 
 template <typename VALUE >
@@ -1106,8 +1107,8 @@ inline typename TELinkedList<VALUE>::LISTPOS TELinkedList<VALUE>::getPosition(ui
 // Friend function implementation
 //////////////////////////////////////////////////////////////////////////
 
-template <typename VALUE> 
-inline const IEInStream & operator >> ( const IEInStream & stream, TELinkedList<VALUE> & input )
+template <typename V>
+inline const IEInStream & operator >> ( const IEInStream & stream, TELinkedList<V> & input )
 {
     input.clear();
 
@@ -1122,8 +1123,8 @@ inline const IEInStream & operator >> ( const IEInStream & stream, TELinkedList<
     return stream;
 }
 
-template <typename VALUE> 
-inline IEOutStream & operator << ( IEOutStream & stream, const TELinkedList<VALUE> & output )
+template <typename V>
+inline IEOutStream & operator << ( IEOutStream & stream, const TELinkedList<V> & output )
 {
     uint32_t size = output.getSize();
     stream << size;

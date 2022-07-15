@@ -10,7 +10,7 @@
  *
  * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/base/TEArrayList.hpp
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
+ * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit
  * \author      Artak Avetyan
  * \brief       AREG Platform, Array List class template
  *              This class template defines array of elements.
@@ -24,12 +24,13 @@
 #include "areg/base/GEGlobal.h"
 
 #include "areg/base/TETemplateBase.hpp"
+#include <vector>
 
 #include "areg/base/NECommon.hpp"
 #include "areg/base/NEMemory.hpp"
 #include "areg/base/IEIOStream.hpp"
 
-#include <vector>
+#include <algorithm>
 
 //////////////////////////////////////////////////////////////////////////
 // TEArrayList< VALUE > class template declaration
@@ -39,11 +40,11 @@
  * \brief   Array List has general functionalities to access, insert, move, find
  *          and copy elements. The elements of array are fast accessed for read
  *          and modification by using index. Use add() method if to add new element.
- * 
- *          The type VALUE should have at least default constructor, applicable 
- *          comparing and assigning operators. The TEArrayList object is not 
+ *
+ *          The type VALUE should have at least default constructor, applicable
+ *          comparing and assigning operators. The TEArrayList object is not
  *          thread safe and data access should be synchronized manually.
- * 
+ *
  *          For performance issue, it is recommended to pass capacity value
  *          in constructor to define initial reserved space for array.
  *          By default, the capacity is NECommon::ARRAY_DEFAULT_CAPACITY.
@@ -156,8 +157,8 @@ public:
      * \param   stream  The streaming object to read values.
      * \param   input   The array object to save initialized values.
      **/
-    template <typename VALUE>
-    friend const IEInStream & operator >> (const IEInStream & stream, TEArrayList< VALUE > & input);
+    template <typename V>
+    friend const IEInStream & operator >> (const IEInStream & stream, TEArrayList< V > & input);
 
     /**
      * \brief   Writes to the stream the values of array.
@@ -167,8 +168,8 @@ public:
      * \param   stream  The stream to write values.
      * \param   input   The array object containing value to stream.
      **/
-    template <typename VALUE>
-    friend IEOutStream & operator << (IEOutStream & stream, const TEArrayList< VALUE > & output);
+    template <typename V>
+    friend IEOutStream & operator << (IEOutStream & stream, const TEArrayList< V > & output);
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes
@@ -234,6 +235,13 @@ public:
      **/
     inline void setAt( uint32_t index, const VALUE & newElement );
     inline void setAt(uint32_t index, VALUE && newElement);
+
+    /**
+     * \brief   Returns element value by valid zero-based index.
+     * \param   atPosition  Zero-based valid position in array.
+     **/
+    inline const VALUE& valueAtPosition(const uint32_t atPosition) const;
+    inline VALUE& valueAtPosition(uint32_t atPosition);
 
     /**
      * \brief   Returns array of values, which cannot be modified.
@@ -411,7 +419,7 @@ protected:
 
 template<typename VALUE >
 TEArrayList< VALUE >::TEArrayList(uint32_t capacity /*= NECommon::ARRAY_DEFAULT_CAPACITY*/)
-    : Constless ( )
+    : Constless<std::vector<VALUE>>( )
     , mValueList( )
 {
     if (capacity != 0)
@@ -453,7 +461,7 @@ inline void TEArrayList< VALUE >::freeExtra( void )
 template<typename VALUE >
 inline void TEArrayList< VALUE >::release(void)
 {
-    mValudList.clear();
+	mValueList.clear();
     mValueList.shrink_to_fit();
 }
 
@@ -509,6 +517,20 @@ inline void TEArrayList< VALUE >::setAt(uint32_t index, VALUE && newElement)
     }
 #endif // DEBUG
 
+}
+
+template<typename VALUE >
+inline const VALUE & TEArrayList< VALUE >::valueAtPosition( const uint32_t atPosition ) const
+{
+    ASSERT( isValidIndex( atPosition ) );
+    return mValueList.at( atPosition );
+}
+
+template<typename VALUE >
+inline VALUE& TEArrayList< VALUE >::valueAtPosition( uint32_t atPosition )
+{
+    ASSERT( isValidIndex( atPosition ) );
+    return mValueList.at( atPosition );
 }
 
 template<typename VALUE >
@@ -819,27 +841,28 @@ inline void TEArrayList< VALUE >::setSize(uint32_t elemCount)
 template<typename VALUE >
 inline const typename TEArrayList< VALUE >::ARRAYPOS TEArrayList< VALUE >::getPosition(uint32_t index) const
 {
-    return Constless::iter(mValueList, index < static_cast<uint32_t>(mValueList.size()) ? mValueList.begin() + index : mValueList.end());
+    return Constless<std::vector<VALUE>>::iter(mValueList, index < static_cast<uint32_t>(mValueList.size()) ? mValueList.begin() + index : mValueList.end());
 }
 
 template<typename VALUE >
 inline typename TEArrayList< VALUE >::ARRAYPOS TEArrayList< VALUE >::getPosition(uint32_t index)
 {
-    return Constless::iter(mValueList, index < static_cast<uint32_t>(mValueList.size()) ? mValueList.begin() + index : mValueList.end());
+	auto it = index < static_cast<uint32_t>(mValueList.size()) ? mValueList.begin() + index : mValueList.end();
+    return Constless<std::vector<VALUE>>::iter(mValueList, it);
 }
 
 //////////////////////////////////////////////////////////////////////////
 // Friend function implementation
 //////////////////////////////////////////////////////////////////////////
 
-template<typename VALUE>
-const IEInStream & operator >> ( const IEInStream & stream, TEArrayList< VALUE > & input )
+template<typename V>
+const IEInStream & operator >> ( const IEInStream & stream, TEArrayList< V > & input )
 {
     uint32_t size = 0;
     stream >> size;
     input.setSize( size );
  
-    for (VALUE & elem : input.mValueList)
+    for (auto & elem : input.mValueList)
     {
         stream >> elem;
     }
@@ -847,11 +870,11 @@ const IEInStream & operator >> ( const IEInStream & stream, TEArrayList< VALUE >
     return stream;
 }
 
-template<typename VALUE>
-IEOutStream & operator << ( IEOutStream& stream, const TEArrayList< VALUE >& output )
+template<typename V>
+IEOutStream & operator << ( IEOutStream& stream, const TEArrayList< V >& output )
 {
     stream << output.getSize();
-    for (const VALUE & elem : output.mValueList)
+    for (const auto & elem : output.mValueList)
     {
         stream << elem;
     }

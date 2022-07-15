@@ -63,7 +63,7 @@
  *              matrix[0][0] = 1; matrix[0][1] = 2; matrix[0][3] = 3;
  *              matrix[1][0] = 1; matrix[1][1] = 2;
  *              matrix[2][0] = 1;
- *              
+ *
  **/
 template<typename VALUE>
 class TEFixedArray
@@ -165,8 +165,8 @@ public:
      * \param   stream  The streaming object to read values.
      * \param   input   The fixed array object to save initialized values.
      **/
-    template<typename VALUE>
-    friend const IEInStream & operator >> ( const IEInStream & stream, TEFixedArray<VALUE> & input );
+    template<typename V>
+    friend const IEInStream & operator >> ( const IEInStream & stream, TEFixedArray<V> & input );
     /**
      * \brief   Writes to the stream the values of fixed array.
      *          The values will be written to the stream starting from firs entry.
@@ -175,8 +175,8 @@ public:
      * \param   stream  The stream to write values.
      * \param   input   The fixed array object containing value to stream.
      **/
-    template<typename VALUE>
-    friend IEOutStream & operator << ( IEOutStream & stream, const TEFixedArray<VALUE> & output );
+    template<typename V>
+    friend IEOutStream & operator << ( IEOutStream & stream, const TEFixedArray<V> & output );
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes
@@ -232,6 +232,13 @@ public:
      **/
     inline void setAt(uint32_t index, const VALUE& newElement);
     inline void setAt(uint32_t index, VALUE && newElement);
+
+    /**
+     * \brief   Returns element value by valid zero-based index.
+     * \param   atPosition  Zero-based valid position in array.
+     **/
+    inline const VALUE& valueAtPosition( const uint32_t atPosition ) const;
+    inline VALUE& valueAtPosition( uint32_t atPosition );
 
     /**
      * \brief   Returns array of values, which cannot be modified.
@@ -436,6 +443,20 @@ inline void TEFixedArray<VALUE>::setAt(uint32_t index, VALUE && newValue)
     mValueList[index] = std::move(newValue);
 }
 
+template<typename VALUE >
+inline const VALUE & TEFixedArray< VALUE >::valueAtPosition( const uint32_t atPosition ) const
+{
+    ASSERT( isValidIndex( atPosition ) );
+    return static_cast<const VALUE&>(mValueList[atPosition]);
+}
+
+template<typename VALUE >
+inline VALUE& TEFixedArray< VALUE >::valueAtPosition( uint32_t atPosition )
+{
+    ASSERT( isValidIndex( atPosition ) );
+    return mValueList[atPosition];
+}
+
 template< typename VALUE >
 inline const VALUE* TEFixedArray<VALUE>::getValues( void ) const
 {
@@ -508,8 +529,8 @@ inline void TEFixedArray<VALUE>::resize(uint32_t newLength)
 // Friend function implementation
 //////////////////////////////////////////////////////////////////////////
 
-template<typename VALUE>
-const IEInStream & operator >> ( const IEInStream & stream, TEFixedArray<VALUE> & input )
+template<typename V>
+const IEInStream & operator >> ( const IEInStream & stream, TEFixedArray<V> & input )
 {
     uint32_t size = 0;
     stream >> size;
@@ -524,8 +545,8 @@ const IEInStream & operator >> ( const IEInStream & stream, TEFixedArray<VALUE> 
     return stream;
 }
 
-template<typename VALUE>
-IEOutStream & operator << ( IEOutStream & stream, const TEFixedArray<VALUE> & output )
+template<typename V>
+IEOutStream & operator << ( IEOutStream & stream, const TEFixedArray<V> & output )
 {
     stream << output.mElemCount;
     for (uint32_t i = 0; i < output.mElemCount; ++ i )

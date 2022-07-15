@@ -10,11 +10,11 @@
  *
  * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/base/TEStack.hpp
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
+ * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit
  * \author      Artak Avetyan
  * \brief       AREG Platform, FIFO Stack class templates.
  *              Blocking and non-blocking FIFO Stacks, used to queue
- *              elements in the Stack without searching elements, 
+ *              elements in the Stack without searching elements,
  *              accessing by position or index.
  *
  ************************************************************************/
@@ -22,13 +22,14 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
-#include "areg/base/SynchObjects.hpp"
 #include "areg/base/TETemplateBase.hpp"
+#include <deque>
 
+#include "areg/base/SynchObjects.hpp"
 #include "areg/base/IEIOStream.hpp"
 
+#include <algorithm>
 #include <utility>
-#include <deque>
 
 /************************************************************************
  * Hierarchies. Following class are declared.
@@ -41,14 +42,14 @@ template <typename VALUE> class TEStack;
 // TEStack<VALUE> class template declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   Simple FIFO Stack base object to queue elements, insert and 
- *          access by push and pop operations. TEStack requires instance 
+ * \brief   Simple FIFO Stack base object to queue elements, insert and
+ *          access by push and pop operations. TEStack requires instance
  *          of resource lock object to synchronize access of stack elements.
  *          Whether the Stack is thread safe or not, depends on type of
  *          synchronization object passed in stack.
- * 
- * \tparam  VALUE   The type of stored items. Either should be primitive 
- *                  or should have default constructor and valid assigning 
+ *
+ * \tparam  VALUE   The type of stored items. Either should be primitive
+ *                  or should have default constructor and valid assigning
  *                  operator. And should be possible to convert to type const VALUE &.
  **/
 template <typename VALUE>
@@ -57,7 +58,6 @@ class TEStack   : private Constless<std::deque<VALUE>>
 //////////////////////////////////////////////////////////////////////////
 // Internal types and constants.
 //////////////////////////////////////////////////////////////////////////
-protected:
 
 public:
     using STACKPOS = typename std::deque<VALUE>::iterator;
@@ -137,18 +137,18 @@ public:
      * \param   stream  The streaming object for reading values
      * \param   input   The Stack object to save initialized values.
      **/
-    template<typename VALUE>
-    friend const IEInStream & operator >> (const IEInStream & stream, TEStack<VALUE> & input);
+    template<typename V>
+    friend const IEInStream & operator >> (const IEInStream & stream, TEStack<V> & input);
     /**
      * \brief   Writes to the stream Stack values.
      *          The values will be written to the stream starting from head position.
-     *          There should be possibility to stream every value of Stack and if VALUE 
+     *          There should be possibility to stream every value of Stack and if VALUE
      *          is not a primitive, but an object, it should have implemented streaming operator.
      * \param   stream  The streaming object to write values
      * \param   input   The Stack object to read out values.
      **/
-    template<typename VALUE>
-    friend IEOutStream & operator << (IEOutStream & stream, const TEStack<VALUE> & output);
+    template<typename V>
+    friend IEOutStream & operator << (IEOutStream & stream, const TEStack<V> & output);
 
 //////////////////////////////////////////////////////////////////////////
 // Operations and Attributes
@@ -320,8 +320,16 @@ public:
     inline const VALUE & getAt( const STACKPOS pos ) const;
     inline VALUE& getAt(STACKPOS pos);
 
+
     /**
-     * \brief   Returns next valid position after given position value. 
+     * \brief   Returns value of element at the give position.
+     * \param   atPosition  The valid position in Linked List
+     **/
+    inline const VALUE& valueAtPosition( const STACKPOS atPosition ) const;
+    inline VALUE& valueAtPosition( STACKPOS atPosition );
+
+    /**
+     * \brief   Returns next valid position after given position value.
      *          Returns nullptr if given position was last.
      * \param   pos     The position value to get next.
      * \return  If given position is not last in the stack, it returns next valid position value.
@@ -353,7 +361,7 @@ private:
 //////////////////////////////////////////////////////////////////////////
 /**
  * \brief   Thread safe FIFO stack class template declaration, where accessing
- *          data is synchronized by resource lock. Use this object if elements 
+ *          data is synchronized by resource lock. Use this object if elements
  *          of stack are accessed by more than one thread.
  **/
 template <typename VALUE>
@@ -433,7 +441,7 @@ private:
 //////////////////////////////////////////////////////////////////////////
 /**
  * \brief   No thread safe FIFO stack class template declaration, where accessing
- *          data is not synchronized. Use this object if elements of stack 
+ *          data is not synchronized. Use this object if elements of stack
  *          are accessed only by one thread.
  **/
 template <typename VALUE>
@@ -517,21 +525,24 @@ private:
 //////////////////////////////////////////////////////////////////////////
 template <typename VALUE>
 TEStack<VALUE>::TEStack( IEResourceLock & synchObject )
-    : mValueList    ( )
+    : Constless<std::deque<VALUE>>( )
+    , mValueList    ( )
     , mSynchObject  ( synchObject )
 {
 }
 
 template <typename VALUE>
 TEStack<VALUE>::TEStack( IEResourceLock & synchObject, const TEStack<VALUE> & source )
-    : mValueList    ( source.mValueList )
+    : Constless<std::deque<VALUE>>( )
+    , mValueList    ( source.mValueList )
     , mSynchObject  ( synchObject )
 {
 }
 
 template <typename VALUE>
 TEStack<VALUE>::TEStack( IEResourceLock & synchObject, TEStack<VALUE> && source ) noexcept
-    : mValueList    ( std::move(source.mValueList) )
+    : Constless<std::deque<VALUE>>( )
+    , mValueList    ( std::move(source.mValueList) )
     , mSynchObject  ( synchObject )
 {
 }
@@ -604,7 +615,7 @@ template <typename VALUE>
 inline typename TEStack<VALUE>::STACKPOS TEStack<VALUE>::invalidPosition(void) const
 {
     Lock lock(mSynchObject);
-    return Constless::iter(mValueList, mValueList.end());
+    return Constless<std::deque<VALUE>>::iter(mValueList, mValueList.end());
 }
 
 template <typename VALUE>
@@ -625,7 +636,7 @@ template <typename VALUE>
 inline bool TEStack<VALUE>::checkPosition(STACKPOS pos) const
 {
     Lock lock(mSynchObject);
-    std::deque<VALUE>::const_iterator it = mValueList.begin();
+    auto it = mValueList.begin();
     while ((it != mValueList.end()) && (it != pos))
         ++it;
 
@@ -747,7 +758,7 @@ inline typename TEStack<VALUE>::STACKPOS TEStack<VALUE>::find(const VALUE& Value
 {
     Lock lock(mSynchObject);
     auto it = std::find(mValueList.begin(), mValueList.end(), Value);
-    return Constless::iter(it);
+    return Constless<std::deque<VALUE>>::iter(mValueList, it);
 }
 
 template <typename VALUE>
@@ -762,7 +773,8 @@ template <typename VALUE>
 inline typename TEStack<VALUE>::STACKPOS TEStack<VALUE>::firstPosition( void ) const
 {
     Lock lock(mSynchObject);
-    return Constless::iter(mValueList, mValueList.begin());
+    auto it = mValueList.begin();
+    return Constless<std::deque<VALUE>>::iter(mValueList, it);
 }
 
 template <typename VALUE>
@@ -781,6 +793,24 @@ inline VALUE & TEStack<VALUE>::getAt( STACKPOS pos )
 
     ASSERT(pos != mValueList.end());
     return (*pos);
+}
+
+template <typename VALUE>
+inline const VALUE & TEStack<VALUE>::valueAtPosition( const STACKPOS atPosition ) const
+{
+    Lock lock( mSynchObject );
+
+    ASSERT( atPosition != mValueList.end( ) );
+    return (*atPosition);
+}
+
+template <typename VALUE>
+inline VALUE & TEStack<VALUE>::valueAtPosition( STACKPOS atPosition )
+{
+    Lock lock( mSynchObject );
+
+    ASSERT( atPosition != mValueList.end( ) );
+    return (*atPosition);
 }
 
 template <typename VALUE>
@@ -901,8 +931,8 @@ inline TENolockStack<VALUE> & TENolockStack<VALUE>::operator = ( TENolockStack<V
 //////////////////////////////////////////////////////////////////////////
 // TEStack<VALUE> friend operators implementation
 //////////////////////////////////////////////////////////////////////////
-template<typename VALUE>
-const IEInStream & operator >> ( const IEInStream & stream, TEStack<VALUE> & input )
+template<typename V>
+const IEInStream & operator >> ( const IEInStream & stream, TEStack<V> & input )
 {
     Lock lock(input.mSynchObject);
 
@@ -918,15 +948,15 @@ const IEInStream & operator >> ( const IEInStream & stream, TEStack<VALUE> & inp
     return stream;
 }
 
-template<typename VALUE>
-IEOutStream & operator << ( IEOutStream & stream, const TEStack<VALUE> & output )
+template<typename V>
+IEOutStream & operator << ( IEOutStream & stream, const TEStack<V> & output )
 {
     Lock lock(output.mSynchObject);
 
     uint32_t size = output.getSize();
     stream << size;
 
-    for (const VALUE value : output.mValueList)
+    for (const auto& value : output.mValueList)
     {
         stream << value;
     }

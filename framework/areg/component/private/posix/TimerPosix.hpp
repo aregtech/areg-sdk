@@ -24,6 +24,7 @@
 
 #include "areg/component/Timer.hpp"
 #include "areg/base/private/posix/SpinLockIX.hpp"
+#include <sys/types.h>
 #include <time.h>
 
 //////////////////////////////////////////////////////////////////////////
