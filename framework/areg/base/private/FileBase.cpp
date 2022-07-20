@@ -123,16 +123,16 @@ inline int _readLine(const FileBase & file, ClassType & outValue)
 }
 
 template<typename CharType>
-inline int _readString(const FileBase & file, CharType * buffer, int elemCount)
+inline int _readString(const FileBase & file, CharType * buffer, int charCount)
 {
     unsigned int result = 0;
     if ((file.isOpened() == false) || (file.canRead() == false))
     {
         OUTPUT_ERR("Either file is not opened or forbidden to read data. Data cannot be read.");
     } 
-    else if ((buffer != nullptr) && (elemCount > 0))
+    else if ((buffer != nullptr) && (charCount > 0))
     {
-        unsigned int strLength  = static_cast<unsigned int>(elemCount) - 1;
+        unsigned int strLength  = static_cast<unsigned int>(charCount) - 1;
         buffer[0]               = NEString::EndOfString;
         unsigned int oldPos     = file.getPosition();
         CharType * context      = nullptr;
@@ -142,7 +142,7 @@ inline int _readString(const FileBase & file, CharType * buffer, int elemCount)
 
         if ( readLength > 0 )
         {
-            NEString::getPrintable<CharType>( buffer, elemCount, &context );
+            NEString::getPrintable<CharType>( buffer, charCount, &context );
             ASSERT((context == nullptr) || (context > buffer));
             result = context != nullptr ? MACRO_ELEM_COUNT( buffer, context ) : readLength;
             int newPos = static_cast<int>( (result * sizeof(CharType)) + oldPos );
@@ -158,16 +158,16 @@ inline int _readString(const FileBase & file, CharType * buffer, int elemCount)
 }
 
 template<typename CharType>
-inline int _readLine(const FileBase & file, CharType * buffer, int elemCount)
+inline int _readLine(const FileBase & file, CharType * buffer, int charCount)
 {
     unsigned int result = 0;
     if ((file.isOpened() == false) || (file.canRead() == false))
     {
         OUTPUT_ERR("Either file is not opened or forbidden to read data. Data cannot be read.");
     } 
-    else if ((buffer != nullptr) && (elemCount > 0))
+    else if ((buffer != nullptr) && (charCount > 0))
     {
-        unsigned int strLength  = static_cast<unsigned int>(elemCount - 1);
+        unsigned int strLength  = static_cast<unsigned int>(charCount - 1);
         buffer[0]               = NEString::EndOfString;
         unsigned int oldPos     = file.getPosition();
         CharType * context      = nullptr;
@@ -176,7 +176,7 @@ inline int _readLine(const FileBase & file, CharType * buffer, int elemCount)
         buffer[readLength]      = NEString::EndOfString;
         if ( readLength != 0 )
         {
-            NEString::getLine<CharType>(buffer, elemCount, &context);
+            NEString::getLine<CharType>(buffer, charCount, &context);
             ASSERT((context == nullptr) || (context > buffer));
             result = context != nullptr ? MACRO_ELEM_COUNT(buffer, context) : readLength;
             int newPos = static_cast<int>( (result * sizeof(CharType)) + oldPos );
@@ -192,7 +192,7 @@ inline int _readLine(const FileBase & file, CharType * buffer, int elemCount)
 }
 
 template<typename CharType>
-inline bool _writeString(FileBase & file, const CharType * buffer, int strLen )
+inline bool _writeString(FileBase & file, const CharType * buffer, int strLen = static_cast<int>(NEString::COUNT_ALL) )
 {
     bool result = false;
     if (file.isOpened() && file.canWrite())
@@ -226,10 +226,7 @@ inline  bool _writeLine(FileBase & file, const CharType * buffer)
     {
         if (buffer != nullptr)
         {
-            unsigned int len = 0;
-            while (NEString::isEndOfLine<CharType>(buffer[len]) == false)
-                ++ len;
-
+            unsigned int len = static_cast<unsigned int>(NEString::getStringLineLength<CharType>(buffer));
             len *= sizeof(CharType);
             if ( file.write(reinterpret_cast<const unsigned char *>(buffer), len) == len )
                 result = file.writeChar( TEString<CharType>::NewLine );
@@ -378,64 +375,84 @@ int FileBase::writeInvert( const unsigned char * buffer, int unsigned length )
     return static_cast<int>(result);
 }
 
-int FileBase::readString( char * buffer, int elemCount) const
+int FileBase::readString( char * IN OUT buffer, int IN charCount) const
 {
-    return _readString<char>(self(), buffer, elemCount);
+    return _readString<char>(self(), buffer, charCount);
 }
 
-int FileBase::readString( wchar_t * buffer, int elemCount ) const
+int FileBase::readString( wchar_t * IN OUT buffer, int IN charCount ) const
 {
-    return _readString<wchar_t>(self(), buffer, elemCount);
+    return _readString<wchar_t>(self(), buffer, charCount);
 }
 
-int FileBase::readString(String & outValue ) const
+int FileBase::readString(String & OUT outValue ) const
 {
     return _readString<char, String>(self(), outValue);
 }
 
-int FileBase::readString(WideString & outValue) const
+int FileBase::readString(WideString & OUT outValue) const
 {
     return _readString<char, WideString>(self(), outValue);
 }
 
-int FileBase::readLine( char * buffer, int elemCount) const
+int FileBase::readLine( char * IN OUT buffer, int IN charCount) const
 {
-    return _readLine<char>(self(), buffer, elemCount);
+    return _readLine<char>(self(), buffer, charCount);
 }
 
-int FileBase::readLine( wchar_t * buffer, int elemCount ) const
+int FileBase::readLine( wchar_t * IN OUT buffer, int IN charCount ) const
 {
-    return _readLine<wchar_t>(self(), buffer, elemCount);
+    return _readLine<wchar_t>(self(), buffer, charCount);
 }
 
-int FileBase::readLine( String & outValue) const
+int FileBase::readLine( String & OUT outBuffer) const
 {
-    return _readLine<char, String>(self(), outValue);
+    return _readLine<char, String>(self(), outBuffer);
 }
 
-int FileBase::readLine(WideString & outValue) const
+int FileBase::readLine(WideString & OUT outBuffer) const
 {
-    return _readLine<wchar_t, WideString>(self(), outValue);
+    return _readLine<wchar_t, WideString>(self(), outBuffer);
 }
 
-bool FileBase::writeString( const char* inValue )
+bool FileBase::writeString( const char* buffer )
 {
-    return _writeString<char>(self(), inValue, -1);
+    return _writeString<char>(self(), buffer, -1);
 }
 
-bool FileBase::writeString( const wchar_t* inValue )
+bool FileBase::writeString( const wchar_t* buffer)
 {
-    return _writeString<wchar_t>(self(), inValue, -1);
+    return _writeString<wchar_t>(self(), buffer, -1);
 }
 
-bool FileBase::writeLine( const char* inValue )
+bool FileBase::writeString(const String& buffer)
 {
-    return _writeLine<char>(self(), inValue);
+    return _writeString<char>(self(), buffer.getString(), static_cast<int>(buffer.getLength()));
 }
 
-bool FileBase::writeLine( const wchar_t* inValue )
+bool FileBase::writeString(const WideString& buffer)
 {
-    return _writeLine<wchar_t>(self(), inValue);
+    return _writeString<wchar_t>(self(), buffer.getString(), static_cast<int>(buffer.getLength()));
+}
+
+bool FileBase::writeLine( const char* buffer)
+{
+    return _writeLine<char>(self(), buffer);
+}
+
+bool FileBase::writeLine( const wchar_t* buffer)
+{
+    return _writeLine<wchar_t>(self(), buffer);
+}
+
+bool FileBase::writeLine(const String& buffer)
+{
+    return _writeLine<char>(self(), buffer);
+}
+
+bool FileBase::writeLine(const WideString& buffer)
+{
+    return _writeLine<wchar_t>(self(), buffer);
 }
 
 unsigned int FileBase::resizeAndFill( int newSize, unsigned char fillValue )

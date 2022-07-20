@@ -131,13 +131,13 @@ bool Application::isModelLoaded(const char * modelName)
 
 void Application::setWorkingDirectory( const char * dirPath /*= nullptr*/ )
 {
-    const char * path = NEString::isEmpty<char>(dirPath) ? Process::getInstance().getPath().getString() : dirPath;
+    String path( NEString::isEmpty<char>(dirPath) ? Process::getInstance().getPath() : dirPath);
 
 #ifdef _DEBUG
     
     if (File::setCurrentDir(path))
     {
-        OUTPUT_DBG("Set current directory [ %s ]", path);
+        OUTPUT_DBG("Set current directory [ %s ]", path.getString());
     }
     else
     {

@@ -203,7 +203,7 @@ private:
      * \brief   Parses given string and sets the priority value.
      * \param   newValue    The value as a string to parse and set.
      **/
-    void _setValue( const char * newValue);
+    void _setValue( const String & newValue);
 };
 
 //////////////////////////////////////////////////////////////////////////

@@ -47,7 +47,7 @@ public:
      *                          required by logger during initialization (open)
      *                          and when outputs message.
      **/
-    FileLogger( LogConfiguration & tracerConfig );
+    explicit FileLogger( LogConfiguration & tracerConfig );
 
     /**
      * \brief   Destructor

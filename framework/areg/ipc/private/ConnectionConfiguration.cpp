@@ -36,7 +36,7 @@ ConnectionConfiguration::eConnectionProperty ConnectionConfiguration::getPositio
 
 bool ConnectionConfiguration::loadConfiguration(const char * filePath /* = nullptr */)
 {
-    mConfigFile = File::getFileFullPath( NEString::isEmpty<char>(filePath) ? NEApplication::DEFAULT_ROUTER_CONFIG_FILE.data() : filePath );
+    mConfigFile = File::getFileFullPath( NEString::isEmpty<char>(filePath) ? NEApplication::DEFAULT_ROUTER_CONFIG_FILE.data() : filePath);
     File fileConfig( static_cast<const char *>(mConfigFile), FileBase::FO_MODE_EXIST | FileBase::FO_MODE_READ | FileBase::FO_MODE_TEXT | FileBase::FO_MODE_SHARE_READ );
     fileConfig.open( );
 

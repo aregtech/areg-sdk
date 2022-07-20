@@ -144,8 +144,8 @@ int main()
 
     // Make a copy of file
     // normalize file paths i.e. get file path and resolve masks in the name.
-    String src = File::normalizePath( "./Debug/hello.txt" );
-    String dst = File::normalizePath( "./Debug/copy_%time%.txt" );
+    String src(File::normalizePath( "./Debug/hello.txt" ));
+    String dst(File::normalizePath( "./Debug/copy_%time%.txt" ));
     printf( "\nCopying file [ %s ] to [ %s ]\n", src.getString( ), dst.getString( ) );
     File::copyFile( src, dst, true );
 

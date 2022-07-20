@@ -1,5 +1,5 @@
 #ifndef AREG_BASE_CONTAINERS_HPP
-#define  AREG_BASE_CONTAINERS_HPP
+#define AREG_BASE_CONTAINERS_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -29,10 +29,11 @@
 #include "areg/base/String.hpp"
 #include "areg/base/NEMath.hpp"
 
-/**
- * \brief       Collection of container such as hash maps, arrays, linked list and sorted list.
- *              For name of existing classes and hierarchy see details bellow.
- **/
+/************************************************************************
+ * \brief   Collection of container such as hash maps, arrays, linked 
+ *          list and sorted list. For name of existing classes and
+ *          hierarchy see details bellow.
+ ************************************************************************/
 
 //////////////////////////////////////////////////////////////////////////
 // Hierarchy of classes.

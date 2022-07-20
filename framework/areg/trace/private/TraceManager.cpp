@@ -336,7 +336,7 @@ bool TraceManager::loadConfiguration( const char * filePath /*= nullptr */ )
 {
     Lock lock(mLock);
 
-    mConfigFile = File::getFileFullPath( NEString::isEmpty<char>(filePath) ? NEApplication::DEFAULT_TRACING_CONFIG_FILE.data() : filePath );
+    mConfigFile = File::getFileFullPath( NEString::isEmpty<char>(filePath) ? NEApplication::DEFAULT_TRACING_CONFIG_FILE.data() : filePath);
     File fileConfig( static_cast<const char *>(mConfigFile), FileBase::FO_MODE_EXIST | FileBase::FO_MODE_READ | FileBase::FO_MODE_TEXT | FileBase::FO_MODE_SHARE_READ );
     fileConfig.open( );
 

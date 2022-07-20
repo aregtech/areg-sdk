@@ -22,6 +22,7 @@
 #include "areg/base/GEGlobal.h"
 #include "areg/trace/private/LoggerBase.hpp"
 #include "areg/base/IEIOStream.hpp"
+
 #include "areg/base/String.hpp"
 
 //////////////////////////////////////////////////////////////////////////
@@ -50,7 +51,7 @@ public:
      *                          required by logger during initialization (open)
      *                          and when outputs message.
      **/
-    DebugOutputLogger( LogConfiguration & tracerConfig );
+    explicit DebugOutputLogger( LogConfiguration & tracerConfig );
 
     /**
      * \brief   Destructor
@@ -163,11 +164,11 @@ private:
     /**
      * \brief   Flag, indicating whether the debug output logger is opened or not.
      **/
-    bool                mIsOpened;
+    bool    mIsOpened;
     /**
      * \brief   The generated ASCII message to output.
      **/
-    String            mOutputMessageA;
+    String  mOutputMessageA;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden / Forbidden calls.

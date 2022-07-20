@@ -88,7 +88,7 @@ bool FileBuffer::open( void )
     return mIsOpened;
 }
 
-bool FileBuffer::open(const char* fileName, unsigned int mode)
+bool FileBuffer::open(const String& fileName, unsigned int mode)
 {
     bool result = false;
     if (isOpened() == false)

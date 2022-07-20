@@ -184,7 +184,7 @@ public:
      *
      * \return	Returns true if file was opened with success.
      **/
-    virtual bool open(const char * fileName, unsigned int mode) override;
+    virtual bool open(const String& fileName, unsigned int mode) override;
 
     /**
      * \brief   Call to close file object.

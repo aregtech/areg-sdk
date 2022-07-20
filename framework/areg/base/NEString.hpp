@@ -193,6 +193,14 @@ namespace NEString
     inline CharCount getStringLength( const CharType * theString );
 
     /**
+     * \brief   Returns length of string line. The length is calculated until first match of End-of-Line or End-of-string value.
+     * \param   theString   The string to count the length.
+     * \return  Returns number of characters in the string
+     **/
+    template <typename CharType>
+    inline CharCount getStringLineLength(const CharType* theString);
+
+    /**
      * \brief   Copies string from source to destination string.
      *          The method does not reallocates space for destination string
      *          if there is no enough space available in destination.
@@ -238,7 +246,7 @@ namespace NEString
      * \param   leftSide        The Left-side string to compare
      * \param   rightSide       The Right-side string to compare
      * \param   charCount       The characters to compare or until end of string if equal to 'NEString::END_POS'
-     * \param   caseSensitive   If false, it will ignore upper and lower cases.
+     * \param   caseSensitive   If false, it will ignore upper and lower cases. 
      * \return  The function returns:
      *              -1 if Left-side string is bigger than Right-side string
      *               0 if Left-side and Right-side strings are equal
@@ -641,23 +649,23 @@ namespace NEString
 
     /**
      * \brief   Returns true if a give string starts with specified phrase.
-     * \param   strString   The string to check the phrase.
-     * \param   phrase      The phrase to check.
-     * \param   isSensitive If false, it with check ignoring upper / lower case. Otherwise, checks exact match.
+     * \param   strString       The string to check the phrase.
+     * \param   phrase          The phrase to check.
+     * \param   caseSensitive   If false, it with check ignoring upper / lower case. Otherwise, checks exact match.
      * \return  Returns true if the string starts with given phrase.
      **/
     template<typename CharType>
-    bool stringStartsWith(const CharType * strString, const CharType * phrase, bool isSensitive = true);
+    bool stringStartsWith(const CharType * strString, const CharType * phrase, bool caseSensitive = true);
 
     /**
      * \brief   Returns true if a give string ends with specified phrase.
      * \param   strString   The string to check the phrase.
      * \param   phrase      The phrase to check.
-     * \param   isSensitive If false, it with check ignoring upper / lower case. Otherwise, checks exact match.
+     * \param   caseSensitive If false, it with check ignoring upper / lower case. Otherwise, checks exact match.
      * \return  Returns true if the string ends with given phrase.
      **/
     template<typename CharType>
-    bool stringEndsWith(const CharType * strString, const CharType * phrase, bool isSensitive = true);
+    bool stringEndsWith(const CharType * strString, const CharType * phrase, bool caseSensitive = true);
 
     /**
      * \brief   Returns printable string of given buffer. The buffer should be possible to modify.
@@ -912,9 +920,9 @@ const CharType * NEString::getPrintable( CharType * strSource, NEString::CharCou
 
 template<typename CharType>
 NEString::CharPos NEString::findLast( CharType   chSearch
-                                      , const CharType * strSource
-                                      , NEString::CharPos startPos /*= NEString::END_POS*/
-                                      , const CharType ** out_next /*= nullptr*/ )
+                                     , const CharType * strSource
+                                     , NEString::CharPos startPos /*= NEString::END_POS*/
+                                     , const CharType ** out_next /*= nullptr*/ )
 {
     NEString::CharPos result= NEString::INVALID_POS;
     if ( out_next != nullptr )
@@ -930,8 +938,8 @@ NEString::CharPos NEString::findLast( CharType   chSearch
             {
                 if ( *end == chSearch )
                 {
-                    result = static_cast<NEString::CharPos>(end - strSource);
-                    end   -= 1;
+                    result = MACRO_ELEM_COUNT(strSource, end);
+                    --end;
                     if ( (out_next != nullptr) && (end >= strSource) )
                         *out_next =  end;
 
@@ -1080,7 +1088,7 @@ NEString::CharPos NEString::findFirst( const CharType * strPhrase
 }
 
 template<typename CharType>
-bool NEString::stringStartsWith(const CharType * strString, const CharType * phrase, bool isSensitive /*= true*/)
+bool NEString::stringStartsWith(const CharType * strString, const CharType * phrase, bool caseSensitive /*= true*/)
 {
     bool result = false;
     if ((isEmpty<CharType>(strString) == false) && (isEmpty<CharType>(phrase) == false))
@@ -1090,7 +1098,7 @@ bool NEString::stringStartsWith(const CharType * strString, const CharType * phr
         {
             CharType ch1 = *strString;
             CharType ch2 = *phrase;
-            if ( isSensitive )
+            if ( caseSensitive == false )
             {
                 ch1 = NEString::makeAsciiLower<CharType>(ch1);
                 ch2 = NEString::makeAsciiLower<CharType>(ch2);
@@ -1110,7 +1118,7 @@ bool NEString::stringStartsWith(const CharType * strString, const CharType * phr
 }
 
 template<typename CharType>
-bool NEString::stringEndsWith(const CharType * strString, const CharType * phrase, bool isSensitive /*= true*/)
+bool NEString::stringEndsWith(const CharType * strString, const CharType * phrase, bool caseSensitive /*= true*/)
 {
     bool result = false;
     if ((isEmpty<CharType>(strString) == false) && (isEmpty<CharType>(phrase) == false))
@@ -1123,7 +1131,7 @@ bool NEString::stringEndsWith(const CharType * strString, const CharType * phras
 
         int diff = lenString - lenPhrase;
 
-        result = (diff >= 0) && NEString::stringStartsWith<CharType>(strString + diff, phrase, isSensitive);
+        result = (diff >= 0) && NEString::stringStartsWith<CharType>(strString + diff, phrase, caseSensitive);
     }
 
     return result;
@@ -1468,6 +1476,21 @@ inline NEString::CharCount NEString::getStringLength( const CharType * theString
             ++ result;
     }
     return result;
+}
+
+template <typename CharType>
+inline NEString::CharCount NEString::getStringLineLength(const CharType* theString)
+{
+    const CharType* start = theString;
+    if (theString != nullptr)
+    {
+        while(!NEString::isEndOfLine<CharType>(*theString) && !NEString::isEndOfString<CharType>(*theString))
+        {
+            ++theString;
+        }
+    }
+
+    return MACRO_ELEM_COUNT(start, theString);
 }
 
 template<typename CharDst, typename CharSrc>

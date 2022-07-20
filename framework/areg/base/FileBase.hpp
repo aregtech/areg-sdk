@@ -522,74 +522,64 @@ public:
 // Read / Write strings
 /************************************************************************/
     /**
-     * \brief	Reads string of 8-bit characters, automatically sets null-terminate char at the end and returns number of characters, which could 
+     * \brief	Reads string, automatically sets null-terminate symbol at
+     *          the end and returns number of characters, which could read.
+     * 
      * \param	buffer      The buffer where the string should be written. 
-     * \param	elemCount	Number of characters to write. The buffer should be long enough to set end-of-string character at the end.
+     * \param	charCount	Number of characters to write in the string buffer.
+     *                      The string buffer should be long enough to set
+     *                      end-of-string character at the end.
      * \return	Returns number of characters, which could read.
      **/
-    int readString( char * buffer, int elemCount ) const;
-    /**
-     * \brief	Reads string of 16-bit characters, automatically sets null-terminate char at the end and returns number of characters, which could 
-     * \param	buffer      The buffer where the string should be written. 
-     * \param	elemCount	Number of characters to write. The buffer should be long enough to set end-of-string character at the end.
-     * \return	Returns number of characters, which could read.
-     **/
-    int readString( wchar_t * buffer, int elemCount ) const;
+    int readString( char * IN OUT buffer, int IN charCount ) const;
+    int readString( wchar_t * IN OUT buffer, int IN charCount ) const;
 
     /**
-     * \brief	Read string until end of file or null-terminated character. It does not validate string data
+     * \brief	Read string until end of file or null-terminated character.
+     *          It does not validate string data.
+     * 
      * \param	outBuffer	The string containing data
      * \return	Returns number of characters, which could read.
      **/
-    int readString(String & outBuffer) const;
-    /**
-     * \brief	Read string until end of file or null-terminated character. It does not validate string data
-     * \param	outBuffer	The string containing data
-     * \return	Returns number of characters, which could read.
-     **/
-    int readString(WideString & outBuffer) const;
+    int readString(String & OUT outBuffer) const;
+    int readString(WideString & OUT outBuffer) const;
 
     /**
-     * \brief	Reads line of string of 8-bit characters, automatically sets null-terminate char at the end and returns number of characters, which could 
+     * \brief	Reads a line of string, automatically sets null-terminate char at
+     *          the end and returns number of characters, which could read.
+     * 
      * \param	buffer      The buffer where the string should be written. 
-     * \param	elemCount	Number of characters to write. The buffer should be long enough to set end-of-string character at the end.
+     * \param	charCount	Number of characters to write in the string buffer.
+     *                      The string buffer should be long enough to set
+     *                      end-of-string character at the end.
      * \return	Returns number of characters, which could read.
      **/
-    int readLine( char * buffer, int elemCount) const;
-    /**
-     * \brief	Reads line of string of 16-bit characters, automatically sets null-terminate char at the end and returns number of characters, which could 
-     * \param	buffer      The buffer where the string should be written. 
-     * \param	elemCount	Number of characters to write. The buffer should be long enough to set end-of-string character at the end.
-     * \return	Returns number of characters, which could read.
-     **/
-    int readLine( wchar_t * buffer, int elemCount ) const;
+    int readLine( char * IN OUT buffer, int IN charCount) const;
+    int readLine( wchar_t * IN OUT buffer, int IN charCount ) const;
 
     /**
-     * \brief	Reads 1 line of string until end of file or null-terminated character or new line character. 
-     *          It does not validate string data
-     * \param	outValue	The string containing data
-     * \return	If succeeds, returns true.
+     * \brief	Reads a line of string until end of file, or first match of 
+     *          null-terminated character or new line character. 
+     *          It does not validate string data.
+     * 
+     * \param	outBuffer	On output, this contains a string of a line.
+     * \return	Returns number of characters, which could read.
      **/
-    int readLine(String & outValue) const;
-    /**
-     * \brief	Reads 1 line of string until end of file or null-terminated character or new line character. 
-     *          It does not validate string data
-     * \param	outValue	The string containing data
-     * \return	If succeeds, returns true.
-     **/
-    int readLine(WideString & outValue) const;
+    int readLine(String & OUT outBuffer) const;
+    int readLine(WideString & OUT outBuffer) const;
 
     /**
      * \brief	Writes string in file and returns true if succeeded.
      *          If file was opened in FO_MODE_TEXT, the null-terminate char of string will be skipped.
      *          If file was opened in FO_MODE_BINARY, the null-terminate char of string will be also written.
      *
-     * \param	inValue	The buffer containing string.
-     *
+     * \param	buffer  The buffer of string to write.
      * \return	Returns true if operation succeeded.
      **/
-    bool writeString(const char* inValue);
-    bool writeString(const wchar_t* inValue);
+    bool writeString(const char* buffer);
+    bool writeString(const wchar_t* buffer);
+    bool writeString(const String& buffer);
+    bool writeString(const WideString& buffer);
 
     /**
      * \brief	Writes line of string in file and returns true if succeeded.
@@ -602,6 +592,8 @@ public:
      **/
     bool writeLine(const char* inValue);
     bool writeLine(const wchar_t* inValue);
+    bool writeLine(const String& buffer);
+    bool writeLine(const WideString& buffer);
 
     /**
      * \brief   Writes string into the file.
@@ -649,7 +641,7 @@ public:
      * \return	Returns true if file was opened with success.
      * \see     close()
      **/
-    virtual bool open(const char* fileName, unsigned int mode) = 0;
+    virtual bool open(const String& fileName, unsigned int mode) = 0;
 
     /**
      * \brief   Call to close file object.

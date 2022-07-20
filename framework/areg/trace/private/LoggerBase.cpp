@@ -23,12 +23,6 @@ LoggerBase::LoggerBase( LogConfiguration & tracerConfig )
 {
 }
 
-bool LoggerBase::reopenLogger(void)
-{
-    closeLogger();
-    return openLogger();
-}
-
 bool LoggerBase::createLayouts(void)
 {
     bool result = false;

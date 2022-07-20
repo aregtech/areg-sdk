@@ -69,7 +69,7 @@ protected:
      *                          required by logger during initialization (open)
      *                          and when outputs message.
      **/
-    LoggerBase( LogConfiguration & tracerConfig );
+    explicit LoggerBase( LogConfiguration & tracerConfig );
 
     /**
      * \brief   Destructor
@@ -126,7 +126,7 @@ public:
      *          to logger to make outputs. Otherwise, the logger will be stopped
      *          receiving log messages.
      **/
-    bool reopenLogger( void );
+    inline bool reopenLogger( void );
 
     /**
      * \brief   Return instance of trace configuration object.
@@ -195,6 +195,12 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // LoggerBase class inline methods
 //////////////////////////////////////////////////////////////////////////
+inline bool LoggerBase::reopenLogger(void)
+{
+    closeLogger();
+    return openLogger();
+}
+
 inline const LogConfiguration & LoggerBase::getTraceConfiguration( void ) const
 {
     return mTracerConfiguration;

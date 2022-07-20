@@ -20,7 +20,7 @@
 #include "areg/base/GEGlobal.h"
 #include "areg/base/IEIOStream.hpp"
 
-#include <string_view>
+#include "areg/base/String.hpp"
 
 /************************************************************************
  * Dependencies
@@ -70,7 +70,7 @@ namespace NETrace
      * \return  Returns string priority value
      * \see     NETrace::FromString
      **/
-    AREG_API const char * convToString( NETrace::eLogPriority prio );
+    AREG_API const String& convToString( NETrace::eLogPriority prio );
 
     /**
      * \brief   NETrace::FromString
@@ -81,7 +81,7 @@ namespace NETrace
      *                  The given string is not case sensitive.
      * \return  Returns appropriate logging priority value.
      **/
-    AREG_API NETrace::eLogPriority convFromString( const char * strPrio );
+    AREG_API NETrace::eLogPriority convFromString( const String& strPrio );
 
     /**
      * \brief   NETrace::HAS_MESSAGE_PRIORITY
@@ -112,35 +112,35 @@ namespace NETrace
     /**
      * \brief   The string value of no priority
      **/
-    constexpr std::string_view  PRIO_NOTSET_STR    { "NOTSET" };
+    const String    PRIO_NOTSET_STR     { "NOTSET" };
     /**
      * \brief   The string value of scope priority
      **/
-    constexpr std::string_view  PRIO_SCOPE_STR      { "SCOPE" };
+    const String    PRIO_SCOPE_STR      { "SCOPE" };
     /**
      * \brief   The string value of fatal error priority
      **/
-    constexpr std::string_view  PRIO_FATAL_STR      { "FATAL" };
+    const String    PRIO_FATAL_STR      { "FATAL" };
     /**
      * \brief   The string value of error priority
      **/
-    constexpr std::string_view  PRIO_ERROR_STR      { "ERROR" };
+    const String    PRIO_ERROR_STR      { "ERROR" };
     /**
      * \brief   The string value of warning priority
      **/
-    constexpr std::string_view  PRIO_WARNING_STR    { "WARNING" };
+    const String    PRIO_WARNING_STR    { "WARNING" };
     /**
      * \brief   The string value of information priority
      **/
-    constexpr std::string_view  PRIO_INFO_STR       { "INFO" };
+    const String    PRIO_INFO_STR       { "INFO" };
     /**
      * \brief   The string value of debug priority
      **/
-    constexpr std::string_view  PRIO_DEBUG_STR      { "DEBUG" };
+    const String    PRIO_DEBUG_STR      { "DEBUG" };
     /**
      * \brief   No priority string
      **/
-    constexpr std::string_view  PRIO_NO_PRIO        { "" };
+    const String    PRIO_NO_PRIO        { "" };
 
     /**
      * \brief   NETrace::LOG_MESSAGE_BUFFER_SIZE

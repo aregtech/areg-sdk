@@ -35,17 +35,21 @@ bool FileLogger::openLogger( void )
         const TraceProperty & prop = traceConfig.getLogFile();
         if ( prop.isValid() )
         {
-            String fileName = File::normalizePath( static_cast<const char *>(prop.getValue()) );
-            // fileName = File::NormalizeFilePath( fileName );
+            String fileName(File::normalizePath(static_cast<const char *>(prop.getValue())) );
             if ( fileName.isEmpty() == false )
             {
                 bool newFile      = static_cast<bool>(traceConfig.getAppendData()) == false;
                 unsigned int mode = File::FO_MODE_WRITE | File::FO_MODE_READ | File::FO_MODE_SHARE_READ | File::FO_MODE_SHARE_WRITE | File::FO_MODE_TEXT;
 
-                if ( File::existFile(fileName) )
+                if (File::existFile(fileName))
+                {
                     mode |= newFile ? File::FO_MODE_TRUNCATE : File::FO_MODE_EXIST;
+                }
                 else
+                {
                     mode |= FileBase::FO_MODE_CREATE;
+                }
+
                 if ( mLogFile.open( fileName, mode) && createLayouts() )
                 {
                     

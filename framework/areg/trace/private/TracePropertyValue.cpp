@@ -20,12 +20,18 @@
 
 #include <utility>
 
-inline void TracePropertyValue::_setValue( const char * newValue )
+inline void TracePropertyValue::_setValue( const String & newValue )
 {
-    mValue = newValue != nullptr ? newValue : "";
-    NEString::CharPos pos = mValue.findFirst(NELogConfig::SYNTAX_END_COMMAND_DELIMITER);
-    if ( mValue.isValidPosition(pos) )
-        mValue.substring(0, pos);
+    mValue = newValue;
+    NEString::CharPos pos = newValue.findFirst(NELogConfig::SYNTAX_END_COMMAND_DELIMITER);
+    if (newValue.isValidPosition(pos))
+    {
+        newValue.substring(mValue, 0, pos);
+    }
+    else
+    {
+        mValue = newValue;
+    }
     
     mValue.trimAll();
 

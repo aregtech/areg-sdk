@@ -193,7 +193,7 @@ bool File::open( void )
             
             if ( mFileMode & FileBase::FOB_CREATE )
             {
-                File::createDirCascaded( File::getFileDirectory( static_cast<const char *>(mFileName) ).getString() );
+                File::createDirCascaded( File::getFileDirectory(mFileName) );
             }
 
             mFileHandle = static_cast<FILEHANDLE>(::CreateFileA(mFileName.getString(), access, shared, nullptr, creation, attributes, nullptr ));
@@ -381,22 +381,22 @@ void File::flush( void )
 
 bool File::deleteFile( const char* filePath )
 {
-    return ( NEString::isEmpty<char>(filePath) == false ? ::DeleteFileA(filePath) == TRUE : false );
+    return ((NEString::isEmpty<char>(filePath) == false) && (::DeleteFileA(filePath) == TRUE));
 }
 
 bool File::createDir( const char* dirPath )
 {
-    return ( NEString::isEmpty<char>(dirPath) == false ? ::CreateDirectoryA(dirPath, nullptr) == TRUE : false );
+    return ((NEString::isEmpty<char>(dirPath) == false) && (::CreateDirectoryA(dirPath, nullptr) == TRUE));
 }
 
 bool File::deleteDir( const char* dirPath )
 {
-    return ( NEString::isEmpty<char>(dirPath) == false ? ::RemoveDirectoryA(dirPath) == TRUE : false );
+    return ((NEString::isEmpty<char>(dirPath) == false) && (::RemoveDirectoryA(dirPath) == TRUE));
 }
 
 bool File::moveFile( const char* oldPath, const char* newPath )
 {
-    return ( NEString::isEmpty<char>(oldPath) == false && NEString::isEmpty<char>(newPath) == false ? ::MoveFileA(oldPath, newPath) == TRUE : false );
+    return ((NEString::isEmpty<char>(oldPath) == false) && (NEString::isEmpty<char>(newPath) == false) && (::MoveFileA(oldPath, newPath) == TRUE));
 }
 
 String File::getCurrentDir( void )
@@ -415,14 +415,14 @@ String File::getCurrentDir( void )
 
 bool File::setCurrentDir( const char* dirPath )
 {
-    return ( NEString::isEmpty<char>(dirPath) == false ? ::SetCurrentDirectoryA(dirPath) == TRUE : false );
+    return ((NEString::isEmpty<char>(dirPath) == false) && (::SetCurrentDirectoryA(dirPath) == TRUE));
 }
 
 bool File::copyFile( const char* originPath, const char* newPath, bool copyForce )
 {
-    return ( NEString::isEmpty<char>(originPath) == false && NEString::isEmpty<char>(newPath) == false  ? 
-            ::CopyFileA(originPath, newPath, copyForce ? FALSE : TRUE) == TRUE                                              :
-            false );
+    return ((NEString::isEmpty<char>(originPath) == false) && 
+            (NEString::isEmpty<char>(newPath) == false) &&
+            (::CopyFileA(originPath, newPath, copyForce ? FALSE : TRUE) == TRUE));
 }
 
 String File::getTempDir( void )
@@ -468,7 +468,7 @@ bool File::existDir( const char* dirPath )
 
 bool File::existFile( const char* filePath )
 {
-    bool result     = false;
+    bool result{ false };
     if ( NEString::isEmpty<char>(filePath) == false )
     {
         unsigned long attr = ::GetFileAttributesA(filePath);
@@ -479,13 +479,13 @@ bool File::existFile( const char* filePath )
 
 String File::getFileFullPath( const char* filePath )
 {
-    String result  = filePath;
-    if ( NEString::isEmpty<char>(filePath) == false )
+    String result(filePath);
+    if (NEString::isEmpty<char>(filePath) == false)
     {
         char * buffer = DEBUG_NEW char[File::MAXIMUM_PATH + 1];
         if ( buffer != nullptr )
         {
-            if ( ::GetFullPathNameA( result, File::MAXIMUM_PATH, buffer, nullptr ) <= File::MAXIMUM_PATH )
+            if ( ::GetFullPathNameA( filePath, File::MAXIMUM_PATH, buffer, nullptr) <= File::MAXIMUM_PATH)
             {
                 result = buffer;
             }

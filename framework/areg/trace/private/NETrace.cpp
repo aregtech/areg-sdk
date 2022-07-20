@@ -20,51 +20,51 @@
 
 #include <string.h>
 
-AREG_API const char * NETrace::convToString( NETrace::eLogPriority prio )
+AREG_API const String& NETrace::convToString( NETrace::eLogPriority prio )
 {
     switch ( prio )
     {
     case NETrace::eLogPriority::PrioNotset:
-        return NETrace::PRIO_NOTSET_STR.data( );
+        return NETrace::PRIO_NOTSET_STR;
     case NETrace::eLogPriority::PrioFatal:
-        return NETrace::PRIO_FATAL_STR.data( );
+        return NETrace::PRIO_FATAL_STR;
     case NETrace::eLogPriority::PrioError:
-        return NETrace::PRIO_ERROR_STR.data( );
+        return NETrace::PRIO_ERROR_STR;
     case NETrace::eLogPriority::PrioWarning:
-        return NETrace::PRIO_WARNING_STR.data( );
+        return NETrace::PRIO_WARNING_STR;
     case NETrace::eLogPriority::PrioInfo:
-        return NETrace::PRIO_INFO_STR.data( );
+        return NETrace::PRIO_INFO_STR;
     case NETrace::eLogPriority::PrioDebug:
-        return NETrace::PRIO_DEBUG_STR.data( );
+        return NETrace::PRIO_DEBUG_STR;
     case NETrace::eLogPriority::PrioScope:
-        return NETrace::PRIO_SCOPE_STR.data( );
+        return NETrace::PRIO_SCOPE_STR;
     case NETrace::eLogPriority::PrioIgnore:
     case NETrace::eLogPriority::PrioIgnoreLayout:
     case NETrace::eLogPriority::PrioAny:
-        return NETrace::PRIO_NO_PRIO.data( );
+        return NETrace::PRIO_NO_PRIO;
     default:
         ASSERT(false);
-        return NETrace::PRIO_NO_PRIO.data( );
+        return NETrace::PRIO_NO_PRIO;
     }
 }
 
-AREG_API NETrace::eLogPriority NETrace::convFromString( const char * strPrio )
+AREG_API NETrace::eLogPriority NETrace::convFromString( const String& strPrio )
 {
-    if ( NEString::isEmpty<char>(strPrio) == false )
+    if ( strPrio.isEmpty() == false )
     {
-        if ( NEString::compareIgnoreCase<char, char>( strPrio, NETrace::PRIO_NOTSET_STR.data( ) ) == NEMath::eCompare::Equal)
+        if ( strPrio.compare( NETrace::PRIO_NOTSET_STR, false ) == NEMath::eCompare::Equal)
             return NETrace::eLogPriority::PrioNotset;
-        else if ( NEString::compareIgnoreCase(strPrio, NETrace::PRIO_SCOPE_STR.data( ) ) == NEMath::eCompare::Equal)
+        else if (strPrio.compare( NETrace::PRIO_SCOPE_STR, false ) == NEMath::eCompare::Equal)
             return NETrace::eLogPriority::PrioScope;
-        else if ( NEString::compareIgnoreCase(strPrio, NETrace::PRIO_DEBUG_STR.data( ) ) == NEMath::eCompare::Equal)
+        else if (strPrio.compare( NETrace::PRIO_DEBUG_STR, false ) == NEMath::eCompare::Equal)
             return NETrace::eLogPriority::PrioDebug;
-        else if ( NEString::compareIgnoreCase(strPrio, NETrace::PRIO_INFO_STR.data( ) ) == NEMath::eCompare::Equal)
+        else if (strPrio.compare( NETrace::PRIO_INFO_STR, false ) == NEMath::eCompare::Equal)
             return NETrace::eLogPriority::PrioInfo;
-        else if ( NEString::compareIgnoreCase(strPrio, NETrace::PRIO_WARNING_STR.data( ) ) == NEMath::eCompare::Equal)
+        else if (strPrio.compare( NETrace::PRIO_WARNING_STR, false ) == NEMath::eCompare::Equal)
             return NETrace::eLogPriority::PrioWarning;
-        else if ( NEString::compareIgnoreCase(strPrio, NETrace::PRIO_ERROR_STR.data( ) ) == NEMath::eCompare::Equal)
+        else if (strPrio.compare( NETrace::PRIO_ERROR_STR, false ) == NEMath::eCompare::Equal)
             return NETrace::eLogPriority::PrioError;
-        else if ( NEString::compareIgnoreCase(strPrio, NETrace::PRIO_FATAL_STR.data( ) ) == NEMath::eCompare::Equal)
+        else if (strPrio.compare( NETrace::PRIO_FATAL_STR, false ) == NEMath::eCompare::Equal)
             return NETrace::eLogPriority::PrioFatal;
     }
 

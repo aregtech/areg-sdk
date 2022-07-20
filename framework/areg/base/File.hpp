@@ -139,7 +139,7 @@ public:
      * \param	mode	    file open mode. 
      *                      For modes, see description in FileBase class 
      **/
-    explicit File(const char * fileName, unsigned int mode = (FileBase::FO_MODE_WRITE | FileBase::FO_MODE_BINARY | FileBase::FOB_SHARE_READ));
+    explicit File(const String& fileName, unsigned int mode = (FileBase::FO_MODE_WRITE | FileBase::FO_MODE_BINARY | FileBase::FOB_SHARE_READ));
 
     /**
      * \brief   Destructor
@@ -186,7 +186,7 @@ public:
      *
      * \return	Returns true if file was opened with success.
      **/
-    virtual bool open(const char * fileName, unsigned int mode) override;
+    virtual bool open(const String& fileName, unsigned int mode) override;
 
     /**
      * \brief   Call to close file object.
@@ -416,14 +416,14 @@ public:
 
     /**
      * \brief	Copies file from old location to new location. File in original location will remain unchanged
-     * \param	originPath	Relative or absolute path of original file
-     * \param	newPath	    Relative or absolute path to new location to copy
+     * \param	srcPath	    Relative or absolute path of source file.
+     * \param	newPath	    Relative or absolute path to new location to copy.
      * \param	copyForce	If new location already contains file:
      *                          - if true, file will be overwritten
      *                          - if false, operation will fail
      * \return	Returns true if operation succeeds.
      **/
-    static bool copyFile(const char * originPath, const char * newPath, bool copyForce);
+    static bool copyFile(const char * srcPath, const char * newPath, bool copyForce);
 
     /**
      * \brief	Checks whether the given path is an existing file or not.

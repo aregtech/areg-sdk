@@ -147,7 +147,7 @@ bool File::open( void )
             // if (mFileMode & FileBase::FOB_WRITE_DIRECT)
             //     ; // do nothing
 
-            String dirName = File::getFileDirectory( static_cast<const char *>(mFileName));
+            String dirName(File::getFileDirectory(mFileName));
 
             if ( (flag & O_CREAT) != 0 )
             {
@@ -437,12 +437,12 @@ bool File::setCurrentDir( const char* dirPath )
     return ( (NEString::isEmpty<char>(dirPath) == false) && (RETURNED_OK == chdir(dirPath)) );
 }
 
-bool File::copyFile( const char* originPath, const char* newPath, bool copyForce )
+bool File::copyFile( const char* srcPath, const char* newPath, bool copyForce )
 {
     static const int BUF_SIZE   = 4 * 1024;
 
     bool result = false;
-    if ( (NEString::isEmpty<char>(originPath) == false) && (NEString::isEmpty<char>(newPath) == false) )
+    if ( (NEString::isEmpty<char>(srcPath) == false) && (NEString::isEmpty<char>(newPath) == false) )
     {
         mode_t mode = 0;
         int flag    = 0;
@@ -470,7 +470,7 @@ bool File::copyFile( const char* originPath, const char* newPath, bool copyForce
 
         if (mode != 0)
         {
-            int fdRead = ::open(originPath, O_RDONLY);
+            int fdRead = ::open(srcPath, O_RDONLY);
             int fdWrite= ::open(newPath, flag, mode);
             unsigned char * buffer = DEBUG_NEW unsigned char[BUF_SIZE];
 
@@ -484,7 +484,7 @@ bool File::copyFile( const char* originPath, const char* newPath, bool copyForce
                     {
                         if ( ::write( fdWrite, buffer, readSize ) < 0 )
                         {
-                            OUTPUT_ERR( "Failed to copy [ %s ] into [ %s ], error code [ %p ]", originPath, newPath, static_cast<id_type>(errno) );
+                            OUTPUT_ERR( "Failed to copy [ %s ] into [ %s ], error code [ %p ]", srcPath, newPath, static_cast<id_type>(errno) );
                             result = false;
                             break;
                         }
@@ -511,7 +511,6 @@ bool File::copyFile( const char* originPath, const char* newPath, bool copyForce
             {
                 OUTPUT_ERR("Failed to allocate buffer to copy files.");
             }
-
         }
     }
 
@@ -572,8 +571,8 @@ bool File::existFile( const char* filePath )
 
 String File::getFileFullPath( const char* filePath )
 {
-    String result  = filePath;
-    if ( NEString::isEmpty<char>(filePath) == false )
+    String result(filePath};
+    if ( NEString::isEmpty<char>(filePath) == false)
     {
         char * pathCanonical  = realpath(filePath, nullptr);
         if (pathCanonical != nullptr)
