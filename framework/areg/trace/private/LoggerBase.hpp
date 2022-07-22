@@ -104,7 +104,7 @@ public:
      * \brief   Called when message should be logged.
      *          Every logger should implement method to process logger specific logging.
      **/
-    virtual bool logMessage( const NETrace::sLogMessage & logMessage ) = 0;
+    virtual void logMessage( const NETrace::sLogMessage & logMessage ) = 0;
 
     /**
      * \brief   Call to flush logs, if they are queued. Some loggers might ignore this.

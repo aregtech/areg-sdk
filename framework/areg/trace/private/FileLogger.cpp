@@ -119,23 +119,22 @@ void FileLogger::closeLogger(void)
     mLogFile.close();
 }
 
-bool FileLogger::logMessage( const NETrace::sLogMessage & logMessage )
+void FileLogger::logMessage( const NETrace::sLogMessage & logMessage )
 {
-    bool result = false;
     if ( mLogFile.isOpened() )
     {
         switch (logMessage.lmHeader.logType)
         {
         case NETrace::LogMessage:
-            result = getLayoutMessage().logMessage( logMessage, static_cast<IEOutStream &>(mLogFile) );
+            getLayoutMessage().logMessage( logMessage, static_cast<IEOutStream &>(mLogFile) );
             break;
 
         case NETrace::LogScopeEnter:
-            result = getLayoutEnterScope().logMessage( logMessage, static_cast<IEOutStream &>(mLogFile) );
+            getLayoutEnterScope().logMessage( logMessage, static_cast<IEOutStream &>(mLogFile) );
             break;
 
         case NETrace::LogScopeExit:
-            result = getLayoutExitScope().logMessage( logMessage, static_cast<IEOutStream &>(mLogFile) );
+            getLayoutExitScope().logMessage( logMessage, static_cast<IEOutStream &>(mLogFile) );
             break;
 
         case NETrace::LogCommand:
@@ -147,8 +146,6 @@ bool FileLogger::logMessage( const NETrace::sLogMessage & logMessage )
             break;
         }
     }
-
-    return result;
 }
 
 bool FileLogger::isLoggerOpened(void) const

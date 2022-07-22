@@ -25,6 +25,7 @@
  * Dependencies
  ************************************************************************/
 class RuntimeClassID;
+class String;
 
 //////////////////////////////////////////////////////////////////////////
 // RuntimeBase class declaration
@@ -74,7 +75,7 @@ public:
     /**
      * \brief   Returns the class name, i.e. the name of Class Identifier
      **/
-    virtual const char * getRuntimeClassName( void ) const;
+    virtual const String& getRuntimeClassName( void ) const;
 
     /**
      * \brief   Returns the calculated number of runtime class.
@@ -86,6 +87,7 @@ public:
      * \param   className   The name of class to check.
      **/
     virtual bool isInstanceOfRuntimeClass( const char* className ) const;
+    virtual bool isInstanceOfRuntimeClass( const String& className ) const;
 
     /**
      * \brief   Checks class instance by name.

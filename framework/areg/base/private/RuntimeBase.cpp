@@ -41,12 +41,17 @@ const RuntimeClassID & RuntimeBase::getRuntimeClassId( void ) const
     return _getClassId();
 }
 
-const char * RuntimeBase::getRuntimeClassName( void ) const
+const String & RuntimeBase::getRuntimeClassName( void ) const
 {
     return RuntimeBase::_getClassId().getName();
 }
 
 bool RuntimeBase::isInstanceOfRuntimeClass( const char * className ) const
+{
+    return (RuntimeBase::_getClassId() == className);
+}
+
+bool RuntimeBase::isInstanceOfRuntimeClass( const String & className ) const
 {
     return (RuntimeBase::_getClassId() == className);
 }

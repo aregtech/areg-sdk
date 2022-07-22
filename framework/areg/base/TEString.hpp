@@ -779,11 +779,8 @@ public:
      *                  If the position is valid, it sets the character at the specified position.
      *                  If the position is NEString::END_POS, it appends a character at the end of the string.
      *                  In all other cases, the operation is ignored.
-     *
-     * \return  Returns true if operation succeeded and character either is set or append.
-     *          Otherwise, returns false.
      **/
-    inline bool setAt( CharType ch, NEString::CharPos atPos = NEString::END_POS );
+    inline TEString<CharType>& setAt( CharType ch, NEString::CharPos atPos = NEString::END_POS );
 
     /**
      * \brief   Removes whitespace characters from left side, i.e. from the begin of the string
@@ -2026,18 +2023,18 @@ TEString<CharType>& TEString<CharType>::replace( const CharType* strSearch
 
 template<typename CharType>
 inline TEString<CharType>& TEString<CharType>::replace( const TEString<CharType>& strSearch
-                                                    , const TEString<CharType>& strReplace
-                                                    , NEString::CharPos startPos /*= NEString::START_POS*/
-                                                    , bool replaceAll /*= true*/)
+                                                       , const TEString<CharType>& strReplace
+                                                       , NEString::CharPos startPos /*= NEString::START_POS*/
+                                                       , bool replaceAll /*= true*/)
 {
     return replace(strSearch.mData, strReplace.mData, startPos, replaceAll);
 }
 
 template<typename CharType>
 TEString<CharType>& TEString<CharType>::replace( const std::basic_string<CharType>& strSearch
-                                             , const std::basic_string<CharType>& strReplace
-                                             , NEString::CharPos startPos /*= NEString::START_POS*/
-                                             , bool replaceAll /*= true*/)
+                                                , const std::basic_string<CharType>& strReplace
+                                                , NEString::CharPos startPos /*= NEString::START_POS*/
+                                                , bool replaceAll /*= true*/)
 {
     if (isValidPosition(startPos) && (strSearch.empty() == false))
     {
@@ -2194,21 +2191,18 @@ inline CharType TEString<CharType>::getAt(NEString::CharPos atPos) const
 }
 
 template<typename CharType>
-inline bool TEString<CharType>::setAt(CharType ch, NEString::CharPos atPos /*= NEString::END_POS*/)
+inline TEString<CharType>& TEString<CharType>::setAt(CharType ch, NEString::CharPos atPos /*= NEString::END_POS*/)
 {
-    bool result = false;
-    if (atPos < static_cast<NEString::CharPos>(mData.size()))
+    if ((atPos >= NEString::START_POS) && (atPos < static_cast<NEString::CharPos>(mData.size())))
     {
         mData.at(static_cast<uint32_t>(atPos)) = ch;
-        result = true;
     }
     else if (atPos == NEString::END_POS)
     {
         mData.append(1, ch);
-        result = true;
     }
 
-    return result;
+    return (*this);
 }
 
 template<typename CharType>

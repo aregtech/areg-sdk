@@ -353,7 +353,7 @@ private:
      * \param   scopeId     The unique ID of trace scope to search in the system.
      * \param   newPrio     The name of priority value to set for trace scope.
      **/
-    inline void setScopePriority( unsigned int scopeId, const char * newPrio );
+    inline void setScopePriority( unsigned int scopeId, const String & newPrio );
 
     /**
      * \brief   By given unique name searches trace scope object in the map and if found, 
@@ -361,7 +361,7 @@ private:
      * \param   scopeName   The unique name of trace scope to search in the system.
      * \param   newPrio     The priority value to set for trace scope.
      **/
-    inline void setScopePriority( const char * scopeName, unsigned int newPrio );
+    inline void setScopePriority( const String& scopeName, unsigned int newPrio );
 
     /**
      * \brief   By given unique name searches trace scope object in the map and if found, 
@@ -369,7 +369,7 @@ private:
      * \param   scopeName   The unique name of trace scope to search in the system.
      * \param   newPrio     The name of priority value to set for trace scope.
      **/
-    inline void setScopePriority( const char * scopeName, const char * newPrio );
+    inline void setScopePriority( const String& scopeName, const String& newPrio );
 
     /**
      * \brief   By given unique ID searches trace scope object in the map and if found, 
@@ -385,7 +385,7 @@ private:
      * \param   scopeId     The unique ID of trace scope to search in the system.
      * \param   addPrio     The name of priority value to add for trace scope.
      **/
-    inline void addScopePriority( unsigned int scopeId, const char * addPrio );
+    inline void addScopePriority( unsigned int scopeId, const String& addPrio );
 
     /**
      * \brief   By given unique name searches trace scope object in the map and if found, 
@@ -393,7 +393,7 @@ private:
      * \param   scopeName   The unique name of trace scope to search in the system.
      * \param   addPrio     The priority value to add for trace scope.
      **/
-    inline void addScopePriority( const char * scopeName, NETrace::eLogPriority addPrio );
+    inline void addScopePriority( const String& scopeName, NETrace::eLogPriority addPrio );
 
     /**
      * \brief   By given unique name searches trace scope object in the map and if found, 
@@ -401,7 +401,7 @@ private:
      * \param   scopeName   The unique name of trace scope to search in the system.
      * \param   addPrio     The name of priority value to add for trace scope.
      **/
-    inline void addScopePriority( const char * scopeName, const char * addPrio );
+    inline void addScopePriority( const String& scopeName, const String& addPrio );
 
     /**
      * \brief   By given unique ID searches trace scope object in the map and if found, 
@@ -417,7 +417,7 @@ private:
      * \param   scopeId     The unique ID of trace scope to search in the system.
      * \param   remPrio     The name of priority value to remove for trace scope.
      **/
-    inline void removeScopePriority( unsigned int scopeId, const char * remPrio );
+    inline void removeScopePriority( unsigned int scopeId, const String& remPrio );
 
     /**
      * \brief   By given unique name searches trace scope object in the map and if found, 
@@ -425,7 +425,7 @@ private:
      * \param   scopeName   The unique name of trace scope to search in the system.
      * \param   remPrio     The priority value to remove for trace scope.
      **/
-    inline void removeScopePriority( const char * scopeName, NETrace::eLogPriority remPrio );
+    inline void removeScopePriority( const String & scopeName, NETrace::eLogPriority remPrio );
 
     /**
      * \brief   By given unique name searches trace scope object in the map and if found, 
@@ -433,7 +433,7 @@ private:
      * \param   scopeName   The unique name of trace scope to search in the system.
      * \param   remPrio     The name of priority value to remove for trace scope.
      **/
-    inline void removeScopePriority( const char * scopeName, const char * remPrio );
+    inline void removeScopePriority( const String & scopeName, const String & remPrio );
 
     /**
      * \brief   By given name of scope group searches trace scope object in the map and for every
@@ -443,7 +443,7 @@ private:
      * \return  Returns number of trace scope object, which priority has been changed.
      *          Returns zero, if could not find any trace scope within specified group.
      **/
-    int setScopeGroupPriority( const char * scopeGroupName, unsigned int newPrio );
+    int setScopeGroupPriority( const String & scopeGroupName, unsigned int newPrio );
 
     /**
      * \brief   By given name of scope group searches trace scope object in the map and for every
@@ -453,7 +453,7 @@ private:
      * \return  Returns number of trace scope object, which priority has been changed.
      *          Returns zero, if could not find any trace scope within specified group.
      **/
-    inline int setScopeGroupPriority( const char * scopeGroupName, const char * newPrio );
+    inline int setScopeGroupPriority( const String & scopeGroupName, const String & newPrio );
 
     /**
      * \brief   By given name of scope group searches trace scope object in the map and for every
@@ -463,7 +463,7 @@ private:
      * \return  Returns number of trace scope object, which priority has been changed.
      *          Returns zero, if could not find any trace scope within specified group.
      **/
-    int addScopeGroupPriority( const char * scopeGroupName, NETrace::eLogPriority addPrio );
+    int addScopeGroupPriority( const String & scopeGroupName, NETrace::eLogPriority addPrio );
 
     /**
      * \brief   By given name of scope group searches trace scope object in the map and for every
@@ -473,7 +473,7 @@ private:
      * \return  Returns number of trace scope object, which priority has been changed.
      *          Returns zero, if could not find any trace scope within specified group.
      **/
-    inline int addScopeGroupPriority( const char * scopeGroupName, const char * addPrio );
+    inline int addScopeGroupPriority( const String & scopeGroupName, const String & addPrio );
 
     /**
      * \brief   By given name of scope group searches trace scope object in the map and for every
@@ -483,7 +483,7 @@ private:
      * \return  Returns number of trace scope object, which priority has been changed.
      *          Returns zero, if could not find any trace scope within specified group.
      **/
-    int removeScopeGroupPriority( const char * scopeGroupName, NETrace::eLogPriority remPrio );
+    int removeScopeGroupPriority( const String& scopeGroupName, NETrace::eLogPriority remPrio );
 
     /**
      * \brief   By given name of scope group searches trace scope object in the map and for every
@@ -493,7 +493,7 @@ private:
      * \return  Returns number of trace scope object, which priority has been changed.
      *          Returns zero, if could not find any trace scope within specified group.
      **/
-    inline int removeScopeGroupPriority( const char * scopeGroupName, const char * remPrio );
+    inline int removeScopeGroupPriority( const String& scopeGroupName, const String& remPrio );
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -613,7 +613,7 @@ private:
      * \param   scopeName   The name of scope to search in the system to change priority.
      * \param   logPriority The logging priority to set for scope.
      **/
-    void setScopesPriority( const char * scopeName, unsigned int logPriority );
+    void setScopesPriority( const String & scopeName, unsigned int logPriority );
 
     /**
      * \brief   Returns true, if settings to log traces on remote host are valid.
@@ -768,62 +768,62 @@ inline TraceScope * TraceManager::_getScope(const char * scopeName) const
     return _getScope( TraceManager::makeScopeId(scopeName) );
 }
 
-inline void TraceManager::setScopePriority(unsigned int scopeId, const char * newPrio)
+inline void TraceManager::setScopePriority(unsigned int scopeId, const String & newPrio)
 {
     setScopePriority( scopeId, NETrace::convFromString(newPrio) );
 }
 
-inline void TraceManager::setScopePriority(const char * scopeName, unsigned int newPrio)
+inline void TraceManager::setScopePriority(const String & scopeName, unsigned int newPrio)
 {
     setScopePriority( TraceManager::makeScopeId(scopeName), newPrio );
 }
 
-inline void TraceManager::setScopePriority(const char * scopeName, const char * newPrio)
+inline void TraceManager::setScopePriority(const String & scopeName, const String & newPrio)
 {
     setScopePriority( TraceManager::makeScopeId(scopeName), NETrace::convFromString(newPrio) );
 }
 
-inline void TraceManager::addScopePriority(unsigned int scopeId, const char * addPrio)
+inline void TraceManager::addScopePriority(unsigned int scopeId, const String & addPrio)
 {
     addScopePriority( scopeId, NETrace::convFromString(addPrio) );
 }
 
-inline void TraceManager::addScopePriority(const char * scopeName, NETrace::eLogPriority addPrio)
+inline void TraceManager::addScopePriority(const String & scopeName, NETrace::eLogPriority addPrio)
 {
     addScopePriority( TraceManager::makeScopeId(scopeName), addPrio );
 }
 
-inline void TraceManager::addScopePriority(const char * scopeName, const char * addPrio)
+inline void TraceManager::addScopePriority(const String & scopeName, const String & addPrio)
 {
     addScopePriority( TraceManager::makeScopeId(scopeName), NETrace::convFromString(addPrio) );
 }
 
-inline void TraceManager::removeScopePriority(unsigned int scopeId, const char * remPrio)
+inline void TraceManager::removeScopePriority(unsigned int scopeId, const String & remPrio)
 {
     removeScopePriority( scopeId, NETrace::convFromString(remPrio) );
 }
 
-inline void TraceManager::removeScopePriority(const char * scopeName, NETrace::eLogPriority remPrio)
+inline void TraceManager::removeScopePriority(const String & scopeName, NETrace::eLogPriority remPrio)
 {
     removeScopePriority( TraceManager::makeScopeId(scopeName), remPrio );
 }
 
-inline void TraceManager::removeScopePriority(const char * scopeName, const char * remPrio)
+inline void TraceManager::removeScopePriority(const String & scopeName, const String & remPrio)
 {
     removeScopePriority( TraceManager::makeScopeId(scopeName), NETrace::convFromString(remPrio) );
 }
 
-inline int TraceManager::setScopeGroupPriority(const char * scopeGroupName, const char * newPrio)
+inline int TraceManager::setScopeGroupPriority(const String & scopeGroupName, const String & newPrio)
 {
     return setScopeGroupPriority( scopeGroupName, NETrace::convFromString(newPrio) );
 }
 
-inline int TraceManager::addScopeGroupPriority(const char * scopeGroupName, const char * addPrio)
+inline int TraceManager::addScopeGroupPriority(const String & scopeGroupName, const String & addPrio)
 {
     return addScopeGroupPriority( scopeGroupName, NETrace::convFromString(addPrio) );
 }
 
-inline int TraceManager::removeScopeGroupPriority(const char * scopeGroupName, const char * remPrio)
+inline int TraceManager::removeScopeGroupPriority(const String& scopeGroupName, const String& remPrio)
 {
     return removeScopeGroupPriority(scopeGroupName, NETrace::convFromString(remPrio) );
 }

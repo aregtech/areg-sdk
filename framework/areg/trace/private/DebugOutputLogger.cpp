@@ -116,24 +116,23 @@ void DebugOutputLogger::closeLogger(void)
 }
 
 #if defined(_OUTPUT_DEBUG)
-bool DebugOutputLogger::logMessage(const NETrace::sLogMessage & logMessage)
-{
-    bool result = false;
 
+void DebugOutputLogger::logMessage(const NETrace::sLogMessage & logMessage)
+{
     if ( mIsOpened )
     {
         switch (logMessage.lmHeader.logType)
         {
         case NETrace::LogMessage:
-            result = getLayoutMessage().logMessage(logMessage, static_cast<IEOutStream &>(*this));
+            getLayoutMessage().logMessage(logMessage, static_cast<IEOutStream &>(*this));
             break;
 
         case NETrace::LogScopeEnter:
-            result = getLayoutEnterScope().logMessage( logMessage, static_cast<IEOutStream &>(*this) );
+            getLayoutEnterScope().logMessage( logMessage, static_cast<IEOutStream &>(*this) );
             break;
 
         case NETrace::LogScopeExit:
-            result = getLayoutExitScope().logMessage( logMessage, static_cast<IEOutStream &>(*this) );
+            getLayoutExitScope().logMessage( logMessage, static_cast<IEOutStream &>(*this) );
             break;
 
         default:
@@ -143,14 +142,12 @@ bool DebugOutputLogger::logMessage(const NETrace::sLogMessage & logMessage)
 
         flush();
     }
-    return result;
 }
 
 #else // !defined(_OUTPUT_DEBUG)
 
-bool DebugOutputLogger::logMessage(const NETrace::sLogMessage & /*logMessage*/)
+void DebugOutputLogger::logMessage(const NETrace::sLogMessage & /*logMessage*/)
 {
-    return false;
 }
 
 #endif // !defined(_OUTPUT_DEBUG)

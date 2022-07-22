@@ -562,7 +562,7 @@ bool ServiceManager::postEvent(Event & eventElem)
     }
     else
     {
-        OUTPUT_ERR("Not a ServiceManagerEvent type event, cannot Post. Destroying event type [ %s ]", eventElem.getRuntimeClassName());
+        OUTPUT_ERR("Not a ServiceManagerEvent type event, cannot Post. Destroying event type [ %s ]", eventElem.getRuntimeClassName().getString());
         eventElem.destroy();
     }
     return result;

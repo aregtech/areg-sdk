@@ -146,7 +146,7 @@ bool NullDispatcherThread::hasRegisteredConsumer( const RuntimeClassID & /* whic
 
 bool NullDispatcherThread::postEvent( Event& eventElem )
 {
-    OUTPUT_ERR("Wrong event dispatcher to post event type [ %s ], going to destroy", eventElem.getRuntimeClassName());
+    OUTPUT_ERR("Wrong event dispatcher to post event type [ %s ], going to destroy", eventElem.getRuntimeClassName().getString());
     eventElem.destroy();
     ASSERT(false);
     return false;
@@ -216,7 +216,7 @@ DispatcherThread::DispatcherThread (const char* threadName )
 //////////////////////////////////////////////////////////////////////////
 bool DispatcherThread::postEvent( Event& eventElem )
 {
-    OUTPUT_ERR("Wrong postEvent function call, destroying event [ %s ]", eventElem.getRuntimeClassName());
+    OUTPUT_ERR("Wrong postEvent function call, destroying event [ %s ]", eventElem.getRuntimeClassName().getString());
     eventElem.destroy();
     ASSERT(false);  // <= this should not be called.
     return true;

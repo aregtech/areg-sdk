@@ -107,6 +107,7 @@ public:
      * \param   newPrio     The name of message priority to set
      **/
     inline void setPriority( const char * newPrio );
+    inline void setPriority( const String & newPrio );
 
     /**
      * \brief   Adds the message priority of scope by given value of priority.
@@ -121,6 +122,7 @@ public:
      * \param   addPrio     The name of message priority to add
      **/
     inline void addPriority( const char * addPrio );
+    inline void addPriority( const String & addPrio );
 
     /**
      * \brief   Removes the message priority of scope by given value of priority.
@@ -135,6 +137,7 @@ public:
      * \param   remPrio     The name of message priority to remove
      **/
     inline void removePriority( const char * remPrio );
+    inline void removePriority( const String & remPrio );
 
     /**
      * \brief   Returns value of trace scope message priority
@@ -229,6 +232,11 @@ inline void TraceScope::setPriority( const char * newPrio )
     setPriority( NETrace::convFromString(newPrio) );
 }
 
+inline void TraceScope::setPriority( const String & newPrio )
+{
+    setPriority( NETrace::convFromString(newPrio) );
+}
+
 inline void TraceScope::addPriority( NETrace::eLogPriority addPrio )
 {
     mScopePrio  |= static_cast<unsigned int>(addPrio);
@@ -239,12 +247,22 @@ inline void TraceScope::addPriority( const char * addPrio )
     addPriority( NETrace::convFromString(addPrio) );
 }
 
+inline void TraceScope::addPriority( const String & addPrio )
+{
+    addPriority( NETrace::convFromString(addPrio) );
+}
+
 inline void TraceScope::removePriority( NETrace::eLogPriority remPrio )
 {
     mScopePrio  &= ~static_cast<unsigned int>(remPrio);
 }
 
 inline void TraceScope::removePriority( const char * remPrio )
+{
+    removePriority( NETrace::convFromString(remPrio) );
+}
+
+inline void TraceScope::removePriority( const String & remPrio )
 {
     removePriority( NETrace::convFromString(remPrio) );
 }

@@ -683,7 +683,7 @@ void ClientService::processRemoteRequestEvent( RemoteRequestEvent & requestEvent
     TRACE_DBG("Processing request event [ %s ] with message id [ 0x%X ] of runtime object [ %s ], target stub [ %s ], source proxy [ %s ], request type [ %s ]"
                 , Event::getString( requestEvent.getEventType() )
                 , static_cast<uint32_t>(requestEvent.getRequestId())
-                , requestEvent.getRuntimeClassName()
+                , requestEvent.getRuntimeClassName().getString()
                 , StubAddress::convAddressToPath(requestEvent.getTargetStub()).getString()
                 , ProxyAddress::convAddressToPath(requestEvent.getEventSource()).getString()
                 , NEService::getString(requestEvent.getRequestType()) );
@@ -718,7 +718,7 @@ void ClientService::processRemoteNotifyRequestEvent( RemoteNotifyRequestEvent & 
     TRACE_DBG("Processing notify request event [ %s ] with message id [ 0x%X ] of runtime object [ %s ], target stub [ %s ], source proxy [ %s ], request type [ %s ]"
                 , Event::getString( requestNotifyEvent.getEventType() )
                 , static_cast<uint32_t>(requestNotifyEvent.getRequestId())
-                , requestNotifyEvent.getRuntimeClassName()
+                , requestNotifyEvent.getRuntimeClassName().getString()
                 , StubAddress::convAddressToPath(requestNotifyEvent.getTargetStub()).getString()
                 , ProxyAddress::convAddressToPath(requestNotifyEvent.getEventSource()).getString()
                 , NEService::getString(requestNotifyEvent.getRequestType()) );
@@ -755,7 +755,7 @@ void ClientService::processRemoteResponseEvent(RemoteResponseEvent & responseEve
     TRACE_DBG("Processing response event [ %s ] with message ID [ 0x%X ] of runtime object [ %s ], target proxy [ %s ], data type [ %s ]"
                 , Event::getString( responseEvent.getEventType() )
                 , static_cast<uint32_t>(responseEvent.getResponseId())
-                , responseEvent.getRuntimeClassName()
+                , responseEvent.getRuntimeClassName().getString()
                 , ProxyAddress::convAddressToPath(responseEvent.getTargetProxy()).getString()
                 , NEService::getString(responseEvent.getDataType()) );
 

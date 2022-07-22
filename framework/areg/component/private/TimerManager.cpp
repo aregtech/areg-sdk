@@ -370,7 +370,7 @@ bool TimerManager::postEvent( Event& eventElem )
     }
     else
     {
-        OUTPUT_ERR("Not a TimerManagingEvent type event, cannot Post. Destroying event type [ %s ]", eventElem.getRuntimeClassName());
+        OUTPUT_ERR("Not a TimerManagingEvent type event, cannot Post. Destroying event type [ %s ]", eventElem.getRuntimeClassName().getString());
         eventElem.destroy();
     }
 

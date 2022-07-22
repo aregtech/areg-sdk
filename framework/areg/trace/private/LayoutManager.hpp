@@ -18,7 +18,7 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
-#include "areg/base/TEStack.hpp"
+#include "areg/base/TEArrayList.hpp"
 #include "areg/trace/NETrace.hpp"
 
 /************************************************************************
@@ -44,7 +44,7 @@ class LayoutManager
 // Local types and constants.
 //////////////////////////////////////////////////////////////////////////
 private:
-    using ListLayouts   = TENolockStack<IELayout *>;
+    using ListLayouts   = TEArrayList<IELayout *>;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -53,7 +53,7 @@ public:
     /**
      * \brief   Default constructor
      **/
-    LayoutManager( void );
+    LayoutManager( void ) = default;
     /**
      * \brief   Destructor
      **/
@@ -69,6 +69,7 @@ public:
      * \return  Returns true if after parsing the layout manager contains at least one layout object.
      **/
     bool createLayouts( const char * layoutFormat );
+    bool createLayouts( const String & layoutFormat );
 
     /**
      * \brief   Release and delete list of layout objects.
@@ -82,13 +83,21 @@ public:
      * \param   stream  The streaming object to write output message.
      * \return  Returns true if operation succeeded.
      **/
-    bool logMessage( const NETrace::sLogMessage & logMsg, IEOutStream & stream ) const;
+    void logMessage( const NETrace::sLogMessage & logMsg, IEOutStream & stream ) const;
 
     /**
      * \brief   Returns true if layout manager is valid.
      *          The layout manager is valid if it has at least one layout object.
      **/
     inline bool isValid( void ) const;
+
+private:
+
+    /**
+     * \brief   Instantiates and creates layout objects out of layout format string.
+     * \param   layoutFormat    The layout string to parse and create objects.
+     **/
+    inline void _createLayouts(char* layoutFormat);
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables

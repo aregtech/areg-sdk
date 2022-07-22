@@ -121,7 +121,7 @@ void Event::deliverEvent( void )
     }
     else
     {
-        OUTPUT_ERR("The event target is unknown! Event type [ %s ] is going to be deleted.", getRuntimeClassName());
+        OUTPUT_ERR("The event target is unknown! Event type [ %s ] is going to be deleted.", getRuntimeClassName().getString());
         destroy();
     }
 }
@@ -173,11 +173,11 @@ void Event::dispatchSelf( IEEventConsumer* consumer )
         }
         else
         {
-            OUTPUT_WARN("The Event [ %s ] is interrupted and not going to be processed", getRuntimeClassName());
+            OUTPUT_WARN("The Event [ %s ] is interrupted and not going to be processed", getRuntimeClassName().getString());
         }
     }
     else
     {
-        OUTPUT_ERR("The Event [ %s ] has invalid consumer. The event cannot be processed!", getRuntimeClassName());
+        OUTPUT_ERR("The Event [ %s ] has invalid consumer. The event cannot be processed!", getRuntimeClassName().getString());
     }
 }

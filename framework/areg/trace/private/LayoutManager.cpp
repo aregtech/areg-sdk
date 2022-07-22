@@ -18,11 +18,6 @@
 #include "areg/trace/private/NELogConfig.hpp"
 #include "areg/base/NEUtilities.hpp"
 
-LayoutManager::LayoutManager(void)
-    : mLayoutList   ( )
-{
-}
-
 LayoutManager::~LayoutManager(void)
 {
     deleteLayouts();
@@ -36,111 +31,25 @@ bool LayoutManager::createLayouts( const char * layoutFormat )
 
     if ( strFormat != nullptr )
     {
-        NEString::copyString( strFormat, len, layoutFormat );
-        char * pos          = strFormat;
-        const char * pos1   = pos;
-        bool hasExclusive   = false;
-
-        while ( *pos != '\0' )
-        {
-            if ( *pos == '%' )
-            {
-                char ch = *(pos + 1);
-                IELayout * newLayout = nullptr;
-                switch ( static_cast<NELogConfig::eLayouts>(ch) )
-                {
-                case NELogConfig::eLayouts::LayoutTickCount:
-                    newLayout   = DEBUG_NEW TickCountLayout();
-                    break;
-
-                case NELogConfig::eLayouts::LayoutDayTime:
-                    newLayout   = DEBUG_NEW DayTimeLaytout();
-                    break;
-
-                case NELogConfig::eLayouts::LayoutExecutableId:
-                    newLayout   = DEBUG_NEW ModuleIdLayout();
-                    break;
-
-                case NELogConfig::eLayouts::LayoutMessage:
-                    if ( hasExclusive == false )
-                    {
-                        newLayout   = DEBUG_NEW MessageLayout();
-                        hasExclusive= true;
-                    }
-                    break;
-
-                case NELogConfig::eLayouts::LayoutEndOfLine:
-                    newLayout   = DEBUG_NEW EndOfLineLayout();
-                    break;
-
-                case NELogConfig::eLayouts::LayoutPriority:
-                    newLayout   = DEBUG_NEW PriorityLayout();
-                    break;
-
-                case NELogConfig::eLayouts::LaytoutScopeId:
-                    newLayout   = DEBUG_NEW ScopeIdLayout();
-                    break;
-
-                case NELogConfig::eLayouts::LayoutThreadId:
-                    newLayout   = DEBUG_NEW ThreadIdLayout();
-                    break;
-
-                case NELogConfig::eLayouts::LayoutExecutableName:
-                    newLayout   = DEBUG_NEW ModuleNameLayout();
-                    break;
-
-                case NELogConfig::eLayouts::LayoutThreadName:
-                    newLayout   = DEBUG_NEW ThreadNameLayout();
-                    break;
-
-                case NELogConfig::eLayouts::LaytoutScopeName:
-                    if ( hasExclusive == false )
-                    {
-                        newLayout   = DEBUG_NEW ScopeNameLayout();
-                        hasExclusive= true;
-                    }
-                    break;
-
-                case NELogConfig::eLayouts::LayoutUndefined:  // fall through
-                case NELogConfig::eLayouts::LayoutAnyText:    // fall through
-                default:
-                    if ( ch == '%' )
-                    {
-                        *(pos + 1) = '\0';
-                        newLayout   = DEBUG_NEW AnyTextLayout(pos1);
-                        pos1 = pos; // <== will automatically move 2 positions when newLayout is not nullptr;
-                    }
-                    else
-                    {
-                        pos += ch != '\0' ? 2 : 1;
-                    }
-                    break;
-                }
-
-                if ( newLayout != nullptr )
-                {
-                    *pos = '\0';
-                    if ( pos1 != static_cast<const char *>(pos) )
-                        mLayoutList.pushLast( static_cast<IELayout *>(DEBUG_NEW AnyTextLayout(pos1)) );
-
-                    mLayoutList.pushLast( newLayout );
-
-                    *(++ pos) = '\0';
-                    pos1 = ++ pos;                        
-                }
-            }
-            else
-            {
-                ++ pos;
-            }
-        }
-
-        if ( pos1 != static_cast<const char *>(pos) )
-        {
-            mLayoutList.pushLast( static_cast<IELayout *>(DEBUG_NEW AnyTextLayout( pos1 )) );
-        }
-
+        NEString::copyString<char, char>( strFormat, len, layoutFormat, len );
+        _createLayouts(strFormat);
         delete [] strFormat;
+    }
+
+    return (mLayoutList.isEmpty() == false);
+}
+
+bool LayoutManager::createLayouts(const String& layoutFormat)
+{
+    deleteLayouts();
+    uint32_t len = layoutFormat.isEmpty() ? 0u : layoutFormat.getLength() + 1;
+    char* strFormat = len != 0 ? DEBUG_NEW char[len] : nullptr;
+
+    if (strFormat != nullptr)
+    {
+        NEString::copyString<char, char>(strFormat, len, layoutFormat.getString(), len);
+        _createLayouts(strFormat);
+        delete[] strFormat;
     }
 
     return (mLayoutList.isEmpty() == false);
@@ -148,15 +57,16 @@ bool LayoutManager::createLayouts( const char * layoutFormat )
 
 void LayoutManager::deleteLayouts(void)
 {
-    for (ListLayouts::STACKPOS pos = mLayoutList.firstPosition(); mLayoutList.isValidPosition(pos); pos = mLayoutList.nextPosition(pos))
-        delete static_cast<IELayout *>(mLayoutList.getAt(pos));
+    for (uint32_t i = 0; i < mLayoutList.getSize(); ++i)
+    {
+        delete static_cast<IELayout*>(mLayoutList.getAt(i));
+    }
 
     mLayoutList.clear();
 }
 
-bool LayoutManager::logMessage(const NETrace::sLogMessage & logMsg, IEOutStream & stream) const
+void LayoutManager::logMessage(const NETrace::sLogMessage & logMsg, IEOutStream & stream) const
 {
-    bool result = false;
     if (isValid())
     {
         if ( logMsg.lmTrace.traceMessagePrio == NETrace::PrioIgnoreLayout )
@@ -165,12 +75,119 @@ bool LayoutManager::logMessage(const NETrace::sLogMessage & logMsg, IEOutStream 
         }
         else
         {
-            for (ListLayouts::STACKPOS pos = mLayoutList.firstPosition(); mLayoutList.isValidPosition(pos); pos = mLayoutList.nextPosition(pos) )
-                mLayoutList.getAt(pos)->logMessage(logMsg, stream);
+            uint32_t size = mLayoutList.getSize();
+            for (uint32_t i = 0; i < size; ++i)
+            {
+                mLayoutList.getAt(i)->logMessage(logMsg, stream);
+            }
         }
+    }
+}
 
-        result = true;
+inline void LayoutManager::_createLayouts(char* layoutFormat)
+{
+    char* pos{ layoutFormat };
+    bool hasExclusive{ false };
+    const char* pos1 = pos;
+
+    while (*pos != '\0')
+    {
+        if (*pos == '%')
+        {
+            char ch = *(pos + 1);
+            IELayout* newLayout = nullptr;
+            switch (static_cast<NELogConfig::eLayouts>(ch))
+            {
+            case NELogConfig::eLayouts::LayoutTickCount:
+                newLayout = DEBUG_NEW TickCountLayout();
+                break;
+
+            case NELogConfig::eLayouts::LayoutDayTime:
+                newLayout = DEBUG_NEW DayTimeLaytout();
+                break;
+
+            case NELogConfig::eLayouts::LayoutExecutableId:
+                newLayout = DEBUG_NEW ModuleIdLayout();
+                break;
+
+            case NELogConfig::eLayouts::LayoutMessage:
+                if (hasExclusive == false)
+                {
+                    newLayout = DEBUG_NEW MessageLayout();
+                    hasExclusive = true;
+                }
+                break;
+
+            case NELogConfig::eLayouts::LayoutEndOfLine:
+                newLayout = DEBUG_NEW EndOfLineLayout();
+                break;
+
+            case NELogConfig::eLayouts::LayoutPriority:
+                newLayout = DEBUG_NEW PriorityLayout();
+                break;
+
+            case NELogConfig::eLayouts::LaytoutScopeId:
+                newLayout = DEBUG_NEW ScopeIdLayout();
+                break;
+
+            case NELogConfig::eLayouts::LayoutThreadId:
+                newLayout = DEBUG_NEW ThreadIdLayout();
+                break;
+
+            case NELogConfig::eLayouts::LayoutExecutableName:
+                newLayout = DEBUG_NEW ModuleNameLayout();
+                break;
+
+            case NELogConfig::eLayouts::LayoutThreadName:
+                newLayout = DEBUG_NEW ThreadNameLayout();
+                break;
+
+            case NELogConfig::eLayouts::LaytoutScopeName:
+                if (hasExclusive == false)
+                {
+                    newLayout = DEBUG_NEW ScopeNameLayout();
+                    hasExclusive = true;
+                }
+                break;
+
+            case NELogConfig::eLayouts::LayoutUndefined:  // fall through
+            case NELogConfig::eLayouts::LayoutAnyText:    // fall through
+            default:
+                if (ch == '%')
+                {
+                    *(pos + 1) = '\0';
+                    newLayout = DEBUG_NEW AnyTextLayout(pos1);
+                    pos1 = pos; // <== will automatically move 2 positions when newLayout is not nullptr;
+                }
+                else
+                {
+                    pos += ch != '\0' ? 2 : 1;
+                }
+                break;
+            }
+
+            if (newLayout != nullptr)
+            {
+                *pos = '\0';
+                if (pos1 != pos)
+                {
+                    mLayoutList.add(static_cast<IELayout*>(DEBUG_NEW AnyTextLayout(pos1)));
+                }
+
+                mLayoutList.add(newLayout);
+
+                *(++pos) = '\0';
+                pos1 = ++pos;
+            }
+        }
+        else
+        {
+            ++pos;
+        }
     }
 
-    return result;
+    if (pos1 != pos)
+    {
+        mLayoutList.add(static_cast<IELayout*>(DEBUG_NEW AnyTextLayout(pos1)));
+    }
 }

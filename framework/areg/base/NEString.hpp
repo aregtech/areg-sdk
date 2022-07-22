@@ -1557,7 +1557,10 @@ inline NEMath::eCompare NEString::compareIgnoreCase( const CharLhs *leftSide, co
 }
 
 template<typename CharLhs, typename CharRhs>
-NEMath::eCompare NEString::compareStrings(const CharLhs *leftSide, const CharRhs * rightSide, NEString::CharCount charCount /*= COUNT_ALL*/, bool caseSensitive /*= true*/)
+NEMath::eCompare NEString::compareStrings( const CharLhs *leftSide
+                                         , const CharRhs * rightSide
+                                         , NEString::CharCount charCount    /*= COUNT_ALL*/
+                                         , bool caseSensitive               /*= true*/)
 {
     NEMath::eCompare result = NEMath::eCompare::Bigger;
 
@@ -1691,18 +1694,17 @@ template<typename CharType>
 inline NEMath::eCompare NEString::compareFast( const CharType * leftSide, const CharType * rightSide, NEString::CharCount count )
 {
     NEMath::eCompare result = NEMath::eCompare::Bigger;
-
-    if ( leftSide == rightSide )
+    if (count == NEString::COUNT_ALL)
+    {
+        result = NEString::compareFast<CharType, CharType>(rightSide, leftSide);
+    }
+    else if ( leftSide == rightSide )
     {
         result = NEMath::eCompare::Equal;
     }
     else if ( (leftSide != nullptr) && (rightSide != nullptr) )
     {
-        int comp = static_cast<int>(NEMemory::memCompare( leftSide, rightSide, count * sizeof( CharType ) ));
-        if (comp == 0)
-            result = NEMath::eCompare::Equal;
-        else if (comp < 0)
-            result = NEMath::eCompare::Smaller;
+        result = NEMemory::memCompare( leftSide, rightSide, count * sizeof( CharType ) );
     }
     else if ( rightSide != nullptr )
     {

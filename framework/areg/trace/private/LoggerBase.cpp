@@ -32,17 +32,17 @@ bool LoggerBase::createLayouts(void)
 
     if (propMessage.isValid() )
     {
-        result |= mLayoutsMessage.createLayouts( static_cast<const char *>(propMessage.getValue( )) );
+        result |= mLayoutsMessage.createLayouts( static_cast<const String&>(propMessage.getValue( )) );
     }
 
     if ( propEnter.isValid() )
     {
-        result |= mLayoutsScopeEnter.createLayouts( static_cast<const char *>(propEnter.getValue( )) );
+        result |= mLayoutsScopeEnter.createLayouts( static_cast<const String&>(propEnter.getValue( )) );
     }
 
     if ( propExit.isValid() )
     {
-        result |= mLayoutsScopeExit.createLayouts( static_cast<const char *>(propExit.getValue( )) );
+        result |= mLayoutsScopeExit.createLayouts( static_cast<const String&>(propExit.getValue( )) );
     }
 
     return result;

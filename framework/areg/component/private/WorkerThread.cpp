@@ -54,7 +54,7 @@ bool WorkerThread::postEvent( Event& eventElem )
     }
     else
     {
-        OUTPUT_ERR("Wrong event to post, event type [ %s ], category [ %d ]", eventElem.getRuntimeClassName(), eventElem.getEventType());
+        OUTPUT_ERR("Wrong event to post, event type [ %s ], category [ %d ]", eventElem.getRuntimeClassName().getString(), eventElem.getEventType());
         eventElem.destroy();
         ASSERT(false);
     }
