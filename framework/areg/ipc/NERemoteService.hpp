@@ -21,8 +21,7 @@
 #include "areg/base/GEGlobal.h"
 #include "areg/appbase/NEApplication.hpp"
 #include "areg/base/NESocket.hpp"
-
-#include <string_view>
+#include "areg/base/String.hpp"
 
 //////////////////////////////////////////////////////////////////////////
 // NERemoteService namespace declaration
@@ -122,7 +121,7 @@ namespace NERemoteService
      * \param   connectionType  The string of connection type name to convert
      * \param   caseSensitive   Flag, indicating whether the given name to convert is case sensitive or not.
      **/
-    AREG_API NERemoteService::eServiceConnection getServiceConnectionType( const char * connectionType, bool caseSensitive = true );
+    AREG_API NERemoteService::eServiceConnection getServiceConnectionType( const String & connectionType, bool caseSensitive = true );
 }
 
 #endif  // AREG_IPC_NEREMOTESERVICE_HPP

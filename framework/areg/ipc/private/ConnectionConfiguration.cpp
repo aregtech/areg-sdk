@@ -22,13 +22,13 @@
 
 ConnectionConfiguration::eConnectionProperty ConnectionConfiguration::getPosition(const String & strProperty)
 {
-    if ( strProperty == NERemoteService::CONFIG_KEY_PROP_ENABLE.data( ) )
+    if ( strProperty == NERemoteService::CONFIG_KEY_PROP_ENABLE )
         return eConnectionProperty::PropertyEnabled;
-    else if ( strProperty == NERemoteService::CONFIG_KEY_PROP_NAME.data( ) )
+    else if ( strProperty == NERemoteService::CONFIG_KEY_PROP_NAME )
         return eConnectionProperty::PropertyName;
-    else if (strProperty == NERemoteService::CONFIG_KEY_PROP_ADDRESS.data( ) )
+    else if (strProperty == NERemoteService::CONFIG_KEY_PROP_ADDRESS )
         return eConnectionProperty::PropertyHost;
-    else if (strProperty == NERemoteService::CONFIG_KEY_PROP_PORT.data( ) )
+    else if (strProperty == NERemoteService::CONFIG_KEY_PROP_PORT )
         return eConnectionProperty::PropertyPort;
     else
         return eConnectionProperty::PropertyInvalid;
@@ -84,8 +84,8 @@ NERemoteService::eServiceConnection ConnectionConfiguration::_parseConnectionPro
             const String & section    = key.getSection();
             const String & target     = key.getProperty();
 
-            if ( (section   == NERemoteService::CONFIG_KEY_CONNECTION.data( )   ) &&
-                 (target    == NERemoteService::CONFIG_KEY_PROP_TYPE.data( )    ) )
+            if ( (section   == NERemoteService::CONFIG_KEY_CONNECTION   ) &&
+                 (target    == NERemoteService::CONFIG_KEY_PROP_TYPE    ) )
             {
                 result = NERemoteService::getServiceConnectionType(prop.getValue().getString(), false);
             }
@@ -104,7 +104,7 @@ bool ConnectionConfiguration::_parseConnectionConfig(ListProperties & listProp, 
     while ( (file.readLine( inLine ) > 0) && (_parseConnectionProperty(file, inLine, prop) == NERemoteService::eServiceConnection::ConnectionUndefined) )
     {
         const PropertyKey & key = prop.getKey( );
-        if ( (key.getSection( ) == NERemoteService::CONFIG_KEY_CONNECTION.data()) && (key.getModule( ) == headModule) )
+        if ( (key.getSection( ) == NERemoteService::CONFIG_KEY_CONNECTION) && (key.getModule( ) == headModule) )
         {
             eConnectionProperty pos = getPosition( key.getProperty( ) );
             if ( pos != eConnectionProperty::PropertyInvalid )
@@ -114,6 +114,7 @@ bool ConnectionConfiguration::_parseConnectionConfig(ListProperties & listProp, 
         }
         prop.resetData();
     }
+
     return (listProp.isEmpty() == false);
 }
 
@@ -129,6 +130,7 @@ String ConnectionConfiguration::_getPropertyValue( NERemoteService::eServiceConn
             result = prop.getValue( ).getString( );
         }
     }
+
     return result;
 }
 
@@ -152,7 +154,7 @@ bool ConnectionConfiguration::getConnectionEnableFlag( NERemoteService::eService
 
 unsigned short ConnectionConfiguration::getConnectionPort( NERemoteService::eServiceConnection section /*= NERemoteService::eServiceConnection::ConnectionTcpip */ ) const
 {
-    String port = _getPropertyValue( section, ConnectionConfiguration::PropertyPort, String::toString(NEConnection::DEFAULT_REMOTE_SERVICE_PORT) );
+    String port = _getPropertyValue( section, ConnectionConfiguration::PropertyPort, String::toString(NEConnection::DEFAULT_REMOTE_SERVICE_PORT).getString() );
     return static_cast<unsigned short>(port.toUInt32( ));
 }
 

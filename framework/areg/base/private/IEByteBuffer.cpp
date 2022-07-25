@@ -72,10 +72,7 @@ unsigned int IEByteBuffer::resize(unsigned int size, bool copy)
                 }
                 else
                 {
-                    if (buffer != nullptr)
-                    {
-                        delete [] buffer;
-                    }
+                    delete[] buffer;
                 }
             }
         }

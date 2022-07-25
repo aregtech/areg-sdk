@@ -24,28 +24,28 @@
 
 uint8_t IEInStream::read8Bits(void) const
 {
-    uint8_t result = 0;
+    uint8_t result{ 0u };
     read( reinterpret_cast<unsigned char *>(&result), 1 );
     return result;
 }
 
 uint16_t IEInStream::read16Bits(void) const
 {
-    uint16_t result = 0;
+    uint16_t result{ 0u };
     read( reinterpret_cast<unsigned char *>(&result), 2 );
     return result;
 }
 
 uint32_t IEInStream::read32Bits(void) const
 {
-    uint32_t result = 0;
+    uint32_t result{ 0u };
     read( reinterpret_cast<unsigned char *>(&result), 4 );
     return result;
 }
 
 uint64_t IEInStream::read64Bits(void) const
 {
-    uint64_t result = 0;
+    uint64_t result{ 0u };
     read( reinterpret_cast<unsigned char *>(&result), 8 );
     return result;
 }

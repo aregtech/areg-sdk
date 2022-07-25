@@ -35,8 +35,6 @@ SpinLockWin32::SpinLockWin32( void )
     , mOwnerThread  ( 0 )
     , mLockCount    ( 0 )
 {
-    static_assert(std::atomic<id_type>::is_always_lock_free);
-    static_assert(std::atomic<uint32_t>::is_always_lock_free);
 }
 
 SpinLockWin32::~SpinLockWin32( void )

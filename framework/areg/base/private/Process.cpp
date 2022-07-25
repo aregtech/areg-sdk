@@ -11,7 +11,7 @@
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit
  * \author      Artak Avetyan
  * \brief       The class to handle process. Get process ID, process handle, process name, etc.
- *              OS indipendant implementation
+ *              OS independent implementation
  ************************************************************************/
 #include "areg/base/Process.hpp"
 

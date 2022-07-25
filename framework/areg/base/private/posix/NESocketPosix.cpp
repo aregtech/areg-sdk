@@ -47,7 +47,6 @@ DEF_TRACE_SCOPE(areg_base_NESocketPosix_remainDataRead);
 
 AREG_API bool NESocket::socketInitialize(void)
 {
-    static_assert( std::atomic_uint::is_always_lock_free );
     return true;
 }
 

@@ -63,7 +63,7 @@ AREG_API const int                  NESocket::MAXIMUM_LISTEN_QUEUE_SIZE = SOMAXC
 // NESocket::SocketAddress class implementation
 //////////////////////////////////////////////////////////////////////////
 NESocket::SocketAddress::SocketAddress( void )
-    : mIpAddr   ( "" )
+    : mIpAddr   ( )
     , mPortNr   ( NESocket::InvalidPort )
 {
 }

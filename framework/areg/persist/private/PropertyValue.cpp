@@ -34,6 +34,12 @@ PropertyValue::PropertyValue( const String & value )
     parseValue( static_cast<const String &>(value) );
 }
 
+PropertyValue::PropertyValue(String&& value) noexcept
+    : mValue()
+{
+    parseValue(std::move(value));
+}
+
 PropertyValue::PropertyValue( const char * value )
     : mValue    ( )
 {
@@ -71,6 +77,12 @@ PropertyValue & PropertyValue::operator = ( PropertyValue && source ) noexcept
 PropertyValue & PropertyValue::operator = ( const String & value )
 {
     parseValue(value);
+    return (*this);
+}
+
+PropertyValue& PropertyValue::operator = (String && value) noexcept
+{
+    parseValue(std::move(value));
     return (*this);
 }
 
@@ -119,12 +131,12 @@ void PropertyValue::setValue( const String & value )
 
 void PropertyValue::setValue( String && value )
 {
-    parseValue( static_cast<String &&>(value) );
+    parseValue( std::move(value) );
 }
 
-const char * PropertyValue::getString(void) const
+const String & PropertyValue::getString(void) const
 {
-    return mValue.getString();
+    return mValue;
 }
 
 unsigned int PropertyValue::getInteger( NEString::eRadix radix /*= NEString::RadixDecimal*/ ) const
@@ -203,28 +215,19 @@ void PropertyValue::setIndentifier(const TEArrayList<Identifier> idList)
 void PropertyValue::parseValue(const char * value)
 {
     mValue  = value;
-    mValue.trimAll();
-    int len = mValue.getLength();
-    for ( ; mValue[len - 1] == NEPersistence::SYNTAX_END_COMMAND && len > 0; -- len)
-        mValue.substring(0, len - 1);
+    _parseValue();
 }
 
 void PropertyValue::parseValue( const String & value )
 {
     mValue  = value;
-    mValue.trimAll( );
-    int len = mValue.getLength( );
-    for ( ; mValue[len - 1] == NEPersistence::SYNTAX_END_COMMAND && len > 0; -- len )
-        mValue.substring( 0, len - 1 );
+    _parseValue();
 }
 
 void PropertyValue::parseValue( String && value )
 {
-    mValue  = static_cast<String &&>(value);
-    mValue.trimAll( );
-    int len = mValue.getLength( );
-    for ( ; mValue[len - 1] == NEPersistence::SYNTAX_END_COMMAND && len > 0; -- len )
-        mValue.substring( 0, len - 1 );
+    mValue  = std::move(value);
+    _parseValue();
 }
 
 void PropertyValue::resetValue(void)
@@ -235,6 +238,20 @@ void PropertyValue::resetValue(void)
 String PropertyValue::convToString(void) const
 {
     String result (mValue);
-    result += mValue.isEmpty() == false ? NEPersistence::SYNTAX_END_COMMAND : '\0';
+    if (mValue.isEmpty() == false)
+    {
+        result += NEPersistence::SYNTAX_END_COMMAND;
+    }
+
     return result;
+}
+
+inline void PropertyValue::_parseValue(void)
+{
+    mValue.trimAll();
+    uint32_t len = mValue.getLength();
+    while ((len != 0) && (mValue[len - 1] == NEPersistence::SYNTAX_END_COMMAND))
+    {
+        len = mValue.resize(len - 1).getLength();
+    }
 }

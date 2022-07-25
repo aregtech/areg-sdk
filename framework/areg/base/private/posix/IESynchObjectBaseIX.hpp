@@ -89,7 +89,7 @@ public:
     /**
      * \brief   Returns synchronization object name.
      **/
-    inline const char * getName( void ) const;
+    inline const String & getName( void ) const;
 
 /************************************************************************/
 // IESynchObjectBaseIX overrides.
@@ -119,7 +119,7 @@ protected:
     /**
      * \brief   The name of synchronization object.
      **/
-    char                                mSynchName[_MAX_NAME_LENGTH];
+    String  mSynchName;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls.
@@ -138,7 +138,7 @@ inline NESynchTypesIX::eSynchObject IESynchObjectBaseIX::getSynchType( void ) co
     return mSynchType;
 }
 
-inline const char * IESynchObjectBaseIX::getName( void ) const
+inline const String & IESynchObjectBaseIX::getName( void ) const
 {
     return mSynchName;
 }

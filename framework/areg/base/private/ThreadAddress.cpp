@@ -45,16 +45,23 @@ const ThreadAddress   ThreadAddress::INVALID_THREAD_ADDRESS;
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 ThreadAddress::ThreadAddress( void )
-    : mThreadName   ( INVALID_THREAD_NAME.data() )
+    : mThreadName   ( INVALID_THREAD_NAME )
     , mMagicNum     ( NEMath::CHECKSUM_IGNORE )
 {
 }
 
 ThreadAddress::ThreadAddress( const char * threadName )
-    : mThreadName   ( threadName != nullptr ? threadName : INVALID_THREAD_NAME.data() )
+    : mThreadName   ( threadName != nullptr ? threadName : INVALID_THREAD_NAME )
     , mMagicNum     ( NEMath::CHECKSUM_IGNORE )
 {
     mThreadName.truncate( NEUtilities::ITEM_NAMES_MAX_LENGTH );
+    mMagicNum    = ThreadAddress::_magicNumber(*this);
+}
+
+ThreadAddress::ThreadAddress( const String & threadName )
+    : mThreadName   ( threadName )
+    , mMagicNum     ( NEMath::CHECKSUM_IGNORE )
+{
     mMagicNum    = ThreadAddress::_magicNumber(*this);
 }
 
@@ -122,7 +129,7 @@ void ThreadAddress::convFromString(const char * threadPath, const char** OUT out
 unsigned int ThreadAddress::_magicNumber(const ThreadAddress & addrThread)
 {
     unsigned int result = NEMath::CHECKSUM_IGNORE;
-    if ((addrThread.mThreadName.isEmpty() == false) && (addrThread.mThreadName != INVALID_THREAD_NAME.data( )))
+    if ((addrThread.mThreadName.isEmpty() == false) && (addrThread.mThreadName != INVALID_THREAD_NAME))
     {
         result = NEMath::crc32Calculate(addrThread.mThreadName.getString());
     }

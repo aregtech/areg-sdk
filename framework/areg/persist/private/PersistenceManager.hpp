@@ -47,11 +47,11 @@ private:
     /**
      * \brief   Hidden constructor
      **/
-    PersistenceManager( void );
+    PersistenceManager( void ) = default;
     /**
      * \brief   Destructor
      **/
-    ~PersistenceManager( void );
+    ~PersistenceManager( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Static public
@@ -90,7 +90,7 @@ public:
      * \param   position    The name of position at section to get the values
      * \return  Returns number of properties in the list.
      **/
-    int getProperty( const char * section, const char * property, const char * position, TEArrayList<Property> & out_listProperties );
+    int getProperty( const String & section, const String & property, const String & position, TEArrayList<Property> & out_listProperties );
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables

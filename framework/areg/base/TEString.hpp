@@ -449,6 +449,7 @@ public:
      *          Otherwise, returns NEString::INVALID_POS value.
      **/
     NEString::CharPos findFirst( const CharType * phrase, NEString::CharPos startPos = NEString::START_POS, bool caseSensitive = true, bool wholeWord = false ) const;
+    NEString::CharPos findFirst( const TEString<CharType> & phrase, NEString::CharPos startPos = NEString::START_POS, bool caseSensitive = true, bool wholeWord = false ) const;
 
     /**
      * \brief   Find the last occurrence of given character in the string. If found, returns valid
@@ -479,6 +480,7 @@ public:
      *          Otherwise, returns NEString::INVALID_POS value.
      **/
     NEString::CharPos findLast( const CharType * phrase, NEString::CharPos startPos = NEString::END_POS, bool caseSensitive = true ) const;
+    NEString::CharPos findLast( const TEString<CharType> & phrase, NEString::CharPos startPos = NEString::END_POS, bool caseSensitive = true ) const;
 
     /**
      * \brief   Compares the given string. The comparing is done by certain position, certain amount of characters
@@ -688,6 +690,7 @@ public:
      **/
     TEString<CharType>& replace( const CharType * strSearch, const CharType * strReplace, NEString::CharPos startPos = NEString::START_POS, NEString::CharCount count = NEString::COUNT_ALL, bool replaceAll = true );
     TEString<CharType>& replace(const std::basic_string<CharType>& strSearch, const std::basic_string<CharType>& strReplace, NEString::CharPos startPos = NEString::START_POS, bool replaceAll = true);
+    TEString<CharType>& replace(const std::basic_string_view<CharType>& strSearch, const std::basic_string_view<CharType>& strReplace, NEString::CharPos startPos = NEString::START_POS, bool replaceAll = true);
     inline TEString<CharType>& replace(const TEString<CharType>& strSearch, const TEString<CharType>& strReplace, NEString::CharPos startPos = NEString::START_POS, bool replaceAll = true);
 
     /**
@@ -745,7 +748,7 @@ public:
      * \param   count   The maximum length of string.
      * \param   chFill  The characters to fill if new size if longer than the current length.
      **/
-    inline void resize(NEString::CharCount count, CharType chFill = static_cast<CharType>('\0'));
+    inline TEString<CharType>& resize(NEString::CharCount count, CharType chFill = static_cast<CharType>('\0'));
 
     /**
      * \brief   If the length of string is bigger than the 'maxChars', it truncated the string.
@@ -753,13 +756,13 @@ public:
      *          If the length of the string is smaller than the 'maxChars', nothing happens.
      * \param   maxChars    The maximum characters in the string.
      */
-    inline void truncate(NEString::CharCount maxChars);
+    inline TEString<CharType>& truncate(NEString::CharCount maxChars);
 
     /**
      * \brief   Reserves the space for the string. Unlike 'resize' this operation does not change the current length of the string.
      * \param   newCapacity     New capacity of the string to set.
      */
-    inline void reserve(NEString::CharCount newCapacity);
+    inline TEString<CharType>& reserve(NEString::CharCount newCapacity);
 
     /**
      * \brief   Returns character at specified valid zero-based position.
@@ -847,32 +850,27 @@ public:
      **/
     inline TEString<CharType>& makeAlphanumeric( void );
 
-/************************************************************************/
-// Methods that can be overwritten in Helper class template
-/************************************************************************/
-protected:
+    /**
+     * \param   Checks and returns true if the string starts with the given phrase.
+     * 
+     * \param phrase            The phrase to check.
+     * \param isCaseSensitive   If false, ignores the upper and lower cases. Valid only for ASCII strings.
+     **/
+    inline bool startsWith(const TEString<CharType>& phrase, bool isCaseSensitive = true) const;
+    inline bool startsWith(const std::basic_string<CharType>& phrase, bool isCaseSensitive = true) const;
+    inline bool startsWith(const std::basic_string_view<CharType>& phrase, bool isCaseSensitive = true) const;
+    inline bool startsWith(const CharType* phrase, bool isCaseSensitive = true, NEString::CharCount count = NEString::COUNT_ALL) const;
 
     /**
-     * \brief   Compares the existing string at the specified valid zero-based position with another string, and returns:
-     *              - NEMath::Smaller   if string is less than given string
-     *              - NEMath::Equal     if strings have equal
-     *              - NEMath::Bigger    if string is more than given string.
-     *          The comparing can be done by ignoring case sensitivity.
-     *
-     * \param   startPos        The Valid zero-based position in the string buffer to start comparing.
-     * \param   strOther        The string to compare
-     * \param   count           The amount of characters to compare or NEString::COUNT_ALL to compare the complete string.
-     * \param   caseSensitive   If true, compares exact match of string. Otherwise, ignores lower and upper cases.
-     * \return  Return:
-     *              NEMath::Smaller if string is less than given string
-     *              NEMath::Equal   if strings have equal
-     *              NEMath::Bigger  if string is more than given string
+     * \param   Checks and returns true if the string ends with the given phrase.
+     * 
+     * \param phrase            The phrase to check.
+     * \param isCaseSensitive   If false, ignores the upper and lower cases. Valid only for ASCII strings.
      **/
-    inline NEMath::eCompare compareString( NEString::CharPos startPos, const CharType * strOther, NEString::CharCount count = NEString::COUNT_ALL, bool caseSensitive = true ) const;
-
-/************************************************************************/
-// Protected methods, can be assessed only from derived class
-/************************************************************************/
+    inline bool endsWith(const TEString<CharType>& phrase, bool isCaseSensitive = true) const;
+    inline bool endsWith(const std::basic_string<CharType>& phrase, bool isCaseSensitive = true) const;
+    inline bool endsWith(const std::basic_string_view<CharType>& phrase, bool isCaseSensitive = true) const;
+    inline bool endsWith(const CharType* phrase, bool isCaseSensitive = true, NEString::CharCount count = NEString::COUNT_ALL) const;
 
     /**
      * \brief   Searches string and if found, replace by another.
@@ -902,14 +900,72 @@ protected:
                                         , const CharType * strReplace
                                         , NEString::CharCount lenReplace);
 
+/************************************************************************/
+// Protected methods, can be assessed only from derived class
+/************************************************************************/
+protected:
+
+    /**
+     * \brief   Compares the existing string at the specified valid zero-based position with another string, and returns:
+     *              - NEMath::Smaller   if string is less than given string
+     *              - NEMath::Equal     if strings have equal
+     *              - NEMath::Bigger    if string is more than given string.
+     *          The comparing can be done by ignoring case sensitivity.
+     *
+     * \param   startPos        The Valid zero-based position in the string buffer to start comparing.
+     * \param   strOther        The string to compare
+     * \param   count           The amount of characters to compare or NEString::COUNT_ALL to compare the complete string.
+     * \param   caseSensitive   If true, compares exact match of string. Otherwise, ignores lower and upper cases.
+     * \return  Return:
+     *              NEMath::Smaller if string is less than given string
+     *              NEMath::Equal   if strings have equal
+     *              NEMath::Bigger  if string is more than given string
+     **/
+    inline NEMath::eCompare compareString( NEString::CharPos startPos, const CharType * strOther, NEString::CharCount count = NEString::COUNT_ALL, bool caseSensitive = true ) const;
+
+    /**
+     * \brief   Compares the existing string at the specified valid zero-based position with another string, and returns:
+     *              - NEMath::Smaller   if string is less than given string
+     *              - NEMath::Equal     if strings have equal
+     *              - NEMath::Bigger    if string is more than given string.
+     *          The comparing is done by exact match.
+     *
+     * \param   startPos        The Valid zero-based position in the string buffer to start comparing.
+     * \param   strOther        The string to compare
+     * \param   count           The amount of characters to compare or NEString::COUNT_ALL to compare the complete string.
+     * \return  Return:
+     *              NEMath::Smaller if string is less than given string
+     *              NEMath::Equal   if strings have equal
+     *              NEMath::Bigger  if string is more than given string
+     **/
+    inline NEMath::eCompare compareStringExact(NEString::CharPos startPos, const CharType* strOther, NEString::CharCount count = NEString::COUNT_ALL) const;
+
+    /**
+     * \brief   Compares the existing string at the specified valid zero-based position with another string, and returns:
+     *              - NEMath::Smaller   if string is less than given string
+     *              - NEMath::Equal     if strings have equal
+     *              - NEMath::Bigger    if string is more than given string.
+     *          The comparing is done by ignoring upper / lower case.
+     *
+     * \param   startPos        The Valid zero-based position in the string buffer to start comparing.
+     * \param   strOther        The string to compare
+     * \param   count           The amount of characters to compare or NEString::COUNT_ALL to compare the complete string.
+     * \return  Return:
+     *              NEMath::Smaller if string is less than given string
+     *              NEMath::Equal   if strings have equal
+     *              NEMath::Bigger  if string is more than given string
+     **/
+    inline NEMath::eCompare compareStringIgnoreCase(NEString::CharPos startPos, const CharType * strOther, NEString::CharCount count = NEString::COUNT_ALL) const;
+
     /**
      * \brief   Searches the first phrase in string. The comparing is done by exact match.
      *
      * \param   phrase      The phrase to search.
+     * \param   count       The number of characters in the phrase. The value NEString::COUNT_ALL searches the complete phrase.
      * \param   startPos    The valid zero-based position in the string to start searching.
      * \return  If found, returns valid position in the string. If not found, it returns NEString::END_POS.
      **/
-    inline NEString::CharPos findFirstPhrase(const CharType* phrase, NEString::CharPos startPos = NEString::START_POS) const;
+    inline NEString::CharPos findFirstPhrase(const CharType* phrase, NEString::CharCount count = NEString::COUNT_ALL, NEString::CharPos startPos = NEString::START_POS ) const;
 
     /**
      * \brief   Searches the first phrase in string. The comparing is done by ignoring upper and lower cases.
@@ -944,28 +1000,6 @@ protected:
      */
     inline bool isValidNameChar(const CharType checkChar, std::locale& loc) const;
 
-    /**
-     * \param   Checks and returns true if the string starts with the given phrase.
-     * 
-     * \param phrase            The phrase to check.
-     * \param isCaseSensitive   If false, ignores the upper and lower cases. Valid only for ASCII strings.
-     **/
-    inline bool startsWith(const TEString<CharType>& phrase, bool isCaseSensitive = true);
-    inline bool startsWith(const std::basic_string<CharType>& phrase, bool isCaseSensitive = true);
-    inline bool startsWith(const std::basic_string_view<CharType>& phrase, bool isCaseSensitive = true);
-    inline bool startsWith(const CharType* phrase, bool isCaseSensitive = true, NEString::CharCount count = NEString::COUNT_ALL);
-
-    /**
-     * \param   Checks and returns true if the string ends with the given phrase.
-     * 
-     * \param phrase            The phrase to check.
-     * \param isCaseSensitive   If false, ignores the upper and lower cases. Valid only for ASCII strings.
-     **/
-    inline bool endsWith(const TEString<CharType>& phrase, bool isCaseSensitive = true);
-    inline bool endsWith(const std::basic_string<CharType>& phrase, bool isCaseSensitive = true);
-    inline bool endsWith(const std::basic_string_view<CharType>& phrase, bool isCaseSensitive = true);
-    inline bool endsWith(const CharType* phrase, bool isCaseSensitive = true, NEString::CharCount count = NEString::COUNT_ALL);
-
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
 //////////////////////////////////////////////////////////////////////////
@@ -979,7 +1013,7 @@ private:
      * \param locale        Pointer to the locale string. Should be nullptr if ignore locale.
      * \return  Returns true if 'count' characters in the full string are equal to the phrase.
      **/
-    inline bool _hasPhrase(const CharType* fullString, const CharType* phrase, NEString::CharCount count, const char* locale);
+    inline bool _hasPhrase(const CharType* fullString, const CharType* phrase, NEString::CharCount count, const char* locale) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Protected member variables
@@ -1594,7 +1628,7 @@ NEString::CharPos TEString<CharType>::findFirst( const CharType* phrase
 
     if (caseSensitive && !wholeWord)
     {
-        return findFirstPhrase(phrase, startPos);
+        return findFirstPhrase(phrase, NEString::COUNT_ALL, startPos);
     }
     else if (!wholeWord)
     {
@@ -1603,6 +1637,29 @@ NEString::CharPos TEString<CharType>::findFirst( const CharType* phrase
     else
     {
         return findFirstWord(phrase, caseSensitive, startPos);
+    }
+}
+
+template<typename CharType>
+NEString::CharPos TEString<CharType>::findFirst( const TEString<CharType> & phrase
+                                               , NEString::CharPos startPos /*= NEString::START_POS*/
+                                               , bool caseSensitive         /*= true*/
+                                               , bool wholeWord             /*= false*/) const
+{
+    if (isInvalidPosition(startPos) || NEString::isEmpty<CharType>(phrase))
+        return NEString::INVALID_POS;
+
+    if (caseSensitive && !wholeWord)
+    {
+        return findFirstPhrase(phrase.getString(), phrase.getLength(), startPos);
+    }
+    else if (!wholeWord)
+    {
+        return findFirstPhraseIgnoreCase(phrase.mData, startPos);
+    }
+    else
+    {
+        return findFirstWord(phrase.mData, caseSensitive, startPos);
     }
 }
 
@@ -1645,21 +1702,37 @@ NEString::CharPos TEString<CharType>::findLast(const CharType* phrase, NEString:
     if (isInvalidPosition(startPos) || NEString::isEmpty<CharType>(phrase))
         return NEString::INVALID_POS;
 
-    if (caseSensitive == false)
-        return findFirstPhrase(phrase, startPos);
-
     NEString::CharPos result{ NEString::END_POS };
     NEString::CharCount count = NEString::getStringLength<CharType>(phrase);
     NEString::CharCount strLen = getLength();
 
-    startPos = (startPos == NEString::END_POS) && (strLen != 0) ? strLen - 1 : 0;
-
-    const CharType* begin = getBuffer(NEString::START_POS);
-    const CharType* end = getBuffer(startPos);
-
-    for (NEString::CharPos pos = startPos; end >= begin; --end, --pos)
+    startPos = (startPos == NEString::END_POS) && (strLen >= count) ? strLen - 1 - count : 0;
+    for (NEString::CharPos pos = startPos; pos >= 0; --pos)
     {
         if ((compareString(pos, phrase, count, caseSensitive) == NEMath::eCompare::Equal))
+        {
+            result = pos;
+            break;
+        }
+    }
+
+    return result;
+}
+
+template<typename CharType>
+NEString::CharPos TEString<CharType>::findLast(const TEString<CharType> & phrase, NEString::CharPos startPos /*= NEString::END_POS*/, bool caseSensitive /*= true*/) const
+{
+    if (isInvalidPosition(startPos) || phrase.isEmpty())
+        return NEString::INVALID_POS;
+
+    NEString::CharPos result{ NEString::END_POS };
+    NEString::CharCount count = phrase.getLength();
+    NEString::CharCount strLen = getLength();
+
+    startPos = (startPos == NEString::END_POS) && (strLen >= count) ? strLen - 1 - count : 0;
+    for (NEString::CharPos pos = startPos; pos >= 0; --pos)
+    {
+        if ((compareString(pos, phrase.getString(), count, caseSensitive) == NEMath::eCompare::Equal))
         {
             result = pos;
             break;
@@ -2022,6 +2095,35 @@ TEString<CharType>& TEString<CharType>::replace( const CharType* strSearch
 }
 
 template<typename CharType>
+inline TEString<CharType>& TEString<CharType>::replace( const std::basic_string_view<CharType>& strSearch
+                                                      , const std::basic_string_view<CharType>& strReplace
+                                                      , NEString::CharPos startPos  /*= NEString::START_POS*/
+                                                      , bool replaceAll             /*= true*/)
+{
+    if (isValidPosition(startPos) && (strSearch.empty() == false))
+    {
+        NEString::CharPos lenSearch  = static_cast<NEString::CharPos>(strSearch.length());
+        NEString::CharPos lenReplace = static_cast<NEString::CharPos>(strReplace.length());
+        uint32_t pos = static_cast<uint32_t>(mData.find(strSearch.data(), startPos));
+        while (pos != static_cast<uint32_t>(std::basic_string<CharType>::npos))
+        {
+            mData.replace(pos, static_cast<uint32_t>(lenSearch), strReplace.data(), lenReplace);
+
+            pos += lenSearch;
+            if (replaceAll == false)
+            {
+                break;
+            }
+
+            pos = static_cast<uint32_t>(mData.find(strSearch.data(), pos));
+        }
+    }
+
+    return (*this);
+}
+
+
+template<typename CharType>
 inline TEString<CharType>& TEString<CharType>::replace( const TEString<CharType>& strSearch
                                                        , const TEString<CharType>& strReplace
                                                        , NEString::CharPos startPos /*= NEString::START_POS*/
@@ -2160,13 +2262,14 @@ inline TEString<CharType>& TEString<CharType>::remove( const TEString<CharType>&
 }
 
 template<typename CharType>
-inline void TEString<CharType>::resize(NEString::CharCount count, CharType chFill /*= static_cast<CharType>('\0')*/)
+inline TEString<CharType>& TEString<CharType>::resize(NEString::CharCount count, CharType chFill /*= static_cast<CharType>('\0')*/)
 {
     mData.resize(count, chFill);
+    return (*this);
 }
 
 template<typename CharType>
-inline void TEString<CharType>::truncate(NEString::CharCount maxChars)
+inline TEString<CharType>& TEString<CharType>::truncate(NEString::CharCount maxChars)
 {
     if (maxChars == 0)
     {
@@ -2176,12 +2279,15 @@ inline void TEString<CharType>::truncate(NEString::CharCount maxChars)
     {
         mData.erase(maxChars);
     }
+
+    return (*this);
 }
 
 template<typename CharType>
-inline void TEString<CharType>::reserve(NEString::CharCount newCapacity)
+inline TEString<CharType>& TEString<CharType>::reserve(NEString::CharCount newCapacity)
 {
     mData.reserve( static_cast<uint32_t>(newCapacity));
+    return (*this);
 }
 
 template<typename CharType>
@@ -2465,6 +2571,40 @@ inline NEMath::eCompare TEString<CharType>::compareString( NEString::CharPos sta
                                                          , NEString::CharCount count/*= NEString::COUNT_ALL */
                                                          , bool caseSensitive       /*= true                */ ) const
 {
+    if (caseSensitive)
+    {
+        return compareStringExact(startPos, strOther, count);
+    }
+    else
+    {
+        return compareStringIgnoreCase(startPos, strOther, count);
+    }
+}
+
+template<typename CharType>
+inline NEMath::eCompare TEString<CharType>::compareStringExact( NEString::CharPos startPos
+                                                              , const CharType * strOther
+                                                              , NEString::CharCount count/*= NEString::COUNT_ALL */ ) const
+{
+    NEMath::eCompare result = NEMath::eCompare::Smaller;
+    count = count == NEString::COUNT_ALL ? NEString::getStringLength<CharType>(strOther) : count;
+    if (isValidPosition(startPos))
+    {
+        NEString::CharCount len = static_cast<NEString::CharCount>(getLength() - startPos);
+        if (count <= len)
+        {
+            result = NEMemory::memCompare(getBuffer(startPos), strOther, count);
+        }
+    }
+
+    return result;
+}
+
+template<typename CharType>
+inline NEMath::eCompare TEString<CharType>::compareStringIgnoreCase( NEString::CharPos startPos
+                                                                   , const CharType * strOther
+                                                                   , NEString::CharCount count/*= NEString::COUNT_ALL */ ) const
+{
     NEMath::eCompare result = NEMath::eCompare::Smaller;
     count = count == NEString::COUNT_ALL ? NEString::getStringLength<CharType>(strOther) : count;
     if (isValidPosition(startPos))
@@ -2478,36 +2618,15 @@ inline NEMath::eCompare TEString<CharType>::compareString( NEString::CharPos sta
             const CharType* leftSide = getBuffer(startPos);
             const CharType* rightSide = strOther;
 
-            if (caseSensitive)
+            std::locale loc(NEString::LOCALE_DEFAULT);
+
+            while (count-- > 0)
             {
-                while (count-- > 0)
+                chLeft  = std::tolower(*leftSide ++, loc);
+                chRight = std::tolower(*rightSide ++, loc);
+                if (chLeft != chRight)
                 {
-                    if (*leftSide != *rightSide)
-                    {
-                        chLeft = *leftSide;
-                        chRight = *rightSide;
-                        break;
-                    }
-
-                    ++leftSide;
-                    ++rightSide;
-                }
-            }
-            else
-            {
-                std::locale loc(NEString::LOCALE_DEFAULT);
-
-                while (count-- > 0)
-                {
-                    chLeft = std::tolower(*leftSide, loc);
-                    chRight = std::tolower(*rightSide, loc);
-                    if (chLeft != chRight)
-                    {
-                        break;
-                    }
-
-                    ++leftSide;
-                    ++rightSide;
+                    break;
                 }
             }
 
@@ -2554,11 +2673,23 @@ inline NEString::CharPos TEString<CharType>::replaceWith( const CharType * strOr
 }
 
 template<typename CharType>
-inline NEString::CharPos TEString<CharType>::findFirstPhrase(const CharType* phrase, NEString::CharPos startPos /* = NEString::START_POS */) const
+inline NEString::CharPos TEString<CharType>::findFirstPhrase( const CharType* phrase
+                                                            , NEString::CharCount count     /* = NEString::COUNT_ALL */
+                                                            , NEString::CharPos startPos    /* = NEString::START_POS */) const
 {
     if (isValidPosition(startPos) && !NEString::isEmpty<CharType>(phrase))
     {
-        uint32_t pos = static_cast<uint32_t>(mData.find(phrase, static_cast<uint32_t>(startPos)));
+        uint32_t pos = static_cast<uint32_t>(std::basic_string<CharType>::npos);
+        
+        if (count == NEString::COUNT_ALL)
+        {
+            pos = static_cast<uint32_t>(mData.find(phrase, static_cast<uint32_t>(startPos)));
+        }
+        else
+        {
+            pos = static_cast<uint32_t>(mData.find(phrase, static_cast<uint32_t>(startPos), static_cast<uint32_t>(count)));
+        }
+
         return (pos != static_cast<uint32_t>(std::basic_string<CharType>::npos) ? static_cast<NEString::CharPos>(pos) : NEString::END_POS);
     }
     else
@@ -2670,25 +2801,25 @@ inline bool TEString<CharType>::isValidNameChar(const CharType checkChar, std::l
 }
 
 template<typename CharType>
-inline bool TEString<CharType>::startsWith(const TEString<CharType>& phrase, bool isCaseSensitive /*= true*/)
+inline bool TEString<CharType>::startsWith(const TEString<CharType>& phrase, bool isCaseSensitive /*= true*/) const
 {
     return startsWith(phrase.mData);
 }
 
 template<typename CharType>
-inline bool TEString<CharType>::startsWith(const std::basic_string<CharType>& phrase, bool isCaseSensitive /*= true*/)
+inline bool TEString<CharType>::startsWith(const std::basic_string<CharType>& phrase, bool isCaseSensitive /*= true*/) const
 {
     return (phrase.length() <= mData.length() ? startsWith(phrase.c_str(), isCaseSensitive, static_cast<NEString::CharCount>(phrase.length())) : false);
 }
 
 template<typename CharType>
-inline bool TEString<CharType>::startsWith(const std::basic_string_view<CharType>& phrase, bool isCaseSensitive /*= true*/)
+inline bool TEString<CharType>::startsWith(const std::basic_string_view<CharType>& phrase, bool isCaseSensitive /*= true*/) const
 {
     return (phrase.length() <= mData.length() ? startsWith(phrase.data(), isCaseSensitive, static_cast<NEString::CharCount>(phrase.length())) : false);
 }
 
 template<typename CharType>
-inline bool TEString<CharType>::startsWith(const CharType* phrase, bool isCaseSensitive /*= true*/, NEString::CharCount count /*= NEString::COUNT_ALL*/)
+inline bool TEString<CharType>::startsWith(const CharType* phrase, bool isCaseSensitive /*= true*/, NEString::CharCount count /*= NEString::COUNT_ALL*/) const
 {
     count = count != NEString::COUNT_ALL ? count : NEString::getStringLength<CharType>(phrase);
     if (NEString::isEmpty<CharType>(phrase) || (count == 0) || (count > static_cast<NEString::CharCount>(mData.length())))
@@ -2702,25 +2833,25 @@ inline bool TEString<CharType>::startsWith(const CharType* phrase, bool isCaseSe
 }
 
 template<typename CharType>
-inline bool TEString<CharType>::endsWith(const TEString<CharType>& phrase, bool isCaseSensitive /*= true*/)
+inline bool TEString<CharType>::endsWith(const TEString<CharType>& phrase, bool isCaseSensitive /*= true*/) const
 {
     return startsWith(phrase.mData);
 }
 
 template<typename CharType>
-inline bool TEString<CharType>::endsWith(const std::basic_string<CharType>& phrase, bool isCaseSensitive /*= true*/)
+inline bool TEString<CharType>::endsWith(const std::basic_string<CharType>& phrase, bool isCaseSensitive /*= true*/) const
 {
     return (phrase.length() <= mData.length() ? startsWith(phrase.c_str(), isCaseSensitive, static_cast<NEString::CharCount>(phrase.length())) : false);
 }
 
 template<typename CharType>
-inline bool TEString<CharType>::endsWith(const std::basic_string_view<CharType>& phrase, bool isCaseSensitive /*= true*/)
+inline bool TEString<CharType>::endsWith(const std::basic_string_view<CharType>& phrase, bool isCaseSensitive /*= true*/) const
 {
     return (phrase.length() <= mData.length() ? startsWith(phrase.data(), isCaseSensitive, static_cast<NEString::CharCount>(phrase.length())) : false);
 }
 
 template<typename CharType>
-inline bool TEString<CharType>::endsWith(const CharType* phrase, bool isCaseSensitive /*= true*/, NEString::CharCount count /*= NEString::COUNT_ALL*/)
+inline bool TEString<CharType>::endsWith(const CharType* phrase, bool isCaseSensitive /*= true*/, NEString::CharCount count /*= NEString::COUNT_ALL*/) const
 {
     count = count != NEString::COUNT_ALL ? count : NEString::getStringLength<CharType>(phrase);
     if (NEString::isEmpty<CharType>(phrase) || (count == 0) || (count > static_cast<NEString::CharCount>(mData.length())))
@@ -2736,7 +2867,7 @@ inline bool TEString<CharType>::endsWith(const CharType* phrase, bool isCaseSens
 }
 
 template<typename CharType>
-inline bool TEString<CharType>::_hasPhrase(const CharType* fullString, const CharType* phrase, NEString::CharCount count, const char* locale)
+inline bool TEString<CharType>::_hasPhrase(const CharType* fullString, const CharType* phrase, NEString::CharCount count, const char* locale) const
 {
     ASSERT((fullString != nullptr) && (phrase != nullptr));
 

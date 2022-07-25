@@ -141,20 +141,44 @@ AREG_API TIME64 NEUtilities::convToTime( const NEUtilities::sFileTime & fileTime
 
 AREG_API String NEUtilities::createComponentItemName( const char * componentName, const char* itemName )
 {
-    std::string result = componentName != nullptr ? componentName : "";
-    if ((result.empty() == false) && (NEString::isEmpty<char>(itemName) == false))
+    String result( componentName != nullptr ? componentName : String::EmptyString );
+    if ((result.isEmpty() == false) && (NEString::isEmpty<char>(itemName) == false))
     {
         result += NECommon::COMPONENT_ITEM_SEPARATOR;
         result += itemName;
 
-        if (result.length() > NEUtilities::MAX_GENERATED_NAME_BUFFER_SIZE)
-            result = result.substr(0, NEUtilities::MAX_GENERATED_NAME_BUFFER_SIZE);
+        if (result.getLength() > NEUtilities::MAX_GENERATED_NAME_BUFFER_SIZE)
+        {
+            result.substring(0, NEUtilities::MAX_GENERATED_NAME_BUFFER_SIZE);
+        }
     }
     else
     {
-        result    = "";
+        result    = String::EmptyString;
     }
-    return String(result.c_str());
+
+    return result;
+}
+
+AREG_API String NEUtilities::createComponentItemName( const String & componentName, const String & itemName )
+{
+    String result( componentName );
+    if ((componentName.isEmpty() == false) && (itemName.isEmpty() == false))
+    {
+        result += NECommon::COMPONENT_ITEM_SEPARATOR;
+        result += itemName;
+
+        if (result.getLength() > NEUtilities::MAX_GENERATED_NAME_BUFFER_SIZE)
+        {
+            result.substring(0, NEUtilities::MAX_GENERATED_NAME_BUFFER_SIZE);
+        }
+    }
+    else
+    {
+        result    = String::EmptyString;
+    }
+
+    return result;
 }
 
 AREG_API String NEUtilities::generateName( const char* prefix )
@@ -177,6 +201,5 @@ AREG_API const char * NEUtilities::generateName(const char * prefix, char * OUT 
 AREG_API unsigned int NEUtilities::generateUniqueId( void )
 {
     static std::atomic_uint _id(0u);
-    static_assert( std::atomic_uint::is_always_lock_free );
     return ++ _id;
 }

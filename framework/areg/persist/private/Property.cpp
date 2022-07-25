@@ -18,14 +18,14 @@
 
 #include <utility>
 
-Property::Property(const char * keySet, const char * valueSet, const char * comment /*= nullptr */)
-    : mComment  ( comment != nullptr ? comment : "")
+Property::Property(const String & keySet, const String & valueSet, const String & comment /*= String::EmptyString */)
+    : mComment  ( comment )
     , mProperty ( PropertyKey(keySet), PropertyValue(valueSet) )
 {
 }
 
-Property::Property(const Property::Entry & newProperty, const char * comment /*= nullptr */)
-    : mComment  ( comment != nullptr ? comment : "")
+Property::Property(const Property::Entry & newProperty, const String & comment /*= String::EmptyString */)
+    : mComment  ( comment )
     , mProperty ( newProperty )
 {
 }
@@ -73,7 +73,7 @@ Property::operator unsigned int ( void ) const
     return static_cast<unsigned int>(mProperty.mValue.first);
 }
 
-void Property::parseKey(const char * keySet)
+void Property::parseKey(const String & keySet)
 {
     mProperty.mValue.first.parseKey(keySet);
 }
@@ -85,7 +85,7 @@ void Property::setKey(const PropertyKey & Key)
 
 void Property::setKey( PropertyKey && Key )
 {
-    mProperty.mValue.first = static_cast<PropertyKey &&>(Key);
+    mProperty.mValue.first = std::move(Key);
 }
 
 const PropertyKey & Property::getKey(void) const
@@ -98,7 +98,7 @@ String Property::getKeyString(void) const
     return mProperty.mValue.first.convToString();
 }
 
-void Property::parseValue(const char * valueSet)
+void Property::parseValue(const String & valueSet)
 {
     mProperty.mValue.second.parseValue(valueSet);
 }
@@ -110,7 +110,7 @@ void Property::setValue(const PropertyValue & Value)
 
 void Property::setValue( PropertyValue && Value )
 {
-    mProperty.mValue.second = static_cast<PropertyValue &&>(Value);
+    mProperty.mValue.second = std::move(Value);
 }
 
 const PropertyValue & Property::getValue(void) const
@@ -123,31 +123,33 @@ String Property::getValueString(void) const
     return mProperty.mValue.second.getString();
 }
 
-void Property::setComment(const char * comment)
+void Property::setComment(const String & comment)
 {
     mComment = comment;
 }
 
-void Property::addComment(const char * comment)
+void Property::addComment(const String & comment)
 {
     if ( mComment.isEmpty() == false )
     {
-        mComment.append( NEPersistence::SYNTAX_LINEEND.data( ), static_cast<int>(NEPersistence::SYNTAX_LINEEND.length( )) );
+        mComment += NEPersistence::SYNTAX_LINEEND;
     }
 
-    String temp(comment);
     // if does not begin with "# "
-    if ( (temp.isEmpty() == false) && (temp.compare(NEPersistence::SYNTAX_COMMENT.data()) != NEMath::eCompare::Equal) )
+    if (comment.startsWith(NEPersistence::SYNTAX_COMMENT))
     {
-        mComment.append( NEPersistence::SYNTAX_COMMENT.data(), static_cast<int>(NEPersistence::SYNTAX_COMMENT.length()) );
+        mComment += comment;
     }
-
-    mComment.append(temp.getString(), temp.getLength());
+    else
+    {
+        mComment += NEPersistence::SYNTAX_COMMENT;
+        mComment += comment;
+    }
 }
 
-const char * Property::getComment(void) const
+const String & Property::getComment(void) const
 {
-    return mComment.getString();
+    return mComment;
 }
 
 void Property::setPropertyPair(const Property::Entry & newPair)
@@ -170,23 +172,22 @@ bool Property::isValid(void) const
     return mProperty.mValue.first.isValid();
 }
 
-bool Property::parseProperty(const char * strProperties)
+bool Property::parseProperty(String strProperties)
 {
-    if ( NEString::isEmpty<char>(strProperties) == false )
+    if ( strProperties.isEmpty() == false)
     {
-        String values         = strProperties != nullptr ? strProperties : "";
-        NEString::CharPos pos = values.findFirst(NEPersistence::SYNTAX_COMMENT.data());
+        NEString::CharPos pos = strProperties.findFirst(NEPersistence::SYNTAX_COMMENT.data());
 
-        if (values.isValidPosition(pos))
+        if (strProperties.isValidPosition(pos))
         {
-            addComment( strProperties + static_cast<int>(pos));
-            values.substring(0, pos);
+            addComment(strProperties.getBuffer(pos));
+            strProperties.substring(0, pos);
         }
 
-        if ( values.isEmpty() == false )
+        if (strProperties.isEmpty() == false )
         {
             const char * value  = nullptr;
-            String key          = String::getSubstring(values.getString(), NEPersistence::SYNTAX_EQUAL.data(), &value);
+            String key          = String::getSubstring(strProperties.getString(), NEPersistence::SYNTAX_EQUAL.data(), &value);
 
             mProperty.mValue.first.parseKey(key);
             mProperty.mValue.second.parseValue(value);
@@ -200,7 +201,7 @@ bool Property::parseProperty(const char * strProperties)
     }
     else
     {
-        addComment("");
+        addComment(String::EmptyString);
     }
 
     return isValid();
@@ -208,9 +209,10 @@ bool Property::parseProperty(const char * strProperties)
 
 String Property::convToString(void) const
 {
-    String result = "";
-    String key     = mProperty.mValue.first.convToString();
-    String value   = mProperty.mValue.second.convToString();
+    String result;
+    String key  (mProperty.mValue.first.convToString());
+    String value(mProperty.mValue.second.convToString());
+
     if ( !key.isEmpty() && !value.isEmpty() )
     {
         key.append(NEPersistence::SYNTAX_WHITESPACE_DELIMITER)
@@ -225,10 +227,10 @@ String Property::convToString(void) const
         {
             result.append(mComment).append(NEPersistence::SYNTAX_LINEEND).append(key);
         }
-    }
-    else if ( mComment.isEmpty() == false )
-    {
-        result.append(key).append(NEPersistence::SYNTAX_WHITESPACE_DELIMITER).append(mComment);
+        else
+        {
+            result.append(key).append(NEPersistence::SYNTAX_WHITESPACE_DELIMITER).append(mComment);
+        }
     }
     else
     {

@@ -297,6 +297,7 @@ namespace   NEUtilities
      * \return  Returns created new string containing componentName and itemName separated by COMPONENT_ITEM_SEPARATOR.
      **/
     AREG_API String createComponentItemName(const char * componentName, const char* itemName);
+    AREG_API String createComponentItemName(const String & componentName, const String & itemName);
 
     /**
      * \brief   This function generates and returns name 

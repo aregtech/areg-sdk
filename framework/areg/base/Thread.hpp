@@ -146,6 +146,7 @@ public:
      *                          be able to track the thread by name.
      **/
     Thread( IEThreadConsumer & threadConsumer, const char * threadName = nullptr);
+    Thread( IEThreadConsumer & threadConsumer, const String & threadName );
 
     /**
      * \brief	Free thread resources and ensures that thread handle is closed.

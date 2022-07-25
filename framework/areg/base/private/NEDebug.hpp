@@ -132,18 +132,6 @@ namespace NEDebug
 inline const char* NEDebug::getPrioPrefix( NEDebug::eDegubPrio priority )
 {
     return NEDebug::PREFIX_DBG_PRIORITIES[ static_cast<int>(priority) ].data();
-    switch ( priority )
-    {
-    case NEDebug::eDegubPrio::PrioNone: // fall through
-    case NEDebug::eDegubPrio::PrioDbg:  // fall through
-    case NEDebug::eDegubPrio::PrioInfo: // fall through
-    case NEDebug::eDegubPrio::PrioWarn: // fall through
-    case NEDebug::eDegubPrio::PrioErr:  // fall through
-        return NEDebug::PREFIX_DBG_PRIORITIES[static_cast<int>(priority)].data( );
-
-    default:
-        return NEDebug::PREFIX_DBG_PRIORITIES[static_cast<int>(NEDebug::eDegubPrio::PrioDbg)].data( );
-    }
 }
 
 #endif  // AREG_BASE_PRIVATE_NEDEBUG_HPP

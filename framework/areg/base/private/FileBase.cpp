@@ -257,7 +257,7 @@ FileBase::FileBase( void )
     : IEIOStream        ( )
     , IECursorPosition  ( )
 
-    , mFileName         (String::EmptyString.data())
+    , mFileName         (String::EmptyString)
     , mFileMode         (static_cast<unsigned int>(FO_MODE_INVALID))
     , mReadConvert      (static_cast<IEInStream &>(self()), static_cast<IECursorPosition &>(self()) )
     , mWriteConvert     (static_cast<IEOutStream &>(self()), static_cast<IECursorPosition &>(self()) )
@@ -594,9 +594,9 @@ void FileBase::normalizeName(String & OUT name)
     NEUtilities::sSystemTime st;
     DateTime::getNow(st, true);
     String::formatString(fmt, 32, FileBase::TIMESTAMP_FORMAT.data(), st.stYear, st.stMonth, st.stDay, st.stHour, st.stMinute, st.stSecond, st.stMillisecs);
-    name.replace(FileBase::FILE_MASK_TIMESTAMP.data(), fmt, NEString::START_POS, NEString::COUNT_ALL, true);
+    name.replace(FileBase::FILE_MASK_TIMESTAMP, fmt, NEString::START_POS, true);
 
     // replace all "%appname%"
-    String appName = Process::getInstance().getAppName();
-    name.replace(FileBase::FILE_MASK_APPNAME.data(), appName, NEString::START_POS, NEString::COUNT_ALL, true);
+    const String & appName = Process::getInstance().getAppName();
+    name.replace(FileBase::FILE_MASK_APPNAME, appName, NEString::START_POS, true);
 }

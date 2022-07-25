@@ -61,6 +61,7 @@ public:
      * \param   threadID    Thread ID to set.
      **/
     explicit ThreadAddress( const char * threadName );
+    explicit ThreadAddress( const String & threadName );
     /**
      * \brief   Copy constructor.
      * \param   src     The source to copy data.

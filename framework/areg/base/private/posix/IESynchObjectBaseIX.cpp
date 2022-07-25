@@ -30,8 +30,8 @@
 
 IESynchObjectBaseIX::IESynchObjectBaseIX( NESynchTypesIX::eSynchObject synchType, const char* asciiName /* = nullptr */ )
     : mSynchType    ( synchType )
+    , mSynchName    ( asciiName != nullptr ? asciiName : String::EmptyString )
 {
-    NEString::copyString<char, char>(mSynchName, IESynchObjectBaseIX::_MAX_NAME_LENGTH, asciiName != nullptr ? asciiName : NEString::EmptyStringA.data());
 }
 
 #endif //  defined(_POSIX) || defined(POSIX)

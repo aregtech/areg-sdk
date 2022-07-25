@@ -35,10 +35,6 @@ SpinLockIX::SpinLockIX( void )
     , mLockCount    ( 0 )
     , mIsValid      ( false )
 {
-    static_assert(std::atomic<pthread_t>::is_always_lock_free);
-    static_assert(std::atomic<uint32_t>::is_always_lock_free);
-    static_assert(std::atomic<bool>::is_always_lock_free);
-
     mIsValid =  (RETURNED_OK == pthread_spin_init( &mSpinLock, PTHREAD_PROCESS_PRIVATE   ) ) && 
                 (RETURNED_OK == pthread_spin_init( &mInternLock, PTHREAD_PROCESS_PRIVATE ) );
 }

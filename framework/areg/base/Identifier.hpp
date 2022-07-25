@@ -167,7 +167,7 @@ public:
     /**
      * \brief   Returns Identifier string value
      **/
-    inline const char* getName( void ) const;
+    inline const String & getName( void ) const;
 
     /**
      * \brief   Returns Identifier integer value
@@ -233,9 +233,9 @@ inline void Identifier::invalidate( void )
     mName   = BAD_IDENTIFIER.mName;
 }
 
-inline const char* Identifier::getName( void ) const
+inline const String & Identifier::getName( void ) const
 {
-    return static_cast<const char*>(mName);
+    return mName;
 }
 
 inline unsigned int Identifier::getValue( void ) const

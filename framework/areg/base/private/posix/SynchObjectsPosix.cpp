@@ -68,7 +68,6 @@ Mutex::Mutex(bool lock /* = true */)
 
     , mOwnerThreadId        ( 0 )
 {
-    static_assert(std::atomic<id_type>::is_always_lock_free);
     mSynchObject    = DEBUG_NEW WaitableMutexIX(lock, "POSIX_Mutex");
 }
 
@@ -173,8 +172,6 @@ Semaphore::Semaphore(int maxCount, int initCount /* = 0 */)
     , mMaxCount     ( MACRO_MAX(maxCount, 1) )
     , mCurrCount    ( MACRO_IN_RANGE(initCount, 0, mMaxCount) ? initCount : 0 )
 {
-    static_assert(std::atomic_long::is_always_lock_free);
-
     mSynchObject = DEBUG_NEW WaitableSemaphoreIX(mMaxCount, mCurrCount.load(), "POSIX_Semaphore");
 }
 

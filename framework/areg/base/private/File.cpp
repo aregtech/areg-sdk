@@ -115,7 +115,7 @@ bool File::remove( void )
 
     mFileHandle = File::INVALID_HANDLE;
     mFileMode   = FileBase::FO_MODE_INVALID;
-    mFileName   = String::EmptyString.data();
+    mFileName   = String::EmptyString;
 
     return result;
 }

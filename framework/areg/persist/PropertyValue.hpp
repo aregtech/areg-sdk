@@ -64,6 +64,7 @@ public:
      * \param   value   The source to copy value
      **/
     explicit PropertyValue( const String & value );
+    explicit PropertyValue( String && value ) noexcept;
     /**
      * \brief   Copies data from given source
      * \param   source  The source to copy data
@@ -100,6 +101,7 @@ public:
      * \param   value   The source as string to parse and copy data.
      **/
     PropertyValue & operator = ( const String & value );
+    PropertyValue & operator = ( String && value ) noexcept;
 
     /**
      * \brief   Copies property Value from given source as a 32-bit unsigned integer
@@ -163,7 +165,7 @@ public:
     /**
      * \brief   Returns value as a string
      **/
-    const char * getString( void ) const;
+    const String & getString( void ) const;
 
     /**
      * \brief   Sets value as a string
@@ -234,6 +236,14 @@ public:
      * \brief   Converts and Value data to the string.
      **/
     String convToString( void ) const;
+
+//////////////////////////////////////////////////////////////////////////
+// Hidden members
+//////////////////////////////////////////////////////////////////////////
+private:
+
+    //! Parses and normalizes the value data.
+    inline void _parseValue(void);
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables

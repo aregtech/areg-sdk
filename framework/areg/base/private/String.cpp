@@ -490,8 +490,7 @@ String String::toString(double number)
 
 String String::toString( bool value )
 {
-    return (value ? String(NECommon::BOOLEAN_TRUE.data(),  static_cast<int>(NECommon::BOOLEAN_TRUE.length() )) :
-                    String(NECommon::BOOLEAN_FALSE.data(), static_cast<int>(NECommon::BOOLEAN_FALSE.length())) );
+    return String(value ? NECommon::BOOLEAN_TRUE : NECommon::BOOLEAN_FALSE);
 }
 
 int String::formatString( char * strDst, int count, const char * format, ... )

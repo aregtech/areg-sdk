@@ -157,6 +157,23 @@ Thread::Thread(IEThreadConsumer &threadConsumer, const char* threadName /* = nul
     mWaitForExit.setEvent();
 }
 
+Thread::Thread(IEThreadConsumer &threadConsumer, const String & threadName )
+    : RuntimeObject   ( )
+
+    , mThreadConsumer   (threadConsumer)
+    , mThreadHandle     (Thread::INVALID_THREAD_HANDLE)
+    , mThreadId         (Thread::INVALID_THREAD_ID)
+    , mThreadAddress    (threadName.isEmpty() == false ? threadName : NEUtilities::generateName(DEFAULT_THREAD_PREFIX.data()).getString())
+    , mThreadPriority   (Thread::eThreadPriority::PriorityUndefined)
+    , mIsRunning        ( false )
+
+    , mSynchObject      ( )
+    , mWaitForRun       (false, false)
+    , mWaitForExit      (false, false)
+{
+    mWaitForExit.setEvent();
+}
+
 Thread::~Thread( void )
 {
     _cleanResources();

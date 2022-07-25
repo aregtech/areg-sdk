@@ -49,6 +49,7 @@ public:
      * \param   key     The Key as a string to parse.
      **/
     explicit PropertyKey( const String & key );
+    explicit PropertyKey( String && key );
     /**
      * \brief   Copies data from given source
      * \param   source  The source to copy data
@@ -85,6 +86,7 @@ public:
      * \param   source  The source as string to parse and copy data.
      **/
     PropertyKey & operator = ( const String & params );
+    PropertyKey & operator = ( String && source );
 
     /**
      * \brief   Checks equality of two Key objects.
@@ -111,12 +113,6 @@ public:
 public:
 
     /**
-     * \brief   Converts Key data to the string.
-     *          If Key consists of several parts, each part is concatenated by key-separator symbol.
-     **/
-    String convToString( void ) const;
-
-    /**
      * \brief   Sets Key data, which consists of section, property, module and position sections.
      *          Key 'module' and 'position' are optional and can be empty.
      * \param   section     The section value of Key
@@ -125,6 +121,7 @@ public:
      * \param   property    The position value of Key
      **/
     void setValues( const char * section, const char * property, const char * module = nullptr, const char * position = nullptr);
+    void setValues( const String & section, const String & property, const String & module, const String & position);
 
     /**
      * \brief   Returns section part of the Key
@@ -168,11 +165,26 @@ public:
      * \return  Returns true if parsing succeeded and could extract property data.
      **/
     bool parseKey( const String & key );
+    bool parseKey( String && key );
 
     /**
      * \brief   Resets and invalidates Key
      **/
     void resetKey( void );
+
+    /**
+     * \brief   Converts Key data to the string.
+     *          If Key consists of several parts, each part is concatenated by key-separator symbol.
+     **/
+    String convToString( void ) const;
+
+//////////////////////////////////////////////////////////////////////////
+// Hidden members
+//////////////////////////////////////////////////////////////////////////
+private:
+
+    //! Parses the passed key value and sets property key data.
+    inline void _parseKey(String & key);
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables

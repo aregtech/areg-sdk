@@ -23,18 +23,6 @@ PersistenceManager & PersistenceManager::getInstance(void)
     return _persistence;
 }
 
-PersistenceManager::PersistenceManager(void)
-    : mMapReadOnly  ( )
-    , mMapWritable  ( )
-{
-}
-
-PersistenceManager::~PersistenceManager(void)
-{
-    mMapReadOnly.clear();
-    mMapWritable.clear();
-}
-
 bool PersistenceManager::parseReadable(const char * filePath)
 {
     mMapReadOnly.clear();
@@ -107,9 +95,9 @@ bool PersistenceManager::parseWritable(const char * filePath)
     return mMapWritable.isEmpty() == false;
 }
 
-int PersistenceManager::getProperty( const char * /*section*/
-                                   , const char * /*property*/
-                                   , const char * /*position*/
+int PersistenceManager::getProperty( const String & /*section*/
+                                   , const String & /*property*/
+                                   , const String & /*position*/
                                    , TEArrayList<Property> & /*out_listProperties*/)
 {
     return 0;
