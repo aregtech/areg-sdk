@@ -66,7 +66,7 @@ public:
      * \brief   Initialization constructor.
      *          Major, Minor and Patch versions are taken from readable string.
      **/
-    Version( const char * version );
+    Version( const String & version );
     /**
      * \brief   Copy constructor.
      * \param   src     The source to copy data.
@@ -101,12 +101,6 @@ public:
      * \brief   Move operator, which moves version information from given source.
      **/
     Version & operator = ( Version && src ) noexcept;
-
-    /**
-     * \brief   Assigning operator. Sets version from string
-     * \brief   Move operator, which moves version information from given source.
-     **/
-    Version & operator = ( const char * version );
 
     /**
      * \brief   Assigning operator. Sets version from string
@@ -221,7 +215,7 @@ public:
      *          The version information should be in following
      *          format: "major.minor.patch"
      **/
-    Version & convFromString( const char * version );
+    Version & convFromString( const String & version );
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables.
@@ -272,7 +266,7 @@ inline bool Version::isCompatible( const Version & version ) const
 
 inline Version & Version::operator = ( const String & version )
 {
-    return (*this) = version.getString();
+    return convFromString(version);
 }
 
 inline bool Version::operator == ( const Version &version ) const

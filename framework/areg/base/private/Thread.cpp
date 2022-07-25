@@ -140,22 +140,6 @@ ThreadLocalStorage* Thread::_getThreadLocalStorage( Thread* ownThread /*= Thread
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
-Thread::Thread(IEThreadConsumer &threadConsumer, const char* threadName /* = nullptr */)
-    : RuntimeObject   ( )
-
-    , mThreadConsumer   (threadConsumer)
-    , mThreadHandle     (Thread::INVALID_THREAD_HANDLE)
-    , mThreadId         (Thread::INVALID_THREAD_ID)
-    , mThreadAddress    (NEString::isEmpty<char>(threadName) == false ? threadName : NEUtilities::generateName(DEFAULT_THREAD_PREFIX.data()).getString())
-    , mThreadPriority   (Thread::eThreadPriority::PriorityUndefined)
-    , mIsRunning        ( false )
-
-    , mSynchObject      ( )
-    , mWaitForRun       (false, false)
-    , mWaitForExit      (false, false)
-{
-    mWaitForExit.setEvent();
-}
 
 Thread::Thread(IEThreadConsumer &threadConsumer, const String & threadName )
     : RuntimeObject   ( )
@@ -163,7 +147,7 @@ Thread::Thread(IEThreadConsumer &threadConsumer, const String & threadName )
     , mThreadConsumer   (threadConsumer)
     , mThreadHandle     (Thread::INVALID_THREAD_HANDLE)
     , mThreadId         (Thread::INVALID_THREAD_ID)
-    , mThreadAddress    (threadName.isEmpty() == false ? threadName : NEUtilities::generateName(DEFAULT_THREAD_PREFIX.data()).getString())
+    , mThreadAddress    (threadName.isEmpty() == false ? threadName : NEUtilities::generateName(DEFAULT_THREAD_PREFIX.data()))
     , mThreadPriority   (Thread::eThreadPriority::PriorityUndefined)
     , mIsRunning        ( false )
 
@@ -349,7 +333,7 @@ IEThreadConsumer& Thread::getCurrentThreadConsumer( void )
 {
     ASSERT(getCurrentThread() != nullptr );
     ThreadLocalStorage& localStorage = Thread::getCurrentThreadStorage();
-    IEThreadConsumer* consumer = reinterpret_cast<IEThreadConsumer *>(localStorage.getStorageItem(STORAGE_THREAD_CONSUMER.data()).alignPtr.mElement);
+    IEThreadConsumer* consumer = reinterpret_cast<IEThreadConsumer *>(localStorage.getStorageItem(STORAGE_THREAD_CONSUMER).alignPtr.mElement);
     ASSERT(consumer != nullptr );
     return (*consumer);
 }

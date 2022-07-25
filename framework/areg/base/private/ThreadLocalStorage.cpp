@@ -38,7 +38,7 @@ ThreadLocalStorage::~ThreadLocalStorage( void )
 //////////////////////////////////////////////////////////////////////////
 // ThreadLocalStorage class methods
 //////////////////////////////////////////////////////////////////////////
-NEMemory::uAlign ThreadLocalStorage::getStorageItem( const char * Key ) const
+NEMemory::uAlign ThreadLocalStorage::getStorageItem( const String & Key ) const
 {
     NEMemory::uAlign result = NEMemory::InvalidElement;
 
@@ -56,40 +56,40 @@ NEMemory::uAlign ThreadLocalStorage::getStorageItem( const char * Key ) const
     return result;
 }
 
-void ThreadLocalStorage::setStorageItem(const char* Key, NEMemory::uAlign Value)
+void ThreadLocalStorage::setStorageItem(const String & Key, NEMemory::uAlign Value)
 {
     mStorageList.pushFirst(ThreadLocalStorage::StorageItem(Key, Value));
 }
 
-void ThreadLocalStorage::setStorageItem( const char* Key, const void* Value )
+void ThreadLocalStorage::setStorageItem( const String & Key, const void* Value )
 {
     NEMemory::uAlign aln;
     aln.alignPtr.mElement = (void *)(Value);
     setStorageItem(Key, aln);
 }
 
-void ThreadLocalStorage::setStorageItem( const char * Key, unsigned int Value )
+void ThreadLocalStorage::setStorageItem( const String & Key, unsigned int Value )
 {
     NEMemory::uAlign aln;
     aln.alignUInt.mElement = Value;
     setStorageItem(Key, aln);
 }
 
-void ThreadLocalStorage::setStorageItem( const char * Key, uint64_t Value )
+void ThreadLocalStorage::setStorageItem( const String & Key, uint64_t Value )
 {
     NEMemory::uAlign aln;
     aln.alignUInt64.mElement = Value;
     setStorageItem(Key, aln);
 }
 
-void ThreadLocalStorage::setStorageItem( const char * Key, double Value )
+void ThreadLocalStorage::setStorageItem( const String & Key, double Value )
 {
     NEMemory::uAlign aln;
     aln.alignDouble.mElement = Value;
     setStorageItem(Key, aln);
 }
 
-NEMemory::uAlign ThreadLocalStorage::removeStoragteItem( const char * Key )
+NEMemory::uAlign ThreadLocalStorage::removeStoragteItem( const String & Key )
 {
     NEMemory::uAlign result = {0};
     StorageList::LISTPOS pos = mStorageList.firstPosition();
@@ -107,7 +107,7 @@ NEMemory::uAlign ThreadLocalStorage::removeStoragteItem( const char * Key )
     return result;
 }
 
-bool ThreadLocalStorage::existKey( const char* Key ) const
+bool ThreadLocalStorage::existKey( const String & Key ) const
 {
     StorageList::LISTPOS pos = mStorageList.firstPosition();
     for ( ; mStorageList.isValidPosition(pos); pos = mStorageList.nextPosition(pos))

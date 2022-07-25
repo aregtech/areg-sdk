@@ -145,7 +145,6 @@ public:
      *                          If nullptr or the name is duplicated, the system will not
      *                          be able to track the thread by name.
      **/
-    Thread( IEThreadConsumer & threadConsumer, const char * threadName = nullptr);
     Thread( IEThreadConsumer & threadConsumer, const String & threadName );
 
     /**
@@ -278,7 +277,7 @@ public:
      * \param	threadName	The unique name of thread to search
      * \return	If not nullptr, the thread object was found.
      **/
-    inline static Thread * findThreadByName( const char * threadName) ;
+    inline static Thread * findThreadByName( const String & threadName) ;
 
     /**
      * \brief	Search by thread ID and return pointer the thread object.
@@ -313,7 +312,7 @@ public:
      * \return	If found, returns valid thread address object.
      *          Otherwise returns invalid thread address.
      **/
-    inline static const ThreadAddress & findThreadAddressByName( const char * threadName );
+    inline static const ThreadAddress & findThreadAddressByName( const String & threadName );
 
     /**
      * \brief   Suspends current thread and puts in a sleep mode for specified timeout in milliseconds.
@@ -674,9 +673,9 @@ inline const ThreadAddress & Thread::getAddress( void ) const
     return mThreadAddress;
 }
 
-inline Thread* Thread::findThreadByName(const char* threadName)
+inline Thread* Thread::findThreadByName(const String & threadName)
 {
-    return (threadName != nullptr ? Thread::_mapThreadName.findResourceObject(threadName) : nullptr);
+    return (!threadName.isEmpty() ? Thread::_mapThreadName.findResourceObject(threadName) : nullptr);
 }
 
 inline Thread* Thread::findThreadById( id_type threadId)
@@ -695,7 +694,7 @@ inline const ThreadAddress & Thread::findThreadAddressById( id_type threadId)
     return (threadObj != nullptr ? threadObj->getAddress() : ThreadAddress::INVALID_THREAD_ADDRESS);
 }
 
-inline const ThreadAddress& Thread::findThreadAddressByName(const char* threadName)
+inline const ThreadAddress& Thread::findThreadAddressByName(const String & threadName)
 {
     Thread* threadObj = Thread::findThreadByName(threadName);
     return (threadObj != nullptr ? threadObj->getAddress() : ThreadAddress::INVALID_THREAD_ADDRESS);

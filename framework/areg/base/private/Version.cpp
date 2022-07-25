@@ -70,7 +70,7 @@ Version::Version(const IEInStream & stream)
     stream >> mPatch;
 }
 
-Version::Version(const char * version)
+Version::Version(const String & version)
     : mMajor    (0)
     , mMinor    (0)
     , mPatch    (0)
@@ -81,17 +81,17 @@ Version::Version(const char * version)
 //////////////////////////////////////////////////////////////////////////
 // Methods
 //////////////////////////////////////////////////////////////////////////
-Version & Version::convFromString( const char * version )
+Version & Version::convFromString( const String & version )
 {
     mMajor  = 0;
     mMinor  = 0;
     mPatch  = 0;
 
-    String temp(version), major, minor, patch;
+    String major, minor, patch;
     NEString::CharPos pos = NEString::START_POS;
-    pos = temp.substring( major, NECommon::OBJECT_SEPARATOR, pos);
-    pos = temp.substring( minor, NECommon::OBJECT_SEPARATOR, pos);
-    pos = temp.substring( patch, NECommon::OBJECT_SEPARATOR, pos);
+    pos = version.substring( major, NECommon::OBJECT_SEPARATOR, pos);
+    pos = version.substring( minor, NECommon::OBJECT_SEPARATOR, pos);
+    pos = version.substring( patch, NECommon::OBJECT_SEPARATOR, pos);
 
     mMajor  = major.toUInt32();;
     mMinor  = minor.toUInt32();
@@ -121,11 +121,6 @@ Version & Version::operator = ( Version && src ) noexcept
     }
 
     return (*this);
-}
-
-Version & Version::operator = (const char * version)
-{
-    return convFromString( version );
 }
 
 bool Version::operator < ( const Version & version ) const

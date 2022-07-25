@@ -96,7 +96,7 @@ public:
      * \param   Key     The name of a local storage item.
      * \return  Returns true if local storage has an item with specified name.
      **/
-    bool existKey(const char* Key) const;
+    bool existKey(const String & Key) const;
 
     /**
      * \brief   Returns the owning thread object.
@@ -123,7 +123,7 @@ public:
      *          Otherwise it returns NEMemory::InvalidElement, if there is no element
      *          with specified name.
      **/
-    NEMemory::uAlign getStorageItem( const char * Key ) const;
+    NEMemory::uAlign getStorageItem( const String & Key ) const;
 
     /**
      * \brief   Saves specified item in thread local storage object.
@@ -134,7 +134,7 @@ public:
      * \param   Key     The name of local storage item
      * \param   Value   The value of local storage item
      **/
-    void setStorageItem(const char * Key, NEMemory::uAlign Value);
+    void setStorageItem(const String & Key, NEMemory::uAlign Value);
 
     /**
      * \brief   Saves pointer value in thread local storage object.
@@ -145,7 +145,7 @@ public:
      * \param   Key     The name of local storage item
      * \param   Value   The value of local storage item
      **/
-    void setStorageItem(const char * Key, const void * Value);
+    void setStorageItem(const String & Key, const void * Value);
 
     /**
      * \brief   Saves integer value in thread local storage object.
@@ -156,7 +156,7 @@ public:
      * \param   Key     The name of local storage item
      * \param   Value   The value of local storage item
      **/
-    void setStorageItem(const char * Key, unsigned int Value);
+    void setStorageItem(const String & Key, unsigned int Value);
 
     /**
      * \brief   Saves 64-bit integer value in thread local storage object.
@@ -167,7 +167,7 @@ public:
      * \param   Key     The name of local storage item
      * \param   Value   The value of local storage item
      **/
-    void setStorageItem(const char * Key, uint64_t Value);
+    void setStorageItem(const String & Key, uint64_t Value);
 
     /**
      * \brief   Saves number with floating point value in thread local storage object.
@@ -178,7 +178,7 @@ public:
      * \param   Key     The name of local storage item
      * \param   Value   The value of local storage item
      **/
-    void setStorageItem(const char * Key, double Value);
+    void setStorageItem(const String & Key, double Value);
 
     /**
      * \brief   If thread local storage has an item with specified name
@@ -189,7 +189,7 @@ public:
      * \return  Returns the value of returned element. If element does not
      *          exist, it will return dummy zero value.
      **/
-    NEMemory::uAlign removeStoragteItem(const char * Key);
+    NEMemory::uAlign removeStoragteItem(const String & Key);
 
     /**
      * \brief   Removes all items in thread local storage
