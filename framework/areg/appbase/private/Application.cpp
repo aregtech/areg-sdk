@@ -100,7 +100,7 @@ void Application::releaseApplication(void)
     Application & theApp  = Application::getInstance();
 
     TimerManager::stopTimerManager();
-    ComponentLoader::unloadComponentModel( nullptr );
+    ComponentLoader::unloadComponentModel( String::EmptyString );
     ServiceManager::_stopServiceManager(); // the message routing client is automatically stopped.
     NETrace::stopLogging();
 

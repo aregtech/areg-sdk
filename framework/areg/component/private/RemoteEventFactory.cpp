@@ -14,6 +14,7 @@
  *              from stream and converts event to stream.
  ************************************************************************/
 #include "areg/component/RemoteEventFactory.hpp"
+
 #include "areg/base/RemoteMessage.hpp"
 #include "areg/component/RequestEvents.hpp"
 #include "areg/component/ResponseEvents.hpp"

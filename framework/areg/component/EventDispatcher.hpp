@@ -48,7 +48,7 @@ public:
      * \brief   Initialization constructor.
      * \param   name    The name of Event Dispatcher
      **/
-    explicit EventDispatcher( const char* name );
+    explicit EventDispatcher( const String & name );
     /**
      * \brief   Destructor.
      **/

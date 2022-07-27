@@ -56,7 +56,7 @@ protected:
      * \brief   Creates consumer object and sets name.
      * \param   consumerName    The name of consumer bind to worker thread.
      **/
-    explicit IEWorkerThreadConsumer( const char* const consumerName );
+    explicit IEWorkerThreadConsumer( const String & consumerName );
 
 public:
     /**
@@ -81,7 +81,7 @@ public:
      * \param   consumerName    The name to check.
      * \return  Returns true if passed name is the name of consumer.
      **/
-    inline bool isEqualName( const char* consumerName ) const;
+    inline bool isEqualName( const String & consumerName ) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Override operations
@@ -133,9 +133,9 @@ inline const String & IEWorkerThreadConsumer::getConsumerName( void ) const
     return mConsumerName;
 }
 
-inline bool IEWorkerThreadConsumer::isEqualName( const char * consumerName ) const
+inline bool IEWorkerThreadConsumer::isEqualName( const String & consumerName ) const
 {
-    return ((consumerName != nullptr) && (mConsumerName == consumerName));
+    return (mConsumerName == consumerName);
 }
 
 #endif  // AREG_COMPONENT_IEWORKERTHREADCONSUMER_HPP

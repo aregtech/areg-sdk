@@ -36,8 +36,10 @@ void IERemoteEventConsumer::startEventProcessing(Event & eventElem)
             else
             {
                 RemoteNotifyRequestEvent * requestNotifyEvent = RUNTIME_CAST(&eventElem, RemoteNotifyRequestEvent);
-                if ( requestNotifyEvent != nullptr )
+                if (requestNotifyEvent != nullptr)
+                {
                     processRemoteNotifyRequestEvent(*requestNotifyEvent);
+                }
             }
         }
     }

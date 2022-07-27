@@ -33,7 +33,7 @@ IMPLEMENT_RUNTIME(WorkerThread, DispatcherThread)
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
-WorkerThread::WorkerThread( const char * threadName, Component & bindingComponent, IEWorkerThreadConsumer & threadConsumer)
+WorkerThread::WorkerThread( const String & threadName, Component & bindingComponent, IEWorkerThreadConsumer & threadConsumer)
     : DispatcherThread    ( threadName )
 
     , mBindingComponent     ( bindingComponent )
@@ -54,7 +54,7 @@ bool WorkerThread::postEvent( Event& eventElem )
     }
     else
     {
-        OUTPUT_ERR("Wrong event to post, event type [ %s ], category [ %d ]", eventElem.getRuntimeClassName().getString(), eventElem.getEventType());
+        OUTPUT_ERR("Wrong event to post, event type [ %s ], category [ %d ]", eventElem.getRuntimeClassName().getString(), static_cast<int>(eventElem.getEventType()));
         eventElem.destroy();
         ASSERT(false);
     }

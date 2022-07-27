@@ -135,7 +135,7 @@ namespace NERegistry
          * \param   minor           The minor version number of implemented interface
          * \param   patch           The patch version number of implemented interface
          **/
-        ServiceEntry( const char* serviceName, unsigned int major, unsigned int minor, unsigned int patch );
+        ServiceEntry( const String & serviceName, unsigned int major, unsigned int minor, unsigned int patch );
 
         /**
          * \brief   Initialize service interface entry by given name and version object.
@@ -146,7 +146,7 @@ namespace NERegistry
          * \param   version     The version object of implemented service interface,
          *                      containing major, minor and patch version numbers
          **/
-        ServiceEntry( const char* serviceName, const Version & version );
+        ServiceEntry( const String & serviceName, const Version & version );
 
         /**
          * \brief   Copies data from given source.
@@ -304,7 +304,7 @@ namespace NERegistry
          * \return  Returns valid Service Entry if found. Otherwise returns
          *          invalid entry NERegistry::INVALID_SERVICE_ENTRY.
          **/
-        const NERegistry::ServiceEntry & getService( const char* serviceName ) const;
+        const NERegistry::ServiceEntry & getService( const String & serviceName ) const;
 
         /**
          * \brief   Searches Service Entry by given Service Name and returns
@@ -313,7 +313,7 @@ namespace NERegistry
          * \return  Returns zero-based valid index if found entry.
          *          Otherwise, returns -1.
          **/
-        int findService( const char* serviceName ) const;
+        int findService( const String & serviceName ) const;
 
         /**
          * \brief   Searches specified Service Entry and returns
@@ -368,7 +368,7 @@ namespace NERegistry
          * \param   compRoleName        The name of Component (Role Name) where consumer is registered.
          * \param   compConsumerName    The name of Consumer object to configure, it should not be same as Component name.
          **/
-        WorkerThreadEntry( const char * masterThreadName, const char* workerThreadName, const char * compRoleName, const char* compConsumerName );
+        WorkerThreadEntry( const String & masterThreadName, const String & workerThreadName, const String & compRoleName, const String & compConsumerName );
 
         /**
          * \brief   Copies /move entries from source.
@@ -510,7 +510,7 @@ namespace NERegistry
          * \return  Returns valid Worker Thread Entry if found. Otherwise returns
          *          invalid entry NERegistry::INVALID_WORKER_THREAD_ENTRY.
          **/
-        const NERegistry::WorkerThreadEntry & getWorkerThread( const char* threadName ) const;
+        const NERegistry::WorkerThreadEntry & getWorkerThread( const String & threadName ) const;
 
         /**
          * \brief   Searches Worker Thread Entry by given thread name and returns
@@ -519,7 +519,7 @@ namespace NERegistry
          * \return  Returns zero-based valid index if found entry.
          *          Otherwise, returns -1.
          **/
-        int findThread( const char* threadName ) const;
+        int findThread( const String & threadName ) const;
 
         /**
          * \brief   Searches specified Worker Thread Entry and returns
@@ -573,7 +573,7 @@ namespace NERegistry
          * \brief   Sets the role name of dependent Component
          * \param   roleName    The Role Name of dependent Component to set.
          **/
-        explicit DependencyEntry( const char* roleName );
+        explicit DependencyEntry( const String & roleName );
 
         /**
          * \brief   Copies / moves data from given source.
@@ -618,7 +618,7 @@ namespace NERegistry
          * \brief   Sets the role name of dependent service.
          * \param   roleName    The role name of dependent service. If empty, invalidates dependency.
          **/
-        void setDependentService( const char * roleName );
+        void setDependentService( const String & roleName );
 
         /**
          * \brief   Returns the role name of dependent service.
@@ -721,7 +721,7 @@ namespace NERegistry
          * \return  Returns valid Dependency Entry if found. Otherwise returns
          *          empty entry.
          **/
-        const NERegistry::DependencyEntry & getDependency( const char* roleName ) const;
+        const NERegistry::DependencyEntry & getDependency( const String & roleName ) const;
 
         /**
          * \brief   Searches Dependency Entry by given role name and returns
@@ -730,7 +730,7 @@ namespace NERegistry
          * \return  Returns zero-based valid index if found entry.
          *          Otherwise, returns -1.
          **/
-        int findDependency( const char* roleName ) const;
+        int findDependency( const String & roleName ) const;
 
         /**
          * \brief   Searches specified Dependency Entry and returns
@@ -794,7 +794,7 @@ namespace NERegistry
          * \param   funcCreate          Pointer of component create function
          * \param   funcDelete          Pointer of component delete function
          **/
-        ComponentEntry( const char * masterThreadName, const char* roleName, FuncCreateComponent funcCreate, FuncDeleteComponent funcDelete );
+        ComponentEntry( const String & masterThreadName, const String & roleName, FuncCreateComponent funcCreate, FuncDeleteComponent funcDelete );
 
         /**
          * \brief   Initialize Component Entry by given Role Name, component thread, component create and delete methods,
@@ -808,8 +808,8 @@ namespace NERegistry
          * \param   dependencyList      The list of dependent service interfaces
          * \param   workerList          The list of worker threads
          **/
-        ComponentEntry(   const char * masterThreadName
-                        , const char * roleName
+        ComponentEntry(   const String & masterThreadName
+                        , const String & roleName
                         , FuncCreateComponent funcCreate
                         , FuncDeleteComponent funcDelete
                         , const NERegistry::ServiceList & serviceList
@@ -828,8 +828,8 @@ namespace NERegistry
          * \param   dependencyList      The entry of dependent service interface, if there is any
          * \param   workerList          The entry of worker thread, if there is any
          **/
-        ComponentEntry(   const char * masterThreadName
-                        , const char * roleName
+        ComponentEntry(   const String & masterThreadName
+                        , const String & roleName
                         , FuncCreateComponent funcCreate
                         , FuncDeleteComponent funcDelete
                         , const NERegistry::ServiceEntry & service
@@ -915,14 +915,14 @@ namespace NERegistry
          * \return  Returns either new added instance or the existing instance of supported service interface.
          *          The uniqueness is checked within component entry context and ignores the version number.
          **/
-        NERegistry::ServiceEntry & addSupportedService( const char * serviceName, const Version & version );
+        NERegistry::ServiceEntry & addSupportedService( const String & serviceName, const Version & version );
 
         /**
          * \brief   Searches given supported service. If found, removes from list.
          * \param   serviceName The name of supported service
          * \return  Returns true if found and remove supported service entry in the list.
          **/
-        bool removeSupportedService( const char * serviceName );
+        bool removeSupportedService( const String & serviceName );
 
         /**
          * \brief   Searches Service Entry in the existing list of Component Entry
@@ -942,7 +942,7 @@ namespace NERegistry
          * \return  If Entry found, returns valid zero-based index of element.
          *          Otherwise, returns -1.
          **/
-        int findSupportedService( const char* serviceName ) const;
+        int findSupportedService( const String & serviceName ) const;
 
         /**
          * \brief   Adds Worker Thread Entry in Component Entry object.
@@ -982,7 +982,7 @@ namespace NERegistry
          * \return  If Entry found, returns valid zero-based index of element.
          *          Otherwise, returns -1.
          **/
-        int findWorkerThread( const char* workerName ) const;
+        int findWorkerThread( const String & workerName ) const;
 
         /**
          * \brief   Searches the worker thread entry in the list.
@@ -990,7 +990,7 @@ namespace NERegistry
          * \param   workerName  The name of worker thread to remove
          * \return  Returns true if worker thread entry found and could remove.
          **/
-        bool removeWorkerThread( const char * workerName );
+        bool removeWorkerThread( const String & workerName );
 
         /**
          * \brief   Adds Dependency Entry in Component Entry object.
@@ -1028,7 +1028,7 @@ namespace NERegistry
          * \param   roleName    The name dependent service.
          * \return  Returns the instance of new added or existing dependency of specified service.
          **/
-        NERegistry::DependencyEntry & addDependencyService( const char * roleName );
+        NERegistry::DependencyEntry & addDependencyService( const String & roleName );
 
         /**
          * \brief   Searches Dependency Entry in the existing list of Component Entry
@@ -1046,7 +1046,7 @@ namespace NERegistry
          * \param   serviceName     The name of dependency service role name to search.
          * \return  Returns true if found entry and could remove it.
          **/
-        bool removeDependencyService( const char * roleName );
+        bool removeDependencyService( const String & roleName );
 
         /**
          * \brief   By given name, searches Dependency Entry in the existing list of
@@ -1056,7 +1056,7 @@ namespace NERegistry
          * \return  If Entry found, returns valid zero-based index of element.
          *          Otherwise, returns -1.
          **/
-        int findDependencyService(const char* roleName) const;
+        int findDependencyService(const String & roleName) const;
 
         /**
          * \brief   Returns list of supported Services of Component Entry object
@@ -1231,7 +1231,7 @@ namespace NERegistry
          * \return  Returns valid Component Entry if found. Otherwise returns
          *          invalid entry NERegistry::INVALID_COMPONENT_ENTRY.
          **/
-        const NERegistry::ComponentEntry & getComponent( const char* roleName ) const;
+        const NERegistry::ComponentEntry & getComponent( const String & roleName ) const;
 
         /**
          * \brief   Searches in the list the component by given name. If found, sets component data.
@@ -1242,7 +1242,7 @@ namespace NERegistry
          *          if as a component data a pointer to manually allocated object is passed,
          *          it should be as well manually freed.
          **/
-        bool setComponentData( const char * roleName, const NEMemory::uAlign & compData );
+        bool setComponentData( const String & roleName, const NEMemory::uAlign & compData );
 
         /**
          * \brief   Searches Component Entry by given Role Name and returns
@@ -1251,7 +1251,7 @@ namespace NERegistry
          * \return  Returns zero-based valid index if found entry.
          *          Otherwise, returns -1.
          **/
-        int findComponent( const char* roleName ) const;
+        int findComponent( const String & roleName ) const;
 
         /**
          * \brief   Searches specified Component Entry and returns
@@ -1307,14 +1307,14 @@ namespace NERegistry
          * \brief   Initialize Thread Entry with given Thread Name.
          * \param   threadName  The Thread Name to assign.
          **/
-        explicit ComponentThreadEntry( const char* threadName );
+        explicit ComponentThreadEntry( const String & threadName );
 
         /**
          * \brief   Initialize Thread Entry with given Thread Name and given Component List.
          * \param   threadName      The Thread Name to assign.
          * \param   componentList   The List of Component Entries to assign.
          **/
-        ComponentThreadEntry( const char* threadName, const NERegistry::ComponentList & componentList );
+        ComponentThreadEntry( const String & threadName, const NERegistry::ComponentList & componentList );
 
         /**
          * \brief   Copies data from given source.
@@ -1411,7 +1411,7 @@ namespace NERegistry
          * \note    NOTE:   The method does not check the uniqueness of role name within the entire system or entire
          *                  model. It checks only within the current component thread entry context.
          **/
-        NERegistry::ComponentEntry & addComponent( const char * roleName, FuncCreateComponent funcCreate, FuncDeleteComponent funcDelete );
+        NERegistry::ComponentEntry & addComponent( const String & roleName, FuncCreateComponent funcCreate, FuncDeleteComponent funcDelete );
 
         /**
          * \brief   Searches the component entry by given role name.
@@ -1419,7 +1419,7 @@ namespace NERegistry
          * \param   roleName    The roleName of service component to search and remove.
          * \return  Returns true if found and could remove the component entry.
          **/
-        bool removeComponent( const char * roleName );
+        bool removeComponent( const String & roleName );
 
         /**
          * \brief   Searches Component Entry in the existing list of Thread Entry
@@ -1439,7 +1439,7 @@ namespace NERegistry
          * \return  If Entry found, returns valid zero-based index of element.
          *          Otherwise, returns -1.
          **/
-        int findComponentEntry( const char* roleName ) const;
+        int findComponentEntry( const String & roleName ) const;
 
         /**
          * \brief   Searches in the list the component by given name. If found, sets component data.
@@ -1450,7 +1450,7 @@ namespace NERegistry
          *          if as a component data a pointer to manually allocated object is passed,
          *          it should be as well manually freed.
          **/
-        bool setComponentData( const char * roleName, const NEMemory::uAlign & compData );
+        bool setComponentData( const String & roleName, const NEMemory::uAlign & compData );
 
     //////////////////////////////////////////////////////////////////////////
     // NERegistry::ComponentThreadEntry class, Member variables
@@ -1561,7 +1561,7 @@ namespace NERegistry
          * \return  Returns valid Thread Entry if found. Otherwise returns
          *          invalid entry NERegistry::INVALID_THREAD_ENTRY.
          **/
-        const NERegistry::ComponentThreadEntry & getThread( const char* threadName ) const;
+        const NERegistry::ComponentThreadEntry & getThread( const String & threadName ) const;
 
         /**
          * \brief   Searches Thread Entry by given Thread Name and returns
@@ -1570,7 +1570,7 @@ namespace NERegistry
          * \return  Returns zero-based valid index if found entry.
          *          Otherwise, returns -1.
          **/
-        int findThread( const char* threadName ) const;
+        int findThread( const String & threadName ) const;
 
         /**
          * \brief   Searches specified Thread Entry and returns
@@ -1625,12 +1625,12 @@ namespace NERegistry
         /**
          * \brief   Initialize empty Model and sets given Name.
          **/
-        explicit Model( const char* modelName );
+        explicit Model( const String & modelName );
 
         /**
          * \brief   Initialize empty Model and sets given Name.
          **/
-        Model( const char* modelName, const ComponentThreadList & threadList );
+        Model( const String & modelName, const ComponentThreadList & threadList );
 
         /**
          * \brief   Copies / moves model entries from given source.
@@ -1691,7 +1691,7 @@ namespace NERegistry
          * \return  Returns true if found specified Component Entry.
          *          Otherwise returns false.
          **/
-        bool hasRegisteredComponent( const char * roleName ) const;
+        bool hasRegisteredComponent( const String & roleName ) const;
 
         /**
          * \brief   Returns true if Model is loaded. Otherwise, returns false.
@@ -1736,7 +1736,7 @@ namespace NERegistry
          *                  model context escaping worker thread names. The caller must take care of uniqueness
          *                  by its self.
          **/
-        NERegistry::ComponentThreadEntry & addThread(const char * threadName );
+        NERegistry::ComponentThreadEntry & addThread(const String & threadName );
 
         /**
          * \brief   Searches component thread entry in the list.
@@ -1744,7 +1744,7 @@ namespace NERegistry
          * \param   threadName  The name of component thread to search.
          * \return  Returns true if found and could remove the thread entry from the list.
          **/
-        bool removeThread( const char * threadName );
+        bool removeThread( const String & threadName );
 
         /**
          * \brief   Searches Thread Entry in the existing list of Model
@@ -1764,7 +1764,7 @@ namespace NERegistry
          * \return  If Entry found, returns valid zero-based index of element.
          *          Otherwise, returns -1.
          **/
-        int findThread(const char* threadName) const;
+        int findThread(const String & threadName) const;
 
         /**
          * \brief   Searches in the list the component by given name. If found, sets component data.
@@ -1775,7 +1775,7 @@ namespace NERegistry
          *          if as a component data a pointer to manually allocated object is passed,
          *          it should be as well manually freed.
          **/
-        bool setComponentData( const char * roleName, const NEMemory::uAlign & compData );
+        bool setComponentData( const String & roleName, const NEMemory::uAlign & compData );
 
     //////////////////////////////////////////////////////////////////////////
     // NERegistry::Model class, Member variables

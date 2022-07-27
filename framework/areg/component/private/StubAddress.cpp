@@ -73,50 +73,50 @@ StubAddress StubAddress::convPathToAddress( const char* pathStub, const char** o
 // Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
 StubAddress::StubAddress( void )
-    : ServiceAddress( ServiceItem(), INVALID_STUB_NAME.data() )
+    : ServiceAddress( ServiceItem(), INVALID_STUB_NAME )
     , mThreadName   ( ThreadAddress::INVALID_THREAD_ADDRESS.getThreadName() )
     , mChannel      ( )
     , mMagicNum     ( NEMath::CHECKSUM_IGNORE )
 {
 }
 
-StubAddress::StubAddress( const char * serviceName
+StubAddress::StubAddress( const String & serviceName
                         , const Version & serviceVersion
                         , NEService::eServiceType serviceType
-                        , const char * roleName
-                        , const char * threadName   /*= nullptr*/ )
+                        , const String & roleName
+                        , const String & threadName   /*= String::EmptyString*/ )
     : ServiceAddress( serviceName, serviceVersion, serviceType, roleName )
-    , mThreadName   ( threadName )
+    , mThreadName   ( )
     , mChannel      ( )
     , mMagicNum     ( NEMath::CHECKSUM_IGNORE )
 {
-    mThreadName.truncate( NEUtilities::ITEM_NAMES_MAX_LENGTH );
+    setThread(threadName); // don't change this to fix channel source.
     if ( ServiceAddress::isValid() )
         mChannel.setCookie(NEService::COOKIE_LOCAL);
 
     mMagicNum = StubAddress::_magicNumber(*this);
 }
 
-StubAddress::StubAddress(const ServiceItem & service, const char * roleName, const char * threadName /*= nullptr */)
+StubAddress::StubAddress(const ServiceItem & service, const String & roleName, const String & threadName /*= String::EmptyString */)
     : ServiceAddress( service, roleName )
-    , mThreadName   ( threadName )
+    , mThreadName   ( )
     , mChannel      ( )
     , mMagicNum     ( NEMath::CHECKSUM_IGNORE )
 {
-    mThreadName.truncate( NEUtilities::ITEM_NAMES_MAX_LENGTH );
+    setThread(threadName); // don't change this to fix channel source.
     if ( ServiceAddress::isValid() )
         mChannel.setCookie(NEService::COOKIE_LOCAL);
 
     mMagicNum = StubAddress::_magicNumber(*this);
 }
 
-StubAddress::StubAddress(const NEService::SInterfaceData & siData, const char * roleName, const char * threadName /*= nullptr */)
+StubAddress::StubAddress(const NEService::SInterfaceData & siData, const String & roleName, const String & threadName /*= String::EmptyString */)
     : ServiceAddress( siData.idServiceName, siData.idVersion, siData.idServiceType, roleName )
-    , mThreadName   ( String::EmptyString.data(), 0 )
+    , mThreadName   ( )
     , mChannel      ( )
     , mMagicNum     ( NEMath::CHECKSUM_IGNORE )
 {
-    setThread(threadName);
+    setThread(threadName); // don't change this to fix channel source.
     if ( ServiceAddress::isValid() )
         mChannel.setCookie(NEService::COOKIE_LOCAL);
 
@@ -175,15 +175,19 @@ StubAddress::StubAddress( const IEInStream & stream )
 
 bool StubAddress::isProxyCompatible(const ProxyAddress & proxyAddress) const
 {
-    if ( isValid() && proxyAddress.isValid() )
-        return (mRoleName == proxyAddress.getRoleName() && isServiceCompatible( static_cast<const ServiceItem &>(proxyAddress) ) );
+    if (isValid() && proxyAddress.isValid())
+    {
+        return (mRoleName == proxyAddress.getRoleName() && isServiceCompatible(static_cast<const ServiceItem&>(proxyAddress)));
+    }
     else
+    {
         return false;
+    }
 }
 
-void StubAddress::setThread(const char * threadName)
+void StubAddress::setThread(const String & threadName)
 {
-    Thread * thread = threadName == nullptr ? Thread::getCurrentThread() : Thread::findThreadByName(threadName);
+    Thread * thread = threadName.isEmpty() ? Thread::getCurrentThread() : Thread::findThreadByName(threadName);
     DispatcherThread * dispatcher = RUNTIME_CAST( thread, DispatcherThread);
     if ( (dispatcher != nullptr) && dispatcher->isValid())
     {

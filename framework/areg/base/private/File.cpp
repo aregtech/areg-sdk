@@ -25,6 +25,8 @@
 #include "areg/base/NEString.hpp"
 #include "areg/base/Containers.hpp"
 
+#include <filesystem>
+
 //////////////////////////////////////////////////////////////////////////
 // File class implementation
 //////////////////////////////////////////////////////////////////////////
@@ -251,6 +253,7 @@ bool File::createDirCascaded( const char* dirPath )
     return result;
 }
 
+#if 0
 String File::normalizePath( const char * fileName )
 {
 #if !defined(WINDOWS) && !defined(_WINDOWS)
@@ -345,6 +348,15 @@ String File::normalizePath( const char * fileName )
         result.append(File::PATH_SEPARATOR).append(list.valueAtPosition(pos));
     }
 
+    FileBase::normalizeName(result);
+
+    return result;
+}
+#endif //0
+
+String File::normalizePath(const char* fileName)
+{
+    String result(std::filesystem::absolute(std::filesystem::path(fileName)).string());
     FileBase::normalizeName(result);
 
     return result;

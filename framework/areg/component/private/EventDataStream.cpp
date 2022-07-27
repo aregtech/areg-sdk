@@ -21,33 +21,40 @@
 // EventDataStream class implementation
 //////////////////////////////////////////////////////////////////////////
 
+namespace
+{
+    //! The default name of the event stream.
+    static constexpr std::string_view DefaultStreamName{ "EventDataStream" };
+
+}
+
 //////////////////////////////////////////////////////////////////////////
 // EventDataStream class, static members
 //////////////////////////////////////////////////////////////////////////
 /**
  * \brief   Predefined Empty Data object.
  **/
-const EventDataStream EventDataStream::EmptyData(EventDataStream::eEventData::EventDataInternal, static_cast<const char *>("EventDataStream::EmptyData"));
+const EventDataStream EventDataStream::EmptyData(EventDataStream::eEventData::EventDataInternal, String("EventDataStream::EmptyData"));
 
 //////////////////////////////////////////////////////////////////////////
 // EventDataStream class, Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
-EventDataStream::EventDataStream( EventDataStream::eEventData evetDataType, const char* name /*= nullptr*/ )
+EventDataStream::EventDataStream( EventDataStream::eEventData evetDataType, const String & name /*= String::EmptyString*/ )
     : IEIOStream    ( )
 
     , mEventDataType(evetDataType)
-    , mBufferName   (name != nullptr ? name : "EventDataStream")
+    , mBufferName   (name.isEmpty() == false ? name : DefaultStreamName)
     , mDataBuffer   ( )
     , mSharedList   ( )
 {
     ;
 }
 
-EventDataStream::EventDataStream( const EventDataStream & buffer, const char* name )
+EventDataStream::EventDataStream( const EventDataStream & buffer, const String & name )
     : IEIOStream    ( )
 
     , mEventDataType(buffer.mEventDataType)
-    , mBufferName   (name != nullptr ? name : "EventDataStream")
+    , mBufferName   (name.isEmpty() == false ? name : DefaultStreamName)
     , mDataBuffer   (buffer.mDataBuffer)
     , mSharedList   (buffer.mSharedList)
 {
@@ -80,7 +87,7 @@ EventDataStream::EventDataStream(const IEInStream & stream)
     : IEIOStream    ( )
 
     , mEventDataType( EventDataStream::eEventData::EventDataExternal)
-    , mBufferName   ("EventDataStream")
+    , mBufferName   ( DefaultStreamName)
     , mDataBuffer   ( )
     , mSharedList   ( )
 {
@@ -112,7 +119,6 @@ EventDataStream & EventDataStream::operator = ( EventDataStream && src ) noexcep
 {
     if ( static_cast<EventDataStream *>(this) != &src )
     {
-        mBufferName = std::move(src.mBufferName);
         mSharedList = std::move(src.mSharedList);
         mDataBuffer = std::move(src.mDataBuffer);
         mDataBuffer.moveToBegin( );
@@ -141,6 +147,7 @@ unsigned int EventDataStream::read( IEByteBuffer & buffer ) const
     {
         result = mDataBuffer.read(buffer);
     }
+
     return result;
 }
 
@@ -176,6 +183,7 @@ unsigned int EventDataStream::write( const IEByteBuffer & buffer )
     {
         result = mDataBuffer.write(buffer);
     }
+
     return result;
 }
 
@@ -191,7 +199,6 @@ unsigned int EventDataStream::write( const WideString & wideString )
 
 void EventDataStream::flush( void )
 {
-    ; // do nothing
 }
 
 unsigned int EventDataStream::getSizeReadable( void ) const

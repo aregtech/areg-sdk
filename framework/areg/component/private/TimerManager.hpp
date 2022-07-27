@@ -313,7 +313,7 @@ private:
      * \param   timerName   The Name of timer to create. If nullptr, no name is set for waitable timer.
      * \return  Returns the handle of created waitable timer or nullptr if failed.
      **/
-    static TIMERHANDLE _createWaitableTimer( const char * timerName );
+    static TIMERHANDLE _createWaitableTimer( const String & timerName );
 
     /**
      * \brief   Destroys previously created waitable timer.

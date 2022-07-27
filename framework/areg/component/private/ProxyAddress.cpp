@@ -76,14 +76,18 @@ ProxyAddress ProxyAddress::convPathToAddress( const char* pathProxy, const char*
 //////////////////////////////////////////////////////////////////////////
 
 ProxyAddress::ProxyAddress( void )
-    : ServiceAddress( ServiceItem(), INVALID_PROXY_NAME.data() )
+    : ServiceAddress( ServiceItem(), INVALID_PROXY_NAME )
     , mThreadName   ( ThreadAddress::INVALID_THREAD_ADDRESS.getThreadName() )
     , mChannel      ( )
     , mMagicNum     ( NEMath::CHECKSUM_IGNORE )
 {
 }
 
-ProxyAddress::ProxyAddress( const char * serviceName, const Version & serviceVersion, NEService::eServiceType serviceType, const char * roleName, const char * threadName /*= nullptr*/ )
+ProxyAddress::ProxyAddress( const String & serviceName
+                          , const Version & serviceVersion
+                          , NEService::eServiceType serviceType
+                          , const String & roleName
+                          , const String & threadName /*= String::EmptyString*/ )
     : ServiceAddress( serviceName, serviceVersion, serviceType, roleName )
     , mThreadName   ( threadName )
     , mChannel      ( )
@@ -94,7 +98,7 @@ ProxyAddress::ProxyAddress( const char * serviceName, const Version & serviceVer
         mChannel.setCookie(NEService::COOKIE_LOCAL);
 }
 
-ProxyAddress::ProxyAddress( const ServiceItem & service, const char * roleName, const char * threadName /*= nullptr*/ )
+ProxyAddress::ProxyAddress( const ServiceItem & service, const String & roleName, const String & threadName /*= String::EmptyString*/ )
     : ServiceAddress( service, roleName )
     , mThreadName   ( "" )
     , mChannel      ( )
@@ -105,7 +109,7 @@ ProxyAddress::ProxyAddress( const ServiceItem & service, const char * roleName, 
         mChannel.setCookie(NEService::COOKIE_LOCAL);
 }
 
-ProxyAddress::ProxyAddress(const NEService::SInterfaceData & siData, const char * roleName, const char * threadName /*= nullptr */)
+ProxyAddress::ProxyAddress(const NEService::SInterfaceData & siData, const String & roleName, const String & threadName /*= String::EmptyString*/)
     : ServiceAddress( siData.idServiceName, siData.idVersion, siData.idServiceType, roleName )
     , mThreadName   ( "" )
     , mChannel      ( )
@@ -167,9 +171,9 @@ bool ProxyAddress::isStubCompatible(const StubAddress & addrStub ) const
     return addrStub.isProxyCompatible(*this);
 }
 
-void ProxyAddress::setThread( const char * threadName )
+void ProxyAddress::setThread( const String & threadName )
 {
-    Thread * thread = NEString::isEmpty<char>(threadName) ? Thread::getCurrentThread() : Thread::findThreadByName(threadName);
+    Thread * thread = threadName.isEmpty() ? Thread::getCurrentThread() : Thread::findThreadByName(threadName);
     DispatcherThread * dispatcher = RUNTIME_CAST( thread, DispatcherThread);
     if ( (dispatcher != nullptr) && dispatcher->isValid() )
     {
@@ -249,7 +253,7 @@ String ProxyAddress::convToString(void) const
 {
     String result(static_cast<uint32_t>(0xFF));
 
-    result.append(EXTENTION_PROXY.data())
+    result.append(EXTENTION_PROXY)
           .append(NECommon::COMPONENT_PATH_SEPARATOR)
           .append(ServiceAddress::convToString( ))
           .append(NECommon::COMPONENT_PATH_SEPARATOR)
@@ -263,11 +267,11 @@ String ProxyAddress::convToString(void) const
 void ProxyAddress::convFromString(const char * pathProxy, const char** out_nextPart /*= nullptr*/)
 {
     const char* strSource = pathProxy;
-    if ( String::getSubstring(strSource, NECommon::COMPONENT_PATH_SEPARATOR.data(), &strSource) == EXTENTION_PROXY.data() )
+    if ( String::getSubstring(strSource, NECommon::COMPONENT_PATH_SEPARATOR.data(), &strSource) == EXTENTION_PROXY )
     {
         ServiceAddress::convFromString(strSource, &strSource);
         mThreadName  = String::getSubstring(strSource, NECommon::COMPONENT_PATH_SEPARATOR.data( ), &strSource);
-        mChannel.convFromString( String::getSubstring(strSource, NECommon::COMPONENT_PATH_SEPARATOR.data( ), &strSource).getString() );
+        mChannel.convFromString( String::getSubstring(strSource, NECommon::COMPONENT_PATH_SEPARATOR.data( ), &strSource) );
 
         mMagicNum = ProxyAddress::_magicNumber(*this);
     }

@@ -337,7 +337,7 @@ bool TraceManager::loadConfiguration( const char * filePath /*= nullptr */ )
     Lock lock(mLock);
 
     mConfigFile = File::getFileFullPath( NEString::isEmpty<char>(filePath) ? NEApplication::DEFAULT_TRACING_CONFIG_FILE.data() : filePath);
-    File fileConfig( static_cast<const char *>(mConfigFile), FileBase::FO_MODE_EXIST | FileBase::FO_MODE_READ | FileBase::FO_MODE_TEXT | FileBase::FO_MODE_SHARE_READ );
+    File fileConfig( mConfigFile, FileBase::FO_MODE_EXIST | FileBase::FO_MODE_READ | FileBase::FO_MODE_TEXT | FileBase::FO_MODE_SHARE_READ );
     fileConfig.open( );
 
     return loadConfiguration( fileConfig ) && initializeConfig( );
@@ -725,14 +725,15 @@ void TraceManager::activateScope( TraceScope & traceScope, unsigned int defaultP
     else
     {
         String groupName( scopeName );
-        NEString::CharPos pos = NEString::INVALID_POS;
+        NEString::CharPos pos = NEString::END_POS;
         do
         {
-            pos = groupName.findLast(NELogConfig::SYNTAX_SCOPE_SEPARATOR, NEString::END_POS, true);
+            pos = groupName.findLast(NELogConfig::SYNTAX_SCOPE_SEPARATOR, pos, true);
             if (groupName.isValidPosition(pos))
             {
                 // set group syntax
                 groupName.setAt(NELogConfig::SYNTAX_SCOPE_GROUP, pos + 1).resize(pos + 2);
+                pos -= 1;
             }
             else
             {

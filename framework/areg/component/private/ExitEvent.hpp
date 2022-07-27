@@ -53,7 +53,7 @@ private:
     /**
      * \brief   Destructor. Hidden. Cannot be deleted outside of class.
      **/
-    virtual ~ExitEvent( void );
+    virtual ~ExitEvent( void ) = default;
 
 private:
 /************************************************************************/

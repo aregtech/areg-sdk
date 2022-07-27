@@ -45,7 +45,7 @@ Process & Process::initilize( void )
 
         if ( ::GetModuleFileNameEx( (HANDLE)(mProcessHandle), nullptr, fullPath, MAX_PATH) != 0 )
         {
-            String temp = fullPath;
+            String temp(fullPath);
             _initPaths(temp.getString());
         }
     }

@@ -144,7 +144,7 @@ public:
      * \param	Key	        The Key value of resource
      * \param	Resource	Pointer to resource object
      **/
-    inline void implCleanResource( RuntimeClassID & Key, EventConsumerList * Resource );
+    void implCleanResource( RuntimeClassID & Key, EventConsumerList * Resource );
 };
 /**
  * \brief   Event Consumer Map is a helper class containing 

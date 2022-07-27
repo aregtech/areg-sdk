@@ -139,7 +139,7 @@ public:
      *                      If nullptr or empty, it will use default settings.
      * \return  Returns true if system could configure. Otherwise, it returns false.
      **/
-    virtual bool configureRemoteServicing( const char * configFile ) override;
+    virtual bool configureRemoteServicing( const String & configFile ) override;
 
     /**
      * \brief   Call manually to set routing service host name and port number.
@@ -148,7 +148,7 @@ public:
      * \param   hostName    IP-address or host name of routing service to connect.
      * \param   portNr      Port number of routing service to connect.
      **/
-    virtual void setRemoteServiceAddress( const char * hostName, unsigned short portNr ) override;
+    virtual void setRemoteServiceAddress( const String & hostName, unsigned short portNr ) override;
 
     /**
      * \brief   Call to start remote service. The host name and port number should be already set.
@@ -418,6 +418,9 @@ private:
      **/
     bool startConnection( void );
 
+    /**
+     * \brief   Call to restart the connection. Returns true if succeeded to reconnect.
+     **/
     bool restartConnection( void );
 
     /**

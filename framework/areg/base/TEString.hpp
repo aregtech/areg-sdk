@@ -1098,7 +1098,7 @@ inline TEString<CharType>::operator const CharType* (void) const
 template<typename CharType>
 inline const CharType TEString<CharType>::operator[ ](int index) const
 {
-    ASSERT((mData.c_str() != nullptr) && (index < mData.length()));
+    ASSERT((mData.c_str() != nullptr) && (index < static_cast<int>(mData.length())));
     return mData.c_str()[index];
 }
 

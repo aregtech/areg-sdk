@@ -23,7 +23,7 @@
 DEF_TRACE_SCOPE(areg_ipc_private_ClientReceiveThread_runDispatcher);
 
 ClientReceiveThread::ClientReceiveThread( IERemoteServiceHandler & remoteService, ClientConnection & connection )
-    : DispatcherThread  ( NEConnection::CLIENT_RECEIVE_MESSAGE_THREAD.data() )
+    : DispatcherThread  ( NEConnection::CLIENT_RECEIVE_MESSAGE_THREAD )
 
     , mRemoteService    ( remoteService )
     , mConnection       ( connection )
@@ -72,8 +72,9 @@ bool ClientReceiveThread::runDispatcher(void)
 
     mEventStarted.resetEvent();
 
-    TRACE_DBG("Exiting client service dispatcher thread [ %s ] with result [ %s ]", getName().getString()
-               , whichEvent == static_cast<int>(EventDispatcherBase::eEventOrder::EventExit) ? "SUCCESS" : "FAILURE");
+    TRACE_DBG("Exiting client service dispatcher thread [ %s ] with result [ %s ]"
+                , getName().getString()
+                , whichEvent == static_cast<int>(EventDispatcherBase::eEventOrder::EventExit) ? "SUCCESS" : "FAILURE");
 
     return (whichEvent == static_cast<int>(EventDispatcherBase::eEventOrder::EventExit));
 }

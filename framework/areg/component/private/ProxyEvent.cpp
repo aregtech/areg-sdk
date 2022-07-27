@@ -14,6 +14,7 @@
  *
  ************************************************************************/
 #include "areg/component/ProxyEvent.hpp"
+
 #include "areg/component/private/ProxyConnectEvent.hpp"
 #include "areg/component/DispatcherThread.hpp"
 #include "areg/component/ServiceResponseEvent.hpp"
@@ -161,9 +162,13 @@ void IEProxyEventConsumer::startEventProcessing( Event & eventElem )
                     {
                         ProxyEvent* proxyEvent = RUNTIME_CAST(&eventElem, ProxyEvent);
                         if (proxyEvent != nullptr)
+                        {
                             processProxyEvent(*proxyEvent);
+                        }
                         else
+                        {
                             processGenericEvent(eventElem);
+                        }
                     }
                 }
             }

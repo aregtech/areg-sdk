@@ -12,8 +12,8 @@
  * \author      Artak Avetyan
  * \brief       AREG Platform Connection constants.
  ************************************************************************/
-
 #include "areg/ipc/NEConnection.hpp"
+
 #include "areg/component/NEService.hpp"
 #include "areg/component/StubAddress.hpp"
 #include "areg/component/ProxyAddress.hpp"

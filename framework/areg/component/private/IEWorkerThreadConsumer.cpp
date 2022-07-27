@@ -22,7 +22,7 @@
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
-IEWorkerThreadConsumer::IEWorkerThreadConsumer(const char* const consumerName)
+IEWorkerThreadConsumer::IEWorkerThreadConsumer(const String & consumerName)
     : mConsumerName (consumerName)
 {
 }

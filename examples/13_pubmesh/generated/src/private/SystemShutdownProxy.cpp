@@ -42,12 +42,12 @@ SystemShutdownProxy::SystemShutdownServiceAvailableEvent::SystemShutdownServiceA
 // static function implementation
 //////////////////////////////////////////////////////////////////////////
 
-ProxyBase * SystemShutdownProxy::_createProxy( const char * roleName, DispatcherThread * ownerThread /*= nullptr*/ )
+ProxyBase * SystemShutdownProxy::_createProxy( const String & roleName, DispatcherThread * ownerThread /*= nullptr*/ )
 {
     return DEBUG_NEW SystemShutdownProxy(roleName, ownerThread);
 }
 
-SystemShutdownProxy * SystemShutdownProxy::createProxy( const char * roleName, IEProxyListener & connectListener, DispatcherThread & ownerThread )
+SystemShutdownProxy * SystemShutdownProxy::createProxy( const String & roleName, IEProxyListener & connectListener, DispatcherThread & ownerThread )
 {
     return static_cast<SystemShutdownProxy *>(ProxyBase::findOrCreateProxy( roleName
                                                                       , NESystemShutdown::getInterfaceData()
@@ -56,7 +56,7 @@ SystemShutdownProxy * SystemShutdownProxy::createProxy( const char * roleName, I
                                                                       , ownerThread) );
 }
 
-SystemShutdownProxy * SystemShutdownProxy::createProxy( const char * roleName, IEProxyListener & connectListener, const char * ownerThread /*= nullptr*/ )
+SystemShutdownProxy * SystemShutdownProxy::createProxy( const String & roleName, IEProxyListener & connectListener, const String & ownerThread /*= String::EmptyString*/ )
 {
     return static_cast<SystemShutdownProxy *>(ProxyBase::findOrCreateProxy( roleName
                                                                       , NESystemShutdown::getInterfaceData()
@@ -68,7 +68,7 @@ SystemShutdownProxy * SystemShutdownProxy::createProxy( const char * roleName, I
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
-SystemShutdownProxy::SystemShutdownProxy( const char * roleName, DispatcherThread * ownerThread /*= nullptr*/ )
+SystemShutdownProxy::SystemShutdownProxy( const String & roleName, DispatcherThread * ownerThread /*= nullptr*/ )
     : ProxyBase(roleName, NESystemShutdown::getInterfaceData(), ownerThread)
 
 /************************************************************************

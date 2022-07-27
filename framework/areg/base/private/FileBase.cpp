@@ -587,7 +587,7 @@ void FileBase::flush(void)
     ; // do nothing
 }
 
-void FileBase::normalizeName(String & OUT name)
+void FileBase::normalizeName(String & IN OUT name)
 {
     // replace all "%time%"
     char fmt[32];

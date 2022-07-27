@@ -14,6 +14,7 @@
  *
  ************************************************************************/
 #include "areg/component/ComponentThread.hpp"
+
 #include "areg/component/Component.hpp"
 #include "areg/component/ProxyBase.hpp"
 #include "areg/component/ComponentLoader.hpp"
@@ -59,13 +60,12 @@ inline ComponentThread* ComponentThread::_getCurrentComponentThread( void )
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
-ComponentThread::ComponentThread( const char* threadName )
-    : DispatcherThread    ( threadName )
+ComponentThread::ComponentThread( const String & threadName )
+    : DispatcherThread  ( threadName )
 
-    , mCurrentComponent     ( nullptr )
-    , mListComponent        ( )
+    , mCurrentComponent ( nullptr )
+    , mListComponent    ( )
 {
-    ; // do nothing
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -109,7 +109,7 @@ int ComponentThread::createComponents( void )
                 }
                 else
                 {
-                    OUTPUT_ERR("Failed creating component [ %s ] in UNKNOWN nullptr thread");
+                    OUTPUT_ERR("Failed creating component [ %s ] in UNKNOWN nullptr thread", entry.mRoleName.getString());
                 }
             }
         }
@@ -190,6 +190,7 @@ DispatcherThread* ComponentThread::getEventConsumerThread( const RuntimeClassID&
             result = comObj->findEventConsumer(whichClass);
         }
     }
+
     return result;
 }
 
@@ -203,6 +204,7 @@ void ComponentThread::shutdownThread( void )
         comObj->notifyComponentShutdown(self());
         OUTPUT_DBG("The component [ %s ] is notified thread [ %s ] is going to shutdown!", comObj->getRoleName().getString(), getName().getString());
     }
+
     DispatcherThread::shutdownThread();
 }
 

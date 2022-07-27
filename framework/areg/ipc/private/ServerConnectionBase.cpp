@@ -25,7 +25,7 @@ ServerConnectionBase::ServerConnectionBase( void )
 {
 }
 
-ServerConnectionBase::ServerConnectionBase(const char * hostName, unsigned short portNr)
+ServerConnectionBase::ServerConnectionBase(const String & hostName, unsigned short portNr)
     : mServerSocket         ( hostName, portNr )
     , mCookieGenerator      ( static_cast<ITEM_ID>(NEService::eCookies::CookieFirstValid) )
     , mAcceptedConnections  ( )
@@ -47,7 +47,7 @@ ServerConnectionBase::ServerConnectionBase(const NESocket::SocketAddress & serve
 {
 }
 
-bool ServerConnectionBase::createSocket(const char * hostName, unsigned short portNr)
+bool ServerConnectionBase::createSocket(const String & hostName, unsigned short portNr)
 {
     Lock lock(mLock);
     return mServerSocket.createSocket(hostName, portNr);

@@ -73,11 +73,11 @@ void Component::unloadComponent( Component& comItem, const NERegistry::Component
     entry.mFuncDelete(comItem, entry);
 }
 
-Component* Component::findComponentByName( const char* roleName )
+Component* Component::findComponentByName( const String & roleName )
 {
-    ASSERT(NEString::isEmpty<char>(roleName) == false);
+    ASSERT(roleName.isEmpty() == false);
     
-    return _mapComponentResource.findResourceObject(NEMath::crc32Calculate(roleName));
+    return _mapComponentResource.findResourceObject(NEMath::crc32Calculate(roleName.getString()));
 }
 
 Component * Component::findComponentByNumber(unsigned int magicNum)
@@ -93,10 +93,10 @@ Component* Component::findComponentByAddress( const ComponentAddress& comAddress
     return (result != nullptr && result->getAddress() == comAddress ? result : nullptr);
 }
 
-bool Component::existComponent( const char* roleName )
+bool Component::existComponent( const String & roleName )
 {
-    ASSERT(NEString::isEmpty<char>(roleName) == false);
-    return _mapComponentResource.existResource(NEMath::crc32Calculate(roleName));
+    ASSERT(roleName.isEmpty() == false);
+    return _mapComponentResource.existResource(NEMath::crc32Calculate(roleName.getString()));
 }
 
 ComponentThread& Component::_getCurrentComponentThread( void )
@@ -109,7 +109,7 @@ ComponentThread& Component::_getCurrentComponentThread( void )
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor 
 //////////////////////////////////////////////////////////////////////////
-Component::Component( ComponentThread & masterThread, const char* roleName)
+Component::Component( ComponentThread & masterThread, const String & roleName)
     : RuntimeObject           ( )
 
     , mComponentInfo    (masterThread, roleName)
@@ -119,7 +119,7 @@ Component::Component( ComponentThread & masterThread, const char* roleName)
     _mapComponentResource.registerResourceObject(mMagicNum, this);
 }
 
-Component::Component( const char* roleName )
+Component::Component( const String & roleName )
     : RuntimeObject           ( )
 
     , mComponentInfo    (_getCurrentComponentThread(), roleName)
@@ -138,18 +138,18 @@ Component::~Component( void )
 //////////////////////////////////////////////////////////////////////////
 // Methods
 //////////////////////////////////////////////////////////////////////////
-WorkerThread* Component::createWorkerThread( const char* threadName, IEWorkerThreadConsumer& consumer, ComponentThread & /* masterThread */ )
+WorkerThread* Component::createWorkerThread( const String & threadName, IEWorkerThreadConsumer& consumer, ComponentThread & /* masterThread */ )
 {
     WorkerThread* workThread = mComponentInfo.findWorkerThread(threadName);
     if (workThread == nullptr)
     {
-        OUTPUT_DBG("Going to Create WorkerThread object [ %s ]", threadName);
+        OUTPUT_DBG("Going to Create WorkerThread object [ %s ]", threadName.getString());
         workThread = DEBUG_NEW WorkerThread(threadName, self(), consumer);
         if (workThread != nullptr)
         {
             if (workThread->createThread(NECommon::WAIT_INFINITE))
             {
-                OUTPUT_DBG("Registering WorkerThread [ %s ]", threadName);
+                OUTPUT_DBG("Registering WorkerThread [ %s ]", threadName.getString());
                 mComponentInfo.registerWorkerThread(*workThread);
             }
             else
@@ -163,13 +163,13 @@ WorkerThread* Component::createWorkerThread( const char* threadName, IEWorkerThr
     return workThread;
 }
 
-void Component::deleteWorkerThread( const char* threadName )
+void Component::deleteWorkerThread( const String & threadName )
 {
-    OUTPUT_DBG("Going to Delete WorkerThread object [ %s ]", threadName);
+    OUTPUT_DBG("Going to Delete WorkerThread object [ %s ]", threadName.getString());
     WorkerThread* workThread = mComponentInfo.findWorkerThread(threadName);
     if (workThread != nullptr)
     {
-        OUTPUT_DBG("Unregistering and deleting WorkerThread [ %s ]", threadName);
+        OUTPUT_DBG("Unregistering and deleting WorkerThread [ %s ]", threadName.getString());
         workThread->destroyThread(NECommon::WAIT_INFINITE);
         mComponentInfo.unregisterWorkerThread(*workThread);
         delete workThread;
@@ -225,7 +225,7 @@ void Component::registerServerItem( StubBase& server )
     mServerList.pushLast(&server);
 }
 
-StubBase* Component::findServerByName( const char* serviceName )
+StubBase* Component::findServerByName( const String & serviceName )
 {
     StubBase* result = nullptr;
     for (ListServers::LISTPOS  pos = mServerList.firstPosition(); mServerList.isValidPosition(pos); pos = mServerList.nextPosition(pos))
@@ -253,7 +253,7 @@ void Component::waitComponentCompletion( unsigned int waitTimeout )
     }
 }
 
-IEWorkerThreadConsumer* Component::workerThreadConsumer( const char* /* consumerName */, const char* /* workerThreadName */)
+IEWorkerThreadConsumer* Component::workerThreadConsumer( const String & /* consumerName */, const String & /* workerThreadName */)
 {
     return nullptr;
 }

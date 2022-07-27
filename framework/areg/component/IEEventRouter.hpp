@@ -44,13 +44,9 @@ class AREG_API IEEventRouter
 //////////////////////////////////////////////////////////////////////////
 protected:
     /**
-     * \brief   Default constructor
+     * \brief   Protected constructor and destructor.
      **/
     IEEventRouter( void ) = default;
-
-    /**
-     * \brief   Destructor
-     **/
     virtual ~IEEventRouter( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////

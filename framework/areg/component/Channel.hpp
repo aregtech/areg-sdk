@@ -189,7 +189,7 @@ public:
      * \brief   Creates channel data from string
      * \param   channel     Null-terminated string, which contains channel data.
      **/
-    const Channel & convFromString( const char * channel );
+    const Channel & convFromString( const String & channel );
 
 
 //////////////////////////////////////////////////////////////////////////

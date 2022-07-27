@@ -184,7 +184,7 @@ private:
      *          Otherwise, it returns false.
      * \see     _routingServiceStart
      **/
-    static bool _routingServiceConfigure( const char * configFile = nullptr );
+    static bool _routingServiceConfigure( const String & configFile = String::EmptyString );
 
     /**
      * \brief   Call to start the client part of remove Routing Service.
@@ -195,7 +195,7 @@ private:
      * \return  Returns true if succeeded to start router client.
      * \see     _routingServiceConfigure, _routingServiceStop
      **/
-    static bool _routingServiceStart( const char * configFile = nullptr );
+    static bool _routingServiceStart( const String & configFile = String::EmptyString );
 
 
     /**
@@ -206,7 +206,7 @@ private:
      * \return  Returns true if router client successfully started.
      * \see     _routingServiceConfigure, _routingServiceStop
      **/
-    static bool _routingServiceStart( const char * ipAddress, unsigned short portNr );
+    static bool _routingServiceStart( const String & ipAddress, unsigned short portNr );
 
     /**
      * \brief   Call to stop router client.

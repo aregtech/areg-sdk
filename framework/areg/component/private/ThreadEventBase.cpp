@@ -10,7 +10,7 @@
  * \file        areg/component/private/ThreadEventBase.cpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
  * \author      Artak Avetyan
- * \brief       AREG Platform, Multithreading Event base class.
+ * \brief       AREG Platform, Multi-threading Event base class.
  *
  ************************************************************************/
 #include "areg/component/private/ThreadEventBase.hpp"

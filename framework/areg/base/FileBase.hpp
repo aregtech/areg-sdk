@@ -799,7 +799,7 @@ protected:
      * \brief   Normalizes the name, replace special masks such as time-stamp or process name in the give name.
      * \param[out]  name    On output, contains normalized name of file.
      **/
-    static void normalizeName( String & OUT name );
+    static void normalizeName( String & IN OUT name );
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables

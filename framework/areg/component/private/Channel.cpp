@@ -70,17 +70,17 @@ String Channel::convToString( void ) const
     return result.formatString("%llu.%llu.%llu", mSource, mTarget, mCookie);
 }
 
-const Channel & Channel::convFromString(const char * channel)
+const Channel & Channel::convFromString(const String & channel)
 {
     mSource = NEService::SOURCE_UNKNOWN;
     mTarget = NEService::TARGET_UNKNOWN;
     mCookie = NEService::COOKIE_UNKNOWN;
 
-    String temp(channel), source, target, cookie;
+    String source, target, cookie;
     NEString::CharPos pos = NEString::START_POS;
-    pos = temp.substring( source, NECommon::OBJECT_SEPARATOR, pos );
-    pos = temp.substring( target, NECommon::OBJECT_SEPARATOR, pos );
-    pos = temp.substring( cookie, NECommon::OBJECT_SEPARATOR, pos );
+    pos = channel.substring( source, NECommon::OBJECT_SEPARATOR, pos );
+    pos = channel.substring( target, NECommon::OBJECT_SEPARATOR, pos );
+    pos = channel.substring( cookie, NECommon::OBJECT_SEPARATOR, pos );
 
     mSource = static_cast<ITEM_ID>( source.toUInt64() );
     mTarget = static_cast<ITEM_ID>( target.toUInt64() );

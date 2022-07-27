@@ -39,6 +39,7 @@
  **/
 class AREG_API EventDataStream : public IEIOStream
 {
+    //! The list of shared buffer list (stack).
     using SharedList    = TENolockStack<SharedBuffer>;
 
 //////////////////////////////////////////////////////////////////////////
@@ -77,14 +78,14 @@ public:
      * \param   evetDataType    The type of event data. Either for internal or for external communication
      * \param   name            The name for streaming object. Can be ignored.
      **/
-    explicit EventDataStream( EventDataStream::eEventData evetDataType, const char* name = nullptr );
+    explicit EventDataStream( EventDataStream::eEventData evetDataType, const String & name = String::EmptyString );
 
     /**
      * \brief	Constructor. Creates read only event data streaming object containing read only data of shared buffer.
      * \param	buffer	The shared buffer to pass to streaming object.
-     * \param	name	The name of streaming object. Can be ignored.
+     * \param	name	The name of streaming object.
      **/
-    EventDataStream(const EventDataStream & buffer, const char* name );
+    EventDataStream(const EventDataStream & buffer, const String & name);
 
     /**
      * \brief   Copy constructor.
@@ -311,7 +312,7 @@ protected:
 
     /**
      * \brief   FIFO Stack of Shared Buffers. Used only if the data type is internal.
-     *          All Shared Buffers instead of copying data, will be added to this list.
+     *          All Shared Buffer objects instead of copying data, will be added to this list.
      **/
     mutable SharedList          mSharedList;
 

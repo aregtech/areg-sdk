@@ -23,6 +23,7 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
+class String;
 class StubAddress;
 class ProxyAddress;
 class RemoteMessage;
@@ -73,7 +74,7 @@ public:
      *                      If nullptr or empty, it will use default settings.
      * \return  Returns true if system could configure. Otherwise, it returns false.
      **/
-    virtual bool configureRemoteServicing( const char * configFile ) = 0;
+    virtual bool configureRemoteServicing( const String & configFile ) = 0;
 
     /**
      * \brief   Call manually to set router service host name and port number.
@@ -82,7 +83,7 @@ public:
      * \param   hostName    IP-address or host name of routing service to connect.
      * \param   portNr      Port number of routing service to connect.
      **/
-    virtual void setRemoteServiceAddress( const char * hostName, unsigned short portNr ) = 0;
+    virtual void setRemoteServiceAddress( const String & hostName, unsigned short portNr ) = 0;
 
     /**
      * \brief   Call to start remote service. The host name and port number should be already set.

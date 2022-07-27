@@ -42,12 +42,12 @@ PatientInformationProxy::PatientInformationServiceAvailableEvent::PatientInforma
 // static function implementation
 //////////////////////////////////////////////////////////////////////////
 
-ProxyBase * PatientInformationProxy::_createProxy( const char * roleName, DispatcherThread * ownerThread /*= nullptr*/ )
+ProxyBase * PatientInformationProxy::_createProxy( const String & roleName, DispatcherThread * ownerThread /*= nullptr*/ )
 {
     return DEBUG_NEW PatientInformationProxy(roleName, ownerThread);
 }
 
-PatientInformationProxy * PatientInformationProxy::createProxy( const char * roleName, IEProxyListener & connectListener, DispatcherThread & ownerThread )
+PatientInformationProxy * PatientInformationProxy::createProxy( const String & roleName, IEProxyListener & connectListener, DispatcherThread & ownerThread )
 {
     return static_cast<PatientInformationProxy *>(ProxyBase::findOrCreateProxy( roleName
                                                                       , NEPatientInformation::getInterfaceData()
@@ -56,7 +56,7 @@ PatientInformationProxy * PatientInformationProxy::createProxy( const char * rol
                                                                       , ownerThread) );
 }
 
-PatientInformationProxy * PatientInformationProxy::createProxy( const char * roleName, IEProxyListener & connectListener, const char * ownerThread /*= nullptr*/ )
+PatientInformationProxy * PatientInformationProxy::createProxy( const String & roleName, IEProxyListener & connectListener, const String & ownerThread /*= String::EmptyString*/ )
 {
     return static_cast<PatientInformationProxy *>(ProxyBase::findOrCreateProxy( roleName
                                                                       , NEPatientInformation::getInterfaceData()
@@ -68,7 +68,7 @@ PatientInformationProxy * PatientInformationProxy::createProxy( const char * rol
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
-PatientInformationProxy::PatientInformationProxy( const char * roleName, DispatcherThread * ownerThread /*= nullptr*/ )
+PatientInformationProxy::PatientInformationProxy( const String & roleName, DispatcherThread * ownerThread /*= nullptr*/ )
     : ProxyBase(roleName, NEPatientInformation::getInterfaceData(), ownerThread)
 
 /************************************************************************

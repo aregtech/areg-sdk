@@ -42,12 +42,12 @@ ConnectionManagerProxy::ConnectionManagerServiceAvailableEvent::ConnectionManage
 // static function implementation
 //////////////////////////////////////////////////////////////////////////
 
-ProxyBase * ConnectionManagerProxy::_createProxy( const char * roleName, DispatcherThread * ownerThread /*= nullptr*/ )
+ProxyBase * ConnectionManagerProxy::_createProxy( const String & roleName, DispatcherThread * ownerThread /*= nullptr*/ )
 {
     return DEBUG_NEW ConnectionManagerProxy(roleName, ownerThread);
 }
 
-ConnectionManagerProxy * ConnectionManagerProxy::createProxy( const char * roleName, IEProxyListener & connectListener, DispatcherThread & ownerThread )
+ConnectionManagerProxy * ConnectionManagerProxy::createProxy( const String & roleName, IEProxyListener & connectListener, DispatcherThread & ownerThread )
 {
     return static_cast<ConnectionManagerProxy *>(ProxyBase::findOrCreateProxy( roleName
                                                                       , NEConnectionManager::getInterfaceData()
@@ -56,7 +56,7 @@ ConnectionManagerProxy * ConnectionManagerProxy::createProxy( const char * roleN
                                                                       , ownerThread) );
 }
 
-ConnectionManagerProxy * ConnectionManagerProxy::createProxy( const char * roleName, IEProxyListener & connectListener, const char * ownerThread /*= nullptr*/ )
+ConnectionManagerProxy * ConnectionManagerProxy::createProxy( const String & roleName, IEProxyListener & connectListener, const String & ownerThread /*= String::EmptyString*/ )
 {
     return static_cast<ConnectionManagerProxy *>(ProxyBase::findOrCreateProxy( roleName
                                                                       , NEConnectionManager::getInterfaceData()
@@ -68,7 +68,7 @@ ConnectionManagerProxy * ConnectionManagerProxy::createProxy( const char * roleN
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
-ConnectionManagerProxy::ConnectionManagerProxy( const char * roleName, DispatcherThread * ownerThread /*= nullptr*/ )
+ConnectionManagerProxy::ConnectionManagerProxy( const String & roleName, DispatcherThread * ownerThread /*= nullptr*/ )
     : ProxyBase(roleName, NEConnectionManager::getInterfaceData(), ownerThread)
 
 /************************************************************************

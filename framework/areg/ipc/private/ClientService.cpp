@@ -61,7 +61,7 @@ ClientService::ClientService( IERemoteServiceConsumer & serviceConsumer )
 
     , mClientConnection ( )
     , mServiceConsumer  ( serviceConsumer )
-    , mTimerConnect     ( static_cast<IETimerConsumer &>(self()), NEConnection::CLIENT_CONNECT_TIMER_NAME.data() )
+    , mTimerConnect     ( static_cast<IETimerConsumer &>(self()), NEConnection::CLIENT_CONNECT_TIMER_NAME )
     , mThreadReceive    ( static_cast<IERemoteServiceHandler &>(self()), mClientConnection )
     , mThreadSend       ( static_cast<IERemoteServiceHandler &>(self()), mClientConnection )
     , mIsServiceEnabled ( NEConnection::DEFAULT_REMOVE_SERVICE_ENABLED )    // TODO: by default, should be false and read out from configuration file.
@@ -72,7 +72,7 @@ ClientService::ClientService( IERemoteServiceConsumer & serviceConsumer )
 {
 }
 
-bool ClientService::configureRemoteServicing( const char * configFile )
+bool ClientService::configureRemoteServicing( const String & configFile )
 {
     Lock lock( mLock );
     ConnectionConfiguration configConnect;
@@ -92,7 +92,7 @@ bool ClientService::configureRemoteServicing( const char * configFile )
     }
 }
 
-void ClientService::setRemoteServiceAddress( const char * hostName, unsigned short portNr )
+void ClientService::setRemoteServiceAddress( const String & hostName, unsigned short portNr )
 {
     Lock lock( mLock );
     mClientConnection.setAddress( hostName, portNr );
@@ -324,7 +324,8 @@ void ClientService::processEvent( const ClientServiceEventData & data )
 
     case ClientServiceEventData::eClientServiceCommands::CMD_ServiceLost:
     {
-        TRACE_WARN("Client service is lost connection. Resetting cookie and trying to restart, current connection state [ %s ]", ClientService::getString(getConnectionState()));
+        TRACE_WARN("Client service is lost connection. Resetting cookie and trying to restart, current connection state [ %s ]"
+                    , ClientService::getString(getConnectionState()));
         Channel channel = mChannel;
         mChannel.setCookie( NEService::COOKIE_UNKNOWN );
         mChannel.setSource( NEService::SOURCE_UNKNOWN );

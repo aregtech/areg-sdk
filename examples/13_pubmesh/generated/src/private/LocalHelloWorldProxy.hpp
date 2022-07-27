@@ -91,7 +91,7 @@ public:
      * \param   ownerThread     The instance of thread to dispatch messages.
      * \return  Returns pointer to instantiated proxy object.
      **/
-    static LocalHelloWorldProxy * createProxy( const char * roleName, IEProxyListener & connectListener, DispatcherThread & ownerThread );
+    static LocalHelloWorldProxy * createProxy( const String & roleName, IEProxyListener & connectListener, DispatcherThread & ownerThread );
 
     /**
      * \brief   Returns existing or creates new proxy object if it is not existing
@@ -102,7 +102,7 @@ public:
      *                          If nullptr, current dispatching thread is used to dispatch messages.
      * \return  Returns pointer to instantiated proxy object.
      **/
-    static LocalHelloWorldProxy * createProxy( const char * roleName, IEProxyListener & connectListener, const char * ownerThread = nullptr );
+    static LocalHelloWorldProxy * createProxy( const String & roleName, IEProxyListener & connectListener, const String & ownerThread = String::EmptyString);
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor. Protected
@@ -115,7 +115,7 @@ protected:
      * \param   ownerThread The instance of thread to dispatch messages.
      *                      If nullptr, current dispatching thread is used to dispatch messages.
      **/
-    explicit LocalHelloWorldProxy( const char * roleName, DispatcherThread * ownerThread = nullptr );
+    explicit LocalHelloWorldProxy( const String & roleName, DispatcherThread * ownerThread = nullptr );
     /**
      * \brief   Destructor
      **/
@@ -362,7 +362,7 @@ private:
      *                      If nullptr, current dispatching thread is used to dispatch messages.
      * \return  Pointer to instantiated proxy object.
      **/
-    static ProxyBase * _createProxy( const char * roleName, DispatcherThread * ownerThread = nullptr );
+    static ProxyBase * _createProxy( const String & roleName, DispatcherThread * ownerThread = nullptr );
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls.

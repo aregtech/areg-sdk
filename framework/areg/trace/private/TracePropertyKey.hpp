@@ -152,7 +152,7 @@ public:
      * \brief   Parses given string and initializes property key data
      * \param   fullKey     The full string of property key to parse and initialize.
      **/
-    void setKey( const char * fullKey );
+    void setKey( const String & fullKey );
 
     /**
      * \brief   Returns true if the module key is empty or equal to given module name.
@@ -162,12 +162,12 @@ public:
      * \return  Returns true if property key is set and either module name is empty (i.e. global visibility)
      *          or equal to the given module name.
      **/
-    bool isModuleKeySet( const char * moduleName = nullptr ) const;
+    bool isModuleKeySet( const String & moduleName = String::EmptyString ) const;
 
     /**
      * \brief   Returns the syntax name of the property key.
      **/
-    const char * getKeySytax( void ) const;
+    const String getKeySyntax( void ) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables

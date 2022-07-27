@@ -42,12 +42,12 @@ SimpleTrafficSwitchProxy::SimpleTrafficSwitchServiceAvailableEvent::SimpleTraffi
 // static function implementation
 //////////////////////////////////////////////////////////////////////////
 
-ProxyBase * SimpleTrafficSwitchProxy::_createProxy( const char * roleName, DispatcherThread * ownerThread /*= nullptr*/ )
+ProxyBase * SimpleTrafficSwitchProxy::_createProxy( const String & roleName, DispatcherThread * ownerThread /*= nullptr*/ )
 {
     return DEBUG_NEW SimpleTrafficSwitchProxy(roleName, ownerThread);
 }
 
-SimpleTrafficSwitchProxy * SimpleTrafficSwitchProxy::createProxy( const char * roleName, IEProxyListener & connectListener, DispatcherThread & ownerThread )
+SimpleTrafficSwitchProxy * SimpleTrafficSwitchProxy::createProxy( const String & roleName, IEProxyListener & connectListener, DispatcherThread & ownerThread )
 {
     return static_cast<SimpleTrafficSwitchProxy *>(ProxyBase::findOrCreateProxy( roleName
                                                                       , NESimpleTrafficSwitch::getInterfaceData()
@@ -56,7 +56,7 @@ SimpleTrafficSwitchProxy * SimpleTrafficSwitchProxy::createProxy( const char * r
                                                                       , ownerThread) );
 }
 
-SimpleTrafficSwitchProxy * SimpleTrafficSwitchProxy::createProxy( const char * roleName, IEProxyListener & connectListener, const char * ownerThread /*= nullptr*/ )
+SimpleTrafficSwitchProxy * SimpleTrafficSwitchProxy::createProxy( const String & roleName, IEProxyListener & connectListener, const String & ownerThread /*= String::EmptyString*/ )
 {
     return static_cast<SimpleTrafficSwitchProxy *>(ProxyBase::findOrCreateProxy( roleName
                                                                       , NESimpleTrafficSwitch::getInterfaceData()
@@ -68,7 +68,7 @@ SimpleTrafficSwitchProxy * SimpleTrafficSwitchProxy::createProxy( const char * r
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
-SimpleTrafficSwitchProxy::SimpleTrafficSwitchProxy( const char * roleName, DispatcherThread * ownerThread /*= nullptr*/ )
+SimpleTrafficSwitchProxy::SimpleTrafficSwitchProxy( const String & roleName, DispatcherThread * ownerThread /*= nullptr*/ )
     : ProxyBase(roleName, NESimpleTrafficSwitch::getInterfaceData(), ownerThread)
 
 /************************************************************************

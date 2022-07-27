@@ -46,10 +46,14 @@ void EventQueue::pushEvent( Event& evendElem )
 Event* EventQueue::popEvent( void )
 {
     mEventQueue.lock();
-    Event* result = mEventQueue.isEmpty() == false ? mEventQueue.popFirst() : nullptr;
-    if (mEventQueue.isEmpty())
+    Event* result{ nullptr };
+    if (mEventQueue.isEmpty() == false)
     {
-        mEventListener.signalEvent(0);
+        result = mEventQueue.popFirst();
+        if (mEventQueue.isEmpty())
+        {
+            mEventListener.signalEvent(0);
+        }
     }
 
     mEventQueue.unlock();
@@ -144,10 +148,6 @@ bool EventQueue::removePendingEvents( bool keepSpecials )
                                         , ProxyAddress::convAddressToPath(respEvent->getTargetProxy()).getString());
                         specials.pushLast(eventElem);
                         eventElem = nullptr;
-                    }
-                    else
-                    {
-                        ; // do nothing, should be removed!
                     }
                 }
             }

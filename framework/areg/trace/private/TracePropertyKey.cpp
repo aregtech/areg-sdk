@@ -87,14 +87,14 @@ TracePropertyKey & TracePropertyKey::operator = ( TracePropertyKey && source ) n
     return (*this);
 }
 
-void TracePropertyKey::setKey(const char * fullKey)
+void TracePropertyKey::setKey(const String & fullKey)
 {
-    mKeyName    = fullKey != nullptr ? fullKey : String::EmptyString.data();
+    mKeyName    = fullKey;
     mKeyName.trimAll();
     mLogConfig  = NELogConfig::convFromString( mKeyName );
     if ( mLogConfig != NELogConfig::eLogConfig::ConfigUnknown )
     {
-        int len = static_cast<int>(NELogConfig::ValidSytaxList[static_cast<int>(mLogConfig)].length());
+        int len = static_cast<int>(NELogConfig::ValidSyntaxList[static_cast<int>(mLogConfig)].length());
         if ( mKeyName.getLength() > len )
         {
             NEString::CharPos pos = mKeyName.findFirst(NELogConfig::SYNTAX_OBJECT_SEPARATOR, len + 1);
@@ -134,7 +134,7 @@ void TracePropertyKey::setKey(const char * fullKey)
     }
 }
 
-bool TracePropertyKey::isModuleKeySet(const char * moduleName /*= nullptr */) const
+bool TracePropertyKey::isModuleKeySet(const String & moduleName /*= String::EmptyString */) const
 {
     if ( mConfigKey != NELogConfig::eConfigKey::KeyUndefined )
     {
@@ -146,7 +146,7 @@ bool TracePropertyKey::isModuleKeySet(const char * moduleName /*= nullptr */) co
     }
 }
 
-const char * TracePropertyKey::getKeySytax( void ) const
+const String TracePropertyKey::getKeySyntax( void ) const
 {
-    return NELogConfig::ValidSytaxList[static_cast<int>(mLogConfig)].data();
+    return NELogConfig::ValidSyntaxList[static_cast<int>(mLogConfig)];
 }

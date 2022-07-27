@@ -96,7 +96,7 @@ public:
      *          To create dispatcher thread, unique thread name required.
      * \param   threadName  The unique name of component thread.
      **/
-    explicit ComponentThread( const char * threadName );
+    explicit ComponentThread( const String & threadName );
 
     /**
      * \brief   Destructor

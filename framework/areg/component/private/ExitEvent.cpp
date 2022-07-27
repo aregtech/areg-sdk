@@ -24,10 +24,6 @@ ExitEvent::ExitEvent( void )
 {
 }
 
-ExitEvent::~ExitEvent( void )
-{
-}
-
 ExitEvent & ExitEvent::getExitEvent( void )
 {
     static ExitEvent  _exitEvent;

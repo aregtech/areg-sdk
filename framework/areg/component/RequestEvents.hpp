@@ -104,7 +104,7 @@ protected:
                 , const StubAddress & toTarget
                 , unsigned int reqId
                 , Event::eEventType eventType
-                , const char* name = nullptr);
+                , const String & name = String::EmptyString);
 
     /**
      * \brief   Initializes object data from streaming object.
@@ -231,7 +231,7 @@ protected:
                      , const ProxyAddress & fromSource
                      , const StubAddress & toTarget
                      , unsigned int reqId
-                     , const char* name = nullptr);
+                     , const String & name = String::EmptyString);
 
     /**
      * \brief   Initializes object data from streaming object.
@@ -297,7 +297,7 @@ protected:
                       , const ProxyAddress & fromSource
                       , const StubAddress & toTarget
                       , unsigned int reqId
-                      , const char* name = nullptr);
+                      , const String & name = String::EmptyString);
 
 
     /**

@@ -43,10 +43,10 @@ ServiceAddress::ServiceAddress( void )
 {
 }
 
-ServiceAddress::ServiceAddress( const char * serviceName
+ServiceAddress::ServiceAddress( const String & serviceName
                               , const Version & serviceVersion
                               , NEService::eServiceType serviceType
-                              , const char * roleName )
+                              , const String & roleName )
     : ServiceItem   ( serviceName, serviceVersion, serviceType )
     , mRoleName     ( roleName )
     , mMagicNum     ( NEMath::CHECKSUM_IGNORE )
@@ -55,7 +55,7 @@ ServiceAddress::ServiceAddress( const char * serviceName
     mMagicNum = ServiceAddress::_magicNumber(*this);
 }
 
-ServiceAddress::ServiceAddress( const ServiceItem & serviceItem, const char * roleName )
+ServiceAddress::ServiceAddress( const ServiceItem & serviceItem, const String & roleName )
     : ServiceItem   ( serviceItem )
     , mRoleName     ( roleName )
     , mMagicNum     ( NEMath::CHECKSUM_IGNORE )

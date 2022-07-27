@@ -44,7 +44,7 @@ ServerInfo::ServerInfo( StubAddress && server )
 }
 
 ServerInfo::ServerInfo( const ProxyAddress & proxy )
-    : mServerAddress( proxy.getServiceName(), proxy.getServiceVersion(), proxy.getServiceType(), proxy.getRoleName(), "" )
+    : mServerAddress( proxy.getServiceName(), proxy.getServiceVersion(), proxy.getServiceType(), proxy.getRoleName(), String::EmptyString )
     , mServerState  ( NEService::eServiceConnection::ServicePending )
 {
     mServerAddress.invalidateChannel();

@@ -35,9 +35,9 @@ PatientClient & PatientClient::self(void)
     return (*this);
 }
 
-IEWorkerThreadConsumer * PatientClient::workerThreadConsumer(const char* consumerName, const char* workerThreadName)
+IEWorkerThreadConsumer * PatientClient::workerThreadConsumer(const String & consumerName, const String & workerThreadName)
 {
-    if ( NEString::compareFast<char, char>(mHwWorker.getConsumerName().getString(), consumerName) == NEMath::eCompare::Equal)
+    if ( mHwWorker.getConsumerName() == consumerName)
     {
         return &mHwWorker;
     }

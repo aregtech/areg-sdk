@@ -98,7 +98,11 @@ public:
      * \param   roleName        Assigned role name of Proxy
      * \param   threadName      The name of thread where Proxy should act. If null, it is processed in current thread.
      **/
-    ProxyAddress( const char * serviceName, const Version & serviceVersion, NEService::eServiceType serviceType, const char * roleName, const char * threadName = nullptr );
+    ProxyAddress( const String & serviceName
+                , const Version & serviceVersion
+                , NEService::eServiceType serviceType
+                , const String & roleName
+                , const String & threadName = String::EmptyString );
     /**
      * \brief	Creates Proxy address according required connected component role name,
      *          service name and thread address of Proxy.
@@ -106,7 +110,7 @@ public:
      * \param   roleName        Assigned role name of Proxy
      * \param   threadName      The name of thread where Proxy should act. If null, it is processed in current thread.
      **/
-    ProxyAddress( const ServiceItem & service, const char * roleName, const char * threadName = nullptr );
+    ProxyAddress( const ServiceItem & service, const String & roleName, const String & threadName = String::EmptyString );
     /**
      * \brief	Creates Proxy address according required connected component role name,
      *          service name and thread address of Proxy.
@@ -114,7 +118,7 @@ public:
      * \param   roleName        Assigned role name of Proxy
      * \param   threadName      The name of thread where Proxy should act. If null, it is processed in current thread.
      **/
-    ProxyAddress( const NEService::SInterfaceData & siData, const char * roleName, const char * threadName = nullptr );
+    ProxyAddress( const NEService::SInterfaceData & siData, const String & roleName, const String & threadName = String::EmptyString );
 
     /**
      * \brief   Copy constructor.
@@ -232,7 +236,7 @@ public:
     /**
      * \brief   Sets the thread name of processed Proxy
      **/
-    void setThread( const char * threadName );
+    void setThread( const String & threadName );
     /**
      * \brief   Returns Proxy communication channel object
      **/

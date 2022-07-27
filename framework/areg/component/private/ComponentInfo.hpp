@@ -79,7 +79,7 @@ public:
      * \param   masterThread    The Master Thread of Component (Component Thread)
      * \param   roleName        The Role Name of component, must not be empty
      **/
-    ComponentInfo( ComponentThread & masterThread, const char * const roleName );
+    ComponentInfo( ComponentThread & masterThread, const String & roleName );
 
     /**
      * \brief   Destructor
@@ -169,7 +169,7 @@ public:
      * \return  Returns pointer of valid Worker Thread if there is registered
      *          Worker Thread with specified unique name. Otherwise, returns nullptr.
      **/
-    inline WorkerThread * findWorkerThread( const char* threadName ) const;
+    inline WorkerThread * findWorkerThread( const String & threadName ) const;
 
     /**
      * \brief   Looks up for Worker Thread by specified unique Component Path,
@@ -182,7 +182,7 @@ public:
      * \return  Returns pointer of valid Worker Thread if there is registered
      *          Worker Thread with extracted unique address. Otherwise, returns nullptr.
      **/
-    inline WorkerThread * findThreadByPath( const char* componentPath ) const;
+    inline WorkerThread * findThreadByPath( const String & componentPath ) const;
 
     /**
      * \brief   By specified Event Consumer runtime class ID object, looks up for registered
@@ -289,13 +289,13 @@ inline WorkerThread* ComponentInfo::findWorkerThread( const ThreadAddress& threa
     return mWorkerThreadMap.findResourceObject(threadAddress);
 }
 
-inline WorkerThread* ComponentInfo::findWorkerThread( const char* threadName ) const
+inline WorkerThread* ComponentInfo::findWorkerThread( const String & threadName ) const
 {
     Thread* targetThread = Thread::findThreadByName(threadName);
     return (targetThread != nullptr ? findWorkerThread(targetThread->getAddress()) : nullptr);
 }
 
-inline WorkerThread* ComponentInfo::findThreadByPath( const char* componentPath ) const
+inline WorkerThread* ComponentInfo::findThreadByPath( const String & componentPath ) const
 {
     ComponentAddress componentAddress = ComponentAddress::convPathToAddress(componentPath);
     return findWorkerThread(componentAddress.getThreadAddress());

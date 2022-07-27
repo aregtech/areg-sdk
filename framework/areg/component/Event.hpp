@@ -35,19 +35,19 @@
  *          event consumer, which should be available in every Event class.
  *          Do not use them directly, instead use DECLARE_RUNTIME_EVENT
  **/
-#define DECLARE_EVENT_STATIC_REGISTRATION(EventClass)                                                       \
-    public:                                                                                                 \
-        /*  Declare static function to add/register event consumer to start processing event.       */      \
-        static bool addListener(IEEventConsumer& eventConsumer, const char* whichThread = nullptr);         \
-        /*  Declare static function to add/register event consumer to start processing event.       */      \
-        static bool addListener(IEEventConsumer& eventConsumer, id_type whichThread);                       \
-        /*  Declare static function to add/register event consumer to start processing event.       */      \
-        static bool addListener(IEEventConsumer& eventConsumer, DispatcherThread & dispThread);             \
-        /*  Declare static function to remove/unregister event consumer to stop processing event.   */      \
-        static bool removeListener(IEEventConsumer& eventConsumer, const char* whichThread = nullptr);      \
-        /*  Declare static function to remove/unregister event consumer to stop processing event.   */      \
-        static bool removeListener(IEEventConsumer& eventConsumer, id_type whichThread);                    \
-        /*  Declare static function to remove/unregister event consumer to stop processing event.   */      \
+#define DECLARE_EVENT_STATIC_REGISTRATION(EventClass)                                                                   \
+    public:                                                                                                             \
+        /*  Declare static function to add/register event consumer to start processing event.       */                  \
+        static bool addListener(IEEventConsumer& eventConsumer, const String & whichThread = String::EmptyString);      \
+        /*  Declare static function to add/register event consumer to start processing event.       */                  \
+        static bool addListener(IEEventConsumer& eventConsumer, id_type whichThread);                                   \
+        /*  Declare static function to add/register event consumer to start processing event.       */                  \
+        static bool addListener(IEEventConsumer& eventConsumer, DispatcherThread & dispThread);                         \
+        /*  Declare static function to remove/unregister event consumer to stop processing event.   */                  \
+        static bool removeListener(IEEventConsumer& eventConsumer, const String & whichThread = String::EmptyString);   \
+        /*  Declare static function to remove/unregister event consumer to stop processing event.   */                  \
+        static bool removeListener(IEEventConsumer& eventConsumer, id_type whichThread);                                \
+        /*  Declare static function to remove/unregister event consumer to stop processing event.   */                  \
         static bool removeListener(IEEventConsumer& eventConsumer, DispatcherThread & dispThread);
 
 /**
@@ -55,24 +55,24 @@
  *          event consumer, which should be available in every Event class.
  *          Do not use them directly, instead use IMPLEMENT_RUNTIME_EVENT
  **/
-#define IMPLEMENT_EVENT_STATIC_REGISTRATION(EventClass)                                                     \
-    /*  Implementation of adding / registering event consumer.                                  */          \
-    bool EventClass::addListener(IEEventConsumer& eventConsumer, const char* whichThread /*= nullptr*/)     \
-    {   return Event::addListener(EventClass::_getClassId(), eventConsumer, whichThread);       }           \
-    /*  Implementation of adding / registering event consumer.                                  */          \
-    bool EventClass::addListener(IEEventConsumer& eventConsumer, id_type whichThread)                       \
-    {   return Event::addListener(EventClass::_getClassId(), eventConsumer, whichThread);       }           \
-    /*  Implementation of adding / registering event consumer.                                  */          \
-    bool EventClass::addListener(IEEventConsumer& eventConsumer, DispatcherThread & dispThread)             \
-    {   return Event::addListener(EventClass::_getClassId(), eventConsumer, dispThread);        }           \
-    /*  Implementation of removing / unregistering event consumer.                              */          \
-    bool EventClass::removeListener(IEEventConsumer& eventConsumer, const char* whichThread /*= nullptr*/)  \
-    {   return Event::removeListener(EventClass::_getClassId(), eventConsumer, whichThread);    }           \
-    /*  Implementation of removing / unregistering event consumer.                              */          \
-    bool EventClass::removeListener(IEEventConsumer& eventConsumer, id_type whichThread)                    \
-    {   return Event::removeListener(EventClass::_getClassId(), eventConsumer, whichThread);    }           \
-    /*  Implementation of removing / unregistering event consumer.                              */          \
-    bool EventClass::removeListener(IEEventConsumer& eventConsumer, DispatcherThread & dispThread)          \
+#define IMPLEMENT_EVENT_STATIC_REGISTRATION(EventClass)                                                                 \
+    /*  Implementation of adding / registering event consumer.                                  */                      \
+    bool EventClass::addListener(IEEventConsumer& eventConsumer, const String & whichThread /*= String::EmptyString*/)  \
+    {   return Event::addListener(EventClass::_getClassId(), eventConsumer, whichThread);       }                       \
+    /*  Implementation of adding / registering event consumer.                                  */                      \
+    bool EventClass::addListener(IEEventConsumer& eventConsumer, id_type whichThread)                                   \
+    {   return Event::addListener(EventClass::_getClassId(), eventConsumer, whichThread);       }                       \
+    /*  Implementation of adding / registering event consumer.                                  */                      \
+    bool EventClass::addListener(IEEventConsumer& eventConsumer, DispatcherThread & dispThread)                         \
+    {   return Event::addListener(EventClass::_getClassId(), eventConsumer, dispThread);        }                       \
+    /*  Implementation of removing / unregistering event consumer.                              */                      \
+    bool EventClass::removeListener(IEEventConsumer& eventConsumer, const String& whichThread/*= String::EmptyString*/) \
+    {   return Event::removeListener(EventClass::_getClassId(), eventConsumer, whichThread);    }                       \
+    /*  Implementation of removing / unregistering event consumer.                              */                      \
+    bool EventClass::removeListener(IEEventConsumer& eventConsumer, id_type whichThread)                                \
+    {   return Event::removeListener(EventClass::_getClassId(), eventConsumer, whichThread);    }                       \
+    /*  Implementation of removing / unregistering event consumer.                              */                      \
+    bool EventClass::removeListener(IEEventConsumer& eventConsumer, DispatcherThread & dispThread)                      \
     {   return Event::removeListener(EventClass::_getClassId(), eventConsumer, dispThread);     }
 
 
@@ -84,10 +84,10 @@
  *
  * \param   EventClass  Event class name.
  **/
-#define DECLARE_RUNTIME_EVENT(EventClass)                                                                   \
-    /*  Declare runtime functions and objects.                                                  */          \
-    DECLARE_RUNTIME(EventClass)                                                                             \
-    /*  Declare static functions to add and remove  event consumer.                             */          \
+#define DECLARE_RUNTIME_EVENT(EventClass)                                                                               \
+    /*  Declare runtime functions and objects.                                                  */                      \
+    DECLARE_RUNTIME(EventClass)                                                                                         \
+    /*  Declare static functions to add and remove  event consumer.                             */                      \
     DECLARE_EVENT_STATIC_REGISTRATION(EventClass)
 
 /**
@@ -98,10 +98,10 @@
  * \param   EventBaseClass      The base (parent) class of Event
  *                              At least it should be Event.
  **/
-#define IMPLEMENT_RUNTIME_EVENT(EventClass, EventBaseClass)                                                 \
-    /*  Implement event runtime functions.                                                      */          \
-    IMPLEMENT_RUNTIME(EventClass, EventBaseClass)                                                           \
-    /*  Implement event static functions.                                                       */          \
+#define IMPLEMENT_RUNTIME_EVENT(EventClass, EventBaseClass)                                                             \
+    /*  Implement event runtime functions.                                                      */                      \
+    IMPLEMENT_RUNTIME(EventClass, EventBaseClass)                                                                       \
+    /*  Implement event static functions.                                                       */                      \
     IMPLEMENT_EVENT_STATIC_REGISTRATION(EventClass)
 
 
@@ -221,7 +221,7 @@ public:
      *          Returns false, if failed or specified thread already had specified
      *          consumer registered for specified event class type.
      **/
-    static bool addListener(const RuntimeClassID & classId, IEEventConsumer & eventConsumer, const char* whichThread);
+    static bool addListener(const RuntimeClassID & classId, IEEventConsumer & eventConsumer, const String & whichThread);
 
     /**
      * \brief	Static method to add the listener to specified thread,
@@ -256,7 +256,7 @@ public:
      *                          it will use current thread to unregister consumer.
      * \return	Returns true if successfully unregistered.
      **/
-    static bool removeListener(const RuntimeClassID & classId, IEEventConsumer & eventConsumer, const char* whichThread);
+    static bool removeListener(const RuntimeClassID & classId, IEEventConsumer & eventConsumer, const String & whichThread);
 
     /**
      * \brief	Static method to remove listener from specified thread,

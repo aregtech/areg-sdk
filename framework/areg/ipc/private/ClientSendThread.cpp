@@ -23,7 +23,7 @@
 DEF_TRACE_SCOPE(areg_ipc_private_ClientSendThread_runDispatcher);
 
 ClientSendThread::ClientSendThread( IERemoteServiceHandler & remoteService, ClientConnection & connection )
-    : DispatcherThread  ( NEConnection::CLIENT_SEND_MESSAGE_THREAD.data() )
+    : DispatcherThread  ( NEConnection::CLIENT_SEND_MESSAGE_THREAD )
     , mRemoteService    ( remoteService )
     , mConnection       ( connection )
 {

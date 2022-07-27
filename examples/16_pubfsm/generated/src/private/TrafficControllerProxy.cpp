@@ -42,12 +42,12 @@ TrafficControllerProxy::TrafficControllerServiceAvailableEvent::TrafficControlle
 // static function implementation
 //////////////////////////////////////////////////////////////////////////
 
-ProxyBase * TrafficControllerProxy::_createProxy( const char * roleName, DispatcherThread * ownerThread /*= nullptr*/ )
+ProxyBase * TrafficControllerProxy::_createProxy( const String & roleName, DispatcherThread * ownerThread /*= nullptr*/ )
 {
     return DEBUG_NEW TrafficControllerProxy(roleName, ownerThread);
 }
 
-TrafficControllerProxy * TrafficControllerProxy::createProxy( const char * roleName, IEProxyListener & connectListener, DispatcherThread & ownerThread )
+TrafficControllerProxy * TrafficControllerProxy::createProxy( const String & roleName, IEProxyListener & connectListener, DispatcherThread & ownerThread )
 {
     return static_cast<TrafficControllerProxy *>(ProxyBase::findOrCreateProxy( roleName
                                                                       , NETrafficController::getInterfaceData()
@@ -56,7 +56,7 @@ TrafficControllerProxy * TrafficControllerProxy::createProxy( const char * roleN
                                                                       , ownerThread) );
 }
 
-TrafficControllerProxy * TrafficControllerProxy::createProxy( const char * roleName, IEProxyListener & connectListener, const char * ownerThread /*= nullptr*/ )
+TrafficControllerProxy * TrafficControllerProxy::createProxy( const String & roleName, IEProxyListener & connectListener, const String & ownerThread /*= String::EmptyString*/ )
 {
     return static_cast<TrafficControllerProxy *>(ProxyBase::findOrCreateProxy( roleName
                                                                       , NETrafficController::getInterfaceData()
@@ -68,7 +68,7 @@ TrafficControllerProxy * TrafficControllerProxy::createProxy( const char * roleN
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
-TrafficControllerProxy::TrafficControllerProxy( const char * roleName, DispatcherThread * ownerThread /*= nullptr*/ )
+TrafficControllerProxy::TrafficControllerProxy( const String & roleName, DispatcherThread * ownerThread /*= nullptr*/ )
     : ProxyBase(roleName, NETrafficController::getInterfaceData(), ownerThread)
 
 /************************************************************************

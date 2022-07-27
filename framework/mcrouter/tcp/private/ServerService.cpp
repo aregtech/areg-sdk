@@ -55,7 +55,7 @@ ServerService::ServerService( void )
 
 }
 
-bool ServerService::configureRemoteServicing(const char * configFile)
+bool ServerService::configureRemoteServicing(const String &configFile)
 {
     ConnectionConfiguration configConnect;
      if ( configConnect.loadConfiguration(configFile) )
@@ -74,7 +74,7 @@ bool ServerService::configureRemoteServicing(const char * configFile)
     }
 }
 
-void ServerService::setRemoteServiceAddress(const char * hostName, unsigned short portNr)
+void ServerService::setRemoteServiceAddress(const String & hostName, unsigned short portNr)
 {
     mServerConnection.setAddress( hostName, portNr );
 }

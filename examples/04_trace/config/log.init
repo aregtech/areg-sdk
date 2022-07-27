@@ -160,4 +160,5 @@ log.debug                   = false
 # #######################################
 
 scope.04_trace.*    = DEBUG | SCOPE ;
-scope.*.areg_*		= NOTSET;
+scope.*             = DEBUG | SCOPE ;
+# scope.*.areg_*		= NOTSET;

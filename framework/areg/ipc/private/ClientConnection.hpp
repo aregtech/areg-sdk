@@ -56,7 +56,7 @@ public:
      *                      is setup for localhost.
      * \param   portNr      Port number of remote server to connect, should not be invalid port.
      **/
-    ClientConnection( const char * hostName, unsigned short portNr );
+    ClientConnection( const String & hostName, unsigned short portNr );
 
     /**
      * \brief   Creates instance of object with invalid socket object. Before sending
@@ -106,7 +106,7 @@ public:
      * \param   portNr      Valid port number of socket connection.
      * \return  Returns true if succeeded to resolve and set Socket Address.
      **/
-    bool setAddress( const char * hostName, unsigned short portNr );
+    bool setAddress( const String & hostName, unsigned short portNr );
 
     /**
      * \brief   Sets socket address. The address should be either invalid
@@ -138,7 +138,7 @@ public:
      * \param   portNr      The valid port number to connect.
      * \return  Returns true if operation succeeded.
      **/
-    bool createSocket( const char * hostName, unsigned short portNr );
+    bool createSocket( const String & hostName, unsigned short portNr );
 
     /**
      * \brief   Before sending or receiving any data from remote host,
@@ -250,7 +250,7 @@ private:
 // ClientConnection class inline functions
 //////////////////////////////////////////////////////////////////////////
 
-inline bool ClientConnection::setAddress(const char * hostName, unsigned short portNr)
+inline bool ClientConnection::setAddress(const String & hostName, unsigned short portNr)
 {
     return mClientSocket.setAddress(hostName, portNr, false);
 }

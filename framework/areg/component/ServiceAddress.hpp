@@ -75,17 +75,17 @@ public:
      * \param   serviceType     The type of service.
      * \param   roleName        The role name of owner component.
      **/
-    ServiceAddress( const char * serviceName
+    ServiceAddress( const String & serviceName
                   , const Version & serviceVersion
                   , NEService::eServiceType serviceType
-                  , const char * roleName );
+                  , const String & roleName );
 
     /**
      * \brief   Creates service address. Sets given service item information and role name of owner component.
      * \param   serviceItem     The service item object, which contains name, version and type information.
      * \param   roleName        The role name of owner component.
      **/
-    ServiceAddress( const ServiceItem  & serviceItem, const char * roleName );
+    ServiceAddress( const ServiceItem  & serviceItem, const String & roleName );
 
     /**
      * \brief   Creates service address, which is contained in stub address object.
@@ -188,7 +188,7 @@ public:
      * \brief   Sets the role name of service address
      * \param   roleName        New role name to set.
      **/
-    inline void setRoleName( const char * roleName );
+    inline void setRoleName( const String & roleName );
 
     /**
      * \brief   Returns service item information, which contains service name, version and type.
@@ -309,7 +309,7 @@ inline const String & ServiceAddress::getRoleName(void) const
     return mRoleName;
 }
 
-inline void ServiceAddress::setRoleName(const char * roleName)
+inline void ServiceAddress::setRoleName(const String & roleName)
 {
     mRoleName = roleName;
     mRoleName.truncate(NEUtilities::ITEM_NAMES_MAX_LENGTH);

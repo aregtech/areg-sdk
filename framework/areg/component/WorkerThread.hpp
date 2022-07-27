@@ -86,7 +86,7 @@ public:
      * \param   bindingComponent    The master (binding) component
      * \param   threadConsumer      The Consumer object.
      **/
-    WorkerThread( const char * threadName, Component & bindingComponent, IEWorkerThreadConsumer & threadConsumer);
+    WorkerThread( const String & threadName, Component & bindingComponent, IEWorkerThreadConsumer & threadConsumer);
 
     /**
      * \brief   Destructor

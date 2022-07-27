@@ -35,7 +35,7 @@ DEF_TRACE_SCOPE(areg_component_private_posix_TimerManager__defaultPosixTimerExpi
 // Linux specific methods
 //////////////////////////////////////////////////////////////////////////
 
-TIMERHANDLE TimerManager::_createWaitableTimer( const char * /* timerName */ )
+TIMERHANDLE TimerManager::_createWaitableTimer( const String & /* timerName */ )
 {
     return static_cast<TIMERHANDLE>(DEBUG_NEW TimerPosix());
 }

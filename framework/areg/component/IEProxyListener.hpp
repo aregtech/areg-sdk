@@ -24,17 +24,13 @@
 // IEProxyListener class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief       A base class for all Proxy Notification event listeners.
- *              Implemented in client class to receive notifications
- *              from Proxy object. Clients also receive service
- *              connected message.
- * 
- * \details     When a Service Event is processed and clients needs to be
- *              notified, Proxy object creates internal notification 
- *              and sends to all its clients. The client objects should
- *              be instances of Proxy Listener to receive those 
- *              notification events.
- *
+ * \brief   A base class for all Proxy Notification event listeners.
+ *          Implemented in client class to receive notifications from
+ *          Proxy object. Clients also receive service connected message.
+ *          When a Service Event is processed and clients needs to be 
+ *          notified, the Proxy object creates internal notification
+ *          and sends to all its clients. The client objects are instances
+ *          of Proxy Listener to receive those notification events.
  **/
 class AREG_API IEProxyListener  : public IENotificationEventConsumer
 {

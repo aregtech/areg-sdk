@@ -25,7 +25,7 @@
 //////////////////////////////////////////////////////////////////////////
 // EventDispatcher class, constructor / destructor
 //////////////////////////////////////////////////////////////////////////
-EventDispatcher::EventDispatcher( const char* name )
+EventDispatcher::EventDispatcher( const String & name )
     : EventDispatcherBase   ( name )
     , IEThreadConsumer      (  )
     , IEEventRouter         (  )
@@ -78,5 +78,6 @@ bool EventDispatcher::postEvent( Event& eventElem )
         OUTPUT_ERR("Failed to queue event of type [ %s ], going to destroy", eventElem.getRuntimeClassName().getString());
         eventElem.destroy();
     }
+
     return result;
 }

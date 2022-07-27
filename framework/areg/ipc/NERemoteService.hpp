@@ -114,7 +114,7 @@ namespace NERemoteService
      *          Returns the string value of service connection type
      * \param   connectionType  The connection type to convert
      **/
-    AREG_API const char * getServiceConnectionTypeString( NERemoteService::eServiceConnection connectionType );
+    AREG_API String getServiceConnectionTypeString( NERemoteService::eServiceConnection connectionType );
     /**
      * \brief   NERemoteService::GetServiceConnectionType
      *          Converts string to connection type value.

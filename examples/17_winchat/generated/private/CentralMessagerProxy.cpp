@@ -42,12 +42,12 @@ CentralMessagerProxy::CentralMessagerServiceAvailableEvent::CentralMessagerServi
 // static function implementation
 //////////////////////////////////////////////////////////////////////////
 
-ProxyBase * CentralMessagerProxy::_createProxy( const char * roleName, DispatcherThread * ownerThread /*= nullptr*/ )
+ProxyBase * CentralMessagerProxy::_createProxy( const String & roleName, DispatcherThread * ownerThread /*= nullptr*/ )
 {
     return DEBUG_NEW CentralMessagerProxy(roleName, ownerThread);
 }
 
-CentralMessagerProxy * CentralMessagerProxy::createProxy( const char * roleName, IEProxyListener & connectListener, DispatcherThread & ownerThread )
+CentralMessagerProxy * CentralMessagerProxy::createProxy( const String & roleName, IEProxyListener & connectListener, DispatcherThread & ownerThread )
 {
     return static_cast<CentralMessagerProxy *>(ProxyBase::findOrCreateProxy( roleName
                                                                       , NECentralMessager::getInterfaceData()
@@ -56,7 +56,7 @@ CentralMessagerProxy * CentralMessagerProxy::createProxy( const char * roleName,
                                                                       , ownerThread) );
 }
 
-CentralMessagerProxy * CentralMessagerProxy::createProxy( const char * roleName, IEProxyListener & connectListener, const char * ownerThread /*= nullptr*/ )
+CentralMessagerProxy * CentralMessagerProxy::createProxy( const String & roleName, IEProxyListener & connectListener, const String & ownerThread /*= String::EmptyString*/ )
 {
     return static_cast<CentralMessagerProxy *>(ProxyBase::findOrCreateProxy( roleName
                                                                       , NECentralMessager::getInterfaceData()
@@ -68,7 +68,7 @@ CentralMessagerProxy * CentralMessagerProxy::createProxy( const char * roleName,
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
-CentralMessagerProxy::CentralMessagerProxy( const char * roleName, DispatcherThread * ownerThread /*= nullptr*/ )
+CentralMessagerProxy::CentralMessagerProxy( const String & roleName, DispatcherThread * ownerThread /*= nullptr*/ )
     : ProxyBase(roleName, NECentralMessager::getInterfaceData(), ownerThread)
 
 /************************************************************************

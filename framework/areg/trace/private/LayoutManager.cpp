@@ -42,8 +42,8 @@ bool LayoutManager::createLayouts( const char * layoutFormat )
 bool LayoutManager::createLayouts(const String& layoutFormat)
 {
     deleteLayouts();
-    uint32_t len = layoutFormat.isEmpty() ? 0u : layoutFormat.getLength() + 1;
-    char* strFormat = len != 0 ? DEBUG_NEW char[len] : nullptr;
+    uint32_t len = layoutFormat.isEmpty() ? 0u : layoutFormat.getLength();
+    char* strFormat = len != 0 ? DEBUG_NEW char[len + 1] : nullptr;
 
     if (strFormat != nullptr)
     {
@@ -86,8 +86,8 @@ void LayoutManager::logMessage(const NETrace::sLogMessage & logMsg, IEOutStream 
 
 inline void LayoutManager::_createLayouts(char* layoutFormat)
 {
-    char* pos{ layoutFormat };
     bool hasExclusive{ false };
+    char* pos = layoutFormat;
     const char* pos1 = pos;
 
     while (*pos != '\0')

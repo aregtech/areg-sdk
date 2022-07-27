@@ -88,7 +88,7 @@ public:
      * \brief   Creates service item, sets service name.
      * \param   serviceName     The service name to set.
      **/
-    explicit ServiceItem( const char * serviceName );
+    explicit ServiceItem( const String & serviceName );
 
     /**
      * \brief   Creates service item, sets service name, version and type.
@@ -96,7 +96,7 @@ public:
      * \param   serviceVersion  The service version to set.
      * \param   serviceType     The type of service
      **/
-    ServiceItem( const char * serviceName, const Version & serviceVersion, NEService::eServiceType serviceType );
+    ServiceItem( const String & serviceName, const Version & serviceVersion, NEService::eServiceType serviceType );
 
     /**
      * \brief   Creates service item and initializes data from given stream.
@@ -190,7 +190,7 @@ public:
     /**
      * \brief   Sets the service name
      **/
-    inline void setServiceName( const char * serviceName );
+    inline void setServiceName( const String & serviceName );
 
     /**
      * \brief   Returns service version
@@ -303,7 +303,7 @@ inline const String & ServiceItem::getServiceName( void ) const
     return mServiceName;
 }
 
-inline void ServiceItem::setServiceName( const char * serviceName )
+inline void ServiceItem::setServiceName( const String & serviceName )
 {
     mServiceName = serviceName;
     mServiceName.truncate(NEUtilities::ITEM_NAMES_MAX_LENGTH);

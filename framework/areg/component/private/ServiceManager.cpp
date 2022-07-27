@@ -94,7 +94,9 @@ void ServiceManager::requestRegisterServer( const StubAddress & whichServer )
     ASSERT(whichServer.isValid());
     
     ServiceManager & serviceManager = ServiceManager::getInstance();
-    ServiceManagerEvent::sendEvent( ServiceManagerEventData::registerStub(whichServer), static_cast<IEServiceManagerEventConsumer &>(serviceManager) , static_cast<DispatcherThread &>(serviceManager));
+    ServiceManagerEvent::sendEvent( ServiceManagerEventData::registerStub(whichServer)
+                                  , static_cast<IEServiceManagerEventConsumer &>(serviceManager)
+                                  , static_cast<DispatcherThread &>(serviceManager));
 }
 
 void ServiceManager::requestUnregisterServer( const StubAddress & whichServer )
@@ -108,7 +110,9 @@ void ServiceManager::requestUnregisterServer( const StubAddress & whichServer )
     ASSERT(whichServer.isValid());
     
     ServiceManager & serviceManager = ServiceManager::getInstance();
-    ServiceManagerEvent::sendEvent( ServiceManagerEventData::unregisterStub(whichServer), static_cast<IEServiceManagerEventConsumer &>(serviceManager) , static_cast<DispatcherThread &>(serviceManager));
+    ServiceManagerEvent::sendEvent( ServiceManagerEventData::unregisterStub(whichServer)
+                                  , static_cast<IEServiceManagerEventConsumer &>(serviceManager)
+                                  , static_cast<DispatcherThread &>(serviceManager));
 }
 
 void ServiceManager::requestRegisterClient( const ProxyAddress & whichClient )
@@ -122,7 +126,9 @@ void ServiceManager::requestRegisterClient( const ProxyAddress & whichClient )
     ASSERT(whichClient.isValid());
     
     ServiceManager & serviceManager = ServiceManager::getInstance();
-    ServiceManagerEvent::sendEvent( ServiceManagerEventData::registerProxy(whichClient), static_cast<IEServiceManagerEventConsumer &>(serviceManager) , static_cast<DispatcherThread &>(serviceManager));
+    ServiceManagerEvent::sendEvent( ServiceManagerEventData::registerProxy(whichClient)
+                                  , static_cast<IEServiceManagerEventConsumer &>(serviceManager)
+                                  , static_cast<DispatcherThread &>(serviceManager));
 }
 
 void ServiceManager::requestUnregisterClient( const ProxyAddress & whichClient )
@@ -135,28 +141,36 @@ void ServiceManager::requestUnregisterClient( const ProxyAddress & whichClient )
     ASSERT(whichClient.isValid());
     
     ServiceManager & serviceManager = ServiceManager::getInstance();
-    ServiceManagerEvent::sendEvent( ServiceManagerEventData::unregisterProxy(whichClient), static_cast<IEServiceManagerEventConsumer &>(serviceManager) , static_cast<DispatcherThread &>(serviceManager));
+    ServiceManagerEvent::sendEvent( ServiceManagerEventData::unregisterProxy(whichClient)
+                                  , static_cast<IEServiceManagerEventConsumer &>(serviceManager)
+                                  , static_cast<DispatcherThread &>(serviceManager));
 }
 
-bool ServiceManager::_routingServiceConfigure( const char * configFile /*= nullptr*/ )
+bool ServiceManager::_routingServiceConfigure( const String & configFile /*= String::EmptyString*/ )
 {
     ServiceManager & serviceManager = ServiceManager::getInstance();
-    return ServiceManagerEvent::sendEvent( ServiceManagerEventData::configureConnection(String(configFile)), static_cast<IEServiceManagerEventConsumer &>(serviceManager) , static_cast<DispatcherThread &>(serviceManager));
+    return ServiceManagerEvent::sendEvent( ServiceManagerEventData::configureConnection(configFile)
+                                         , static_cast<IEServiceManagerEventConsumer &>(serviceManager) 
+                                         , static_cast<DispatcherThread &>(serviceManager));
 }
 
-bool ServiceManager::_routingServiceStart(const char * configFile /*= nullptr */)
+bool ServiceManager::_routingServiceStart(const String & configFile /*= String::EmptyString */)
 {
     ServiceManager & serviceManager = ServiceManager::getInstance();
-    return ServiceManagerEvent::sendEvent( ServiceManagerEventData::startConnection(String(configFile)), static_cast<IEServiceManagerEventConsumer &>(serviceManager) , static_cast<DispatcherThread &>(serviceManager));
+    return ServiceManagerEvent::sendEvent( ServiceManagerEventData::startConnection(configFile)
+                                         , static_cast<IEServiceManagerEventConsumer &>(serviceManager)
+                                         , static_cast<DispatcherThread &>(serviceManager));
 }
 
-bool ServiceManager::_routingServiceStart( const char * ipAddress, unsigned short portNr )
+bool ServiceManager::_routingServiceStart( const String & ipAddress, unsigned short portNr )
 {
     bool result = false;
-    if ( (NEString::isEmpty<char>(ipAddress) == false) && (portNr != NESocket::InvalidPort) )
+    if ( (ipAddress.isEmpty() == false) && (portNr != NESocket::InvalidPort) )
     {
         ServiceManager & serviceManager = ServiceManager::getInstance( );
-        result =ServiceManagerEvent::sendEvent( ServiceManagerEventData::startNetConnection( String( ipAddress ), portNr ), static_cast<IEServiceManagerEventConsumer &>(serviceManager), static_cast<DispatcherThread &>(serviceManager) );
+        result =ServiceManagerEvent::sendEvent( ServiceManagerEventData::startNetConnection( ipAddress, portNr )
+                                              , static_cast<IEServiceManagerEventConsumer &>(serviceManager)
+                                              , static_cast<DispatcherThread &>(serviceManager) );
     }
     return result;
 }
@@ -164,13 +178,17 @@ bool ServiceManager::_routingServiceStart( const char * ipAddress, unsigned shor
 void ServiceManager::_routingServiceStop(void)
 {
     ServiceManager & serviceManager = ServiceManager::getInstance();
-    ServiceManagerEvent::sendEvent( ServiceManagerEventData::stopConnection(), static_cast<IEServiceManagerEventConsumer &>(serviceManager) , static_cast<DispatcherThread &>(serviceManager));
+    ServiceManagerEvent::sendEvent( ServiceManagerEventData::stopConnection()
+                                  , static_cast<IEServiceManagerEventConsumer &>(serviceManager)
+                                  , static_cast<DispatcherThread &>(serviceManager));
 }
 
 void ServiceManager::_routingServiceEnable( bool enable )
 {
     ServiceManager & serviceManager = ServiceManager::getInstance( );
-    ServiceManagerEvent::sendEvent( ServiceManagerEventData::enableRemoteService(enable), static_cast<IEServiceManagerEventConsumer &>(serviceManager), static_cast<DispatcherThread &>(serviceManager) );
+    ServiceManagerEvent::sendEvent( ServiceManagerEventData::enableRemoteService(enable)
+                                  , static_cast<IEServiceManagerEventConsumer &>(serviceManager)
+                                  , static_cast<DispatcherThread &>(serviceManager) );
 }
 
 bool ServiceManager::_isRoutingServiceStarted(void)
@@ -192,7 +210,7 @@ bool ServiceManager::_isRoutingServiceEnabled(void)
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 ServiceManager::ServiceManager( void )
-    : DispatcherThread              ( SERVICE_MANAGER_THREAD_NAME.data() )
+    : DispatcherThread              ( SERVICE_MANAGER_THREAD_NAME )
     , IEServiceManagerEventConsumer ( )
     , IERemoteServiceConsumer       ( )
 
@@ -209,8 +227,10 @@ void ServiceManager::_registerServer( const StubAddress & whichServer )
 {
     TRACE_SCOPE(areg_component_private_ServiceManager__registerServer);
 
-    if ( whichServer.isLocalAddress() && whichServer.isServicePublic() )
+    if (whichServer.isLocalAddress() && whichServer.isServicePublic())
+    {
         mConnectService.registerService(whichServer);
+    }
 
     ClientList clientList;
 
@@ -224,16 +244,20 @@ void ServiceManager::_registerServer( const StubAddress & whichServer )
     mServerList.registerServer(whichServer, clientList);
 #endif  // !ENABLE_TRACES
 
-    for (ClientList::LISTPOS pos = clientList.firstPosition(); clientList.isValidPosition(pos); pos = clientList.nextPosition(pos) )
-        _sendClientConnectedEvent( clientList.valueAtPosition(pos), whichServer );
+    for (ClientList::LISTPOS pos = clientList.firstPosition(); clientList.isValidPosition(pos); pos = clientList.nextPosition(pos))
+    {
+        _sendClientConnectedEvent(clientList.valueAtPosition(pos), whichServer);
+    }
 }
 
 void ServiceManager::_unregisterServer( const StubAddress & whichServer )
 {
     TRACE_SCOPE(areg_component_private_ServiceManager__unregisterServer);
 
-    if ( whichServer.isLocalAddress() && whichServer.isServicePublic() )
+    if (whichServer.isLocalAddress() && whichServer.isServicePublic())
+    {
         mConnectService.unregisterService(whichServer);
+    }
 
     ClientList clientList;
     ServerInfo server = mServerList.unregisterServer(whichServer, clientList);
@@ -244,15 +268,19 @@ void ServiceManager::_unregisterServer( const StubAddress & whichServer )
                 , clientList.getSize());
 
     for (ClientList::LISTPOS pos = clientList.firstPosition(); clientList.isValidPosition(pos); pos = clientList.nextPosition(pos))
+    {
         _sendClientDisconnectedEvent(clientList.valueAtPosition(pos), whichServer);
+    }
 }
 
 void ServiceManager::_registerClient( const ProxyAddress & whichClient )
 {
     TRACE_SCOPE(areg_component_private_ServiceManager__registerClient);
 
-    if ( whichClient.isLocalAddress() && whichClient.isServicePublic() )
+    if (whichClient.isLocalAddress() && whichClient.isServicePublic())
+    {
         mConnectService.registerServiceClient(whichClient);
+    }
 
     ClientInfo client;
     const ServerInfo & server = mServerList.registerClient(whichClient, client);
@@ -269,8 +297,10 @@ void ServiceManager::_unregisterClient( const ProxyAddress & whichClient )
 {
     TRACE_SCOPE(areg_component_private_ServiceManager__unregisterClient);
 
-    if ( whichClient.isLocalAddress() && whichClient.isServicePublic() )
+    if (whichClient.isLocalAddress() && whichClient.isServicePublic())
+    {
         mConnectService.unregisterServiceClient(whichClient);
+    }
 
     ClientInfo client;
     ServerInfo server = mServerList.unregisterClient(whichClient, client);
@@ -298,8 +328,10 @@ void ServiceManager::_sendClientConnectedEvent( const ClientInfo & client, const
                             , ProxyAddress::convAddressToPath(addrProxy).getString());
             
             StubConnectEvent * clientConnect  = DEBUG_NEW StubConnectEvent(addrProxy, addrStub, NEService::eServiceConnection::ServiceConnected);
-            if ( clientConnect != nullptr )
+            if (clientConnect != nullptr)
+            {
                 addrStub.deliverServiceEvent(*clientConnect);
+            }
         }
 
         if ( addrProxy.isLocalAddress() && addrProxy.getSource() != NEService::SOURCE_UNKNOWN )
@@ -309,8 +341,10 @@ void ServiceManager::_sendClientConnectedEvent( const ClientInfo & client, const
                             , StubAddress::convAddressToPath(addrStub).getString());
             
             ProxyConnectEvent * proxyConnect  = DEBUG_NEW ProxyConnectEvent(addrProxy, addrStub, NEService::eServiceConnection::ServiceConnected);
-            if ( proxyConnect != nullptr )
+            if (proxyConnect != nullptr)
+            {
                 addrProxy.deliverServiceEvent(*proxyConnect);
+            }
         }
     }
     else
@@ -333,8 +367,10 @@ void ServiceManager::_sendClientDisconnectedEvent( const ClientInfo & client, co
                             , ProxyAddress::convAddressToPath(addrProxy).getString());
             
             StubConnectEvent * clientConnect  = DEBUG_NEW StubConnectEvent(addrProxy, addrStub, NEService::eServiceConnection::ServiceDisconnected);
-            if ( clientConnect != nullptr )
+            if (clientConnect != nullptr)
+            {
                 addrStub.deliverServiceEvent(*clientConnect);
+            }
         }
 
         if ( addrProxy.isLocalAddress() )
@@ -344,8 +380,10 @@ void ServiceManager::_sendClientDisconnectedEvent( const ClientInfo & client, co
                             , StubAddress::convAddressToPath(addrStub).getString());
             
             ProxyConnectEvent * proxyConnect  = DEBUG_NEW ProxyConnectEvent(addrProxy, addrStub, NEService::eServiceConnection::ServiceDisconnected);
-            if ( proxyConnect != nullptr )
+            if (proxyConnect != nullptr)
+            {
                 addrProxy.deliverServiceEvent(*proxyConnect);
+            }
         }
     }
 }
@@ -441,10 +479,14 @@ void ServiceManager::processEvent( const ServiceManagerEventData & data )
             String   configFile;
             stream >> configFile;
             mConnectService.enableRemoteServicing(true);
-            if ( NEString::isEmpty<char>(configFile) == false )
+            if (configFile.isEmpty() == false)
+            {
                 mConnectService.configureRemoteServicing(configFile);
+            }
             else if (mConnectService.isRemoteServicingConfigured() == false)
-                mConnectService.configureRemoteServicing(nullptr);
+            {
+                mConnectService.configureRemoteServicing(String::EmptyString);
+            }
         }
         break;
 
@@ -454,14 +496,23 @@ void ServiceManager::processEvent( const ServiceManagerEventData & data )
             stream >> configFile;
             bool isConfigured = false;
             mConnectService.enableRemoteServicing( true );
-            if ( NEString::isEmpty<char>(configFile) == false )
+            if (configFile.isEmpty() == false)
+            {
                 isConfigured = mConnectService.configureRemoteServicing(configFile);
+            }
             else if (mConnectService.isRemoteServicingConfigured() == false)
-                isConfigured = mConnectService.configureRemoteServicing(nullptr);
-            else 
+            {
+                isConfigured = mConnectService.configureRemoteServicing(String::EmptyString);
+            }
+            else
+            {
                 isConfigured = true;
-            if ( isConfigured )
+            }
+
+            if (isConfigured)
+            {
                 mConnectService.startRemoteServicing();
+            }
         }
         break;
 
@@ -474,8 +525,10 @@ void ServiceManager::processEvent( const ServiceManagerEventData & data )
 
             mConnectService.enableRemoteServicing( true );
             mConnectService.setRemoteServiceAddress(ipAddress, portNr);
-            if ( mConnectService.isRemoteServicingConfigured() )
-                mConnectService.startRemoteServicing( );
+            if (mConnectService.isRemoteServicingConfigured())
+            {
+                mConnectService.startRemoteServicing();
+            }
         }
         break;
 
@@ -500,14 +553,18 @@ void ServiceManager::processEvent( const ServiceManagerEventData & data )
                 const StubAddress & server = mServerList.keyAtPosition(posMap).getAddress();
                 const ClientList & clientList = mServerList.valueAtPosition(posMap);
 
-                if ( server.isServicePublic() && server.isLocalAddress() && server.isValid() )
+                if (server.isServicePublic() && server.isLocalAddress() && server.isValid())
+                {
                     mConnectService.registerService(server);
+                }
 
                 for (ClientList::LISTPOS pos = clientList.firstPosition(); clientList.isValidPosition(pos); pos = clientList.nextPosition(pos))
                 {
                     const ProxyAddress & proxy = clientList.valueAtPosition(pos).getAddress();
-                    if ( proxy.isServicePublic() && proxy.isLocalAddress() && proxy.isValid() )
+                    if (proxy.isServicePublic() && proxy.isLocalAddress() && proxy.isValid())
+                    {
                         mConnectService.registerServiceClient(proxy);
+                    }
                 }
             }
         }
@@ -523,14 +580,18 @@ void ServiceManager::processEvent( const ServiceManagerEventData & data )
                 const StubAddress & server = mServerList.keyAtPosition(posMap).getAddress();
                 const ClientList & clientList = mServerList.valueAtPosition(posMap);
 
-                if ( server.isServicePublic() && server.isRemoteAddress() && server.isValid() )
+                if (server.isServicePublic() && server.isRemoteAddress() && server.isValid())
+                {
                     stubList.add(server);
+                }
 
                 for (ClientList::LISTPOS pos = clientList.firstPosition(); clientList.isValidPosition(pos); pos = clientList.nextPosition(pos))
                 {
                     const ProxyAddress & proxy = clientList.valueAtPosition(pos).getAddress();
-                    if ( proxy.isServicePublic() && proxy.isRemoteAddress() && proxy.isValid() )
+                    if (proxy.isServicePublic() && proxy.isRemoteAddress() && proxy.isValid())
+                    {
                         proxyList.add(proxy);
+                    }
                 }
             }
 
@@ -592,7 +653,7 @@ bool ServiceManager::_startServiceManagerThread( void )
         }
         else
         {
-            OUTPUT_ERR("Failed to create [ %s ] Service Manage thread.", ServiceManager::SERVICE_MANAGER_THREAD_NAME);
+            OUTPUT_ERR("Failed to create [ %s ] Service Manage thread.", ServiceManager::SERVICE_MANAGER_THREAD_NAME.data());
         }
     }
     else
@@ -605,7 +666,9 @@ bool ServiceManager::_startServiceManagerThread( void )
 void ServiceManager::_stopServiceManagerThread( void )
 {
     // ServiceManagerEvent::sendEvent(ServiceManagerEventData::stopMessageRouterClient(), static_cast<IEServiceManagerEventConsumer &>(self()), static_cast<DispatcherThread &>(self()));
-    ServiceManagerEvent::sendEvent(ServiceManagerEventData::shutdownServiceManager(), static_cast<IEServiceManagerEventConsumer &>(self()), static_cast<DispatcherThread &>(self()));
+    ServiceManagerEvent::sendEvent( ServiceManagerEventData::shutdownServiceManager()
+                                  , static_cast<IEServiceManagerEventConsumer &>(self())
+                                  , static_cast<DispatcherThread &>(self()));
     completionWait( NECommon::WAIT_INFINITE );
 }
 
@@ -664,15 +727,21 @@ void ServiceManager::unregisterRemoteProxy(const ProxyAddress & proxy, ITEM_ID /
 
 void ServiceManager::remoteServiceStarted(const Channel & channel)
 {
-    ServiceManagerEvent::sendEvent( ServiceManagerEventData::registerConnection(channel), static_cast<IEServiceManagerEventConsumer &>(self()), static_cast<DispatcherThread &>(self()));
+    ServiceManagerEvent::sendEvent( ServiceManagerEventData::registerConnection(channel)
+                                  , static_cast<IEServiceManagerEventConsumer &>(self())
+                                  , static_cast<DispatcherThread &>(self()));
 }
 
 void ServiceManager::remoteServiceStopped(const Channel & channel)
 {
-    ServiceManagerEvent::sendEvent( ServiceManagerEventData::unregisterConnection(channel), static_cast<IEServiceManagerEventConsumer &>(self()), static_cast<DispatcherThread &>(self()));
+    ServiceManagerEvent::sendEvent( ServiceManagerEventData::unregisterConnection(channel)
+                                  , static_cast<IEServiceManagerEventConsumer &>(self())
+                                  , static_cast<DispatcherThread &>(self()));
 }
 
 void ServiceManager::remoteServiceConnectionLost(const Channel & channel)
 {
-    ServiceManagerEvent::sendEvent( ServiceManagerEventData::lostConnection(channel), static_cast<IEServiceManagerEventConsumer &>(self()), static_cast<DispatcherThread &>(self()));
+    ServiceManagerEvent::sendEvent( ServiceManagerEventData::lostConnection(channel)
+                                  , static_cast<IEServiceManagerEventConsumer &>(self())
+                                  , static_cast<DispatcherThread &>(self()));
 }

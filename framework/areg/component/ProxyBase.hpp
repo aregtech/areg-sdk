@@ -60,7 +60,7 @@ class Version;
  * \param   ownerThread The instance of thread to dispatch messages.
  *                      If nullptr, uses current component thread.
  **/
-typedef ProxyBase* (*FuncCreateProxy)( const char* /*roleName*/, DispatcherThread * /*ownerThread*/ );
+typedef ProxyBase* (*FuncCreateProxy)( const String & /*roleName*/, DispatcherThread * /*ownerThread*/ );
 
 //////////////////////////////////////////////////////////////////////////
 // ProxyBase class declaration
@@ -385,11 +385,11 @@ public:
      *                      If nullptr, it searches Proxy instance in current thread.
      * \return  Returns pointer to Proxy object.
      **/
-    static ProxyBase * findOrCreateProxy( const char * roleName
+    static ProxyBase * findOrCreateProxy( const String & roleName
                                         , const NEService::SInterfaceData & serviceIfData
                                          , IEProxyListener & connect
                                          , FuncCreateProxy funcCreate
-                                         , const char * ownerThread = nullptr );
+                                         , const String & ownerThread = String::EmptyString );
 
     /**
      * \brief   Finds already existing proxy object or creates new one.
@@ -410,7 +410,7 @@ public:
      * \param   ownerThread The instance of owner thread where the messages are dispatched.
      * \return  Returns pointer to Proxy object.
      **/
-    static ProxyBase * findOrCreateProxy( const char * roleName
+    static ProxyBase * findOrCreateProxy( const String & roleName
                                         , const NEService::SInterfaceData & serviceIfData
                                         , IEProxyListener & connect
                                         , FuncCreateProxy funcCreate
@@ -458,7 +458,7 @@ protected:
      * \param   ownerThread     The instance of Proxy owner thread to dispatch messages.
      *                          If nullptr, the messages are dispatched in current thread.
      **/
-    ProxyBase( const char* roleName, const NEService::SInterfaceData & serviceIfData, DispatcherThread * ownerThread = nullptr );
+    ProxyBase( const String & roleName, const NEService::SInterfaceData & serviceIfData, DispatcherThread * ownerThread = nullptr );
 
     /**
      * \brief   Destructor.

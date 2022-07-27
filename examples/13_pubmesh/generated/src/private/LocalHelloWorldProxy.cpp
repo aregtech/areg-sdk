@@ -42,12 +42,12 @@ LocalHelloWorldProxy::LocalHelloWorldServiceAvailableEvent::LocalHelloWorldServi
 // static function implementation
 //////////////////////////////////////////////////////////////////////////
 
-ProxyBase * LocalHelloWorldProxy::_createProxy( const char * roleName, DispatcherThread * ownerThread /*= nullptr*/ )
+ProxyBase * LocalHelloWorldProxy::_createProxy( const String & roleName, DispatcherThread * ownerThread /*= nullptr*/ )
 {
     return DEBUG_NEW LocalHelloWorldProxy(roleName, ownerThread);
 }
 
-LocalHelloWorldProxy * LocalHelloWorldProxy::createProxy( const char * roleName, IEProxyListener & connectListener, DispatcherThread & ownerThread )
+LocalHelloWorldProxy * LocalHelloWorldProxy::createProxy( const String & roleName, IEProxyListener & connectListener, DispatcherThread & ownerThread )
 {
     return static_cast<LocalHelloWorldProxy *>(ProxyBase::findOrCreateProxy( roleName
                                                                       , NELocalHelloWorld::getInterfaceData()
@@ -56,7 +56,7 @@ LocalHelloWorldProxy * LocalHelloWorldProxy::createProxy( const char * roleName,
                                                                       , ownerThread) );
 }
 
-LocalHelloWorldProxy * LocalHelloWorldProxy::createProxy( const char * roleName, IEProxyListener & connectListener, const char * ownerThread /*= nullptr*/ )
+LocalHelloWorldProxy * LocalHelloWorldProxy::createProxy( const String & roleName, IEProxyListener & connectListener, const String & ownerThread /*= String::EmptyString*/ )
 {
     return static_cast<LocalHelloWorldProxy *>(ProxyBase::findOrCreateProxy( roleName
                                                                       , NELocalHelloWorld::getInterfaceData()
@@ -68,7 +68,7 @@ LocalHelloWorldProxy * LocalHelloWorldProxy::createProxy( const char * roleName,
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
-LocalHelloWorldProxy::LocalHelloWorldProxy( const char * roleName, DispatcherThread * ownerThread /*= nullptr*/ )
+LocalHelloWorldProxy::LocalHelloWorldProxy( const String & roleName, DispatcherThread * ownerThread /*= nullptr*/ )
     : ProxyBase(roleName, NELocalHelloWorld::getInterfaceData(), ownerThread)
 
 /************************************************************************

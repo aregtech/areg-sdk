@@ -44,9 +44,13 @@ bool StubBase::Listener::operator == ( const StubBase::Listener & other ) const
         if (mMessageId == other.mMessageId)
         {
             if (NEService::SEQUENCE_NUMBER_ANY == other.mSequenceNr)
+            {
                 result = true;
-            else if (mSequenceNr == other.mSequenceNr || mSequenceNr == static_cast<unsigned int>( -1 * static_cast<int>(mSequenceNr == other.mSequenceNr)))
+            }
+            else if (mSequenceNr == other.mSequenceNr || mSequenceNr == static_cast<unsigned int>(-1 * static_cast<int>(mSequenceNr == other.mSequenceNr)))
+            {
                 result = true;
+            }
         }
     }
 
@@ -63,7 +67,7 @@ bool StubBase::Listener::operator == ( const StubBase::Listener & other ) const
 //////////////////////////////////////////////////////////////////////////
 
 StubBase::StubBase( Component & masterComp, const NEService::SInterfaceData & siData )
-    : IEStubEventConsumer  ( mAddress )
+    : IEStubEventConsumer   ( mAddress )
 
     , mComponent            (masterComp)
     , mInterface            (siData)

@@ -30,17 +30,14 @@ class Event;
 // IEEventConsumer class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief       Every Event requires to have Event Consumer object 
- *              registered in dispatcher. When Dispatcher receives event
- *              it will trigger event processing method to process event.
- * 
- * \details     The Event Consumers require registration in Dispatcher.
- *              Register consumer by calling add / remove consumer of
- *              Event class. By default the consumer is registered in
- *              the current dispatcher of current thread. Otherwise,
- *              register by specifying certain dispatcher. All event
- *              consumer are instances of IEEventConsumer. And the
- *              event processing method is triggered by dispatcher object.
+ * \brief   Every Event requires to have Event Consumer object registered 
+ *          in dispatcher. When Dispatcher receives an event it triggers
+ *          methods to process the event.
+ *          The Event Consumers require registration in Dispatcher. Register
+ *          consumer by calling add / remove consumer of Event class. 
+ *          By default the consumer is registered in the current dispatcher
+ *          of the current thread. Otherwise, register by specifying certain
+ *          dispatcher. All event consumers are instances of IEEventConsumer.
  **/
 class AREG_API IEEventConsumer
 {
@@ -49,13 +46,9 @@ class AREG_API IEEventConsumer
 //////////////////////////////////////////////////////////////////////////
 protected:
     /**
-     * \brief   Default constructor. Protected.
+     * \brief   Protected constructor and destructor.
      **/
     IEEventConsumer( void ) = default;
-
-    /**
-     * \brief   Destructor
-     **/
     virtual ~IEEventConsumer( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////

@@ -40,7 +40,7 @@ unsigned int Timer::getTickCount( void )
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
-Timer::Timer(IETimerConsumer& timerConsumer, const char* timerName /*= nullptr*/, int maxQueued /*= Timer::DEFAULT_MAXIMUM_QUEUE*/)
+Timer::Timer(IETimerConsumer& timerConsumer, const String & timerName /*= String::EmptyString*/, int maxQueued /*= Timer::DEFAULT_MAXIMUM_QUEUE*/)
     : mConsumer         (timerConsumer)
     , mName             (NEUtilities::generateName(timerName))
     , mTimeoutInMs      (Timer::INVALID_TIMEOUT)
@@ -72,11 +72,15 @@ bool Timer::startTimer(unsigned int timeoutInMs, DispatcherThread & whichThread,
 
     if (isActive())
     {
-        TRACE_WARN("The timer [ %s ] is still active, going to stop first. Current timeout [ %u ] ms and event count [ %d]", getName().getString(), mTimeoutInMs, mEventsCount);
+        TRACE_WARN("The timer [ %s ] is still active, going to stop first. Current timeout [ %u ] ms and event count [ %d]"
+                    , mName.getString()
+                    , mTimeoutInMs
+                    , mEventsCount);
+
         TimerManager::stopTimer(self());
     }
 
-    TRACE_DBG("Starting [ %s ] with timeout [ %u ] ms and event count [ %d ]", getName().getString(), timeoutInMs, eventCount);
+    TRACE_DBG("Starting [ %s ] with timeout [ %u ] ms and event count [ %d ]", mName.getString(), timeoutInMs, eventCount);
 
     mTimeoutInMs    = timeoutInMs;
     mEventsCount    = eventCount;
@@ -137,7 +141,10 @@ void Timer::queueTimer( void )
             {
                 mStarted = false;
                 TimerManager::stopTimer(self());
-                OUTPUT_WARN("Timer Object: Temporary stopped timer [ %s ]! current queued = [ %d ], max queue = [ %d ]", mName.getString(), mCurrentQueued, mMaxQueued);
+                OUTPUT_WARN("Timer Object: Temporary stopped timer [ %s ]! current queued = [ %d ], max queue = [ %d ]"
+                                , mName.getString()
+                                , mCurrentQueued
+                                , mMaxQueued);
             }
         }
     }
@@ -154,13 +161,20 @@ void Timer::unqueueTimer( void )
            if ((-- mCurrentQueued < mMaxQueued) && (mStarted == false))
            {
                 mStarted = TimerManager::startTimer(self(), *mDispatchThread);
-                OUTPUT_WARN("Timer Object: Restarting timer [ %s ]! started = [ %s ], current queued = [ %d ], max queue = [ %d ]", mStarted ? "YES" : "NO", mName.getString(), mCurrentQueued, mMaxQueued);
+                OUTPUT_WARN("Timer Object: Restarting timer [ %s ]! started = [ %s ], current queued = [ %d ], max queue = [ %d ]"
+                                , mStarted ? "YES" : "NO"
+                                , mName.getString()
+                                , mCurrentQueued
+                                , mMaxQueued);
            }
 #ifdef _DEBUG
 
            else if (mStarted == false)
            {
-               OUTPUT_WARN("Timer Object: Ignore restart timer. Timer [ %s ] is not started, current queued = [ %d ], max queue = [ %d ]", mName.getString(), mCurrentQueued, mMaxQueued);
+               OUTPUT_WARN("Timer Object: Ignore restart timer. Timer [ %s ] is not started, current queued = [ %d ], max queue = [ %d ]"
+                                , mName.getString()
+                                , mCurrentQueued
+                                , mMaxQueued);
            }
 #endif  // _DEBUG
         }

@@ -100,11 +100,11 @@ public:
      * \param   roleName        The role name of holder component
      * \param   threadName      Optional thread name of Stub. If nullptr, the current thread where Stub instantiated is set.
      **/
-    StubAddress( const char * serviceName
+    StubAddress( const String & serviceName
                , const Version & serviceVersion
                , NEService::eServiceType serviceType
-               , const char * roleName
-               , const char * threadName = nullptr );
+               , const String & roleName
+               , const String & threadName = String::EmptyString );
 
     /**
      * \brief   Initialize Stub address from given service item, role name and holder thread.
@@ -112,7 +112,7 @@ public:
      * \param   roleName        The role name of holder component
      * \param   threadName      Optional thread name of Stub. If nullptr, the current thread where Stub instantiated is set.
      **/
-    StubAddress( const ServiceItem & service, const char * roleName, const char * threadName = nullptr );
+    StubAddress( const ServiceItem & service, const String & roleName, const String & threadName = String::EmptyString );
 
     /**
      * \brief   Initialize Stub address from given service data, role name and holder thread.
@@ -120,7 +120,7 @@ public:
      * \param   roleName        The role name of holder component
      * \param   threadName      Optional thread name of Stub. If nullptr, the current thread where Stub instantiated is set.
      **/
-    StubAddress( const NEService::SInterfaceData & siData, const char * roleName, const char * threadName = nullptr );
+    StubAddress( const NEService::SInterfaceData & siData, const String & roleName, const String & threadName = String::EmptyString );
 
     /**
      * \brief   Copy constructor.
@@ -283,7 +283,7 @@ public:
      * \brief   Sets the service owner thread name.
      * \param   threadName  The thread name to set.
      **/
-    void setThread( const char * threadName );
+    void setThread( const String & threadName );
 
     /**
      * \brief   Returns validity of stub address. Returns true if Stub Address is not a StubAddress::INVALID_STUB_ADDRESS
@@ -430,7 +430,7 @@ inline StubAddress & StubAddress::operator = (const ServiceAddress & addrService
     if ( static_cast<const ServiceAddress *>(this) != &addrService)
     {
         static_cast<ServiceAddress &>(*this) = static_cast<const ServiceAddress &>(addrService);
-        mThreadName = "";
+        mThreadName = String::EmptyString;
         mChannel    = Channel();
         mMagicNum   = StubAddress::_magicNumber(*this);
     }
@@ -443,7 +443,7 @@ inline StubAddress & StubAddress::operator = ( ServiceAddress && addrService ) n
     if ( static_cast<const ServiceAddress *>(this) != &addrService )
     {
         static_cast<ServiceAddress &>(*this) = static_cast<ServiceAddress &&>(addrService);
-        mThreadName = "";
+        mThreadName = String::EmptyString;
         mChannel    = Channel( );
         mMagicNum   = StubAddress::_magicNumber( *this );
     }

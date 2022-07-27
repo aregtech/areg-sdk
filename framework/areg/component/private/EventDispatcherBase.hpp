@@ -81,7 +81,7 @@ protected:
      * \brief   Initialization constructor. Initialized Dispatcher and assigns name.
      * \param   name            The name of Dispatcher.
      **/
-    EventDispatcherBase( const char* name );
+    EventDispatcherBase( const String & name );
     /**
      * \brief   Destructor
      **/

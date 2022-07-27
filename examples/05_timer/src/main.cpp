@@ -145,7 +145,7 @@ bool TimerDispatcher::postEvent( Event & eventElem )
     }
     else
     {
-        TRACE_ERR( "Unexpected event of type [ %s ] for this example. Raising assertion!", eventElem.getRuntimeClassName( ) );
+        TRACE_ERR( "Unexpected event of type [ %s ] for this example. Raising assertion!", eventElem.getRuntimeClassName( ).getString() );
         eventElem.destroy( );
         ASSERT(false);
     }

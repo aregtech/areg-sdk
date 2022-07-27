@@ -79,7 +79,7 @@ public:
      * \param	threadName	The unique name of dispatching thread.
      * \return	If found, returns valid Dispatcher thread. Otherwise, returns NullDispather object, which destroys any event passed to thread.
      **/
-    static inline DispatcherThread & getDispatcherThread(const char * threadName);
+    static inline DispatcherThread & getDispatcherThread(const String & threadName);
 
     /**
      * \brief	By given thread ID searches registered Event Dispatcher thread and returns object.
@@ -139,7 +139,7 @@ public:
      *          name, which is registered in system (in resource mapping). The Dispatcher Thread can be accessed by its unique name.
      * \param	threadName	The unique name of dispatcher. If this parameter is nullptr or empty, system will unique thread name.
      **/
-    explicit DispatcherThread( const char * threadName );
+    explicit DispatcherThread( const String & threadName );
     /**
      * \brief   Destructor.
      **/
@@ -292,9 +292,9 @@ private:
 // DispatcherThread class inline functions implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline DispatcherThread & DispatcherThread::getDispatcherThread( const char * threadName )
+inline DispatcherThread & DispatcherThread::getDispatcherThread( const String & threadName )
 {
-    DispatcherThread * dispThread = RUNTIME_CAST(threadName != nullptr ? Thread::findThreadByName(threadName) : Thread::getCurrentThread(), DispatcherThread);
+    DispatcherThread * dispThread = RUNTIME_CAST(threadName.isEmpty() == false ? Thread::findThreadByName(threadName) : Thread::getCurrentThread(), DispatcherThread);
     return ( dispThread != nullptr ? *dispThread : DispatcherThread::_getNullDispatherThread() );
 }
 

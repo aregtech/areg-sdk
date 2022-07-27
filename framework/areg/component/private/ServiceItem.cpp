@@ -39,8 +39,8 @@ ServiceItem::ServiceItem( void )
 {
 }
 
-ServiceItem::ServiceItem(const char * serviceName)
-    : mServiceName      ( serviceName != nullptr ? serviceName : "")
+ServiceItem::ServiceItem(const String & serviceName)
+    : mServiceName      ( serviceName )
     , mServiceVersion   ( Version::INVALID_VERSION )
     , mServiceType      ( NEService::eServiceType::ServiceLocal )
     , mMagicNum         ( NEMath::CHECKSUM_IGNORE )
@@ -49,8 +49,8 @@ ServiceItem::ServiceItem(const char * serviceName)
     mMagicNum = ServiceItem::_magicNumber(*this);
 }
 
-ServiceItem::ServiceItem( const char * serviceName, const Version & serviceVersion, NEService::eServiceType serviceType )
-    : mServiceName      ( serviceName != nullptr ? serviceName : "")
+ServiceItem::ServiceItem( const String & serviceName, const Version & serviceVersion, NEService::eServiceType serviceType )
+    : mServiceName      ( serviceName )
     , mServiceVersion   ( serviceVersion )
     , mServiceType      ( serviceType )
     , mMagicNum         ( NEMath::CHECKSUM_IGNORE )

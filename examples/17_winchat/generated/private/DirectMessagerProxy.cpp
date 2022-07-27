@@ -42,12 +42,12 @@ DirectMessagerProxy::DirectMessagerServiceAvailableEvent::DirectMessagerServiceA
 // static function implementation
 //////////////////////////////////////////////////////////////////////////
 
-ProxyBase * DirectMessagerProxy::_createProxy( const char * roleName, DispatcherThread * ownerThread /*= nullptr*/ )
+ProxyBase * DirectMessagerProxy::_createProxy( const String & roleName, DispatcherThread * ownerThread /*= nullptr*/ )
 {
     return DEBUG_NEW DirectMessagerProxy(roleName, ownerThread);
 }
 
-DirectMessagerProxy * DirectMessagerProxy::createProxy( const char * roleName, IEProxyListener & connectListener, DispatcherThread & ownerThread )
+DirectMessagerProxy * DirectMessagerProxy::createProxy( const String & roleName, IEProxyListener & connectListener, DispatcherThread & ownerThread )
 {
     return static_cast<DirectMessagerProxy *>(ProxyBase::findOrCreateProxy( roleName
                                                                       , NEDirectMessager::getInterfaceData()
@@ -56,7 +56,7 @@ DirectMessagerProxy * DirectMessagerProxy::createProxy( const char * roleName, I
                                                                       , ownerThread) );
 }
 
-DirectMessagerProxy * DirectMessagerProxy::createProxy( const char * roleName, IEProxyListener & connectListener, const char * ownerThread /*= nullptr*/ )
+DirectMessagerProxy * DirectMessagerProxy::createProxy( const String & roleName, IEProxyListener & connectListener, const String & ownerThread /*= String::EmptyString*/ )
 {
     return static_cast<DirectMessagerProxy *>(ProxyBase::findOrCreateProxy( roleName
                                                                       , NEDirectMessager::getInterfaceData()
@@ -68,7 +68,7 @@ DirectMessagerProxy * DirectMessagerProxy::createProxy( const char * roleName, I
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
-DirectMessagerProxy::DirectMessagerProxy( const char * roleName, DispatcherThread * ownerThread /*= nullptr*/ )
+DirectMessagerProxy::DirectMessagerProxy( const String & roleName, DispatcherThread * ownerThread /*= nullptr*/ )
     : ProxyBase(roleName, NEDirectMessager::getInterfaceData(), ownerThread)
 
 /************************************************************************

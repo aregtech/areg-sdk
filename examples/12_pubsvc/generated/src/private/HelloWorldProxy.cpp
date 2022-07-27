@@ -42,12 +42,12 @@ HelloWorldProxy::HelloWorldServiceAvailableEvent::HelloWorldServiceAvailableEven
 // static function implementation
 //////////////////////////////////////////////////////////////////////////
 
-ProxyBase * HelloWorldProxy::_createProxy( const char * roleName, DispatcherThread * ownerThread /*= nullptr*/ )
+ProxyBase * HelloWorldProxy::_createProxy( const String & roleName, DispatcherThread * ownerThread /*= nullptr*/ )
 {
     return DEBUG_NEW HelloWorldProxy(roleName, ownerThread);
 }
 
-HelloWorldProxy * HelloWorldProxy::createProxy( const char * roleName, IEProxyListener & connectListener, DispatcherThread & ownerThread )
+HelloWorldProxy * HelloWorldProxy::createProxy( const String & roleName, IEProxyListener & connectListener, DispatcherThread & ownerThread )
 {
     return static_cast<HelloWorldProxy *>(ProxyBase::findOrCreateProxy( roleName
                                                                       , NEHelloWorld::getInterfaceData()
@@ -56,7 +56,7 @@ HelloWorldProxy * HelloWorldProxy::createProxy( const char * roleName, IEProxyLi
                                                                       , ownerThread) );
 }
 
-HelloWorldProxy * HelloWorldProxy::createProxy( const char * roleName, IEProxyListener & connectListener, const char * ownerThread /*= nullptr*/ )
+HelloWorldProxy * HelloWorldProxy::createProxy( const String & roleName, IEProxyListener & connectListener, const String & ownerThread /*= String::EmptyString*/ )
 {
     return static_cast<HelloWorldProxy *>(ProxyBase::findOrCreateProxy( roleName
                                                                       , NEHelloWorld::getInterfaceData()
@@ -68,7 +68,7 @@ HelloWorldProxy * HelloWorldProxy::createProxy( const char * roleName, IEProxyLi
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
-HelloWorldProxy::HelloWorldProxy( const char * roleName, DispatcherThread * ownerThread /*= nullptr*/ )
+HelloWorldProxy::HelloWorldProxy( const String & roleName, DispatcherThread * ownerThread /*= nullptr*/ )
     : ProxyBase(roleName, NEHelloWorld::getInterfaceData(), ownerThread)
 
 /************************************************************************

@@ -48,9 +48,6 @@ protected:
      * \brief   Protected default constructor.
      **/
     IEQueueListener( void ) = default;
-    /**
-     * \brief   Destructor.
-     **/
     virtual ~IEQueueListener( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////

@@ -29,13 +29,13 @@
 //  Windows OS specific methods
 //////////////////////////////////////////////////////////////////////////
 
-TIMERHANDLE TimerManager::_createWaitableTimer( const char * timerName )
+TIMERHANDLE TimerManager::_createWaitableTimer( const String & timerName )
 {
     TIMERHANDLE result = nullptr;
     TCHAR* name = nullptr;
     TCHAR convertName[MAX_PATH];
 
-    if ( NEString::isEmpty<char>(timerName) == false )
+    if ( timerName.isEmpty() == false)
     {
         NEString::copyString<TCHAR, char>(convertName, MAX_PATH, timerName);
         name = convertName;
@@ -46,7 +46,7 @@ TIMERHANDLE TimerManager::_createWaitableTimer( const char * timerName )
 #ifdef _DEBUG
     if ( result == nullptr )
     {
-        OUTPUT_ERR( "Failed creating timer [ %s ], the system error code is [ 0xp ]", timerName != nullptr ? timerName : "nullptr", GetLastError( ) );
+        OUTPUT_ERR( "Failed creating timer [ %s ], the system error code is [ 0xp ]", timerName.getString(), GetLastError());
     }
 #endif // _DEBUG
 

@@ -42,12 +42,12 @@ PowerManagerProxy::PowerManagerServiceAvailableEvent::PowerManagerServiceAvailab
 // static function implementation
 //////////////////////////////////////////////////////////////////////////
 
-ProxyBase * PowerManagerProxy::_createProxy( const char * roleName, DispatcherThread * ownerThread /*= nullptr*/ )
+ProxyBase * PowerManagerProxy::_createProxy( const String & roleName, DispatcherThread * ownerThread /*= nullptr*/ )
 {
     return DEBUG_NEW PowerManagerProxy(roleName, ownerThread);
 }
 
-PowerManagerProxy * PowerManagerProxy::createProxy( const char * roleName, IEProxyListener & connectListener, DispatcherThread & ownerThread )
+PowerManagerProxy * PowerManagerProxy::createProxy( const String & roleName, IEProxyListener & connectListener, DispatcherThread & ownerThread )
 {
     return static_cast<PowerManagerProxy *>(ProxyBase::findOrCreateProxy( roleName
                                                                       , NEPowerManager::getInterfaceData()
@@ -56,7 +56,7 @@ PowerManagerProxy * PowerManagerProxy::createProxy( const char * roleName, IEPro
                                                                       , ownerThread) );
 }
 
-PowerManagerProxy * PowerManagerProxy::createProxy( const char * roleName, IEProxyListener & connectListener, const char * ownerThread /*= nullptr*/ )
+PowerManagerProxy * PowerManagerProxy::createProxy( const String & roleName, IEProxyListener & connectListener, const String & ownerThread /*= String::EmptyString*/ )
 {
     return static_cast<PowerManagerProxy *>(ProxyBase::findOrCreateProxy( roleName
                                                                       , NEPowerManager::getInterfaceData()
@@ -68,7 +68,7 @@ PowerManagerProxy * PowerManagerProxy::createProxy( const char * roleName, IEPro
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
-PowerManagerProxy::PowerManagerProxy( const char * roleName, DispatcherThread * ownerThread /*= nullptr*/ )
+PowerManagerProxy::PowerManagerProxy( const String & roleName, DispatcherThread * ownerThread /*= nullptr*/ )
     : ProxyBase(roleName, NEPowerManager::getInterfaceData(), ownerThread)
 
 /************************************************************************

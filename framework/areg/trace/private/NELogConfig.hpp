@@ -428,9 +428,9 @@ namespace NELogConfig
     /**
      * \brief   The list of valid syntax lists.
      **/
-    constexpr const std::string_view    ValidSytaxList[ ] = 
+    constexpr const std::string_view    ValidSyntaxList[ ] = 
             {
-                  NEString::EmptyStringA                        //!< eLogConfig::ConfigUnknown
+                  String::EmptyString                           //!< eLogConfig::ConfigUnknown
                 , NELogConfig::SYNTAX_CMD_LOG_VERSION           //!< eLogConfig::ConfigLogVersion
                 , NELogConfig::SYNTAX_CMD_LOG_FILE              //!< eLogConfig::ConfigLogFile
                 , NELogConfig::SYNTAX_CMD_LOG_REMOTE_HOST       //!< eLogConfig::ConfigLogRemoteHost

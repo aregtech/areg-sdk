@@ -42,12 +42,12 @@ DirectConnectionProxy::DirectConnectionServiceAvailableEvent::DirectConnectionSe
 // static function implementation
 //////////////////////////////////////////////////////////////////////////
 
-ProxyBase * DirectConnectionProxy::_createProxy( const char * roleName, DispatcherThread * ownerThread /*= nullptr*/ )
+ProxyBase * DirectConnectionProxy::_createProxy( const String & roleName, DispatcherThread * ownerThread /*= String::EmptyString*/ )
 {
     return DEBUG_NEW DirectConnectionProxy(roleName, ownerThread);
 }
 
-DirectConnectionProxy * DirectConnectionProxy::createProxy( const char * roleName, IEProxyListener & connectListener, DispatcherThread & ownerThread )
+DirectConnectionProxy * DirectConnectionProxy::createProxy( const String & roleName, IEProxyListener & connectListener, DispatcherThread & ownerThread )
 {
     return static_cast<DirectConnectionProxy *>(ProxyBase::findOrCreateProxy( roleName
                                                                       , NEDirectConnection::getInterfaceData()
@@ -56,7 +56,7 @@ DirectConnectionProxy * DirectConnectionProxy::createProxy( const char * roleNam
                                                                       , ownerThread) );
 }
 
-DirectConnectionProxy * DirectConnectionProxy::createProxy( const char * roleName, IEProxyListener & connectListener, const char * ownerThread /*= nullptr*/ )
+DirectConnectionProxy * DirectConnectionProxy::createProxy( const String & roleName, IEProxyListener & connectListener, const String & ownerThread /*= nullptr*/ )
 {
     return static_cast<DirectConnectionProxy *>(ProxyBase::findOrCreateProxy( roleName
                                                                       , NEDirectConnection::getInterfaceData()
@@ -68,7 +68,7 @@ DirectConnectionProxy * DirectConnectionProxy::createProxy( const char * roleNam
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
-DirectConnectionProxy::DirectConnectionProxy( const char * roleName, DispatcherThread * ownerThread /*= nullptr*/ )
+DirectConnectionProxy::DirectConnectionProxy( const String & roleName, DispatcherThread * ownerThread /*= nullptr*/ )
     : ProxyBase(roleName, NEDirectConnection::getInterfaceData(), ownerThread)
 
 /************************************************************************

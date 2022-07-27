@@ -108,7 +108,7 @@ public:
      * \param	threadAddress	The address of master component thread.
      * \param	roleName	    The role name of component.
      **/
-    ComponentAddress( const ThreadAddress & threadAddress, const char * roleName );
+    ComponentAddress( const ThreadAddress & threadAddress, const String & roleName );
 
     /**
      * \brief	Initialization component.
@@ -119,7 +119,7 @@ public:
      * \param	roleName	The role name of component.
      * \return	
      **/
-    ComponentAddress( const char * roleName );
+    ComponentAddress( const String & roleName );
 
     /**
      * \brief	Initialization component.
@@ -129,7 +129,7 @@ public:
      * \param	roleName	The role name of component.
      * \param	nameThread	The thread name of master component thread.
      **/
-    ComponentAddress( const char * roleName, const char * nameThread );
+    ComponentAddress( const String & roleName, const String & nameThread );
 
     /**
      * \brief   Copy constructor.

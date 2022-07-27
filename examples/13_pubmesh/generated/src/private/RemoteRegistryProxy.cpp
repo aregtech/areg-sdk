@@ -42,12 +42,12 @@ RemoteRegistryProxy::RemoteRegistryServiceAvailableEvent::RemoteRegistryServiceA
 // static function implementation
 //////////////////////////////////////////////////////////////////////////
 
-ProxyBase * RemoteRegistryProxy::_createProxy( const char * roleName, DispatcherThread * ownerThread /*= nullptr*/ )
+ProxyBase * RemoteRegistryProxy::_createProxy( const String & roleName, DispatcherThread * ownerThread /*= nullptr*/ )
 {
     return DEBUG_NEW RemoteRegistryProxy(roleName, ownerThread);
 }
 
-RemoteRegistryProxy * RemoteRegistryProxy::createProxy( const char * roleName, IEProxyListener & connectListener, DispatcherThread & ownerThread )
+RemoteRegistryProxy * RemoteRegistryProxy::createProxy( const String & roleName, IEProxyListener & connectListener, DispatcherThread & ownerThread )
 {
     return static_cast<RemoteRegistryProxy *>(ProxyBase::findOrCreateProxy( roleName
                                                                       , NERemoteRegistry::getInterfaceData()
@@ -56,7 +56,7 @@ RemoteRegistryProxy * RemoteRegistryProxy::createProxy( const char * roleName, I
                                                                       , ownerThread) );
 }
 
-RemoteRegistryProxy * RemoteRegistryProxy::createProxy( const char * roleName, IEProxyListener & connectListener, const char * ownerThread /*= nullptr*/ )
+RemoteRegistryProxy * RemoteRegistryProxy::createProxy( const String & roleName, IEProxyListener & connectListener, const String & ownerThread /*= String::EmptyString*/ )
 {
     return static_cast<RemoteRegistryProxy *>(ProxyBase::findOrCreateProxy( roleName
                                                                       , NERemoteRegistry::getInterfaceData()
@@ -68,7 +68,7 @@ RemoteRegistryProxy * RemoteRegistryProxy::createProxy( const char * roleName, I
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
-RemoteRegistryProxy::RemoteRegistryProxy( const char * roleName, DispatcherThread * ownerThread /*= nullptr*/ )
+RemoteRegistryProxy::RemoteRegistryProxy( const String & roleName, DispatcherThread * ownerThread /*= nullptr*/ )
     : ProxyBase(roleName, NERemoteRegistry::getInterfaceData(), ownerThread)
 
 /************************************************************************

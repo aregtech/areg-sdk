@@ -226,7 +226,7 @@ bool HelloDispatcher::postEvent( Event& eventElem )
 bool HelloDispatcher::dispatchEvent(Event & eventElem)
 {
     TRACE_SCOPE(main_HelloDispatcher_postEvent);
-    TRACE_DBG("Received event [ %s ], the custom event dispatching can be set here", eventElem.getRuntimeClassName());
+    TRACE_DBG("Received event [ %s ], the custom event dispatching can be set here", eventElem.getRuntimeClassName().getString());
     return true; // break dispatching event.
 }
 

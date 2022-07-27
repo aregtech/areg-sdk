@@ -12,20 +12,13 @@
  * \author      Artak Avetyan
  * \brief       AREG Platform Remote service namespace
  ************************************************************************/
-
 #include "areg/ipc/NERemoteService.hpp"
+
 #include "areg/base/String.hpp"
 
-AREG_API const char * NERemoteService::getServiceConnectionTypeString(NERemoteService::eServiceConnection connectionType)
+AREG_API String NERemoteService::getServiceConnectionTypeString(NERemoteService::eServiceConnection connectionType)
 {
-    if ( connectionType == NERemoteService::eServiceConnection::ConnectionTcpip )
-    {
-        return NERemoteService::STR_CONNECTION_TYPE_TCPIP.data( );
-    }
-    else
-    {
-        return String::EmptyString.data( );
-    }
+    return String(connectionType == NERemoteService::eServiceConnection::ConnectionTcpip ? NERemoteService::STR_CONNECTION_TYPE_TCPIP : String::EmptyString);
 }
 
 AREG_API NERemoteService::eServiceConnection NERemoteService::getServiceConnectionType(const String & connectionType, bool caseSensitive /* = true */ )

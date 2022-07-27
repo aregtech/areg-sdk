@@ -42,12 +42,12 @@ HelloServiceProxy::HelloServiceServiceAvailableEvent::HelloServiceServiceAvailab
 // static function implementation
 //////////////////////////////////////////////////////////////////////////
 
-ProxyBase * HelloServiceProxy::_createProxy( const char * roleName, DispatcherThread * ownerThread /*= nullptr*/ )
+ProxyBase * HelloServiceProxy::_createProxy( const String & roleName, DispatcherThread * ownerThread /*= nullptr*/ )
 {
     return DEBUG_NEW HelloServiceProxy(roleName, ownerThread);
 }
 
-HelloServiceProxy * HelloServiceProxy::createProxy( const char * roleName, IEProxyListener & connectListener, DispatcherThread & ownerThread )
+HelloServiceProxy * HelloServiceProxy::createProxy( const String & roleName, IEProxyListener & connectListener, DispatcherThread & ownerThread )
 {
     return static_cast<HelloServiceProxy *>(ProxyBase::findOrCreateProxy( roleName
                                                                       , NEHelloService::getInterfaceData()
@@ -56,7 +56,7 @@ HelloServiceProxy * HelloServiceProxy::createProxy( const char * roleName, IEPro
                                                                       , ownerThread) );
 }
 
-HelloServiceProxy * HelloServiceProxy::createProxy( const char * roleName, IEProxyListener & connectListener, const char * ownerThread /*= nullptr*/ )
+HelloServiceProxy * HelloServiceProxy::createProxy( const String & roleName, IEProxyListener & connectListener, const String & ownerThread /*= String::EmptyString*/ )
 {
     return static_cast<HelloServiceProxy *>(ProxyBase::findOrCreateProxy( roleName
                                                                       , NEHelloService::getInterfaceData()
@@ -68,7 +68,7 @@ HelloServiceProxy * HelloServiceProxy::createProxy( const char * roleName, IEPro
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
-HelloServiceProxy::HelloServiceProxy( const char * roleName, DispatcherThread * ownerThread /*= nullptr*/ )
+HelloServiceProxy::HelloServiceProxy( const String & roleName, DispatcherThread * ownerThread /*= nullptr*/ )
     : ProxyBase(roleName, NEHelloService::getInterfaceData(), ownerThread)
 
 /************************************************************************
