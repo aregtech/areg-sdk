@@ -228,6 +228,12 @@ bool Thread::completionWait( unsigned int waitForCompleteMs /*= NECommon::WAIT_I
     return result;
 }
 
+inline Thread::eCompletionStatus Thread::terminateThread(void)
+{
+    return destroyThread(NECommon::WAIT_10_MILLISECONDS);
+}
+
+
 bool Thread::onPreRunThread( void )
 {
     return mWaitForRun.setEvent();

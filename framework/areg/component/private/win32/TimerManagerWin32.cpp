@@ -37,7 +37,7 @@ TIMERHANDLE TimerManager::_createWaitableTimer( const String & timerName )
 
     if ( timerName.isEmpty() == false)
     {
-        NEString::copyString<TCHAR, char>(convertName, MAX_PATH, timerName);
+        NEString::copyString<TCHAR, char>(convertName, MAX_PATH, timerName, timerName.getLength());
         name = convertName;
     }
 
@@ -58,20 +58,20 @@ void TimerManager::_destroyWaitableTimer( TIMERHANDLE timerHandle, bool cancelTi
     ASSERT( timerHandle != nullptr );
     if ( cancelTimer )
     {
-        _stopSystemTimer(timerHandle);
+        _systemTimerStop(timerHandle);
     }
 
     ::CloseHandle( static_cast<HANDLE>(timerHandle) );
 }
 
-void TimerManager::_stopSystemTimer( TIMERHANDLE timerHandle )
+void TimerManager::_systemTimerStop( TIMERHANDLE timerHandle )
 {
 
     ASSERT( timerHandle != nullptr );
     ::CancelWaitableTimer( static_cast<HANDLE>(timerHandle) );
 }
 
-bool TimerManager::_createSystemTimer( TimerInfo & timerInfo, MapTimerTable & timerTable )
+bool TimerManager::_systemTimerStart( TimerInfo & timerInfo, MapTimerTable & timerTable )
 {
     bool result = false;
 
@@ -83,8 +83,8 @@ bool TimerManager::_createSystemTimer( TimerInfo & timerInfo, MapTimerTable & ti
     ASSERT( whichTimer != nullptr );
 
     // the period of time. If should be fired several times, set the period value. Otherwise set zero to fire once.
-    long period     = whichTimer->getEventCount( ) > 1 ? static_cast<long>(whichTimer->getFireTime()) : 0;
-    int64_t dueTime = static_cast<int64_t>(whichTimer->getFireTime( ) * NEUtilities::MILLISEC_TO_100NS);  // timer from now
+    long period     = whichTimer->getEventCount( ) > 1 ? static_cast<long>(whichTimer->getTimeout()) : 0;
+    int64_t dueTime = static_cast<int64_t>(whichTimer->getTimeout( )) * NEUtilities::MILLISEC_TO_100NS;  // timer from now
     dueTime *= -1;
     LARGE_INTEGER timeTrigger;
 
@@ -95,7 +95,7 @@ bool TimerManager::_createSystemTimer( TimerInfo & timerInfo, MapTimerTable & ti
     if ( ::SetWaitableTimer( timerInfo.mHandle, &timeTrigger, period, reinterpret_cast<PTIMERAPCROUTINE>(&TimerManager::_defaultWindowsTimerExpiredRoutine), static_cast<void *>(whichTimer), FALSE ) == FALSE )
     {
         OUTPUT_ERR( "System Failed to start timer in period [ %d ] ms, timer name [ %s ]. System Error [ %p ]"
-                        , whichTimer->getFireTime( )
+                        , whichTimer->getTimeout( )
                         , whichTimer->getName( ).getString()
                         , static_cast<id_type>(GetLastError( )) );
 

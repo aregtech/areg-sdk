@@ -60,30 +60,44 @@
 /**
  * \brief   extracts unsigned low-byte value of 16-bit argument
  **/
-#ifndef MACRO_LO_BYTE16
-    #define  MACRO_LO_BYTE16(n) (static_cast<unsigned char>( static_cast<unsigned short>(n) >>  0 ) & 0xFF)
-#endif  // MACRO_LO_BYTE16
+#ifndef MACRO_16_LO_BYTE8
+    #define  MACRO_16_LO_BYTE8(n)   (static_cast<unsigned char>( static_cast<unsigned short>(n) >>  0 ) & 0xFF )
+#endif  // MACRO_16_LO_BYTE8
 
 /**
  * \brief   extracts unsigned low-byte value of 32-bit argument
  **/
-#ifndef MACRO_LO_BYTE32
-    #define  MACRO_LO_BYTE32(n) (static_cast<unsigned char>( static_cast<unsigned int>(n) >>  0 ) & 0xFF)
-#endif  // MACRO_LO_BYTE32
+#ifndef MACRO_32_LO_BYTE8
+    #define  MACRO_32_LO_BYTE8(n)   (static_cast<unsigned char>( static_cast<unsigned int>(n) >>  0 ) & 0xFF )
+#endif  // MACRO_32_LO_BYTE8
+
+/**
+ * \brief   extracts unsigned low 16-bits value of 32-bit argument
+ **/
+#ifndef MACRO_32_LO_BYTE16
+    #define  MACRO_32_LO_BYTE16(n)  (static_cast<unsigned short>( static_cast<unsigned int>(n) >>  0 ) & 0xFFFF )
+#endif  // MACRO_32_LO_BYTE16
 
 /**
  * \brief   extracts unsigned high-byte value of 16-bit argument
  **/
-#ifndef MACRO_HI_BYTE16
-    #define  MACRO_HI_BYTE16(n) (static_cast<unsigned char>( static_cast<unsigned short>(n) >>  8 ) & 0xFF)
-#endif  // MACRO_HI_BYTE16
+#ifndef MACRO_16_HI_BYTE8
+    #define  MACRO_16_HI_BYTE8(n)   (static_cast<unsigned char>( static_cast<unsigned short>(n) >>  8 ) & 0xFF )
+#endif  // MACRO_16_HI_BYTE8
 
 /**
  * \brief   extracts unsigned high-byte value of 32-bit argument
  **/
-#ifndef MACRO_HI_BYTE32
-    #define  MACRO_HI_BYTE32(n) (static_cast<unsigned char>( static_cast<unsigned int>(n) >> 24 ) & 0xFF)
-#endif  // MACRO_HI_BYTE32
+#ifndef MACRO_32_HI_BYTE8
+    #define  MACRO_32_HI_BYTE8(n)   (static_cast<unsigned char>( static_cast<unsigned int>(n) >> 24 ) & 0xFF )
+#endif  // MACRO_32_HI_BYTE8
+
+/**
+ * \brief   extracts unsigned high 16-bits value of 32-bit argument
+ **/
+#ifndef MACRO_32_HI_BYTE16
+    #define  MACRO_32_HI_BYTE16(n)  (static_cast<unsigned short>( static_cast<unsigned int>(n) >> 16 ) & 0xFFFF )
+#endif  // MACRO_32_HI_BYTE8
 
 /**
  * \brief   swaps bytes in 16-bit number

@@ -22,7 +22,6 @@
 
 #if defined(_POSIX) || defined(POSIX)
 
-#include "areg/component/Timer.hpp"
 #include "areg/base/private/posix/SpinLockIX.hpp"
 #include <sys/types.h>
 #include <time.h>
@@ -30,6 +29,8 @@
 //////////////////////////////////////////////////////////////////////////
 // Dependency.
 //////////////////////////////////////////////////////////////////////////
+class Timer;
+class Watchdog;
 
 /**
  * \brief   The POSIX timer routing method triggered in a separate thread.
@@ -83,21 +84,20 @@ public:
     inline timer_t getTimerId( void ) const;
 
     /**
-     * \brief   Returns POSIX timer context.
+     * \brief   Returns POSIX timer context pointer.
      **/
-    inline Timer * getContext( void ) const;
+    inline void * getContext( void ) const;
+
+    /**
+     * \brief   Returns POSIX timer context ID.
+     **/
+    inline id_type getContextId( void ) const;
 
     /**
      * \brief   Returns timeout due date and time when timer expired or should expire next.
      **/
     inline const timespec & getDueTime( void ) const;
 
-    /**
-     * \brief   Returns period. If zero, the timer does not run. If TimerPosix::TIMER_PERIOD_ENDLESS 
-     *          the timer is endless until it is not stopped. Any other value specifies the remaining
-     *          period to run timer.
-     **/
-    inline unsigned int getRemainPeriod( void ) const;
 
     /**
      * \brief   Returns true if timer is valid, i.e. the timer ID and context are valid.
@@ -122,6 +122,7 @@ public:
      * \return  Returns true if timer is created and started with success.
      **/
     bool startTimer( Timer & context, FuncPosixTimerRoutine funcTimer );
+    bool startTimer( Watchdog & context, FuncPosixTimerRoutine funcTimer);
 
     /**
      * \brief   Starts initialized timer if the timeout and the period values are not zero.
@@ -130,6 +131,7 @@ public:
      * \return  Returns true if timer is started with success.
      */
     bool startTimer( Timer & context );
+    bool startTimer( Watchdog & context );
 
     /**
      * \brief   Starts the timer that was initialized. This function ignores starting timer
@@ -164,10 +166,12 @@ protected:
      *          can continue running. Returns false if timer should be stopped.
      *          The timer can run if it is periodic and the period count is greater 
      *          than zero. The timer is stopped if period count is zero.
-     * \param   Returns true if timer can continue running. Returns false if timer 
+     * \param   timeoutMs   The timeout in milliseconds when timer expired.
+     * \return  Returns true if timer can continue running. Returns false if timer 
      *          should be stopped.
      **/
     void timerExpired( void );
+    void timerExpired( unsigned int timeoutMs );
 
 //////////////////////////////////////////////////////////////////////////
 // Internal private methods.
@@ -185,10 +189,11 @@ private:
 
     /**
      * \brief	Initializes and starts the timer.
-     * \param	context	The pointer to Timer object as a timer context.
+     * \param	context	The pointer to timer context object.
      * \return	Returns true if timer succeeded to start.
      **/
     inline bool _startTimer( Timer * context );
+    inline bool _startTimer( Watchdog * context );
     /**
      * \brief   Starts the initialized timer.
      * \param   msTimeout   The timeout of timer is milliseconds.
@@ -223,9 +228,16 @@ private:
     timer_t                 mTimerId;
 
     /**
-     * \brief   The valid pointer to Timer object that contains timeout and period information.
+     * \brief   The context pointer passed to POSIX timer, set when using Timer object.
+     *          Otherwise, should be nullptr.
      */
-    Timer *                 mContext;
+    void *                  mContext;
+
+    /**
+     * \brief   The context ID passed to POSIX timer, set when using Watchdog object.
+     *          Otherwise, should be zero.
+     **/
+    id_type                 mContextId;
 
     /**
      * \brief   The number of events to trigger timer. Should be more than zero.
@@ -264,7 +276,7 @@ inline timer_t TimerPosix::getTimerId(void) const
     return mTimerId;
 }
 
-inline Timer * TimerPosix::getContext(void) const
+inline void * TimerPosix::getContext(void) const
 {
 	SpinAutolockIX lock(mLock);
     return mContext;
@@ -276,16 +288,10 @@ inline const timespec & TimerPosix::getDueTime(void) const
     return mDueTime;
 }
 
-inline unsigned int TimerPosix::getRemainPeriod(void) const
-{
-	SpinAutolockIX lock(mLock);
-    return mContext->getEventCount();
-}
-
 inline bool TimerPosix::isValid(void) const
 {
 	SpinAutolockIX lock(mLock);
-    return ((mContext != nullptr) && (mTimerId != 0));
+    return (((mContext != nullptr) || (mContextId != 0u)) && (mTimerId != 0));
 }
 
 inline bool TimerPosix::_isStarted(void) const

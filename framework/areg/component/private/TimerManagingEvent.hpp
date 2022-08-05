@@ -197,7 +197,7 @@ DECLARE_EVENT(TimerManagingEventData, TimerManagingEvent, IETimerManagingEventCo
 inline TimerManagingEventData::TimerManagingEventData( void )
     : mAction   (TimerManagingEventData::eTimerAction::TimerIgnore)
     , mTimer    (nullptr)
-    , mHandle    (nullptr)
+    , mHandle   (nullptr)
 {
 }
 

@@ -259,10 +259,58 @@ namespace NECommon
      **/
     constexpr unsigned int  WAIT_10_SECONDS         { 10 * WAIT_1_SECOND };
     /**
-     * \brief   IESynchObject::WAIT_1_MIN
+     * \brief   NECommon::WAIT_1_MIN
      *          Waiting time 1 minute
      **/
     constexpr unsigned int  WAIT_1_MINUTE           { 60 * WAIT_1_SECOND };
+
+    /**
+     * \brief   NECommon::INVALID_TIMEOUT
+     *          A value, indicating invalid timeout. The timers with invalid timeouts are invalid
+     **/
+    constexpr unsigned int   INVALID_TIMEOUT        { DO_NOT_WAIT };
+
+    /**
+     * \brief   NECommon::TIMEOUT_1_MS
+     *          Timeout 1 millisecond
+     **/
+    constexpr unsigned int   TIMEOUT_1_MS           { WAIT_1_MILLISECOND};
+
+    /**
+     * \brief   NECommon::TIMEOUT_10_MS
+     *          Timeout 10 millisecond
+     **/
+    constexpr unsigned int   TIMEOUT_10_MS          { WAIT_10_MILLISECONDS };
+
+    /**
+     * \brief   NECommon::TIMEOUT_50_MS
+     *          Timeout 50 millisecond
+     **/
+    constexpr unsigned int   TIMEOUT_50_MS          { WAIT_50_MILLISECONDS };
+
+    /**
+     * \brief   NECommon::TIMEOUT_100_MS
+     *          Timeout 100 millisecond
+     **/
+    constexpr unsigned int   TIMEOUT_100_MS          { WAIT_100_MILLISECONDS };
+
+    /**
+     * \brief   NECommon::TIMEOUT_500_MS
+     *          Timeout 500 millisecond
+     **/
+    constexpr unsigned int   TIMEOUT_500_MS          { WAIT_500_MILLISECONDS };
+
+    /**
+     * \brief   NECommon::TIMEOUT_1_SEC
+     *          Timeout 1 second
+     **/
+    constexpr unsigned int   TIMEOUT_1_SEC           { WAIT_1_SECOND };
+
+    /**
+     * \brief   NECommon::TIMEOUT_1_MIN
+     *          Timeout 1 minute
+     **/
+    constexpr unsigned int   TIMEOUT_1_MIN           { WAIT_1_MINUTE };
 
     /**
      * \brief   NECommon::COMPONENT_PATH_SEPARATOR

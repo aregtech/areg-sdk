@@ -221,8 +221,8 @@ AREG_API unsigned int NEMath::crc32Calculate( const wchar_t * strData )
             }
             else
             {
-                unsigned char low    = static_cast<unsigned char>( MACRO_LO_BYTE16(data) );
-                unsigned char high   = static_cast<unsigned char>( MACRO_HI_BYTE16(data) );
+                unsigned char low    = static_cast<unsigned char>( MACRO_16_LO_BYTE8(data) );
+                unsigned char high   = static_cast<unsigned char>( MACRO_16_HI_BYTE8(data) );
                 result = (result >> 8) ^ crc32Tab[static_cast<unsigned char>(low ) ^ static_cast<unsigned char>(result & 0x000000FF)];  // calculate low bits
                 result = (result >> 8) ^ crc32Tab[static_cast<unsigned char>(high) ^ static_cast<unsigned char>(result & 0x000000FF)];  // calculate hight bits
             }

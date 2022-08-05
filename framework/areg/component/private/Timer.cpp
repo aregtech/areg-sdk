@@ -7,7 +7,7 @@
  * If not, please contact to info[at]aregtech.com
  *
  * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
- * \file        areg/component/Timer.cpp
+ * \file        areg/component/private/Timer.cpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
  * \author      Artak Avetyan
  * \brief       AREG Platform, Timer class.

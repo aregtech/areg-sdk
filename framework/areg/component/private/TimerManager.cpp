@@ -21,7 +21,6 @@
 #include "areg/component/private/ExitEvent.hpp"
 
 #include "areg/component/Timer.hpp"
-#include "areg/base/Thread.hpp"
 #include "areg/base/NEUtilities.hpp"
 #include "areg/trace/GETrace.h"
 
@@ -95,9 +94,9 @@ bool TimerManager::startTimer(Timer &timer, const DispatcherThread & whichThread
     return result;
 }
 
-bool TimerManager::stopTimer( Timer &timer )
+void TimerManager::stopTimer( Timer &timer )
 {
-    return getInstance()._unregisterTimer( &timer );
+    getInstance()._unregisterTimer( &timer );
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -105,7 +104,7 @@ bool TimerManager::stopTimer( Timer &timer )
 //////////////////////////////////////////////////////////////////////////
 
 TimerManager::TimerManager( void )
-    : DispatcherThread            ( TimerManager::TIMER_THREAD_NAME.data() )
+    : DispatcherThread            ( TimerManager::TIMER_THREAD_NAME )
     , IETimerManagingEventConsumer ( )
 
     , mTimerTable   ( )
@@ -131,11 +130,10 @@ bool TimerManager::_registerTimer(Timer &timer, const DispatcherThread & whichTh
     bool result = false;
     if (timer.isValid() && whichThread.isValid() && whichThread.isRunning() )
     {
-        TIMERHANDLE timerHandle = TimerManager::_createWaitableTimer(timer.hasName() ? timer.getName().getString() : nullptr);
+        TIMERHANDLE timerHandle = TimerManager::_createWaitableTimer(timer.getName());
         if (timerHandle != nullptr)
         {
-            TimerManager::getInstance().mTimerResource.registerResourceObject(timerHandle, &timer);
-
+            mTimerResource.registerResourceObject(timerHandle, &timer);
             TRACE_DBG("Succeeded to create waitable object for timer [ %s ], going to register", timer.getName().getString());
 
             do
@@ -168,10 +166,8 @@ bool TimerManager::_registerTimer(Timer &timer, id_type whichThreadId)
     return (disp != nullptr ? _registerTimer(timer, *disp) : false);
 }
 
-bool TimerManager::_unregisterTimer( Timer * timer )
+void TimerManager::_unregisterTimer( Timer * timer )
 {
-    bool result = false;
-
     if (timer != nullptr)
     {
         Lock lock(mLock);
@@ -182,17 +178,14 @@ bool TimerManager::_unregisterTimer( Timer * timer )
         {
             ASSERT(timerInfo.getHandle() != nullptr);
             TimerManager::getInstance().mTimerResource.unregisterResourceObject(timerInfo.getHandle());
-            TimerManager::_stopSystemTimer(timerInfo.getHandle());
+            TimerManager::_systemTimerStop(timerInfo.getHandle());
 
             TimerManagingEventData data(TimerManagingEventData::eTimerAction::TimerRemove, timer, timerInfo.getHandle());
             TimerManagingEvent::sendEvent(data, static_cast<IETimerManagingEventConsumer &>(self()), static_cast<DispatcherThread &>(self()));
-            result = true;
 
             OUTPUT_DBG("Successfully unregistered timer [ %s ].", timer->getName().getString());
         }
     }
-
-    return result;
 }
 
 void TimerManager::_removeAllTimers( void )
@@ -323,13 +316,15 @@ void TimerManager::_startSystemTimer( Timer* whichTimer )
         {
             ASSERT(timerInfo->mTimer == whichTimer);
             ASSERT(timerInfo->mHandle != nullptr);
-            if (_startSystemTimer(*timerInfo))
+            if (timerInfo->canStartTimer())
             {
-                TRACE_DBG("Succeeded starting timer [ %s ]", whichTimer->getName().getString());
+                TimerManager::_systemTimerStart(*timerInfo, mTimerTable);
             }
             else
             {
-                TRACE_ERR("Failed starting timer [ %s ]", whichTimer->getName().getString());
+                TRACE_ERR("Ignoring firing timer because it is not in Idle state. The current state of timer [ %s ] is [ %s ]"
+                            , timerInfo->getTimer()->getName().getString()
+                            , TimerInfo::getString(timerInfo->mTimerState));
             }
         }
         else
@@ -341,24 +336,6 @@ void TimerManager::_startSystemTimer( Timer* whichTimer )
     {
         TRACE_ERR("Invalid nullptr pointer to Timer object. Ignoring starting timer.");
     }
-}
-
-bool TimerManager::_startSystemTimer( TimerInfo &timerInfo )
-{
-    bool result = false;
-    if (timerInfo.canStartTimer())
-    {
-        result = TimerManager::_createSystemTimer(timerInfo, mTimerTable);
-    }
-    else
-    {
-    	TRACE_SCOPE(areg_component_private_TimerManager__startSystemTimer);
-        TRACE_ERR("Ignoring firing timer because it is not in Idle state. The current state of timer [ %s ] is [ %s ]"
-                    , timerInfo.getTimer()->getName().getString()
-                    , TimerInfo::getString(timerInfo.mTimerState));
-    }
-
-    return result;
 }
 
 bool TimerManager::postEvent( Event& eventElem )

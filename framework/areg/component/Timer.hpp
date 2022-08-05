@@ -209,11 +209,6 @@ public:
     inline const String & getName( void ) const;
 
     /**
-     * \brief   Returns the timeout value to fire time.
-     **/
-    inline unsigned int getFireTime( void ) const;
-
-    /**
      * \brief   Returns the amount of events, which timer still needs to send
      *          This function returns zero, if timer is stopped (automatically or manually),
      *          and returns Timer::CONTINUOUSLY for continues events.
@@ -418,11 +413,6 @@ inline IETimerConsumer& Timer::getConsumer( void ) const
 inline const String & Timer::getName( void ) const
 {
     return mName;
-}
-
-inline unsigned int Timer::getFireTime( void ) const
-{
-    return mTimeoutInMs;
 }
 
 inline unsigned int Timer::getTimeout( void ) const

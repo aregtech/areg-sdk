@@ -50,12 +50,16 @@ namespace
 /************************************************************************/
 void * Thread::_posixThreadRoutine( void * data )
 {
-    int oldState = 0;
+    int oldState{ 0 };
+    int oldType{ 0 };
     pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, &oldState);
+    pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, &oldType);
 
     Thread::_defaultThreadFunction(data);
 
     pthread_setcancelstate(oldState, nullptr);
+    pthread_setcanceltype(oldType, nullptr);
+
     return nullptr;
 }
 

@@ -20,12 +20,12 @@
 
 #if defined(_POSIX) || defined(POSIX)
 
-#include <signal.h>
-
-#include "areg/base/private/posix/NESynchTypesIX.hpp"
-#include "areg/component/private/TimerManager.hpp"
 #include "areg/component/Timer.hpp"
+#include "areg/component/private/Watchdog.hpp"
+#include "areg/base/private/posix/NESynchTypesIX.hpp"
 #include "areg/base/NEMemory.hpp"
+
+#include <signal.h>
 
 //////////////////////////////////////////////////////////////////////////
 // TimerPosix class implementation
@@ -44,10 +44,11 @@ namespace
 TimerPosix::TimerPosix( void )
     : mTimerId      ( INVALID_POSIX_TIMER_ID  )
     , mContext      ( nullptr  )
+    , mContextId    ( 0u    )
     , mEventCount   (       )
     , mDueTime      (       )
     , mThreadId     ( Thread::INVALID_THREAD_ID )
-    , mLock         ( )
+    , mLock         (       )
 {
 }
 
@@ -93,6 +94,23 @@ bool TimerPosix::startTimer( Timer & context, FuncPosixTimerRoutine funcTimer )
     return startTimer(context);
 }
 
+bool TimerPosix::startTimer(Watchdog& context, FuncPosixTimerRoutine funcTimer)
+{
+    SpinAutolockIX lock(mLock);
+
+    if (funcTimer != nullptr)
+    {
+        if (INVALID_POSIX_TIMER_ID != 0)
+        {
+            _destroyTimer();
+        }
+
+        _createTimer(funcTimer);
+    }
+
+    return startTimer(context);
+}
+
 bool TimerPosix::startTimer( Timer & context )
 {
 	SpinAutolockIX lock(mLock);
@@ -100,6 +118,12 @@ bool TimerPosix::startTimer( Timer & context )
     return _startTimer(&context);
 }
 
+bool TimerPosix::startTimer(Watchdog& context)
+{
+    SpinAutolockIX lock(mLock);
+
+    return _startTimer(&context);
+}
 
 bool TimerPosix::startTimer( void )
 {
@@ -144,21 +168,30 @@ void TimerPosix::destroyTimer(void)
 
 void TimerPosix::timerExpired(void)
 {
-	SpinAutolockIX lock(mLock);
+    if (mContext != nullptr)
+    {
+        timerExpired(reinterpret_cast<Timer*>(mContext)->getTimeout());
+    }
+}
+
+void TimerPosix::timerExpired(unsigned int timeoutMs)
+{
+    SpinAutolockIX lock(mLock);
 
     if ((mTimerId != INVALID_POSIX_TIMER_ID) && (mEventCount != 0))
     {
-        if ((mEventCount != Timer::CONTINUOUSLY) && (-- mEventCount == 0) )
+        if ((mEventCount != Timer::CONTINUOUSLY) && (--mEventCount == 0))
         {
             ASSERT(_isStarted());
             _stopTimer();
         }
         else
         {
-            NESynchTypesIX::convTimeout(mDueTime, mContext->getFireTime());
+            NESynchTypesIX::convTimeout(mDueTime, timeoutMs);
         }
     }
 }
+
 
 bool TimerPosix::_createTimer( FuncPosixTimerRoutine funcTimer )
 {
@@ -188,12 +221,35 @@ inline bool TimerPosix::_startTimer( Timer * context )
             _stopTimer();
         }
 
-        unsigned int msTimeout = mContext->getFireTime();
-        unsigned int eventCount= mContext->getEventCount();
+        unsigned int msTimeout = reinterpret_cast<Timer*>(mContext)->getTimeout();
+        unsigned int eventCount= reinterpret_cast<Timer*>(mContext)->getEventCount();
 
         if ((msTimeout != 0) && (eventCount != 0))
         {
             result = _startTimer(msTimeout, eventCount);
+        }
+    }
+
+    return result;
+}
+
+inline bool TimerPosix::_startTimer(Watchdog* context)
+{
+    bool result = false;
+    ASSERT(context != nullptr);
+
+    mContextId = context->makeWatchdogId();
+    if ((mTimerId != INVALID_POSIX_TIMER_ID) && (mContextId != 0))
+    {
+        if (_isStarted())
+        {
+            _stopTimer();
+        }
+
+        unsigned int msTimeout = contextt->getTimeout();
+        if (msTimeout != 0)
+        {
+            result = _startTimer(msTimeout, 1);
         }
     }
 

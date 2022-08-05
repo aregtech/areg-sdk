@@ -160,11 +160,10 @@ public:
     static bool startTimer(Timer &timer, const DispatcherThread & whichThread);
 
     /**
-     * \brief   Stops the timer. Returns true if timer successfully was stopped.
+     * \brief   Stops the timer.
      * \param   timer   The timer object that should be stopped
-     * \return  Returns true if timer was successfully stopped.
      **/
-    static bool stopTimer(Timer &timer);
+    static void stopTimer(Timer &timer);
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -260,9 +259,8 @@ private:
      * \brief   Unregisters timer manager in the timer resource map.
      *          Before unregistering timer, it stops and closes system timer.
      * \param   timer   The pointer to timer object that should be unregistered.
-     * \return  Returns true if timer object successfully is unregistered
      **/
-    bool _unregisterTimer( Timer * timer );
+    void _unregisterTimer( Timer * timer );
 
     /**
      * \brief   This method called for every single expired timer.
@@ -280,13 +278,6 @@ private:
      * \return  
      **/
     void _startSystemTimer( Timer * whichTimer );
-
-    /**
-     * \brief   Starts system timer and returns true if timer started with success.
-     * \param   timerInfo   The timer information object
-     * \return  Returns true if system timer started with success.
-     **/
-    bool _startSystemTimer( TimerInfo & timerInfo );
 
     /**
      * \brief   Starts Timer Manager Thread it is not started yet.
@@ -327,13 +318,13 @@ private:
      * \param   timerInfo   The timer information object
      * \return  Returns true if system timer started with success.
      **/
-    static bool _createSystemTimer( TimerInfo & timerInfo, MapTimerTable & timerTable );
+    static bool _systemTimerStart( TimerInfo & timerInfo, MapTimerTable & timerTable );
 
     /**
      * \brief   Stops previously started waitable timer.
      * \param   timerHandle The waitable timer handle to destroy.
      **/
-    static void _stopSystemTimer( TIMERHANDLE timerHandle );
+    static void _systemTimerStop( TIMERHANDLE timerHandle );
 
 //////////////////////////////////////////////////////////////////////////
 //  Member variables.

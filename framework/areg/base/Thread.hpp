@@ -208,6 +208,20 @@ public:
      **/
     virtual bool completionWait( unsigned int waitForCompleteMs = NECommon::WAIT_INFINITE );
 
+    /**
+     * \brief   It calls destroyThread() with waiting timeout 10 ms. If waiting time is expired, 
+     *          it immediately terminates the thread and returns completion status 'terminated'.
+     *          Use this function only if thread does not react anymore and immediate termination
+     *          is required. By calling this method, the system does not guarantee the graceful
+     *          way of cleaning resources and stacks.
+     * 
+     * \return	Returns the thread completion status. The following statuses are defined:
+     *              Thread::ThreadTerminated  -- The waiting timeout expired and thread was terminated;
+     *              Thread::ThreadCompleted   -- The thread was valid and completed normally;
+     *              Thread::ThreadInvalid     -- The thread was not valid and was not running, nothing was done.
+     **/
+    virtual Thread::eCompletionStatus terminateThread( void );
+
 /************************************************************************
  * Attributes
  ************************************************************************/

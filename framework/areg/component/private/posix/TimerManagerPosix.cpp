@@ -28,7 +28,7 @@
 #include <time.h>
 #include <errno.h>
 
-DEF_TRACE_SCOPE(areg_component_private_posix_TimerManager__createSystemTimer);
+DEF_TRACE_SCOPE(areg_component_private_posix_TimerManager__systemTimerStart);
 DEF_TRACE_SCOPE(areg_component_private_posix_TimerManager__defaultPosixTimerExpiredRoutine);
 
 //////////////////////////////////////////////////////////////////////////
@@ -40,7 +40,7 @@ TIMERHANDLE TimerManager::_createWaitableTimer( const String & /* timerName */ )
     return static_cast<TIMERHANDLE>(DEBUG_NEW TimerPosix());
 }
 
-void TimerManager::_stopSystemTimer( TIMERHANDLE timerHandle )
+void TimerManager::_systemTimerStop( TIMERHANDLE timerHandle )
 {
     TimerPosix * posixTimer = reinterpret_cast<TimerPosix *>(timerHandle);
     if ( posixTimer != nullptr )
@@ -57,9 +57,9 @@ void TimerManager::_destroyWaitableTimer( TIMERHANDLE timerHandle, bool /* cance
     }
 }
 
-bool TimerManager::_createSystemTimer( TimerInfo & timerInfo, MapTimerTable & timerTable )
+bool TimerManager::_systemTimerStart( TimerInfo & timerInfo, MapTimerTable & timerTable )
 {
-    TRACE_SCOPE(areg_component_private_posix_TimerManager__createSystemTimer);
+    TRACE_SCOPE(areg_component_private_posix_TimerManager__systemTimerStart);
 
     bool result = false;
     TimerPosix * posixTimer   = reinterpret_cast<TimerPosix *>(timerInfo.getHandle());
@@ -78,7 +78,7 @@ bool TimerManager::_createSystemTimer( TimerInfo & timerInfo, MapTimerTable & ti
             if (posixTimer->startTimer(*whichTimer) == false)
             {
                 TRACE_ERR( "System Failed to start timer in period [ %d ] ms, timer name [ %s ]. System Error [ %p ]"
-                                , whichTimer->getFireTime( )
+                                , whichTimer->getTimeout( )
                                 , whichTimer->getName( ).getString()
                                 , static_cast<id_type>(errno) );
 
@@ -121,7 +121,7 @@ void TimerManager::_defaultPosixTimerExpiredRoutine( union sigval argSig )
     if ((timer != nullptr) && (posixTimer->isValid()))
     {
         TRACE_DBG("Timer [ %s ] expired at [ %u ] sec and [ %u ] ns, going to notify thread [ %u ]"
-                        , posixTimer->mContext->getName().getString()
+                        , reinterpret_cast<Timer *>(posixTimer)->mContext->getName().getString()
                         , posixTimer->getDueTime().tv_sec
                         , posixTimer->getDueTime().tv_nsec
                         , static_cast<unsigned int>(posixTimer->mThreadId));
@@ -129,7 +129,7 @@ void TimerManager::_defaultPosixTimerExpiredRoutine( union sigval argSig )
         unsigned int highValue  = static_cast<unsigned int>(posixTimer->mDueTime.tv_sec );
         unsigned int lowValue   = static_cast<unsigned int>(posixTimer->mDueTime.tv_nsec);
         posixTimer->timerExpired();
-        TimerManager::getInstance()._timerExpired(posixTimer->mContext, highValue, lowValue);
+        TimerManager::getInstance()._timerExpired(reinterpret_cast<Timer*>(posixTimer)->mContext, highValue, lowValue);
     }
     else
     {
