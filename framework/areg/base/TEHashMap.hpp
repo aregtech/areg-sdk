@@ -647,7 +647,7 @@ inline std::pair<typename TEHashMap<KEY, VALUE>::MAPPOS, bool> TEHashMap<KEY, VA
 template < typename KEY, typename VALUE >
 inline typename TEHashMap<KEY, VALUE>::MAPPOS TEHashMap<KEY, VALUE>::updateAt(const KEY & Key, const VALUE & newValue)
 {
-    MAPPOS pos = mValueList.find(Key);
+    MAPPOS pos = mValueList.empty() ? invalidPosition() : mValueList.find(Key);
     if (pos != mValueList.end())
     {
         pos->second = newValue;
@@ -660,11 +660,14 @@ template < typename KEY, typename VALUE >
 inline bool TEHashMap<KEY, VALUE>::removeAt(const KEY& Key)
 {
     bool result = false;
-    MAPPOS pos = mValueList.find(Key);
-    if (pos != mValueList.end())
+    if (mValueList.empty() == false)
     {
-        result = true;
-        mValueList.erase(pos);
+        MAPPOS pos = mValueList.find(Key);
+        if (pos != mValueList.end())
+        {
+            result = true;
+            mValueList.erase(pos);
+        }
     }
 
     return result;
@@ -674,12 +677,15 @@ template < typename KEY, typename VALUE >
 inline bool TEHashMap<KEY, VALUE>::removeAt(const KEY & Key, VALUE& out_Value)
 {
     bool result = false;
-    MAPPOS pos = mValueList.find(Key);
-    if (pos != mValueList.end())
+    if (mValueList.empty() == false)
     {
-        result = true;
-        out_Value = pos->second;
-        mValueList.erase(pos);
+        MAPPOS pos = mValueList.find(Key);
+        if (pos != mValueList.end())
+        {
+            result = true;
+            out_Value = pos->second;
+            mValueList.erase(pos);
+        }
     }
 
     return result;

@@ -28,7 +28,7 @@
     #pragma comment(lib, "areg.lib")
 #endif // WINDOWS
 
-constexpr unsigned int TIMEOUT_APPLICATION  = Timer::TIMEOUT_1_SEC * 5;
+constexpr unsigned int TIMEOUT_APPLICATION{ NECommon::TIMEOUT_1_SEC * 5 };
 
 //////////////////////////////////////////////////////////////////////////
 // TimerDispatcher class declaration
@@ -44,9 +44,9 @@ constexpr unsigned int TIMEOUT_APPLICATION  = Timer::TIMEOUT_1_SEC * 5;
 class TimerDispatcher   : public    DispatcherThread
                         , private   IETimerConsumer
 {
-    static constexpr unsigned int TIMEOUT_ONE_TIME          = Timer::TIMEOUT_1_MS * 500;//!< The timeout in milliseconds of one time timer
-    static constexpr unsigned int TIMEOUT_PERIODIC_TIME     = Timer::TIMEOUT_1_MS * 80; //!< The timeout in milliseconds of periodic timer
-    static constexpr unsigned int TIMEOUT_CONTINUOUS_TIME   = Timer::TIMEOUT_1_MS * 50; //!< The timeout in milliseconds of continues timer
+    static constexpr unsigned int TIMEOUT_ONE_TIME          { NECommon::TIMEOUT_1_MS * 500 }; //!< The timeout in milliseconds of one time timer
+    static constexpr unsigned int TIMEOUT_PERIODIC_TIME     { NECommon::TIMEOUT_1_MS * 80  }; //!< The timeout in milliseconds of periodic timer
+    static constexpr unsigned int TIMEOUT_CONTINUOUS_TIME   { NECommon::TIMEOUT_1_MS * 50  }; //!< The timeout in milliseconds of continues timer
 
 public:
 

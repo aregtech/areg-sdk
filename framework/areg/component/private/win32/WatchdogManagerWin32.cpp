@@ -29,11 +29,13 @@
  //  Windows OS specific methods
  //////////////////////////////////////////////////////////////////////////
 
-void WatchdogManager::_systemTimerStop(const Watchdog& watchdog)
+void WatchdogManager::_systemTimerStop(TIMERHANDLE handle)
 {
 
-    ASSERT(watchdog.getHandle() != nullptr);
-    ::CancelWaitableTimer(static_cast<HANDLE>(watchdog.getHandle()));
+    if (handle != nullptr)
+    {
+        ::CancelWaitableTimer(handle);
+    }
 }
 
 bool WatchdogManager::_systemTimerStart(Watchdog& watchdog)
@@ -76,8 +78,14 @@ bool WatchdogManager::_systemTimerStart(Watchdog& watchdog)
 void WatchdogManager::_defaultWindowsWatchdogExpiredRoutine(void* argPtr, unsigned long lowValue, unsigned long highValue)
 {
     ASSERT(argPtr != nullptr);
+    WatchdogManager& watchdogManager = WatchdogManager::getInstance();
     Watchdog::WATCHDOG_ID watchdogId = reinterpret_cast<Watchdog::WATCHDOG_ID>(argPtr);
-    WatchdogManager::getInstance()._timerExpired(watchdogId, highValue, lowValue);
+    Watchdog::GUARD_ID guardId = Watchdog::makeGuardId(watchdogId);
+    Watchdog* watchdog = watchdogManager.mWatchdogResource.findResourceObject(guardId);
+    if (watchdog != nullptr)
+    {
+        watchdogManager._processExpiredTimer(watchdog, watchdogId, highValue, lowValue);
+    }
 }
 
 #endif // _WINDOWS

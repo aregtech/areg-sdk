@@ -160,7 +160,8 @@ BOOL DistributedDialog::OnInitDialog()
     mCaption = mCaptionInit;
     SetTitle(mCaption);
 
-    Application::initApplication( true, true, false, true );
+    // Initialize application, enable logging, servicing, timer and watchdog.
+    Application::initApplication( true, true, false, true, true );
 
     SetActivePage(&mPageConnections);
     SetActivePage(&mPageMessaging);

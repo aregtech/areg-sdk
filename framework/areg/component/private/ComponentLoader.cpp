@@ -120,11 +120,11 @@ const NERegistry::ComponentEntry& ComponentLoader::findComponentEntry( const Str
     ComponentLoader & loader = ComponentLoader::getInstance();
     Lock lock(loader.mLock);
 
-    for (uint32_t i = 0; result == nullptr && i < loader.mModelList.getSize(); ++ i )
+    for (uint32_t i = 0; (result == nullptr) && (i < loader.mModelList.getSize()); ++ i )
     {
         const NERegistry::ComponentThreadList & threadList = loader.mModelList.getAt(i).getThreadList();
 
-        for (uint32_t j = 0; result == nullptr && j < threadList.mListThreads.getSize(); ++ j )
+        for (uint32_t j = 0; (result == nullptr) && (j < threadList.mListThreads.getSize()); ++ j )
         {
             const NERegistry::ComponentThreadEntry & threadEntry = threadList.mListThreads.getAt(j);
             for (uint32_t k = 0; k < threadEntry.mComponents.mListComponents.getSize(); ++k)
@@ -139,6 +139,30 @@ const NERegistry::ComponentEntry& ComponentLoader::findComponentEntry( const Str
     }
 
     return (result != nullptr ? *result : NERegistry::INVALID_COMPONENT_ENTRY);
+}
+
+const NERegistry::ComponentThreadEntry& ComponentLoader::findThreadEntry(const String& threadName)
+{
+    const NERegistry::ComponentThreadEntry* result = nullptr;
+    ComponentLoader& loader = ComponentLoader::getInstance();
+    Lock lock(loader.mLock);
+
+    for (uint32_t i = 0; (result == nullptr) && (i < loader.mModelList.getSize()); ++i)
+    {
+        const NERegistry::ComponentThreadList& threadList = loader.mModelList.getAt(i).getThreadList();
+
+        for (uint32_t j = 0; j < threadList.mListThreads.getSize(); ++j)
+        {
+            const NERegistry::ComponentThreadEntry& threadEntry = threadList.mListThreads.getAt(j);
+            if (threadEntry.mThreadName == threadName)
+            {
+                result = &threadEntry;
+                break;
+            }
+        }
+    }
+
+    return (result != nullptr ? *result : NERegistry::INVALID_THREAD_ENTRY);
 }
 
 bool ComponentLoader::isModelLoaded( const String & modelName )
@@ -383,7 +407,7 @@ bool ComponentLoader::loadModel( NERegistry::Model & whichModel ) const
             const NERegistry::ComponentThreadEntry& entry = thrList.mListThreads[i];
             if ( entry.isValid( ) && Thread::findThreadByName( entry.mThreadName ) == nullptr )
             {
-                ComponentThread* thrObject = DEBUG_NEW ComponentThread( entry.mThreadName );
+                ComponentThread* thrObject = DEBUG_NEW ComponentThread( entry.mThreadName, entry.mWatchdogTimeout );
                 if ( thrObject != nullptr )
                 {
                     OUTPUT_DBG( "Starting thread [ %s ] and loading components.", thrObject->getName( ).getString( ) );

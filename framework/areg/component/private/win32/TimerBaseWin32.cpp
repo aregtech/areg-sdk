@@ -7,58 +7,58 @@
  * If not, please contact to info[at]aregtech.com
  *
  * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
- * \file        areg/component/private/Watchdog.cpp
+ * \file        areg/component/private/win32/TimerBaseWin32.cpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit
  * \author      Artak Avetyan
- * \brief       AREG Platform, Thread watchdog object implementation.
+ * \brief       AREG Platform, Timer base class implementation.
  *              Windows OS specific implementation.
  *
  ************************************************************************/
 
-#include "areg/component/private/Watchdog.hpp"
+#include "areg/component/TimerBase.hpp"
 
 #ifdef  _WINDOWS
 
-#include "areg/base/String.hpp"
-
 #include <windows.h>
 
-TIMERHANDLE Watchdog::_createWaitableTimer(const Watchdog& watchdog)
+bool TimerBase::createWaitableTimer()
 {
-    TIMERHANDLE result = nullptr;
+    Lock lock(mLock);
 
-    if ((watchdog.getTimeout() != Watchdog::NO_WATCHDOG))
+    if ((mHandle == nullptr) && (mTimeoutInMs != NECommon::INVALID_TIMEOUT))
     {
         TCHAR* name = nullptr;
         TCHAR convertName[MAX_PATH];
 
-        const String& timerName = watchdog.getName();
-
-        if (timerName.isEmpty() == false)
+        if (mName.isEmpty() == false)
         {
-            NEString::copyString<TCHAR, char>(convertName, MAX_PATH, timerName.getString(), timerName.getLength());
+            NEString::copyString<TCHAR, char>(convertName, MAX_PATH, mName.getString(), mName.getLength());
             name = convertName;
         }
 
-        result = static_cast<TIMERHANDLE>(::CreateWaitableTimer(nullptr, FALSE, name));
+        mHandle = static_cast<TIMERHANDLE>(::CreateWaitableTimer(nullptr, FALSE, name));
 
 #ifdef _DEBUG
-        if (result == nullptr)
+        if (mHandle == nullptr)
         {
             OUTPUT_ERR("Failed creating timer [ %s ], the system error code is [ 0xp ]", timerName.getString(), GetLastError());
         }
 #endif // _DEBUG
     }
 
-    return result;
+    return (mHandle != nullptr);
 }
 
-void Watchdog::_destroyWaitableTimer(const Watchdog& watchdog)
+void TimerBase::destroyWaitableTimer( void )
 {
-    if (watchdog.getHandle() != nullptr)
+    Lock lock(mLock);
+
+    TIMERHANDLE handle  = mHandle;
+    mHandle = nullptr;
+    if (handle != nullptr)
     {
-        ::CancelWaitableTimer(static_cast<HANDLE>(watchdog.getHandle()));
-        ::CloseHandle(static_cast<HANDLE>(watchdog.getHandle()));
+        ::CancelWaitableTimer(static_cast<HANDLE>(handle));
+        ::CloseHandle(static_cast<HANDLE>(handle));
     }
 }
 

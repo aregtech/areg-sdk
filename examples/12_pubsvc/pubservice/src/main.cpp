@@ -34,7 +34,7 @@ constexpr char const _modelName[]  { "ServiceModel" };   //!< The name of model
 BEGIN_MODEL(_modelName)
 
     // define component thread
-    BEGIN_REGISTER_THREAD( "TestServiceThread" )
+    BEGIN_REGISTER_THREAD( "TestServiceThread", NECommon::INVALID_TIMEOUT)
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
         BEGIN_REGISTER_COMPONENT( NECommon::ServiceHelloName, ServicingComponent )
             // register HelloWorld service implementation.
@@ -61,8 +61,9 @@ int main()
 
     // force to start logging with default settings
     TRACER_CONFIGURE_AND_START( nullptr );
-    // Initialize application, enable logging, servicing and the timer.
-    Application::initApplication(true, true, true, true, nullptr, nullptr );
+    // Initialize application, enable logging, servicing, routing, timer and watchdog.
+    // Use default settings.
+    Application::initApplication( );
 
     do 
     {

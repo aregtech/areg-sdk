@@ -354,7 +354,7 @@ namespace NERegistry
         /**
          * \brief   Creates invalid Worker Thread Entry.
          **/
-        WorkerThreadEntry( void ) = default;
+        WorkerThreadEntry( void );
 
         /**
          * \brief   Initialize Worker Thread Entry by given name and specifying the name of Master Thread.
@@ -367,8 +367,13 @@ namespace NERegistry
          * \param   workerThreadName    The name of Worker Thread of Component. The name should be unique.
          * \param   compRoleName        The name of Component (Role Name) where consumer is registered.
          * \param   compConsumerName    The name of Consumer object to configure, it should not be same as Component name.
+         * \param   watchdogTimeout     The timeout in milliseconds to set for watchdog. The value 0 ignores watchdog.
          **/
-        WorkerThreadEntry( const String & masterThreadName, const String & workerThreadName, const String & compRoleName, const String & compConsumerName );
+        WorkerThreadEntry( const String & masterThreadName
+                         , const String & workerThreadName
+                         , const String & compRoleName
+                         , const String & compConsumerName
+                         , const uint32_t watchdogTimeout = NECommon::INVALID_TIMEOUT);
 
         /**
          * \brief   Copies /move entries from source.
@@ -416,11 +421,15 @@ namespace NERegistry
         /**
          * \brief   The name of Worker Thread
          **/
-        String mThreadName;
+        String      mThreadName;
         /**
          * \brief   The name of Worker Thread Consumer.
          **/
-        String mConsumerName;
+        String      mConsumerName;
+        /**
+         * \brief   The watchdog timeout in milliseconds.
+         **/
+        uint32_t    mWatchdogTimeout;
    };
 
     //////////////////////////////////////////////////////////////////////////
@@ -1301,20 +1310,24 @@ namespace NERegistry
         /**
          * \brief   Creates invalid Thread Entry.
          **/
-        ComponentThreadEntry( void ) = default;
+        ComponentThreadEntry( void );
 
         /**
          * \brief   Initialize Thread Entry with given Thread Name.
          * \param   threadName  The Thread Name to assign.
+         * \param   watchdogTimeout     The watchdog timeout in milliseconds to guard component thread.
+         *                              The value 0 (NECommon::INVALID_TIMEOUT) ignores watchdog.
          **/
-        explicit ComponentThreadEntry( const String & threadName );
+        explicit ComponentThreadEntry( const String & threadName, const uint32_t watchdogTimeout = NECommon::INVALID_TIMEOUT );
 
         /**
          * \brief   Initialize Thread Entry with given Thread Name and given Component List.
          * \param   threadName      The Thread Name to assign.
          * \param   componentList   The List of Component Entries to assign.
+         * \param   watchdogTimeout     The watchdog timeout in milliseconds to guard component thread.
+         *                              The value 0 (NECommon::INVALID_TIMEOUT) ignores watchdog.
          **/
-        ComponentThreadEntry( const String & threadName, const NERegistry::ComponentList & componentList );
+        ComponentThreadEntry( const String & threadName, const NERegistry::ComponentList & componentList, const uint32_t watchdogTimeout = NECommon::INVALID_TIMEOUT);
 
         /**
          * \brief   Copies data from given source.
@@ -1466,6 +1479,11 @@ namespace NERegistry
          * \brief   List of component entries
          **/
         ComponentList   mComponents;
+
+        /**
+         * \brief   The watchdog timeout in milliseconds.
+         **/
+        uint32_t        mWatchdogTimeout;
     };
 
     //////////////////////////////////////////////////////////////////////////

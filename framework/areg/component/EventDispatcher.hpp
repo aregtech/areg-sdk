@@ -43,7 +43,7 @@ class AREG_API EventDispatcher  : public    EventDispatcherBase
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
-public:
+protected:
     /**
      * \brief   Initialization constructor.
      * \param   name    The name of Event Dispatcher
@@ -129,7 +129,7 @@ private:
      *          The pointer is set after thread has been created and reset
      *          when it is destroyed.
      **/
-    DispatcherThread *    mDispatcherThread;
+    DispatcherThread *  mDispatcherThread;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden / Forbidden method calls.

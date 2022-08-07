@@ -67,11 +67,13 @@
  *          Declare as many component thread, as needed for application.
  *
  * \param   thread_name The name of component thread, which should be unique.
+ * \param   timeout             The watchdog timeout in milliseconds of the worker thread.
+ *                              The value 0 (NECommon::INVALID_TIMEOUT) ignores the watchdog
  **/
-#define BEGIN_REGISTER_THREAD(thread_name)                                                                      \
+#define BEGIN_REGISTER_THREAD(thread_name, timeout)                                                             \
         {                                                                                                       \
             /*  Begin registering component thread                                  */                          \
-            NERegistry::ComponentThreadEntry  thrEntry((thread_name));
+            NERegistry::ComponentThreadEntry  thrEntry((thread_name), (timeout));
 
 #define END_REGISTER_THREAD(thread_name)                                                                        \
             /*  End registering component thread, add to model                      */                          \
@@ -164,13 +166,16 @@
  * \param   worker_thread_name  The name of worker thread.
  * \param   consumer_name       The consumer name of worker thread. Differentiate consumer
  *                              names if one component has more than one worker thread.
+ * \param   timeout             The watchdog timeout in milliseconds of the worker thread.
+ *                              The value 0 (NECommon::INVALID_TIMEOUT) ignores the watchdog
  **/
-#define REGISTER_WORKER_THREAD(worker_thread_name, consumer_name)                                               \
+#define REGISTER_WORKER_THREAD(worker_thread_name, consumer_name, timeout)                                      \
                 /*  Register component worker thread                                */                          \
                 comEntry.addWorkerThread(     NERegistry::WorkerThreadEntry(comEntry.mThreadName.getString()    \
                                             , (worker_thread_name)                                              \
                                             , comEntry.mRoleName.getString()                                    \
-                                            , (consumer_name))  );
+                                            , (consumer_name)                                                   \
+                                            , (timeout))  );
 
 /**
  * \brief   Declare and register component dependency. Optional.
@@ -230,7 +235,7 @@
  *
  *  BEGIN_MODEL("test_model")
  *  
- *      BEGIN_REGISTER_THREAD("test_thread")
+ *      BEGIN_REGISTER_THREAD("test_thread", 0)
  *
  *          BEGIN_REGISTER_COMPONENT_EX("test_component", TestCompLoad, TestCompUnload)
  *              REGISTER_IMPLEMENT_SERVICE("test_service_1", Version(1, 0, 0))
@@ -240,13 +245,13 @@
  *          BEGIN_REGISTER_COMPONENT_EX("another_component", AnotherCompLoad, AnotherCompUnload)
  *              REGISTER_IMPLEMENT_SERVICE("another_service_1", Version(1, 0, 0))
  *              REGISTER_IMPLEMENT_SERVICE("another_service_2", Version(1, 0, 0))
- *              REGISTER_WORKER_THREAD("another_worker_thread", "consumer_name")
+ *              REGISTER_WORKER_THREAD("another_worker_thread", "consumer_name", , NECommon::INVALID_TIMEOUT)
  *              REGISTER_DEPENDENCY("secondary_component")
  *          END_REGISTER_COMPONENT("another_component")
  *
  *      END_REGISTER_THREAD("text_thread")
  *
- *      BEGIN_REGISTER_THREAD("secondary_thread")
+ *      BEGIN_REGISTER_THREAD("secondary_thread", NECommon::INVALID_TIMEOUT)
  *
  *          BEGIN_REGISTER_COMPONENT_EX("secondary_component", SecondaryCompLoad, SecondaryCompUnload)
  *              REGISTER_IMPLEMENT_SERVICE("secondary_service_1", Version(1, 0, 0))
@@ -435,6 +440,13 @@ public:
      * \param   roleName    The role name of registered component to lookup
      **/
     static const NERegistry::ComponentEntry & findComponentEntry(const String & roleName);
+
+    /**
+     * \brief   Returns registered component thread entry object having specified thread name.
+     *          The component thread entry is searched in the complete Model list.
+     * \param   threadName  The name of the component thread name to search.
+     **/
+    static const NERegistry::ComponentThreadEntry & findThreadEntry( const String & threadName );
 
     /**
      * \brief   Returns true, if Model with specified name is already registered and loaded.

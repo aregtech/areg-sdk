@@ -97,8 +97,9 @@ int main()
 
     printf("\n...........................................\n");
 
-    // Initialize application, disable logging, enables servicing and the timer.
-    Application::initApplication(false, true, true, true, nullptr, nullptr );
+    // Initialize application, enable logging, servicing, routing, timer and watchdog.
+    // Use default settings.
+    Application::initApplication( );
 
     // Create model manually during run-time.
     NERegistry::Model model(_modelName);

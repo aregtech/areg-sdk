@@ -42,7 +42,7 @@ constexpr char const _threadName[] { "TestSimpleTrafficThread" };	// The name of
 BEGIN_MODEL(_modelName)
 
     // define component thread
-    BEGIN_REGISTER_THREAD( _threadName )
+    BEGIN_REGISTER_THREAD( _threadName, NECommon::INVALID_TIMEOUT)
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
         BEGIN_REGISTER_COMPONENT( NECommon::SimpleLightControllerName, TrafficLightService )
             // register SimpleTrafficLight and SimpleTrafficSwitch service implementation.
@@ -65,8 +65,8 @@ END_MODEL(_modelName)
  **/
 int main()
 {
-    // Initialize application, disable logging, enables servicing and the timer.
-    Application::initApplication(false, true, true, true, nullptr, nullptr );
+    // Initialize application, enable servicing, routing, timer and watchdog.
+    Application::initApplication(false, true, true, true, true, nullptr, nullptr );
 
 
     // load model to initialize components

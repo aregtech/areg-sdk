@@ -15,13 +15,16 @@
  ************************************************************************/
 #include "areg/component/private/ServiceManager.hpp"
 
+#include "areg/base/Process.hpp"
+#include "areg/component/ComponentLoader.hpp"
+#include "areg/component/ComponentThread.hpp"
+#include "areg/component/NERegistry.hpp"
 #include "areg/component/ProxyAddress.hpp"
 #include "areg/component/StubAddress.hpp"
 #include "areg/component/ServiceRequestEvent.hpp"
 #include "areg/component/ServiceResponseEvent.hpp"
 #include "areg/component/private/ProxyConnectEvent.hpp"
 #include "areg/component/private/StubConnectEvent.hpp"
-#include "areg/base/Process.hpp"
 
 #include "areg/trace/GETrace.h"
 
@@ -34,10 +37,13 @@ DEF_TRACE_SCOPE(areg_component_private_ServiceManager__registerClient);
 DEF_TRACE_SCOPE(areg_component_private_ServiceManager__unregisterClient);
 DEF_TRACE_SCOPE(areg_component_private_ServiceManager__sendClientConnectedEvent);
 DEF_TRACE_SCOPE(areg_component_private_ServiceManager__sendClientDisconnectedEvent);
+DEF_TRACE_SCOPE(areg_component_private_ServiceManager__terminateComponentThread);
+DEF_TRACE_SCOPE(areg_component_private_ServiceManager__startComponentThread);
 DEF_TRACE_SCOPE(areg_component_private_ServiceManager_requestRegisterServer);
 DEF_TRACE_SCOPE(areg_component_private_ServiceManager_requestUnregisterServer);
 DEF_TRACE_SCOPE(areg_component_private_ServiceManager_requestRegisterClient);
 DEF_TRACE_SCOPE(areg_component_private_ServiceManager_requestUnregisterClient);
+DEF_TRACE_SCOPE(areg_component_private_ServiceManager_requestRecreateThread);
 DEF_TRACE_SCOPE(areg_component_private_ServiceManager_getServiceList);
 
 namespace
@@ -146,6 +152,17 @@ void ServiceManager::requestUnregisterClient( const ProxyAddress & whichClient )
                                   , static_cast<DispatcherThread &>(serviceManager));
 }
 
+void ServiceManager::requestRecreateThread(const ComponentThread& whichThread)
+{
+    TRACE_SCOPE(areg_component_private_ServiceManager_requestRecreateThread);
+    TRACE_DBG("Request to re-create component thread [ %s ]", whichThread.getName().getString());
+
+    ServiceManager & serviceManager = ServiceManager::getInstance();
+    ServiceManagerEvent::sendEvent(ServiceManagerEventData::terminateComponentThread(whichThread.getName())
+                                  , static_cast<IEServiceManagerEventConsumer &>(serviceManager)
+                                  , static_cast<DispatcherThread &>(serviceManager));
+}
+
 bool ServiceManager::_routingServiceConfigure( const String & configFile /*= String::EmptyString*/ )
 {
     ServiceManager & serviceManager = ServiceManager::getInstance();
@@ -204,6 +221,14 @@ bool ServiceManager::_isRoutingServiceConfigured(void)
 bool ServiceManager::_isRoutingServiceEnabled(void)
 {
     return ServiceManager::getInstance().mConnectService.isRemoteServicingEnabled();
+}
+
+void ServiceManager::_requestCreateThread(const String& componentThread)
+{
+    ServiceManager& serviceManager = ServiceManager::getInstance();
+    ServiceManagerEvent::sendEvent( ServiceManagerEventData::createComponentThread(componentThread)
+                                  , static_cast<IEServiceManagerEventConsumer&>(serviceManager)
+                                  , static_cast<DispatcherThread&>(serviceManager) );
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -605,7 +630,25 @@ void ServiceManager::processEvent( const ServiceManagerEventData & data )
                 _unregisterClient(proxyList[i]);
             }
         }
+        break;
 
+    case ServiceManagerEventData::eServiceManagerCommands::CMD_TerminateComponentThread:
+        {
+            String threadName;
+            stream >> threadName;
+            if (_terminateComponentThread(threadName))
+            {
+                ServiceManager::_requestCreateThread(threadName);
+            }
+        }
+        break;
+
+    case ServiceManagerEventData::eServiceManagerCommands::CMD_StartComponentThread:
+        {
+            String threadName;
+            stream >> threadName;
+            _startComponentThread(threadName);
+        }
         break;
 
     default:
@@ -665,12 +708,58 @@ bool ServiceManager::_startServiceManagerThread( void )
 
 void ServiceManager::_stopServiceManagerThread( void )
 {
-    // ServiceManagerEvent::sendEvent(ServiceManagerEventData::stopMessageRouterClient(), static_cast<IEServiceManagerEventConsumer &>(self()), static_cast<DispatcherThread &>(self()));
     ServiceManagerEvent::sendEvent( ServiceManagerEventData::shutdownServiceManager()
                                   , static_cast<IEServiceManagerEventConsumer &>(self())
                                   , static_cast<DispatcherThread &>(self()));
     completionWait( NECommon::WAIT_INFINITE );
 }
+
+bool ServiceManager::_terminateComponentThread(const String& threadName)
+{
+    TRACE_SCOPE(areg_component_private_ServiceManager__terminateComponentThread);
+    
+    bool result{ false };
+
+    Thread * thread = Thread::findThreadByName(threadName);
+    ComponentThread* compThread = RUNTIME_CAST(thread, ComponentThread);
+    if (compThread != nullptr)
+    {
+        TRACE_WARN("Terminating component thread [ %s ]", compThread->getName().getString());
+        result = true;
+        compThread->terminateSelf();
+    }
+    else
+    {
+        TRACE_INFO("Was not able to find component thread [ %s ] to terminate", threadName.getString());
+    }
+
+    return result;
+}
+
+inline void ServiceManager::_startComponentThread(const String& threadName)
+{
+    TRACE_SCOPE(areg_component_private_ServiceManager__startComponentThread);
+
+    const NERegistry::ComponentThreadEntry& entry = ComponentLoader::findThreadEntry(threadName);
+    Thread* thread = Thread::findThreadByName(threadName);
+    if (entry.isValid() && (thread == nullptr))
+    {
+        ComponentThread* compThread = DEBUG_NEW ComponentThread(entry.mThreadName, entry.mWatchdogTimeout);
+        if ((compThread != nullptr) && (compThread->createThread(NECommon::WAIT_INFINITE) == false))
+        {
+            TRACE_DBG("Succeeded to create and start component thread [ %s ]", threadName.getString());
+        }
+        else
+        {
+            TRACE_WARN("Failed to create and start component thread [ %s ]", threadName.getString());
+        }
+    }
+    else
+    {
+        TRACE_ERR("The thread [ %s ] is registered in the system, ignoring to create seconds instance of the thread", threadName.getString());
+    }
+}
+
 
 void ServiceManager::getServiceList( ITEM_ID cookie, TEArrayList<StubAddress> & OUT out_listStubs, TEArrayList<ProxyAddress> & OUT out_lisProxies ) const
 {

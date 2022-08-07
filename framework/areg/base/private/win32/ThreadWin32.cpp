@@ -114,7 +114,7 @@ Thread::eCompletionStatus Thread::destroyThread(unsigned int waitForStopMs /* = 
             //              and see the point where the thread is suspended
             //////////////////////////////////////////////////////////////////////////
             ::SuspendThread(handle);
-            ASSERT(false);  // <== rais assertion
+            ASSERT(false);  // <== raise assertion
             ::ResumeThread(handle);
             //////////////////////////////////////////////////////////////////////////
             //

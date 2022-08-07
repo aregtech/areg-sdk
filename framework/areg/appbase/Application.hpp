@@ -82,6 +82,7 @@ public:
      * \param   startServicing      If true, application starts Service Manager. This parameter is ignored if 'startRouting' is true.
      * \param   startRouting        If true, application starts multi-cast router client and Service Manager (if not started).
      * \param   startTimer          If true, application starts timer manager. If Service Managers, Timer Manager automatically starts.
+     * \param   startWatchdog       If true, application starts watchdog manager, so that it can track the component threads.
      * \param   fileTraceConfig     If nullptr or empty, configures Tracing from specified file. Default location is './config/log.init' (NEApplication::DEFAULT_TRACING_CONFIG_FILE)
      * \param   fileRouterConfig    If nullptr or empty, configures  Router client from specified file. Default location is './config/router.init' (NEApplication::DEFAULT_ROUTER_CONFIG_FILE).
      * \see     release, loadModel
@@ -92,7 +93,7 @@ public:
      *          Application::initApplication();
      *
      *          // In this example, start all services and configuration files from user home folder:
-     *          Application::initApplication(true, true, true, true, "%user%/log.init", "%user%/mcrouter.init");
+     *          Application::initApplication(true, true, true, true, true, "%user%/log.init", "%user%/mcrouter.init");
      *
      *          // In this example, start all services, even if Service Manager marked 'false', because
      *          // routing requires to start Service Manager first. Read configuration files from default location:
@@ -100,12 +101,13 @@ public:
      *
      *          // In this example start no service, only make configuration of system, read configuration files from
      *          // user home folder.The services can start later:
-     *          Application::initApplication(false, false, false, false, "%user%/log.init", "%user%/connect.init");
+     *          Application::initApplication(false, false, false, false, false, "%user%/log.init", "%user%/connect.init");
      **/
     static void initApplication(  bool startTracing   = true
                                 , bool startServicing = true
                                 , bool startRouting   = true
                                 , bool startTimer     = true
+                                , bool startWatchdog  = true
                                 , const char * fileTraceConfig = NEApplication::DEFAULT_TRACING_CONFIG_FILE.data()
                                 , const char * fileRouterConfig= NEApplication::DEFAULT_ROUTER_CONFIG_FILE.data() );
 
@@ -232,6 +234,17 @@ public:
     static void stopTimerManager( void );
 
     /**
+     * \brief   Call to start timer manager, so that the components can trigger timers.
+     * \return  Returns true if timer manager is running.
+     **/
+    static bool startWatchdogManager(void);
+
+    /**
+     * \brief   Call to stop timer manager.
+     **/
+    static void stopWatchdogManager(void);
+
+    /**
      * \brief   Returns true, if Message Router client is started.
      **/
     static bool isServiceManagerStarted( void );
@@ -302,20 +315,6 @@ public:
     static bool isRouterConnected( void );
 
     /**
-     * \brief   Returns true, if it was requested to start tracer.
-     *          The tracer starts if any model requests to start it.
-     *          Then the flag remains unchanged even if any model requests do not start the tracer.
-     **/
-    inline static bool startTracerRequested( void );
-
-    /**
-     * \brief   Returns true, if it was requested to start Router Service.
-     *          The Router Service starts if any model requests to start if.
-     *          Then the flag remains unchanged even if any model requests do not start the Router Service.
-     **/
-    inline static bool startServiceManagerRequested( void );
-
-    /**
      * \brief   Returns the config file name of tracer.
      *          The config file is setup once when any module first requests to setup tracer.
      **/
@@ -377,25 +376,9 @@ private:
      */
     bool            mSetup;
     /**
-     * \brief   Requested to start tracer
-     **/
-    bool            mStartTracer;
-    /**
      * \brief   The config file name of Tracer
      **/
     String          mConfigTracer;
-    /**
-     * \brief   Requested to start service manager.
-     **/
-    bool            mStartService;
-    /**
-     * \brief   Requested to start timer manager.
-     **/
-    bool            mStartTimer;
-    /**
-     * \brief   Requested to start Router Service client. THe service manager should start fits.
-     **/
-    bool            mStartRouting;
     /**
      * \brief   The config file name of Router Service
      **/
@@ -470,15 +453,6 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // Application class inline methods.
 //////////////////////////////////////////////////////////////////////////
-inline bool Application::startTracerRequested( void )
-{
-    return Application::getInstance().mStartTracer;
-}
-
-inline bool Application::startServiceManagerRequested( void )
-{
-    return Application::getInstance().mStartService;
-}
 
 inline const char * Application::getTracerConfigFile( void )
 {

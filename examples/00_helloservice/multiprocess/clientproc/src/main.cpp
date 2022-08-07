@@ -33,7 +33,7 @@ const std::string   _client( NEUtilities::generateName("ServiceClient").getStrin
 // Describe model, register the service consumer (client)
 BEGIN_MODEL(_modelName)
 
-    BEGIN_REGISTER_THREAD( "Thread1" )
+    BEGIN_REGISTER_THREAD( "Thread1", NECommon::INVALID_TIMEOUT )
         BEGIN_REGISTER_COMPONENT( _client.c_str(), ClientComponent )
             REGISTER_DEPENDENCY( _service ) /* reference to the service*/
         END_REGISTER_COMPONENT( _client )
@@ -48,8 +48,9 @@ END_MODEL(_modelName)
 
 int main( void )
 {
-    // Initialize application, enable logging, servicing and the timer.
-    Application::initApplication(true, true, true, true, nullptr, nullptr );
+    // Initialize application, enable logging, servicing, routing, timer and watchdog.
+    // Use default settings.
+    Application::initApplication( );
 
     // load model to initialize components
     Application::loadModel(_modelName);

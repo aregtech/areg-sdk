@@ -7,15 +7,11 @@
  * If not, please contact to info[at]aregtech.com
  *
  * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
- * \file        areg/component/private/TimerManagingEvent.cpp
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
+ * \file        areg/component/private/TimerManagerEvent.cpp
+ * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit
  * \author      Artak Avetyan
  * \brief       AREG Platform. Event Class to manage Timer
  *
  ************************************************************************/
-#include "areg/component/private/TimerManagingEvent.hpp"
 
-//////////////////////////////////////////////////////////////////////////
-// TimerManagingEventData class implementation
-//////////////////////////////////////////////////////////////////////////
-
+#include "areg/component/private/TimerManagerEvent.hpp"

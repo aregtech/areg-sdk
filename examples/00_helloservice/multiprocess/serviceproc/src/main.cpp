@@ -30,7 +30,7 @@ constexpr char const _service[]     { "ServiceComponent" };
 // Describe model, register the provided service in this model
 BEGIN_MODEL(_modelName)
 
-    BEGIN_REGISTER_THREAD( "Thread1" )
+    BEGIN_REGISTER_THREAD( "Thread1", NECommon::INVALID_TIMEOUT)
         BEGIN_REGISTER_COMPONENT( _service, ServiceComponent )
             REGISTER_IMPLEMENT_SERVICE( NEHelloService::ServiceName, NEHelloService::InterfaceVersion )
         END_REGISTER_COMPONENT( _service )
@@ -45,8 +45,9 @@ END_MODEL(_modelName)
 
 int main( void )
 {
-    // Initialize application, enable logging, servicing and the timer.
-    Application::initApplication(true, true, true, true, nullptr, nullptr );
+    // Initialize application, enable logging, servicing, routing, timer and watchdog.
+    // Use default settings.
+    Application::initApplication( );
 
     // load model to initialize components
     Application::loadModel(_modelName);

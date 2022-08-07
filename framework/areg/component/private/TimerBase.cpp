@@ -14,3 +14,31 @@
  *
  ************************************************************************/
 #include "areg/component/TimerBase.hpp"
+
+#include "areg/base/DateTime.hpp"
+
+unsigned int TimerBase::getTickCount(void)
+{
+    return static_cast<unsigned int>(DateTime::getSystemTickCount());
+}
+
+TimerBase::TimerBase( const eTimerType timerType
+                    , const String& timerName
+                    , unsigned int timeoutMs    /*= NECommon::INVALID_TIMEOUT*/
+                    , unsigned int eventCount   /*= TimerBase::CONTINUOUSLY*/)
+    : mTimerType    ( timerType )
+    , mHandle       ( nullptr   )
+    , mContextId    ( 0u        )
+    , mName         ( timerName )
+    , mTimeoutInMs  ( timeoutMs )
+    , mEventsCount  ( eventCount)
+    , mActive       ( false     )
+    , mLock         ( false     )
+{
+    createWaitableTimer();
+}
+
+TimerBase::~TimerBase(void)
+{
+    destroyWaitableTimer();
+}

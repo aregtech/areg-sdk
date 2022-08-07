@@ -328,7 +328,7 @@ After generating codes, the implemented services must be a part of the `Componen
 BEGIN_MODEL( "ServiceModel" )
 
     // define component thread
-    BEGIN_REGISTER_THREAD( "TestServiceThread" )
+    BEGIN_REGISTER_THREAD( "TestServiceThread", NECommon::INVALID_TIMEOUT_ )
         // define component, set role name.
         BEGIN_REGISTER_COMPONENT( NECommon::ServiceHelloName, ServiceComponent )
             // register HelloService service implementation.
@@ -353,8 +353,9 @@ int main()
 {
     printf("Testing simple remote servicing component. Run as a ultra-small Server...\n");
 
-    // Initialize application, enable logging, servicing and the timer.
-    Application::initApplication(true, true, true, true, nullptr, nullptr );
+    // Initialize application, enable logging, servicing, routing, timer and watchdog.
+    // Use default settings.
+    Application::initApplication( );
 
     do 
     {
@@ -819,7 +820,7 @@ const std::string   _client( NEUtilities::generateName("ServiceClient").getStrin
 // Describe model, register the service and the client in one thread "Thread1"
 BEGIN_MODEL(_modelName)
 
-    BEGIN_REGISTER_THREAD( "Thread1" )
+    BEGIN_REGISTER_THREAD( "Thread1", NECommon::INVALID_TIMEOUT )
         // register service in the thread
         BEGIN_REGISTER_COMPONENT( _service, ServiceComponent )
             REGISTER_IMPLEMENT_SERVICE( NEHelloService::ServiceName, NEHelloService::InterfaceVersion )
@@ -839,8 +840,9 @@ END_MODEL(_modelName)
 
 int main( void )
 {
-    // Initialize application, enable logging, servicing and the timer.
-    Application::initApplication(true, true, true, true, nullptr, nullptr );
+    // Initialize application, enable logging, servicing, routing, timer and watchdog.
+    // Use default settings.
+    Application::initApplication( );
 
     // load model to initialize components
     Application::loadModel(_modelName);
@@ -897,14 +899,14 @@ const std::string   _client( NEUtilities::generateName("ServiceClient").getStrin
 // Describe model, register the service and the client in 2 different threads "Thread1" and "Thread2"
 BEGIN_MODEL(_modelName)
     // Thread 1, provides a service
-    BEGIN_REGISTER_THREAD( "Thread1" )
+    BEGIN_REGISTER_THREAD( "Thread1", NECommon::INVALID_TIMEOUT )
         BEGIN_REGISTER_COMPONENT( _service, ServiceComponent )
             REGISTER_IMPLEMENT_SERVICE( NEHelloService::ServiceName, NEHelloService::InterfaceVersion )
         END_REGISTER_COMPONENT( _service )
     END_REGISTER_THREAD( "Thread1" )
 
     // Thread 2, is a client / service consumer.
-    BEGIN_REGISTER_THREAD( "Thread2" )
+    BEGIN_REGISTER_THREAD( "Thread2", NECommon::INVALID_TIMEOUT )
         BEGIN_REGISTER_COMPONENT( _client.c_str(), ClientComponent )
             REGISTER_DEPENDENCY( _service ) /* reference to the service*/
         END_REGISTER_COMPONENT( _client )
@@ -919,8 +921,9 @@ END_MODEL(_modelName)
 
 int main( void )
 {
-    // Initialize application, enable logging, servicing and the timer.
-    Application::initApplication(true, true, true, true, nullptr, nullptr );
+    // Initialize application, enable logging, servicing, routing, timer and watchdog.
+    // Use default settings.
+    Application::initApplication( );
 
     // load model to initialize components
     Application::loadModel(_modelName);
@@ -978,7 +981,7 @@ constexpr char const _service[]     { "ServiceComponent" };
 // Describe model, register the provided service in this model
 BEGIN_MODEL(_modelName)
 
-    BEGIN_REGISTER_THREAD( "Thread1" )
+    BEGIN_REGISTER_THREAD( "Thread1, NECommon::INVALID_TIMEOUT" )
         BEGIN_REGISTER_COMPONENT( _service, ServiceComponent )
             REGISTER_IMPLEMENT_SERVICE( NEHelloService::ServiceName, NEHelloService::InterfaceVersion )
         END_REGISTER_COMPONENT( _service )
@@ -993,8 +996,9 @@ END_MODEL(_modelName)
 
 int main( void )
 {
-    // Initialize application, enable logging, servicing and the timer.
-    Application::initApplication(true, true, true, true, nullptr, nullptr );
+    // Initialize application, enable logging, servicing, routing, timer and watchdog.
+    // Use default settings.
+    Application::initApplication( );
 
     // load model to initialize components
     Application::loadModel(_modelName);
@@ -1050,7 +1054,7 @@ const std::string   _client( NEUtilities::generateName("ServiceClient").getStrin
 // Describe model, register the service consumer (client)
 BEGIN_MODEL(_modelName)
 
-    BEGIN_REGISTER_THREAD( "Thread1" )
+    BEGIN_REGISTER_THREAD( "Thread1", NECommon::INVALID_TIMEOUT )
         BEGIN_REGISTER_COMPONENT( _client.c_str(), ClientComponent )
             REGISTER_DEPENDENCY( _service ) /* reference to the service*/
         END_REGISTER_COMPONENT( _client )
@@ -1065,8 +1069,9 @@ END_MODEL(_modelName)
 
 int main( void )
 {
-    // Initialize application, enable logging, servicing and the timer.
-    Application::initApplication(true, true, true, true, nullptr, nullptr );
+    // Initialize application, enable logging, servicing, routing, timer and watchdog.
+    // Use default settings.
+    Application::initApplication( );
 
     // load model to initialize components
     Application::loadModel(_modelName);

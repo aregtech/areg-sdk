@@ -33,13 +33,15 @@ TimerEvent::TimerEvent( const TimerEventData & data )
     : TimerEventBase(Event::eEventType::EventCustomExternal, data)
 {
     if (mData.mTimer != nullptr)
-        mData.mTimer->queueTimer();
+    {
+        mData.mTimer->_queueTimer();
+    }
 }
 
 TimerEvent::TimerEvent( Timer &timer )
     : TimerEventBase(Event::eEventType::EventCustomExternal, TimerEventData(timer))
 {
-    timer.queueTimer();
+    timer._queueTimer();
 }
 
 TimerEvent::TimerEvent(Timer & timer, DispatcherThread & target)
@@ -49,14 +51,16 @@ TimerEvent::TimerEvent(Timer & timer, DispatcherThread & target)
 
     setEventConsumer(static_cast<IEEventConsumer *>(&timer.getConsumer()));
     registerForThread(&target);
-    timer.queueTimer();
+    timer._queueTimer();
 }
 
 TimerEvent::~TimerEvent( void )
 {
     if (mData.mTimer != nullptr)
-        mData.mTimer->unqueueTimer();
-    mData.mTimer = nullptr;
+    {
+        mData.mTimer->_unqueueTimer();
+        mData.mTimer = nullptr;
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -80,7 +84,7 @@ bool TimerEvent::sendEvent(Timer & timer, DispatcherThread & dispatchThread)
         }
         else
         {
-            OUTPUT_ERR("Cound not create Timer Event. Ignoring sending event");
+            OUTPUT_ERR("Could not create Timer Event. Ignoring sending event");
         }
     }
     else

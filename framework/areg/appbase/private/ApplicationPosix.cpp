@@ -74,7 +74,7 @@ DEF_TRACE_SCOPE(areg_appbase_ApplicationPosix_handleSignalSegmentationFault);
 void handleSignalSegmentationFault(int s)
 {
     TRACE_SCOPE(areg_appbase_ApplicationPosix_handleSignalSegmentationFault);
-    TRACE_ERR("Caught segmantion fault!!! Parameter [ %d ]", s);
+    TRACE_ERR("Caught segmentation fault!!! Parameter [ %d ]", s);
 }
 
 } // namespace
@@ -87,9 +87,9 @@ void Application::setupHandlers( void )
 
         signal(SIGPIPE, &handleSignalBrokenPipe);
         signal(SIGSEGV, &handleSignalSegmentationFault);
-    }
 
-    theApp.mSetup = true;
+        theApp.mSetup = true;
+    }
 }
 
 /**

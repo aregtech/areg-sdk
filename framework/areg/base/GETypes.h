@@ -66,7 +66,7 @@
         typedef uintptr_t   id_type;
     #else   // !_UINTPTR_T_DEFINED
         typedef uint64_t    id_type;
-    #endif  // _UINTPTR_T_DEFINED
+#endif  // _UINTPTR_T_DEFINED
 #else   // defined(BIT32)
     #ifdef _UINTPTR_T_DEFINED
         typedef uintptr_t   id_type;
@@ -74,6 +74,8 @@
         typedef uint32_t    id_type;
     #endif  // _UINTPTR_T_DEFINED
 #endif  // id_type
+
+typedef id_type    ptr_type;
 
 /**
  * \brief   The type defines an item ID.

@@ -140,7 +140,7 @@ namespace NEConnection
      * \brief   NEConnection::DEFAULT_RETRY_CONNECT_TIMEOUT
      *          Default connect retry timer timeout value in milliseconds
      **/
-    constexpr unsigned int      DEFAULT_RETRY_CONNECT_TIMEOUT   { Timer::TIMEOUT_500_MS };  // 500 ms
+    constexpr unsigned int      DEFAULT_RETRY_CONNECT_TIMEOUT   { NECommon::TIMEOUT_500_MS };  // 500 ms
     /**
      * \brief   NEConnection::DEFAULT_REMOVE_SERVICE_ENABLED
      *          Message router enable / disable default flag. If true, by default it is enabled.

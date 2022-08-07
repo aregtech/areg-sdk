@@ -489,6 +489,12 @@ public:
      **/
     void stopProxy( void );
 
+    /**
+     * \brief   Called to force to delete proxy.
+     *          After calling this method the proxy is not operable anymore.
+     **/
+    void terminateSelf( void );
+
 //////////////////////////////////////////////////////////////////////////
 // Pure virtual methods to implement
 //////////////////////////////////////////////////////////////////////////

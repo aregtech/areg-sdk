@@ -46,7 +46,7 @@ constexpr char const _modelName[] { "TestModel" };  //!< The name of model
 BEGIN_MODEL(_modelName)
 
     // define component thread
-    BEGIN_REGISTER_THREAD( "TestServiceThread1" )
+    BEGIN_REGISTER_THREAD( "TestServiceThread1", NECommon::INVALID_TIMEOUT)
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
         BEGIN_REGISTER_COMPONENT( "TestService1", ServicingComponent )
             // register dummy 'empty service'. In this example we demonstrate simple initialization
@@ -67,7 +67,7 @@ BEGIN_MODEL(_modelName)
     //////////////////////////////////////////////////////////////////////////
 
     // define component thread
-    BEGIN_REGISTER_THREAD( "TestServiceThread2" )
+    BEGIN_REGISTER_THREAD( "TestServiceThread2", NECommon::INVALID_TIMEOUT)
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
         BEGIN_REGISTER_COMPONENT( "TestService2", ServicingComponent )
             // register dummy 'empty service'. In this example we demonstrate simple initialization
@@ -94,8 +94,8 @@ int main()
 
     // force to start logging with default settings
     TRACER_CONFIGURE_AND_START( nullptr );
-    // Initialize application, enable logging, servicing and the timer.
-    Application::initApplication(true, true, false, true, nullptr, nullptr );
+    // Initialize application, enable logging, servicing, timer and watchdog.
+    Application::initApplication(true, true, false, true, true, nullptr, nullptr );
 
     do 
     {

@@ -35,7 +35,7 @@ constexpr char const _modelName[] { "TestModel" };  //!< The name of model
 BEGIN_MODEL(_modelName)
 
     // define component thread
-    BEGIN_REGISTER_THREAD( "TestServiceThread" )
+    BEGIN_REGISTER_THREAD( "TestServiceThread", NECommon::INVALID_TIMEOUT)
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
         BEGIN_REGISTER_COMPONENT( "TestServiceComponent", ServicingComponent )
             // register HelloWorld service implementation.
@@ -52,7 +52,7 @@ BEGIN_MODEL(_modelName)
     //////////////////////////////////////////////////////////////////////////
 
     // define component thread
-    BEGIN_REGISTER_THREAD( "TestClientThread" )
+    BEGIN_REGISTER_THREAD( "TestClientThread", NECommon::INVALID_TIMEOUT)
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
         BEGIN_REGISTER_COMPONENT( "TestServiceClient", ServiceClient )
             REGISTER_DEPENDENCY( "TestServiceComponent" )
@@ -77,8 +77,8 @@ int main()
     printf("Testing simple local servicing components running as a server and as a client...\n");
     // force to start logging with default settings
     TRACER_CONFIGURE_AND_START( nullptr );
-    // Initialize application, enable logging, servicing and the timer.
-    Application::initApplication(true, true, false, true, nullptr, nullptr );
+    // Initialize application, enable logging, servicing, timer and watchdog.
+    Application::initApplication(true, true, false, true, true, nullptr, nullptr );
 
     do 
     {

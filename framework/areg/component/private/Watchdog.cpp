@@ -27,151 +27,56 @@ Watchdog::GUARD_ID Watchdog::_generateId(void)
     return (++_id);
 }
 
-Watchdog::Watchdog(ComponentThread& thread, uint32_t msTimeout /*= Watchdog::NO_WATCHDOG*/)
-    : mGuardId          ( _generateId() )
-    , mTimeoutMs        ( msTimeout )
+Watchdog::Watchdog(ComponentThread& thread, uint32_t msTimeout /*= NECommon::INVALID_TIMEOUT*/)
+    : TimerBase         (TimerBase::eTimerType::TimerTypeWatchdog, thread.getName(), msTimeout, TimerBase::ONE_TIME)
+    , mGuardId          ( _generateId() )
     , mSequence         ( 0u )
     , mComponentThread  ( thread )
-    , mWorkerThread     ( nullptr )
-    , mTimer            ( nullptr )
-    , mIsActive         ( false )
-    , mLock             ( false )
 {
-    mTimer   = Watchdog::_createWaitableTimer(*this);
 }
 
-Watchdog::Watchdog(WorkerThread& thread, uint32_t msTimeout /*= Watchdog::NO_WATCHDOG*/)
-    : mGuardId          ( _generateId() )
-    , mTimeoutMs        ( msTimeout )
+Watchdog::Watchdog(WorkerThread& thread, uint32_t msTimeout /*= NECommon::INVALID_TIMEOUT*/)
+    : TimerBase         ( TimerBase::eTimerType::TimerTypeWatchdog, thread.getName(), msTimeout, TimerBase::ONE_TIME)
+    , mGuardId          ( _generateId() )
     , mSequence         ( 0u )
     , mComponentThread  ( thread.getBindingComponentThread() )
-    , mWorkerThread     ( &thread )
-    , mTimer            ( nullptr )
-    , mIsActive         ( false )
-    , mLock             ( false )
 {
-    mTimer = Watchdog::_createWaitableTimer(*this);
 }
 
 Watchdog::~Watchdog(void)
 {
-    Watchdog::_destroyWaitableTimer(*this);
+    WatchdogManager::stopTimer(*this);
+}
+
+bool Watchdog::startTimer(void)
+{
+    startGuard();
+    return true;
+}
+
+void Watchdog::stopTimer(void)
+{
+    stopGuard();
 }
 
 void Watchdog::startGuard(void)
 {
-    if (mTimeoutMs != Watchdog::NO_WATCHDOG)
+    if (mTimeoutInMs != NECommon::INVALID_TIMEOUT)
     {
         Lock lock(mLock);
-        ASSERT(mTimer != nullptr);
+        ASSERT(mHandle != nullptr);
         ++mSequence;
-        mIsActive = WatchdogManager::startTimer(*this);
+        mActive = WatchdogManager::startTimer(*this);
     }
 }
 
 void Watchdog::stopGuard( void )
 {
-    if (mTimeoutMs != Watchdog::NO_WATCHDOG)
+    if (mTimeoutInMs != NECommon::INVALID_TIMEOUT)
     {
         Lock lock(mLock);
-        ASSERT(mTimer != nullptr);
-        mIsActive = false;
+        ASSERT(mHandle != nullptr);
+        mActive = false;
         WatchdogManager::stopTimer(*this);
     }
-}
-
-const Watchdog::GUARD_ID Watchdog::getId(void) const
-{
-    return mGuardId;
-}
-
-const Watchdog::SEQUENCE_ID Watchdog::getSequence(void) const
-{
-    return mSequence;
-}
-
-const String& Watchdog::getName(void) const
-{
-    return (mWorkerThread != nullptr ? mWorkerThread->getName() : mComponentThread.getName());
-}
-
-const uint32_t Watchdog::getTimeout(void) const
-{
-    return mTimeoutMs;
-}
-
-const DispatcherThread& Watchdog::getThread(void) const
-{
-    return (mWorkerThread != nullptr ? static_cast<const DispatcherThread&>(*mWorkerThread) : static_cast<const DispatcherThread&>(mComponentThread));
-}
-
-const ComponentThread& Watchdog::getComponentThread(void) const
-{
-    return mComponentThread;
-}
-
-const WorkerThread* Watchdog::getWorkerThread(void) const
-{
-    return mWorkerThread;
-}
-
-TIMERHANDLE Watchdog::getHandle(void) const
-{
-    return mTimer;
-}
-
-bool Watchdog::isActive(void) const
-{
-    return mIsActive;
-}
-
-Watchdog::WATCHDOG_ID Watchdog::makeWatchdogId(void)
-{
-    return Watchdog::makeWatchdogId(mGuardId, mSequence);
-}
-
-Watchdog::WATCHDOG_ID Watchdog::makeWatchdogId(GUARD_ID guardId, SEQUENCE_ID sequence)
-{
-#if defined(BIT64)
-    return static_cast<id_type>(MACRO_MAKE_64(guardId, sequence));
-#else   // !defined(BIT64)
-    return static_cast<id_type>(MACRO_MAKE_32(guardId, sequence));
-#endif  // defined(BIT64)
-}
-
-Watchdog::GUARD_ID Watchdog::makeGuardId(Watchdog::WATCHDOG_ID watchdogId)
-{
-#if defined(BIT64)
-    return static_cast<GUARD_ID>(MACRO_64_HI_BYTE32(watchdogId));
-#else   // !defined(BIT64)
-    return static_cast<GUARD_ID>(MACRO_32_HI_BYTE16(watchdogId));
-#endif  // defined(BIT64)
-}
-
-Watchdog::SEQUENCE_ID Watchdog::makeSequenceId(Watchdog::WATCHDOG_ID watchdogId)
-{
-#if defined(BIT64)
-    return static_cast<GUARD_ID>(MACRO_64_LO_BYTE32(watchdogId));
-#else   // !defined(BIT64)
-    return static_cast<GUARD_ID>(MACRO_32_LO_BYTE16(watchdogId));
-#endif  // defined(BIT64)
-}
-
-bool Watchdog::isValid(void) const
-{
-    return (mTimer != nullptr);
-}
-
-void Watchdog::timeoutExpired(Watchdog::WATCHDOG_ID watchdogId)
-{
-    ASSERT(makeGuardId(watchdogId) == mGuardId);
-    ASSERT(mTimeoutMs != Watchdog::NO_WATCHDOG);
-    do
-    {
-        Lock lock(mLock);
-        if (makeSequenceId(watchdogId) == mSequence)
-        {
-            mComponentThread.destroyThread(NECommon::DO_NOT_WAIT);
-        }
-    } while (false);
 }

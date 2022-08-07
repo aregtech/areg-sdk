@@ -132,3 +132,19 @@ ServiceManagerEventData ServiceManagerEventData::lostConnection(const Channel & 
     return data;
 }
 
+ServiceManagerEventData ServiceManagerEventData::terminateComponentThread(const String& threadName)
+{
+    ServiceManagerEventData data(ServiceManagerEventData::eServiceManagerCommands::CMD_TerminateComponentThread);
+    IEOutStream& stream = data.getWriteStream();
+    stream << threadName;
+    return data;
+}
+
+ServiceManagerEventData ServiceManagerEventData::createComponentThread(const String& threadName)
+{
+    ServiceManagerEventData data(ServiceManagerEventData::eServiceManagerCommands::CMD_StartComponentThread);
+    IEOutStream& stream = data.getWriteStream();
+    stream << threadName;
+    return data;
+}
+

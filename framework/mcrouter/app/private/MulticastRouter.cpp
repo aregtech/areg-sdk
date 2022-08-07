@@ -54,7 +54,8 @@ MulticastRouter::~MulticastRouter( void )
 
 void MulticastRouter::serviceMain( int argc, char ** argv )
 {
-    Application::initApplication(true, false, false, true, NEApplication::DEFAULT_TRACING_CONFIG_FILE.data(), nullptr );
+    // Start only tracing and timer manager.
+    Application::initApplication(true, false, false, true, false, NEApplication::DEFAULT_TRACING_CONFIG_FILE.data(), nullptr );
 
     do 
     {

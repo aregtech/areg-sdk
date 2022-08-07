@@ -23,6 +23,7 @@
 #include "areg/trace/private/TraceManager.hpp"
 #include "areg/component/private/ServiceManager.hpp"
 #include "areg/component/private/TimerManager.hpp"
+#include "areg/component/private/WatchdogManager.hpp"
 #include "areg/trace/NETrace.hpp"
 
 //////////////////////////////////////////////////////////////////////////
@@ -32,11 +33,7 @@ Application Application::_theApplication;
 
 Application::Application(void)
     : mSetup        ( false )
-    , mStartTracer  ( false )
     , mConfigTracer ( )
-    , mStartService ( false )
-    , mStartTimer   ( false )
-    , mStartRouting ( false )
     , mConfigService( )
     , mAppState     ( Application::eAppState::AppStateStopped )
     , mAppQuit      (false, false)
@@ -49,6 +46,7 @@ void Application::initApplication(  bool startTracing   /*= true */
                                   , bool startServicing /*= true */
                                   , bool startRouting   /*= true */
                                   , bool startTimer     /*= true */
+                                  , bool startWatchdog  /*= true */
                                   , const char * fileTraceConfig /*= NEApplication::DEFAULT_TRACING_CONFIG_FILE */
                                   , const char * fileRouterConfig/*= NEApplication::DEFAULT_ROUTER_CONFIG_FILE */)
 {
@@ -75,6 +73,12 @@ void Application::initApplication(  bool startTracing   /*= true */
         Application::startTimerManager();
     }
 
+    if ( startWatchdog )
+    {
+        OUTPUT_DBG("Starting watchdog manager");
+        Application::startWatchdogManager();
+    }
+
     if ( startServicing )
     {
         OUTPUT_DBG("Starting service manager");
@@ -99,15 +103,12 @@ void Application::releaseApplication(void)
 
     Application & theApp  = Application::getInstance();
 
+    WatchdogManager::stopWatchdogManager();
     TimerManager::stopTimerManager();
     ComponentLoader::unloadComponentModel( String::EmptyString );
     ServiceManager::_stopServiceManager(); // the message routing client is automatically stopped.
     NETrace::stopLogging();
 
-    theApp.mStartTracer     = false;
-    theApp.mStartService    = false;
-    theApp.mStartTimer      = false;
-    theApp.mStartRouting    = false;
     theApp.mConfigTracer    = String::EmptyString;
     theApp.mConfigService   = String::EmptyString;
 
@@ -188,7 +189,6 @@ bool Application::startTracer(const char * configFile /*= nullptr*/, bool force 
         if (NETrace::startLogging(config))
         {
             OUTPUT_DBG("Succeeded to start tracer, setting flags and config file name [ %s ]", config);
-            theApp.mStartTracer     = true;
             theApp.mConfigTracer    = NETrace::getConfigFile();
             result = true;
         }
@@ -199,7 +199,6 @@ bool Application::startTracer(const char * configFile /*= nullptr*/, bool force 
             if ( NETrace::forceStartLogging() )
             {
                 OUTPUT_INFO("Succeeded to start forced tracer!!!");
-                theApp.mStartTracer = true;
                 theApp.mConfigTracer= "";
                 result = true;
             }
@@ -220,8 +219,6 @@ bool Application::startTracer(const char * configFile /*= nullptr*/, bool force 
 
 void Application::stopTracer(void)
 {
-    Application & theApp  = Application::getInstance( );
-    theApp.mStartTracer     = false;
     NETrace::stopLogging();
 }
 
@@ -263,8 +260,8 @@ bool Application::startServiceManager( void )
         if (ServiceManager::_startServiceManager( ))
         {
             Application::startTimerManager();
+            Application::startWatchdogManager();
             result = true;
-            theApp.mStartService = true;
             Application::_setAppState(Application::eAppState::AppStateReady);
         }
         else
@@ -278,8 +275,6 @@ bool Application::startServiceManager( void )
         Application::_setAppState(Application::eAppState::AppStateReady);
 
         OUTPUT_INFO("The service manager has been started, ignoring to start service manager");
-        ASSERT( theApp.mStartService );
-        ASSERT( theApp.mStartTimer );
     }
 
     return result;
@@ -287,34 +282,22 @@ bool Application::startServiceManager( void )
 
 bool Application::startTimerManager( void )
 {
-    bool result             = false;
-    Application & theApp  = Application::getInstance( );
-
-    if ( TimerManager::isTimerManagerStarted() == false )
-    {
-        OUTPUT_DBG("Starting Timer Manager");
-        if ( TimerManager::startTimerManager() )
-        {
-            theApp.mStartTimer  = true;
-            result = true;
-        }
-        else
-        {
-            OUTPUT_ERR("Failed to start timer manager!");
-        }
-    }
-    else
-    {
-        result = true;
-        OUTPUT_INFO("The timer manager is running, ignoring to start timer manager");
-    }
-
-    return result;
+    return (TimerManager::isTimerManagerStarted() == false ? TimerManager::startTimerManager() : true);
 }
 
 void Application::stopTimerManager(void)
 {
     TimerManager::stopTimerManager();
+}
+
+bool Application::startWatchdogManager(void)
+{
+    return (WatchdogManager::isWatchdogManagerStarted() == false ? WatchdogManager::startWatchdogManager() : true);
+}
+
+void Application::stopWatchdogManager(void)
+{
+    WatchdogManager::stopWatchdogManager();
 }
 
 bool Application::startMessageRouting(const char * configFile /*= nullptr*/ )
@@ -330,7 +313,6 @@ bool Application::startMessageRouting(const char * configFile /*= nullptr*/ )
             if ( ServiceManager::_routingServiceStart( config ) )
             {
                 result = true;
-                theApp.mStartRouting    = true;
                 theApp.mConfigService   = config;
             }
             else
@@ -386,32 +368,20 @@ bool Application::startMessageRouting( const char * ipAddress, unsigned short po
     {
         if ( ServiceManager::_isRoutingServiceStarted( ) == false )
         {
-            theApp.mStartRouting = ServiceManager::_routingServiceStart(ipAddress, portNr);
             theApp.mConfigService.clear();
         }
-#ifdef _DEBUG
-        else
-        {
-            ASSERT( theApp.mStartRouting );
-        }
-#endif // _DEBUG
     }
 
-    return theApp.mStartRouting;
+    return ServiceManager::_isRoutingServiceStarted();
 }
 
 void Application::stopMessageRouting( void )
 {
-    Application & theApp = Application::getInstance( );
     ServiceManager::_routingServiceStop();
-    theApp.mStartRouting = false;
 }
 
 void Application::enableMessageRouting( bool enable )
 {
-    Application & theApp = Application::getInstance( );
-    theApp.mStartRouting = theApp.mStartRouting && enable ? false : theApp.mStartRouting;
-
     ServiceManager::_routingServiceEnable(enable);
 }
 

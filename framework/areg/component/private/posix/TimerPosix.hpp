@@ -29,8 +29,7 @@
 //////////////////////////////////////////////////////////////////////////
 // Dependency.
 //////////////////////////////////////////////////////////////////////////
-class Timer;
-class Watchdog;
+class TimerBase;
 
 /**
  * \brief   The POSIX timer routing method triggered in a separate thread.
@@ -121,8 +120,7 @@ public:
      * \param   funcTimer   Pointer to the timer handling function triggered when timer expires.
      * \return  Returns true if timer is created and started with success.
      **/
-    bool startTimer( Timer & context, FuncPosixTimerRoutine funcTimer );
-    bool startTimer( Watchdog & context, FuncPosixTimerRoutine funcTimer);
+    bool startTimer( TimerBase & context, FuncPosixTimerRoutine funcTimer );
 
     /**
      * \brief   Starts initialized timer if the timeout and the period values are not zero.
@@ -130,8 +128,7 @@ public:
      * \param   context     The timer object that contains timeout and period information.
      * \return  Returns true if timer is started with success.
      */
-    bool startTimer( Timer & context );
-    bool startTimer( Watchdog & context );
+    bool startTimer( TimerBase & context );
 
     /**
      * \brief   Starts the timer that was initialized. This function ignores starting timer
@@ -171,7 +168,6 @@ protected:
      *          should be stopped.
      **/
     void timerExpired( void );
-    void timerExpired( unsigned int timeoutMs );
 
 //////////////////////////////////////////////////////////////////////////
 // Internal private methods.
@@ -192,15 +188,7 @@ private:
      * \param	context	The pointer to timer context object.
      * \return	Returns true if timer succeeded to start.
      **/
-    inline bool _startTimer( Timer * context );
-    inline bool _startTimer( Watchdog * context );
-    /**
-     * \brief   Starts the initialized timer.
-     * \param   msTimeout   The timeout of timer is milliseconds.
-     * \param   eventCount  The number of periods to trigger.
-     * \return  Returns true if succeeded to start timer.
-     **/
-    inline bool _startTimer( unsigned int msTimeout, unsigned int eventCount );
+    inline bool _startTimer( TimerBase * context );
 
     /**
      * \brief   Stops the timer.
@@ -231,18 +219,13 @@ private:
      * \brief   The context pointer passed to POSIX timer, set when using Timer object.
      *          Otherwise, should be nullptr.
      */
-    void *                  mContext;
+    TimerBase *             mContext;
 
     /**
      * \brief   The context ID passed to POSIX timer, set when using Watchdog object.
      *          Otherwise, should be zero.
      **/
     id_type                 mContextId;
-
-    /**
-     * \brief   The number of events to trigger timer. Should be more than zero.
-     */
-    unsigned int            mEventCount;
 
     /**
      * \brief   The timer timeout information.
@@ -280,6 +263,12 @@ inline void * TimerPosix::getContext(void) const
 {
 	SpinAutolockIX lock(mLock);
     return mContext;
+}
+
+inline id_type TimerPosix::getContextId(void) const
+{
+    SpinAutolockIX lock(mLock);
+    return mContextId;
 }
 
 inline const timespec & TimerPosix::getDueTime(void) const

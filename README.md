@@ -36,7 +36,7 @@
 3. [Composition](#composition)
 4. [Software build](#software-build)
 5. [Software integration](#software-integration)
-   - [Multicast router](#mulitcast-router)
+   - [Multicast router](#multicast-router)
    - [Logging service](#logging-service)
    - [Development](#development)
 6. [Use cases and benefits](#use-cases-and-benefits)
@@ -64,7 +64,7 @@ Since data is generated and collected at the edge of the network (mist network),
 
 ## More than embedded[![](./docs/img/pin.svg)](#more-than-embedded)
 
-When we were designing AREG SDK, the guiding principle was to provide a homogeneous solution for multithreading, multiprocessing and internet communication wrapped in services appropriately having _Local_, _Public_ and _Internet_ categories. These services are neither processes nor tasks managed by the operating system, they are software components with a predefined interface, in which methods are invoked remotely.
+When we were designing AREG SDK, the guiding principle was to provide a homogeneous solution for Multithreading, Multiprocessing and Internet communication wrapped in services appropriately having _Local_, _Public_ and _Internet_ categories. These services are neither processes nor tasks managed by the operating system, they are software components with a predefined interface, in which methods are invoked remotely.
 <br><a href="docs/img/areg-services.png"><img src="docs/img/areg-services.png" alt="AREG SDK distributed services" style="width:70%;height:70%"/></a><br>
 > 💡 In current version, the AREG engine handles multithreading (_Local_) and multiprocessing (_Public_) communication. 
 
@@ -128,7 +128,7 @@ _Compile AREG SDK sources and examples:_
 |**Linux**| Open gnome-terminal in Linux and call “_make_” to compile with POSIX API.|
 
 > 💡 Compilation with _Eclipse_ under Windows might require to switch the Toolchain. For example, `Cygwin GCC`.<br>
-> 💡 For Linux the default compiler is `g++`. Set prefered C++17 compiler in [conf/make/user.mk](./conf/make/user.mk) file.
+> 💡 For Linux the default compiler is `g++`. Set preferred C++17 compiler in [conf/make/user.mk](./conf/make/user.mk) file.
 
 Details on how to change compiler, load and compile sources for various targets are described in [HOWTO](./docs/HOWTO.md).
 
@@ -136,7 +136,7 @@ Details on how to change compiler, load and compile sources for various targets 
 
 ## Software integration[![](./docs/img/pin.svg)](#software-integration)
 
-#### Mulitcast router
+#### Multicast router
 
 Configure [_router.init_](./framework/areg/resources/router.init) file to set the IP-address and the port of _multicast router_:
 ```
@@ -198,8 +198,9 @@ END_MODEL(NECommon::ModelName)
 // the main function
 int main()
 {
-    // Initialize application, enable logging, servicing and the timer.
-    Application::initApplication(true, true, true, true, nullptr, nullptr );
+    // Initialize application, enable logging, servicing, routing, timer and watchdog.
+    // Use default settings.
+    Application::initApplication( );
 
     // load model to start service components
     Application::loadModel(NECommon::ModelName);

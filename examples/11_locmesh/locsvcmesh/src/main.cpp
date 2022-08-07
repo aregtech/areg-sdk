@@ -46,7 +46,7 @@ constexpr char const _mainServiceName[] { "MainService" };  //!< Main component 
 BEGIN_MODEL(_modelName)
 
     // define component thread
-    BEGIN_REGISTER_THREAD( "Test_ServiceThread" )
+    BEGIN_REGISTER_THREAD( "Test_ServiceThread", NECommon::INVALID_TIMEOUT)
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
         BEGIN_REGISTER_COMPONENT( _mainServiceName, MainComponent )
             // register HelloWorld service implementation.
@@ -62,7 +62,7 @@ BEGIN_MODEL(_modelName)
     //
     //////////////////////////////////////////////////////////////////////////
     
-    BEGIN_REGISTER_THREAD( "Test_SecondaryThread")
+    BEGIN_REGISTER_THREAD( "Test_SecondaryThread", NECommon::INVALID_TIMEOUT)
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
         BEGIN_REGISTER_COMPONENT( "Test_SecondaryComponent", SecondaryComponent )
             // register HelloWorld service implementation and the dependencies.
@@ -75,7 +75,7 @@ BEGIN_MODEL(_modelName)
     END_REGISTER_THREAD("Test_SecondaryThread")
 
     // define component thread
-    BEGIN_REGISTER_THREAD( "Test_MixedThread" )
+    BEGIN_REGISTER_THREAD( "Test_MixedThread", NECommon::INVALID_TIMEOUT)
 
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
         BEGIN_REGISTER_COMPONENT( "Test_ThirdComponent", SecondaryComponent )
@@ -112,8 +112,8 @@ int main()
     printf("Testing multiple local servicing components of the same service interface running with different names in different threads...\n");
     // force to start logging with default settings
     TRACER_CONFIGURE_AND_START( nullptr );
-    // Initialize application, enable logging, servicing and the timer.
-    Application::initApplication(true, true, false, true, nullptr, nullptr );
+    // Initialize application, enable logging, servicing, timer and watchdog.
+    Application::initApplication(true, true, false, true, true, nullptr, nullptr );
 
     do 
     {

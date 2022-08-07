@@ -19,31 +19,63 @@
   * Include files.
   ************************************************************************/
 #include "areg/base/GEGlobal.h"
-#include "areg/component/DispatcherThread.hpp"
-#include "areg/component/private/WatchdogManagerEvent.hpp"
+#include "areg/component/private/TimerManagerBase.hpp"
+#include "areg/component/private/TimerManagerEvent.hpp"
+
 #include "areg/component/private/Watchdog.hpp"
 
-class WatchdogManager   : protected DispatcherThread
-                        , protected IEWatchdogManagerEventConsumer
+class WatchdogManager   : protected TimerManagerBase
 {
-//////////////////////////////////////////////////////////////////////////
-// Runtime declaration
-//////////////////////////////////////////////////////////////////////////
-    DECLARE_RUNTIME(WatchdogManager)
-
 //////////////////////////////////////////////////////////////////////////
 // Predefined constants and types
 //////////////////////////////////////////////////////////////////////////    
 private:
-    using MapWatchdogResource   = TEHashMap<Watchdog::GUARD_ID, Watchdog*>;
-    using WatchdogResource      = TELockResourceMap<Watchdog::GUARD_ID, Watchdog, MapWatchdogResource>;
-
     /**
      * \brief   WatchdogManager::WATCHDOG_THREAD_NAME
      *          Watchdog Manager thread name
      **/
     static constexpr std::string_view WATCHDOG_THREAD_NAME { "_AREG_WATCHDOG_THREAD_NAME_" };
 
+    using MapWatchdogResource   = TEHashMap<Watchdog::GUARD_ID, Watchdog*>;
+    using WatchdogResource      = TELockResourceMap<Watchdog::GUARD_ID, Watchdog, MapWatchdogResource>;
+
+//////////////////////////////////////////////////////////////////////////
+// Static members
+//////////////////////////////////////////////////////////////////////////
+private:
+/************************************************************************/
+// Private statics. Hidden
+/************************************************************************/
+
+    /**
+     * \brief   Returns reference to Watchdog Manager object.
+     **/
+    static WatchdogManager& getInstance( void );
+
+#ifdef _WINDOWS
+
+    /**
+     * \brief   Windows OS specific timer routine function. Triggered, when one of timer is expired.
+     * \param   argPtr          The pointer of argument passed to timer expired callback function
+     * \param   timerLowValue   The low value of timer expiration
+     * \param   timerHighValue  The high value of timer expiration.
+     **/
+    static void _defaultWindowsWatchdogExpiredRoutine( void * argPtr, unsigned long timerLowValue, unsigned long timerHighValue );
+
+#endif // _WINDOWS
+
+#ifdef _POSIX
+
+    /**
+     * \brief   POSIX timer routine function. Triggered, when one of timer is expired.
+     * \param   argSig          The value passed to thread signal when the timer was created.
+     *                          This value is passed to routine callback.
+     **/
+    static void _defaultPosixWatchdogExpiredRoutine( union sigval argSig );
+
+#endif // _POSIX
+
+//////////////////////////////////////////////////////////////////////////
 // Operations
 //////////////////////////////////////////////////////////////////////////
 public:
@@ -83,44 +115,6 @@ public:
      **/
     static void stopTimer(Watchdog& watchdog);
 
-protected:
-/************************************************************************/
-// IETimerManagingEventConsumer overrides
-/************************************************************************/
-
-    /**
-     * \brief   Automatically triggered when event is dispatched by timer thread
-     * \param   data    The data object passed in event.
-     **/
-    virtual void processEvent( const WatchdogManagerEventData & data) override;
-
-/************************************************************************/
-// DispatcherThread overrides
-/************************************************************************/
-
-    /**
-     * \brief	Posts event and delivers to its target thread / process.
-     * \param	eventElem	Event object to post.
-     * \return	Returns true if target was found and the event
-     *          delivered with success. Otherwise it returns false.
-     **/
-    virtual bool postEvent( Event & eventElem ) override;
-
-    /**
-     * \brief	Triggered when dispatcher starts running. 
-     *          In this function runs main dispatching loop.
-     *          Events are picked and dispatched here.
-     *          Override if logic should be changed.
-     * \return	Returns true if Exit Event is signaled.
-     **/
-    virtual bool runDispatcher( void ) override;
-
-    /**
-     * \brief   Triggered before dispatcher starts to dispatch events and when event dispatching just finished.
-     * \param   hasStarted  The flag to indicate whether the dispatcher is ready for events.
-     **/
-    virtual void readyForEvents( bool isReady ) override;
-
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
@@ -134,42 +128,39 @@ private:
      **/
     virtual ~WatchdogManager( void );
 
+//////////////////////////////////////////////////////////////////////////
+// Overrides.
+//////////////////////////////////////////////////////////////////////////
+protected:
 /************************************************************************/
-// Private statics. Hidden
+// IETimerManagingEventConsumer overrides
 /************************************************************************/
 
     /**
-     * \brief   Returns reference to Watchdog Manager object.
+     * \brief   Automatically triggered when event is dispatched by timer thread
+     * \param   data    The data object passed in event.
      **/
-    static WatchdogManager& getInstance( void );
+    virtual void processEvent( const TimerManagerEventData & data) override;
 
-#ifdef _WINDOWS
+/************************************************************************/
+// DispatcherThread overrides
+/************************************************************************/
 
     /**
-     * \brief   Windows OS specific timer routine function. Triggered, when one of timer is expired.
-     * \param   argPtr          The pointer of argument passed to timer expired callback function
-     * \param   timerLowValue   The low value of timer expiration
-     * \param   timerHighValue  The high value of timer expiration.
+     * \brief   Triggered before dispatcher starts to dispatch events and when event dispatching just finished.
+     * \param   hasStarted  The flag to indicate whether the dispatcher is ready for events.
      **/
-    static void _defaultWindowsWatchdogExpiredRoutine( void * argPtr, unsigned long timerLowValue, unsigned long timerHighValue );
-
-#endif // _WINDOWS
-
-#ifdef _POSIX
-
-    /**
-     * \brief   POSIX timer routine function. Triggered, when one of timer is expired.
-     * \param   argSig          The value passed to thread signal when the timer was created.
-     *                          This value is passed to routine callback.
-     **/
-    static void _defaultPosixWatchdogExpiredRoutine( union sigval argSig );
-
-#endif // _POSIX
+    virtual void readyForEvents( bool isReady ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden operations. Called from Watchdog Thread.
 //////////////////////////////////////////////////////////////////////////
 private:
+    /**
+     * \brief   Called when expired timers should be processed.
+     **/
+    void _processExpiredTimer(Watchdog* whatchdog, Watchdog::WATCHDOG_ID watchdogId, uint32_t hiBytes, uint32_t loBytes);
+
     /**
      * \brief   Stops and removes all watchdog timers.
      **/
@@ -180,38 +171,13 @@ private:
      * \param   watchdog       The Watchdog object that should be registered.
      * \return  Returns true if succeeded to register Watchdog in the map.
      **/
-    void _registerWatchdog( Watchdog & watchdog);
+    bool _registerWatchdog( Watchdog & watchdog);
 
     /**
      * \brief   Stop watchdog timer and unregister from the resource map.
      * \param   watchdog   The instance of watchdog object to unregister.
      **/
     void _unregisterWatchdog( Watchdog & Watchdog );
-
-    /**
-     * \brief   This method called for every single expired Watchdog.
-     *          The function is triggered from Watchdog expired callback function.
-     * \param   whichWatchdog  The pointer to Watchdog object that has expired.
-     * \param   highValue   The expired time high value
-     * \param   lowValue    The expired time low value
-     **/
-    void _timerExpired(Watchdog::WATCHDOG_ID watchdogId, unsigned int highValue, unsigned int lowValue );
-
-    /**
-     * \brief   Starts Watchdog Manager Thread it is not started yet.
-     * \return  Returns true if Watchdog Manager Thread is started and ready to process events.
-     **/
-    bool _startWatchdogManagerThread( void );
-
-    /**
-     * \brief   Stops Watchdog Manager Thread and waits until it exists.
-     **/
-    void _stopWatchdogManagerThread( void );
-
-    /**
-     * \brief   Returns WatchdogManager object. for internal calls.
-     **/
-    inline WatchdogManager & self( void );
 
 //////////////////////////////////////////////////////////////////////////
 //  Operating system specific methods
@@ -225,10 +191,10 @@ private:
     static bool _systemTimerStart( Watchdog & watchdog );
 
     /**
-     * \brief   Stops previously started waitable Watchdog.
-     * \param   watchdog    The Watchdog object with timer handle to stop.
+     * \brief   Stops previously started waitable timer.
+     * \param   timerHandle The waitable timer handle to destroy.
      **/
-    static void _systemTimerStop(const Watchdog& watchdog);
+    static void _systemTimerStop(TIMERHANDLE handle);
 
 //////////////////////////////////////////////////////////////////////////
 //  Member variables.
@@ -238,10 +204,6 @@ private:
      * \brief   The Watchdog table object.
      **/
     WatchdogResource    mWatchdogResource;
-    /**
-     * \brief   Synchronization object.
-     **/
-    mutable Mutex       mLock;
 
 //////////////////////////////////////////////////////////////////////////
 //  Forbidden calls
@@ -250,10 +212,5 @@ private:
     DECLARE_NOCOPY_NOMOVE( WatchdogManager );
 
 };
-
-inline WatchdogManager& WatchdogManager::self(void)
-{
-    return (*this);
-}
 
 #endif  // AREG_COMPONENT_PRIVATE_WATCHDOGMANAGER_HPP

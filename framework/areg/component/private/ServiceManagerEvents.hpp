@@ -64,6 +64,8 @@ public:
         , CMD_UnregisterConnection      //!< Requested to unregister connection
         , CMD_LostConnection            //!< Requested to send notifications to components that connection is lost.
         , CMD_ShutdownService           //!< Request to shutdown service.
+        , CMD_TerminateComponentThread  //!< Request to terminate component thread.
+        , CMD_StartComponentThread      //!< Request to start component thread.
     } eServiceManagerCommands;
 
     /**
@@ -155,6 +157,18 @@ public:
      * \param   channel     The Channel information to set for lost connection
      **/
     static ServiceManagerEventData lostConnection( const Channel & channel );
+
+    /**
+     * \brief   Creates an event data to terminate component thread.
+     * \param   threadName  The name of component thread to terminate.
+     **/
+    static ServiceManagerEventData terminateComponentThread( const String & threadName );
+
+    /**
+     * \brief   Creates an event data to create component thread.
+     * \param   threadName  The name of component thread to create.
+     **/
+    static ServiceManagerEventData createComponentThread( const String & threadName );
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
@@ -319,6 +333,10 @@ inline const char * ServiceManagerEventData::getString( ServiceManagerEventData:
         return "ServiceManagerEventData::eServiceManagerCommands::CMD_LostConnection";
     case ServiceManagerEventData::eServiceManagerCommands::CMD_ShutdownService:
         return "ServiceManagerEventData::eServiceManagerCommands::CMD_ShutdownService";
+    case ServiceManagerEventData::eServiceManagerCommands::CMD_TerminateComponentThread:
+        return "ServiceManagerEventData::eServiceManagerCommands::CMD_TerminateComponentThread";
+    case ServiceManagerEventData::eServiceManagerCommands::CMD_StartComponentThread:
+        return "ServiceManagerEventData::eServiceManagerCommands::CMD_StartComponentThread";
     default:
         return "ERR: undefined ServiceManagerEventData::eServiceManagerCommands value!!!";
     }

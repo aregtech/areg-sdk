@@ -44,7 +44,7 @@ static const char* const _compName  = NEUtilities::generateName(NECommon::Serivc
 BEGIN_MODEL(_modelName)
 
     // define component thread
-    BEGIN_REGISTER_THREAD( _threadName )
+    BEGIN_REGISTER_THREAD( _threadName, NECommon::INVALID_TIMEOUT)
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
         BEGIN_REGISTER_COMPONENT( _compName, TrafficLightClient )
             // register TrafficController dependency.
@@ -111,8 +111,9 @@ int main()
     data.alignBool.mElement = isEastWest;
     ComponentLoader::setComponentData(_compName, data);
 
-    // Initialize application, disable logging, enables servicing and the timer.
-    Application::initApplication(true, true, true, true, nullptr, nullptr );
+    // Initialize application, enable logging, servicing, routing, timer and watchdog.
+    // Use default settings.
+    Application::initApplication( );
 
     do 
     {

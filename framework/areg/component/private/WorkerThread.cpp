@@ -33,11 +33,15 @@ IMPLEMENT_RUNTIME(WorkerThread, DispatcherThread)
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
-WorkerThread::WorkerThread( const String & threadName, Component & bindingComponent, IEWorkerThreadConsumer & threadConsumer)
-    : DispatcherThread    ( threadName )
+WorkerThread::WorkerThread( const String & threadName
+                          , Component & bindingComponent
+                          , IEWorkerThreadConsumer & threadConsumer
+                          , uint32_t watchdogTimeout /*= NECommon::INVALID_TIMEOUT*/)
+    : DispatcherThread      ( threadName )
 
     , mBindingComponent     ( bindingComponent )
     , mWorkerThreadConsumer ( threadConsumer )
+    , mWatchdog             ( self(), watchdogTimeout )
 {
     ASSERT(NEString::isEmpty<char>(threadName) == false);
 }
@@ -75,7 +79,26 @@ DispatcherThread* WorkerThread::getEventConsumerThread( const RuntimeClassID& wh
     return (hasRegisteredConsumer(whichClass) ? static_cast<DispatcherThread *>(this) : getBindingComponent().findEventConsumer(whichClass));
 }
 
+bool WorkerThread::dispatchEvent(Event& eventElem)
+{
+    mWatchdog.startGuard();
+    bool result = DispatcherThread::dispatchEvent(eventElem);
+    mWatchdog.stopGuard();
+
+    return result;
+}
+
 ComponentThread & WorkerThread::getBindingComponentThread( void ) const
 {
     return mBindingComponent.getMasterThread();
+}
+
+void WorkerThread::terminateSelf(void)
+{
+    mHasStarted = false;
+    removeAllEvents();
+    mEventExit.setEvent();
+    Thread::destroyThread(NECommon::TIMEOUT_10_MS);
+
+    delete this;
 }

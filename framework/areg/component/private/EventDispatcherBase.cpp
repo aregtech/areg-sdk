@@ -323,7 +323,9 @@ bool EventDispatcherBase::prepareDispatchEvent( Event* eventElem )
 void EventDispatcherBase::postDispatchEvent( Event* eventElem )
 {
     if (eventElem != nullptr)
+    {
         eventElem->destroy();
+    }
 }
 
 bool EventDispatcherBase::dispatchEvent( Event& eventElem )

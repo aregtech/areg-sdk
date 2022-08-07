@@ -7,36 +7,47 @@
  * If not, please contact to info[at]aregtech.com
  *
  * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
- * \file        areg/component/private/Watchdog.cpp
+ * \file        areg/component/private/posix/TimerBasePosix.cpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit
  * \author      Artak Avetyan
- * \brief       AREG Platform, Thread watchdog object implementation.
+ * \brief       AREG Platform, Timer base class implementation.
  *              Posix specific implementation.
  *
  ************************************************************************/
 
-#include "areg/component/private/Watchdog.hpp"
+#include "areg/component/TimerBase.hpp"
 
 #if defined(_POSIX) || defined(POSIX)
 
 #include "areg/component/private/posix/TimerPosix.hpp"
 
-//////////////////////////////////////////////////////////////////////////
-// Posix specific methods
-//////////////////////////////////////////////////////////////////////////
+ //////////////////////////////////////////////////////////////////////////
+ // Posix specific methods
+ //////////////////////////////////////////////////////////////////////////
 
-TIMERHANDLE Watchdog::_createWaitableTimer(const Watchdog& /*watchdog*/)
+bool TimerBase::createWaitableTimer( void )
 {
-    return static_cast<TIMERHANDLE>(DEBUG_NEW TimerPosix());
+    Lock lock(mLock);
+
+    if ((mHandle == nullptr) && (mTimeoutInMs != NECommon::INVALID_TIMEOUT))
+    {
+        mHandle = static_cast<TIMERHANDLE>(DEBUG_NEW TimerPosix());
+    }
+
+    return (mHandle != nullptr);
 }
 
-void Watchdog::_destroyWaitableTimer(const Watchdog& watchdog)
+void TimerBase::destroyWaitableTimer( void )
 {
-    TimerPosix* posixTimer = reinterpret_cast<TimerPosix*>(watchdog.getHandle());
-    if (posixTimer != nullptr)
+    Lock lock(mLock);
+
+    TIMERHANDLE handle  = mHandle;
+    mHandle = nullptr;
+    if (handle != nullptr)
     {
-        posixTimer->destroyTimer();
-        delete posixTimer;
+        TimerPosix* timer = reinterpret_cast<TimerPosix*>(handle);
+        timer->destroyTimer();
+        delete timer;
     }
 }
 

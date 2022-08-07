@@ -227,6 +227,15 @@ public:
      **/
     inline WorkerThread * getNextWorkerThread( ThreadAddress & int_out_threadAddress );
 
+    /**
+     * \brief   Removes first worker thread from the list of worker threads.
+     * 
+     * \param   out_threadAddress   On output it contains the address of the removed worker thread.
+     * \return  Returns valid pointer to the worker thread object if operation succeeded.
+     *          Otherwise, returns nullptr.
+     */
+    inline WorkerThread * removeFirstWorkerThread( ThreadAddress & OUT out_threadAddress );
+
 //////////////////////////////////////////////////////////////////////////
 // Member variables
 //////////////////////////////////////////////////////////////////////////
@@ -309,6 +318,18 @@ inline WorkerThread* ComponentInfo::getFirstWorkerThread( ThreadAddress & out_th
 inline WorkerThread* ComponentInfo::getNextWorkerThread( ThreadAddress & int_out_threadAddress )
 {
     return mWorkerThreadMap.resourceNextKey(int_out_threadAddress);
+}
+
+inline WorkerThread* ComponentInfo::removeFirstWorkerThread(ThreadAddress& OUT out_threadAddress)
+{
+    std::pair<ThreadAddress, WorkerThread*> elem{ThreadAddress::INVALID_THREAD_ADDRESS, nullptr};
+    if (mWorkerThreadMap.isEmpty() == false)
+    {
+        mWorkerThreadMap.removeResourceFirstElement(elem);
+    }
+
+    out_threadAddress = elem.first;
+    return elem.second;
 }
 
 inline bool ComponentInfo::hasWorkerThreads( void ) const

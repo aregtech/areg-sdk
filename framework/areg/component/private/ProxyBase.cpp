@@ -337,12 +337,30 @@ void ProxyBase::freeProxy( IEProxyListener & connect )
         mIsConnected = false;
         mIsStopped   = true;
 
-        -- mProxyInstCount;
+        mProxyInstCount = 0;
         delete this;
     }
     else if ( mProxyInstCount > 0 )
     {
         -- mProxyInstCount;
+    }
+}
+
+void ProxyBase::terminateSelf(void)
+{
+    if (mProxyInstCount != 0)
+    {
+        mListenerList.clear();
+        if (mIsStopped == false)
+        {
+            ServiceManager::requestUnregisterClient(getProxyAddress());
+        }
+
+        mIsConnected    = false;
+        mIsStopped      = true;
+        mProxyInstCount = 0;
+
+        delete this;
     }
 }
 

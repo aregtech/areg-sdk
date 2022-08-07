@@ -35,26 +35,11 @@ DEF_TRACE_SCOPE(areg_component_private_posix_TimerManager__defaultPosixTimerExpi
 // Linux specific methods
 //////////////////////////////////////////////////////////////////////////
 
-TIMERHANDLE TimerManager::_createWaitableTimer( const String & /* timerName */ )
-{
-    return static_cast<TIMERHANDLE>(DEBUG_NEW TimerPosix());
-}
-
 void TimerManager::_systemTimerStop( TIMERHANDLE timerHandle )
 {
     TimerPosix * posixTimer = reinterpret_cast<TimerPosix *>(timerHandle);
     if ( posixTimer != nullptr )
         posixTimer->stopTimer();
-}
-
-void TimerManager::_destroyWaitableTimer( TIMERHANDLE timerHandle, bool /* cancelTimer */ )
-{
-    TimerPosix * posixTimer = reinterpret_cast<TimerPosix *>(timerHandle);
-    if ( posixTimer != nullptr )
-    {
-        posixTimer->destroyTimer();
-        delete posixTimer;
-    }
 }
 
 bool TimerManager::_systemTimerStart( TimerInfo & timerInfo, MapTimerTable & timerTable )
@@ -115,8 +100,9 @@ void TimerManager::_defaultPosixTimerExpiredRoutine( union sigval argSig )
 {
     TRACE_SCOPE(areg_component_private_posix_TimerManager__defaultPosixTimerExpiredRoutine);
 
+    TimerManager& timerManager = TimerManager::getInstance();
     TimerPosix * posixTimer = reinterpret_cast<TimerPosix *>(argSig.sival_ptr);
-    Timer *timer = TimerManager::getInstance().mTimerResource.findResourceObject(reinterpret_cast<TIMERHANDLE>(posixTimer));
+    Timer *timer = timerManager.mTimerResource.findResourceObject(reinterpret_cast<TIMERHANDLE>(posixTimer));
 
     if ((timer != nullptr) && (posixTimer->isValid()))
     {
@@ -129,7 +115,7 @@ void TimerManager::_defaultPosixTimerExpiredRoutine( union sigval argSig )
         unsigned int highValue  = static_cast<unsigned int>(posixTimer->mDueTime.tv_sec );
         unsigned int lowValue   = static_cast<unsigned int>(posixTimer->mDueTime.tv_nsec);
         posixTimer->timerExpired();
-        TimerManager::getInstance()._timerExpired(reinterpret_cast<Timer*>(posixTimer)->mContext, highValue, lowValue);
+        timerManager._processExpiredTimer(timer, reinterpret_cast<TIMERHANDLE>(posixTimer), highValue, lowValue);
     }
     else
     {

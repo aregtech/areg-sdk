@@ -25,7 +25,7 @@ DEF_TRACE_SCOPE( centralapp_ConnectionManager_requestKeyTyping );
 
 BEGIN_MODEL(NECommon::MODEL_NAME_CENTRAL_SERVER)
 
-    BEGIN_REGISTER_THREAD( NECentralApp::THREAD_CENTRAL )
+    BEGIN_REGISTER_THREAD( NECentralApp::THREAD_CENTRAL, NECommon::INVALID_TIMEOUT)
         BEGIN_REGISTER_COMPONENT( NECommon::COMP_NAME_CENTRAL_SERVER, ConnectionManager )
             REGISTER_IMPLEMENT_SERVICE( NEConnectionManager::ServiceName, NEConnectionManager::InterfaceVersion )
             REGISTER_IMPLEMENT_SERVICE( NECentralMessager::ServiceName, NECentralMessager::InterfaceVersion )

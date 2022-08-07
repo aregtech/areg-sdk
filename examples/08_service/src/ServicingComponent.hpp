@@ -33,8 +33,8 @@ class ServicingComponent    : public    Component
 // Constants
 //////////////////////////////////////////////////////////////////////////
 private:
-    static const unsigned int   TIMER_TIMEOUT   =  Timer::TIMEOUT_100_MS;   //!< Timer timeout in milliseconds
-    static const int            TIMER_EVENTS    =  10;   					//!< Fired timer count.
+    static const unsigned int   TIMER_TIMEOUT   { NECommon::TIMEOUT_100_MS };   //!< Timer timeout in milliseconds
+    static const int            TIMER_EVENTS    { 10 };   					    //!< Fired timer count.
 
 //////////////////////////////////////////////////////////////////////////
 // Static methods

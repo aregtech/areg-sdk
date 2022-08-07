@@ -141,6 +141,17 @@ public:
     static void requestUnregisterClient( const ProxyAddress & whichClient );
 
     /**
+     * \brief   Static method to be called globally.
+     *          The function is called if the component thread should be terminated and
+     *          restarted again. This will terminate all worker threads, components, service,
+     *          and the proxies of the component thread. Delete and re-create and restart the
+     *          component thread, so that it can restart again.
+     * 
+     * \param   whichThread     The instance of valid component thread.
+     */
+    static void requestRecreateThread( const ComponentThread & whichThread );
+
+    /**
      * \brief   The function returns true, if Service Manager is running and ready to
      *          process Service Manager Events. Otherwise, it returns false.
      **/
@@ -236,6 +247,14 @@ private:
      * \brief   Returns true if remote Routing Service is enabled.
      **/
     static bool _isRoutingServiceEnabled( void );
+
+    /**
+     * \brief   The function generates an event to create and start component thread.
+     *          Only for internal use.
+     * 
+     * \param   componentThread The name of the thread to create and restart.
+     **/
+    static void _requestCreateThread( const String & componentThread );
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -452,6 +471,21 @@ private:
      *          notification, and the Service Manager Thread will stop and complete job.
      **/
     void _stopServiceManagerThread( void );
+
+    /**
+     * \brief   Terminates the component thread. No guarantee that all resources are cleanup.
+     *          After processing this method the thread is not operable anymore.
+     * \param   threadName  The name of component thread to terminate.
+     **/
+    bool _terminateComponentThread( const String& threadName );
+    
+    /**
+     * \brief   Creates new instance of the component thread after it was terminated.
+     *          All components, services, proxies and worker threads related with the
+     *          component thread are restarted again.
+     * \param   threadName  The name of the thread to re-start.
+     */
+    void _startComponentThread( const String & threadName );
 
     /**
      * \brief   Returns reference to ServiceManager object

@@ -238,15 +238,23 @@ public:
      * \param   consumer        Worker Thread consumer object, which
      *                          start and stop functions will be triggered.
      * \param   masterThread    The component thread, which owns worker thread,
+     * \param   watchdogTimeout The watchdog timeout in milliseconds.
      * \return	Pointer to created worker thread object.
      **/
-    WorkerThread * createWorkerThread( const String & threadName, IEWorkerThreadConsumer & consumer, ComponentThread & masterThread );
+    WorkerThread * createWorkerThread( const String & threadName, IEWorkerThreadConsumer & consumer, ComponentThread & masterThread, uint32_t watchdogTimeout );
 
     /**
      * \brief	Stops and deletes worker thread by given name
      * \param	threadName	Worker thread name to stop and delete.
      **/
     void deleteWorkerThread( const String & threadName );
+
+    /**
+     * \brief   Call to terminate the component execution and cleanup resources.
+     *          After calling this method the component deletes all worker threads,
+     *          cleans up resources and components become not operable anymore.
+     **/
+    void terminateSelf( void );
 
     /**
      * \brief	Registers Stub / Server object of component
@@ -331,7 +339,12 @@ private:
     /**
      * \brief   Returns reference of component object.
      **/
-    Component & self( void );
+    inline Component & self( void );
+
+    /**
+     * \brief   Shutdowns all registered services of the component.
+     **/
+    inline void _shutdownServices( void );
     /**
      * \brief   Static method. Returns the component thread of current component.
      **/

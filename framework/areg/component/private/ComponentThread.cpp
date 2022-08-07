@@ -60,10 +60,11 @@ inline ComponentThread* ComponentThread::_getCurrentComponentThread( void )
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
-ComponentThread::ComponentThread( const String & threadName )
+ComponentThread::ComponentThread( const String & threadName, uint32_t watchdogTimeout /*= NECommon::INVALID_TIMEOUT*/ )
     : DispatcherThread  ( threadName )
 
     , mCurrentComponent ( nullptr )
+    , mWatchdog         ( self(), watchdogTimeout )
     , mListComponent    ( )
 {
 }
@@ -158,23 +159,8 @@ void ComponentThread::shutdownComponents( void )
 {
     OUTPUT_DBG("Going to shutdown components in thread [ %s ].", getName().getString());
 
-    TEArrayList<ProxyBase *> proxyList;
-    ProxyBase::findThreadProxies( self(), proxyList );
-    for ( uint32_t i = 0; i < proxyList.getSize(); ++ i)
-    {
-        ProxyBase * proxy = proxyList.getAt(i);
-        ASSERT(proxy != nullptr);
-        proxy->stopProxy();
-    }
-
-    ListComponent::LISTPOS pos = mListComponent.firstPosition();
-    while (mListComponent.isValidPosition(pos))
-    {
-        Component* comObj = mListComponent.getNext(pos);
-        ASSERT(comObj != nullptr);
-        comObj->shutdownComponent(self());
-        OUTPUT_DBG("Shutdown component [ %s ] in thread [ %s ]...", comObj->getRoleName().getString(), getName().getString());
-    }
+    _shutdownProxies();
+    _shutdownComponents();
 }
 
 DispatcherThread* ComponentThread::getEventConsumerThread( const RuntimeClassID& whichClass )
@@ -192,6 +178,60 @@ DispatcherThread* ComponentThread::getEventConsumerThread( const RuntimeClassID&
     }
 
     return result;
+}
+
+void ComponentThread::terminateSelf(void)
+{
+    mHasStarted = false;
+    removeAllEvents();
+    mEventExit.setEvent();
+
+    _shutdownProxies();
+
+    while (mListComponent.isEmpty() == false)
+    {
+        Component* component{ nullptr };
+        mListComponent.removeLast(component);
+        ASSERT(component != nullptr);
+        component->terminateSelf();
+    }
+
+    TEArrayList<ProxyBase*> proxyList;
+    ProxyBase::findThreadProxies(self(), proxyList);
+    for (uint32_t i = 0; i < proxyList.getSize(); ++i)
+    {
+        ProxyBase* proxy = proxyList[i];
+        ASSERT(proxy != nullptr);
+        proxy->terminateSelf();
+    }
+
+    Thread::destroyThread(NECommon::TIMEOUT_10_MS);
+
+    delete this;
+}
+
+inline void ComponentThread::_shutdownProxies(void)
+{
+    TEArrayList<ProxyBase*> proxyList;
+    ProxyBase::findThreadProxies(self(), proxyList);
+    for (uint32_t i = 0; i < proxyList.getSize(); ++i)
+    {
+        ProxyBase* proxy = proxyList.getAt(i);
+        ASSERT(proxy != nullptr);
+        proxy->stopProxy();
+    }
+}
+
+inline void ComponentThread::_shutdownComponents(void)
+{
+    ListComponent::LISTPOS pos = mListComponent.firstPosition();
+    while (mListComponent.isValidPosition(pos))
+    {
+        Component* comObj = mListComponent.getNext(pos);
+        ASSERT(comObj != nullptr);
+        comObj->shutdownComponent(self());
+        OUTPUT_DBG("Shutdown component [ %s ] in thread [ %s ]...", comObj->getRoleName().getString(), getName().getString());
+    }
 }
 
 void ComponentThread::shutdownThread( void )
@@ -227,6 +267,15 @@ int ComponentThread::onThreadExit(void)
 
     shutdownComponents();
     destroyComponents();
+
+    return result;
+}
+
+bool ComponentThread::dispatchEvent(Event& eventElem)
+{
+    mWatchdog.startGuard();
+    bool result = DispatcherThread::dispatchEvent(eventElem);
+    mWatchdog.stopGuard();
 
     return result;
 }

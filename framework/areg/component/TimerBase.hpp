@@ -54,6 +54,19 @@ public:
     } eTimerType;
 
     /**
+     * \brief   TimerBase::CONTINUOUSLY
+     *          This value is used to set continues Timer, which will not
+     *          stop, until it is not requested to be stopped manually.
+     **/
+    static constexpr unsigned int   CONTINUOUSLY        = static_cast<unsigned int>(~0);    /*0xFFFFFFFF*/
+
+    /**
+     * \brief   TimerBase::ONE_TIME
+     *          Timer which is fired one time.
+     */
+    static constexpr unsigned int   ONE_TIME            = static_cast<unsigned int>(1u);
+
+    /**
      * \brief   Retrieves the number of milliseconds that have elapsed
      *          since the system was started, up to 49.7 days.
      **/
@@ -69,18 +82,26 @@ protected:
      * \param   timerType   The type of timer. Currently it is either Normal or Watchdog.
      * \param   timerName   The name of Timer. Can be empty if no name is needed.
      * \param   timeoutMs   The timer timeout in milliseconds. By default it is zero.
+     * \param   eventCount  The amount of times that event should run:
+     *                      - TimerBase::CONTINUOUSLY if runs continuously until manually stopped.
+     *                      - TimerBase::ONE_TIME if runs one time, then automatically stopped.
+     *                      If values is zero, does not run the timer.
+     *                      Any other number defines the amount of timeout events to fire.
      **/
-    explicit TimerBase( const eTimerType timerType, const String & timerName, unsigned int timeoutMs = NECommon::INVALID_TIMEOUT );
+    TimerBase( const eTimerType timerType
+             , const String & timerName
+             , unsigned int timeoutMs   = NECommon::INVALID_TIMEOUT
+             , unsigned int eventCount  = TimerBase::CONTINUOUSLY );
 
 public:
     /**
      * \brief   Destructor.
      **/
-    virtual ~TimerBase( void ) = default;
+    virtual ~TimerBase( void );
 
-//////////////////////////////////////////////////////////////////////////
-// Overrides
-//////////////////////////////////////////////////////////////////////////
+/************************************************************************/
+// TimerBase class overrides
+/************************************************************************/
 public:
     /**
      * \brief   Call to start timer. The timer should have valid timeout.
@@ -94,35 +115,59 @@ public:
      **/
     virtual void stopTimer( void ) = 0;
 
-protected:
-
-    /**
-     * \brief   Called by timer manager when timer is expired.
-     *          The function should returns false to stop the timer.
-     *          Otherwise, should return true.
-     *          The passed parameters are low and high 32-bits of
-     *          64-bit time in Coordinated Universal Time (UTC) format.
-     *
-     * \param   highValue   Th high 32-bit value to set.
-     * \param   lowValue    The low 32-bit value to set.
-     * \return  Returns true, if timer should still remain active.
-     *          Otherwise, should return false to stop the timer.
-     **/
-    virtual bool timerIsExpired(unsigned int highValue, unsigned int lowValue) = 0;
-
 //////////////////////////////////////////////////////////////////////////
 // Attributes
 //////////////////////////////////////////////////////////////////////////
-
-    /**
-     * \brief   Returns the name of timer. 
-     **/
-    inline const String & getName( void ) const;
-
+public:
     /**
      * \brief   Returns the timeout of timer in milliseconds.
      **/
     inline unsigned int getTimeout( void ) const;
+
+    /**
+     * \brief   Set the timeout of timer in milliseconds.
+     * \param   timeoutMs   The timeout of timer in milliseconds.
+     **/
+    inline void setTimeout(unsigned int timeoutMs);
+
+    /**
+     * \brief   Returns the amount of events, which timer still needs to send.
+     *          This function returns zero, if timer is stopped (automatically or manually),
+     *          and returns Timer::CONTINUOUSLY for continues events.
+     **/
+    inline unsigned int getEventCount(void) const;
+
+    /**
+     * \brief   Set the number of timeout events to fire.
+     * 
+     * \param   eventCount  The amount of times that event should run:
+     *                      - TimerBase::CONTINUOUSLY if runs continuously until manually stopped.
+     *                      - TimerBase::ONE_TIME if runs one time, then automatically stopped.
+     *                      If values is zero, does not run the timer.
+     *                      Any other number defines the amount of timeout events to fire.
+     **/
+    inline void setEventCount(unsigned int eventCount);
+
+    /**
+     * \brief   Returns optional context ID of the timer.
+     **/
+    inline ptr_type getContextId( void ) const;
+
+    /**
+     * \brief   Sets optional context ID of the timer.
+     * \param   contextId   The context ID of the timer.
+     **/
+    inline void setContextId( ptr_type contextId );
+
+    /**
+     * \brief   Returns the name of timer.
+     **/
+    inline const String& getName(void) const;
+
+    /**
+     * \brief   Returns the handle of the system waitable timer.
+     **/
+    inline TIMERHANDLE getHandle( void ) const;
 
     /**
      * \brief   Returns true if timer is active.
@@ -141,34 +186,64 @@ protected:
     inline TimerBase::eTimerType getTimerType( void ) const;
 
 //////////////////////////////////////////////////////////////////////////
+// Protected methods
+//////////////////////////////////////////////////////////////////////////
+protected:
+
+    /**
+     * \brief   Call to creates system waitable timer.
+     *          The timer can be used if succeeded to create handle.
+     *          It has OS specific implementation
+     * 
+     * \param   timer   The instance of the timer to create system waitable timer.
+     * \return  Returns true if succeeded to create system timer or the timer was already created.
+     **/
+    bool createWaitableTimer( void );
+
+    /**
+     * \brief   Call to destroy system waitable.
+     *          After calling this method, the timer cannot be used anymore.
+     * 
+     * \param   timer   The instance of the timer to destroy system waitable timer.
+     **/
+    void destroyWaitableTimer( void );
+
+//////////////////////////////////////////////////////////////////////////
 // Member variables
 //////////////////////////////////////////////////////////////////////////
 protected:
     /**
      * \brief   The type of the timer.
      */
-    eTimerType      mTimerType;
+    const eTimerType    mTimerType;
+    /**
+     * \brief   The timer handle.
+     */
+    TIMERHANDLE         mHandle;
+    /**
+     * \brief   The timer optional context ID.
+     */
+    ptr_type            mContextId;
     /**
      * \brief   Timer name. If not empty, it is unique name
      **/
-    String          mName;
+    const String        mName;
     /**
      * \brief   Timeout to fire timer.
      **/
-    unsigned int    mTimeoutInMs;
-
+    unsigned int        mTimeoutInMs;
     /**
-     * \brief   Flag, indicating whether the timer is already started by timer manager or not.
+     * \brief   The amount of events to fire
      **/
-    bool            mStarted;
+    unsigned int        mEventsCount;
     /**
      * \brief   Flag, indicating whether the timer is active or not.
      **/
-    bool            mActive;
+    bool                mActive;
     /**
      * \brief   Synchronization object
      **/
-    ResourceLock    mLock;
+    ResourceLock        mLock;
 
 private:
     TimerBase( void ) = delete;
@@ -181,7 +256,22 @@ private:
 
 inline bool TimerBase::isValid( void ) const
 {
-    return (mTimeoutInMs != NECommon::INVALID_TIMEOUT);
+    return ((mTimeoutInMs != NECommon::INVALID_TIMEOUT) && (mHandle != nullptr));
+}
+
+inline void TimerBase::setEventCount(unsigned int eventCount)
+{
+    mEventsCount = eventCount;
+}
+
+inline ptr_type TimerBase::getContextId(void) const
+{
+    return mContextId;
+}
+
+inline void TimerBase::setContextId(ptr_type contextId)
+{
+    mContextId = contextId;
 }
 
 inline const String & TimerBase::getName( void ) const
@@ -192,6 +282,21 @@ inline const String & TimerBase::getName( void ) const
 inline unsigned int TimerBase::getTimeout( void ) const
 {
     return mTimeoutInMs;
+}
+
+inline void TimerBase::setTimeout(unsigned int timeoutMs)
+{
+    mTimeoutInMs = timeoutMs;
+}
+
+inline unsigned int TimerBase::getEventCount(void) const
+{
+    return mEventsCount;
+}
+
+inline TIMERHANDLE TimerBase::getHandle(void) const
+{
+    return mHandle;
 }
 
 inline bool TimerBase::isActive(void) const

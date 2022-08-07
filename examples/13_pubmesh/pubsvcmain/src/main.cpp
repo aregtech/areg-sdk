@@ -36,7 +36,7 @@
 BEGIN_MODEL(NECommon::ModelName)
 
     // define component thread
-    BEGIN_REGISTER_THREAD( "TestMainServiceThread" )
+    BEGIN_REGISTER_THREAD( "TestMainServiceThread", NECommon::INVALID_TIMEOUT)
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
         BEGIN_REGISTER_COMPONENT( NECommon::MainService, MainServiceComponent )
             // register RemoteRegistry, SystemShutdown service implementation and the dependency.
@@ -70,8 +70,9 @@ int main()
 {
     // force to start logging with default settings
     TRACER_CONFIGURE_AND_START( nullptr );
-    // Initialize application, enable logging, servicing and the timer.
-    Application::initApplication(true, true, true, true, nullptr, nullptr );
+    // Initialize application, enable logging, servicing, routing, timer and watchdog.
+    // Use default settings.
+    Application::initApplication( );
 
     do 
     {

@@ -51,9 +51,10 @@ list(APPEND areg_SRC
 	${areg_BASE}/component/private/ThreadEventBase.cpp
 	${areg_BASE}/component/private/Timer.cpp
 	${areg_BASE}/component/private/TimerEventData.cpp
-	${areg_BASE}/component/private/TimerInfo.cpp
 	${areg_BASE}/component/private/TimerManager.cpp
-	${areg_BASE}/component/private/TimerManagingEvent.cpp
+	${areg_BASE}/component/private/TimerManagerEvent.cpp
+	${areg_BASE}/component/private/Watchdog.cpp
+	${areg_BASE}/component/private/WatchdogManager.cpp
 	${areg_BASE}/component/private/WorkerThread.cpp
 )
 include("${areg_BASE}/component/private/posix/CMakeLists.txt")
