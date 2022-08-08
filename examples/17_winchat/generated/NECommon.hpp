@@ -294,7 +294,8 @@ inline NECommon::sConnection::sConnection( void )
     , nickName        (  )
     , connectTime     (  )
     , connectedTime   (  )
-{   ;   }
+{
+}
 /**
  * \brief   Initialize sConnection data by setting parameters.
  **/
@@ -303,7 +304,8 @@ inline NECommon::sConnection::sConnection( const uint32_t & _cookie, const Strin
     , nickName        ( _nickName )
     , connectTime     ( _connectTime )
     , connectedTime   ( _connectedTime )
-{   ;   }
+{
+}
 /**
  * Every filed of structure should have copy constructor.
  **/
@@ -312,12 +314,14 @@ inline NECommon::sConnection::sConnection( const NECommon::sConnection & src )
     , nickName        ( src.nickName )
     , connectTime     ( src.connectTime )
     , connectedTime   ( src.connectedTime )
-{   ;   }
+{
+}
 /**
  * No extra function is called, every field of structure should be able to be cleaned.
  **/
 inline NECommon::sConnection::~sConnection( void )
-{   ;   }
+{
+}
 /**
  * Copies data from given source.
  **/

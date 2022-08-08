@@ -571,10 +571,10 @@ bool File::existFile( const char* filePath )
 
 String File::getFileFullPath( const char* filePath )
 {
-    String result(filePath};
-    if ( NEString::isEmpty<char>(filePath) == false)
+    String result{filePath};
+    if ( result.isEmpty() == false )
     {
-        char * pathCanonical  = realpath(filePath, nullptr);
+        char * pathCanonical  = realpath(result.getString(), nullptr);
         if (pathCanonical != nullptr)
         {
             result = pathCanonical;

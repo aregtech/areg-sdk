@@ -10,7 +10,7 @@
  *
  * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/base/GEMacros.h
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
+ * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit
  * \author      Artak Avetyan
  * \brief       AREG Platform, Predefined MACRO
  *
@@ -129,14 +129,12 @@
 #endif  // MACRO_MAKE_64
 
 /**
- * \brief   Combines high and low bits of 64-bit number into 32-bit number, i.e.
- *          high 16-bits are set high bits of 64-bit number
- *          low 16-bits are set low bits of 64-bit number
+ * \brief   Makes 64-bit number from 2 16-bit numbers
  **/
 #ifndef MACRO_MAKE_32
-    #define MACRO_MAKE_32(Bit64)                \
-            (   ( (static_cast<unsigned int>( (static_cast<uint64_t>(Bit64) >> 32) & static_cast<uint64_t>(0x00000000FFFFFFFF)) << 16) & static_cast<unsigned int>(0xFFFF0000) )  |  \
-                ( (static_cast<unsigned int>( (static_cast<uint64_t>(Bit64) >>  0) & static_cast<uint64_t>(0x00000000FFFFFFFF)) <<  0) & static_cast<unsigned int>(0x0000FFFF) )  )
+    #define MACRO_MAKE_32(hi16, lo16)                \
+            (   ( (static_cast<uint32_t>(hi16) << 16) & static_cast<uint32_t>(0xFFFF0000) ) |   \
+                ( (static_cast<uint32_t>(lo16) <<  0) & static_cast<uint32_t>(0x0000FFFF) ) )
 #endif  // MACRO_MAKE_32
 
 #ifndef MACRO_64_LO_BYTE32
@@ -415,7 +413,7 @@
 
     #ifndef ASSERT
         #define ASSERT(x)                       assert(x)
-    #endif   // ASSERT   
+    #endif   // ASSERT
     #ifndef ASSERT_MSG
         #define  ASSERT_MSG(x, msg)             ASSERT(x)
     #endif   // ASSERT_MSG

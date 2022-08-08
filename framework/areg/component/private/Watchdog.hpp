@@ -60,7 +60,7 @@ public:
     /**
      * \brief   The Sequence number changed each time watchdog is started. It can be zero.
      **/
-    using GUARD_ID      = unsigned short;
+    using SEQUENCE_ID   = unsigned short;
     /**
      * \brief   The unique ID of watchdog guard. It is not a zero and the maximum value is 0xFFFF.
      **/
@@ -177,7 +177,7 @@ public:
 
     /**
      * \brief   Extracts the Guard ID from previously generated watchdog ID.
-     * 
+     *
      * \param   watchdogId  The previously generated watchdog ID.
      * \return  Guard ID, which exists in watchdog ID value.
      **/

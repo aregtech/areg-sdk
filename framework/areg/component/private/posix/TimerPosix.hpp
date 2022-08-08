@@ -48,6 +48,7 @@ class TimerPosix
 // Friend class and constants
 //////////////////////////////////////////////////////////////////////////
     friend class TimerManager;
+    friend class WatchdogManager;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor.
@@ -231,11 +232,6 @@ private:
      * \brief   The timer timeout information.
      */
     struct timespec         mDueTime;
-
-    /**
-     * \brief   The ID of thread where timer is started.
-     */
-    id_type                 mThreadId;
 
     /**
      * \brief   Synchronization object.

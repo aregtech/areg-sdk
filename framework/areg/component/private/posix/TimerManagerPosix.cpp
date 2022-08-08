@@ -39,58 +39,44 @@ void TimerManager::_systemTimerStop( TIMERHANDLE timerHandle )
 {
     TimerPosix * posixTimer = reinterpret_cast<TimerPosix *>(timerHandle);
     if ( posixTimer != nullptr )
+    {
         posixTimer->stopTimer();
+    }
 }
 
-bool TimerManager::_systemTimerStart( TimerInfo & timerInfo, MapTimerTable & timerTable )
+bool TimerManager::_systemTimerStart( Timer & timer )
 {
     TRACE_SCOPE(areg_component_private_posix_TimerManager__systemTimerStart);
 
-    bool result = false;
-    TimerPosix * posixTimer   = reinterpret_cast<TimerPosix *>(timerInfo.getHandle());
-    Timer * whichTimer        = timerInfo.getTimer();
-    if ((posixTimer != nullptr) && (whichTimer != nullptr))
+    bool result{ false };
+    TimerPosix * posixTimer   = reinterpret_cast<TimerPosix *>(timer.getHandle());
+    ASSERT(posixTimer != nullptr);
+
+    if (posixTimer->createTimer(&TimerManager::_defaultPosixTimerExpiredRoutine))
     {
-    	ASSERT(posixTimer->mContext == nullptr);
-        if (posixTimer->createTimer(&TimerManager::_defaultPosixTimerExpiredRoutine))
+        result = true;
+        if (posixTimer->startTimer(timer) == false)
         {
-            struct timespec ts;
-            clock_gettime(CLOCK_REALTIME, &ts);
-            timerInfo.timerStarting( static_cast<unsigned int>(ts.tv_sec), static_cast<unsigned int>(ts.tv_nsec));
-            timerTable.registerObject( whichTimer, timerInfo );
+            TRACE_ERR( "System Failed to start timer in period [ %d ] ms, timer name [ %s ]. System Error [ %p ]"
+                            , timer.getTimeout( )
+                            , timer.getName( ).getString()
+                            , static_cast<id_type>(errno) );
 
-            result = true;
-            if (posixTimer->startTimer(*whichTimer) == false)
-            {
-                TRACE_ERR( "System Failed to start timer in period [ %d ] ms, timer name [ %s ]. System Error [ %p ]"
-                                , whichTimer->getTimeout( )
-                                , whichTimer->getName( ).getString()
-                                , static_cast<id_type>(errno) );
-
-                result = false;
-                timerInfo.mTimerState   = TimerInfo::eTimerState::TimerIdle;
-                timerTable.updateObject( whichTimer, timerInfo );
-            }
-            else
-            {
-                TRACE_DBG("Started timer [ %s ], starting time at [ %u ]:[ %u ], expire time at [ %u ]:[ %u ], difference: [ %u ] sec and [ %u ] ns "
-                            , whichTimer->getName().getString()
-                            , ts.tv_sec
-                            , ts.tv_nsec
-                            , posixTimer->getDueTime().tv_sec
-                            , posixTimer->getDueTime().tv_nsec
-                            , posixTimer->getDueTime().tv_sec - ts.tv_sec
-                            , posixTimer->getDueTime().tv_nsec- ts.tv_nsec);
-            }
+            result = false;
         }
         else
         {
-        	TRACE_ERR("Failed to create instance of POSIX system timer [ %s ]", whichTimer->getName().getString());
+            TRACE_DBG("Started timer [ %s ], expire time at [ %u ]:[ %u ], difference: [ %u ] sec and [ %u ] ns "
+							, whichTimer->getName().getString()
+							, posixTimer->getDueTime().tv_sec
+							, posixTimer->getDueTime().tv_nsec
+							, posixTimer->getDueTime().tv_sec - ts.tv_sec
+							, posixTimer->getDueTime().tv_nsec- ts.tv_nsec);
         }
     }
     else
     {
-    	TRACE_ERR("Either POSIX system [ %p ], or the timer [ %p ] object are null", posixTimer, whichTimer);
+    	TRACE_ERR("Failed to create instance of POSIX system timer [ %s ]", whichTimer->getName().getString());
     }
 
     return result;

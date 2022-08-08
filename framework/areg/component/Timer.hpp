@@ -262,7 +262,7 @@ private:
      *          The function will be ignored if maximum queue count in zero and/or is less
      *          than the event count.
      **/
-    inline void _queueTimer( void );
+    void _queueTimer( void );
 
     /**
      * \brief   Triggered in Timer Event object destructor, indicating that timer is removed from queue.
@@ -271,7 +271,7 @@ private:
      *          The function will be ignored if timer was stopped manually or it is completed to be fired.
      *          The function will be ignored if the maximum queue count is zero.
      **/
-    inline void _unqueueTimer( void );
+    void _unqueueTimer( void );
 
     /**
      * \brief   Returns reference to Timer object.

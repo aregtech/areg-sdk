@@ -83,22 +83,6 @@ typedef id_type    ptr_type;
 typedef uint64_t    ITEM_ID;
 
 /**
- * \brief   Type, defining position of element in Lists.
- **/
-/**
- * \brief   Type definition of position in Linked List
- **/
-typedef void *          LISTPOS;
-/**
- * \brief   Type definition of position in Stack List
- **/
-typedef void *          STACKPOS;
-/**
- * \brief   Type definition of position in Hash Map
- **/
-typedef void *          MAPPOS;
-
-/**
  * \brief   Type definition of socket descriptor. Differs in on different platforms
  **/
 #ifdef  _WINDOWS

@@ -25,6 +25,7 @@
 
 #include "areg/base/private/posix/NESynchTypesIX.hpp"
 #include "areg/base/IESynchObject.hpp"
+#include "areg/base/String.hpp"
 
 //////////////////////////////////////////////////////////////////////////
 // Declared classes and hierarchies.

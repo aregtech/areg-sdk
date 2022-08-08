@@ -132,7 +132,7 @@ bool Application::isModelLoaded(const char * modelName)
 
 void Application::setWorkingDirectory( const char * dirPath /*= nullptr*/ )
 {
-    String path( NEString::isEmpty<char>(dirPath) ? Process::getInstance().getPath() : dirPath);
+    String path( NEString::isEmpty<char>(dirPath) ? Process::getInstance().getPath().getString() : dirPath);
 
 #ifdef _DEBUG
     
@@ -254,7 +254,7 @@ bool Application::startServiceManager( void )
     Application::_setAppState(Application::eAppState::AppStateInitializing);
 
     bool result = false;
-    Application & theApp  = Application::getInstance( );
+
     if ( ServiceManager::isServiceManagerStarted( ) == false )
     {
         if (ServiceManager::_startServiceManager( ))

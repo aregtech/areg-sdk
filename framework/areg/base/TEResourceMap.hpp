@@ -464,7 +464,7 @@ inline bool TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::remo
 {
     Lock lock(mSynchObj);
     bool result = false;
-    MAPPOS pos  = HashMap::firstPosition();
+    typename HashMap::MAPPOS pos  = HashMap::firstPosition();
     if (HashMap::isValidPosition(pos))
     {
         result = true;

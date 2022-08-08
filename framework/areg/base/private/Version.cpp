@@ -70,6 +70,14 @@ Version::Version(const IEInStream & stream)
     stream >> mPatch;
 }
 
+Version::Version(const char * version)
+    : mMajor    (0)
+    , mMinor    (0)
+    , mPatch    (0)
+{
+    convFromString( version );
+}
+
 Version::Version(const String & version)
     : mMajor    (0)
     , mMinor    (0)
@@ -98,6 +106,11 @@ Version & Version::convFromString( const String & version )
     mPatch  = (mMajor != 0) && (mMinor != 0) ? patch.toUInt32() : 0;
 
     return (*this);
+}
+
+Version & Version::convFromString( const char * version )
+{
+	return convFromString( String(version != nullptr ? version : String::EmptyString) );
 }
 
 Version & Version::operator = ( const Version &src )

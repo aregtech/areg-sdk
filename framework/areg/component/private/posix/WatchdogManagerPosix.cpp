@@ -35,9 +35,9 @@ DEF_TRACE_SCOPE(areg_component_private_posix_WatchdogManager__defaultPosixTimerE
 // Linux specific methods
 //////////////////////////////////////////////////////////////////////////
 
-void WatchdogManager::_systemTimerStop(const Watchdog& watchdog)
+void WatchdogManager::_systemTimerStop(TIMERHANDLE handle)
 {
-    TimerPosix* posixTimer = reinterpret_cast<TimerPosix*>(watchdog.getHandle());
+    TimerPosix* posixTimer = reinterpret_cast<TimerPosix*>(handle);
     if (posixTimer != nullptr)
     {
         posixTimer->stopTimer();
@@ -55,7 +55,7 @@ bool WatchdogManager::_systemTimerStart(Watchdog& watchdog)
         if (posixTimer->createTimer(&WatchdogManager::_defaultPosixWatchdogExpiredRoutine))
         {
             result = true;
-            if (posixTimer->startTimer(watchdog.getTimeout(), 1))
+            if (posixTimer->startTimer(watchdog))
             {
                 TRACE_DBG("Started watchdog timer [ %s ] with timeout [ %u ] ms", watchdog.getName().getString(), watchdog.getTimeout());
                 result = true;
@@ -86,21 +86,18 @@ void WatchdogManager::_defaultPosixWatchdogExpiredRoutine(union sigval argSig)
 {
     TRACE_SCOPE(areg_component_private_posix_WatchdogManager__defaultPosixTimerExpiredRoutine);
 
-    TimerPosix* posixTimer = reinterpret_cast<TimerPosix*>(argSig.sival_ptr);
-    ASSERT(posixTimer != nullptr);
-    ASSERT(posixTimer->getContextId() != 0);
-    if (posixTimer->isValid())
+    ASSERT(argSig.sival_ptr != nullptr);
+    WatchdogManager& watchdogManager = WatchdogManager::getInstance();
+    Watchdog::WATCHDOG_ID watchdogId = reinterpret_cast<Watchdog::WATCHDOG_ID>(argSig.sival_ptr);
+    Watchdog::GUARD_ID guardId 	= Watchdog::makeGuardId(watchdogId);
+    Watchdog* watchdog 			= watchdogManager.mWatchdogResource.findResourceObject(guardId);
+	TimerPosix * posixTimer		= watchdog != nullptr ? static_cast<TimerPosix *>(watchdog->getHandle()) : nullptr;
+    if (posixTimer != nullptr)
     {
-        TRACE_DBG("Watchdog Timer [ 0u ] expired at [ %u ] sec and [ %u ] ns, going to notify thread [ %u ]"
-                        , posixTimer->mContextId
-                        , posixTimer->getDueTime().tv_sec
-                        , posixTimer->getDueTime().tv_nsec
-                        , static_cast<unsigned int>(posixTimer->mThreadId));
-
-        unsigned int highValue = static_cast<unsigned int>(posixTimer->mDueTime.tv_sec);
-        unsigned int lowValue = static_cast<unsigned int>(posixTimer->mDueTime.tv_nsec);
+        unsigned int highValue 	= static_cast<unsigned int>(posixTimer->mDueTime.tv_sec);
+        unsigned int lowValue  	= static_cast<unsigned int>(posixTimer->mDueTime.tv_nsec);
         posixTimer->stopTimer();
-        WatchdogManager::getInstance()._timerExpired(posixTimer->mContextId, highValue, lowValue);
+        watchdogManager._processExpiredTimer(watchdog, watchdogId, highValue, lowValue);
     }
     else
     {

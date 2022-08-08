@@ -8,7 +8,7 @@
  *
  * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/component/private/Timer.cpp
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
+ * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit
  * \author      Artak Avetyan
  * \brief       AREG Platform, Timer class.
  *              Use to fire timer.
@@ -158,7 +158,7 @@ void Timer::timerStarting(unsigned int highValue, unsigned int lowValue, ptr_typ
     mExpiredAt = 0;
 }
 
-inline void Timer::_queueTimer( void )
+void Timer::_queueTimer( void )
 {
     Lock lock(mLock);
 
@@ -179,7 +179,7 @@ inline void Timer::_queueTimer( void )
     }
 }
 
-inline void Timer::_unqueueTimer( void )
+void Timer::_unqueueTimer( void )
 {
     Lock lock(mLock);
 
