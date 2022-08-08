@@ -64,6 +64,7 @@ include(${AREG_EXAMPLES}/13_pubmesh/CMakeLists.txt)
 include(${AREG_EXAMPLES}/14_pubtraffic/CMakeLists.txt)
 include(${AREG_EXAMPLES}/15_pubworker/CMakeLists.txt)
 include(${AREG_EXAMPLES}/16_pubfsm/CMakeLists.txt)
+include(${AREG_EXAMPLES}/18_locwatchdog/CMakeLists.txt)
 
 
 # Iterating over fileList and extract each source file,

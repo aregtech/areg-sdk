@@ -23,10 +23,11 @@ include $(AREG_EXAMPLES)/13_pubmesh/Makefile
 include $(AREG_EXAMPLES)/14_pubtraffic/Makefile
 include $(AREG_EXAMPLES)/15_pubworker/Makefile
 include $(AREG_EXAMPLES)/16_pubfsm/Makefile
+include $(AREG_EXAMPLES)/18_locwatchdog/Makefile
 
 examples: 00_helloservice 01_hello 02_buffer 03_file 04_trace \
     05_timer 06_threads 07_synch 08_service 09_svcmulti \
     10_locsvc 11_locmesh 12_pubsvc 13_pubmesh \
-    14_pubtraffic 15_pubworker 16_pubfsm
+    14_pubtraffic 15_pubworker 16_pubfsm 18_locwatchdog
 
 .PHONY: examples
