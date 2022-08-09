@@ -105,7 +105,7 @@ private:
      * \tparam  Value   The value is a digital number of scope.
      **/
 
-    using ListScopes        = StringToIntegerMap;
+    using ListScopes        = StringToIntegerHashMap;
     /**
      * \brief   The list of logging properties
      * \tparam  Value   The value is a property

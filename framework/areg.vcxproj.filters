@@ -1055,6 +1055,9 @@
     <ClInclude Include="areg\component\private\TimerManagerEvent.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="areg\base\TEMap.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="areg\resources\areg_post_build.bat">

@@ -222,6 +222,7 @@
     <ClInclude Include="areg\base\DateTime.hpp" />
     <ClInclude Include="areg\base\private\posix\SpinLockIX.hpp" />
     <ClInclude Include="areg\base\private\win32\SpinLockWin32.hpp" />
+    <ClInclude Include="areg\base\TEMap.hpp" />
     <ClInclude Include="areg\base\TETemplateBase.hpp" />
     <ClInclude Include="areg\base\IESynchObject.hpp" />
     <ClInclude Include="areg\base\NECommon.hpp" />

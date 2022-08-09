@@ -598,7 +598,7 @@ private:
      * \brief   Thread resource mapping by thread ID.
      *          The unique thread ID is set when thread is created
      **/
-    using   MapThreadID             = TEIdHashMap< Thread* >;
+    using   MapThreadID             = TEIdMap< Thread* >;
     using   ImplThreadIDResource    = TEResourceMapImpl<id_type, Thread>;
     using   MapThreadIDResource     = TELockResourceMap<id_type, Thread, MapThreadID,ImplThreadIDResource>;
     /**

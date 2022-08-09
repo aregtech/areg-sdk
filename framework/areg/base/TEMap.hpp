@@ -1,5 +1,5 @@
-#ifndef AREG_BASE_TEHASHMAP_HPP
-#define AREG_BASE_TEHASHMAP_HPP
+#ifndef AREG_BASE_TEMAP_HPP
+#define AREG_BASE_TEMAP_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -9,12 +9,11 @@
  * If not, please contact to info[at]aregtech.com
  *
  * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
- * \file        areg/base/TEHashMap.hpp
+ * \file        areg/base/TEMap.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit
  * \author      Artak Avetyan
- * \brief       AREG Platform, Hash Map class template.
- *              Hash Map object to store elements by its hash value.
- *              Every element is accessed by unique Key value.
+ * \brief       AREG Platform, Map class template.
+ *              In the map object every element is accessed by the unique key.
  *
  ************************************************************************/
 /************************************************************************
@@ -26,10 +25,10 @@
 #include "areg/base/IEIOStream.hpp"
 #include "areg/base/NEMemory.hpp"
 
-#include <unordered_map>
+#include <map>
 
 //////////////////////////////////////////////////////////////////////////
-// TEHashMap<KEY, VALUE> class template declaration
+// TEMap<KEY, VALUE> class template declaration
 //////////////////////////////////////////////////////////////////////////
 
 /**
@@ -76,14 +75,14 @@
  *                  possible to convert to type 'const VALUE&'.
  **/
 template < typename KEY, typename VALUE>
-class TEHashMap : protected Constless<std::unordered_map<KEY, VALUE>>
+class TEMap : protected Constless<std::map<KEY, VALUE>>
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
     //! Position in the hash map
-    using MAPPOS    = typename std::unordered_map<KEY, VALUE>::iterator;
+    using MAPPOS    = typename std::map<KEY, VALUE>::iterator;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -91,27 +90,26 @@ public:
 public:
 
     /**
-     * \brief	Constructs empty hash-map with hash table size 'hashSize'.
-     * \param	hashSize	The size of has map table. By default, MAP_DEFAULT_HASH_SIZE (64).
+     * \brief	Creates empty map.
      **/
-    TEHashMap( uint32_t hashSize = NECommon::MAP_DEFAULT_HASH_SIZE);
+    TEMap( void ) = default;
 
     /**
      * \brief   Copies entries from given source.
      * \param   src     The source to copy data.
      **/
-    TEHashMap( const TEHashMap<KEY, VALUE> & src ) = default;
+    TEMap( const TEMap<KEY, VALUE> & src ) = default;
 
     /**
      * \brief   Moves entries from given source.
      * \param   src     The source to move data.
      **/
-    TEHashMap( TEHashMap<KEY, VALUE> && src ) noexcept = default;
+    TEMap( TEMap<KEY, VALUE> && src ) noexcept = default;
 
     /**
      * \brief   Destructor.
      **/
-    ~TEHashMap( void ) = default;
+    ~TEMap( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
@@ -140,7 +138,7 @@ public:
      *          present in the source.
      * \param   src     The source of hash-map.
      **/
-    inline TEHashMap<KEY, VALUE>& operator = ( const TEHashMap<KEY, VALUE> & src ) = default;
+    inline TEMap<KEY, VALUE>& operator = ( const TEMap<KEY, VALUE> & src ) = default;
 
     /**
      * \brief   Move operator. Moves all values from given source.
@@ -149,21 +147,21 @@ public:
      *          present in the source.
      * \param   src     The source of hash-map.
      **/
-    inline TEHashMap<KEY, VALUE>& operator = ( TEHashMap<KEY, VALUE> && src ) noexcept = default;
+    inline TEMap<KEY, VALUE>& operator = ( TEMap<KEY, VALUE> && src ) noexcept = default;
 
     /**
      * \brief   Checks equality of 2 hash-map objects, and returns true if they are equal.
      *          There should be possible to compare KEY and VALUE type entries of hash-map.
      * \param   other   The hash-map object to compare.
      **/
-    inline bool operator == ( const TEHashMap<KEY, VALUE> & other ) const;
+    inline bool operator == ( const TEMap<KEY, VALUE> & other ) const;
 
     /**
      * \brief   Checks inequality of 2 hash-map objects, and returns true if they are not equal.
      *          There should be possible to compare KEY and VALUE type entries of hash-map.
      * \param   other   The hash-map object to compare.
      **/
-    inline bool operator != ( const TEHashMap<KEY, VALUE> & other ) const;
+    inline bool operator != ( const TEMap<KEY, VALUE> & other ) const;
 
 /************************************************************************/
 // Friend global operators to make Hash Map streamable
@@ -180,7 +178,7 @@ public:
      * \param   input   The hash-map object to save initialized values.
      **/
     template < typename K, typename V >
-    friend inline const IEInStream & operator >> ( const IEInStream & stream, TEHashMap<K, V> & input);
+    friend inline const IEInStream & operator >> ( const IEInStream & stream, TEMap<K, V> & input);
 
     /**
      * \brief   Writes to the stream the key and value pairs of hash-map.
@@ -191,7 +189,7 @@ public:
      * \param   input   The hash-map object containing value to stream.
      **/
     template < typename K, typename V >
-    friend inline IEOutStream & operator << ( IEOutStream & stream, const TEHashMap<K, V> & output );
+    friend inline IEOutStream & operator << ( IEOutStream & stream, const TEMap<K, V> & output );
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes
@@ -319,8 +317,8 @@ public:
      *          then that element is not extracted from the source and remains unchanged.
      * \param   source  The source of hash map to merge.
      */
-    inline void merge( const TEHashMap<KEY, VALUE> & source );
-    inline void merge( TEHashMap<KEY, VALUE> && source );
+    inline void merge( const TEMap<KEY, VALUE> & source );
+    inline void merge( TEMap<KEY, VALUE> && source );
 
     /**
      * \brief   Adds new entry with the specified key in the hash map if it is not existing.
@@ -453,7 +451,7 @@ protected:
     /**
      * \brief   Instance of map to store key-value pairs.
      **/
-    std::unordered_map<KEY, VALUE>  mValueList;
+    std::map<KEY, VALUE>  mValueList;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -461,86 +459,79 @@ protected:
 //////////////////////////////////////////////////////////////////////////
 
 //////////////////////////////////////////////////////////////////////////
-// TEHashMap<KEY, VALUE> class template Implement
+// TEMap<KEY, VALUE> class template Implement
 //////////////////////////////////////////////////////////////////////////
 
 template < typename KEY, typename VALUE >
-TEHashMap<KEY, VALUE>::TEHashMap(uint32_t hashSize /* = NECommon::MAP_DEFAULT_HASH_SIZE */)
-    : Constless<std::unordered_map<KEY, VALUE>>( )
-    , mValueList(hashSize)
-{
-}
-
-template < typename KEY, typename VALUE >
-inline bool TEHashMap<KEY, VALUE>::operator == (const TEHashMap<KEY, VALUE>& other) const
+inline bool TEMap<KEY, VALUE>::operator == (const TEMap<KEY, VALUE>& other) const
 {
     return (mValueList == other.mValueList);
 }
 
 template < typename KEY, typename VALUE >
-inline bool TEHashMap<KEY, VALUE>::operator != ( const TEHashMap<KEY, VALUE>& other ) const
+inline bool TEMap<KEY, VALUE>::operator != ( const TEMap<KEY, VALUE>& other ) const
 {
     return (mValueList != other.mValueList);
 }
 
 template < typename KEY, typename VALUE >
-inline VALUE & TEHashMap<KEY, VALUE>::operator [] (const KEY& Key)
+inline VALUE & TEMap<KEY, VALUE>::operator [] (const KEY& Key)
 {
     return mValueList[Key];
 }
 
 template < typename KEY, typename VALUE >
-inline const VALUE & TEHashMap<KEY, VALUE>::operator [] ( const KEY & Key ) const
+inline const VALUE & TEMap<KEY, VALUE>::operator [] ( const KEY & Key ) const
 {
     return mValueList[Key];
 }
 
 template < typename KEY, typename VALUE >
-inline bool TEHashMap<KEY, VALUE>::isEmpty(void) const
+inline bool TEMap<KEY, VALUE>::isEmpty(void) const
 {
     return mValueList.empty();
 }
 
 template < typename KEY, typename VALUE >
-inline uint32_t TEHashMap<KEY, VALUE>::getSize( void ) const
+inline uint32_t TEMap<KEY, VALUE>::getSize( void ) const
 {
     return static_cast<uint32_t>(mValueList.size());
 }
 
 template < typename KEY, typename VALUE >
-inline typename TEHashMap<KEY, VALUE>::MAPPOS TEHashMap<KEY, VALUE>::firstPosition( void ) const
+inline typename TEMap<KEY, VALUE>::MAPPOS TEMap<KEY, VALUE>::firstPosition( void ) const
 {
     auto pos = mValueList.begin();
-    return Constless<std::unordered_map<KEY, VALUE>>::iter(mValueList, pos);
+    return Constless<std::map<KEY, VALUE>>::iter(mValueList, pos);
 }
 
 template < typename KEY, typename VALUE >
-inline bool TEHashMap<KEY, VALUE>::isStartPosition(const MAPPOS pos) const
+inline bool TEMap<KEY, VALUE>::isStartPosition(const MAPPOS pos) const
 {
     return (pos == mValueList.begin());
 }
 
 template < typename KEY, typename VALUE >
-inline typename TEHashMap<KEY, VALUE>::MAPPOS TEHashMap<KEY, VALUE>::invalidPosition(void) const
+inline typename TEMap<KEY, VALUE>::MAPPOS TEMap<KEY, VALUE>::invalidPosition(void) const
 {
 	auto end = mValueList.end();
-    return Constless<std::unordered_map<KEY, VALUE>>::iter(mValueList, end);
+    return Constless<std::map<KEY, VALUE>>::iter(mValueList, end);
 }
 
 template < typename KEY, typename VALUE >
-inline bool TEHashMap<KEY, VALUE>::isInvalidPosition(const MAPPOS pos) const
+inline bool TEMap<KEY, VALUE>::isInvalidPosition(const MAPPOS pos) const
 {
     return (pos == mValueList.end());
 }
 
 template < typename KEY, typename VALUE >
-inline bool TEHashMap<KEY, VALUE>::isValidPosition(const MAPPOS pos) const
+inline bool TEMap<KEY, VALUE>::isValidPosition(const MAPPOS pos) const
 {
     return (pos != mValueList.end());
 }
 
 template < typename KEY, typename VALUE >
-inline bool TEHashMap<KEY, VALUE>::checkPosition(const MAPPOS pos) const
+inline bool TEMap<KEY, VALUE>::checkPosition(const MAPPOS pos) const
 {
     auto it = mValueList.begin();
     while ((it != mValueList.end()) && (it != pos))
@@ -552,25 +543,25 @@ inline bool TEHashMap<KEY, VALUE>::checkPosition(const MAPPOS pos) const
 }
 
 template < typename KEY, typename VALUE >
-inline void TEHashMap<KEY, VALUE>::clear(void)
+inline void TEMap<KEY, VALUE>::clear(void)
 {
     mValueList.clear();
 }
 
 template < typename KEY, typename VALUE >
-inline void TEHashMap<KEY, VALUE>::freeExtra(void)
+inline void TEMap<KEY, VALUE>::freeExtra(void)
 {
     mValueList.clear();
 }
 
 template < typename KEY, typename VALUE >
-inline void TEHashMap<KEY, VALUE>::release(void)
+inline void TEMap<KEY, VALUE>::release(void)
 {
     mValueList.clear();
 }
 
 template < typename KEY, typename VALUE >
-inline bool TEHashMap<KEY, VALUE>::find( const KEY & Key, VALUE & OUT out_Value ) const
+inline bool TEMap<KEY, VALUE>::find( const KEY & Key, VALUE & OUT out_Value ) const
 {
     bool result = false;
     if (mValueList.empty() == false)
@@ -587,68 +578,68 @@ inline bool TEHashMap<KEY, VALUE>::find( const KEY & Key, VALUE & OUT out_Value 
 }
 
 template < typename KEY, typename VALUE >
-inline typename TEHashMap<KEY, VALUE>::MAPPOS TEHashMap<KEY, VALUE>::find(const KEY& Key) const
+inline typename TEMap<KEY, VALUE>::MAPPOS TEMap<KEY, VALUE>::find(const KEY& Key) const
 {
     auto cit = mValueList.empty() ? mValueList.end() : mValueList.find(Key);
-    return Constless<std::unordered_map<KEY, VALUE>>::iter(mValueList, cit);
+    return Constless<std::map<KEY, VALUE>>::iter(mValueList, cit);
 }
 
 template < typename KEY, typename VALUE >
-inline bool TEHashMap<KEY, VALUE>::contains(const KEY& Key) const
+inline bool TEMap<KEY, VALUE>::contains(const KEY& Key) const
 {
     return (mValueList.find(Key) != mValueList.end());
 }
 
 template < typename KEY, typename VALUE >
-inline void TEHashMap<KEY, VALUE>::setAt(const KEY & Key, const VALUE & newValue)
+inline void TEMap<KEY, VALUE>::setAt(const KEY & Key, const VALUE & newValue)
 {
     mValueList[Key] = newValue;
 }
 
 template < typename KEY, typename VALUE >
-inline void TEHashMap<KEY, VALUE>::setAt( KEY && Key, VALUE && newValue)
+inline void TEMap<KEY, VALUE>::setAt( KEY && Key, VALUE && newValue)
 {
     mValueList[Key] = std::move(newValue);
 }
 
 template < typename KEY, typename VALUE >
-inline void TEHashMap<KEY, VALUE>::setAt(const std::pair<KEY, VALUE>& element)
+inline void TEMap<KEY, VALUE>::setAt(const std::pair<KEY, VALUE>& element)
 {
     setAt(element.first, element.second);
 }
 
 template < typename KEY, typename VALUE >
-inline void TEHashMap<KEY, VALUE>::setAt( std::pair<KEY, VALUE> && element)
+inline void TEMap<KEY, VALUE>::setAt( std::pair<KEY, VALUE> && element)
 {
     setAt(std::move(element.first), std::move(element.second));
 }
 
 template < typename KEY, typename VALUE >
-inline void TEHashMap<KEY, VALUE>::merge(const TEHashMap<KEY, VALUE>& source)
+inline void TEMap<KEY, VALUE>::merge(const TEMap<KEY, VALUE>& source)
 {
     mValueList.merge(source.mValueList);
 }
 
 template < typename KEY, typename VALUE >
-inline void TEHashMap<KEY, VALUE>::merge(TEHashMap<KEY, VALUE> && source)
+inline void TEMap<KEY, VALUE>::merge(TEMap<KEY, VALUE> && source)
 {
     mValueList.merge(std::move(source.mValueList));
 }
 
 template < typename KEY, typename VALUE >
-inline std::pair<typename TEHashMap<KEY, VALUE>::MAPPOS, bool> TEHashMap<KEY, VALUE>::addIfUnique(const KEY& newKey, const VALUE& newValue)
+inline std::pair<typename TEMap<KEY, VALUE>::MAPPOS, bool> TEMap<KEY, VALUE>::addIfUnique(const KEY& newKey, const VALUE& newValue)
 {
     return mValueList.insert({ newKey, newValue });
 }
 
 template < typename KEY, typename VALUE >
-inline std::pair<typename TEHashMap<KEY, VALUE>::MAPPOS, bool> TEHashMap<KEY, VALUE>::addIfUnique( KEY && newKey, VALUE && newValue)
+inline std::pair<typename TEMap<KEY, VALUE>::MAPPOS, bool> TEMap<KEY, VALUE>::addIfUnique( KEY && newKey, VALUE && newValue)
 {
     return mValueList.insert(std::make_pair(newKey, newValue));
 }
 
 template < typename KEY, typename VALUE >
-inline typename TEHashMap<KEY, VALUE>::MAPPOS TEHashMap<KEY, VALUE>::updateAt(const KEY & Key, const VALUE & newValue)
+inline typename TEMap<KEY, VALUE>::MAPPOS TEMap<KEY, VALUE>::updateAt(const KEY & Key, const VALUE & newValue)
 {
     MAPPOS pos = mValueList.empty() ? invalidPosition() : mValueList.find(Key);
     if (pos != mValueList.end())
@@ -660,7 +651,7 @@ inline typename TEHashMap<KEY, VALUE>::MAPPOS TEHashMap<KEY, VALUE>::updateAt(co
 }
 
 template < typename KEY, typename VALUE >
-inline bool TEHashMap<KEY, VALUE>::removeAt(const KEY& Key)
+inline bool TEMap<KEY, VALUE>::removeAt(const KEY& Key)
 {
     bool result = false;
     if (mValueList.empty() == false)
@@ -677,7 +668,7 @@ inline bool TEHashMap<KEY, VALUE>::removeAt(const KEY& Key)
 }
 
 template < typename KEY, typename VALUE >
-inline bool TEHashMap<KEY, VALUE>::removeAt(const KEY & Key, VALUE& out_Value)
+inline bool TEMap<KEY, VALUE>::removeAt(const KEY & Key, VALUE& out_Value)
 {
     bool result = false;
     if (mValueList.empty() == false)
@@ -695,7 +686,7 @@ inline bool TEHashMap<KEY, VALUE>::removeAt(const KEY & Key, VALUE& out_Value)
 }
 
 template < typename KEY, typename VALUE >
-inline typename TEHashMap<KEY, VALUE>::MAPPOS TEHashMap<KEY, VALUE>::setPosition(typename TEHashMap<KEY, VALUE>::MAPPOS atPosition, const VALUE & newValue)
+inline typename TEMap<KEY, VALUE>::MAPPOS TEMap<KEY, VALUE>::setPosition(typename TEMap<KEY, VALUE>::MAPPOS atPosition, const VALUE & newValue)
 {
     ASSERT( atPosition != mValueList.end() );
     atPosition->second = newValue;
@@ -703,7 +694,7 @@ inline typename TEHashMap<KEY, VALUE>::MAPPOS TEHashMap<KEY, VALUE>::setPosition
 }
 
 template < typename KEY, typename VALUE >
-inline typename TEHashMap<KEY, VALUE>::MAPPOS TEHashMap<KEY, VALUE>::removePosition(typename TEHashMap<KEY, VALUE>::MAPPOS IN curPos, KEY& OUT out_Key, VALUE& OUT out_Value)
+inline typename TEMap<KEY, VALUE>::MAPPOS TEMap<KEY, VALUE>::removePosition(typename TEMap<KEY, VALUE>::MAPPOS IN curPos, KEY& OUT out_Key, VALUE& OUT out_Value)
 {
     ASSERT( curPos != mValueList.end());
     out_Key         = curPos->first;
@@ -713,14 +704,14 @@ inline typename TEHashMap<KEY, VALUE>::MAPPOS TEHashMap<KEY, VALUE>::removePosit
 }
 
 template < typename KEY, typename VALUE >
-inline typename TEHashMap<KEY, VALUE>::MAPPOS TEHashMap<KEY, VALUE>::removePosition(MAPPOS atPosition)
+inline typename TEMap<KEY, VALUE>::MAPPOS TEMap<KEY, VALUE>::removePosition(MAPPOS atPosition)
 {
     ASSERT(atPosition != mValueList.end());
     return mValueList.erase(atPosition);
 }
 
 template < typename KEY, typename VALUE >
-inline bool TEHashMap<KEY, VALUE>::removeFirst(KEY& OUT out_Key, VALUE& OUT out_Value)
+inline bool TEMap<KEY, VALUE>::removeFirst(KEY& OUT out_Key, VALUE& OUT out_Value)
 {
     bool result = false;
     if (mValueList.empty() == false)
@@ -738,7 +729,7 @@ inline bool TEHashMap<KEY, VALUE>::removeFirst(KEY& OUT out_Key, VALUE& OUT out_
 }
 
 template < typename KEY, typename VALUE >
-inline void TEHashMap<KEY, VALUE>::removeFirst( void )
+inline void TEMap<KEY, VALUE>::removeFirst( void )
 {
     if (mValueList.empty() == false)
     {
@@ -749,7 +740,7 @@ inline void TEHashMap<KEY, VALUE>::removeFirst( void )
 }
 
 template < typename KEY, typename VALUE >
-inline bool TEHashMap<KEY, VALUE>::removeLast(KEY& OUT out_Key, VALUE& OUT out_Value)
+inline bool TEMap<KEY, VALUE>::removeLast(KEY& OUT out_Key, VALUE& OUT out_Value)
 {
     bool result = false;
     if (mValueList.empty() == false)
@@ -767,7 +758,7 @@ inline bool TEHashMap<KEY, VALUE>::removeLast(KEY& OUT out_Key, VALUE& OUT out_V
 }
 
 template < typename KEY, typename VALUE >
-inline void TEHashMap<KEY, VALUE>::removeLast(void)
+inline void TEMap<KEY, VALUE>::removeLast(void)
 {
     if (mValueList.empty() == false)
     {
@@ -778,7 +769,7 @@ inline void TEHashMap<KEY, VALUE>::removeLast(void)
 }
 
 template < typename KEY, typename VALUE >
-inline typename TEHashMap<KEY, VALUE>::MAPPOS TEHashMap<KEY, VALUE>::nextPosition(TEHashMap<KEY, VALUE>::MAPPOS IN atPosition, KEY& OUT out_Key, VALUE& OUT out_Value) const
+inline typename TEMap<KEY, VALUE>::MAPPOS TEMap<KEY, VALUE>::nextPosition(TEMap<KEY, VALUE>::MAPPOS IN atPosition, KEY& OUT out_Key, VALUE& OUT out_Value) const
 {
     ASSERT(atPosition != mValueList.end());
 
@@ -789,33 +780,33 @@ inline typename TEHashMap<KEY, VALUE>::MAPPOS TEHashMap<KEY, VALUE>::nextPositio
 }
 
 template < typename KEY, typename VALUE >
-inline typename TEHashMap<KEY, VALUE>::MAPPOS
-TEHashMap<KEY, VALUE>::nextPosition( TEHashMap<KEY, VALUE>::MAPPOS IN atPosition, std::pair<KEY, VALUE> & OUT out_Element) const
+inline typename TEMap<KEY, VALUE>::MAPPOS
+TEMap<KEY, VALUE>::nextPosition( TEMap<KEY, VALUE>::MAPPOS IN atPosition, std::pair<KEY, VALUE> & OUT out_Element) const
 {
     return nextPosition(atPosition, out_Element.mKey, out_Element.mValue);
 }
 
 template < typename KEY, typename VALUE >
-inline typename TEHashMap<KEY, VALUE>::MAPPOS TEHashMap<KEY, VALUE>::nextPosition(TEHashMap<KEY, VALUE>::MAPPOS IN atPosition ) const
+inline typename TEMap<KEY, VALUE>::MAPPOS TEMap<KEY, VALUE>::nextPosition(TEMap<KEY, VALUE>::MAPPOS IN atPosition ) const
 {
     ASSERT(atPosition != mValueList.end());
     return (++ atPosition);
 }
 
 template < typename KEY, typename VALUE >
-inline VALUE & TEHashMap<KEY, VALUE>::getAt( const KEY & Key )
+inline VALUE & TEMap<KEY, VALUE>::getAt( const KEY & Key )
 {
     return mValueList.at(Key);
 }
 
 template < typename KEY, typename VALUE >
-inline const VALUE & TEHashMap<KEY, VALUE>::getAt(const KEY & Key) const
+inline const VALUE & TEMap<KEY, VALUE>::getAt(const KEY & Key) const
 {
     return mValueList.at(Key);
 }
 
 template < typename KEY, typename VALUE >
-inline void TEHashMap<KEY, VALUE>::getAtPosition(TEHashMap<KEY, VALUE>::MAPPOS IN atPosition, KEY & OUT out_Key, VALUE & OUT out_Value) const
+inline void TEMap<KEY, VALUE>::getAtPosition(TEMap<KEY, VALUE>::MAPPOS IN atPosition, KEY & OUT out_Key, VALUE & OUT out_Value) const
 {
     ASSERT(atPosition != mValueList.end());
     out_Key     = atPosition->first;
@@ -823,41 +814,41 @@ inline void TEHashMap<KEY, VALUE>::getAtPosition(TEHashMap<KEY, VALUE>::MAPPOS I
 }
 
 template < typename KEY, typename VALUE >
-inline void TEHashMap<KEY, VALUE>::getAtPosition(TEHashMap<KEY, VALUE>::MAPPOS IN atPosition, std::pair<KEY, VALUE> & OUT out_Element) const
+inline void TEMap<KEY, VALUE>::getAtPosition(TEMap<KEY, VALUE>::MAPPOS IN atPosition, std::pair<KEY, VALUE> & OUT out_Element) const
 {
     getAtPosition(atPosition, out_Element.mKey, out_Element.mValue);
 }
 
 template < typename KEY, typename VALUE >
-inline const KEY & TEHashMap<KEY, VALUE>::keyAtPosition(const TEHashMap<KEY, VALUE>::MAPPOS atPosition) const
+inline const KEY & TEMap<KEY, VALUE>::keyAtPosition(const TEMap<KEY, VALUE>::MAPPOS atPosition) const
 {
     ASSERT(atPosition != mValueList.end());
     return atPosition->first;
 }
 
 template < typename KEY, typename VALUE >
-inline KEY& TEHashMap<KEY, VALUE>::keyAtPosition(TEHashMap<KEY, VALUE>::MAPPOS atPosition)
+inline KEY& TEMap<KEY, VALUE>::keyAtPosition(TEMap<KEY, VALUE>::MAPPOS atPosition)
 {
     ASSERT(atPosition != mValueList.end());
     return const_cast<KEY &>(atPosition->first);
 }
 
 template < typename KEY, typename VALUE >
-inline const VALUE & TEHashMap<KEY, VALUE>::valueAtPosition(const TEHashMap<KEY, VALUE>::MAPPOS atPosition ) const
+inline const VALUE & TEMap<KEY, VALUE>::valueAtPosition(const TEMap<KEY, VALUE>::MAPPOS atPosition ) const
 {
     ASSERT(atPosition != mValueList.end());
     return atPosition->second;
 }
 
 template < typename KEY, typename VALUE >
-inline VALUE& TEHashMap<KEY, VALUE>::valueAtPosition(TEHashMap<KEY, VALUE>::MAPPOS atPosition)
+inline VALUE& TEMap<KEY, VALUE>::valueAtPosition(TEMap<KEY, VALUE>::MAPPOS atPosition)
 {
     ASSERT(atPosition != mValueList.end());
     return atPosition->second;
 }
 
 template < typename KEY, typename VALUE >
-inline bool TEHashMap<KEY, VALUE>::nextEntry(TEHashMap<KEY, VALUE>::MAPPOS & IN OUT in_out_NextPosition, KEY & OUT out_NextKey, VALUE & OUT out_NextValue) const
+inline bool TEMap<KEY, VALUE>::nextEntry(TEMap<KEY, VALUE>::MAPPOS & IN OUT in_out_NextPosition, KEY & OUT out_NextKey, VALUE & OUT out_NextValue) const
 {
     ASSERT( in_out_NextPosition != mValueList.end() );
     bool result = false;
@@ -872,11 +863,11 @@ inline bool TEHashMap<KEY, VALUE>::nextEntry(TEHashMap<KEY, VALUE>::MAPPOS & IN 
 }
 
 //////////////////////////////////////////////////////////////////////////
-// TEHashMap<KEY, VALUE> class friend methods
+// TEMap<KEY, VALUE> class friend methods
 //////////////////////////////////////////////////////////////////////////
 
 template < typename K, typename V >
-inline const IEInStream & operator >> ( const IEInStream & stream, TEHashMap<K, V> & input )
+inline const IEInStream & operator >> ( const IEInStream & stream, TEMap<K, V> & input )
 {
     uint32_t size = 0;
     stream >> size;
@@ -896,7 +887,7 @@ inline const IEInStream & operator >> ( const IEInStream & stream, TEHashMap<K, 
 }
 
 template < typename K, typename V >
-inline IEOutStream & operator << ( IEOutStream & stream, const TEHashMap<K, V> & output )
+inline IEOutStream & operator << ( IEOutStream & stream, const TEMap<K, V> & output )
 {
     uint32_t size = output.getSize();
     stream << size;
@@ -912,4 +903,4 @@ inline IEOutStream & operator << ( IEOutStream & stream, const TEHashMap<K, V> &
     return stream;
 }
 
-#endif  // AREG_BASE_TEHASHMAP_HPP
+#endif  // AREG_BASE_TEMAP_HPP
