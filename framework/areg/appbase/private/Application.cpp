@@ -363,16 +363,21 @@ bool Application::configMessageRouting( const char * configFile /*= nullptr*/ )
 
 bool Application::startMessageRouting( const char * ipAddress, unsigned short portNr )
 {
+    bool result = false;
     Application & theApp = Application::getInstance( );
     if ( Application::startServiceManager() )
     {
-        if ( ServiceManager::_isRoutingServiceStarted( ) == false )
+        if( ServiceManager::_isRoutingServiceStarted( ) || ServiceManager::_routingServiceStart(ipAddress, portNr))
+        {
+            result = true;
+        }
+        else
         {
             theApp.mConfigService.clear();
         }
     }
 
-    return ServiceManager::_isRoutingServiceStarted();
+    return result;
 }
 
 void Application::stopMessageRouting( void )
