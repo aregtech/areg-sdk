@@ -244,9 +244,8 @@ public:
     inline bool checkPosition(const MAPPOS pos) const;
 
     /**
-     * \brief	Checks whether given element exist in the hash-map or not.
+     * \brief	Checks and returns true if the given element exist in the hash-map or not.
      * \param	key	    The key of value to search.
-     * \return	Returns true if the value specified by the key exists in the hash-map.
      */
     inline bool contains(const KEY& Key) const;
 
@@ -360,19 +359,19 @@ public:
      * \brief	Update value of an element at the given position and return position of the next entry.
      * \param	atPosition      The valid position of the element to update value.
      * \param	newValue	    New value to set for existing element.
-     * \return  Returns valid position of the next element or invalid position if there is it updated
-     *          the last entry in the hash-map.
+     * \return  Returns valid position of the next element or invalid position if it updated the last 
+     *          entry in the hash-map.
      **/
     inline MAPPOS setPosition(MAPPOS atPosition, const VALUE& newValue );
 
     /**
      * \brief	Removes an element at the given position. The function returns next position of an entry in the hash map.
-     *
+     *          or invalid position if removed last element in the map.
      * \param	curPos      The valid position of the element in the hash-map to remove.
      * \param	out_Key     On output, this contains the key of the removed element
      * \param	out_Value   On output, this contains the value of the removed element.
-     * \return  Returns valid position of the next entry in the hash-map, or returns invalid position if
-     *          removed element was the last in the hash-map.
+     * \return  Returns valid position of the next entry in the hash-map or returns invalid position if
+     *          removed last element in the map.
      **/
     inline MAPPOS removePosition(MAPPOS atPosition);
     inline MAPPOS removePosition(MAPPOS IN curPos, KEY & OUT out_Key, VALUE & OUT out_Value );
@@ -404,7 +403,7 @@ public:
      * \param	out_Key     On output, this contains key of given position.
      * \param	out_Value   On output, this contains value of given position.
      * \param	out_Element On output, this element contains pair of Key and Value specified by given position.
-     * \return	Next valid position of the next entry in the hash-map or invalid position if reached end of hash-map.
+     * \return	Next valid position in the hash-map or invalid position if reached end of hash-map.
      **/
     inline MAPPOS nextPosition(MAPPOS IN atPosition) const;
     inline MAPPOS nextPosition(MAPPOS IN atPosition, KEY & OUT out_Key, VALUE & OUT out_Value ) const;

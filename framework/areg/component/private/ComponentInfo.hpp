@@ -57,7 +57,7 @@ private:
      * \brief   The Hash Map object to save information of threads
      *          saved in specified Component Info object.
      **/
-    using _WorkerThreadMap  = TEHashMap<ThreadAddress, WorkerThread*>;
+    using _WorkerThreadMap  = TEMap<ThreadAddress, WorkerThread*>;
 
     /**
      * \brief   Resource mapping object type. 

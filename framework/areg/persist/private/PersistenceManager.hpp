@@ -38,7 +38,7 @@ class PersistenceManager
     /**
      * \brief   The map of saved properties.
      **/
-    using DataMap       = TEIntegerHashMap<Property>;
+    using DataMap       = TEIntegerMap<Property>;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden constructor / destructor

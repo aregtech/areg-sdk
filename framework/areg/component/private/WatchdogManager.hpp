@@ -36,7 +36,7 @@ private:
      **/
     static constexpr std::string_view WATCHDOG_THREAD_NAME { "_AREG_WATCHDOG_THREAD_NAME_" };
 
-    using MapWatchdogResource   = TEHashMap<Watchdog::GUARD_ID, Watchdog*>;
+    using MapWatchdogResource   = TEMap<Watchdog::GUARD_ID, Watchdog*>;
     using WatchdogResource      = TELockResourceMap<Watchdog::GUARD_ID, Watchdog, MapWatchdogResource>;
 
 //////////////////////////////////////////////////////////////////////////

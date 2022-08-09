@@ -19,8 +19,7 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
-#include "areg/base/TEArrayList.hpp"
-#include "areg/base/TEHashMap.hpp"
+#include "areg/base/Containers.hpp"
 #include "areg/base/String.hpp"
 #include "areg/persist/Property.hpp"
 #include "areg/ipc/NERemoteService.hpp"
@@ -53,7 +52,7 @@ private:
      * \tparam  NERemoteService::eServiceConnection         The section / type of configuration.
      * \tparam  ConnectionConfiguration::ListProperties   The list of configuration properties.
      **/
-    using MapConfiguration		= TEHashMap<NERemoteService::eServiceConnection, ListProperties>;
+    using MapConfiguration		= TEMap<NERemoteService::eServiceConnection, ListProperties>;
 
     /**
      * \brief   Connection configuration property indexes.

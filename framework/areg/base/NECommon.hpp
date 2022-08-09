@@ -177,13 +177,13 @@ namespace NECommon
      * \brief   NECommon::MAX_CONTAINER_SIZE
      *          The maximum size of the containers such as array, list or map.
      **/
-    constexpr uint32_t      MAX_CONTAINER_SIZE      { static_cast<uint32_t>(VALUE_MAX_INT32) };
+    constexpr uint32_t      MAX_CONTAINER_SIZE      { static_cast<uint32_t>(VALUE_MAX_INT32 - 1) };
 
     /**
      * \brief   NECommon::MAP_DEFAULT_HASH_SIZE
      *          The size of hash table by default created in map. For hash map internal use
      **/
-    constexpr uint32_t      MAP_DEFAULT_HASH_SIZE   { static_cast<int>(64) };
+    constexpr uint32_t      MAP_DEFAULT_HASH_SIZE   { static_cast<int>(64 - 1) };
 
     /**
      * \brief   NECommon::ARRAY_DEFAULT_CAPACITY

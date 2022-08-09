@@ -60,7 +60,7 @@ class SynchLockAndWaitIX
     /**
      * \brief   The hash map container of waitable object and LockAndWait lists.
      **/
-    using MapLockAndWait        = TEHashMap<IEWaitableBaseIX *, ListLockAndWait>;
+    using MapLockAndWait        = TEMap<IEWaitableBaseIX *, ListLockAndWait>;
 
 //////////////////////////////////////////////////////////////////////////
 // SynchWaitableMapIX class declaration

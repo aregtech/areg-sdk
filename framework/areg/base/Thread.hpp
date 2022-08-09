@@ -605,14 +605,14 @@ private:
      * \brief   Thread resource mapping by thread handle. 
      *          The unique thread handle can be used to access thread object.
      **/
-    using   MapThreadPoiters        = TEPointerHashMap< Thread* >;
+    using   MapThreadPoiters        = TEPointerMap< Thread* >;
     using   ImplThreadHandleResource= TEResourceMapImpl< void *, Thread >;
     using   MapThreadHandleResource = TELockResourceMap< void *, Thread, MapThreadPoiters,ImplThreadHandleResource >;
     /**
      * \brief   Thread resource mapping by thread name. 
      *          The unique thread name can be used to access thread object.
      **/
-    using   MapThreadName           = TEStringHashMap<Thread *>;
+    using   MapThreadName           = TEStringMap<Thread *>;
     using   ImplThreadNameResource  = TEResourceMapImpl<String, Thread>;
     using   MapThreadNameResource   = TELockResourceMap<String, Thread, MapThreadName, ImplThreadNameResource>;
 

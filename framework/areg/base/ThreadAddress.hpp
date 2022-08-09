@@ -109,6 +109,18 @@ public:
      **/
     inline bool operator != (const ThreadAddress & other) const;
 
+    /**
+     * \brief   Returns true if the thread address is greater than the other thread address.
+     *          The comparing is required by sorted map.
+     **/
+    inline bool operator > (const ThreadAddress& other) const;
+
+    /**
+     * \brief   Returns true if the thread address is less than the other thread address.
+     *          The comparing is required by sorted map.
+     **/
+    inline bool operator < (const ThreadAddress& other) const;
+
 /************************************************************************/
 // Friend global operators to make thread address streamable
 /************************************************************************/
@@ -263,6 +275,16 @@ inline bool ThreadAddress::operator == ( const ThreadAddress & other ) const
 inline bool ThreadAddress::operator != ( const ThreadAddress & other ) const
 {
     return (mMagicNum != other.mMagicNum);
+}
+
+inline bool ThreadAddress::operator > (const ThreadAddress& other) const
+{
+    return (mMagicNum > other.mMagicNum);
+}
+
+inline bool ThreadAddress::operator < (const ThreadAddress& other) const
+{
+    return (mMagicNum < other.mMagicNum);
 }
 
 inline ThreadAddress::operator unsigned int( void ) const

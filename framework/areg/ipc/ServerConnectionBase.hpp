@@ -20,11 +20,10 @@
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
 
+#include "areg/base/Containers.hpp"
 #include "areg/base/SynchObjects.hpp"
 #include "areg/base/SocketServer.hpp"
 #include "areg/base/SocketAccepted.hpp"
-#include "areg/base/TEHashMap.hpp"
-#include "areg/base/TEArrayList.hpp"
 #include "areg/component/NEService.hpp"
 
 //////////////////////////////////////////////////////////////////////////
@@ -53,17 +52,17 @@ protected:
     /**
      * \brief   The container of accepted socket objects where the keys are socket handle.
      **/
-    using MapSocketToObject 	= TEHashMap<SOCKETHANDLE, SocketAccepted>;
+    using MapSocketToObject 	= TEMap<SOCKETHANDLE, SocketAccepted>;
 
     /**
      * \brief   The container of socket handles where the keys are cookie values.
      **/
-    using MapCookieToSocket		= TEHashMap<ITEM_ID, SOCKETHANDLE>;
+    using MapCookieToSocket		= TEMap<ITEM_ID, SOCKETHANDLE>;
 
     /**
      * \brief   The container of cookie values where the keys are socket handles.
      **/
-    using MapSocketToCookie		= TEHashMap<SOCKETHANDLE, ITEM_ID>;
+    using MapSocketToCookie		= TEMap<SOCKETHANDLE, ITEM_ID>;
 
     /**
      * \brief   The list of accepted sockets.

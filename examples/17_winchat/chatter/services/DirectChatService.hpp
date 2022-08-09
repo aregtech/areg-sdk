@@ -22,7 +22,7 @@ class DirectChatService : public Component
                         , public DirectMessagerStub
                           
 {
-    using HashMapDirectConnections      = TEHashMap<String, DirectChatService *>;
+    using HashMapDirectConnections      = TEMap<String, DirectChatService *>;
     using MapDirectConnections          = TELockResourceMap<String, DirectChatService *, HashMapDirectConnections>;
     using ListDirectConnectionClients   = TEArrayList<DirectConnectionClient *>;
 
