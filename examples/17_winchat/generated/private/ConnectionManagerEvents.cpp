@@ -3,9 +3,9 @@
 //////////////////////////////////////////////////////////////////////////
 
 /************************************************************************
- * (c) copyright    2021
+ * (c) copyright    2022
  *
- * Generated at     30.09.2021  01:22:14 GMT+02:00 
+ * Generated at     11.08.2022  17:55:56 GMT+02:00
  *                  Create by AREG SDK code generator tool from source ConnectionManager.
  *
  * \file            generated/private/ConnectionManagerEvents.hpp
@@ -17,8 +17,8 @@
 /************************************************************************
  * Include files
  ************************************************************************/
- #include "generated/private/ConnectionManagerEvents.hpp"
- 
+#include "generated/private/ConnectionManagerEvents.hpp"
+
 //////////////////////////////////////////////////////////////////////////
 // ConnectionManagerRequestEvent class implementation
 //////////////////////////////////////////////////////////////////////////
@@ -48,7 +48,7 @@ ConnectionManagerRequestEvent::ConnectionManagerRequestEvent( const EventDataStr
 ConnectionManagerRequestEvent::ConnectionManagerRequestEvent( const IEInStream & stream )
     : RemoteRequestEvent( stream )
 {
-}    
+}
 
 //////////////////////////////////////////////////////////////////////////
 // ConnectionManagerNotifyRequestEvent class implementation
@@ -72,7 +72,7 @@ ConnectionManagerNotifyRequestEvent::ConnectionManagerNotifyRequestEvent( const 
 ConnectionManagerNotifyRequestEvent::ConnectionManagerNotifyRequestEvent( const IEInStream & stream )
     : RemoteNotifyRequestEvent( stream )
 {
-}    
+}
 
 //////////////////////////////////////////////////////////////////////////
 // ConnectionManagerResponseEvent class implementation
@@ -106,7 +106,7 @@ ConnectionManagerResponseEvent::ConnectionManagerResponseEvent( const ProxyAddre
 ConnectionManagerResponseEvent::ConnectionManagerResponseEvent( const IEInStream & stream )
     : RemoteResponseEvent( stream )
 {
-}    
+}
 
 //////////////////////////////////////////////////////////////////////////
 // ConnectionManagerResponseEvent class, Methods

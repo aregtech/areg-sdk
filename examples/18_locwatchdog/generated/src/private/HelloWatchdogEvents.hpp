@@ -1,18 +1,19 @@
 //////////////////////////////////////////////////////////////////////////
-// Begin generate generated/src/private/HelloWorldEvents.hpp file
+// Begin generate generated/src/private/HelloWatchdogEvents.hpp file
 //////////////////////////////////////////////////////////////////////////
 
-#pragma once
+#ifndef  GENERATED_SRC_PRIVATE_HELLOWATCHDOGEVENTS_HPP
+#define  GENERATED_SRC_PRIVATE_HELLOWATCHDOGEVENTS_HPP
 
 /************************************************************************
- * (c) copyright    2021
+ * (c) copyright    2022
  *
- * Generated at     30.09.2021  01:22:11 GMT+02:00 
- *                  Create by AREG SDK code generator tool from source HelloWorld.
+ * Generated at     12.08.2022  10:30:17 GMT+02:00
+ *                  Create by AREG SDK code generator tool from source HelloWatchdog.
  *
- * \file            generated/src/private/HelloWorldEvents.hpp
- * \ingroup         HelloWorld Service Interface
- * \brief           This is an automatic generated code of HelloWorld
+ * \file            generated/src/private/HelloWatchdogEvents.hpp
+ * \ingroup         HelloWatchdog Service Interface
+ * \brief           This is an automatic generated code of HelloWatchdog
  *                  Service Interface event classes declaration.
  ************************************************************************/
 
@@ -20,7 +21,7 @@
  * Include files
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
-#include "generated/src/NEHelloWorld.hpp"
+#include "generated/src/NEHelloWatchdog.hpp"
 #include "areg/component/RequestEvents.hpp"
 #include "areg/component/ResponseEvents.hpp"
 #include "areg/component/NotificationEvent.hpp"
@@ -32,156 +33,161 @@
 /************************************************************************
  * Declared classes
  ************************************************************************/
-class HelloWorldRequestEvent;
-class HelloWorldNotifyRequestEvent;
-class HelloWorldResponseEvent;
-class HelloWorldNotificationEvent;
+class HelloWatchdogRequestEvent;
+class HelloWatchdogNotifyRequestEvent;
+class HelloWatchdogResponseEvent;
+class HelloWatchdogNotificationEvent;
 
 /**
  * \brief   In this file following classes are declared:
- *              1.  HelloWorldRequestEvent
- *              2.  HelloWorldNotifyRequestEvent
- *              3.  HelloWorldResponseEvent
- *              4.  HelloWorldNotificationEvent
- *          These are HelloWorld Service Interface event objects.
+ *              1.  HelloWatchdogRequestEvent
+ *              2.  HelloWatchdogNotifyRequestEvent
+ *              3.  HelloWatchdogResponseEvent
+ *              4.  HelloWatchdogNotificationEvent
+ *          These are HelloWatchdog Service Interface event objects.
  *          They are used to send Communication Events to Proxy,
  *          Stub and Client objects.
- *          The HelloWorldRequestEvent Event is used to send request message to Stub object.
- *          The HelloWorldNotifyRequestEvent Event is used to assign for Notifications of Attributes or Responses / Broadcasts.
- *          The HelloWorldResponseEvent Event is used to send response or update message to Proxy object.
- *          The HelloWorldNotificationEvent Event is used to trigger functions on Client object.
+ *          The HelloWatchdogRequestEvent Event is used to send request message to Stub object.
+ *          The HelloWatchdogNotifyRequestEvent Event is used to assign for Notifications of Attributes or Responses / Broadcasts.
+ *          The HelloWatchdogResponseEvent Event is used to send response or update message to Proxy object.
+ *          The HelloWatchdogNotificationEvent Event is used to trigger functions on Client object.
  *          For more details see descriptions bellow.
  **/
 
 //////////////////////////////////////////////////////////////////////////
-// HelloWorldRequestEvent class declaration
+// HelloWatchdogRequestEvent class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   HelloWorldRequestEvent is used to send request events from Proxy objects to Stub
+ * \brief   HelloWatchdogRequestEvent is used to send request events from Proxy objects to Stub
  *          Every request is generating Request Event and forwarded to Stub for processing.
  **/
-class HelloWorldRequestEvent   : public LocalRequestEvent
+class HelloWatchdogRequestEvent   : public LocalRequestEvent
 {
 //////////////////////////////////////////////////////////////////////////
 // Declare Event Runtime
 //////////////////////////////////////////////////////////////////////////
-    DECLARE_RUNTIME_EVENT( HelloWorldRequestEvent )
+    DECLARE_RUNTIME_EVENT( HelloWatchdogRequestEvent )
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Initialization constructor. Gets message source proxy address, message target address and message request ID.
+     * \brief   Gets message source proxy address, message target address and message request ID.
+     *
      * \param   fromSource  The Proxy message source address.
      * \param   toTarget    The Stub message target address to deliver event.
      * \param   reqId       The request message ID.
      **/
-    HelloWorldRequestEvent( const ProxyAddress & fromSource, const StubAddress & toTarget, unsigned int reqId );
+    HelloWatchdogRequestEvent( const ProxyAddress & fromSource, const StubAddress & toTarget, unsigned int reqId );
     /**
-     * \brief   Initialization constructor. Gets streamable data of arguments, message source proxy address, message target address  and message request ID.
+     * \brief   Gets streamable data of arguments, message source proxy address, message target address  and message request ID.
+     *
      * \param   args        The streamable object containing message arguments.
      * \param   fromSource  The Proxy message source address.
      * \param   toTarget    The Stub message target address to deliver event.
      * \param   reqId       The request message ID.
      **/
-    HelloWorldRequestEvent( const EventDataStream & args, const ProxyAddress & fromSource, const StubAddress & toTarget, unsigned int reqId );
+    HelloWatchdogRequestEvent( const EventDataStream & args, const ProxyAddress & fromSource, const StubAddress & toTarget, unsigned int reqId );
     /**
      * \brief   Destructor.
      **/
-    virtual ~HelloWorldRequestEvent( void ) = default;
+    virtual ~HelloWatchdogRequestEvent( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    HelloWorldRequestEvent( void ) = delete;
-    DECLARE_NOCOPY_NOMOVE( HelloWorldRequestEvent );
+    HelloWatchdogRequestEvent( void ) = delete;
+    DECLARE_NOCOPY_NOMOVE( HelloWatchdogRequestEvent );
 };
 
 //////////////////////////////////////////////////////////////////////////
-// HelloWorldNotifyRequestEvent class declaration
+// HelloWatchdogNotifyRequestEvent class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   HelloWorldNotifyRequestEvent is used to send notification request events.
+ * \brief   HelloWatchdogNotifyRequestEvent is used to send notification request events.
  *          Used when Proxy is requesting to start / stop notifications of attribute update, Broadcast, or response.
  **/
-class HelloWorldNotifyRequestEvent : public LocalNotifyRequestEvent
+class HelloWatchdogNotifyRequestEvent : public LocalNotifyRequestEvent
 {
 //////////////////////////////////////////////////////////////////////////
 // Declare Event Runtime
 //////////////////////////////////////////////////////////////////////////
-    DECLARE_RUNTIME_EVENT( HelloWorldNotifyRequestEvent )
+    DECLARE_RUNTIME_EVENT( HelloWatchdogNotifyRequestEvent )
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Initialization constructor. Used to send start / stop notification request from Prosy to Stub.
+     * \brief   Used to send start / stop notification request from Prosy to Stub.
+     *
      * \param   fromProxy   The source Proxy address, requesting start / stop notifications.
      * \param   toStub      The target Stub address to start / stop sending notifications.
      * \param   msgId       The ID of message. Normally either Attribute ID, Broadcast ID or Response ID. The Request IDs cannot be notified.
      * \param   reqType     The type of request.
      **/
-    HelloWorldNotifyRequestEvent( const ProxyAddress & fromProxy, const StubAddress & toStub, unsigned int msgId, NEService::eRequestType reqType );
+    HelloWatchdogNotifyRequestEvent( const ProxyAddress & fromProxy, const StubAddress & toStub, unsigned int msgId, NEService::eRequestType reqType );
     /**
      * \brief   Destructor.
      **/
-    virtual ~HelloWorldNotifyRequestEvent( void ) = default;
+    virtual ~HelloWatchdogNotifyRequestEvent( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    HelloWorldNotifyRequestEvent( void ) = delete;
-    DECLARE_NOCOPY_NOMOVE( HelloWorldNotifyRequestEvent );
+    HelloWatchdogNotifyRequestEvent( void ) = delete;
+    DECLARE_NOCOPY_NOMOVE( HelloWatchdogNotifyRequestEvent );
 };
 
 //////////////////////////////////////////////////////////////////////////
-// HelloWorldResponseEvent class declaration
+// HelloWatchdogResponseEvent class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   HelloWorldResponseEvent is used to send response events from Stub to Proxy.
+ * \brief   HelloWatchdogResponseEvent is used to send response events from Stub to Proxy.
  **/
-class HelloWorldResponseEvent  : public LocalResponseEvent
+class HelloWatchdogResponseEvent  : public LocalResponseEvent
 {
 //////////////////////////////////////////////////////////////////////////
 // Declare Event Runtime
 //////////////////////////////////////////////////////////////////////////
-    DECLARE_RUNTIME_EVENT( HelloWorldResponseEvent )
+    DECLARE_RUNTIME_EVENT( HelloWatchdogResponseEvent )
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Initialization constructor. Used to send response messages from Stub to Proxy. The argument list is empty.
+     * \brief   Used to send response messages from Stub to Proxy. The argument list is empty.
+     *
      * \param   proxyTarget The target Proxy address to deliver message
      * \param   result      The result code of response message
      * \param   responseId  The response message ID. Normally either attribute, broadcast or response ID.
      * \param   seqNr       The sequence number of response call. By default it is NEService::SEQUENCE_NUMBER_NOTIFY.
      **/
-    HelloWorldResponseEvent( const ProxyAddress & proxyTarget, NEService::eResultType result, unsigned int responseId, unsigned int seqNr = NEService::SEQUENCE_NUMBER_NOTIFY );
+    HelloWatchdogResponseEvent( const ProxyAddress & proxyTarget, NEService::eResultType result, unsigned int responseId, unsigned int seqNr = NEService::SEQUENCE_NUMBER_NOTIFY );
     /**
-     * \brief   Initialization constructor. Used to send response messages from Stub to Proxy with arguments.
+     * \brief   Used to send response messages from Stub to Proxy with arguments.
+     *
      * \param   args        The streamable object containing message arguments.
      * \param   proxyTarget The target Proxy address to deliver message
      * \param   result      The result code of response message
      * \param   responseId  The response message ID. Normally either attribute, broadcast or response ID.
      * \param   seqNr       The sequence number of response call. By default it is NEService::SEQUENCE_NUMBER_NOTIFY.
      **/
-    HelloWorldResponseEvent( const EventDataStream & args, const ProxyAddress & proxyTarget, NEService::eResultType result, unsigned int responseId, unsigned int seqNr = NEService::SEQUENCE_NUMBER_NOTIFY );
+    HelloWatchdogResponseEvent( const EventDataStream & args, const ProxyAddress & proxyTarget, NEService::eResultType result, unsigned int responseId, unsigned int seqNr = NEService::SEQUENCE_NUMBER_NOTIFY );
     /**
      * \brief   Initialization constructor. Used to clone same message for different Proxy objects.
      * \param   proxyTarget The target Proxy address to deliver message
      * \param   source      The source event object containing message ID, result code and parameters.
      **/
-    HelloWorldResponseEvent( const ProxyAddress & proxyTarget, const LocalResponseEvent & source );
+    HelloWatchdogResponseEvent( const ProxyAddress & proxyTarget, const LocalResponseEvent & source );
     /**
-     * \brief   Destructor
+     * \brief   Destructor.
      **/
-    virtual ~HelloWorldResponseEvent( void ) = default;
+    virtual ~HelloWatchdogResponseEvent( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -206,49 +212,50 @@ public:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    HelloWorldResponseEvent( void ) = delete;
-    DECLARE_NOCOPY_NOMOVE( HelloWorldResponseEvent );
+    HelloWatchdogResponseEvent( void ) = delete;
+    DECLARE_NOCOPY_NOMOVE( HelloWatchdogResponseEvent );
 };
 
 //////////////////////////////////////////////////////////////////////////
-// HelloWorldNotificationEvent class declaration
+// HelloWatchdogNotificationEvent class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   HelloWorldNotificationEvent is used by Proxy to send notifications to client objects
+ * \brief   HelloWatchdogNotificationEvent is used by Proxy to send notifications to client objects
  *          and trigger appropriate functions
  **/
-class HelloWorldNotificationEvent  : public NotificationEvent
+class HelloWatchdogNotificationEvent  : public NotificationEvent
 {
 //////////////////////////////////////////////////////////////////////////
 // Declare Event Runtime
 //////////////////////////////////////////////////////////////////////////
-    DECLARE_RUNTIME_EVENT( HelloWorldNotificationEvent )
+    DECLARE_RUNTIME_EVENT( HelloWatchdogNotificationEvent )
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Initialization constructor. Copies notification event data
+     * \brief   Copies notification event data
      * \param   data    The notification event data to copy
      **/
-    explicit HelloWorldNotificationEvent( const NotificationEventData & data );
+    explicit HelloWatchdogNotificationEvent( const NotificationEventData & data );
 
 protected:
     /**
-     * \brief   Destructor. Protected
+     * \brief   Protected destructor.
      **/
-    virtual ~HelloWorldNotificationEvent( void ) = default;
-    
+    virtual ~HelloWatchdogNotificationEvent( void ) = default;
+
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    HelloWorldNotificationEvent( void ) = delete;
-    DECLARE_NOCOPY_NOMOVE( HelloWorldNotificationEvent );
+    HelloWatchdogNotificationEvent( void ) = delete;
+    DECLARE_NOCOPY_NOMOVE( HelloWatchdogNotificationEvent );
 };
 
+#endif  // GENERATED_SRC_PRIVATE_HELLOWATCHDOGEVENTS_HPP
+
 //////////////////////////////////////////////////////////////////////////
-// End generate generated/src/private/HelloWorldEvents.hpp file
+// End generate generated/src/private/HelloWatchdogEvents.hpp file
 //////////////////////////////////////////////////////////////////////////
- 

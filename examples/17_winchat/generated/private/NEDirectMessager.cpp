@@ -3,9 +3,9 @@
 //////////////////////////////////////////////////////////////////////////
 
 /************************************************************************
- * (c) copyright    2021
+ * (c) copyright    2022
  *
- * Generated at     30.09.2021  01:22:16 GMT+02:00 
+ * Generated at     11.08.2022  17:55:59 GMT+02:00
  *                  Create by AREG SDK code generator tool from source DirectMessager.
  *
  * \file            generated/NEDirectMessager.hpp
@@ -29,7 +29,7 @@ const NEService::SInterfaceData & NEDirectMessager::getInterfaceData( void )
     /************************************************************************
      * The list of requests
      ************************************************************************/
-    static constexpr unsigned int _RequestList[] 
+    static constexpr unsigned int _RequestList[]
     {
           static_cast<unsigned int>( NEDirectMessager::eMessageIDs::MsgId_requestChatJoin             ) // requestChatJoin( const NEDirectMessager::sParticipant & participant, const DateTime & timeConnect )
         , static_cast<unsigned int>( NEDirectMessager::eMessageIDs::MsgId_requestMessageSend          ) // requestMessageSend( const NEDirectMessager::sParticipant & sender, const String & msgText, const DateTime & timeSent )
@@ -40,7 +40,7 @@ const NEService::SInterfaceData & NEDirectMessager::getInterfaceData( void )
     /************************************************************************
      * The list of responses and broadcasts
      ************************************************************************/
-    static constexpr unsigned int _ResponseList[] 
+    static constexpr unsigned int _ResponseList[]
     {
           static_cast<unsigned int>( NEDirectMessager::eMessageIDs::MsgId_responseChatJoin            ) // responseChatJoin( bool succeed, const NEDirectMessager::ListParticipants & listParticipant, const DateTime & timeConnect, const DateTime & timeConnected )
         , static_cast<unsigned int>( NEDirectMessager::eMessageIDs::MsgId_broadcastMessageSent        ) // broadcastMessageSent( const NEDirectMessager::sParticipant & sender, const String & msgText, const DateTime & timeSent )
@@ -53,7 +53,7 @@ const NEService::SInterfaceData & NEDirectMessager::getInterfaceData( void )
     /************************************************************************
      * The list of attributes
      ************************************************************************/
-    static constexpr unsigned int _AttributeList[] 
+    static constexpr unsigned int _AttributeList[]
     {
           static_cast<unsigned int>( NEDirectMessager::eMessageIDs::MsgId_ChatParticipants            ) // NEDirectMessager::ListParticipants mChatParticipants;
     };
@@ -89,7 +89,7 @@ const NEService::SInterfaceData & NEDirectMessager::getInterfaceData( void )
         0, // void broadcastChatClosed( void )
 
     };
-    
+
     /************************************************************************
      * DirectMessager Service Interface data
      ************************************************************************/
@@ -111,7 +111,7 @@ const NEService::SInterfaceData & NEDirectMessager::getInterfaceData( void )
     return _InterfaceData;
 }
 
-NEDirectMessager::eMessageIDs NEDirectMessager::getResponseId( NEDirectMessager::eMessageIDs reqId )
+NEDirectMessager::eMessageIDs NEDirectMessager::getResponseId( NEDirectMessager::eMessageIDs reqId)
 {
     const NEService::SInterfaceData & sid = NEDirectMessager::getInterfaceData();
     msg_id index = GET_REQ_INDEX(reqId);
@@ -127,7 +127,7 @@ NEDirectMessager::eMessageIDs NEDirectMessager::getRequestId( NEDirectMessager::
     {
         result = sid.idRequestToResponseMap[i] == static_cast<msg_id>(respId) ? static_cast<NEDirectMessager::eMessageIDs>(sid.idRequestList[i]) : NEDirectMessager::eMessageIDs::MsgId_Invalid;
     }
-    
+
     return result;
 }
 

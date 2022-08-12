@@ -163,10 +163,12 @@ public:
     inline bool operator == (const std::basic_string<CharType>& other) const;
     inline bool operator == (const std::basic_string_view<CharType>& other) const;
     inline bool operator == (const CharType * other) const;
+    inline bool operator == (const CharType ch ) const;
     inline bool operator != (const TEString<CharType>& other) const;
     inline bool operator != (const std::basic_string<CharType>& other) const;
     inline bool operator != (const std::basic_string_view<CharType>& other) const;
     inline bool operator != (const CharType* other) const;
+    inline bool operator != (const CharType ch) const;
 
     /**
      * \brief   Comparing operator. Checks whether strings are bigger or smaller.
@@ -599,12 +601,14 @@ public:
      * \param   source  The source of string to copy characters.
      * \param   pos     The position in source string to start to copy.
      * \param   count   The number of characters to copy. By default, it copies all characters.
+     * \param   ch      A character to assign.
      * \return  Returns modified string.
      **/
     inline TEString<CharType>& assign(const CharType * source, NEString::CharCount count = NEString::COUNT_ALL );
     inline TEString<CharType>& assign(const std::basic_string<CharType> & source, NEString::CharPos pos = NEString::START_POS, NEString::CharCount count = NEString::COUNT_ALL);
     inline TEString<CharType>& assign(const std::basic_string_view<CharType>& source, NEString::CharPos pos = NEString::START_POS, NEString::CharCount count = NEString::COUNT_ALL);
     inline TEString<CharType>& assign(const TEString<CharType>& source, NEString::CharPos pos = NEString::START_POS, NEString::CharCount count = NEString::COUNT_ALL);
+    inline TEString<CharType>& assign(CharType ch);
 
     /**
      * \brief   Appends given string at the end. The given string can be limited by zero-based valid position
@@ -614,12 +618,14 @@ public:
      * \param   pos     If specified the valid zero-based position in the given string to append.
      *                  Otherwise, it append starting from the beginning.
      * \param   count   If specified, the number of characters to append. By default, it appends all characters.
+     * \param   ch      A character to append.
      * \return  Returns modified string.
      **/
     inline TEString<CharType>& append(const CharType * source, NEString::CharCount count = NEString::COUNT_ALL);
     inline TEString<CharType>& append(const std::basic_string<CharType>& source, NEString::CharPos pos = NEString::START_POS, NEString::CharCount count = NEString::COUNT_ALL);
     inline TEString<CharType>& append(const std::basic_string_view<CharType>& source, NEString::CharPos pos = NEString::START_POS, NEString::CharCount count = NEString::COUNT_ALL);
     inline TEString<CharType>& append(const TEString<CharType>& source, NEString::CharPos pos = NEString::START_POS, NEString::CharCount count = NEString::COUNT_ALL);
+    inline TEString<CharType>& append(CharType ch);
 
     /**
      * \brief   Moves data inside string buffer starting at specified position.
@@ -1185,6 +1191,12 @@ inline bool TEString<CharType>::operator == (const CharType* other) const
 }
 
 template<typename CharType>
+inline bool TEString<CharType>::operator == ( const CharType ch) const
+{
+    return ((mData.length() == 1) && (mData[0] == ch));
+}
+
+template<typename CharType>
 inline bool TEString<CharType>::operator != (const TEString<CharType>& other) const
 {
     return (mData != other.mData);
@@ -1206,6 +1218,12 @@ template<typename CharType>
 inline bool TEString<CharType>::operator != (const CharType* other) const
 {
     return (mData != other);
+}
+
+template<typename CharType>
+inline bool TEString<CharType>::operator != ( const CharType ch ) const
+{
+    return ((mData.length( ) != 1) || (mData[0] != ch));
 }
 
 template<typename CharType>
@@ -1945,6 +1963,13 @@ inline TEString<CharType>& TEString<CharType>::assign(const TEString<CharType>& 
 }
 
 template<typename CharType>
+inline TEString<CharType>& TEString<CharType>::assign( CharType ch )
+{
+    mData = ch;
+    return (*this);
+}
+
+template<typename CharType>
 inline TEString<CharType>& TEString<CharType>::append(const CharType* source, NEString::CharCount count /*= NEString::COUNT_ALL*/)
 {
     count = count == NEString::COUNT_ALL ? NEString::getStringLength<CharType>(source) : count;
@@ -1978,6 +2003,13 @@ template<typename CharType>
 inline TEString<CharType>& TEString<CharType>::append( const TEString<CharType>& source, NEString::CharPos pos /*= NEString::START_POS*/, NEString::CharCount count /*= NEString::COUNT_ALL*/)
 {
     return append(source.mData, pos, count);
+}
+
+template<typename CharType>
+inline TEString<CharType>& TEString<CharType>::append( CharType ch )
+{
+    mData += ch;
+    return (*this);
 }
 
 template<typename CharType>

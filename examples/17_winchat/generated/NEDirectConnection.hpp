@@ -1,12 +1,13 @@
 //////////////////////////////////////////////////////////////////////////
 // Begin generate generated/NEDirectConnection.hpp file
 //////////////////////////////////////////////////////////////////////////
-#pragma once
+#ifndef  GENERATED_NEDIRECTCONNECTION_HPP
+#define  GENERATED_NEDIRECTCONNECTION_HPP
 
 /************************************************************************
- * (c) copyright    2021
+ * (c) copyright    2022
  *
- * Generated at     30.09.2021  01:22:15 GMT+02:00 
+ * Generated at     11.08.2022  17:55:57 GMT+02:00
  *                  Create by AREG SDK code generator tool from source DirectConnection.
  *
  * \file            generated/NEDirectConnection.hpp
@@ -60,15 +61,15 @@ namespace   NEDirectConnection
 // Service Interface constants
 /************************************************************************/
     /**
-     * \brief   Service Interface Name
+     * \brief   Service Interface Name.
      *          NEDirectConnection::ServiceName
      **/
-    constexpr char            ServiceName[]       { "DirectConnection" };
+    constexpr   char    ServiceName[]   { "DirectConnection" };
     /**
-     * \brief   Implemented Version
+     * \brief   Implemented Version.
      *          NEDirectConnection::InterfaceVersion
      **/
-    const Version             InterfaceVersion    = "1.0.0";
+    const       Version InterfaceVersion{ 1, 0, 0 };
 
     /**
      * \brief   Indicates Invalid session
@@ -273,6 +274,8 @@ inline const char * NEDirectConnection::getString( NEDirectConnection::eMessageI
 //////////////////////////////////////////////////////////////////////////
 // NEDirectConnection namespace declaration End
 //////////////////////////////////////////////////////////////////////////
+
+#endif  // GENERATED_NEDIRECTCONNECTION_HPP
 
 //////////////////////////////////////////////////////////////////////////
 // End generate generated/NEDirectConnection.hpp file

@@ -3,9 +3,9 @@
 //////////////////////////////////////////////////////////////////////////
 
 /************************************************************************
- * (c) copyright    2021
+ * (c) copyright    2022
  *
- * Generated at     30.09.2021  01:22:14 GMT+02:00 
+ * Generated at     11.08.2022  17:55:56 GMT+02:00
  *                  Create by AREG SDK code generator tool from source ConnectionManager.
  *
  * \file            generated/private/ConnectionManagerProxy.hpp
@@ -146,7 +146,7 @@ void ConnectionManagerProxy::unregisterServiceListeners( void )
 /************************************************************************
  * Requests.
  ************************************************************************/
- 
+
 unsigned int ConnectionManagerProxy::requestConnect( IENotificationEventConsumer & caller, const String & nickName, const DateTime & dateTime )
 {
     static const NEConnectionManager::eMessageIDs msgId = NEConnectionManager::eMessageIDs::MsgId_requestConnect;
@@ -184,7 +184,7 @@ void ConnectionManagerProxy::requestDisconnect( const String & nickName, unsigne
 /************************************************************************
  * Event processing.
  ************************************************************************/
- 
+
 /************************************************************************
  * IEProxyEventConsumer interface overrides.
  ************************************************************************/
@@ -267,8 +267,8 @@ void ConnectionManagerProxy::updateData( ConnectionManagerResponseEvent & eventE
         break;
     }
 }
- 
-void ConnectionManagerProxy::processResponse( ConnectionManagerResponseEvent & evenElem )
+
+    void ConnectionManagerProxy::processResponse( ConnectionManagerResponseEvent & evenElem )
 {
     NEConnectionManager::eMessageIDs respId  = static_cast<NEConnectionManager::eMessageIDs>(evenElem.getResponseId());
     NEService::eResultType resultType  = evenElem.getResult();
@@ -294,8 +294,8 @@ void ConnectionManagerProxy::processResponse( ConnectionManagerResponseEvent & e
         {
             respId  = static_cast<NEConnectionManager::eMessageIDs>( mProxyData.getResponseId(static_cast<msg_id>(respId)) );
         }
-        
-        setStates   = respId != NEConnectionManager::eMessageIDs::MsgId_NotProcessed;            
+
+        setStates   = respId != NEConnectionManager::eMessageIDs::MsgId_NotProcessed;
         break;
 
     case NEService::eResultType::RequestOK:     // fall through
@@ -312,16 +312,15 @@ void ConnectionManagerProxy::processResponse( ConnectionManagerResponseEvent & e
     {
         updateData(evenElem, respId);
     }
-       
+
     if (setStates == true)
     {
         setState(static_cast<msg_id>(respId), dataValid ? NEService::eDataStateType::DataIsOK : NEService::eDataStateType::DataIsInvalid);
     }
-    
+
     notifyListeners(static_cast<msg_id>(respId), resultType, evenElem.getSequenceNumber());
 }
 
 //////////////////////////////////////////////////////////////////////////
 // End generate generated/private/ConnectionManagerProxy.cpp file
 //////////////////////////////////////////////////////////////////////////
- 

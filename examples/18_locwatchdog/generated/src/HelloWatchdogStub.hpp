@@ -1,17 +1,18 @@
 //////////////////////////////////////////////////////////////////////////
-// Begin generate generated/src/HelloWorldStub.hpp file
+// Begin generate generated/src/HelloWatchdogStub.hpp file
 //////////////////////////////////////////////////////////////////////////
-#pragma once
+#ifndef  GENERATED_SRC_HELLOWATCHDOGSTUB_HPP
+#define  GENERATED_SRC_HELLOWATCHDOGSTUB_HPP
 
 /************************************************************************
- * (c) copyright    2021
+ * (c) copyright    2022
  *
- * Generated at     30.09.2021  01:22:11 GMT+02:00 
- *                  Create by AREG SDK code generator tool from source HelloWorld.
+ * Generated at     12.08.2022  10:30:17 GMT+02:00
+ *                  Create by AREG SDK code generator tool from source HelloWatchdog.
  *
- * \file            generated/src/HelloWorldStub.hpp
- * \ingroup         HelloWorld Service Interface
- * \brief           This is an automatic generated code of HelloWorld
+ * \file            generated/src/HelloWatchdogStub.hpp
+ * \ingroup         HelloWatchdog Service Interface
+ * \brief           This is an automatic generated code of HelloWatchdog
  *                  Service Interface Stub class declaration.
  ************************************************************************/
 
@@ -19,7 +20,7 @@
  * Include files
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
-#include "generated/src/NEHelloWorld.hpp"
+#include "generated/src/NEHelloWatchdog.hpp"
 #include "areg/component/StubBase.hpp"
 
 /************************************************************************
@@ -27,16 +28,17 @@
  ************************************************************************/
 
 //////////////////////////////////////////////////////////////////////////
-// HelloWorldStub class declaration
+// HelloWatchdogStub class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief       HelloWorld Service Interface Stub object.
+ * \brief       HelloWatchdog Service Interface Stub object.
  *              Instantiated per every server component, which differ by
  *              role name of component.
  *
  *              Simple Service Interface to demonstrate working features of AREG SDK.
+ *              This service will demonstrate how the system watchdog works.
  **/
-class HelloWorldStub   : protected  StubBase
+class HelloWatchdogStub   : protected  StubBase
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor. Protected
@@ -47,12 +49,12 @@ protected:
      * \param   masterComp  The master component object, which is initializing service Stub.
      * \note    Before constructor is called, the instance of Component must be already initialized.
      **/
-    explicit HelloWorldStub( Component & masterComp );
+    explicit HelloWatchdogStub( Component & masterComp );
     /**
      * \brief   Destructor.
      **/
-    virtual ~HelloWorldStub( void ) = default;
-    
+    virtual ~HelloWatchdogStub( void ) = default;
+
 //////////////////////////////////////////////////////////////////////////
 // Operations
 //////////////////////////////////////////////////////////////////////////
@@ -69,131 +71,73 @@ public:
 //////////////////////////////////////////////////////////////////////////
 
 //////////////////////////////////////////////////////////////////////////
-// HelloWorld Interface Attributes
+// HelloWatchdog Interface Attributes
 //////////////////////////////////////////////////////////////////////////
  public:
 /************************************************************************
- * Attribute ConnectedClients functions
+ * Attribute ServiceState functions
  ************************************************************************/
 
     /**
-     * \brief   Returns true if ConnectedClients attribute is valid
+     * \brief   Returns true if ServiceState attribute is valid
      **/
-    inline bool isConnectedClientsValid( void ) const;
+    inline bool isServiceStateValid( void ) const;
     /**
-     * \brief   Invalidates ConnectedClients attribute and
+     * \brief   Invalidates ServiceState attribute and
      *          sends error update notification message to clients.
      **/
-    inline void invalidateConnectedClients( void );
+    inline void invalidateServiceState( void );
     /**
-     * \brief   Force to send ConnectedClients attribute notification message to all clients.
+     * \brief   Force to send ServiceState attribute notification message to all clients.
      *          The method can be called when the attribute is updated not via set-method.
      **/
-     inline void notifyConnectedClientsUpdated( void );
+     inline void notifyServiceStateUpdated( void );
     /**
-     * \brief   Set ConnectedClients attribute value and send notification event to all clients.
+     * \brief   Set ServiceState attribute value and send notification event to all clients.
      *          The notification is sent only when value is updated or validated.
-     * \param   newValue    New value of ConnectedClients attribute to set.
-     *                      The ConnectedClients attribute description:
-     *                      The list of connected clients. Updated each time when new client requests to output Hello World message.
+     * \param   newValue    New value of ServiceState attribute to set.
+     *                      The ServiceState attribute description:
+     *                      The state of the service.
      **/
-    virtual void setConnectedClients( const NEHelloWorld::ConnectionList & newValue );
+    virtual void setServiceState( const NEHelloWatchdog::eState & newValue );
     /**
-     * \brief   Returns the value of ConnectedClients attribute.
-     *          The ConnectedClients attribute description:
-     *          The list of connected clients. Updated each time when new client requests to output Hello World message.
+     * \brief   Returns the value of ServiceState attribute.
+     *          The ServiceState attribute description:
+     *          The state of the service.
      **/
-    inline const NEHelloWorld::ConnectionList & getConnectedClients( void ) const;
-    inline NEHelloWorld::ConnectionList & getConnectedClients( void );
-
-/************************************************************************
- * Attribute RemainOutput functions
- ************************************************************************/
-
-    /**
-     * \brief   Returns true if RemainOutput attribute is valid
-     **/
-    inline bool isRemainOutputValid( void ) const;
-    /**
-     * \brief   Invalidates RemainOutput attribute and
-     *          sends error update notification message to clients.
-     **/
-    inline void invalidateRemainOutput( void );
-    /**
-     * \brief   Force to send RemainOutput attribute notification message to all clients.
-     *          The method can be called when the attribute is updated not via set-method.
-     **/
-     inline void notifyRemainOutputUpdated( void );
-    /**
-     * \brief   Set RemainOutput attribute value and send notification event to all clients.
-     *          The notification is sent only when value is updated or validated.
-     * \param   newValue    New value of RemainOutput attribute to set.
-     *                      The RemainOutput attribute description:
-     *                      Remaining number of outputs to print Hello World.
-     **/
-    virtual void setRemainOutput( const short & newValue );
-    /**
-     * \brief   Returns the value of RemainOutput attribute.
-     *          The RemainOutput attribute description:
-     *          Remaining number of outputs to print Hello World.
-     **/
-    inline const short & getRemainOutput( void ) const;
-    inline short & getRemainOutput( void );
+    inline const NEHelloWatchdog::eState & getServiceState( void ) const;
+    inline NEHelloWatchdog::eState & getServiceState( void );
 
 //////////////////////////////////////////////////////////////////////////
-// HelloWorld Interface Requests
+// HelloWatchdog Interface Requests
 //////////////////////////////////////////////////////////////////////////
 public:
 
     /**
      * \brief   Request call.
-     *          Request to print hello world
-     * \param   roleName    The role name of client component that requested to print hello world
-     * \param   addMessage  Additional message to output. Can be empty.
-     *          Has default value: ""
-     * \see     responseHelloWorld
+     *          The response triggered when the thread resumed from suspended mode.
+     * \param   timeoutSleep    The timeout in milliseconds to suspend the thread.
+     * \see     responseStartSleep
      **/
-    virtual void requestHelloWorld( const String & roleName, const String & addMessage = "" ) = 0;
-
-    /**
-     * \brief   Request call.
-     *          Sent by client to notify the shutdown. This removes client from the list. This request has no response.
-     * \param   clientID    The ID of client that requests to shutdown. The ID is given by service when first time client requests to output message.
-     * \param   roleName    Service client component role name
-     * \note    Has no response
-     **/
-    virtual void requestClientShutdown( unsigned int clientID, const String & roleName ) = 0;
+    virtual void requestStartSleep( unsigned int timeoutSleep ) = 0;
 
 //////////////////////////////////////////////////////////////////////////
-// HelloWorld Interface Responses
+// HelloWatchdog Interface Responses
 //////////////////////////////////////////////////////////////////////////
 public:
 
     /**
      * \brief   Response call.
-     *          The response to hello world request.
-     * \param   clientInfo  The client information set by servicing component. If empty or invalid ID, the message output failed.
-     * \see     requestHelloWorld
+     *          Triggered to stop the timer.
+     * \param   timeoutSleep    The timeout in milliseconds while thread was in suspended mode.
+     * \see     requestStartSleep
      **/
-    virtual void responseHelloWorld( const NEHelloWorld::sConnectedClient & clientInfo );
+    virtual void responseStartSleep( unsigned int timeoutSleep );
 
 //////////////////////////////////////////////////////////////////////////
-// HelloWorld Interface Broadcasts
+// HelloWatchdog Interface Broadcasts
 //////////////////////////////////////////////////////////////////////////
 public:
-
-    /**
-     * \brief   Broadcast call.
-     *          Broadcast to notify all clients about connection
-     * \param   clientList  List of currently active clients.
-     **/
-    virtual void broadcastHelloClients( const NEHelloWorld::ConnectionList & clientList );
-
-    /**
-     * \brief   Broadcast call.
-     *          DESCRIPTION MISSED
-     **/
-    virtual void broadcastServiceUnavailable( void );
 
 //////////////////////////////////////////////////////////////////////////
 // End Service Interface operations / attributes and overrides declaration
@@ -208,8 +152,8 @@ public:
 /************************************************************************/
 
     /**
-     * \brief   Sends update notification message to all clients. 
-     *          This method can be called manually to send update 
+     * \brief   Sends update notification message to all clients.
+     *          This method can be called manually to send update
      *          notification message after updating attribute value.
      *
      * \param   msgId   The attribute message ID to notify clients.
@@ -254,7 +198,7 @@ protected:
     virtual void shutdownServiceIntrface ( Component & holder ) override;
 
 /************************************************************************/
-// StubBase overrides. Protected methods 
+// StubBase overrides. Protected methods
 /************************************************************************/
 
     /**
@@ -293,9 +237,9 @@ private:
 //////////////////////////////////////////////////////////////////////////
 private:
     /**
-     * \brief   Returns reference to HelloWorldStub object
+     * \brief   Returns reference to HelloWatchdogStub object
      **/
-    inline HelloWorldStub & self( void );
+    inline HelloWatchdogStub & self( void );
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -306,104 +250,67 @@ private:
  ************************************************************************/
 
     /**
-     * \brief   Attribute ConnectedClients
-     *          The list of connected clients. Updated each time when new client requests to output Hello World message.
+     * \brief   Attribute ServiceState
+     *          The state of the service.
      **/
-    NEHelloWorld::ConnectionList    mConnectedClients;
+    NEHelloWatchdog::eState     mServiceState;
     /**
-     * \brief   Attribute ConnectedClients data validation state.
+     * \brief   Attribute ServiceState data validation state.
      **/
-    NEService::eDataStateType       mConnectedClientsState;
-
-    /**
-     * \brief   Attribute RemainOutput
-     *          Remaining number of outputs to print Hello World.
-     **/
-    short                           mRemainOutput;
-    /**
-     * \brief   Attribute RemainOutput data validation state.
-     **/
-    NEService::eDataStateType       mRemainOutputState;
+    NEService::eDataStateType   mServiceStateState;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    HelloWorldStub( void ) = delete;
-    DECLARE_NOCOPY_NOMOVE( HelloWorldStub );
+    HelloWatchdogStub( void ) = delete;
+    DECLARE_NOCOPY_NOMOVE( HelloWatchdogStub );
 };
 
 //////////////////////////////////////////////////////////////////////////
-// HelloWorldStub class inline functions implementation
+// HelloWatchdogStub class inline functions implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline HelloWorldStub & HelloWorldStub::self( void )
+inline HelloWatchdogStub & HelloWatchdogStub::self( void )
 {
     return (*this);
 }
 
 /************************************************************************
- * \brief   ConnectedClients attribute functions
+ * \brief   ServiceState attribute functions
  ************************************************************************/
  
-inline bool HelloWorldStub::isConnectedClientsValid( void ) const
+inline bool HelloWatchdogStub::isServiceStateValid( void ) const
 {
-    return (mConnectedClientsState  == NEService::eDataStateType::DataIsOK);
+    return (mServiceStateState  == NEService::eDataStateType::DataIsOK);
 }
 
-inline void HelloWorldStub::invalidateConnectedClients( void )
+inline void HelloWatchdogStub::invalidateServiceState( void )
 {
-    errorRequest( static_cast<msg_id>(NEHelloWorld::eMessageIDs::MsgId_ConnectedClients), false );
+    errorRequest( static_cast<msg_id>(NEHelloWatchdog::eMessageIDs::MsgId_ServiceState), false );
 }
 
-inline void HelloWorldStub::notifyConnectedClientsUpdated( void )
+inline void HelloWatchdogStub::notifyServiceStateUpdated( void )
 {
-    sendNotification( static_cast<msg_id>(NEHelloWorld::eMessageIDs::MsgId_ConnectedClients) );
+    sendNotification( static_cast<msg_id>(NEHelloWatchdog::eMessageIDs::MsgId_ServiceState) );
 }
 
-inline const NEHelloWorld::ConnectionList & HelloWorldStub::getConnectedClients( void ) const
+inline const NEHelloWatchdog::eState & HelloWatchdogStub::getServiceState( void ) const
 {
-    return mConnectedClients;
+    return mServiceState;
 }
 
-inline NEHelloWorld::ConnectionList & HelloWorldStub::getConnectedClients( void )
+inline NEHelloWatchdog::eState & HelloWatchdogStub::getServiceState( void )
 {
-    return mConnectedClients;
-}
-
-/************************************************************************
- * \brief   RemainOutput attribute functions
- ************************************************************************/
- 
-inline bool HelloWorldStub::isRemainOutputValid( void ) const
-{
-    return (mRemainOutputState  == NEService::eDataStateType::DataIsOK);
-}
-
-inline void HelloWorldStub::invalidateRemainOutput( void )
-{
-    errorRequest( static_cast<msg_id>(NEHelloWorld::eMessageIDs::MsgId_RemainOutput), false );
-}
-
-inline void HelloWorldStub::notifyRemainOutputUpdated( void )
-{
-    sendNotification( static_cast<msg_id>(NEHelloWorld::eMessageIDs::MsgId_RemainOutput) );
-}
-
-inline const short & HelloWorldStub::getRemainOutput( void ) const
-{
-    return mRemainOutput;
-}
-
-inline short & HelloWorldStub::getRemainOutput( void )
-{
-    return mRemainOutput;
+    return mServiceState;
 }
 
 //////////////////////////////////////////////////////////////////////////
-// HelloWorldStub class declaration End
+// HelloWatchdogStub class declaration End
 //////////////////////////////////////////////////////////////////////////
 
+#endif   // GENERATED_SRC_HELLOWATCHDOGSTUB_HPP
+
 //////////////////////////////////////////////////////////////////////////
-// End generate generated/src/HelloWorldStub.hpp file
+// End generate generated/src/HelloWatchdogStub.hpp file
 //////////////////////////////////////////////////////////////////////////

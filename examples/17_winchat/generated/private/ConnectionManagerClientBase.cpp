@@ -2,9 +2,9 @@
 // Begin generate generated/private/ConnectionManagerClientBase.cpp file
 //////////////////////////////////////////////////////////////////////////
 /************************************************************************
- * (c) copyright    2021
+ * (c) copyright    2022
  *
- * Generated at     30.09.2021  01:22:14 GMT+02:00 
+ * Generated at     11.08.2022  17:55:56 GMT+02:00
  *                  Create by AREG SDK code generator tool from source ConnectionManager.
  *
  * \file            generated/ConnectionManagerClientBase.hpp
@@ -30,7 +30,7 @@ namespace NEConnectionManager
      * \brief   Initialize request failure function pointers to make error handling
      **/
     typedef void (ConnectionManagerClientBase::* FuncRequestFailure) ( NEService::eResultType );
-    static FuncRequestFailure failureFunctions[] = 
+    static constexpr FuncRequestFailure failureFunctions[]
     {
           &ConnectionManagerClientBase::requestConnectFailed
         , &ConnectionManagerClientBase::requestRegisterConnectionFailed
@@ -81,7 +81,7 @@ ConnectionManagerClientBase::~ConnectionManagerClientBase( void )
         mProxy->freeProxy( static_cast<IEProxyListener &>(self()) );
         mProxy  = nullptr;
     }
-    
+
     mIsConnected= false;
 }
 
@@ -106,8 +106,9 @@ bool ConnectionManagerClientBase::recreateProxy( void )
                 mProxy = newProxy;
                 result = true;
             }
-        }    
+        }
     }
+
     return result;
 }
 
@@ -120,7 +121,7 @@ DEF_TRACE_SCOPE(generated_ConnectionManagerClientBase_serviceConnected);
 bool ConnectionManagerClientBase::serviceConnected( bool isConnected, ProxyBase & proxy )
 {
     TRACE_SCOPE(generated_ConnectionManagerClientBase_serviceConnected);
-    
+
     bool result = false;
     if(mProxy == &proxy)
     {
@@ -129,11 +130,11 @@ bool ConnectionManagerClientBase::serviceConnected( bool isConnected, ProxyBase 
                  , proxy.getProxyAddress().getServiceName().getString()
                  , proxy.getProxyAddress().getRoleName().getString()
                  , isConnected ? "CONNECTED" : "DISCONNECTED");
-        
+
         mIsConnected= isConnected;
         result      = true;
     }
-    
+
     return result;
 }
 
@@ -173,7 +174,7 @@ void ConnectionManagerClientBase::processNotificationEvent( NotificationEvent & 
     case NEService::eResultType::RequestInvalid:
         {
         /************************************************************************
-         * Trigger invalid response / broadcast handling. May happen when remove notification 
+         * Trigger invalid response / broadcast handling. May happen when remove notification
          ************************************************************************/
             ConnectionManagerClientBase::invalidResponse(msgId);
         }
@@ -306,7 +307,7 @@ void ConnectionManagerClientBase::invalidRequest( NEConnectionManager::eMessageI
                     , NEConnectionManager::getString(InvalidReqId)
                     , static_cast<unsigned int>(InvalidReqId)
                     , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString() );
-                    
+
     ASSERT(false);
 }
 
@@ -319,7 +320,7 @@ void ConnectionManagerClientBase::requestFailed( NEConnectionManager::eMessageID
                     , static_cast<unsigned int>(FailureMsgId)
                     , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString()
                     , NEService::getString(FailureReason) );
-                    
+
     unsigned int index = static_cast<msg_id>(NEConnectionManager::eMessageIDs::MsgId_Invalid);
     index = static_cast<msg_id>( NEService::isResponseId(static_cast<unsigned int>(FailureMsgId)) ? NEConnectionManager::getRequestId(FailureMsgId) : FailureMsgId);
     index = NEService::isRequestId(index)  ? GET_REQ_INDEX(index) : static_cast<msg_id>(NEConnectionManager::eMessageIDs::MsgId_Invalid);
@@ -349,7 +350,7 @@ void ConnectionManagerClientBase::onConnectionListUpdate( const NEConnectionMana
 /************************************************************************
  * Request failure / Response and Broadcast notifications
  ************************************************************************/
- 
+
 DEF_TRACE_SCOPE(generated_ConnectionManagerClientBase_requestConnectFailed);
 void ConnectionManagerClientBase::requestConnectFailed( NEService::eResultType FailureReason )
 {

@@ -1,18 +1,18 @@
 //////////////////////////////////////////////////////////////////////////
-// Begin generate generated/CentralMessagerClientBase.hpp file
+// Begin generate generated/src/HelloWatchdogClientBase.hpp file
 //////////////////////////////////////////////////////////////////////////
-#ifndef  GENERATED_CENTRALMESSAGERCLIENTBASE_HPP
-#define  GENERATED_CENTRALMESSAGERCLIENTBASE_HPP
+#ifndef  GENERATED_SRC_HELLOWATCHDOGCLIENTBASE_HPP
+#define  GENERATED_SRC_HELLOWATCHDOGCLIENTBASE_HPP
 
 /************************************************************************
  * (c) copyright    2022
  *
- * Generated at     11.08.2022  17:55:55 GMT+02:00
- *                  Create by AREG SDK code generator tool from source CentralMessager.
+ * Generated at     12.08.2022  10:30:17 GMT+02:00
+ *                  Create by AREG SDK code generator tool from source HelloWatchdog.
  *
- * \file            generated/CentralMessagerClientBase.hpp
- * \ingroup         CentralMessager Service Interface
- * \brief           This is an automatic generated code of CentralMessager
+ * \file            generated/src/HelloWatchdogClientBase.hpp
+ * \ingroup         HelloWatchdog Service Interface
+ * \brief           This is an automatic generated code of HelloWatchdog
  *                  Service Interface Client base class declaration.
  ************************************************************************/
 
@@ -20,11 +20,11 @@
  * Include files
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
-#include "generated/NECentralMessager.hpp"
+#include "generated/src/NEHelloWatchdog.hpp"
 #include "areg/component/IEProxyListener.hpp"
 #include "areg/component/NotificationEvent.hpp"
 
-#include "generated/private/CentralMessagerProxy.hpp"
+#include "generated/src/private/HelloWatchdogProxy.hpp"
 
 /************************************************************************
  * Dependencies
@@ -33,55 +33,53 @@ class Component;
 class DispatcherThread;
 
 //////////////////////////////////////////////////////////////////////////
-// CentralMessagerClientBase class declaration.
+// HelloWatchdogClientBase class declaration.
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief       The interface of CentralMessager Service Interface
+ * \brief       The interface of HelloWatchdog Service Interface
  *              Client base object. This object should be inherited
  *              and overrides should be implemented.
  *
- *              This service is used to receive messages from connected edge when typing or 
- *              sending messages. The service receives text message from initiator and
- *              broadcast to all clients, which have subscribed on event.
- *              It as well broadcasts own text message to all connected clients.
+ *              Simple Service Interface to demonstrate working features of AREG SDK.
+ *              This service will demonstrate how the system watchdog works.
  **/
-class CentralMessagerClientBase  : public IEProxyListener
+class HelloWatchdogClientBase  : public IEProxyListener
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor. Protected
 //////////////////////////////////////////////////////////////////////////
 protected:
     /**
-     * \brief   Initialize CentralMessager Service Interface client object. 
+     * \brief   Initialize HelloWatchdog Service Interface client object.
      *          Specifies used service and owner thread.
-     * \param   roleName    The role name assigned to CentralMessager servicing component object.
+     * \param   roleName    The role name assigned to HelloWatchdog servicing component object.
      * \param   ownerThread The name of component owner thread to dispatch messages.
      *                      If nullptr, all messages are dispatched in current component thread.
      **/
-    CentralMessagerClientBase( const char* roleName, const char * ownerThread = nullptr );
+    HelloWatchdogClientBase( const String & roleName, const String & ownerThread = String::EmptyString );
 
     /**
-     * \brief   Initialize CentralMessager Service Interface client object.
+     * \brief   Initialize HelloWatchdog Service Interface client object.
      *          Specifies used service and owner thread.
-     * \param   roleName    The role name assigned to CentralMessager servicing component object.
+     * \param   roleName    The role name assigned to HelloWatchdog servicing component object.
      * \param   ownerThread The instance of component owner thread to dispatch messages.
      **/
-    CentralMessagerClientBase( const char* roleName, DispatcherThread & ownerThread );
+    HelloWatchdogClientBase( const String & roleName, DispatcherThread & ownerThread );
 
     /**
-     * \brief   Initialize CentralMessager Service Interface client object.
+     * \brief   Initialize HelloWatchdog Service Interface client object.
      *          Specifies used service and owner component.
-     * \param   roleName    The role name assigned to CentralMessager servicing component object.
+     * \param   roleName    The role name assigned to HelloWatchdog servicing component object.
      * \param   owner       The instance of client owner component. The component object should be already initialized.
      * \note    When this constructor is used, it is important that the Component object is already initialized.
      *          and the component thread is set.
      **/
-    CentralMessagerClientBase( const char* roleName, Component & owner );
+    HelloWatchdogClientBase( const String & roleName, Component & owner );
 
     /**
      * \brief   Destructor.
      **/
-    virtual ~CentralMessagerClientBase( void );
+    virtual ~HelloWatchdogClientBase( void );
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -97,7 +95,7 @@ public:
      *          Otherwise returns false.
      * \param   msgId   The ID of message to check.
      **/
-    inline bool isNotificationAssigned( NECentralMessager::eMessageIDs msgId ) const;
+    inline bool isNotificationAssigned( NEHelloWatchdog::eMessageIDs msgId ) const;
 
     /**
      * \brief   Returns true if client object has got connection with servicing component
@@ -119,114 +117,90 @@ public:
 //////////////////////////////////////////////////////////////////////////
 
 //////////////////////////////////////////////////////////////////////////
-// CentralMessager Interface Attributes
-//////////////////////////////////////////////////////////////////////////
-public:
-
-//////////////////////////////////////////////////////////////////////////
-// CentralMessager Interface Requests / Responses / Broadcasts
+// HelloWatchdog Interface Attributes
 //////////////////////////////////////////////////////////////////////////
 public:
 
 /************************************************************************
- * Request SendMessage
+ * Attribute ServiceState functions
+ ************************************************************************/
+    /**
+     * \brief   Returns true if value of ServiceState attribute is valid.
+     *          If Update Notification is disabled, this method will return false.
+     **/
+    inline bool isServiceStateValid( void ) const;
+    /**
+     * \brief   Returns the value of ServiceState attribute.
+     *          To get valid value, the Update Notification should be enabled.
+     *          Attribute ServiceState description:
+     *          The state of the service.
+     * \param   state   On returns, contains the validation flag of attribute data.
+     *                  Check validation flag before use attribute value.
+     * \see     isServiceStateValid, notifyServiceStateUpdate, onServiceStateUpdate
+     **/
+    inline NEHelloWatchdog::eState getServiceState( NEService::eDataStateType & state ) const;
+    /**
+     * \brief   Call to enable or disable receiving notifications on ServiceState attribute update.
+     *          Once notification is enabled and the data is updated,
+     *          the getServiceState method will return valid data
+     *          Attribute ServiceState description:
+     *          The state of the service.
+     * \param   notify  If true, notification will be enable. If false, notification is disabled
+     * \see     isServiceStateValid, getServiceState, onServiceStateUpdate
+     **/
+    inline void notifyOnServiceStateUpdate( bool notify = true );
+    /**
+     * \brief   Triggered, when ServiceState attribute is updated. The function contains
+     *          attribute value and validation flag. When notification is enabled,
+     *          the method should be overwritten in derived class.
+     *          Attributes ServiceState description:
+     *          The state of the service.
+     * \param   ServiceState    The value of ServiceState attribute.
+     * \param   state           The data validation flag.
+     **/
+    virtual void onServiceStateUpdate( NEHelloWatchdog::eState ServiceState, NEService::eDataStateType state );
+
+//////////////////////////////////////////////////////////////////////////
+// HelloWatchdog Interface Requests / Responses / Broadcasts
+//////////////////////////////////////////////////////////////////////////
+public:
+
+/************************************************************************
+ * Request StartSleep
  ************************************************************************/
     /**
      * \brief   Request call.
-     *          Request to sends message that all clients can see.
-     * \param   nickName    The nick name of initiator
-     * \param   cookie      The cookie given by connection manager. Should not be invalid.
-     * \param   newMessage  The message sent by connected initiator
-     * \param   dateTime    The time-stamp create on local host of initiator
-     * \see     Has no response
+     *          The response triggered when the thread resumed from suspended mode.
+     * \param   timeoutSleep    The timeout in milliseconds to suspend the thread.
+     * \return  The sequence count number of call
+     * \see     responseStartSleep
      **/
-    inline void requestSendMessage( const String & nickName, unsigned int cookie, const String & newMessage, const DateTime & dateTime );
+    inline unsigned int requestStartSleep( unsigned int timeoutSleep );
     /**
-     * \brief   Overwrite to handle error of SendMessage request call.
+     * \brief   Overwrite to handle error of StartSleep request call.
      * \param   FailureReason   The failure reason value of request call.
      **/
-    virtual void requestSendMessageFailed( NEService::eResultType FailureReason );
+    virtual void requestStartSleepFailed( NEService::eResultType FailureReason );
 
 /************************************************************************
- * Request KeyTyping
+ * Response StartSleep
  ************************************************************************/
     /**
-     * \brief   Request call.
-     *          Sent each time when typing a key
-     * \param   nickName    The nick name of initiator
-     * \param   cookie      The cookie assigned to initiator
-     * \param   newMessage  The message typed.
-     * \see     Has no response
-     **/
-    inline void requestKeyTyping( const String & nickName, unsigned int cookie, const String & newMessage );
-    /**
-     * \brief   Overwrite to handle error of KeyTyping request call.
-     * \param   FailureReason   The failure reason value of request call.
-     **/
-    virtual void requestKeyTypingFailed( NEService::eResultType FailureReason );
-
-/************************************************************************
- * Broadcast SendMessage
- ************************************************************************/
-    /**
-     * \brief   Server broadcast.
-     *          The response, sent by connection manager to notify the message typing update
-     *          Overwrite, if need to handle Broadcast call of server object. 
+     * \brief   Response callback.
+     *          Triggered to stop the timer.
+     *          Overwrite, if need to handle Response call of server object.
      *          This call will be automatically triggered, on every appropriate request call
-     * \param   nickName    The nick name of initiator
-     * \param   cookie      The cookie assigned to initiator
-     * \param   newMessage  The message sent by initiator
-     * \param   dateTime    The local time-stamp of initiator
+     * \param   timeoutSleep    The timeout in milliseconds while thread was in suspended mode.
+     * \see     requestStartSleep
      **/
-    virtual void broadcastSendMessage( const String & nickName, unsigned int cookie, const String & newMessage, const DateTime & dateTime );
+    virtual void responseStartSleep( unsigned int timeoutSleep );
     /**
-     * \brief   Call to enable or disable receiving notifications on SendMessage broadcast call.
+     * \brief   Call to enable or disable receiving notifications on StartSleep response call.
      *          This function is triggered, when client object is interested only on response result
      *          without triggering request call.
      * \param   notify  If true, notification will be enable. If false, notification is disabled
      **/
-    inline void notifyOnBroadcastSendMessage( bool notify = true );
-
-/************************************************************************
- * Broadcast KeyTyping
- ************************************************************************/
-    /**
-     * \brief   Server broadcast.
-     *          Sent each time when a client is typing a key
-     *          Overwrite, if need to handle Broadcast call of server object. 
-     *          This call will be automatically triggered, on every appropriate request call
-     * \param   nickName    The nick name of initiator
-     * \param   cookie      Assigned cookie of initiator
-     * \param   newMessage  The message typed by initiator
-     **/
-    virtual void broadcastKeyTyping( const String & nickName, unsigned int cookie, const String & newMessage );
-    /**
-     * \brief   Call to enable or disable receiving notifications on KeyTyping broadcast call.
-     *          This function is triggered, when client object is interested only on response result
-     *          without triggering request call.
-     * \param   notify  If true, notification will be enable. If false, notification is disabled
-     **/
-    inline void notifyOnBroadcastKeyTyping( bool notify = true );
-
-/************************************************************************
- * Broadcast BroadcastMessage
- ************************************************************************/
-    /**
-     * \brief   Server broadcast.
-     *          Server broadcasts a message to all clients.
-     *          Overwrite, if need to handle Broadcast call of server object. 
-     *          This call will be automatically triggered, on every appropriate request call
-     * \param   serverMessage   The message sent by servicing server
-     * \param   dateTime        The time-stamp of servicing component
-     **/
-    virtual void broadcastBroadcastMessage( const String & serverMessage, const DateTime & dateTime );
-    /**
-     * \brief   Call to enable or disable receiving notifications on BroadcastMessage broadcast call.
-     *          This function is triggered, when client object is interested only on response result
-     *          without triggering request call.
-     * \param   notify  If true, notification will be enable. If false, notification is disabled
-     **/
-    inline void notifyOnBroadcastBroadcastMessage( bool notify = true );
+    inline void notifyOnResponseStartSleep( bool notify = true );
 
 //////////////////////////////////////////////////////////////////////////
 // End Service Interface operations / attributes and overrides declaration
@@ -260,14 +234,14 @@ protected:
     virtual bool serviceConnected( bool isConnected, ProxyBase & proxy ) override;
 
 /************************************************************************/
-// CentralMessagerClientBase Error Handling overrides
+// HelloWatchdogClientBase Error Handling overrides
 /************************************************************************/
 
     /**
      * \brief   Overwrite this method if need to make error handling on invalid request
      * \param   InvalidReqId    The ID of invalid request
      **/
-    virtual void invalidRequest( NECentralMessager::eMessageIDs InvalidReqId );
+    virtual void invalidRequest( NEHelloWatchdog::eMessageIDs InvalidReqId );
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes
@@ -298,7 +272,7 @@ protected:
     /**
      * \brief  Returns instance of proxy object.
      */
-    inline const CentralMessagerProxy * getProxy( void ) const;
+    inline const HelloWatchdogProxy * getProxy( void ) const;
 
     /**
      * \brief Returns target service component role name.
@@ -320,7 +294,7 @@ private:
     /**
      * \brief   Pointer of Proxy object providing communication
      **/
-    CentralMessagerProxy *   mProxy;
+    HelloWatchdogProxy *   mProxy;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
@@ -337,7 +311,7 @@ private:
     virtual void processNotificationEvent( NotificationEvent & eventElem ) override;
 
 /************************************************************************/
-// CentralMessagerClientBase hidden methods
+// HelloWatchdogClientBase hidden methods
 /************************************************************************/
 
     /**
@@ -350,12 +324,12 @@ private:
      *                  assigned, then if parameter 'always' is true, it will trigger
      *                  notification immediately after call.
      **/
-    void notifyOn( NECentralMessager::eMessageIDs msgId, bool notify, bool always = false );
+    void notifyOn( NEHelloWatchdog::eMessageIDs msgId, bool notify, bool always = false );
     /**
      * \brief   Overwrite this method if need to make error handling on invalid response
      * \param   InvalidRespId   The ID of invalid response
      **/
-     void invalidResponse( NECentralMessager::eMessageIDs InvalidRespId );
+     void invalidResponse( NEHelloWatchdog::eMessageIDs InvalidRespId );
 
     /**
      * \brief   By default, the function calls appropriate request failure function.
@@ -363,113 +337,117 @@ private:
      * \param   msgId           The ID of either response of request message, which failed. Normally ID of request.
      * \param   FailureReason   The failure reason value of request call.
      **/
-    void requestFailed( NECentralMessager::eMessageIDs FailureMsgId, NEService::eResultType FailureReason );
+    void requestFailed( NEHelloWatchdog::eMessageIDs FailureMsgId, NEService::eResultType FailureReason );
 
     /**
-     * \brief   Returns reference of CentralMessagerClientBase object
+     * \brief   Returns reference of HelloWatchdogClientBase object
      **/
-    inline CentralMessagerClientBase & self( void );
+    inline HelloWatchdogClientBase & self( void );
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    CentralMessagerClientBase( void ) = delete;
-    DECLARE_NOCOPY_NOMOVE( CentralMessagerClientBase );
+    HelloWatchdogClientBase( void ) = delete;
+    DECLARE_NOCOPY_NOMOVE( HelloWatchdogClientBase );
 };
 
 //////////////////////////////////////////////////////////////////////////
-// CentralMessagerClientBase class inline functions implementation
+// HelloWatchdogClientBase class inline functions implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline CentralMessagerClientBase & CentralMessagerClientBase::self( void )
+inline HelloWatchdogClientBase & HelloWatchdogClientBase::self( void )
 {
     return (*this);
 }
 
-inline unsigned int CentralMessagerClientBase::getCurrentSequenceNr( void ) const
+inline unsigned int HelloWatchdogClientBase::getCurrentSequenceNr( void ) const
 {
     return mCurrSequenceNr;
 }
 
-inline void CentralMessagerClientBase::clearAllNotifications( void )
+inline void HelloWatchdogClientBase::clearAllNotifications( void )
 {
     ASSERT(mProxy != nullptr);
     mProxy->clearAllNotifications(static_cast<IENotificationEventConsumer &>(self()));
 }
 
-inline bool CentralMessagerClientBase::isConnected( void ) const
+inline bool HelloWatchdogClientBase::isConnected( void ) const
 {
     ASSERT(mProxy != nullptr);
     return mIsConnected;
 }
 
-inline bool CentralMessagerClientBase::isNotificationAssigned( NECentralMessager::eMessageIDs msgId ) const
+inline bool HelloWatchdogClientBase::isNotificationAssigned( NEHelloWatchdog::eMessageIDs msgId ) const
 {
     ASSERT(mProxy != nullptr);
     return mProxy->hasNotificationListener(static_cast<unsigned int>(msgId));
 }
 
-inline const String & CentralMessagerClientBase::getServiceName( void ) const
+inline const String & HelloWatchdogClientBase::getServiceName( void ) const
 {
     ASSERT(mProxy != nullptr);
     return mProxy->getProxyAddress().getServiceName();
 }
 
-inline const Version & CentralMessagerClientBase::getServiceVersion( void ) const
+inline const Version & HelloWatchdogClientBase::getServiceVersion( void ) const
 {
     ASSERT(mProxy != nullptr);
     return mProxy->getProxyAddress().getServiceVersion();
 }
 
 /************************************************************************
- * Request calls
+ * Attribute inline functions
  ************************************************************************/
 
-inline void CentralMessagerClientBase::requestSendMessage( const String & nickName, unsigned int cookie, const String & newMessage, const DateTime & dateTime )
+inline bool HelloWatchdogClientBase::isServiceStateValid( void ) const
 {
     ASSERT(mProxy != nullptr);
-    mProxy->requestSendMessage( nickName, cookie, newMessage, dateTime );
+   return mProxy->isServiceStateValid( );
+}
+inline NEHelloWatchdog::eState HelloWatchdogClientBase::getServiceState( NEService::eDataStateType & state ) const
+{
+    ASSERT(mProxy != nullptr);
+    return mProxy->getServiceState( state );
 }
 
-inline void CentralMessagerClientBase::requestKeyTyping( const String & nickName, unsigned int cookie, const String & newMessage )
+inline void HelloWatchdogClientBase::notifyOnServiceStateUpdate( bool notify /* = true */ )
 {
-    ASSERT(mProxy != nullptr);
-    mProxy->requestKeyTyping( nickName, cookie, newMessage );
+    HelloWatchdogClientBase::notifyOn( NEHelloWatchdog::eMessageIDs::MsgId_ServiceState, notify, false );
 }
 
 /************************************************************************
- * Broadcast notifications
+ * Request calls
  ************************************************************************/
 
-inline void CentralMessagerClientBase::notifyOnBroadcastSendMessage( bool notify /* = true */ )
+inline unsigned int HelloWatchdogClientBase::requestStartSleep( unsigned int timeoutSleep )
 {
-    CentralMessagerClientBase::notifyOn(NECentralMessager::eMessageIDs::MsgId_broadcastSendMessage, notify, false);
+    ASSERT(mProxy != nullptr);
+    return mProxy->requestStartSleep( static_cast<IENotificationEventConsumer &>(self()), timeoutSleep );
 }
 
-inline void CentralMessagerClientBase::notifyOnBroadcastKeyTyping( bool notify /* = true */ )
+/************************************************************************
+ * Response notifications
+ ************************************************************************/
+
+inline void HelloWatchdogClientBase::notifyOnResponseStartSleep( bool notify /* = true */ )
 {
-    CentralMessagerClientBase::notifyOn(NECentralMessager::eMessageIDs::MsgId_broadcastKeyTyping, notify, false);
+    HelloWatchdogClientBase::notifyOn(NEHelloWatchdog::eMessageIDs::MsgId_responseStartSleep, notify, false);
 }
 
-inline void CentralMessagerClientBase::notifyOnBroadcastBroadcastMessage( bool notify /* = true */ )
-{
-    CentralMessagerClientBase::notifyOn(NECentralMessager::eMessageIDs::MsgId_broadcastBroadcastMessage, notify, false);
-}
-
-inline const CentralMessagerProxy * CentralMessagerClientBase::getProxy( void ) const
+inline const HelloWatchdogProxy * HelloWatchdogClientBase::getProxy( void ) const
 {
     return mProxy;
 }
 
-inline const String & CentralMessagerClientBase::getServiceRole( void ) const
+inline const String & HelloWatchdogClientBase::getServiceRole( void ) const
 {
     ASSERT(mProxy != nullptr);
     return mProxy->getProxyAddress().getRoleName();
 }
 
-#endif   // GENERATED_CENTRALMESSAGERCLIENTBASE_HPP
+#endif   // GENERATED_SRC_HELLOWATCHDOGCLIENTBASE_HPP
 
 //////////////////////////////////////////////////////////////////////////
-// End generate generated/CentralMessagerClientBase.hpp file
+// End generate generated/src/HelloWatchdogClientBase.hpp file
 //////////////////////////////////////////////////////////////////////////

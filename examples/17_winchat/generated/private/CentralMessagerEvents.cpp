@@ -3,9 +3,9 @@
 //////////////////////////////////////////////////////////////////////////
 
 /************************************************************************
- * (c) copyright    2021
+ * (c) copyright    2022
  *
- * Generated at     30.09.2021  01:22:12 GMT+02:00 
+ * Generated at     11.08.2022  17:55:55 GMT+02:00
  *                  Create by AREG SDK code generator tool from source CentralMessager.
  *
  * \file            generated/private/CentralMessagerEvents.hpp
@@ -17,8 +17,8 @@
 /************************************************************************
  * Include files
  ************************************************************************/
- #include "generated/private/CentralMessagerEvents.hpp"
- 
+#include "generated/private/CentralMessagerEvents.hpp"
+
 //////////////////////////////////////////////////////////////////////////
 // CentralMessagerRequestEvent class implementation
 //////////////////////////////////////////////////////////////////////////
@@ -48,7 +48,7 @@ CentralMessagerRequestEvent::CentralMessagerRequestEvent( const EventDataStream 
 CentralMessagerRequestEvent::CentralMessagerRequestEvent( const IEInStream & stream )
     : RemoteRequestEvent( stream )
 {
-}    
+}
 
 //////////////////////////////////////////////////////////////////////////
 // CentralMessagerNotifyRequestEvent class implementation
@@ -72,7 +72,7 @@ CentralMessagerNotifyRequestEvent::CentralMessagerNotifyRequestEvent( const Prox
 CentralMessagerNotifyRequestEvent::CentralMessagerNotifyRequestEvent( const IEInStream & stream )
     : RemoteNotifyRequestEvent( stream )
 {
-}    
+}
 
 //////////////////////////////////////////////////////////////////////////
 // CentralMessagerResponseEvent class implementation
@@ -106,7 +106,7 @@ CentralMessagerResponseEvent::CentralMessagerResponseEvent( const ProxyAddress &
 CentralMessagerResponseEvent::CentralMessagerResponseEvent( const IEInStream & stream )
     : RemoteResponseEvent( stream )
 {
-}    
+}
 
 //////////////////////////////////////////////////////////////////////////
 // CentralMessagerResponseEvent class, Methods

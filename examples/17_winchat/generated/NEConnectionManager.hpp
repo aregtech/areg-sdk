@@ -1,12 +1,13 @@
 //////////////////////////////////////////////////////////////////////////
 // Begin generate generated/NEConnectionManager.hpp file
 //////////////////////////////////////////////////////////////////////////
-#pragma once
+#ifndef  GENERATED_NECONNECTIONMANAGER_HPP
+#define  GENERATED_NECONNECTIONMANAGER_HPP
 
 /************************************************************************
- * (c) copyright    2021
+ * (c) copyright    2022
  *
- * Generated at     30.09.2021  01:22:14 GMT+02:00 
+ * Generated at     11.08.2022  17:55:56 GMT+02:00
  *                  Create by AREG SDK code generator tool from source ConnectionManager.
  *
  * \file            generated/NEConnectionManager.hpp
@@ -58,15 +59,15 @@ namespace   NEConnectionManager
 // Service Interface constants
 /************************************************************************/
     /**
-     * \brief   Service Interface Name
+     * \brief   Service Interface Name.
      *          NEConnectionManager::ServiceName
      **/
-    constexpr char        ServiceName[]       { "ConnectionManager" };
+    constexpr   char    ServiceName[]   { "ConnectionManager" };
     /**
-     * \brief   Implemented Version
+     * \brief   Implemented Version.
      *          NEConnectionManager::InterfaceVersion
      **/
-    const Version         InterfaceVersion    = "1.0.0";
+    const       Version InterfaceVersion{ 1, 0, 0 };
 
     /**
      * \brief   Indicates invalid cookie value
@@ -151,7 +152,7 @@ namespace   NEConnectionManager
          * \brief   Request ID: MsgId_requestConnect
          *          The request to connect to system
          **/
-          MsgId_requestConnect                 = NEService::REQUEST_ID_FIRST     // void requestConnect( const String & nickName, const DateTime & dateTime );
+          MsgId_requestConnect                = NEService::REQUEST_ID_FIRST     // void requestConnect( const String & nickName, const DateTime & dateTime );
         /**
          * \brief   Request ID: MsgId_requestRegisterConnection
          *          Request to register direct connection service.
@@ -161,7 +162,7 @@ namespace   NEConnectionManager
          * \brief   Request ID: MsgId_requestDisconnect
          *          Request to disconnect.
          **/
-        , MsgId_requestDisconnect                                                // void requestDisconnect( const String & nickName, unsigned int cookie, const DateTime & dateTime );
+        , MsgId_requestDisconnect                                               // void requestDisconnect( const String & nickName, unsigned int cookie, const DateTime & dateTime );
      
     /************************************************************************
      * Response IDs
@@ -320,6 +321,8 @@ inline const char * NEConnectionManager::getString( NEConnectionManager::eMessag
 //////////////////////////////////////////////////////////////////////////
 // NEConnectionManager namespace declaration End
 //////////////////////////////////////////////////////////////////////////
+
+#endif  // GENERATED_NECONNECTIONMANAGER_HPP
 
 //////////////////////////////////////////////////////////////////////////
 // End generate generated/NEConnectionManager.hpp file

@@ -3,9 +3,9 @@
 //////////////////////////////////////////////////////////////////////////
 
 /************************************************************************
- * (c) copyright    2021
+ * (c) copyright    2022
  *
- * Generated at     30.09.2021  01:22:15 GMT+02:00 
+ * Generated at     11.08.2022  17:55:57 GMT+02:00
  *                  Create by AREG SDK code generator tool from source DirectConnection.
  *
  * \file            generated/private/DirectConnectionEvents.hpp
@@ -17,8 +17,8 @@
 /************************************************************************
  * Include files
  ************************************************************************/
- #include "generated/private/DirectConnectionEvents.hpp"
- 
+#include "generated/private/DirectConnectionEvents.hpp"
+
 //////////////////////////////////////////////////////////////////////////
 // DirectConnectionRequestEvent class implementation
 //////////////////////////////////////////////////////////////////////////
@@ -48,7 +48,7 @@ DirectConnectionRequestEvent::DirectConnectionRequestEvent( const EventDataStrea
 DirectConnectionRequestEvent::DirectConnectionRequestEvent( const IEInStream & stream )
     : RemoteRequestEvent( stream )
 {
-}    
+}
 
 //////////////////////////////////////////////////////////////////////////
 // DirectConnectionNotifyRequestEvent class implementation
@@ -72,7 +72,7 @@ DirectConnectionNotifyRequestEvent::DirectConnectionNotifyRequestEvent( const Pr
 DirectConnectionNotifyRequestEvent::DirectConnectionNotifyRequestEvent( const IEInStream & stream )
     : RemoteNotifyRequestEvent( stream )
 {
-}    
+}
 
 //////////////////////////////////////////////////////////////////////////
 // DirectConnectionResponseEvent class implementation
@@ -106,7 +106,7 @@ DirectConnectionResponseEvent::DirectConnectionResponseEvent( const ProxyAddress
 DirectConnectionResponseEvent::DirectConnectionResponseEvent( const IEInStream & stream )
     : RemoteResponseEvent( stream )
 {
-}    
+}
 
 //////////////////////////////////////////////////////////////////////////
 // DirectConnectionResponseEvent class, Methods

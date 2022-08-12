@@ -11,14 +11,11 @@
  ************************************************************************/
 #include "locservice/src/ServiceClient.hpp"
 #include "areg/trace/GETrace.h"
+#include "areg/appbase/Application.hpp"
 
 DEF_TRACE_SCOPE(examples_18_locwatchdog_ServiceClient_serviceConnected);
-DEF_TRACE_SCOPE(examples_18_locwatchdog_ServiceClient_onConnectedClientsUpdate);
-DEF_TRACE_SCOPE(examples_18_locwatchdog_ServiceClient_onRemainOutputUpdate);
-DEF_TRACE_SCOPE(examples_18_locwatchdog_ServiceClient_broadcastHelloClients);
-DEF_TRACE_SCOPE(examples_18_locwatchdog_ServiceClient_broadcastServiceUnavailable);
-DEF_TRACE_SCOPE(examples_18_locwatchdog_ServiceClient_responseHelloWorld);
-DEF_TRACE_SCOPE(examples_18_locwatchdog_ServiceClient_processTimer);
+DEF_TRACE_SCOPE(examples_18_locwatchdog_ServiceClient_onServiceStateUpdate);
+DEF_TRACE_SCOPE(examples_18_locwatchdog_ServiceClient_responseStartSleep);
 
 const unsigned int  ServiceClient::TIMEOUT_VALUE    = 237;
 
@@ -34,20 +31,18 @@ void ServiceClient::DeleteComponent(Component & compObject, const NERegistry::Co
 }
 
 ServiceClient::ServiceClient(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
-    : Component             ( owner, entry.mRoleName)
-    , HelloWorldClientBase  ( entry.mDependencyServices[0].mRoleName, static_cast<Component &>(self()) )
-    , IETimerConsumer       ( )
+    : Component              ( owner, entry.mRoleName)
+    , HelloWatchdogClientBase( entry.mDependencyServices[0].mRoleName, static_cast<Component &>(self()) )
 
-    , mTimer                (static_cast<IETimerConsumer &>(self()), entry.mRoleName)
-    , mID                   ( 0 )
+    , mSleepTimeout          ( 0 )
+    , mRestarts              ( 0 )
 {
-
 }
 
 bool ServiceClient::serviceConnected(bool isConnected, ProxyBase & proxy)
 {
     TRACE_SCOPE(examples_18_locwatchdog_ServiceClient_serviceConnected);
-    bool result = HelloWorldClientBase::serviceConnected(isConnected, proxy);
+    bool result = HelloWatchdogClientBase::serviceConnected(isConnected, proxy);
 
     TRACE_DBG("Client [ %s ] of [ %s ] service is [ %s ]"
                 , proxy.getProxyAddress().getRoleName().getString()
@@ -56,14 +51,24 @@ bool ServiceClient::serviceConnected(bool isConnected, ProxyBase & proxy)
 
     if (isConnected)
     {
-        // dynamic subscribe on messages.
-        notifyOnRemainOutputUpdate(true);
-        notifyOnBroadcastServiceUnavailable(true);
-        mTimer.startTimer(ServiceClient::TIMEOUT_VALUE);
+        if (++ mRestarts <= NEHelloWatchdog::MaximumRestarts)
+        {
+            // dynamic subscribe on messages.
+            notifyOnServiceStateUpdate( true );
+            mSleepTimeout   = NEHelloWatchdog::InitialSleepTimeout;
+            TRACE_DBG( "Initialized thread sleep timeout [ %u ] ms, sending first request", mSleepTimeout );
+
+            requestStartSleep( mSleepTimeout );
+        }
+        else
+        {
+            TRACE_DBG("Reached maximum number of service restarts, exit application");
+            Application::signalAppQuit();
+        }
     }
     else
     {
-        mTimer.stopTimer();
+        TRACE_DBG( "Completing watchdog test with final sleep timeout [ %u ] ms", mSleepTimeout );
         // clear all subscriptions.
         clearAllNotifications();
     }
@@ -71,51 +76,19 @@ bool ServiceClient::serviceConnected(bool isConnected, ProxyBase & proxy)
     return result;
 }
 
-void ServiceClient::onConnectedClientsUpdate(const NEHelloWorld::ConnectionList & ConnectedClients, NEService::eDataStateType state)
+void ServiceClient::onServiceStateUpdate( NEHelloWatchdog::eState ServiceState, NEService::eDataStateType state )
 {
-    TRACE_SCOPE(examples_18_locwatchdog_ServiceClient_onConnectedClientsUpdate);
-    TRACE_DBG("Active client list is updated. There are [ %d ] clients, data is [ %s ]", ConnectedClients.getSize(), NEService::getString(state));
+    TRACE_SCOPE(examples_18_locwatchdog_ServiceClient_onServiceStateUpdate);
+    TRACE_DBG("Current service state is [ %s ], data state is [ %s ]", NEHelloWatchdog::getString(ServiceState), NEService::getString(state));
 }
 
-void ServiceClient::onRemainOutputUpdate(short RemainOutput, NEService::eDataStateType state)
+void ServiceClient::responseStartSleep( unsigned int timeoutSleep )
 {
-    TRACE_SCOPE(examples_18_locwatchdog_ServiceClient_onRemainOutputUpdate);
-    TRACE_DBG("Remain greeting outputs [ %d ], data is [ %s ]", RemainOutput, NEService::getString(state));
-}
+    TRACE_SCOPE(examples_18_locwatchdog_ServiceClient_responseStartSleep);
+    TRACE_DBG("Completed service sleep, current timeout is [ %u ]", timeoutSleep);
 
-void ServiceClient::responseHelloWorld(const NEHelloWorld::sConnectedClient & clientInfo)
-{
-    TRACE_SCOPE(examples_18_locwatchdog_ServiceClient_responseHelloWorld);
-    TRACE_DBG("Greetings from [ %s ] output on console, client ID [ %d ]", clientInfo.ccName.getString(), clientInfo.ccID);
-    ASSERT(clientInfo.ccName == getRoleName());
-    mID = clientInfo.ccID;
+    ASSERT( timeoutSleep == mSleepTimeout);
+    mSleepTimeout += NEHelloWatchdog::TimeoutStep;
 
-    if (isNotificationAssigned(NEHelloWorld::eMessageIDs::MsgId_broadcastHelloClients) == false)
-    {
-        // If it is not subscribed on message, make subscription, which is cleaned when disconnect service.
-        notifyOnBroadcastHelloClients(true);
-        notifyOnRemainOutputUpdate(true);
-    }
-}
-
-void ServiceClient::broadcastHelloClients(const NEHelloWorld::ConnectionList & clientList)
-{
-    TRACE_SCOPE(examples_18_locwatchdog_ServiceClient_broadcastHelloClients);
-    TRACE_DBG("[ %d ] clients use service [ %s ]", clientList.getSize(), getServiceName().getString());
-}
-
-void ServiceClient::broadcastServiceUnavailable(void)
-{
-    TRACE_SCOPE(examples_18_locwatchdog_ServiceClient_broadcastServiceUnavailable);
-    TRACE_WARN("Service notify reached message output maximum, starting shutdown procedure");
-    requestClientShutdown(mID, getRoleName());
-}
-
-void ServiceClient::processTimer(Timer & timer)
-{
-    TRACE_SCOPE(examples_18_locwatchdog_ServiceClient_processTimer);
-    ASSERT(&timer == &mTimer);
-
-    TRACE_DBG("Timer [ %s ] expired, send request to output message.", timer.getName().getString());
-    requestHelloWorld(getRoleName(), "");
+    requestStartSleep(mSleepTimeout);
 }

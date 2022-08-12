@@ -1,12 +1,13 @@
 //////////////////////////////////////////////////////////////////////////
 // Begin generate generated/DirectConnectionClientBase.hpp file
 //////////////////////////////////////////////////////////////////////////
-#pragma once
+#ifndef  GENERATED_DIRECTCONNECTIONCLIENTBASE_HPP
+#define  GENERATED_DIRECTCONNECTIONCLIENTBASE_HPP
 
 /************************************************************************
- * (c) copyright    2021
+ * (c) copyright    2022
  *
- * Generated at     30.09.2021  01:22:15 GMT+02:00 
+ * Generated at     11.08.2022  17:55:57 GMT+02:00
  *                  Create by AREG SDK code generator tool from source DirectConnection.
  *
  * \file            generated/DirectConnectionClientBase.hpp
@@ -102,12 +103,12 @@ public:
      * \brief   Returns true if client object has got connection with servicing component
      **/
     inline bool isConnected( void ) const;
-    
+
     /**
      * \brief   Returns the name of used service.
      **/
     inline const String & getServiceName( void ) const;
-    
+
     /**
      * \brief   Returns the version of used service.
      **/
@@ -183,7 +184,7 @@ public:
      * \param   FailureReason   The failure reason value of request call.
      **/
     virtual void requestConnectoinSetupFailed( NEService::eResultType FailureReason );
-    
+
 /************************************************************************
  * Request AddParticipant
  ************************************************************************/
@@ -201,7 +202,7 @@ public:
      * \param   FailureReason   The failure reason value of request call.
      **/
     virtual void requestAddParticipantFailed( NEService::eResultType FailureReason );
-    
+
 /************************************************************************
  * Request RemoveParticipant
  ************************************************************************/
@@ -219,7 +220,7 @@ public:
      * \param   FailureReason   The failure reason value of request call.
      **/
     virtual void requestRemoveParticipantFailed( NEService::eResultType FailureReason );
-    
+
 /************************************************************************
  * Request CloseConnection
  ************************************************************************/
@@ -235,7 +236,7 @@ public:
      * \param   FailureReason   The failure reason value of request call.
      **/
     virtual void requestCloseConnectionFailed( NEService::eResultType FailureReason );
-    
+
 /************************************************************************
  * Response ConnectoinSetup
  ************************************************************************/
@@ -341,16 +342,16 @@ protected:
      * \param   InvalidReqId    The ID of invalid request
      **/
     virtual void invalidRequest( NEDirectConnection::eMessageIDs InvalidReqId );
-    
+
 //////////////////////////////////////////////////////////////////////////
 // Attributes
 //////////////////////////////////////////////////////////////////////////
 
     /**
      * \brief   Call to recreate Proxy for the client. This call will remove and unregister all existing notifications
-     *          and the client will not receive pending update or response notifications. 
+     *          and the client will not receive pending update or response notifications.
      *          The client first will receive disconnect message, then again connect.
-     *          Reset update notifications manually in connect if need.          
+     *          Reset update notifications manually in connect if need.
      *          This function call can be used when the client instance should be registered and run in new thread.
      *
      * \return  Returns true if Proxy was created with success.
@@ -362,7 +363,7 @@ protected:
      *         The function can return nullptr if Proxy was not instantiated yet.
      **/
     DispatcherThread * getDispatcherThread( void );
-     
+
     /**
      * \brief   Returns the current sequence number
      **/
@@ -372,7 +373,7 @@ protected:
      * \brief  Returns instance of proxy object.
      */
     inline const DirectConnectionProxy * getProxy( void ) const;
-      
+
     /**
      * \brief Returns target service component role name.
      **/
@@ -408,7 +409,7 @@ private:
      * \param   eventElem   Notification Event object to process
      **/
     virtual void processNotificationEvent( NotificationEvent & eventElem ) override;
-    
+
 /************************************************************************/
 // DirectConnectionClientBase hidden methods
 /************************************************************************/
@@ -416,12 +417,12 @@ private:
     /**
      * \brief   Enables / Disables notification flags on appropriate message call.
      * \param   msgId   The ID of message to enable / disable notification
-     * \param   notify  If true, the notification is enabled. 
+     * \param   notify  If true, the notification is enabled.
      *                  If false, the notification is disabled.
      * \param   always  Flag, indicating whether should notify always or not.
      *                  if 'notify' parameter is true and the notification is already
      *                  assigned, then if parameter 'always' is true, it will trigger
-     *                  notification immediately after call. 
+     *                  notification immediately after call.
      **/
     void notifyOn( NEDirectConnection::eMessageIDs msgId, bool notify, bool always = false );
     /**
@@ -441,7 +442,6 @@ private:
     /**
      * \brief   Returns reference of DirectConnectionClientBase object
      **/
-
     inline DirectConnectionClientBase & self( void );
 
 //////////////////////////////////////////////////////////////////////////
@@ -489,7 +489,7 @@ inline const String & DirectConnectionClientBase::getServiceName( void ) const
     ASSERT(mProxy != nullptr);
     return mProxy->getProxyAddress().getServiceName();
 }
-    
+
 inline const Version & DirectConnectionClientBase::getServiceVersion( void ) const
 {
     ASSERT(mProxy != nullptr);
@@ -573,6 +573,8 @@ inline const String & DirectConnectionClientBase::getServiceRole( void ) const
     ASSERT(mProxy != nullptr);
     return mProxy->getProxyAddress().getRoleName();
 }
+
+#endif   // GENERATED_DIRECTCONNECTIONCLIENTBASE_HPP
 
 //////////////////////////////////////////////////////////////////////////
 // End generate generated/DirectConnectionClientBase.hpp file

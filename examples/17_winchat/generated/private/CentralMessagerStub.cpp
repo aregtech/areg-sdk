@@ -2,9 +2,9 @@
 // Begin generate generated/private/CentralMessagerStub.cpp file
 //////////////////////////////////////////////////////////////////////////
 /************************************************************************
- * (c) copyright    2021
+ * (c) copyright    2022
  *
- * Generated at     30.09.2021  01:22:12 GMT+02:00 
+ * Generated at     11.08.2022  17:55:55 GMT+02:00
  *                  Create by AREG SDK code generator tool from source CentralMessager.
  *
  * \file            generated/CentralMessagerStub.hpp
@@ -32,7 +32,7 @@
 //////////////////////////////////////////////////////////////////////////
 CentralMessagerStub::CentralMessagerStub( Component & masterComp )
     : StubBase    ( masterComp, NECentralMessager::getInterfaceData() )
-    
+
 {
 }
 
@@ -53,7 +53,7 @@ DEF_TRACE_SCOPE(generated_CentralMessagerStub_startupServiceInterface);
 void CentralMessagerStub::startupServiceInterface( Component & holder )
 {
     TRACE_SCOPE(generated_CentralMessagerStub_startupServiceInterface);
-    
+
     CentralMessagerRequestEvent::addListener( static_cast<IEEventConsumer &>(self()), Thread::getCurrentThreadName() );
     CentralMessagerNotifyRequestEvent::addListener( static_cast<IEEventConsumer &>(self()), Thread::getCurrentThreadName() );
     StubBase::startupServiceInterface( holder );
@@ -66,7 +66,7 @@ void CentralMessagerStub::shutdownServiceIntrface( Component & holder )
 {
     TRACE_SCOPE(generated_CentralMessagerStub_shutdownServiceIntrface);
     TRACE_DBG("The Stub Service [ %s ] of component with role name [ %s ] is shutting down and not available anymore ...", mAddress.getServiceName().getString(), mAddress.getRoleName().getString());
-    
+
     CentralMessagerRequestEvent::removeListener( static_cast<IEEventConsumer &>(self()), Thread::getCurrentThreadName() );
     CentralMessagerNotifyRequestEvent::removeListener( static_cast<IEEventConsumer &>(self()), Thread::getCurrentThreadName() );
     StubBase::shutdownServiceIntrface( holder );
@@ -101,7 +101,7 @@ void CentralMessagerStub::errorRequest( unsigned int msgId, bool msgCancel )
 {
     NEService::eResultType result = NEService::eResultType::NotProcessed;
     msg_id listenerId = msgId;
-    
+
     switch ( static_cast<NECentralMessager::eMessageIDs>(msgId) )
     {
 /************************************************************************
@@ -133,7 +133,7 @@ void CentralMessagerStub::errorRequest( unsigned int msgId, bool msgCancel )
         ASSERT(false);
         break;
     }
-    
+
     StubBase::StubListenerList listeners;
     if ( findListeners(listenerId, listeners) > 0 )
     {
@@ -219,27 +219,27 @@ void CentralMessagerStub::processRequestEvent( ServiceRequestEvent & eventElem )
                 unsigned int    cookie;
                 String          newMessage;
                 DateTime        dateTime;
-                stream >> nickName;                
-                stream >> cookie;                
-                stream >> newMessage;                
-                stream >> dateTime;                
+                stream >> nickName;
+                stream >> cookie;
+                stream >> newMessage;
+                stream >> dateTime;
                 requestSendMessage( nickName, cookie, newMessage, dateTime );
             }
             break;
-            
+
         case NECentralMessager::eMessageIDs::MsgId_requestKeyTyping:
             if ( true )
             {
                 String          nickName;
                 unsigned int    cookie;
                 String          newMessage;
-                stream >> nickName;                
-                stream >> cookie;                
-                stream >> newMessage;                
+                stream >> nickName;
+                stream >> cookie;
+                stream >> newMessage;
                 requestKeyTyping( nickName, cookie, newMessage );
             }
             break;
-            
+
         default:
             {
                 TRACE_SCOPE(generated_CentralMessagerStub_processRequestEvent);

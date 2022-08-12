@@ -3,9 +3,9 @@
 //////////////////////////////////////////////////////////////////////////
 
 /************************************************************************
- * (c) copyright    2021
+ * (c) copyright    2022
  *
- * Generated at     30.09.2021  01:22:15 GMT+02:00 
+ * Generated at     11.08.2022  17:55:57 GMT+02:00
  *                  Create by AREG SDK code generator tool from source DirectConnection.
  *
  * \file            generated/NEDirectConnection.hpp
@@ -29,7 +29,7 @@ const NEService::SInterfaceData & NEDirectConnection::getInterfaceData( void )
     /************************************************************************
      * The list of requests
      ************************************************************************/
-    static constexpr unsigned int _RequestList[] 
+    static constexpr unsigned int _RequestList[]
     {
           static_cast<unsigned int>( NEDirectConnection::eMessageIDs::MsgId_requestConnectoinSetup     ) // requestConnectoinSetup( const NEDirectConnection::sInitiator & initiator, const NEDirectConnection::ListParticipants & listParticipants )
         , static_cast<unsigned int>( NEDirectConnection::eMessageIDs::MsgId_requestAddParticipant      ) // requestAddParticipant( const NEDirectConnection::sInitiator & initiator, const NEDirectConnection::ListParticipants & listParticipants )
@@ -40,7 +40,7 @@ const NEService::SInterfaceData & NEDirectConnection::getInterfaceData( void )
     /************************************************************************
      * The list of responses and broadcasts
      ************************************************************************/
-    static constexpr unsigned int _ResponseList[] 
+    static constexpr unsigned int _ResponseList[]
     {
           static_cast<unsigned int>( NEDirectConnection::eMessageIDs::MsgId_responseConnectoinSetup    ) // responseConnectoinSetup( bool succeeded, const NEDirectConnection::sParticipant & target, const NEDirectConnection::sInitiator & initiator, const NEDirectConnection::ListParticipants & listParticipants )
         , static_cast<unsigned int>( NEDirectConnection::eMessageIDs::MsgId_responseAddParticipant     ) // responseAddParticipant( bool succeeded, const NEDirectConnection::ListParticipants & listParticipants )
@@ -50,7 +50,7 @@ const NEService::SInterfaceData & NEDirectConnection::getInterfaceData( void )
     /************************************************************************
      * The list of attributes
      ************************************************************************/
-    static constexpr unsigned int _AttributeList[] 
+    static constexpr unsigned int _AttributeList[]
     {
           static_cast<unsigned int>( NEDirectConnection::eMessageIDs::MsgId_InitiatedConnections       ) // NEDirectConnection::MapParticipants mInitiatedConnections;
     };
@@ -83,7 +83,7 @@ const NEService::SInterfaceData & NEDirectConnection::getInterfaceData( void )
      ************************************************************************/
 
     };
-    
+
     /************************************************************************
      * DirectConnection Service Interface data
      ************************************************************************/
@@ -105,7 +105,7 @@ const NEService::SInterfaceData & NEDirectConnection::getInterfaceData( void )
     return _InterfaceData;
 }
 
-NEDirectConnection::eMessageIDs NEDirectConnection::getResponseId( NEDirectConnection::eMessageIDs reqId )
+NEDirectConnection::eMessageIDs NEDirectConnection::getResponseId( NEDirectConnection::eMessageIDs reqId)
 {
     const NEService::SInterfaceData & sid = NEDirectConnection::getInterfaceData();
     msg_id index = GET_REQ_INDEX(reqId);
@@ -121,7 +121,7 @@ NEDirectConnection::eMessageIDs NEDirectConnection::getRequestId( NEDirectConnec
     {
         result = sid.idRequestToResponseMap[i] == static_cast<msg_id>(respId) ? static_cast<NEDirectConnection::eMessageIDs>(sid.idRequestList[i]) : NEDirectConnection::eMessageIDs::MsgId_Invalid;
     }
-    
+
     return result;
 }
 

@@ -1,12 +1,13 @@
 //////////////////////////////////////////////////////////////////////////
 // Begin generate generated/ConnectionManagerClientBase.hpp file
 //////////////////////////////////////////////////////////////////////////
-#pragma once
+#ifndef  GENERATED_CONNECTIONMANAGERCLIENTBASE_HPP
+#define  GENERATED_CONNECTIONMANAGERCLIENTBASE_HPP
 
 /************************************************************************
- * (c) copyright    2021
+ * (c) copyright    2022
  *
- * Generated at     30.09.2021  01:22:14 GMT+02:00 
+ * Generated at     11.08.2022  17:55:56 GMT+02:00
  *                  Create by AREG SDK code generator tool from source ConnectionManager.
  *
  * \file            generated/ConnectionManagerClientBase.hpp
@@ -99,12 +100,12 @@ public:
      * \brief   Returns true if client object has got connection with servicing component
      **/
     inline bool isConnected( void ) const;
-    
+
     /**
      * \brief   Returns the name of used service.
      **/
     inline const String & getServiceName( void ) const;
-    
+
     /**
      * \brief   Returns the version of used service.
      **/
@@ -180,7 +181,7 @@ public:
      * \param   FailureReason   The failure reason value of request call.
      **/
     virtual void requestConnectFailed( NEService::eResultType FailureReason );
-    
+
 /************************************************************************
  * Request RegisterConnection
  ************************************************************************/
@@ -200,7 +201,7 @@ public:
      * \param   FailureReason   The failure reason value of request call.
      **/
     virtual void requestRegisterConnectionFailed( NEService::eResultType FailureReason );
-    
+
 /************************************************************************
  * Request Disconnect
  ************************************************************************/
@@ -218,7 +219,7 @@ public:
      * \param   FailureReason   The failure reason value of request call.
      **/
     virtual void requestDisconnectFailed( NEService::eResultType FailureReason );
-    
+
 /************************************************************************
  * Response Connect
  ************************************************************************/
@@ -361,16 +362,16 @@ protected:
      * \param   InvalidReqId    The ID of invalid request
      **/
     virtual void invalidRequest( NEConnectionManager::eMessageIDs InvalidReqId );
-    
+
 //////////////////////////////////////////////////////////////////////////
 // Attributes
 //////////////////////////////////////////////////////////////////////////
 
     /**
      * \brief   Call to recreate Proxy for the client. This call will remove and unregister all existing notifications
-     *          and the client will not receive pending update or response notifications. 
+     *          and the client will not receive pending update or response notifications.
      *          The client first will receive disconnect message, then again connect.
-     *          Reset update notifications manually in connect if need.          
+     *          Reset update notifications manually in connect if need.
      *          This function call can be used when the client instance should be registered and run in new thread.
      *
      * \return  Returns true if Proxy was created with success.
@@ -382,7 +383,7 @@ protected:
      *         The function can return nullptr if Proxy was not instantiated yet.
      **/
     DispatcherThread * getDispatcherThread( void );
-     
+
     /**
      * \brief   Returns the current sequence number
      **/
@@ -392,7 +393,7 @@ protected:
      * \brief  Returns instance of proxy object.
      */
     inline const ConnectionManagerProxy * getProxy( void ) const;
-      
+
     /**
      * \brief Returns target service component role name.
      **/
@@ -428,7 +429,7 @@ private:
      * \param   eventElem   Notification Event object to process
      **/
     virtual void processNotificationEvent( NotificationEvent & eventElem ) override;
-    
+
 /************************************************************************/
 // ConnectionManagerClientBase hidden methods
 /************************************************************************/
@@ -436,12 +437,12 @@ private:
     /**
      * \brief   Enables / Disables notification flags on appropriate message call.
      * \param   msgId   The ID of message to enable / disable notification
-     * \param   notify  If true, the notification is enabled. 
+     * \param   notify  If true, the notification is enabled.
      *                  If false, the notification is disabled.
      * \param   always  Flag, indicating whether should notify always or not.
      *                  if 'notify' parameter is true and the notification is already
      *                  assigned, then if parameter 'always' is true, it will trigger
-     *                  notification immediately after call. 
+     *                  notification immediately after call.
      **/
     void notifyOn( NEConnectionManager::eMessageIDs msgId, bool notify, bool always = false );
     /**
@@ -461,7 +462,6 @@ private:
     /**
      * \brief   Returns reference of ConnectionManagerClientBase object
      **/
-
     inline ConnectionManagerClientBase & self( void );
 
 //////////////////////////////////////////////////////////////////////////
@@ -509,7 +509,7 @@ inline const String & ConnectionManagerClientBase::getServiceName( void ) const
     ASSERT(mProxy != nullptr);
     return mProxy->getProxyAddress().getServiceName();
 }
-    
+
 inline const Version & ConnectionManagerClientBase::getServiceVersion( void ) const
 {
     ASSERT(mProxy != nullptr);
@@ -601,6 +601,8 @@ inline const String & ConnectionManagerClientBase::getServiceRole( void ) const
     ASSERT(mProxy != nullptr);
     return mProxy->getProxyAddress().getRoleName();
 }
+
+#endif   // GENERATED_CONNECTIONMANAGERCLIENTBASE_HPP
 
 //////////////////////////////////////////////////////////////////////////
 // End generate generated/ConnectionManagerClientBase.hpp file

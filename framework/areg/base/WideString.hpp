@@ -114,7 +114,7 @@ public:
      * \brief    Copies wchar_t as source
      * \param    ch    Char as string.
      **/
-    inline WideString( wchar_t ch );
+    inline explicit WideString( wchar_t ch );
 
     /**
      * \brief   Initializes string and reserves a space for specified amount of characters.
@@ -122,12 +122,12 @@ public:
      *
      * \param   count   The space to reserve.
      */
-    explicit inline WideString(uint32_t count);
+    inline explicit WideString(uint32_t count);
 
     /**
      * \brief   Constructor, initializes string from streaming object
      **/
-    WideString( const IEInStream & stream );
+    explicit WideString( const IEInStream & stream );
 
 //////////////////////////////////////////////////////////////////////////
 // operators
@@ -168,6 +168,7 @@ public:
     inline bool operator == (const std::wstring& other) const;
     inline bool operator == (const std::wstring_view& other) const;
     inline bool operator == (const wchar_t* other) const;
+    inline bool operator == (const wchar_t ch) const;
     bool operator == (const char* other) const;
     bool operator == (const std::string& other) const;
     bool operator == (const String& other) const;
@@ -176,6 +177,7 @@ public:
     inline bool operator != (const std::wstring& other) const;
     inline bool operator != (const std::wstring_view& other) const;
     inline bool operator != (const wchar_t* other) const;
+    inline bool operator != (const wchar_t ch) const;
     bool operator != (const char* other) const;
     bool operator != (const std::string& other) const;
     bool operator != (const String& other) const;
@@ -442,6 +444,7 @@ public:
      * \param   source  The source of string to copy characters.
      * \param   pos     The position in source string to start to copy.
      * \param   count   The number of characters to copy. By default, it copies all characters.
+     * \param   ch      A character to assign.
      * \return  Returns modified string.
      **/
     WideString& assign(const char* source, NEString::CharCount count = NEString::COUNT_ALL);
@@ -449,6 +452,7 @@ public:
     inline WideString& assign(const std::wstring& source, NEString::CharPos pos = NEString::START_POS, NEString::CharCount count = NEString::COUNT_ALL);
     inline WideString& assign(const std::wstring_view& source, NEString::CharPos pos = NEString::START_POS, NEString::CharCount count = NEString::COUNT_ALL);
     inline WideString& assign(const WideString& source, NEString::CharPos pos = NEString::START_POS, NEString::CharCount count = NEString::COUNT_ALL);
+    inline WideString& assign(const wchar_t ch);
 
     /**
      * \brief   Appends given string at the end. The given string can be limited by zero-based valid position
@@ -458,6 +462,7 @@ public:
      * \param   pos     If specified the valid zero-based position in the given string to append.
      *                  Otherwise, it append starting from the beginning.
      * \param   count   If specified, the number of characters to append. By default, it appends all characters.
+     * \param   ch      A character to append.
      * \return  Returns modified string.
      **/
     WideString& append(const char* source, NEString::CharCount count = NEString::COUNT_ALL);
@@ -465,6 +470,7 @@ public:
     inline WideString& append(const std::wstring& source, NEString::CharPos pos = NEString::START_POS, NEString::CharCount count = NEString::COUNT_ALL);
     inline WideString& append(const std::wstring_view& source, NEString::CharPos pos = NEString::START_POS, NEString::CharCount count = NEString::COUNT_ALL);
     inline WideString& append(const WideString& source, NEString::CharPos pos = NEString::START_POS, NEString::CharCount count = NEString::COUNT_ALL);
+    inline WideString& append(const wchar_t ch);
 
     /**
      * \brief   Converts string of digits to 32-bit integer
@@ -527,7 +533,7 @@ public:
      * \return  Returns string with value.
      * \note    In case of RadixHexadecimal, it adds "0x" at the begin and the total length
      *          of string is 10, where first 2 positions are "0x" and the rest 8 positions
-     *          are filled with 
+     *          are filled with
      **/
     inline WideString & fromUInt32( uint32_t value, NEString::eRadix radix = NEString::eRadix::RadixDecimal );
     /**
@@ -550,7 +556,7 @@ public:
      * \return  Returns string with value.
      * \note    In case of RadixHexadecimal, it adds "0x" at the begin and the total length
      *          of string is 10, where first 2 positions are "0x" and the rest 8 positions
-     *          are filled with 
+     *          are filled with
      **/
     inline WideString & fromUInt64( uint64_t value, NEString::eRadix radix = NEString::eRadix::RadixDecimal );
     /**
@@ -604,7 +610,7 @@ namespace std
     template<>
     struct hash<WideString>
     {
-        //! A function to convert WideString object to unsigned int.
+        //! An operator to convert String object to unsigned int.
         inline unsigned int operator()(const WideString& key) const
         {
             return static_cast<unsigned int>(std::hash<std::wstring>{}(key.getObject()));
@@ -632,7 +638,7 @@ inline WideString::WideString(const std::wstring_view& source)
 }
 
 inline WideString::WideString(std::wstring&& source) noexcept
-    : TEString<wchar_t>(source)
+    : TEString<wchar_t>( std::move( source ) )
 {
 }
 
@@ -754,6 +760,11 @@ inline bool WideString::operator == (const wchar_t* other) const
     return Base::operator==(other);
 }
 
+inline bool WideString::operator == (const wchar_t ch) const
+{
+    return Base::operator==(ch);
+}
+
 inline bool WideString::operator != (const WideString& other) const
 {
     return Base::operator!=(static_cast<const Base&>(other));
@@ -772,6 +783,11 @@ inline bool WideString::operator != (const std::wstring_view& other) const
 inline bool WideString::operator != (const wchar_t* other) const
 {
     return Base::operator!=(other);
+}
+
+inline bool WideString::operator != (const wchar_t ch) const
+{
+    return Base::operator != (ch);
 }
 
 inline WideString& WideString::operator += (const WideString& src)
@@ -853,7 +869,7 @@ inline WideString operator + (const WideString& lhs, const wchar_t* rhs)
 inline WideString operator + (const WideString& lhs, const wchar_t rhs)
 {
     WideString result(lhs);
-    result.append(rhs);
+    result += rhs;
     return result;
 }
 
@@ -1012,6 +1028,12 @@ inline WideString& WideString::assign(const WideString& source, NEString::CharPo
     return (*this);
 }
 
+inline WideString & WideString::assign(const wchar_t ch)
+{
+    Base::assign(ch);
+    return (*this);
+}
+
 inline WideString& WideString::append(const wchar_t* source, NEString::CharCount count /*= NEString::COUNT_ALL*/)
 {
     Base::append(source, count);
@@ -1033,6 +1055,12 @@ inline WideString& WideString::append(const std::wstring_view& source, NEString:
 inline WideString& WideString::append(const WideString& source, NEString::CharPos pos /*= NEString::START_POS*/, NEString::CharCount count /*= NEString::COUNT_ALL*/)
 {
     Base::append(static_cast<const Base&>(source), pos, count);
+    return (*this);
+}
+
+inline WideString & WideString::append(const wchar_t ch)
+{
+    Base::append(ch);
     return (*this);
 }
 

@@ -3,9 +3,9 @@
 //////////////////////////////////////////////////////////////////////////
 
 /************************************************************************
- * (c) copyright    2021
+ * (c) copyright    2022
  *
- * Generated at     30.09.2021  01:22:14 GMT+02:00 
+ * Generated at     11.08.2022  17:55:56 GMT+02:00
  *                  Create by AREG SDK code generator tool from source ConnectionManager.
  *
  * \file            generated/NEConnectionManager.hpp
@@ -29,17 +29,17 @@ const NEService::SInterfaceData & NEConnectionManager::getInterfaceData( void )
     /************************************************************************
      * The list of requests
      ************************************************************************/
-    static constexpr unsigned int _RequestList[] 
+    static constexpr unsigned int _RequestList[]
     {
-          static_cast<unsigned int>( NEConnectionManager::eMessageIDs::MsgId_requestConnect                ) // requestConnect( const String & nickName, const DateTime & dateTime )
+          static_cast<unsigned int>( NEConnectionManager::eMessageIDs::MsgId_requestConnect               ) // requestConnect( const String & nickName, const DateTime & dateTime )
         , static_cast<unsigned int>( NEConnectionManager::eMessageIDs::MsgId_requestRegisterConnection    ) // requestRegisterConnection( const String & nickName, unsigned int cookie, unsigned int connectCookie, const DateTime & dateRegister )
-        , static_cast<unsigned int>( NEConnectionManager::eMessageIDs::MsgId_requestDisconnect             ) // requestDisconnect( const String & nickName, unsigned int cookie, const DateTime & dateTime )
+        , static_cast<unsigned int>( NEConnectionManager::eMessageIDs::MsgId_requestDisconnect            ) // requestDisconnect( const String & nickName, unsigned int cookie, const DateTime & dateTime )
     };
 
     /************************************************************************
      * The list of responses and broadcasts
      ************************************************************************/
-    static constexpr unsigned int _ResponseList[] 
+    static constexpr unsigned int _ResponseList[]
     {
           static_cast<unsigned int>( NEConnectionManager::eMessageIDs::MsgId_responseConnect              ) // responseConnect( const String & nickName, unsigned int cookie, const DateTime & dateTime, NEConnectionManager::eConnectionResult result )
         , static_cast<unsigned int>( NEConnectionManager::eMessageIDs::MsgId_responseRegisterConnection   ) // responseRegisterConnection( const NEConnectionManager::sConnection & connection, const NEConnectionManager::ListConnection & connectionList, bool success )
@@ -51,7 +51,7 @@ const NEService::SInterfaceData & NEConnectionManager::getInterfaceData( void )
     /************************************************************************
      * The list of attributes
      ************************************************************************/
-    static constexpr unsigned int _AttributeList[] 
+    static constexpr unsigned int _AttributeList[]
     {
           static_cast<unsigned int>( NEConnectionManager::eMessageIDs::MsgId_ConnectionList               ) // NEConnectionManager::MapConnection mConnectionList;
     };
@@ -85,7 +85,7 @@ const NEService::SInterfaceData & NEConnectionManager::getInterfaceData( void )
         1, // void broadcastClientDisconnected( const NEConnectionManager::sConnection & clientLeft )
 
     };
-    
+
     /************************************************************************
      * ConnectionManager Service Interface data
      ************************************************************************/
@@ -107,7 +107,7 @@ const NEService::SInterfaceData & NEConnectionManager::getInterfaceData( void )
     return _InterfaceData;
 }
 
-NEConnectionManager::eMessageIDs NEConnectionManager::getResponseId( NEConnectionManager::eMessageIDs reqId )
+NEConnectionManager::eMessageIDs NEConnectionManager::getResponseId( NEConnectionManager::eMessageIDs reqId)
 {
     const NEService::SInterfaceData & sid = NEConnectionManager::getInterfaceData();
     msg_id index = GET_REQ_INDEX(reqId);
@@ -123,7 +123,7 @@ NEConnectionManager::eMessageIDs NEConnectionManager::getRequestId( NEConnection
     {
         result = sid.idRequestToResponseMap[i] == static_cast<msg_id>(respId) ? static_cast<NEConnectionManager::eMessageIDs>(sid.idRequestList[i]) : NEConnectionManager::eMessageIDs::MsgId_Invalid;
     }
-    
+
     return result;
 }
 

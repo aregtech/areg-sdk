@@ -18,7 +18,7 @@
 
 #ifdef WINDOWS
     #pragma comment(lib, "areg.lib")
-    #pragma comment(lib, "10_generated.lib")
+    #pragma comment(lib, "18_generated.lib")
 #endif // WINDOWS
 
 constexpr char const _modelName[] { "TestModel" };  //!< The name of model
@@ -35,11 +35,11 @@ constexpr char const _modelName[] { "TestModel" };  //!< The name of model
 BEGIN_MODEL(_modelName)
 
     // define component thread
-    BEGIN_REGISTER_THREAD( "TestServiceThread", NECommon::INVALID_TIMEOUT)
+    BEGIN_REGISTER_THREAD( "TestServiceThread", NEHelloWatchdog::TimeoutWatchdog)
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
         BEGIN_REGISTER_COMPONENT( "TestServiceComponent", ServicingComponent )
-            // register HelloWorld service implementation.
-            REGISTER_IMPLEMENT_SERVICE( NEHelloWorld::ServiceName, NEHelloWorld::InterfaceVersion )
+            // register HelloWatchdog service implementation.
+            REGISTER_IMPLEMENT_SERVICE( NEHelloWatchdog::ServiceName, NEHelloWatchdog::InterfaceVersion )
         // end of component description
         END_REGISTER_COMPONENT( "TestServiceComponent" )
     // end of thread description
@@ -78,9 +78,9 @@ int main()
     // force to start logging with default settings
     TRACER_CONFIGURE_AND_START( nullptr );
     // Initialize application, enable logging, servicing, timer and watchdog.
-    Application::initApplication(true, true, false, true, true, nullptr, nullptr );
+    Application::initApplication(true, true, false, true, true );
 
-    do 
+    do
     {
         TRACE_SCOPE(main_main);
         TRACE_DBG("The application has been initialized, loading model [ %s ]", _modelName);
@@ -89,7 +89,7 @@ int main()
         Application::loadModel(_modelName);
 
         TRACE_DBG("Servicing model is loaded");
-        
+
         // wait until Application quit signal is set.
         Application::waitAppQuit(NECommon::WAIT_INFINITE);
 
@@ -100,8 +100,8 @@ int main()
         Application::releaseApplication();
 
     } while (false);
-    
-    printf("Completed testing simple local servicing components...\n");
+
+    printf("Completed testing servicing component with watchdog timeout...\n");
 
 	return 0;
 }

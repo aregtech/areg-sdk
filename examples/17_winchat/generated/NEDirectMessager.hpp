@@ -1,12 +1,13 @@
 //////////////////////////////////////////////////////////////////////////
 // Begin generate generated/NEDirectMessager.hpp file
 //////////////////////////////////////////////////////////////////////////
-#pragma once
+#ifndef  GENERATED_NEDIRECTMESSAGER_HPP
+#define  GENERATED_NEDIRECTMESSAGER_HPP
 
 /************************************************************************
- * (c) copyright    2021
+ * (c) copyright    2022
  *
- * Generated at     30.09.2021  01:22:16 GMT+02:00 
+ * Generated at     11.08.2022  17:55:59 GMT+02:00
  *                  Create by AREG SDK code generator tool from source DirectMessager.
  *
  * \file            generated/NEDirectMessager.hpp
@@ -58,15 +59,15 @@ namespace   NEDirectMessager
 // Service Interface constants
 /************************************************************************/
     /**
-     * \brief   Service Interface Name
+     * \brief   Service Interface Name.
      *          NEDirectMessager::ServiceName
      **/
-    constexpr char            ServiceName[]       { "DirectMessager" };
+    constexpr   char    ServiceName[]   { "DirectMessager" };
     /**
-     * \brief   Implemented Version
+     * \brief   Implemented Version.
      *          NEDirectMessager::InterfaceVersion
      **/
-    const Version             InterfaceVersion    = "1.0.0";
+    const       Version InterfaceVersion{ 1, 0, 0 };
 
     /**
      * \brief   The maximum length of a message.
@@ -274,6 +275,8 @@ inline const char * NEDirectMessager::getString( NEDirectMessager::eMessageIDs m
 //////////////////////////////////////////////////////////////////////////
 // NEDirectMessager namespace declaration End
 //////////////////////////////////////////////////////////////////////////
+
+#endif  // GENERATED_NEDIRECTMESSAGER_HPP
 
 //////////////////////////////////////////////////////////////////////////
 // End generate generated/NEDirectMessager.hpp file

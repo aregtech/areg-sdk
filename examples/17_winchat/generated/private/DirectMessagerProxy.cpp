@@ -3,9 +3,9 @@
 //////////////////////////////////////////////////////////////////////////
 
 /************************************************************************
- * (c) copyright    2021
+ * (c) copyright    2022
  *
- * Generated at     30.09.2021  01:22:16 GMT+02:00 
+ * Generated at     11.08.2022  17:55:59 GMT+02:00
  *                  Create by AREG SDK code generator tool from source DirectMessager.
  *
  * \file            generated/private/DirectMessagerProxy.hpp
@@ -146,7 +146,7 @@ void DirectMessagerProxy::unregisterServiceListeners( void )
 /************************************************************************
  * Requests.
  ************************************************************************/
- 
+
 unsigned int DirectMessagerProxy::requestChatJoin( IENotificationEventConsumer & caller, const NEDirectMessager::sParticipant & participant, const DateTime & timeConnect )
 {
     static const NEDirectMessager::eMessageIDs msgId = NEDirectMessager::eMessageIDs::MsgId_requestChatJoin;
@@ -189,7 +189,7 @@ void DirectMessagerProxy::requestChatLeave( const NEDirectMessager::sParticipant
 /************************************************************************
  * Event processing.
  ************************************************************************/
- 
+
 /************************************************************************
  * IEProxyEventConsumer interface overrides.
  ************************************************************************/
@@ -278,8 +278,8 @@ void DirectMessagerProxy::updateData( DirectMessagerResponseEvent & eventElem, N
         break;
     }
 }
- 
-void DirectMessagerProxy::processResponse( DirectMessagerResponseEvent & evenElem )
+
+    void DirectMessagerProxy::processResponse( DirectMessagerResponseEvent & evenElem )
 {
     NEDirectMessager::eMessageIDs respId  = static_cast<NEDirectMessager::eMessageIDs>(evenElem.getResponseId());
     NEService::eResultType resultType  = evenElem.getResult();
@@ -305,8 +305,8 @@ void DirectMessagerProxy::processResponse( DirectMessagerResponseEvent & evenEle
         {
             respId  = static_cast<NEDirectMessager::eMessageIDs>( mProxyData.getResponseId(static_cast<msg_id>(respId)) );
         }
-        
-        setStates   = respId != NEDirectMessager::eMessageIDs::MsgId_NotProcessed;            
+
+        setStates   = respId != NEDirectMessager::eMessageIDs::MsgId_NotProcessed;
         break;
 
     case NEService::eResultType::RequestOK:     // fall through
@@ -323,16 +323,15 @@ void DirectMessagerProxy::processResponse( DirectMessagerResponseEvent & evenEle
     {
         updateData(evenElem, respId);
     }
-       
+
     if (setStates == true)
     {
         setState(static_cast<msg_id>(respId), dataValid ? NEService::eDataStateType::DataIsOK : NEService::eDataStateType::DataIsInvalid);
     }
-    
+
     notifyListeners(static_cast<msg_id>(respId), resultType, evenElem.getSequenceNumber());
 }
 
 //////////////////////////////////////////////////////////////////////////
 // End generate generated/private/DirectMessagerProxy.cpp file
 //////////////////////////////////////////////////////////////////////////
- 

@@ -14,23 +14,18 @@
 
 #include "areg/base/GEGlobal.h"
 #include "areg/component/Component.hpp"
-#include "generated/src/HelloWorldStub.hpp"
+#include "generated/src/HelloWatchdogStub.hpp"
 
 //////////////////////////////////////////////////////////////////////////
 // ServicingComponent class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   A demo of simple servicing component with requests, response, broadcasts and attributes.
- *          The service outputs Hello Worlds message until reaches maximum number.
- *          It demonstrates the various ways to use:
- *              a. Request with connected response;
- *              b. Request without response;
- *              c. Broadcasts with and without parameters;
- *              d. Attribute with automatic and manual update notification
- *          As well, it demonstrates use of start / shutdown of service, and manual invalidating of attribute.
+ * \brief   A demo of simple servicing component, which receives request to
+            sleep. If sleeping time is bigger than the watchdog timeout, the
+            system terminates the thread and restarts again.
  **/
 class ServicingComponent    : public    Component
-                            , protected HelloWorldStub
+                            , protected HelloWatchdogStub
 {
 //////////////////////////////////////////////////////////////////////////
 // Static methods
@@ -55,7 +50,7 @@ public:
 // Constructor / destructor
 //////////////////////////////////////////////////////////////////////////
 protected:
-    
+
     /**
      * \brief   Instantiates the component object.
      * \param   entry   The entry of registry, which describes the component.
@@ -75,22 +70,11 @@ protected:
 
     /**
      * \brief   Request call.
-     *          Request to print hello world
-     * \param   roleName    The role name of client component that requested to print hello world
-     * \param   addMessage  Additional message to output. Can be empty.
-     *          Has default value: ""
-     * \see     responseHelloWorld
+     *          The response triggered when the thread resumed from suspended mode.
+     * \param   timeoutSleep    The timeout in milliseconds to suspend the thread.
+     * \see     responseStartSleep
      **/
-    virtual void requestHelloWorld( const String & roleName, const String & addMessage = "" ) override;
-
-    /**
-     * \brief   Request call.
-     *          Sent by client to notify the shutdown. This removes client from the list. This request has no response.
-     * \param   clientID    The ID of client that requests to shutdown. The ID is given by service when first time client requests to output message.
-     * \param   roleName    Service client component role name
-     * \note    Has no response
-     **/
-    virtual void requestClientShutdown( unsigned int clientID, const String & roleName ) override;
+    virtual void requestStartSleep( unsigned int timeoutSleep ) override;
 
 /************************************************************************/
 // StubBase overrides. Triggered by Component on startup.
@@ -104,12 +88,6 @@ protected:
      *                  which started up.
      **/
     virtual void startupServiceInterface( Component & holder ) override;
-
-//////////////////////////////////////////////////////////////////////////
-// Member variables
-//////////////////////////////////////////////////////////////////////////
-private:
-    unsigned int    mGnerateID;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden calls

@@ -2,9 +2,9 @@
 // Begin generate generated/private/DirectConnectionStub.cpp file
 //////////////////////////////////////////////////////////////////////////
 /************************************************************************
- * (c) copyright    2021
+ * (c) copyright    2022
  *
- * Generated at     30.09.2021  01:22:15 GMT+02:00 
+ * Generated at     11.08.2022  17:55:57 GMT+02:00
  *                  Create by AREG SDK code generator tool from source DirectConnection.
  *
  * \file            generated/DirectConnectionStub.hpp
@@ -32,7 +32,7 @@
 //////////////////////////////////////////////////////////////////////////
 DirectConnectionStub::DirectConnectionStub( Component & masterComp )
     : StubBase    ( masterComp, NEDirectConnection::getInterfaceData() )
-    
+
     , mInitiatedConnections       (  )
     , mInitiatedConnectionsState  ( NEService::eDataStateType::DataIsUnavailable )
     
@@ -56,7 +56,7 @@ DEF_TRACE_SCOPE(generated_DirectConnectionStub_startupServiceInterface);
 void DirectConnectionStub::startupServiceInterface( Component & holder )
 {
     TRACE_SCOPE(generated_DirectConnectionStub_startupServiceInterface);
-    
+
     DirectConnectionRequestEvent::addListener( static_cast<IEEventConsumer &>(self()), Thread::getCurrentThreadName() );
     DirectConnectionNotifyRequestEvent::addListener( static_cast<IEEventConsumer &>(self()), Thread::getCurrentThreadName() );
     StubBase::startupServiceInterface( holder );
@@ -69,7 +69,7 @@ void DirectConnectionStub::shutdownServiceIntrface( Component & holder )
 {
     TRACE_SCOPE(generated_DirectConnectionStub_shutdownServiceIntrface);
     TRACE_DBG("The Stub Service [ %s ] of component with role name [ %s ] is shutting down and not available anymore ...", mAddress.getServiceName().getString(), mAddress.getRoleName().getString());
-    
+
     DirectConnectionRequestEvent::removeListener( static_cast<IEEventConsumer &>(self()), Thread::getCurrentThreadName() );
     DirectConnectionNotifyRequestEvent::removeListener( static_cast<IEEventConsumer &>(self()), Thread::getCurrentThreadName() );
     StubBase::shutdownServiceIntrface( holder );
@@ -119,7 +119,7 @@ void DirectConnectionStub::errorRequest( unsigned int msgId, bool msgCancel )
 {
     NEService::eResultType result = NEService::eResultType::NotProcessed;
     msg_id listenerId = msgId;
-    
+
     switch ( static_cast<NEDirectConnection::eMessageIDs>(msgId) )
     {
 /************************************************************************
@@ -158,7 +158,7 @@ void DirectConnectionStub::errorRequest( unsigned int msgId, bool msgCancel )
         ASSERT(false);
         break;
     }
-    
+
     StubBase::StubListenerList listeners;
     if ( findListeners(listenerId, listeners) > 0 )
     {
@@ -251,43 +251,43 @@ void DirectConnectionStub::processRequestEvent( ServiceRequestEvent & eventElem 
             {
                 NEDirectConnection::sInitiator          initiator;
                 NEDirectConnection::ListParticipants    listParticipants;
-                stream >> initiator;                
-                stream >> listParticipants;                
+                stream >> initiator;
+                stream >> listParticipants;
                 requestConnectoinSetup( initiator, listParticipants );
             }
             break;
-            
+
         case NEDirectConnection::eMessageIDs::MsgId_requestAddParticipant:
             if ( canExecuteRequest(listener, static_cast<msg_id>(respId), reqEvent->getSequenceNumber()) )
             {
                 NEDirectConnection::sInitiator          initiator;
                 NEDirectConnection::ListParticipants    listParticipants;
-                stream >> initiator;                
-                stream >> listParticipants;                
+                stream >> initiator;
+                stream >> listParticipants;
                 requestAddParticipant( initiator, listParticipants );
             }
             break;
-            
+
         case NEDirectConnection::eMessageIDs::MsgId_requestRemoveParticipant:
             if ( canExecuteRequest(listener, static_cast<msg_id>(respId), reqEvent->getSequenceNumber()) )
             {
                 NEDirectConnection::sInitiator          initiator;
                 NEDirectConnection::ListParticipants    listParticipants;
-                stream >> initiator;                
-                stream >> listParticipants;                
+                stream >> initiator;
+                stream >> listParticipants;
                 requestRemoveParticipant( initiator, listParticipants );
             }
             break;
-            
+
         case NEDirectConnection::eMessageIDs::MsgId_requestCloseConnection:
             if ( true )
             {
                 NEDirectConnection::sInitiator  initiator;
-                stream >> initiator;                
+                stream >> initiator;
                 requestCloseConnection( initiator );
             }
             break;
-            
+
         default:
             {
                 TRACE_SCOPE(generated_DirectConnectionStub_processRequestEvent);

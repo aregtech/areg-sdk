@@ -15,36 +15,36 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="generated\src\private\HelloWorldClientBase.cpp">
+    <ClCompile Include="generated\src\private\HelloWatchdogClientBase.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="generated\src\private\HelloWorldEvents.cpp">
+    <ClCompile Include="generated\src\private\HelloWatchdogEvents.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="generated\src\private\HelloWorldProxy.cpp">
+    <ClCompile Include="generated\src\private\HelloWatchdogProxy.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="generated\src\private\HelloWorldStub.cpp">
+    <ClCompile Include="generated\src\private\HelloWatchdogStub.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="generated\src\private\NEHelloWorld.cpp">
+    <ClCompile Include="generated\src\private\NEHelloWatchdog.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="generated\src\private\HelloWorldEvents.hpp">
+    <ClInclude Include="generated\src\private\HelloWatchdogEvents.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="generated\src\private\HelloWorldProxy.hpp">
+    <ClInclude Include="generated\src\private\HelloWatchdogProxy.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="generated\src\HelloWorldClientBase.hpp">
+    <ClInclude Include="generated\src\HelloWatchdogClientBase.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="generated\src\HelloWorldStub.hpp">
+    <ClInclude Include="generated\src\HelloWatchdogStub.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="generated\src\NEHelloWorld.hpp">
+    <ClInclude Include="generated\src\NEHelloWatchdog.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

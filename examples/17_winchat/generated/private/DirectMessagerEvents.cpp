@@ -3,9 +3,9 @@
 //////////////////////////////////////////////////////////////////////////
 
 /************************************************************************
- * (c) copyright    2021
+ * (c) copyright    2022
  *
- * Generated at     30.09.2021  01:22:16 GMT+02:00 
+ * Generated at     11.08.2022  17:55:59 GMT+02:00
  *                  Create by AREG SDK code generator tool from source DirectMessager.
  *
  * \file            generated/private/DirectMessagerEvents.hpp
@@ -17,8 +17,8 @@
 /************************************************************************
  * Include files
  ************************************************************************/
- #include "generated/private/DirectMessagerEvents.hpp"
- 
+#include "generated/private/DirectMessagerEvents.hpp"
+
 //////////////////////////////////////////////////////////////////////////
 // DirectMessagerRequestEvent class implementation
 //////////////////////////////////////////////////////////////////////////
@@ -48,7 +48,7 @@ DirectMessagerRequestEvent::DirectMessagerRequestEvent( const EventDataStream & 
 DirectMessagerRequestEvent::DirectMessagerRequestEvent( const IEInStream & stream )
     : RemoteRequestEvent( stream )
 {
-}    
+}
 
 //////////////////////////////////////////////////////////////////////////
 // DirectMessagerNotifyRequestEvent class implementation
@@ -72,7 +72,7 @@ DirectMessagerNotifyRequestEvent::DirectMessagerNotifyRequestEvent( const ProxyA
 DirectMessagerNotifyRequestEvent::DirectMessagerNotifyRequestEvent( const IEInStream & stream )
     : RemoteNotifyRequestEvent( stream )
 {
-}    
+}
 
 //////////////////////////////////////////////////////////////////////////
 // DirectMessagerResponseEvent class implementation
@@ -106,7 +106,7 @@ DirectMessagerResponseEvent::DirectMessagerResponseEvent( const ProxyAddress & p
 DirectMessagerResponseEvent::DirectMessagerResponseEvent( const IEInStream & stream )
     : RemoteResponseEvent( stream )
 {
-}    
+}
 
 //////////////////////////////////////////////////////////////////////////
 // DirectMessagerResponseEvent class, Methods

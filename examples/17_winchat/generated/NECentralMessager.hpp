@@ -1,12 +1,13 @@
 //////////////////////////////////////////////////////////////////////////
 // Begin generate generated/NECentralMessager.hpp file
 //////////////////////////////////////////////////////////////////////////
-#pragma once
+#ifndef  GENERATED_NECENTRALMESSAGER_HPP
+#define  GENERATED_NECENTRALMESSAGER_HPP
 
 /************************************************************************
- * (c) copyright    2021
+ * (c) copyright    2022
  *
- * Generated at     30.09.2021  01:22:12 GMT+02:00 
+ * Generated at     11.08.2022  17:55:55 GMT+02:00
  *                  Create by AREG SDK code generator tool from source CentralMessager.
  *
  * \file            generated/NECentralMessager.hpp
@@ -61,15 +62,15 @@ namespace   NECentralMessager
 // Service Interface constants
 /************************************************************************/
     /**
-     * \brief   Service Interface Name
+     * \brief   Service Interface Name.
      *          NECentralMessager::ServiceName
      **/
-    constexpr char        ServiceName[]       { "CentralMessager" };
+    constexpr   char    ServiceName[]   { "CentralMessager" };
     /**
-     * \brief   Implemented Version
+     * \brief   Implemented Version.
      *          NECentralMessager::InterfaceVersion
      **/
-    const Version         InterfaceVersion    = "1.0.0";
+    const       Version InterfaceVersion{ 1, 0, 0 };
 
     /**
      * \brief   The maximum length of messages.
@@ -211,6 +212,8 @@ inline const char * NECentralMessager::getString( NECentralMessager::eMessageIDs
 //////////////////////////////////////////////////////////////////////////
 // NECentralMessager namespace declaration End
 //////////////////////////////////////////////////////////////////////////
+
+#endif  // GENERATED_NECENTRALMESSAGER_HPP
 
 //////////////////////////////////////////////////////////////////////////
 // End generate generated/NECentralMessager.hpp file
