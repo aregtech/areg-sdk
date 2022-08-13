@@ -2,9 +2,9 @@
 // Begin generate generated/src/private/PatientInformationStub.cpp file
 //////////////////////////////////////////////////////////////////////////
 /************************************************************************
- * (c) copyright    2021
+ * (c) copyright    2022
  *
- * Generated at     30.09.2021  01:22:12 GMT+02:00 
+ * Generated at     13.08.2022  02:46:19 GMT+02:00
  *                  Create by AREG SDK code generator tool from source PatientInformation.
  *
  * \file            generated/src/PatientInformationStub.hpp
@@ -20,7 +20,8 @@
 #include "generated/src/private/PatientInformationEvents.hpp"
 
 #include "areg/component/ServiceResponseEvent.hpp"
-#include "areg/base/Thread.hpp"
+#include "areg/component/Component.hpp"
+#include "areg/component/ComponentThread.hpp"
 #include "areg/trace/GETrace.h"
 
 //////////////////////////////////////////////////////////////////////////
@@ -32,7 +33,7 @@
 //////////////////////////////////////////////////////////////////////////
 PatientInformationStub::PatientInformationStub( Component & masterComp )
     : StubBase    ( masterComp, NEPatientInformation::getInterfaceData() )
-    
+
     , mPatient        (  )
     , mPatientState   ( NEService::eDataStateType::DataIsUnavailable )
     
@@ -56,9 +57,9 @@ DEF_TRACE_SCOPE(generated_src_PatientInformationStub_startupServiceInterface);
 void PatientInformationStub::startupServiceInterface( Component & holder )
 {
     TRACE_SCOPE(generated_src_PatientInformationStub_startupServiceInterface);
-    
-    PatientInformationRequestEvent::addListener( static_cast<IEEventConsumer &>(self()), Thread::getCurrentThreadName() );
-    PatientInformationNotifyRequestEvent::addListener( static_cast<IEEventConsumer &>(self()), Thread::getCurrentThreadName() );
+
+    PatientInformationRequestEvent::addListener( static_cast<IEEventConsumer &>(self()), holder.getMasterThread() );
+    PatientInformationNotifyRequestEvent::addListener( static_cast<IEEventConsumer &>(self()), holder.getMasterThread() );
     StubBase::startupServiceInterface( holder );
 
     TRACE_DBG("The Stub Service [ %s ] of component with role name [ %s ] has been started and is available ...", mAddress.getServiceName().getString(), mAddress.getRoleName().getString());
@@ -69,9 +70,9 @@ void PatientInformationStub::shutdownServiceIntrface( Component & holder )
 {
     TRACE_SCOPE(generated_src_PatientInformationStub_shutdownServiceIntrface);
     TRACE_DBG("The Stub Service [ %s ] of component with role name [ %s ] is shutting down and not available anymore ...", mAddress.getServiceName().getString(), mAddress.getRoleName().getString());
-    
-    PatientInformationRequestEvent::removeListener( static_cast<IEEventConsumer &>(self()), Thread::getCurrentThreadName() );
-    PatientInformationNotifyRequestEvent::removeListener( static_cast<IEEventConsumer &>(self()), Thread::getCurrentThreadName() );
+
+    PatientInformationRequestEvent::removeListener( static_cast<IEEventConsumer &>(self()), holder.getMasterThread() );
+    PatientInformationNotifyRequestEvent::removeListener( static_cast<IEEventConsumer &>(self()), holder.getMasterThread() );
     StubBase::shutdownServiceIntrface( holder );
 }
 
@@ -119,7 +120,7 @@ void PatientInformationStub::errorRequest( unsigned int msgId, bool msgCancel )
 {
     NEService::eResultType result = NEService::eResultType::NotProcessed;
     msg_id listenerId = msgId;
-    
+
     switch ( static_cast<NEPatientInformation::eMessageIDs>(msgId) )
     {
 /************************************************************************
@@ -144,7 +145,7 @@ void PatientInformationStub::errorRequest( unsigned int msgId, bool msgCancel )
         ASSERT(false);
         break;
     }
-    
+
     StubBase::StubListenerList listeners;
     if ( findListeners(listenerId, listeners) > 0 )
     {

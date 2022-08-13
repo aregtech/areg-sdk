@@ -1,12 +1,13 @@
 //////////////////////////////////////////////////////////////////////////
 // Begin generate generated/src/RemoteRegistryClientBase.hpp file
 //////////////////////////////////////////////////////////////////////////
-#pragma once
+#ifndef  GENERATED_SRC_REMOTEREGISTRYCLIENTBASE_HPP
+#define  GENERATED_SRC_REMOTEREGISTRYCLIENTBASE_HPP
 
 /************************************************************************
- * (c) copyright    2021
+ * (c) copyright    2022
  *
- * Generated at     30.09.2021  01:22:13 GMT+02:00 
+ * Generated at     13.08.2022  02:45:11 GMT+02:00
  *                  Create by AREG SDK code generator tool from source RemoteRegistry.
  *
  * \file            generated/src/RemoteRegistryClientBase.hpp
@@ -52,13 +53,13 @@ class RemoteRegistryClientBase  : public IEProxyListener
 //////////////////////////////////////////////////////////////////////////
 protected:
     /**
-     * \brief   Initialize RemoteRegistry Service Interface client object. 
+     * \brief   Initialize RemoteRegistry Service Interface client object.
      *          Specifies used service and owner thread.
      * \param   roleName    The role name assigned to RemoteRegistry servicing component object.
      * \param   ownerThread The name of component owner thread to dispatch messages.
      *                      If nullptr, all messages are dispatched in current component thread.
      **/
-    RemoteRegistryClientBase( const char* roleName, const char * ownerThread = nullptr );
+    RemoteRegistryClientBase( const String & roleName, const String & ownerThread = String::EmptyString );
 
     /**
      * \brief   Initialize RemoteRegistry Service Interface client object.
@@ -66,7 +67,7 @@ protected:
      * \param   roleName    The role name assigned to RemoteRegistry servicing component object.
      * \param   ownerThread The instance of component owner thread to dispatch messages.
      **/
-    RemoteRegistryClientBase( const char* roleName, DispatcherThread & ownerThread );
+    RemoteRegistryClientBase( const String & roleName, DispatcherThread & ownerThread );
 
     /**
      * \brief   Initialize RemoteRegistry Service Interface client object.
@@ -76,7 +77,7 @@ protected:
      * \note    When this constructor is used, it is important that the Component object is already initialized.
      *          and the component thread is set.
      **/
-    RemoteRegistryClientBase( const char* roleName, Component & owner );
+    RemoteRegistryClientBase( const String & roleName, Component & owner );
 
     /**
      * \brief   Destructor.
@@ -103,12 +104,12 @@ public:
      * \brief   Returns true if client object has got connection with servicing component
      **/
     inline bool isConnected( void ) const;
-    
+
     /**
      * \brief   Returns the name of used service.
      **/
     inline const String & getServiceName( void ) const;
-    
+
     /**
      * \brief   Returns the version of used service.
      **/
@@ -122,6 +123,7 @@ public:
 // RemoteRegistry Interface Attributes
 //////////////////////////////////////////////////////////////////////////
 public:
+
 /************************************************************************
  * Attribute RegistryList functions
  ************************************************************************/
@@ -132,18 +134,18 @@ public:
     inline bool isRegistryListValid( void ) const;
     /**
      * \brief   Returns the value of RegistryList attribute.
-     *          To get valid value, the Update Notification should be enabled. 
-     *          Attribute RegistryList description: 
+     *          To get valid value, the Update Notification should be enabled.
+     *          Attribute RegistryList description:
      *          List of registered clients.
-     * \param   state   On returns, contains the validation flag of attribute data. 
+     * \param   state   On returns, contains the validation flag of attribute data.
      *                  Check validation flag before use attribute value.
      * \see     isRegistryListValid, notifyRegistryListUpdate, onRegistryListUpdate
      **/
     inline const NERemoteRegistry::ListRegistry & getRegistryList( NEService::eDataStateType & state ) const;
     /**
      * \brief   Call to enable or disable receiving notifications on RegistryList attribute update.
-     *          Once notification is enabled and the data is updated, 
-     *          the getRegistryList method will return valid data 
+     *          Once notification is enabled and the data is updated,
+     *          the getRegistryList method will return valid data
      *          Attribute RegistryList description:
      *          List of registered clients.
      * \param   notify  If true, notification will be enable. If false, notification is disabled
@@ -154,7 +156,7 @@ public:
      * \brief   Triggered, when RegistryList attribute is updated. The function contains
      *          attribute value and validation flag. When notification is enabled,
      *          the method should be overwritten in derived class.
-     *          Attributes RegistryList description: 
+     *          Attributes RegistryList description:
      *          List of registered clients.
      * \param   RegistryList    The value of RegistryList attribute.
      * \param   state           The data validation flag.
@@ -171,18 +173,18 @@ public:
     inline bool isRemainOutputsValid( void ) const;
     /**
      * \brief   Returns the value of RemainOutputs attribute.
-     *          To get valid value, the Update Notification should be enabled. 
-     *          Attribute RemainOutputs description: 
+     *          To get valid value, the Update Notification should be enabled.
+     *          Attribute RemainOutputs description:
      *          Remaining outputs before reaching maximum.
-     * \param   state   On returns, contains the validation flag of attribute data. 
+     * \param   state   On returns, contains the validation flag of attribute data.
      *                  Check validation flag before use attribute value.
      * \see     isRemainOutputsValid, notifyRemainOutputsUpdate, onRemainOutputsUpdate
      **/
     inline unsigned int getRemainOutputs( NEService::eDataStateType & state ) const;
     /**
      * \brief   Call to enable or disable receiving notifications on RemainOutputs attribute update.
-     *          Once notification is enabled and the data is updated, 
-     *          the getRemainOutputs method will return valid data 
+     *          Once notification is enabled and the data is updated,
+     *          the getRemainOutputs method will return valid data
      *          Attribute RemainOutputs description:
      *          Remaining outputs before reaching maximum.
      * \param   notify  If true, notification will be enable. If false, notification is disabled
@@ -193,13 +195,12 @@ public:
      * \brief   Triggered, when RemainOutputs attribute is updated. The function contains
      *          attribute value and validation flag. When notification is enabled,
      *          the method should be overwritten in derived class.
-     *          Attributes RemainOutputs description: 
+     *          Attributes RemainOutputs description:
      *          Remaining outputs before reaching maximum.
      * \param   RemainOutputs   The value of RemainOutputs attribute.
      * \param   state           The data validation flag.
      **/
     virtual void onRemainOutputsUpdate( unsigned int RemainOutputs, NEService::eDataStateType state );
-
 
 //////////////////////////////////////////////////////////////////////////
 // RemoteRegistry Interface Requests / Responses / Broadcasts
@@ -225,7 +226,7 @@ public:
      * \param   FailureReason   The failure reason value of request call.
      **/
     virtual void requestRegisterFailed( NEService::eResultType FailureReason );
-    
+
 /************************************************************************
  * Request Unregister
  ************************************************************************/
@@ -241,7 +242,7 @@ public:
      * \param   FailureReason   The failure reason value of request call.
      **/
     virtual void requestUnregisterFailed( NEService::eResultType FailureReason );
-    
+
 /************************************************************************
  * Request HelloWorld
  ************************************************************************/
@@ -259,14 +260,14 @@ public:
      * \param   FailureReason   The failure reason value of request call.
      **/
     virtual void requestHelloWorldFailed( NEService::eResultType FailureReason );
-    
+
 /************************************************************************
  * Response Register
  ************************************************************************/
     /**
      * \brief   Response callback.
      *          Sent when the client is registered. Each registered client has unique ID.
-     *          Overwrite, if need to handle Response call of server object. 
+     *          Overwrite, if need to handle Response call of server object.
      *          This call will be automatically triggered, on every appropriate request call
      * \param   client  The client registration object that contains unique ID.
      * \see     requestRegister
@@ -286,7 +287,7 @@ public:
     /**
      * \brief   Response callback.
      *          Called as reply to the request to output message.
-     *          Overwrite, if need to handle Response call of server object. 
+     *          Overwrite, if need to handle Response call of server object.
      *          This call will be automatically triggered, on every appropriate request call
      * \param   clientID    Indicates the ID client that made message output
      * \see     requestHelloWorld
@@ -340,16 +341,16 @@ protected:
      * \param   InvalidReqId    The ID of invalid request
      **/
     virtual void invalidRequest( NERemoteRegistry::eMessageIDs InvalidReqId );
-    
+
 //////////////////////////////////////////////////////////////////////////
 // Attributes
 //////////////////////////////////////////////////////////////////////////
 
     /**
      * \brief   Call to recreate Proxy for the client. This call will remove and unregister all existing notifications
-     *          and the client will not receive pending update or response notifications. 
+     *          and the client will not receive pending update or response notifications.
      *          The client first will receive disconnect message, then again connect.
-     *          Reset update notifications manually in connect if need.          
+     *          Reset update notifications manually in connect if need.
      *          This function call can be used when the client instance should be registered and run in new thread.
      *
      * \return  Returns true if Proxy was created with success.
@@ -361,7 +362,7 @@ protected:
      *         The function can return nullptr if Proxy was not instantiated yet.
      **/
     DispatcherThread * getDispatcherThread( void );
-     
+
     /**
      * \brief   Returns the current sequence number
      **/
@@ -371,7 +372,7 @@ protected:
      * \brief  Returns instance of proxy object.
      */
     inline const RemoteRegistryProxy * getProxy( void ) const;
-      
+
     /**
      * \brief Returns target service component role name.
      **/
@@ -407,7 +408,7 @@ private:
      * \param   eventElem   Notification Event object to process
      **/
     virtual void processNotificationEvent( NotificationEvent & eventElem ) override;
-    
+
 /************************************************************************/
 // RemoteRegistryClientBase hidden methods
 /************************************************************************/
@@ -415,12 +416,12 @@ private:
     /**
      * \brief   Enables / Disables notification flags on appropriate message call.
      * \param   msgId   The ID of message to enable / disable notification
-     * \param   notify  If true, the notification is enabled. 
+     * \param   notify  If true, the notification is enabled.
      *                  If false, the notification is disabled.
      * \param   always  Flag, indicating whether should notify always or not.
      *                  if 'notify' parameter is true and the notification is already
      *                  assigned, then if parameter 'always' is true, it will trigger
-     *                  notification immediately after call. 
+     *                  notification immediately after call.
      **/
     void notifyOn( NERemoteRegistry::eMessageIDs msgId, bool notify, bool always = false );
     /**
@@ -440,7 +441,6 @@ private:
     /**
      * \brief   Returns reference of RemoteRegistryClientBase object
      **/
-
     inline RemoteRegistryClientBase & self( void );
 
 //////////////////////////////////////////////////////////////////////////
@@ -488,7 +488,7 @@ inline const String & RemoteRegistryClientBase::getServiceName( void ) const
     ASSERT(mProxy != nullptr);
     return mProxy->getProxyAddress().getServiceName();
 }
-    
+
 inline const Version & RemoteRegistryClientBase::getServiceVersion( void ) const
 {
     ASSERT(mProxy != nullptr);
@@ -577,6 +577,8 @@ inline const String & RemoteRegistryClientBase::getServiceRole( void ) const
     ASSERT(mProxy != nullptr);
     return mProxy->getProxyAddress().getRoleName();
 }
+
+#endif   // GENERATED_SRC_REMOTEREGISTRYCLIENTBASE_HPP
 
 //////////////////////////////////////////////////////////////////////////
 // End generate generated/src/RemoteRegistryClientBase.hpp file

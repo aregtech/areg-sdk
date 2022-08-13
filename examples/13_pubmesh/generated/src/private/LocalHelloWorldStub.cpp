@@ -2,9 +2,9 @@
 // Begin generate generated/src/private/LocalHelloWorldStub.cpp file
 //////////////////////////////////////////////////////////////////////////
 /************************************************************************
- * (c) copyright    2021
+ * (c) copyright    2022
  *
- * Generated at     30.09.2021  01:22:12 GMT+02:00 
+ * Generated at     13.08.2022  02:45:10 GMT+02:00
  *                  Create by AREG SDK code generator tool from source LocalHelloWorld.
  *
  * \file            generated/src/LocalHelloWorldStub.hpp
@@ -20,7 +20,8 @@
 #include "generated/src/private/LocalHelloWorldEvents.hpp"
 
 #include "areg/component/ServiceResponseEvent.hpp"
-#include "areg/base/Thread.hpp"
+#include "areg/component/Component.hpp"
+#include "areg/component/ComponentThread.hpp"
 #include "areg/trace/GETrace.h"
 
 //////////////////////////////////////////////////////////////////////////
@@ -32,7 +33,7 @@
 //////////////////////////////////////////////////////////////////////////
 LocalHelloWorldStub::LocalHelloWorldStub( Component & masterComp )
     : StubBase    ( masterComp, NELocalHelloWorld::getInterfaceData() )
-    
+
     , mConnectedClients       (  )
     , mConnectedClientsState  ( NEService::eDataStateType::DataIsUnavailable )
     
@@ -59,9 +60,9 @@ DEF_TRACE_SCOPE(generated_src_LocalHelloWorldStub_startupServiceInterface);
 void LocalHelloWorldStub::startupServiceInterface( Component & holder )
 {
     TRACE_SCOPE(generated_src_LocalHelloWorldStub_startupServiceInterface);
-    
-    LocalHelloWorldRequestEvent::addListener( static_cast<IEEventConsumer &>(self()), Thread::getCurrentThreadName() );
-    LocalHelloWorldNotifyRequestEvent::addListener( static_cast<IEEventConsumer &>(self()), Thread::getCurrentThreadName() );
+
+    LocalHelloWorldRequestEvent::addListener( static_cast<IEEventConsumer &>(self()), holder.getMasterThread() );
+    LocalHelloWorldNotifyRequestEvent::addListener( static_cast<IEEventConsumer &>(self()), holder.getMasterThread() );
     StubBase::startupServiceInterface( holder );
 
     TRACE_DBG("The Stub Service [ %s ] of component with role name [ %s ] has been started and is available ...", mAddress.getServiceName().getString(), mAddress.getRoleName().getString());
@@ -72,9 +73,9 @@ void LocalHelloWorldStub::shutdownServiceIntrface( Component & holder )
 {
     TRACE_SCOPE(generated_src_LocalHelloWorldStub_shutdownServiceIntrface);
     TRACE_DBG("The Stub Service [ %s ] of component with role name [ %s ] is shutting down and not available anymore ...", mAddress.getServiceName().getString(), mAddress.getRoleName().getString());
-    
-    LocalHelloWorldRequestEvent::removeListener( static_cast<IEEventConsumer &>(self()), Thread::getCurrentThreadName() );
-    LocalHelloWorldNotifyRequestEvent::removeListener( static_cast<IEEventConsumer &>(self()), Thread::getCurrentThreadName() );
+
+    LocalHelloWorldRequestEvent::removeListener( static_cast<IEEventConsumer &>(self()), holder.getMasterThread() );
+    LocalHelloWorldNotifyRequestEvent::removeListener( static_cast<IEEventConsumer &>(self()), holder.getMasterThread() );
     StubBase::shutdownServiceIntrface( holder );
 }
 
@@ -118,7 +119,7 @@ void LocalHelloWorldStub::errorRequest( unsigned int msgId, bool msgCancel )
 {
     NEService::eResultType result = NEService::eResultType::NotProcessed;
     msg_id listenerId = msgId;
-    
+
     switch ( static_cast<NELocalHelloWorld::eMessageIDs>(msgId) )
     {
 /************************************************************************
@@ -157,7 +158,7 @@ void LocalHelloWorldStub::errorRequest( unsigned int msgId, bool msgCancel )
         ASSERT(false);
         break;
     }
-    
+
     StubBase::StubListenerList listeners;
     if ( findListeners(listenerId, listeners) > 0 )
     {
@@ -236,12 +237,12 @@ void LocalHelloWorldStub::processRequestEvent( ServiceRequestEvent & eventElem )
             {
                 String  roleName;
                 String  addMessage  = "";
-                stream >> roleName;                
-                stream >> addMessage;                
+                stream >> roleName;
+                stream >> addMessage;
                 requestHelloWorld( roleName, addMessage );
             }
             break;
-            
+
         default:
             {
                 TRACE_SCOPE(generated_src_LocalHelloWorldStub_processRequestEvent);

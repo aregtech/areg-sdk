@@ -7,7 +7,7 @@
 /************************************************************************
  * (c) copyright    2022
  *
- * Generated at     11.08.2022  17:55:56 GMT+02:00
+ * Generated at     13.08.2022  02:47:58 GMT+02:00
  *                  Create by AREG SDK code generator tool from source ConnectionManager.
  *
  * \file            generated/ConnectionManagerClientBase.hpp
@@ -49,13 +49,13 @@ class ConnectionManagerClientBase  : public IEProxyListener
 //////////////////////////////////////////////////////////////////////////
 protected:
     /**
-     * \brief   Initialize ConnectionManager Service Interface client object. 
+     * \brief   Initialize ConnectionManager Service Interface client object.
      *          Specifies used service and owner thread.
      * \param   roleName    The role name assigned to ConnectionManager servicing component object.
      * \param   ownerThread The name of component owner thread to dispatch messages.
      *                      If nullptr, all messages are dispatched in current component thread.
      **/
-    ConnectionManagerClientBase( const char* roleName, const char * ownerThread = nullptr );
+    ConnectionManagerClientBase( const String & roleName, const String & ownerThread = String::EmptyString );
 
     /**
      * \brief   Initialize ConnectionManager Service Interface client object.
@@ -63,7 +63,7 @@ protected:
      * \param   roleName    The role name assigned to ConnectionManager servicing component object.
      * \param   ownerThread The instance of component owner thread to dispatch messages.
      **/
-    ConnectionManagerClientBase( const char* roleName, DispatcherThread & ownerThread );
+    ConnectionManagerClientBase( const String & roleName, DispatcherThread & ownerThread );
 
     /**
      * \brief   Initialize ConnectionManager Service Interface client object.
@@ -73,7 +73,7 @@ protected:
      * \note    When this constructor is used, it is important that the Component object is already initialized.
      *          and the component thread is set.
      **/
-    ConnectionManagerClientBase( const char* roleName, Component & owner );
+    ConnectionManagerClientBase( const String & roleName, Component & owner );
 
     /**
      * \brief   Destructor.
@@ -119,6 +119,7 @@ public:
 // ConnectionManager Interface Attributes
 //////////////////////////////////////////////////////////////////////////
 public:
+
 /************************************************************************
  * Attribute ConnectionList functions
  ************************************************************************/
@@ -129,18 +130,18 @@ public:
     inline bool isConnectionListValid( void ) const;
     /**
      * \brief   Returns the value of ConnectionList attribute.
-     *          To get valid value, the Update Notification should be enabled. 
-     *          Attribute ConnectionList description: 
+     *          To get valid value, the Update Notification should be enabled.
+     *          Attribute ConnectionList description:
      *          The map of all active connections
-     * \param   state   On returns, contains the validation flag of attribute data. 
+     * \param   state   On returns, contains the validation flag of attribute data.
      *                  Check validation flag before use attribute value.
      * \see     isConnectionListValid, notifyConnectionListUpdate, onConnectionListUpdate
      **/
     inline const NEConnectionManager::MapConnection & getConnectionList( NEService::eDataStateType & state ) const;
     /**
      * \brief   Call to enable or disable receiving notifications on ConnectionList attribute update.
-     *          Once notification is enabled and the data is updated, 
-     *          the getConnectionList method will return valid data 
+     *          Once notification is enabled and the data is updated,
+     *          the getConnectionList method will return valid data
      *          Attribute ConnectionList description:
      *          The map of all active connections
      * \param   notify  If true, notification will be enable. If false, notification is disabled
@@ -151,13 +152,12 @@ public:
      * \brief   Triggered, when ConnectionList attribute is updated. The function contains
      *          attribute value and validation flag. When notification is enabled,
      *          the method should be overwritten in derived class.
-     *          Attributes ConnectionList description: 
+     *          Attributes ConnectionList description:
      *          The map of all active connections
      * \param   ConnectionList  The value of ConnectionList attribute.
      * \param   state           The data validation flag.
      **/
     virtual void onConnectionListUpdate( const NEConnectionManager::MapConnection & ConnectionList, NEService::eDataStateType state );
-
 
 //////////////////////////////////////////////////////////////////////////
 // ConnectionManager Interface Requests / Responses / Broadcasts
@@ -226,7 +226,7 @@ public:
     /**
      * \brief   Response callback.
      *          The result of connection request.
-     *          Overwrite, if need to handle Response call of server object. 
+     *          Overwrite, if need to handle Response call of server object.
      *          This call will be automatically triggered, on every appropriate request call
      * \param   nickName    Client connection data, which contains nick name and connection date-time
      * \param   cookie      Connection assigned cookie for client service
@@ -249,7 +249,7 @@ public:
     /**
      * \brief   Response callback.
      *          The result of request to register direct connection service.
-     *          Overwrite, if need to handle Response call of server object. 
+     *          Overwrite, if need to handle Response call of server object.
      *          This call will be automatically triggered, on every appropriate request call
      * \param   connection      The connection structure after registration.
      * \param   connectionList  The list of all servicing connections.
@@ -271,7 +271,7 @@ public:
     /**
      * \brief   Server broadcast.
      *          Notifies all client components the connection has been updated.
-     *          Overwrite, if need to handle Broadcast call of server object. 
+     *          Overwrite, if need to handle Broadcast call of server object.
      *          This call will be automatically triggered, on every appropriate request call
      * \param   updatedList The complete list of clients to send.
      **/
@@ -290,7 +290,7 @@ public:
     /**
      * \brief   Server broadcast.
      *          Notifies that a new client has been connected.
-     *          Overwrite, if need to handle Broadcast call of server object. 
+     *          Overwrite, if need to handle Broadcast call of server object.
      *          This call will be automatically triggered, on every appropriate request call
      * \param   clientConnected New client data, which contains nick name and connected date-time
      **/
@@ -309,7 +309,7 @@ public:
     /**
      * \brief   Server broadcast.
      *          Notifies a client has been disconnected.
-     *          Overwrite, if need to handle Broadcast call of server object. 
+     *          Overwrite, if need to handle Broadcast call of server object.
      *          This call will be automatically triggered, on every appropriate request call
      * \param   clientLeft  The connection data of disconnected client.
      **/

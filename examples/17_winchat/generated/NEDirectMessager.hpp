@@ -7,7 +7,7 @@
 /************************************************************************
  * (c) copyright    2022
  *
- * Generated at     11.08.2022  17:55:59 GMT+02:00
+ * Generated at     13.08.2022  02:48:00 GMT+02:00
  *                  Create by AREG SDK code generator tool from source DirectMessager.
  *
  * \file            generated/NEDirectMessager.hpp
@@ -46,7 +46,7 @@
 //////////////////////////////////////////////////////////////////////////
 /**
  *
- * \brief   DirectMessager Service Interface defined constants, 
+ * \brief   DirectMessager Service Interface defined constants,
  *          types and structures message IDs, global static methods.
  *
  *          The service interface of direct connection and messaging used in chat-room.
@@ -120,7 +120,7 @@ namespace   NEDirectMessager
          * \brief   Request ID: MsgId_requestChatJoin
          *          Request to join chat. The participant should be in the list of connections
          **/
-          MsgId_requestChatJoin               = NEService::REQUEST_ID_FIRST     // void requestChatJoin( const NEDirectMessager::sParticipant & participant, const DateTime & timeConnect );
+          MsgId_requestChatJoin               = NEService::REQUEST_ID_FIRST   // void requestChatJoin( const NEDirectMessager::sParticipant & participant, const DateTime & timeConnect );
         /**
          * \brief   Request ID: MsgId_requestMessageSend
          *          Request to send a message, has no response
@@ -136,7 +136,7 @@ namespace   NEDirectMessager
          *          The request to leave chat-room. Has no response.
          **/
         , MsgId_requestChatLeave                                                // void requestChatLeave( const NEDirectMessager::sParticipant & participant, const DateTime & timeLeave );
-     
+
     /************************************************************************
      * Response IDs
      ************************************************************************/
@@ -144,7 +144,7 @@ namespace   NEDirectMessager
          * \brief   Response ID: MsgId_responseChatJoin
          *          Response to join chat
          **/
-        , MsgId_responseChatJoin              = NEService::RESPONSE_ID_FIRST    // void responseChatJoin( bool succeed, const NEDirectMessager::ListParticipants & listParticipant, const DateTime & timeConnect, const DateTime & timeConnected );     
+        , MsgId_responseChatJoin              = NEService::RESPONSE_ID_FIRST  // void responseChatJoin( bool succeed, const NEDirectMessager::ListParticipants & listParticipant, const DateTime & timeConnect, const DateTime & timeConnected );
     /************************************************************************
      * Broadcast IDs
      ************************************************************************/
@@ -173,7 +173,7 @@ namespace   NEDirectMessager
          *          Informs all service connected clients that the chat-room is closed. Message will be impossible.
          **/
         , MsgId_broadcastChatClosed                                             // void broadcastChatClosed( void );
-     
+
     /************************************************************************
      * Attributes IDs
      ************************************************************************/
@@ -181,30 +181,30 @@ namespace   NEDirectMessager
          * \brief   Attribute ID: MsgId_ChatParticipants
          *          The list of char-room participants
          **/
-        , MsgId_ChatParticipants              = NEService::ATTRIBUTE_ID_FIRST   // NEDirectMessager::ListParticipants mChatParticipants;
-     
+        , MsgId_ChatParticipants              = NEService::ATTRIBUTE_ID_FIRST // NEDirectMessager::ListParticipants mChatParticipants;
+
     /************************************************************************
      * Reserved constant IDs
      ************************************************************************/
         /**
          * \brief   ID of empty function
          **/
-        , MsgId_NotProcessed                  = NEService::INVALID_MESSAGE_ID  
+        , MsgId_NotProcessed                  = NEService::INVALID_MESSAGE_ID
         /**
          * \brief   ID of invalid call
          **/
-        , MsgId_Invalid                       = NEService::RESPONSE_ID_NONE    
-     
+        , MsgId_Invalid                       = NEService::RESPONSE_ID_NONE
+
     };
     /**
      * \brief   Returns string value of NEDirectMessager::eMessageIDs
      **/
     inline const char * getString( NEDirectMessager::eMessageIDs msgId );
-     
+
 /************************************************************************
  * Service Interface standard functions and variables
  ************************************************************************/
- 
+
     /**
      * \brief   Creates and returns Service Interface Data
      **/
@@ -263,7 +263,6 @@ inline const char * NEDirectMessager::getString( NEDirectMessager::eMessageIDs m
 
     case NEDirectMessager::eMessageIDs::MsgId_NotProcessed:
         return "NEDirectMessager::eMessageIDs::MsgId_NotProcessed";
-        
     case NEDirectMessager::eMessageIDs::MsgId_Invalid:
         return "NEDirectMessager::eMessageIDs::MsgId_Invalid";
     default:

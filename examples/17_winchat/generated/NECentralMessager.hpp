@@ -7,7 +7,7 @@
 /************************************************************************
  * (c) copyright    2022
  *
- * Generated at     11.08.2022  17:55:55 GMT+02:00
+ * Generated at     13.08.2022  02:47:56 GMT+02:00
  *                  Create by AREG SDK code generator tool from source CentralMessager.
  *
  * \file            generated/NECentralMessager.hpp
@@ -46,7 +46,7 @@
 //////////////////////////////////////////////////////////////////////////
 /**
  *
- * \brief   CentralMessager Service Interface defined constants, 
+ * \brief   CentralMessager Service Interface defined constants,
  *          types and structures message IDs, global static methods.
  *
  *          This service is used to receive messages from connected edge when typing or 
@@ -99,16 +99,16 @@ namespace   NECentralMessager
          * \brief   Request ID: MsgId_requestSendMessage
          *          Request to sends message that all clients can see.
          **/
-          MsgId_requestSendMessage        = NEService::REQUEST_ID_FIRST     // void requestSendMessage( const String & nickName, unsigned int cookie, const String & newMessage, const DateTime & dateTime );
+          MsgId_requestSendMessage        = NEService::REQUEST_ID_FIRST   // void requestSendMessage( const String & nickName, unsigned int cookie, const String & newMessage, const DateTime & dateTime );
         /**
          * \brief   Request ID: MsgId_requestKeyTyping
          *          Sent each time when typing a key
          **/
         , MsgId_requestKeyTyping                                            // void requestKeyTyping( const String & nickName, unsigned int cookie, const String & newMessage );
-     
+
     /************************************************************************
      * Response IDs
-     ************************************************************************/     
+     ************************************************************************/
     /************************************************************************
      * Broadcast IDs
      ************************************************************************/
@@ -116,7 +116,7 @@ namespace   NECentralMessager
          * \brief   Broadcast ID: MsgId_broadcastSendMessage
          *          The response, sent by connection manager to notify the message typing update
          **/
-        , MsgId_broadcastSendMessage      = NEService::RESPONSE_ID_FIRST    // void broadcastSendMessage( const String & nickName, unsigned int cookie, const String & newMessage, const DateTime & dateTime );
+        , MsgId_broadcastSendMessage      = NEService::RESPONSE_ID_FIRST  // void broadcastSendMessage( const String & nickName, unsigned int cookie, const String & newMessage, const DateTime & dateTime );
         /**
          * \brief   Broadcast ID: MsgId_broadcastKeyTyping
          *          Sent each time when a client is typing a key
@@ -127,33 +127,33 @@ namespace   NECentralMessager
          *          Server broadcasts a message to all clients.
          **/
         , MsgId_broadcastBroadcastMessage                                   // void broadcastBroadcastMessage( const String & serverMessage, const DateTime & dateTime );
-     
+
     /************************************************************************
      * Attributes IDs
      ************************************************************************/
-     
+
     /************************************************************************
      * Reserved constant IDs
      ************************************************************************/
         /**
          * \brief   ID of empty function
          **/
-        , MsgId_NotProcessed              = NEService::INVALID_MESSAGE_ID  
+        , MsgId_NotProcessed              = NEService::INVALID_MESSAGE_ID
         /**
          * \brief   ID of invalid call
          **/
-        , MsgId_Invalid                   = NEService::RESPONSE_ID_NONE    
-     
+        , MsgId_Invalid                   = NEService::RESPONSE_ID_NONE
+
     };
     /**
      * \brief   Returns string value of NECentralMessager::eMessageIDs
      **/
     inline const char * getString( NECentralMessager::eMessageIDs msgId );
-     
+
 /************************************************************************
  * Service Interface standard functions and variables
  ************************************************************************/
- 
+
     /**
      * \brief   Creates and returns Service Interface Data
      **/
@@ -200,7 +200,6 @@ inline const char * NECentralMessager::getString( NECentralMessager::eMessageIDs
 
     case NECentralMessager::eMessageIDs::MsgId_NotProcessed:
         return "NECentralMessager::eMessageIDs::MsgId_NotProcessed";
-        
     case NECentralMessager::eMessageIDs::MsgId_Invalid:
         return "NECentralMessager::eMessageIDs::MsgId_Invalid";
     default:

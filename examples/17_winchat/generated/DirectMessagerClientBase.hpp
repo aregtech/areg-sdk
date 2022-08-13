@@ -7,7 +7,7 @@
 /************************************************************************
  * (c) copyright    2022
  *
- * Generated at     11.08.2022  17:55:59 GMT+02:00
+ * Generated at     13.08.2022  02:48:00 GMT+02:00
  *                  Create by AREG SDK code generator tool from source DirectMessager.
  *
  * \file            generated/DirectMessagerClientBase.hpp
@@ -49,13 +49,13 @@ class DirectMessagerClientBase  : public IEProxyListener
 //////////////////////////////////////////////////////////////////////////
 protected:
     /**
-     * \brief   Initialize DirectMessager Service Interface client object. 
+     * \brief   Initialize DirectMessager Service Interface client object.
      *          Specifies used service and owner thread.
      * \param   roleName    The role name assigned to DirectMessager servicing component object.
      * \param   ownerThread The name of component owner thread to dispatch messages.
      *                      If nullptr, all messages are dispatched in current component thread.
      **/
-    DirectMessagerClientBase( const char* roleName, const char * ownerThread = nullptr );
+    DirectMessagerClientBase( const String & roleName, const String & ownerThread = String::EmptyString );
 
     /**
      * \brief   Initialize DirectMessager Service Interface client object.
@@ -63,7 +63,7 @@ protected:
      * \param   roleName    The role name assigned to DirectMessager servicing component object.
      * \param   ownerThread The instance of component owner thread to dispatch messages.
      **/
-    DirectMessagerClientBase( const char* roleName, DispatcherThread & ownerThread );
+    DirectMessagerClientBase( const String & roleName, DispatcherThread & ownerThread );
 
     /**
      * \brief   Initialize DirectMessager Service Interface client object.
@@ -73,7 +73,7 @@ protected:
      * \note    When this constructor is used, it is important that the Component object is already initialized.
      *          and the component thread is set.
      **/
-    DirectMessagerClientBase( const char* roleName, Component & owner );
+    DirectMessagerClientBase( const String & roleName, Component & owner );
 
     /**
      * \brief   Destructor.
@@ -119,6 +119,7 @@ public:
 // DirectMessager Interface Attributes
 //////////////////////////////////////////////////////////////////////////
 public:
+
 /************************************************************************
  * Attribute ChatParticipants functions
  ************************************************************************/
@@ -129,18 +130,18 @@ public:
     inline bool isChatParticipantsValid( void ) const;
     /**
      * \brief   Returns the value of ChatParticipants attribute.
-     *          To get valid value, the Update Notification should be enabled. 
-     *          Attribute ChatParticipants description: 
+     *          To get valid value, the Update Notification should be enabled.
+     *          Attribute ChatParticipants description:
      *          The list of char-room participants
-     * \param   state   On returns, contains the validation flag of attribute data. 
+     * \param   state   On returns, contains the validation flag of attribute data.
      *                  Check validation flag before use attribute value.
      * \see     isChatParticipantsValid, notifyChatParticipantsUpdate, onChatParticipantsUpdate
      **/
     inline const NEDirectMessager::ListParticipants & getChatParticipants( NEService::eDataStateType & state ) const;
     /**
      * \brief   Call to enable or disable receiving notifications on ChatParticipants attribute update.
-     *          Once notification is enabled and the data is updated, 
-     *          the getChatParticipants method will return valid data 
+     *          Once notification is enabled and the data is updated,
+     *          the getChatParticipants method will return valid data
      *          Attribute ChatParticipants description:
      *          The list of char-room participants
      * \param   notify  If true, notification will be enable. If false, notification is disabled
@@ -151,13 +152,12 @@ public:
      * \brief   Triggered, when ChatParticipants attribute is updated. The function contains
      *          attribute value and validation flag. When notification is enabled,
      *          the method should be overwritten in derived class.
-     *          Attributes ChatParticipants description: 
+     *          Attributes ChatParticipants description:
      *          The list of char-room participants
      * \param   ChatParticipants    The value of ChatParticipants attribute.
      * \param   state               The data validation flag.
      **/
     virtual void onChatParticipantsUpdate( const NEDirectMessager::ListParticipants & ChatParticipants, NEService::eDataStateType state );
-
 
 //////////////////////////////////////////////////////////////////////////
 // DirectMessager Interface Requests / Responses / Broadcasts
@@ -240,7 +240,7 @@ public:
     /**
      * \brief   Response callback.
      *          Response to join chat
-     *          Overwrite, if need to handle Response call of server object. 
+     *          Overwrite, if need to handle Response call of server object.
      *          This call will be automatically triggered, on every appropriate request call
      * \param   succeed         Flag, indicating whether connection is accepted or not.
      * \param   listParticipant The list of participants.
@@ -263,7 +263,7 @@ public:
     /**
      * \brief   Server broadcast.
      *          Informs all connected servicing clients that the message is sent.
-     *          Overwrite, if need to handle Broadcast call of server object. 
+     *          Overwrite, if need to handle Broadcast call of server object.
      *          This call will be automatically triggered, on every appropriate request call
      * \param   sender      The structure of participant, who sent the message.
      * \param   msgText     The message, which was sent.
@@ -284,7 +284,7 @@ public:
     /**
      * \brief   Server broadcast.
      *          Informs all connected servicing client that the text was typed.
-     *          Overwrite, if need to handle Broadcast call of server object. 
+     *          Overwrite, if need to handle Broadcast call of server object.
      *          This call will be automatically triggered, on every appropriate request call
      * \param   participant The structure of participant, who initiated message during typing.
      * \param   msgText     The text message while typing.
@@ -304,7 +304,7 @@ public:
     /**
      * \brief   Server broadcast.
      *          Informs new participant joined chat-room
-     *          Overwrite, if need to handle Broadcast call of server object. 
+     *          Overwrite, if need to handle Broadcast call of server object.
      *          This call will be automatically triggered, on every appropriate request call
      * \param   participant The structure of participant, joined chat-room.
      * \param   timeJoined  Time-stamp when participant joined the chat-room
@@ -324,7 +324,7 @@ public:
     /**
      * \brief   Server broadcast.
      *          Informs that a participant left chat-room.
-     *          Overwrite, if need to handle Broadcast call of server object. 
+     *          Overwrite, if need to handle Broadcast call of server object.
      *          This call will be automatically triggered, on every appropriate request call
      * \param   participant The structure of participant, who left the chat-room.
      * \param   timeLeft    The time-stamp when the participant left chat-room.
@@ -344,7 +344,7 @@ public:
     /**
      * \brief   Server broadcast.
      *          Informs all service connected clients that the chat-room is closed. Message will be impossible.
-     *          Overwrite, if need to handle Broadcast call of server object. 
+     *          Overwrite, if need to handle Broadcast call of server object.
      *          This call will be automatically triggered, on every appropriate request call
      **/
     virtual void broadcastChatClosed( void );

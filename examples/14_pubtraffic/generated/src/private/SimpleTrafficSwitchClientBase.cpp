@@ -2,9 +2,9 @@
 // Begin generate generated/src/private/SimpleTrafficSwitchClientBase.cpp file
 //////////////////////////////////////////////////////////////////////////
 /************************************************************************
- * (c) copyright    2021
+ * (c) copyright    2022
  *
- * Generated at     30.09.2021  01:22:13 GMT+02:00 
+ * Generated at     13.08.2022  02:45:34 GMT+02:00
  *                  Create by AREG SDK code generator tool from source SimpleTrafficSwitch.
  *
  * \file            generated/src/SimpleTrafficSwitchClientBase.hpp
@@ -30,7 +30,7 @@ namespace NESimpleTrafficSwitch
      * \brief   Initialize request failure function pointers to make error handling
      **/
     typedef void (SimpleTrafficSwitchClientBase::* FuncRequestFailure) ( NEService::eResultType );
-    static FuncRequestFailure failureFunctions[] = 
+    static constexpr FuncRequestFailure failureFunctions[]
     {
         &SimpleTrafficSwitchClientBase::requestSwitchLightFailed
     };
@@ -44,7 +44,7 @@ namespace NESimpleTrafficSwitch
  * Constructor / Destructor
  ************************************************************************/
 
-SimpleTrafficSwitchClientBase::SimpleTrafficSwitchClientBase( const char * roleName, const char * ownerThread /*= nullptr*/ )
+SimpleTrafficSwitchClientBase::SimpleTrafficSwitchClientBase( const String & roleName, const String & ownerThread /* = String::EmptyString */ )
     : IEProxyListener   ( )
 
     , mIsConnected      ( false )
@@ -53,7 +53,7 @@ SimpleTrafficSwitchClientBase::SimpleTrafficSwitchClientBase( const char * roleN
 {
 }
 
-SimpleTrafficSwitchClientBase::SimpleTrafficSwitchClientBase( const char * roleName, DispatcherThread & ownerThread )
+SimpleTrafficSwitchClientBase::SimpleTrafficSwitchClientBase( const String & roleName, DispatcherThread & ownerThread )
     : IEProxyListener   ( )
 
     , mIsConnected      ( false )
@@ -62,7 +62,7 @@ SimpleTrafficSwitchClientBase::SimpleTrafficSwitchClientBase( const char * roleN
 {
 }
 
-SimpleTrafficSwitchClientBase::SimpleTrafficSwitchClientBase( const char* roleName, Component & owner )
+SimpleTrafficSwitchClientBase::SimpleTrafficSwitchClientBase( const String & roleName, Component & owner )
     : IEProxyListener   ( )
 
     , mIsConnected      ( false )
@@ -79,7 +79,7 @@ SimpleTrafficSwitchClientBase::~SimpleTrafficSwitchClientBase( void )
         mProxy->freeProxy( static_cast<IEProxyListener &>(self()) );
         mProxy  = nullptr;
     }
-    
+
     mIsConnected= false;
 }
 
@@ -92,11 +92,11 @@ bool SimpleTrafficSwitchClientBase::recreateProxy( void )
     bool result         = false;
     if (mProxy != nullptr)
     {
-        String roleName   = mProxy->getProxyAddress().getRoleName();
-        String threadName = mProxy->getProxyAddress().getThread();
+        const String & roleName   = mProxy->getProxyAddress().getRoleName();
+        const String & threadName = mProxy->getProxyAddress().getThread();
         if ( roleName.isEmpty() == false )
         {
-            SimpleTrafficSwitchProxy * newProxy = SimpleTrafficSwitchProxy::createProxy(roleName.getString(), static_cast<IEProxyListener &>(self()), threadName.getString());
+            SimpleTrafficSwitchProxy * newProxy = SimpleTrafficSwitchProxy::createProxy(roleName, static_cast<IEProxyListener &>(self()), threadName);
             if (newProxy != nullptr)
             {
                 mProxy->clearAllNotifications( static_cast<IENotificationEventConsumer &>(self()) );
@@ -104,8 +104,9 @@ bool SimpleTrafficSwitchClientBase::recreateProxy( void )
                 mProxy = newProxy;
                 result = true;
             }
-        }    
+        }
     }
+
     return result;
 }
 
@@ -118,7 +119,7 @@ DEF_TRACE_SCOPE(generated_src_SimpleTrafficSwitchClientBase_serviceConnected);
 bool SimpleTrafficSwitchClientBase::serviceConnected( bool isConnected, ProxyBase & proxy )
 {
     TRACE_SCOPE(generated_src_SimpleTrafficSwitchClientBase_serviceConnected);
-    
+
     bool result = false;
     if(mProxy == &proxy)
     {
@@ -127,11 +128,11 @@ bool SimpleTrafficSwitchClientBase::serviceConnected( bool isConnected, ProxyBas
                  , proxy.getProxyAddress().getServiceName().getString()
                  , proxy.getProxyAddress().getRoleName().getString()
                  , isConnected ? "CONNECTED" : "DISCONNECTED");
-        
+
         mIsConnected= isConnected;
         result      = true;
     }
-    
+
     return result;
 }
 
@@ -171,7 +172,7 @@ void SimpleTrafficSwitchClientBase::processNotificationEvent( NotificationEvent 
     case NEService::eResultType::RequestInvalid:
         {
         /************************************************************************
-         * Trigger invalid response / broadcast handling. May happen when remove notification 
+         * Trigger invalid response / broadcast handling. May happen when remove notification
          ************************************************************************/
             SimpleTrafficSwitchClientBase::invalidResponse(msgId);
         }
@@ -244,7 +245,7 @@ void SimpleTrafficSwitchClientBase::invalidRequest( NESimpleTrafficSwitch::eMess
                     , NESimpleTrafficSwitch::getString(InvalidReqId)
                     , static_cast<unsigned int>(InvalidReqId)
                     , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString() );
-                    
+
     ASSERT(false);
 }
 
@@ -257,7 +258,7 @@ void SimpleTrafficSwitchClientBase::requestFailed( NESimpleTrafficSwitch::eMessa
                     , static_cast<unsigned int>(FailureMsgId)
                     , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString()
                     , NEService::getString(FailureReason) );
-                    
+
     unsigned int index = static_cast<msg_id>(NESimpleTrafficSwitch::eMessageIDs::MsgId_Invalid);
     index = static_cast<msg_id>( NEService::isResponseId(static_cast<unsigned int>(FailureMsgId)) ? NESimpleTrafficSwitch::getRequestId(FailureMsgId) : FailureMsgId);
     index = NEService::isRequestId(index)  ? GET_REQ_INDEX(index) : static_cast<msg_id>(NESimpleTrafficSwitch::eMessageIDs::MsgId_Invalid);
@@ -287,7 +288,7 @@ void SimpleTrafficSwitchClientBase::onIsSwitchedOnUpdate( bool /* IsSwitchedOn *
 /************************************************************************
  * Request failure / Response and Broadcast notifications
  ************************************************************************/
- 
+
 DEF_TRACE_SCOPE(generated_src_SimpleTrafficSwitchClientBase_requestSwitchLightFailed);
 void SimpleTrafficSwitchClientBase::requestSwitchLightFailed( NEService::eResultType FailureReason )
 {

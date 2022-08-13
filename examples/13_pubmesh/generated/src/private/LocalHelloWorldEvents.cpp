@@ -3,9 +3,9 @@
 //////////////////////////////////////////////////////////////////////////
 
 /************************************************************************
- * (c) copyright    2021
+ * (c) copyright    2022
  *
- * Generated at     30.09.2021  01:22:12 GMT+02:00 
+ * Generated at     13.08.2022  02:45:10 GMT+02:00
  *                  Create by AREG SDK code generator tool from source LocalHelloWorld.
  *
  * \file            generated/src/private/LocalHelloWorldEvents.hpp
@@ -17,8 +17,8 @@
 /************************************************************************
  * Include files
  ************************************************************************/
- #include "generated/src/private/LocalHelloWorldEvents.hpp"
- 
+#include "generated/src/private/LocalHelloWorldEvents.hpp"
+
 //////////////////////////////////////////////////////////////////////////
 // LocalHelloWorldRequestEvent class implementation
 //////////////////////////////////////////////////////////////////////////

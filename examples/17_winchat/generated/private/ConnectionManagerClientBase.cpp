@@ -4,7 +4,7 @@
 /************************************************************************
  * (c) copyright    2022
  *
- * Generated at     11.08.2022  17:55:56 GMT+02:00
+ * Generated at     13.08.2022  02:47:58 GMT+02:00
  *                  Create by AREG SDK code generator tool from source ConnectionManager.
  *
  * \file            generated/ConnectionManagerClientBase.hpp
@@ -46,7 +46,7 @@ namespace NEConnectionManager
  * Constructor / Destructor
  ************************************************************************/
 
-ConnectionManagerClientBase::ConnectionManagerClientBase( const char * roleName, const char * ownerThread /*= nullptr*/ )
+ConnectionManagerClientBase::ConnectionManagerClientBase( const String & roleName, const String & ownerThread /* = String::EmptyString */ )
     : IEProxyListener   ( )
 
     , mIsConnected      ( false )
@@ -55,7 +55,7 @@ ConnectionManagerClientBase::ConnectionManagerClientBase( const char * roleName,
 {
 }
 
-ConnectionManagerClientBase::ConnectionManagerClientBase( const char * roleName, DispatcherThread & ownerThread )
+ConnectionManagerClientBase::ConnectionManagerClientBase( const String & roleName, DispatcherThread & ownerThread )
     : IEProxyListener   ( )
 
     , mIsConnected      ( false )
@@ -64,7 +64,7 @@ ConnectionManagerClientBase::ConnectionManagerClientBase( const char * roleName,
 {
 }
 
-ConnectionManagerClientBase::ConnectionManagerClientBase( const char* roleName, Component & owner )
+ConnectionManagerClientBase::ConnectionManagerClientBase( const String & roleName, Component & owner )
     : IEProxyListener   ( )
 
     , mIsConnected      ( false )
@@ -94,11 +94,11 @@ bool ConnectionManagerClientBase::recreateProxy( void )
     bool result         = false;
     if (mProxy != nullptr)
     {
-        String roleName   = mProxy->getProxyAddress().getRoleName();
-        String threadName = mProxy->getProxyAddress().getThread();
+        const String & roleName   = mProxy->getProxyAddress().getRoleName();
+        const String & threadName = mProxy->getProxyAddress().getThread();
         if ( roleName.isEmpty() == false )
         {
-            ConnectionManagerProxy * newProxy = ConnectionManagerProxy::createProxy(roleName.getString(), static_cast<IEProxyListener &>(self()), threadName.getString());
+            ConnectionManagerProxy * newProxy = ConnectionManagerProxy::createProxy(roleName, static_cast<IEProxyListener &>(self()), threadName);
             if (newProxy != nullptr)
             {
                 mProxy->clearAllNotifications( static_cast<IENotificationEventConsumer &>(self()) );

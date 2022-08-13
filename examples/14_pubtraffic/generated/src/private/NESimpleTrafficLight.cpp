@@ -3,9 +3,9 @@
 //////////////////////////////////////////////////////////////////////////
 
 /************************************************************************
- * (c) copyright    2021
+ * (c) copyright    2022
  *
- * Generated at     30.09.2021  01:22:12 GMT+02:00 
+ * Generated at     13.08.2022  02:45:32 GMT+02:00
  *                  Create by AREG SDK code generator tool from source SimpleTrafficLight.
  *
  * \file            generated/src/NESimpleTrafficLight.hpp
@@ -34,7 +34,7 @@ const NEService::SInterfaceData & NESimpleTrafficLight::getInterfaceData( void )
     /************************************************************************
      * The list of responses and broadcasts
      ************************************************************************/
-    static constexpr unsigned int _ResponseList[] 
+    static constexpr unsigned int _ResponseList[]
     {
           static_cast<unsigned int>( NESimpleTrafficLight::eMessageIDs::MsgId_broadcastLightChanged  ) // broadcastLightChanged( NESimpleTrafficLight::eTrafficLight SouthNorth, NESimpleTrafficLight::eTrafficLight EastWest )
     };
@@ -42,7 +42,7 @@ const NEService::SInterfaceData & NESimpleTrafficLight::getInterfaceData( void )
     /************************************************************************
      * The list of attributes
      ************************************************************************/
-    static constexpr unsigned int _AttributeList[] 
+    static constexpr unsigned int _AttributeList[]
     {
           static_cast<unsigned int>( NESimpleTrafficLight::eMessageIDs::MsgId_SouthNorth             ) // NESimpleTrafficLight::eTrafficLight mSouthNorth;
         , static_cast<unsigned int>( NESimpleTrafficLight::eMessageIDs::MsgId_EastWest               ) // NESimpleTrafficLight::eTrafficLight mEastWest;
@@ -68,7 +68,7 @@ const NEService::SInterfaceData & NESimpleTrafficLight::getInterfaceData( void )
         2, // void broadcastLightChanged( NESimpleTrafficLight::eTrafficLight SouthNorth, NESimpleTrafficLight::eTrafficLight EastWest )
 
     };
-    
+
     /************************************************************************
      * SimpleTrafficLight Service Interface data
      ************************************************************************/
@@ -90,12 +90,12 @@ const NEService::SInterfaceData & NESimpleTrafficLight::getInterfaceData( void )
     return _InterfaceData;
 }
 
-NESimpleTrafficLight::eMessageIDs NESimpleTrafficLight::getResponseId( NESimpleTrafficLight::eMessageIDs reqId )
+NESimpleTrafficLight::eMessageIDs NESimpleTrafficLight::getResponseId( NESimpleTrafficLight::eMessageIDs /* reqId */ )
 {
     return NESimpleTrafficLight::eMessageIDs::MsgId_Invalid;
 }
 
-NESimpleTrafficLight::eMessageIDs NESimpleTrafficLight::getRequestId( NESimpleTrafficLight::eMessageIDs respId )
+NESimpleTrafficLight::eMessageIDs NESimpleTrafficLight::getRequestId( NESimpleTrafficLight::eMessageIDs /* respId */ )
 {
     return NESimpleTrafficLight::eMessageIDs::MsgId_Invalid;
 }

@@ -8,7 +8,7 @@
  *
  * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/component/private/ProxyBase.cpp
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
+ * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit
  * \author      Artak Avetyan
  * \brief       AREG Platform, Proxy Base class implementation.
  *
@@ -245,7 +245,7 @@ RemoteResponseEvent * ProxyBase::createRequestFailureEvent(const ProxyAddress & 
     RemoteResponseEvent * result = nullptr;
 
     ProxyBase::_mapRegisteredProxies.lock();
-    
+
     ProxyBase * proxy = ProxyBase::findProxyByAddress(target);
     if (proxy != nullptr)
     {
@@ -264,7 +264,7 @@ RemoteResponseEvent * ProxyBase::createRequestFailureEvent(const ProxyAddress & 
 ProxyBase::ProxyBase(const String & roleName, const NEService::SInterfaceData & serviceIfData, DispatcherThread * ownerThread /*= nullptr*/ )
 
     : IEProxyEventConsumer  ( mProxyAddress )
-    
+
     , mProxyAddress     ( serviceIfData, roleName, (ownerThread != nullptr) && (ownerThread->isValid()) ? ownerThread->getName() : String::EmptyString )
     , mStubAddress      ( StubAddress::INVALID_STUB_ADDRESS )
     , mSequenceCount    ( 0 )
@@ -313,7 +313,7 @@ void ProxyBase::freeProxy( IEProxyListener & connect )
         mListConnect.removeAt(exists);
         connect.serviceConnected(false, self());
     }
-    
+
     removeListener( static_cast<unsigned int>(NEService::eFuncIdRange::ServiceNotifyConnection)
                   , NEService::SEQUENCE_NUMBER_NOTIFY
                   , static_cast<IENotificationEventConsumer *>(&connect));
@@ -412,10 +412,8 @@ void ProxyBase::serviceConnectionUpdated( const StubAddress & server, const Chan
             IEProxyListener * consumer = static_cast<IEProxyListener *>(listener.mListener);
             if (mIsConnected)
             {
-                if (mListConnect.addIfUnique(consumer))
-                {
-                    consumer->serviceConnected(true, *this);
-                }
+                mListConnect.addIfUnique(consumer);
+                consumer->serviceConnected( true, *this );
             }
             else
             {

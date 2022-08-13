@@ -2,9 +2,9 @@
 // Begin generate generated/src/private/SimpleTrafficSwitchStub.cpp file
 //////////////////////////////////////////////////////////////////////////
 /************************************************************************
- * (c) copyright    2021
+ * (c) copyright    2022
  *
- * Generated at     30.09.2021  01:22:13 GMT+02:00 
+ * Generated at     13.08.2022  02:45:34 GMT+02:00
  *                  Create by AREG SDK code generator tool from source SimpleTrafficSwitch.
  *
  * \file            generated/src/SimpleTrafficSwitchStub.hpp
@@ -20,7 +20,8 @@
 #include "generated/src/private/SimpleTrafficSwitchEvents.hpp"
 
 #include "areg/component/ServiceResponseEvent.hpp"
-#include "areg/base/Thread.hpp"
+#include "areg/component/Component.hpp"
+#include "areg/component/ComponentThread.hpp"
 #include "areg/trace/GETrace.h"
 
 //////////////////////////////////////////////////////////////////////////
@@ -32,7 +33,7 @@
 //////////////////////////////////////////////////////////////////////////
 SimpleTrafficSwitchStub::SimpleTrafficSwitchStub( Component & masterComp )
     : StubBase    ( masterComp, NESimpleTrafficSwitch::getInterfaceData() )
-    
+
     , mIsSwitchedOn       (  )
     , mIsSwitchedOnState  ( NEService::eDataStateType::DataIsUnavailable )
     
@@ -56,9 +57,9 @@ DEF_TRACE_SCOPE(generated_src_SimpleTrafficSwitchStub_startupServiceInterface);
 void SimpleTrafficSwitchStub::startupServiceInterface( Component & holder )
 {
     TRACE_SCOPE(generated_src_SimpleTrafficSwitchStub_startupServiceInterface);
-    
-    SimpleTrafficSwitchRequestEvent::addListener( static_cast<IEEventConsumer &>(self()), Thread::getCurrentThreadName() );
-    SimpleTrafficSwitchNotifyRequestEvent::addListener( static_cast<IEEventConsumer &>(self()), Thread::getCurrentThreadName() );
+
+    SimpleTrafficSwitchRequestEvent::addListener( static_cast<IEEventConsumer &>(self()), holder.getMasterThread() );
+    SimpleTrafficSwitchNotifyRequestEvent::addListener( static_cast<IEEventConsumer &>(self()), holder.getMasterThread() );
     StubBase::startupServiceInterface( holder );
 
     TRACE_DBG("The Stub Service [ %s ] of component with role name [ %s ] has been started and is available ...", mAddress.getServiceName().getString(), mAddress.getRoleName().getString());
@@ -69,9 +70,9 @@ void SimpleTrafficSwitchStub::shutdownServiceIntrface( Component & holder )
 {
     TRACE_SCOPE(generated_src_SimpleTrafficSwitchStub_shutdownServiceIntrface);
     TRACE_DBG("The Stub Service [ %s ] of component with role name [ %s ] is shutting down and not available anymore ...", mAddress.getServiceName().getString(), mAddress.getRoleName().getString());
-    
-    SimpleTrafficSwitchRequestEvent::removeListener( static_cast<IEEventConsumer &>(self()), Thread::getCurrentThreadName() );
-    SimpleTrafficSwitchNotifyRequestEvent::removeListener( static_cast<IEEventConsumer &>(self()), Thread::getCurrentThreadName() );
+
+    SimpleTrafficSwitchRequestEvent::removeListener( static_cast<IEEventConsumer &>(self()), holder.getMasterThread() );
+    SimpleTrafficSwitchNotifyRequestEvent::removeListener( static_cast<IEEventConsumer &>(self()), holder.getMasterThread() );
     StubBase::shutdownServiceIntrface( holder );
 }
 
@@ -109,7 +110,7 @@ void SimpleTrafficSwitchStub::errorRequest( unsigned int msgId, bool msgCancel )
 {
     NEService::eResultType result = NEService::eResultType::NotProcessed;
     msg_id listenerId = msgId;
-    
+
     switch ( static_cast<NESimpleTrafficSwitch::eMessageIDs>(msgId) )
     {
 /************************************************************************
@@ -139,7 +140,7 @@ void SimpleTrafficSwitchStub::errorRequest( unsigned int msgId, bool msgCancel )
         ASSERT(false);
         break;
     }
-    
+
     StubBase::StubListenerList listeners;
     if ( findListeners(listenerId, listeners) > 0 )
     {
@@ -198,11 +199,11 @@ void SimpleTrafficSwitchStub::processRequestEvent( ServiceRequestEvent & eventEl
             if ( true )
             {
                 bool    switchOn;
-                stream >> switchOn;                
+                stream >> switchOn;
                 requestSwitchLight( switchOn );
             }
             break;
-            
+
         default:
             {
                 TRACE_SCOPE(generated_src_SimpleTrafficSwitchStub_processRequestEvent);

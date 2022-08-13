@@ -3,9 +3,9 @@
 //////////////////////////////////////////////////////////////////////////
 
 /************************************************************************
- * (c) copyright    2021
+ * (c) copyright    2022
  *
- * Generated at     30.09.2021  01:22:13 GMT+02:00 
+ * Generated at     13.08.2022  02:45:11 GMT+02:00
  *                  Create by AREG SDK code generator tool from source RemoteRegistry.
  *
  * \file            generated/src/private/RemoteRegistryProxy.hpp
@@ -139,7 +139,7 @@ void RemoteRegistryProxy::unregisterServiceListeners( void )
 /************************************************************************
  * Requests.
  ************************************************************************/
- 
+
 unsigned int RemoteRegistryProxy::requestRegister( IENotificationEventConsumer & caller, const String & name, const ServiceAddress & service, const String & thread, const String & process )
 {
     static const NERemoteRegistry::eMessageIDs msgId = NERemoteRegistry::eMessageIDs::MsgId_requestRegister;
@@ -175,7 +175,7 @@ unsigned int RemoteRegistryProxy::requestHelloWorld( IENotificationEventConsumer
 /************************************************************************
  * Event processing.
  ************************************************************************/
- 
+
 /************************************************************************
  * IEProxyEventConsumer interface overrides.
  ************************************************************************/
@@ -245,8 +245,8 @@ void RemoteRegistryProxy::updateData( RemoteRegistryResponseEvent & eventElem, N
         break;
     }
 }
- 
-void RemoteRegistryProxy::processResponse( RemoteRegistryResponseEvent & evenElem )
+
+    void RemoteRegistryProxy::processResponse( RemoteRegistryResponseEvent & evenElem )
 {
     NERemoteRegistry::eMessageIDs respId  = static_cast<NERemoteRegistry::eMessageIDs>(evenElem.getResponseId());
     NEService::eResultType resultType  = evenElem.getResult();
@@ -272,8 +272,8 @@ void RemoteRegistryProxy::processResponse( RemoteRegistryResponseEvent & evenEle
         {
             respId  = static_cast<NERemoteRegistry::eMessageIDs>( mProxyData.getResponseId(static_cast<msg_id>(respId)) );
         }
-        
-        setStates   = respId != NERemoteRegistry::eMessageIDs::MsgId_NotProcessed;            
+
+        setStates   = respId != NERemoteRegistry::eMessageIDs::MsgId_NotProcessed;
         break;
 
     case NEService::eResultType::RequestOK:     // fall through
@@ -290,16 +290,15 @@ void RemoteRegistryProxy::processResponse( RemoteRegistryResponseEvent & evenEle
     {
         updateData(evenElem, respId);
     }
-       
+
     if (setStates == true)
     {
         setState(static_cast<msg_id>(respId), dataValid ? NEService::eDataStateType::DataIsOK : NEService::eDataStateType::DataIsInvalid);
     }
-    
+
     notifyListeners(static_cast<msg_id>(respId), resultType, evenElem.getSequenceNumber());
 }
 
 //////////////////////////////////////////////////////////////////////////
 // End generate generated/src/private/RemoteRegistryProxy.cpp file
 //////////////////////////////////////////////////////////////////////////
- 

@@ -7,7 +7,7 @@
 /************************************************************************
  * (c) copyright    2022
  *
- * Generated at     12.08.2022  10:30:17 GMT+02:00
+ * Generated at     13.08.2022  02:48:18 GMT+02:00
  *                  Create by AREG SDK code generator tool from source HelloWatchdog.
  *
  * \file            generated/src/HelloWatchdogClientBase.hpp

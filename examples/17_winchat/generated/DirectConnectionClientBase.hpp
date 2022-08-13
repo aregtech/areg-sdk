@@ -7,7 +7,7 @@
 /************************************************************************
  * (c) copyright    2022
  *
- * Generated at     11.08.2022  17:55:57 GMT+02:00
+ * Generated at     13.08.2022  02:47:59 GMT+02:00
  *                  Create by AREG SDK code generator tool from source DirectConnection.
  *
  * \file            generated/DirectConnectionClientBase.hpp
@@ -52,13 +52,13 @@ class DirectConnectionClientBase  : public IEProxyListener
 //////////////////////////////////////////////////////////////////////////
 protected:
     /**
-     * \brief   Initialize DirectConnection Service Interface client object. 
+     * \brief   Initialize DirectConnection Service Interface client object.
      *          Specifies used service and owner thread.
      * \param   roleName    The role name assigned to DirectConnection servicing component object.
      * \param   ownerThread The name of component owner thread to dispatch messages.
      *                      If nullptr, all messages are dispatched in current component thread.
      **/
-    DirectConnectionClientBase( const char* roleName, const char * ownerThread = nullptr );
+    DirectConnectionClientBase( const String & roleName, const String & ownerThread = String::EmptyString );
 
     /**
      * \brief   Initialize DirectConnection Service Interface client object.
@@ -66,7 +66,7 @@ protected:
      * \param   roleName    The role name assigned to DirectConnection servicing component object.
      * \param   ownerThread The instance of component owner thread to dispatch messages.
      **/
-    DirectConnectionClientBase( const char* roleName, DispatcherThread & ownerThread );
+    DirectConnectionClientBase( const String & roleName, DispatcherThread & ownerThread );
 
     /**
      * \brief   Initialize DirectConnection Service Interface client object.
@@ -76,7 +76,7 @@ protected:
      * \note    When this constructor is used, it is important that the Component object is already initialized.
      *          and the component thread is set.
      **/
-    DirectConnectionClientBase( const char* roleName, Component & owner );
+    DirectConnectionClientBase( const String & roleName, Component & owner );
 
     /**
      * \brief   Destructor.
@@ -122,6 +122,7 @@ public:
 // DirectConnection Interface Attributes
 //////////////////////////////////////////////////////////////////////////
 public:
+
 /************************************************************************
  * Attribute InitiatedConnections functions
  ************************************************************************/
@@ -132,18 +133,18 @@ public:
     inline bool isInitiatedConnectionsValid( void ) const;
     /**
      * \brief   Returns the value of InitiatedConnections attribute.
-     *          To get valid value, the Update Notification should be enabled. 
-     *          Attribute InitiatedConnections description: 
+     *          To get valid value, the Update Notification should be enabled.
+     *          Attribute InitiatedConnections description:
      *          The map of initiated connections and list of participants.
-     * \param   state   On returns, contains the validation flag of attribute data. 
+     * \param   state   On returns, contains the validation flag of attribute data.
      *                  Check validation flag before use attribute value.
      * \see     isInitiatedConnectionsValid, notifyInitiatedConnectionsUpdate, onInitiatedConnectionsUpdate
      **/
     inline const NEDirectConnection::MapParticipants & getInitiatedConnections( NEService::eDataStateType & state ) const;
     /**
      * \brief   Call to enable or disable receiving notifications on InitiatedConnections attribute update.
-     *          Once notification is enabled and the data is updated, 
-     *          the getInitiatedConnections method will return valid data 
+     *          Once notification is enabled and the data is updated,
+     *          the getInitiatedConnections method will return valid data
      *          Attribute InitiatedConnections description:
      *          The map of initiated connections and list of participants.
      * \param   notify  If true, notification will be enable. If false, notification is disabled
@@ -154,13 +155,12 @@ public:
      * \brief   Triggered, when InitiatedConnections attribute is updated. The function contains
      *          attribute value and validation flag. When notification is enabled,
      *          the method should be overwritten in derived class.
-     *          Attributes InitiatedConnections description: 
+     *          Attributes InitiatedConnections description:
      *          The map of initiated connections and list of participants.
      * \param   InitiatedConnections    The value of InitiatedConnections attribute.
      * \param   state                   The data validation flag.
      **/
     virtual void onInitiatedConnectionsUpdate( const NEDirectConnection::MapParticipants & InitiatedConnections, NEService::eDataStateType state );
-
 
 //////////////////////////////////////////////////////////////////////////
 // DirectConnection Interface Requests / Responses / Broadcasts
@@ -243,7 +243,7 @@ public:
     /**
      * \brief   Response callback.
      *          The response of connection setup
-     *          Overwrite, if need to handle Response call of server object. 
+     *          Overwrite, if need to handle Response call of server object.
      *          This call will be automatically triggered, on every appropriate request call
      * \param   succeeded           Flag, indicating whether the connection setup succeeded or not.
      * \param   target              The targeted participant to include in chat-room
@@ -266,7 +266,7 @@ public:
     /**
      * \brief   Response callback.
      *          The response to add initiator to chat room
-     *          Overwrite, if need to handle Response call of server object. 
+     *          Overwrite, if need to handle Response call of server object.
      *          This call will be automatically triggered, on every appropriate request call
      * \param   succeeded           Flag, indicating whether operation succeeded.
      * \param   listParticipants    New list of participants
@@ -287,7 +287,7 @@ public:
     /**
      * \brief   Response callback.
      *          Response to remove initiator from chat-room
-     *          Overwrite, if need to handle Response call of server object. 
+     *          Overwrite, if need to handle Response call of server object.
      *          This call will be automatically triggered, on every appropriate request call
      * \param   succeeded           Flag, indicating whther operation succeeded or not.
      * \param   listParticipants    New lsit of chat-room participants.

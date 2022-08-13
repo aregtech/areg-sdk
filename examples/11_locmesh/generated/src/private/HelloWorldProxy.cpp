@@ -3,9 +3,9 @@
 //////////////////////////////////////////////////////////////////////////
 
 /************************************************************************
- * (c) copyright    2021
+ * (c) copyright    2022
  *
- * Generated at     30.09.2021  01:22:12 GMT+02:00 
+ * Generated at     13.08.2022  02:44:13 GMT+02:00
  *                  Create by AREG SDK code generator tool from source HelloWorld.
  *
  * \file            generated/src/private/HelloWorldProxy.hpp
@@ -129,7 +129,7 @@ void HelloWorldProxy::unregisterServiceListeners( void )
 /************************************************************************
  * Requests.
  ************************************************************************/
- 
+
 unsigned int HelloWorldProxy::requestHelloWorld( IENotificationEventConsumer & caller, const String & roleName, const String & addMessage/* = "" */ )
 {
     static const NEHelloWorld::eMessageIDs msgId = NEHelloWorld::eMessageIDs::MsgId_requestHelloWorld;
@@ -153,7 +153,7 @@ void HelloWorldProxy::requestClientShutdown( unsigned int clientID, const String
 /************************************************************************
  * Event processing.
  ************************************************************************/
- 
+
 /************************************************************************
  * IEProxyEventConsumer interface overrides.
  ************************************************************************/
@@ -226,8 +226,8 @@ void HelloWorldProxy::updateData( HelloWorldResponseEvent & eventElem, NEHelloWo
         break;
     }
 }
- 
-void HelloWorldProxy::processResponse( HelloWorldResponseEvent & evenElem )
+
+    void HelloWorldProxy::processResponse( HelloWorldResponseEvent & evenElem )
 {
     NEHelloWorld::eMessageIDs respId  = static_cast<NEHelloWorld::eMessageIDs>(evenElem.getResponseId());
     NEService::eResultType resultType  = evenElem.getResult();
@@ -253,8 +253,8 @@ void HelloWorldProxy::processResponse( HelloWorldResponseEvent & evenElem )
         {
             respId  = static_cast<NEHelloWorld::eMessageIDs>( mProxyData.getResponseId(static_cast<msg_id>(respId)) );
         }
-        
-        setStates   = respId != NEHelloWorld::eMessageIDs::MsgId_NotProcessed;            
+
+        setStates   = respId != NEHelloWorld::eMessageIDs::MsgId_NotProcessed;
         break;
 
     case NEService::eResultType::RequestOK:     // fall through
@@ -271,16 +271,15 @@ void HelloWorldProxy::processResponse( HelloWorldResponseEvent & evenElem )
     {
         updateData(evenElem, respId);
     }
-       
+
     if (setStates == true)
     {
         setState(static_cast<msg_id>(respId), dataValid ? NEService::eDataStateType::DataIsOK : NEService::eDataStateType::DataIsInvalid);
     }
-    
+
     notifyListeners(static_cast<msg_id>(respId), resultType, evenElem.getSequenceNumber());
 }
 
 //////////////////////////////////////////////////////////////////////////
 // End generate generated/src/private/HelloWorldProxy.cpp file
 //////////////////////////////////////////////////////////////////////////
- 

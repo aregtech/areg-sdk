@@ -2,9 +2,9 @@
 // Begin generate generated/src/private/SystemShutdownClientBase.cpp file
 //////////////////////////////////////////////////////////////////////////
 /************************************************************************
- * (c) copyright    2021
+ * (c) copyright    2022
  *
- * Generated at     30.09.2021  01:22:15 GMT+02:00 
+ * Generated at     13.08.2022  02:45:13 GMT+02:00
  *                  Create by AREG SDK code generator tool from source SystemShutdown.
  *
  * \file            generated/src/SystemShutdownClientBase.hpp
@@ -43,7 +43,7 @@ namespace NESystemShutdown
  * Constructor / Destructor
  ************************************************************************/
 
-SystemShutdownClientBase::SystemShutdownClientBase( const char * roleName, const char * ownerThread /*= nullptr*/ )
+SystemShutdownClientBase::SystemShutdownClientBase( const String & roleName, const String & ownerThread /* = String::EmptyString */ )
     : IEProxyListener   ( )
 
     , mIsConnected      ( false )
@@ -52,7 +52,7 @@ SystemShutdownClientBase::SystemShutdownClientBase( const char * roleName, const
 {
 }
 
-SystemShutdownClientBase::SystemShutdownClientBase( const char * roleName, DispatcherThread & ownerThread )
+SystemShutdownClientBase::SystemShutdownClientBase( const String & roleName, DispatcherThread & ownerThread )
     : IEProxyListener   ( )
 
     , mIsConnected      ( false )
@@ -61,7 +61,7 @@ SystemShutdownClientBase::SystemShutdownClientBase( const char * roleName, Dispa
 {
 }
 
-SystemShutdownClientBase::SystemShutdownClientBase( const char* roleName, Component & owner )
+SystemShutdownClientBase::SystemShutdownClientBase( const String & roleName, Component & owner )
     : IEProxyListener   ( )
 
     , mIsConnected      ( false )
@@ -78,7 +78,7 @@ SystemShutdownClientBase::~SystemShutdownClientBase( void )
         mProxy->freeProxy( static_cast<IEProxyListener &>(self()) );
         mProxy  = nullptr;
     }
-    
+
     mIsConnected= false;
 }
 
@@ -91,11 +91,11 @@ bool SystemShutdownClientBase::recreateProxy( void )
     bool result         = false;
     if (mProxy != nullptr)
     {
-        String roleName   = mProxy->getProxyAddress().getRoleName();
-        String threadName = mProxy->getProxyAddress().getThread();
+        const String & roleName   = mProxy->getProxyAddress().getRoleName();
+        const String & threadName = mProxy->getProxyAddress().getThread();
         if ( roleName.isEmpty() == false )
         {
-            SystemShutdownProxy * newProxy = SystemShutdownProxy::createProxy(roleName.getString(), static_cast<IEProxyListener &>(self()), threadName.getString());
+            SystemShutdownProxy * newProxy = SystemShutdownProxy::createProxy(roleName, static_cast<IEProxyListener &>(self()), threadName);
             if (newProxy != nullptr)
             {
                 mProxy->clearAllNotifications( static_cast<IENotificationEventConsumer &>(self()) );
@@ -103,8 +103,9 @@ bool SystemShutdownClientBase::recreateProxy( void )
                 mProxy = newProxy;
                 result = true;
             }
-        }    
+        }
     }
+
     return result;
 }
 
@@ -117,7 +118,7 @@ DEF_TRACE_SCOPE(generated_src_SystemShutdownClientBase_serviceConnected);
 bool SystemShutdownClientBase::serviceConnected( bool isConnected, ProxyBase & proxy )
 {
     TRACE_SCOPE(generated_src_SystemShutdownClientBase_serviceConnected);
-    
+
     bool result = false;
     if(mProxy == &proxy)
     {
@@ -126,11 +127,11 @@ bool SystemShutdownClientBase::serviceConnected( bool isConnected, ProxyBase & p
                  , proxy.getProxyAddress().getServiceName().getString()
                  , proxy.getProxyAddress().getRoleName().getString()
                  , isConnected ? "CONNECTED" : "DISCONNECTED");
-        
+
         mIsConnected= isConnected;
         result      = true;
     }
-    
+
     return result;
 }
 
@@ -170,7 +171,7 @@ void SystemShutdownClientBase::processNotificationEvent( NotificationEvent & eve
     case NEService::eResultType::RequestInvalid:
         {
         /************************************************************************
-         * Trigger invalid response / broadcast handling. May happen when remove notification 
+         * Trigger invalid response / broadcast handling. May happen when remove notification
          ************************************************************************/
             SystemShutdownClientBase::invalidResponse(msgId);
         }
@@ -275,7 +276,7 @@ void SystemShutdownClientBase::invalidRequest( NESystemShutdown::eMessageIDs Inv
                     , NESystemShutdown::getString(InvalidReqId)
                     , static_cast<unsigned int>(InvalidReqId)
                     , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString() );
-                    
+
     ASSERT(false);
 }
 
@@ -288,7 +289,7 @@ void SystemShutdownClientBase::requestFailed( NESystemShutdown::eMessageIDs Fail
                     , static_cast<unsigned int>(FailureMsgId)
                     , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString()
                     , NEService::getString(FailureReason) );
-                    
+
     ASSERT(NESystemShutdown::failureFunctions == nullptr);
     invalidRequest( FailureMsgId );
 }
@@ -309,7 +310,7 @@ void SystemShutdownClientBase::onServiceStateUpdate( NESystemShutdown::eServiceS
 /************************************************************************
  * Request failure / Response and Broadcast notifications
  ************************************************************************/
- 
+
 DEF_TRACE_SCOPE(generated_src_SystemShutdownClientBase_broadcastServiceUnavailable);
 void SystemShutdownClientBase::broadcastServiceUnavailable( void )
 {

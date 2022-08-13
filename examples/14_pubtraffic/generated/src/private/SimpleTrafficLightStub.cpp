@@ -2,9 +2,9 @@
 // Begin generate generated/src/private/SimpleTrafficLightStub.cpp file
 //////////////////////////////////////////////////////////////////////////
 /************************************************************************
- * (c) copyright    2021
+ * (c) copyright    2022
  *
- * Generated at     30.09.2021  01:22:12 GMT+02:00 
+ * Generated at     13.08.2022  02:45:32 GMT+02:00
  *                  Create by AREG SDK code generator tool from source SimpleTrafficLight.
  *
  * \file            generated/src/SimpleTrafficLightStub.hpp
@@ -20,7 +20,8 @@
 #include "generated/src/private/SimpleTrafficLightEvents.hpp"
 
 #include "areg/component/ServiceResponseEvent.hpp"
-#include "areg/base/Thread.hpp"
+#include "areg/component/Component.hpp"
+#include "areg/component/ComponentThread.hpp"
 #include "areg/trace/GETrace.h"
 
 //////////////////////////////////////////////////////////////////////////
@@ -32,7 +33,7 @@
 //////////////////////////////////////////////////////////////////////////
 SimpleTrafficLightStub::SimpleTrafficLightStub( Component & masterComp )
     : StubBase    ( masterComp, NESimpleTrafficLight::getInterfaceData() )
-    
+
     , mSouthNorth         (  )
     , mSouthNorthState    ( NEService::eDataStateType::DataIsUnavailable )
     
@@ -59,9 +60,9 @@ DEF_TRACE_SCOPE(generated_src_SimpleTrafficLightStub_startupServiceInterface);
 void SimpleTrafficLightStub::startupServiceInterface( Component & holder )
 {
     TRACE_SCOPE(generated_src_SimpleTrafficLightStub_startupServiceInterface);
-    
-    SimpleTrafficLightRequestEvent::addListener( static_cast<IEEventConsumer &>(self()), Thread::getCurrentThreadName() );
-    SimpleTrafficLightNotifyRequestEvent::addListener( static_cast<IEEventConsumer &>(self()), Thread::getCurrentThreadName() );
+
+    SimpleTrafficLightRequestEvent::addListener( static_cast<IEEventConsumer &>(self()), holder.getMasterThread() );
+    SimpleTrafficLightNotifyRequestEvent::addListener( static_cast<IEEventConsumer &>(self()), holder.getMasterThread() );
     StubBase::startupServiceInterface( holder );
 
     TRACE_DBG("The Stub Service [ %s ] of component with role name [ %s ] has been started and is available ...", mAddress.getServiceName().getString(), mAddress.getRoleName().getString());
@@ -72,9 +73,9 @@ void SimpleTrafficLightStub::shutdownServiceIntrface( Component & holder )
 {
     TRACE_SCOPE(generated_src_SimpleTrafficLightStub_shutdownServiceIntrface);
     TRACE_DBG("The Stub Service [ %s ] of component with role name [ %s ] is shutting down and not available anymore ...", mAddress.getServiceName().getString(), mAddress.getRoleName().getString());
-    
-    SimpleTrafficLightRequestEvent::removeListener( static_cast<IEEventConsumer &>(self()), Thread::getCurrentThreadName() );
-    SimpleTrafficLightNotifyRequestEvent::removeListener( static_cast<IEEventConsumer &>(self()), Thread::getCurrentThreadName() );
+
+    SimpleTrafficLightRequestEvent::removeListener( static_cast<IEEventConsumer &>(self()), holder.getMasterThread() );
+    SimpleTrafficLightNotifyRequestEvent::removeListener( static_cast<IEEventConsumer &>(self()), holder.getMasterThread() );
     StubBase::shutdownServiceIntrface( holder );
 }
 
@@ -128,7 +129,7 @@ void SimpleTrafficLightStub::errorRequest( unsigned int msgId, bool msgCancel )
 {
     NEService::eResultType result = NEService::eResultType::NotProcessed;
     msg_id listenerId = msgId;
-    
+
     switch ( static_cast<NESimpleTrafficLight::eMessageIDs>(msgId) )
     {
 /************************************************************************
@@ -162,7 +163,7 @@ void SimpleTrafficLightStub::errorRequest( unsigned int msgId, bool msgCancel )
         ASSERT(false);
         break;
     }
-    
+
     StubBase::StubListenerList listeners;
     if ( findListeners(listenerId, listeners) > 0 )
     {

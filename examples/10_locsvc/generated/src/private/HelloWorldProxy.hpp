@@ -1,12 +1,13 @@
 //////////////////////////////////////////////////////////////////////////
 // Begin generate generated/src/private/HelloWorldProxy.hpp file
 //////////////////////////////////////////////////////////////////////////
-#pragma once
+#ifndef  GENERATED_SRC_PRIVATE_HELLOWORLDPROXY_HPP
+#define  GENERATED_SRC_PRIVATE_HELLOWORLDPROXY_HPP
 
 /************************************************************************
- * (c) copyright    2021
+ * (c) copyright    2022
  *
- * Generated at     30.09.2021  01:22:11 GMT+02:00 
+ * Generated at     13.08.2022  02:43:40 GMT+02:00
  *                  Create by AREG SDK code generator tool from source HelloWorld.
  *
  * \file            generated/src/private/HelloWorldProxy.hpp
@@ -21,12 +22,12 @@
 #include "areg/base/GEGlobal.h"
 #include "generated/src/NEHelloWorld.hpp"
 #include "areg/component/ProxyBase.hpp"
- 
+
 /************************************************************************
  * Dependencies
  ************************************************************************/
 class HelloWorldResponseEvent;
- 
+
 //////////////////////////////////////////////////////////////////////////
 // HelloWorldProxy class declaration Begin
 //////////////////////////////////////////////////////////////////////////
@@ -40,16 +41,14 @@ class HelloWorldResponseEvent;
  **/
 class HelloWorldProxy   : public ProxyBase
 {
-
 private:
     //////////////////////////////////////////////////////////////////////////
     // HelloWorldProxy::HelloWorldServiceAvailableEvent class declaration
     //////////////////////////////////////////////////////////////////////////
     /**
-     * \brief       The event is used to immediately notify new client
-     *              about service availability and escape duplicating 
-     *              notification for other, already connected clients.
-     *  
+     * \brief   The event is used immediately to notify new client about service
+     *          availability and escape duplicating notification for other,
+     *          already connected clients.
      **/
     class HelloWorldServiceAvailableEvent : public ProxyBase::ServiceAvailableEvent
     {
@@ -67,7 +66,7 @@ private:
          **/
         explicit HelloWorldServiceAvailableEvent( IENotificationEventConsumer & consumer );
         /**
-         * \brief   Destructor
+         * \brief   Destructor.
          **/
         virtual ~HelloWorldServiceAvailableEvent( void ) = default;
     //////////////////////////////////////////////////////////////////////////
@@ -84,7 +83,7 @@ public:
     /**
      * \brief   Returns existing or creates new proxy object if it is not existing
      *          in the current thread scope.
-     * \param   roleName        The role name of stub component object
+     * \param   roleName        The role name of stub component object.
      * \param   connectListener The reference to connection listener
      * \param   ownerThread     The instance of thread to dispatch messages.
      * \return  Returns pointer to instantiated proxy object.
@@ -94,7 +93,7 @@ public:
     /**
      * \brief   Returns existing or creates new proxy object if it is not existing
      *          in the current thread scope.
-     * \param   roleName        The role name of stub component object
+     * \param   roleName        The role name of stub component object.
      * \param   connectListener The reference to connection listener
      * \param   ownerThread     The name of thread instance to dispatch messages.
      *                          If nullptr, current dispatching thread is used to dispatch messages.
@@ -107,7 +106,7 @@ public:
 //////////////////////////////////////////////////////////////////////////
 protected:
     /**
-     * \brief   Constructor. Creates Proxy object by given role name. 
+     * \brief   Creates Proxy object by given role name.
      *          Do not create proxy object directly, instead use CreateProxy function.
      * \param   roleName    The role name of proxy, i.e. role name of server component object.
      * \param   ownerThread The instance of thread to dispatch messages.
@@ -134,9 +133,9 @@ public:
     /**
      * \brief   Returns the value of ConnectedClients attribute.
      *          To get valid value, the Update Notification should be enabled. 
-     *          Attribute ConnectedClients description: 
+     *          Attribute ConnectedClients description:
      *          The list of connected clients. Updated each time when new client requests to output Hello World message.
-     * \param   state   On returns, contains the validation flag of attribute data. 
+     * \param   state   On returns, contains the validation flag of attribute data.
      *                  Check validation flag before use attribute value.
      **/
     inline const NEHelloWorld::ConnectionList & getConnectedClients( NEService::eDataStateType & state ) const;
@@ -149,9 +148,9 @@ public:
     /**
      * \brief   Returns the value of RemainOutput attribute.
      *          To get valid value, the Update Notification should be enabled. 
-     *          Attribute RemainOutput description: 
+     *          Attribute RemainOutput description:
      *          Remaining number of outputs to print Hello World.
-     * \param   state   On returns, contains the validation flag of attribute data. 
+     * \param   state   On returns, contains the validation flag of attribute data.
      *                  Check validation flag before use attribute value.
      **/
     inline short getRemainOutput( NEService::eDataStateType & state ) const;
@@ -162,7 +161,7 @@ public:
     /**
      * \brief   Returns value of clientInfo of response call function.
      *          The parameter is validated and set when Proxy is getting response call.
-     *          Parameter clientInfo description: 
+     *          Parameter clientInfo description:
      *          The client information set by servicing component. If empty or invalid ID, the message output failed.
      **/
     inline const NEHelloWorld::sConnectedClient & getParamclientInfo( void ) const;
@@ -170,7 +169,7 @@ public:
     /**
      * \brief   Returns value of clientList of response call function.
      *          The parameter is validated and set when Proxy is getting response call.
-     *          Parameter clientList description: 
+     *          Parameter clientList description:
      *          List of currently active clients.
      **/
     inline const NEHelloWorld::ConnectionList & getParamclientList( void ) const;
@@ -206,22 +205,21 @@ public:
     /**
      * \brief   Checks whether there is already listener of Notification Event
      *          exists. If does not exit, adds new listener entry in the listener
-     *          list. If need, send appropriate message to Stub to start 
+     *          list. If need, send appropriate message to Stub to start
      *          sending attribute update messages. If already listener
-     *          exists in listener list and notifyAlways flag is true, 
+     *          exists in listener list and notifyAlways flag is true,
      *          sends immediate update notification based on existing update data status.
      * \param   msgId           The Notification Message ID
      * \param   consumer        The pointer of Notification Event consumer
      * \param   notifyAlways    The flag, indicating whether the notification event
      *                          should be send to client immediately if the notification
-     *                          already exists. By default it is false. 
+     *                          already exists. By default it is false.
      **/
     inline void setNotification( NEHelloWorld::eMessageIDs notifyId, IENotificationEventConsumer & listener, bool notifyAlways = false );
     /**
      * \brief   Clears listener entries of specified Notification Event consumer
      * \param   msgId       The Notification Message ID
      * \param   consumer    The pointer of Notification Event Consumer.
-     * \return  
      **/
     inline void clearNotification( NEHelloWorld::eMessageIDs notifyId, IENotificationEventConsumer & listener );
     /**
@@ -248,7 +246,7 @@ protected:
     virtual void processResponseEvent( ServiceResponseEvent & eventElem ) override;
     /**
      * \brief   Method derived from IEProxyEventConsumer interface.
-     *          Triggered when on server side a certain Attribute 
+     *          Triggered when on server side a certain Attribute
      *          value has been updated.
      * \param   eventElem   The Service Response event object.
      *                      Contains new updated value of Attribute
@@ -261,8 +259,8 @@ protected:
 /************************************************************************/
 
     /**
-     * \brief   Creates notification event to send to client objects. 
-     *          All Notification Events should be internal events and 
+     * \brief   Creates notification event to send to client objects.
+     *          All Notification Events should be internal events and
      *          should be instances of NotificationEvent class.
      * \param   data    The Notification Event data object containing
      *                  notification information.
@@ -271,7 +269,7 @@ protected:
     virtual NotificationEvent * createNotificationEvent( const NotificationEventData & data ) const override;
 
     /**
-     * \brief   Create Request event to send to Stub object. 
+     * \brief   Create Request event to send to Stub object.
      *          Request events are triggering request calls on Stub side.
      * \param   args    The buffer containing serialized arguments of request call.
      * \param   reqId   The ID of request call.
@@ -281,7 +279,7 @@ protected:
 
     /**
      * \brief   Creates event requesting to receive update notification events.
-     *          The caller should be address of current proxy and the target 
+     *          The caller should be address of current proxy and the target
      *          should address of appropriate sub address.
      * \param   msgId       The message ID to send. Should be either attribute or response (info)
      * \param   reqType     The type of request.
@@ -352,7 +350,7 @@ private:
     /**
      * \brief   Updates attribute and response call variable data received from Stub
      * \param   eventElem   The event object containing buffer with serialized data
-     * \param   respId      The response message ID, which received. 
+     * \param   respId      The response message ID, which received.
      *                      It is either attribute or response message ID
      **/
     void updateData( HelloWorldResponseEvent & eventElem, NEHelloWorld::eMessageIDs respId );
@@ -360,8 +358,8 @@ private:
      * \brief   Starts processing response message. The received event contains
      *          ID of appropriate message to update and contains result flag.
      *          If request calls failed (busy), the ID in event is a request call ID.
-     *          In all other cases, the ID is either response call, info call, 
-     *          or attribute update notification call. 
+     *          In all other cases, the ID is either response call, info call,
+     *          or attribute update notification call.
      *          It will also update parameters and states.
      * \param   evenElem    The response object containing message ID, result and data.
      **/
@@ -465,6 +463,7 @@ inline const NEHelloWorld::ConnectionList & HelloWorldProxy::getParamclientList(
     return mParamclientList;
 }
 
+#endif   // GENERATED_SRC_PRIVATE_HELLOWORLDPROXY_HPP
 
 //////////////////////////////////////////////////////////////////////////
 // End generate generated/src/private/HelloWorldProxy.hpp file

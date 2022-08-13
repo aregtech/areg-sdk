@@ -1,12 +1,13 @@
 //////////////////////////////////////////////////////////////////////////
 // Begin generate generated/src/SystemShutdownClientBase.hpp file
 //////////////////////////////////////////////////////////////////////////
-#pragma once
+#ifndef  GENERATED_SRC_SYSTEMSHUTDOWNCLIENTBASE_HPP
+#define  GENERATED_SRC_SYSTEMSHUTDOWNCLIENTBASE_HPP
 
 /************************************************************************
- * (c) copyright    2021
+ * (c) copyright    2022
  *
- * Generated at     30.09.2021  01:22:15 GMT+02:00 
+ * Generated at     13.08.2022  02:45:13 GMT+02:00
  *                  Create by AREG SDK code generator tool from source SystemShutdown.
  *
  * \file            generated/src/SystemShutdownClientBase.hpp
@@ -51,13 +52,13 @@ class SystemShutdownClientBase  : public IEProxyListener
 //////////////////////////////////////////////////////////////////////////
 protected:
     /**
-     * \brief   Initialize SystemShutdown Service Interface client object. 
+     * \brief   Initialize SystemShutdown Service Interface client object.
      *          Specifies used service and owner thread.
      * \param   roleName    The role name assigned to SystemShutdown servicing component object.
      * \param   ownerThread The name of component owner thread to dispatch messages.
      *                      If nullptr, all messages are dispatched in current component thread.
      **/
-    SystemShutdownClientBase( const char* roleName, const char * ownerThread = nullptr );
+    SystemShutdownClientBase( const String & roleName, const String & ownerThread = String::EmptyString );
 
     /**
      * \brief   Initialize SystemShutdown Service Interface client object.
@@ -65,7 +66,7 @@ protected:
      * \param   roleName    The role name assigned to SystemShutdown servicing component object.
      * \param   ownerThread The instance of component owner thread to dispatch messages.
      **/
-    SystemShutdownClientBase( const char* roleName, DispatcherThread & ownerThread );
+    SystemShutdownClientBase( const String & roleName, DispatcherThread & ownerThread );
 
     /**
      * \brief   Initialize SystemShutdown Service Interface client object.
@@ -75,7 +76,7 @@ protected:
      * \note    When this constructor is used, it is important that the Component object is already initialized.
      *          and the component thread is set.
      **/
-    SystemShutdownClientBase( const char* roleName, Component & owner );
+    SystemShutdownClientBase( const String & roleName, Component & owner );
 
     /**
      * \brief   Destructor.
@@ -102,12 +103,12 @@ public:
      * \brief   Returns true if client object has got connection with servicing component
      **/
     inline bool isConnected( void ) const;
-    
+
     /**
      * \brief   Returns the name of used service.
      **/
     inline const String & getServiceName( void ) const;
-    
+
     /**
      * \brief   Returns the version of used service.
      **/
@@ -121,6 +122,7 @@ public:
 // SystemShutdown Interface Attributes
 //////////////////////////////////////////////////////////////////////////
 public:
+
 /************************************************************************
  * Attribute ServiceState functions
  ************************************************************************/
@@ -131,18 +133,18 @@ public:
     inline bool isServiceStateValid( void ) const;
     /**
      * \brief   Returns the value of ServiceState attribute.
-     *          To get valid value, the Update Notification should be enabled. 
-     *          Attribute ServiceState description: 
+     *          To get valid value, the Update Notification should be enabled.
+     *          Attribute ServiceState description:
      *          Describes the current state of service.
-     * \param   state   On returns, contains the validation flag of attribute data. 
+     * \param   state   On returns, contains the validation flag of attribute data.
      *                  Check validation flag before use attribute value.
      * \see     isServiceStateValid, notifyServiceStateUpdate, onServiceStateUpdate
      **/
     inline NESystemShutdown::eServiceState getServiceState( NEService::eDataStateType & state ) const;
     /**
      * \brief   Call to enable or disable receiving notifications on ServiceState attribute update.
-     *          Once notification is enabled and the data is updated, 
-     *          the getServiceState method will return valid data 
+     *          Once notification is enabled and the data is updated,
+     *          the getServiceState method will return valid data
      *          Attribute ServiceState description:
      *          Describes the current state of service.
      * \param   notify  If true, notification will be enable. If false, notification is disabled
@@ -153,13 +155,12 @@ public:
      * \brief   Triggered, when ServiceState attribute is updated. The function contains
      *          attribute value and validation flag. When notification is enabled,
      *          the method should be overwritten in derived class.
-     *          Attributes ServiceState description: 
+     *          Attributes ServiceState description:
      *          Describes the current state of service.
      * \param   ServiceState    The value of ServiceState attribute.
      * \param   state           The data validation flag.
      **/
     virtual void onServiceStateUpdate( NESystemShutdown::eServiceState ServiceState, NEService::eDataStateType state );
-
 
 //////////////////////////////////////////////////////////////////////////
 // SystemShutdown Interface Requests / Responses / Broadcasts
@@ -172,7 +173,7 @@ public:
     /**
      * \brief   Server broadcast.
      *          Sent to notify the service unavailable state. All clients should be unregistered to start the shutdown procedure.
-     *          Overwrite, if need to handle Broadcast call of server object. 
+     *          Overwrite, if need to handle Broadcast call of server object.
      *          This call will be automatically triggered, on every appropriate request call
      **/
     virtual void broadcastServiceUnavailable( void );
@@ -190,7 +191,7 @@ public:
     /**
      * \brief   Server broadcast.
      *          Notifies the system is shutting down so that application should disconnect and close.
-     *          Overwrite, if need to handle Broadcast call of server object. 
+     *          Overwrite, if need to handle Broadcast call of server object.
      *          This call will be automatically triggered, on every appropriate request call
      **/
     virtual void broadcastServiceShutdown( void );
@@ -242,16 +243,16 @@ protected:
      * \param   InvalidReqId    The ID of invalid request
      **/
     virtual void invalidRequest( NESystemShutdown::eMessageIDs InvalidReqId );
-    
+
 //////////////////////////////////////////////////////////////////////////
 // Attributes
 //////////////////////////////////////////////////////////////////////////
 
     /**
      * \brief   Call to recreate Proxy for the client. This call will remove and unregister all existing notifications
-     *          and the client will not receive pending update or response notifications. 
+     *          and the client will not receive pending update or response notifications.
      *          The client first will receive disconnect message, then again connect.
-     *          Reset update notifications manually in connect if need.          
+     *          Reset update notifications manually in connect if need.
      *          This function call can be used when the client instance should be registered and run in new thread.
      *
      * \return  Returns true if Proxy was created with success.
@@ -263,7 +264,7 @@ protected:
      *         The function can return nullptr if Proxy was not instantiated yet.
      **/
     DispatcherThread * getDispatcherThread( void );
-     
+
     /**
      * \brief   Returns the current sequence number
      **/
@@ -273,7 +274,7 @@ protected:
      * \brief  Returns instance of proxy object.
      */
     inline const SystemShutdownProxy * getProxy( void ) const;
-      
+
     /**
      * \brief Returns target service component role name.
      **/
@@ -309,7 +310,7 @@ private:
      * \param   eventElem   Notification Event object to process
      **/
     virtual void processNotificationEvent( NotificationEvent & eventElem ) override;
-    
+
 /************************************************************************/
 // SystemShutdownClientBase hidden methods
 /************************************************************************/
@@ -317,12 +318,12 @@ private:
     /**
      * \brief   Enables / Disables notification flags on appropriate message call.
      * \param   msgId   The ID of message to enable / disable notification
-     * \param   notify  If true, the notification is enabled. 
+     * \param   notify  If true, the notification is enabled.
      *                  If false, the notification is disabled.
      * \param   always  Flag, indicating whether should notify always or not.
      *                  if 'notify' parameter is true and the notification is already
      *                  assigned, then if parameter 'always' is true, it will trigger
-     *                  notification immediately after call. 
+     *                  notification immediately after call.
      **/
     void notifyOn( NESystemShutdown::eMessageIDs msgId, bool notify, bool always = false );
     /**
@@ -342,7 +343,6 @@ private:
     /**
      * \brief   Returns reference of SystemShutdownClientBase object
      **/
-
     inline SystemShutdownClientBase & self( void );
 
 //////////////////////////////////////////////////////////////////////////
@@ -390,7 +390,7 @@ inline const String & SystemShutdownClientBase::getServiceName( void ) const
     ASSERT(mProxy != nullptr);
     return mProxy->getProxyAddress().getServiceName();
 }
-    
+
 inline const Version & SystemShutdownClientBase::getServiceVersion( void ) const
 {
     ASSERT(mProxy != nullptr);
@@ -441,6 +441,8 @@ inline const String & SystemShutdownClientBase::getServiceRole( void ) const
     ASSERT(mProxy != nullptr);
     return mProxy->getProxyAddress().getRoleName();
 }
+
+#endif   // GENERATED_SRC_SYSTEMSHUTDOWNCLIENTBASE_HPP
 
 //////////////////////////////////////////////////////////////////////////
 // End generate generated/src/SystemShutdownClientBase.hpp file

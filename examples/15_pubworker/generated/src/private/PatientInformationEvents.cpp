@@ -3,9 +3,9 @@
 //////////////////////////////////////////////////////////////////////////
 
 /************************************************************************
- * (c) copyright    2021
+ * (c) copyright    2022
  *
- * Generated at     30.09.2021  01:22:12 GMT+02:00 
+ * Generated at     13.08.2022  02:46:19 GMT+02:00
  *                  Create by AREG SDK code generator tool from source PatientInformation.
  *
  * \file            generated/src/private/PatientInformationEvents.hpp
@@ -17,8 +17,8 @@
 /************************************************************************
  * Include files
  ************************************************************************/
- #include "generated/src/private/PatientInformationEvents.hpp"
- 
+#include "generated/src/private/PatientInformationEvents.hpp"
+
 //////////////////////////////////////////////////////////////////////////
 // PatientInformationRequestEvent class implementation
 //////////////////////////////////////////////////////////////////////////
@@ -48,7 +48,7 @@ PatientInformationRequestEvent::PatientInformationRequestEvent( const EventDataS
 PatientInformationRequestEvent::PatientInformationRequestEvent( const IEInStream & stream )
     : RemoteRequestEvent( stream )
 {
-}    
+}
 
 //////////////////////////////////////////////////////////////////////////
 // PatientInformationNotifyRequestEvent class implementation
@@ -72,7 +72,7 @@ PatientInformationNotifyRequestEvent::PatientInformationNotifyRequestEvent( cons
 PatientInformationNotifyRequestEvent::PatientInformationNotifyRequestEvent( const IEInStream & stream )
     : RemoteNotifyRequestEvent( stream )
 {
-}    
+}
 
 //////////////////////////////////////////////////////////////////////////
 // PatientInformationResponseEvent class implementation
@@ -106,7 +106,7 @@ PatientInformationResponseEvent::PatientInformationResponseEvent( const ProxyAdd
 PatientInformationResponseEvent::PatientInformationResponseEvent( const IEInStream & stream )
     : RemoteResponseEvent( stream )
 {
-}    
+}
 
 //////////////////////////////////////////////////////////////////////////
 // PatientInformationResponseEvent class, Methods

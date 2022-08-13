@@ -1,12 +1,13 @@
 //////////////////////////////////////////////////////////////////////////
 // Begin generate generated/src/HelloWorldStub.hpp file
 //////////////////////////////////////////////////////////////////////////
-#pragma once
+#ifndef  GENERATED_SRC_HELLOWORLDSTUB_HPP
+#define  GENERATED_SRC_HELLOWORLDSTUB_HPP
 
 /************************************************************************
- * (c) copyright    2021
+ * (c) copyright    2022
  *
- * Generated at     30.09.2021  01:22:12 GMT+02:00 
+ * Generated at     13.08.2022  02:44:13 GMT+02:00
  *                  Create by AREG SDK code generator tool from source HelloWorld.
  *
  * \file            generated/src/HelloWorldStub.hpp
@@ -52,7 +53,7 @@ protected:
      * \brief   Destructor.
      **/
     virtual ~HelloWorldStub( void ) = default;
-    
+
 //////////////////////////////////////////////////////////////////////////
 // Operations
 //////////////////////////////////////////////////////////////////////////
@@ -208,8 +209,8 @@ public:
 /************************************************************************/
 
     /**
-     * \brief   Sends update notification message to all clients. 
-     *          This method can be called manually to send update 
+     * \brief   Sends update notification message to all clients.
+     *          This method can be called manually to send update
      *          notification message after updating attribute value.
      *
      * \param   msgId   The attribute message ID to notify clients.
@@ -254,7 +255,7 @@ protected:
     virtual void shutdownServiceIntrface ( Component & holder ) override;
 
 /************************************************************************/
-// StubBase overrides. Protected methods 
+// StubBase overrides. Protected methods
 /************************************************************************/
 
     /**
@@ -403,6 +404,8 @@ inline short & HelloWorldStub::getRemainOutput( void )
 //////////////////////////////////////////////////////////////////////////
 // HelloWorldStub class declaration End
 //////////////////////////////////////////////////////////////////////////
+
+#endif   // GENERATED_SRC_HELLOWORLDSTUB_HPP
 
 //////////////////////////////////////////////////////////////////////////
 // End generate generated/src/HelloWorldStub.hpp file

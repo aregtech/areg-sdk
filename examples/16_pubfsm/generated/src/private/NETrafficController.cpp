@@ -3,9 +3,9 @@
 //////////////////////////////////////////////////////////////////////////
 
 /************************************************************************
- * (c) copyright    2021
+ * (c) copyright    2022
  *
- * Generated at     30.09.2021  01:22:14 GMT+02:00 
+ * Generated at     13.08.2022  02:47:36 GMT+02:00
  *                  Create by AREG SDK code generator tool from source TrafficController.
  *
  * \file            generated/src/NETrafficController.hpp
@@ -34,7 +34,7 @@ const NEService::SInterfaceData & NETrafficController::getInterfaceData( void )
     /************************************************************************
      * The list of responses and broadcasts
      ************************************************************************/
-    static constexpr unsigned int _ResponseList[] 
+    static constexpr unsigned int _ResponseList[]
     {
           static_cast<unsigned int>( NETrafficController::eMessageIDs::MsgId_broadcastSouthNorth  ) // broadcastSouthNorth( NETrafficController::eVehicleTrafficLight LightVehicle, NETrafficController::ePedestrianTrafficLight LightPedestrian )
         , static_cast<unsigned int>( NETrafficController::eMessageIDs::MsgId_broadcastEastWest    ) // broadcastEastWest( NETrafficController::eVehicleTrafficLight LightVehicle, NETrafficController::ePedestrianTrafficLight LightPedestrian )
@@ -43,7 +43,7 @@ const NEService::SInterfaceData & NETrafficController::getInterfaceData( void )
     /************************************************************************
      * The list of attributes
      ************************************************************************/
-    static constexpr unsigned int _AttributeList[] 
+    static constexpr unsigned int _AttributeList[]
     {
           static_cast<unsigned int>( NETrafficController::eMessageIDs::MsgId_TrafficSouthNorth    ) // NETrafficController::sTrafficLight mTrafficSouthNorth;
         , static_cast<unsigned int>( NETrafficController::eMessageIDs::MsgId_TrafficEastWest      ) // NETrafficController::sTrafficLight mTrafficEastWest;
@@ -70,7 +70,7 @@ const NEService::SInterfaceData & NETrafficController::getInterfaceData( void )
         2, // void broadcastEastWest( NETrafficController::eVehicleTrafficLight LightVehicle, NETrafficController::ePedestrianTrafficLight LightPedestrian )
 
     };
-    
+
     /************************************************************************
      * TrafficController Service Interface data
      ************************************************************************/
@@ -92,12 +92,12 @@ const NEService::SInterfaceData & NETrafficController::getInterfaceData( void )
     return _InterfaceData;
 }
 
-NETrafficController::eMessageIDs NETrafficController::getResponseId( NETrafficController::eMessageIDs reqId )
+NETrafficController::eMessageIDs NETrafficController::getResponseId( NETrafficController::eMessageIDs /* reqId */ )
 {
     return NETrafficController::eMessageIDs::MsgId_Invalid;
 }
 
-NETrafficController::eMessageIDs NETrafficController::getRequestId( NETrafficController::eMessageIDs respId )
+NETrafficController::eMessageIDs NETrafficController::getRequestId( NETrafficController::eMessageIDs /* respId */ )
 {
     return NETrafficController::eMessageIDs::MsgId_Invalid;
 }

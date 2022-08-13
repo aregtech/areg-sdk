@@ -1,12 +1,13 @@
 //////////////////////////////////////////////////////////////////////////
 // Begin generate generated/src/SimpleTrafficLightStub.hpp file
 //////////////////////////////////////////////////////////////////////////
-#pragma once
+#ifndef  GENERATED_SRC_SIMPLETRAFFICLIGHTSTUB_HPP
+#define  GENERATED_SRC_SIMPLETRAFFICLIGHTSTUB_HPP
 
 /************************************************************************
- * (c) copyright    2021
+ * (c) copyright    2022
  *
- * Generated at     30.09.2021  01:22:12 GMT+02:00 
+ * Generated at     13.08.2022  02:45:32 GMT+02:00
  *                  Create by AREG SDK code generator tool from source SimpleTrafficLight.
  *
  * \file            generated/src/SimpleTrafficLightStub.hpp
@@ -52,7 +53,7 @@ protected:
      * \brief   Destructor.
      **/
     virtual ~SimpleTrafficLightStub( void ) = default;
-    
+
 //////////////////////////////////////////////////////////////////////////
 // Operations
 //////////////////////////////////////////////////////////////////////////
@@ -176,8 +177,8 @@ public:
 /************************************************************************/
 
     /**
-     * \brief   Sends update notification message to all clients. 
-     *          This method can be called manually to send update 
+     * \brief   Sends update notification message to all clients.
+     *          This method can be called manually to send update
      *          notification message after updating attribute value.
      *
      * \param   msgId   The attribute message ID to notify clients.
@@ -222,7 +223,7 @@ protected:
     virtual void shutdownServiceIntrface ( Component & holder ) override;
 
 /************************************************************************/
-// StubBase overrides. Protected methods 
+// StubBase overrides. Protected methods
 /************************************************************************/
 
     /**
@@ -236,7 +237,7 @@ protected:
     virtual ResponseEvent * createResponseEvent( const ProxyAddress & proxy, unsigned int msgId, NEService::eResultType result, const EventDataStream & data ) const override;
 
     /**
-     * \brief   Overwrite method to create remote service request event from streaming object for 
+     * \brief   Overwrite method to create remote service request event from streaming object for
      *          further dispatching by stub.
      * \param   stream  Streaming object, which contains event data.
      * \return  If operation succeeds, returns valid pointer to Service Request event object.
@@ -245,7 +246,7 @@ protected:
     virtual RemoteRequestEvent * createRemoteRequestEvent( const IEInStream & stream ) const override;
 
     /**
-     * \brief   Overwrite method to create remote notify request event from streaming object for 
+     * \brief   Overwrite method to create remote notify request event from streaming object for
      *          further dispatching by stub.
      * \param   stream  Streaming object, which contains event data.
      * \return  If operation succeeds, returns valid pointer to Service Request event object.
@@ -389,6 +390,8 @@ inline NESimpleTrafficLight::eTrafficLight & SimpleTrafficLightStub::getEastWest
 //////////////////////////////////////////////////////////////////////////
 // SimpleTrafficLightStub class declaration End
 //////////////////////////////////////////////////////////////////////////
+
+#endif   // GENERATED_SRC_SIMPLETRAFFICLIGHTSTUB_HPP
 
 //////////////////////////////////////////////////////////////////////////
 // End generate generated/src/SimpleTrafficLightStub.hpp file

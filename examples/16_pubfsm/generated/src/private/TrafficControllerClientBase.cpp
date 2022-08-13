@@ -2,9 +2,9 @@
 // Begin generate generated/src/private/TrafficControllerClientBase.cpp file
 //////////////////////////////////////////////////////////////////////////
 /************************************************************************
- * (c) copyright    2021
+ * (c) copyright    2022
  *
- * Generated at     30.09.2021  01:22:14 GMT+02:00 
+ * Generated at     13.08.2022  02:47:36 GMT+02:00
  *                  Create by AREG SDK code generator tool from source TrafficController.
  *
  * \file            generated/src/TrafficControllerClientBase.hpp
@@ -43,7 +43,7 @@ namespace NETrafficController
  * Constructor / Destructor
  ************************************************************************/
 
-TrafficControllerClientBase::TrafficControllerClientBase( const char * roleName, const char * ownerThread /*= nullptr*/ )
+TrafficControllerClientBase::TrafficControllerClientBase( const String & roleName, const String & ownerThread /* = String::EmptyString */ )
     : IEProxyListener   ( )
 
     , mIsConnected      ( false )
@@ -52,7 +52,7 @@ TrafficControllerClientBase::TrafficControllerClientBase( const char * roleName,
 {
 }
 
-TrafficControllerClientBase::TrafficControllerClientBase( const char * roleName, DispatcherThread & ownerThread )
+TrafficControllerClientBase::TrafficControllerClientBase( const String & roleName, DispatcherThread & ownerThread )
     : IEProxyListener   ( )
 
     , mIsConnected      ( false )
@@ -61,7 +61,7 @@ TrafficControllerClientBase::TrafficControllerClientBase( const char * roleName,
 {
 }
 
-TrafficControllerClientBase::TrafficControllerClientBase( const char* roleName, Component & owner )
+TrafficControllerClientBase::TrafficControllerClientBase( const String & roleName, Component & owner )
     : IEProxyListener   ( )
 
     , mIsConnected      ( false )
@@ -78,7 +78,7 @@ TrafficControllerClientBase::~TrafficControllerClientBase( void )
         mProxy->freeProxy( static_cast<IEProxyListener &>(self()) );
         mProxy  = nullptr;
     }
-    
+
     mIsConnected= false;
 }
 
@@ -91,11 +91,11 @@ bool TrafficControllerClientBase::recreateProxy( void )
     bool result         = false;
     if (mProxy != nullptr)
     {
-        String roleName   = mProxy->getProxyAddress().getRoleName();
-        String threadName = mProxy->getProxyAddress().getThread();
+        const String & roleName   = mProxy->getProxyAddress().getRoleName();
+        const String & threadName = mProxy->getProxyAddress().getThread();
         if ( roleName.isEmpty() == false )
         {
-            TrafficControllerProxy * newProxy = TrafficControllerProxy::createProxy(roleName.getString(), static_cast<IEProxyListener &>(self()), threadName.getString());
+            TrafficControllerProxy * newProxy = TrafficControllerProxy::createProxy(roleName, static_cast<IEProxyListener &>(self()), threadName);
             if (newProxy != nullptr)
             {
                 mProxy->clearAllNotifications( static_cast<IENotificationEventConsumer &>(self()) );
@@ -103,8 +103,9 @@ bool TrafficControllerClientBase::recreateProxy( void )
                 mProxy = newProxy;
                 result = true;
             }
-        }    
+        }
     }
+
     return result;
 }
 
@@ -117,7 +118,7 @@ DEF_TRACE_SCOPE(generated_src_TrafficControllerClientBase_serviceConnected);
 bool TrafficControllerClientBase::serviceConnected( bool isConnected, ProxyBase & proxy )
 {
     TRACE_SCOPE(generated_src_TrafficControllerClientBase_serviceConnected);
-    
+
     bool result = false;
     if(mProxy == &proxy)
     {
@@ -126,11 +127,11 @@ bool TrafficControllerClientBase::serviceConnected( bool isConnected, ProxyBase 
                  , proxy.getProxyAddress().getServiceName().getString()
                  , proxy.getProxyAddress().getRoleName().getString()
                  , isConnected ? "CONNECTED" : "DISCONNECTED");
-        
+
         mIsConnected= isConnected;
         result      = true;
     }
-    
+
     return result;
 }
 
@@ -170,7 +171,7 @@ void TrafficControllerClientBase::processNotificationEvent( NotificationEvent & 
     case NEService::eResultType::RequestInvalid:
         {
         /************************************************************************
-         * Trigger invalid response / broadcast handling. May happen when remove notification 
+         * Trigger invalid response / broadcast handling. May happen when remove notification
          ************************************************************************/
             TrafficControllerClientBase::invalidResponse(msgId);
         }
@@ -286,7 +287,7 @@ void TrafficControllerClientBase::invalidRequest( NETrafficController::eMessageI
                     , NETrafficController::getString(InvalidReqId)
                     , static_cast<unsigned int>(InvalidReqId)
                     , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString() );
-                    
+
     ASSERT(false);
 }
 
@@ -299,7 +300,7 @@ void TrafficControllerClientBase::requestFailed( NETrafficController::eMessageID
                     , static_cast<unsigned int>(FailureMsgId)
                     , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString()
                     , NEService::getString(FailureReason) );
-                    
+
     ASSERT(NETrafficController::failureFunctions == nullptr);
     invalidRequest( FailureMsgId );
 }
@@ -329,7 +330,7 @@ void TrafficControllerClientBase::onTrafficEastWestUpdate( const NETrafficContro
 /************************************************************************
  * Request failure / Response and Broadcast notifications
  ************************************************************************/
- 
+
 DEF_TRACE_SCOPE(generated_src_TrafficControllerClientBase_broadcastSouthNorth);
 void TrafficControllerClientBase::broadcastSouthNorth( NETrafficController::eVehicleTrafficLight /* LightVehicle */, NETrafficController::ePedestrianTrafficLight /* LightPedestrian */ )
 {

@@ -2,9 +2,9 @@
 // Begin generate generated/src/private/PowerManagerStub.cpp file
 //////////////////////////////////////////////////////////////////////////
 /************************************************************************
- * (c) copyright    2021
+ * (c) copyright    2022
  *
- * Generated at     30.09.2021  01:22:12 GMT+02:00 
+ * Generated at     13.08.2022  02:47:34 GMT+02:00
  *                  Create by AREG SDK code generator tool from source PowerManager.
  *
  * \file            generated/src/PowerManagerStub.hpp
@@ -20,7 +20,8 @@
 #include "generated/src/private/PowerManagerEvents.hpp"
 
 #include "areg/component/ServiceResponseEvent.hpp"
-#include "areg/base/Thread.hpp"
+#include "areg/component/Component.hpp"
+#include "areg/component/ComponentThread.hpp"
 #include "areg/trace/GETrace.h"
 
 //////////////////////////////////////////////////////////////////////////
@@ -32,7 +33,7 @@
 //////////////////////////////////////////////////////////////////////////
 PowerManagerStub::PowerManagerStub( Component & masterComp )
     : StubBase    ( masterComp, NEPowerManager::getInterfaceData() )
-    
+
     , mLightsPowerState       (  )
     , mLightsPowerStateState  ( NEService::eDataStateType::DataIsUnavailable )
     
@@ -56,9 +57,9 @@ DEF_TRACE_SCOPE(generated_src_PowerManagerStub_startupServiceInterface);
 void PowerManagerStub::startupServiceInterface( Component & holder )
 {
     TRACE_SCOPE(generated_src_PowerManagerStub_startupServiceInterface);
-    
-    PowerManagerRequestEvent::addListener( static_cast<IEEventConsumer &>(self()), Thread::getCurrentThreadName() );
-    PowerManagerNotifyRequestEvent::addListener( static_cast<IEEventConsumer &>(self()), Thread::getCurrentThreadName() );
+
+    PowerManagerRequestEvent::addListener( static_cast<IEEventConsumer &>(self()), holder.getMasterThread() );
+    PowerManagerNotifyRequestEvent::addListener( static_cast<IEEventConsumer &>(self()), holder.getMasterThread() );
     StubBase::startupServiceInterface( holder );
 
     TRACE_DBG("The Stub Service [ %s ] of component with role name [ %s ] has been started and is available ...", mAddress.getServiceName().getString(), mAddress.getRoleName().getString());
@@ -69,9 +70,9 @@ void PowerManagerStub::shutdownServiceIntrface( Component & holder )
 {
     TRACE_SCOPE(generated_src_PowerManagerStub_shutdownServiceIntrface);
     TRACE_DBG("The Stub Service [ %s ] of component with role name [ %s ] is shutting down and not available anymore ...", mAddress.getServiceName().getString(), mAddress.getRoleName().getString());
-    
-    PowerManagerRequestEvent::removeListener( static_cast<IEEventConsumer &>(self()), Thread::getCurrentThreadName() );
-    PowerManagerNotifyRequestEvent::removeListener( static_cast<IEEventConsumer &>(self()), Thread::getCurrentThreadName() );
+
+    PowerManagerRequestEvent::removeListener( static_cast<IEEventConsumer &>(self()), holder.getMasterThread() );
+    PowerManagerNotifyRequestEvent::removeListener( static_cast<IEEventConsumer &>(self()), holder.getMasterThread() );
     StubBase::shutdownServiceIntrface( holder );
 }
 
@@ -109,7 +110,7 @@ void PowerManagerStub::errorRequest( unsigned int msgId, bool msgCancel )
 {
     NEService::eResultType result = NEService::eResultType::NotProcessed;
     msg_id listenerId = msgId;
-    
+
     switch ( static_cast<NEPowerManager::eMessageIDs>(msgId) )
     {
 /************************************************************************
@@ -147,7 +148,7 @@ void PowerManagerStub::errorRequest( unsigned int msgId, bool msgCancel )
         ASSERT(false);
         break;
     }
-    
+
     StubBase::StubListenerList listeners;
     if ( findListeners(listenerId, listeners) > 0 )
     {
@@ -226,28 +227,28 @@ void PowerManagerStub::processRequestEvent( ServiceRequestEvent & eventElem )
                 requestPowerOn(  );
             }
             break;
-            
+
         case NEPowerManager::eMessageIDs::MsgId_requestPowerOff:
             if ( true )
             {
                 requestPowerOff(  );
             }
             break;
-            
+
         case NEPowerManager::eMessageIDs::MsgId_requestStartTrafficLight:
             if ( canExecuteRequest(listener, static_cast<msg_id>(respId), reqEvent->getSequenceNumber()) )
             {
                 requestStartTrafficLight(  );
             }
             break;
-            
+
         case NEPowerManager::eMessageIDs::MsgId_requestStopTrafficLight:
             if ( canExecuteRequest(listener, static_cast<msg_id>(respId), reqEvent->getSequenceNumber()) )
             {
                 requestStopTrafficLight(  );
             }
             break;
-            
+
         default:
             {
                 TRACE_SCOPE(generated_src_PowerManagerStub_processRequestEvent);

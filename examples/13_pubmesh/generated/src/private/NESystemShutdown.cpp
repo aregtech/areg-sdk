@@ -3,9 +3,9 @@
 //////////////////////////////////////////////////////////////////////////
 
 /************************************************************************
- * (c) copyright    2021
+ * (c) copyright    2022
  *
- * Generated at     30.09.2021  01:22:15 GMT+02:00 
+ * Generated at     13.08.2022  02:45:13 GMT+02:00
  *                  Create by AREG SDK code generator tool from source SystemShutdown.
  *
  * \file            generated/src/NESystemShutdown.hpp
@@ -34,7 +34,7 @@ const NEService::SInterfaceData & NESystemShutdown::getInterfaceData( void )
     /************************************************************************
      * The list of responses and broadcasts
      ************************************************************************/
-    static constexpr unsigned int _ResponseList[] 
+    static constexpr unsigned int _ResponseList[]
     {
           static_cast<unsigned int>( NESystemShutdown::eMessageIDs::MsgId_broadcastServiceUnavailable  ) // broadcastServiceUnavailable( void )
         , static_cast<unsigned int>( NESystemShutdown::eMessageIDs::MsgId_broadcastServiceShutdown     ) // broadcastServiceShutdown( void )
@@ -43,7 +43,7 @@ const NEService::SInterfaceData & NESystemShutdown::getInterfaceData( void )
     /************************************************************************
      * The list of attributes
      ************************************************************************/
-    static constexpr unsigned int _AttributeList[] 
+    static constexpr unsigned int _AttributeList[]
     {
           static_cast<unsigned int>( NESystemShutdown::eMessageIDs::MsgId_ServiceState                 ) // NESystemShutdown::eServiceState mServiceState;
     };
@@ -69,7 +69,7 @@ const NEService::SInterfaceData & NESystemShutdown::getInterfaceData( void )
         0, // void broadcastServiceShutdown( void )
 
     };
-    
+
     /************************************************************************
      * SystemShutdown Service Interface data
      ************************************************************************/
@@ -91,12 +91,12 @@ const NEService::SInterfaceData & NESystemShutdown::getInterfaceData( void )
     return _InterfaceData;
 }
 
-NESystemShutdown::eMessageIDs NESystemShutdown::getResponseId( NESystemShutdown::eMessageIDs reqId )
+NESystemShutdown::eMessageIDs NESystemShutdown::getResponseId( NESystemShutdown::eMessageIDs /* reqId */ )
 {
     return NESystemShutdown::eMessageIDs::MsgId_Invalid;
 }
 
-NESystemShutdown::eMessageIDs NESystemShutdown::getRequestId( NESystemShutdown::eMessageIDs respId )
+NESystemShutdown::eMessageIDs NESystemShutdown::getRequestId( NESystemShutdown::eMessageIDs /* respId */ )
 {
     return NESystemShutdown::eMessageIDs::MsgId_Invalid;
 }

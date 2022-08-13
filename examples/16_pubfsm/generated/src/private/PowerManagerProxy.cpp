@@ -3,9 +3,9 @@
 //////////////////////////////////////////////////////////////////////////
 
 /************************************************************************
- * (c) copyright    2021
+ * (c) copyright    2022
  *
- * Generated at     30.09.2021  01:22:12 GMT+02:00 
+ * Generated at     13.08.2022  02:47:34 GMT+02:00
  *                  Create by AREG SDK code generator tool from source PowerManager.
  *
  * \file            generated/src/private/PowerManagerProxy.hpp
@@ -127,7 +127,7 @@ void PowerManagerProxy::unregisterServiceListeners( void )
 /************************************************************************
  * Requests.
  ************************************************************************/
- 
+
 void PowerManagerProxy::requestPowerOn( void )
 {
     static const NEPowerManager::eMessageIDs msgId = NEPowerManager::eMessageIDs::MsgId_requestPowerOn;
@@ -155,7 +155,7 @@ unsigned int PowerManagerProxy::requestStopTrafficLight( IENotificationEventCons
 /************************************************************************
  * Event processing.
  ************************************************************************/
- 
+
 /************************************************************************
  * IEProxyEventConsumer interface overrides.
  ************************************************************************/
@@ -221,8 +221,8 @@ void PowerManagerProxy::updateData( PowerManagerResponseEvent & eventElem, NEPow
         break;
     }
 }
- 
-void PowerManagerProxy::processResponse( PowerManagerResponseEvent & evenElem )
+
+    void PowerManagerProxy::processResponse( PowerManagerResponseEvent & evenElem )
 {
     NEPowerManager::eMessageIDs respId  = static_cast<NEPowerManager::eMessageIDs>(evenElem.getResponseId());
     NEService::eResultType resultType  = evenElem.getResult();
@@ -248,8 +248,8 @@ void PowerManagerProxy::processResponse( PowerManagerResponseEvent & evenElem )
         {
             respId  = static_cast<NEPowerManager::eMessageIDs>( mProxyData.getResponseId(static_cast<msg_id>(respId)) );
         }
-        
-        setStates   = respId != NEPowerManager::eMessageIDs::MsgId_NotProcessed;            
+
+        setStates   = respId != NEPowerManager::eMessageIDs::MsgId_NotProcessed;
         break;
 
     case NEService::eResultType::RequestOK:     // fall through
@@ -266,16 +266,15 @@ void PowerManagerProxy::processResponse( PowerManagerResponseEvent & evenElem )
     {
         updateData(evenElem, respId);
     }
-       
+
     if (setStates == true)
     {
         setState(static_cast<msg_id>(respId), dataValid ? NEService::eDataStateType::DataIsOK : NEService::eDataStateType::DataIsInvalid);
     }
-    
+
     notifyListeners(static_cast<msg_id>(respId), resultType, evenElem.getSequenceNumber());
 }
 
 //////////////////////////////////////////////////////////////////////////
 // End generate generated/src/private/PowerManagerProxy.cpp file
 //////////////////////////////////////////////////////////////////////////
- 

@@ -3,9 +3,9 @@
 //////////////////////////////////////////////////////////////////////////
 
 /************************************************************************
- * (c) copyright    2021
+ * (c) copyright    2022
  *
- * Generated at     30.09.2021  01:22:15 GMT+02:00 
+ * Generated at     13.08.2022  02:45:13 GMT+02:00
  *                  Create by AREG SDK code generator tool from source SystemShutdown.
  *
  * \file            generated/src/private/SystemShutdownProxy.hpp
@@ -136,11 +136,11 @@ void SystemShutdownProxy::unregisterServiceListeners( void )
 /************************************************************************
  * Requests.
  ************************************************************************/
- 
+
 /************************************************************************
  * Event processing.
  ************************************************************************/
- 
+
 /************************************************************************
  * IEProxyEventConsumer interface overrides.
  ************************************************************************/
@@ -204,8 +204,8 @@ void SystemShutdownProxy::updateData( SystemShutdownResponseEvent & eventElem, N
         break;
     }
 }
- 
-void SystemShutdownProxy::processResponse( SystemShutdownResponseEvent & evenElem )
+
+    void SystemShutdownProxy::processResponse( SystemShutdownResponseEvent & evenElem )
 {
     NESystemShutdown::eMessageIDs respId  = static_cast<NESystemShutdown::eMessageIDs>(evenElem.getResponseId());
     NEService::eResultType resultType  = evenElem.getResult();
@@ -231,8 +231,8 @@ void SystemShutdownProxy::processResponse( SystemShutdownResponseEvent & evenEle
         {
             respId  = static_cast<NESystemShutdown::eMessageIDs>( mProxyData.getResponseId(static_cast<msg_id>(respId)) );
         }
-        
-        setStates   = respId != NESystemShutdown::eMessageIDs::MsgId_NotProcessed;            
+
+        setStates   = respId != NESystemShutdown::eMessageIDs::MsgId_NotProcessed;
         break;
 
     case NEService::eResultType::RequestOK:     // fall through
@@ -249,16 +249,15 @@ void SystemShutdownProxy::processResponse( SystemShutdownResponseEvent & evenEle
     {
         updateData(evenElem, respId);
     }
-       
+
     if (setStates == true)
     {
         setState(static_cast<msg_id>(respId), dataValid ? NEService::eDataStateType::DataIsOK : NEService::eDataStateType::DataIsInvalid);
     }
-    
+
     notifyListeners(static_cast<msg_id>(respId), resultType, evenElem.getSequenceNumber());
 }
 
 //////////////////////////////////////////////////////////////////////////
 // End generate generated/src/private/SystemShutdownProxy.cpp file
 //////////////////////////////////////////////////////////////////////////
- 

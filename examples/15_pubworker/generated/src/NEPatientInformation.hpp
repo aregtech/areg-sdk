@@ -1,12 +1,13 @@
 //////////////////////////////////////////////////////////////////////////
 // Begin generate generated/src/NEPatientInformation.hpp file
 //////////////////////////////////////////////////////////////////////////
-#pragma once
+#ifndef  GENERATED_SRC_NEPATIENTINFORMATION_HPP
+#define  GENERATED_SRC_NEPATIENTINFORMATION_HPP
 
 /************************************************************************
- * (c) copyright    2021
+ * (c) copyright    2022
  *
- * Generated at     30.09.2021  01:22:12 GMT+02:00 
+ * Generated at     13.08.2022  02:46:19 GMT+02:00
  *                  Create by AREG SDK code generator tool from source PatientInformation.
  *
  * \file            generated/src/NEPatientInformation.hpp
@@ -43,7 +44,7 @@
 //////////////////////////////////////////////////////////////////////////
 /**
  *
- * \brief   PatientInformation Service Interface defined constants, 
+ * \brief   PatientInformation Service Interface defined constants,
  *          types and structures message IDs, global static methods.
  *
  *          This service sends the patient information to apply connected devices.
@@ -56,15 +57,15 @@ namespace   NEPatientInformation
 // Service Interface constants
 /************************************************************************/
     /**
-     * \brief   Service Interface Name
+     * \brief   Service Interface Name.
      *          NEPatientInformation::ServiceName
      **/
-    constexpr char        ServiceName[]       { "PatientInformation" };
+    constexpr   char    ServiceName[]   { "PatientInformation" };
     /**
-     * \brief   Implemented Version
+     * \brief   Implemented Version.
      *          NEPatientInformation::InterfaceVersion
      **/
-    const Version         InterfaceVersion    = "0.1.0";
+    const       Version InterfaceVersion{ 1, 0, 0 };
 
     /**
      * \brief   The timeout in milliseconds to apply the patient information.
@@ -84,11 +85,10 @@ namespace   NEPatientInformation
      **/
     struct PatientInfo
     {
-    
     //////////////////////////////////////////////////////////////////////////
     // Constructor/ destructor
     ///////////////////////////////////////////////////////////////////////////
-        
+
         /**
          * \brief   Default constructor. Every field of structure should have default constructor.
          **/
@@ -115,43 +115,34 @@ namespace   NEPatientInformation
          * \brief   Default destructor.
          **/
         ~PatientInfo( void ) = default;
-    
+
     //////////////////////////////////////////////////////////////////////////
     // Basic operators
     ///////////////////////////////////////////////////////////////////////////
-        
+
         /**
          * \brief   Copies data from given source. Every field of structure should have copy constructor.
          * \param   src     The source of PatientInfo structure to copy data.
          **/
         inline NEPatientInformation::PatientInfo & operator = ( const NEPatientInformation::PatientInfo & src );
-        
+
         /**
          * \brief   Moves data from given source. Every field of structure should have move constructor.
          * \param   src     The source of PatientInfo structure to move data.
          **/
         inline NEPatientInformation::PatientInfo & operator = ( NEPatientInformation::PatientInfo && src ) noexcept;
-        
+
         /**
          * \brief   Checks equality and returns true if 2 instances of PatientInfo are equal
          * \param   other   The instance of PatientInfo to compare
-         * \return  Returns true if 2 instances are equal
          **/ 
         inline bool operator == ( const NEPatientInformation::PatientInfo & other ) const;
-        
+
         /**
          * \brief   Checks inequality and returns true if 2 instances of PatientInfo are not equal
          * \param   other   The instance of PatientInfo to compare
-         * \return  Returns true if 2 instances are not equal
          **/ 
         inline bool operator != ( const NEPatientInformation::PatientInfo & other ) const;
-
-        /**
-         * \brief   Converts data to unsigned int, which might be used as a hash key value in map object.
-         *          The conversion is a sum of each field of structure
-         **/
-         inline explicit operator unsigned int ( void ) const;
-
     //////////////////////////////////////////////////////////////////////////
     // PatientInfo fields
     ///////////////////////////////////////////////////////////////////////////
@@ -186,14 +177,14 @@ namespace   NEPatientInformation
     /************************************************************************
      * Request IDs
      ************************************************************************/
-     
+
     /************************************************************************
      * Response IDs
-     ************************************************************************/     
+     ************************************************************************/
     /************************************************************************
      * Broadcast IDs
      ************************************************************************/
-     
+
     /************************************************************************
      * Attributes IDs
      ************************************************************************/
@@ -201,30 +192,30 @@ namespace   NEPatientInformation
          * \brief   Attribute ID: MsgId_Patient
          *          The patient information to apply to hardware.
          **/
-          MsgId_Patient       = NEService::ATTRIBUTE_ID_FIRST   // NEPatientInformation::PatientInfo mPatient;
-     
+          MsgId_Patient       = NEService::ATTRIBUTE_ID_FIRST // NEPatientInformation::PatientInfo mPatient;
+
     /************************************************************************
      * Reserved constant IDs
      ************************************************************************/
         /**
          * \brief   ID of empty function
          **/
-        , MsgId_NotProcessed  = NEService::INVALID_MESSAGE_ID  
+        , MsgId_NotProcessed  = NEService::INVALID_MESSAGE_ID
         /**
          * \brief   ID of invalid call
          **/
-        , MsgId_Invalid       = NEService::RESPONSE_ID_NONE    
-     
+        , MsgId_Invalid       = NEService::RESPONSE_ID_NONE
+
     };
     /**
      * \brief   Returns string value of NEPatientInformation::eMessageIDs
      **/
     inline const char * getString( NEPatientInformation::eMessageIDs msgId );
-     
+
 /************************************************************************
  * Service Interface standard functions and variables
  ************************************************************************/
- 
+
     /**
      * \brief   Creates and returns Service Interface Data
      **/
@@ -344,15 +335,6 @@ inline bool NEPatientInformation::PatientInfo::operator != ( const NEPatientInfo
     }
 }
 
-inline NEPatientInformation::PatientInfo::operator unsigned int ( void ) const
-{
-    return (
-              static_cast<unsigned int>( firstName    )
-            + static_cast<unsigned int>( lastName     )
-            + static_cast<unsigned int>( weight       )
-            + static_cast<unsigned int>( age          )
-            );
-}
 
 /**
  * Encode and decode NEPatientInformation::PatientInfo structure
@@ -387,7 +369,6 @@ inline const char * NEPatientInformation::getString( NEPatientInformation::eMess
 
     case NEPatientInformation::eMessageIDs::MsgId_NotProcessed:
         return "NEPatientInformation::eMessageIDs::MsgId_NotProcessed";
-        
     case NEPatientInformation::eMessageIDs::MsgId_Invalid:
         return "NEPatientInformation::eMessageIDs::MsgId_Invalid";
     default:
@@ -399,6 +380,8 @@ inline const char * NEPatientInformation::getString( NEPatientInformation::eMess
 //////////////////////////////////////////////////////////////////////////
 // NEPatientInformation namespace declaration End
 //////////////////////////////////////////////////////////////////////////
+
+#endif  // GENERATED_SRC_NEPATIENTINFORMATION_HPP
 
 //////////////////////////////////////////////////////////////////////////
 // End generate generated/src/NEPatientInformation.hpp file

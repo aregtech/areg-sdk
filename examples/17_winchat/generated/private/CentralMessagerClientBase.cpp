@@ -4,7 +4,7 @@
 /************************************************************************
  * (c) copyright    2022
  *
- * Generated at     11.08.2022  17:55:55 GMT+02:00
+ * Generated at     13.08.2022  02:47:56 GMT+02:00
  *                  Create by AREG SDK code generator tool from source CentralMessager.
  *
  * \file            generated/CentralMessagerClientBase.hpp
@@ -45,7 +45,7 @@ namespace NECentralMessager
  * Constructor / Destructor
  ************************************************************************/
 
-CentralMessagerClientBase::CentralMessagerClientBase( const char * roleName, const char * ownerThread /*= nullptr*/ )
+CentralMessagerClientBase::CentralMessagerClientBase( const String & roleName, const String & ownerThread /* = String::EmptyString */ )
     : IEProxyListener   ( )
 
     , mIsConnected      ( false )
@@ -54,7 +54,7 @@ CentralMessagerClientBase::CentralMessagerClientBase( const char * roleName, con
 {
 }
 
-CentralMessagerClientBase::CentralMessagerClientBase( const char * roleName, DispatcherThread & ownerThread )
+CentralMessagerClientBase::CentralMessagerClientBase( const String & roleName, DispatcherThread & ownerThread )
     : IEProxyListener   ( )
 
     , mIsConnected      ( false )
@@ -63,7 +63,7 @@ CentralMessagerClientBase::CentralMessagerClientBase( const char * roleName, Dis
 {
 }
 
-CentralMessagerClientBase::CentralMessagerClientBase( const char* roleName, Component & owner )
+CentralMessagerClientBase::CentralMessagerClientBase( const String & roleName, Component & owner )
     : IEProxyListener   ( )
 
     , mIsConnected      ( false )
@@ -93,11 +93,11 @@ bool CentralMessagerClientBase::recreateProxy( void )
     bool result         = false;
     if (mProxy != nullptr)
     {
-        String roleName   = mProxy->getProxyAddress().getRoleName();
-        String threadName = mProxy->getProxyAddress().getThread();
+        const String & roleName   = mProxy->getProxyAddress().getRoleName();
+        const String & threadName = mProxy->getProxyAddress().getThread();
         if ( roleName.isEmpty() == false )
         {
-            CentralMessagerProxy * newProxy = CentralMessagerProxy::createProxy(roleName.getString(), static_cast<IEProxyListener &>(self()), threadName.getString());
+            CentralMessagerProxy * newProxy = CentralMessagerProxy::createProxy(roleName, static_cast<IEProxyListener &>(self()), threadName);
             if (newProxy != nullptr)
             {
                 mProxy->clearAllNotifications( static_cast<IENotificationEventConsumer &>(self()) );

@@ -7,7 +7,7 @@
 /************************************************************************
  * (c) copyright    2022
  *
- * Generated at     11.08.2022  17:55:55 GMT+02:00
+ * Generated at     13.08.2022  02:47:56 GMT+02:00
  *                  Create by AREG SDK code generator tool from source CentralMessager.
  *
  * \file            generated/CentralMessagerClientBase.hpp
@@ -52,13 +52,13 @@ class CentralMessagerClientBase  : public IEProxyListener
 //////////////////////////////////////////////////////////////////////////
 protected:
     /**
-     * \brief   Initialize CentralMessager Service Interface client object. 
+     * \brief   Initialize CentralMessager Service Interface client object.
      *          Specifies used service and owner thread.
      * \param   roleName    The role name assigned to CentralMessager servicing component object.
      * \param   ownerThread The name of component owner thread to dispatch messages.
      *                      If nullptr, all messages are dispatched in current component thread.
      **/
-    CentralMessagerClientBase( const char* roleName, const char * ownerThread = nullptr );
+    CentralMessagerClientBase( const String & roleName, const String & ownerThread = String::EmptyString );
 
     /**
      * \brief   Initialize CentralMessager Service Interface client object.
@@ -66,7 +66,7 @@ protected:
      * \param   roleName    The role name assigned to CentralMessager servicing component object.
      * \param   ownerThread The instance of component owner thread to dispatch messages.
      **/
-    CentralMessagerClientBase( const char* roleName, DispatcherThread & ownerThread );
+    CentralMessagerClientBase( const String & roleName, DispatcherThread & ownerThread );
 
     /**
      * \brief   Initialize CentralMessager Service Interface client object.
@@ -76,7 +76,7 @@ protected:
      * \note    When this constructor is used, it is important that the Component object is already initialized.
      *          and the component thread is set.
      **/
-    CentralMessagerClientBase( const char* roleName, Component & owner );
+    CentralMessagerClientBase( const String & roleName, Component & owner );
 
     /**
      * \brief   Destructor.
@@ -171,7 +171,7 @@ public:
     /**
      * \brief   Server broadcast.
      *          The response, sent by connection manager to notify the message typing update
-     *          Overwrite, if need to handle Broadcast call of server object. 
+     *          Overwrite, if need to handle Broadcast call of server object.
      *          This call will be automatically triggered, on every appropriate request call
      * \param   nickName    The nick name of initiator
      * \param   cookie      The cookie assigned to initiator
@@ -193,7 +193,7 @@ public:
     /**
      * \brief   Server broadcast.
      *          Sent each time when a client is typing a key
-     *          Overwrite, if need to handle Broadcast call of server object. 
+     *          Overwrite, if need to handle Broadcast call of server object.
      *          This call will be automatically triggered, on every appropriate request call
      * \param   nickName    The nick name of initiator
      * \param   cookie      Assigned cookie of initiator
@@ -214,7 +214,7 @@ public:
     /**
      * \brief   Server broadcast.
      *          Server broadcasts a message to all clients.
-     *          Overwrite, if need to handle Broadcast call of server object. 
+     *          Overwrite, if need to handle Broadcast call of server object.
      *          This call will be automatically triggered, on every appropriate request call
      * \param   serverMessage   The message sent by servicing server
      * \param   dateTime        The time-stamp of servicing component

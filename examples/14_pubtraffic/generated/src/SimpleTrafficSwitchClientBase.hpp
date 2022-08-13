@@ -1,12 +1,13 @@
 //////////////////////////////////////////////////////////////////////////
 // Begin generate generated/src/SimpleTrafficSwitchClientBase.hpp file
 //////////////////////////////////////////////////////////////////////////
-#pragma once
+#ifndef  GENERATED_SRC_SIMPLETRAFFICSWITCHCLIENTBASE_HPP
+#define  GENERATED_SRC_SIMPLETRAFFICSWITCHCLIENTBASE_HPP
 
 /************************************************************************
- * (c) copyright    2021
+ * (c) copyright    2022
  *
- * Generated at     30.09.2021  01:22:13 GMT+02:00 
+ * Generated at     13.08.2022  02:45:34 GMT+02:00
  *                  Create by AREG SDK code generator tool from source SimpleTrafficSwitch.
  *
  * \file            generated/src/SimpleTrafficSwitchClientBase.hpp
@@ -49,13 +50,13 @@ class SimpleTrafficSwitchClientBase  : public IEProxyListener
 //////////////////////////////////////////////////////////////////////////
 protected:
     /**
-     * \brief   Initialize SimpleTrafficSwitch Service Interface client object. 
+     * \brief   Initialize SimpleTrafficSwitch Service Interface client object.
      *          Specifies used service and owner thread.
      * \param   roleName    The role name assigned to SimpleTrafficSwitch servicing component object.
      * \param   ownerThread The name of component owner thread to dispatch messages.
      *                      If nullptr, all messages are dispatched in current component thread.
      **/
-    SimpleTrafficSwitchClientBase( const char* roleName, const char * ownerThread = nullptr );
+    SimpleTrafficSwitchClientBase( const String & roleName, const String & ownerThread = String::EmptyString );
 
     /**
      * \brief   Initialize SimpleTrafficSwitch Service Interface client object.
@@ -63,7 +64,7 @@ protected:
      * \param   roleName    The role name assigned to SimpleTrafficSwitch servicing component object.
      * \param   ownerThread The instance of component owner thread to dispatch messages.
      **/
-    SimpleTrafficSwitchClientBase( const char* roleName, DispatcherThread & ownerThread );
+    SimpleTrafficSwitchClientBase( const String & roleName, DispatcherThread & ownerThread );
 
     /**
      * \brief   Initialize SimpleTrafficSwitch Service Interface client object.
@@ -73,7 +74,7 @@ protected:
      * \note    When this constructor is used, it is important that the Component object is already initialized.
      *          and the component thread is set.
      **/
-    SimpleTrafficSwitchClientBase( const char* roleName, Component & owner );
+    SimpleTrafficSwitchClientBase( const String & roleName, Component & owner );
 
     /**
      * \brief   Destructor.
@@ -100,12 +101,12 @@ public:
      * \brief   Returns true if client object has got connection with servicing component
      **/
     inline bool isConnected( void ) const;
-    
+
     /**
      * \brief   Returns the name of used service.
      **/
     inline const String & getServiceName( void ) const;
-    
+
     /**
      * \brief   Returns the version of used service.
      **/
@@ -119,6 +120,7 @@ public:
 // SimpleTrafficSwitch Interface Attributes
 //////////////////////////////////////////////////////////////////////////
 public:
+
 /************************************************************************
  * Attribute IsSwitchedOn functions
  ************************************************************************/
@@ -129,18 +131,18 @@ public:
     inline bool isIsSwitchedOnValid( void ) const;
     /**
      * \brief   Returns the value of IsSwitchedOn attribute.
-     *          To get valid value, the Update Notification should be enabled. 
-     *          Attribute IsSwitchedOn description: 
+     *          To get valid value, the Update Notification should be enabled.
+     *          Attribute IsSwitchedOn description:
      *          Flag that indicates the light on/off state.
-     * \param   state   On returns, contains the validation flag of attribute data. 
+     * \param   state   On returns, contains the validation flag of attribute data.
      *                  Check validation flag before use attribute value.
      * \see     isIsSwitchedOnValid, notifyIsSwitchedOnUpdate, onIsSwitchedOnUpdate
      **/
     inline bool getIsSwitchedOn( NEService::eDataStateType & state ) const;
     /**
      * \brief   Call to enable or disable receiving notifications on IsSwitchedOn attribute update.
-     *          Once notification is enabled and the data is updated, 
-     *          the getIsSwitchedOn method will return valid data 
+     *          Once notification is enabled and the data is updated,
+     *          the getIsSwitchedOn method will return valid data
      *          Attribute IsSwitchedOn description:
      *          Flag that indicates the light on/off state.
      * \param   notify  If true, notification will be enable. If false, notification is disabled
@@ -151,13 +153,12 @@ public:
      * \brief   Triggered, when IsSwitchedOn attribute is updated. The function contains
      *          attribute value and validation flag. When notification is enabled,
      *          the method should be overwritten in derived class.
-     *          Attributes IsSwitchedOn description: 
+     *          Attributes IsSwitchedOn description:
      *          Flag that indicates the light on/off state.
      * \param   IsSwitchedOn    The value of IsSwitchedOn attribute.
      * \param   state           The data validation flag.
      **/
     virtual void onIsSwitchedOnUpdate( bool IsSwitchedOn, NEService::eDataStateType state );
-
 
 //////////////////////////////////////////////////////////////////////////
 // SimpleTrafficSwitch Interface Requests / Responses / Broadcasts
@@ -179,7 +180,7 @@ public:
      * \param   FailureReason   The failure reason value of request call.
      **/
     virtual void requestSwitchLightFailed( NEService::eResultType FailureReason );
-    
+
 //////////////////////////////////////////////////////////////////////////
 // End Service Interface operations / attributes and overrides declaration
 //////////////////////////////////////////////////////////////////////////
@@ -220,16 +221,16 @@ protected:
      * \param   InvalidReqId    The ID of invalid request
      **/
     virtual void invalidRequest( NESimpleTrafficSwitch::eMessageIDs InvalidReqId );
-    
+
 //////////////////////////////////////////////////////////////////////////
 // Attributes
 //////////////////////////////////////////////////////////////////////////
 
     /**
      * \brief   Call to recreate Proxy for the client. This call will remove and unregister all existing notifications
-     *          and the client will not receive pending update or response notifications. 
+     *          and the client will not receive pending update or response notifications.
      *          The client first will receive disconnect message, then again connect.
-     *          Reset update notifications manually in connect if need.          
+     *          Reset update notifications manually in connect if need.
      *          This function call can be used when the client instance should be registered and run in new thread.
      *
      * \return  Returns true if Proxy was created with success.
@@ -241,7 +242,7 @@ protected:
      *         The function can return nullptr if Proxy was not instantiated yet.
      **/
     DispatcherThread * getDispatcherThread( void );
-     
+
     /**
      * \brief   Returns the current sequence number
      **/
@@ -251,7 +252,7 @@ protected:
      * \brief  Returns instance of proxy object.
      */
     inline const SimpleTrafficSwitchProxy * getProxy( void ) const;
-      
+
     /**
      * \brief Returns target service component role name.
      **/
@@ -287,7 +288,7 @@ private:
      * \param   eventElem   Notification Event object to process
      **/
     virtual void processNotificationEvent( NotificationEvent & eventElem ) override;
-    
+
 /************************************************************************/
 // SimpleTrafficSwitchClientBase hidden methods
 /************************************************************************/
@@ -295,12 +296,12 @@ private:
     /**
      * \brief   Enables / Disables notification flags on appropriate message call.
      * \param   msgId   The ID of message to enable / disable notification
-     * \param   notify  If true, the notification is enabled. 
+     * \param   notify  If true, the notification is enabled.
      *                  If false, the notification is disabled.
      * \param   always  Flag, indicating whether should notify always or not.
      *                  if 'notify' parameter is true and the notification is already
      *                  assigned, then if parameter 'always' is true, it will trigger
-     *                  notification immediately after call. 
+     *                  notification immediately after call.
      **/
     void notifyOn( NESimpleTrafficSwitch::eMessageIDs msgId, bool notify, bool always = false );
     /**
@@ -320,7 +321,6 @@ private:
     /**
      * \brief   Returns reference of SimpleTrafficSwitchClientBase object
      **/
-
     inline SimpleTrafficSwitchClientBase & self( void );
 
 //////////////////////////////////////////////////////////////////////////
@@ -368,7 +368,7 @@ inline const String & SimpleTrafficSwitchClientBase::getServiceName( void ) cons
     ASSERT(mProxy != nullptr);
     return mProxy->getProxyAddress().getServiceName();
 }
-    
+
 inline const Version & SimpleTrafficSwitchClientBase::getServiceVersion( void ) const
 {
     ASSERT(mProxy != nullptr);
@@ -415,6 +415,8 @@ inline const String & SimpleTrafficSwitchClientBase::getServiceRole( void ) cons
     ASSERT(mProxy != nullptr);
     return mProxy->getProxyAddress().getRoleName();
 }
+
+#endif   // GENERATED_SRC_SIMPLETRAFFICSWITCHCLIENTBASE_HPP
 
 //////////////////////////////////////////////////////////////////////////
 // End generate generated/src/SimpleTrafficSwitchClientBase.hpp file

@@ -2,9 +2,9 @@
 // Begin generate generated/src/private/RemoteRegistryStub.cpp file
 //////////////////////////////////////////////////////////////////////////
 /************************************************************************
- * (c) copyright    2021
+ * (c) copyright    2022
  *
- * Generated at     30.09.2021  01:22:13 GMT+02:00 
+ * Generated at     13.08.2022  02:45:11 GMT+02:00
  *                  Create by AREG SDK code generator tool from source RemoteRegistry.
  *
  * \file            generated/src/RemoteRegistryStub.hpp
@@ -20,7 +20,8 @@
 #include "generated/src/private/RemoteRegistryEvents.hpp"
 
 #include "areg/component/ServiceResponseEvent.hpp"
-#include "areg/base/Thread.hpp"
+#include "areg/component/Component.hpp"
+#include "areg/component/ComponentThread.hpp"
 #include "areg/trace/GETrace.h"
 
 //////////////////////////////////////////////////////////////////////////
@@ -32,7 +33,7 @@
 //////////////////////////////////////////////////////////////////////////
 RemoteRegistryStub::RemoteRegistryStub( Component & masterComp )
     : StubBase    ( masterComp, NERemoteRegistry::getInterfaceData() )
-    
+
     , mRegistryList       (  )
     , mRegistryListState  ( NEService::eDataStateType::DataIsUnavailable )
     
@@ -59,9 +60,9 @@ DEF_TRACE_SCOPE(generated_src_RemoteRegistryStub_startupServiceInterface);
 void RemoteRegistryStub::startupServiceInterface( Component & holder )
 {
     TRACE_SCOPE(generated_src_RemoteRegistryStub_startupServiceInterface);
-    
-    RemoteRegistryRequestEvent::addListener( static_cast<IEEventConsumer &>(self()), Thread::getCurrentThreadName() );
-    RemoteRegistryNotifyRequestEvent::addListener( static_cast<IEEventConsumer &>(self()), Thread::getCurrentThreadName() );
+
+    RemoteRegistryRequestEvent::addListener( static_cast<IEEventConsumer &>(self()), holder.getMasterThread() );
+    RemoteRegistryNotifyRequestEvent::addListener( static_cast<IEEventConsumer &>(self()), holder.getMasterThread() );
     StubBase::startupServiceInterface( holder );
 
     TRACE_DBG("The Stub Service [ %s ] of component with role name [ %s ] has been started and is available ...", mAddress.getServiceName().getString(), mAddress.getRoleName().getString());
@@ -72,9 +73,9 @@ void RemoteRegistryStub::shutdownServiceIntrface( Component & holder )
 {
     TRACE_SCOPE(generated_src_RemoteRegistryStub_shutdownServiceIntrface);
     TRACE_DBG("The Stub Service [ %s ] of component with role name [ %s ] is shutting down and not available anymore ...", mAddress.getServiceName().getString(), mAddress.getRoleName().getString());
-    
-    RemoteRegistryRequestEvent::removeListener( static_cast<IEEventConsumer &>(self()), Thread::getCurrentThreadName() );
-    RemoteRegistryNotifyRequestEvent::removeListener( static_cast<IEEventConsumer &>(self()), Thread::getCurrentThreadName() );
+
+    RemoteRegistryRequestEvent::removeListener( static_cast<IEEventConsumer &>(self()), holder.getMasterThread() );
+    RemoteRegistryNotifyRequestEvent::removeListener( static_cast<IEEventConsumer &>(self()), holder.getMasterThread() );
     StubBase::shutdownServiceIntrface( holder );
 }
 
@@ -128,7 +129,7 @@ void RemoteRegistryStub::errorRequest( unsigned int msgId, bool msgCancel )
 {
     NEService::eResultType result = NEService::eResultType::NotProcessed;
     msg_id listenerId = msgId;
-    
+
     switch ( static_cast<NERemoteRegistry::eMessageIDs>(msgId) )
     {
 /************************************************************************
@@ -170,7 +171,7 @@ void RemoteRegistryStub::errorRequest( unsigned int msgId, bool msgCancel )
         ASSERT(false);
         break;
     }
-    
+
     StubBase::StubListenerList listeners;
     if ( findListeners(listenerId, listeners) > 0 )
     {
@@ -260,34 +261,34 @@ void RemoteRegistryStub::processRequestEvent( ServiceRequestEvent & eventElem )
                 ServiceAddress  service;
                 String          thread;
                 String          process;
-                stream >> name;                
-                stream >> service;                
-                stream >> thread;                
-                stream >> process;                
+                stream >> name;
+                stream >> service;
+                stream >> thread;
+                stream >> process;
                 requestRegister( name, service, thread, process );
             }
             break;
-            
+
         case NERemoteRegistry::eMessageIDs::MsgId_requestUnregister:
             if ( true )
             {
                 NERemoteRegistry::sClientRegister   client;
-                stream >> client;                
+                stream >> client;
                 requestUnregister( client );
             }
             break;
-            
+
         case NERemoteRegistry::eMessageIDs::MsgId_requestHelloWorld:
             if ( canExecuteRequest(listener, static_cast<msg_id>(respId), reqEvent->getSequenceNumber()) )
             {
                 unsigned int    clientID;
                 String          addMessage;
-                stream >> clientID;                
-                stream >> addMessage;                
+                stream >> clientID;
+                stream >> addMessage;
                 requestHelloWorld( clientID, addMessage );
             }
             break;
-            
+
         default:
             {
                 TRACE_SCOPE(generated_src_RemoteRegistryStub_processRequestEvent);

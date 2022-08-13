@@ -4,7 +4,7 @@
 /************************************************************************
  * (c) copyright    2022
  *
- * Generated at     11.08.2022  17:55:57 GMT+02:00
+ * Generated at     13.08.2022  02:47:59 GMT+02:00
  *                  Create by AREG SDK code generator tool from source DirectConnection.
  *
  * \file            generated/DirectConnectionClientBase.hpp
@@ -47,7 +47,7 @@ namespace NEDirectConnection
  * Constructor / Destructor
  ************************************************************************/
 
-DirectConnectionClientBase::DirectConnectionClientBase( const char * roleName, const char * ownerThread /*= nullptr*/ )
+DirectConnectionClientBase::DirectConnectionClientBase( const String & roleName, const String & ownerThread /* = String::EmptyString */ )
     : IEProxyListener   ( )
 
     , mIsConnected      ( false )
@@ -56,7 +56,7 @@ DirectConnectionClientBase::DirectConnectionClientBase( const char * roleName, c
 {
 }
 
-DirectConnectionClientBase::DirectConnectionClientBase( const char * roleName, DispatcherThread & ownerThread )
+DirectConnectionClientBase::DirectConnectionClientBase( const String & roleName, DispatcherThread & ownerThread )
     : IEProxyListener   ( )
 
     , mIsConnected      ( false )
@@ -65,7 +65,7 @@ DirectConnectionClientBase::DirectConnectionClientBase( const char * roleName, D
 {
 }
 
-DirectConnectionClientBase::DirectConnectionClientBase( const char* roleName, Component & owner )
+DirectConnectionClientBase::DirectConnectionClientBase( const String & roleName, Component & owner )
     : IEProxyListener   ( )
 
     , mIsConnected      ( false )
@@ -95,11 +95,11 @@ bool DirectConnectionClientBase::recreateProxy( void )
     bool result         = false;
     if (mProxy != nullptr)
     {
-        String roleName   = mProxy->getProxyAddress().getRoleName();
-        String threadName = mProxy->getProxyAddress().getThread();
+        const String & roleName   = mProxy->getProxyAddress().getRoleName();
+        const String & threadName = mProxy->getProxyAddress().getThread();
         if ( roleName.isEmpty() == false )
         {
-            DirectConnectionProxy * newProxy = DirectConnectionProxy::createProxy(roleName.getString(), static_cast<IEProxyListener &>(self()), threadName.getString());
+            DirectConnectionProxy * newProxy = DirectConnectionProxy::createProxy(roleName, static_cast<IEProxyListener &>(self()), threadName);
             if (newProxy != nullptr)
             {
                 mProxy->clearAllNotifications( static_cast<IENotificationEventConsumer &>(self()) );
