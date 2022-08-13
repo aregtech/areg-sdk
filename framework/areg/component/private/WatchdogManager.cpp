@@ -22,9 +22,6 @@
 
 #include "areg/trace/GETrace.h"
 
-DEF_TRACE_SCOPE(areg_component_private_WatchdogManager_startTimer);
-DEF_TRACE_SCOPE(areg_component_private_WatchdogManager_processEvent);
-DEF_TRACE_SCOPE(areg_component_private_WatchdogManager__registerWatchdog);
 DEF_TRACE_SCOPE(areg_component_private_WatchdogManager__processExpiredTimers);
 
 //////////////////////////////////////////////////////////////////////////
@@ -58,25 +55,16 @@ bool WatchdogManager::isWatchdogManagerStarted(void)
 
 bool WatchdogManager::startTimer(Watchdog& watchdog)
 {
-    TRACE_SCOPE(areg_component_private_WatchdogManager_startTimer);
-
     bool result = false;
     ASSERT(watchdog.getHandle() != nullptr);
     WatchdogManager& watchdogManager = getInstance();
 
     if (watchdogManager.isWatchdogManagerStarted())
     {
-        if (watchdogManager._registerWatchdog(watchdog))
-        {
-            TRACE_DBG("Registered timer [ %s ], sending event to start timer", watchdog.getName().getString());
-            result = TimerManagerEvent::sendEvent( TimerManagerEventData(&watchdog)
-                                                 , static_cast<IETimerManagerEventConsumer&>(watchdogManager)
-                                                 , static_cast<DispatcherThread&>(watchdogManager));
-        }
-    }
-    else
-    {
-        TRACE_ERR("The Timer manager service is not running, cannot start and process the timer.");
+        watchdogManager._registerWatchdog(watchdog);
+        result = TimerManagerEvent::sendEvent( TimerManagerEventData(&watchdog)
+                                             , static_cast<IETimerManagerEventConsumer&>(watchdogManager)
+                                             , static_cast<DispatcherThread&>(watchdogManager));
     }
 
     return result;
@@ -108,21 +96,12 @@ WatchdogManager::~WatchdogManager(void)
 // Methods
 //////////////////////////////////////////////////////////////////////////
 
-bool WatchdogManager::_registerWatchdog(Watchdog & watchdog)
+inline void WatchdogManager::_registerWatchdog(Watchdog & watchdog)
 {
-    bool result{ false };
-    if (watchdog.getHandle() != nullptr)
-    {
-        TRACE_SCOPE(areg_component_private_WatchdogManager__registerWatchdog);
-        mWatchdogResource.registerResourceObject(watchdog.getId(), &watchdog);
-        TRACE_DBG("Registered watchdog [ %s ]", watchdog.getName().getString());
-        result = true;
-    }
-
-    return result;
+    mWatchdogResource.registerResourceObject(watchdog.getId(), &watchdog);
 }
 
-void WatchdogManager::_unregisterWatchdog(Watchdog& watchdog)
+inline void WatchdogManager::_unregisterWatchdog(Watchdog& watchdog)
 {
     mWatchdogResource.unregisterResourceObject(watchdog.getId());
     WatchdogManager::_systemTimerStop(watchdog.getHandle());
@@ -145,11 +124,12 @@ void WatchdogManager::_removeAllWatchdogs(void)
 
 void WatchdogManager::processEvent(const TimerManagerEventData & data)
 {
-    TRACE_SCOPE(areg_component_private_WatchdogManager_processEvent);
     Watchdog* watchdog = static_cast<Watchdog*>(data.getTimer());
-    ASSERT((watchdog != nullptr) && mWatchdogResource.existResource(watchdog->getId()));
-    TRACE_DBG("Starting timer [ %s ] with timeout [ %u ] ms.", watchdog->getName().getString(), watchdog->getTimeout());
-    WatchdogManager::_systemTimerStart(*watchdog);
+    ASSERT(watchdog != nullptr);
+    if (mWatchdogResource.existResource(watchdog->getId()))
+    {
+        WatchdogManager::_systemTimerStart(*watchdog);
+    }
 }
 
 void WatchdogManager::_processExpiredTimer(Watchdog* whatchdog, Watchdog::WATCHDOG_ID watchdogId, uint32_t hiBytes, uint32_t loBytes)

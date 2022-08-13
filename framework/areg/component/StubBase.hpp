@@ -230,7 +230,12 @@ public:
     /**
      * \brief   Returns the address of Stub object.
      **/
-    const StubAddress & getAddress( void ) const;
+    inline const StubAddress & getAddress( void ) const;
+
+    /**
+     * \brief   Returns the name of the implemented service.
+     **/
+    inline const String & getServiceName( void ) const;
 
     /**
      * \brief   Sends error event to all pending responses and notification updates
@@ -789,6 +794,16 @@ inline StubBase::Listener& StubBase::Listener::operator = ( StubBase::Listener &
 inline StubBase & StubBase::self( void )
 {
     return (*this);
+}
+
+inline const StubAddress& StubBase::getAddress(void) const
+{
+    return mAddress;
+}
+
+inline const String& StubBase::getServiceName(void) const
+{
+    return mAddress.getServiceName();
 }
 
 #endif  // AREG_COMPONENT_STUBBASE_HPP

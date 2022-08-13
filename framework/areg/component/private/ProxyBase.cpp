@@ -408,17 +408,21 @@ void ProxyBase::serviceConnectionUpdated( const StubAddress & server, const Chan
 
         for (index = 0 ; index < conListeners.getSize(); ++ index)
         {
-            IEProxyListener * listener = static_cast<IEProxyListener *>(conListeners[index].mListener);
+            ProxyBase::Listener& listener = conListeners[index];
+            IEProxyListener * consumer = static_cast<IEProxyListener *>(listener.mListener);
             if (mIsConnected)
             {
-                mListConnect.addIfUnique(listener);
+                if (mListConnect.addIfUnique(consumer))
+                {
+                    consumer->serviceConnected(true, *this);
+                }
             }
             else
             {
-                mListConnect.removeElem(listener, 0);
+                mListConnect.removeElem(consumer, 0);
+                consumer->serviceConnected(false, *this);
+                mListenerList.addIfUnique(listener);
             }
-
-            listener->serviceConnected(mIsConnected, *this);
         }
     }
 }

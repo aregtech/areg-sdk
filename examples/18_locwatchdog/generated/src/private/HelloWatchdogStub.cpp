@@ -20,7 +20,8 @@
 #include "generated/src/private/HelloWatchdogEvents.hpp"
 
 #include "areg/component/ServiceResponseEvent.hpp"
-#include "areg/base/Thread.hpp"
+#include "areg/component/Component.hpp"
+#include "areg/component/ComponentThread.hpp"
 #include "areg/trace/GETrace.h"
 
 //////////////////////////////////////////////////////////////////////////
@@ -57,8 +58,8 @@ void HelloWatchdogStub::startupServiceInterface( Component & holder )
 {
     TRACE_SCOPE(generated_src_HelloWatchdogStub_startupServiceInterface);
 
-    HelloWatchdogRequestEvent::addListener( static_cast<IEEventConsumer &>(self()), Thread::getCurrentThreadName() );
-    HelloWatchdogNotifyRequestEvent::addListener( static_cast<IEEventConsumer &>(self()), Thread::getCurrentThreadName() );
+    HelloWatchdogRequestEvent::addListener( static_cast<IEEventConsumer &>(self()), holder.getMasterThread());
+    HelloWatchdogNotifyRequestEvent::addListener( static_cast<IEEventConsumer &>(self()), holder.getMasterThread());
     StubBase::startupServiceInterface( holder );
 
     TRACE_DBG("The Stub Service [ %s ] of component with role name [ %s ] has been started and is available ...", mAddress.getServiceName().getString(), mAddress.getRoleName().getString());
@@ -70,8 +71,8 @@ void HelloWatchdogStub::shutdownServiceIntrface( Component & holder )
     TRACE_SCOPE(generated_src_HelloWatchdogStub_shutdownServiceIntrface);
     TRACE_DBG("The Stub Service [ %s ] of component with role name [ %s ] is shutting down and not available anymore ...", mAddress.getServiceName().getString(), mAddress.getRoleName().getString());
 
-    HelloWatchdogRequestEvent::removeListener( static_cast<IEEventConsumer &>(self()), Thread::getCurrentThreadName() );
-    HelloWatchdogNotifyRequestEvent::removeListener( static_cast<IEEventConsumer &>(self()), Thread::getCurrentThreadName() );
+    HelloWatchdogRequestEvent::removeListener( static_cast<IEEventConsumer &>(self()), holder.getMasterThread());
+    HelloWatchdogNotifyRequestEvent::removeListener( static_cast<IEEventConsumer &>(self()), holder.getMasterThread());
     StubBase::shutdownServiceIntrface( holder );
 }
 

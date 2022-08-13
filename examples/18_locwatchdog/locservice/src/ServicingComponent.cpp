@@ -34,12 +34,15 @@ ServicingComponent::ServicingComponent(const NERegistry::ComponentEntry & entry,
     : Component         ( owner, entry.mRoleName)
     , HelloWatchdogStub ( static_cast<Component &>(self()) )
 {
-
 }
 
 void ServicingComponent::startupServiceInterface( Component & holder )
 {
     TRACE_SCOPE(examples_18_locwatchdog_ServicingComponent_startupServiceInterface);
+    printf("-------------------------------------\n");
+    printf("Start service [ %s ] with role [ %s ]\n", HelloWatchdogStub::getServiceName().getString(), getRoleName().getString());
+
+    HelloWatchdogStub::startupServiceInterface(holder);
     setServiceState(NEHelloWatchdog::eState::Initialized);
 }
 
@@ -48,7 +51,7 @@ void ServicingComponent::requestStartSleep( unsigned int timeoutSleep )
     TRACE_SCOPE(examples_18_locwatchdog_ServicingComponent_requestStartSleep);
 
     TRACE_DBG("Received request to sleep [ %u ] ms, the watchdog timeout is [ %u ]", timeoutSleep, NEHelloWatchdog::TimeoutWatchdog);
-    printf("Hello Watchdog!!! Sleep [ %u ] ms, watchdog timeout [ %u ]", timeoutSleep, NEHelloWatchdog::TimeoutWatchdog);
+    printf("Hello Watchdog!!! Sleep [ %u ] ms, watchdog timeout [ %u ]\n", timeoutSleep, NEHelloWatchdog::TimeoutWatchdog);
 
     setServiceState( NEHelloWatchdog::eState::Started );
 

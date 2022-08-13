@@ -87,11 +87,6 @@ StubBase::~StubBase( void )
     _mapRegisteredStubs.unregisterResourceObject(mAddress);
 }
 
-const StubAddress & StubBase::getAddress( void ) const
-{
-    return mAddress;
-}
-
 bool StubBase::isBusy( unsigned int requestId ) const
 {
     bool result = false;
@@ -122,8 +117,10 @@ SessionID StubBase::unblockCurrentRequest( void )
 void StubBase::prepareResponse( SessionID sessionId )
 {
     StubBase::Listener listener;
-    if ( mMapSessions.removeAt(sessionId, listener) )
+    if (mMapSessions.removeAt(sessionId, listener))
+    {
         mListListener.pushFirst(listener);
+    }
 }
 
 void StubBase::prepareRequest( Listener & listener, unsigned int seqNr, unsigned int responseId )
@@ -286,14 +283,20 @@ void StubBase::errorAllRequests( void )
     ASSERT(respIds != nullptr || numOfResp == 0);
     ASSERT(reqIds  != nullptr || numOfReqs == 0);
 
-    for ( i = 0; i < numOfAttr; ++ i )
+    for (i = 0; i < numOfAttr; ++i)
+    {
         errorRequest(attrIds[i], false);
+    }
 
-    for ( i = 0; i < numOfResp; ++ i )
+    for (i = 0; i < numOfResp; ++i)
+    {
         errorRequest(respIds[i], false);
+    }
 
-    for ( i = 0; i < numOfReqs; ++ i )
-        errorRequest( reqIds[i], false);
+    for (i = 0; i < numOfReqs; ++i)
+    {
+        errorRequest(reqIds[i], false);
+    }
 }
 
 void StubBase::cancelAllRequests( void )
@@ -301,7 +304,9 @@ void StubBase::cancelAllRequests( void )
     const unsigned int numOfReqs= getNumberOfRequests();
     const unsigned int* reqIds  = getRequestIds();
     for ( unsigned int i = 0; i < numOfReqs; ++ i )
-        errorRequest( reqIds[i], true);
+    {
+        errorRequest( reqIds[i], true );
+    }
 }
 
 void StubBase::invalidateAttribute( unsigned int attrId )

@@ -47,7 +47,7 @@ bool ServiceClient::serviceConnected(bool isConnected, ProxyBase & proxy)
     TRACE_DBG("Client [ %s ] of [ %s ] service is [ %s ]"
                 , proxy.getProxyAddress().getRoleName().getString()
                 , proxy.getProxyAddress().getServiceName().getString()
-                , isConnected ? "connected to" : "disconnected from");
+                , isConnected ? "connected" : "disconnected");
 
     if (isConnected)
     {
@@ -63,6 +63,7 @@ bool ServiceClient::serviceConnected(bool isConnected, ProxyBase & proxy)
         else
         {
             TRACE_DBG("Reached maximum number of service restarts, exit application");
+            printf("Reached maximum number of service restarts, exit application ...\n");
             Application::signalAppQuit();
         }
     }

@@ -21,7 +21,8 @@
     #pragma comment(lib, "10_generated.lib")
 #endif // WINDOWS
 
-constexpr char const _modelName[] { "TestModel" };  //!< The name of model
+constexpr char const _modelName[]   { "TestModel" };            //!< The name of model
+constexpr char const _roleName[]    { "TestServiceComponent" }; //!< Service role name
 
 //////////////////////////////////////////////////////////////////////////
 //
@@ -37,11 +38,11 @@ BEGIN_MODEL(_modelName)
     // define component thread
     BEGIN_REGISTER_THREAD( "TestServiceThread", NECommon::INVALID_TIMEOUT)
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
-        BEGIN_REGISTER_COMPONENT( "TestServiceComponent", ServicingComponent )
+        BEGIN_REGISTER_COMPONENT(_roleName, ServicingComponent )
             // register HelloWorld service implementation.
             REGISTER_IMPLEMENT_SERVICE( NEHelloWorld::ServiceName, NEHelloWorld::InterfaceVersion )
         // end of component description
-        END_REGISTER_COMPONENT( "TestServiceComponent" )
+        END_REGISTER_COMPONENT(_roleName)
     // end of thread description
     END_REGISTER_THREAD( "TestServiceThread" )
 
@@ -57,7 +58,7 @@ BEGIN_MODEL(_modelName)
         BEGIN_REGISTER_COMPONENT( "TestServiceClient", ServiceClient )
             REGISTER_DEPENDENCY( "TestServiceComponent" )
         // end of component description
-        END_REGISTER_COMPONENT( "TestDummyComponent" )
+        END_REGISTER_COMPONENT( "TestServiceClient" )
     // end of thread description
     END_REGISTER_THREAD( "TestClientThread" )
 

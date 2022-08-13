@@ -52,7 +52,7 @@ bool ServiceClient::serviceConnected(bool isConnected, ProxyBase & proxy)
     TRACE_DBG("Client [ %s ] of [ %s ] service is [ %s ]"
                 , proxy.getProxyAddress().getRoleName().getString()
                 , proxy.getProxyAddress().getServiceName().getString()
-                , isConnected ? "connected to" : "disconnected from");
+                , isConnected ? "connected" : "disconnected");
 
     if (isConnected)
     {

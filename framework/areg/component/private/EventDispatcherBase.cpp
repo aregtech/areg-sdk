@@ -315,6 +315,7 @@ Event* EventDispatcherBase::pickEvent( void )
 {
     return mExternaEvents.popEvent();
 }
+
 bool EventDispatcherBase::prepareDispatchEvent( Event* eventElem )
 {
     return (eventElem != nullptr);

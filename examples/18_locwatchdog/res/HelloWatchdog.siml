@@ -48,7 +48,7 @@ This service will demonstrate how the system watchdog works.</Description>
     </MethodList>
     <ConstantList>
         <Constant DataType="uint32" ID="34" Name="TimeoutWatchdog">
-            <Value>5000</Value>
+            <Value>1000</Value>
             <Description>The timeout of the watchdog</Description>
         </Constant>
         <Constant DataType="uint32" ID="35" Name="TimeoutStep">

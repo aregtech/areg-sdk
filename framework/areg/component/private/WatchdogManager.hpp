@@ -169,15 +169,14 @@ private:
     /**
      * \brief   Creates system timer for watchdog and registers it in the resource map.
      * \param   watchdog       The Watchdog object that should be registered.
-     * \return  Returns true if succeeded to register Watchdog in the map.
      **/
-    bool _registerWatchdog( Watchdog & watchdog);
+    inline void _registerWatchdog( Watchdog & watchdog);
 
     /**
      * \brief   Stop watchdog timer and unregister from the resource map.
      * \param   watchdog   The instance of watchdog object to unregister.
      **/
-    void _unregisterWatchdog( Watchdog & Watchdog );
+    inline void _unregisterWatchdog( Watchdog & Watchdog );
 
 //////////////////////////////////////////////////////////////////////////
 //  Operating system specific methods

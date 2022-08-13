@@ -71,7 +71,7 @@ namespace   NEHelloWatchdog
      * \brief   The timeout of the watchdog
      *          NEHelloWatchdog::TimeoutWatchdog
      **/
-    constexpr unsigned int    TimeoutWatchdog     = 5000;
+    constexpr unsigned int    TimeoutWatchdog     = 1000;
 
     /**
      * \brief   The step to increase sleep timeout.
