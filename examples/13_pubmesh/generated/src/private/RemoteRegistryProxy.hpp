@@ -7,7 +7,7 @@
 /************************************************************************
  * (c) copyright    2022
  *
- * Generated at     13.08.2022  02:45:11 GMT+02:00
+ * Generated at     13.08.2022  13:59:48 GMT+02:00
  *                  Create by AREG SDK code generator tool from source RemoteRegistry.
  *
  * \file            generated/src/private/RemoteRegistryProxy.hpp
@@ -193,7 +193,7 @@ public:
      * \see     responseRegister
      **/
     unsigned int requestRegister( IENotificationEventConsumer & caller, const String & name, const ServiceAddress & service, const String & thread, const String & process );
-    
+
     /**
      * \brief   Request call.
      *          Sent to unregister connected client.
@@ -204,15 +204,14 @@ public:
 
     /**
      * \brief   Request call.
-     *          Outputs message on console. If additional message is not empty, outputs the additional message as well.
+     *          Outputs message on console.
      * \param   caller      The reference of caller object to get response.
-     * \param   clientID    The ID of registered client to make message output
-     * \param   addMessage  The additional message to output. Ignored if empty.
+     * \param   clientID    The ID of registered client to make message output.
      * \return  The sequence count number of call
      * \see     responseHelloWorld
      **/
-    unsigned int requestHelloWorld( IENotificationEventConsumer & caller, unsigned int clientID, const String & addMessage );
-    
+    unsigned int requestHelloWorld( IENotificationEventConsumer & caller, unsigned int clientID );
+
 //////////////////////////////////////////////////////////////////////////
 // Operations.
 //////////////////////////////////////////////////////////////////////////

@@ -162,7 +162,7 @@ void RemoteServiceClient::processTimer(Timer & timer)
     NEService::eDataStateType dataState = NEService::eDataStateType::DataIsInvalid;
     if ( (getServiceState(dataState) == NESystemShutdown::eServiceState::ServiceReady) && (dataState == NEService::eDataStateType::DataIsOK))
     {
-        requestHelloWorld(mClient.crID, "REMOTE");
+        requestHelloWorld(mClient.crID);
     }
     else
     {

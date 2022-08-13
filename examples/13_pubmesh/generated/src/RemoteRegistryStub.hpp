@@ -7,7 +7,7 @@
 /************************************************************************
  * (c) copyright    2022
  *
- * Generated at     13.08.2022  02:45:11 GMT+02:00
+ * Generated at     13.08.2022  13:59:48 GMT+02:00
  *                  Create by AREG SDK code generator tool from source RemoteRegistry.
  *
  * \file            generated/src/RemoteRegistryStub.hpp
@@ -171,12 +171,11 @@ public:
 
     /**
      * \brief   Request call.
-     *          Outputs message on console. If additional message is not empty, outputs the additional message as well.
-     * \param   clientID    The ID of registered client to make message output
-     * \param   addMessage  The additional message to output. Ignored if empty.
+     *          Outputs message on console.
+     * \param   clientID    The ID of registered client to make message output.
      * \see     responseHelloWorld
      **/
-    virtual void requestHelloWorld( unsigned int clientID, const String & addMessage ) = 0;
+    virtual void requestHelloWorld( unsigned int clientID ) = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // RemoteRegistry Interface Responses

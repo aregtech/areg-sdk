@@ -78,7 +78,7 @@ int main()
         Application::loadModel(_modelName);
 
         TRACE_DBG("Servicing model is loaded");
-        
+
         // wait until Application quit signal is set.
         Application::waitAppQuit(NECommon::WAIT_INFINITE);
 
@@ -89,7 +89,7 @@ int main()
         Application::releaseApplication();
 
     } while (false);
-    
+
     printf("Completed testing remote servicing client, check the logs...\n");
 
 	return 0;

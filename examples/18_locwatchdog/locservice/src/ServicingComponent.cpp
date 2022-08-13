@@ -51,7 +51,7 @@ void ServicingComponent::requestStartSleep( unsigned int timeoutSleep )
     TRACE_SCOPE(examples_18_locwatchdog_ServicingComponent_requestStartSleep);
 
     TRACE_DBG("Received request to sleep [ %u ] ms, the watchdog timeout is [ %u ]", timeoutSleep, NEHelloWatchdog::TimeoutWatchdog);
-    printf("Hello Watchdog!!! Sleep [ %u ] ms, watchdog timeout [ %u ]\n", timeoutSleep, NEHelloWatchdog::TimeoutWatchdog);
+    printf("Hello Watchdog! Sleep [ %u ] ms, watchdog timeout [ %u ]\n", timeoutSleep, NEHelloWatchdog::TimeoutWatchdog);
 
     setServiceState( NEHelloWatchdog::eState::Started );
 

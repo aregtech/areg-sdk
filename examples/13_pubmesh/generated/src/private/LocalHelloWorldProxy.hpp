@@ -7,7 +7,7 @@
 /************************************************************************
  * (c) copyright    2022
  *
- * Generated at     13.08.2022  02:45:10 GMT+02:00
+ * Generated at     13.08.2022  13:59:46 GMT+02:00
  *                  Create by AREG SDK code generator tool from source LocalHelloWorld.
  *
  * \file            generated/src/private/LocalHelloWorldProxy.hpp
@@ -176,13 +176,11 @@ public:
      *          Request to print hello world
      * \param   caller      The reference of caller object to get response.
      * \param   roleName    The role name of client component that requested to print hello world
-     * \param   addMessage  Additional message to output. Can be empty.
-     *          Has default value: ""
      * \return  The sequence count number of call
      * \see     responseHelloWorld
      **/
-    unsigned int requestHelloWorld( IENotificationEventConsumer & caller, const String & roleName, const String & addMessage = "" );
-    
+    unsigned int requestHelloWorld( IENotificationEventConsumer & caller, const String & roleName );
+
 //////////////////////////////////////////////////////////////////////////
 // Operations.
 //////////////////////////////////////////////////////////////////////////

@@ -106,7 +106,7 @@ int main()
         Application::loadModel(_modelName);
 
         TRACE_DBG("Servicing model is loaded");
-        
+
         // wait until 'gExit' event is signaled
         Application::waitAppQuit(NECommon::WAIT_INFINITE);
 
@@ -117,7 +117,7 @@ int main()
         Application::releaseApplication();
 
     } while (false);
-    
+
     printf("Completed testing multiple empty servicing components, check logs...\n");
 
 	return 0;

@@ -4,7 +4,7 @@
 /************************************************************************
  * (c) copyright    2022
  *
- * Generated at     13.08.2022  02:45:11 GMT+02:00
+ * Generated at     13.08.2022  13:59:48 GMT+02:00
  *                  Create by AREG SDK code generator tool from source RemoteRegistry.
  *
  * \file            generated/src/RemoteRegistryStub.hpp
@@ -282,10 +282,8 @@ void RemoteRegistryStub::processRequestEvent( ServiceRequestEvent & eventElem )
             if ( canExecuteRequest(listener, static_cast<msg_id>(respId), reqEvent->getSequenceNumber()) )
             {
                 unsigned int    clientID;
-                String          addMessage;
                 stream >> clientID;
-                stream >> addMessage;
-                requestHelloWorld( clientID, addMessage );
+                requestHelloWorld( clientID );
             }
             break;
 

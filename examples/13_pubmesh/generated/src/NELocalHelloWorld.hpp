@@ -7,7 +7,7 @@
 /************************************************************************
  * (c) copyright    2022
  *
- * Generated at     13.08.2022  02:45:10 GMT+02:00
+ * Generated at     13.08.2022  13:59:46 GMT+02:00
  *                  Create by AREG SDK code generator tool from source LocalHelloWorld.
  *
  * \file            generated/src/NELocalHelloWorld.hpp
@@ -182,7 +182,7 @@ namespace   NELocalHelloWorld
          * \brief   Request ID: MsgId_requestHelloWorld
          *          Request to print hello world
          **/
-          MsgId_requestHelloWorld     = NEService::REQUEST_ID_FIRST   // void requestHelloWorld( const String & roleName, const String & addMessage = "" );
+          MsgId_requestHelloWorld     = NEService::REQUEST_ID_FIRST   // void requestHelloWorld( const String & roleName );
 
     /************************************************************************
      * Response IDs

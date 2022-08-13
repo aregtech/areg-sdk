@@ -7,7 +7,7 @@
 /************************************************************************
  * (c) copyright    2022
  *
- * Generated at     13.08.2022  02:44:38 GMT+02:00
+ * Generated at     13.08.2022  13:39:07 GMT+02:00
  *                  Create by AREG SDK code generator tool from source HelloWorld.
  *
  * \file            generated/src/HelloWorldClientBase.hpp
@@ -210,12 +210,10 @@ public:
      * \brief   Request call.
      *          Request to print hello world
      * \param   roleName    The role name of client component that requested to print hello world
-     * \param   addMessage  Additional message to output. Can be empty.
-     *          Has default value: ""
      * \return  The sequence count number of call
      * \see     responseHelloWorld
      **/
-    inline unsigned int requestHelloWorld( const String & roleName, const String & addMessage = "" );
+    inline unsigned int requestHelloWorld( const String & roleName );
     /**
      * \brief   Overwrite to handle error of HelloWorld request call.
      * \param   FailureReason   The failure reason value of request call.
@@ -283,7 +281,7 @@ public:
  ************************************************************************/
     /**
      * \brief   Server broadcast.
-     *          DESCRIPTION MISSED
+     *          Triggered when the service is unavailable.
      *          Overwrite, if need to handle Broadcast call of server object.
      *          This call will be automatically triggered, on every appropriate request call
      **/
@@ -530,10 +528,10 @@ inline void HelloWorldClientBase::notifyOnRemainOutputUpdate( bool notify /* = t
  * Request calls
  ************************************************************************/
 
-inline unsigned int HelloWorldClientBase::requestHelloWorld( const String & roleName, const String & addMessage/* = "" */ )
+inline unsigned int HelloWorldClientBase::requestHelloWorld( const String & roleName )
 {
     ASSERT(mProxy != nullptr);
-    return mProxy->requestHelloWorld( static_cast<IENotificationEventConsumer &>(self()), roleName, addMessage );
+    return mProxy->requestHelloWorld( static_cast<IENotificationEventConsumer &>(self()), roleName );
 }
 
 inline void HelloWorldClientBase::requestClientShutdown( unsigned int clientID, const String & roleName )

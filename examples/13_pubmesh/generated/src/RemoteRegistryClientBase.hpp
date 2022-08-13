@@ -7,7 +7,7 @@
 /************************************************************************
  * (c) copyright    2022
  *
- * Generated at     13.08.2022  02:45:11 GMT+02:00
+ * Generated at     13.08.2022  13:59:48 GMT+02:00
  *                  Create by AREG SDK code generator tool from source RemoteRegistry.
  *
  * \file            generated/src/RemoteRegistryClientBase.hpp
@@ -248,13 +248,12 @@ public:
  ************************************************************************/
     /**
      * \brief   Request call.
-     *          Outputs message on console. If additional message is not empty, outputs the additional message as well.
-     * \param   clientID    The ID of registered client to make message output
-     * \param   addMessage  The additional message to output. Ignored if empty.
+     *          Outputs message on console.
+     * \param   clientID    The ID of registered client to make message output.
      * \return  The sequence count number of call
      * \see     responseHelloWorld
      **/
-    inline unsigned int requestHelloWorld( unsigned int clientID, const String & addMessage );
+    inline unsigned int requestHelloWorld( unsigned int clientID );
     /**
      * \brief   Overwrite to handle error of HelloWorld request call.
      * \param   FailureReason   The failure reason value of request call.
@@ -547,10 +546,10 @@ inline void RemoteRegistryClientBase::requestUnregister( const NERemoteRegistry:
     mProxy->requestUnregister( client );
 }
 
-inline unsigned int RemoteRegistryClientBase::requestHelloWorld( unsigned int clientID, const String & addMessage )
+inline unsigned int RemoteRegistryClientBase::requestHelloWorld( unsigned int clientID )
 {
     ASSERT(mProxy != nullptr);
-    return mProxy->requestHelloWorld( static_cast<IENotificationEventConsumer &>(self()), clientID, addMessage );
+    return mProxy->requestHelloWorld( static_cast<IENotificationEventConsumer &>(self()), clientID );
 }
 
 /************************************************************************

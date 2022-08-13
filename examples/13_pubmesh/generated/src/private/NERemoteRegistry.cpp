@@ -5,7 +5,7 @@
 /************************************************************************
  * (c) copyright    2022
  *
- * Generated at     13.08.2022  02:45:11 GMT+02:00
+ * Generated at     13.08.2022  13:59:48 GMT+02:00
  *                  Create by AREG SDK code generator tool from source RemoteRegistry.
  *
  * \file            generated/src/NERemoteRegistry.hpp
@@ -33,7 +33,7 @@ const NEService::SInterfaceData & NERemoteRegistry::getInterfaceData( void )
     {
           static_cast<unsigned int>( NERemoteRegistry::eMessageIDs::MsgId_requestRegister     ) // requestRegister( const String & name, const ServiceAddress & service, const String & thread, const String & process )
         , static_cast<unsigned int>( NERemoteRegistry::eMessageIDs::MsgId_requestUnregister   ) // requestUnregister( const NERemoteRegistry::sClientRegister & client )
-        , static_cast<unsigned int>( NERemoteRegistry::eMessageIDs::MsgId_requestHelloWorld   ) // requestHelloWorld( unsigned int clientID, const String & addMessage )
+        , static_cast<unsigned int>( NERemoteRegistry::eMessageIDs::MsgId_requestHelloWorld   ) // requestHelloWorld( unsigned int clientID )
     };
 
     /************************************************************************
@@ -61,7 +61,7 @@ const NEService::SInterfaceData & NERemoteRegistry::getInterfaceData( void )
     {
           static_cast<unsigned int>( NERemoteRegistry::eMessageIDs::MsgId_responseRegister    ) // requestRegister( const String & name, const ServiceAddress & service, const String & thread, const String & process )
         , static_cast<unsigned int>( NERemoteRegistry::eMessageIDs::MsgId_NotProcessed        ) // requestUnregister( const NERemoteRegistry::sClientRegister & client )
-        , static_cast<unsigned int>( NERemoteRegistry::eMessageIDs::MsgId_responseHelloWorld  ) // requestHelloWorld( unsigned int clientID, const String & addMessage )
+        , static_cast<unsigned int>( NERemoteRegistry::eMessageIDs::MsgId_responseHelloWorld  ) // requestHelloWorld( unsigned int clientID )
     };
 
     /************************************************************************

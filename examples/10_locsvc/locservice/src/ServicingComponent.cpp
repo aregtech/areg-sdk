@@ -49,7 +49,7 @@ void ServicingComponent::startupServiceInterface( Component & holder )
     setRemainOutput(NEHelloWorld::MaxMessages);
 }
 
-void ServicingComponent::requestHelloWorld(const String & roleName, const String & addMessage /*= "" */)
+void ServicingComponent::requestHelloWorld(const String & roleName)
 {
     TRACE_SCOPE(examples_10_locservice_ServicingComponent_requestHelloWorld);
 
@@ -73,7 +73,7 @@ void ServicingComponent::requestHelloWorld(const String & roleName, const String
     {
         cl.ccID     = ++ mGnerateID;
         cl.ccName   = roleName;
-        
+
         TRACE_INFO("Registered new client component [ %s ] with ID [ %u ]", cl.ccName.getString(), cl.ccID);
 
         list.pushLast(cl);
@@ -104,11 +104,7 @@ void ServicingComponent::requestHelloWorld(const String & roleName, const String
         TRACE_WARN("Still making output of queued requests to print Hello World.");
     }
 
-    printf("Client [ %s ] says \"!!!Hello World!!!\". Remain [ %d ].\n", roleName.getString(), outputs - 1);
-    if (addMessage.isEmpty() == false)
-    {
-        printf("\t>>> The additional message: %s.\n", addMessage.getString());
-    }
+    printf("\"Hello client [ %s ]!\", remain [ %d ].\n", roleName.getString(), outputs - 1);
 }
 
 void ServicingComponent::requestClientShutdown(unsigned int clientID, const String & roleName)

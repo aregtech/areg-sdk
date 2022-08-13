@@ -56,7 +56,7 @@ public:
 // Constructor / destructor
 //////////////////////////////////////////////////////////////////////////
 protected:
-    
+
     /**
      * \brief   Instantiates the component object.
      * \param   entry   The entry of registry, which describes the component.
@@ -78,11 +78,9 @@ protected:
      * \brief   Request call.
      *          Request to print hello world
      * \param   roleName    The role name of client component that requested to print hello world
-     * \param   addMessage  Additional message to output. Can be empty.
-     *          Has default value: ""
      * \see     responseHelloWorld
      **/
-    virtual void requestHelloWorld( const String & roleName, const String & addMessage = "" ) override;
+    virtual void requestHelloWorld( const String & roleName ) override;
 
     /**
      * \brief   Request call.

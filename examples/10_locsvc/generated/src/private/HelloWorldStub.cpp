@@ -4,7 +4,7 @@
 /************************************************************************
  * (c) copyright    2022
  *
- * Generated at     13.08.2022  02:43:40 GMT+02:00
+ * Generated at     13.08.2022  12:57:45 GMT+02:00
  *                  Create by AREG SDK code generator tool from source HelloWorld.
  *
  * \file            generated/src/HelloWorldStub.hpp
@@ -254,10 +254,8 @@ void HelloWorldStub::processRequestEvent( ServiceRequestEvent & eventElem )
             if ( canExecuteRequest(listener, static_cast<msg_id>(respId), reqEvent->getSequenceNumber()) )
             {
                 String  roleName;
-                String  addMessage  = "";
                 stream >> roleName;
-                stream >> addMessage;
-                requestHelloWorld( roleName, addMessage );
+                requestHelloWorld( roleName );
             }
             break;
 

@@ -7,7 +7,7 @@
 /************************************************************************
  * (c) copyright    2022
  *
- * Generated at     13.08.2022  02:45:11 GMT+02:00
+ * Generated at     13.08.2022  13:59:48 GMT+02:00
  *                  Create by AREG SDK code generator tool from source RemoteRegistry.
  *
  * \file            generated/src/NERemoteRegistry.hpp
@@ -205,9 +205,9 @@ namespace   NERemoteRegistry
         , MsgId_requestUnregister                                       // void requestUnregister( const NERemoteRegistry::sClientRegister & client );
         /**
          * \brief   Request ID: MsgId_requestHelloWorld
-         *          Outputs message on console. If additional message is not empty, outputs the additional message as well.
+         *          Outputs message on console.
          **/
-        , MsgId_requestHelloWorld                                       // void requestHelloWorld( unsigned int clientID, const String & addMessage );
+        , MsgId_requestHelloWorld                                       // void requestHelloWorld( unsigned int clientID );
 
     /************************************************************************
      * Response IDs

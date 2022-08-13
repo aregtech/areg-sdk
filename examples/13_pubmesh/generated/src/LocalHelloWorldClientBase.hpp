@@ -7,7 +7,7 @@
 /************************************************************************
  * (c) copyright    2022
  *
- * Generated at     13.08.2022  02:45:10 GMT+02:00
+ * Generated at     13.08.2022  13:59:46 GMT+02:00
  *                  Create by AREG SDK code generator tool from source LocalHelloWorld.
  *
  * \file            generated/src/LocalHelloWorldClientBase.hpp
@@ -212,12 +212,10 @@ public:
      * \brief   Request call.
      *          Request to print hello world
      * \param   roleName    The role name of client component that requested to print hello world
-     * \param   addMessage  Additional message to output. Can be empty.
-     *          Has default value: ""
      * \return  The sequence count number of call
      * \see     responseHelloWorld
      **/
-    inline unsigned int requestHelloWorld( const String & roleName, const String & addMessage = "" );
+    inline unsigned int requestHelloWorld( const String & roleName );
     /**
      * \brief   Overwrite to handle error of HelloWorld request call.
      * \param   FailureReason   The failure reason value of request call.
@@ -478,10 +476,10 @@ inline void LocalHelloWorldClientBase::notifyOnRemainOutputUpdate( bool notify /
  * Request calls
  ************************************************************************/
 
-inline unsigned int LocalHelloWorldClientBase::requestHelloWorld( const String & roleName, const String & addMessage/* = "" */ )
+inline unsigned int LocalHelloWorldClientBase::requestHelloWorld( const String & roleName )
 {
     ASSERT(mProxy != nullptr);
-    return mProxy->requestHelloWorld( static_cast<IENotificationEventConsumer &>(self()), roleName, addMessage );
+    return mProxy->requestHelloWorld( static_cast<IENotificationEventConsumer &>(self()), roleName );
 }
 
 /************************************************************************

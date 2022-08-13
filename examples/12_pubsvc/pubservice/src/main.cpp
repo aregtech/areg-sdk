@@ -57,7 +57,7 @@ DEF_TRACE_SCOPE(example_12_pubservice_main_main);
  **/
 int main()
 {
-    printf("Testing simple remote servicing component. Run as a ultra-small Server...\n");
+    printf("Testing simple remote servicing, run as a ultra-small Server...\n");
 
     // force to start logging with default settings
     TRACER_CONFIGURE_AND_START( nullptr );
@@ -74,7 +74,7 @@ int main()
         Application::loadModel(_modelName);
 
         TRACE_DBG("Servicing model is loaded");
-        
+
         // wait until Application quit signal is set.
         Application::waitAppQuit(NECommon::WAIT_INFINITE);
 
@@ -85,7 +85,7 @@ int main()
         Application::releaseApplication();
 
     } while (false);
-    
+
     printf("Completed testing simple remote servicing component. Check the logs...\n");
 
 	return 0;

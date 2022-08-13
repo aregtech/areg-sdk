@@ -6,14 +6,14 @@
 // Description : The application that instantiates multiple instances of the
 //               same service and clients in different threads.The definition
 //               of servicing components, service provider or service client
-//               are done in modeling that are loaded on application start 
+//               are done in modeling that are loaded on application start
 //               and unload when exit.
 //
 //               One of the components is marked as 'main' and the application
 //               runs as long, until the main component does not trigger 'quit'
 //               event to stop application and release the resources.Similar to
-//               previous project, it has request, response, broadcast and 
-//               subscription services features dynamically subscribe and 
+//               previous project, it has request, response, broadcast and
+//               subscription services features dynamically subscribe and
 //               unsubscribe to data update messages during run-time.
 //============================================================================
 
@@ -61,7 +61,7 @@ BEGIN_MODEL(_modelName)
     // Use of service component in the other thread.
     //
     //////////////////////////////////////////////////////////////////////////
-    
+
     BEGIN_REGISTER_THREAD( "Test_SecondaryThread", NECommon::INVALID_TIMEOUT)
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
         BEGIN_REGISTER_COMPONENT( "Test_SecondaryComponent", SecondaryComponent )
@@ -109,13 +109,13 @@ DEF_TRACE_SCOPE(example_11_locsvcmesh_main_main);
  **/
 int main()
 {
-    printf("Testing multiple local servicing components of the same service interface running with different names in different threads...\n");
+    printf("Testing multiple local servicing components running in different threads...\n");
     // force to start logging with default settings
     TRACER_CONFIGURE_AND_START( nullptr );
     // Initialize application, enable logging, servicing, timer and watchdog.
     Application::initApplication(true, true, false, true, true, nullptr, nullptr );
 
-    do 
+    do
     {
         TRACE_SCOPE(example_11_locsvcmesh_main_main);
         TRACE_DBG("The application has been initialized, loading model [ %s ]", _modelName);
@@ -127,7 +127,7 @@ int main()
         Application::loadModel(_modelName);
 
         TRACE_DBG("Servicing model is loaded");
-        
+
         // wait until Application quit signal is set.
         Application::waitAppQuit(NECommon::WAIT_INFINITE);
 
@@ -138,7 +138,7 @@ int main()
         Application::releaseApplication();
 
     } while (false);
-    
+
     printf("Completed testing multiple local servicing components, check the logs...\n");
 
 	return 0;

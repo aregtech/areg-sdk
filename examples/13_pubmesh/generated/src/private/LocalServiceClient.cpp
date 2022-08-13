@@ -79,7 +79,7 @@ void LocalServiceClient::responseHelloWorld(const NELocalHelloWorld::sConnectedC
 {
     TRACE_SCOPE(examples_13_pubmesh_generated_LocalServiceClient_responseHelloWorld);
     TRACE_DBG("Service [ %s ]: Made output of [ %s ], client ID [ %d ]", LocalHelloWorldClientBase::getServiceRole().getString(), clientInfo.ccName.getString(), clientInfo.ccID);
-    
+
     ASSERT(clientInfo.ccName == mTimer.getName());
     mID = clientInfo.ccID;
 }
@@ -92,7 +92,7 @@ void LocalServiceClient::processTimer(Timer & timer)
     TRACE_DBG("Timer [ %s ] expired, send request to output message.", timer.getName().getString());
     if (timer.isActive())
     {
-        requestHelloWorld(timer.getName(), "");
+        requestHelloWorld(timer.getName());
     }
 }
 
@@ -104,6 +104,6 @@ inline String LocalServiceClient::timerName( Component & owner ) const
           .append(LocalHelloWorldClientBase::getServiceRole())
           .append(NECommon::DEFAULT_SPECIAL_CHAR)
           .append(LocalHelloWorldClientBase::getServiceName());
-    
+
     return result;
 }

@@ -7,7 +7,7 @@
 /************************************************************************
  * (c) copyright    2022
  *
- * Generated at     13.08.2022  02:44:13 GMT+02:00
+ * Generated at     13.08.2022  13:08:11 GMT+02:00
  *                  Create by AREG SDK code generator tool from source HelloWorld.
  *
  * \file            generated/src/NEHelloWorld.hpp
@@ -180,7 +180,7 @@ namespace   NEHelloWorld
          * \brief   Request ID: MsgId_requestHelloWorld
          *          Request to print hello world
          **/
-          MsgId_requestHelloWorld             = NEService::REQUEST_ID_FIRST   // void requestHelloWorld( const String & roleName, const String & addMessage = "" );
+          MsgId_requestHelloWorld             = NEService::REQUEST_ID_FIRST   // void requestHelloWorld( const String & roleName );
         /**
          * \brief   Request ID: MsgId_requestClientShutdown
          *          Sent by client to notify the shutdown. This removes client from the list. This request has no response.
@@ -205,7 +205,7 @@ namespace   NEHelloWorld
         , MsgId_broadcastHelloClients                                           // void broadcastHelloClients( const NEHelloWorld::ConnectionList & clientList );
         /**
          * \brief   Broadcast ID: MsgId_broadcastServiceUnavailable
-         *          DESCRIPTION MISSED
+         *          Triggered when the service is unavailable.
          **/
         , MsgId_broadcastServiceUnavailable                                     // void broadcastServiceUnavailable( void );
 

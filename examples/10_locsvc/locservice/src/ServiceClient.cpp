@@ -117,5 +117,5 @@ void ServiceClient::processTimer(Timer & timer)
     ASSERT(&timer == &mTimer);
 
     TRACE_DBG("Timer [ %s ] expired, send request to output message.", timer.getName().getString());
-    requestHelloWorld(getRoleName(), "");
+    requestHelloWorld(getRoleName());
 }

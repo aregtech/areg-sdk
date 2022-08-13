@@ -7,7 +7,7 @@
 /************************************************************************
  * (c) copyright    2022
  *
- * Generated at     13.08.2022  02:44:13 GMT+02:00
+ * Generated at     13.08.2022  13:08:11 GMT+02:00
  *                  Create by AREG SDK code generator tool from source HelloWorld.
  *
  * \file            generated/src/HelloWorldStub.hpp
@@ -150,11 +150,9 @@ public:
      * \brief   Request call.
      *          Request to print hello world
      * \param   roleName    The role name of client component that requested to print hello world
-     * \param   addMessage  Additional message to output. Can be empty.
-     *          Has default value: ""
      * \see     responseHelloWorld
      **/
-    virtual void requestHelloWorld( const String & roleName, const String & addMessage = "" ) = 0;
+    virtual void requestHelloWorld( const String & roleName ) = 0;
 
     /**
      * \brief   Request call.
@@ -192,7 +190,7 @@ public:
 
     /**
      * \brief   Broadcast call.
-     *          DESCRIPTION MISSED
+     *          Triggered when the service is unavailable.
      **/
     virtual void broadcastServiceUnavailable( void );
 

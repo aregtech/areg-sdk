@@ -35,14 +35,14 @@ private:
 // Constructor / destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    
+
     /**
      * \brief   Instantiates the component object.
      * \param   entry   The entry of registry, which describes the component.
      * \param   owner   The component owning thread.
      **/
     ServiceClient( const String & roleName, Component & owner );
-    
+
     /**
      * \brief   Destructor
      **/
@@ -54,7 +54,7 @@ protected:
      * \brief   Triggered, when ConnectedClients attribute is updated. The function contains
      *          attribute value and validation flag. When notification is enabled,
      *          the method should be overwritten in derived class.
-     *          Attributes ConnectedClients description: 
+     *          Attributes ConnectedClients description:
      *          The list of connected clients. Updated each time when new client requests to output Hello World message.
      * \param   ConnectedClients    The value of ConnectedClients attribute.
      * \param   state               The data validation flag.
@@ -65,7 +65,7 @@ protected:
      * \brief   Triggered, when RemainOutput attribute is updated. The function contains
      *          attribute value and validation flag. When notification is enabled,
      *          the method should be overwritten in derived class.
-     *          Attributes RemainOutput description: 
+     *          Attributes RemainOutput description:
      *          Remaining number of outputs to print Hello World.
      * \param   RemainOutput    The value of RemainOutput attribute.
      * \param   state           The data validation flag.
@@ -75,7 +75,7 @@ protected:
     /**
      * \brief   Response callback.
      *          The response to hello world request.
-     *          Overwrite, if need to handle Response call of server object. 
+     *          Overwrite, if need to handle Response call of server object.
      *          This call will be automatically triggered, on every appropriate request call
      * \param   clientInfo  The client information set by servicing component. If empty or invalid ID, the message output failed.
      * \see     requestHelloWorld
@@ -85,16 +85,16 @@ protected:
     /**
      * \brief   Server broadcast.
      *          Broadcast to notify all clients about connection
-     *          Overwrite, if need to handle Broadcast call of server object. 
+     *          Overwrite, if need to handle Broadcast call of server object.
      *          This call will be automatically triggered, on every appropriate request call
-     * \param   clientList  DESCRIPTION MISSED
+     * \param   clientList  List of currently active clients.
      **/
     virtual void broadcastHelloClients( const NEHelloWorld::ConnectionList & clientList ) override;
 
     /**
      * \brief   Server broadcast.
-     *          DESCRIPTION MISSED
-     *          Overwrite, if need to handle Broadcast call of server object. 
+     *          Triggered when the service is unavailable.
+     *          Overwrite, if need to handle Broadcast call of server object.
      *          This call will be automatically triggered, on every appropriate request call
      **/
     virtual void broadcastServiceUnavailable( void ) override;
@@ -110,7 +110,7 @@ protected:
      * \param   FailureReason   The failure reason value of request call.
      **/
     virtual void requestClientShutdownFailed( NEService::eResultType FailureReason ) override;
-    
+
 /************************************************************************/
 // IEProxyListener Overrides
 /************************************************************************/
@@ -139,7 +139,7 @@ protected:
 /************************************************************************/
 
     /**
-     * \brief   Triggered when Timer is expired. 
+     * \brief   Triggered when Timer is expired.
      *          The passed Timer parameter is indicating object, which has been expired.
      *          Overwrite method to receive messages.
      * \param   timer   The timer object that is expired.

@@ -76,10 +76,9 @@ protected:
      * \brief   Request call.
      *          Outputs message on console. If additional message is not empty, outputs the additional message as well.
      * \param   clientID    The ID of registered client to make message output
-     * \param   addMessage  The additional message to output. Ignored if empty.
      * \see     responseHelloWorld
      **/
-    virtual void requestHelloWorld( unsigned int clientID, const String & addMessage ) override;
+    virtual void requestHelloWorld( unsigned int clientID ) override;
 
 /************************************************************************/
 // StubBase overrides. Triggered by Component on startup.

@@ -132,7 +132,7 @@ void ServiceClient::processTimer(Timer & timer)
     ASSERT(&timer == &mTimer);
 
     TRACE_DBG("Timer [ %s ] expired, send request to output message.", timer.getName().getString());
-    requestHelloWorld(timer.getName(), "");
+    requestHelloWorld(timer.getName());
 }
 
 inline String ServiceClient::timerName( Component & owner ) const
@@ -143,6 +143,6 @@ inline String ServiceClient::timerName( Component & owner ) const
           .append(getServiceRole())
           .append(NECommon::DEFAULT_SPECIAL_CHAR)
           .append(getServiceName());
-    
+
     return result;
 }

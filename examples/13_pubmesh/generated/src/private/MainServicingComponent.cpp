@@ -63,12 +63,12 @@ void MainServicingComponent::requestRegister(const String & name, const ServiceA
     }
 }
 
-void MainServicingComponent::requestHelloWorld(unsigned int clientID, const String & addMessage)
+void MainServicingComponent::requestHelloWorld(unsigned int clientID)
 {
     TRACE_SCOPE(examples_13_pubmesh_generated_MainServicingComponent_requestHelloWorld);
     if (getServiceState() == NESystemShutdown::eServiceState::ServiceReady)
     {
-        RemoteServicingComponent::requestHelloWorld(clientID, addMessage);
+        RemoteServicingComponent::requestHelloWorld(clientID);
 
         if (getRemainOutputs() == 0)
         {

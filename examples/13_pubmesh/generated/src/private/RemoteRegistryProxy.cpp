@@ -5,7 +5,7 @@
 /************************************************************************
  * (c) copyright    2022
  *
- * Generated at     13.08.2022  02:45:11 GMT+02:00
+ * Generated at     13.08.2022  13:59:48 GMT+02:00
  *                  Create by AREG SDK code generator tool from source RemoteRegistry.
  *
  * \file            generated/src/private/RemoteRegistryProxy.hpp
@@ -161,13 +161,12 @@ void RemoteRegistryProxy::requestUnregister( const NERemoteRegistry::sClientRegi
     stream << client;
     sendRequestEvent( static_cast<unsigned int>(msgId), args, nullptr );
 }
-unsigned int RemoteRegistryProxy::requestHelloWorld( IENotificationEventConsumer & caller, unsigned int clientID, const String & addMessage )
+unsigned int RemoteRegistryProxy::requestHelloWorld( IENotificationEventConsumer & caller, unsigned int clientID )
 {
     static const NERemoteRegistry::eMessageIDs msgId = NERemoteRegistry::eMessageIDs::MsgId_requestHelloWorld;
     EventDataStream args(EventDataStream::eEventData::EventDataExternal);
     IEOutStream & stream = args.getStreamForWrite();
     stream << clientID;
-    stream << addMessage;
     sendRequestEvent( static_cast<unsigned int>(msgId), args, &caller );
     return mSequenceCount;
 }

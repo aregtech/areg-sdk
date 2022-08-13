@@ -104,7 +104,7 @@ void RemoteServicingComponent::requestUnregister( const NERemoteRegistry::sClien
     }
 }
 
-void RemoteServicingComponent::requestHelloWorld( unsigned int clientID, const String & addMessage )
+void RemoteServicingComponent::requestHelloWorld( unsigned int clientID )
 {
     TRACE_SCOPE(examples_13_pubmesh_generated_RemoteServicingComponent_requestHelloWorld);
 
@@ -122,20 +122,13 @@ void RemoteServicingComponent::requestHelloWorld( unsigned int clientID, const S
     if ( list.isValidPosition(pos))
     {
         unsigned int outputs   = getRemainOutputs();
-        printf(">>> REMOTE client [ %s ]:\n", list.valueAtPosition(pos).crName.getString());
-        printf("    Says: \"!Hello World!\". Remain [ %d ].\n", outputs);
-        if (addMessage.isEmpty() == false)
-        {
-            printf("\t>>> The additional message: %s.\n", addMessage.getString());
-        }
-
+        printf("\"Hello REMOTE [ %s ]!\" Remain [ %d ]\n", list.valueAtPosition(pos).crName.getString(), outputs );
         setRemainOutputs(-- outputs);
-
         responseHelloWorld(clientID);
     }
     else
     {
-        printf("ERROR... ignoring output message!");
+        printf("ERROR... ignoring output message!\n");
         responseHelloWorld(0);
     }
 }

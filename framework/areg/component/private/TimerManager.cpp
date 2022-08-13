@@ -8,7 +8,7 @@
  *
  * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/component/private/TimerManager.cpp
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
+ * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit
  * \author      Artak Avetyan
  * \brief       AREG Platform, The System Timer Manager.
  *              Controlling, triggering and stopping timer.
@@ -171,9 +171,16 @@ void TimerManager::processEvent( const TimerManagerEventData & data )
 {
     TRACE_SCOPE(areg_component_private_TimerManager_processEvent);
     Timer* timer = static_cast<Timer*>(data.getTimer());
-    ASSERT((timer != nullptr) && mTimerResource.existResource(timer->getHandle()));
-    TRACE_DBG("Starting timer [ %s ] with timeout [ %u ] ms.", timer->getName().getString(), timer->getTimeout());
-    TimerManager::_systemTimerStart(*timer);
+    ASSERT(timer != nullptr);
+    if ( mTimerResource.existResource(timer->getHandle( )) )
+    {
+        TRACE_DBG( "Starting timer [ %s ] with timeout [ %u ] ms.", timer->getName( ).getString( ), timer->getTimeout( ) );
+        TimerManager::_systemTimerStart( *timer );
+    }
+    else
+    {
+        TRACE_WARN("The timer [ %s ] is not registered, ignoring to start.", timer->getName().getString());
+    }
 }
 
 void TimerManager::_processExpiredTimer(Timer * timer, TIMERHANDLE handle, uint32_t hiBytes, uint32_t loBytes)

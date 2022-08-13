@@ -46,7 +46,7 @@ void ServicingComponent::startupServiceInterface( Component & holder )
     setRemainOutput(NEHelloWorld::MaxMessages);
 }
 
-void ServicingComponent::requestHelloWorld(const String & roleName, const String & addMessage /*= "" */)
+void ServicingComponent::requestHelloWorld(const String & roleName)
 {
     TRACE_SCOPE(examples_11_locsvcmesh_ServicingComponent_requestHelloWorld);
 
@@ -70,7 +70,7 @@ void ServicingComponent::requestHelloWorld(const String & roleName, const String
     {
         cl.ccID     = ++ mGnerateID;
         cl.ccName   = roleName;
-        
+
         TRACE_INFO("Component [ %s ] got new client [ %s ] with ID [ %u ]", getRoleName().getString(), cl.ccName.getString(), cl.ccID);
 
         list.pushLast(cl);
@@ -106,10 +106,13 @@ void ServicingComponent::requestHelloWorld(const String & roleName, const String
         TRACE_WARN("<< Component [ %s ] reached maximum message numbers, but still makes output. >>", getRoleName().getString());
     }
 
-    printf("Client [ %s ] says \"!!!Hello World!!!\". Remain [ %d ].\n", roleName.getString(), outputs - 1);
-    if (addMessage.isEmpty() == false)
+    if ( outputs > 0)
     {
-        printf("\t>>> The additional message: %s.\n", addMessage.getString());
+        printf( "\"Hello [ %s ]!\", [ %d ].\n", roleName.getString( ), outputs - 1 );
+    }
+    else
+    {
+        printf("Client [ %s ] completed, waiting...\n", roleName.getString( ) );
     }
 }
 

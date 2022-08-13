@@ -86,13 +86,10 @@ Before using services, the clients should be registered.</Description>
             </ParamList>
         </Method>
         <Method ID="30" MethodType="request" Name="HelloWorld" Response="HelloWorld">
-            <Description>Outputs message on console. If additional message is not empty, outputs the additional message as well.</Description>
+            <Description>Outputs message on console.</Description>
             <ParamList>
                 <Parameter DataType="uint32" ID="31" Name="clientID">
-                    <Description>The ID of registered client to make message output</Description>
-                </Parameter>
-                <Parameter DataType="String" ID="32" Name="addMessage">
-                    <Description>The additional message to output. Ignored if empty.</Description>
+                    <Description>The ID of registered client to make message output.</Description>
                 </Parameter>
             </ParamList>
         </Method>

@@ -3,9 +3,9 @@
 // Author      : Artak Avetyan
 // Version     :
 // Copyright   : Aregtech (c) 2021
-// Description : The application that instantiates a simple service with 
-//               request, response, broadcast and subscription servicing 
-//               features, where clients can dynamically subscribe and 
+// Description : The application that instantiates a simple service with
+//               request, response, broadcast and subscription servicing
+//               features, where clients can dynamically subscribe and
 //               unsubscribe to data update messages during run-time.
 //============================================================================
 
@@ -75,7 +75,7 @@ DEF_TRACE_SCOPE(main_main);
  **/
 int main()
 {
-    printf("Testing simple local servicing components running as a server and as a client...\n");
+    printf("Testing Watchdog on local services\n");
     // force to start logging with default settings
     TRACER_CONFIGURE_AND_START( nullptr );
     // Initialize application, enable logging, servicing, timer and watchdog.
@@ -102,7 +102,7 @@ int main()
 
     } while (false);
 
-    printf("Completed testing servicing component with watchdog timeout...\n");
+    printf("Completed testing watchdog with timeout...\n");
 
 	return 0;
 }
