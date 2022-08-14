@@ -8,6 +8,6 @@
 include $(18_locwatchdog_BASE)/generated/Makefile
 include $(18_locwatchdog_BASE)/locservice/Makefile
 
-18_locwatchdog: $(AREG_OUTPUT_BIN)/$(18_locwatchdoge_TARGET_BIN)
+18_locwatchdog: $(AREG_OUTPUT_BIN)/$(18_locservice_TARGET_BIN)
 
 .PHONY: 18_locwatchdog
