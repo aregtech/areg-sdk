@@ -8,7 +8,7 @@
  *
  * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/component/private/posix/TimerPosix.cpp
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
+ * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit
  * \author      Artak Avetyan
  * \brief       AREG Platform, POSIX specific timer information
  *
@@ -85,7 +85,7 @@ bool TimerPosix::startTimer( TimerBase & context, id_type contextId )
 bool TimerPosix::pauseTimer(void)
 {
 	SpinAutolockIX lock(mLock);
-    
+
     if ( _isStarted() )
     {
         _stopTimer();

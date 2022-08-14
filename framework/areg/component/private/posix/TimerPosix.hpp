@@ -54,7 +54,7 @@ class TimerPosix
 // Constructors / Destructor.
 //////////////////////////////////////////////////////////////////////////
 public:
-    
+
     /**
      * \brief   Initializes the POSIX timer object. Sets context, timeout and period.
      * \param   context         The timer context to set. If this value is nullptr, the timer is invalid
@@ -67,7 +67,7 @@ public:
      *                          or endless until it is not stopped (value TIMER_PERIOD_ENDLESS).
      **/
     TimerPosix( void );
-    
+
     /**
      * \brief   Destructor.
      **/

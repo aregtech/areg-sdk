@@ -126,7 +126,7 @@ bool Timer::startTimer(unsigned int timeoutInMs, DispatcherThread & whichThread,
     }
 }
 
-bool Timer::timerIsExpired(unsigned int highValue, unsigned int lowValue, ptr_type context)
+bool Timer::timerIsExpired(unsigned int highValue, unsigned int lowValue, ptr_type /*context*/ )
 {
     Lock lock(mLock);
 
@@ -152,7 +152,7 @@ bool Timer::timerIsExpired(unsigned int highValue, unsigned int lowValue, ptr_ty
 }
 
 
-void Timer::timerStarting(unsigned int highValue, unsigned int lowValue, ptr_type context)
+void Timer::timerStarting(unsigned int highValue, unsigned int lowValue, ptr_type /*context*/)
 {
     mStartedAt = MACRO_MAKE_64(highValue, lowValue);
     mExpiredAt = 0;

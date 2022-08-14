@@ -8,7 +8,7 @@
  *
  * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/component/private/TimerManagerWin.cpp
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
+ * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit
  * \author      Artak Avetyan
  * \brief       AREG Platform, The System Timer Manager.
  *              Controlling, triggering and stopping timer.
@@ -51,7 +51,7 @@ bool TimerManager::_systemTimerStart( Timer & timer )
 
     FILETIME fileTime;
     ::GetSystemTimeAsFileTime( &fileTime );
-    timer.timerStarting( fileTime.dwHighDateTime, fileTime.dwLowDateTime, timer.getContextId() );
+    timer.timerStarting( fileTime.dwHighDateTime, fileTime.dwLowDateTime, reinterpret_cast<ptr_type>(timer.getHandle()) );
 
     if ( ::SetWaitableTimer( timer.getHandle()
                            , &timeTrigger

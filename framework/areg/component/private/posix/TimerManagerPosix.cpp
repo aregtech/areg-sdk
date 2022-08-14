@@ -52,6 +52,10 @@ bool TimerManager::_systemTimerStart( Timer & timer )
     TimerPosix * posixTimer   = reinterpret_cast<TimerPosix *>(timer.getHandle());
     ASSERT(posixTimer != nullptr);
 
+    struct timespec startTime;
+    clock_gettime( CLOCK_REALTIME, &startTime );
+    timer.timerStarting(startTime.tv_sec, startTime.tv_nsec, reinterpret_cast<ptr_type>(posixTimer));
+
     if (posixTimer->startTimer(timer, 0, &TimerManager::_defaultPosixTimerExpiredRoutine))
     {
         result = true;
