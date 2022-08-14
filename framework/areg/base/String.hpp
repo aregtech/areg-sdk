@@ -153,7 +153,6 @@ public:
     inline String & operator = (const wchar_t * src );
     inline String & operator = (const wchar_t src );
     inline String & operator = (String && src) noexcept;
-    inline String & operator = (std::string && src) noexcept;
     String & operator = ( const WideString & src );
 
     /**
@@ -725,12 +724,6 @@ inline String& String::operator = (const char* src)
 inline String& String::operator = (String&& src) noexcept
 {
     Base::operator = (std::move(src));
-    return (*this);
-}
-
-inline String& String::operator = (std::string&& src) noexcept
-{
-    Base::mData = std::move(src);
     return (*this);
 }
 

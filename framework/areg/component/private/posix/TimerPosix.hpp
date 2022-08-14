@@ -118,26 +118,20 @@ public:
      *          the Timer object are zero, the timer is created, but not started.
      *          This function creates a timer to handle in a separate thread.
      * \param   context     The timer object that contains timeout and period information.
+     * \param   contextId   The timer context ID to set.
      * \param   funcTimer   Pointer to the timer handling function triggered when timer expires.
      * \return  Returns true if timer is created and started with success.
      **/
-    bool startTimer( TimerBase & context, FuncPosixTimerRoutine funcTimer );
+    bool startTimer( TimerBase & context, id_type contextId, FuncPosixTimerRoutine funcTimer );
 
     /**
      * \brief   Starts initialized timer if the timeout and the period values are not zero.
      *          The timer should be initialized before calling this method.
      * \param   context     The timer object that contains timeout and period information.
+     * \param   contextId   The timer context ID to set.
      * \return  Returns true if timer is started with success.
-     */
-    bool startTimer( TimerBase & context );
-
-    /**
-     * \brief   Starts the timer that was initialized. This function ignores starting timer
-     *          if either it was not initialized, or timeout is zero, or the period is zero.
-     *          The timer, timeout and periodic values should be set before starting timer.
-     * \return  Returns true if timer is initialized and started with success.
      **/
-    bool startTimer( void );
+    bool startTimer( TimerBase & context, id_type contextId );
 
     /**
      * \brief   Stops timer, resets timeout and period values.
@@ -186,10 +180,11 @@ private:
 
     /**
      * \brief	Initializes and starts the timer.
-     * \param	context	The pointer to timer context object.
+     * \param	context	    The pointer to timer context object.
+     * \param   contextId   The ID relevant with timer context object.
      * \return	Returns true if timer succeeded to start.
      **/
-    inline bool _startTimer( TimerBase * context );
+    inline bool _startTimer( TimerBase * context, id_type contextId );
 
     /**
      * \brief   Stops the timer.

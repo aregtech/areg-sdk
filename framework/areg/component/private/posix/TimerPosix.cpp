@@ -64,24 +64,22 @@ bool TimerPosix::createTimer( FuncPosixTimerRoutine funcTimer )
     return ((mTimerId == INVALID_POSIX_TIMER_ID) && (funcTimer != nullptr) ? _createTimer(funcTimer) : mTimerId != INVALID_POSIX_TIMER_ID);
 }
 
-bool TimerPosix::startTimer( TimerBase & context, FuncPosixTimerRoutine funcTimer )
+bool TimerPosix::startTimer( TimerBase & context, id_type contextId, FuncPosixTimerRoutine funcTimer )
 {
 	SpinAutolockIX lock(mLock);
-    return (createTimer(funcTimer) ? startTimer(context) : false);
+	if ((funcTimer != nullptr) && (mTimerId == INVALID_POSIX_TIMER_ID))
+	{
+	    _createTimer(funcTimer);
+	}
+
+	return (mTimerId != INVALID_POSIX_TIMER_ID ? _startTimer(&context, contextId) : false);
 }
 
-bool TimerPosix::startTimer( TimerBase & context )
+bool TimerPosix::startTimer( TimerBase & context, id_type contextId )
 {
 	SpinAutolockIX lock(mLock);
 
-    return _startTimer(&context);
-}
-
-bool TimerPosix::startTimer( void )
-{
-	SpinAutolockIX lock(mLock);
-
-    return _startTimer(nullptr);
+    return _startTimer(&context, contextId);
 }
 
 bool TimerPosix::pauseTimer(void)
@@ -148,13 +146,10 @@ bool TimerPosix::_createTimer( FuncPosixTimerRoutine funcTimer )
     return (RETURNED_OK == timer_create(CLOCK_REALTIME, &sigEvent, &mTimerId));
 }
 
-inline bool TimerPosix::_startTimer( TimerBase * context )
+inline bool TimerPosix::_startTimer( TimerBase * context, id_type contextId )
 {
     bool result = false;
-    if (context != nullptr)
-    {
-    	mContext    = context;
-    }
+    mContext    = context;
 
     if ((mTimerId != INVALID_POSIX_TIMER_ID) && (mContext != nullptr))
     {
@@ -169,6 +164,8 @@ inline bool TimerPosix::_startTimer( TimerBase * context )
 
         if ((msTimeout != 0) && (eventCount != 0))
         {
+            mContextId  = contextId;
+
             struct itimerspec interval;
             NEMemory::memZero(static_cast<void *>(&interval), sizeof(struct itimerspec));
             NESynchTypesIX::convTimeout(interval.it_value, msTimeout);
@@ -180,8 +177,6 @@ inline bool TimerPosix::_startTimer( TimerBase * context )
 
             clock_gettime(CLOCK_REALTIME, &mDueTime);
             NESynchTypesIX::convTimeout(mDueTime, msTimeout);
-
-            mContextId = context->getContextId();
 
             if (RETURNED_OK != timer_settime(mTimerId, 0, &interval, nullptr))
             {

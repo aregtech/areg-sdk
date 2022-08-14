@@ -28,7 +28,6 @@ TimerBase::TimerBase( const eTimerType timerType
                     , unsigned int eventCount   /*= TimerBase::CONTINUOUSLY*/)
     : mTimerType    ( timerType )
     , mHandle       ( nullptr   )
-    , mContextId    ( 0u        )
     , mName         ( timerName )
     , mTimeoutInMs  ( timeoutMs )
     , mEventsCount  ( eventCount)

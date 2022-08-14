@@ -50,8 +50,10 @@ list(APPEND areg_SRC
 	${areg_BASE}/component/private/TEEvent.cpp
 	${areg_BASE}/component/private/ThreadEventBase.cpp
 	${areg_BASE}/component/private/Timer.cpp
+	${areg_BASE}/component/private/TimerBase.cpp
 	${areg_BASE}/component/private/TimerEventData.cpp
 	${areg_BASE}/component/private/TimerManager.cpp
+	${areg_BASE}/component/private/TimerManagerBase.cpp
 	${areg_BASE}/component/private/TimerManagerEvent.cpp
 	${areg_BASE}/component/private/Watchdog.cpp
 	${areg_BASE}/component/private/WatchdogManager.cpp

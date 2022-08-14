@@ -149,17 +149,6 @@ public:
     inline void setEventCount(unsigned int eventCount);
 
     /**
-     * \brief   Returns optional context ID of the timer.
-     **/
-    inline ptr_type getContextId( void ) const;
-
-    /**
-     * \brief   Sets optional context ID of the timer.
-     * \param   contextId   The context ID of the timer.
-     **/
-    inline void setContextId( ptr_type contextId );
-
-    /**
      * \brief   Returns the name of timer.
      **/
     inline const String& getName(void) const;
@@ -221,10 +210,6 @@ protected:
      */
     TIMERHANDLE         mHandle;
     /**
-     * \brief   The timer optional context ID.
-     */
-    ptr_type            mContextId;
-    /**
      * \brief   Timer name. If not empty, it is unique name
      **/
     const String        mName;
@@ -262,16 +247,6 @@ inline bool TimerBase::isValid( void ) const
 inline void TimerBase::setEventCount(unsigned int eventCount)
 {
     mEventsCount = eventCount;
-}
-
-inline ptr_type TimerBase::getContextId(void) const
-{
-    return mContextId;
-}
-
-inline void TimerBase::setContextId(ptr_type contextId)
-{
-    mContextId = contextId;
 }
 
 inline const String & TimerBase::getName( void ) const

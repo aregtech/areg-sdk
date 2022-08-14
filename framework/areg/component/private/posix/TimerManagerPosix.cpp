@@ -52,31 +52,20 @@ bool TimerManager::_systemTimerStart( Timer & timer )
     TimerPosix * posixTimer   = reinterpret_cast<TimerPosix *>(timer.getHandle());
     ASSERT(posixTimer != nullptr);
 
-    if (posixTimer->createTimer(&TimerManager::_defaultPosixTimerExpiredRoutine))
+    if (posixTimer->startTimer(timer, 0, &TimerManager::_defaultPosixTimerExpiredRoutine))
     {
         result = true;
-        if (posixTimer->startTimer(timer) == false)
-        {
-            TRACE_ERR( "System Failed to start timer in period [ %d ] ms, timer name [ %s ]. System Error [ %p ]"
-                            , timer.getTimeout( )
-                            , timer.getName( ).getString()
-                            , static_cast<id_type>(errno) );
-
-            result = false;
-        }
-        else
-        {
-            TRACE_DBG("Started timer [ %s ], expire time at [ %u ]:[ %u ], difference: [ %u ] sec and [ %u ] ns "
-							, whichTimer->getName().getString()
-							, posixTimer->getDueTime().tv_sec
-							, posixTimer->getDueTime().tv_nsec
-							, posixTimer->getDueTime().tv_sec - ts.tv_sec
-							, posixTimer->getDueTime().tv_nsec- ts.tv_nsec);
-        }
+        TRACE_DBG("Started timer [ %s ], expire time at [ %u ]sec : [ %u ] ns"
+                        , timer.getName().getString()
+                        , posixTimer->getDueTime().tv_sec
+                        , posixTimer->getDueTime().tv_nsec);
     }
     else
     {
-    	TRACE_ERR("Failed to create instance of POSIX system timer [ %s ]", whichTimer->getName().getString());
+        TRACE_ERR( "System Failed to start timer in period [ %d ] ms, timer name [ %s ]. System Error [ %p ]"
+                        , timer.getTimeout( )
+                        , timer.getName( ).getString()
+                        , static_cast<id_type>(errno) );
     }
 
     return result;
@@ -88,15 +77,15 @@ void TimerManager::_defaultPosixTimerExpiredRoutine( union sigval argSig )
 
     TimerManager& timerManager = TimerManager::getInstance();
     TimerPosix * posixTimer = reinterpret_cast<TimerPosix *>(argSig.sival_ptr);
+    ASSERT(posixTimer != nullptr);
     Timer *timer = timerManager.mTimerResource.findResourceObject(reinterpret_cast<TIMERHANDLE>(posixTimer));
 
     if ((timer != nullptr) && (posixTimer->isValid()))
     {
-        TRACE_DBG("Timer [ %s ] expired at [ %u ] sec and [ %u ] ns, going to notify thread [ %u ]"
-                        , reinterpret_cast<Timer *>(posixTimer)->mContext->getName().getString()
+        TRACE_DBG("Timer [ %s ] expired at [ %u ] sec and [ %u ] ns"
+                        , timer->getName().getString()
                         , posixTimer->getDueTime().tv_sec
-                        , posixTimer->getDueTime().tv_nsec
-                        , static_cast<unsigned int>(posixTimer->mThreadId));
+                        , posixTimer->getDueTime().tv_nsec);
 
         unsigned int highValue  = static_cast<unsigned int>(posixTimer->mDueTime.tv_sec );
         unsigned int lowValue   = static_cast<unsigned int>(posixTimer->mDueTime.tv_nsec);

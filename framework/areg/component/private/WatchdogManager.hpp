@@ -159,7 +159,7 @@ private:
     /**
      * \brief   Called when expired timers should be processed.
      **/
-    void _processExpiredTimer(Watchdog* whatchdog, Watchdog::WATCHDOG_ID watchdogId, uint32_t hiBytes, uint32_t loBytes);
+    void _processExpiredTimer(Watchdog* watchdog, Watchdog::WATCHDOG_ID watchdogId, uint32_t hiBytes, uint32_t loBytes);
 
     /**
      * \brief   Stops and removes all watchdog timers.

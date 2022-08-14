@@ -52,26 +52,18 @@ bool WatchdogManager::_systemTimerStart(Watchdog& watchdog)
     TimerPosix* posixTimer = reinterpret_cast<TimerPosix*>(watchdog.getHandle());
     if (posixTimer != nullptr)
     {
-        if (posixTimer->createTimer(&WatchdogManager::_defaultPosixWatchdogExpiredRoutine))
+        Watchdog::WATCHDOG_ID watchdogId = watchdog.watchdogId();
+        if (posixTimer->startTimer(watchdog, watchdogId, &WatchdogManager::_defaultPosixWatchdogExpiredRoutine))
         {
+            TRACE_DBG("Started watchdog timer [ %s ] with timeout [ %u ] ms", watchdog.getName().getString(), watchdog.getTimeout());
             result = true;
-            if (posixTimer->startTimer(watchdog))
-            {
-                TRACE_DBG("Started watchdog timer [ %s ] with timeout [ %u ] ms", watchdog.getName().getString(), watchdog.getTimeout());
-                result = true;
-
-            }
-            else
-            {
-                TRACE_ERR("System failed to start watchdog timer in period [ %d ] ms, timer name [ %s ]. System Error [ %p ]"
-                                , watchdog.getTimeout()
-                                , watchdog.getName().getString()
-                                , static_cast<id_type>(errno));
-            }
         }
         else
         {
-            TRACE_ERR("Failed to create instance of POSIX system timer [ %s ]", watchdog.getName().getString());
+            TRACE_ERR("System failed to start watchdog timer in period [ %d ] ms, timer name [ %s ]. System Error [ %p ]"
+                            , watchdog.getTimeout()
+                            , watchdog.getName().getString()
+                            , static_cast<id_type>(errno));
         }
     }
     else
@@ -86,13 +78,14 @@ void WatchdogManager::_defaultPosixWatchdogExpiredRoutine(union sigval argSig)
 {
     TRACE_SCOPE(areg_component_private_posix_WatchdogManager__defaultPosixTimerExpiredRoutine);
 
-    ASSERT(argSig.sival_ptr != nullptr);
     WatchdogManager& watchdogManager = WatchdogManager::getInstance();
-    Watchdog::WATCHDOG_ID watchdogId = reinterpret_cast<Watchdog::WATCHDOG_ID>(argSig.sival_ptr);
-    Watchdog::GUARD_ID guardId 	= Watchdog::makeGuardId(watchdogId);
-    Watchdog* watchdog 			= watchdogManager.mWatchdogResource.findResourceObject(guardId);
-	TimerPosix * posixTimer		= watchdog != nullptr ? static_cast<TimerPosix *>(watchdog->getHandle()) : nullptr;
-    if (posixTimer != nullptr)
+    TimerPosix * posixTimer = reinterpret_cast<TimerPosix *>(argSig.sival_ptr);
+    ASSERT(posixTimer != nullptr);
+    Watchdog::WATCHDOG_ID watchdogId = static_cast<Watchdog::WATCHDOG_ID>(posixTimer->getContextId());
+    Watchdog::GUARD_ID guardId  = Watchdog::makeGuardId(watchdogId);
+    Watchdog* watchdog          = watchdogManager.mWatchdogResource.findResourceObject(guardId);
+
+    if (watchdog != nullptr)
     {
         unsigned int highValue 	= static_cast<unsigned int>(posixTimer->mDueTime.tv_sec);
         unsigned int lowValue  	= static_cast<unsigned int>(posixTimer->mDueTime.tv_nsec);
@@ -101,7 +94,7 @@ void WatchdogManager::_defaultPosixWatchdogExpiredRoutine(union sigval argSig)
     }
     else
     {
-        TRACE_WARN("Ignore handling timer [ %p ], it is [ %s ]", posixTimer, timer == nullptr ? "NOT REGISTERED ANYMORE" : "ALREADY INVALID");
+        TRACE_WARN("Ignore handling null timer, watchdog is [ %s ]", watchdog == nullptr ? "NOT REGISTERED ANYMORE" : "ALREADY INVALID");
     }
 }
 

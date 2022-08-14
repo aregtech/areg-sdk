@@ -132,15 +132,13 @@ void WatchdogManager::processEvent(const TimerManagerEventData & data)
     }
 }
 
-void WatchdogManager::_processExpiredTimer(Watchdog* whatchdog, Watchdog::WATCHDOG_ID watchdogId, uint32_t hiBytes, uint32_t loBytes)
+void WatchdogManager::_processExpiredTimer(Watchdog* watchdog, Watchdog::WATCHDOG_ID watchdogId, uint32_t hiBytes, uint32_t loBytes)
 {
     TRACE_SCOPE(areg_component_private_WatchdogManager__processExpiredTimers);
 
     mWatchdogResource.lock();
 
-    Watchdog::GUARD_ID guardId      = Watchdog::makeGuardId(watchdogId);
     Watchdog::SEQUENCE_ID sequence  = Watchdog::makeSequenceId(watchdogId);
-    Watchdog* watchdog = mWatchdogResource.findResourceObject(guardId);
     if ((watchdog != nullptr) && (watchdog->getSequence() == sequence))
     {
         TRACE_WARN("The watchdog [ %s ] has expired, terminating component thread [ %s ]"
