@@ -1,3 +1,3 @@
-set(subProjDir ${12_pubsvc_BASE}/generated/src/private)
+set(subProjDir ${19_pubwatchdog_BASE}/generated/src/private)
 
 include(${subProjDir}/CMakeLists.txt)

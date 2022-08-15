@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>12_pubservice</name>
+	<name>19_pubservicewdog</name>
 	<comment></comment>
 	<projects>
 		<project>areg</project>
-		<project>12_generated</project>
+		<project>19_generated</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
