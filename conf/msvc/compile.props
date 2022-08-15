@@ -22,11 +22,11 @@
   <PropertyGroup Label="UserMacros">
     <ConfigShortName Condition="'$(Configuration)'=='Debug'">Debug</ConfigShortName>
     <ConfigShortName Condition="'$(Configuration)'=='Release'">Release</ConfigShortName>
-    <VCCompilerVersion Condition="'$(Configuration)'=='Debug'">v142</VCCompilerVersion>
-    <VCCompilerVersion Condition="'$(Configuration)'=='Release'">v142</VCCompilerVersion>
+    <VCCompilerVersion Condition="'$(Configuration)'=='Debug'">v143</VCCompilerVersion>
+    <VCCompilerVersion Condition="'$(Configuration)'=='Release'">v143</VCCompilerVersion>
   </PropertyGroup>
   <PropertyGroup Label="Globals">
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
   </PropertyGroup>
   <!-- Import User settings -->
 </Project>
