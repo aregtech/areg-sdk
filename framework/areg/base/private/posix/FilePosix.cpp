@@ -31,6 +31,7 @@
 #include <errno.h>
 #include <libgen.h>
 #include <limits.h>
+#include <pwd.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/stat.h>
@@ -46,6 +47,9 @@ namespace
     constexpr int   POSIX_INVALID_FD        { -1 };
     constexpr char  DIR_NAME_DOCUMENTS[]    { "Documents" };
     constexpr char  DIR_NAME_APPDATA[]      { "profile" };
+    constexpr char  ENV_USER_HOME[]         { "HOME" };
+    constexpr char  USER_HOME_DIR[]         { "~" };
+    constexpr char  USER_TEMP_DIR[]         { "~/tmp" };
 
     typedef struct S_PosixFile
     {
@@ -60,6 +64,33 @@ namespace
     inline bool _existFile( const char * filePath )
     {
         return ((NEString::isEmpty<char>( filePath ) == false) && (RETURNED_OK == ::access( filePath, R_OK )));
+    }
+
+    inline const char * _getUserHomeDir( void )
+    {
+        const char *homedir = getenv(ENV_USER_HOME);
+        if (homedir == nullptr)
+        {
+            struct passwd *pw = getpwuid(getuid());
+            homedir = pw != nullptr ? pw->pw_dir : USER_HOME_DIR;
+        }
+
+        return homedir;
+    }
+
+    inline const char * _getTempDir( void )
+    {
+        const char * tempDir = getenv("TMPDIR");
+        if (tempDir == nullptr )
+        {
+            tempDir = getenv( "TMP" );
+            if ( tempDir == nullptr )
+            {
+                tempDir = getenv( "TEMP" );
+            }
+        }
+
+        return (tempDir != nullptr ? tempDir : USER_TEMP_DIR);
     }
 }
 
@@ -613,49 +644,32 @@ String File::getSpecialDir(eSpecialFolder specialFolder)
         switch ( specialFolder )
         {
         case File::eSpecialFolder::SpecialUserHome:
-            filePath = getenv("HOME");
-            if (filePath != nullptr)
-            {
-                sprintf( buffer, "%s", filePath != nullptr ? filePath : "~" );
-            }
+            filePath = _getUserHomeDir();
+            ASSERT(filePath != nullptr);
+            sprintf( buffer, "%s", filePath != nullptr ? filePath : "~" );
             break;
 
         case File::eSpecialFolder::SpecialPersonal:
-            filePath = getenv("HOME");
-            if ( filePath != nullptr )
-            {
-                sprintf( buffer, "%s%c%s", filePath != nullptr ? filePath : "", File::PATH_SEPARATOR, DIR_NAME_DOCUMENTS );
-            }
+            filePath = _getUserHomeDir();
+            ASSERT( filePath != nullptr );
+            sprintf( buffer, "%s%c%s", filePath != nullptr ? filePath : "", File::PATH_SEPARATOR, DIR_NAME_DOCUMENTS );
             break;
 
         case File::eSpecialFolder::SpecialAppData:
-            filePath = getenv("HOME");
-            if (filePath != nullptr)
-            {
-                sprintf(  buffer, "%s%c.%s%c%s"
-						, filePath
-						, static_cast<int>(File::PATH_SEPARATOR)
-						, Process::getInstance().getAppName().getString()
-						, static_cast<int>(File::PATH_SEPARATOR)
-						, DIR_NAME_APPDATA);
-            }
+            filePath = _getUserHomeDir();
+            ASSERT(filePath != nullptr);
+            sprintf(  buffer, "%s%c.%s%c%s"
+                    , filePath
+                    , static_cast<int>(File::PATH_SEPARATOR)
+                    , Process::getInstance().getAppName().getString()
+                    , static_cast<int>(File::PATH_SEPARATOR)
+                    , DIR_NAME_APPDATA);
             break;
 
         case File::eSpecialFolder::SpecialTemp:
-            filePath = getenv("TMPDIR");
-            if (filePath == nullptr )
-            {
-                filePath = getenv( "TMP" );
-                if ( filePath == nullptr )
-                {
-                    filePath = getenv( "TEMP" );
-                }
-            }
-
-            if (filePath != nullptr)
-            {
-                sprintf( buffer, "%s", filePath );
-            }
+            filePath = _getTempDir();
+            ASSERT(filePath != nullptr );
+            sprintf( buffer, "%s", filePath );
             break;
 
         default:

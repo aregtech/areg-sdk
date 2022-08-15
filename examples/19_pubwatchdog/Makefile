@@ -9,6 +9,6 @@ include $(19_pubwatchdog_BASE)/generated/Makefile
 include $(19_pubwatchdog_BASE)/pubservice/Makefile
 include $(19_pubwatchdog_BASE)/pubclient/Makefile
 
-19_pubwatchdog: $(AREG_OUTPUT_BIN)/$(19_pubservicewdog_TARGET_BIN) $(AREG_OUTPUT_BIN)/$(19_pubclientwdog_TARGET_BIN)
+19_pubwatchdog: $(AREG_OUTPUT_BIN)/$(19_pubclient_TARGET_BIN) $(AREG_OUTPUT_BIN)/$(19_pubservice_TARGET_BIN)
 
 .PHONY: 19_pubwatchdog
