@@ -72,7 +72,7 @@ StreamableEvent * RemoteEventFactory::createEventFromStream( const RemoteMessage
 
                 result = static_cast<StreamableEvent *>(eventRequest);
             }
-        }        
+        }
         break;
 
     case Event::eEventType::EventRemoteNotifyRequest:
@@ -310,7 +310,7 @@ StreamableEvent * RemoteEventFactory::createRequestFailedEvent( const RemoteMess
                                                                                          , eventRequest.getRequestId()
                                                                                          , NEService::eResultType::MessageUndelivered
                                                                                          , eventRequest.getSequenceNumber()) );
-        }        
+        }
         break;
 
     case Event::eEventType::EventRemoteNotifyRequest:

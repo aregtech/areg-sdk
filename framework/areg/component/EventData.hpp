@@ -51,8 +51,8 @@ class AREG_API EventData
 public:
     /**
      * \brief	Constructor.
-     * \param	msgId	The ID of communication message. 
-     *                  Data type will be set according of 
+     * \param	msgId	The ID of communication message.
+     *                  Data type will be set according of
      *                  message ID type.
      * \param	name	Optional. Used to name data streaming object.
      *                  Can be nullptr if there is no need to name streaming object.
@@ -61,8 +61,8 @@ public:
 
     /**
      * \brief	Constructor.
-     * \param	msgId	The ID of communication message. 
-     *                  Data type will be set according of 
+     * \param	msgId	The ID of communication message.
+     *                  Data type will be set according of
      *                  message ID type.
      * \param	args	Streaming object containing serialized information
      *                  of parameters.

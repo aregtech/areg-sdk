@@ -50,7 +50,7 @@ public:
      * \brief   EventDataStream::EmptyData
      *          Predefined Empty Data object. Can be used when event has
      *          no data to transfer and no data should be write or read,
-     *          because it is instance of Invalid Buffer and any 
+     *          because it is instance of Invalid Buffer and any
      *          read / write will fail.
      **/
     static const EventDataStream  EmptyData;
@@ -63,8 +63,9 @@ public:
      **/
     typedef enum class E_EventData : uint8_t
     {
-          EventDataInternal //!< Internal Data
-        , EventDataExternal //!< External Data
+          EventDataInternal     = 1 //!< Internal Data
+        , EventDataExternal     = 2 //!< External Data
+        , EventDataEmpty        = 3 //!< An empty data
 
     } eEventData;
 
@@ -290,7 +291,7 @@ protected:
 // Member variables
 //////////////////////////////////////////////////////////////////////////
 protected:
-    
+
     /**
      * \brief   The type of Event Data. Either internal or external.
      **/
@@ -334,7 +335,7 @@ inline bool EventDataStream::isEmpty( void ) const
 
 inline bool EventDataStream::isExternalDataStream( void ) const
 {
-    return (mEventDataType == EventDataStream::eEventData::EventDataExternal);
+    return (mEventDataType != EventDataStream::eEventData::EventDataInternal);
 }
 
 inline const IEInStream & EventDataStream::getStreamForRead( void ) const

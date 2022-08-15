@@ -457,6 +457,7 @@ void ClientService::failedSendMessage(const RemoteMessage & msgFailed)
         if ( NEService::isExecutableId(msgId) || NEService::isConnectNotifyId(msgId) )
         {
             TRACE_DBG("Failed message [ %u ] is executable or connection notification", msgId);
+            msgFailed.moveToBegin();
             StreamableEvent * eventError = RemoteEventFactory::createRequestFailedEvent(msgFailed, mChannel);
             if ( eventError != nullptr )
             {
@@ -510,6 +511,7 @@ void ClientService::failedProcessMessage( const RemoteMessage & msgUnprocessed )
         unsigned int msgId = msgUnprocessed.getMessageId();
         if ( NEService::isExecutableId(msgId) )
         {
+            msgUnprocessed.moveToBegin();
             StreamableEvent * eventError = RemoteEventFactory::createRequestFailedEvent(msgUnprocessed, mChannel);
             if ( eventError != nullptr )
             {

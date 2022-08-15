@@ -5,8 +5,8 @@
   </ImportGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{766E4B9C-F428-4289-8975-DC3D22EEDBF6}</ProjectGuid>
-    <ProjectName>18_locwatchdog</ProjectName>
-    <RootNamespace>18_locwatchdog</RootNamespace>
+    <ProjectName>18_locsvcwadog</ProjectName>
+    <RootNamespace>18_locsvcwadog</RootNamespace>
     <Keyword>Win32Proj</Keyword>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />

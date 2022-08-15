@@ -8,7 +8,7 @@
  *
  * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/component/private/EventDataStream.cpp
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
+ * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit
  * \author      Artak Avetyan
  * \brief       AREG Platform, event data stream implementation
  *
@@ -34,7 +34,7 @@ namespace
 /**
  * \brief   Predefined Empty Data object.
  **/
-const EventDataStream EventDataStream::EmptyData(EventDataStream::eEventData::EventDataInternal, String("EventDataStream::EmptyData"));
+const EventDataStream EventDataStream::EmptyData(EventDataStream::eEventData::EventDataEmpty, String("EventDataStream::EmptyData"));
 
 //////////////////////////////////////////////////////////////////////////
 // EventDataStream class, Constructors / Destructor
@@ -223,7 +223,7 @@ AREG_API const IEInStream & operator >> ( const IEInStream & stream, EventDataSt
 
 AREG_API IEOutStream & operator << ( IEOutStream & stream, const EventDataStream & output )
 {
-    ASSERT(output.mEventDataType == EventDataStream::eEventData::EventDataExternal);
+    ASSERT(output.mEventDataType != EventDataStream::eEventData::EventDataInternal);
     stream << EventDataStream::eEventData::EventDataExternal;
     stream << output.mBufferName;
     stream << output.mDataBuffer;

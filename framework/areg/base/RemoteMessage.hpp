@@ -130,7 +130,7 @@ public:
 // Attributes
 //////////////////////////////////////////////////////////////////////////////
 public:
-    
+
     /**
      * \brief   Returns remote message structure data
      **/
@@ -146,7 +146,7 @@ public:
      * \brief   Returns the ID of remote source set in Remote Buffer header.
      **/
     inline uint64_t getSource( void ) const;
-    
+
     /**
      * \brief   Sets the ID of source in Remote Buffer.
      * \param   idSource    The ID of source to set in Remote Buffer
@@ -157,7 +157,7 @@ public:
      * \brief   Returns the ID of remote target set in Remote Buffer header.
      **/
     inline uint64_t getTarget( void ) const;
-    
+
     /**
      * \brief   Sets the ID of target in Remote Buffer.
      * \param   idTarget    The ID of target to set in Remote Buffer
@@ -236,7 +236,7 @@ protected:
      *          If needed, it will copy existing binary data to passed buffer.
      *          The function is called from child classes when new byte buffer
      *          is created and the existing data should be passed to new buffer.
-     * \param	newBuffer	The buffer to initialize. 
+     * \param	newBuffer	The buffer to initialize.
      * \param	bufLength	The length in bytes of the entire buffer object.
      * \param	makeCopy	If 'true' it will make copy of existing buffer
      * \return	Returns the current writing position in initialized buffer.

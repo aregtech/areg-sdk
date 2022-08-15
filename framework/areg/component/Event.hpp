@@ -10,7 +10,7 @@
  *
  * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
  * \file        areg/component/Event.hpp
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
+ * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit
  * \author      Artak Avetyan
  * \brief       AREG Platform, Event Base class declaration.
  *              This event class is generic and base class for all kind
@@ -125,14 +125,14 @@ class Thread;
  *          or external queue. The events are created dynamically in the heap
  *          to remain valid as long until they are processed. After processing
  *          the events are automatically destroyed.
- * 
+ *
  *          Before sending Event to the target dispatcher thread, the thread
  *          should have registered event consumer object which processes
  *          the events. The event consumers are registered and unregistered in
  *          the dispatcher thread by calling addListener() and removeListener()
  *          methods. User DECLARE_RUNTIME_EVENT() and IMPLEMENT_RUNTIME_EVENT()
  *          macros to have appropriate method definition in the event object.
- * 
+ *
  *          In addition, the system contains several predefined event objects,
  *          which are used by the system.
  *
@@ -150,7 +150,7 @@ public:
     typedef enum class E_EventType  : unsigned int
     {
           EventUnknown              =    0  /*0x0000*/  //!< Unknown event type.      Bit set: 0000 0000 0000 0000
-        
+
         , EventInternal             =    1  /*0x0001*/  //!< Internal event.          Bit set: 0000 0000 0000 0001
         , EventExternal             =    2  /*0x0002*/  //!< External event.          Bit set: 0000 0000 0000 0010
 
@@ -210,8 +210,8 @@ public:
 public:
 
     /**
-     * \brief	Static method to add the listener to specified thread, 
-     *          i.e. registers consumer for specified event class. 
+     * \brief	Static method to add the listener to specified thread,
+     *          i.e. registers consumer for specified event class.
      * \param	classId	        Runtime ID of event class.
      * \param	eventConsumer	Consumer to register.
      * \param	whichThread	    The registered thread name to add the
@@ -236,8 +236,8 @@ public:
     static bool addListener( const RuntimeClassID & classId, IEEventConsumer & eventConsumer, id_type whichThread );
 
     /**
-     * \brief	Static method to add the listener to specified thread, 
-     *          i.e. registers consumer for specified event class. 
+     * \brief	Static method to add the listener to specified thread,
+     *          i.e. registers consumer for specified event class.
      * \param	classId	        Runtime ID of event class.
      * \param	eventConsumer	Consumer to register.
      * \param	dispThread	    The dispatcher thread, which dispatches messages
@@ -288,12 +288,12 @@ protected:
     Event( void );
 
     /**
-     * \brief   Initialization constructor. 
+     * \brief   Initialization constructor.
      *          Creates event object of specified type.
      * \param   eventType   The type of Event.
      **/
     Event( Event::eEventType eventType );
-    
+
     /**
      * \brief   Destructor.
      **/
@@ -349,7 +349,7 @@ public:
     virtual bool removeEventListener( IEEventConsumer & eventConsumer );
 
 //////////////////////////////////////////////////////////////////////////
-// Operations 
+// Operations
 //////////////////////////////////////////////////////////////////////////
 public:
 
@@ -655,7 +655,7 @@ inline const char* Event::getString(Event::eEventType eventType)
         return "Event::eEventType::EventCustomExternal";
 
     default:
-        return "ERR: Undefined Event::eEventType value!";    
+        return "ERR: Undefined Event::eEventType value!";
     }
 }
 

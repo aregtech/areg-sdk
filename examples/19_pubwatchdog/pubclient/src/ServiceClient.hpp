@@ -29,6 +29,12 @@
 class ServiceClient : public    Component
                     , protected HelloWatchdogClientBase
 {
+private:
+    /**
+     * \brief   Timeout to wait before sending message
+     **/
+    static const unsigned int    TIMEOUT_VALUE       /*= 237*/;
+
 //////////////////////////////////////////////////////////////////////////
 // Static methods
 //////////////////////////////////////////////////////////////////////////
@@ -87,6 +93,24 @@ protected:
      * \see     requestStartSleep
      **/
     virtual void responseStartSleep( unsigned int timeoutSleep ) override;
+
+    /**
+     * \brief   Overwrite to handle error of StartSleep request call.
+     * \param   FailureReason   The failure reason value of request call.
+     **/
+    virtual void requestStartSleepFailed( NEService::eResultType FailureReason ) override;
+
+    /**
+     * \brief   Overwrite to handle error of StopService request call.
+     * \param   FailureReason   The failure reason value of request call.
+     **/
+    virtual void requestStopServiceFailed( NEService::eResultType FailureReason ) override;
+
+    /**
+     * \brief   Overwrite to handle error of ShutdownService request call.
+     * \param   FailureReason   The failure reason value of request call.
+     **/
+    virtual void requestShutdownServiceFailed( NEService::eResultType FailureReason ) override;
 
 /************************************************************************/
 // IEProxyListener Overrides
