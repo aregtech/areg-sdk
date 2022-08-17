@@ -5,6 +5,8 @@
 
 ![Latest release](https://img.shields.io/github/v/release/aregtech/areg-sdk?label=%20%F0%9F%93%A3%20Latest%20release&style=flat&logoColor=b0c0c0&labelColor=363D44)
 
+The latest development sources can be cloned from [20220701-candidate](https://github.com/aregtech/areg-sdk/tree/20220701-candidate).
+
 ---
 
 <!-- markdownlint-disable -->
