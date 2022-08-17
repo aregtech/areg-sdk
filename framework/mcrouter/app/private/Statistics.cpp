@@ -19,6 +19,12 @@
 #include "mcrouter/app/private/Statistics.hpp"
 #include "areg/base/NECommon.hpp"
 
+Statistics & Statistics::getInstance( void )
+{
+    static Statistics   _instance;
+    return _instance;
+}
+
 Statistics::Statistics(void)
     : mVerbose      ( false )
     , mStatSent     ( )
@@ -30,7 +36,7 @@ Statistics::Statistics(void)
 void Statistics::initialize(bool verbose)
 {
     mVerbose = verbose;
-    if (verbose)
+    if (verbose && _osInitialize())
     {
         Timestamp now = Clock::now();
         sCoord curPos = _getCursorCurrentPos();

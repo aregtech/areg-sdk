@@ -22,6 +22,35 @@
 #ifdef _POSIX
 
 #include <stdio.h>
+#include <curses.h> // similar name for windows
+
+
+namespace
+{
+    WINDOW* _newTerminal()
+    {
+
+        newterm(getenv("TERM"), stdout, stdin);
+        return stdscr;
+    }
+
+    WINDOW * _getTerminal()
+    {
+        static WINDOW * win = stdscr == nullptr ? curscr == nullptr ? _newTerminal() : curscr : stdscr;
+        return win;
+    }
+}
+
+bool Statistics::_osInitialize( void )
+{
+    if (mIsInitialized == false)
+    {
+        initscr();
+        mIsInitialized = true;
+    }
+
+    return mIsInitialized;
+}
 
 void Statistics::_setCursorCurrentPos(const Statistics::sCoord& pos)
 {
@@ -33,8 +62,10 @@ Statistics::sCoord Statistics::_getCursorCurrentPos(void)
     int posX{ 0 };
     int posY{ 0 };
 
-    printf("\033[6n");
-    scanf("\033[%d;%dR", &posX, &posY);
+    WINDOW * scr = stdscr;
+    getyx(scr, posY, posX);
+    // printf("\033[6n");
+    // scanf("\033[%d;%dR", &posX, &posY);
 
     return sCoord{ static_cast<int16_t>(posX), static_cast<int16_t>(posY)};
 }

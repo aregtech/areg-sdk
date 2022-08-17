@@ -25,6 +25,12 @@
 
 #include <windows.h>
 
+bool Statistics::_osInitialize( void )
+{
+    mIsInitialized = true;
+    return mIsInitialized;
+}
+
 void Statistics::_setCursorCurrentPos(const Statistics::sCoord& pos)
 {
     HANDLE h = GetStdHandle(STD_OUTPUT_HANDLE);

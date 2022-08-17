@@ -27,6 +27,7 @@
 
 /**
  * \brief   This helper class makes data send and receive statistics output on console.
+ *          Because of some OS specific method implementations, this object is a singleton.
  **/
 class Statistics
 {
@@ -70,7 +71,7 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // Constructor / destructor
 //////////////////////////////////////////////////////////////////////////
-public:
+private:
     Statistics(void);
     ~Statistics(void) = default;
 
@@ -78,6 +79,11 @@ public:
 // Operations and attributes
 //////////////////////////////////////////////////////////////////////////
 public:
+
+    /**
+     * \brief   Returns the instance of object.
+     **/
+    static Statistics & getInstance( void );
 
     /**
      * \brief   Initializes the statistics data.
@@ -108,6 +114,12 @@ public:
 // Hidden methods
 //////////////////////////////////////////////////////////////////////////
 private:
+
+    /**
+     * \brief   Returns true if succeeded to make OS specific initializations.
+     **/
+    bool _osInitialize( void );
+
     /**
      * \brief   Outputs message of sent data rate.
      * \param   duration    The duration of last update in milliseconds.
@@ -132,6 +144,7 @@ private:
 // Hidden members
 //////////////////////////////////////////////////////////////////////////
 private:
+    bool        mIsInitialized; //!< Flag, indicating whether the object is initialized or not.
     bool        mVerbose;       //!< The verbose output flag. If false, makes no message outputs.
     sStatistics mStatSent;      //!< The sent data
     sStatistics mStatReceived;  //!< The received data
