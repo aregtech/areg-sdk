@@ -14,7 +14,9 @@
  ************************************************************************/
 #include "mcrouter/tcp/private/ServerSendThread.hpp"
 
+#include "mcrouter/app/MulticastRouter.hpp"
 #include "mcrouter/tcp/private/ServerConnection.hpp"
+
 #include "areg/ipc/NEConnection.hpp"
 #include "areg/ipc/IERemoteServiceHandler.hpp"
 #include "areg/component/NEService.hpp"
@@ -59,7 +61,8 @@ void ServerSendThread::processEvent( const SendMessageEventData & data )
                     , static_cast<unsigned int>(msgSend.getSource())
                     , static_cast<unsigned int>(msgSend.getTarget()));
 
-        if ( (client.isAlive() == false) || (mConnection.sendMessage( msgSend, client ) <= 0) )
+        int sentBytes = 0;
+        if ( (client.isAlive() == false) || ((sentBytes = mConnection.sendMessage( msgSend, client )) <= 0) )
         {
             TRACE_WARN("Failed to send message [ %u ] to target [ %u ], client is [ %s ]"
                             , msgSend.getMessageId()
@@ -70,6 +73,7 @@ void ServerSendThread::processEvent( const SendMessageEventData & data )
         }
         else
         {
+            MulticastRouter::getInstance().dataSent(sentBytes);
             TRACE_DBG("Succeeded to send message [ %u ] to target [ %p ]", msgSend.getMessageId(), static_cast<id_type>(msgSend.getTarget()));
         }
     }

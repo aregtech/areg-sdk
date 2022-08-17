@@ -14,8 +14,10 @@
  ************************************************************************/
 #include "mcrouter/tcp/private/ServerReceiveThread.hpp"
 
+#include "mcrouter/app/MulticastRouter.hpp"
 #include "mcrouter/tcp/private/IEServerConnectionHandler.hpp"
 #include "mcrouter/tcp/private/ServerConnection.hpp"
+
 #include "areg/ipc/IERemoteServiceHandler.hpp"
 #include "areg/ipc/NEConnection.hpp"
 #include "areg/base/RemoteMessage.hpp"
@@ -105,7 +107,8 @@ bool ServerReceiveThread::runDispatcher(void)
                     }
 
                     const NESocket::SocketAddress& addSocket = clientSocket.getAddress();
-                    if ( mConnection.receiveMessage(msgReceived, clientSocket) > 0 )
+                    int sizeReceived = mConnection.receiveMessage(msgReceived, clientSocket);
+                    if (sizeReceived > 0 )
                     {
                         TRACE_DBG("Received message [ %p ] from source [ %p ], client [ %s : %d ]"
                                     , static_cast<id_type>(msgReceived.getMessageId())
@@ -113,6 +116,7 @@ bool ServerReceiveThread::runDispatcher(void)
                                     , addSocket.getHostAddress().getString()
                                     , addSocket.getHostPort());
 
+                        MulticastRouter::getInstance().dataReceived(sizeReceived);
                         mRemoteService.processReceivedMessage(msgReceived, addSocket, clientSocket.getHandle());
                     }
                     else

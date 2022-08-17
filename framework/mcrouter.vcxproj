@@ -37,9 +37,12 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="mcrouter\app\private\MulticastRouter.cpp" />
-    <ClCompile Include="mcrouter\app\private\MulticastRouterPosix.cpp" />
-    <ClCompile Include="mcrouter\app\private\MulticastRouterWin32.cpp" />
     <ClCompile Include="mcrouter\app\private\NEMulticastRouterSettings.cpp" />
+    <ClCompile Include="mcrouter\app\private\posix\MulticastRouterPosix.cpp" />
+    <ClCompile Include="mcrouter\app\private\posix\StatisticsPosix.cpp" />
+    <ClCompile Include="mcrouter\app\private\Statistics.cpp" />
+    <ClCompile Include="mcrouter\app\private\win32\MulticastRouterWin32.cpp" />
+    <ClCompile Include="mcrouter\app\private\win32\StatisticsWin32.cpp" />
     <ClCompile Include="mcrouter\tcp\private\IEServerConnectionHandler.cpp" />
     <ClCompile Include="mcrouter\tcp\private\ListServiceProxies.cpp" />
     <ClCompile Include="mcrouter\tcp\private\ServerConnection.cpp" />
@@ -52,6 +55,7 @@
     <ClCompile Include="mcrouter\tcp\private\ServiceStub.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="mcrouter\app\private\Statistics.hpp" />
     <ClInclude Include="mcrouter\tcp\private\IEServerConnectionHandler.hpp" />
     <ClInclude Include="mcrouter\tcp\private\ListServiceProxies.hpp" />
     <ClInclude Include="mcrouter\tcp\private\ServerConnection.hpp" />

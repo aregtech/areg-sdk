@@ -41,15 +41,72 @@ MulticastRouter & MulticastRouter::getInstance(void)
 MulticastRouter::MulticastRouter( void )
     : mRouterState  ( NEMulticastRouterSettings::eRouterState::RouterStopped )
     , mServiceCmd   ( NEMulticastRouterSettings::eServiceCommand::CMD_Undefined )
+    , mRunVerbose   ( false )
     , mServiceServer( )
     , mSvcHandle    ( nullptr )
     , mSeMHandle    ( nullptr )
+    , mStatistics   ( )
 {
 }
 
 MulticastRouter::~MulticastRouter( void )
 {
     _freeResources( );
+}
+
+bool MulticastRouter::parseOptions(int argc, char** argv)
+{
+    bool result{ false };
+    
+    if (argc > 1)
+    {
+        bool isValid{ true };
+
+        NEMulticastRouterSettings::eServiceCommand foundCmd{ NEMulticastRouterSettings::eServiceCommand::CMD_Undefined };
+        bool isVerbose{ false };
+
+        for (int i = 1; i < argc; ++i)
+        {
+            const char* opt = argv[i];
+            if (opt != nullptr)
+            {
+                NEMulticastRouterSettings::eServiceCommand cmd = NEMulticastRouterSettings::parseOption(opt);
+
+                if (cmd == NEMulticastRouterSettings::eServiceCommand::CMD_Verbose)
+                {
+                    isVerbose = true;   // Output verbose.
+                }
+                else if (cmd == NEMulticastRouterSettings::eServiceCommand::CMD_Undefined)
+                {
+                    isValid = false;    // Invalid option, break and return false.
+                    break;
+                }
+                else if (foundCmd == NEMulticastRouterSettings::eServiceCommand::CMD_Undefined)
+                {
+                    foundCmd = cmd;     // No option was set, set current.
+                }
+                else
+                {
+                    isValid = false;    // Already has an option, break and return false.
+                    break;
+                }
+            }
+        }
+
+        if (isValid)
+        {
+            setCurrentCommand(foundCmd);
+            mRunVerbose = isVerbose;
+            result = true;
+        }
+    }
+    else if (argc == 1)
+    {
+        resetDefaultOptions();
+        result = true;
+    }
+
+    return result;
 }
 
 void MulticastRouter::serviceMain( int argc, char ** argv )
@@ -67,7 +124,7 @@ void MulticastRouter::serviceMain( int argc, char ** argv )
             TRACE_DBG("... Command argument [ %d ]: [ %s ]", i, argv[i]);
 #endif  // DEBUG
 
-        if ( _registerService() || mServiceCmd == NEMulticastRouterSettings::eServiceCommand::CMD_Console )
+        if ( _registerService() || (mServiceCmd == NEMulticastRouterSettings::eServiceCommand::CMD_Console) )
         {
             TRACE_DBG("Starting service");
             serviceStart();
@@ -75,6 +132,16 @@ void MulticastRouter::serviceMain( int argc, char ** argv )
 
         if ( mServiceCmd == NEMulticastRouterSettings::eServiceCommand::CMD_Console )
         {
+            mStatistics.initialize(mRunVerbose);
+
+            if (mRunVerbose)
+            {
+                mStatistics.sentBytes(0);
+                printf("\n\r");
+                mStatistics.receivedBytes(0);
+                printf("\n\r");
+            }
+
             printf("Type \'quit\' or \'q\' to quit message router ...: ");
             const char quit = static_cast<int>('q' );
             char cmd[8]     = {0};
@@ -90,6 +157,10 @@ void MulticastRouter::serviceMain( int argc, char ** argv )
             } while ((NEString::makeAsciiLower<char>(*cmd) != quit) && (charRead > 0));
 
             Application::signalAppQuit();
+        }
+        else
+        {
+            mStatistics.setVerbose(false);
         }
 
         Application::waitAppQuit(NECommon::WAIT_INFINITE);
@@ -142,7 +213,7 @@ void MulticastRouter::servicePause(void)
 bool MulticastRouter::serviceContinue(void)
 {
     TRACE_SCOPE(mcrouter_app_MulticastRouter_serviceContinue);
-    TRACE_DBG("Continueing Router service");
+    TRACE_DBG("Continuing Router service");
 
     bool result = false;
     setState( NEMulticastRouterSettings::eRouterState::RouterContinuing );
@@ -183,4 +254,3 @@ void MulticastRouter::serviceUninstall(void)
 
     _freeResources();
 }
-

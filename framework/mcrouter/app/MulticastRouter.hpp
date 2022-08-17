@@ -20,6 +20,7 @@
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
 #include "mcrouter/app/NEMulticastRouterSettings.hpp"
+#include "mcrouter/app/private/Statistics.hpp"
 #include "mcrouter/tcp/ServerService.hpp"
 #include "areg/base/SynchObjects.hpp"
 
@@ -106,12 +107,12 @@ public:
      * \brief   Opens operating system service DB for further processing.
      * \return  Returns true if succeeded.
      **/
-    bool serviceOpen( void );
+    inline bool serviceOpen( void );
 
     /**
      * \brief   Returns current command of message router service.
      **/
-    NEMulticastRouterSettings::eServiceCommand getCurrentCommand( void ) const;
+    inline NEMulticastRouterSettings::eServiceCommand getCurrentCommand( void ) const;
 
     /**
      * \brief   Sets the current command of message router service.
@@ -122,12 +123,50 @@ public:
     /**
      * \brief   Returns the state of message router service.
      **/
-    NEMulticastRouterSettings::eRouterState getState( void ) const;
+    inline NEMulticastRouterSettings::eRouterState getState( void ) const;
 
     /**
      * \brief   Sets the state of message router service.
      **/
     bool setState( NEMulticastRouterSettings::eRouterState newState );
+
+    /**
+     * \brief   Sets verbose flag.
+     **/
+    inline void setVerbose(bool verbose);
+
+    /**
+     * \brief   Returns verbose flag of the process. It can be true only if application runs as a console application.
+     **/
+    inline bool getVerbose(void) const;
+
+    /**
+     * \brief   Parses the options and returns true if succeeded.
+     * \param   argc    The number of options to parse.
+     * \param   argv    The options to parse.
+     */
+    bool parseOptions(int argc, char** argv);
+
+    /**
+     * \brief   Resets default options.
+     **/
+    inline void resetDefaultOptions(void);
+
+    /**
+     * \brief   Called to update data received statistics and if needed to make message output on console.
+     *          The output statistics message is ignored if verbose flag is not set.
+     *          It output invalid data rate message if 'bytesReceived' is zero.
+     * \param   bytesReceived   The bytes that received the multicast router.
+     **/
+    void dataReceived(uint32_t bytesReceived);
+
+    /**
+     * \brief   Called to update data sent statistics and if needed to make message output on console.
+     *          The output statistics message is ignored if verbose flag is not set.
+     *          It output invalid data rate message if 'bytesReceived' is zero.
+     * \param   bytesSent       The bytes that sent the multicast router.
+     **/
+    void dataSent(uint32_t bytesSent);
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods.
@@ -176,6 +215,10 @@ private:
      **/
     NEMulticastRouterSettings::eServiceCommand  mServiceCmd;
     /**
+     * \brief   Flag, indicating whether the process should run verbose or not. Valid only if process runs as console application.
+     */
+    bool            mRunVerbose;
+    /**
      * \brief   The instance of message router service server to accept connections from applications.
      **/
     ServerService   mServiceServer;
@@ -187,6 +230,10 @@ private:
      * \brief   OS specific service manager handle.
      **/
     void *          mSeMHandle;
+    /**
+     * \brief   The helper class to make data send and receive statistics on console if verbose flag is set.
+     */
+    Statistics      mStatistics;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -198,9 +245,20 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // MulticastRouter class inline methods.
 //////////////////////////////////////////////////////////////////////////
+
 inline NEMulticastRouterSettings::eRouterState MulticastRouter::getState( void ) const
 {
     return mRouterState;
+}
+
+inline void MulticastRouter::setVerbose(bool verbose)
+{
+    mRunVerbose = verbose;
+}
+
+inline bool MulticastRouter::getVerbose(void) const
+{
+    return (mRunVerbose && (mServiceCmd == NEMulticastRouterSettings::eServiceCommand::CMD_Console));
 }
 
 inline bool MulticastRouter::serviceOpen(void)
@@ -216,6 +274,23 @@ inline NEMulticastRouterSettings::eServiceCommand MulticastRouter::getCurrentCom
 inline void MulticastRouter::setCurrentCommand( NEMulticastRouterSettings::eServiceCommand cmdService)
 {
     mServiceCmd = cmdService;
+}
+
+inline void MulticastRouter::resetDefaultOptions(void)
+{
+    mServiceCmd = NEMulticastRouterSettings::DEFAULT_OPTION;
+    mRunVerbose = NEMulticastRouterSettings::DEFAULT_VERBOSE;
+    mStatistics.initialize(mRunVerbose);
+}
+
+inline void MulticastRouter::dataReceived(uint32_t bytesReceived)
+{
+    mStatistics.receivedBytes(bytesReceived);
+}
+
+inline void MulticastRouter::dataSent(uint32_t bytesSent)
+{
+    mStatistics.sentBytes(bytesSent);
 }
 
 inline MulticastRouter & MulticastRouter::self( void )

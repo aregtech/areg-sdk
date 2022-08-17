@@ -56,6 +56,7 @@ namespace NEMulticastRouterSettings
         , CMD_Uninstall     //!< Command is to uninstall (unregister) service in the system
         , CMD_Service       //!< Command is to execute process as a system service (in background)
         , CMD_Console       //!< Command is to execute process as console application.
+        , CMD_Verbose       //!< Command is to display the data rate when execute process as console application.
     } eServiceCommand;
 
     /**
@@ -72,9 +73,13 @@ namespace NEMulticastRouterSettings
      **/
     extern wchar_t *    SERVICE_NAME_WIDE           /*= NEApplication::ROUTER_SERVICE_NAME_WIDE*/;
     /**
-     * \brief   Default option. Set if multicast service starts without an option.
+     * \brief   The default option to run multicast router as a console application.
      **/
     constexpr eServiceCommand   DEFAULT_OPTION      { eServiceCommand::CMD_Console };
+    /**
+     * \brief   The default option to run multicast router in verbose mode to output send and receive data rate.
+     */
+    constexpr bool              DEFAULT_VERBOSE     { false };
     /**
      * \brief   Structure that specifies multicast router process option and related eServiceCommand value
      **/
@@ -94,6 +99,7 @@ namespace NEMulticastRouterSettings
         , {"--uninstall", "-u", eServiceCommand::CMD_Uninstall} //!< Command to uninstall service. Valid for Windows OS.
         , {"--service"  , "-s", eServiceCommand::CMD_Service}   //!< Command to run process as a system service process.
         , {"--console"  , "-c", eServiceCommand::CMD_Console}   //!< Command to run process as a console application.
+        , {"--verbose"  , "-v", eServiceCommand::CMD_Verbose}   //!< Command to display data rate when run as console application.
         , {""           , ""  , eServiceCommand::CMD_Undefined} //!< Any other command.
     };
 
@@ -152,6 +158,8 @@ inline const char * NEMulticastRouterSettings::getString( NEMulticastRouterSetti
         return "NEMulticastRouterSettings::CMD_Service";
     case NEMulticastRouterSettings::eServiceCommand::CMD_Console:
         return "NEMulticastRouterSettings::CMD_Console";
+    case NEMulticastRouterSettings::eServiceCommand::CMD_Verbose:
+        return "NEMulticastRouterSettings::CMD_Verbose";
     default:
         ASSERT( false );
         return "ERR: Unexpected NEMulticastRouterSettings::eServiceCommand value!";

@@ -18,6 +18,7 @@
 
 #pragma comment(lib, "areg.lib")
 #pragma comment(lib, "advapi32.lib")
+#pragma comment(lib, "kernel32.lib")
 
 #include "areg/base/NEUtilities.hpp"
 #include "areg/base/File.hpp"
@@ -31,6 +32,7 @@
 #include <tchar.h>
 #include <stdio.h>
 #include <shellapi.h>
+
 #include "mcrouter/resources/resource.hpp"
 
 DEF_TRACE_SCOPE(mcrouter_app_MulticastRouter_setState);
@@ -86,7 +88,10 @@ int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
     int result      = 0;
     char ** argvTemp = _convertArguments(argv, argc);
     MulticastRouter & router = MulticastRouter::getInstance();
-    router.setCurrentCommand( NEMulticastRouterSettings::parseOption( argc > 1 ?  argvTemp[1] : nullptr) );
+    if (router.parseOptions(argc, argvTemp) == false)
+    {
+        router.resetDefaultOptions();
+    }
 
     _deleteArguments(argvTemp, argc);
 

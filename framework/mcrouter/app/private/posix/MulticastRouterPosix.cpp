@@ -37,7 +37,11 @@ int main(int argc, char* argv[], char* envp[])
 {
     int result      = 0;
     MulticastRouter & router = MulticastRouter::getInstance();
-    router.setCurrentCommand( NEMulticastRouterSettings::parseOption( argc > 1 ?  argv[1] : nullptr ) );
+
+    if (router.parseOptions(argc, argv) == false)
+    {
+        router.resetDefaultOptions();
+    }
 
     switch ( router.getCurrentCommand() )
     {

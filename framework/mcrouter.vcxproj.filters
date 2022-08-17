@@ -60,6 +60,9 @@
     <ClInclude Include="mcrouter\tcp\private\ServiceStub.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="mcrouter\app\private\Statistics.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="mcrouter\resources\mcrouter.ico">
@@ -80,12 +83,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="mcrouter\app\private\MulticastRouter.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="mcrouter\app\private\MulticastRouterPosix.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="mcrouter\app\private\MulticastRouterWin32.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="mcrouter\tcp\private\ServerConnection.cpp">
@@ -119,6 +116,21 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="mcrouter\app\private\NEMulticastRouterSettings.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="mcrouter\app\private\Statistics.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="mcrouter\app\private\posix\MulticastRouterPosix.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="mcrouter\app\private\win32\MulticastRouterWin32.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="mcrouter\app\private\win32\StatisticsWin32.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="mcrouter\app\private\posix\StatisticsPosix.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
