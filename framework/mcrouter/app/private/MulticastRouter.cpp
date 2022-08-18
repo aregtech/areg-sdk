@@ -6,12 +6,13 @@
  ************************************************************************/
 
 #include "mcrouter/app/MulticastRouter.hpp"
-#include "areg/base/NEUtilities.hpp"
-#include "areg/base/File.hpp"
-#include "areg/base/Process.hpp"
-#include "areg/base/String.hpp"
+
 #include "areg/appbase/Application.hpp"
 #include "areg/appbase/NEApplication.hpp"
+#include "areg/base/File.hpp"
+#include "areg/base/NEUtilities.hpp"
+#include "areg/base/Process.hpp"
+#include "areg/base/String.hpp"
 #include "areg/trace/GETrace.h"
 
 #ifdef _WINDOWS
@@ -45,7 +46,6 @@ MulticastRouter::MulticastRouter( void )
     , mServiceServer( )
     , mSvcHandle    ( nullptr )
     , mSeMHandle    ( nullptr )
-    , mStatistics   ( )
 {
 }
 
@@ -132,17 +132,19 @@ void MulticastRouter::serviceMain( int argc, char ** argv )
 
         if ( mServiceCmd == NEMulticastRouterSettings::eServiceCommand::CMD_Console )
         {
-            mStatistics.initialize(mRunVerbose);
+            Statistics& stat = Statistics::getInstance();
+            stat.initialize(mRunVerbose);
 
             if (mRunVerbose)
             {
-                mStatistics.sentBytes(0);
+                stat.sentBytes(0);
                 printf("\n\r");
-                mStatistics.receivedBytes(0);
+                stat.receivedBytes(0);
                 printf("\n\r");
             }
 
-            printf("Type \'quit\' or \'q\' to quit message router ...: ");
+            stat.outputMessage(String("Type \'quit\' or \'q\' to quit message router ...: "));
+
             const char quit = static_cast<int>('q' );
             char cmd[8]     = {0};
             int charRead	= 0;
@@ -160,12 +162,13 @@ void MulticastRouter::serviceMain( int argc, char ** argv )
         }
         else
         {
-            mStatistics.setVerbose(false);
+            Statistics::getInstance().setVerbose(false);
         }
 
         Application::waitAppQuit(NECommon::WAIT_INFINITE);
 
         serviceStop();
+        Statistics::getInstance().unitialize();
 
         TRACE_WARN("Service Stopped and not running anymore");
 

@@ -22,39 +22,41 @@
 #ifdef _POSIX
 
 #include <stdio.h>
-#include <curses.h> // similar name for windows
+#include <termios.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <curses.h>
 
 
-namespace
+bool Statistics::_osInitialize(void)
 {
-    WINDOW* _newTerminal()
+    if (mSetupEnv == false)
     {
+        puts(CMD_ENTER_SCREEN.data())
+        puts(CMD_CLEAR_SCREEN.data());
+        puts(CMD_SCROLL_BACK.data());
 
-        newterm(getenv("TERM"), stdout, stdin);
-        return stdscr;
+        mSetupEnv = true;
     }
 
-    WINDOW * _getTerminal()
-    {
-        static WINDOW * win = stdscr == nullptr ? curscr == nullptr ? _newTerminal() : curscr : stdscr;
-        return win;
-    }
+    return mSetupEnv;
 }
 
-bool Statistics::_osInitialize( void )
+void Statistics::_osUnitialize(void)
 {
-    if (mIsInitialized == false)
+    if (mSetupEnv)
     {
-        initscr();
-        mIsInitialized = true;
-    }
+        // restore previous mode.
+        puts(CMD_EXIT_SCREEN.data());
 
-    return mIsInitialized;
+        mContext = 0;
+        mSetupEnv = false;
+    }
 }
 
 void Statistics::_setCursorCurrentPos(const Statistics::sCoord& pos)
 {
-    printf("\033[%d;%dH", pos.posY + 1, pos.posX + 1);
+    printf(CMD_MOVE_CURSOR.data(), pos.posY + 1, pos.posX + 1);
 }
 
 Statistics::sCoord Statistics::_getCursorCurrentPos(void)
@@ -62,8 +64,18 @@ Statistics::sCoord Statistics::_getCursorCurrentPos(void)
     int posX{ 0 };
     int posY{ 0 };
 
-    WINDOW * scr = stdscr;
-    getyx(scr, posY, posX);
+    struct termios oldTerm, newTerm;
+
+    tcgetattr(STDOUT_FILENO, &oldTerm);
+    newTerm.c_lflag &= ~(ECHO | ICANON);
+    cfmakeraw(&newTerm);
+    tcsetattr(STDOUT_FILENO, TCSANOW, &newTerm);
+
+    printf(CMD_POS_CURSOR.data());
+    fflush(stdout);
+    scanf(CMD_READ_CURSOR.data(), &posX, &posY);
+
+    tcsetattr(STDOUT_FILENO, TCSANOW, &oldTerm);
     // printf("\033[6n");
     // scanf("\033[%d;%dR", &posX, &posY);
 

@@ -24,7 +24,14 @@
 
 #include <chrono>
 
+//////////////////////////////////////////////////////////////////////////
+// Dependencies
+//////////////////////////////////////////////////////////////////////////
+class String;
 
+//////////////////////////////////////////////////////////////////////////
+// Statistics class declaration.
+//////////////////////////////////////////////////////////////////////////
 /**
  * \brief   This helper class makes data send and receive statistics output on console.
  *          Because of some OS specific method implementations, this object is a singleton.
@@ -38,7 +45,8 @@ private:
     //!< The timestamp to calculate duration.
     using Timestamp = std::chrono::high_resolution_clock::time_point;
     //!< The clocks to calculate duration.
-    using Clock = std::chrono::high_resolution_clock;
+    using Clock     = std::chrono::high_resolution_clock;
+    using Seconds   = std::ratio<1, 1>;
 
     /**
      * \brief   The X- and Y-coordinates for cursor position.
@@ -54,7 +62,6 @@ private:
      */
     typedef struct S_Statistics
     {
-        sCoord      statPosition{ 0, 0 };   //!< The X- and Y-coordinates on console to output message
         uint32_t    statDataSize{ 0 };      //!< The amount of data in bytes that sent or received.
         Timestamp   statLastUpdate;         //!< The timestamp when last time updated on the screen.
     } sStatistics;
@@ -62,18 +69,38 @@ private:
     /**
      * \brief   Bytes in 1 Kilobyte.
      **/
-    static constexpr uint32_t ONE_KILOBYTE{ 1024 };
+    static constexpr uint32_t           ONE_KILOBYTE    { 1024 };
     /**
      * \brief   Bytes in 1 Megabyte.
      **/
-    static constexpr uint32_t ONE_MEGABYTE{ ONE_KILOBYTE * 1024 };
+    static constexpr uint32_t           ONE_MEGABYTE    { ONE_KILOBYTE * 1024 };
+
+    static constexpr std::string_view   CMD_CLEAR_SCREEN{ "\x1B[2J" };
+
+    static constexpr std::string_view   CMD_SCROLL_BACK { "\x1B[3J" };
+
+    static constexpr std::string_view   CMD_MOVE_CURSOR { "\033[%d;%dH" };
+
+    static constexpr std::string_view   CMD_POS_CURSOR  { "\033[6n" };
+
+    static constexpr std::string_view   CMD_READ_CURSOR { "\033[%d;%dR" };
+
+    static constexpr std::string_view   CMD_ENTER_SCREEN{ "\033[?1049h\033[H" };
+
+    static constexpr std::string_view   CMD_EXIT_SCREEN { "\033[?1049l" };
+
+    static constexpr sCoord             COORD_SEND_DATA { 0, 0 };
+
+    static constexpr sCoord             COORD_RECV_DATA { 0, 1 };
+
+    static constexpr sCoord             COORD_OUTPUT_MSG{ 0, 2 };
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / destructor
 //////////////////////////////////////////////////////////////////////////
 private:
     Statistics(void);
-    ~Statistics(void) = default;
+    ~Statistics(void);
 
 //////////////////////////////////////////////////////////////////////////
 // Operations and attributes
@@ -90,6 +117,8 @@ public:
      * \param   verbose     Set verbose flag to indicate whether to output data on console or not.
      **/
     void initialize(bool verbose);
+
+    void unitialize( void );
 
     /**
      * \brief   Sets verbose flag to indicate whether should output message on console or not..
@@ -110,6 +139,8 @@ public:
      **/
     void receivedBytes(uint32_t bytesReceived);
 
+    void outputMessage(const String & msg);
+
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
 //////////////////////////////////////////////////////////////////////////
@@ -119,6 +150,8 @@ private:
      * \brief   Returns true if succeeded to make OS specific initializations.
      **/
     bool _osInitialize( void );
+
+    void _osUnitialize(void);
 
     /**
      * \brief   Outputs message of sent data rate.
@@ -144,10 +177,11 @@ private:
 // Hidden members
 //////////////////////////////////////////////////////////////////////////
 private:
-    bool        mIsInitialized; //!< Flag, indicating whether the object is initialized or not.
+    bool        mSetupEnv;      //!< Flag, indicating whether the object is initialized or not.
     bool        mVerbose;       //!< The verbose output flag. If false, makes no message outputs.
-    sStatistics mStatSent;      //!< The sent data
-    sStatistics mStatReceived;  //!< The received data
+    sStatistics mStatSent;      //!< The sent data.
+    sStatistics mStatReceived;  //!< The received data.
+    ptr_type    mContext;       //!< The OS specific context to use.
     Mutex       mLock;          //!< Synchronization object to handle cursor position.
 
 //////////////////////////////////////////////////////////////////////////

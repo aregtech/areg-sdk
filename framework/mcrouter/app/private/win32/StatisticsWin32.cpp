@@ -25,10 +25,49 @@
 
 #include <windows.h>
 
+
 bool Statistics::_osInitialize( void )
 {
-    mIsInitialized = true;
-    return mIsInitialized;
+    if (mSetupEnv == false)
+    {
+        HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
+        DWORD mode = 0;
+        if ((hStdOut != nullptr) && (GetConsoleMode(hStdOut, &mode) == TRUE))
+        {
+            mContext = static_cast<ptr_type>(mode);
+            mode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
+            SetConsoleMode(hStdOut, mode);
+            DWORD written = 0;
+            if (WriteConsoleA(hStdOut, CMD_CLEAR_SCREEN.data(), static_cast<DWORD>(CMD_CLEAR_SCREEN.size()), &written, NULL) == TRUE)
+            {
+                written = 0;
+                WriteConsoleA(hStdOut, CMD_SCROLL_BACK.data(), static_cast<DWORD>(CMD_SCROLL_BACK.size()), &written, NULL);
+                mSetupEnv = true;
+            }
+            else
+            {
+                // restore previous mode.
+                mode = static_cast<DWORD>(mContext);
+                SetConsoleMode(hStdOut, mode);
+                mContext = 0;
+            }
+        }
+    }
+
+    return mSetupEnv;
+}
+
+void Statistics::_osUnitialize(void)
+{
+    if (mSetupEnv)
+    {
+        // restore previous mode.
+        HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
+        DWORD mode = static_cast<DWORD>(mContext);
+        SetConsoleMode(hStdOut, mode);
+        mContext    = 0;
+        mSetupEnv   = false;
+    }
 }
 
 void Statistics::_setCursorCurrentPos(const Statistics::sCoord& pos)

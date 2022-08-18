@@ -18,6 +18,7 @@
   ************************************************************************/
 #include "mcrouter/app/private/Statistics.hpp"
 #include "areg/base/NECommon.hpp"
+#include "areg/base/String.hpp"
 
 Statistics & Statistics::getInstance( void )
 {
@@ -26,11 +27,18 @@ Statistics & Statistics::getInstance( void )
 }
 
 Statistics::Statistics(void)
-    : mVerbose      ( false )
+    : mSetupEnv     ( false )
+    , mVerbose      ( false )
     , mStatSent     ( )
     , mStatReceived ( )
+    , mContext      ( 0 )
     , mLock         (false)
 {
+}
+
+Statistics::~Statistics(void)
+{
+    _osUnitialize();
 }
 
 void Statistics::initialize(bool verbose)
@@ -39,18 +47,18 @@ void Statistics::initialize(bool verbose)
     if (verbose && _osInitialize())
     {
         Timestamp now = Clock::now();
-        sCoord curPos = _getCursorCurrentPos();
 
         mStatSent.statLastUpdate = now;
         mStatSent.statDataSize = 0;
-        mStatSent.statPosition.posX = 0;
-        mStatSent.statPosition.posY = curPos.posY + 0;
 
         mStatReceived.statLastUpdate = now;
         mStatReceived.statDataSize = 0;
-        mStatReceived.statPosition.posX = 0;
-        mStatReceived.statPosition.posY = curPos.posY + 1;
     }
+}
+
+void Statistics::unitialize(void)
+{
+    _osUnitialize();
 }
 
 void Statistics::setVerbose(bool verbose)
@@ -68,9 +76,9 @@ void Statistics::sentBytes(uint32_t bytesSent)
         mStatSent.statDataSize += bytesSent;
 
         Timestamp now = Clock::now();
-        std::chrono::duration<double, std::milli> duration = now - mStatSent.statLastUpdate;
+        std::chrono::duration<float, Seconds> duration = now - mStatSent.statLastUpdate;
         uint32_t elapsed = static_cast<uint32_t>(duration.count());
-        if (elapsed >= NECommon::TIMEOUT_1_SEC)
+        if (elapsed >= 1)
         {
             Lock lock(mLock);
 
@@ -102,9 +110,9 @@ void Statistics::receivedBytes(uint32_t bytesReceived)
         mStatReceived.statDataSize += bytesReceived;
 
         Timestamp now = Clock::now();
-        std::chrono::duration<double, std::milli> duration = now - mStatReceived.statLastUpdate;
+        std::chrono::duration<float, Seconds> duration = now - mStatReceived.statLastUpdate;
         uint32_t elapsed = static_cast<uint32_t>(duration.count());
-        if (elapsed >= NECommon::TIMEOUT_1_SEC)
+        if (elapsed >= 1)
         {
 
             Lock lock(mLock);
@@ -127,9 +135,15 @@ void Statistics::receivedBytes(uint32_t bytesReceived)
     }
 }
 
+void Statistics::outputMessage(const String & msg)
+{
+    _setCursorCurrentPos(COORD_OUTPUT_MSG);
+    printf("%s", msg.getString());
+}
+
 void Statistics::_outputSendBytes(uint32_t duration)
 {
-    _setCursorCurrentPos(mStatSent.statPosition);
+    _setCursorCurrentPos(COORD_SEND_DATA);
 
     if (duration == 0)
     {
@@ -141,23 +155,23 @@ void Statistics::_outputSendBytes(uint32_t duration)
         if (static_cast<uint32_t>(rate) > ONE_MEGABYTE)
         {
             rate /= ONE_MEGABYTE;
-            printf("\rSend data with the rate: %.02f MB/s", rate);
+            printf("\rSend data with the rate: % 7.02f MB/s", rate);
         }
         else if (static_cast<uint32_t>(rate) > ONE_KILOBYTE)
         {
             rate /= ONE_KILOBYTE;
-            printf("\rSend data with the rate: %.02f KB/s", rate);
+            printf("\rSend data with the rate: % 7.02f KB/s", rate);
         }
         else
         {
-            printf("\rSend data with the rate: %.02f B/s", rate);
+            printf("\rSend data with the rate: % 7.02f  B/s", rate);
         }
     }
 }
 
 void Statistics::_outputReceiveBytes(uint32_t duration)
 {
-    _setCursorCurrentPos(mStatReceived.statPosition);
+    _setCursorCurrentPos(COORD_RECV_DATA);
 
     if (duration == 0)
     {
@@ -169,16 +183,16 @@ void Statistics::_outputReceiveBytes(uint32_t duration)
         if (static_cast<uint32_t>(rate) > ONE_MEGABYTE)
         {
             rate /= ONE_MEGABYTE;
-            printf("\rRecv data with the rate: %.02f MB/s", rate);
+            printf("\rRecv data with the rate: % 7.02f MB/s", rate);
         }
         else if (static_cast<uint32_t>(rate) > ONE_KILOBYTE)
         {
             rate /= ONE_KILOBYTE;
-            printf("\rRecv data with the rate: %.02f KB/s", rate);
+            printf("\rRecv data with the rate: % 7.02f KB/s", rate);
         }
         else
         {
-            printf("\rRecv data with the rate: %.02f B/s", rate);
+            printf("\rRecv data with the rate: % 7.02f  B/s", rate);
         }
     }
 }

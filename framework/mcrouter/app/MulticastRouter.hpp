@@ -230,10 +230,6 @@ private:
      * \brief   OS specific service manager handle.
      **/
     void *          mSeMHandle;
-    /**
-     * \brief   The helper class to make data send and receive statistics on console if verbose flag is set.
-     */
-    Statistics      mStatistics;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -280,17 +276,17 @@ inline void MulticastRouter::resetDefaultOptions(void)
 {
     mServiceCmd = NEMulticastRouterSettings::DEFAULT_OPTION;
     mRunVerbose = NEMulticastRouterSettings::DEFAULT_VERBOSE;
-    mStatistics.initialize(mRunVerbose);
+    Statistics::getInstance().initialize(mRunVerbose);
 }
 
 inline void MulticastRouter::dataReceived(uint32_t bytesReceived)
 {
-    mStatistics.receivedBytes(bytesReceived);
+    Statistics::getInstance().receivedBytes(bytesReceived);
 }
 
 inline void MulticastRouter::dataSent(uint32_t bytesSent)
 {
-    mStatistics.sentBytes(bytesSent);
+    Statistics::getInstance().sentBytes(bytesSent);
 }
 
 inline MulticastRouter & MulticastRouter::self( void )
