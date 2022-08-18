@@ -23,6 +23,7 @@
 #include "areg/base/SynchObjects.hpp"
 
 #include <chrono>
+#include <string_view>
 
 //////////////////////////////////////////////////////////////////////////
 // Dependencies

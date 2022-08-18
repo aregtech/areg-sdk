@@ -72,9 +72,12 @@ void Statistics::_osUnitialize(void)
 
 void Statistics::_setCursorCurrentPos(const Statistics::sCoord& pos)
 {
-    HANDLE h = GetStdHandle(STD_OUTPUT_HANDLE);
-    COORD coord{ pos.posX, pos.posY };
-    SetConsoleCursorPosition(h, coord);
+    if ((pos.posX >= 0) && (pos.posY >= 0))
+    {
+        HANDLE h = GetStdHandle( STD_OUTPUT_HANDLE );
+        COORD coord{ pos.posX, pos.posY };
+        SetConsoleCursorPosition( h, coord );
+    }
 }
 
 Statistics::sCoord Statistics::_getCursorCurrentPos(void)

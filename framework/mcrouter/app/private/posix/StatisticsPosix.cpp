@@ -25,14 +25,12 @@
 #include <termios.h>
 #include <unistd.h>
 #include <fcntl.h>
-#include <curses.h>
-
 
 bool Statistics::_osInitialize(void)
 {
     if (mSetupEnv == false)
     {
-        puts(CMD_ENTER_SCREEN.data())
+        puts(CMD_ENTER_SCREEN.data());
         puts(CMD_CLEAR_SCREEN.data());
         puts(CMD_SCROLL_BACK.data());
 
