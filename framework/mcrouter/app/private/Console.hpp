@@ -1,5 +1,5 @@
-#ifndef AREG_MCROUTER_APP_STATISTICS_HPP
-#define AREG_MCROUTER_APP_STATISTICS_HPP
+#ifndef AREG_MCROUTER_APP_Console_HPP
+#define AREG_MCROUTER_APP_Console_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -9,10 +9,10 @@
  * If not, please contact to info[at]aregtech.com
  *
  * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
- * \file        mcrouter/app/private/Statistics.hpp
+ * \file        mcrouter/app/private/Console.hpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
  * \author      Artak Avetyan
- * \brief       AREG Platform, Multi-cast routing statistics.
+ * \brief       AREG Platform, Multi-cast routing console that outputs stistics.
  ************************************************************************/
 
  /************************************************************************
@@ -21,6 +21,7 @@
 #include "areg/base/GEGlobal.h"
 #include "areg/base/NEMath.hpp"
 #include "areg/base/SynchObjects.hpp"
+#include "areg/base/String.hpp"
 
 #include <chrono>
 #include <string_view>
@@ -31,13 +32,13 @@
 class String;
 
 //////////////////////////////////////////////////////////////////////////
-// Statistics class declaration.
+// Console class declaration.
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   This helper class makes data send and receive statistics output on console.
+ * \brief   This helper class makes data send and receive Console output on console.
  *          Because of some OS specific method implementations, this object is a singleton.
  **/
-class Statistics
+class Console
 {
 //////////////////////////////////////////////////////////////////////////
 // Internal types and constants
@@ -59,7 +60,7 @@ private:
     } sCoord;
 
     /**
-     * \brief   The statistics data.
+     * \brief   The Statistics data.
      */
     typedef struct S_Statistics
     {
@@ -78,30 +79,61 @@ private:
 
     static constexpr std::string_view   CMD_CLEAR_SCREEN{ "\x1B[2J" };
 
+    static constexpr std::string_view   CMD_CLEAR_EOL   { "\x1B[K" };
+
+    static constexpr std::string_view   CMD_CLEAR_LINE  { "\33[2K" };
+
     static constexpr std::string_view   CMD_SCROLL_BACK { "\x1B[3J" };
 
-    static constexpr std::string_view   CMD_MOVE_CURSOR { "\033[%d;%dH" };
+    static constexpr std::string_view   CMD_MOVE_CURSOR { "\x1B[%d;%dH" };
 
-    static constexpr std::string_view   CMD_POS_CURSOR  { "\033[6n" };
+    static constexpr std::string_view   CMD_POS_CURSOR  { "\x1B[6n" };
 
-    static constexpr std::string_view   CMD_READ_CURSOR { "\033[%d;%dR" };
+    static constexpr std::string_view   CMD_READ_CURSOR { "\x1B[%d;%dR" };
 
-    static constexpr std::string_view   CMD_ENTER_SCREEN{ "\033[?1049h\033[H" };
+    static constexpr std::string_view   CMD_ENTER_SCREEN{ "\x1B[?1049h\033[H" };
 
-    static constexpr std::string_view   CMD_EXIT_SCREEN { "\033[?1049l" };
+    static constexpr std::string_view   CMD_EXIT_SCREEN { "\x1B[?1049l" };
 
     static constexpr sCoord             COORD_SEND_DATA { 0, 0 };
 
     static constexpr sCoord             COORD_RECV_DATA { 0, 1 };
 
-    static constexpr sCoord             COORD_OUTPUT_MSG{ 0, 2 };
+    static constexpr sCoord             COORD_OUTPUT_ERR{ 0, 2 };
+
+    static constexpr sCoord             COORD_OUTPUT_MSG{ 0, 3 };
+
+    static constexpr std::string_view   FORMAT_SEND_DATA{ "\x1B[1;1HSend data with the rate: % 7.02f %s\n" };
+
+    static constexpr std::string_view   FORMAT_RECV_DATA{ "\x1B[2;1HRecv data with the rate: % 7.02f %s\n" };
+
+    static constexpr std::string_view   FORMAT_MSG_ERROR{ "\x1B[3;1HERROR, unexpected command [ %s ], please type again ...\n" };
+
+    static constexpr std::string_view   FORMAT_WAIT_QUIT{ "\x1B[4;1H%s" };
+
+    static constexpr std::string_view   FORMAT_ENDOF_MSG{ "\x1B[4;%dH" };
+
+    static constexpr std::string_view   MSG_WAIT_QUIT   { "Type \'quit\' or \'q\' to quit message router ...: "};
+
+    static constexpr char               CHAR_ENTER      { 13 };
+
+    static constexpr std::string_view   MSG_KILOBYTES   { "KBytes / sec." };
+
+    static constexpr std::string_view   MSG_MEGABYTES   { "MBytes / sec." };
+
+    static constexpr std::string_view   MSG_BYTES       { " Bytes / sec." };
+
+    static constexpr char               QUIT_CH         { 'q' };
+
+    static constexpr std::string_view   QUIT_STR        { "quit" };
+
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / destructor
 //////////////////////////////////////////////////////////////////////////
 private:
-    Statistics(void);
-    ~Statistics(void);
+    Console(void);
+    ~Console(void);
 
 //////////////////////////////////////////////////////////////////////////
 // Operations and attributes
@@ -109,43 +141,35 @@ private:
 public:
 
     /**
-     * \brief   Returns the instance of object.
-     **/
-    static Statistics & getInstance( void );
-
-    /**
-     * \brief   Initializes the statistics data.
+     * \brief   Initializes the Console data.
      * \param   verbose     Set verbose flag to indicate whether to output data on console or not.
      **/
-    void initialize(bool verbose);
-
-    void unitialize( void );
-
-    /**
-     * \brief   Sets verbose flag to indicate whether should output message on console or not..
-     **/
-    void setVerbose(bool verbose);
+    static void initialize(bool verbose);
 
     /**
      * \brief   Call to check and if needed to output send data message on console.
      *          The message is output if verbose flag is set. Otherwise, makes nothing.
      * \param   bytesSent       Bytes that where sent. Value 0 means to make invalidate data output.
      **/
-    void sentBytes(uint32_t bytesSent);
+    static void sentBytes(uint32_t bytesSent);
 
     /**
      * \brief   Call to check and if needed to output receive data message on console.
      *          The message is output if verbose flag is set. Otherwise, makes nothing.
      * \param   bytesReceived   Bytes that where received. Value 0 means to make invalidate data output.
      **/
-    void receivedBytes(uint32_t bytesReceived);
+    static void receivedBytes(uint32_t bytesReceived);
 
-    void outputMessage(const String & msg);
+    static void waitQuitCommand( void );
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
 //////////////////////////////////////////////////////////////////////////
 private:
+
+    static Console & _getInstance( void );
+
+    void _unitialize( void );
 
     /**
      * \brief   Returns true if succeeded to make OS specific initializations.
@@ -168,7 +192,7 @@ private:
      * \brief   Sets the cursor position on console.
      * \param   pos     The X- and Y-coordinate positions on console to set the cursor.
      */
-    void _setCursorCurrentPos(const Statistics::sCoord& pos);
+    void _setCursorCurrentPos(const Console::sCoord& pos);
     /**
      * \brief   Gets current X- and Y-coordinate position of cursor on the console.
      **/
@@ -182,6 +206,7 @@ private:
     bool        mVerbose;       //!< The verbose output flag. If false, makes no message outputs.
     sStatistics mStatSent;      //!< The sent data.
     sStatistics mStatReceived;  //!< The received data.
+    String      mCommand;       //!< The command entered by user on console.
     ptr_type    mContext;       //!< The OS specific context to use.
     Mutex       mLock;          //!< Synchronization object to handle cursor position.
 
@@ -189,8 +214,8 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    DECLARE_NOCOPY_NOMOVE(Statistics);
+    DECLARE_NOCOPY_NOMOVE(Console);
 };
 
-#endif  // AREG_MCROUTER_APP_STATISTICS_HPP
+#endif  // AREG_MCROUTER_APP_Console_HPP
 

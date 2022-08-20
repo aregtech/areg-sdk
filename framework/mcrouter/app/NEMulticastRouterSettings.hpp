@@ -79,7 +79,7 @@ namespace NEMulticastRouterSettings
     /**
      * \brief   The default option to run multicast router in verbose mode to output send and receive data rate.
      */
-    constexpr bool              DEFAULT_VERBOSE     { false };
+    constexpr bool              DEFAULT_VERBOSE     { true };
     /**
      * \brief   Structure that specifies multicast router process option and related eServiceCommand value
      **/

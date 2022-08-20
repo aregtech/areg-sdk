@@ -7,17 +7,17 @@
  * If not, please contact to info[at]aregtech.com
  *
  * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
- * \file        mcrouter/app/private/Statistics.cpp
+ * \file        mcrouter/app/private/ConsoleWin32.cpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
  * \author      Artak Avetyan
- * \brief       AREG Platform, Multi-cast routing statistics.
+ * \brief       AREG Platform, Multi-cast routing console that outputs stistics.
  *              Windows OS specific part implementation.
  ************************************************************************/
 
  /************************************************************************
   * Include files.
   ************************************************************************/
-#include "mcrouter/app/private/Statistics.hpp"
+#include "mcrouter/app/private/Console.hpp"
 
 #ifdef WINDOWS
 
@@ -26,7 +26,7 @@
 #include <windows.h>
 
 
-bool Statistics::_osInitialize( void )
+bool Console::_osInitialize( void )
 {
     if (mSetupEnv == false)
     {
@@ -57,7 +57,7 @@ bool Statistics::_osInitialize( void )
     return mSetupEnv;
 }
 
-void Statistics::_osUnitialize(void)
+void Console::_osUnitialize(void)
 {
     if (mSetupEnv)
     {
@@ -70,7 +70,7 @@ void Statistics::_osUnitialize(void)
     }
 }
 
-void Statistics::_setCursorCurrentPos(const Statistics::sCoord& pos)
+void Console::_setCursorCurrentPos(const Console::sCoord& pos)
 {
     if ((pos.posX >= 0) && (pos.posY >= 0))
     {
@@ -80,7 +80,7 @@ void Statistics::_setCursorCurrentPos(const Statistics::sCoord& pos)
     }
 }
 
-Statistics::sCoord Statistics::_getCursorCurrentPos(void)
+Console::sCoord Console::_getCursorCurrentPos(void)
 {
     HANDLE h = GetStdHandle(STD_OUTPUT_HANDLE);
     CONSOLE_SCREEN_BUFFER_INFO bufferInfo;

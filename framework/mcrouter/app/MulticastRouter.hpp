@@ -20,7 +20,7 @@
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
 #include "mcrouter/app/NEMulticastRouterSettings.hpp"
-#include "mcrouter/app/private/Statistics.hpp"
+#include "mcrouter/app/private/Console.hpp"
 #include "mcrouter/tcp/ServerService.hpp"
 #include "areg/base/SynchObjects.hpp"
 
@@ -276,17 +276,16 @@ inline void MulticastRouter::resetDefaultOptions(void)
 {
     mServiceCmd = NEMulticastRouterSettings::DEFAULT_OPTION;
     mRunVerbose = NEMulticastRouterSettings::DEFAULT_VERBOSE;
-    Statistics::getInstance().initialize(mRunVerbose);
 }
 
 inline void MulticastRouter::dataReceived(uint32_t bytesReceived)
 {
-    Statistics::getInstance().receivedBytes(bytesReceived);
+    Console::receivedBytes(bytesReceived);
 }
 
 inline void MulticastRouter::dataSent(uint32_t bytesSent)
 {
-    Statistics::getInstance().sentBytes(bytesSent);
+	Console::sentBytes(bytesSent);
 }
 
 inline MulticastRouter & MulticastRouter::self( void )

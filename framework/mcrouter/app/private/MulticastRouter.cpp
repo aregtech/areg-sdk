@@ -15,10 +15,18 @@
 #include "areg/base/String.hpp"
 #include "areg/trace/GETrace.h"
 
+#include <stdio.h>
+
 #ifdef _WINDOWS
     #define MACRO_SCANF(fmt, data, len)     scanf_s(fmt, data, len)
 #else   // _POSIX
     #define MACRO_SCANF(fmt, data, len)     scanf(fmt, data)
+#endif  // _WINDOWS
+
+#ifdef _WINDOWS
+    #define MACRO_FSCANF(stream, fmt, data, len)    fscanf_s(stream, fmt, data, len)
+#else   // _POSIX
+    #define MACRO_FSCANF(stream, fmt, data, len)    fscanf(stream, fmt, data)
 #endif  // _WINDOWS
 
 
@@ -132,44 +140,17 @@ void MulticastRouter::serviceMain( int argc, char ** argv )
 
         if ( mServiceCmd == NEMulticastRouterSettings::eServiceCommand::CMD_Console )
         {
-            Statistics& stat = Statistics::getInstance();
-            stat.initialize(mRunVerbose);
-
-            if (mRunVerbose)
-            {
-                stat.sentBytes(0);
-                printf("\n\r");
-                stat.receivedBytes(0);
-                printf("\n\r");
-            }
-
-            stat.outputMessage(String("Type \'quit\' or \'q\' to quit message router ...: "));
-
-            const char quit = static_cast<int>('q' );
-            char cmd[8]     = {0};
-            int charRead	= 0;
-
-            do 
-            {
-                if ( MACRO_SCANF( "%4s", cmd, 8 ) != 1 )
-                {
-                    printf( "\nERROR: Unexpected choice of command, quit application ...\n" );
-                }
-
-            } while ((NEString::makeAsciiLower<char>(*cmd) != quit) && (charRead > 0));
-
+            Console::initialize(mRunVerbose);
+            Console::waitQuitCommand();
             Application::signalAppQuit();
         }
         else
         {
-            Statistics::getInstance().setVerbose(false);
+            Console::initialize(false);
         }
 
         Application::waitAppQuit(NECommon::WAIT_INFINITE);
-
         serviceStop();
-        Statistics::getInstance().unitialize();
-
         TRACE_WARN("Service Stopped and not running anymore");
 
         Application::releaseApplication();
