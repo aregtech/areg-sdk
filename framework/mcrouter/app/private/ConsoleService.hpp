@@ -276,6 +276,7 @@ private:
     void _osUninitialize(void);
 
     void _osDataRate(uint32_t bytesSent, uint32_t bytesReceive, bool isInit);
+
     bool isQuitApplication(void);
 
     //////////////////////////////////////////////////////////////////////////

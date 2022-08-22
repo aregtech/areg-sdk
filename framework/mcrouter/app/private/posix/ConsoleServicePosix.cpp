@@ -33,7 +33,7 @@ void ConsoleService::_osInitialize(void)
     puts(CMD_SCROLL_BACK.data());
 }
 
-void ConsoleService::_osUnitialize(void)
+void ConsoleService::_osUninitialize(void)
 {
     // restore previous mode.
     // fputs(CMD_EXIT_SCREEN.data(), stdout);
@@ -60,7 +60,7 @@ void ConsoleService::_osDataRate(uint32_t bytesSent, uint32_t bytesReceive, bool
 
     if (mDispError)
     {
-        puts(CMD_CLEAR_LINE.data(), CMD_CLEAR_LINE.length());
+        puts(CMD_CLEAR_LINE.data());
     }
 
     printf(FORMAT_WAIT_QUIT_X.data(), mCommand.getString());

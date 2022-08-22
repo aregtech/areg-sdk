@@ -28,7 +28,6 @@
     #define WIN32_LEAN_AND_MEAN
 #endif  // WIN32_LEAN_AND_MEAN
 #include <windows.h>
-#include <winsock2.h>
 #include <cstdio>
 #include <iostream>
 #include <chrono>
