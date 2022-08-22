@@ -12,12 +12,12 @@
  * \file        mcrouter/app/private/Console.hpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
  * \author      Artak Avetyan
- * \brief       AREG Platform, Multi-cast routing console that outputs stistics.
+ * \brief       AREG Platform, Multi-cast routing console that outputs statistics.
  ************************************************************************/
 
- /************************************************************************
-  * Include files.
-  ************************************************************************/
+/************************************************************************
+ * Include files.
+ ************************************************************************/
 #include "areg/base/GEGlobal.h"
 #include "areg/base/NEMath.hpp"
 #include "areg/base/SynchObjects.hpp"

@@ -30,6 +30,7 @@ ServerSendThread::ServerSendThread(IERemoteServiceHandler & remoteService, Serve
     , IESendMessageEventConsumer( )
     , mRemoteService            ( remoteService )
     , mConnection               ( connection )
+    , mBytesSent                ( 0 )
 {
 }
 
@@ -51,7 +52,7 @@ void ServerSendThread::processEvent( const SendMessageEventData & data )
     {
         ITEM_ID target = static_cast<ITEM_ID>(msgSend.getTarget());
         SocketAccepted client = mConnection.getClientByCookie(target);
-        
+
         TRACE_DBG("Sending message [ %s ] (ID = [ %u ]) to client [ %s : %d ] of socket [ %u ]. The message sent from source [ %u ] to target [ %u ]"
                     , NEService::getString( static_cast<NEService::eFuncIdRange>(msgSend.getMessageId()) )
                     , static_cast<unsigned int>(msgSend.getMessageId())
@@ -73,7 +74,7 @@ void ServerSendThread::processEvent( const SendMessageEventData & data )
         }
         else
         {
-            MulticastRouter::getInstance().dataSent(sentBytes);
+            mBytesSent += sentBytes;
             TRACE_DBG("Succeeded to send message [ %u ] to target [ %p ]", msgSend.getMessageId(), static_cast<id_type>(msgSend.getTarget()));
         }
     }

@@ -1,17 +1,23 @@
-#pragma once
-
+#ifndef AREG_MCROUTER_APP_STATSERVICE_HPP
+#define AREG_MCROUTER_APP_STATSERVICE_HPP
 /************************************************************************
- * \file        src/ServicingComponent.hpp
- * \ingroup     AREG Asynchronous Event-Driven Communication Framework examples
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \file        mcrouter/app/private/StatService.hpp
+ * \ingroup     AREG Asynchronous Event-Driven Communication Framework
  * \author      Artak Avetyan
- * \brief       Collection of AREG SDK examples.
- *              This file contains simple implementation of servicing component
- *              without requests
+ * \brief       AREG Platform, Multi-cast routing, service that outputs statistics.
  ************************************************************************/
+
 /************************************************************************
  * Include files.
  ************************************************************************/
-
 #include "areg/base/GEGlobal.h"
 #include "areg/component/Component.hpp"
 #include "areg/component/StubBase.hpp"
@@ -20,22 +26,15 @@
 #include "areg/component/Timer.hpp"
 
 //////////////////////////////////////////////////////////////////////////
-// ServicingComponent class declaration
+// StatService class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   A demo of simple servicing component with timer without component servicing (request) methods.
+ * \brief   A service to output statistics..
  **/
-class ServicingComponent    : public    Component
-                            , protected StubBase
-                            , protected IETimerConsumer
+class StatService   : public    Component
+                    , protected StubBase
+                    , protected IETimerConsumer
 {
-//////////////////////////////////////////////////////////////////////////
-// Constants
-//////////////////////////////////////////////////////////////////////////
-private:
-    static const unsigned int   TIMER_TIMEOUT   { NECommon::TIMEOUT_100_MS };   //!< Timer timeout in milliseconds
-    static const int            TIMER_EVENTS    { 10 };   					    //!< Fired timer count.
-
 //////////////////////////////////////////////////////////////////////////
 // Static methods
 //////////////////////////////////////////////////////////////////////////
@@ -66,12 +65,12 @@ protected:
      * \param   roleName        The role name of component, given in the system.
      * \param   data            The optional component data set in system. Can be empty / no data.
      **/
-    ServicingComponent(ComponentThread & masterThread, const char * const roleName, NEMemory::uAlign OPTIONAL data);
+    StatService( ComponentThread & masterThread, const char * const roleName, NEMemory::uAlign OPTIONAL data );
 
     /**
      * \brief   Destructor.
      **/
-    virtual ~ServicingComponent(void) = default;
+    virtual ~StatService( void ) = default;
 
 /************************************************************************/
 // CEStubBase overrides. Triggered by Component on startup.
@@ -163,20 +162,24 @@ protected:
 
 private:
     Timer   mTimer; //!< The timer to run in component thread.
-    int     mCount; //!< The timer event count.
+
 
 private:
-    inline ServicingComponent & self( void );
+    inline StatService & self( void );
 
-//////////////////////////////////////////////////////////////////////////
-// Forbidden calls
-//////////////////////////////////////////////////////////////////////////
-    ServicingComponent( void ) = delete;
-    DECLARE_NOCOPY_NOMOVE( ServicingComponent );
+    //////////////////////////////////////////////////////////////////////////
+    // Forbidden calls
+    //////////////////////////////////////////////////////////////////////////
+    StatService( void ) = delete;
+    DECLARE_NOCOPY_NOMOVE( StatService );
 };
 
 //////////////////////////////////////////////////////////////////////////
-// ServicingComponent inline methods
+// StatService inline methods
 //////////////////////////////////////////////////////////////////////////
-inline ServicingComponent & ServicingComponent::self( void )
-{   return (*this);     }
+inline StatService & StatService::self( void )
+{
+    return (*this);
+}
+
+#endif  // AREG_MCROUTER_APP_STATSERVICE_HPP

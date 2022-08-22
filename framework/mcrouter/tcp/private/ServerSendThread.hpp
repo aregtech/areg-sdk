@@ -53,6 +53,12 @@ public:
      **/
     virtual ~ServerSendThread( void ) = default;
 
+/************************************************************************/
+// Actions and attributes.
+/************************************************************************/
+public:
+    inline uint32_t extractDataSent( void );
+
 protected:
 /************************************************************************/
 // DispatcherThread overrides
@@ -107,7 +113,10 @@ private:
      * \brief   The instance of server connection object
      **/
     ServerConnection &          mConnection;
-
+    /**
+     *\brief    The number of bytes that sent data each sec.
+     **/
+    uint32_t                    mBytesSent;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
