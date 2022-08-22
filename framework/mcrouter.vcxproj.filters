@@ -60,10 +60,7 @@
     <ClInclude Include="mcrouter\tcp\private\ServiceStub.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="mcrouter\app\private\Console.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="mcrouter\app\private\StatService.hpp">
+    <ClInclude Include="mcrouter\app\private\ConsoleService.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -121,22 +118,19 @@
     <ClCompile Include="mcrouter\app\private\NEMulticastRouterSettings.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="mcrouter\app\private\Console.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="mcrouter\app\private\posix\MulticastRouterPosix.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="mcrouter\app\private\win32\MulticastRouterWin32.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="mcrouter\app\private\win32\ConsoleWin32.cpp">
+    <ClCompile Include="mcrouter\app\private\win32\ConsoleServiceWin32.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="mcrouter\app\private\posix\ConsolePosix.cpp">
+    <ClCompile Include="mcrouter\app\private\posix\ConsoleServicePosix.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="mcrouter\app\private\StatService.cpp">
+    <ClCompile Include="mcrouter\app\private\ConsoleService.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

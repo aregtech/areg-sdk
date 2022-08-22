@@ -125,6 +125,8 @@ Thread::eCompletionStatus Thread::destroyThread(unsigned int waitForStopMs /* = 
             // force to terminate thread and close handles due to waiting timeout expire
             result = Thread::eCompletionStatus::ThreadTerminated;
             ::TerminateThread(static_cast<HANDLE>(handle), static_cast<DWORD>(IEThreadConsumer::eExitCodes::ExitTerminated));
+            this->mWaitForRun.resetEvent();
+            this->mWaitForExit.setEvent();
         }
         else
         {

@@ -21,6 +21,8 @@
 #include "areg/base/GEGlobal.h"
 #include "areg/component/DispatcherThread.hpp"
 
+#include <atomic>
+
 /************************************************************************
  * Dependencies
  ************************************************************************/
@@ -54,6 +56,15 @@ public:
      **/
     virtual ~ServerReceiveThread( void ) = default;
 
+// Actions and attributes.
+/************************************************************************/
+public:
+    /**
+     * \brief   Returns accumulative value of received data size and rests the existing value to zero.
+     *          The operations are atomic. The value can be used to display data rate, for example.
+     **/
+    inline uint32_t extractDataReceive( void );
+
 protected:
 /************************************************************************/
 // DispatcherThread overrides
@@ -84,6 +95,10 @@ private:
      * \brief   The instance of server connection object
      **/
     ServerConnection &          mConnection;
+    /**
+     * \brief   Accumulative value of received data size.
+     */
+    std::atomic_uint            mBytesReceive;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -92,5 +107,10 @@ private:
     ServerReceiveThread( void ) = delete;
     DECLARE_NOCOPY_NOMOVE( ServerReceiveThread );
 };
+
+inline uint32_t ServerReceiveThread::extractDataReceive(void)
+{
+    return mBytesReceive.exchange(0);
+}
 
 #endif  // AREG_MCROUTER_TCP_PRIVATE_SERVERRECEIVETHREAD_HPP

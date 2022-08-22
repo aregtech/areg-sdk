@@ -1,5 +1,5 @@
-#ifndef AREG_MCROUTER_APP_STATSERVICE_HPP
-#define AREG_MCROUTER_APP_STATSERVICE_HPP
+#ifndef AREG_MCROUTER_APP_CONSOLESERVICE_HPP
+#define AREG_MCROUTER_APP_CONSOLESERVICE_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -9,7 +9,7 @@
  * If not, please contact to info[at]aregtech.com
  *
  * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
- * \file        mcrouter/app/private/StatService.hpp
+ * \file        mcrouter/app/private/ConsoleService.hpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
  * \author      Artak Avetyan
  * \brief       AREG Platform, Multi-cast routing, service that outputs statistics.
@@ -23,18 +23,106 @@
 #include "areg/component/StubBase.hpp"
 #include "areg/component/IETimerConsumer.hpp"
 
+#include "areg/base/Thread.hpp"
+#include "areg/component/TEEvent.hpp"
 #include "areg/component/Timer.hpp"
 
+#include <string_view>
+#include <thread>
+#include <memory>
+#include <utility>
+
+class ConsoleEventData
+{
+public:
+    ConsoleEventData(void) = default;
+    ConsoleEventData(const ConsoleEventData& /*src*/) = default;
+    ~ConsoleEventData(void) = default;
+};
+
+DECLARE_EXTERNAL_EVENT(ConsoleEventData, ConsoleEvent, IEConsoleEventConsumer);
+
 //////////////////////////////////////////////////////////////////////////
-// StatService class declaration
+// ConsoleService class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
  * \brief   A service to output statistics..
  **/
-class StatService   : public    Component
+class ConsoleService: public    Component
                     , protected StubBase
                     , protected IETimerConsumer
+                    , protected IEConsoleEventConsumer
 {
+    //!< Bytes in 1 Kilobyte.
+    static constexpr uint32_t           ONE_KILOBYTE    { 1024 };
+    //!< Bytes in 1 megabyte.
+    static constexpr uint32_t           ONE_MEGABYTE    { ONE_KILOBYTE * 1024 };
+
+    //!< Enter new screen.
+    static constexpr std::string_view   CMD_ENTER_SCREEN{ "\x1B[?1049h\033[H" };
+    //!< Exit new screen.
+    static constexpr std::string_view   CMD_EXIT_SCREEN{ "\x1B[?1049l" };
+    //!< Scroll cursor back.
+    static constexpr std::string_view   CMD_SCROLL_BACK{ "\x1B[3J" };
+    //!< Clear the screen.
+    static constexpr std::string_view   CMD_CLEAR_SCREEN{ "\x1B[2J" };
+    //!< Clear end of line.
+    static constexpr std::string_view   CMD_CLEAR_EOL   { "\x1B[K" };
+    //!< Clear line.
+    static constexpr std::string_view   CMD_CLEAR_LINE      { "\33[2K" };
+    //!< String format 'send data' rate
+    static constexpr std::string_view   FORMAT_SEND_DATA_X  { "\x1B[1;1HSend data with the rate: % 7.02f %s\n" };
+    //!< String format 'received data' rate
+    static constexpr std::string_view   FORMAT_RECV_DATA_X  { "\x1B[2;1HRecv data with the rate: % 7.02f %s\n" };
+    //!< String format 'wait for input'
+    static constexpr std::string_view   FORMAT_WAIT_QUIT_X{ "\x1B[3;1HType \'quit\' or \'q\' to quit message router ...: %s" };
+    //!< String format 'error entering command'
+    static constexpr std::string_view   FORMAT_MSG_ERROR_X  { "\x1B[4;1HERROR, unexpected command [ %s ], please type again ...\n" };
+
+    static constexpr std::string_view   FORMAT_SEND_DATA_W  { "Send data with the rate: % 7.02f %s\n" };
+    static constexpr std::string_view   FORMAT_RECV_DATA_W  { "Recv data with the rate: % 7.02f %s\n" };
+    static constexpr std::string_view   FORMAT_MSG_ERROR_W  { "ERROR, unexpected command [ %s ], please type again ...\n" };
+    static constexpr std::string_view   FORMAT_WAIT_QUIT_W  { "Type \'quit\' or \'q\' to quit message router ...: %s" };
+    //!< String kilobytes per second
+    static constexpr std::string_view   MSG_KILOBYTES{ "KBytes / sec." };
+    //!< String megabytes per second
+    static constexpr std::string_view   MSG_MEGABYTES{ "MBytes / sec." };
+    //!< String bytes per second
+    static constexpr std::string_view   MSG_BYTES{ " Bytes / sec." };
+    //!< Char command quit.
+    static constexpr char               QUIT_CH{ 'q' };
+    //!< String command quit.
+    static constexpr std::string_view   QUIT_STR{ "quit" };
+
+    class DataRate
+    {
+    public:
+        explicit DataRate(uint32_t sizeBytes);
+
+        inline const std::pair<float, std::string>& getRate(void) const;
+
+    private:
+        std::pair<float, std::string>   mRate;
+    };
+
+    class OutputThread  : public    Thread
+                        , protected IEThreadConsumer
+    {
+        friend class ConsoleService;
+    public:
+        OutputThread(ConsoleService & theService);
+    
+    protected:
+        virtual void onThreadRuns(void) override;
+
+    private:
+
+        OutputThread& self() { return (*this); }
+
+        ConsoleService& mTheConsole;
+        SynchEvent      mExit;
+    };
+
 //////////////////////////////////////////////////////////////////////////
 // Static methods
 //////////////////////////////////////////////////////////////////////////
@@ -54,6 +142,8 @@ public:
      **/
     static void DeleteComponent( Component & compObject, const NERegistry::ComponentEntry & entry );
 
+    static bool waitQuitCommand(void);
+
 //////////////////////////////////////////////////////////////////////////
 // Constructor / destructor
 //////////////////////////////////////////////////////////////////////////
@@ -65,12 +155,12 @@ protected:
      * \param   roleName        The role name of component, given in the system.
      * \param   data            The optional component data set in system. Can be empty / no data.
      **/
-    StatService( ComponentThread & masterThread, const char * const roleName, NEMemory::uAlign OPTIONAL data );
+    ConsoleService( ComponentThread & masterThread, const char * const roleName, NEMemory::uAlign OPTIONAL data );
 
     /**
      * \brief   Destructor.
      **/
-    virtual ~StatService( void ) = default;
+    virtual ~ConsoleService( void ) = default;
 
 /************************************************************************/
 // CEStubBase overrides. Triggered by Component on startup.
@@ -104,6 +194,16 @@ protected:
      * \param   timer   The timer object that is expired.
      **/
     virtual void processTimer( Timer & timer ) override;
+
+/************************************************************************/
+// IETimerConsumer interface overrides.
+/************************************************************************/
+
+    /**
+     * \brief   Triggered when to receive events.
+     * \param   data    The instance of ConsoleService event data to process.
+     **/
+    virtual void processEvent( const ConsoleEventData & data ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // These methods must exist, but can have empty body
@@ -161,25 +261,44 @@ protected:
     virtual void processAttributeEvent( ServiceRequestEvent & eventElem ) override;
 
 private:
-    Timer   mTimer; //!< The timer to run in component thread.
-
+    Timer           mTimer;     //!< The timer to run in component thread.
+    String          mCommand;   
+    bool            mDispError;
+    ptr_type        mContext;
+    OutputThread    mOutThred;
 
 private:
-    inline StatService & self( void );
+    inline ConsoleService & self( void );
+
+    //!< Make OS specific initialization
+    void _osInitialize(void);
+
+    void _osUninitialize(void);
+
+    void _osDataRate(uint32_t bytesSent, uint32_t bytesReceive, bool isInit);
+    bool isQuitApplication(void);
 
     //////////////////////////////////////////////////////////////////////////
     // Forbidden calls
     //////////////////////////////////////////////////////////////////////////
-    StatService( void ) = delete;
-    DECLARE_NOCOPY_NOMOVE( StatService );
+    ConsoleService( void ) = delete;
+    DECLARE_NOCOPY_NOMOVE( ConsoleService );
 };
 
 //////////////////////////////////////////////////////////////////////////
-// StatService inline methods
+// ConsoleService::DataRate inline methods
 //////////////////////////////////////////////////////////////////////////
-inline StatService & StatService::self( void )
+inline const std::pair<float, std::string>& ConsoleService::DataRate::getRate(void) const
+{
+    return mRate;
+}
+
+//////////////////////////////////////////////////////////////////////////
+// ConsoleService inline methods
+//////////////////////////////////////////////////////////////////////////
+inline ConsoleService & ConsoleService::self( void )
 {
     return (*this);
 }
 
-#endif  // AREG_MCROUTER_APP_STATSERVICE_HPP
+#endif  // AREG_MCROUTER_APP_CONSOLESERVICE_HPP

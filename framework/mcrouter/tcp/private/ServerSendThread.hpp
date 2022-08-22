@@ -22,6 +22,8 @@
 #include "areg/component/DispatcherThread.hpp"
 #include "areg/ipc/RemoteServiceEvent.hpp"
 
+#include <atomic>
+
 /************************************************************************
  * Dependencies
  ************************************************************************/
@@ -57,7 +59,11 @@ public:
 // Actions and attributes.
 /************************************************************************/
 public:
-    inline uint32_t extractDataSent( void );
+    /**
+     * \brief   Returns accumulative value of sent data size and rests the existing value to zero.
+     *          The operations are atomic. The value can be used to display data rate, for example.
+     **/
+    inline uint32_t extractDataSend( void );
 
 protected:
 /************************************************************************/
@@ -114,9 +120,9 @@ private:
      **/
     ServerConnection &          mConnection;
     /**
-     *\brief    The number of bytes that sent data each sec.
+     * \brief   Accumulative value of sent data size.
      **/
-    uint32_t                    mBytesSent;
+    std::atomic_uint             mBytesSend;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -125,5 +131,10 @@ private:
     ServerSendThread( void ) = delete;
     DECLARE_NOCOPY_NOMOVE( ServerSendThread );
 };
+
+inline uint32_t ServerSendThread::extractDataSend(void)
+{
+    return static_cast<uint32_t>(mBytesSend.exchange(0));
+}
 
 #endif  // AREG_MCROUTER_TCP_PRIVATE_SERVERSENDTHREAD_HPP

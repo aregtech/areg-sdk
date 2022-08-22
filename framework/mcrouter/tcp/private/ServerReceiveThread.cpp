@@ -32,6 +32,7 @@ ServerReceiveThread::ServerReceiveThread( IEServerConnectionHandler & connectHan
     , mRemoteService    ( remoteService )
     , mConnectHandler   ( connectHandler )
     , mConnection       ( connection )
+    , mBytesReceive     ( 0 )
 {
 }
 
@@ -116,7 +117,7 @@ bool ServerReceiveThread::runDispatcher(void)
                                     , addSocket.getHostAddress().getString()
                                     , addSocket.getHostPort());
 
-                        MulticastRouter::getInstance().dataReceived(sizeReceived);
+                        mBytesReceive += sizeReceived;
                         mRemoteService.processReceivedMessage(msgReceived, addSocket, clientSocket.getHandle());
                     }
                     else

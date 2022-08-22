@@ -6,6 +6,7 @@
  ************************************************************************/
 
 #include "mcrouter/app/MulticastRouter.hpp"
+#include "mcrouter/app/private/ConsoleService.hpp"
 
 #include "areg/appbase/Application.hpp"
 #include "areg/appbase/NEApplication.hpp"
@@ -13,6 +14,7 @@
 #include "areg/base/NEUtilities.hpp"
 #include "areg/base/Process.hpp"
 #include "areg/base/String.hpp"
+#include "areg/component/ComponentLoader.hpp"
 #include "areg/trace/GETrace.h"
 
 #include <stdio.h>
@@ -28,6 +30,26 @@
 #else   // _POSIX
     #define MACRO_FSCANF(stream, fmt, data, len)    fscanf(stream, fmt, data)
 #endif  // _WINDOWS
+
+
+static String _modelName("MCRouterModel");
+
+// Describe mode, set model name
+BEGIN_MODEL(_modelName)
+
+    // define console service thread.
+    BEGIN_REGISTER_THREAD( "ConsoleServiceThread", NECommon::INVALID_TIMEOUT)
+        // Define the console service
+        BEGIN_REGISTER_COMPONENT( "ConsoleService", ConsoleService)
+            // register dummy 'empty service'.
+            REGISTER_IMPLEMENT_SERVICE( NEService::EmptyServiceName, NEService::EmptyServiceVersion )
+        // end of component description
+        END_REGISTER_COMPONENT( "ConsoleService" )
+    // end of thread description
+    END_REGISTER_THREAD( "ConsoleServiceThread" )
+
+// end of model description
+END_MODEL(_modelName)
 
 
 DEF_TRACE_SCOPE(mcrouter_app_MulticastRouter_serviceMain);
@@ -120,7 +142,7 @@ bool MulticastRouter::parseOptions(int argc, char** argv)
 void MulticastRouter::serviceMain( int argc, char ** argv )
 {
     // Start only tracing and timer manager.
-    Application::initApplication(true, false, false, true, false, NEApplication::DEFAULT_TRACING_CONFIG_FILE.data(), nullptr );
+    Application::initApplication(true, true, false, true, false, NEApplication::DEFAULT_TRACING_CONFIG_FILE.data(), nullptr );
 
     do 
     {
@@ -140,16 +162,23 @@ void MulticastRouter::serviceMain( int argc, char ** argv )
 
         if ( mServiceCmd == NEMulticastRouterSettings::eServiceCommand::CMD_Console )
         {
-            Console::initialize(mRunVerbose);
-            Console::waitQuitCommand();
-            Application::signalAppQuit();
-        }
-        else
-        {
-            Console::initialize(false);
+            if (mRunVerbose)
+            {
+                Application::loadModel(_modelName);
+                Application::waitAppQuit(NECommon::WAIT_INFINITE);
+                Application::unloadModel(_modelName);
+            }
+            else
+            {
+                do
+                {
+
+                } while (ConsoleService::waitQuitCommand() == false);
+
+                Application::signalAppQuit();
+            }
         }
 
-        Application::waitAppQuit(NECommon::WAIT_INFINITE);
         serviceStop();
         TRACE_WARN("Service Stopped and not running anymore");
 

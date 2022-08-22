@@ -30,7 +30,7 @@ ServerSendThread::ServerSendThread(IERemoteServiceHandler & remoteService, Serve
     , IESendMessageEventConsumer( )
     , mRemoteService            ( remoteService )
     , mConnection               ( connection )
-    , mBytesSent                ( 0 )
+    , mBytesSend                ( 0 )
 {
 }
 
@@ -74,7 +74,7 @@ void ServerSendThread::processEvent( const SendMessageEventData & data )
         }
         else
         {
-            mBytesSent += sentBytes;
+            mBytesSend += sentBytes;
             TRACE_DBG("Succeeded to send message [ %u ] to target [ %p ]", msgSend.getMessageId(), static_cast<id_type>(msgSend.getTarget()));
         }
     }

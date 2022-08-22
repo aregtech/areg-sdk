@@ -145,7 +145,7 @@ protected:                                                                      
     /**                                                                                                                     **/                     \
 protected:                                                                                                                                          \
     /**                                                                                                                     **/                     \
-    /** \brief  Override operation. Implement this function to receive events and make processing                           **/                     \
+    /** \brief  Override operation. Implement this function to receive events and make processing.                          **/                     \
     /** \param  data    The data, which was passed as an event.                                                             **/                     \
     /**                                                                                                                     **/                     \
     virtual void processEvent(const DATA_CLASS & data) = 0;                                                                                         \

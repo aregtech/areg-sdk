@@ -20,7 +20,6 @@
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
 #include "mcrouter/app/NEMulticastRouterSettings.hpp"
-#include "mcrouter/app/private/Console.hpp"
 #include "mcrouter/tcp/ServerService.hpp"
 #include "areg/base/SynchObjects.hpp"
 
@@ -131,16 +130,6 @@ public:
     bool setState( NEMulticastRouterSettings::eRouterState newState );
 
     /**
-     * \brief   Sets verbose flag.
-     **/
-    inline void setVerbose(bool verbose);
-
-    /**
-     * \brief   Returns verbose flag of the process. It can be true only if application runs as a console application.
-     **/
-    inline bool getVerbose(void) const;
-
-    /**
      * \brief   Parses the options and returns true if succeeded.
      * \param   argc    The number of options to parse.
      * \param   argv    The options to parse.
@@ -153,20 +142,14 @@ public:
     inline void resetDefaultOptions(void);
 
     /**
-     * \brief   Called to update data received statistics and if needed to make message output on console.
-     *          The output statistics message is ignored if verbose flag is not set.
-     *          It output invalid data rate message if 'bytesReceived' is zero.
-     * \param   bytesReceived   The bytes that received the multicast router.
+     * \brief   Call to query the size in bytes of data sent.
      **/
-    void dataReceived(uint32_t bytesReceived);
+    inline uint32_t queryDataReceived(void);
 
     /**
-     * \brief   Called to update data sent statistics and if needed to make message output on console.
-     *          The output statistics message is ignored if verbose flag is not set.
-     *          It output invalid data rate message if 'bytesReceived' is zero.
-     * \param   bytesSent       The bytes that sent the multicast router.
+     * \brief   Call to query the size in bytes of data received.
      **/
-    void dataSent(uint32_t bytesSent);
+    inline uint32_t queryDataSent(void);
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods.
@@ -247,16 +230,6 @@ inline NEMulticastRouterSettings::eRouterState MulticastRouter::getState( void )
     return mRouterState;
 }
 
-inline void MulticastRouter::setVerbose(bool verbose)
-{
-    mRunVerbose = verbose;
-}
-
-inline bool MulticastRouter::getVerbose(void) const
-{
-    return (mRunVerbose && (mServiceCmd == NEMulticastRouterSettings::eServiceCommand::CMD_Console));
-}
-
 inline bool MulticastRouter::serviceOpen(void)
 {
     return _openService();
@@ -278,14 +251,14 @@ inline void MulticastRouter::resetDefaultOptions(void)
     mRunVerbose = NEMulticastRouterSettings::DEFAULT_VERBOSE;
 }
 
-inline void MulticastRouter::dataReceived(uint32_t bytesReceived)
+inline uint32_t MulticastRouter::queryDataReceived(void)
 {
-    Console::receivedBytes(bytesReceived);
+    return mServiceServer.queryBytesReceived();
 }
 
-inline void MulticastRouter::dataSent(uint32_t bytesSent)
+inline uint32_t MulticastRouter::queryDataSent(void)
 {
-	Console::sentBytes(bytesSent);
+    return mServiceServer.queryBytesSent();
 }
 
 inline MulticastRouter & MulticastRouter::self( void )

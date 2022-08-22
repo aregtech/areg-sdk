@@ -121,6 +121,18 @@ public:
      **/
     inline void removeBlackList( const NESocket::SocketAddress & addrClient );
 
+    /**
+     * \brief   Each time querying the bytes sent via network connection returns
+     *          the value after last query.
+     **/
+    inline uint32_t queryBytesSent(void);
+
+    /**
+     * \brief   Each time querying the bytes received via network connection returns
+     *          the value after last query.
+     **/
+    inline uint32_t queryBytesReceived(void);
+
 //////////////////////////////////////////////////////////////////////////
 // Overrides
 //////////////////////////////////////////////////////////////////////////
@@ -498,6 +510,16 @@ inline void ServerService::removeWhiteList(const NESocket::SocketAddress & addrC
 inline void ServerService::removeBlackList(const NESocket::SocketAddress & addrClient)
 {
     mBlackList.removeElem( addrClient.getHostAddress(), 0);
+}
+
+inline uint32_t ServerService::queryBytesSent(void)
+{
+    return mThreadSend.extractDataSend();
+}
+
+inline uint32_t ServerService::queryBytesReceived(void)
+{
+    return mThreadReceive.extractDataReceive();
 }
 
 #endif  // AREG_MCROUTER_TCP_SERVERSERVICE_HPP
