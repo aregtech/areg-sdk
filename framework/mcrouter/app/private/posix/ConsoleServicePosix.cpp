@@ -42,6 +42,10 @@ void ConsoleService::_osUninitialize(void)
 
 void ConsoleService::_osDataRate(uint32_t bytesSent, uint32_t bytesReceive, bool isInit)
 {
+    uint32_t xPos {0},yPos{0};
+    puts(CMD_POSITION_CURSOR.data());
+    fscanf(stdin, CMD_READ_POSITION.data(), &xPos, &yPos);
+
     do
     {
         ConsoleService::DataRate dataRate(bytesSent);
@@ -56,14 +60,13 @@ void ConsoleService::_osDataRate(uint32_t bytesSent, uint32_t bytesReceive, bool
         printf(FORMAT_RECV_DATA_X.data(), rate.first, rate.second.c_str());
     } while (false);
 
-    printf(FORMAT_WAIT_QUIT_X.data(), mCommand.getString());
-
     if (mDispError)
     {
         puts(CMD_CLEAR_LINE.data());
     }
 
     printf(FORMAT_WAIT_QUIT_X.data(), mCommand.getString());
+    puts(CMD_CLEAR_EOL.data());
 
     mDispError = false;
 }

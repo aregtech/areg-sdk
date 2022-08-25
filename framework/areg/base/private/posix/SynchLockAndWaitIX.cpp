@@ -170,8 +170,7 @@ void SynchLockAndWaitIX::eventRemove( IEWaitableBaseIX & synchWaitable )
                 break;
 
             int index = lockAndWait->_getWaitableIndex( synchWaitable );
-            ASSERT(index != NECommon::INVALID_INDEX);
-            lockAndWait->mFiredEntry = static_cast<NESynchTypesIX::eSynchObjectFired>(index + NESynchTypesIX::SynchObject0Error);
+            lockAndWait->mFiredEntry = index != NECommon::INVALID_INDEX ? static_cast<NESynchTypesIX::eSynchObjectFired>(index + NESynchTypesIX::SynchObject0Error) : NESynchTypesIX::eSynchObjectFired::SynchWaitInterrupted;
             lockAndWait->_notifyEvent();
         }
 

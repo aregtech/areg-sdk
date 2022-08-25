@@ -119,6 +119,7 @@ ConsoleService::ConsoleService( ComponentThread & masterThread, const char * con
     , mDispError            ( false )
     , mContext              ( 0 )
     , mOutThred             ( self() )
+    , mReleased             ( false )
 {
 }
 
@@ -238,15 +239,15 @@ void ConsoleService::OutputThread::onThreadRuns(void)
     {
         if (mExit.lock(NECommon::WAIT_10_MILLISECONDS) == false)
         {
-            char ch = getchar();
-            if (ch == '\n')
-            {
-                ConsoleEvent::sendEvent(ConsoleEventData(), mTheConsole.getMasterThread());
-            }
-            else if (ch != '\0')
-            {
-                mTheConsole.mCommand += ch;
-            }
+            std::string line;
+            std::getline(std::cin, line);
+            mTheConsole.mCommand = line;
+            ConsoleEvent::sendEvent(ConsoleEventData(), mTheConsole.getMasterThread());
         }
+        else
+        {
+            run = false;
+        }
+
     } while (run);
 }

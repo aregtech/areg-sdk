@@ -59,15 +59,15 @@ class ConsoleService: public    Component
     static constexpr uint32_t           ONE_MEGABYTE    { ONE_KILOBYTE * 1024 };
 
     //!< Enter new screen.
-    static constexpr std::string_view   CMD_ENTER_SCREEN{ "\x1B[?1049h\033[H" };
+    static constexpr std::string_view   CMD_ENTER_SCREEN    { "\x1B[?1049h\033[H" };
     //!< Exit new screen.
-    static constexpr std::string_view   CMD_EXIT_SCREEN{ "\x1B[?1049l" };
+    static constexpr std::string_view   CMD_EXIT_SCREEN     { "\x1B[?1049l" };
     //!< Scroll cursor back.
-    static constexpr std::string_view   CMD_SCROLL_BACK{ "\x1B[3J" };
+    static constexpr std::string_view   CMD_SCROLL_BACK     { "\x1B[3J" };
     //!< Clear the screen.
-    static constexpr std::string_view   CMD_CLEAR_SCREEN{ "\x1B[2J" };
+    static constexpr std::string_view   CMD_CLEAR_SCREEN    { "\x1B[2J" };
     //!< Clear end of line.
-    static constexpr std::string_view   CMD_CLEAR_EOL   { "\x1B[K" };
+    static constexpr std::string_view   CMD_CLEAR_EOL       { "\x1B[K" };
     //!< Clear line.
     static constexpr std::string_view   CMD_CLEAR_LINE      { "\33[2K" };
     //!< String format 'send data' rate
@@ -75,7 +75,7 @@ class ConsoleService: public    Component
     //!< String format 'received data' rate
     static constexpr std::string_view   FORMAT_RECV_DATA_X  { "\x1B[2;1HRecv data with the rate: % 7.02f %s\n" };
     //!< String format 'wait for input'
-    static constexpr std::string_view   FORMAT_WAIT_QUIT_X{ "\x1B[3;1HType \'quit\' or \'q\' to quit message router ...: %s" };
+    static constexpr std::string_view   FORMAT_WAIT_QUIT_X  { "\x1B[3;1HType \'quit\' or \'q\' to quit message router ...: %s" };
     //!< String format 'error entering command'
     static constexpr std::string_view   FORMAT_MSG_ERROR_X  { "\x1B[4;1HERROR, unexpected command [ %s ], please type again ...\n" };
 
@@ -84,15 +84,19 @@ class ConsoleService: public    Component
     static constexpr std::string_view   FORMAT_MSG_ERROR_W  { "ERROR, unexpected command [ %s ], please type again ...\n" };
     static constexpr std::string_view   FORMAT_WAIT_QUIT_W  { "Type \'quit\' or \'q\' to quit message router ...: %s" };
     //!< String kilobytes per second
-    static constexpr std::string_view   MSG_KILOBYTES{ "KBytes / sec." };
+    static constexpr std::string_view   MSG_KILOBYTES       { "KBytes / sec." };
     //!< String megabytes per second
-    static constexpr std::string_view   MSG_MEGABYTES{ "MBytes / sec." };
+    static constexpr std::string_view   MSG_MEGABYTES       { "MBytes / sec." };
     //!< String bytes per second
-    static constexpr std::string_view   MSG_BYTES{ " Bytes / sec." };
+    static constexpr std::string_view   MSG_BYTES           { " Bytes / sec." };
     //!< Char command quit.
-    static constexpr char               QUIT_CH{ 'q' };
+    static constexpr char               QUIT_CH             { 'q' };
     //!< String command quit.
-    static constexpr std::string_view   QUIT_STR{ "quit" };
+    static constexpr std::string_view   QUIT_STR            { "quit" };
+
+    static constexpr std::string_view   CMD_POSITION_CURSOR { "\x1B[6n" };
+
+    static constexpr std::string_view   CMD_READ_POSITION   { "\x1B[%d;%dR" };
 
     class DataRate
     {
@@ -266,6 +270,7 @@ private:
     bool            mDispError;
     ptr_type        mContext;
     OutputThread    mOutThred;
+    Mutex           mReleased;
 
 private:
     inline ConsoleService & self( void );
