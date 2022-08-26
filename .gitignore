@@ -45,3 +45,6 @@ examples/*/*/*/.gitignore
 examples/*/*/*/.settings
 examples/*/*/*/Debug
 examples/*/*/*/Release
+
+build/
+build-win/
