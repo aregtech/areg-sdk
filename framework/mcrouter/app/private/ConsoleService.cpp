@@ -63,7 +63,6 @@ ConsoleService::ConsoleService( ComponentThread & masterThread, const char * con
     : Component             ( masterThread, roleName )
     , StubBase              ( self( ), NEService::getEmptyInterface( ) )
     , IETimerConsumer       ( )
-    , IEConsoleEventConsumer( )
     , mTimer                ( self( ), "ServicingTimer" )
 {
 }
@@ -78,7 +77,6 @@ void ConsoleService::startupServiceInterface( Component & holder )
     console.outputText(NEMulticastRouterSettings::COORD_RECV_RATE, NEMulticastRouterSettings::FORMAT_RECV_DATA.data(), 0.0f, ConsoleService::MSG_BYTES.data());
     console.outputText(NEMulticastRouterSettings::COORD_USER_INPUT, NEMulticastRouterSettings::FORMAT_WAIT_QUIT);
 
-    ConsoleEvent::addListener(static_cast<IEConsoleEventConsumer&>(self()), holder.getMasterThread());
     mTimer.startTimer(NECommon::TIMEOUT_1_SEC, Timer::CONTINUOUSLY);
 
     console.enableConsoleInput(true);
@@ -87,7 +85,6 @@ void ConsoleService::startupServiceInterface( Component & holder )
 
 void ConsoleService::shutdownServiceIntrface( Component & holder )
 {
-    ConsoleEvent::removeListener(static_cast<IEConsoleEventConsumer&>(self()));
     mTimer.stopTimer( );
     StubBase::shutdownServiceIntrface( holder );
 }
@@ -99,14 +96,6 @@ void ConsoleService::processTimer( Timer & timer )
     {
         outputDataRate(MulticastRouter::getInstance().queryDataSent(), MulticastRouter::getInstance().queryDataReceived());
     }
-    else
-    {
-        Application::signalAppQuit( );
-    }
-}
-
-void ConsoleService::processEvent(const ConsoleEventData& data)
-{
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -161,4 +150,3 @@ bool ConsoleService::checkCommand(const String& cmd)
         return false;
     }
 }
-

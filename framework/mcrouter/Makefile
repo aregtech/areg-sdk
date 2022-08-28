@@ -12,7 +12,7 @@ mcrouter_OBJS :=
 include $(mcrouter_BASE)/app/private/Makefile
 include $(mcrouter_BASE)/tcp/private/Makefile
 
-mcrouter_LDFLAGS  :=
+mcrouter_LDFLAGS  := -lncurses
 mcrouter_CXXFLAGS :=
 ifeq ($(AREG_BINARY), shared)
 	mcrouter_CXXFLAGS += -DIMP_AREG_DLL

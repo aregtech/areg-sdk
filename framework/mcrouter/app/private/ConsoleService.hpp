@@ -32,16 +32,6 @@
 #include <memory>
 #include <utility>
 
-class ConsoleEventData
-{
-public:
-    ConsoleEventData(void) = default;
-    ConsoleEventData(const ConsoleEventData& /*src*/) = default;
-    ~ConsoleEventData(void) = default;
-};
-
-DECLARE_EXTERNAL_EVENT(ConsoleEventData, ConsoleEvent, IEConsoleEventConsumer);
-
 //////////////////////////////////////////////////////////////////////////
 // ConsoleService class declaration
 //////////////////////////////////////////////////////////////////////////
@@ -51,7 +41,6 @@ DECLARE_EXTERNAL_EVENT(ConsoleEventData, ConsoleEvent, IEConsoleEventConsumer);
 class ConsoleService: public    Component
                     , protected StubBase
                     , protected IETimerConsumer
-                    , protected IEConsoleEventConsumer
 {
     //!< Bytes in 1 Kilobyte.
     static constexpr uint32_t           ONE_KILOBYTE    { 1024 };
@@ -166,16 +155,6 @@ protected:
      * \param   timer   The timer object that is expired.
      **/
     virtual void processTimer( Timer & timer ) override;
-
-/************************************************************************/
-// IETimerConsumer interface overrides.
-/************************************************************************/
-
-    /**
-     * \brief   Triggered when to receive events.
-     * \param   data    The instance of ConsoleService event data to process.
-     **/
-    virtual void processEvent( const ConsoleEventData & data ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // These methods must exist, but can have empty body
