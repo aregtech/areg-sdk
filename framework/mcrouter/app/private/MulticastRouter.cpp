@@ -18,14 +18,13 @@
 #include "areg/component/ComponentLoader.hpp"
 #include "areg/trace/GETrace.h"
 
-#include <stdio.h>
 
-#ifdef _WINDOWS
-    #define MACRO_FSCANF(stream, fmt, data, len)    fscanf_s(stream, fmt, data, len)
-#else   // _POSIX
-    #define MACRO_FSCANF(stream, fmt, data, len)    fscanf(stream, fmt, data)
-#endif  // _WINDOWS
+//////////////////////////////////////////////////////////////////////////
+// The model used only in console mode.
+//////////////////////////////////////////////////////////////////////////
 
+// This model defines a Console Service to run to make data rate outputs.
+// The Console Service runs only in verbose mode.
 
 static String _modelName("MCRouterModel");
 
@@ -46,6 +45,9 @@ BEGIN_MODEL(_modelName)
 // end of model description
 END_MODEL(_modelName)
 
+//////////////////////////////////////////////////////////////////////////
+// Traces.
+//////////////////////////////////////////////////////////////////////////
 
 DEF_TRACE_SCOPE(mcrouter_app_MulticastRouter_serviceMain);
 DEF_TRACE_SCOPE(mcrouter_app_MulticastRouter_serviceStart);
@@ -158,19 +160,20 @@ void MulticastRouter::serviceMain( int argc, char ** argv )
         if ( mServiceCmd == NEMulticastRouterSettings::eServiceCommand::CMD_Console )
         {
             Console& console = Console::getInstance();
-            console.initialize();
 
             if (mRunVerbose)
             {
+                // Disable to block user input until Console Service is up and running.
                 console.enableConsoleInput(false);
                 Application::loadModel(_modelName);
+                // Blocked until user input
                 console.waitForInput();
-                // ConsoleService::waitQuitCommand(true);
-                // Application::waitAppQuit(NECommon::WAIT_INFINITE);
                 Application::unloadModel(_modelName);
             }
             else
             {
+                // No verbose mode.
+                // Set local callback, output message and wait for user input.
                 Console::CallBack call = _checkCommand;
                 console.setCallback(call);
                 console.enableConsoleInput(true);

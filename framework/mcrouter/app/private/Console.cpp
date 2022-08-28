@@ -18,17 +18,20 @@
   ************************************************************************/
 #include "mcrouter/app/private/Console.hpp"
 
+//////////////////////////////////////////////////////////////////////////
+// Console class implementations.
+//////////////////////////////////////////////////////////////////////////
+
 Console& Console::getInstance(void)
 {
-    static Console _instance;
+    static Console _instance;   // singleton instance.
     return _instance;
 }
 
 Console::Console(void)
     : mIsReady  ( false )
-    , mInput    ( )
-    , mContext  ( 0 )
     , mUsrInput ( )
+    , mContext  ( 0 )
     , mCallback ( )
     , mEnable   (true, false)
     , mLock     (false)
@@ -37,16 +40,6 @@ Console::Console(void)
 }
 
 Console::~Console(void)
-{
-    _osUninitialize();
-}
-
-bool Console::initialize(void)
-{
-    return _osInitialize();
-}
-
-void Console::uninitialize(void)
 {
     _osUninitialize();
 }
@@ -72,31 +65,6 @@ bool Console::waitForInput(void)
     return result;
 }
 
-void Console::setCallback(CallBack callback)
-{
-    mCallback = callback;
-}
-
-bool Console::isReady(void) const
-{
-    return mIsReady;
-}
-
-bool Console::enableConsoleInput(bool enable)
-{
-    return enable ? (mIsReady && mEnable.setEvent()) : (mIsReady == false) || (mEnable.resetEvent());
-}
-
-void Console::outputText(NEMulticastRouterSettings::Coord pos, const String& text) const
-{
-    _osOutputText(pos, text);
-}
-
-void Console::outputText(NEMulticastRouterSettings::Coord pos, const std::string_view& text) const
-{
-    _osOutputText(pos, text);
-}
-
 void Console::outputText(NEMulticastRouterSettings::Coord pos, const char* format, ...) const
 {
     va_list argptr;
@@ -107,24 +75,4 @@ void Console::outputText(NEMulticastRouterSettings::Coord pos, const char* forma
     va_end(argptr);
 
     outputText(pos, text);
-}
-
-NEMulticastRouterSettings::Coord Console::getCursorCurPosition(void) const
-{
-    return _osGetCursorPosition();
-}
-
-void Console::setCursorCurPosition(NEMulticastRouterSettings::Coord pos)
-{
-    _osSetCursorCurPosition(pos);
-}
-
-const String& Console::getUserInput(void) const
-{
-    return mUsrInput;
-}
-
-void Console::refreshScreen(void) const
-{
-    _osRefreshScreen();
 }

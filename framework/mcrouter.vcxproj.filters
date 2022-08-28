@@ -127,12 +127,6 @@
     <ClCompile Include="mcrouter\app\private\win32\MulticastRouterWin32.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="mcrouter\app\private\win32\ConsoleServiceWin32.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="mcrouter\app\private\posix\ConsoleServicePosix.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="mcrouter\app\private\ConsoleService.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

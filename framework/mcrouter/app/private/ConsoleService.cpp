@@ -25,8 +25,9 @@
 #include "mcrouter/app/NEMulticastRouterSettings.hpp"
 #include "mcrouter/app/private/Console.hpp"
 
-DEF_TRACE_SCOPE(mcrouter_app_ConsoleService_runWaitInput);
-
+ //////////////////////////////////////////////////////////////////////////
+ // ConsoleService::DataRate helper class implementation
+ //////////////////////////////////////////////////////////////////////////
 ConsoleService::DataRate::DataRate(uint32_t sizeBytes)
     : mRate ( )
 {
@@ -49,6 +50,9 @@ ConsoleService::DataRate::DataRate(uint32_t sizeBytes)
     }
 }
 
+//////////////////////////////////////////////////////////////////////////
+// ConsoleService class implementation, static methods
+//////////////////////////////////////////////////////////////////////////
 Component * ConsoleService::CreateComponent( const NERegistry::ComponentEntry & entry, ComponentThread & owner )
 {
     return DEBUG_NEW ConsoleService( owner, entry.mRoleName.getString( ), entry.getComponentData( ) );
@@ -59,11 +63,15 @@ void ConsoleService::DeleteComponent( Component & compObject, const NERegistry::
     delete (&compObject);
 }
 
+//////////////////////////////////////////////////////////////////////////
+// ConsoleService class implementation
+//////////////////////////////////////////////////////////////////////////
 ConsoleService::ConsoleService( ComponentThread & masterThread, const char * const roleName, NEMemory::uAlign OPTIONAL data )
-    : Component             ( masterThread, roleName )
-    , StubBase              ( self( ), NEService::getEmptyInterface( ) )
-    , IETimerConsumer       ( )
-    , mTimer                ( self( ), "ServicingTimer" )
+    : Component         ( masterThread, roleName )
+    , StubBase          ( self( ), NEService::getEmptyInterface( ) )
+    , IETimerConsumer   ( )
+
+    , mTimer            ( self( ), "ServicingTimer" )
 {
 }
 

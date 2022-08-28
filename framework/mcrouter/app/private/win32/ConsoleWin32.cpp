@@ -30,6 +30,10 @@
 
 #include "mcrouter/app/NEMulticastRouterSettings.hpp"
 
+//////////////////////////////////////////////////////////////////////////
+// Console Windows OS specific implementation
+//////////////////////////////////////////////////////////////////////////
+
 bool Console::_osInitialize(void)
 {
     if (mIsReady == false)
@@ -127,23 +131,6 @@ void Console::_osWaitInput(void)
     static_cast<void>(scanf_s("%s", buffer, 32));
 
     mUsrInput = buffer;
-
-#if 0
-    do
-    {
-        char ch = getchar();
-
-        if ((ch == '\n') || (ch == static_cast<char>(27)) || (ch == static_cast<char>(0)))
-        {
-            break;
-        }
-        else
-        {
-            mUsrInput += ch;
-        }
-
-    } while (true);
-#endif
 }
 
 void Console::_osRefreshScreen(void) const

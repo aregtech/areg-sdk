@@ -23,14 +23,7 @@
 #include "areg/component/StubBase.hpp"
 #include "areg/component/IETimerConsumer.hpp"
 
-#include "areg/base/Thread.hpp"
-#include "areg/component/TEEvent.hpp"
 #include "areg/component/Timer.hpp"
-
-#include <string_view>
-#include <thread>
-#include <memory>
-#include <utility>
 
 //////////////////////////////////////////////////////////////////////////
 // ConsoleService class declaration
@@ -53,36 +46,21 @@ class ConsoleService: public    Component
     //!< String bytes per second
     static constexpr std::string_view   MSG_BYTES       { " Bytes / sec." };
 
-    //!< Enter new screen.
-    static constexpr std::string_view   CMD_ENTER_SCREEN    { "\x1B[?1049h\033[H" };
-    //!< Exit new screen.
-    static constexpr std::string_view   CMD_EXIT_SCREEN     { "\x1B[?1049l" };
-    //!< Scroll cursor back.
-    static constexpr std::string_view   CMD_SCROLL_BACK     { "\x1B[3J" };
-    //!< Clear the screen.
-    static constexpr std::string_view   CMD_CLEAR_SCREEN    { "\x1B[2J" };
-    //!< Clear end of line.
-    static constexpr std::string_view   CMD_CLEAR_EOL       { "\x1B[K" };
-    //!< Clear line.
-    static constexpr std::string_view   CMD_CLEAR_LINE      { "\33[2K" };
-    //!< String format 'send data' rate
-    static constexpr std::string_view   FORMAT_SEND_DATA_X  { "\x1B[1;1HSend data with the rate: % 7.02f %s" };
-    //!< String format 'received data' rate
-    static constexpr std::string_view   FORMAT_RECV_DATA_X  { "\x1B[2;1HRecv data with the rate: % 7.02f %s" };
-    //!< String format 'wait for input'
-    static constexpr std::string_view   FORMAT_WAIT_QUIT_X  { "\x1B[3;1HType \'quit\' or \'q\' to quit message router ...: %s" };
-    //!< String format 'error entering command'
-    static constexpr std::string_view   FORMAT_MSG_ERROR_X  { "\x1B[4;1HERROR, unexpected command [ %s ], please type again ..." };
-
-    static constexpr std::string_view   CMD_POSITION_CURSOR { "\x1B[6n" };
-
-    static constexpr std::string_view   CMD_READ_POSITION   { "\x1B[%d;%dR" };
-
+//////////////////////////////////////////////////////////////////////////
+// DataRate helper class declaration.
+//////////////////////////////////////////////////////////////////////////
+    /**
+     * \brief   The helper class to calculate data rate and output message in MB, KB and Bytes.
+     **/
     class DataRate
     {
+    //////////////////////////////////////////////////////////////////////////
+    // Members.
+    //////////////////////////////////////////////////////////////////////////
     public:
-        explicit DataRate(uint32_t sizeBytes);
+        DataRate(uint32_t sizeBytes = 0);
 
+        //!< This pair contains size in bytes and message indicating MB, KB or Bytes.
         std::pair<float, std::string>   mRate;
     };
 
@@ -211,15 +189,30 @@ protected:
      **/
     virtual void processAttributeEvent( ServiceRequestEvent & eventElem ) override;
 
+//////////////////////////////////////////////////////////////////////////
+// Hidden metods
+//////////////////////////////////////////////////////////////////////////
 private:
-    Timer           mTimer;     //!< The timer to run in component thread.
-
-private:
+    /**
+     * \brief   Returns the instance of ConsoleService
+     **/
     inline ConsoleService & self( void );
-
+    /**
+     * \brief   Called to output sent and received data rate messages.
+     **/
     inline void outputDataRate(uint32_t bytesSend, uint32_t bytesRecv);
-
+    /**
+     * \brief   The callback to check the user input command.
+     *          If returns true, the command is recognized ant the application can 
+                stop working. Otherwise, display error and continue waiting for input.
+     **/
     static bool checkCommand(const String& cmd);
+
+//////////////////////////////////////////////////////////////////////////
+// Hidden member valirables
+//////////////////////////////////////////////////////////////////////////
+private:
+    Timer   mTimer;     //!< The timer to run in component thread.
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
