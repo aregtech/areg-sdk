@@ -6,6 +6,7 @@
  ************************************************************************/
 
 #include "mcrouter/app/MulticastRouter.hpp"
+#include "mcrouter/app/private/Console.hpp"
 #include "mcrouter/app/private/ConsoleService.hpp"
 
 #include "areg/appbase/Application.hpp"
@@ -18,12 +19,6 @@
 #include "areg/trace/GETrace.h"
 
 #include <stdio.h>
-
-#ifdef _WINDOWS
-    #define MACRO_SCANF(fmt, data, len)     scanf_s(fmt, data, len)
-#else   // _POSIX
-    #define MACRO_SCANF(fmt, data, len)     scanf(fmt, data)
-#endif  // _WINDOWS
 
 #ifdef _WINDOWS
     #define MACRO_FSCANF(stream, fmt, data, len)    fscanf_s(stream, fmt, data, len)
@@ -162,21 +157,33 @@ void MulticastRouter::serviceMain( int argc, char ** argv )
 
         if ( mServiceCmd == NEMulticastRouterSettings::eServiceCommand::CMD_Console )
         {
+            Console& console = Console::getInstance();
+            console.initialize();
+
             if (mRunVerbose)
             {
+                console.enableConsoleInput(false);
                 Application::loadModel(_modelName);
-                Application::waitAppQuit(NECommon::WAIT_INFINITE);
+                console.waitForInput();
+                // ConsoleService::waitQuitCommand(true);
+                // Application::waitAppQuit(NECommon::WAIT_INFINITE);
                 Application::unloadModel(_modelName);
             }
             else
             {
-                do
-                {
-
-                } while (ConsoleService::waitQuitCommand() == false);
-
-                Application::signalAppQuit();
+                Console::CallBack call = _checkCommand;
+                console.setCallback(call);
+                console.enableConsoleInput(true);
+                console.outputText(NEMulticastRouterSettings::Coord{ 0, 0 }, NEMulticastRouterSettings::FORMAT_WAIT_QUIT);
+                console.waitForInput();
             }
+
+            NEMulticastRouterSettings::Coord pos = console.getCursorCurPosition();
+            pos.posY += 1;
+            pos.posX = 0;
+            console.outputText(pos, NEMulticastRouterSettings::FORMAT_QUIT_APP);
+            console.uninitialize();
+            Application::signalAppQuit();
         }
 
         serviceStop();
@@ -266,4 +273,23 @@ void MulticastRouter::serviceUninstall(void)
     }
 
     _freeResources();
+}
+
+bool MulticastRouter::_checkCommand(const String& cmd)
+{
+    if ((cmd == NEMulticastRouterSettings::QUIT_CH) || (cmd == NEMulticastRouterSettings::QUIT_STR))
+    {
+        return true; // interrupt, requested quit
+    }
+    else
+    {
+        Console& console = Console::getInstance();
+
+        ASSERT(MulticastRouter::getInstance().mRunVerbose == false);
+        console.outputText(NEMulticastRouterSettings::Coord{ 0, 1 }, NEMulticastRouterSettings::FORMAT_MSG_ERROR.data(), cmd.getString());
+        console.outputText(NEMulticastRouterSettings::Coord{ 0, 0 }, NEMulticastRouterSettings::FORMAT_WAIT_QUIT);
+        console.refreshScreen();
+
+        return false;
+    }
 }

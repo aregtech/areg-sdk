@@ -17,190 +17,15 @@
  * Include files.
  ************************************************************************/
 #include "mcrouter/app/private/ConsoleService.hpp"
+
 #include "areg/component/ComponentThread.hpp"
 #include "areg/appbase/Application.hpp"
-#include "mcrouter/app/MulticastRouter.hpp"
-#include "areg/trace/GETrace.h"
 
-#include <cstdio>
-#include <iostream>
+#include "mcrouter/app/MulticastRouter.hpp"
+#include "mcrouter/app/NEMulticastRouterSettings.hpp"
+#include "mcrouter/app/private/Console.hpp"
 
 DEF_TRACE_SCOPE(mcrouter_app_ConsoleService_runWaitInput);
-
-#if 0
-void ConsoleService::runWaitInput(ConsoleService* theConsole)
-{
-    bool run{ true };
-    struct pollfd pfd = { STDIN_FILENO, POLLIN, 0 };
-
-    std::string line;
-    int ret = 0;
-    while (ret == 0)
-    {
-        ret = poll(&pfd, 1, 1000);  // timeout of 1000ms
-        if (ret == 1) // there is something to read
-        {
-            std::getline(std::cin, line);
-        }
-        else if (ret == -1)
-        {
-            std::cout << "Error: " << strerror(errno) << std::endl;
-        }
-    }
-    return line;
-
-    do
-    {
-        char ch = getchar();
-
-        if ((ch == static_cast<char>(27)) || (ch == static_cast<char>(0)))
-        {
-            run = false;
-            ConsoleEvent::sendEvent(ConsoleEventData(ConsoleEventData::eEvent::ConsoleContinue), theConsole->getMasterThread());
-        }
-        else if (ch == '\n')
-        {
-            run = false;
-            ConsoleEvent::sendEvent(ConsoleEventData(ConsoleEventData::eEvent::ConsoleCheck), theConsole->getMasterThread());
-        }
-        else
-        {
-            theConsole->mCommand += ch;
-        }
-    } while (run);
-}
-#endif
-
-Component * ConsoleService::CreateComponent( const NERegistry::ComponentEntry & entry, ComponentThread & owner )
-{
-    return DEBUG_NEW ConsoleService( owner, entry.mRoleName.getString( ), entry.getComponentData( ) );
-}
-
-void ConsoleService::DeleteComponent( Component & compObject, const NERegistry::ComponentEntry & entry )
-{
-    delete (&compObject);
-}
-
-bool ConsoleService::waitQuitCommand(void)
-{
-    String command;
-    bool run{ true };
-
-    printf(ConsoleService::FORMAT_WAIT_QUIT_W.data(), command.getString());
-
-    do
-    {
-        char ch = getchar();
-
-        if ((ch == static_cast<char>(27)) || (ch == static_cast<char>(0)))
-        {
-            run = false;
-        }
-        else if (ch == '\n')
-        {
-            run = false;
-        }
-        else
-        {
-            command += ch;
-        }
-    } while (run);
-
-    return ((command == ConsoleService::QUIT_CH) || (command == ConsoleService::QUIT_STR));
-}
-
-ConsoleService::ConsoleService( ComponentThread & masterThread, const char * const roleName, NEMemory::uAlign OPTIONAL data )
-    : Component             ( masterThread, roleName )
-    , StubBase              ( self( ), NEService::getEmptyInterface( ) )
-    , IETimerConsumer       ( )
-    , IEConsoleEventConsumer( )
-    , mTimer                ( self( ), "ServicingTimer" )
-    , mCommand              ( )
-    , mDispError            ( false )
-    , mContext              ( 0 )
-    , mOutThred             ( self() )
-    , mReleased             ( false )
-{
-}
-
-void ConsoleService::startupServiceInterface( Component & holder )
-{
-    StubBase::startupServiceInterface( holder );
-    
-    _osInitialize();
-
-    ConsoleEvent::addListener(static_cast<IEConsoleEventConsumer&>(self()), holder.getMasterThread());
-
-    _osDataRate(0, 0, true);
-    mOutThred.createThread(NECommon::WAIT_INFINITE);
-    mTimer.startTimer(NECommon::TIMEOUT_1_SEC, Timer::CONTINUOUSLY);
-}
-
-void ConsoleService::shutdownServiceIntrface( Component & holder )
-{
-    ConsoleEvent::removeListener(static_cast<IEConsoleEventConsumer&>(self()));
-    mTimer.stopTimer( );
-
-    StubBase::shutdownServiceIntrface( holder );
-    _osUninitialize();
-}
-
-void ConsoleService::processTimer( Timer & timer )
-{
-    ASSERT( &timer == &mTimer );
-    if ( mTimer.isActive( ) )
-    {
-        _osDataRate(MulticastRouter::getInstance().queryDataSent(), MulticastRouter::getInstance().queryDataReceived(), false);
-    }
-    else
-    {
-        Application::signalAppQuit( );
-    }
-}
-
-void ConsoleService::processEvent(const ConsoleEventData& data)
-{
-    if (isQuitApplication())
-    {
-        mTimer.stopTimer();
-        mOutThred.mExit.setEvent();
-        fwrite(ConsoleService::QUIT_STR.data(), 1, static_cast<size_t>(ConsoleService::QUIT_STR.length()), stdout);
-        fflush(stdout);
-        mOutThred.destroyThread(NECommon::WAIT_100_MILLISECONDS);
-        Application::signalAppQuit();
-    }
-    else
-    {
-        printf(ConsoleService::FORMAT_MSG_ERROR_W.data(), mCommand.getString());
-        mDispError = true;
-    }
-
-    mCommand = String::EmptyString;
-}
-
-//////////////////////////////////////////////////////////////////////////
-// These methods must exist, but can have empty body
-//////////////////////////////////////////////////////////////////////////
-void ConsoleService::sendNotification( unsigned int msgId )
-{
-}
-
-void ConsoleService::errorRequest( unsigned int msgId, bool msgCancel )
-{
-}
-
-void ConsoleService::processRequestEvent( ServiceRequestEvent & eventElem )
-{
-}
-
-void ConsoleService::processAttributeEvent( ServiceRequestEvent & eventElem )
-{
-}
-
-bool ConsoleService::isQuitApplication(void)
-{
-    return (mCommand == QUIT_CH) || (mCommand == QUIT_STR);
-}
 
 ConsoleService::DataRate::DataRate(uint32_t sizeBytes)
     : mRate ( )
@@ -224,30 +49,116 @@ ConsoleService::DataRate::DataRate(uint32_t sizeBytes)
     }
 }
 
-ConsoleService::OutputThread::OutputThread(ConsoleService& theService)
-    : Thread            (static_cast<IEThreadConsumer &>(self()), "OutputThread")
-    , IEThreadConsumer  ( )
-    , mTheConsole       ( theService )
-    , mExit             ( true, false )
+Component * ConsoleService::CreateComponent( const NERegistry::ComponentEntry & entry, ComponentThread & owner )
+{
+    return DEBUG_NEW ConsoleService( owner, entry.mRoleName.getString( ), entry.getComponentData( ) );
+}
+
+void ConsoleService::DeleteComponent( Component & compObject, const NERegistry::ComponentEntry & entry )
+{
+    delete (&compObject);
+}
+
+ConsoleService::ConsoleService( ComponentThread & masterThread, const char * const roleName, NEMemory::uAlign OPTIONAL data )
+    : Component             ( masterThread, roleName )
+    , StubBase              ( self( ), NEService::getEmptyInterface( ) )
+    , IETimerConsumer       ( )
+    , IEConsoleEventConsumer( )
+    , mTimer                ( self( ), "ServicingTimer" )
 {
 }
 
-void ConsoleService::OutputThread::onThreadRuns(void)
+void ConsoleService::startupServiceInterface( Component & holder )
 {
-    bool run{ true };
-    do
+    StubBase::startupServiceInterface( holder );
+
+    Console& console = Console::getInstance();
+
+    console.outputText(NEMulticastRouterSettings::COORD_SEND_RATE, NEMulticastRouterSettings::FORMAT_SEND_DATA.data(), 0.0f, ConsoleService::MSG_BYTES.data());
+    console.outputText(NEMulticastRouterSettings::COORD_RECV_RATE, NEMulticastRouterSettings::FORMAT_RECV_DATA.data(), 0.0f, ConsoleService::MSG_BYTES.data());
+    console.outputText(NEMulticastRouterSettings::COORD_USER_INPUT, NEMulticastRouterSettings::FORMAT_WAIT_QUIT);
+
+    ConsoleEvent::addListener(static_cast<IEConsoleEventConsumer&>(self()), holder.getMasterThread());
+    mTimer.startTimer(NECommon::TIMEOUT_1_SEC, Timer::CONTINUOUSLY);
+
+    console.enableConsoleInput(true);
+    console.refreshScreen();
+}
+
+void ConsoleService::shutdownServiceIntrface( Component & holder )
+{
+    ConsoleEvent::removeListener(static_cast<IEConsoleEventConsumer&>(self()));
+    mTimer.stopTimer( );
+    StubBase::shutdownServiceIntrface( holder );
+}
+
+void ConsoleService::processTimer( Timer & timer )
+{
+    ASSERT( &timer == &mTimer );
+    if ( mTimer.isActive( ) )
     {
-        if (mExit.lock(NECommon::WAIT_10_MILLISECONDS) == false)
-        {
-            std::string line;
-            std::getline(std::cin, line);
-            mTheConsole.mCommand = line;
-            ConsoleEvent::sendEvent(ConsoleEventData(), mTheConsole.getMasterThread());
-        }
-        else
-        {
-            run = false;
-        }
-
-    } while (run);
+        outputDataRate(MulticastRouter::getInstance().queryDataSent(), MulticastRouter::getInstance().queryDataReceived());
+    }
+    else
+    {
+        Application::signalAppQuit( );
+    }
 }
+
+void ConsoleService::processEvent(const ConsoleEventData& data)
+{
+}
+
+//////////////////////////////////////////////////////////////////////////
+// These methods must exist, but can have empty body
+//////////////////////////////////////////////////////////////////////////
+void ConsoleService::sendNotification( unsigned int msgId )
+{
+}
+
+void ConsoleService::errorRequest( unsigned int msgId, bool msgCancel )
+{
+}
+
+void ConsoleService::processRequestEvent( ServiceRequestEvent & eventElem )
+{
+}
+
+void ConsoleService::processAttributeEvent( ServiceRequestEvent & eventElem )
+{
+}
+
+inline void ConsoleService::outputDataRate(uint32_t bytesSend, uint32_t bytesRecv)
+{
+    Console& console = Console::getInstance();
+
+    NEMulticastRouterSettings::Coord oldPos = console.getCursorCurPosition();
+    ConsoleService::DataRate rateSend(bytesSend);
+    ConsoleService::DataRate rateRecv(bytesRecv);
+
+    console.outputText(NEMulticastRouterSettings::COORD_SEND_RATE, NEMulticastRouterSettings::FORMAT_SEND_DATA.data(), rateSend.mRate.first, rateSend.mRate.second.c_str());
+    console.outputText(NEMulticastRouterSettings::COORD_RECV_RATE, NEMulticastRouterSettings::FORMAT_RECV_DATA.data(), rateRecv.mRate.first, rateRecv.mRate.second.c_str());
+
+    console.setCursorCurPosition(oldPos);
+    console.refreshScreen();
+}
+
+bool ConsoleService::checkCommand(const String& cmd)
+{
+    if ((cmd == NEMulticastRouterSettings::QUIT_CH) || (cmd == NEMulticastRouterSettings::QUIT_STR))
+    {
+        return true; // interrupt, requested quit
+    }
+    else
+    {
+        Console& console = Console::getInstance();
+
+        ASSERT(MulticastRouter::getInstance().isVerbose());
+        console.outputText(NEMulticastRouterSettings::COORD_ERROR_MSG, NEMulticastRouterSettings::FORMAT_MSG_ERROR.data(), cmd.getString());
+        console.outputText(NEMulticastRouterSettings::COORD_USER_INPUT, NEMulticastRouterSettings::FORMAT_WAIT_QUIT);
+        console.refreshScreen();
+
+        return false;
+    }
+}
+

@@ -63,6 +63,9 @@
     <ClInclude Include="mcrouter\app\private\ConsoleService.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="mcrouter\app\private\Console.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="mcrouter\resources\mcrouter.ico">
@@ -131,6 +134,15 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="mcrouter\app\private\ConsoleService.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="mcrouter\app\private\Console.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="mcrouter\app\private\win32\ConsoleWin32.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="mcrouter\app\private\posix\ConsolePosix.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

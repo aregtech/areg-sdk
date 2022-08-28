@@ -25,50 +25,68 @@
 #include <termios.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <ncurses.h>
 
-void ConsoleService::_osInitialize(void)
+#if 0
+
+bool ConsoleService::_osInitialize(void)
 {
-    puts(CMD_ENTER_SCREEN.data());
-    puts(CMD_CLEAR_SCREEN.data());
-    puts(CMD_SCROLL_BACK.data());
+    Lock lock(mLOck);
+    if (mIsReady == false)
+    {
+        initscr();
+        cbreak();
+        mIsReady = true;
+        // raw();
+        // puts(CMD_ENTER_SCREEN.data());
+        // puts(CMD_CLEAR_SCREEN.data());
+        // puts(CMD_SCROLL_BACK.data());
+    }
+
+    return mIsReady;
 }
 
 void ConsoleService::_osUninitialize(void)
 {
-    // restore previous mode.
-    // fputs(CMD_EXIT_SCREEN.data(), stdout);
-    mContext = 0;
+    Lock lock(mLock);
+
+    if (mIsReady)
+    {
+        // restore previous mode.
+        // fputs(CMD_EXIT_SCREEN.data(), stdout);
+        mContext = 0;
+        delwin();
+        endwin();
+        refresh();
+    }
 }
 
 void ConsoleService::_osDataRate(uint32_t bytesSent, uint32_t bytesReceive, bool isInit)
 {
-    uint32_t xPos {0},yPos{0};
-    puts(CMD_POSITION_CURSOR.data());
-    fscanf(stdin, CMD_READ_POSITION.data(), &xPos, &yPos);
-
     do
     {
         ConsoleService::DataRate dataRate(bytesSent);
         std::pair<float, std::string> rate = dataRate.getRate();
-        printf(FORMAT_SEND_DATA_X.data(), rate.first, rate.second.c_str());
+        mvprintw(COORD_SEND_RATE.posY, COORD_SEND_RATE.posX, FORMAT_SEND_DATA_W.data(), rate.first, rate.second.c_str());
     } while (false);
 
     do
     {
         ConsoleService::DataRate dataRate(bytesReceive);
         std::pair<float, std::string> rate = dataRate.getRate();
-        printf(FORMAT_RECV_DATA_X.data(), rate.first, rate.second.c_str());
+        mvprintw(COORD_RECV_RATE.posY, COORD_RECV_RATE.posX, FORMAT_RECV_DATA_W.data(), rate.first, rate.second.c_str());
     } while (false);
 
     if (mDispError)
     {
-        puts(CMD_CLEAR_LINE.data());
+        mvprintw(COORD_ERROR_OUT.posY, COORD_ERROR_OUT.posX, FORMAT_MSG_ERROR_W.data(), mCommand.getString());
     }
 
-    printf(FORMAT_WAIT_QUIT_X.data(), mCommand.getString());
-    puts(CMD_CLEAR_EOL.data());
+    mvprintw(COORD_WAIT_QUIT.posY, COORD_WAIT_QUIT.posX, FORMAT_WAIT_QUIT_W.data(), mCommand.getString());
 
     mDispError = false;
+
+    refresh();
 }
 
 /*
@@ -80,5 +98,7 @@ void ConsoleService::_osWaitToQuit(void)
     }
 }
 */
+
+#endif
 
 #endif  // _POSIX

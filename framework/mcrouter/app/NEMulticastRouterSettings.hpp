@@ -67,11 +67,11 @@ namespace NEMulticastRouterSettings
     /**
      * \brief   The ASCII name of router as a system service.
      **/
-    extern char *       SERVICE_NAME_ASCII          /*= NEApplication::ROUTER_SERVICE_NAME_ASCII*/;
+    extern char *               SERVICE_NAME_ASCII  /*= NEApplication::ROUTER_SERVICE_NAME_ASCII*/;
     /**
      * \brief   The UNICODE name of router as a system service.
      **/
-    extern wchar_t *    SERVICE_NAME_WIDE           /*= NEApplication::ROUTER_SERVICE_NAME_WIDE*/;
+    extern wchar_t *            SERVICE_NAME_WIDE   /*= NEApplication::ROUTER_SERVICE_NAME_WIDE*/;
     /**
      * \brief   The default option to run multicast router as a console application.
      **/
@@ -80,6 +80,27 @@ namespace NEMulticastRouterSettings
      * \brief   The default option to run multicast router in verbose mode to output send and receive data rate.
      */
     constexpr bool              DEFAULT_VERBOSE     { true };
+    constexpr std::string_view  FORMAT_SEND_DATA    { "Send data with the rate: % 7.02f %s" };
+    constexpr std::string_view  FORMAT_RECV_DATA    { "Recv data with the rate: % 7.02f %s" };
+    constexpr std::string_view  FORMAT_MSG_ERROR    { "ERROR, unexpected command [ %s ], please type again ..." };
+    constexpr std::string_view  FORMAT_WAIT_QUIT    { "Type \'quit\' or \'q\' to quit message router ...: " };
+    constexpr std::string_view  FORMAT_QUIT_APP     { "\nQuit the application ...\n"};
+    //!< Char command quit.
+    constexpr char              QUIT_CH             { 'q' };
+    //!< String command quit.
+    constexpr std::string_view  QUIT_STR            { "quit" };
+
+    struct Coord
+    {
+        int16_t posX{ 0 };
+        int16_t posY{ 0 };
+    };
+
+    constexpr Coord             COORD_SEND_RATE     { 0, 0 };
+    constexpr Coord             COORD_RECV_RATE     { 0, 1 };
+    constexpr Coord             COORD_USER_INPUT    { 0, 2 };
+    constexpr Coord             COORD_ERROR_MSG     { 0, 3 };
+
     /**
      * \brief   Structure that specifies multicast router process option and related eServiceCommand value
      **/

@@ -57,6 +57,12 @@ class ConsoleService: public    Component
     static constexpr uint32_t           ONE_KILOBYTE    { 1024 };
     //!< Bytes in 1 megabyte.
     static constexpr uint32_t           ONE_MEGABYTE    { ONE_KILOBYTE * 1024 };
+    //!< String kilobytes per second
+    static constexpr std::string_view   MSG_KILOBYTES   { "KBytes / sec." };
+    //!< String megabytes per second
+    static constexpr std::string_view   MSG_MEGABYTES   { "MBytes / sec." };
+    //!< String bytes per second
+    static constexpr std::string_view   MSG_BYTES       { " Bytes / sec." };
 
     //!< Enter new screen.
     static constexpr std::string_view   CMD_ENTER_SCREEN    { "\x1B[?1049h\033[H" };
@@ -71,28 +77,13 @@ class ConsoleService: public    Component
     //!< Clear line.
     static constexpr std::string_view   CMD_CLEAR_LINE      { "\33[2K" };
     //!< String format 'send data' rate
-    static constexpr std::string_view   FORMAT_SEND_DATA_X  { "\x1B[1;1HSend data with the rate: % 7.02f %s\n" };
+    static constexpr std::string_view   FORMAT_SEND_DATA_X  { "\x1B[1;1HSend data with the rate: % 7.02f %s" };
     //!< String format 'received data' rate
-    static constexpr std::string_view   FORMAT_RECV_DATA_X  { "\x1B[2;1HRecv data with the rate: % 7.02f %s\n" };
+    static constexpr std::string_view   FORMAT_RECV_DATA_X  { "\x1B[2;1HRecv data with the rate: % 7.02f %s" };
     //!< String format 'wait for input'
     static constexpr std::string_view   FORMAT_WAIT_QUIT_X  { "\x1B[3;1HType \'quit\' or \'q\' to quit message router ...: %s" };
     //!< String format 'error entering command'
-    static constexpr std::string_view   FORMAT_MSG_ERROR_X  { "\x1B[4;1HERROR, unexpected command [ %s ], please type again ...\n" };
-
-    static constexpr std::string_view   FORMAT_SEND_DATA_W  { "Send data with the rate: % 7.02f %s\n" };
-    static constexpr std::string_view   FORMAT_RECV_DATA_W  { "Recv data with the rate: % 7.02f %s\n" };
-    static constexpr std::string_view   FORMAT_MSG_ERROR_W  { "ERROR, unexpected command [ %s ], please type again ...\n" };
-    static constexpr std::string_view   FORMAT_WAIT_QUIT_W  { "Type \'quit\' or \'q\' to quit message router ...: %s" };
-    //!< String kilobytes per second
-    static constexpr std::string_view   MSG_KILOBYTES       { "KBytes / sec." };
-    //!< String megabytes per second
-    static constexpr std::string_view   MSG_MEGABYTES       { "MBytes / sec." };
-    //!< String bytes per second
-    static constexpr std::string_view   MSG_BYTES           { " Bytes / sec." };
-    //!< Char command quit.
-    static constexpr char               QUIT_CH             { 'q' };
-    //!< String command quit.
-    static constexpr std::string_view   QUIT_STR            { "quit" };
+    static constexpr std::string_view   FORMAT_MSG_ERROR_X  { "\x1B[4;1HERROR, unexpected command [ %s ], please type again ..." };
 
     static constexpr std::string_view   CMD_POSITION_CURSOR { "\x1B[6n" };
 
@@ -103,28 +94,7 @@ class ConsoleService: public    Component
     public:
         explicit DataRate(uint32_t sizeBytes);
 
-        inline const std::pair<float, std::string>& getRate(void) const;
-
-    private:
         std::pair<float, std::string>   mRate;
-    };
-
-    class OutputThread  : public    Thread
-                        , protected IEThreadConsumer
-    {
-        friend class ConsoleService;
-    public:
-        OutputThread(ConsoleService & theService);
-    
-    protected:
-        virtual void onThreadRuns(void) override;
-
-    private:
-
-        OutputThread& self() { return (*this); }
-
-        ConsoleService& mTheConsole;
-        SynchEvent      mExit;
     };
 
 //////////////////////////////////////////////////////////////////////////
@@ -145,8 +115,6 @@ public:
      * \param   entry   The entry of registry, which describes the component.
      **/
     static void DeleteComponent( Component & compObject, const NERegistry::ComponentEntry & entry );
-
-    static bool waitQuitCommand(void);
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / destructor
@@ -266,38 +234,20 @@ protected:
 
 private:
     Timer           mTimer;     //!< The timer to run in component thread.
-    String          mCommand;   
-    bool            mDispError;
-    ptr_type        mContext;
-    OutputThread    mOutThred;
-    Mutex           mReleased;
 
 private:
     inline ConsoleService & self( void );
 
-    //!< Make OS specific initialization
-    void _osInitialize(void);
+    inline void outputDataRate(uint32_t bytesSend, uint32_t bytesRecv);
 
-    void _osUninitialize(void);
+    static bool checkCommand(const String& cmd);
 
-    void _osDataRate(uint32_t bytesSent, uint32_t bytesReceive, bool isInit);
-
-    bool isQuitApplication(void);
-
-    //////////////////////////////////////////////////////////////////////////
-    // Forbidden calls
-    //////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+// Forbidden calls
+//////////////////////////////////////////////////////////////////////////
     ConsoleService( void ) = delete;
     DECLARE_NOCOPY_NOMOVE( ConsoleService );
 };
-
-//////////////////////////////////////////////////////////////////////////
-// ConsoleService::DataRate inline methods
-//////////////////////////////////////////////////////////////////////////
-inline const std::pair<float, std::string>& ConsoleService::DataRate::getRate(void) const
-{
-    return mRate;
-}
 
 //////////////////////////////////////////////////////////////////////////
 // ConsoleService inline methods

@@ -32,38 +32,52 @@
 #include <iostream>
 #include <chrono>
 
-void ConsoleService::_osInitialize( void )
+#if 0
+
+bool ConsoleService::_osInitialize( void )
 {
-    HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
-    DWORD mode = 0;
-    if ((hStdOut != nullptr) && (GetConsoleMode(hStdOut, &mode) == TRUE))
+    Lock lock(mLock);
+
+    if (mIsReady == false)
     {
-        mContext = static_cast<ptr_type>(mode);
-        mode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
-        SetConsoleMode(hStdOut, mode);
-        DWORD written = 0;
-        if (WriteConsoleA(hStdOut, CMD_CLEAR_SCREEN.data(), static_cast<DWORD>(CMD_CLEAR_SCREEN.size()), &written, NULL) == TRUE)
+        HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
+        DWORD mode = 0;
+        if ((hStdOut != nullptr) && (GetConsoleMode(hStdOut, &mode) == TRUE))
         {
-            written = 0;
-            WriteConsoleA(hStdOut, CMD_SCROLL_BACK.data(), static_cast<DWORD>(CMD_SCROLL_BACK.size()), &written, NULL);
-        }
-        else
-        {
-            // restore previous mode.
-            mode = static_cast<DWORD>(mContext);
+            mContext = static_cast<ptr_type>(mode);
+            mode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
             SetConsoleMode(hStdOut, mode);
-            mContext = 0;
+            DWORD written = 0;
+            if (WriteConsoleA(hStdOut, CMD_CLEAR_SCREEN.data(), static_cast<DWORD>(CMD_CLEAR_SCREEN.size()), &written, NULL) == TRUE)
+            {
+                written = 0;
+                WriteConsoleA(hStdOut, CMD_SCROLL_BACK.data(), static_cast<DWORD>(CMD_SCROLL_BACK.size()), &written, NULL);
+                mIsReady = true;
+            }
+            else
+            {
+                // restore previous mode.
+                mode = static_cast<DWORD>(mContext);
+                SetConsoleMode(hStdOut, mode);
+                mContext = 0;
+            }
         }
     }
 }
 
 void ConsoleService::_osUninitialize(void)
 {
-    // restore previous mode.
-    HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
-    DWORD mode = static_cast<DWORD>(mContext);
-    SetConsoleMode(hStdOut, mode);
-    mContext = 0;
+    Lock lock(mLock);
+    if (mIsReady)
+    {
+        // restore previous mode.
+        HANDLE hStdOut  = GetStdHandle(STD_OUTPUT_HANDLE);
+        DWORD written   = 0;
+        WriteConsoleA(hStdOut, CMD_CLEAR_SCREEN.data(), static_cast<DWORD>(CMD_CLEAR_SCREEN.size()), &written, NULL);
+        DWORD mode = static_cast<DWORD>(mContext);
+        SetConsoleMode(hStdOut, mode);
+        mContext = 0;
+    }
 }
 
 void ConsoleService::_osDataRate(uint32_t bytesSent, uint32_t bytesReceive, bool isInit)
@@ -107,5 +121,7 @@ void ConsoleService::_osDataRate(uint32_t bytesSent, uint32_t bytesReceive, bool
 
     mDispError = false;
 }
+
+#endif
 
 #endif  // WINDOWS

@@ -23,6 +23,8 @@
 #include "mcrouter/tcp/ServerService.hpp"
 #include "areg/base/SynchObjects.hpp"
 
+class Console;
+
 //////////////////////////////////////////////////////////////////////////
 // MulticastRouter class declaration
 //////////////////////////////////////////////////////////////////////////
@@ -125,18 +127,6 @@ public:
     inline NEMulticastRouterSettings::eRouterState getState( void ) const;
 
     /**
-     * \brief   Sets the state of message router service.
-     **/
-    bool setState( NEMulticastRouterSettings::eRouterState newState );
-
-    /**
-     * \brief   Parses the options and returns true if succeeded.
-     * \param   argc    The number of options to parse.
-     * \param   argv    The options to parse.
-     */
-    bool parseOptions(int argc, char** argv);
-
-    /**
      * \brief   Resets default options.
      **/
     inline void resetDefaultOptions(void);
@@ -150,6 +140,20 @@ public:
      * \brief   Call to query the size in bytes of data received.
      **/
     inline uint32_t queryDataSent(void);
+
+    inline bool isVerbose( void ) const;
+
+    /**
+     * \brief   Sets the state of message router service.
+     **/
+    bool setState( NEMulticastRouterSettings::eRouterState newState );
+
+    /**
+     * \brief   Parses the options and returns true if succeeded.
+     * \param   argc    The number of options to parse.
+     * \param   argv    The options to parse.
+     */
+    bool parseOptions(int argc, char** argv);
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods.
@@ -184,6 +188,7 @@ private:
      * \brief   Returns instance of message router service.
      **/
     inline MulticastRouter & self( void );
+    static bool _checkCommand(const String& cmd);
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables.
@@ -259,6 +264,11 @@ inline uint32_t MulticastRouter::queryDataReceived(void)
 inline uint32_t MulticastRouter::queryDataSent(void)
 {
     return mServiceServer.queryBytesSent();
+}
+
+inline bool MulticastRouter::isVerbose(void) const
+{
+    return mRunVerbose;
 }
 
 inline MulticastRouter & MulticastRouter::self( void )
