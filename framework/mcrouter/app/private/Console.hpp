@@ -132,7 +132,21 @@ public:
      * \brief   Sets the cursor position at the specified position on console.
      * \param   pos     The X- and Y-coordinate of console to move the cursor.
      **/
-    inline void setCursorCurPosition(NEMulticastRouterSettings::Coord pos);
+    inline void setCursorCurPosition(NEMulticastRouterSettings::Coord pos) const;
+
+    /**
+     * \brief   Clears the line starting from the cursor current position until the end of the line. 
+     **/
+    inline void clearCurrentLine( void ) const;
+
+    /**
+     * \brief   Clear the specified line starting from specified posX position until
+     *          the end of the line.
+     * \param   pos     The position to start clearing line.
+     *                  The 'posY' parameter specifies the line index and
+     *                  the 'posX' paramter specifies the starting position to clear. 
+     **/
+    inline void clearLine(NEMulticastRouterSettings::Coord pos) const;
 
     /**
      * \brief   Return the user input command.
@@ -180,7 +194,7 @@ private:
      *          OS specific implementation.
      * \param   pos     The X- and Y-coordinate of console to move the cursor.
      **/
-    void _osSetCursorCurPosition(NEMulticastRouterSettings::Coord pos);
+    void _osSetCursorCurPosition(NEMulticastRouterSettings::Coord pos) const;
 
     /**
      * \brief   A blocking call to wait for user input on the console.
@@ -193,6 +207,11 @@ private:
      *          OS specific implementation.
      **/
     void _osRefreshScreen(void) const;
+
+    /**
+     * \brie    Clears the line starting from the cursor position until the end of line. 
+     **/
+    void _osClearLine( void ) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables.
@@ -268,7 +287,7 @@ inline NEMulticastRouterSettings::Coord Console::getCursorCurPosition( void ) co
     return _osGetCursorPosition( );
 }
 
-inline void Console::setCursorCurPosition( NEMulticastRouterSettings::Coord pos )
+inline void Console::setCursorCurPosition( NEMulticastRouterSettings::Coord pos ) const
 {
     _osSetCursorCurPosition( pos );
 }
@@ -282,6 +301,20 @@ inline void Console::refreshScreen( void ) const
 {
     _osRefreshScreen( );
 }
+
+inline void Console::clearCurrentLine( void ) const
+{
+    _osClearLine( );
+}
+
+inline void Console::clearLine(NEMulticastRouterSettings::Coord pos) const
+{
+    NEMulticastRouterSettings::Coord oldPos = getCursorCurPosition();
+    setCursorCurPosition(pos);
+    clearCurrentLine();
+    setCursorCurPosition(oldPos);
+}
+
 
 #endif  // AREG_MCROUTER_APP_CONSOLE_HPP
 

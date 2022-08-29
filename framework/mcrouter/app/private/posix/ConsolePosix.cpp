@@ -70,6 +70,7 @@ void Console::_osOutputText(NEMulticastRouterSettings::Coord pos, const String& 
     {
         ASSERT(mIsReady);
         mvwaddstr(reinterpret_cast<WINDOW *>(mContext), pos.posY, pos.posX, text.getString());
+        wclrtoeol(reinterpret_cast<WINDOW *>(mContext));
     }
 }
 
@@ -81,6 +82,7 @@ void Console::_osOutputText(NEMulticastRouterSettings::Coord pos, const std::str
     {
         ASSERT(mIsReady);
         mvwaddstr(reinterpret_cast<WINDOW*>(mContext), pos.posY, pos.posX, text.data());
+        wclrtoeol(reinterpret_cast<WINDOW *>(mContext));
     }
 }
 
@@ -102,7 +104,7 @@ NEMulticastRouterSettings::Coord Console::_osGetCursorPosition(void) const
     return pos;
 }
 
-void Console::_osSetCursorCurPosition(NEMulticastRouterSettings::Coord pos)
+void Console::_osSetCursorCurPosition(NEMulticastRouterSettings::Coord pos) const
 {
     Lock lock(mLock);
 
@@ -127,6 +129,16 @@ void Console::_osRefreshScreen(void) const
     if (mContext != 0)
     {
         wrefresh(reinterpret_cast<WINDOW*>(mContext));
+    }
+}
+
+void Console::_osClearLine( void ) const
+{
+    Lock lock(mLock);
+
+    if (mContext != 0)
+    {
+        wclrtoeol(reinterpret_cast<WINDOW *>(mContext));
     }
 }
 

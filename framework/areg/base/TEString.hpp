@@ -837,6 +837,16 @@ public:
     void trimAll(std::basic_string<CharType>& OUT strResult) const;
 
     /**
+     * \brief   Converts the string, makes all letters to lower case and returns the instance of converted string.
+     **/
+    inline TEString<CharType> & makeLower( void );
+
+    /**
+     * \brief   Converts the string, makes all letters to upper case and returns the instance of converted string.
+     **/
+    inline TEString<CharType> & makeUpper( void );
+
+    /**
      * \brief   Reads the string starting from specified position until end of line,
      *          copies the result into the 'strResult' and returns the next position
      *          where new line begins or returns NEString::END_POS if reached end of string.
@@ -2526,6 +2536,30 @@ inline void TEString<CharType>::trimAll(std::basic_string<CharType>& OUT strResu
             strResult = mData.substr(left, length - right);
         }
     }
+}
+
+template<typename CharType>
+inline TEString<CharType> & TEString<CharType>::makeLower( void )
+{
+    std::locale loc(NEString::LOCALE_DEFAULT);
+    for (CharType * src = mData.data(); *src != TEString<CharType>::EmptyChar; ++src)
+    {
+        *src = std::tolower(*src, loc);
+    }
+
+    return (*this);
+}
+
+template<typename CharType>
+inline TEString<CharType> & TEString<CharType>::makeUpper( void )
+{
+    std::locale loc(NEString::LOCALE_DEFAULT);
+    for (CharType * src = mData.data(); *src != TEString<CharType>::EmptyChar; ++src)
+    {
+        *src = std::toupper(*src, loc);
+    }
+
+    return (*this);
 }
 
 template<typename CharType>

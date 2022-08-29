@@ -81,6 +81,9 @@ void ConsoleService::startupServiceInterface( Component & holder )
 
     Console& console = Console::getInstance();
 
+    std::function callback(ConsoleService::checkCommand);
+    console.setCallback(callback);
+
     console.outputText(NEMulticastRouterSettings::COORD_SEND_RATE, NEMulticastRouterSettings::FORMAT_SEND_DATA.data(), 0.0f, ConsoleService::MSG_BYTES.data());
     console.outputText(NEMulticastRouterSettings::COORD_RECV_RATE, NEMulticastRouterSettings::FORMAT_RECV_DATA.data(), 0.0f, ConsoleService::MSG_BYTES.data());
     console.outputText(NEMulticastRouterSettings::COORD_USER_INPUT, NEMulticastRouterSettings::FORMAT_WAIT_QUIT);
@@ -142,7 +145,9 @@ inline void ConsoleService::outputDataRate(uint32_t bytesSend, uint32_t bytesRec
 
 bool ConsoleService::checkCommand(const String& cmd)
 {
-    if ((cmd == NEMulticastRouterSettings::QUIT_CH) || (cmd == NEMulticastRouterSettings::QUIT_STR))
+    String command(cmd);
+    command.makeLower();
+    if ((command == NEMulticastRouterSettings::QUIT_CH) || (command == NEMulticastRouterSettings::QUIT_STR))
     {
         return true; // interrupt, requested quit
     }

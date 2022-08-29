@@ -174,8 +174,8 @@ void MulticastRouter::serviceMain( int argc, char ** argv )
             {
                 // No verbose mode.
                 // Set local callback, output message and wait for user input.
-                Console::CallBack call = _checkCommand;
-                console.setCallback(call);
+                Console::CallBack callback(_checkCommand);
+                console.setCallback(callback);
                 console.enableConsoleInput(true);
                 console.outputText(NEMulticastRouterSettings::Coord{ 0, 0 }, NEMulticastRouterSettings::FORMAT_WAIT_QUIT);
                 console.waitForInput();
@@ -280,7 +280,9 @@ void MulticastRouter::serviceUninstall(void)
 
 bool MulticastRouter::_checkCommand(const String& cmd)
 {
-    if ((cmd == NEMulticastRouterSettings::QUIT_CH) || (cmd == NEMulticastRouterSettings::QUIT_STR))
+    String command(cmd);
+    command.makeLower();
+    if ((command == NEMulticastRouterSettings::QUIT_CH) || (command == NEMulticastRouterSettings::QUIT_STR))
     {
         return true; // interrupt, requested quit
     }

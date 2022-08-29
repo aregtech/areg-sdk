@@ -116,7 +116,7 @@ NEMulticastRouterSettings::Coord Console::_osGetCursorPosition(void) const
     return NEMulticastRouterSettings::Coord{ coord.X, coord.Y };
 }
 
-void Console::_osSetCursorCurPosition(NEMulticastRouterSettings::Coord pos)
+void Console::_osSetCursorCurPosition(NEMulticastRouterSettings::Coord pos) const
 {
     Lock lock(mLock);
 
@@ -135,6 +135,16 @@ void Console::_osWaitInput(void)
 
 void Console::_osRefreshScreen(void) const
 {
+}
+
+void Console::_osClearLine( void ) const
+{
+    Lock lock(mLock);
+
+    DWORD written = 0;
+    HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
+    SetConsoleCursorPosition(hStdOut, COORD{ pos.posX, pos.posY });
+    WriteConsoleA(hStdOut, CMD_CLEAR_LINE.data(), static_cast<DWORD>(CMD_CLEAR_LINE.length()), &written, NULL);
 }
 
 #endif  // WINDOWS
