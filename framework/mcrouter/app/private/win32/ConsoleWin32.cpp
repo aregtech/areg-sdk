@@ -143,7 +143,6 @@ void Console::_osClearLine( void ) const
 
     DWORD written = 0;
     HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
-    SetConsoleCursorPosition(hStdOut, COORD{ pos.posX, pos.posY });
     WriteConsoleA(hStdOut, CMD_CLEAR_LINE.data(), static_cast<DWORD>(CMD_CLEAR_LINE.length()), &written, NULL);
 }
 
