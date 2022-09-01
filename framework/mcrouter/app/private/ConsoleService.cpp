@@ -20,10 +20,10 @@
 
 #include "areg/component/ComponentThread.hpp"
 #include "areg/appbase/Application.hpp"
+#include "areg/appbase/Console.hpp"
 
 #include "mcrouter/app/MulticastRouter.hpp"
 #include "mcrouter/app/NEMulticastRouterSettings.hpp"
-#include "mcrouter/app/private/Console.hpp"
 
  //////////////////////////////////////////////////////////////////////////
  // ConsoleService::DataRate helper class implementation
@@ -81,9 +81,6 @@ void ConsoleService::startupServiceInterface( Component & holder )
 
     Console& console = Console::getInstance();
 
-    std::function callback(ConsoleService::checkCommand);
-    console.setCallback(callback);
-
     console.outputText(NEMulticastRouterSettings::COORD_SEND_RATE, NEMulticastRouterSettings::FORMAT_SEND_DATA.data(), 0.0f, ConsoleService::MSG_BYTES.data());
     console.outputText(NEMulticastRouterSettings::COORD_RECV_RATE, NEMulticastRouterSettings::FORMAT_RECV_DATA.data(), 0.0f, ConsoleService::MSG_BYTES.data());
     console.outputText(NEMulticastRouterSettings::COORD_USER_INPUT, NEMulticastRouterSettings::FORMAT_WAIT_QUIT);
@@ -132,7 +129,7 @@ inline void ConsoleService::outputDataRate(uint32_t bytesSend, uint32_t bytesRec
 {
     Console& console = Console::getInstance();
 
-    NEMulticastRouterSettings::Coord oldPos = console.getCursorCurPosition();
+    Console::Coord oldPos = console.getCursorCurPosition();
     ConsoleService::DataRate rateSend(bytesSend);
     ConsoleService::DataRate rateRecv(bytesRecv);
 

@@ -7,17 +7,17 @@
  * If not, please contact to info[at]aregtech.com
  *
  * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
- * \file        mcrouter/app/private/Console.cpp
+ * \file        areg/appbase/private/Console.cpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
  * \author      Artak Avetyan
- * \brief       AREG Platform, Multi-cast routing, OS specific console.
+ * \brief       AREG Platform, Basic OS specific console implementation.
  *              Windows specific implementation
  ************************************************************************/
 
  /************************************************************************
   * Include files.
   ************************************************************************/
-#include "mcrouter/app/private/Console.hpp"
+#include "areg/appbase/Console.hpp"
 
 #ifdef WINDOWS
 
@@ -25,16 +25,23 @@
     #define WIN32_LEAN_AND_MEAN
 #endif  // WIN32_LEAN_AND_MEAN
 #include <windows.h>
-
 #include <stdio.h>
 
-#include "mcrouter/app/NEMulticastRouterSettings.hpp"
+namespace
+{
+    //!< Clear the screen.
+    constexpr std::string_view  CMD_CLEAR_SCREEN{ "\x1B[2J" };
+    //!< Scroll cursor back.
+    constexpr std::string_view  CMD_SCROLL_BACK { "\x1B[3J" };
+    //!< Clear line.
+    constexpr std::string_view  CMD_CLEAR_LINE  { "\33[2K" };
+}
 
 //////////////////////////////////////////////////////////////////////////
 // Console Windows OS specific implementation
 //////////////////////////////////////////////////////////////////////////
 
-bool Console::_osInitialize(void)
+bool Console::_osSetup(void)
 {
     if (mIsReady == false)
     {
@@ -65,7 +72,7 @@ bool Console::_osInitialize(void)
     return mIsReady;
 }
 
-void Console::_osUninitialize(void)
+void Console::_osRelease(void)
 {
     if (mIsReady)
     {
@@ -80,7 +87,7 @@ void Console::_osUninitialize(void)
     }
 }
 
-void Console::_osOutputText(NEMulticastRouterSettings::Coord pos, const String& text) const
+void Console::_osOutputText(Console::Coord pos, const String& text) const
 {
     Lock lock(mLock);
 
@@ -91,7 +98,7 @@ void Console::_osOutputText(NEMulticastRouterSettings::Coord pos, const String& 
     WriteConsoleA(hStdOut, text.getString(), static_cast<DWORD>(text.getLength()), &written, NULL);
 }
 
-void Console::_osOutputText(NEMulticastRouterSettings::Coord pos, const std::string_view& text) const
+void Console::_osOutputText(Console::Coord pos, const std::string_view& text) const
 {
     Lock lock(mLock);
 
@@ -102,7 +109,7 @@ void Console::_osOutputText(NEMulticastRouterSettings::Coord pos, const std::str
     WriteConsoleA(hStdOut, text.data(), static_cast<DWORD>(text.length()), &written, NULL);
 }
 
-NEMulticastRouterSettings::Coord Console::_osGetCursorPosition(void) const
+Console::Coord Console::_osGetCursorPosition(void) const
 {
     Lock lock(mLock);
 
@@ -113,10 +120,10 @@ NEMulticastRouterSettings::Coord Console::_osGetCursorPosition(void) const
     GetConsoleScreenBufferInfo(hStdOut, &bufferInfo);
     const COORD& coord = reinterpret_cast<const COORD&>(bufferInfo.dwCursorPosition);
 
-    return NEMulticastRouterSettings::Coord{ coord.X, coord.Y };
+    return Console::Coord{ coord.X, coord.Y };
 }
 
-void Console::_osSetCursorCurPosition(NEMulticastRouterSettings::Coord pos) const
+void Console::_osSetCursorCurPosition(Console::Coord pos) const
 {
     Lock lock(mLock);
 
@@ -125,12 +132,9 @@ void Console::_osSetCursorCurPosition(NEMulticastRouterSettings::Coord pos) cons
     SetConsoleCursorPosition(hStdOut, COORD{ pos.posX, pos.posY });
 }
 
-void Console::_osWaitInput(void)
+void Console::_osWaitInput(char* buffer, uint32_t size) const
 {
-    char buffer[32]{ 0 };
-    static_cast<void>(scanf_s("%s", buffer, 32));
-
-    mUsrInput = buffer;
+    static_cast<void>(scanf_s("%s", buffer, size));
 }
 
 void Console::_osRefreshScreen(void) const
@@ -144,6 +148,11 @@ void Console::_osClearLine( void ) const
     DWORD written = 0;
     HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
     WriteConsoleA(hStdOut, CMD_CLEAR_LINE.data(), static_cast<DWORD>(CMD_CLEAR_LINE.length()), &written, NULL);
+}
+
+bool Console::_osReadInputList(const char* format, va_list varList) const
+{
+    return (vscanf(format, varList) > 0);
 }
 
 #endif  // WINDOWS

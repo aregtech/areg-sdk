@@ -7,29 +7,27 @@
  * If not, please contact to info[at]aregtech.com
  *
  * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
- * \file        mcrouter/app/private/Console.cpp
+ * \file        areg/appbase/private/Console.cpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
  * \author      Artak Avetyan
- * \brief       AREG Platform, Multi-cast routing, OS specific console.
+ * \brief       AREG Platform, Basic OS specific console implementation.
  *              POSIX specific implementation.
  ************************************************************************/
 
  /************************************************************************
   * Include files.
   ************************************************************************/
-#include "mcrouter/app/private/Console.hpp"
+#include "areg/appbase/Console.hpp"
 
 #ifdef _POSIX
 
 #include <ncurses.h>
 
-#include "mcrouter/app/NEMulticastRouterSettings.hpp"
-
 //////////////////////////////////////////////////////////////////////////
 // Console POSIX specific implementation
 //////////////////////////////////////////////////////////////////////////
 
-bool Console::_osInitialize(void)
+bool Console::_osSetup(void)
 {
     if (mIsReady == false)
     {
@@ -46,7 +44,7 @@ bool Console::_osInitialize(void)
     return mIsReady;
 }
 
-void Console::_osUninitialize(void)
+void Console::_osRelease(void)
 {
     if (mIsReady)
     {
@@ -62,7 +60,7 @@ void Console::_osUninitialize(void)
     }
 }
 
-void Console::_osOutputText(NEMulticastRouterSettings::Coord pos, const String& text) const
+void Console::_osOutputText(Console::Coord pos, const String& text) const
 {
     Lock lock(mLock);
 
@@ -74,7 +72,7 @@ void Console::_osOutputText(NEMulticastRouterSettings::Coord pos, const String& 
     }
 }
 
-void Console::_osOutputText(NEMulticastRouterSettings::Coord pos, const std::string_view& text) const
+void Console::_osOutputText(Console::Coord pos, const std::string_view& text) const
 {
     Lock lock(mLock);
 
@@ -87,11 +85,11 @@ void Console::_osOutputText(NEMulticastRouterSettings::Coord pos, const std::str
 }
 
 
-NEMulticastRouterSettings::Coord Console::_osGetCursorPosition(void) const
+Console::Coord Console::_osGetCursorPosition(void) const
 {
     Lock lock(mLock);
 
-    NEMulticastRouterSettings::Coord pos{ -1, -1 };
+    Console::Coord pos{ -1, -1 };
     if (mContext != 0)
     {
         ASSERT(mIsReady);
@@ -104,7 +102,7 @@ NEMulticastRouterSettings::Coord Console::_osGetCursorPosition(void) const
     return pos;
 }
 
-void Console::_osSetCursorCurPosition(NEMulticastRouterSettings::Coord pos) const
+void Console::_osSetCursorCurPosition(Console::Coord pos) const
 {
     Lock lock(mLock);
 
@@ -114,13 +112,13 @@ void Console::_osSetCursorCurPosition(NEMulticastRouterSettings::Coord pos) cons
     }
 }
 
-void Console::_osWaitInput(void)
+void Console::_osWaitInput(char* buffer, uint32_t size) const
 {
     if (mContext != 0)
     {
-        char buffer[32]{ 0 };
-        wscanw(reinterpret_cast<WINDOW*>(mContext), "%32s", buffer);
-        mUsrInput = buffer;
+        String fmt;
+        fmt.formatString("%%%u", size);
+        wscanw(reinterpret_cast<WINDOW*>(mContext), fmt.getString(), buffer);
     }
 }
 
@@ -140,6 +138,11 @@ void Console::_osClearLine( void ) const
     {
         wclrtoeol(reinterpret_cast<WINDOW *>(mContext));
     }
+}
+
+bool Console::_osReadInputList(const char* format, va_list varList) const
+{
+    return (mContext != 0 ? vw_scanw(reinterpret_cast<WINDOW *>(mContext), format, varList) == OK : false);
 }
 
 #endif  // POSIX

@@ -16,7 +16,7 @@
  /************************************************************************
   * Include files.
   ************************************************************************/
-#include "mcrouter/app/private/Console.hpp"
+#include "areg/appbase/Console.hpp"
 
 //////////////////////////////////////////////////////////////////////////
 // Console class implementations.
@@ -30,33 +30,34 @@ Console& Console::getInstance(void)
 
 Console::Console(void)
     : mIsReady  ( false )
-    , mUsrInput ( )
     , mContext  ( 0 )
-    , mCallback ( )
     , mEnable   (true, false)
     , mLock     (false)
 {
-    _osInitialize();
+    _osSetup();
 }
 
 Console::~Console(void)
 {
-    _osUninitialize();
+    _osRelease();
 }
 
-bool Console::waitForInput(void)
+String Console::waitForInput(Console::CallBack callback) const
 {
-    bool result = false;
+    String result;
+
     mEnable.lock(NECommon::WAIT_INFINITE);
+
     if (mIsReady)
     {
         do
         {
-            mUsrInput.clear();
-            _osWaitInput();
-            if ((static_cast<bool>(mCallback) == false) || mCallback(mUsrInput))
+            result.clear();
+            char buffer[256]{ 0 };
+            _osWaitInput(buffer, 256);
+            result = buffer;
+            if ((static_cast<bool>(callback) == false) || callback(result))
             {
-                result = true;
                 break;
             }
         } while (true);
@@ -65,7 +66,29 @@ bool Console::waitForInput(void)
     return result;
 }
 
-void Console::outputText(NEMulticastRouterSettings::Coord pos, const char* format, ...) const
+bool Console::readInputs(const char* format, ...) const
+{
+    va_list argptr;
+    va_start(argptr, format);
+    bool result = readInputList(format, argptr);
+    va_end(argptr);
+
+    return result;
+}
+
+bool Console::readInputList(const char* format, va_list varList) const
+{
+    mEnable.lock(NECommon::WAIT_INFINITE);
+    return _osReadInputList(format, varList);
+}
+
+String Console::readString(void) const
+{
+    char buffer[513] { 0 };
+    return String(readInputs("%513s", buffer) ? buffer : String::EmptyString);
+}
+
+void Console::outputText(Console::Coord pos, const char* format, ...) const
 {
     va_list argptr;
     va_start(argptr, format);

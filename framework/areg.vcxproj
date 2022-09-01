@@ -44,11 +44,14 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="areg\appbase\private\ApplicationPosix.cpp" />
-    <ClCompile Include="areg\appbase\private\ApplicationWin.cpp" />
+    <ClCompile Include="areg\appbase\private\Console.cpp" />
+    <ClCompile Include="areg\appbase\private\posix\ApplicationPosix.cpp" />
+    <ClCompile Include="areg\appbase\private\win32\ApplicationWin32.cpp" />
     <ClCompile Include="areg\appbase\private\configure.cpp" />
     <ClCompile Include="areg\appbase\private\Application.cpp" />
     <ClCompile Include="areg\appbase\private\NEApplication.cpp" />
+    <ClCompile Include="areg\appbase\private\posix\ConsolePosix.cpp" />
+    <ClCompile Include="areg\appbase\private\win32\ConsoleWin32.cpp" />
     <ClCompile Include="areg\base\private\posix\CriticalSectionIX.cpp" />
     <ClCompile Include="areg\base\private\posix\FilePosix.cpp" />
     <ClCompile Include="areg\base\private\posix\MutexIX.cpp" />
@@ -219,6 +222,7 @@
     <ClCompile Include="areg\component\private\WatchdogManager.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="areg\appbase\Console.hpp" />
     <ClInclude Include="areg\base\DateTime.hpp" />
     <ClInclude Include="areg\base\private\posix\SpinLockIX.hpp" />
     <ClInclude Include="areg\base\private\win32\SpinLockWin32.hpp" />

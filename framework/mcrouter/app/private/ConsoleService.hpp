@@ -83,6 +83,13 @@ public:
      **/
     static void DeleteComponent( Component & compObject, const NERegistry::ComponentEntry & entry );
 
+    /**
+     * \brief   The callback to check the user input command.
+     *          If returns true, the command is recognized ant the application can 
+     *          stop working. Otherwise, display error and continue waiting for input.
+     **/
+    static bool checkCommand(const String& cmd);
+
 //////////////////////////////////////////////////////////////////////////
 // Constructor / destructor
 //////////////////////////////////////////////////////////////////////////
@@ -190,7 +197,7 @@ protected:
     virtual void processAttributeEvent( ServiceRequestEvent & eventElem ) override;
 
 //////////////////////////////////////////////////////////////////////////
-// Hidden metods
+// Hidden methods
 //////////////////////////////////////////////////////////////////////////
 private:
     /**
@@ -201,15 +208,9 @@ private:
      * \brief   Called to output sent and received data rate messages.
      **/
     inline void outputDataRate(uint32_t bytesSend, uint32_t bytesRecv);
-    /**
-     * \brief   The callback to check the user input command.
-     *          If returns true, the command is recognized ant the application can 
-                stop working. Otherwise, display error and continue waiting for input.
-     **/
-    static bool checkCommand(const String& cmd);
 
 //////////////////////////////////////////////////////////////////////////
-// Hidden member valirables
+// Hidden member variables
 //////////////////////////////////////////////////////////////////////////
 private:
     Timer   mTimer;     //!< The timer to run in component thread.

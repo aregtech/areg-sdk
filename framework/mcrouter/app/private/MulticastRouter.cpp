@@ -6,10 +6,10 @@
  ************************************************************************/
 
 #include "mcrouter/app/MulticastRouter.hpp"
-#include "mcrouter/app/private/Console.hpp"
 #include "mcrouter/app/private/ConsoleService.hpp"
 
 #include "areg/appbase/Application.hpp"
+#include "areg/appbase/Console.hpp"
 #include "areg/appbase/NEApplication.hpp"
 #include "areg/base/File.hpp"
 #include "areg/base/NEUtilities.hpp"
@@ -167,21 +167,21 @@ void MulticastRouter::serviceMain( int argc, char ** argv )
                 console.enableConsoleInput(false);
                 Application::loadModel(_modelName);
                 // Blocked until user input
-                console.waitForInput();
+                Console::CallBack callback(ConsoleService::checkCommand);
+                console.waitForInput(callback);
                 Application::unloadModel(_modelName);
             }
             else
             {
                 // No verbose mode.
                 // Set local callback, output message and wait for user input.
-                Console::CallBack callback(_checkCommand);
-                console.setCallback(callback);
+                Console::CallBack callback(MulticastRouter::_checkCommand);
                 console.enableConsoleInput(true);
-                console.outputText(NEMulticastRouterSettings::Coord{ 0, 0 }, NEMulticastRouterSettings::FORMAT_WAIT_QUIT);
-                console.waitForInput();
+                console.outputText(Console::Coord{ 0, 0 }, NEMulticastRouterSettings::FORMAT_WAIT_QUIT);
+                console.waitForInput(callback);
             }
 
-            NEMulticastRouterSettings::Coord pos = console.getCursorCurPosition();
+            Console::Coord pos = console.getCursorCurPosition();
             pos.posY += 1;
             pos.posX = 0;
             console.outputText(pos, NEMulticastRouterSettings::FORMAT_QUIT_APP);
@@ -291,8 +291,8 @@ bool MulticastRouter::_checkCommand(const String& cmd)
         Console& console = Console::getInstance();
 
         ASSERT(MulticastRouter::getInstance().mRunVerbose == false);
-        console.outputText(NEMulticastRouterSettings::Coord{ 0, 1 }, NEMulticastRouterSettings::FORMAT_MSG_ERROR.data(), cmd.getString());
-        console.outputText(NEMulticastRouterSettings::Coord{ 0, 0 }, NEMulticastRouterSettings::FORMAT_WAIT_QUIT);
+        console.outputText(Console::Coord{ 0, 1 }, NEMulticastRouterSettings::FORMAT_MSG_ERROR.data(), cmd.getString());
+        console.outputText(Console::Coord{ 0, 0 }, NEMulticastRouterSettings::FORMAT_WAIT_QUIT);
         console.refreshScreen();
 
         return false;
