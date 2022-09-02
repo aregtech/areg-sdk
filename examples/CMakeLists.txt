@@ -70,7 +70,7 @@ list(APPEND fileList
 
 # Examples with specific design must be included one by one.
 #include(${AREG_EXAMPLES}/00_helloservice/CMakeLists.txt)
-#include(${AREG_EXAMPLES}/10_locsvc/CMakeLists.txt)
+include(${AREG_EXAMPLES}/10_locsvc/CMakeLists.txt)
 #include(${AREG_EXAMPLES}/11_locmesh/CMakeLists.txt)
 #include(${AREG_EXAMPLES}/12_pubsvc/CMakeLists.txt)
 #include(${AREG_EXAMPLES}/13_pubmesh/CMakeLists.txt)

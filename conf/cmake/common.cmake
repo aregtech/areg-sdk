@@ -15,21 +15,20 @@ else()
     set(AREG_BINARY "shared")
 endif()
 
-
 # Add compiler flags here
 # Checking Compiler for adding corresponded tweaks and flags
 if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     # Clang compile options
-    add_compile_options(-g -pthread -Werror -stdlib=libc++)
+    list(APPEND CompileOptions -g -pthread -Werror -stdlib=libc++ ${UserDefines})
     if (Config MATCHES "Release")
-        add_compile_options(-O2)
+        list(APPEND CompileOptions -O2)
     endif()
 
 elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     # GNU compile options
-    add_compile_options(-g -pthread -Werror -Wall ${UserDefines})
+    list(APPEND CompileOptions -g -pthread -Werror -Wall ${UserDefines})
     if (Config MATCHES "Release")
-        add_compile_options(-O2)
+        list(APPEND CompileOptions -O2)
     endif()
 
 elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
@@ -37,7 +36,7 @@ elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     if(Config MATCHES "Release")
         add_definitions(-DNDEBUG -DUNICODE)
     else()
-        add_compile_options(-Od -RTC1)
+        list(APPEND CompileOptions -Od -RTC1)
         add_definitions(-DDEBUG -DUNICODE)
     endif()
 
@@ -52,11 +51,11 @@ endif()
 
 # flags for bitness
 if(Platform MATCHES "x86_64")
-    if(NOT DEFINED CrossCompile)
+    if(NOT DEFINED CrossCompile AND NOT AREG_OS MATCHES "Windows")
         if(bit MATCHES "32")
-            add_compile_options(-m32)
+            list(APPEND CompileOptions -m32)
         else()
-            add_compile_options(-m64)
+            list(APPEND CompileOptions -m64)
         endif()
     endif()
 endif()
@@ -105,3 +104,5 @@ set_property(
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${ProjLibDir})
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${ProjBinDir})
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${ProjBinDir})
+
+add_compile_options(${CompileOptions})
