@@ -86,13 +86,25 @@ else()
     endif()
 endif()
 
+# Adding compile options
+add_compile_options(${CompileOptions})
+
+# Examples Compile Options
+if (NOT CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
+    set(CompileOptShared "-Wl,-rpath=${AREG_OUTPUT_BIN} -L ${AREG_OUTPUT_BIN}")
+    set(CompileOptStatic "-L ${AREG_OUTPUT_LIB} -Wl,-Bstatic -Wl,-Bdynamic")
+endif()
+
 # Examples LD flags (-l is not necessary)
 if(AREG_OS MATCHES "Windows")
     list(APPEND exampleLDFlags areg)
 else()
     list(APPEND exampleLDFlags areg m  stdc++ rt pthread)
 endif()
+
+# CPP standard for examples
 set(exampleCXXStandard "17")
+
 
 # Adding areg/product directory for clean-up
 set_property(
@@ -104,5 +116,3 @@ set_property(
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${ProjLibDir})
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${ProjBinDir})
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${ProjBinDir})
-
-add_compile_options(${CompileOptions})

@@ -1,7 +1,3 @@
-# Compile Options
-#set(CompileOptShared "-Wl,-rpath=${AREG_OUTPUT_BIN} -L ${AREG_OUTPUT_BIN}")
-#set(CompileOptStatic "-L ${AREG_OUTPUT_LIB} -Wl,-Bstatic -Wl,-Bdynamic")
-
 # This function will be used for all targets which created by add_executable(),
 # to set proper compile options and linkage flags
 function(setOpt item)
