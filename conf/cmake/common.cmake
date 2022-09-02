@@ -9,10 +9,10 @@ set(AREG_AR          "${CrossCompile}ar")
 set(AREG_OS          "${OpSystem}")
 set(AREG_STATIC_LIB)
 
-if(areg MATCHES "static")
-    set(AREG_BINARY "static")
-else()
+if(areg MATCHES "shared")
     set(AREG_BINARY "shared")
+else()
+    set(AREG_BINARY "static")
 endif()
 
 # Add compiler flags here
@@ -91,8 +91,8 @@ add_compile_options(${CompileOptions})
 
 # Examples Compile Options
 if (NOT CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
-    set(CompileOptShared "-Wl,-rpath=${AREG_OUTPUT_BIN} -L ${AREG_OUTPUT_BIN}")
-    set(CompileOptStatic "-L ${AREG_OUTPUT_LIB} -Wl,-Bstatic -Wl,-Bdynamic")
+    set(ExampleCompileOptShared "-Wl,-rpath=${AREG_OUTPUT_BIN} -L ${AREG_OUTPUT_BIN}")
+    set(ExampleCompileOptStatic "-L ${AREG_OUTPUT_LIB} -Wl,-Bstatic -Wl,-Bdynamic")
 endif()
 
 # Examples LD flags (-l is not necessary)

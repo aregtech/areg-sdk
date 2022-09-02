@@ -5,18 +5,20 @@ include("${AREG_BASE}/mcrouter/CMakeLists.txt")
 set(EXE mcrouter${AREG_BIN_EXT})
 add_executable(${EXE} ${mcrouter_SRC})
 
-if(AREG_BINARY MATCHES static)
-    add_library(areg STATIC ${areg_SRC})
-    target_compile_definitions(areg PRIVATE EXP_AREG_LIB=1)
-
-    target_compile_definitions(${EXE} PRIVATE IMP_AREG_LIB=1)
-else()
+if(AREG_BINARY MATCHES "shared")
+    # Shared Library
     add_library(areg SHARED ${areg_SRC})
-    target_compile_definitions(areg PRIVATE EXP_AREG_DLL=1 _USRDLL)
+    target_compile_definitions(areg PRIVATE EXP_AREG_DLL)
     target_compile_options(areg PRIVATE -fPIC)
 
-    target_compile_definitions(${EXE} PRIVATE IMP_AREG_DLL=1 _USRDLL)
+    target_compile_definitions(${EXE} PRIVATE IMP_AREG_DLL)
     target_compile_options(${EXE} PRIVATE -fPIC)
+else()
+    # Static Library
+    add_library(areg STATIC ${areg_SRC})
+    target_compile_definitions(areg PRIVATE EXP_AREG_LIB)
+
+    target_compile_definitions(${EXE} PRIVATE IMP_AREG_LIB)
 endif()
 
 # Library configs

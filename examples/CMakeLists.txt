@@ -5,10 +5,10 @@ function(setOpt item)
 	# Adding compile options to target in respect to ${AREG_BINARY}
 	if(AREG_BINARY MATCHES shared)
 		target_compile_definitions(${item} PRIVATE IMP_AREG_DLL=1)
-		target_compile_options(${item} PRIVATE ${CompileOptShared})
+		target_compile_options(${item} PRIVATE ${ExampleCompileOptShared})
 	else()
 		target_compile_definitions(${item} PRIVATE IMP_AREG_LIB=1)
-		target_compile_options(${item} PRIVATE ${CompileOptStatic})
+		target_compile_options(${item} PRIVATE ${ExampleCompileOptStatic})
 	endif()
 
 	# Linking flags
@@ -23,21 +23,21 @@ function(setOpt item)
 endfunction(setOpt item)
 
 function(setLibOpt item)
-
 	# Setting libxxx properties (static or shared)
 	if(AREG_BINARY MATCHES shared)
 		add_library(${item} SHARED ${ARGN})
 		target_compile_definitions(${item} PRIVATE IMP_AREG_DLL=1)
-		target_compile_options(${item} PRIVATE ${CompileOptShared})
+		target_compile_options(${item} PRIVATE ${ExampleCompileOptShared})
 
 		set_property(TARGET ${item} PROPERTY LIBRARY_OUTPUT_DIRECTORY ${ProjBinDir})
 	else()
 		add_library(${item} STATIC ${ARGN})
 		target_compile_definitions(${item} PRIVATE IMP_AREG_LIB=1)
-		target_compile_options(${item} PRIVATE ${CompileOptStatic})
+		target_compile_options(${item} PRIVATE ${ExampleCompileOptStatic})
 
 		set_property(TARGET ${item} PROPERTY ARCHIVE_OUTPUT_DIRECTORY ${ProjLibDir})
 	endif()
+
 
 	# Linking flags
 	target_link_libraries(${item} ${exampleLDFlags})
@@ -66,7 +66,7 @@ list(APPEND fileList
 
 # Examples with specific design must be included one by one.
 #include(${AREG_EXAMPLES}/00_helloservice/CMakeLists.txt)
-include(${AREG_EXAMPLES}/10_locsvc/CMakeLists.txt)
+#include(${AREG_EXAMPLES}/10_locsvc/CMakeLists.txt)
 #include(${AREG_EXAMPLES}/11_locmesh/CMakeLists.txt)
 #include(${AREG_EXAMPLES}/12_pubsvc/CMakeLists.txt)
 #include(${AREG_EXAMPLES}/13_pubmesh/CMakeLists.txt)
