@@ -62,12 +62,6 @@ public:
     explicit ServiceStub( const ProxyAddress & addrProxy );
 
     /**
-     * \brief   Extracts relevant data from given Proxy address and initializes Stub service object.
-     * \param   addrProxy   The Proxy address to extract information.
-     **/
-    explicit ServiceStub( ProxyAddress && addrProxy ) noexcept;
-
-    /**
      * \brief   Copies Stub service data from given source.
      * \param   stubService     The source of Stub service object to copy data.
      **/
@@ -118,12 +112,6 @@ public:
      * \param   addrProxy   The Proxy address to generate Stub address information
      **/
     ServiceStub & operator = ( const ProxyAddress & addrProxy );
-
-    /**
-     * \brief   Creates and moves Stub address data out of Proxy address.
-     * \param   addrProxy   The Proxy address to generate Stub address information
-     **/
-    ServiceStub & operator = ( ProxyAddress && addrProxy ) noexcept;
 
     /**
      * \brief   Copies data from given source

@@ -115,8 +115,6 @@ bool NESocket::SocketAddress::getAddress(struct sockaddr_in & out_sockAddr) cons
 #endif  // (_MSC_VER >= 1800)
 
         }
-
-        result = true;
     }
 
     return result;
@@ -480,13 +478,18 @@ AREG_API bool NESocket::serverListenConnection(SOCKETHANDLE serverSocket, int ma
 AREG_API SOCKETHANDLE NESocket::serverAcceptConnection(SOCKETHANDLE serverSocket, const SOCKETHANDLE * masterList, int entriesCount, NESocket::SocketAddress * out_socketAddr /*= nullptr*/)
 {
     TRACE_SCOPE(areg_base_NESocket_serverAcceptConnection);
-
     TRACE_DBG("Checking server socket event, server socket handle [ %u ]", static_cast<unsigned int>(serverSocket));
+
+    SOCKETHANDLE result = NESocket::InvalidSocketHandle;
+    if (masterList == nullptr)
+    {
+        TRACE_ERR("Invalid list of sockets, cannot accept connection");
+        return result;
+    }
 
     if (out_socketAddr != nullptr )
         out_socketAddr->resetAddress();
 
-    SOCKETHANDLE result = NESocket::InvalidSocketHandle;
     if ( serverSocket != NESocket::InvalidSocketHandle )
     {
         fd_set readList;
@@ -494,7 +497,7 @@ AREG_API SOCKETHANDLE NESocket::serverAcceptConnection(SOCKETHANDLE serverSocket
         FD_SET( serverSocket, &readList );
         SOCKETHANDLE maxSocket = serverSocket;
 
-        if ( (masterList != nullptr) && (entriesCount > 0) )
+        if ( entriesCount > 0 )
         {
             entriesCount= MACRO_MIN(entriesCount, (FD_SETSIZE - 1));
 
@@ -556,7 +559,7 @@ AREG_API SOCKETHANDLE NESocket::serverAcceptConnection(SOCKETHANDLE serverSocket
                     TRACE_DBG("Have got select event of existing connection, going to resolve socket");
 
                     //  check whether have got connection from existing clients. if 'yes', server can read data.
-                    for ( int count = 0; result == NESocket::InvalidSocketHandle && count < entriesCount; ++ count )
+                    for ( int count = 0; count < entriesCount; ++ count )
                     {
                         if (FD_ISSET( masterList[count], &readList ) != 0)
                         {

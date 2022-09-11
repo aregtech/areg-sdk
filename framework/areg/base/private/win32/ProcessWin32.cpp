@@ -56,14 +56,16 @@ Process & Process::initilize( void )
 String Process::getSafeEnvVariable( const char* var ) const
 {
     String result;
-    DWORD length = ::GetEnvironmentVariableA(var, nullptr, 0);
-    if (length > 0)
+    uint32_t length = static_cast<uint32_t>(::GetEnvironmentVariableA(var, nullptr, 0));
+    uint32_t size = length + 1u;
+    if (size > 1)
     {
-        char *buffer = DEBUG_NEW char[length + 1];
+        char *buffer = DEBUG_NEW char[size];
         ::GetEnvironmentVariableA(var, buffer, length);
         result = buffer;
         delete [] buffer;
     }
+
     return result;
 }
 

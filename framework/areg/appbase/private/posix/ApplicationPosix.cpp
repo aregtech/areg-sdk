@@ -38,7 +38,7 @@ int _getProcIdByName(const char * procName)
         if ((dirEntry->d_type == DT_REG) && (NEString::isNumeric<char>(dirEntry->d_name[0])))
         {
             String name;
-            name.formatString(fmt, dirEntry->d_name);
+            name.format(fmt, dirEntry->d_name);
             FILE* file = fopen(name.getBuffer(), "r");
             if (file != nullptr)
             {
@@ -79,9 +79,11 @@ void handleSignalSegmentationFault(int s)
 
 } // namespace
 
-void Application::setupHandlers( void )
+void Application::_osSetupHandlers( void )
 {
     Application & theApp = Application::getInstance();
+    Lock lock(theApp.mLock);
+
     if ( theApp.mSetup == false )
     {
 
@@ -92,10 +94,23 @@ void Application::setupHandlers( void )
     }
 }
 
+void Application::_osReleaseHandlers(void)
+{
+    Application& theApp = Application::getInstance();
+    Lock lock(theApp.mLock);
+
+    if (theApp.mSetup)
+    {
+        signal(SIGPIPE, nullptr);
+        signal(SIGSEGV, nullptr);
+        theApp.mSetup = false;
+    }
+}
+
 /**
 * \brief   POSIX specific implementation of method.
 **/
-bool Application::_startRouterService( void )
+bool Application::_osStartRouterService( void )
 {
     int pid = _getProcIdByName(NEApplication::DEFAULT_ROUTER_SERVICE_NAME.data());
     bool result = pid != -1;

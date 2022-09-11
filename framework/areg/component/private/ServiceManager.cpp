@@ -696,7 +696,7 @@ bool ServiceManager::_startServiceManagerThread( void )
         }
         else
         {
-            OUTPUT_ERR("Failed to create [ %s ] Service Manage thread.", ServiceManager::SERVICE_MANAGER_THREAD_NAME.data());
+            OUTPUT_ERR("Failed to create [ %s ] Service Manager thread.", SERVICE_MANAGER_THREAD_NAME.data());
         }
     }
     else

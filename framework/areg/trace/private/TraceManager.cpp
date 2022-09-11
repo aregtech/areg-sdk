@@ -203,7 +203,7 @@ void TraceManager::_registerScope( TraceScope & scopeRegister )
 #ifdef DEBUG
     if ( mMapTraceScope.findResourceObject( static_cast<unsigned int>(scopeRegister)) != nullptr )
     {
-        OUTPUT_ERR("The scope [ %s ] is already registered", scopeRegister.getScopeName());
+        OUTPUT_ERR("The scope [ %s ] is already registered", scopeRegister.getScopeName().getString());
     }
 #endif // DEBUG
 

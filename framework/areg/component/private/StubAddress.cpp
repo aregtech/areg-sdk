@@ -153,7 +153,7 @@ StubAddress::StubAddress( ServiceAddress && source)
     : ServiceAddress(std::move(source))
     , mThreadName   (ThreadAddress::INVALID_THREAD_ADDRESS.getThreadName())
     , mChannel      ( )
-    , mMagicNum     (static_cast<unsigned int>(source))
+    , mMagicNum     (static_cast<unsigned int>(static_cast<const ServiceAddress &>(self())))
 {
     if (ServiceAddress::isValid())
         mChannel.setCookie(NEService::COOKIE_LOCAL);

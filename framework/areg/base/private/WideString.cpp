@@ -444,6 +444,7 @@ WideString WideString::toString(int64_t number, NEString::eRadix radix /*= NEStr
         _formatDigit<int64_t, 32>(result, L"%lld", number);
         break;
     }
+
     return result;
 }
 
@@ -471,6 +472,7 @@ WideString WideString::toString(uint64_t number, NEString::eRadix radix /*= NESt
         _formatDigit<uint64_t, 32>( result, L"%llu", number );
         break;
     }
+
     return result;
 }
 
@@ -490,8 +492,7 @@ WideString WideString::toString(double number)
 
 WideString WideString::toString( bool value )
 {
-    return (value ? WideString(NECommon::BOOLEAN_TRUE.data(),  static_cast<int>(NECommon::BOOLEAN_TRUE.length() )) :
-                    WideString(NECommon::BOOLEAN_FALSE.data(), static_cast<int>(NECommon::BOOLEAN_FALSE.length())) );
+    return WideString(value ? NECommon::BOOLEAN_TRUE : NECommon::BOOLEAN_FALSE);
 }
 
 int WideString::formatString( wchar_t * strDst, int count, const wchar_t * format, ... )
@@ -508,7 +509,7 @@ int WideString::formatStringList( wchar_t * strDst, int count, const wchar_t * f
     return _formatStringList(strDst, count, format, argptr);
 }
 
-const WideString & WideString::formatString(const wchar_t * format, ...)
+const WideString & WideString::format(const wchar_t * format, ...)
 {
     va_list argptr;
     va_start(argptr, format);
@@ -564,10 +565,13 @@ WideString& WideString::append(const char* source, NEString::CharCount count /*=
     {
         uint32_t len = static_cast<uint32_t>(mData.length());
         count = count == NEString::COUNT_ALL ? static_cast<NEString::CharCount>(strlen(source)) : count;
-        mData.resize(count + len);
+        uint32_t newSize = len + static_cast<uint32_t>(count);
+        mData.resize(newSize);
         wchar_t* dst = mData.data() + len;
         while (--count >= 0)
+        {
             *dst++ = static_cast<wchar_t>(*source++);
+        }
 
         *dst = EmptyChar;
     }

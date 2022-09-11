@@ -148,7 +148,7 @@ ProxyAddress::ProxyAddress( ServiceAddress && source)
     : ServiceAddress(std::move(source))
     , mThreadName   ("")
     , mChannel      ( )
-    , mMagicNum     (static_cast<unsigned int>(static_cast<const ServiceAddress &>(source)))
+    , mMagicNum     (static_cast<unsigned int>(static_cast<const ServiceAddress &>(self())))
 {
 }
 

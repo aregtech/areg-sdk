@@ -127,7 +127,6 @@ void Console::_osSetCursorCurPosition(Console::Coord pos) const
 {
     Lock lock(mLock);
 
-    DWORD written = 0;
     HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
     SetConsoleCursorPosition(hStdOut, COORD{ pos.posX, pos.posY });
 }

@@ -335,6 +335,10 @@ protected:
 //////////////////////////////////////////////////////////////////////////
 private:
     /**
+     * \brief   Returns own object.
+     **/
+    inline ProxyAddress& self(void);
+    /**
      * \brief   Delivers specified service event to target.
      * \param   serviceEvent    The service event to deliver
      * \param   idTarget        The ID of target service to deliver event
@@ -491,6 +495,11 @@ inline ITEM_ID ProxyAddress::getTarget( void ) const
 inline void ProxyAddress::setTarget( ITEM_ID target )
 {
     return mChannel.setTarget(target);
+}
+
+inline ProxyAddress& ProxyAddress::self(void)
+{
+    return (*this);
 }
 
 #endif  // AREG_COMPONENT_PROXYADDRESS_HPP

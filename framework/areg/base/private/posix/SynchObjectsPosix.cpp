@@ -30,6 +30,7 @@
 #include "areg/base/private/posix/SynchLockAndWaitIX.hpp"
 
 #include <string.h>
+#include <time.h>
 
 //////////////////////////////////////////////////////////////////////////
 // Internal static methods
@@ -334,14 +335,14 @@ bool ResourceLock::tryLock(void)
 //////////////////////////////////////////////////////////////////////////
 // SynchTimer class, Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
-SynchTimer::SynchTimer( unsigned int timeMilliseconds, bool periodic /* = false */, bool autoReset /* = true */, bool initSignaled /* = true */ )
-    : IESynchObject   ( IESynchObject::eSyncObject::SoTimer )
+SynchTimer::SynchTimer( unsigned int msTimeout, bool isPeriodic /* = false */, bool isAutoReset /* = true */, bool /*isSteady*/ /* = true */ )
+    : IESynchObject ( IESynchObject::eSyncObject::SoTimer )
 
-    , mTimeMilliseconds ( timeMilliseconds )
-    , mIsPeriodic       ( periodic )
-    , mIsAutoReset      ( autoReset )
+    , mTimeout 		( msTimeout )
+    , mIsPeriodic   ( isPeriodic )
+    , mIsAutoReset  ( isAutoReset )
 {
-    mSynchObject= static_cast<void *>(DEBUG_NEW WaitableTimerIX( mIsAutoReset, initSignaled, "POSIX_WaitableTimer" ));
+    mSynchObject= static_cast<void *>(DEBUG_NEW WaitableTimerIX( mIsAutoReset, "POSIX_WaitableTimer" ));
 }
 
 SynchTimer::~SynchTimer( void )
@@ -367,7 +368,7 @@ bool SynchTimer::unlock( void )
 
 bool SynchTimer::setTimer( void )
 {
-    return ((mSynchObject != nullptr) && reinterpret_cast<WaitableTimerIX *>(mSynchObject)->setTimer( mTimeMilliseconds, mIsPeriodic ));
+    return ((mSynchObject != nullptr) && reinterpret_cast<WaitableTimerIX *>(mSynchObject)->setTimer( mTimeout, mIsPeriodic ));
 }
 
 bool SynchTimer::cancelTimer( void )
@@ -433,6 +434,37 @@ int MultiLock::lock(unsigned int timeout /* = NECommon::WAIT_INFINITE */, bool w
     } while(false);
 
     return index;
+}
+
+//////////////////////////////////////////////////////////////////////////
+// Wait class implementation
+//////////////////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////////////////
+// Wait class, Methods
+//////////////////////////////////////////////////////////////////////////
+
+void Wait::_osInitTimer(void)
+{
+}
+
+void Wait::_osReleaseTimer(void)
+{
+}
+
+bool Wait::_osWait(const Wait::Duration& timeout) const
+{
+    bool result{ timeout.count() >= 0 };
+    if (timeout >= Wait::ONE_MUS)
+    {
+        struct timespec dueTime;
+        Wait::Duration mus{ timeout - (timeout % Wait::ONE_MUS) };
+        dueTime.tv_sec  = mus >= Wait::ONE_SEC ? (mus.count() / Wait::ONE_SEC.count()) : 0;
+        dueTime.tv_nsec = mus.count() % Wait::ONE_SEC.count();
+        result = ::nanosleep(&dueTime, nullptr) == RETURNED_OK;
+    }
+
+    return result;
 }
 
 #endif  // defined(_POSIX) || defined(POSIX)

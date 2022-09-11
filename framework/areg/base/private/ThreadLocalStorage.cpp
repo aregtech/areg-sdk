@@ -91,7 +91,7 @@ void ThreadLocalStorage::setStorageItem( const String & Key, double Value )
 
 NEMemory::uAlign ThreadLocalStorage::removeStoragteItem( const String & Key )
 {
-    NEMemory::uAlign result = {0};
+    NEMemory::uAlign result{ {0} };
     StorageList::LISTPOS pos = mStorageList.firstPosition();
     for ( ; mStorageList.isValidPosition(pos); pos = mStorageList.nextPosition(pos))
     {

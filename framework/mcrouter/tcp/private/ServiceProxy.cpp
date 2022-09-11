@@ -31,7 +31,7 @@ ServiceProxy::ServiceProxy( const ProxyAddress & addrProxy )
 
 ServiceProxy::ServiceProxy( ProxyAddress && addrProxy ) noexcept
     : mProxyAddress ( std::move(addrProxy) )
-    , mConnectStatus( addrProxy.isValid( ) ? NEService::eServiceConnection::ServicePending : NEService::eServiceConnection::ServiceConnectionUnknown )
+    , mConnectStatus( mProxyAddress.isValid( ) ? NEService::eServiceConnection::ServicePending : NEService::eServiceConnection::ServiceConnectionUnknown )
 {
 }
 
@@ -42,7 +42,7 @@ ServiceProxy::ServiceProxy(const StubAddress & addrStub)
 }
 
 ServiceProxy::ServiceProxy( StubAddress && addrStub) noexcept
-    : mProxyAddress(static_cast<ServiceAddress &&>(addrStub))
+    : mProxyAddress (std::move(addrStub))
     , mConnectStatus(NEService::eServiceConnection::ServiceConnectionUnknown)
 {
 }
@@ -86,7 +86,7 @@ ServiceProxy & ServiceProxy::operator = ( const ProxyAddress & addrProxy )
 ServiceProxy & ServiceProxy::operator = ( ProxyAddress && addrProxy ) noexcept
 {
     mProxyAddress   = std::move(addrProxy);
-    mConnectStatus  = addrProxy.isValid( ) ? NEService::eServiceConnection::ServicePending : NEService::eServiceConnection::ServiceConnectionUnknown;
+    mConnectStatus  = mProxyAddress.isValid( ) ? NEService::eServiceConnection::ServicePending : NEService::eServiceConnection::ServiceConnectionUnknown;
     
     return (*this);
 }

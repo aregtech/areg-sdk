@@ -41,9 +41,9 @@ bool DebugOutputLogger::openLogger(void)
     if ( mIsOpened == false )
     {
         const LogConfiguration & traceConfig = getTraceConfiguration();
-        ASSERT( static_cast<bool>(traceConfig.propertyStatus().getValue()) );
+        ASSERT( static_cast<bool>(traceConfig.getStatus().getValue()) );
         
-        const TraceProperty & prop = traceConfig.propertyDebugOutput();
+        const TraceProperty & prop = traceConfig.getDebugOutput();
         if ( prop.isValid() && static_cast<bool>(prop.getValue()) )
         {
 
@@ -61,11 +61,11 @@ bool DebugOutputLogger::openLogger(void)
 
                 logMsgHello.lmTrace.traceThreadId   = 0;
                 logMsgHello.lmTrace.traceScopeId    = 0;
-                logMsgHello.lmTrace.traceTime-stamp  = DateTime::getNow();
+                logMsgHello.lmTrace.traceTimestamp  = DateTime::getNow();
                 logMsgHello.lmTrace.traceMessagePrio= NETrace::PrioIgnoreLayout;
                 String::formatString( logMsgHello.lmTrace.traceMessage
                                     , NETrace::LOG_MESSAGE_BUFFER_SIZE
-                                    , LoggerBase::FOMAT_MESSAGE_HELLO
+                                    , LoggerBase::FOMAT_MESSAGE_HELLO.data()
                                     , Process::getString(curProcess.getEnvironment())
                                     , curProcess.getFullPath().getString()
                                     , curProcess.getId());
@@ -98,11 +98,11 @@ void DebugOutputLogger::closeLogger(void)
 
         logMsgHello.lmTrace.traceThreadId   = 0;
         logMsgHello.lmTrace.traceScopeId    = 0;
-        logMsgHello.lmTrace.traceTime-stamp  = DateTime::getNow();
+        logMsgHello.lmTrace.traceTimestamp  = DateTime::getNow();
         logMsgHello.lmTrace.traceMessagePrio= NETrace::PrioIgnoreLayout;
         String::formatString( logMsgHello.lmTrace.traceMessage
                             , NETrace::LOG_MESSAGE_BUFFER_SIZE
-                            , LoggerBase::FORMAT_MESSAGE_BYE
+                            , LoggerBase::FORMAT_MESSAGE_BYE.data()
                             , Process::getString(curProcess.getEnvironment())
                             , curProcess.getFullPath().getString()
                             , curProcess.getId());

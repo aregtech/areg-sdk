@@ -60,8 +60,8 @@ bool TimerManager::_systemTimerStart( Timer & timer )
                            , static_cast<void *>(timer.getHandle()), FALSE ) == FALSE )
     {
         OUTPUT_ERR( "System Failed to start timer in period [ %d ] ms, timer name [ %s ]. System Error [ %p ]"
-                        , whichTimer->getTimeout( )
-                        , whichTimer->getName( ).getString()
+                        , timer.getTimeout( )
+                        , timer.getName( ).getString()
                         , static_cast<id_type>(GetLastError( )) );
     }
     else

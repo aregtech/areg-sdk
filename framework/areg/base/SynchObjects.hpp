@@ -34,7 +34,7 @@
 #include "areg/base/IESynchObject.hpp"
 
 #include <atomic>
-#include <mutex>
+#include <chrono>
 
 /**
  * \brief   This file contains synchronization objects used to synchronize data access
@@ -68,6 +68,7 @@
 
 class Lock;
 class MultiLock;
+class Wait;
 
 //////////////////////////////////////////////////////////////////////////
 // IEResourceLock class declaration
@@ -812,23 +813,21 @@ class AREG_API SynchTimer: public IESynchObject
 public:
     /**
      * \brief	Creates Waitable Timer, either manual-reset synchronization or periodic timer.
-     * \param	timeMilliseconds	Time in milliseconds of Waitable Timer
-     * \param	periodic	        If true, it is periodic timer
-     * \param	autoReset	        If true, it is synchronization timer,
-     *                              otherwise it is manual-reset timer.
-     * \param	initSignaled        If true, the timer is activated and
-     *                              set	to signaled state.
+     * \param	msTimeout	Time in milliseconds of Waitable Timer
+     * \param	isPeriodic  If true, it is periodic timer
+     * \param	isAutoReset	If true, it is synchronization timer, otherwise it is manual-reset timer.
+     * \param   isSteady    If true, it uses steady high resolution timer;
      **/
-    SynchTimer( unsigned int timeMilliseconds, bool periodic = false, bool autoReset = true, bool initSignaled = true );
+    SynchTimer( unsigned int msTimeout, bool isPeriodic = false, bool isAutoReset = true, bool isSteady = true );
 
     /**
      * \brief   Destructor. Signals and Destroys waitable timer.
      **/
     virtual ~SynchTimer( void );
 
-    //////////////////////////////////////////////////////////////////////////
-    // Override operations, IESynchObject interface
-    //////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+// Override operations, IESynchObject interface
+//////////////////////////////////////////////////////////////////////////
 public:
     /**
      * \brief	If waitable timer is in non-signaled / locked state,
@@ -850,9 +849,9 @@ public:
      **/
     virtual bool unlock( void ) override;
 
-    //////////////////////////////////////////////////////////////////////////
-    // Operations / Attributes
-    //////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+// Operations / Attributes
+//////////////////////////////////////////////////////////////////////////
 public:
     /**
      * \brief   Activates timer manually. Same as unlock() function call.
@@ -887,14 +886,14 @@ public:
      **/
     bool isAutoreset( void ) const;
 
-    //////////////////////////////////////////////////////////////////////////
-    // Member variables
-    //////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+// Member variables
+//////////////////////////////////////////////////////////////////////////
 private:
     /**
-     * \brief   Due time in milliseconds
+     * \brief   Timeout in milliseconds
      **/
-    const unsigned int  mTimeMilliseconds;
+    const unsigned int  mTimeout;
     /**
      * \brief   Flag containing information whether timer is periodic or not
      **/
@@ -904,9 +903,9 @@ private:
      **/
     const bool          mIsAutoReset;
 
-    //////////////////////////////////////////////////////////////////////////
-    // Hidden / Forbidden methods
-    //////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+// Hidden / Forbidden methods
+//////////////////////////////////////////////////////////////////////////
 private:
     SynchTimer( void ) = delete;
     DECLARE_NOCOPY_NOMOVE( SynchTimer );
@@ -1186,6 +1185,175 @@ private:
 };
 
 //////////////////////////////////////////////////////////////////////////
+// Wait class
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   The Wait puts the thread in a waiting state for seconds, milliseconds
+ *          or microseconds. Do not use this object if the thread should sleep
+ *          for longer time like minutes or even ten seconds. Use this object
+ *          for a very short time where the high resolution timer matters.
+ *          The minimum timeout to suspend the calling thread is 1 microsecond.
+ *          The object ignores passed timeouts in nanoseconds and rounds
+ *          it to microseconds. The calling thread continues execution when 
+ *          the timeout expires.
+ *          The Wait object is not designed to use for synchronization.
+ **/
+class AREG_API Wait
+{
+//////////////////////////////////////////////////////////////////////////
+// Internal types and constants
+//////////////////////////////////////////////////////////////////////////
+public:
+    //!< The high resolution clock, close to real-time
+    using SteadyClock   = std::chrono::high_resolution_clock::time_point;
+    //!< The system clock, with higher precision
+    using SystemClock   = std::chrono::system_clock::time_point;
+    //!< Duration in nanoseconds.
+    using Duration      = std::chrono::nanoseconds;
+
+#if defined(_MSC_VER) && (_MSC_VER > 1200)
+    #pragma warning(disable: 4251)
+#endif  // _MSC_VER
+
+    //!< One nanosecond duration
+    static constexpr Duration   ONE_NS      { 1 };
+    //!< One microsecond duration
+    static constexpr Duration   ONE_MUS     { ONE_NS  * 1'000 };
+    //!< One millisecond duration
+    static constexpr Duration   ONE_MS      { ONE_MUS * 1'000 };
+    //!< One second duration
+    static constexpr Duration   ONE_SEC     { ONE_MS  * 1'000 };
+    //!< The minimum waiting timeout
+    static constexpr Duration   MIN_WAIT    { ONE_MUS };
+
+#if defined(_MSC_VER) && (_MSC_VER > 1200)
+    #pragma warning(default: 4251)
+#endif  // _MSC_VER
+
+//////////////////////////////////////////////////////////////////////////
+// Constructor / Destructor
+//////////////////////////////////////////////////////////////////////////
+public:
+    Wait(void);
+    ~Wait(void);
+
+//////////////////////////////////////////////////////////////////////////
+// Static operations
+//////////////////////////////////////////////////////////////////////////
+public:
+
+    /**
+     * \brief   Converts the system clock to high resolution steady clock.
+     * \param   clock   The system clock to convert.
+     * \return  Returns converted high resolution steady clock.
+     **/
+    static inline Wait::SystemClock convertToSystemClock(const Wait::SteadyClock& clock);
+    
+    /**
+     * \brief   Converts the high resolution steady clock to system clock .
+     * \param   clock   The high resolution steady clock to convert.
+     * \return  Returns converted system clock.
+     **/
+    static inline Wait::SteadyClock convertToSteadyClock(const Wait::SystemClock& clock);
+
+    /**
+     * \brief   Calculates and returns time difference in nanoseconds when the 
+     *          method is called until the specified steady high-resolution time
+     *          in the future. Returns negative value is specified future time 
+     *          is already passed.
+     * 
+     * \param   future  The steady high-resolution time in future.
+     * \return  The time difference in nanoseconds.
+     **/
+    static inline Wait::Duration fromNow(const Wait::SteadyClock& future);
+
+    /**
+     * \brief   Calculates and returns time difference in nanoseconds of the steady
+     *          high-resolution time in the passed until the time when the method 
+     *          is called. Returns negative value if specified passed time is in the
+     *          future (i.e. did not reach).
+     *
+     * \param   passed  The steady high-resolution time in passed.
+     * \return  The time difference in nanoseconds.
+     **/
+    static inline Wait::Duration untilNow(const Wait::SteadyClock& past);
+
+//////////////////////////////////////////////////////////////////////////
+// Operations
+//////////////////////////////////////////////////////////////////////////
+
+    /**
+     * \brief   Suspends the thread from further execution for specified timeout
+     *          in milliseconds.
+     * 
+     * \param   ms      The timeout in milliseconds.
+     * \return  Returns true if succeeded to suspend thread from execution.
+     **/
+    inline bool wait(uint32_t ms) const;
+
+    /**
+     * \brief   Suspends the thread from further execution for specified timeout
+     *          in nanoseconds. The nanosecond part of the timeout is ignored and
+     *          rounded to microseconds, so that the thread is suspended from the
+     *          execution in microseconds.
+     *
+     *          The accuracy of timeout depends on the system and supported feature
+     *          of the hardware.
+     *
+     * \param   timeout     The timeout in microseconds with nanoseconds duration.
+     * \return  Returns true if succeeded to suspend the thread from execution for
+     *          specified timeout.
+     **/
+    inline bool waitFor(Wait::Duration timeout) const;
+
+    /**
+     * \brief   Suspends the thread from execution until reached the steady high 
+     *          resolution timer.
+     *
+     * \param   clock   The timeout in the future. The thread is not suspended
+     *                  if difference between time in the future is less than
+     *                  the time when the method is called or the difference
+     *                  is in nanoseconds. The minimum timeout should be
+     *                  1 microsecond.
+     * \return  Returns true if the time is in future and succeeded to suspend the thread.
+     **/
+    inline bool waitUntil(const Wait::SteadyClock& clock) const;
+
+//////////////////////////////////////////////////////////////////////////
+// Hidden OS dependent calls
+//////////////////////////////////////////////////////////////////////////
+private:
+    /**
+     * \brief   Initializes the timer object depending on the OS.
+     **/
+    void _osInitTimer(void);
+    /**
+     * \brief   Releases the timer object depending on the OS.
+     **/
+    void _osReleaseTimer(void);
+    /**
+     * \brief   OS dependent implementation of thread waiting.
+     *          The accuracy depends on the OS and hardware provided features.
+     * \param   timeout     The timeout in nanoseconds, which is rounded to microseconds.
+     * \return  Returns true if waiting operation succeeded.
+     **/
+    bool _osWait(const Wait::Duration& timeout) const;
+
+//////////////////////////////////////////////////////////////////////////
+// Member variables
+//////////////////////////////////////////////////////////////////////////
+private:
+    //!< OS dependent timer.
+    TIMERHANDLE mTimer;
+
+//////////////////////////////////////////////////////////////////////////
+// Forbidden calls
+//////////////////////////////////////////////////////////////////////////
+private:
+    DECLARE_NOCOPY_NOMOVE(Wait);
+};
+
+//////////////////////////////////////////////////////////////////////////
 // Inline functions
 //////////////////////////////////////////////////////////////////////////
 
@@ -1228,7 +1396,7 @@ inline long Semaphore::getCurrentCount( void ) const
 //////////////////////////////////////////////////////////////////////////
 inline unsigned int SynchTimer::dueTime( void ) const
 {
-    return mTimeMilliseconds;
+    return mTimeout;
 }
 
 inline bool SynchTimer::isPeriodic( void ) const
@@ -1276,6 +1444,49 @@ inline bool Lock::lock(unsigned int timeout /* = NECommon::WAIT_INFINITE */)
 inline bool Lock::unlock( void )
 {
     return mSynchObject.unlock();
+}
+
+//////////////////////////////////////////////////////////////////////////
+// Wait class inline functions
+//////////////////////////////////////////////////////////////////////////
+
+inline Wait::SystemClock Wait::convertToSystemClock(const Wait::SteadyClock& clock)
+{
+    SystemClock result = std::chrono::system_clock::now();
+    SteadyClock steady = std::chrono::high_resolution_clock::now();
+    return std::chrono::time_point_cast<SystemClock::duration>(result + (clock - steady));
+}
+
+inline Wait::SteadyClock Wait::convertToSteadyClock(const Wait::SystemClock& clock)
+{
+    SteadyClock result = std::chrono::high_resolution_clock::now();
+    SystemClock system = std::chrono::system_clock::now();
+    return std::chrono::time_point_cast<SteadyClock::duration>(result + (clock - system));
+}
+
+inline Wait::Duration Wait::fromNow(const Wait::SteadyClock& future)
+{
+    return (future - std::chrono::high_resolution_clock::now());
+}
+
+inline Wait::Duration Wait::untilNow(const Wait::SteadyClock& past)
+{
+    return (std::chrono::high_resolution_clock::now() - past);
+}
+
+inline bool Wait::wait(uint32_t ms) const
+{
+    return _osWait(Wait::Duration{ms * Wait::ONE_MS});
+}
+
+inline bool Wait::waitFor(Wait::Duration timeout) const
+{
+    return _osWait(timeout);
+}
+
+inline bool Wait::waitUntil(const Wait::SteadyClock& clock) const
+{
+    return _osWait(clock - std::chrono::high_resolution_clock::now());
 }
 
 #endif  // AREG_BASE_SYNCHOBJECTS_HPP

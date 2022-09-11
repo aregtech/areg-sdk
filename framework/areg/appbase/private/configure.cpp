@@ -23,10 +23,10 @@
         #pragma comment(lib, "dbghelp.lib")
     #endif  // _DEBUG
 
+    #pragma comment(lib, "advapi32.lib")
     #pragma comment(lib, "psapi.lib")
     #pragma comment(lib, "shell32.lib")
     #pragma comment(lib, "ws2_32.lib")
-    #pragma comment(lib, "advapi32.lib")
 
 #else   // !WIN32
 

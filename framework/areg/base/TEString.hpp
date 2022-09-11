@@ -1596,7 +1596,7 @@ void TEString<CharType>::getWord(TEString<CharType>& OUT word, NEString::CharPos
     if (startAt != NEString::END_POS)
     {
         ASSERT(endAt != NEString::INVALID_POS);
-        substring(word, startAt, endAt == NEString::END_POS ? std::basic_string<CharType>::npos : endAt - startAt);
+        substring(word, startAt, static_cast<NEString::CharCount>(endAt == NEString::END_POS ? NEString::COUNT_ALL : endAt - startAt));
     }
     else
     {
@@ -1777,9 +1777,13 @@ NEMath::eCompare TEString<CharType>::compare(const CharType* what, NEString::Cha
     if (isValidPosition(startAt) == false)
         return result;
 
+    if (count == NEString::COUNT_ALL)
+    {
+        count = NEString::getStringLength<CharType>(what);
+    }
+
     NEString::CharPos length = static_cast<NEString::CharPos>(mData.length()) - startAt;
-    count = count == NEString::COUNT_ALL ? NEString::getStringLength<CharType>(what) : count;
-    if (length == count)
+    if ((length == count) && (what != nullptr))
     {
         const CharType* current = getBuffer(startAt);
         const CharType* other = what;
@@ -1890,14 +1894,17 @@ inline NEString::CharPos TEString<CharType>::substring(TEString<CharType>& outRe
     outResult.mData.clear();
 
     if (isInvalidPosition(startPos) || strPhrase.empty())
+    {
         return NEString::INVALID_POS;
+    }
 
     uint32_t len = static_cast<uint32_t>(strPhrase.length());
     uint32_t pos = static_cast<uint32_t>(mData.find(strPhrase, static_cast<uint32_t>(startPos)));
 
     if (pos != static_cast<uint32_t>(std::basic_string<CharType>::npos))
     {
-        outResult.mData = mData.substr(startPos, static_cast<uint32_t>(pos - startPos));
+        uint32_t newCount = pos - static_cast<uint32_t>(startPos);
+        outResult.mData = mData.substr(startPos, newCount);
         return static_cast<NEString::CharPos>(pos + len);
     }
     else
@@ -1910,11 +1917,16 @@ inline NEString::CharPos TEString<CharType>::substring(TEString<CharType>& outRe
 template<typename CharType>
 NEString::CharPos TEString<CharType>::substring(TEString<CharType>& outResult, CharType chSymbol, NEString::CharPos startPos /* = NEString::START_POS */) const
 {
+    if (isInvalidPosition(startPos))
+    {
+        return NEString::INVALID_POS;
+    }
+
     uint32_t pos = static_cast<uint32_t>(mData.find(chSymbol, startPos));
     if (pos != static_cast<uint32_t>(std::basic_string<CharType>::npos))
     {
-
-        outResult.mData = mData.substr(startPos, static_cast<uint32_t>(pos - startPos));
+        uint32_t newCount = pos - static_cast<uint32_t>(startPos);
+        outResult.mData = mData.substr(startPos, newCount);
         return static_cast<NEString::CharPos>(pos + 1);
     }
     else

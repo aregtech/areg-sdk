@@ -99,7 +99,7 @@ Version & Version::convFromString( const String & version )
     NEString::CharPos pos = NEString::START_POS;
     pos = version.substring( major, NECommon::OBJECT_SEPARATOR, pos);
     pos = version.substring( minor, NECommon::OBJECT_SEPARATOR, pos);
-    pos = version.substring( patch, NECommon::OBJECT_SEPARATOR, pos);
+    version.substring( patch, NECommon::OBJECT_SEPARATOR, pos);
 
     mMajor  = major.toUInt32();;
     mMinor  = minor.toUInt32();
@@ -157,7 +157,7 @@ bool Version::operator > ( const Version & version ) const
 String Version::convToString( void ) const
 {
     String result;
-    return result.formatString("%d%c%d%c%d", mMajor, NECommon::OBJECT_SEPARATOR, mMinor, NECommon::OBJECT_SEPARATOR, mPatch);
+    return result.format("%d%c%d%c%d", mMajor, NECommon::OBJECT_SEPARATOR, mMinor, NECommon::OBJECT_SEPARATOR, mPatch);
 }
 
 //////////////////////////////////////////////////////////////////////////

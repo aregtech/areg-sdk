@@ -11,16 +11,32 @@
 
 #include <windows.h>
 
-void Application::setupHandlers( void )
+void Application::_osSetupHandlers( void )
 {
     Application & theApp = Application::getInstance();
-    theApp.mSetup = true;
+    Lock lock(theApp.mLock);
+
+    if (theApp.mSetup == false)
+    {
+        theApp.mSetup   = true;
+    }
+}
+
+void Application::_osReleaseHandlers(void)
+{
+    Application& theApp = Application::getInstance();
+    Lock lock(theApp.mLock);
+
+    if (theApp.mSetup)
+    {
+        theApp.mSetup = false;
+    }
 }
 
 /**
  * \brief   Windows OS specific implementation of method.
  **/
-bool Application::_startRouterService( void )
+bool Application::_osStartRouterService( void )
 {
     bool result = false;
 

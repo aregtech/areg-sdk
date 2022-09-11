@@ -54,7 +54,6 @@ void AREG_API NEDebug::dumpExceptionCallStack( struct _EXCEPTION_POINTERS *ep, s
 
     constexpr unsigned int   _stackMaxDepth     { 64 };
     constexpr unsigned int   _symNameLength     { MAX_SYM_NAME };
-    constexpr unsigned int   _messageNameLength { _symNameLength + MAX_PATH + 16 };
     constexpr unsigned int   _sizeOfSymInfo     { MACRO_ALIGN_SIZE( sizeof( SYMBOL_INFO ) + _symNameLength * sizeof( char ), sizeof( ULONG64 ) ) };
 
     out_callStack.clear();

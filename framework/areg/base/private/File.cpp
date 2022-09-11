@@ -224,7 +224,8 @@ bool File::createDirCascaded( const char* dirPath )
     bool result = false;
     if ( NEString::isEmpty<char>(dirPath) == false )
     {
-        char * buffer = DEBUG_NEW char[ static_cast<unsigned int>(File::MAXIMUM_PATH + 1) ];
+        uint32_t size = static_cast<uint32_t>(File::MAXIMUM_PATH) + 1;
+        char * buffer = DEBUG_NEW char[size];
         if ( buffer != nullptr )
         {
             const char * src    = dirPath;

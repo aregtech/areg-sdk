@@ -143,7 +143,7 @@ bool TimerPosix::_createTimer( FuncPosixTimerRoutine funcTimer )
     sigEvent.sigev_notify_function  = funcTimer;
     sigEvent.sigev_notify_attributes= nullptr;
 
-    return (RETURNED_OK == timer_create(CLOCK_REALTIME, &sigEvent, &mTimerId));
+    return (RETURNED_OK == timer_create(CLOCK_MONOTONIC, &sigEvent, &mTimerId));
 }
 
 inline bool TimerPosix::_startTimer( TimerBase * context, id_type contextId )
@@ -175,7 +175,7 @@ inline bool TimerPosix::_startTimer( TimerBase * context, id_type contextId )
                 interval.it_interval.tv_nsec= interval.it_value.tv_nsec;
             }
 
-            clock_gettime(CLOCK_REALTIME, &mDueTime);
+            clock_gettime(CLOCK_MONOTONIC, &mDueTime);
             NESynchTypesIX::convTimeout(mDueTime, msTimeout);
 
             if (RETURNED_OK != timer_settime(mTimerId, 0, &interval, nullptr))

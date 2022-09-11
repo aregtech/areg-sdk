@@ -67,9 +67,10 @@ inline static char ** _convertArguments( TCHAR ** argv, int argc)
         for ( int i = 0; i < static_cast<int>(argc); ++ i )
         {
             TCHAR * entry   = argv[i];
-            int length      = NEString::getStringLength<TCHAR>(entry);
-            char * arg      = DEBUG_NEW char[ length + 1];
-            NEString::copyString<char, TCHAR>(arg, length + 1, entry);
+            uint32_t length = static_cast<uint32_t>(NEString::getStringLength<TCHAR>(entry));
+            uint32_t size = length + 1u;
+            char * arg      = DEBUG_NEW char[ size ];
+            NEString::copyString<char, TCHAR>(arg, size, entry);
             argvTemp[i] = arg;
         }
     }

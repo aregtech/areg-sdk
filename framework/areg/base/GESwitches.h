@@ -137,9 +137,9 @@
  **/
 #ifdef EXP_AREG_DLL
    #if (defined(_WINDOWS) || defined(WINDOWS) || defined(_WIN32))
-      #define AREG_API       __declspec(dllexport)
+      #define AREG_API      __declspec(dllexport)
    #else
-      #define AREG_API
+      #define AREG_API      __attribute__((visibility("default")))
    #endif   // (defined(_WINDOWS) || defined(WINDOWS) || defined(_WIN32))
 #endif   // LINK_AREG_DLL
 

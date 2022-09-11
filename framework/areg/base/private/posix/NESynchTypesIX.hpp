@@ -27,6 +27,7 @@
 #include "areg/base/NEUtilities.hpp"
 #include <unistd.h>
 #include <time.h>
+#include <chrono>
 
 //////////////////////////////////////////////////////////////////////////
 // NESynchTypesIX namespace declaration
@@ -158,7 +159,7 @@ namespace NESynchTypesIX
 inline bool NESynchTypesIX::timeoutFromNow( timespec & out_result, unsigned int msTimeout )
 {
     bool result = false;
-    if ( NESynchTypesIX::POSIX_SUCCESS == clock_gettime( CLOCK_REALTIME, &out_result ) )
+    if ( NESynchTypesIX::POSIX_SUCCESS == clock_gettime(CLOCK_MONOTONIC, &out_result ) )
     {
         convTimeout(out_result, msTimeout);
         result = true;
@@ -169,13 +170,17 @@ inline bool NESynchTypesIX::timeoutFromNow( timespec & out_result, unsigned int 
 
 inline void NESynchTypesIX::convTimeout( timespec & out_result, unsigned int msTimeout )
 {
-    msTimeout += static_cast<unsigned int>(out_result.tv_nsec / NEUtilities::MILLISEC_TO_NS);
-    unsigned int nsec = static_cast<unsigned int>(out_result.tv_nsec % NEUtilities::MILLISEC_TO_NS);
-    unsigned int secs = static_cast<unsigned int>(msTimeout  / NEUtilities::SEC_TO_MILLISECS);
-    unsigned int msec = static_cast<unsigned int>(msTimeout  % NEUtilities::SEC_TO_MILLISECS);
+	constexpr std::chrono::nanoseconds _sec_to_nano{NEUtilities::SEC_TO_NS};
 
-    out_result.tv_sec   += static_cast<int64_t>(secs);
-    out_result.tv_nsec   = static_cast<int64_t>(msec * NEUtilities::MILLISEC_TO_NS) + nsec;
+	std::chrono::seconds		sec{ out_result.tv_sec };
+	std::chrono::nanoseconds  	ns { out_result.tv_nsec };
+
+	ns += std::chrono::nanoseconds(msTimeout * NEUtilities::MILLISEC_TO_NS);
+	sec+= std::chrono::duration_cast<std::chrono::seconds>(ns);
+	ns = ns % _sec_to_nano;
+
+    out_result.tv_sec 	= static_cast<int64_t>(sec.count());
+    out_result.tv_nsec  = static_cast<int64_t>(ns.count());
 }
 
 inline const char * NESynchTypesIX::getString(NESynchTypesIX::eEventResetInfo val)

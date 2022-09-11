@@ -425,7 +425,7 @@ public:
      * \note    By default, it will be 128 character space allocated to format string.
      *          If fails, will try repeat operation with 512 chars
      **/
-    const WideString& formatString(const wchar_t* format, ...);
+    const WideString& format(const wchar_t* format, ...);
 
     /**
      * \brief   Formats the string. The classic rules similar of 'vsprintf' are applied.

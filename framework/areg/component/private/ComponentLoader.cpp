@@ -239,7 +239,7 @@ bool ComponentLoader::addModelUnique(const NERegistry::Model & newModel)
 
 void ComponentLoader::removeComponentModel(const String & modelName /*= String::EmptyString */)
 {
-    OUTPUT_WARN("Removing components and model [ %s ]", modelName.isEmpty() == false? modelName : "ALL MODELS");
+    OUTPUT_WARN("Removing components and model [ %s ]", modelName.isEmpty() ? "ALL MODELS" : modelName.getString());
     ComponentLoader::unloadComponentModel(modelName);
     ComponentLoader & loader = ComponentLoader::getInstance();
     Lock lock( loader.mLock );
@@ -354,7 +354,7 @@ bool ComponentLoader::loadModel( const String & modelName /*= String::EmptyStrin
     Lock lock(mLock);
     bool result = false;
     
-    OUTPUT_DBG("Requested to start load model [ %s ].", modelName.isEmpty() ? "ALL" : modelName);
+    OUTPUT_DBG("Requested to start load model [ %s ].", modelName.isEmpty() ? "ALL" : modelName.getString());
     if ( modelName.isEmpty() )
     {
         result = mModelList.getSize() > 0;
@@ -369,14 +369,14 @@ bool ComponentLoader::loadModel( const String & modelName /*= String::EmptyStrin
     }
     else
     {
-        OUTPUT_DBG("Searching model [ %s ] in the list with size [ %d ]", modelName, mModelList.getSize() );
+        OUTPUT_DBG("Searching model [ %s ] in the list with size [ %d ]", modelName.getString(), mModelList.getSize());
         for ( uint32_t i = 0; i < mModelList.getSize(); ++ i )
         {
             NERegistry::Model & model = mModelList[i];
             OUTPUT_DBG("Checking the name, the entry [ %d ] has name [ %s ]", i, model.getModelName().getString());
             if ( model.getModelName() == modelName )
             {
-                OUTPUT_DBG("Found model with name [ %s ] at position [ %d ]", modelName, i);
+                OUTPUT_DBG("Found model with name [ %s ] at position [ %d ]", modelName.getString(), i);
                 result = loadModel(model);
                 break;
             }
@@ -397,7 +397,7 @@ bool ComponentLoader::loadModel( NERegistry::Model & whichModel ) const
         const NERegistry::ComponentThreadList& thrList = whichModel.getThreadList( );
         OUTPUT_DBG( "Starting to load model [ %s ]. There are [ %d ] component threads to start. Component loader is going to load objects and start Service Manager"
                         , whichModel.getModelName( ).getString( )
-                        , thrList.getSize( ) );
+                        , thrList.mListThreads.getSize( ) );
 
         whichModel.markModelLoaded( true );
         result = true;

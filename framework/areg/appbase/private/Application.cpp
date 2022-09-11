@@ -53,7 +53,7 @@ void Application::initApplication(  bool startTracing   /*= true */
     OUTPUT_DBG("Going to initialize application");
     Application::_setAppState(Application::eAppState::AppStateInitializing);
 
-    Application::setupHandlers();
+    Application::_osSetupHandlers();
     Application::setWorkingDirectory( nullptr );
     startTimer = startTimer == false ? startServicing : startTimer;
 
@@ -113,6 +113,7 @@ void Application::releaseApplication(void)
     theApp.mConfigService   = String::EmptyString;
 
     Application::_setAppState(Application::eAppState::AppStateStopped);
+    Application::_osReleaseHandlers();
 }
 
 bool Application::loadModel(const char * modelName /*= nullptr */)
@@ -282,11 +283,13 @@ bool Application::startServiceManager( void )
 
 bool Application::startTimerManager( void )
 {
+    Application::_osSetupHandlers();
     return (TimerManager::isTimerManagerStarted() == false ? TimerManager::startTimerManager() : true);
 }
 
 void Application::stopTimerManager(void)
 {
+    Application::_osReleaseHandlers();
     TimerManager::stopTimerManager();
 }
 
@@ -412,7 +415,7 @@ bool Application::isMessageRoutingConfigured(void)
 
 bool Application::startRouterService(void)
 {
-    return Application::_startRouterService();
+    return Application::_osStartRouterService();
 }
 
 bool Application::isElementStored( const String & elemName )

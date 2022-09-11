@@ -31,19 +31,13 @@ ServiceStub::ServiceStub( const StubAddress & addrStub )
 
 ServiceStub::ServiceStub( StubAddress && addrStub ) noexcept
     : mStubAddress  ( std::move(addrStub) )
-    , mConnectStatus( addrStub.isValid( ) ? NEService::eServiceConnection::ServicePending : NEService::eServiceConnection::ServiceConnectionUnknown )
+    , mConnectStatus(mStubAddress.isValid( ) ? NEService::eServiceConnection::ServicePending : NEService::eServiceConnection::ServiceConnectionUnknown )
 {
 }
 
 ServiceStub::ServiceStub( const ProxyAddress & addrProxy )
     : mStubAddress  ( static_cast<const ServiceItem &>(addrProxy), addrProxy.getRoleName(), "" )
     , mConnectStatus( addrProxy.isValid() ? NEService::eServiceConnection::ServicePending : NEService::eServiceConnection::ServiceConnectionUnknown )
-{
-}
-
-ServiceStub::ServiceStub( ProxyAddress && addrProxy ) noexcept
-    : mStubAddress  ( static_cast<ServiceItem &&>(addrProxy), addrProxy.getRoleName( ), "" )
-    , mConnectStatus( addrProxy.isValid( ) ? NEService::eServiceConnection::ServicePending : NEService::eServiceConnection::ServiceConnectionUnknown )
 {
 }
 
@@ -82,7 +76,7 @@ ServiceStub & ServiceStub::operator = ( const StubAddress & addrStub )
 ServiceStub & ServiceStub::operator = ( StubAddress && addrStub ) noexcept
 {
     mStubAddress    = std::move(addrStub);
-    mConnectStatus  = addrStub.isValid( ) ? NEService::eServiceConnection::ServicePending : NEService::eServiceConnection::ServiceConnectionUnknown;
+    mConnectStatus  = mStubAddress.isValid( ) ? NEService::eServiceConnection::ServicePending : NEService::eServiceConnection::ServiceConnectionUnknown;
     
     return (*this);
 }
@@ -91,14 +85,6 @@ ServiceStub & ServiceStub::operator = ( const ProxyAddress & addrProxy )
 {
     mStubAddress    = static_cast<const ServiceAddress &>(addrProxy);
     mConnectStatus  = addrProxy.isValid() ? NEService::eServiceConnection::ServicePending : NEService::eServiceConnection::ServiceConnectionUnknown;
-
-    return (*this);
-}
-
-ServiceStub & ServiceStub::operator = ( ProxyAddress && addrProxy ) noexcept
-{
-    mStubAddress    = static_cast<ServiceAddress &&>(addrProxy);
-    mConnectStatus  = addrProxy.isValid( ) ? NEService::eServiceConnection::ServicePending : NEService::eServiceConnection::ServiceConnectionUnknown;
 
     return (*this);
 }

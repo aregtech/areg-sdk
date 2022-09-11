@@ -336,7 +336,10 @@ protected:
     bool isValidated( void ) const;
 
 private:
-
+    /**
+     * \brief   Returns own object.
+     **/
+    inline StubAddress& self(void);
     /**
      * \brief   Returns the calculated hash-key value of specified stub address object.
      **/
@@ -514,6 +517,11 @@ inline ITEM_ID StubAddress::getSource( void ) const
 inline void StubAddress::setSource( ITEM_ID source )
 {
     return mChannel.setSource(source);
+}
+
+inline StubAddress& StubAddress::self(void)
+{
+    return (*this);
 }
 
 #endif  // AREG_COMPONENT_STUBADDRESS_HPP

@@ -67,7 +67,7 @@ Channel & Channel::operator = ( Channel && source ) noexcept
 String Channel::convToString( void ) const
 {
     String result;
-    return result.formatString("%llu.%llu.%llu", mSource, mTarget, mCookie);
+    return result.format("%llu.%llu.%llu", mSource, mTarget, mCookie);
 }
 
 const Channel & Channel::convFromString(const String & channel)
@@ -80,7 +80,7 @@ const Channel & Channel::convFromString(const String & channel)
     NEString::CharPos pos = NEString::START_POS;
     pos = channel.substring( source, NECommon::OBJECT_SEPARATOR, pos );
     pos = channel.substring( target, NECommon::OBJECT_SEPARATOR, pos );
-    pos = channel.substring( cookie, NECommon::OBJECT_SEPARATOR, pos );
+    channel.substring( cookie, NECommon::OBJECT_SEPARATOR, pos );
 
     mSource = static_cast<ITEM_ID>( source.toUInt64() );
     mTarget = static_cast<ITEM_ID>( target.toUInt64() );

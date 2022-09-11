@@ -52,11 +52,10 @@ private:
 public:
     /**
      * \brief   Initializes waitable timer, sets the states.
-     * \param   isAutoReset     Indicates whether the waitable timer is manual- or auto-reset.
-     * \param   isSignaled      Indicates the initial signaled state.
-     * \param   name            The name of waitable timer. Plays no role for POSIX timers.
+     * \param   isAutoReset 	Indicates whether the waitable timer is manual- or auto-reset.
+     * \param   name        	The name of waitable timer. Plays no role for POSIX timers.
      **/
-    explicit WaitableTimerIX( bool isAutoReset = false, bool isSignaled = true, const char * name = nullptr);
+    explicit WaitableTimerIX( bool isAutoReset = false, const char * name = nullptr);
     /**
      * \brief   Destructor.
      */

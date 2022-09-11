@@ -6,25 +6,31 @@
     <PropertyGroup>
         <_PropertySheetDisplayName>project_defaults</_PropertySheetDisplayName>
     </PropertyGroup>
-  <PropertyGroup Label="Configuration">
-    <CharacterSet>Unicode</CharacterSet>
-  </PropertyGroup>
-    <PropertyGroup>
+    <PropertyGroup Label="Configuration">
         <RegisterForComInterop>false</RegisterForComInterop>
         <SignAssembly>false</SignAssembly>
-		<GenerateManifest>true</GenerateManifest>
-		<EmbedManifest>true</EmbedManifest>
+        <GenerateManifest>true</GenerateManifest>
+        <EmbedManifest>true</EmbedManifest>
         <EnableManagedIncrementalBuild>true</EnableManagedIncrementalBuild>
-        <UseDebugLibraries Condition="'$(ConfigShortName)'=='Debug'">true</UseDebugLibraries>
-        <UseDebugLibraries Condition="'$(ConfigShortName)'=='Release'">false</UseDebugLibraries>
-        <LinkIncremental Condition="'$(ConfigShortName)'=='Debug'">true</LinkIncremental>
-        <LinkIncremental Condition="'$(ConfigShortName)'=='Release'">false</LinkIncremental>
+    </PropertyGroup>
+    <PropertyGroup Label="Configuration" Condition="'$(ConfigShortName)'=='Debug'">
+        <UseDebugLibraries>true</UseDebugLibraries>
+        <LinkIncremental>true</LinkIncremental>
+    </PropertyGroup>
+    <PropertyGroup Label="Configuration" Condition="'$(ConfigShortName)'=='Release'">
+        <UseDebugLibraries>false</UseDebugLibraries>
+        <LinkIncremental>false</LinkIncremental>
+    </PropertyGroup>
+    <PropertyGroup>
+        <!-- RunCodeAnalysis>true</RunCodeAnalysis -->
+        <CharacterSet>Unicode</CharacterSet>
     </PropertyGroup>
     <ItemDefinitionGroup>
         <ClCompile>
             <MultiProcessorCompilation>true</MultiProcessorCompilation>
             <MinimalRebuild>false</MinimalRebuild>
             <WarningLevel>Level3</WarningLevel>
+            <ConformanceMode>true</ConformanceMode>
             <BasicRuntimeChecks Condition="'$(ConfigShortName)'=='Debug'">EnableFastChecks</BasicRuntimeChecks>
             <BasicRuntimeChecks Condition="'$(ConfigShortName)'=='Release'">Default</BasicRuntimeChecks>
             <DebugInformationFormat Condition="'$(ConfigShortName)'=='Debug'">EditAndContinue</DebugInformationFormat>
@@ -33,12 +39,14 @@
             <RuntimeLibrary Condition="'$(ConfigShortName)'=='Release'">MultiThreadedDLL</RuntimeLibrary>
             <Optimization Condition="'$(ConfigShortName)'=='Debug'">Disabled</Optimization>
             <Optimization Condition="'$(ConfigShortName)'=='Release'">Full</Optimization>
+            <SDLCheck Condition="'$(Configuration)'=='Debug'">true</SDLCheck>
+
             <!-- ************************************************************************************************************************** -->
             <!-- Release version only                                                                                                       -->
             <!-- ************************************************************************************************************************** -->
-			<InlineFunctionExpansion Condition="'$(ConfigShortName)'=='Release'">AnySuitable</InlineFunctionExpansion>
-			<ExceptionHandling Condition="'$(ConfigShortName)'=='Release'">false</ExceptionHandling>
-			<DebugInformationFormat Condition="'$(ConfigShortName)'=='Release'">None</DebugInformationFormat>
+            <InlineFunctionExpansion Condition="'$(ConfigShortName)'=='Release'">AnySuitable</InlineFunctionExpansion>
+            <ExceptionHandling Condition="'$(ConfigShortName)'=='Release'">false</ExceptionHandling>
+            <DebugInformationFormat Condition="'$(ConfigShortName)'=='Release'">None</DebugInformationFormat>
             <FunctionLevelLinking Condition="'$(ConfigShortName)'=='Release'">true</FunctionLevelLinking>
             <IntrinsicFunctions Condition="'$(ConfigShortName)'=='Release'">true</IntrinsicFunctions>
             <WholeProgramOptimization Condition="'$(ConfigShortName)'=='Release'">true</WholeProgramOptimization>

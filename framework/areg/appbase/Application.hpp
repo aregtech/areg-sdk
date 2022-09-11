@@ -117,11 +117,6 @@ public:
     static void releaseApplication( void );
 
     /**
-     * \brief   Setup application handlers. In Linux, it sets up the signal handlers.
-     **/
-    static void setupHandlers( void );
-
-    /**
      * \brief   Call to load and start particular registered model in the system.
      *          If mode name is nullptr or empty, all registered models are started.
      * \param   modelName   The unique name of model to load. If nullptr, all models will be loaded.
@@ -430,18 +425,31 @@ private:
     static inline Application & getInstance( void );
 
     /**
-     * \brief   Operating system specific implementation to start router service on machine.
-     * \return  Returns true if succeeded to start service.
-     **/
-    static bool _startRouterService( void );
-
-    /**
      * \brief   Sets new state of application. The state can be changed in following sequence:
      *          AppStateUndefined => AppStateInitializing => AppStateReady => AppStateReleasing => AppStateUndefined
      * \param   newState    The new sate of application to set.
      * \return  Returns true if succeeded to change the application state.
      **/
-    static bool _setAppState( eAppState newState );
+    static bool _setAppState(eAppState newState);
+
+    /**
+     * \brief   Operating system specific implementation to start router service on machine.
+     * \return  Returns true if succeeded to start service.
+     **/
+    static bool _osStartRouterService( void );
+
+    /**
+     * \brief   OS specific implementation to make setups.
+     *          In Linux it sets up signal handlers.
+     *          In Windows it sets up time period.
+     **/
+    static void _osSetupHandlers(void);
+
+    /**
+     * \brief   OS specific implementation to release resources.
+     * 
+     **/
+    static void _osReleaseHandlers(void);
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden methods.

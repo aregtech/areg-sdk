@@ -264,8 +264,6 @@ int Thread::_threadEntry( void )
     {
         Thread::getCurrentThreadStorage().setStorageItem(STORAGE_THREAD_CONSUMER.data(), (void *)&mThreadConsumer);
 
-        result = IEThreadConsumer::eExitCodes::ExitError;
-
         _setRunning(true);
 
         if (onPreRunThread())
@@ -374,7 +372,8 @@ void Thread::dumpThreads( void )
     if (Thread::_mapThreadName.isEmpty() == false)
     {
         String threadName("");
-        Thread* threadObj = Thread::_mapThreadName.resourceFirstKey(threadName);
+        Thread* threadObj{ nullptr };
+        Thread::_mapThreadName.resourceFirstKey(threadName);
         do
         {
             OUTPUT_WARN("The thread with name [ %s ] is still registered in resource!", static_cast<const char *>(threadName.getString()));

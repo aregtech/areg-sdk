@@ -35,13 +35,13 @@ bool TimerBase::createWaitableTimer()
             NEString::copyString<TCHAR, char>(convertName, MAX_PATH, mName.getString(), mName.getLength());
             name = convertName;
         }
-
+        
         mHandle = static_cast<TIMERHANDLE>(::CreateWaitableTimer(nullptr, FALSE, name));
 
 #ifdef _DEBUG
         if (mHandle == nullptr)
         {
-            OUTPUT_ERR("Failed creating timer [ %s ], the system error code is [ 0xp ]", timerName.getString(), GetLastError());
+            OUTPUT_ERR("Failed creating timer [ %s ], the system error code is [ 0x%p ]", mName.getString(), GetLastError());
         }
 #endif // _DEBUG
     }

@@ -444,6 +444,7 @@ String String::toString(int64_t number, NEString::eRadix radix /*= NEString::Rad
         _formatDigit<int64_t, 32>(result, "%lld", number);
         break;
     }
+
     return result;
 }
 
@@ -471,6 +472,7 @@ String String::toString(uint64_t number, NEString::eRadix radix /*= NEString::Ra
         _formatDigit<uint64_t, 32>( result, "%llu", number );
         break;
     }
+
     return result;
 }
 
@@ -507,7 +509,7 @@ int String::formatStringList( char * strDst, int count, const char * format, va_
     return _formatStringList(strDst, count, format, argptr);
 }
 
-const String & String::formatString(const char * format, ...)
+const String & String::format(const char * format, ...)
 {
     va_list argptr;
     va_start(argptr, format);
@@ -563,10 +565,13 @@ String& String::append(const wchar_t* source, NEString::CharCount count /*= NESt
     {
         uint32_t len = static_cast<uint32_t>(mData.length());
         count = count == NEString::COUNT_ALL ? static_cast<NEString::CharCount>(wcslen(source)) : count;
-        mData.resize(count + len);
+        uint32_t newSize = len + static_cast<uint32_t>(count);
+        mData.resize(newSize);
         char* dst = mData.data() + len;
         while (--count >= 0)
+        {
             *dst++ = static_cast<char>(*source++);
+        }
 
         *dst = EmptyChar;
     }

@@ -45,7 +45,7 @@ namespace NEUtilities
             const char * spec = specChar != nullptr ? specChar : NECommon::DEFAULT_SPECIAL_CHAR.data();
             *out_buffer = '\0';
             struct timespec now;
-            clock_gettime(CLOCK_REALTIME, &now);
+            clock_gettime(CLOCK_MONOTONIC, &now);
             String::formatString( out_buffer, length, strFormat
                                 , prefix != nullptr ? prefix : NEUtilities::DEFAULT_GENERATED_NAME.data()
                                 , spec
