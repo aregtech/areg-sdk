@@ -71,7 +71,7 @@ void PageBrokerSetup::OnBnClickedBrokerConnect( )
         {
             mBrokerPort = temp;
             String ipAddress;
-            ipAddress.formatString("%u.%u.%u.%u", ip1, ip2, ip3, ip4);
+            ipAddress.format("%u.%u.%u.%u", ip1, ip2, ip3, ip4);
             mIsConnected = CentralDialog::StartConnection(ipAddress, static_cast<unsigned short>(mBrokerPort) );
         }
     }

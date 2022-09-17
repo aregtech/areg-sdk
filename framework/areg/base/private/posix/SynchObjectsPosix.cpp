@@ -262,6 +262,7 @@ bool CriticalSection::tryLock( void )
 //////////////////////////////////////////////////////////////////////////
 // SpinLock class implementation
 //////////////////////////////////////////////////////////////////////////
+#if 0 // TODO: Probably don't need anymore and should be removed
 
 SpinLock::SpinLock( void )
     : IEResourceLock( IESynchObject::eSyncObject::SoSpinlock )
@@ -292,6 +293,7 @@ bool SpinLock::tryLock( void )
 {
     return (mSynchObject != nullptr ? reinterpret_cast<SpinLockIX *>(mSynchObject)->tryLock( ) : false);
 }
+#endif //0
 
 //////////////////////////////////////////////////////////////////////////
 // ResourceLock class implementation

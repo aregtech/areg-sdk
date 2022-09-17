@@ -125,11 +125,13 @@ public:
     {
           FO_MODE_INVALID       = (FOB_INVALID)                                                     //!< 0000000000000000 <= invalid mode
 
-        , FO_MODE_READ          = (FOB_READ)                                                        //!< 0000000000000001 <= read bit
-        , FO_MODE_WRITE         = (FOB_WRITE | FOB_READ)                                            //!< 0000000000000011 <= write mode, should contain "read" bit
+        , FO_MODE_ONLY_READ     = (FOB_READ)                                                        //!< 0000000000000001 <= exclusive read, contains only read bit
+        , FO_MODE_ONLY_WRITE    = (FOB_WRITE | FOB_READ)                                            //!< 0000000000000011 <= exclusive write, should contain "read" bit
+        , FO_MODE_READ          = (FOB_READ  | FOB_SHARE_READ)                                      //!< 0000000000010001 <= read mode, can share read
+        , FO_MODE_WRITE         = (FOB_WRITE | FOB_READ | FOB_SHARE_READ)                           //!< 0000000000010011 <= write mode, should contain "read" bit and can share read
         , FO_MODE_BINARY        = (FOB_BINARY)                                                      //!< 0000000000000100 <= binary bit. strings in binary mode will write EOS char, all data will be dumped.
         , FO_MODE_TEXT          = (FOB_TEXT)                                                        //!< 0000000000001000 <= text bit. EOS char of string will not be written, can write and read line of string
-        , FO_MODE_SHARE_READ    = (FOB_SHARE_READ | FOB_READ)                                       //!< 0000000000010001 <= share read mode, should contain "read" bit
+        , FO_MODE_SHARE_READ    = (FOB_SHARE_READ  | FOB_READ)                                      //!< 0000000000010001 <= share read mode, should contain "read" bit
         , FO_MODE_SHARE_WRITE   = (FOB_SHARE_WRITE | FOB_SHARE_READ | FOB_WRITE | FOB_READ)         //!< 0000000000110011 <= share write mode, should contain "read", "write" and "share read" bits
         , FO_MODE_CREATE        = (FOB_CREATE)                                                      //!< 0000000001000000 <= always create file
         , FO_MODE_EXIST         = (FOB_EXIST)                                                       //!< 0000000010000000 <= file should exist, otherwise it fails

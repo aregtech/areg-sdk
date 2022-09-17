@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <ServiceInterface FormatVersion="1.0.0">
-    <Overview ID="1" Name="HelloWatchdog" Version="1.0.0" isRemote="true">
+    <Overview ID="1" Name="LargeData" Version="1.0.0" isRemote="true">
         <Description>Simple Service Interface to demonstrate working features of AREG SDK.
-This service will demonstrate how the system watchdog works in case of public service.</Description>
+This service will demonstrate the TCP/IP data rate by sending image data to connected clinets.</Description>
     </Overview>
     <DataTypeList>
         <DataType ID="27" Name="eState" Type="Enumerate" Values="default">

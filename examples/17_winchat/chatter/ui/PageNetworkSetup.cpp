@@ -186,7 +186,7 @@ void PageNetworkSetup::OnClickedBrokerConnect()
         {
             mBrokerPort = temp;
             String ipAddress;
-            ipAddress.formatString( "%u.%u.%u.%u", ip1, ip2, ip3, ip4 );
+            ipAddress.format( "%u.%u.%u.%u", ip1, ip2, ip3, ip4 );
             if ( Application::startMessageRouting( ipAddress, mBrokerPort ) )
             {
                 Application::loadModel( NECommon::MODEL_NAME_DISTRIBUTED_CLIENT );

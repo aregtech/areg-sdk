@@ -250,6 +250,8 @@ bool CriticalSection::tryLock( void )
     return ( (mSynchObject != nullptr) && (TryEnterCriticalSection(reinterpret_cast<LPCRITICAL_SECTION>(mSynchObject)) == TRUE) );
 }
 
+#if 0 // TODO: Probably don't need anymore and should be removed
+
 //////////////////////////////////////////////////////////////////////////
 // SpinLock class implementation
 //////////////////////////////////////////////////////////////////////////
@@ -303,6 +305,7 @@ bool SpinLock::tryLock( void )
     return (mSynchObject != nullptr ? reinterpret_cast<CriticalSection *>(mSynchObject)->tryLock( ) : false);
 #endif // defined (__cplusplus) && (__cplusplus > 201703L)
 }
+#endif
 
 //////////////////////////////////////////////////////////////////////////
 // ResourceLock class implementation
