@@ -2,11 +2,13 @@
 
 #include "areg/base/GEGlobal.h"
 #include "areg/base/File.hpp"
+#include "common/NELargeData.hpp"
 
 #include <string>
 
 class SimpleBitmap
 {
+    static constexpr uint16_t BIT_COUNT{ 24 };
 public:
     struct sBitmapInfoHeader
     {
@@ -14,7 +16,7 @@ public:
         int32_t     bmiWidth    { 0 };
         int32_t     bmiHeight   { 0 };
         uint16_t    bmiPlanes   { 1 };
-        uint16_t    bmiBitCount { 24 };
+        uint16_t    bmiBitCount { BIT_COUNT };
         uint32_t    bmiCompress { 0 };
         uint32_t    bmiSizeImage{ 0 };
         int32_t     bmiXPPMeter { 0 };
@@ -36,7 +38,7 @@ public:
     {
         sBitmapFileHeader   bmpFile;
         sBitmapInfoHeader   bmpInfo;
-        uint32_t            bmpBits[1];
+        uint32_t            bmpBits[1]{0};
     };
 
 public:
@@ -66,9 +68,15 @@ public:
 
     inline bool open(const std::string& fileName);
 
+    inline bool setPixels( const NELargeData::sImageBlock & imgBlock );
+
+    inline SharedBuffer getPixels( uint32_t channelId, uint32_t sequenceNr, uint32_t rowIndex, uint32_t lines );
+
 private:
     sBitmap *   mBitmap;
     std::string mFileName;
+    uint32_t    mFrameId;
+    int32_t     mChannelId;
     
 private:
     inline void _allocateBitmap(uint32_t width, uint32_t height);
@@ -87,6 +95,8 @@ private:
 inline SimpleBitmap::SimpleBitmap(void)
     : mBitmap   (nullptr)
     , mFileName ( )
+    , mFrameId  ( 0xFFFFFFFFu )
+    , mChannelId( -1 )
 {
     _createGreyBitmap(DEFAULT_WIDTH, DEFAULT_HEIGHT);
 }
@@ -94,6 +104,8 @@ inline SimpleBitmap::SimpleBitmap(void)
 inline SimpleBitmap::SimpleBitmap(uint32_t width, uint32_t height)
     : mBitmap   (nullptr)
     , mFileName ( )
+    , mFrameId  ( 0xFFFFFFFFu )
+    , mChannelId( -1 )
 {
     _createGreyBitmap(width, height);
 }
@@ -195,6 +207,51 @@ inline bool SimpleBitmap::open(const std::string& fileName)
     return result;
 }
 
+inline bool SimpleBitmap::setPixels( const NELargeData::sImageBlock & imgBlock )
+{
+    if ((mChannelId != -1) && (mChannelId != static_cast<int32_t>(imgBlock.channelId)))
+        return false; // wrong source
+
+    if ( (getWidth( ) != imgBlock.frameWidth) || (getHeight( ) != imgBlock.frameHeight) )
+    {
+        _release( );
+        _allocateBitmap( imgBlock.frameWidth, imgBlock.frameHeight );
+    }
+
+    uint8_t * pixels = getPixels( imgBlock.imageData.imgStartPos.coordX, imgBlock.imageData.imgStartPos.coordY );
+    ::memcpy( pixels, reinterpret_cast<const uint8_t *>(imgBlock.imageData.imgRGB), imgBlock.imageData.imgRBGLen );
+    mChannelId  = imgBlock.channelId;
+    mFrameId    = imgBlock.frameSeqId;
+}
+
+inline SharedBuffer SimpleBitmap::getPixels( uint32_t channelId, uint32_t sequenceNr, uint32_t rowIndex, uint32_t lines )
+{
+    if ( (mBitmap == nullptr) || (mBitmap->bmpInfo.bmiSize == 0) )
+        return SharedBuffer();
+
+    uint32_t sizePixels = _dataSize( getWidth( ), lines );
+    uint32_t sizeBlock = sizePixels + sizeof( NELargeData::sImageBlock );
+    SharedBuffer result( sizeBlock, 4 );
+
+    uint8_t * buffer = result.getBuffer();
+    NELargeData::sImageBlock * block = new(buffer)NELargeData::sImageBlock;
+    block->blockSize = sizeBlock;
+    block->channelId = channelId;
+    block->frameSeqId = sequenceNr;
+    block->frameHeight = getHeight( );
+    block->frameWidth = getWidth( );
+    block->imageData.imgHeight = lines;
+    block->imageData.imgRBGLen = sizePixels;
+    block->imageData.imgStartPos = NELargeData::sCoord{ 0, rowIndex };
+    block->imageData.imgWidth = getWidth( );
+
+    ::memcpy( reinterpret_cast<uint8_t *>(block->imageData.imgRGB), getPixels( 0, rowIndex ), sizePixels );
+
+    result.setPosition( sizeBlock, IECursorPosition::eCursorPosition::PositionBegin );
+
+    return result;
+}
+
 inline void SimpleBitmap::_allocateBitmap(uint32_t width, uint32_t height)
 {
     uint32_t dataSize = _dataSize(width, height);
@@ -235,7 +292,7 @@ inline uint8_t* SimpleBitmap::_getData(void) const
 inline uint32_t SimpleBitmap::_rowSize(uint32_t width) const
 {
     // return ((((width * 24) + 31) & ~31) >> 3);
-    return ((((width * 24) + 31) / 32) * 4);
+    return ((((width * BIT_COUNT) + 31) / 32) * 4);
 }
 
 inline uint32_t SimpleBitmap::_dataSize(uint32_t width, uint32_t height) const

@@ -21,9 +21,15 @@
     <ClCompile Include="pubservice\src\ServicingComponent.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="pubservice\src\OptionsServiceClient.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pubservice\src\ServicingComponent.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="pubservice\src\OptionsServiceClient.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -39,9 +39,28 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="NELargeData.hpp" />
+    <ClCompile Include="generated\src\private\LargeDataClientBase.cpp" />
+    <ClCompile Include="generated\src\private\LargeDataEvents.cpp" />
+    <ClCompile Include="generated\src\private\LargeDataProxy.cpp" />
+    <ClCompile Include="generated\src\private\LargeDataStub.cpp" />
+    <ClCompile Include="generated\src\private\NELargeData.cpp" />
+    <ClCompile Include="generated\src\private\NEOptions.cpp" />
+    <ClCompile Include="generated\src\private\OptionsClientBase.cpp" />
+    <ClCompile Include="generated\src\private\OptionsEvents.cpp" />
+    <ClCompile Include="generated\src\private\OptionsProxy.cpp" />
+    <ClCompile Include="generated\src\private\OptionsStub.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="generated\src\LargeDataClientBase.hpp" />
+    <ClInclude Include="generated\src\LargeDataStub.hpp" />
+    <ClInclude Include="generated\src\NELargeData.hpp" />
+    <ClInclude Include="generated\src\NEOptions.hpp" />
+    <ClInclude Include="generated\src\OptionsClientBase.hpp" />
+    <ClInclude Include="generated\src\OptionsStub.hpp" />
+    <ClInclude Include="generated\src\private\LargeDataEvents.hpp" />
+    <ClInclude Include="generated\src\private\LargeDataProxy.hpp" />
+    <ClInclude Include="generated\src\private\OptionsEvents.hpp" />
+    <ClInclude Include="generated\src\private\OptionsProxy.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
