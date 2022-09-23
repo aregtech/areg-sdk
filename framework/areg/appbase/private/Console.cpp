@@ -88,7 +88,7 @@ String Console::readString(void) const
     return String(readInputs("%513s", buffer) ? buffer : String::EmptyString);
 }
 
-void Console::outputText(Console::Coord pos, const char* format, ...) const
+void Console::outputMessage(Console::Coord pos, const char* format, ...) const
 {
     va_list argptr;
     va_start(argptr, format);
@@ -97,5 +97,5 @@ void Console::outputText(Console::Coord pos, const char* format, ...) const
     text.formatList(format, argptr);
     va_end(argptr);
 
-    outputText(pos, text);
+    outputString(pos, text);
 }

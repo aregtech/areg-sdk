@@ -46,7 +46,7 @@
             <FieldList>
                 <Field DataType="uint32" ID="12" Name="flags">
                     <Value IsDefault="true">0</Value>
-                    <Description>Flag, identifying valid or changed fileds of options</Description>
+                    <Description>Flag, identifying valid or changed fields of options</Description>
                 </Field>
                 <Field DataType="uint32" ID="3" Name="width">
                     <Value IsDefault="true">0</Value>
@@ -70,7 +70,7 @@
                 </Field>
                 <Field DataType="double" ID="10" Name="dataRate">
                     <Value IsDefault="true">0.0</Value>
-                    <Description>Tata rate in Kilobytes per second</Description>
+                    <Description>Data rate in Kilobytes per second</Description>
                 </Field>
                 <Field DataType="uint32" ID="11" Name="packetRate">
                     <Value IsDefault="true">0</Value>
@@ -134,17 +134,20 @@
         <Method ID="49" MethodType="response" Name="DataRate">
             <Description>Response of data rate</Description>
             <ParamList>
+                <Parameter DataType="sDataRate" ID="58" Name="genData">
+                    <Description>Computed rate of generated data per second.</Description>
+                </Parameter>
                 <Parameter DataType="sDataRate" ID="50" Name="sentData">
                     <Description>Computed rate of sent data per second.</Description>
                 </Parameter>
                 <Parameter DataType="sDataRate" ID="51" Name="missedData">
-                    <Description>Computed rate of missed data. The data is missed if failed to copy within certain timeshlot.
+                    <Description>Computed rate of missed data. The data is missed if failed to copy within certain time-slot.
 TODO: remove if useless.</Description>
                 </Parameter>
             </ParamList>
         </Method>
         <Method ID="53" MethodType="request" Name="PacketRate" Response="PacketRate">
-            <Description>Request to get packetrate, i.e. the numberof generated image blocks per second</Description>
+            <Description>Request to get packet rate, i.e. the number of generated image blocks per second</Description>
         </Method>
         <Method ID="54" MethodType="response" Name="PacketRate">
             <Description>Response of packet rate.</Description>
@@ -152,8 +155,11 @@ TODO: remove if useless.</Description>
                 <Parameter DataType="uint32" ID="55" Name="genPackets">
                     <Description>Number of generate packet per second</Description>
                 </Parameter>
-                <Parameter DataType="sDataRate" ID="56" Name="avSize">
-                    <Description>The average size of a packet.</Description>
+                <Parameter DataType="uint32" ID="59" Name="sentPackets">
+                    <Description>Number of sent packet per second</Description>
+                </Parameter>
+                <Parameter DataType="uint32" ID="56" Name="avSize">
+                    <Description>The average size of a packet in bytes.</Description>
                 </Parameter>
             </ParamList>
         </Method>

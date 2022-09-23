@@ -7,7 +7,7 @@
 /************************************************************************
  * (c) copyright    2022
  *
- * Generated at     20.09.2022  23:32:51 GMT+02:00
+ * Generated at     22.09.2022  23:42:15 GMT+02:00
  *                  Create by AREG SDK code generator tool from source LargeData.
  *
  * \file            generated/src/LargeDataStub.hpp
@@ -37,7 +37,7 @@
  *
  *              Simple Service Interface to demonstrate working features of AREG SDK.
  *              This service will demonstrate the TCP/IP data rate by sending 
- *              image data to connected clinets.
+ *              image data to connected clients.
  **/
 class LargeDataStub   : protected  StubBase
 {
@@ -92,7 +92,7 @@ public:
 
     /**
      * \brief   Broadcast call.
-     *          Callet to notify all connected clinets that new image data is available.
+     *          Called to notify all connected clients that new image data is available.
      **/
     virtual void broadcastWriteImageBlock( void );
 

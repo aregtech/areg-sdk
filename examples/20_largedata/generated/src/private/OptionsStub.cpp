@@ -4,7 +4,7 @@
 /************************************************************************
  * (c) copyright    2022
  *
- * Generated at     20.09.2022  23:32:53 GMT+02:00
+ * Generated at     22.09.2022  23:42:16 GMT+02:00
  *                  Create by AREG SDK code generator tool from source Options.
  *
  * \file            generated/src/OptionsStub.hpp
@@ -181,22 +181,24 @@ void OptionsStub::setOptionData( const NEOptions::sOptionData & newValue )
  * Send responses
  ************************************************************************/
 
-void OptionsStub::responseDataRate( const NEOptions::sDataRate & sentData, const NEOptions::sDataRate & missedData )
+void OptionsStub::responseDataRate( const NEOptions::sDataRate & genData, const NEOptions::sDataRate & sentData, const NEOptions::sDataRate & missedData )
 {
     static const NEOptions::eMessageIDs msgId = NEOptions::eMessageIDs::MsgId_responseDataRate;
     EventDataStream args(EventDataStream::eEventData::EventDataInternal);
     IEOutStream & stream = args.getStreamForWrite();
+    stream << genData;
     stream << sentData;
     stream << missedData;
     sendResponseEvent( static_cast<msg_id>(msgId), args );
 }
 
-void OptionsStub::responsePacketRate( unsigned int genPackets, const NEOptions::sDataRate & avSize )
+void OptionsStub::responsePacketRate( unsigned int genPackets, unsigned int sentPackets, unsigned int avSize )
 {
     static const NEOptions::eMessageIDs msgId = NEOptions::eMessageIDs::MsgId_responsePacketRate;
     EventDataStream args(EventDataStream::eEventData::EventDataInternal);
     IEOutStream & stream = args.getStreamForWrite();
     stream << genPackets;
+    stream << sentPackets;
     stream << avSize;
     sendResponseEvent( static_cast<msg_id>(msgId), args );
 }

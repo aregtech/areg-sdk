@@ -23,7 +23,25 @@ void OptionsServiceClient::DeleteComponent( Component & compObject, const NERegi
 }
 
 OptionsServiceClient::OptionsServiceClient( const NERegistry::ComponentEntry & entry, ComponentThread & owner )
-    : Component         ( entry.mRoleName )
-    , OptionsClientBase ( entry.mRoleName, static_cast<Component &>(self()) )
+    : Component             ( entry.mRoleName )
+    , IEThreadConsumer      ( )
+    , IETimerConsumer       ( )
+    , IEOptionEventConsumer ( )
+    , OptionsClientBase     ( entry.mRoleName, static_cast<Component &>(self()) )
+
+    , mOptions              ( )
+    , mConsoleThread        ( static_cast<IEThreadConsumer &>(self()), ConsoleThread)
+    , mLock                 ( false )
+    , mQuitThread           ( true )
 {
 }
+
+void OptionsServiceClient::responseDataRate(const NEOptions::sDataRate& genData, const NEOptions::sDataRate& sentData, const NEOptions::sDataRate& missedData)
+{
+    Lock lock(mLock);
+
+    Console& console = Console::getInstance();
+    Console::Coord curPos = console.getCursorCurPosition();
+    console.outputMessage
+}
+

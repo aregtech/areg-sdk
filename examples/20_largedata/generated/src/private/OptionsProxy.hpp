@@ -7,7 +7,7 @@
 /************************************************************************
  * (c) copyright    2022
  *
- * Generated at     20.09.2022  23:32:53 GMT+02:00
+ * Generated at     22.09.2022  23:42:16 GMT+02:00
  *                  Create by AREG SDK code generator tool from source Options.
  *
  * \file            generated/src/private/OptionsProxy.hpp
@@ -144,6 +144,14 @@ public:
  * Parameters
  ************************************************************************/
     /**
+     * \brief   Returns value of genData of response call function.
+     *          The parameter is validated and set when Proxy is getting response call.
+     *          Parameter genData description:
+     *          Computed rate of generated data per second.
+     **/
+    inline const NEOptions::sDataRate & getParamgenData( void ) const;
+
+    /**
      * \brief   Returns value of sentData of response call function.
      *          The parameter is validated and set when Proxy is getting response call.
      *          Parameter sentData description:
@@ -155,7 +163,7 @@ public:
      * \brief   Returns value of missedData of response call function.
      *          The parameter is validated and set when Proxy is getting response call.
      *          Parameter missedData description:
-     *          Computed rate of missed data. The data is missed if failed to copy within certain timeshlot.
+     *          Computed rate of missed data. The data is missed if failed to copy within certain time-slot.
      *          TODO: remove if useless.
      **/
     inline const NEOptions::sDataRate & getParammissedData( void ) const;
@@ -169,12 +177,20 @@ public:
     inline unsigned int getParamgenPackets( void ) const;
 
     /**
+     * \brief   Returns value of sentPackets of response call function.
+     *          The parameter is validated and set when Proxy is getting response call.
+     *          Parameter sentPackets description:
+     *          Number of sent packet per second
+     **/
+    inline unsigned int getParamsentPackets( void ) const;
+
+    /**
      * \brief   Returns value of avSize of response call function.
      *          The parameter is validated and set when Proxy is getting response call.
      *          Parameter avSize description:
-     *          The average size of a packet.
+     *          The average size of a packet in bytes.
      **/
-    inline const NEOptions::sDataRate & getParamavSize( void ) const;
+    inline unsigned int getParamavSize( void ) const;
 
 /************************************************************************
  * Requests
@@ -190,7 +206,7 @@ public:
 
     /**
      * \brief   Request call.
-     *          Request to get packetrate, i.e. the numberof generated image blocks per second
+     *          Request to get packet rate, i.e. the number of generated image blocks per second
      * \param   caller  The reference of caller object to get response.
      * \return  The sequence count number of call
      * \see     responsePacketRate
@@ -337,6 +353,12 @@ private:
  * Parameter members
  ************************************************************************/
     /**
+     * \brief   genData parameter value.
+     *          Computed rate of generated data per second.
+     **/
+    NEOptions::sDataRate    mParamgenData;
+
+    /**
      * \brief   sentData parameter value.
      *          Computed rate of sent data per second.
      **/
@@ -344,7 +366,7 @@ private:
 
     /**
      * \brief   missedData parameter value.
-     *          Computed rate of missed data. The data is missed if failed to copy within certain timeshlot.
+     *          Computed rate of missed data. The data is missed if failed to copy within certain time-slot.
      *          TODO: remove if useless.
      **/
     NEOptions::sDataRate    mParammissedData;
@@ -356,10 +378,16 @@ private:
     unsigned int            mParamgenPackets;
 
     /**
-     * \brief   avSize parameter value.
-     *          The average size of a packet.
+     * \brief   sentPackets parameter value.
+     *          Number of sent packet per second
      **/
-    NEOptions::sDataRate    mParamavSize;
+    unsigned int            mParamsentPackets;
+
+    /**
+     * \brief   avSize parameter value.
+     *          The average size of a packet in bytes.
+     **/
+    unsigned int            mParamavSize;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
@@ -463,6 +491,11 @@ inline const NEOptions::sOptionData & OptionsProxy::getOptionData( NEService::eD
  * Inline parameters
  ************************************************************************/
 
+inline const NEOptions::sDataRate & OptionsProxy::getParamgenData( void ) const
+{
+    return mParamgenData;
+}
+
 inline const NEOptions::sDataRate & OptionsProxy::getParamsentData( void ) const
 {
     return mParamsentData;
@@ -478,7 +511,12 @@ inline unsigned int OptionsProxy::getParamgenPackets( void ) const
     return mParamgenPackets;
 }
 
-inline const NEOptions::sDataRate & OptionsProxy::getParamavSize( void ) const
+inline unsigned int OptionsProxy::getParamsentPackets( void ) const
+{
+    return mParamsentPackets;
+}
+
+inline unsigned int OptionsProxy::getParamavSize( void ) const
 {
     return mParamavSize;
 }

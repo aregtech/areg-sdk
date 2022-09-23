@@ -32,5 +32,11 @@
     <ClInclude Include="pubservice\src\OptionsServiceClient.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="common\NELargeData.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="common\SimpleBitmap.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

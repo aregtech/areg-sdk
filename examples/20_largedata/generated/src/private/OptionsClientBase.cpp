@@ -4,7 +4,7 @@
 /************************************************************************
  * (c) copyright    2022
  *
- * Generated at     20.09.2022  23:32:53 GMT+02:00
+ * Generated at     22.09.2022  23:42:16 GMT+02:00
  *                  Create by AREG SDK code generator tool from source Options.
  *
  * \file            generated/src/OptionsClientBase.hpp
@@ -219,17 +219,19 @@ void OptionsClientBase::processNotificationEvent( NotificationEvent & eventElem 
          ************************************************************************/
             case NEOptions::eMessageIDs::MsgId_responseDataRate:
                 {
+                    const NEOptions::sDataRate & genData = mProxy->getParamgenData();
                     const NEOptions::sDataRate & sentData = mProxy->getParamsentData();
                     const NEOptions::sDataRate & missedData = mProxy->getParammissedData();
-                    responseDataRate( sentData, missedData );
+                    responseDataRate( genData, sentData, missedData );
                 }
                 break;
 
             case NEOptions::eMessageIDs::MsgId_responsePacketRate:
                 {
                     unsigned int genPackets = mProxy->getParamgenPackets();
-                    const NEOptions::sDataRate & avSize = mProxy->getParamavSize();
-                    responsePacketRate( genPackets, avSize );
+                    unsigned int sentPackets = mProxy->getParamsentPackets();
+                    unsigned int avSize = mProxy->getParamavSize();
+                    responsePacketRate( genPackets, sentPackets, avSize );
                 }
                 break;
 
@@ -369,7 +371,7 @@ void OptionsClientBase::requestQuitApplicationFailed( NEService::eResultType Fai
 }
 
 DEF_TRACE_SCOPE(generated_src_OptionsClientBase_responseDataRate);
-void OptionsClientBase::responseDataRate( const NEOptions::sDataRate & /* sentData */, const NEOptions::sDataRate & /* missedData */ )
+void OptionsClientBase::responseDataRate( const NEOptions::sDataRate & /* genData */, const NEOptions::sDataRate & /* sentData */, const NEOptions::sDataRate & /* missedData */ )
 {
     TRACE_SCOPE(generated_src_OptionsClientBase_responseDataRate);
     TRACE_WARN("The response responseDataRate (value = %u) method of proxy [ %s ] client OptionsClientBase is not implemented!"
@@ -378,7 +380,7 @@ void OptionsClientBase::responseDataRate( const NEOptions::sDataRate & /* sentDa
 }
 
 DEF_TRACE_SCOPE(generated_src_OptionsClientBase_responsePacketRate);
-void OptionsClientBase::responsePacketRate( unsigned int /* genPackets */, const NEOptions::sDataRate & /* avSize */ )
+void OptionsClientBase::responsePacketRate( unsigned int /* genPackets */, unsigned int /* sentPackets */, unsigned int /* avSize */ )
 {
     TRACE_SCOPE(generated_src_OptionsClientBase_responsePacketRate);
     TRACE_WARN("The response responsePacketRate (value = %u) method of proxy [ %s ] client OptionsClientBase is not implemented!"

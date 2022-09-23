@@ -7,7 +7,7 @@
 /************************************************************************
  * (c) copyright    2022
  *
- * Generated at     20.09.2022  23:32:51 GMT+02:00
+ * Generated at     22.09.2022  23:42:15 GMT+02:00
  *                  Create by AREG SDK code generator tool from source LargeData.
  *
  * \file            generated/src/private/LargeDataProxy.hpp
@@ -39,7 +39,7 @@ class LargeDataResponseEvent;
  *
  *              Simple Service Interface to demonstrate working features of AREG SDK.
  *              This service will demonstrate the TCP/IP data rate by sending 
- *              image data to connected clinets.
+ *              image data to connected clients.
  **/
 class LargeDataProxy   : public ProxyBase
 {

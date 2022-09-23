@@ -3,11 +3,11 @@
     <Overview ID="1" Name="LargeData" Version="1.0.0" isRemote="true">
         <Description>Simple Service Interface to demonstrate working features of AREG SDK.
 This service will demonstrate the TCP/IP data rate by sending 
-image data to connected clinets.</Description>
+image data to connected clients.</Description>
     </Overview>
     <MethodList>
         <Method ID="40" MethodType="broadcast" Name="WriteImageBlock">
-            <Description>Callet to notify all connected clinets that new image data is available.</Description>
+            <Description>Called to notify all connected clients that new image data is available.</Description>
         </Method>
         <Method ID="41" MethodType="broadcast" Name="ServiceStopping">
             <Description>Called to notify all clients that service is shutting down.</Description>

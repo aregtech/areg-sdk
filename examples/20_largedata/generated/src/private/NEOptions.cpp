@@ -5,7 +5,7 @@
 /************************************************************************
  * (c) copyright    2022
  *
- * Generated at     20.09.2022  23:32:53 GMT+02:00
+ * Generated at     22.09.2022  23:42:16 GMT+02:00
  *                  Create by AREG SDK code generator tool from source Options.
  *
  * \file            generated/src/NEOptions.hpp
@@ -42,8 +42,8 @@ const NEService::SInterfaceData & NEOptions::getInterfaceData( void )
      ************************************************************************/
     static constexpr unsigned int _ResponseList[]
     {
-          static_cast<unsigned int>( NEOptions::eMessageIDs::MsgId_responseDataRate        ) // responseDataRate( const NEOptions::sDataRate & sentData, const NEOptions::sDataRate & missedData )
-        , static_cast<unsigned int>( NEOptions::eMessageIDs::MsgId_responsePacketRate      ) // responsePacketRate( unsigned int genPackets, const NEOptions::sDataRate & avSize )
+          static_cast<unsigned int>( NEOptions::eMessageIDs::MsgId_responseDataRate        ) // responseDataRate( const NEOptions::sDataRate & genData, const NEOptions::sDataRate & sentData, const NEOptions::sDataRate & missedData )
+        , static_cast<unsigned int>( NEOptions::eMessageIDs::MsgId_responsePacketRate      ) // responsePacketRate( unsigned int genPackets, unsigned int sentPackets, unsigned int avSize )
     };
 
     /************************************************************************
@@ -73,8 +73,8 @@ const NEService::SInterfaceData & NEOptions::getInterfaceData( void )
     /************************************************************************
      * Responses
      ************************************************************************/
-        2, // void responseDataRate( const NEOptions::sDataRate & sentData, const NEOptions::sDataRate & missedData )
-        2, // void responsePacketRate( unsigned int genPackets, const NEOptions::sDataRate & avSize )
+        3, // void responseDataRate( const NEOptions::sDataRate & genData, const NEOptions::sDataRate & sentData, const NEOptions::sDataRate & missedData )
+        3, // void responsePacketRate( unsigned int genPackets, unsigned int sentPackets, unsigned int avSize )
 
     /************************************************************************
      * Broadcasts

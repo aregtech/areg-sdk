@@ -5,7 +5,7 @@
 /************************************************************************
  * (c) copyright    2022
  *
- * Generated at     20.09.2022  23:32:53 GMT+02:00
+ * Generated at     22.09.2022  23:42:16 GMT+02:00
  *                  Create by AREG SDK code generator tool from source Options.
  *
  * \file            generated/src/private/OptionsProxy.hpp
@@ -79,9 +79,11 @@ OptionsProxy::OptionsProxy( const String & roleName, DispatcherThread * ownerThr
 /************************************************************************
  * Parameters
  ************************************************************************/
+    , mParamgenData       (  )
     , mParamsentData      (  )
     , mParammissedData    (  )
     , mParamgenPackets    (  )
+    , mParamsentPackets   (  )
     , mParamavSize        (  )
 {
 }
@@ -199,12 +201,14 @@ void OptionsProxy::updateData( OptionsResponseEvent & eventElem, NEOptions::eMes
      * Update Response parameters
      ************************************************************************/
     case NEOptions::eMessageIDs::MsgId_responseDataRate:
+        stream >> mParamgenData;
         stream >> mParamsentData;
         stream >> mParammissedData;
         break;
 
     case NEOptions::eMessageIDs::MsgId_responsePacketRate:
         stream >> mParamgenPackets;
+        stream >> mParamsentPackets;
         stream >> mParamavSize;
         break;
 

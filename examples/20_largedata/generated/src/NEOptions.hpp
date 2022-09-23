@@ -7,7 +7,7 @@
 /************************************************************************
  * (c) copyright    2022
  *
- * Generated at     20.09.2022  23:32:53 GMT+02:00
+ * Generated at     22.09.2022  23:42:16 GMT+02:00
  *                  Create by AREG SDK code generator tool from source Options.
  *
  * \file            generated/src/NEOptions.hpp
@@ -185,7 +185,7 @@ namespace   NEOptions
     ///////////////////////////////////////////////////////////////////////////
 
         /**
-         * \brief   Flag, identifying valid or changed fileds of options
+         * \brief   Flag, identifying valid or changed fields of options
          **/
          unsigned int    flags           /* = 0 */;
         /**
@@ -209,7 +209,7 @@ namespace   NEOptions
          **/
          unsigned int    channels        /* = 0 */;
         /**
-         * \brief   Tata rate in Kilobytes per second
+         * \brief   Data rate in Kilobytes per second
          **/
          double          dataRate        /* = 0.0 */;
         /**
@@ -322,7 +322,7 @@ namespace   NEOptions
         /**
          * \brief   The unit of data rate -- bytes, kilobytes or megabytes.
          **/
-         NEOptions::eUnit    valueUnit   /* = UnitUndefined */;
+         NEOptions::eUnit    valueUnit   /* = eUnit::UnitUndefined */;
     };
 
     /**
@@ -419,7 +419,7 @@ namespace   NEOptions
           MsgId_requestDataRate           = NEService::REQUEST_ID_FIRST   // void requestDataRate( void );
         /**
          * \brief   Request ID: MsgId_requestPacketRate
-         *          Request to get packetrate, i.e. the numberof generated image blocks per second
+         *          Request to get packet rate, i.e. the number of generated image blocks per second
          **/
         , MsgId_requestPacketRate                                           // void requestPacketRate( void );
         /**
@@ -440,12 +440,12 @@ namespace   NEOptions
          * \brief   Response ID: MsgId_responseDataRate
          *          Response of data rate
          **/
-        , MsgId_responseDataRate          = NEService::RESPONSE_ID_FIRST  // void responseDataRate( const NEOptions::sDataRate & sentData, const NEOptions::sDataRate & missedData );
+        , MsgId_responseDataRate          = NEService::RESPONSE_ID_FIRST  // void responseDataRate( const NEOptions::sDataRate & genData, const NEOptions::sDataRate & sentData, const NEOptions::sDataRate & missedData );
         /**
          * \brief   Response ID: MsgId_responsePacketRate
          *          Response of packet rate.
          **/
-        , MsgId_responsePacketRate                                          // void responsePacketRate( unsigned int genPackets, const NEOptions::sDataRate & avSize );
+        , MsgId_responsePacketRate                                          // void responsePacketRate( unsigned int genPackets, unsigned int sentPackets, unsigned int avSize );
     /************************************************************************
      * Broadcast IDs
      ************************************************************************/

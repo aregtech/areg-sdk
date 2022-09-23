@@ -163,7 +163,7 @@ public:
      * \param   pos     The X- and Y-coordinate to start to output the message text.
      * \param   text    The message text to output.
      **/
-    inline void outputText(Console::Coord pos, const String& text) const;
+    inline void outputString(Console::Coord pos, const String& text) const;
     inline void outputText(Console::Coord pos, const std::string_view& text) const;
 
     /**
@@ -171,7 +171,7 @@ public:
      * \param   pos     The X- and Y-coordinate to start to output the message text.
      * \param   format  The text format with arguments to output the message.
      **/
-    void outputText(Console::Coord pos, const char* format, ...) const;
+    void outputMessage(Console::Coord pos, const char* format, ...) const;
 
     /**
      * \brief   Returns the current coordinate of the cursor on the console.
@@ -331,7 +331,7 @@ inline bool Console::enableConsoleInput( bool enable )
     return enable ? (mIsReady && mEnable.setEvent( )) : (mIsReady == false) || (mEnable.resetEvent( ));
 }
 
-inline void Console::outputText( Console::Coord pos, const String & text ) const
+inline void Console::outputString( Console::Coord pos, const String & text ) const
 {
     _osOutputText( pos, text );
 }

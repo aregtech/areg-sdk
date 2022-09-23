@@ -7,7 +7,7 @@
 /************************************************************************
  * (c) copyright    2022
  *
- * Generated at     20.09.2022  23:32:53 GMT+02:00
+ * Generated at     22.09.2022  23:42:16 GMT+02:00
  *                  Create by AREG SDK code generator tool from source Options.
  *
  * \file            generated/src/OptionsClientBase.hpp
@@ -185,7 +185,7 @@ public:
  ************************************************************************/
     /**
      * \brief   Request call.
-     *          Request to get packetrate, i.e. the numberof generated image blocks per second
+     *          Request to get packet rate, i.e. the number of generated image blocks per second
      * \return  The sequence count number of call
      * \see     responsePacketRate
      **/
@@ -235,12 +235,13 @@ public:
      *          Response of data rate
      *          Overwrite, if need to handle Response call of server object.
      *          This call will be automatically triggered, on every appropriate request call
+     * \param   genData     Computed rate of generated data per second.
      * \param   sentData    Computed rate of sent data per second.
-     * \param   missedData  Computed rate of missed data. The data is missed if failed to copy within certain timeshlot.
+     * \param   missedData  Computed rate of missed data. The data is missed if failed to copy within certain time-slot.
      *          TODO: remove if useless.
      * \see     requestDataRate
      **/
-    virtual void responseDataRate( const NEOptions::sDataRate & sentData, const NEOptions::sDataRate & missedData );
+    virtual void responseDataRate( const NEOptions::sDataRate & genData, const NEOptions::sDataRate & sentData, const NEOptions::sDataRate & missedData );
     /**
      * \brief   Call to enable or disable receiving notifications on DataRate response call.
      *          This function is triggered, when client object is interested only on response result
@@ -258,10 +259,11 @@ public:
      *          Overwrite, if need to handle Response call of server object.
      *          This call will be automatically triggered, on every appropriate request call
      * \param   genPackets  Number of generate packet per second
-     * \param   avSize      The average size of a packet.
+     * \param   sentPackets Number of sent packet per second
+     * \param   avSize      The average size of a packet in bytes.
      * \see     requestPacketRate
      **/
-    virtual void responsePacketRate( unsigned int genPackets, const NEOptions::sDataRate & avSize );
+    virtual void responsePacketRate( unsigned int genPackets, unsigned int sentPackets, unsigned int avSize );
     /**
      * \brief   Call to enable or disable receiving notifications on PacketRate response call.
      *          This function is triggered, when client object is interested only on response result

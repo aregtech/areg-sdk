@@ -2,7 +2,7 @@ echo off
 cls
 
 :: set the AREG_SDK_ROOT directory here
-set AREG_SDK_ROOT=E:\Projects\aregtech\areg-sdk
+set AREG_SDK_ROOT=C:\personal\aregtech\areg-sdk-stl
 
 :: .bat file directory
 set BATCH_ROOT=%~dp0

@@ -41,6 +41,8 @@
     <ClCompile Include="pubservice\src\main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="common\NELargeData.hpp" />
+    <ClInclude Include="common\SimpleBitmap.hpp" />
     <ClInclude Include="pubservice\src\OptionsServiceClient.hpp" />
     <ClInclude Include="pubservice\src\ServicingComponent.hpp" />
   </ItemGroup>
