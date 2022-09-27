@@ -22,15 +22,15 @@ function(setOpt item)
 endfunction(setOpt item)
 
 function(setLibOpt item)
+	add_library(${item} STATIC ${ARGN})
+
 	# Setting libxxx properties (static or shared)
 	if(AREG_BINARY MATCHES shared)
-		add_library(${item} SHARED ${ARGN})
 		target_compile_definitions(${item} PRIVATE IMP_AREG_DLL)
 		target_compile_options(${item} PRIVATE ${ExampleCompileOptShared})
 
 		set_property(TARGET ${item} PROPERTY LIBRARY_OUTPUT_DIRECTORY ${ProjBinDir})
 	else()
-		add_library(${item} STATIC ${ARGN})
 		target_compile_definitions(${item} PRIVATE IMP_AREG_LIB)
 		target_compile_options(${item} PRIVATE ${ExampleCompileOptStatic})
 
