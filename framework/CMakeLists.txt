@@ -25,11 +25,7 @@ endif()
 set_property(TARGET areg PROPERTY CXX_STANDARD 17)
 
 # Setting linker flags and properties
-if(AREG_OS MATCHES "Windows")
-    target_link_libraries(${EXE} areg)
-else()
-    target_link_libraries(${EXE} areg m stdc++ rt pthread)
-endif()
+target_link_libraries(${EXE} areg ${LDFLAGS})
 
 set_target_properties(${EXE}
     PROPERTIES
