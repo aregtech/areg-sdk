@@ -50,7 +50,7 @@ function(setLibOpt item)
 endfunction(setLibOpt item)
 
 # Examples which has similar building structure
-list(APPEND fileList
+list(APPEND projectList
 	01_hello
 	02_buffer
 	03_file
@@ -73,9 +73,9 @@ include(${AREG_EXAMPLES}/15_pubworker/CMakeLists.txt)
 include(${AREG_EXAMPLES}/16_pubfsm/CMakeLists.txt)
 
 
-# Iterating over fileList and extract each source file,
+# Iterating over projectList and extract each source file,
 # to create separate target and executable.
-foreach(item IN LISTS fileList)
+foreach(item IN LISTS projectList)
 	unset(SRC)
 	set(itemDir ${AREG_EXAMPLES}/${item})
 	set(subProjDir ${itemDir}/src)
