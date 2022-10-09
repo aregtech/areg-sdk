@@ -16,7 +16,7 @@ function(setOpt item)
 	# Adjusting CPP standard for target
 	set_target_properties(${item}
 		PROPERTIES
-		CXX_STANDARD ${exampleCXXStandard}
+		CXX_STANDARD ${aregCXXStandard}
 		CXX_STANDARD_REQUIRED ON
 		)
 endfunction(setOpt item)
@@ -43,7 +43,7 @@ function(setLibOpt item)
 	# Adjusting CPP standard for target
 	set_target_properties(${item}
 		PROPERTIES
-		CXX_STANDARD ${exampleCXXStandard}
+		CXX_STANDARD ${aregCXXStandard}
 		CXX_STANDARD_REQUIRED ON
 		)
 

@@ -15,7 +15,6 @@ else()
     set(AREG_BINARY "static")
 endif()
 
-# Add compiler flags here
 # Checking Compiler for adding corresponded tweaks and flags
 if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     # Clang compile options
@@ -42,9 +41,11 @@ elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
 
 endif()
 
+# CPP standard for the project
+set(aregCXXStandard "17")
 
 if(Config MATCHES "Release")
-    add_definitions(-DNDEBUG )
+    add_definitions(-DNDEBUG)
 else()
     add_definitions(-DDEBUG)
 endif()
@@ -85,9 +86,6 @@ else()
     list(APPEND LDFLAGS m  stdc++ rt pthread)
     list(APPEND exampleLDFlags areg ${LDFLAGS})
 endif()
-
-# CPP standard for examples
-set(exampleCXXStandard "17")
 
 
 # Adding areg/product directory for clean-up

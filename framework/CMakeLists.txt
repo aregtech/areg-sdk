@@ -29,6 +29,6 @@ target_link_libraries(${EXE} areg ${LDFLAGS})
 
 set_target_properties(${EXE}
     PROPERTIES
-    CXX_STANDARD 17
+    CXX_STANDARD ${aregCXXStandard}
     CXX_STANDARD_REQUIRED ON
     )
