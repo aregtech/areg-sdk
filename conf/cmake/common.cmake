@@ -33,12 +33,10 @@ elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     # Visual Studio C++
     if(Config MATCHES "Release")
-        add_definitions(-DNDEBUG -DUNICODE)
     else()
         list(APPEND CompileOptions -Od -RTC1)
-        add_definitions(-DDEBUG -DUNICODE)
     endif()
-
+    add_definitions(-DUNICODE)
 endif()
 
 # CPP standard for the project
