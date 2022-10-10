@@ -1,49 +1,56 @@
-# Compile Options
-set(CompileOptShared "-Wl,-rpath=${AREG_OUTPUT_BIN} -L ${AREG_OUTPUT_BIN}")
-set(CompileOptStatic "-L ${AREG_OUTPUT_LIB} -Wl,-Bstatic -Wl,-Bdynamic")
-
 # This function will be used for all targets which created by add_executable(),
 # to set proper compile options and linkage flags
 function(setOpt item)
 
-	# Adding compile options to target in respect to ${AREG_BINARY}
 	if(AREG_BINARY MATCHES shared)
 		target_compile_definitions(${item} PRIVATE IMP_AREG_DLL)
-		target_compile_options(${item} PRIVATE ${CompileOptShared})
+		target_compile_options(${item} PRIVATE ${ExampleCompileOptShared})
 	else()
 		target_compile_definitions(${item} PRIVATE IMP_AREG_LIB)
-		target_compile_options(${item} PRIVATE ${CompileOptStatic})
+		target_compile_options(${item} PRIVATE ${ExampleCompileOptStatic})
 	endif()
 
 	# Linking flags
-	target_link_libraries(${item} ${exampleLDFlags} ${LDFLAGS})
+	target_link_libraries(${item} ${exampleLDFlags})
 
 	# Adjusting CPP standard for target
 	set_target_properties(${item}
 		PROPERTIES
-		CXX_STANDARD ${exampleCXXStandard}
+		CXX_STANDARD ${aregCXXStandard}
 		CXX_STANDARD_REQUIRED ON
 		)
 endfunction(setOpt item)
 
 function(setLibOpt item)
+	add_library(${item} STATIC ${ARGN})
 
 	# Setting libxxx properties (static or shared)
 	if(AREG_BINARY MATCHES shared)
-		add_library(${item} SHARED ${ARGN})
+		target_compile_definitions(${item} PRIVATE IMP_AREG_DLL)
+		target_compile_options(${item} PRIVATE ${ExampleCompileOptShared})
+
 		set_property(TARGET ${item} PROPERTY LIBRARY_OUTPUT_DIRECTORY ${ProjBinDir})
 	else()
-		add_library(${item} STATIC ${ARGN})
+		target_compile_definitions(${item} PRIVATE IMP_AREG_LIB)
+		target_compile_options(${item} PRIVATE ${ExampleCompileOptStatic})
+
 		set_property(TARGET ${item} PROPERTY ARCHIVE_OUTPUT_DIRECTORY ${ProjLibDir})
 	endif()
 
+	# Linking flags
+	target_link_libraries(${item} PRIVATE ${exampleLDFlags})
+
 	# Adjusting CPP standard for target
-	set_property(TARGET ${item} PROPERTY CXX_STANDARD 17)
+	set_target_properties(${item}
+		PROPERTIES
+		CXX_STANDARD ${aregCXXStandard}
+		CXX_STANDARD_REQUIRED ON
+		)
 
 endfunction(setLibOpt item)
 
 # Examples which has similar building structure
-list(APPEND fileList
+list(APPEND projectList
 	01_hello
 	02_buffer
 	03_file
@@ -66,9 +73,9 @@ include(${AREG_EXAMPLES}/15_pubworker/CMakeLists.txt)
 include(${AREG_EXAMPLES}/16_pubfsm/CMakeLists.txt)
 
 
-# Iterating over fileList and extract each source file,
+# Iterating over projectList and extract each source file,
 # to create separate target and executable.
-foreach(item IN LISTS fileList)
+foreach(item IN LISTS projectList)
 	unset(SRC)
 	set(itemDir ${AREG_EXAMPLES}/${item})
 	set(subProjDir ${itemDir}/src)
