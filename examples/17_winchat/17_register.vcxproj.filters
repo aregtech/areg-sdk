@@ -75,25 +75,13 @@
     </Image>
   </ItemGroup>
   <ItemGroup>
-    <None Include="register\res\register.rc2">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="res\CentralMessager.siml" />
-    <None Include="res\ConnectionManager.siml" />
-    <None Include="res\DirectConnection.siml" />
-    <None Include="res\DirectMessager.siml" />
-    <None Include="res\generate_files.bat">
-      <Filter>Source Files</Filter>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
     <ResourceCompile Include="register\res\register.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <Text Include="register\res\ReadMe.txt">
+    <None Include="register\res\register.rc2">
       <Filter>Resource Files</Filter>
-    </Text>
+    </None>
   </ItemGroup>
 </Project>
