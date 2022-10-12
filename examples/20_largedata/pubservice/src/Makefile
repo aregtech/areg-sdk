@@ -1,3 +1,3 @@
-19_pubservice_SRC += \
-	$(19_pubwatchdog_BASE)/pubservice/src/ServicingComponent.cpp \
-	$(19_pubwatchdog_BASE)/pubservice/src/main.cpp
+20_svclargedata_SRC += \
+	$(20_largedata_BASE)/pubservice/src/ServicingComponent.cpp \
+	$(20_largedata_BASE)/pubservice/src/main.cpp

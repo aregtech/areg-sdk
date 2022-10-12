@@ -271,7 +271,7 @@ public:
      * \param	lock	    If true, the initial state of Event is non-signaled.
      *                      When Event state is non-signaled, any thread trying
      *                      lock Event, will be blocked until Event object
-     *                      is not unlocked / signaled by any other thread.
+     *                      is unlocked / signaled by any other thread.
      *                      By default, the initial state is locked / non-signaled
      * \param	autoReset	If true, Event object is auto-reset and whenever
      *                      a single waiting thread is released, it will change
@@ -1220,9 +1220,9 @@ class AREG_API Wait
 //////////////////////////////////////////////////////////////////////////
 public:
     //!< The high resolution clock, close to real-time
-    using SteadyClock   = std::chrono::high_resolution_clock::time_point;
+    using SteadyTime    = std::chrono::steady_clock::time_point;
     //!< The system clock, with higher precision
-    using SystemClock   = std::chrono::system_clock::time_point;
+    using SystemTime    = std::chrono::system_clock::time_point;
     //!< Duration in nanoseconds.
     using Duration      = std::chrono::nanoseconds;
 
@@ -1231,19 +1231,28 @@ public:
 #endif  // _MSC_VER
 
     //!< One nanosecond duration
-    static constexpr Duration   ONE_NS      { 1 };
+    static constexpr Duration   ONE_NS      { NECommon::DURATION_1_NS };
     //!< One microsecond duration
-    static constexpr Duration   ONE_MUS     { ONE_NS  * 1'000 };
+    static constexpr Duration   ONE_MUS     { NECommon::DURATION_1_MICRO };
     //!< One millisecond duration
-    static constexpr Duration   ONE_MS      { ONE_MUS * 1'000 };
+    static constexpr Duration   ONE_MS      { NECommon::DURATION_1_MILLI };
     //!< One second duration
-    static constexpr Duration   ONE_SEC     { ONE_MS  * 1'000 };
+    static constexpr Duration   ONE_SEC     { NECommon::DURATION_1_SEC };
     //!< The minimum waiting timeout
-    static constexpr Duration   MIN_WAIT    { ONE_MUS };
+    static constexpr Duration   MIN_WAIT    { ONE_MS  * 5 };
 
 #if defined(_MSC_VER) && (_MSC_VER > 1200)
     #pragma warning(default: 4251)
 #endif  // _MSC_VER
+
+    //!< The waiting results
+    enum class eWaitResult
+    {
+          WaitInvalid   = 0 //!< No waiting, due to invalid timeout
+        , WaitIgnored   = 1 //!< The waiting timeout is value, but ignored waiting, because timeout in nanoseconds
+        , WaitInMilli   = 2 //!< Wait thread in milliseconds or longer
+        , WaitInMicro   = 3 //!< Wait thread in microseconds up to MIN_WAIT.
+    };
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -1259,17 +1268,17 @@ public:
 
     /**
      * \brief   Converts the system clock to high resolution steady clock.
-     * \param   clock   The system clock to convert.
+     * \param   time    The system time to convert.
      * \return  Returns converted high resolution steady clock.
      **/
-    static inline Wait::SystemClock convertToSystemClock(const Wait::SteadyClock& clock);
+    static inline Wait::SystemTime convertToSystemClock(const Wait::SteadyTime& time);
     
     /**
      * \brief   Converts the high resolution steady clock to system clock .
-     * \param   clock   The high resolution steady clock to convert.
+     * \param   time    The high resolution steady time to convert.
      * \return  Returns converted system clock.
      **/
-    static inline Wait::SteadyClock convertToSteadyClock(const Wait::SystemClock& clock);
+    static inline Wait::SteadyTime convertToSteadyClock(const Wait::SystemTime& time);
 
     /**
      * \brief   Calculates and returns time difference in nanoseconds when the 
@@ -1280,7 +1289,7 @@ public:
      * \param   future  The steady high-resolution time in future.
      * \return  The time difference in nanoseconds.
      **/
-    static inline Wait::Duration fromNow(const Wait::SteadyClock& future);
+    static inline Wait::Duration fromNow(const Wait::SteadyTime& future);
 
     /**
      * \brief   Calculates and returns time difference in nanoseconds of the steady
@@ -1291,7 +1300,7 @@ public:
      * \param   passed  The steady high-resolution time in passed.
      * \return  The time difference in nanoseconds.
      **/
-    static inline Wait::Duration untilNow(const Wait::SteadyClock& past);
+    static inline Wait::Duration untilNow(const Wait::SteadyTime& past);
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -1302,9 +1311,10 @@ public:
      *          in milliseconds.
      * 
      * \param   ms      The timeout in milliseconds.
-     * \return  Returns true if succeeded to suspend thread from execution.
+     * \return  Returns waiting results. Any value, which is not equal to eWaitResult::WaitInvalid
+     *          is considered successful operation.
      **/
-    inline bool wait(uint32_t ms) const;
+    inline Wait::eWaitResult wait(uint32_t ms) const;
 
     /**
      * \brief   Suspends the thread from further execution for specified timeout
@@ -1316,23 +1326,24 @@ public:
      *          of the hardware.
      *
      * \param   timeout     The timeout in microseconds with nanoseconds duration.
-     * \return  Returns true if succeeded to suspend the thread from execution for
-     *          specified timeout.
+     * \return  Returns waiting results. Any value, which is not equal to eWaitResult::WaitInvalid
+     *          is considered successful operation.
      **/
-    inline bool waitFor(Wait::Duration timeout) const;
+    inline Wait::eWaitResult waitFor(Wait::Duration timeout) const;
 
     /**
      * \brief   Suspends the thread from execution until reached the steady high 
      *          resolution timer.
      *
-     * \param   clock   The timeout in the future. The thread is not suspended
+     * \param   future  The time in the future. The thread is not suspended
      *                  if difference between time in the future is less than
      *                  the time when the method is called or the difference
      *                  is in nanoseconds. The minimum timeout should be
      *                  1 microsecond.
-     * \return  Returns true if the time is in future and succeeded to suspend the thread.
+     * \return  Returns waiting results. Any value, which is not equal to eWaitResult::WaitInvalid
+     *          is considered successful operation.
      **/
-    inline bool waitUntil(const Wait::SteadyClock& clock) const;
+    inline Wait::eWaitResult waitUntil(const Wait::SteadyTime& future) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden OS dependent calls
@@ -1349,10 +1360,11 @@ private:
     /**
      * \brief   OS dependent implementation of thread waiting.
      *          The accuracy depends on the OS and hardware provided features.
-     * \param   timeout     The timeout in nanoseconds, which is rounded to microseconds.
-     * \return  Returns true if waiting operation succeeded.
+     * \param   time    The time in the future to suspend thread and wait.
+     * \return  Returns waiting results. Any value, which is not equal to eWaitResult::WaitInvalid
+     *          is considered successful operation.
      **/
-    bool _osWait(const Wait::Duration& timeout) const;
+    eWaitResult _osWaitFor(const Wait::Duration& timeout) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -1465,43 +1477,43 @@ inline bool Lock::unlock( void )
 // Wait class inline functions
 //////////////////////////////////////////////////////////////////////////
 
-inline Wait::SystemClock Wait::convertToSystemClock(const Wait::SteadyClock& clock)
+inline Wait::SystemTime Wait::convertToSystemClock(const Wait::SteadyTime& time)
 {
-    SystemClock result = std::chrono::system_clock::now();
-    SteadyClock steady = std::chrono::high_resolution_clock::now();
-    return std::chrono::time_point_cast<SystemClock::duration>(result + (clock - steady));
+    SystemTime result = std::chrono::system_clock::now();
+    SteadyTime steady = std::chrono::steady_clock::now();
+    return std::chrono::time_point_cast<SystemTime::duration>(result + (time - steady));
 }
 
-inline Wait::SteadyClock Wait::convertToSteadyClock(const Wait::SystemClock& clock)
+inline Wait::SteadyTime Wait::convertToSteadyClock(const Wait::SystemTime& time)
 {
-    SteadyClock result = std::chrono::high_resolution_clock::now();
-    SystemClock system = std::chrono::system_clock::now();
-    return std::chrono::time_point_cast<SteadyClock::duration>(result + (clock - system));
+    SteadyTime result = std::chrono::steady_clock::now();
+    SystemTime system = std::chrono::system_clock::now();
+    return std::chrono::time_point_cast<SteadyTime::duration>(result + (time - system));
 }
 
-inline Wait::Duration Wait::fromNow(const Wait::SteadyClock& future)
+inline Wait::Duration Wait::fromNow(const Wait::SteadyTime& future)
 {
-    return (future - std::chrono::high_resolution_clock::now());
+    return (future - std::chrono::steady_clock::now());
 }
 
-inline Wait::Duration Wait::untilNow(const Wait::SteadyClock& past)
+inline Wait::Duration Wait::untilNow(const Wait::SteadyTime& past)
 {
-    return (std::chrono::high_resolution_clock::now() - past);
+    return (std::chrono::steady_clock::now() - past);
 }
 
-inline bool Wait::wait(uint32_t ms) const
+inline Wait::eWaitResult Wait::wait(uint32_t ms) const
 {
-    return _osWait(Wait::Duration{ms * Wait::ONE_MS});
+    return _osWaitFor(Wait::Duration{ ms * Wait::ONE_MS });
 }
 
-inline bool Wait::waitFor(Wait::Duration timeout) const
+inline Wait::eWaitResult Wait::waitFor(Wait::Duration timeout) const
 {
-    return _osWait(timeout);
+    return _osWaitFor(timeout);
 }
 
-inline bool Wait::waitUntil(const Wait::SteadyClock& clock) const
+inline Wait::eWaitResult Wait::waitUntil(const Wait::SteadyTime& future) const
 {
-    return _osWait(clock - std::chrono::high_resolution_clock::now());
+    return _osWaitFor(future - std::chrono::steady_clock::now());
 }
 
 #endif  // AREG_BASE_SYNCHOBJECTS_HPP

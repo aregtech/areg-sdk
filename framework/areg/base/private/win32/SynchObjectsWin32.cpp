@@ -488,7 +488,6 @@ namespace
 
     const double _ticksPerNs{ _getFrequencyNs() };
 
-    constexpr int64_t _COEF{ -100 };
 }
 
 void Wait::_osInitTimer(void)
@@ -509,33 +508,43 @@ void Wait::_osReleaseTimer(void)
     }
 }
 
-bool Wait::_osWait(const Wait::Duration& timeout) const
+Wait::eWaitResult Wait::_osWaitFor(const Wait::Duration& timeout) const
 {
-    bool result {timeout.count() >= 0};
-    if (timeout >= Wait::ONE_MS)
+    static constexpr int64_t _COEF{ -10'000 };
+
+    Wait::eWaitResult result {Wait::eWaitResult::WaitInvalid};
+    if (timeout >= Wait::MIN_WAIT)
     {
         LARGE_INTEGER dueTime;
-        std::chrono::milliseconds ms{ std::chrono::duration_cast<std::chrono::milliseconds>(timeout) };
-        dueTime.QuadPart = timeout.count() / _COEF;
+        dueTime.QuadPart = static_cast<int64_t>(timeout.count() / ONE_MS.count()) * _COEF;
         ::SetWaitableTimer(mTimer, &dueTime, 0, nullptr, nullptr, FALSE);
-        result = ::WaitForSingleObject(mTimer, static_cast<uint32_t>(ms.count())) == WAIT_OBJECT_0;
+        if (::WaitForSingleObject(mTimer, INFINITE) == WAIT_OBJECT_0)
+        {
+            result = Wait::eWaitResult::WaitInMilli;
+        }
     }
     else if (timeout >= Wait::ONE_MUS)
     {
-        LARGE_INTEGER dueTime, runTime;
-        ::QueryPerformanceCounter(&dueTime);
+        LARGE_INTEGER start, dueTime;
+        QueryPerformanceCounter(&start);
         // due time is current time in ticks + expected ticks
-        Wait::Duration mus{ timeout - (timeout % Wait::ONE_MUS) };
-        dueTime.QuadPart += static_cast<int64_t>(mus.count()* _ticksPerNs);
+        int64_t deadline = start.QuadPart + static_cast<int64_t>(timeout.count() * _ticksPerNs);
         
         do
         {
-            ::Sleep(0);
-            ::QueryPerformanceCounter(&runTime);
-        } while (runTime.QuadPart < dueTime.QuadPart);
+            ::Sleep(NECommon::DO_NOT_WAIT);
+            ::QueryPerformanceCounter(&dueTime);
+        } while (dueTime.QuadPart < deadline);
+
+        result = Wait::eWaitResult::WaitInMicro;
+    }
+    else if (timeout.count() > 0)
+    {
+        result = Wait::eWaitResult::WaitIgnored;
     }
 
     return result;
 }
+
 
 #endif  // _WINDOWS

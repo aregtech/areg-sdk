@@ -36,7 +36,7 @@ Tokenizer::Tokenizer( Tokenizer && src ) noexcept
 {
 }
 
-void Tokenizer::tokenize( const String & str, const String & delimiters, bool keepEmpty/*=true*/)
+const StringArray& Tokenizer::tokenize( const String & str, const String & delimiters, bool keepEmpty/*=true*/)
 {
     NEString::CharPos lastPos   = 0;
     NEString::CharCount length  = str.getLength();
@@ -45,7 +45,7 @@ void Tokenizer::tokenize( const String & str, const String & delimiters, bool ke
     while (lastPos <= length)
     {
         NEString::CharPos pos = str.findOneOf(delimiters, lastPos);
-        if (pos == NEString::INVALID_POS)
+        if (pos < 0)
            pos = length;
 
         if (pos != lastPos || keepEmpty)
@@ -57,4 +57,6 @@ void Tokenizer::tokenize( const String & str, const String & delimiters, bool ke
         
         lastPos = pos + 1;
     }
+
+    return mTokens;
 }

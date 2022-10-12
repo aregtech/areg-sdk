@@ -17,7 +17,7 @@ AREG_BINARY = shared
 endif
 
 CXXFLAGS := -g -pthread -std=c++17
-LDFLAGS  := -lm -lstdc++ -lrt -pthread
+LDFLAGS  := -lm -lstdc++ -lrt -lncurses -pthread
 
 #TODO fix the warnings reported by clang first
 ifeq ($(findstring clang,$(Toolset)),clang)

@@ -16,15 +16,15 @@
 #include "areg/trace/GETrace.h"
 
 
-#include "generated/src/NECommon.hpp"
+#include "common/NELargeData.hpp"
 #include "pubclient/src/ServiceClient.hpp"
 
 #ifdef WINDOWS
     #pragma comment(lib, "areg")
-    #pragma comment(lib, "19_generated.lib")
+    #pragma comment(lib, "20_generated.lib")
 #endif // WINDOWS
 
-constexpr char const _modelName[]= { "HelloModel" };  //!< The name of model
+constexpr char const _modelName[]= { "LargeData" };  //!< The name of model
 const String     _serviceClient  = NEUtilities::generateName("ServiceClient"); //!< Generated name of service client component
 
 //////////////////////////////////////////////////////////////////////////
@@ -43,7 +43,7 @@ BEGIN_MODEL(_modelName)
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
         BEGIN_REGISTER_COMPONENT( _serviceClient, ServiceClient )
             // register service dependency
-            REGISTER_DEPENDENCY(NECommon::ServiceRoleName )
+            REGISTER_DEPENDENCY(NELargeData::ServiceRoleName )
         // end of component description
         END_REGISTER_COMPONENT( _serviceClient )
     // end of thread description
@@ -55,7 +55,7 @@ END_MODEL(_modelName)
 //////////////////////////////////////////////////////////////////////////
 // main method.
 //////////////////////////////////////////////////////////////////////////
-DEF_TRACE_SCOPE(example_19_pubclientwdog_main_main);
+DEF_TRACE_SCOPE(example_20_clientlargedata_main_main);
 /**
  * \brief   The main method enables logging, service manager and timer.
  *          it loads and unloads the services, releases application.
@@ -71,7 +71,7 @@ int main()
 
     do
     {
-        TRACE_SCOPE(example_19_pubclientwdog_main_main);
+        TRACE_SCOPE(example_20_clientlargedata_main_main);
         TRACE_DBG("The application has been initialized, loading model [ %s ]", _modelName);
 
         // load model to initialize components

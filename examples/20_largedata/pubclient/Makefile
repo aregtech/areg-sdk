@@ -1,20 +1,20 @@
-19_pubclient_PROJECT_NAME := 19_pubclientwdog
+20_clientlargedata_PROJECT_NAME := 20_clientlargedata
 
-19_pubclient_TARGET_BIN := $(19_pubclient_PROJECT_NAME)$(AREG_BIN_EXT)
-19_pubclient_OUTPUT_OBJ := $(19_pubwatchdog_OUTPUT_OBJ)/pubclient
+20_clientlargedata_TARGET_BIN := $(20_clientlargedata_PROJECT_NAME)$(AREG_BIN_EXT)
+20_clientlargedata_OUTPUT_OBJ := $(20_largedata_OUTPUT_OBJ)/pubclient
 
-19_pubclient_SRC  :=
-19_pubclient_OBJS :=
+20_clientlargedata_SRC  :=
+20_clientlargedata_OBJS :=
 
-include $(19_pubwatchdog_BASE)/pubclient/src/Makefile
+include $(20_largedata_BASE)/pubclient/src/Makefile
 
 # define one target for each source file
-$(foreach cpp, $(19_pubclient_SRC), $(eval $(call obj, $(cpp), $(19_pubclient_OUTPUT_OBJ), 19_pubclient_OBJS, $(19_pubwatchdog_CXXFLAGS))))
+$(foreach cpp, $(20_clientlargedata_SRC), $(eval $(call obj, $(cpp), $(20_clientlargedata_OUTPUT_OBJ), 20_clientlargedata_OBJS, $(20_largedata_CXXFLAGS))))
 
-DEPS = $(19_pubclient_OBJS:%.o=%.d)
+DEPS = $(20_clientlargedata_OBJS:%.o=%.d)
 -include $(DEPS)
 
-$(AREG_OUTPUT_BIN)/$(19_pubclient_TARGET_BIN): $(areg_TARGET_PATH) $(AREG_OUTPUT_LIB)/$(19_generated_TARGET_BIN) $(19_pubclient_OBJS)
+$(AREG_OUTPUT_BIN)/$(20_clientlargedata_TARGET_BIN): $(areg_TARGET_PATH) $(AREG_OUTPUT_LIB)/$(20_generated_TARGET_BIN) $(20_clientlargedata_OBJS)
 	@echo "Linking $@ ..."
 	@mkdir -p $(dir $@)
-	$(AREG_TOOLCHAIN) $(CXXFLAGS) $(19_pubwatchdog_CXXFLAGS) $(19_pubclient_OBJS) $(19_pubwatchdog_LDFLAGS) -o $@
+	$(AREG_TOOLCHAIN) $(CXXFLAGS) $(20_largedata_CXXFLAGS) $(20_clientlargedata_OBJS) $(20_largedata_LDFLAGS) -o $@

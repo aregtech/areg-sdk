@@ -165,37 +165,37 @@ namespace NECommon
      * \brief   NECommon::VALUE_MIN_INT32
      *          The minimum 32-bit signed integer value.
      **/
-    constexpr int32_t       VALUE_MIN_INT32         { static_cast<int32_t>(0x80000000) };
+    constexpr int           VALUE_MIN_INT32         { static_cast<int32_t>(0x80000000) };
 
     /**
      * \brief   NECommon::VALUE_MAX_UINT32
      *          The maximum 32-bit unsigned integer value.
      **/
-    constexpr uint32_t      VALUE_MAX_UINT32        { static_cast<uint32_t>(0xFFFFFFFF) };
+    constexpr unsigned int  VALUE_MAX_UINT32        { static_cast<unsigned int>(0xFFFFFFFF) };
 
     /**
      * \brief   NECommon::MAX_CONTAINER_SIZE
      *          The maximum size of the containers such as array, list or map.
      **/
-    constexpr uint32_t      MAX_CONTAINER_SIZE      { static_cast<uint32_t>(VALUE_MAX_INT32 - 1) };
+    constexpr unsigned int  MAX_CONTAINER_SIZE      { static_cast<unsigned int>(VALUE_MAX_INT32 - 1) };
 
     /**
      * \brief   NECommon::MAP_DEFAULT_HASH_SIZE
      *          The size of hash table by default created in map. For hash map internal use
      **/
-    constexpr uint32_t      MAP_DEFAULT_HASH_SIZE   { static_cast<int>(64 - 1) };
+    constexpr unsigned int  MAP_DEFAULT_HASH_SIZE   { static_cast<unsigned int>(64 - 1) };
 
     /**
      * \brief   NECommon::ARRAY_DEFAULT_CAPACITY
      *          The default capacity of the array.
      **/
-    constexpr uint32_t      ARRAY_DEFAULT_CAPACITY  { static_cast<int>(2048) };
+    constexpr unsigned int  ARRAY_DEFAULT_CAPACITY  { static_cast<unsigned int>(2048) };
 
     /**
      * \brief   NECommon::RING_START_POSITION
      *          Defines first index in the ring.
      **/
-    constexpr uint32_t      RING_START_POSITION     { static_cast<uint32_t>(MAX_UINT_32) };
+    constexpr unsigned int  RING_START_POSITION     { static_cast<unsigned int>(MAX_UINT_32) };
 
     /**
      * \brief   NECommon::WAIT_INFINITE
@@ -292,25 +292,85 @@ namespace NECommon
      * \brief   NECommon::TIMEOUT_100_MS
      *          Timeout 100 millisecond
      **/
-    constexpr unsigned int   TIMEOUT_100_MS          { WAIT_100_MILLISECONDS };
+    constexpr unsigned int  TIMEOUT_100_MS          { WAIT_100_MILLISECONDS };
 
     /**
      * \brief   NECommon::TIMEOUT_500_MS
      *          Timeout 500 millisecond
      **/
-    constexpr unsigned int   TIMEOUT_500_MS          { WAIT_500_MILLISECONDS };
+    constexpr unsigned int  TIMEOUT_500_MS          { WAIT_500_MILLISECONDS };
 
     /**
      * \brief   NECommon::TIMEOUT_1_SEC
      *          Timeout 1 second
      **/
-    constexpr unsigned int   TIMEOUT_1_SEC           { WAIT_1_SECOND };
+    constexpr unsigned int  TIMEOUT_1_SEC           { WAIT_1_SECOND };
 
     /**
      * \brief   NECommon::TIMEOUT_1_MIN
      *          Timeout 1 minute
      **/
-    constexpr unsigned int   TIMEOUT_1_MIN           { WAIT_1_MINUTE };
+    constexpr unsigned int  TIMEOUT_1_MIN           { WAIT_1_MINUTE };
+
+    /**
+     * \brief   NECommon::DURATION_1_NS
+     *          1 nanosecond duration.
+     **/
+    constexpr unsigned int  DURATION_1_NS           { 1 };
+
+    /**
+     * \brief   NECommon::DURATION_1_MICRO
+     *          1 microsecond duration in nanoseconds.
+     **/
+    constexpr unsigned int  DURATION_1_MICRO        { 1'000 * DURATION_1_NS };
+
+    /**
+     * \brief   NECommon::DURATION_1_MILLI
+     *          1 millisecond duration in nanoseconds.
+     **/
+    constexpr unsigned int  DURATION_1_MILLI        { 1'000 * DURATION_1_MICRO };
+
+    /**
+     * \brief   NECommon::DURATION_1_SEC
+     *          1 second duration in nanoseconds.
+     **/
+    constexpr unsigned int  DURATION_1_SEC          { 1'000 * DURATION_1_MILLI };
+
+    /**
+     * \brief   NECommon::DURATION_DURATION_1_MIN1_SEC
+     *          1 minute duration in nanoseconds.
+     **/
+    constexpr unsigned int  DURATION_1_MIN          { 60 * DURATION_1_SEC };
+
+    /**
+     * \brief   NECommon::BITS_IN_BYTE
+     *          Bits in one byte.
+     **/
+    constexpr unsigned int  BITS_IN_BYTE            { 8 };
+
+    /**
+     * \brief   NECommon::ONE_BYTE
+     *          Size of one byte.
+     **/
+    constexpr unsigned int  ONE_BYTE                { 1 };
+
+    /**
+     * \brief   NECommon::ONE_KILOBYTE
+     *          Size of one Kilobyte.
+     **/
+    constexpr unsigned int  ONE_KILOBYTE            { 1'000 * ONE_BYTE };
+
+    /**
+     * \brief   NECommon::ONE_MEGABYTE
+     *          Size of one Megabyte.
+     **/
+    constexpr unsigned int  ONE_MEGABYTE            { 1'000 * ONE_KILOBYTE };
+
+    /**
+     * \brief   NECommon::ONE_GIGABYTE
+     *          Size of one Gigabyte.
+     **/
+    constexpr unsigned int  ONE_GIGABYTE            { 1'000 * ONE_MEGABYTE };
 
     /**
      * \brief   NECommon::COMPONENT_PATH_SEPARATOR

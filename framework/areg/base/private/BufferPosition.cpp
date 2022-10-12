@@ -57,35 +57,32 @@ unsigned int BufferPosition::getPosition( void ) const
  **/
 unsigned int BufferPosition::setPosition( int offset, IECursorPosition::eCursorPosition startAt ) const
 {
-    int size   = static_cast<int>( mBuffer.getSizeUsed() );
-    int curPos = static_cast<int>( getPosition() );
-    if ( curPos != static_cast<int>(IECursorPosition::INVALID_CURSOR_POSITION) )
+    if (mBuffer.isValid() == false)
     {
-        ASSERT( mBuffer.isValid() );
-
-        switch (startAt)
-        {
-        case IECursorPosition::eCursorPosition::PositionBegin:
-            curPos = 0;
-            offset = offset < 0 ? 0 : std::min(offset, size);
-            break;
-
-        case IECursorPosition::eCursorPosition::PositionCurrent:
-            offset = offset < 0 ? std::max(offset, -1 * curPos) : std::min(offset, size - curPos);
-            break;
-
-        case IECursorPosition::eCursorPosition::PositionEnd:
-            curPos = size;
-            offset = offset < 0 ? std::max(offset, -1 * size) : 0;
-            break;
-
-        default:
-            ASSERT(false);
-        }
+        return IECursorPosition::INVALID_CURSOR_POSITION;
     }
-    else
+
+    int size{ static_cast<int>(mBuffer.getSizeUsed()) };
+    int curPos{ static_cast<int>(mPosition == IECursorPosition::INVALID_CURSOR_POSITION ? 0 : mPosition) };
+
+    switch (startAt)
     {
-        offset = 0;
+    case IECursorPosition::eCursorPosition::PositionBegin:
+        curPos = 0;
+        offset = offset < 0 ? 0 : std::min(offset, size);
+        break;
+
+    case IECursorPosition::eCursorPosition::PositionCurrent:
+        offset = offset < 0 ? std::max(offset, -1 * curPos) : std::min(offset, size - curPos);
+        break;
+
+    case IECursorPosition::eCursorPosition::PositionEnd:
+        curPos = size;
+        offset = offset < 0 ? std::max(offset, -1 * size) : 0;
+        break;
+
+    default:
+        ASSERT(false);
     }
 
     mPosition = static_cast<unsigned int>(curPos + offset);

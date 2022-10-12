@@ -36,21 +36,18 @@ EventData::EventData( unsigned int msgId, const EventDataStream & args, const St
     : mDataType (NEService::getMessageDataType(msgId))
     , mData     (args, name)
 {
-    mData.resetCursor();
 }
 
 EventData::EventData( const EventData& src )
     : mDataType (src.mDataType)
     , mData     (src.mData)
 {
-    mData.resetCursor();
 }
 
 EventData::EventData( EventData && src ) noexcept
     : mDataType ( std::move(src.mDataType) )
     , mData     ( std::move(src.mData) )
 {
-    mData.resetCursor( );
 }
 
 EventData::EventData(const IEInStream & stream)

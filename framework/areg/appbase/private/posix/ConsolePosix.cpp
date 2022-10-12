@@ -84,6 +84,16 @@ void Console::_osOutputText(Console::Coord pos, const std::string_view& text) co
     }
 }
 
+void Console::_osOutputText(const String& text) const
+{
+    Lock lock(mLock);
+
+    if (mContext != 0)
+    {
+        ASSERT(mIsReady);
+        waddstr(reinterpret_cast<WINDOW*>(mContext), text.getString());
+    }
+}
 
 Console::Coord Console::_osGetCursorPosition(void) const
 {

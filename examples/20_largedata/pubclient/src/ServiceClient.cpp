@@ -12,13 +12,9 @@
 #include "pubclient/src/ServiceClient.hpp"
 #include "areg/trace/GETrace.h"
 #include "areg/appbase/Application.hpp"
+#include "areg/appbase/Console.hpp"
 
-DEF_TRACE_SCOPE(examples_19_pubclientwdog_ServiceClient_serviceConnected);
-DEF_TRACE_SCOPE(examples_19_pubclientwdog_ServiceClient_onServiceStateUpdate);
-DEF_TRACE_SCOPE(examples_19_pubclientwdog_ServiceClient_responseStartSleep);
-DEF_TRACE_SCOPE(examples_19_pubclientwdog_ServiceClient_requestStartSleepFailed );
-DEF_TRACE_SCOPE(examples_19_pubclientwdog_ServiceClient_requestStopServiceFailed);
-DEF_TRACE_SCOPE(examples_19_pubclientwdog_ServiceClient_requestShutdownServiceFailed);
+DEF_TRACE_SCOPE(examples_20_clientlargedata_ServiceClient_serviceConnected);
 
 Component * ServiceClient::CreateComponent(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
 {
@@ -31,100 +27,84 @@ void ServiceClient::DeleteComponent(Component & compObject, const NERegistry::Co
 }
 
 ServiceClient::ServiceClient(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
-    : Component              ( owner, entry.mRoleName)
-    , HelloWatchdogClientBase( entry.mDependencyServices[0].mRoleName, static_cast<Component &>(self()) )
+    : Component             ( owner, entry.mRoleName)
+    , LargeDataClientBase   ( entry.mDependencyServices[0].mRoleName, static_cast<Component &>(self()) )
+    , IETimerConsumer       ( )
 
-    , mSleepTimeout          ( 0 )
-    , mRestarts              ( 0 )
+    , mBitmap               ( )
+    , mDataSize             ( 0 )
+    , mBlockCount           ( 0 )
+    , mTimer                (static_cast<IETimerConsumer&>(self()), TIMER_NAME)
 {
+}
+
+void ServiceClient::startupComponent(ComponentThread& comThread)
+{
+    std::pair<double, std::string_view> dataRate = NELargeData::calcDataRate(mDataSize);
+    Console& console = Console::getInstance();
+    console.clearCurrentLine();
+    console.outputTxt(COORD_TITLE, MSG_APP_TITLE);
+    console.outputMsg(COORD_DATA_RATE, MSG_DATA_RATE.data(), static_cast<float>(dataRate.first), dataRate.second.data(), mBlockCount);
+}
+
+void ServiceClient::broadcastImageBlockAcquired(const NELargeData::ImageBlock& imageBlock)
+{
+    const NELargeData::sImageBlock* block = imageBlock.getBlock();
+    if ((block != nullptr) && mBitmap.allocateBitmap(block->frameWidth, block->frameHeight))
+    {
+        mBitmap.setBlock(imageBlock);
+        mDataSize   += imageBlock.getSize();
+        mBlockCount += 1;
+    }
+}
+
+void ServiceClient::broadcastServiceStopping(void)
+{
+    mTimer.stopTimer();
+    notifyOnBroadcastServiceStopping(false);
+    notifyOnBroadcastImageBlockAcquired(false);
+
+    if (mBitmap.isValid())
+    {
+        mBitmap.save(FILE_NAME.data());
+    }
+
+    Application::signalAppQuit();
 }
 
 bool ServiceClient::serviceConnected(bool isConnected, ProxyBase & proxy)
 {
-    TRACE_SCOPE(examples_19_pubclientwdog_ServiceClient_serviceConnected);
-    bool result = HelloWatchdogClientBase::serviceConnected(isConnected, proxy);
+    TRACE_SCOPE(examples_20_clientlargedata_ServiceClient_serviceConnected);
+    bool result = LargeDataClientBase::serviceConnected(isConnected, proxy);
 
     TRACE_DBG("Client [ %s ] of [ %s ] service is [ %s ]"
                 , proxy.getProxyAddress().getRoleName().getString()
                 , proxy.getProxyAddress().getServiceName().getString()
                 , isConnected ? "connected" : "disconnected");
 
-    if (isConnected)
-    {
-        // dynamic subscribe on messages.
-        notifyOnServiceStateUpdate( true );
-        if (++ mRestarts <= NEHelloWatchdog::MaximumRestarts)
-        {
-            mSleepTimeout   = NEHelloWatchdog::InitialSleepTimeout;
-            TRACE_DBG( "Initialized thread sleep timeout [ %u ] ms, sending first request", mSleepTimeout );
+    // dynamic subscribe on messages.
+    notifyOnBroadcastServiceStopping(isConnected);
+    notifyOnBroadcastImageBlockAcquired(isConnected);
 
-            requestStartSleep( mSleepTimeout );
-        }
-        else
-        {
-            TRACE_DBG("Reached maximum number of service restarts, exit application");
-            printf("Reached maximum number of service restarts, stopping service to shutdown ...\n");
-            requestStopService();
-        }
+    if (isConnected == false)
+    {
+        mTimer.stopTimer();
+        Application::signalAppQuit();
     }
     else
     {
-        TRACE_DBG( "Completing watchdog test with final sleep timeout [ %u ] ms", mSleepTimeout );
-        // clear all subscriptions.
-        clearAllNotifications();
+        mTimer.startTimer(NELargeData::TIMER_TIMEOUT, Timer::CONTINUOUSLY);
     }
 
     return result;
 }
 
-void ServiceClient::onServiceStateUpdate( NEHelloWatchdog::eState ServiceState, NEService::eDataStateType state )
+void ServiceClient::processTimer(Timer& timer)
 {
-    TRACE_SCOPE(examples_19_pubclientwdog_ServiceClient_onServiceStateUpdate);
-    TRACE_DBG("Current service state is [ %s ], data state is [ %s ]", NEHelloWatchdog::getString(ServiceState), NEService::getString(state));
-    if (state == NEService::eDataStateType::DataIsOK)
-    {
-        if (ServiceState == NEHelloWatchdog::eState::Stopped)
-        {
-            printf("Sending request to shutdown and quit application");
-            requestShutdownService();
-            Application::signalAppQuit();
-        }
-    }
-}
+    Console& console = Console::getInstance();
+    std::pair<double, std::string_view> dataRate = NELargeData::calcDataRate(mDataSize);
+    console.outputMsg(COORD_DATA_RATE, MSG_DATA_RATE.data(), dataRate.first, dataRate.second.data(), mBlockCount);
 
-void ServiceClient::responseStartSleep( unsigned int timeoutSleep )
-{
-    TRACE_SCOPE(examples_19_pubclientwdog_ServiceClient_responseStartSleep);
-    TRACE_DBG("Completed service sleep, current timeout is [ %u ]", timeoutSleep);
-
-    if (timeoutSleep != 0)
-    {
-        ASSERT( timeoutSleep == mSleepTimeout );
-        mSleepTimeout += NEHelloWatchdog::TimeoutStep;
-
-        requestStartSleep( mSleepTimeout );
-    }
-    else
-    {
-        TRACE_INFO("The service didn't sleep");
-        printf("The service didn't sleep.\n");
-    }
-}
-
-void ServiceClient::requestStartSleepFailed( NEService::eResultType FailureReason )
-{
-    TRACE_SCOPE( examples_19_pubclientwdog_ServiceClient_requestStartSleepFailed );
-    TRACE_WARN("Request to sleep service failed with reason [ %s ]", NEService::getString(FailureReason));
-}
-
-void ServiceClient::requestStopServiceFailed( NEService::eResultType FailureReason )
-{
-    TRACE_SCOPE( examples_19_pubclientwdog_ServiceClient_requestStopServiceFailed );
-    TRACE_WARN( "Request to stop the service failed with reason [ %s ]", NEService::getString( FailureReason ) );
-}
-
-void ServiceClient::requestShutdownServiceFailed( NEService::eResultType FailureReason )
-{
-    TRACE_SCOPE( examples_19_pubclientwdog_ServiceClient_requestShutdownServiceFailed );
-    TRACE_WARN( "Request to shutdown service failed with reason [ %s ]", NEService::getString( FailureReason ) );
+    mDataSize = 0;
+    mBlockCount = 0;
 }

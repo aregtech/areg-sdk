@@ -274,6 +274,11 @@ private:
     void _unqueueTimer( void );
 
     /**
+     * \brief   Called to stop and release the timer.
+     */
+    inline void _stopTimer(void);
+
+    /**
      * \brief   Returns reference to Timer object.
      **/
     inline Timer & self( void );

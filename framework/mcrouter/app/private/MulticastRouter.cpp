@@ -177,14 +177,14 @@ void MulticastRouter::serviceMain( int argc, char ** argv )
                 // Set local callback, output message and wait for user input.
                 Console::CallBack callback(MulticastRouter::_checkCommand);
                 console.enableConsoleInput(true);
-                console.outputText(Console::Coord{ 0, 0 }, NEMulticastRouterSettings::FORMAT_WAIT_QUIT);
+                console.outputTxt(Console::Coord{ 0, 0 }, NEMulticastRouterSettings::FORMAT_WAIT_QUIT);
                 console.waitForInput(callback);
             }
 
             Console::Coord pos = console.getCursorCurPosition();
             pos.posY += 1;
             pos.posX = 0;
-            console.outputText(pos, NEMulticastRouterSettings::FORMAT_QUIT_APP);
+            console.outputTxt(pos, NEMulticastRouterSettings::FORMAT_QUIT_APP);
             console.uninitialize();
             Application::signalAppQuit();
         }
@@ -291,8 +291,8 @@ bool MulticastRouter::_checkCommand(const String& cmd)
         Console& console = Console::getInstance();
 
         ASSERT(MulticastRouter::getInstance().mRunVerbose == false);
-        console.outputText(Console::Coord{ 0, 1 }, NEMulticastRouterSettings::FORMAT_MSG_ERROR.data(), cmd.getString());
-        console.outputText(Console::Coord{ 0, 0 }, NEMulticastRouterSettings::FORMAT_WAIT_QUIT);
+        console.outputMsg(Console::Coord{ 0, 1 }, NEMulticastRouterSettings::FORMAT_MSG_ERROR.data(), cmd.getString());
+        console.outputTxt(Console::Coord{ 0, 0 }, NEMulticastRouterSettings::FORMAT_WAIT_QUIT);
         console.refreshScreen();
 
         return false;

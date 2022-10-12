@@ -69,7 +69,6 @@ EventDataStream::EventDataStream( const EventDataStream & src )
     , mDataBuffer   (src.mDataBuffer)
     , mSharedList   (src.mSharedList)
 {
-    mDataBuffer.moveToBegin();
 }
 
 EventDataStream::EventDataStream( EventDataStream && src ) noexcept
@@ -80,7 +79,6 @@ EventDataStream::EventDataStream( EventDataStream && src ) noexcept
     , mDataBuffer   ( std::move(src.mDataBuffer) )
     , mSharedList   ( std::move(src.mSharedList) )
 {
-    mDataBuffer.moveToBegin( );
 }
 
 EventDataStream::EventDataStream(const IEInStream & stream)

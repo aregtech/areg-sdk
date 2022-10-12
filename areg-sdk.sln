@@ -80,6 +80,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "cmake", "cmake", "{5E95D089
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "examples", "examples", "{07BFF46A-D4BC-4FAD-9727-D959755BFBAC}"
 	ProjectSection(SolutionItems) = preProject
+		examples\CMakeLists.txt = examples\CMakeLists.txt
+		examples\Makefile = examples\Makefile
 		examples\README.md = examples\README.md
 	EndProjectSection
 EndProject
@@ -216,14 +218,14 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "12_generated", "examples\12
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "12_pubclient", "examples\12_pubsvc\12_pubclient.vcxproj", "{C6AEF053-AA0C-46A8-A2F2-4330021D2DE2}"
 	ProjectSection(ProjectDependencies) = postProject
-		{CCBBF424-D22D-480F-A13E-28095E33827C} = {CCBBF424-D22D-480F-A13E-28095E33827C}
 		{2DF8165C-EDE2-4F76-8D2C-2FFE82CB6CE5} = {2DF8165C-EDE2-4F76-8D2C-2FFE82CB6CE5}
+		{CCBBF424-D22D-480F-A13E-28095E33827C} = {CCBBF424-D22D-480F-A13E-28095E33827C}
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "12_pubservice", "examples\12_pubsvc\12_pubservice.vcxproj", "{D20E2DBD-4224-479D-9608-5BC062A48BE4}"
 	ProjectSection(ProjectDependencies) = postProject
-		{CCBBF424-D22D-480F-A13E-28095E33827C} = {CCBBF424-D22D-480F-A13E-28095E33827C}
 		{2DF8165C-EDE2-4F76-8D2C-2FFE82CB6CE5} = {2DF8165C-EDE2-4F76-8D2C-2FFE82CB6CE5}
+		{CCBBF424-D22D-480F-A13E-28095E33827C} = {CCBBF424-D22D-480F-A13E-28095E33827C}
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "13_pubmesh", "13_pubmesh", "{BB26B4E2-9A39-4CD5-8BE0-A14BA7BE2D5D}"
@@ -322,14 +324,14 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "16_generated", "examples\16
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "16_pubclient", "examples\16_pubfsm\16_pubclient.vcxproj", "{C23BA253-475E-49DD-A92E-616C2A93831A}"
 	ProjectSection(ProjectDependencies) = postProject
-		{AA7F1615-AF3B-465F-A2CE-6A9AD1786F8B} = {AA7F1615-AF3B-465F-A2CE-6A9AD1786F8B}
 		{2DF8165C-EDE2-4F76-8D2C-2FFE82CB6CE5} = {2DF8165C-EDE2-4F76-8D2C-2FFE82CB6CE5}
+		{AA7F1615-AF3B-465F-A2CE-6A9AD1786F8B} = {AA7F1615-AF3B-465F-A2CE-6A9AD1786F8B}
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "16_pubservice", "examples\16_pubfsm\16_pubservice.vcxproj", "{57693047-C0E4-4183-91B5-8BCAB76F1B7D}"
 	ProjectSection(ProjectDependencies) = postProject
-		{AA7F1615-AF3B-465F-A2CE-6A9AD1786F8B} = {AA7F1615-AF3B-465F-A2CE-6A9AD1786F8B}
 		{2DF8165C-EDE2-4F76-8D2C-2FFE82CB6CE5} = {2DF8165C-EDE2-4F76-8D2C-2FFE82CB6CE5}
+		{AA7F1615-AF3B-465F-A2CE-6A9AD1786F8B} = {AA7F1615-AF3B-465F-A2CE-6A9AD1786F8B}
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "17_winchat", "17_winchat", "{503FAC02-04F9-466D-B783-4608413BDFBA}"
@@ -366,8 +368,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "18_generated", "examples\18
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "18_locsvcwadog", "examples\18_locwatchdog\18_locsvcwadog.vcxproj", "{766E4B9C-F428-4289-8975-DC3D22EEDBF6}"
 	ProjectSection(ProjectDependencies) = postProject
-		{38A88D1E-B86C-48E2-9B9E-68F672388734} = {38A88D1E-B86C-48E2-9B9E-68F672388734}
 		{2DF8165C-EDE2-4F76-8D2C-2FFE82CB6CE5} = {2DF8165C-EDE2-4F76-8D2C-2FFE82CB6CE5}
+		{38A88D1E-B86C-48E2-9B9E-68F672388734} = {38A88D1E-B86C-48E2-9B9E-68F672388734}
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "19_pubwatchdog", "19_pubwatchdog", "{E5D433F5-DBA3-45D5-8A7A-32A10566AA8E}"
@@ -391,8 +393,15 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "20_generated", "examples\20_largedata\20_generated.vcxproj", "{B8900569-8956-47AF-A2E7-50EB1DD788DD}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "20_clientlargedata", "examples\20_largedata\20_clientlargedata.vcxproj", "{70307B6F-61D5-4015-8578-E0E3549B7AB9}"
+	ProjectSection(ProjectDependencies) = postProject
+		{2DF8165C-EDE2-4F76-8D2C-2FFE82CB6CE5} = {2DF8165C-EDE2-4F76-8D2C-2FFE82CB6CE5}
+		{B8900569-8956-47AF-A2E7-50EB1DD788DD} = {B8900569-8956-47AF-A2E7-50EB1DD788DD}
+	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "19_pubservicewdog", "examples\20_largedata\20_svclargedata.vcxproj", "{2F18E4B1-966E-4A8D-B91E-8F216186A6E3}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "20_svclargedata", "examples\20_largedata\20_svclargedata.vcxproj", "{2F18E4B1-966E-4A8D-B91E-8F216186A6E3}"
+	ProjectSection(ProjectDependencies) = postProject
+		{2DF8165C-EDE2-4F76-8D2C-2FFE82CB6CE5} = {2DF8165C-EDE2-4F76-8D2C-2FFE82CB6CE5}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

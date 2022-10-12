@@ -7,7 +7,7 @@
 /************************************************************************
  * (c) copyright    2022
  *
- * Generated at     22.09.2022  23:42:15 GMT+02:00
+ * Generated at     07.10.2022  01:35:30 GMT+02:00
  *                  Create by AREG SDK code generator tool from source LargeData.
  *
  * \file            generated/src/NELargeData.hpp
@@ -24,6 +24,7 @@
 //////////////////////////////////////////////////////////////////////////
 // Dependency includes
 //////////////////////////////////////////////////////////////////////////
+#include "common/NELargeData.hpp"
 
 //////////////////////////////////////////////////////////////////////////
 // Mandatory includes
@@ -93,15 +94,15 @@ namespace   NELargeData
      * Broadcast IDs
      ************************************************************************/
         /**
-         * \brief   Broadcast ID: MsgId_broadcastWriteImageBlock
+         * \brief   Broadcast ID: MsgId_broadcastImageBlockAcquired
          *          Called to notify all connected clients that new image data is available.
          **/
-          MsgId_broadcastWriteImageBlock  = NEService::RESPONSE_ID_FIRST  // void broadcastWriteImageBlock( void );
+          MsgId_broadcastImageBlockAcquired   = NEService::RESPONSE_ID_FIRST  // void broadcastImageBlockAcquired( const NELargeData::ImageBlock & imageBlock );
         /**
          * \brief   Broadcast ID: MsgId_broadcastServiceStopping
          *          Called to notify all clients that service is shutting down.
          **/
-        , MsgId_broadcastServiceStopping                                    // void broadcastServiceStopping( void );
+        , MsgId_broadcastServiceStopping                                        // void broadcastServiceStopping( void );
 
     /************************************************************************
      * Attributes IDs
@@ -113,11 +114,11 @@ namespace   NELargeData
         /**
          * \brief   ID of empty function
          **/
-        , MsgId_NotProcessed              = NEService::INVALID_MESSAGE_ID
+        , MsgId_NotProcessed                  = NEService::INVALID_MESSAGE_ID
         /**
          * \brief   ID of invalid call
          **/
-        , MsgId_Invalid                   = NEService::RESPONSE_ID_NONE
+        , MsgId_Invalid                       = NEService::RESPONSE_ID_NONE
 
     };
     /**
@@ -162,8 +163,8 @@ inline const char * NELargeData::getString( NELargeData::eMessageIDs msgId )
 {
     switch ( msgId )
     {
-    case    NELargeData::eMessageIDs::MsgId_broadcastWriteImageBlock:
-        return "NELargeData::eMessageIDs::MsgId_broadcastWriteImageBlock";
+    case    NELargeData::eMessageIDs::MsgId_broadcastImageBlockAcquired:
+        return "NELargeData::eMessageIDs::MsgId_broadcastImageBlockAcquired";
     case    NELargeData::eMessageIDs::MsgId_broadcastServiceStopping:
         return "NELargeData::eMessageIDs::MsgId_broadcastServiceStopping";
 

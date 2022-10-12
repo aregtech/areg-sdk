@@ -7,7 +7,7 @@
 /************************************************************************
  * (c) copyright    2022
  *
- * Generated at     22.09.2022  23:42:15 GMT+02:00
+ * Generated at     07.10.2022  01:35:30 GMT+02:00
  *                  Create by AREG SDK code generator tool from source LargeData.
  *
  * \file            generated/src/LargeDataClientBase.hpp
@@ -128,22 +128,23 @@ public:
 public:
 
 /************************************************************************
- * Broadcast WriteImageBlock
+ * Broadcast ImageBlockAcquired
  ************************************************************************/
     /**
      * \brief   Server broadcast.
      *          Called to notify all connected clients that new image data is available.
      *          Overwrite, if need to handle Broadcast call of server object.
      *          This call will be automatically triggered, on every appropriate request call
+     * \param   imageBlock  Acquired image block.
      **/
-    virtual void broadcastWriteImageBlock( void );
+    virtual void broadcastImageBlockAcquired( const NELargeData::ImageBlock & imageBlock );
     /**
-     * \brief   Call to enable or disable receiving notifications on WriteImageBlock broadcast call.
+     * \brief   Call to enable or disable receiving notifications on ImageBlockAcquired broadcast call.
      *          This function is triggered, when client object is interested only on response result
      *          without triggering request call.
      * \param   notify  If true, notification will be enable. If false, notification is disabled
      **/
-    inline void notifyOnBroadcastWriteImageBlock( bool notify = true );
+    inline void notifyOnBroadcastImageBlockAcquired( bool notify = true );
 
 /************************************************************************
  * Broadcast ServiceStopping
@@ -361,9 +362,9 @@ inline const Version & LargeDataClientBase::getServiceVersion( void ) const
  * Broadcast notifications
  ************************************************************************/
 
-inline void LargeDataClientBase::notifyOnBroadcastWriteImageBlock( bool notify /* = true */ )
+inline void LargeDataClientBase::notifyOnBroadcastImageBlockAcquired( bool notify /* = true */ )
 {
-    LargeDataClientBase::notifyOn(NELargeData::eMessageIDs::MsgId_broadcastWriteImageBlock, notify, false);
+    LargeDataClientBase::notifyOn(NELargeData::eMessageIDs::MsgId_broadcastImageBlockAcquired, notify, false);
 }
 
 inline void LargeDataClientBase::notifyOnBroadcastServiceStopping( bool notify /* = true */ )

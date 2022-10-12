@@ -1,3 +1,3 @@
-set(subProjDir ${19_pubwatchdog_BASE}/pubclient/src)
+set(subProjDir ${20_largedata_BASE}/pubclient/src)
 
 include(${subProjDir}/CMakeLists.txt)

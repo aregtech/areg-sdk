@@ -5,7 +5,7 @@
 /************************************************************************
  * (c) copyright    2022
  *
- * Generated at     22.09.2022  23:42:15 GMT+02:00
+ * Generated at     07.10.2022  01:35:30 GMT+02:00
  *                  Create by AREG SDK code generator tool from source LargeData.
  *
  * \file            generated/src/NELargeData.hpp
@@ -36,8 +36,8 @@ const NEService::SInterfaceData & NELargeData::getInterfaceData( void )
      ************************************************************************/
     static constexpr unsigned int _ResponseList[]
     {
-          static_cast<unsigned int>( NELargeData::eMessageIDs::MsgId_broadcastWriteImageBlock  ) // broadcastWriteImageBlock( void )
-        , static_cast<unsigned int>( NELargeData::eMessageIDs::MsgId_broadcastServiceStopping  ) // broadcastServiceStopping( void )
+          static_cast<unsigned int>( NELargeData::eMessageIDs::MsgId_broadcastImageBlockAcquired  ) // broadcastImageBlockAcquired( const NELargeData::ImageBlock & imageBlock )
+        , static_cast<unsigned int>( NELargeData::eMessageIDs::MsgId_broadcastServiceStopping     ) // broadcastServiceStopping( void )
     };
 
     /************************************************************************
@@ -62,7 +62,7 @@ const NEService::SInterfaceData & NELargeData::getInterfaceData( void )
     /************************************************************************
      * Broadcasts
      ************************************************************************/
-        0, // void broadcastWriteImageBlock( void )
+        1, // void broadcastImageBlockAcquired( const NELargeData::ImageBlock & imageBlock )
         0, // void broadcastServiceStopping( void )
 
     };

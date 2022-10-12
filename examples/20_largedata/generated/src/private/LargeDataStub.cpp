@@ -4,7 +4,7 @@
 /************************************************************************
  * (c) copyright    2022
  *
- * Generated at     22.09.2022  23:42:15 GMT+02:00
+ * Generated at     07.10.2022  01:35:30 GMT+02:00
  *                  Create by AREG SDK code generator tool from source LargeData.
  *
  * \file            generated/src/LargeDataStub.hpp
@@ -114,7 +114,7 @@ void LargeDataStub::errorRequest( unsigned int msgId, bool msgCancel )
 /************************************************************************
  * Broadcast errors
  ************************************************************************/
-    case NELargeData::eMessageIDs::MsgId_broadcastWriteImageBlock:
+    case NELargeData::eMessageIDs::MsgId_broadcastImageBlockAcquired:
     case NELargeData::eMessageIDs::MsgId_broadcastServiceStopping:
         result = NEService::eResultType::DataInvalid;
         break;
@@ -155,10 +155,13 @@ void LargeDataStub::errorRequest( unsigned int msgId, bool msgCancel )
  * Send Broadcast
  ************************************************************************/
 
-void LargeDataStub::broadcastWriteImageBlock( void )
+void LargeDataStub::broadcastImageBlockAcquired( const NELargeData::ImageBlock & imageBlock )
 {
-    static const NELargeData::eMessageIDs msgId = NELargeData::eMessageIDs::MsgId_broadcastWriteImageBlock;
-    sendResponseEvent( static_cast<msg_id>(msgId), EventDataStream::EmptyData );
+    static const NELargeData::eMessageIDs msgId = NELargeData::eMessageIDs::MsgId_broadcastImageBlockAcquired;
+    EventDataStream args(EventDataStream::eEventData::EventDataExternal);
+    IEOutStream & stream = args.getStreamForWrite();
+    stream << imageBlock;
+    sendResponseEvent( static_cast<msg_id>(msgId), args );
 }
 
 void LargeDataStub::broadcastServiceStopping( void )

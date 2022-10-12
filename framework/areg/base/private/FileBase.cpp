@@ -496,7 +496,7 @@ unsigned int FileBase::read(IEByteBuffer & buffer) const
 
         if (readInt(sizeReserve) && (sizeReserve > 0))
         {
-            sizeRead = buffer.resize(static_cast<unsigned int>(sizeReserve), false);
+            sizeRead = buffer.reserve(static_cast<unsigned int>(sizeReserve), false);
             unsigned char * data = sizeRead != 0 ? buffer.getBuffer() : nullptr;
             if ( (data != nullptr) && (read(data, sizeRead) == sizeRead) )
             {

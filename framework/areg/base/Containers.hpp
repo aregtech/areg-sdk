@@ -539,7 +539,7 @@ public:
      * \brief   Gets the string and tokenize according delimiters.
      * \param   str         the String to tokenize
      * \param   delimiters  one or more delimiter chars that define token boundaries
-     * \param   keepEmpty   if two delimiters next to each other specify an empty token
+     * \param   keepEmpty   if true, two delimiters next to each other specify an empty token
      *                      if false, the result will only contain nonempty tokens
      **/
     Tokenizer( const String & str, const String & delimiters, bool keepEmpty = true);
@@ -567,10 +567,16 @@ public:
      * \brief   Tokenize string. After operation, the array is filled by string separated by delimiters.
      * \param   str         the String to tokenize
      * \param   delimiters  one or more delimiter chars that define token boundaries
-     * \param   keepEmpty   if two delimiters next to each other specify an empty token
-     *                      if false, the result will only contain nonempty tokens
+     * \param   keepEmpty   If true, two delimiters next to each other specify an empty token.
+     *                      If false, the result will only contain nonempty tokens.
+     * \return  Returns list of string split by matching delimiter
      **/
-    void tokenize( const String & str, const String & delimiters, bool keepEmpty = true);
+    const StringArray & tokenize( const String & str, const String & delimiters, bool keepEmpty = true);
+
+    /**
+     * \brief   Returns list of string split by matching delimiter.
+     **/
+    inline const StringArray& getList(void) const;
 
 private:
 
@@ -628,6 +634,15 @@ template <typename VALUE>
 TEPointerHashMap<VALUE>::TEPointerHashMap( uint32_t hashSize )
     : TEHashMap<void *, VALUE>(hashSize)
 {
+}
+
+//////////////////////////////////////////////////////////////////////////
+// Tokenizer class inline implementation
+//////////////////////////////////////////////////////////////////////////
+
+inline const StringArray& Tokenizer::getList(void) const
+{
+    return mTokens;
 }
 
 #endif  // AREG_BASE_CONTAINERS_HPP

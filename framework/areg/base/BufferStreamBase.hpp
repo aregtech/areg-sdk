@@ -187,7 +187,7 @@ public:
      * \param	copy    If true and the existing buffer is valid, it will copy data
      * \return	Returns the size available to use (i.e. remaining space).
      **/
-    virtual unsigned int resize(unsigned int size, bool copy) override;
+    virtual unsigned int reserve(unsigned int size, bool copy) override;
 
 protected:
 /************************************************************************/

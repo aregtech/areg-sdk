@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>19_pubclientwdog</name>
+	<name>20_clientlargedata</name>
 	<comment></comment>
 	<projects>
 		<project>areg</project>
-		<project>19_generated</project>
+		<project>20_generated</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

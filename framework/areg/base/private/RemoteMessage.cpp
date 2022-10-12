@@ -43,13 +43,13 @@ RemoteMessage::RemoteMessage(unsigned int blockSize /*= NEMemory::BLOCK_SIZE*/)
 RemoteMessage::RemoteMessage(unsigned int reserveSize, unsigned int blockSize)
     : SharedBuffer  ( blockSize )
 {
-    resize(reserveSize, false);
+    reserve(reserveSize, false);
 }
 
 RemoteMessage::RemoteMessage(const unsigned char * buffer, unsigned int size, unsigned int blockSize /*= NEMemory::BLOCK_SIZE*/)
     : SharedBuffer  ( blockSize )
 {
-    resize(size, false);
+    reserve(size, false);
     writeData(buffer, size);
 }
 

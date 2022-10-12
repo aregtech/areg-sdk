@@ -22,6 +22,7 @@
 #include "areg/base/GEGlobal.h"
 #include "areg/base/IEIOStream.hpp"
 #include "areg/base/NEMath.hpp"
+
 #include <new>
 #include <string.h>
 

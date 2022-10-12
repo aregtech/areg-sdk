@@ -81,9 +81,9 @@ void ConsoleService::startupServiceInterface( Component & holder )
 
     Console& console = Console::getInstance();
 
-    console.outputText(NEMulticastRouterSettings::COORD_SEND_RATE, NEMulticastRouterSettings::FORMAT_SEND_DATA.data(), 0.0f, ConsoleService::MSG_BYTES.data());
-    console.outputText(NEMulticastRouterSettings::COORD_RECV_RATE, NEMulticastRouterSettings::FORMAT_RECV_DATA.data(), 0.0f, ConsoleService::MSG_BYTES.data());
-    console.outputText(NEMulticastRouterSettings::COORD_USER_INPUT, NEMulticastRouterSettings::FORMAT_WAIT_QUIT);
+    console.outputMsg(NEMulticastRouterSettings::COORD_SEND_RATE, NEMulticastRouterSettings::FORMAT_SEND_DATA.data(), 0.0f, ConsoleService::MSG_BYTES.data());
+    console.outputMsg(NEMulticastRouterSettings::COORD_RECV_RATE, NEMulticastRouterSettings::FORMAT_RECV_DATA.data(), 0.0f, ConsoleService::MSG_BYTES.data());
+    console.outputTxt(NEMulticastRouterSettings::COORD_USER_INPUT, NEMulticastRouterSettings::FORMAT_WAIT_QUIT);
 
     mTimer.startTimer(NECommon::TIMEOUT_1_SEC, Timer::CONTINUOUSLY);
 
@@ -133,8 +133,8 @@ inline void ConsoleService::outputDataRate(uint32_t bytesSend, uint32_t bytesRec
     ConsoleService::DataRate rateSend(bytesSend);
     ConsoleService::DataRate rateRecv(bytesRecv);
 
-    console.outputText(NEMulticastRouterSettings::COORD_SEND_RATE, NEMulticastRouterSettings::FORMAT_SEND_DATA.data(), rateSend.mRate.first, rateSend.mRate.second.c_str());
-    console.outputText(NEMulticastRouterSettings::COORD_RECV_RATE, NEMulticastRouterSettings::FORMAT_RECV_DATA.data(), rateRecv.mRate.first, rateRecv.mRate.second.c_str());
+    console.outputMsg(NEMulticastRouterSettings::COORD_SEND_RATE, NEMulticastRouterSettings::FORMAT_SEND_DATA.data(), rateSend.mRate.first, rateSend.mRate.second.c_str());
+    console.outputMsg(NEMulticastRouterSettings::COORD_RECV_RATE, NEMulticastRouterSettings::FORMAT_RECV_DATA.data(), rateRecv.mRate.first, rateRecv.mRate.second.c_str());
 
     console.setCursorCurPosition(oldPos);
     console.refreshScreen();
@@ -153,8 +153,8 @@ bool ConsoleService::checkCommand(const String& cmd)
         Console& console = Console::getInstance();
 
         ASSERT(MulticastRouter::getInstance().isVerbose());
-        console.outputText(NEMulticastRouterSettings::COORD_ERROR_MSG, NEMulticastRouterSettings::FORMAT_MSG_ERROR.data(), cmd.getString());
-        console.outputText(NEMulticastRouterSettings::COORD_USER_INPUT, NEMulticastRouterSettings::FORMAT_WAIT_QUIT);
+        console.outputMsg(NEMulticastRouterSettings::COORD_ERROR_MSG, NEMulticastRouterSettings::FORMAT_MSG_ERROR.data(), cmd.getString());
+        console.outputTxt(NEMulticastRouterSettings::COORD_USER_INPUT, NEMulticastRouterSettings::FORMAT_WAIT_QUIT);
         console.refreshScreen();
 
         return false;

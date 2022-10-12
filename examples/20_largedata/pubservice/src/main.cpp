@@ -12,13 +12,11 @@
 #include "areg/component/ComponentLoader.hpp"
 #include "areg/trace/GETrace.h"
 
-#include "generated/src/NEHelloWatchdog.hpp"
-#include "generated/src/NECommon.hpp"
 #include "pubservice/src/ServicingComponent.hpp"
 
 #ifdef WINDOWS
     #pragma comment(lib, "areg.lib")
-    #pragma comment(lib, "19_generated.lib")
+    #pragma comment(lib, "20_generated.lib")
 #endif // WINDOWS
 
 //////////////////////////////////////////////////////////////////////////
@@ -30,18 +28,19 @@
 //////////////////////////////////////////////////////////////////////////
 
 constexpr char const _modelName[]  { "ServiceModel" };   //!< The name of model
+constexpr uint32_t _watchdogTimeout{ 0 };
 
 // Describe mode, set model name
 BEGIN_MODEL(_modelName)
 
     // define component thread
-    BEGIN_REGISTER_THREAD( "TestServiceThread", NEHelloWatchdog::TimeoutWatchdog)
+    BEGIN_REGISTER_THREAD( "TestServiceThread", _watchdogTimeout)
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
-        BEGIN_REGISTER_COMPONENT( NECommon::ServiceRoleName, ServicingComponent )
+        BEGIN_REGISTER_COMPONENT(NELargeData::ServiceRoleName, ServicingComponent)
             // register HelloWorld service implementation.
-            REGISTER_IMPLEMENT_SERVICE( NEHelloWatchdog::ServiceName, NEHelloWatchdog::InterfaceVersion )
+            REGISTER_IMPLEMENT_SERVICE( NELargeData::ServiceName, NELargeData::InterfaceVersion )
         // end of component description
-        END_REGISTER_COMPONENT( NECommon::ServiceRoleName )
+        END_REGISTER_COMPONENT(NELargeData::ServiceRoleName)
     // end of thread description
     END_REGISTER_THREAD( "TestServiceThread" )
 

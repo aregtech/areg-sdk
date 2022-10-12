@@ -163,15 +163,22 @@ public:
      * \param   pos     The X- and Y-coordinate to start to output the message text.
      * \param   text    The message text to output.
      **/
-    inline void outputString(Console::Coord pos, const String& text) const;
-    inline void outputText(Console::Coord pos, const std::string_view& text) const;
+    inline void outputStr(Console::Coord pos, const String& text) const;
+    inline void outputTxt(Console::Coord pos, const std::string_view& text) const;
 
     /**
      * \brief   Outputs the formated text message with arguments at the given coordinate.
      * \param   pos     The X- and Y-coordinate to start to output the message text.
      * \param   format  The text format with arguments to output the message.
      **/
-    void outputMessage(Console::Coord pos, const char* format, ...) const;
+    void outputMsg(Console::Coord pos, const char* format, ...) const;
+
+    /**
+     * \brief   Outputs the formated text message with arguments at the given coordinate.
+     * \param   format  The text format with arguments to output the message.
+     **/
+    void printTxt(const String& text) const;
+    void printMsg(const char* format, ...) const;
 
     /**
      * \brief   Returns the current coordinate of the cursor on the console.
@@ -240,6 +247,7 @@ private:
      **/
     void _osOutputText(Console::Coord pos, const String& text) const;
     void _osOutputText(Console::Coord pos, const std::string_view& text) const;
+    void _osOutputText(const String& text) const;
 
     /**
      * \brief   Returns the current position of the cursor on the console.
@@ -331,14 +339,19 @@ inline bool Console::enableConsoleInput( bool enable )
     return enable ? (mIsReady && mEnable.setEvent( )) : (mIsReady == false) || (mEnable.resetEvent( ));
 }
 
-inline void Console::outputString( Console::Coord pos, const String & text ) const
+inline void Console::outputStr( Console::Coord pos, const String & text ) const
 {
     _osOutputText( pos, text );
 }
 
-inline void Console::outputText( Console::Coord pos, const std::string_view & text ) const
+inline void Console::outputTxt( Console::Coord pos, const std::string_view & text ) const
 {
     _osOutputText( pos, text );
+}
+
+inline void Console::printTxt(const String& text) const
+{
+    _osOutputText(text);
 }
 
 inline Console::Coord Console::getCursorCurPosition( void ) const

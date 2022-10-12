@@ -1,3 +1,3 @@
-19_pubclient_SRC += \
-	$(19_pubwatchdog_BASE)/pubclient/src/ServiceClient.cpp \
-	$(19_pubwatchdog_BASE)/pubclient/src/main.cpp
+20_clientlargedata_SRC += \
+	$(20_largedata_BASE)/pubclient/src/ServiceClient.cpp \
+	$(20_largedata_BASE)/pubclient/src/main.cpp

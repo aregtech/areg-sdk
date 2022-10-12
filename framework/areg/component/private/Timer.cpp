@@ -50,7 +50,7 @@ Timer::Timer( IETimerConsumer& timerConsumer
 
 Timer::~Timer(void)
 {
-    TimerManager::stopTimer(self());
+    _stopTimer();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -64,18 +64,7 @@ bool Timer::startTimer( void )
 
 void Timer::stopTimer(void)
 {
-    Lock lock(mLock);
-
-    TimerManager::stopTimer(self());
-
-    mStarted        = false;
-    mActive         = false;
-    mDispatchThread = nullptr;
-    mCurrentQueued  = 0;
-    mTimeoutInMs    = NECommon::INVALID_TIMEOUT;
-    mEventsCount    = 0;
-    mStartedAt      = 0;
-    mExpiredAt      = 0;
+    _stopTimer();
 }
 
 bool Timer::startTimer( unsigned int timeoutInMs, unsigned int eventCount /*= Timer::CONTINUOUSLY*/ )
@@ -208,4 +197,20 @@ void Timer::_unqueueTimer( void )
 #endif  // _DEBUG
         }
     }
+}
+
+inline void Timer::_stopTimer(void)
+{
+    Lock lock(mLock);
+
+    TimerManager::stopTimer(self());
+
+    mStarted        = false;
+    mActive         = false;
+    mDispatchThread = nullptr;
+    mCurrentQueued  = 0;
+    mTimeoutInMs    = NECommon::INVALID_TIMEOUT;
+    mEventsCount    = 0;
+    mStartedAt      = 0;
+    mExpiredAt      = 0;
 }

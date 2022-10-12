@@ -7,6 +7,5 @@ CMD=${PROJ_DIR}/../../tools/generate.sh
 
 TARGET='generated/src'
 $CMD --root "PROJ_DIR" --doc res/LargeData.siml --target $TARGET
-$CMD --root "PROJ_DIR" --doc res/Options.siml --target $TARGET
 
 find ${PROJ_DIR}/${TARGET} \( -name '*.cpp' -o -name '*.hpp' \) -exec dos2unix {} \;

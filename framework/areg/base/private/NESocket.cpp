@@ -108,7 +108,7 @@ bool NESocket::SocketAddress::getAddress(struct sockaddr_in & out_sockAddr) cons
         {
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1800)
-            result = RETURNED_OK == inet_pton(AF_INET, mIpAddr.getString(), &out_sockAddr.sin_addr);
+            result = 1 == inet_pton(AF_INET, mIpAddr.getString(), &out_sockAddr.sin_addr);
 #else   // (_MSC_VER >= 1800)
             out_sockAddr.sin_addr.s_addr = inet_addr(mIpAddr.getString());
             result = true;
@@ -126,7 +126,7 @@ void NESocket::SocketAddress::setAddress(const struct sockaddr_in & addrHost)
 #if defined(_MSC_VER) && (_MSC_VER >= 1800)
     char ipAddr[32] = { 0 };
     IN_ADDR & inAddr = const_cast<IN_ADDR &>(addrHost.sin_addr);
-    if ( RETURNED_OK == inet_ntop(AF_INET, &inAddr, ipAddr, 32) )
+    if ( nullptr != inet_ntop(AF_INET, &inAddr, ipAddr, 32) )
     {
         mIpAddr = ipAddr;
     }
@@ -143,7 +143,6 @@ bool NESocket::SocketAddress::resolveSocket(SOCKETHANDLE hSocket)
 
     if ( hSocket != NESocket::InvalidSocketHandle )
     {
-        // struct sockaddr sa  = {0};
         struct sockaddr_in sAddr;
         NEMemory::memZero(&sAddr, sizeof(sockaddr));
 
@@ -162,7 +161,7 @@ bool NESocket::SocketAddress::resolveSocket(SOCKETHANDLE hSocket)
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1800)
                 char ipAddr[32] = { 0 };
-                if ( RETURNED_OK == inet_ntop(AF_INET, &addr_in.sin_addr, ipAddr, 32) )
+                if ( nullptr != inet_ntop(AF_INET, &addr_in.sin_addr, ipAddr, 32) )
                 {
                     mIpAddr = ipAddr;
                     result = true;
@@ -206,7 +205,6 @@ bool NESocket::SocketAddress::resolveAddress( const std::string_view & hostName,
         char svcName[0x0F];
         String::formatString(svcName, 0x0F, "%u", portNr);
 
-        // struct addrinfo hints = {0};
         struct addrinfo hints;
         NEMemory::memZero(&hints, sizeof(addrinfo));
         hints.ai_family     = AF_INET;

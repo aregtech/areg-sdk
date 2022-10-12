@@ -14,26 +14,45 @@
 
 #include "areg/base/GEGlobal.h"
 #include "areg/component/Component.hpp"
-#include "generated/src/HelloWatchdogClientBase.hpp"
+#include "generated/src/LargeDataClientBase.hpp"
+#include "areg/component/IETimerConsumer.hpp"
+
+#include "areg/appbase/Console.hpp"
+#include "areg/component/Timer.hpp"
+#include "common/NELargeData.hpp"
+#include "common/SimpleBitmap.hpp"
 
 //////////////////////////////////////////////////////////////////////////
 // ServicingComponent class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   Service client, which runs in separate thread.
- *          It sends the command to service to sleep, so that the thread
- *          does not reset watchdog. If watchdog timeout expires, the system
- *          terminates the thread and components and restarts again.
- *          After reaching certain amount of restarts, the application quits.
+ * \brief   Service client, connects to the large data service to receive
+ *          generated image data. It outputs the statistics of received
+ *          data and imte blocks.
  **/
 class ServiceClient : public    Component
-                    , protected HelloWatchdogClientBase
+                    , protected LargeDataClientBase
+                    , protected IETimerConsumer
 {
 private:
-    /**
-     * \brief   Timeout to wait before sending message
-     **/
-    static const unsigned int    TIMEOUT_VALUE       /*= 237*/;
+
+    //!< The coordinates to output client application title / headline.
+    static constexpr Console::Coord     COORD_TITLE{ 0, 0 };
+
+    //!< Coordinates to output data rate information of large data client.
+    static constexpr Console::Coord     COORD_DATA_RATE{ 0, 1 };
+
+    //!< File name to save bitmap image.
+    static constexpr std::string_view   FILE_NAME       { ".\\SimpleImage.bmp" };
+
+    //!< Timer name.
+    static constexpr std::string_view   TIMER_NAME      { "DataRateTimer" };
+
+    //!< Message to output as application title / headline.
+    static constexpr std::string_view   MSG_APP_TITLE{ "Application to test data rate, service client part..." };
+
+    //!< Message to output data rate.
+    static constexpr std::string_view   MSG_DATA_RATE   { "Receiving data with rate [ % 7.2f ] %s and [ %u ] blocks per second." };
 
 //////////////////////////////////////////////////////////////////////////
 // Static methods
@@ -73,44 +92,33 @@ protected:
 
 protected:
 
+/************************************************************************/
+// Component overrides
+/************************************************************************/
     /**
-     * \brief   Triggered, when ServiceState attribute is updated. The function contains
-     *          attribute value and validation flag. When notification is enabled,
-     *          the method should be overwritten in derived class.
-     *          Attributes ServiceState description:
-     *          The state of the service.
-     * \param   ServiceState    The value of ServiceState attribute.
-     * \param   state           The data validation flag.
+     * \brief	This function is triggered by component thread when it 
+     *          requires component to start up. Set listeners and make
+     *          initialization in this function call.
+     * \param	comThread	The component thread, which triggered startup command
      **/
-    virtual void onServiceStateUpdate( NEHelloWatchdog::eState ServiceState, NEService::eDataStateType state ) override;
+    virtual void startupComponent( ComponentThread & comThread );
 
     /**
-     * \brief   Response callback.
-     *          Triggered to stop the timer.
-     *          Overwrite, if need to handle Response call of server object.
+     * \brief   Server broadcast.
+     *          Called to notify all connected clients that new image data is available.
+     *          Overwrite, if need to handle Broadcast call of server object.
      *          This call will be automatically triggered, on every appropriate request call
-     * \param   timeoutSleep    The timeout in milliseconds while thread was in suspended mode.
-     * \see     requestStartSleep
+     * \param   imageBlock  Acquired image block.
      **/
-    virtual void responseStartSleep( unsigned int timeoutSleep ) override;
+    virtual void broadcastImageBlockAcquired( const NELargeData::ImageBlock & imageBlock ) override;
 
     /**
-     * \brief   Overwrite to handle error of StartSleep request call.
-     * \param   FailureReason   The failure reason value of request call.
+     * \brief   Server broadcast.
+     *          Called to notify all clients that service is shutting down.
+     *          Overwrite, if need to handle Broadcast call of server object.
+     *          This call will be automatically triggered, on every appropriate request call
      **/
-    virtual void requestStartSleepFailed( NEService::eResultType FailureReason ) override;
-
-    /**
-     * \brief   Overwrite to handle error of StopService request call.
-     * \param   FailureReason   The failure reason value of request call.
-     **/
-    virtual void requestStopServiceFailed( NEService::eResultType FailureReason ) override;
-
-    /**
-     * \brief   Overwrite to handle error of ShutdownService request call.
-     * \param   FailureReason   The failure reason value of request call.
-     **/
-    virtual void requestShutdownServiceFailed( NEService::eResultType FailureReason ) override;
+    virtual void broadcastServiceStopping( void ) override;
 
 /************************************************************************/
 // IEProxyListener Overrides
@@ -135,17 +143,39 @@ protected:
      **/
     virtual bool serviceConnected( bool isConnected, ProxyBase & proxy ) override;
 
+/************************************************************************/
+// IETimerConsumer interface overrides.
+/************************************************************************/
+
+    /**
+     * \brief   Triggered when Timer is expired. 
+     *          The passed Timer parameter is indicating object, which has been expired.
+     *          Overwrite method to receive messages.
+     * \param   timer   The timer object that is expired.
+     **/
+    virtual void processTimer( Timer & timer ) override;
+
+//////////////////////////////////////////////////////////////////////////
+// member variables
+//////////////////////////////////////////////////////////////////////////
+private:
+    //!< Bitmap object to construct received image data.
+    SimpleBitmap    mBitmap;
+
+    //!< Received data size.
+    uint32_t        mDataSize;
+
+    //!< Received image blocks
+    uint32_t        mBlockCount;
+
+    //!< Timer to output message.
+    Timer           mTimer;
+
 //////////////////////////////////////////////////////////////////////////
 // hidden methods
 //////////////////////////////////////////////////////////////////////////
 private:
     inline ServiceClient & self( void );
-
-//////////////////////////////////////////////////////////////////////////
-// member variables
-//////////////////////////////////////////////////////////////////////////
-    uint32_t mSleepTimeout; //!< The thread sleep timeout
-    uint32_t mRestarts;     //!< The number of service restarts.
 
 //////////////////////////////////////////////////////////////////////////
 // forbidden calls

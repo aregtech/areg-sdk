@@ -4,7 +4,7 @@
 /************************************************************************
  * (c) copyright    2022
  *
- * Generated at     22.09.2022  23:42:15 GMT+02:00
+ * Generated at     07.10.2022  01:35:30 GMT+02:00
  *                  Create by AREG SDK code generator tool from source LargeData.
  *
  * \file            generated/src/LargeDataClientBase.hpp
@@ -191,9 +191,10 @@ void LargeDataClientBase::processNotificationEvent( NotificationEvent & eventEle
         /************************************************************************
          * Trigger broadcast processing
          ************************************************************************/
-            case NELargeData::eMessageIDs::MsgId_broadcastWriteImageBlock:
+            case NELargeData::eMessageIDs::MsgId_broadcastImageBlockAcquired:
                 {
-                    broadcastWriteImageBlock(  );
+                    const NELargeData::ImageBlock & imageBlock = mProxy->getParamimageBlock();
+                    broadcastImageBlockAcquired( imageBlock );
                 }
                 break;
 
@@ -277,12 +278,12 @@ void LargeDataClientBase::requestFailed( NELargeData::eMessageIDs FailureMsgId, 
  * Request failure / Response and Broadcast notifications
  ************************************************************************/
 
-DEF_TRACE_SCOPE(generated_src_LargeDataClientBase_broadcastWriteImageBlock);
-void LargeDataClientBase::broadcastWriteImageBlock( void )
+DEF_TRACE_SCOPE(generated_src_LargeDataClientBase_broadcastImageBlockAcquired);
+void LargeDataClientBase::broadcastImageBlockAcquired( const NELargeData::ImageBlock & /* imageBlock */ )
 {
-    TRACE_SCOPE(generated_src_LargeDataClientBase_broadcastWriteImageBlock);
-    TRACE_WARN("The broadcast broadcastWriteImageBlock (value = %u) method of proxy [ %s ] client LargeDataClientBase is not implemented!"
-                    , static_cast<unsigned int>(NELargeData::eMessageIDs::MsgId_broadcastWriteImageBlock)
+    TRACE_SCOPE(generated_src_LargeDataClientBase_broadcastImageBlockAcquired);
+    TRACE_WARN("The broadcast broadcastImageBlockAcquired (value = %u) method of proxy [ %s ] client LargeDataClientBase is not implemented!"
+                    , static_cast<unsigned int>(NELargeData::eMessageIDs::MsgId_broadcastImageBlockAcquired)
                     , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString());
 }
 

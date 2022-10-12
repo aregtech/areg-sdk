@@ -72,7 +72,7 @@ bool FileBuffer::open( void )
         mFileMode = normalizeMode(mFileMode);
         if (isAttachMode() == false)
         {
-            mSharedBuffer.resize(mSharedBuffer.getBlockSize(), false);
+            mSharedBuffer.reserve(mSharedBuffer.getBlockSize(), false);
         }
         else
         {
@@ -185,7 +185,7 @@ bool FileBuffer::isOpened() const
 
 unsigned int FileBuffer::reserve(int newSize)
 {
-    return (isOpened() && (newSize >= 0) ? mSharedBuffer.resize(static_cast<unsigned int>(newSize), false) : NEMemory::INVALID_SIZE);
+    return (isOpened() && (newSize >= 0) ? mSharedBuffer.reserve(static_cast<unsigned int>(newSize), false) : NEMemory::INVALID_SIZE);
 }
 
 bool FileBuffer::truncate( void )

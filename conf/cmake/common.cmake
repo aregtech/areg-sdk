@@ -88,7 +88,7 @@ else()
 endif()
 
 # Examples LD flags (-l is not necessary)
-list(APPEND exampleLDFlags areg m  stdc++ rt pthread)
+list(APPEND exampleLDFlags areg m  stdc++ rt ncurses pthread)
 set(exampleCXXStandard "17")
 
 # Adding areg/product directory for clean-up

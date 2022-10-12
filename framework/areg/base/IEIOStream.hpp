@@ -404,7 +404,7 @@ public:
      * \brief   Writes STL string into the stream.
      **/
     template<typename CharType>
-    friend inline const IEInStream& operator >> (const IEInStream& stream, std::basic_string<CharType>& output);
+    friend inline const IEInStream& operator >> (const IEInStream& stream, std::basic_string<CharType>& input);
 
     /**
      * \brief   Reads and writes std::deque object to the stream.
@@ -413,7 +413,7 @@ public:
     template<typename ElemType>
     friend inline IEOutStream& operator << (IEOutStream& stream, const std::deque<ElemType>& output);
     template<typename ElemType>
-    friend inline const IEInStream& operator >> (const IEInStream& stream, std::deque<ElemType>& output);
+    friend inline const IEInStream& operator >> (const IEInStream& stream, std::deque<ElemType>& input);
 
     /**
      * \brief   Reads and writes std::list object to the stream.
@@ -422,16 +422,7 @@ public:
     template<typename ElemType>
     friend inline IEOutStream& operator << (IEOutStream& stream, const std::list<ElemType>& output);
     template<typename ElemType>
-    friend inline const IEInStream& operator >> (const IEInStream& stream, std::list<ElemType>& output);
-
-    /**
-     * \brief   Reads and writes std::queue object to the stream.
-     *          Each element in the container must be streamable.
-     **/
-    template<typename ElemType>
-    friend inline IEOutStream& operator << (IEOutStream& stream, const std::queue<ElemType>& output);
-    template<typename ElemType>
-    friend inline const IEInStream& operator >> (const IEInStream& stream, std::queue<ElemType>& output);
+    friend inline const IEInStream& operator >> (const IEInStream& stream, std::list<ElemType>& input);
 
     /**
      * \brief   Reads and writes std::vector object to the stream.
@@ -440,7 +431,7 @@ public:
     template<typename ElemType>
     friend inline IEOutStream& operator << (IEOutStream& stream, const std::vector<ElemType>& output);
     template<typename ElemType>
-    friend inline const IEInStream& operator >> (const IEInStream& stream, std::vector<ElemType>& output);
+    friend inline const IEInStream& operator >> (const IEInStream& stream, std::vector<ElemType>& input);
 
     /**
      * \brief   Reads and writes std::pair object to the stream.
@@ -449,7 +440,7 @@ public:
     template<typename Key, typename Value>
     friend inline IEOutStream& operator << (IEOutStream& stream, const std::pair<Key, Value>& output);
     template<typename Key, typename Value>
-    friend inline const IEInStream& operator >> (const IEInStream& stream, std::pair<Key, Value>& output);
+    friend inline const IEInStream& operator >> (const IEInStream& stream, std::pair<Key, Value>& input);
 
     /**
      * \brief   Reads and writes std::map object to the stream.
@@ -458,7 +449,7 @@ public:
     template<typename Key, typename Value>
     friend inline IEOutStream& operator << (IEOutStream& stream, const std::map<Key, Value>& output);
     template<typename Key, typename Value>
-    friend inline const IEInStream& operator >> (const IEInStream& stream, std::map<Key, Value>& output);
+    friend inline const IEInStream& operator >> (const IEInStream& stream, std::map<Key, Value>& input);
 
     /**
      * \brief   Reads and writes std::unordered_map object to the stream.
@@ -467,7 +458,7 @@ public:
     template<typename Key, typename Value>
     friend inline IEOutStream& operator << (IEOutStream& stream, const std::unordered_map<Key, Value>& output);
     template<typename Key, typename Value>
-    friend inline const IEInStream& operator >> (const IEInStream& stream, std::unordered_map<Key, Value>& output);
+    friend inline const IEInStream& operator >> (const IEInStream& stream, std::unordered_map<Key, Value>& input);
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -550,15 +541,15 @@ inline IEOutStream& operator << (IEOutStream& stream, const std::basic_string_vi
 }
 
 template<typename CharType>
-inline const IEInStream& operator >> (const IEInStream& stream, std::basic_string<CharType>& output)
+inline const IEInStream& operator >> (const IEInStream& stream, std::basic_string<CharType>& input)
 {
-    output.clear();
+    input.clear();
 
     CharType ch;
     stream >> ch;
     while (ch != static_cast<CharType>('\0'))
     {
-        output += ch;
+        input += ch;
         stream >> ch;
     }
 
@@ -578,12 +569,14 @@ inline IEOutStream& operator << (IEOutStream& stream, const std::deque<ElemType>
 }
 
 template<typename ElemType>
-inline const IEInStream& operator >> (const IEInStream& stream, std::deque<ElemType>& output)
+inline const IEInStream& operator >> (const IEInStream& stream, std::deque<ElemType>& input)
 {
+    input.clear();
+
     unsigned int size = 0;
     stream >> size;
-    output.resize(size);
-    for (auto& elem : output)
+    input.resize(size);
+    for (auto& elem : input)
     {
         stream >> elem;
     }
@@ -604,38 +597,14 @@ inline IEOutStream& operator << (IEOutStream& stream, const std::list<ElemType>&
 }
 
 template<typename ElemType>
-inline const IEInStream& operator >> (const IEInStream& stream, std::list<ElemType>& output)
+inline const IEInStream& operator >> (const IEInStream& stream, std::list<ElemType>& input)
 {
+    input.clear();
+
     unsigned int size = 0;
     stream >> size;
-    output.resize(size);
-    for (auto& elem : output)
-    {
-        stream >> elem;
-    }
-
-    return stream;
-}
-
-template<typename ElemType>
-inline IEOutStream& operator << (IEOutStream& stream, const std::queue<ElemType>& output)
-{
-    stream << static_cast<unsigned int>(output.size());
-    for (const auto& elem : output)
-    {
-        stream << elem;
-    }
-
-    return stream;
-}
-
-template<typename ElemType>
-inline const IEInStream& operator >> (const IEInStream& stream, std::queue<ElemType>& output)
-{
-    unsigned int size = 0;
-    stream >> size;
-    output.resize(size);
-    for (auto& elem : output)
+    input.resize(size);
+    for (auto& elem : input)
     {
         stream >> elem;
     }
@@ -656,12 +625,14 @@ inline IEOutStream& operator << (IEOutStream& stream, const std::vector<ElemType
 }
 
 template<typename ElemType>
-inline const IEInStream& operator >> (const IEInStream& stream, std::vector<ElemType>& output)
+inline const IEInStream& operator >> (const IEInStream& stream, std::vector<ElemType>& input)
 {
+    input.clear();
+
     unsigned int size = 0;
     stream >> size;
-    output.resize(size);
-    for (auto& elem : output)
+    input.resize(size);
+    for (auto& elem : input)
     {
         stream >> elem;
     }
@@ -678,10 +649,10 @@ inline IEOutStream& operator << (IEOutStream& stream, const std::pair<Key, Value
 }
 
 template<typename Key, typename Value>
-inline const IEInStream& operator >> (const IEInStream& stream, std::pair<Key, Value>& output)
+inline const IEInStream& operator >> (const IEInStream& stream, std::pair<Key, Value>& input)
 {
-    stream >> output.first;
-    stream >> output.second;
+    stream >> input.first;
+    stream >> input.second;
     return stream;
 }
 
@@ -698,15 +669,17 @@ inline IEOutStream& operator << (IEOutStream& stream, const std::map<Key, Value>
 }
 
 template<typename Key, typename Value>
-inline const IEInStream& operator >> (const IEInStream& stream, std::map<Key, Value>& output)
+inline const IEInStream& operator >> (const IEInStream& stream, std::map<Key, Value>& input)
 {
+    input.clear();
+
     unsigned int size = 0;
     stream >> size;
     for (unsigned int i = 0; i < size; ++i)
     {
         std::pair<Key, Value> elem;
         stream >> elem;
-        output[elem.first] = elem.second;
+        input[elem.first] = elem.second;
     }
 
     return stream;
@@ -725,15 +698,17 @@ inline IEOutStream& operator << (IEOutStream& stream, const std::unordered_map<K
 }
 
 template<typename Key, typename Value>
-inline const IEInStream& operator >> (const IEInStream& stream, std::unordered_map<Key, Value>& output)
+inline const IEInStream& operator >> (const IEInStream& stream, std::unordered_map<Key, Value>& input)
 {
+    input.clear();
+
     unsigned int size = 0;
     stream >> size;
     for (unsigned int i = 0; i < size; ++i)
     {
         std::pair<Key, Value> elem;
         stream >> elem;
-        output[elem.first] = elem.second;
+        input[elem.first] = elem.second;
     }
 
     return stream;

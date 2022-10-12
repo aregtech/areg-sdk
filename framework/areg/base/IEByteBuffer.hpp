@@ -124,7 +124,7 @@ public:
      * \param	copy    If true and the existing buffer is valid, it will copy data
      * \return	Returns the size available to use (i.e. remaining space).
      **/
-    virtual unsigned int resize(unsigned int size, bool copy);
+    virtual unsigned int reserve(unsigned int size, bool copy);
 
 /************************************************************************/
 // IEByteBuffer Attributes and operations
@@ -145,6 +145,13 @@ public:
      **/
     inline unsigned int getSizeUsed( void ) const;
     
+    /**
+     * \brief	Sets the used size value in byte buffer object.
+     *          It should not be more than the length of buffer.
+     * \param	newSize	The new size in bytes to set in byte buffer object.
+     **/
+    inline void setSizeUsed(unsigned int newSize);
+
     /**
      * \brief   Returns the constant pointer to the data buffer of byte buffer
      **/
@@ -182,13 +189,6 @@ protected:
      * \brief   Returns pointer to the byte buffer.
      **/
     inline NEMemory::sByteBuffer * getByteBuffer( void );
-
-    /**
-     * \brief	Sets the used size value in byte buffer object.
-     *          It should not be more than the length of buffer.
-     * \param	newSize	The new size in bytes to set in byte buffer object.
-     **/
-    inline void setSizeUsed(unsigned int newSize);
 
     /**
      * \brief   Returns read-only end-of-buffer, i.e. end of used space. The end of buffer means 

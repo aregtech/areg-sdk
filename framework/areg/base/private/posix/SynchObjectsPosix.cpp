@@ -454,16 +454,23 @@ void Wait::_osReleaseTimer(void)
 {
 }
 
-bool Wait::_osWait(const Wait::Duration& timeout) const
+Wait::eWaitResult Wait::_osWaitFor(const Wait::Duration& timeout) const
 {
-    bool result{ timeout.count() >= 0 };
+    Wait::eWaitResult result{ timeout.count() >= 0 ? Wait::eWaitResult::WaitIgnored : Wait::eWaitResult::WaitInvalid };
     if (timeout >= Wait::ONE_MUS)
     {
         struct timespec dueTime;
         Wait::Duration mus{ timeout - (timeout % Wait::ONE_MUS) };
         dueTime.tv_sec  = mus >= Wait::ONE_SEC ? (mus.count() / Wait::ONE_SEC.count()) : 0;
         dueTime.tv_nsec = mus.count() % Wait::ONE_SEC.count();
-        result = ::nanosleep(&dueTime, nullptr) == RETURNED_OK;
+        if (::nanosleep(&dueTime, nullptr) == RETURNED_OK)
+        {
+            result = timeout >= Wait::MIN_WAIT ? Wait::eWaitResult::WaitInMilli : Wait::eWaitResult::WaitInMicro;
+        }
+        else
+        {
+            result = Wait::eWaitResult::WaitInvalid;
+        }
     }
 
     return result;

@@ -109,6 +109,16 @@ void Console::_osOutputText(Console::Coord pos, const std::string_view& text) co
     WriteConsoleA(hStdOut, text.data(), static_cast<DWORD>(text.length()), &written, NULL);
 }
 
+void Console::_osOutputText(const String& text) const
+{
+    Lock lock(mLock);
+
+    DWORD written = 0;
+    HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
+    WriteConsoleA(hStdOut, CMD_CLEAR_LINE.data(), static_cast<DWORD>(CMD_CLEAR_LINE.length()), &written, NULL);
+    WriteConsoleA(hStdOut, text.getString(), static_cast<DWORD>(text.getLength()), &written, NULL);
+}
+
 Console::Coord Console::_osGetCursorPosition(void) const
 {
     Lock lock(mLock);

@@ -708,7 +708,7 @@ inline typename TEHashMap<KEY, VALUE>::MAPPOS TEHashMap<KEY, VALUE>::removePosit
     out_Key         = curPos->first;
     out_Value       = curPos->second;
 
-    return mValueList.erase(++curPos);
+    return mValueList.erase(curPos);
 }
 
 template < typename KEY, typename VALUE >

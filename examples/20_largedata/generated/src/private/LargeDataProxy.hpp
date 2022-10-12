@@ -7,7 +7,7 @@
 /************************************************************************
  * (c) copyright    2022
  *
- * Generated at     22.09.2022  23:42:15 GMT+02:00
+ * Generated at     07.10.2022  01:35:30 GMT+02:00
  *                  Create by AREG SDK code generator tool from source LargeData.
  *
  * \file            generated/src/private/LargeDataProxy.hpp
@@ -130,6 +130,14 @@ public:
 /************************************************************************
  * Parameters
  ************************************************************************/
+    /**
+     * \brief   Returns value of imageBlock of response call function.
+     *          The parameter is validated and set when Proxy is getting response call.
+     *          Parameter imageBlock description:
+     *          Acquired image block.
+     **/
+    inline const NELargeData::ImageBlock & getParamimageBlock( void ) const;
+
 /************************************************************************
  * Requests
  ************************************************************************/
@@ -270,6 +278,12 @@ private:
 /************************************************************************
  * Parameter members
  ************************************************************************/
+    /**
+     * \brief   imageBlock parameter value.
+     *          Acquired image block.
+     **/
+    NELargeData::ImageBlock mParamimageBlock;
+
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
 //////////////////////////////////////////////////////////////////////////
@@ -351,6 +365,15 @@ inline void LargeDataProxy::clearAllNotifications( IENotificationEventConsumer &
 inline LargeDataProxy & LargeDataProxy::self( void )
 {
     return (*this);
+}
+
+/************************************************************************
+ * Inline parameters
+ ************************************************************************/
+
+inline const NELargeData::ImageBlock & LargeDataProxy::getParamimageBlock( void ) const
+{
+    return mParamimageBlock;
 }
 
 #endif   // GENERATED_SRC_PRIVATE_LARGEDATAPROXY_HPP

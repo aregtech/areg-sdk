@@ -5,9 +5,20 @@
 This service will demonstrate the TCP/IP data rate by sending 
 image data to connected clients.</Description>
     </Overview>
+    <DataTypeList>
+        <DataType ID="42" Name="ImageBlock" Type="Imported">
+        <Namespace>NELargeData</Namespace>
+        <Location>common/NELargeData.hpp</Location>
+        </DataType>
+    </DataTypeList>
     <MethodList>
-        <Method ID="40" MethodType="broadcast" Name="WriteImageBlock">
+        <Method ID="40" MethodType="broadcast" Name="ImageBlockAcquired">
             <Description>Called to notify all connected clients that new image data is available.</Description>
+            <ParamList>
+                <Parameter DataType="NELargeData::ImageBlock" ID="43" Name="imageBlock">
+                    <Description>Acquired image block.</Description>
+                </Parameter>
+            </ParamList>
         </Method>
         <Method ID="41" MethodType="broadcast" Name="ServiceStopping">
             <Description>Called to notify all clients that service is shutting down.</Description>
