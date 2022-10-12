@@ -8,10 +8,10 @@ function(setOpt item)
 
 	# Adding compile options to target in respect to ${AREG_BINARY}
 	if(AREG_BINARY MATCHES shared)
-		target_compile_definitions(${item} PRIVATE IMP_AREG_DLL=1)
+		target_compile_definitions(${item} PRIVATE IMP_AREG_DLL)
 		target_compile_options(${item} PRIVATE ${CompileOptShared})
 	else()
-		target_compile_definitions(${item} PRIVATE IMP_AREG_LIB=1)
+		target_compile_definitions(${item} PRIVATE IMP_AREG_LIB)
 		target_compile_options(${item} PRIVATE ${CompileOptStatic})
 	endif()
 

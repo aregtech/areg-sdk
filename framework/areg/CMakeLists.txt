@@ -14,9 +14,9 @@ include("${areg_BASE}/persist/private/CMakeLists.txt")
 include("${areg_BASE}/trace/private/CMakeLists.txt")
 
 if(AREG_BINARY STREQUAL "shared")
-    set(areg_CXXFLAGS += "${areg_CXXFLAGS} -fPIC -D_EXP_AREG_DLL=1 D_USRDLL")
+    set(areg_CXXFLAGS "${areg_CXXFLAGS} -fPIC -DEXP_AREG_DLL D_USRDLL")
 else()
-    set(areg_CXXFLAGS += "${areg_CXXFLAGS} -D_EXP_AREG_LIB=1")
+    set(areg_CXXFLAGS "${areg_CXXFLAGS} -DEXP_AREG_LIB")
 endif()
 
 set(areg_TARGET_PATH "${areg_OUTPUT_BIN}/${AREG_LIB_PREFIX}/${PROJECT_NAME}/${AREG_LIB_EXT}")
