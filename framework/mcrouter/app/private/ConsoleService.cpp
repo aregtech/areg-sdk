@@ -144,11 +144,7 @@ bool ConsoleService::checkCommand(const String& cmd)
 {
     String command(cmd);
     command.makeLower();
-    if ((command == NEMulticastRouterSettings::QUIT_CH) || (command == NEMulticastRouterSettings::QUIT_STR))
-    {
-        return true; // interrupt, requested quit
-    }
-    else
+    if ((command != NEMulticastRouterSettings::QUIT_CH) && (command != NEMulticastRouterSettings::QUIT_STR))
     {
         Console& console = Console::getInstance();
 
@@ -159,4 +155,6 @@ bool ConsoleService::checkCommand(const String& cmd)
 
         return false;
     }
+
+    return true;
 }

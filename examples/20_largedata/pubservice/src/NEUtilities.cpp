@@ -15,8 +15,6 @@ bool NEUtilities::sOptionData::parseCommand(const String& cmd)
 {
     static constexpr std::string_view   _delimiter{ " " };
 
-    bool result{ false };
-
     Tokenizer tokens(cmd, _delimiter, false);
     const StringArray& list = tokens.getList();
     mFlags = static_cast<uint32_t>(eOptionFlags::CmdNothing);

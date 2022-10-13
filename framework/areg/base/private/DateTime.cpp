@@ -14,7 +14,6 @@
  *
  ************************************************************************/
 #include "areg/base/DateTime.hpp"
-#include "areg/base/IEIOStream.hpp"
 #include "areg/base/NEUtilities.hpp"
 
 #include <time.h>
@@ -166,16 +165,4 @@ String DateTime::formatTime( const std::string_view & formatName /*= DateTime::T
     }
 
     return String(buffer);
-}
-
-AREG_API const IEInStream & operator >> ( const IEInStream & stream, DateTime & input )
-{
-    stream >> input.mDateTime;
-    return stream;
-}
-
-AREG_API IEOutStream & operator << ( IEOutStream & stream, const DateTime & output )
-{
-    stream << output.mDateTime;
-    return stream;
 }

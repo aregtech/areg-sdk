@@ -168,7 +168,7 @@ protected:
      * \param   isConnected Flag, indicating whether client is connected or disconnected.
      *                      When client disconnects, all listeners are removed.
      **/
-    virtual void clientConnected( const ProxyAddress & client, bool isConnected );
+    virtual void clientConnected( const ProxyAddress & client, bool isConnected ) override;
 
 /************************************************************************/
 // IETimerConsumer interface overrides.

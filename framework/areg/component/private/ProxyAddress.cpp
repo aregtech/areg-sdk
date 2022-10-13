@@ -289,7 +289,7 @@ bool ProxyAddress::isValidated(void) const
     return ServiceAddress::isValidated() && (mThreadName.isEmpty() == false) && (mThreadName != ThreadAddress::INVALID_THREAD_ADDRESS.getThreadName());
 }
 
-AREG_API const IEInStream & operator >> ( const IEInStream & stream, ProxyAddress & input )
+AREG_API_IMPL const IEInStream & operator >> ( const IEInStream & stream, ProxyAddress & input )
 {
     ITEM_ID cookie = NEService::COOKIE_LOCAL;
     stream >> static_cast<ServiceAddress &>(input);
@@ -302,7 +302,7 @@ AREG_API const IEInStream & operator >> ( const IEInStream & stream, ProxyAddres
     return stream;
 }
 
-AREG_API IEOutStream & operator << ( IEOutStream & stream, const ProxyAddress & output)
+AREG_API_IMPL IEOutStream & operator << ( IEOutStream & stream, const ProxyAddress & output)
 {
     stream << static_cast<const ServiceAddress &>(output);
     stream << output.mThreadName;

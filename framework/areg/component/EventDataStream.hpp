@@ -138,13 +138,13 @@ public:
      * \param	stream	The data streaming object to read data
      * \param	input	The Event Data Stream Buffer object to write data
      **/
-    friend AREG_API const IEInStream & operator >> ( const IEInStream & stream, EventDataStream & input );
+    friend inline const IEInStream & operator >> ( const IEInStream & stream, EventDataStream & input );
     /**
      * \brief	Friend global operator declaration to write data to streaming object
      * \param	stream	The data streaming object to write data
      * \param	output	The Event Data Stream Buffer object containing data
      **/
-    friend AREG_API IEOutStream & operator << ( IEOutStream & stream, const EventDataStream & output );
+    friend inline IEOutStream & operator << ( IEOutStream & stream, const EventDataStream & output );
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -346,6 +346,23 @@ inline const IEInStream & EventDataStream::getStreamForRead( void ) const
 inline IEOutStream & EventDataStream::getStreamForWrite( void )
 {
     return static_cast<IEOutStream &>(*this);
+}
+
+inline const IEInStream & operator >> ( const IEInStream & stream, EventDataStream & input )
+{
+    stream >> input.mEventDataType;
+    stream >> input.mBufferName;
+    stream >> input.mDataBuffer;
+    return stream;
+}
+
+inline IEOutStream & operator << ( IEOutStream & stream, const EventDataStream & output )
+{
+    ASSERT(output.mEventDataType != EventDataStream::eEventData::EventDataInternal);
+    stream << EventDataStream::eEventData::EventDataExternal;
+    stream << output.mBufferName;
+    stream << output.mDataBuffer;
+    return stream;
 }
 
 #endif  // AREG_COMPONENT_EVENTDATASTREAM_HPP

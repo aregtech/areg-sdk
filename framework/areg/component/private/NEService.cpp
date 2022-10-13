@@ -241,9 +241,9 @@ unsigned int NEService::ProxyData::getResponseId( unsigned int requestId ) const
             );
 }
 
-AREG_API const Version NEService::EmptyServiceVersion (1, 0, 0);
+AREG_API_IMPL const Version NEService::EmptyServiceVersion (1, 0, 0);
 
-AREG_API NEService::SInterfaceData & NEService::getEmptyInterface(void)
+AREG_API_IMPL NEService::SInterfaceData & NEService::getEmptyInterface(void)
 {
     /**
      * \brief   System Service Interface data

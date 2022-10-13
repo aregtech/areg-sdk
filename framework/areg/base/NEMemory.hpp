@@ -277,7 +277,7 @@ namespace NEMemory
      *
      * \see     ThreadLocalStorage::GetStorageItem()
      **/
-    extern AREG_API const  NEMemory::uAlign InvalidElement;
+    constexpr  NEMemory::uAlign InvalidElement{{0}};
 
     /**
      * \brief   Compares 2 NEMemory::uAlign elements, returns true if they are equal

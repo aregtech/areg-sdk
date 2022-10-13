@@ -165,12 +165,12 @@ namespace NEMath
          *          taken from given Large Number source.
          * \param   src     The source of Large Number to take high and low 32-bit values.
          **/
-        NEMath::S_LargeInteger & operator = ( const NEMath::S_LargeInteger & src );
+        inline NEMath::S_LargeInteger & operator = ( const NEMath::S_LargeInteger & src );
         /**
          * \brief   Move operator, assigns high and low 32-bit values from given source.
          * \param   src     The source of Large Number to take high and low 32-bit values.
          **/
-        NEMath::S_LargeInteger & operator = ( NEMath::S_LargeInteger && src ) noexcept;
+        inline NEMath::S_LargeInteger & operator = ( NEMath::S_LargeInteger && src ) noexcept;
         /**
          * \brief   Assigning operator, assigns high and low 32-bit values
          *          taken from given 64-bit integer source.
@@ -305,21 +305,21 @@ namespace NEMath
      * \param	lo	    Low bits to set
      * \return	
      **/
-    AREG_API void setBits( sLargeInteger & out_num, unsigned int hi, unsigned int lo);
+    inline void setBits( sLargeInteger & out_num, unsigned int hi, unsigned int lo);
 
     /**
      * \brief	Returns High Bits value of Large Number
      * \param	num	    Large Number structure
      * \return	Returns High Bits value of Large Number
      **/
-    AREG_API unsigned int getHighBits(const sLargeInteger & num);
+    inline unsigned int getHighBits(const sLargeInteger & num);
 
     /**
      * \brief	Returns Low Bits value of Large Number
      * \param	num	    Large Number structure
      * \return	Returns Low Bits value of Large Number
      **/
-    AREG_API unsigned int getLowBits(const sLargeInteger & num);
+    inline unsigned int getLowBits(const sLargeInteger & num);
 
 /************************************************************************/
 // NEMath namespace utility functions, check-sum operations
@@ -495,6 +495,22 @@ inline char NEMath::getChar(NEMath::eDigitSign sign)
     }
 }
 
+inline void NEMath::setBits( sLargeInteger &num, unsigned int hi, unsigned int lo )
+{
+    num.hiBits = hi;
+    num.loBits = lo;
+}
+
+inline unsigned int NEMath::getHighBits( const sLargeInteger &num )
+{
+    return (num.hiBits);
+}
+
+inline unsigned int NEMath::getLowBits( const sLargeInteger &num )
+{
+    return (num.loBits);
+}
+
 /************************************************************************/
 // NEMath::sLargeInteger inline functions implementation
 /************************************************************************/
@@ -592,6 +608,22 @@ inline bool NEMath::S_LargeInteger::operator != (const NEMath::S_LargeInteger& o
 inline bool NEMath::S_LargeInteger::operator != (uint64_t other) const
 {
     return ( static_cast<uint64_t>(*this) != other );
+}
+
+inline NEMath::S_LargeInteger & NEMath::S_LargeInteger::operator =  ( const NEMath::S_LargeInteger & src )
+{
+    hiBits  = src.hiBits;
+    loBits  = src.loBits;
+
+    return (*this);
+}
+
+inline NEMath::S_LargeInteger & NEMath::S_LargeInteger::operator =  ( NEMath::S_LargeInteger && src ) noexcept
+{
+    hiBits  = src.hiBits;
+    loBits  = src.loBits;
+
+    return (*this);
 }
 
 /************************************************************************/

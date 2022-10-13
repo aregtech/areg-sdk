@@ -219,12 +219,12 @@ namespace NEService
      * \brief   NEService::SEQUENCE_NUMBER_NOTIFY
      *          Sequence number predefining notification message ID
      **/
-    const unsigned int  SEQUENCE_NUMBER_NOTIFY  = static_cast<unsigned int>(0);    /*0x00000000*/
+    constexpr unsigned int  SEQUENCE_NUMBER_NOTIFY  { static_cast<unsigned int>(0) };    /*0x00000000*/
     /**
      * \brief   NEService::SEQUENCE_NUMBER_ANY
      *          Any sequence number, used in messages. "Any sequence number" used to find any listener object with same message ID.
      **/
-    const unsigned int  SEQUENCE_NUMBER_ANY     = static_cast<unsigned int>(~0);    /*0xFFFFFFFF*/
+    constexpr unsigned int  SEQUENCE_NUMBER_ANY     { static_cast<unsigned int>(~0) };    /*0xFFFFFFFF*/
 
     /**
      * \brief   NEService::eCookie
@@ -243,42 +243,42 @@ namespace NEService
      * \brief   NEService::COOKIE_UNKNOWN
      *          Unknown cookie
      **/
-    const ITEM_ID   COOKIE_UNKNOWN      = static_cast<ITEM_ID>(NEService::eCookies::CookieInvalid);
+    constexpr ITEM_ID   COOKIE_UNKNOWN      { static_cast<ITEM_ID>(NEService::eCookies::CookieInvalid) };
     /**
      * \brief   NEService::COOKIE_LOCAL
      *          The indication of local service.
      **/
-    const ITEM_ID   COOKIE_LOCAL        = static_cast<ITEM_ID>(NEService::eCookies::CookieLocal);
+    constexpr ITEM_ID   COOKIE_LOCAL        { static_cast<ITEM_ID>(NEService::eCookies::CookieLocal) };
     /**
      * \brief   NEService::COOKIE_ROUTER
      *          Indicates Router cookie
      **/
-    const ITEM_ID   COOKIE_ROUTER       = static_cast<ITEM_ID>(NEService::eCookies::CookieRouter);
+    constexpr ITEM_ID   COOKIE_ROUTER       { static_cast<ITEM_ID>(NEService::eCookies::CookieRouter) };
     /**
      * \brief   NEService::COOKIE_ANY
      *          Indicates any valid cookie
      **/
-    const ITEM_ID   COOKIE_ANY          = static_cast<ITEM_ID>(NEService::eCookies::CookieAny);
+    constexpr ITEM_ID   COOKIE_ANY          { static_cast<ITEM_ID>(NEService::eCookies::CookieAny) };
     /**
      * \brief   NEService::TARGET_UNKNOWN
      *          The unknown target ID
      **/
-    const ITEM_ID   TARGET_UNKNOWN      = static_cast<ITEM_ID>(NEService::eCookies::CookieInvalid);
+    constexpr ITEM_ID   TARGET_UNKNOWN      { static_cast<ITEM_ID>(NEService::eCookies::CookieInvalid) };
     /**
      * \brief   NEService::TARGET_LOCAL
      *          The local target ID
      **/
-    const ITEM_ID   TARGET_LOCAL        = static_cast<ITEM_ID>(NEService::eCookies::CookieLocal);
+    constexpr ITEM_ID   TARGET_LOCAL        { static_cast<ITEM_ID>(NEService::eCookies::CookieLocal) };
     /**
      * \brief   NEService::SOURCE_UNKNOWN
      *          The unknown source ID
      **/
-    const ITEM_ID   SOURCE_UNKNOWN      = static_cast<ITEM_ID>(NEService::eCookies::CookieInvalid);
+    constexpr ITEM_ID   SOURCE_UNKNOWN      { static_cast<ITEM_ID>(NEService::eCookies::CookieInvalid) };
     /**
      * \brief   NEService::SOURCE_UNKNOWN
      *          The unknown source ID
      **/
-    const ITEM_ID   SOURCE_LOCAL        = static_cast<ITEM_ID>(NEService::eCookies::CookieLocal);
+    constexpr ITEM_ID   SOURCE_LOCAL        { static_cast<ITEM_ID>(NEService::eCookies::CookieLocal) };
 
     /**
      * \brief   NEService::eServiceCalls
@@ -296,68 +296,68 @@ namespace NEService
     /**
      * \brief   Predefined range of function message IDs
      **/
-    const unsigned int  FUNC_RANGE              = static_cast<unsigned int>(4095);  /*0x0FFF*/
+    constexpr unsigned int  FUNC_RANGE          { static_cast<unsigned int>(4095) };  /*0x0FFF*/
 
     /**
      * \brief   The first ID of valid service interface function call
      **/
-    const unsigned int  SERVICE_FUNCTION        = static_cast<uint32_t>(eServiceCalls::ServiceCallRequest);    /*0x1000*/
+    constexpr unsigned int  SERVICE_FUNCTION    { static_cast<uint32_t>(eServiceCalls::ServiceCallRequest) };    /*0x1000*/
 
     /**
      * \brief   NEService::REQUEST_ID_FIRST
      *          The first ID in request call.
      **/
-    constexpr unsigned int  REQUEST_ID_FIRST    = static_cast<uint32_t>(eServiceCalls::ServiceCallRequest);
+    constexpr unsigned int  REQUEST_ID_FIRST    { static_cast<uint32_t>(eServiceCalls::ServiceCallRequest) };
     /**
      * \brief   NEService::REQUEST_ID_LAST
      *          The last ID in request call.
      **/
-    constexpr unsigned int  REQUEST_ID_LAST     = REQUEST_ID_FIRST + FUNC_RANGE;
+    constexpr unsigned int  REQUEST_ID_LAST     { REQUEST_ID_FIRST + FUNC_RANGE };
 
     /**
      * \brief   NEService::RESPONSE_ID_FIRST
      *          The first ID in response call.
      **/
-    constexpr unsigned int  RESPONSE_ID_FIRST   = static_cast<uint32_t>(eServiceCalls::ServiceCallResponse);
+    constexpr unsigned int  RESPONSE_ID_FIRST   { static_cast<uint32_t>(eServiceCalls::ServiceCallResponse) };
     /**
      * \brief   NEService::RESPONSE_ID_LAST
      *          The last ID in response call.
      **/
-    constexpr unsigned int  RESPONSE_ID_LAST    = RESPONSE_ID_FIRST + FUNC_RANGE;
+    constexpr unsigned int  RESPONSE_ID_LAST    { RESPONSE_ID_FIRST + FUNC_RANGE };
 
     /**
      * \brief   NEService::ATTRIBUTE_ID_FIRST
      *          The first ID in attribute call.
      **/
-    constexpr unsigned int  ATTRIBUTE_ID_FIRST  = static_cast<uint32_t>(eServiceCalls::ServiceCallAttribute);
+    constexpr unsigned int  ATTRIBUTE_ID_FIRST  { static_cast<uint32_t>(eServiceCalls::ServiceCallAttribute) };
     /**
      * \brief   NEService::ATTRIBUTE_ID_LAST
      *          The last ID in attribute call.
      **/
-    constexpr unsigned int  ATTRIBUTE_ID_LAST   = ATTRIBUTE_ID_FIRST + FUNC_RANGE;
+    constexpr unsigned int  ATTRIBUTE_ID_LAST   { ATTRIBUTE_ID_FIRST + FUNC_RANGE };
 
     /**
      * \brief   NEService::SERVICE_ID_FIRST
      *          The last ID in service call.
      **/
-    constexpr unsigned int  SERVICE_ID_FIRST    = static_cast<uint32_t>(NEService::eServiceCalls::ServiceCallRegister);
+    constexpr unsigned int  SERVICE_ID_FIRST    { static_cast<uint32_t>(NEService::eServiceCalls::ServiceCallRegister) };
     /**
      * \brief   NEService::SERVICE_ID_LAST
      *          The last ID in service call.
      **/
-    constexpr unsigned int  SERVICE_ID_LAST     = SERVICE_ID_FIRST + FUNC_RANGE;
+    constexpr unsigned int  SERVICE_ID_LAST     { SERVICE_ID_FIRST + FUNC_RANGE };
 
     /**
      * \brief   NEService::RESPONSE_ID_NONE
      *          Constant no response. Used to indicate that the request has no response.
      **/
-    constexpr unsigned int  RESPONSE_ID_NONE    = static_cast<uint32_t>(eServiceCalls::ServiceCallNoFunction);
+    constexpr unsigned int  RESPONSE_ID_NONE    { static_cast<uint32_t>(eServiceCalls::ServiceCallNoFunction) };
 
     /**
      * \brief   NEService::INVALID_MESSAGE_ID
      *          The invalid message ID
      **/
-    constexpr unsigned int  INVALID_MESSAGE_ID  = static_cast<unsigned int>(~0);    /*0xFFFFFFFF*/
+    constexpr unsigned int  INVALID_MESSAGE_ID  { static_cast<unsigned int>(~0) };    /*0xFFFFFFFF*/
 
     /**
      * \brief   Predefined range of function calls

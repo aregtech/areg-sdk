@@ -83,7 +83,7 @@ SharedBuffer::SharedBuffer( const SharedBuffer & src )
     , mBlockSize        (src.mBlockSize)
 {
     mByteBuffer = src.mByteBuffer;
-    BufferPosition::setPosition(src.getPosition(), IECursorPosition::eCursorPosition::PositionBegin);
+    BufferPosition::setPosition(0, IECursorPosition::eCursorPosition::PositionBegin);
 }
 
 SharedBuffer::SharedBuffer( SharedBuffer && src ) noexcept
@@ -93,7 +93,7 @@ SharedBuffer::SharedBuffer( SharedBuffer && src ) noexcept
     , mBlockSize        ( src.mBlockSize )
 {
     mByteBuffer = src.mByteBuffer;
-    BufferPosition::setPosition(src.getPosition(), IECursorPosition::eCursorPosition::PositionBegin);
+    BufferPosition::setPosition(0, IECursorPosition::eCursorPosition::PositionBegin);
     src.invalidate();
 }
 
@@ -108,7 +108,7 @@ SharedBuffer & SharedBuffer::operator = ( const SharedBuffer &src )
         if (src.isValid())
         {
             mByteBuffer = src.mByteBuffer;
-            BufferPosition::setPosition(src.getPosition(), IECursorPosition::eCursorPosition::PositionBegin);
+            BufferPosition::setPosition(0, IECursorPosition::eCursorPosition::PositionBegin);
         }
         else
         {
@@ -126,7 +126,7 @@ SharedBuffer & SharedBuffer::operator = ( SharedBuffer && src ) noexcept
         if ( src.isValid( ) )
         {
             mByteBuffer = src.mByteBuffer;
-            BufferPosition::setPosition( src.getPosition( ), IECursorPosition::eCursorPosition::PositionBegin );
+            BufferPosition::setPosition( 0, IECursorPosition::eCursorPosition::PositionBegin );
             src.invalidate();
         }
         else

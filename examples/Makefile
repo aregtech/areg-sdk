@@ -25,6 +25,7 @@ include $(AREG_EXAMPLES)/15_pubworker/Makefile
 include $(AREG_EXAMPLES)/16_pubfsm/Makefile
 include $(AREG_EXAMPLES)/18_locwatchdog/Makefile
 include $(AREG_EXAMPLES)/19_pubwatchdog/Makefile
+include $(AREG_EXAMPLES)/20_largedata/Makefile
 
 examples: 00_helloservice \
     01_hello        02_buffer       03_file         04_trace        05_timer        \

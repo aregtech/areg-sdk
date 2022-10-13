@@ -31,47 +31,47 @@
 /**
  * \brief   Predefined invalid Service Entry.
  **/
-AREG_API const NERegistry::ServiceEntry           NERegistry::INVALID_SERVICE_ENTRY;
+AREG_API_IMPL const NERegistry::ServiceEntry           NERegistry::INVALID_SERVICE_ENTRY;
 /**
  * \brief   Predefined invalid Service List.
  **/
-AREG_API const NERegistry::ServiceList            NERegistry::INVALID_SERVICE_LIST;
+AREG_API_IMPL const NERegistry::ServiceList            NERegistry::INVALID_SERVICE_LIST;
 /**
  * \brief   Predefined invalid Worker Thread Entry.
  **/
-AREG_API const NERegistry::WorkerThreadEntry      NERegistry::INVALID_WORKER_THREAD_ENTRY;
+AREG_API_IMPL const NERegistry::WorkerThreadEntry      NERegistry::INVALID_WORKER_THREAD_ENTRY;
 /**
  * \brief   Predefined invalid Worker Thread List.
  **/
-AREG_API const NERegistry::WorkerThreadList       NERegistry::INVALID_WORKER_THREAD_LIST;
+AREG_API_IMPL const NERegistry::WorkerThreadList       NERegistry::INVALID_WORKER_THREAD_LIST;
 /**
  * \brief   Predefined invalid service dependency entry.
  **/
-AREG_API const NERegistry::DependencyEntry        NERegistry::INVALID_DEPENDENCY_ENTRY;
+AREG_API_IMPL const NERegistry::DependencyEntry        NERegistry::INVALID_DEPENDENCY_ENTRY;
 /**
  * \brief   Predefined invalid service dependency entry.
  **/
-AREG_API const NERegistry::DependencyList         NERegistry::INVALID_DEPENDENCY_LIST;
+AREG_API_IMPL const NERegistry::DependencyList         NERegistry::INVALID_DEPENDENCY_LIST;
 /**
  * \brief   Predefined Invalid Component Entry.
  **/
-AREG_API const NERegistry::ComponentEntry         NERegistry::INVALID_COMPONENT_ENTRY;
+AREG_API_IMPL const NERegistry::ComponentEntry         NERegistry::INVALID_COMPONENT_ENTRY;
 /**
  * \brief   Predefined invalid Component List.
  **/
-AREG_API const NERegistry::ComponentList          NERegistry::INVALID_COMPONENT_LIST;
+AREG_API_IMPL const NERegistry::ComponentList          NERegistry::INVALID_COMPONENT_LIST;
 /**
  * \brief   Predefined invalid Thread Entry.
  **/
-AREG_API const NERegistry::ComponentThreadEntry   NERegistry::INVALID_THREAD_ENTRY;
+AREG_API_IMPL const NERegistry::ComponentThreadEntry   NERegistry::INVALID_THREAD_ENTRY;
 /**
  * \brief   Predefined invalid Thread List.
  **/
-AREG_API const NERegistry::ComponentThreadList    NERegistry::INVALID_THREAD_LIST;
+AREG_API_IMPL const NERegistry::ComponentThreadList    NERegistry::INVALID_THREAD_LIST;
 /**
  * \brief   Predefined invalid Model.
  **/
-AREG_API const NERegistry::Model                  NERegistry::INVALID_MODEL;
+AREG_API_IMPL const NERegistry::Model                  NERegistry::INVALID_MODEL;
 
 //////////////////////////////////////////////////////////////////////////
 // class NERegistry::ServiceEntry implementation

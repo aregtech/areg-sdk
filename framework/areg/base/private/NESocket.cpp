@@ -45,19 +45,9 @@ DEF_TRACE_SCOPE(areg_base_NESocket_serverAcceptConnection);
 //////////////////////////////////////////////////////////////////////////
 
 /**
- * \brief   Constant, identifying invalid socket descriptor.
- **/
-AREG_API const SOCKETHANDLE         NESocket::InvalidSocketHandle      = static_cast<SOCKETHANDLE>(~0);
-
-/**
- * \brief   Invalid connection socket descriptor. Used to indicate failure on server socket.
- **/
-AREG_API const SOCKETHANDLE         NESocket::FailedSocketHandle = static_cast<SOCKETHANDLE>(~1);
-
-/**
  * \brief   Constant, identifying maximum number of listeners in the queue. Used by server socket when set to listen connection.
  **/
-AREG_API const int                  NESocket::MAXIMUM_LISTEN_QUEUE_SIZE = SOMAXCONN;
+AREG_API_IMPL const int NESocket::MAXIMUM_LISTEN_QUEUE_SIZE = SOMAXCONN;
 
 //////////////////////////////////////////////////////////////////////////
 // NESocket::SocketAddress class implementation
@@ -272,17 +262,17 @@ bool NESocket::SocketAddress::operator != ( const NESocket::SocketAddress & othe
 // NESocket namespace functions implementation
 //////////////////////////////////////////////////////////////////////////
 
-AREG_API bool NESocket::isSocketHandleValid(SOCKETHANDLE hSocket)
+AREG_API_IMPL bool NESocket::isSocketHandleValid(SOCKETHANDLE hSocket)
 {
     return (hSocket != NESocket::InvalidSocketHandle);
 }
 
-AREG_API SOCKETHANDLE NESocket::socketCreate( void )
+AREG_API_IMPL SOCKETHANDLE NESocket::socketCreate( void )
 {
     return static_cast<SOCKETHANDLE>( socket(AF_INET, SOCK_STREAM, IPPROTO_TCP) );
 }
 
-AREG_API int NESocket::getMaxSendSize( SOCKETHANDLE hSocket )
+AREG_API_IMPL int NESocket::getMaxSendSize( SOCKETHANDLE hSocket )
 {
     long maxData= NESocket::DEFAULT_SEGMENT_SIZE;
 
@@ -300,7 +290,7 @@ AREG_API int NESocket::getMaxSendSize( SOCKETHANDLE hSocket )
     return static_cast<int>(maxData);
 }
 
-AREG_API int NESocket::getMaxReceiveSize( SOCKETHANDLE hSocket )
+AREG_API_IMPL int NESocket::getMaxReceiveSize( SOCKETHANDLE hSocket )
 {
     long maxData= NESocket::DEFAULT_SEGMENT_SIZE;
 
@@ -318,7 +308,7 @@ AREG_API int NESocket::getMaxReceiveSize( SOCKETHANDLE hSocket )
     return static_cast<int>(maxData);
 }
 
-AREG_API SOCKETHANDLE NESocket::clientSocketConnect(const std::string_view & hostName, unsigned short portNr, NESocket::SocketAddress * out_socketAddr /*= nullptr*/)
+AREG_API_IMPL SOCKETHANDLE NESocket::clientSocketConnect(const std::string_view & hostName, unsigned short portNr, NESocket::SocketAddress * out_socketAddr /*= nullptr*/)
 {
     TRACE_SCOPE(areg_base_NESocket_clientSocketConnect);
 
@@ -345,7 +335,7 @@ AREG_API SOCKETHANDLE NESocket::clientSocketConnect(const std::string_view & hos
     return result;
 }
 
-AREG_API SOCKETHANDLE NESocket::clientSocketConnect(const SocketAddress & peerAddr)
+AREG_API_IMPL SOCKETHANDLE NESocket::clientSocketConnect(const SocketAddress & peerAddr)
 {
     TRACE_SCOPE(areg_base_NESocket_clientSocketConnect);
 
@@ -391,7 +381,7 @@ AREG_API SOCKETHANDLE NESocket::clientSocketConnect(const SocketAddress & peerAd
     return result;
 }
 
-AREG_API SOCKETHANDLE NESocket::serverSocketConnect(const std::string_view & hostName, unsigned short portNr, SocketAddress * out_socketAddr /*= nullptr */)
+AREG_API_IMPL SOCKETHANDLE NESocket::serverSocketConnect(const std::string_view & hostName, unsigned short portNr, SocketAddress * out_socketAddr /*= nullptr */)
 {
     TRACE_SCOPE(areg_base_NESocket_serverSocketConnect);
 
@@ -419,7 +409,7 @@ AREG_API SOCKETHANDLE NESocket::serverSocketConnect(const std::string_view & hos
     return result;
 }
 
-AREG_API SOCKETHANDLE NESocket::serverSocketConnect(const SocketAddress & peerAddr)
+AREG_API_IMPL SOCKETHANDLE NESocket::serverSocketConnect(const SocketAddress & peerAddr)
 {
     TRACE_SCOPE(areg_base_NESocket_serverSocketConnect);
 
@@ -468,12 +458,12 @@ AREG_API SOCKETHANDLE NESocket::serverSocketConnect(const SocketAddress & peerAd
     return result;
 }
 
-AREG_API bool NESocket::serverListenConnection(SOCKETHANDLE serverSocket, int maxQueueSize /*= NESocket::MAXIMUM_LISTEN_QUEUE_SIZE*/)
+AREG_API_IMPL bool NESocket::serverListenConnection(SOCKETHANDLE serverSocket, int maxQueueSize /*= NESocket::MAXIMUM_LISTEN_QUEUE_SIZE*/)
 {
     return ( (serverSocket != NESocket::InvalidSocketHandle) && (RETURNED_OK == listen(serverSocket, maxQueueSize)) );
 }
 
-AREG_API SOCKETHANDLE NESocket::serverAcceptConnection(SOCKETHANDLE serverSocket, const SOCKETHANDLE * masterList, int entriesCount, NESocket::SocketAddress * out_socketAddr /*= nullptr*/)
+AREG_API_IMPL SOCKETHANDLE NESocket::serverAcceptConnection(SOCKETHANDLE serverSocket, const SOCKETHANDLE * masterList, int entriesCount, NESocket::SocketAddress * out_socketAddr /*= nullptr*/)
 {
     TRACE_SCOPE(areg_base_NESocket_serverAcceptConnection);
     TRACE_DBG("Checking server socket event, server socket handle [ %u ]", static_cast<unsigned int>(serverSocket));
@@ -588,7 +578,7 @@ AREG_API SOCKETHANDLE NESocket::serverAcceptConnection(SOCKETHANDLE serverSocket
     return result;
 }
 
-AREG_API bool NESocket::isSocketAlive(SOCKETHANDLE hSocket)
+AREG_API_IMPL bool NESocket::isSocketAlive(SOCKETHANDLE hSocket)
 {
     bool result = false;
 
@@ -604,7 +594,7 @@ AREG_API bool NESocket::isSocketAlive(SOCKETHANDLE hSocket)
     return result;
 }
 
-AREG_API int NESocket::pendingRead(SOCKETHANDLE hSocket)
+AREG_API_IMPL int NESocket::pendingRead(SOCKETHANDLE hSocket)
 {
 #ifdef _WINDOWS
     unsigned long result = 0;

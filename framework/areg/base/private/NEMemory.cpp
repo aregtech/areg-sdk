@@ -16,5 +16,3 @@
  ************************************************************************/
 
 #include "areg/base/NEMemory.hpp"
-
-AREG_API const  NEMemory::uAlign NEMemory::InvalidElement{ {0} };

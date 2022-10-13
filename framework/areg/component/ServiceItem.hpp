@@ -18,6 +18,8 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
+
+#include "areg/base/IEIOStream.hpp"
 #include "areg/base/String.hpp"
 #include "areg/base/Version.hpp"
 #include "areg/base/NEUtilities.hpp"
@@ -163,7 +165,7 @@ public:
      * \param   stream  The streaming object to read out data
      * \param   input   The Service Item to initialize data from stream.
      **/
-    friend AREG_API const IEInStream & operator >> ( const IEInStream & stream, ServiceItem & input);
+    friend inline const IEInStream & operator >> ( const IEInStream & stream, ServiceItem & input);
 
     /**
      * \brief   Streaming operator.
@@ -171,7 +173,7 @@ public:
      * \param   stream  The streaming object to write data
      * \param   output  The Service Item containing data for streaming
      **/
-    friend AREG_API IEOutStream & operator << ( IEOutStream & stream, const ServiceItem & output );
+    friend inline IEOutStream & operator << ( IEOutStream & stream, const ServiceItem & output );
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes
@@ -393,6 +395,25 @@ inline ServiceItem::operator unsigned int ( void ) const
 inline bool ServiceItem::isServiceCompatible( const ServiceItem & other ) const
 {
     return ((mMagicNum == other.mMagicNum) && mServiceVersion.isCompatible(other.mServiceVersion));
+}
+
+inline const IEInStream & operator >> ( const IEInStream & stream, ServiceItem & input )
+{
+    stream >> input.mServiceName;
+    stream >> input.mServiceVersion;
+    stream >> input.mServiceType;
+    
+    input.mMagicNum = ServiceItem::_magicNumber(input);
+
+    return stream;
+}
+
+inline IEOutStream & operator << ( IEOutStream & stream, const ServiceItem & output )
+{
+    stream << output.mServiceName;
+    stream << output.mServiceVersion;
+    stream << output.mServiceType;
+    return stream;
 }
 
 #endif  // AREG_COMPONENT_SERVICEITEM_HPP

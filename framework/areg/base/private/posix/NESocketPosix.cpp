@@ -45,16 +45,16 @@ DEF_TRACE_SCOPE(areg_base_NESocketPosix_remainDataRead);
 // NESocket namespace functions implementation
 //////////////////////////////////////////////////////////////////////////
 
-AREG_API bool NESocket::socketInitialize(void)
+AREG_API_IMPL bool NESocket::socketInitialize(void)
 {
     return true;
 }
 
-AREG_API void NESocket::socketRelease(void)
+AREG_API_IMPL void NESocket::socketRelease(void)
 {
 }
 
-AREG_API void NESocket::socketClose(SOCKETHANDLE hSocket)
+AREG_API_IMPL void NESocket::socketClose(SOCKETHANDLE hSocket)
 {
     TRACE_SCOPE(areg_base_NESocketPosix_socketClose);
 
@@ -71,7 +71,7 @@ AREG_API void NESocket::socketClose(SOCKETHANDLE hSocket)
     }
 }
 
-AREG_API int NESocket::sendData(SOCKETHANDLE hSocket, const unsigned char * dataBuffer, int dataLength, int blockMaxSize /*= -1*/ )
+AREG_API_IMPL int NESocket::sendData(SOCKETHANDLE hSocket, const unsigned char * dataBuffer, int dataLength, int blockMaxSize /*= -1*/ )
 {
     TRACE_SCOPE(areg_base_NESocketPosix_sendData);
 
@@ -130,7 +130,7 @@ AREG_API int NESocket::sendData(SOCKETHANDLE hSocket, const unsigned char * data
     return result;
 }
 
-AREG_API int NESocket::receiveData(SOCKETHANDLE hSocket, unsigned char * dataBuffer, int dataLength, int blockMaxSize /*= -1*/ )
+AREG_API_IMPL int NESocket::receiveData(SOCKETHANDLE hSocket, unsigned char * dataBuffer, int dataLength, int blockMaxSize /*= -1*/ )
 {
     TRACE_SCOPE(areg_base_NESocketPosix_receiveData);
 
@@ -182,17 +182,17 @@ AREG_API int NESocket::receiveData(SOCKETHANDLE hSocket, unsigned char * dataBuf
     return result;
 }
 
-AREG_API bool NESocket::disableSend(SOCKETHANDLE hSocket)
+AREG_API_IMPL bool NESocket::disableSend(SOCKETHANDLE hSocket)
 {
     return ( hSocket != NESocket::InvalidSocketHandle ? RETURNED_OK == shutdown( hSocket, SHUT_WR) : false );
 }
 
-AREG_API bool NESocket::disableReceive(SOCKETHANDLE hSocket)
+AREG_API_IMPL bool NESocket::disableReceive(SOCKETHANDLE hSocket)
 {
     return ( hSocket != NESocket::InvalidSocketHandle ? RETURNED_OK == shutdown(hSocket, SHUT_RD ) : false );
 }
 
-AREG_API unsigned int NESocket::remainDataRead( SOCKETHANDLE hSocket )
+AREG_API_IMPL unsigned int NESocket::remainDataRead( SOCKETHANDLE hSocket )
 {
     TRACE_SCOPE(areg_base_NESocketPosix_remainDataRead);
 

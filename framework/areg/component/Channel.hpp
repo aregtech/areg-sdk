@@ -20,7 +20,9 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
+
 #include "areg/component/NEService.hpp"
+#include "areg/base/IEIOStream.hpp"
 
 //////////////////////////////////////////////////////////////////////////
 // Channel class declaration.
@@ -122,14 +124,14 @@ public:
      * \param   stream  The streaming object to read data.
      * \param   input   Connection channel to initialize.
      **/
-    friend AREG_API const IEInStream & operator >> ( const IEInStream & stream, Channel & input );
+    friend inline const IEInStream & operator >> ( const IEInStream & stream, Channel & input );
 
     /**
      * \brief   Streaming operator. Writes connection channel data into stream.
      * \param   stream  The streaming object to write data.
      * \param   output  Connection channel to stream.
      **/
-    friend AREG_API IEOutStream & operator << ( IEOutStream & stream, const Channel & output);
+    friend inline IEOutStream & operator << ( IEOutStream & stream, const Channel & output);
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations
@@ -269,6 +271,22 @@ inline void Channel::invalidate( void )
     mSource = NEService::SOURCE_UNKNOWN;
     mTarget = NEService::TARGET_UNKNOWN;
     mCookie = NEService::COOKIE_UNKNOWN;
+}
+
+inline const IEInStream & operator >> ( const IEInStream & stream, Channel & input )
+{
+    stream >> input.mSource;
+    stream >> input.mTarget;
+    stream >> input.mCookie;
+    return stream;
+}
+
+inline IEOutStream & operator << ( IEOutStream & stream, const Channel & output)
+{
+    stream << output.mSource;
+    stream << output.mTarget;
+    stream << output.mCookie;
+    return stream;
 }
 
 #endif  // AREG_COMPONENT_CHANNEL_HPP

@@ -16,12 +16,12 @@
 
 #include "areg/base/String.hpp"
 
-AREG_API String NERemoteService::getServiceConnectionTypeString(NERemoteService::eServiceConnection connectionType)
+AREG_API_IMPL String NERemoteService::getServiceConnectionTypeString(NERemoteService::eServiceConnection connectionType)
 {
     return String(connectionType == NERemoteService::eServiceConnection::ConnectionTcpip ? NERemoteService::STR_CONNECTION_TYPE_TCPIP : String::EmptyString);
 }
 
-AREG_API NERemoteService::eServiceConnection NERemoteService::getServiceConnectionType(const String & connectionType, bool caseSensitive /* = true */ )
+AREG_API_IMPL NERemoteService::eServiceConnection NERemoteService::getServiceConnectionType(const String & connectionType, bool caseSensitive /* = true */ )
 {
     if (connectionType.compare(NERemoteService::STR_CONNECTION_TYPE_TCPIP, caseSensitive) == NEMath::eCompare::Equal)
     {

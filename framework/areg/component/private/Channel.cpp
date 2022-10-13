@@ -88,19 +88,3 @@ const Channel & Channel::convFromString(const String & channel)
 
     return (*this);
 }
-
-AREG_API const IEInStream & operator >> ( const IEInStream & stream, Channel & input )
-{
-    stream >> input.mSource;
-    stream >> input.mTarget;
-    stream >> input.mCookie;
-    return stream;
-}
-
-AREG_API IEOutStream & operator << ( IEOutStream & stream, const Channel & output)
-{
-    stream << output.mSource;
-    stream << output.mTarget;
-    stream << output.mCookie;
-    return stream;
-}

@@ -193,18 +193,12 @@ namespace NESocket
      * \brief   NESocket::InvalidSocketHandle
      *          Constant, identifying invalid socket descriptor.
      **/
-    extern AREG_API const SOCKETHANDLE  InvalidSocketHandle         /* = ~0 */; // invalid socket descriptor
+    constexpr const SOCKETHANDLE        InvalidSocketHandle         { static_cast<SOCKETHANDLE>(~0) };
     /**
      * \brief   NESocket::FailedSocketHandle
      *          Invalid connection socket descriptor. Used to indicate failure on server socket.
      **/
-    extern AREG_API const SOCKETHANDLE  FailedSocketHandle          /* = ~1 */; // failed socket descriptor
-    /**
-     * \brief   NESocket::MAXIMUM_LISTEN_QUEUE_SIZE
-     *          Constant, identifying maximum number of listeners in the queue.
-     *          Used by server socket when set to listen connection.
-     **/
-    extern AREG_API const int           MAXIMUM_LISTEN_QUEUE_SIZE   /*= SOMAXCONN*/;
+    constexpr const SOCKETHANDLE        FailedSocketHandle          { static_cast<SOCKETHANDLE>(~1) };
     /**
      * \brief   NESocket::InvalidSocket
      *          Constant, identifying invalid port number
@@ -225,6 +219,13 @@ namespace NESocket
      *          The default size of segment when sends or receives data.
      **/
     constexpr int                       DEFAULT_SEGMENT_SIZE        { 16384 };
+
+    /**
+     * \brief   NESocket::MAXIMUM_LISTEN_QUEUE_SIZE
+     *          Constant, identifying maximum number of listeners in the queue.
+     *          Used by server socket when set to listen connection.
+     **/
+    extern AREG_API const int           MAXIMUM_LISTEN_QUEUE_SIZE   /*= SOMAXCONN*/;
 
 //////////////////////////////////////////////////////////////////////////
 // NESocket namespace functions

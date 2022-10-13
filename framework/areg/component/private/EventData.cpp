@@ -76,19 +76,3 @@ EventData & EventData::operator = ( EventData && src ) noexcept
 
     return (*this);
 }
-
-AREG_API const IEInStream & operator >> ( const IEInStream & stream, EventData & input )
-{
-    stream >> input.mDataType;
-    stream >> input.mData;
-    input.mData.resetCursor();
-    return stream;
-}
-
-AREG_API IEOutStream & operator << ( IEOutStream & stream, const EventData & output )
-{
-    stream << output.mDataType;
-    stream << output.mData;
-    output.mData.resetCursor();
-    return stream;
-}

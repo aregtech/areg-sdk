@@ -20,7 +20,7 @@
 
 #include <string.h>
 
-AREG_API const String& NETrace::convToString( NETrace::eLogPriority prio )
+AREG_API_IMPL const String& NETrace::convToString( NETrace::eLogPriority prio )
 {
     switch ( prio )
     {
@@ -48,7 +48,7 @@ AREG_API const String& NETrace::convToString( NETrace::eLogPriority prio )
     }
 }
 
-AREG_API NETrace::eLogPriority NETrace::convFromString( const String& strPrio )
+AREG_API_IMPL NETrace::eLogPriority NETrace::convFromString( const String& strPrio )
 {
     if ( strPrio.isEmpty() == false )
     {
@@ -193,52 +193,52 @@ NETrace::S_LogMessage & NETrace::S_LogMessage::operator = (const NETrace::S_LogM
     return (*this);
 }
 
-AREG_API bool NETrace::startLogging(const char * fileConfig /*= nullptr */ )
+AREG_API_IMPL bool NETrace::startLogging(const char * fileConfig /*= nullptr */ )
 {
     return TraceManager::startLogging(fileConfig);
 }
 
-AREG_API void NETrace::stopLogging(void)
+AREG_API_IMPL void NETrace::stopLogging(void)
 {
     TraceManager::stopLogging();
 }
 
-AREG_API void NETrace::activateScope(TraceScope & traceScope)
+AREG_API_IMPL void NETrace::activateScope(TraceScope & traceScope)
 {
     TraceManager::activateTraceScope(traceScope);
 }
 
-AREG_API bool NETrace::isStarted( void )
+AREG_API_IMPL bool NETrace::isStarted( void )
 {
     return TraceManager::isLoggingStarted();
 }
 
-AREG_API bool NETrace::isConfigured(void)
+AREG_API_IMPL bool NETrace::isConfigured(void)
 {
     return TraceManager::isLoggingEnabled();
 }
 
-AREG_API bool NETrace::configureLoging(const char * fileConfig)
+AREG_API_IMPL bool NETrace::configureLoging(const char * fileConfig)
 {
     return TraceManager::configureLogging(fileConfig);
 }
 
-AREG_API bool NETrace::isEnabled(void)
+AREG_API_IMPL bool NETrace::isEnabled(void)
 {
     return TraceManager::isLoggingEnabled();
 }
 
-AREG_API const String& NETrace::getConfigFile(void)
+AREG_API_IMPL const String& NETrace::getConfigFile(void)
 {
     return TraceManager::getConfigFile();
 }
 
-AREG_API bool NETrace::forceStartLogging(void)
+AREG_API_IMPL bool NETrace::forceStartLogging(void)
 {
     return TraceManager::forceActivateLogging();
 }
 
-AREG_API bool NETrace::configAndStart(const char * fileConfig /*= nullptr */)
+AREG_API_IMPL bool NETrace::configAndStart(const char * fileConfig /*= nullptr */)
 {
     if (TraceManager::configureLogging(fileConfig))
     {

@@ -210,20 +210,3 @@ unsigned int EventDataStream::getSizeWritable( void ) const
     ASSERT(false);
     return 0;
 }
-
-AREG_API const IEInStream & operator >> ( const IEInStream & stream, EventDataStream & input )
-{
-    stream >> input.mEventDataType;
-    stream >> input.mBufferName;
-    stream >> input.mDataBuffer;
-    return stream;
-}
-
-AREG_API IEOutStream & operator << ( IEOutStream & stream, const EventDataStream & output )
-{
-    ASSERT(output.mEventDataType != EventDataStream::eEventData::EventDataInternal);
-    stream << EventDataStream::eEventData::EventDataExternal;
-    stream << output.mBufferName;
-    stream << output.mDataBuffer;
-    return stream;
-}

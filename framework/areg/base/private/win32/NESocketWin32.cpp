@@ -47,7 +47,7 @@ namespace
 // NESocket namespace functions implementation
 //////////////////////////////////////////////////////////////////////////
 
-AREG_API bool NESocket::socketInitialize(void)
+AREG_API_IMPL bool NESocket::socketInitialize(void)
 {
     bool result = true;
     if ( _instanceCount.fetch_add(1) == 0 )
@@ -66,7 +66,7 @@ AREG_API bool NESocket::socketInitialize(void)
     return result;
 }
 
-AREG_API void NESocket::socketRelease(void)
+AREG_API_IMPL void NESocket::socketRelease(void)
 {
     if ( _instanceCount.fetch_sub(1) == 1 )
     {
@@ -75,7 +75,7 @@ AREG_API void NESocket::socketRelease(void)
     }
 }
 
-AREG_API void NESocket::socketClose(SOCKETHANDLE hSocket)
+AREG_API_IMPL void NESocket::socketClose(SOCKETHANDLE hSocket)
 {
     if ( hSocket != NESocket::InvalidSocketHandle )
     {
@@ -84,7 +84,7 @@ AREG_API void NESocket::socketClose(SOCKETHANDLE hSocket)
     }
 }
 
-AREG_API int NESocket::sendData(SOCKETHANDLE hSocket, const unsigned char * dataBuffer, int dataLength, int blockMaxSize /*= NECommon::DEFAULT_SIZE*/ )
+AREG_API_IMPL int NESocket::sendData(SOCKETHANDLE hSocket, const unsigned char * dataBuffer, int dataLength, int blockMaxSize /*= NECommon::DEFAULT_SIZE*/ )
 {
     int result = -1;
     if ( hSocket != NESocket::InvalidSocketHandle )
@@ -133,7 +133,7 @@ AREG_API int NESocket::sendData(SOCKETHANDLE hSocket, const unsigned char * data
     return result;
 }
 
-AREG_API int NESocket::receiveData(SOCKETHANDLE hSocket, unsigned char * dataBuffer, int dataLength, int blockMaxSize /*= NECommon::DEFAULT_SIZE*/ )
+AREG_API_IMPL int NESocket::receiveData(SOCKETHANDLE hSocket, unsigned char * dataBuffer, int dataLength, int blockMaxSize /*= NECommon::DEFAULT_SIZE*/ )
 {
     int result = -1;
 
@@ -187,17 +187,17 @@ AREG_API int NESocket::receiveData(SOCKETHANDLE hSocket, unsigned char * dataBuf
     return result;
 }
 
-AREG_API bool NESocket::disableSend(SOCKETHANDLE hSocket)
+AREG_API_IMPL bool NESocket::disableSend(SOCKETHANDLE hSocket)
 {
     return ( hSocket != NESocket::InvalidSocketHandle ? RETURNED_OK == shutdown(hSocket, SD_SEND    ) : false );
 }
 
-AREG_API bool NESocket::disableReceive(SOCKETHANDLE hSocket)
+AREG_API_IMPL bool NESocket::disableReceive(SOCKETHANDLE hSocket)
 {
     return ( hSocket != NESocket::InvalidSocketHandle ? RETURNED_OK == shutdown( hSocket, SD_RECEIVE) : false );
 }
 
-AREG_API unsigned int NESocket::remainDataRead( SOCKETHANDLE hSocket )
+AREG_API_IMPL unsigned int NESocket::remainDataRead( SOCKETHANDLE hSocket )
 {
     unsigned int result = 0;
 

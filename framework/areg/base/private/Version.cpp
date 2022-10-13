@@ -16,7 +16,6 @@
 
 #include "areg/base/Version.hpp"
 
-#include "areg/base/IEIOStream.hpp"
 #include "areg/base/NEUtilities.hpp"
 #include "areg/base/NECommon.hpp"
 
@@ -163,32 +162,3 @@ String Version::convToString( void ) const
 //////////////////////////////////////////////////////////////////////////
 // Version friend global operators to make Version object streamable
 //////////////////////////////////////////////////////////////////////////
-
-/**
- * \brief	Streams to input object, i.e. reads data from streaming object to string,
- *          and initialize string data.
- * \param	stream	Streaming object to read string data
- * \param	input	String object to initialize and write string data.
- * \return	Reference to stream object.
- **/
-AREG_API const IEInStream & operator >> (const IEInStream & stream, Version& input)
-{
-    stream >> input.mMajor;
-    stream >> input.mMinor;
-    stream >> input.mPatch;
-    return stream;
-}
-
-/**
- * \brief	Streams from output object, i.e. write data from string to streaming object.
- * \param	stream	Streaming object to write data.
- * \param	output	String object to read data from
- * \return	Reference to stream object.
- **/
-AREG_API IEOutStream & operator << (IEOutStream& stream, const Version& output)
-{
-    stream << output.mMajor;
-    stream << output.mMinor;
-    stream << output.mPatch;
-    return stream;
-}

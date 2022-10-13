@@ -290,7 +290,7 @@ bool StubAddress::isValidated(void) const
     return ServiceAddress::isValidated() && (mThreadName.isEmpty() == false) && (mThreadName != ThreadAddress::INVALID_THREAD_ADDRESS.getThreadName());
 }
 
-AREG_API const IEInStream & operator >> ( const IEInStream & stream, StubAddress & input )
+AREG_API_IMPL const IEInStream & operator >> ( const IEInStream & stream, StubAddress & input )
 {
     ITEM_ID cookie = NEService::COOKIE_LOCAL;
     stream >> static_cast<ServiceAddress &>(input);
@@ -303,7 +303,7 @@ AREG_API const IEInStream & operator >> ( const IEInStream & stream, StubAddress
     return stream;
 }
 
-AREG_API IEOutStream & operator << ( IEOutStream & stream, const StubAddress & output)
+AREG_API_IMPL IEOutStream & operator << ( IEOutStream & stream, const StubAddress & output)
 {
     stream << static_cast<const ServiceAddress &>(output);
     stream << output.mThreadName;

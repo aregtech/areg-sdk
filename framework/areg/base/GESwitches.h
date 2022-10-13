@@ -137,16 +137,20 @@
  **/
 #ifdef EXP_AREG_DLL
    #if (defined(_WINDOWS) || defined(WINDOWS) || defined(_WIN32))
-      #define AREG_API      __declspec(dllexport)
-   #else
-      #define AREG_API      __attribute__((visibility("default")))
+      #define AREG_API        __declspec(dllexport)
+   #elif (__GNUC__ >= 4)
+      #define AREG_API        __attribute__((visibility("default")))
+   #else    // !(__GNUC__ >= 4) 
+      #define AREG_API
    #endif   // (defined(_WINDOWS) || defined(WINDOWS) || defined(_WIN32))
 #endif   // LINK_AREG_DLL
 
 #ifdef IMP_AREG_DLL
    #if (defined(_WINDOWS) || defined(WINDOWS) || defined(_WIN32))
       #define AREG_API       __declspec(dllimport)
-   #else
+   #elif (__GNUC__ >= 4)
+      #define AREG_API     __attribute__((visibility("default")))
+   #else    // !(__GNUC__ >= 4)
       #define AREG_API
    #endif   // (defined(_WINDOWS) || defined(WINDOWS) || defined(_WIN32))
 #endif   // IMP_AREG_DLL
@@ -160,4 +164,10 @@
    #define AREG_API
 #endif  // AREG_API
 
-#endif  // AREG_BASE_GESWITCHES_H
+#if (defined(_WINDOWS) || defined(WINDOWS) || defined(_WIN32))
+      #define AREG_API_IMPL   AREG_API
+#else    // ! ((defined(_WINDOWS) || defined(WINDOWS) || defined(_WIN32)))
+      #define AREG_API_IMPL
+#endif   // (defined(_WINDOWS) || defined(WINDOWS) || defined(_WIN32))
+
+#endif   // AREG_BASE_GESWITCHES_H

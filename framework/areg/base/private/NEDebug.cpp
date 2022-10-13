@@ -26,7 +26,7 @@
 
 #ifdef  _DEBUG
 
-void AREG_API NEDebug::outputConsole( NEDebug::eDegubPrio priority, const char * msg, ... )
+void AREG_API_IMPL NEDebug::outputConsole( NEDebug::eDegubPrio priority, const char * msg, ... )
 {
     va_list args;
     if (msg != nullptr)
@@ -49,7 +49,7 @@ void AREG_API NEDebug::outputConsole( NEDebug::eDegubPrio priority, const char *
 
 #else   // !_DEBUG
 
-void AREG_API NEDebug::outputConsole( NEDebug::eDegubPrio /*priority*/, const char * /*msg*/, ... )
+void AREG_API_IMPL NEDebug::outputConsole( NEDebug::eDegubPrio /*priority*/, const char * /*msg*/, ... )
 {
 }
 
@@ -57,7 +57,7 @@ void AREG_API NEDebug::outputConsole( NEDebug::eDegubPrio /*priority*/, const ch
 
 #ifdef  _DEBUG
 
-void AREG_API NEDebug::outputConsole(const char * msg, ...)
+void AREG_API_IMPL NEDebug::outputConsole(const char * msg, ...)
 {
     va_list args;
     if (msg != nullptr)
@@ -74,7 +74,7 @@ void AREG_API NEDebug::outputConsole(const char * msg, ...)
 
 #else   // !_DEBUG
 
-void AREG_API NEDebug::outputConsole(const char * /*msg*/, ...)
+void AREG_API_IMPL NEDebug::outputConsole(const char * /*msg*/, ...)
 {
 }
 

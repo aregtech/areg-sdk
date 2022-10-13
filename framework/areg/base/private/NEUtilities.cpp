@@ -50,7 +50,7 @@ namespace NEUtilities
 /************************************************************************/
 // NEUtilities namespace global functions
 /************************************************************************/
-AREG_API NEMath::eCompare NEUtilities::compareTimes( const TIME64 & lsh, const TIME64 & rhs )
+AREG_API_IMPL NEMath::eCompare NEUtilities::compareTimes( const TIME64 & lsh, const TIME64 & rhs )
 {
     NEMath::uLargeInteger lshLi, rshLi;
     lshLi.quadPart  = lsh;
@@ -59,7 +59,7 @@ AREG_API NEMath::eCompare NEUtilities::compareTimes( const TIME64 & lsh, const T
     return NEUtilities::compareLargeIntegers(lshLi, rshLi);
 }
 
-AREG_API void NEUtilities::convToTm(const sSystemTime & sysTime, tm & OUT out_time)
+AREG_API_IMPL void NEUtilities::convToTm(const sSystemTime & sysTime, tm & OUT out_time)
 {
     if (sysTime.stYear >= 1900)
     {
@@ -78,7 +78,7 @@ AREG_API void NEUtilities::convToTm(const sSystemTime & sysTime, tm & OUT out_ti
     }
 }
 
-AREG_API void NEUtilities::makeTmLocal( struct tm & IN OUT utcTime )
+AREG_API_IMPL void NEUtilities::makeTmLocal( struct tm & IN OUT utcTime )
 {
     time_t _timer = mktime( &utcTime );
 #ifdef  _WIN32
@@ -90,7 +90,7 @@ AREG_API void NEUtilities::makeTmLocal( struct tm & IN OUT utcTime )
 #endif  // _WIN32
 }
 
-AREG_API void NEUtilities::convToSystemTime(const tm & time, sSystemTime & OUT out_sysTime)
+AREG_API_IMPL void NEUtilities::convToSystemTime(const tm & time, sSystemTime & OUT out_sysTime)
 {
     out_sysTime.stSecond    = static_cast<unsigned short>(time.tm_sec);
     out_sysTime.stMinute    = static_cast<unsigned short>(time.tm_min);
@@ -101,7 +101,7 @@ AREG_API void NEUtilities::convToSystemTime(const tm & time, sSystemTime & OUT o
     out_sysTime.stDayOfWeek = static_cast<unsigned short>(time.tm_wday);
 }
 
-AREG_API void NEUtilities::convToFileTime( const TIME64 &  timeValue, NEUtilities::sFileTime & out_fileTime )
+AREG_API_IMPL void NEUtilities::convToFileTime( const TIME64 &  timeValue, NEUtilities::sFileTime & out_fileTime )
 {
     uint64_t quad = timeValue + WIN_TO_POSIX_EPOCH_BIAS_MICROSECS;
 
@@ -109,7 +109,7 @@ AREG_API void NEUtilities::convToFileTime( const TIME64 &  timeValue, NEUtilitie
     out_fileTime.ftHighDateTime = MACRO_64_HI_BYTE32(quad);
 }
 
-AREG_API NEMath::eCompare NEUtilities::compareTimes( const NEUtilities::sSystemTime & lsh, const NEUtilities::sSystemTime & rhs )
+AREG_API_IMPL NEMath::eCompare NEUtilities::compareTimes( const NEUtilities::sSystemTime & lsh, const NEUtilities::sSystemTime & rhs )
 {
     sFileTime lshFile, rshFile;
     NEUtilities::convToFileTime( lsh, lshFile );
@@ -118,7 +118,7 @@ AREG_API NEMath::eCompare NEUtilities::compareTimes( const NEUtilities::sSystemT
     return NEUtilities::compareTimes(lshFile, rshFile);
 }
 
-AREG_API NEMath::eCompare NEUtilities::compareTimes( const NEUtilities::sFileTime & lsh, const NEUtilities::sFileTime & rhs )
+AREG_API_IMPL NEMath::eCompare NEUtilities::compareTimes( const NEUtilities::sFileTime & lsh, const NEUtilities::sFileTime & rhs )
 {
     NEMath::uLargeInteger lshLi, rshLi;
     lshLi.u.lowPart = lsh.ftLowDateTime;
@@ -130,7 +130,7 @@ AREG_API NEMath::eCompare NEUtilities::compareTimes( const NEUtilities::sFileTim
     return NEUtilities::compareLargeIntegers( lshLi, rshLi );
 }
 
-AREG_API TIME64 NEUtilities::convToTime( const NEUtilities::sFileTime & fileTime )
+AREG_API_IMPL TIME64 NEUtilities::convToTime( const NEUtilities::sFileTime & fileTime )
 {
     NEMath::uLargeInteger li;
     li.u.lowPart    = fileTime.ftLowDateTime;
@@ -139,7 +139,7 @@ AREG_API TIME64 NEUtilities::convToTime( const NEUtilities::sFileTime & fileTime
     return static_cast<uint64_t>(li.quadPart);
 }
 
-AREG_API String NEUtilities::createComponentItemName( const char * componentName, const char* itemName )
+AREG_API_IMPL String NEUtilities::createComponentItemName( const char * componentName, const char* itemName )
 {
     String result( componentName != nullptr ? componentName : String::EmptyString );
     if ((result.isEmpty() == false) && (NEString::isEmpty<char>(itemName) == false))
@@ -160,7 +160,7 @@ AREG_API String NEUtilities::createComponentItemName( const char * componentName
     return result;
 }
 
-AREG_API String NEUtilities::createComponentItemName( const String & componentName, const String & itemName )
+AREG_API_IMPL String NEUtilities::createComponentItemName( const String & componentName, const String & itemName )
 {
     String result( componentName );
     if ((componentName.isEmpty() == false) && (itemName.isEmpty() == false))
@@ -181,24 +181,24 @@ AREG_API String NEUtilities::createComponentItemName( const String & componentNa
     return result;
 }
 
-AREG_API String NEUtilities::generateName( const char* prefix )
+AREG_API_IMPL String NEUtilities::generateName( const char* prefix )
 {
     char buffer[NEUtilities::MAX_GENERATED_NAME_BUFFER_SIZE];
     NEUtilities::generateName(prefix, buffer, NEUtilities::MAX_GENERATED_NAME_BUFFER_SIZE);
     return String(buffer);
 }
 
-AREG_API const char * NEUtilities::generateName(const char * prefix, char * OUT out_buffer, int length)
+AREG_API_IMPL const char * NEUtilities::generateName(const char * prefix, char * OUT out_buffer, int length)
 {
     return NEUtilities::generateName(prefix, out_buffer, length, NECommon::DEFAULT_SPECIAL_CHAR.data());
 }
 
-AREG_API const char * NEUtilities::generateName(const char * prefix, char * OUT out_buffer, int length, const char * specChar)
+AREG_API_IMPL const char * NEUtilities::generateName(const char * prefix, char * OUT out_buffer, int length, const char * specChar)
 {
     return NEUtilities::_generateName(prefix, out_buffer, length, specChar);
 }
 
-AREG_API unsigned int NEUtilities::generateUniqueId( void )
+AREG_API_IMPL unsigned int NEUtilities::generateUniqueId( void )
 {
     static std::atomic_uint _id(0u);
     return ++ _id;

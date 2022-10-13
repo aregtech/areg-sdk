@@ -125,22 +125,3 @@ unsigned int ServiceItem::_magicNumber(const ServiceItem svcItem)
 
     return result;
 }
-
-AREG_API const IEInStream & operator >> ( const IEInStream & stream, ServiceItem & input )
-{
-    stream >> input.mServiceName;
-    stream >> input.mServiceVersion;
-    stream >> input.mServiceType;
-    
-    input.mMagicNum = ServiceItem::_magicNumber(input);
-
-    return stream;
-}
-
-AREG_API IEOutStream & operator << ( IEOutStream & stream, const ServiceItem & output )
-{
-    stream << output.mServiceName;
-    stream << output.mServiceVersion;
-    stream << output.mServiceType;
-    return stream;
-}

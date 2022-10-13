@@ -127,7 +127,7 @@ void Console::_osWaitInput(char* buffer, uint32_t size) const
     if (mContext != 0)
     {
         String fmt;
-        fmt.format("%%%u", size);
+        fmt.format("%%%us", size);
         wscanw(reinterpret_cast<WINDOW*>(mContext), fmt.getString(), buffer);
     }
 }

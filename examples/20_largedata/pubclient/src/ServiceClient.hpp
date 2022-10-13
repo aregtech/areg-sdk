@@ -101,7 +101,7 @@ protected:
      *          initialization in this function call.
      * \param	comThread	The component thread, which triggered startup command
      **/
-    virtual void startupComponent( ComponentThread & comThread );
+    virtual void startupComponent( ComponentThread & comThread ) override;
 
     /**
      * \brief   Server broadcast.

@@ -32,7 +32,7 @@
     #pragma warning(default: 4091)
 #endif  // _MSC_VER
 
-void AREG_API NEDebug::outputMessageOS( const char * msg )
+void AREG_API_IMPL NEDebug::outputMessageOS( const char * msg )
 {
 #ifdef  _DEBUG
     if ( NEString::isEmpty<char>( msg ) == false )
@@ -40,7 +40,7 @@ void AREG_API NEDebug::outputMessageOS( const char * msg )
 #endif  // _DEBUG
 }
 
-void AREG_API NEDebug::dumpExceptionCallStack( struct _EXCEPTION_POINTERS *ep, std::list<std::string> & OUT out_callStack )
+void AREG_API_IMPL NEDebug::dumpExceptionCallStack( struct _EXCEPTION_POINTERS *ep, std::list<std::string> & OUT out_callStack )
 {
 #ifdef  _DEBUG
 

@@ -23,7 +23,7 @@
 
 #ifdef  _DEBUG
 
-void AREG_API NEDebug::outputMessageOS( const char * msg )
+void AREG_API_IMPL NEDebug::outputMessageOS( const char * msg )
 {
     if ( NEString::isEmpty<char>( msg ) == false )
     {
@@ -34,7 +34,7 @@ void AREG_API NEDebug::outputMessageOS( const char * msg )
 
 #else   // _DEBUG
 
-void AREG_API NEDebug::outputMessageOS( const char * /*msg*/ )
+void AREG_API_IMPL NEDebug::outputMessageOS( const char * /*msg*/ )
 {
 }
 

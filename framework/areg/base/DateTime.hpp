@@ -19,16 +19,17 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
+
+#include "areg/base/IEIOStream.hpp"
 #include "areg/base/String.hpp"
 #include "areg/base/NEUtilities.hpp"
+
 #include <string_view>
 
 /************************************************************************
  * Dependencies
  ************************************************************************/
 struct tm;
-class IEInStream;
-class IEOutStream;
 //////////////////////////////////////////////////////////////////////////
 // DateTime class declaration
 //////////////////////////////////////////////////////////////////////////
@@ -38,14 +39,13 @@ class IEOutStream;
  **/
 class AREG_API DateTime
 {
-#if defined(_MSC_VER) && (_MSC_VER > 1200)
-    #pragma warning(disable: 4251)
-#endif  // _MSC_VER
-
 public:
 /************************************************************************/
 // Public constants
 /************************************************************************/
+#if defined(_MSC_VER) && (_MSC_VER > 1200)
+    #pragma warning(disable: 4251)
+#endif  // _MSC_VER
 
     /**
      * \brief   ISO8601 format of time-stamp to display logs
@@ -184,7 +184,7 @@ public:
      * \param   input   Date and time object, which is initialized by deserializing 
      *                  date and time value from stream
      **/
-    friend AREG_API const IEInStream & operator >> ( const IEInStream & stream, DateTime & input );
+    friend inline const IEInStream & operator >> ( const IEInStream & stream, DateTime & input );
 
     /**
      * \brief   Writes (serializes) date and time value to streaming object.
@@ -192,7 +192,7 @@ public:
      * \param   input   Date and time object, which is contains date and time value and
      *                  should be serialized to streaming object
      **/
-    friend AREG_API IEOutStream & operator << ( IEOutStream & stream, const DateTime & output );
+    friend inline IEOutStream & operator << ( IEOutStream & stream, const DateTime & output );
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -295,6 +295,18 @@ inline const TIME64 & DateTime::getTime( void ) const
 inline bool DateTime::isValid( void ) const
 {
     return (mDateTime != 0);
+}
+
+inline const IEInStream & operator >> ( const IEInStream & stream, DateTime & input )
+{
+    stream >> input.mDateTime;
+    return stream;
+}
+
+inline IEOutStream & operator << ( IEOutStream & stream, const DateTime & output )
+{
+    stream << output.mDateTime;
+    return stream;
 }
 
 #endif  // AREG_BASE_DATETIME_HPP

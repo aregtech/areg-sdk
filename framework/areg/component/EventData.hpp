@@ -20,6 +20,8 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
+
+#include "areg/base/IEIOStream.hpp"
 #include "areg/component/EventDataStream.hpp"
 #include "areg/component/NEService.hpp"
 
@@ -118,7 +120,7 @@ public:
      * \param	input	The Event Data Buffer object to write data.
      * \return	Reference to Streaming object.
      **/
-    friend AREG_API const IEInStream & operator >> ( const IEInStream & stream, EventData & input );
+    friend inline const IEInStream & operator >> ( const IEInStream & stream, EventData & input );
 
     /**
      * \brief	Friend global operator to write object into streaming buffer.
@@ -126,7 +128,7 @@ public:
      * \param	output	The Event Data Buffer object of data source.
      * \return	Reference to Streaming object.
      **/
-    friend AREG_API IEOutStream & operator << ( IEOutStream & stream, const EventData & output );
+    friend inline IEOutStream & operator << ( IEOutStream & stream, const EventData & output );
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes
@@ -193,6 +195,22 @@ inline IEOutStream & EventData::getWriteStream( void )
 inline const EventDataStream & EventData::getDataStream( void ) const
 {
     return mData;
+}
+
+inline const IEInStream & operator >> ( const IEInStream & stream, EventData & input )
+{
+    stream >> input.mDataType;
+    stream >> input.mData;
+    input.mData.resetCursor();
+    return stream;
+}
+
+inline IEOutStream & operator << ( IEOutStream & stream, const EventData & output )
+{
+    stream << output.mDataType;
+    stream << output.mData;
+    output.mData.resetCursor();
+    return stream;
 }
 
 #endif  // AREG_COMPONENT_EVENTDATA_HPP
