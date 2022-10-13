@@ -152,7 +152,7 @@ void Console::_osClearLine( void ) const
 
 bool Console::_osReadInputList(const char* format, va_list varList) const
 {
-    return (mContext != 0 ? vw_scanw(reinterpret_cast<WINDOW *>(mContext), format, varList) == OK : false);
+    return (mContext != 0 ? vw_scanw(reinterpret_cast<WINDOW *>(mContext), format, varList) >= 0 : false);
 }
 
 #endif  // POSIX

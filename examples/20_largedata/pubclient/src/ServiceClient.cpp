@@ -45,6 +45,7 @@ void ServiceClient::startupComponent(ComponentThread& comThread)
     console.clearCurrentLine();
     console.outputTxt(COORD_TITLE, MSG_APP_TITLE);
     console.outputMsg(COORD_DATA_RATE, MSG_DATA_RATE.data(), static_cast<float>(dataRate.first), dataRate.second.data(), mBlockCount);
+    console.refreshScreen();
 }
 
 void ServiceClient::broadcastImageBlockAcquired(const NELargeData::ImageBlock& imageBlock)
@@ -104,6 +105,7 @@ void ServiceClient::processTimer(Timer& timer)
     Console& console = Console::getInstance();
     std::pair<double, std::string_view> dataRate = NELargeData::calcDataRate(mDataSize);
     console.outputMsg(COORD_DATA_RATE, MSG_DATA_RATE.data(), dataRate.first, dataRate.second.data(), mBlockCount);
+    console.refreshScreen();
 
     mDataSize = 0;
     mBlockCount = 0;

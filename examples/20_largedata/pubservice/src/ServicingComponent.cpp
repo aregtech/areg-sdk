@@ -20,10 +20,10 @@
 
 DEF_TRACE_SCOPE(examples_20_pubservice_ServicingComponent_startupServiceInterface);
 DEF_TRACE_SCOPE(examples_20_pubservice_ServicingComponent_shutdownServiceIntrface);
-DEF_TRACE_SCOPE(examples_20_pubservice_ServicingComponent_processTimer);
 DEF_TRACE_SCOPE(examples_20_pubservice_ServicingComponent_processEvent);
 DEF_TRACE_SCOPE(examples_20_pubservice_ServicingComponent_onThreadRuns);
-DEF_TRACE_SCOPE(examples_20_pubservice_ServicingComponent_runImageThread);
+DEF_TRACE_SCOPE(examples_20_pubservice_ServicingComponent__runInputThread);
+DEF_TRACE_SCOPE(examples_20_pubservice_ServicingComponent__runImageThread);
 
 Component * ServicingComponent::CreateComponent(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
 {
@@ -142,18 +142,25 @@ void ServicingComponent::processTimer(Timer& timer)
     console.outputMsg(COORD_DATA_RATE, MSG_DATA_RATE.data(), dataRate.first, dataRate.second.data());
     console.outputMsg(COORD_ITEM_RATE, MSG_ITEM_RATE.data(), itemRate, didSleep, ignoreSleep);
     console.setCursorCurPosition(oldPos);
+    console.refreshScreen();
 }
 
 void ServicingComponent::processEvent(const OptionData& data)
 {
+    TRACE_SCOPE(examples_20_pubservice_ServicingComponent_processEvent);
+    
     if (data.hasError())
     {
+        TRACE_WARN("Error input of command");
+
         Console::Coord oldPos = Console::getInstance().getCursorCurPosition();
         Console::getInstance().outputTxt(COORD_ERROR_INFO, MSG_INVALID_CMD);
         Console::getInstance().setCursorCurPosition(oldPos);
     }
     else if (data.hasQuit())
     {
+        TRACE_WARN("Reqeusted to quit application");
+        
         mQuitThread = true;
         mOptionChanged = true;
         mOptions.update(data);
@@ -166,39 +173,40 @@ void ServicingComponent::processEvent(const OptionData& data)
     }
     else if (data.hasStart())
     {
+        TRACE_INFO("Requested to start the generating data");
 
         mQuitThread = false;
         mOptionChanged = true;
         mOptions.update(data);
         mTimer.startTimer(NELargeData::TIMER_TIMEOUT, getComponentThread(), Timer::CONTINUOUSLY);
         mPauseEvent.setEvent();
+        _printInfo();
     }
     else if (data.hasStop())
     {
+        TRACE_INFO("Requested to stop generating data");
+
         mQuitThread = false;
         mOptionChanged = true;
         mOptions.update(data);
         mPauseEvent.resetEvent();
         mTimer.stopTimer();
-    }
-    else if (data.hasPause())
-    {
-        mQuitThread = false;
-        mOptionChanged = true;
-        mOptions.update(data);
-        mPauseEvent.resetEvent();
-        mTimer.stopTimer();
+        _printInfo();
     }
     else if (data.hasPrintHelp())
     {
+        TRACE_INFO("Requested to print help");
         _printHelp();
     }
     else if (data.hasPrintInfo())
     {
+        TRACE_INFO("Requested to print info");
         _printInfo();
     }
     else
     {
+        TRACE_INFO("Requested to change the generating data parameter(s)");
+
         bool isRunning = mOptions.hasStart();
         mOptions.update(data);
         _printInfo();
@@ -246,18 +254,25 @@ void ServicingComponent::_runInputThread(void)
     bool cmdQuit{ false };
     while ((cmdQuit == false) && (mQuitThread == false))
     {
+        TRACE_SCOPE(examples_20_pubservice_ServicingComponent__runInputThread);
+        TRACE_DBG("Waiting to enter option command ...");
+
         console.outputTxt(COORD_OPTIONS, MSG_INPUT_OPTION);
+        console.refreshScreen();
         String cmd = console.readString();
+        cmd.makeLower();
         OptionData newData;
         newData.parseCommand(cmd);
         cmdQuit = newData.hasQuit();
         EventOption::sendEvent(newData, static_cast<IEOptionConsumer&>(self()), getComponentThread());
+
+        TRACE_DBG("Have go the option command [ %s ]", cmd.getString());
     }
 }
 
 void ServicingComponent::_runImageThread(void)
 {
-    TRACE_SCOPE(examples_20_pubservice_ServicingComponent_runImageThread);
+    TRACE_SCOPE(examples_20_pubservice_ServicingComponent__runImageThread);
 
     uint32_t seqNr = 0;
     std::chrono::nanoseconds nsPerBlock{ mOptions.nsPerBlock() };
@@ -269,13 +284,9 @@ void ServicingComponent::_runImageThread(void)
     {
         if (mOptionChanged)
         {
+            seqNr = 0;
             mOptionChanged = false;
-
             mPauseEvent.lock();
-            if (!mOptions.hasPause())
-            {
-                seqNr = 0;
-            }
 
             nsPerBlock = std::chrono::nanoseconds(mOptions.nsPerBlock());
             blocks = mOptions.blocksCount();
@@ -360,6 +371,7 @@ void ServicingComponent::_printInfo(void) const
     console.printTxt("---------------------------------------\n");
 
     console.setCursorCurPosition(curPos);
+    console.refreshScreen();
 }
 
 void ServicingComponent::_printHelp(void) const
@@ -378,12 +390,12 @@ void ServicingComponent::_printHelp(void) const
     console.printMsg("-i         or --info .............: Print option status.\n");
     console.printMsg("-h         or --help .............: Print this help.\n");
     console.printMsg("-s         or --start ............: Start and run large data service.\n");
-    console.printMsg("-o         or --stop .............: Stop generating image data and stop large data service.\n");
-    console.printMsg("-a         or --pause ............: Pause generating image data and stop large data service.\n");
+    console.printMsg("-p         or --stop .............: Stop generating image data and stop large data service.\n");
     console.printMsg("-q         or --quit .............: Stop service and quit application.\n");
     console.printTxt("---------------------------------------\n");
 
     console.setCursorCurPosition(curPos);
+    console.refreshScreen();
 }
 
 void ServicingComponent::_initBlockList(void)

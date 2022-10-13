@@ -67,18 +67,17 @@ namespace NEUtilities
          **/
         , CmdStop           = 256
         /**
-         * \brief   The command to pause large data service
-         **/
-        , CmdPause          = 512
-        /**
          * \brief   The command to quit application
          **/
-        , CmdQuit           = 1024
+        , CmdQuit           = 512
         /**
          * \brief   The command to display help
          **/
         , Error             = static_cast<uint32_t>(0x80000000)
     };
+
+    //!< Returns the string value of the option flag.
+    inline const char * getString(NEUtilities::eOptionFlags flag);
 
     //! The structure of options command
     struct sOptions
@@ -101,8 +100,7 @@ namespace NEUtilities
         , {"-i" , "--info",     eOptionFlags::CmdInformation,    0,          0} //! Display information
         , {"-h" , "--help",     eOptionFlags::CmdHelp,           0,          0} //! Display help
         , {"-s" , "--start",    eOptionFlags::CmdStart,          0,          0} //! Start large data service
-        , {"-o" , "--stop",     eOptionFlags::CmdStop,           0,          0} //! Stop large data service
-        , {"-a" , "--pause",    eOptionFlags::CmdPause,          0,          0} //! Pause large data service
+        , {"-p" , "--stop",     eOptionFlags::CmdStop,           0,          0} //! Stop large data service
         , {"-q" , "--quit",     eOptionFlags::CmdQuit,           0,          0} //! Quit application
     };
 
@@ -188,11 +186,6 @@ namespace NEUtilities
          * \brief   Returns true if the option has command to stop application.
          */
         inline bool hasStop(void) const;
-
-        /**
-         * \brief   Returns true if the option has command to pause application.
-         */
-        inline bool hasPause(void) const;
 
         /**
          * \brief   Returns true if the option has command to quit application.
@@ -294,11 +287,6 @@ inline bool NEUtilities::sOptionData::hasStop(void) const
     return ((mFlags & static_cast<uint32_t>(eOptionFlags::CmdStop)) != 0);
 }
 
-inline bool NEUtilities::sOptionData::hasPause(void) const
-{
-    return ((mFlags & static_cast<uint32_t>(eOptionFlags::CmdPause)) != 0);
-}
-
 inline bool NEUtilities::sOptionData::hasQuit(void) const
 {
     return ((mFlags & static_cast<uint32_t>(eOptionFlags::CmdQuit)) != 0);
@@ -372,10 +360,8 @@ inline uint64_t NEUtilities::sOptionData::nsPerBlock(uint32_t startRowIndex, uin
 
 inline String NEUtilities::sOptionData::getState(void) const
 {
-    if (hasPause())
-        return String("PAUSED");
-    else if (hasStart())
-        return String("RUN");
+    if (hasStart())
+        return String("STARTED");
     else
         return String("STOPPED");
 }
@@ -417,29 +403,53 @@ inline void NEUtilities::sOptionData::update(const sOptionData& newOption)
     if ((newOption.mFlags & static_cast<uint32_t>(eOptionFlags::CmdStart)) != 0)
     {
         mFlags &= ~static_cast<uint32_t>(eOptionFlags::CmdStop);
-        mFlags &= ~static_cast<uint32_t>(eOptionFlags::CmdPause);
         mFlags |= static_cast<uint32_t>(eOptionFlags::CmdStart);
     }
 
     if ((newOption.mFlags & static_cast<uint32_t>(eOptionFlags::CmdStop)) != 0)
     {
         mFlags &= ~static_cast<uint32_t>(eOptionFlags::CmdStart);
-        mFlags &= ~static_cast<uint32_t>(eOptionFlags::CmdPause);
         mFlags |= static_cast<uint32_t>(eOptionFlags::CmdStop);
-    }
-
-    if ((newOption.mFlags & static_cast<uint32_t>(eOptionFlags::CmdPause)) != 0)
-    {
-        mFlags &= ~static_cast<uint32_t>(eOptionFlags::CmdStart);
-        mFlags &= ~static_cast<uint32_t>(eOptionFlags::CmdStop);
-        mFlags |= static_cast<uint32_t>(eOptionFlags::CmdPause);
     }
 
     if ((newOption.mFlags & static_cast<uint32_t>(eOptionFlags::CmdQuit)) != 0)
     {
         mFlags &= ~static_cast<uint32_t>(eOptionFlags::CmdStart);
         mFlags &= ~static_cast<uint32_t>(eOptionFlags::CmdStop);
-        mFlags &= ~static_cast<uint32_t>(eOptionFlags::CmdPause);
         mFlags |= static_cast<uint32_t>(eOptionFlags::CmdQuit);
+    }
+}
+
+inline const char * NEUtilities::getString(NEUtilities::eOptionFlags flag)
+{
+    switch (flag)
+    {
+    case NEUtilities::eOptionFlags::CmdNothing:
+        return "NEUtilities::eOptionFlags::CmdNothing";
+    case NEUtilities::eOptionFlags::CmdWidth:
+        return "NEUtilities::eOptionFlags::CmdWidth";
+    case NEUtilities::eOptionFlags::CmdHeight:
+        return "NEUtilities::eOptionFlags::CmdHeight";
+    case NEUtilities::eOptionFlags::CmdLinesPerBlock:
+        return "NEUtilities::eOptionFlags::CmdLinesPerBlock";
+    case NEUtilities::eOptionFlags::CmdPixelTime:
+        return "NEUtilities::eOptionFlags::CmdPixelTime";
+    case NEUtilities::eOptionFlags::CmdChannels:
+        return "NEUtilities::eOptionFlags::CmdChannels";
+    case NEUtilities::eOptionFlags::CmdInformation:
+        return "NEUtilities::eOptionFlags::CmdInformation";
+    case NEUtilities::eOptionFlags::CmdHelp:
+        return "NEUtilities::eOptionFlags::CmdHelp";
+    case NEUtilities::eOptionFlags::CmdStart:
+        return "NEUtilities::eOptionFlags::CmdStart";
+    case NEUtilities::eOptionFlags::CmdStop:
+        return "NEUtilities::eOptionFlags::CmdStop";
+    case NEUtilities::eOptionFlags::CmdQuit:
+        return "NEUtilities::eOptionFlags::CmdQuit";
+    case NEUtilities::eOptionFlags::Error:
+        return "NEUtilities::eOptionFlags::Error";
+    
+    default:
+        return "ERR: Invalid NEUtilities::eOptionFlags value!";
     }
 }

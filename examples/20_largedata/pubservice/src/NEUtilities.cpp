@@ -10,10 +10,17 @@
 
 #include "areg/base/Containers.hpp"
 #include "areg/base/String.hpp"
+#include "areg/trace/GETrace.h"
+
+DEF_TRACE_SCOPE(examples_20_pubservice_NEUtilities_sOptionData_parseCommand);
+DEF_TRACE_SCOPE(examples_20_pubservice_NEUtilities_sOptionData_setValue);
 
 bool NEUtilities::sOptionData::parseCommand(const String& cmd)
 {
     static constexpr std::string_view   _delimiter{ " " };
+
+    TRACE_SCOPE(examples_20_pubservice_NEUtilities_sOptionData_parseCommand);
+    TRACE_DBG("Parsing command [ $s ]", cmd.getString());
 
     Tokenizer tokens(cmd, _delimiter, false);
     const StringArray& list = tokens.getList();
@@ -45,6 +52,12 @@ bool NEUtilities::sOptionData::parseCommand(const String& cmd)
                 break;
             }
         }
+
+        if (found == false)
+        {
+            mFlags = static_cast<uint32_t>(eOptionFlags::Error);
+            break;
+        }
     }
 
     return (hasError() == false);
@@ -52,6 +65,13 @@ bool NEUtilities::sOptionData::parseCommand(const String& cmd)
 
 bool NEUtilities::sOptionData::setValue(const sOptions& whichOpt, uint32_t whichValue)
 {
+    TRACE_SCOPE(examples_20_pubservice_NEUtilities_sOptionData_setValue);
+    TRACE_DBG("Validating the option command [ %s ] with values [ %u ], the allowed min = [ %u ] and max = [ %u ]"
+                    , NEUtilities::getString(whichOpt.cmdValue)
+                    , whichValue
+                    , whichOpt.minValue
+                    , whichOpt.maxValue);
+
     if (((mFlags & static_cast<uint32_t>(whichOpt.cmdValue)) != 0    ) ||
         ((whichOpt.minValue != 0) && (whichValue < whichOpt.minValue)) ||
         ((whichOpt.maxValue != 0) && (whichValue > whichOpt.maxValue)))
@@ -92,7 +112,6 @@ bool NEUtilities::sOptionData::setValue(const sOptions& whichOpt, uint32_t which
     case eOptionFlags::CmdHelp:
     case eOptionFlags::CmdStart:
     case eOptionFlags::CmdStop:
-    case eOptionFlags::CmdPause:
     case eOptionFlags::CmdQuit:
         mFlags |= static_cast<uint32_t>(whichOpt.cmdValue);
         break;
