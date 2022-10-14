@@ -47,7 +47,7 @@ set(UserDefLibPaths)
 
 set(UserDefLibs)
 
-set(UserDefOutput "product")
+set(UserDefOutput "build")
 
 
 

@@ -20,4 +20,3 @@ else()
 endif()
 
 set(areg_TARGET_PATH "${areg_OUTPUT_BIN}/${AREG_LIB_PREFIX}/${PROJECT_NAME}/${AREG_LIB_EXT}")
-

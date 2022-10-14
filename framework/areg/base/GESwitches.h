@@ -59,7 +59,7 @@
     #define IMP_AREG_DLL
     #define _IMP_AREG_DLL
 
-#endif  // defined(IMP_AREG_DLL) || defined(_IMP_AREG_DLL) || defined(IMPORT_SHARED_SYMBOLS)
+#endif  // defined(IMP_AREG_DLL) || defined(_IMP_AREG_DLL) || defined(IMPORT_SHARED_SYMBOLS) || defined(_IMPORT_SHARED_SYMBOLS)
 
 #if defined(IMP_AREG_LIB) || defined(_IMP_AREG_LIB) || defined(IMPORT_STATIC_SYMBOLS) || defined(_IMPORT_STATIC_SYMBOLS)
 
@@ -81,7 +81,7 @@
     #define IMP_AREG_LIB
     #define _IMP_AREG_LIB
 
-#endif  // defined(IMP_AREG_LIB) || defined(_IMP_AREG_LIB) || defined(IMPORT_STATIC_SYMBOLS)
+#endif  // defined(IMP_AREG_LIB) || defined(_IMP_AREG_LIB) || defined(IMPORT_STATIC_SYMBOLS) || defined(_IMPORT_STATIC_SYMBOLS)
 
 #if defined(EXP_AREG_DLL) || defined(_EXP_AREG_DLL) || defined(EXPORT_SHARED_SYMBOLS) || defined(_EXPORT_SHARED_SYMBOLS)
 
@@ -103,7 +103,7 @@
     #define EXP_AREG_DLL
     #define _EXP_AREG_DLL
 
-#endif  // defined(EXP_AREG_DLL) || defined(_EXP_AREG_DLL) || defined(EXPORT_SHARED_SYMBOLS)
+#endif  // defined(EXP_AREG_DLL) || defined(_EXP_AREG_DLL) || defined(EXPORT_SHARED_SYMBOLS) || defined(_EXPORT_SHARED_SYMBOLS)
 
 #if defined(EXP_AREG_LIB) || defined(_EXP_AREG_LIB) || defined(EXPORT_STATIC_SYMBOLS) || defined(_EXPORT_STATIC_SYMBOLS)
 
@@ -125,11 +125,11 @@
     #define EXP_AREG_LIB
     #define _EXP_AREG_LIB
 
-#endif  // defined(EXP_AREG_LIB) || defined(_EXP_AREG_LIB) || defined(EXPORT_STATIC_SYMBOLS)
+#endif  // defined(EXP_AREG_LIB) || defined(_EXP_AREG_LIB) || defined(EXPORT_STATIC_SYMBOLS) || defined(_EXPORT_STATIC_SYMBOLS)
 
 #if !defined(EXP_AREG_DLL) && !defined(EXP_AREG_LIB) && !defined(IMP_AREG_DLL) && !defined(IMP_AREG_LIB)
-    #pragma message ("WARNING: None of preprocessor defines are set. By default use LINK_AREG_API_DLL = 1. See file Switches of AREG API Core")
-    #define EXP_AREG_DLL        1
+    #pragma message ("WARNING: None of preprocessor defines are set. By default sets EXP_AREG_DLL. See GESwitches.h file of AREG API Core")
+    #define EXP_AREG_DLL
 #endif  // !defined(LINK_AREG_API_DLL) && !defined(LINK_AREG_API_LIB) && !defined(IMP_AREG_API_DLL) && !defined(IMP_AREG_API_LIB)
 
 /**

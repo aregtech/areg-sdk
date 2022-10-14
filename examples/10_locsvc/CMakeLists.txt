@@ -10,7 +10,7 @@ set(10_locsvc_BASE ${AREG_EXAMPLES}/10_locsvc)
 
 # Filling SRCs up
 include(${10_locsvc_BASE}/generated/CMakeLists.txt)
-include(${AREG_EXAMPLES}/10_locsvc/locservice/CMakeLists.txt)
+include(${10_locsvc_BASE}/locservice/CMakeLists.txt)
 
 # Adding targets
 add_executable(${projName} ${10_SRC})

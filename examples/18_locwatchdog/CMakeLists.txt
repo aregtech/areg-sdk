@@ -9,8 +9,8 @@ set(projName 18_locwatchdog)
 set(18_locwatchdog_BASE ${AREG_EXAMPLES}/18_locwatchdog)
 
 # Filling SRCs up
-include(${10_locsvc_BASE}/generated/CMakeLists.txt)
-include(${AREG_EXAMPLES}/18_locwatchdog/locservice/CMakeLists.txt)
+include(${18_locwatchdog_BASE}/generated/CMakeLists.txt)
+include(${18_locwatchdog_BASE}/locservice/CMakeLists.txt)
 
 # Adding targets
 add_executable(${projName} ${18_SRC})
