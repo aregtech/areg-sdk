@@ -39,11 +39,16 @@ Process::Process( void )
 
 void Process::_initPaths( const char * fullPath )
 {
-    mProcessFullPath= File::normalizePath(fullPath);
+    ASSERT(fullPath != nullptr);
 
+    mProcessFullPath= File::normalizePath(fullPath);
     std::filesystem::path procPath(mProcessFullPath.getObject());
-    mProcessPath = procPath.parent_path().string();
-    mProcessName = procPath.filename().string();
-    mAppName     = procPath.stem().string();
-    mProcessExt  = procPath.extension().string();
+
+    if (procPath.empty() != false)
+    {
+        mProcessPath = procPath.parent_path().empty() ? String::EmptyString : procPath.parent_path().string();
+        mProcessName = procPath.filename().empty()    ? String::EmptyString : procPath.filename().string();
+        mAppName     = procPath.stem().empty()        ? String::EmptyString : procPath.stem().string();
+        mProcessExt  = procPath.extension().empty()   ? String::EmptyString : procPath.extension().string();
+    }
 }

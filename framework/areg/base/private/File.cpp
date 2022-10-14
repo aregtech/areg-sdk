@@ -254,111 +254,11 @@ bool File::createDirCascaded( const char* dirPath )
     return result;
 }
 
-#if 0
-String File::normalizePath( const char * fileName )
-{
-#if !defined(WINDOWS) && !defined(_WINDOWS)
-    static const String _PSEUDO_ROOT( "<root>" );
-#endif // !defined(WINDOWS) && !defined(_WINDOWS)
-
-    String result;
-    StringList list;
-    if (fileName != nullptr)
-    {
-        if ( File::_nameHasCurrentFolder(fileName, false) || _nameHasParentFolder(fileName, false) )
-        {
-            String curDir( File::getCurrentDir() );
-            File::splitPath(curDir, list);
-#if !defined(WINDOWS) && !defined(_WINDOWS)
-            list.pushFirst(_PSEUDO_ROOT);
-#endif // !defined(WINDOWS) && !defined(_WINDOWS)
-        }
-        else if (*fileName == '%')
-        {
-            for ( int i = 0; i < File::LEN_SPECIAL_MASKS; ++ i )
-            {
-                if (NEString::stringStartsWith<char>(fileName, SPEACIAL_MASKS[i].data(), false))
-                {
-                    String special(File::getSpecialDir(static_cast<File::eSpecialFolder>(i)));
-                    File::splitPath(special, list);
-#if !defined(WINDOWS) && !defined(_WINDOWS)
-                    list.pushFirst(_PSEUDO_ROOT);
-#endif // !defined(WINDOWS) && !defined(_WINDOWS)
-                    break;
-                }
-            }
-        }
-#if !defined(WINDOWS) && !defined(_WINDOWS)
-        else if ((*fileName == File::UNIX_SEPARATOR))
-        {
-            list.pushFirst(_PSEUDO_ROOT);
-        }
-#endif // !defined(WINDOWS) && !defined(_WINDOWS)
-    }
-
-    File::splitPath(fileName, list);
-
-    bool isInvalid  = false;
-    for (StringList::LISTPOS pos = list.firstPosition(); list.isValidPosition(pos); )
-    {
-        const String & node = list.valueAtPosition(pos);
-        if (File::_nameHasParentFolder(node, true))
-        {
-            pos = list.removeAt(pos);
-            StringList::LISTPOS prev = list.prevPosition(pos);
-            if (list.isValidPosition(prev))
-            {
-                list.removeAt(prev);
-            }
-            else
-            {
-                isInvalid = true;
-                break;
-            }
-        }
-        else if (File::_nameHasCurrentFolder(node, true))
-        {
-            pos = list.removeAt(pos);
-        }
-        else
-        {
-            pos = list.nextPosition(pos);
-        }
-    }
-
-    if (isInvalid || list.isEmpty())
-        return result;
-
-    String first(list.getFirstEntry());
-    list.removeFirst();
-#if !defined(WINDOWS) && !defined(_WINDOWS)
-    if (first == _PSEUDO_ROOT)
-    {
-        result = File::PATH_SEPARATOR;
-        if (list.isEmpty() == false)
-        {
-            list.removeFirst(first);
-        }
-    }
-#endif // !defined(WINDOWS) && !defined(_WINDOWS)
-
-    result += first;
-    StringList::LISTPOS end = list.invalidPosition();
-    for (StringList::LISTPOS pos = list.firstPosition(); pos != end; pos = list.nextPosition(pos))
-    {
-        result.append(File::PATH_SEPARATOR).append(list.valueAtPosition(pos));
-    }
-
-    FileBase::normalizeName(result);
-
-    return result;
-}
-#endif //0
-
 String File::normalizePath(const char* fileName)
 {
-    String result(std::filesystem::absolute(std::filesystem::path(fileName)).string());
+    String result = fileName != nullptr ? fileName : String::EmptyString;
     FileBase::normalizeName(result);
+    result = std::filesystem::absolute(std::filesystem::path(result.getObject())).string();
 
     return result;
 }
