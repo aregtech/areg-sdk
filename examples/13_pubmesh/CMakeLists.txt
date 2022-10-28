@@ -29,6 +29,11 @@ setOpt(${projName1})
 setOpt(${projName2})
 setOpt(${projName3})
 
+target_include_directories(${gen_projName} BEFORE PRIVATE ${13_pubmesh_BASE})
+target_include_directories(${projName1} BEFORE PRIVATE ${13_pubmesh_BASE})
+target_include_directories(${projName2} BEFORE PRIVATE ${13_pubmesh_BASE})
+target_include_directories(${projName3} BEFORE PRIVATE ${13_pubmesh_BASE})
+
 target_link_libraries(${projName1} ${gen_projName})
 target_link_libraries(${projName2} ${gen_projName})
 target_link_libraries(${projName3} ${gen_projName})

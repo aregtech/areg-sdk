@@ -11,7 +11,7 @@ function(setOpt item)
 	endif()
 
 	# Linking flags
-	target_link_libraries(${item} ${exampleLDFlags})
+	target_link_libraries(${item} ${AREG_EXAMPLES_LDFLAGS})
 
 	# Adjusting CPP standard for target
 	set_target_properties(${item}
@@ -25,7 +25,7 @@ function(setLibOpt item)
 	add_library(${item} STATIC ${ARGN})
 
 	# Setting libxxx properties (static or shared)
-	if(AREG_BINARY MATCHES shared)
+	if(AREG_BINARY MATCHES "shared")
 		target_compile_definitions(${item} PRIVATE IMP_AREG_DLL)
 		target_compile_options(${item} PRIVATE ${ExampleCompileOptShared})
 
@@ -38,7 +38,7 @@ function(setLibOpt item)
 	endif()
 
 	# Linking flags
-	target_link_libraries(${item} PRIVATE ${exampleLDFlags})
+	target_link_libraries(${item} PRIVATE ${AREG_EXAMPLES_LDFLAGS})
 
 	# Adjusting CPP standard for target
 	set_target_properties(${item}

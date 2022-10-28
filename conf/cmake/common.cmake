@@ -7,7 +7,9 @@ set(AREG_INCLUDES    "${ProjIncludes}")
 set(AREG_TOOLCHAIN   "${CrossCompile}${Toolset}")
 set(AREG_AR          "${CrossCompile}ar")
 set(AREG_OS          "${OpSystem}")
+set(AREG_DEVELOP_ENV)
 set(AREG_STATIC_LIB)
+set(AREG_EXAMPLES_LDFLAGS)
 
 if(areg MATCHES "shared")
     set(AREG_BINARY "shared")
@@ -17,31 +19,45 @@ endif()
 
 # Checking Compiler for adding corresponded tweaks and flags
 if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-    # Clang compile options
-    list(APPEND CompileOptions -g -pthread -Werror -stdlib=libc++ ${UserDefines})
+    # POSIX API
+    add_definitions(-DPOSIX)
+    set(AREG_DEVELOP_ENV "Posix")
     if (Config MATCHES "Release")
         list(APPEND CompileOptions -O2)
-    endif()
-
-elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-    # GNU compile options
-    list(APPEND CompileOptions -g -pthread -Werror -Wall ${UserDefines})
-    if (Config MATCHES "Release")
-        list(APPEND CompileOptions -O2)
-    endif()
-
-elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-    # Visual Studio C++
-    if(Config MATCHES "Release")
     else()
-        list(APPEND CompileOptions -Od -RTC1)
+        list(APPEND CompileOptions -O0 -g3)
     endif()
-    add_definitions(-DUNICODE)
+
+    # Clang compile options
+    list(APPEND CompileOptions -pthread -Wall -c -std=c++17 -fmessage-length=0 -MMD -stdlib=libc++ ${UserDefines})
+
+    elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    # POSIX API
+    add_definitions(-DPOSIX)
+    set(AREG_DEVELOP_ENV "Posix")
+    if (Config MATCHES "Release")
+        list(APPEND CompileOptions -O2)
+    else()
+        list(APPEND CompileOptions -O0 -g3)
+    endif()
+
+    # GNU compile options
+    list(APPEND CompileOptions -pthread -Wall -c -std=c++17 -fmessage-length=0 -MMD ${UserDefines})
+
+    elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+    # Visual Studio C++
+    # Windows / Win32 API
+    add_definitions(-DWINDOWS)
+    set(AREG_DEVELOP_ENV "Windows")
+    if(NOT Config MATCHES "Release")
+        list(APPEND CompileOptions -Od -RTC1 -g3 -c -fmessage-length=0 -MMD)
+    endif()
 endif()
 
 # CPP standard for the project
 set(aregCXXStandard "17")
 
+add_definitions(-DUNICODE)
 if(Config MATCHES "Release")
     add_definitions(-DNDEBUG)
 else()
@@ -50,7 +66,7 @@ endif()
 
 # flags for bitness
 if(Platform MATCHES "x86_64")
-    if(NOT DEFINED CrossCompile AND NOT AREG_OS MATCHES "Windows")
+    if(NOT DEFINED CrossCompile)
         if(bit MATCHES "32")
             list(APPEND CompileOptions -m32)
         else()
@@ -59,16 +75,11 @@ if(Platform MATCHES "x86_64")
     endif()
 endif()
 
-if(AREG_OS MATCHES "Windows")
-# Windows
-    add_definitions(-DWINDOWS)
-else()
-# Unix
-    add_definitions(-DPOSIX)
-endif()
-
 # Adding compile options
 add_compile_options(${CompileOptions})
+
+# Adding common definitions.
+add_definitions(-DUNICODE)
 
 # Examples Compile Options
 if (NOT CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
@@ -77,12 +88,12 @@ if (NOT CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
 endif()
 
 # Examples LD flags (-l is not necessary)
-if(AREG_OS MATCHES "Windows")
-    list(APPEND LDFLAGS ws2_32 psapi)
-    list(APPEND exampleLDFlags areg ${LDFLAGS})
+if(AREG_DEVELOP_ENV MATCHES "Windows")
+    list(APPEND LDFLAGS advapi32 psapi shell32 ws2_32)
+    list(APPEND AREG_EXAMPLES_LDFLAGS areg ${LDFLAGS})
 else()
-    list(APPEND LDFLAGS m  stdc++ rt pthread ncurses)
-    list(APPEND exampleLDFlags areg ${LDFLAGS})
+    list(APPEND LDFLAGS m stdc++ ncurses rt pthread)
+    list(APPEND AREG_EXAMPLES_LDFLAGS areg ${LDFLAGS})
 endif()
 
 

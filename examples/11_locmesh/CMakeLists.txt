@@ -19,7 +19,7 @@ add_executable(${projName} ${11_SRC})
 setLibOpt(${gen_projName} ${11_generated_SRC})
 setOpt(${projName})
 
-target_link_libraries(${projName} ${gen_projName})
-
 target_include_directories(${gen_projName} BEFORE PRIVATE ${11_locmesh_BASE})
 target_include_directories(${projName} BEFORE PRIVATE ${11_locmesh_BASE})
+
+target_link_libraries(${projName} ${gen_projName})

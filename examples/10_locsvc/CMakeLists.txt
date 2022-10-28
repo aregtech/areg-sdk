@@ -16,10 +16,10 @@ include(${10_locsvc_BASE}/locservice/CMakeLists.txt)
 add_executable(${projName} ${10_SRC})
 
 # Setting up appropriate flags
-setOpt(${projName})
 setLibOpt(${gen_projName} ${10_generated_SRC})
-
-target_link_libraries(${projName} ${gen_projName})
+setOpt(${projName})
 
 target_include_directories(${gen_projName} BEFORE PRIVATE ${10_locsvc_BASE})
 target_include_directories(${projName} BEFORE PRIVATE ${10_locsvc_BASE})
+
+target_link_libraries(${projName} ${gen_projName})
