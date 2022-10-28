@@ -489,14 +489,14 @@ AREG_API_IMPL SOCKETHANDLE NESocket::serverAcceptConnection(SOCKETHANDLE serverS
         {
             entriesCount= MACRO_MIN(entriesCount, (FD_SETSIZE - 1));
 
-#ifdef  WINDOWS
+#ifdef  _WINDOWS
 
             for ( int count = 0; count < entriesCount; ++ count)
                 readList.fd_array[count + 1] = masterList[count];
             
             readList.fd_count = static_cast<u_int>( entriesCount + 1 );
 
-#else   // !WINDOWS
+#else   // !_WINDOWS
 
             TRACE_DBG("There are [ %d ] socket entries in the master list, setting FD_SET", entriesCount);
             for ( int count = 0; count < entriesCount; ++ count)
@@ -515,7 +515,7 @@ AREG_API_IMPL SOCKETHANDLE NESocket::serverAcceptConnection(SOCKETHANDLE serverS
                 }
             }
 
-#endif  // WINDOWS
+#endif  // !_WINDOWS
         }
 
         if (result == NESocket::InvalidSocketHandle)
@@ -587,9 +587,9 @@ AREG_API_IMPL bool NESocket::isSocketAlive(SOCKETHANDLE hSocket)
 
 #ifdef _WINDOWS
     result = (getsockopt(static_cast<SOCKET>(hSocket), SOL_SOCKET, SO_ERROR, reinterpret_cast<char *>(&error), &len) == 0) && (error == 0);
-#else
+#else   // !_WINDOWS
     result = (getsockopt(static_cast<int>(hSocket), SOL_SOCKET, SO_ERROR, reinterpret_cast<char *>(&error), &len) == 0) && (error == 0);
-#endif
+#endif  // !_WINDOWS
 
     return result;
 }
@@ -599,10 +599,10 @@ AREG_API_IMPL int NESocket::pendingRead(SOCKETHANDLE hSocket)
 #ifdef _WINDOWS
     unsigned long result = 0;
     return (ioctlsocket(static_cast<SOCKET>(hSocket), FIONREAD, &result) == 0 ? static_cast<int>(result) : -1);
-#else   // _WINDOWS
+#else   // !_WINDOWS
     int result = 0;
     return (ioctl(static_cast<int>(hSocket), FIONREAD, &result) == 0 ? result : -1);
-#endif  // _WINDOWS
+#endif  // !_WINDOWS
 
     return static_cast<int>(result);
 }

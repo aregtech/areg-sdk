@@ -27,6 +27,12 @@
 #include <windows.h>
 #include <stdio.h>
 
+#ifdef MS_VISUAL_CPP
+    #define SCAN_S(fmt, buff, size)   scanf_s((fmt), (buff), size)
+#else   // !MS_VISUAL_CPP
+    #define SCAN_S(fmt, buff, size)   scanf((fmt), (buff))
+#endif  // MS_VISUAL_CPP
+
 namespace
 {
     //!< Clear the screen.
@@ -143,7 +149,7 @@ void Console::_osSetCursorCurPosition(Console::Coord pos) const
 
 void Console::_osWaitInput(char* buffer, uint32_t size) const
 {
-    static_cast<void>(scanf_s("%s", buffer, size));
+    static_cast<void>(SCAN_S("%s", buffer, size));
 }
 
 void Console::_osRefreshScreen(void) const

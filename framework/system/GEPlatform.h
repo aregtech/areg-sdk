@@ -41,17 +41,21 @@
 #endif // DEBUG
 
 
-#if defined(_POSIX) || defined(POSIX)
+#if (defined(_POSIX) || defined(POSIX))
 
     #undef WINDOWS
     #undef _WINDOWS
 
     #include "system/posix/GEPosix.h"
 
-#elif defined(_WINDOWS) || defined(WINDOWS)
+#elif (defined(_WINDOWS) || defined(WINDOWS))
 
     #include "system/windows/GEWindows.h"
 
-#endif // defined(_WINDOWS) || defined(WINDOWS)
+#else // !(defined(_WINDOWS) || defined(WINDOWS))
+
+    #error  Unsupported OS.
+
+#endif // (defined(_WINDOWS) || defined(WINDOWS))
 
 #endif // AREG_GEPLATFORM_H
