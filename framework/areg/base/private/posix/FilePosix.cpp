@@ -98,7 +98,7 @@ namespace
 // defined constants
 //////////////////////////////////////////////////////////////////////////
 const char      File::PATH_SEPARATOR    = '/';
-const int       File::MAXIMUM_PATH      = 256;
+const int       File::MAXIMUM_PATH      = 1024;
 void * const    File::INVALID_HANDLE    = nullptr;
 
 //////////////////////////////////////////////////////////////////////////

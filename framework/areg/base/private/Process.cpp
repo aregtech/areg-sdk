@@ -41,7 +41,8 @@ void Process::_initPaths( const char * fullPath )
 {
     ASSERT(fullPath != nullptr);
 
-    mProcessFullPath= File::normalizePath(fullPath);
+    // mProcessFullPath= File::normalizePath(fullPath);
+    mProcessFullPath.assign( fullPath );
     std::filesystem::path procPath(mProcessFullPath.getObject());
 
     if (procPath.empty() != false)

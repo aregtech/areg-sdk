@@ -1136,7 +1136,7 @@ inline TEString<CharType>& TEString<CharType>::operator = (const std::basic_stri
 template<typename CharType>
 inline TEString<CharType>& TEString<CharType>::operator = (const std::basic_string_view<CharType>& src)
 {
-    mData = src.data();
+    mData.assign( src.data( ) );
     return (*this);
 }
 
@@ -1145,7 +1145,7 @@ inline TEString<CharType>& TEString<CharType>::operator = (const CharType* src)
 {
     if (src != nullptr)
     {
-        mData = src;
+        mData.assign(src);
     }
     else
     {
@@ -1959,7 +1959,15 @@ inline TEString<CharType> TEString<CharType>::rightSide(NEString::CharCount char
 template<typename CharType>
 inline TEString<CharType>& TEString<CharType>::assign(const CharType* source, NEString::CharCount count /*= NEString::COUNT_ALL */)
 {
-    mData.assign(source, count == NEString::COUNT_ALL ? NEString::getStringLength<CharType>(source) : count);
+    if ( source != nullptr )
+    {
+        mData.assign( source, count == NEString::COUNT_ALL ? NEString::getStringLength<CharType>( source ) : count );
+    }
+    else
+    {
+        mData.clear( );
+    }
+
     return (*this);
 }
 
@@ -2133,10 +2141,17 @@ TEString<CharType>& TEString<CharType>::replace( const CharType* strSearch
         uint32_t pos = static_cast<uint32_t>(mData.find(strSearch, startPos));
         while (pos != static_cast<uint32_t>(std::basic_string<CharType>::npos))
         {
-            mData.replace(pos, static_cast<uint32_t>(lenSearch), strReplace, static_cast<uint32_t>(count));
+            if ( count != 0 )
+            {
+                mData.replace( pos, static_cast<uint32_t>(lenSearch), strReplace, static_cast<uint32_t>(count) );
+                pos += static_cast<uint32_t>(count);
+            }
+            else
+            {
+                mData.erase( pos, static_cast<uint32_t>(lenSearch) );
+            }
 
-            pos += static_cast<uint32_t>(count);
-            if (replaceAll == false)
+            if ( (replaceAll == false) || (pos >= static_cast<uint32_t>(mData.length())) )
             {
                 break;
             }
@@ -2161,10 +2176,17 @@ inline TEString<CharType>& TEString<CharType>::replace( const std::basic_string_
         uint32_t pos = static_cast<uint32_t>(mData.find(strSearch.data(), startPos));
         while (pos != static_cast<uint32_t>(std::basic_string<CharType>::npos))
         {
-            mData.replace(pos, static_cast<uint32_t>(lenSearch), strReplace.data(), lenReplace);
+            if ( lenReplace != 0 )
+            {
+                mData.replace( pos, static_cast<uint32_t>(lenSearch), strReplace.data( ), lenReplace );
+                pos += lenReplace;
+            }
+            else
+            {
+                mData.erase( pos, static_cast<uint32_t>(lenSearch) );
+            }
 
-            pos += lenSearch;
-            if (replaceAll == false)
+            if ((replaceAll == false) || (pos >= static_cast<uint32_t>(mData.length( ))) )
             {
                 break;
             }
@@ -2188,9 +2210,9 @@ inline TEString<CharType>& TEString<CharType>::replace( const TEString<CharType>
 
 template<typename CharType>
 TEString<CharType>& TEString<CharType>::replace( const std::basic_string<CharType>& strSearch
-                                                , const std::basic_string<CharType>& strReplace
-                                                , NEString::CharPos startPos /*= NEString::START_POS*/
-                                                , bool replaceAll /*= true*/)
+                                               , const std::basic_string<CharType>& strReplace
+                                               , NEString::CharPos startPos /*= NEString::START_POS*/
+                                               , bool replaceAll /*= true*/)
 {
     if (isValidPosition(startPos) && (strSearch.empty() == false))
     {
@@ -2199,10 +2221,17 @@ TEString<CharType>& TEString<CharType>::replace( const std::basic_string<CharTyp
         uint32_t pos = static_cast<uint32_t>(mData.find(strSearch, startPos));
         while (pos != static_cast<uint32_t>(std::basic_string<CharType>::npos))
         {
-            mData.replace(pos, static_cast<uint32_t>(lenSearch), strReplace);
+            if ( lenReplace != 0 )
+            {
+                mData.replace( pos, static_cast<uint32_t>(lenSearch), strReplace );
+                pos += lenReplace;
+            }
+            else
+            {
+                mData.erase( pos, static_cast<uint32_t>(lenSearch) );
+            }
 
-            pos += lenReplace;
-            if (replaceAll == false)
+            if ( (replaceAll == false) || (pos >= static_cast<uint32_t>(mData.length( ))) )
             {
                 break;
             }
@@ -2270,7 +2299,7 @@ TEString<CharType>& TEString<CharType>::remove(const CharType chRemove, NEString
         for ( ; pos != static_cast<uint32_t>(std::basic_string<CharType>::npos); pos = static_cast<uint32_t>(mData.find(chRemove, static_cast<uint32_t>(pos))))
         {
             mData.erase(pos, 1);
-            if (removeAll == false)
+            if ( (removeAll == false) || (pos >= static_cast<uint32_t>(mData.length( ))) )
             {
                 break;
             }
@@ -2299,7 +2328,7 @@ TEString<CharType>& TEString<CharType>::remove( const std::basic_string<CharType
         for (; pos != static_cast<uint32_t>(std::basic_string<CharType>::npos); pos = static_cast<uint32_t>(mData.find(strRemove, pos)))
         {
             mData.erase(pos, len);
-            if (removeAll == false)
+            if ( (removeAll == false) || (pos >= static_cast<uint32_t>(mData.length( ))) )
             {
                 break;
             }

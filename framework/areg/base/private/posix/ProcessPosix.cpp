@@ -31,29 +31,29 @@ Process & Process::initilize( void )
 {
     if ( mIsInitialized == false )
     {
-        constexpr char const fmt[] { "/proc/%d/cmdline" };
+        mIsInitialized = true;
+        mProcessId = getpid( );
+        mProcessHandle = static_cast<void *>(&mProcessId);
 
-        mIsInitialized  = true;
-        mProcessId      = getpid();
-        mProcessHandle  = static_cast<void *>(&mProcessId);
+        char buffer[File::MAXIMUM_PATH];
+        char path[256];
 
-        char * buffer = DEBUG_NEW char [ File::MAXIMUM_PATH + 1 ];
-        if ( buffer != nullptr )
+        buffer[0] = path[0] = '\0';
+
+        sprintf( path, "/proc/%lu/cmdLine", static_cast<uint64_t>(mProcessId) );
+        FILE * file = fopen( path, "r" );
+        if ( (file == nullptr) || (fgets( buffer, File::MAXIMUM_PATH, file ) == nullptr))
         {
-            sprintf(buffer, fmt, static_cast<pid_t>(mProcessId));
-            FILE * file = fopen(buffer, "r");
-            if (file != nullptr)
-            {
-                if (fgets(buffer, File::MAXIMUM_PATH + 1, file) != nullptr)
-                {
-                    _initPaths(buffer);
-                }
-
-                fclose(file);
-            }
-
-            delete [] buffer;
+            sprintf( path, "/proc/%lu/exe", static_cast<uint64_t>(mProcessId) );
+            readlink( path, buffer, File::MAXIMUM_PATH );
         }
+
+        if (file != nullptr)
+        {
+            fclose(file);
+        }
+
+        _initPaths( buffer );
     }
 
     return (*this);
