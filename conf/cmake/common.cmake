@@ -50,7 +50,7 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     add_definitions(-DWINDOWS)
     set(AREG_DEVELOP_ENV "Windows")
     if(NOT Config MATCHES "Release")
-        list(APPEND CompileOptions -Od -RTC1 -g3 -c -fmessage-length=0 -MMD)
+        list(APPEND CompileOptions -Od -RTC1 -c)
     endif()
 endif()
 
@@ -65,7 +65,7 @@ else()
 endif()
 
 # flags for bitness
-if(Platform MATCHES "x86_64")
+if(Platform MATCHES "x86_64" AND NOT AREG_DEVELOP_ENV MATCHES "Windows")
     if(NOT DEFINED CrossCompile)
         if(bit MATCHES "32")
             list(APPEND CompileOptions -m32)
