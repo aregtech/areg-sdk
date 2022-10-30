@@ -4,8 +4,8 @@
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework examples
  * \author      Artak Avetyan
  * \brief       Collection of AREG SDK examples.
- *              This file contains simple implementation of service client to
- *              request message output
+ *              This file contains basic constants and objects that are
+ *              shared between components.
  ************************************************************************/
 /************************************************************************
  * Include files.
@@ -26,34 +26,34 @@
 namespace NELargeData
 {
     //!< The role name of the service
-    constexpr std::string_view  ServiceRoleName{ "LargeDataService" };
+    constexpr std::string_view  ServiceRoleName { "LargeDataService" };
 
     //!< The string for bytes.
-    constexpr std::string_view   STR_BYTES{ " Bytes" };
+    constexpr std::string_view   STR_BYTES      { " Bytes" };
 
     //!< The string for kilobytes.
-    constexpr std::string_view   STR_KBYTES{ "KBytes" };
+    constexpr std::string_view   STR_KBYTES     { "KBytes" };
 
     //!< The string for megabytes.
-    constexpr std::string_view   STR_MBYTES{ "MBytes" };
+    constexpr std::string_view   STR_MBYTES     { "MBytes" };
 
     //!< The string literal for nanoseconds.
-    constexpr std::string_view   STR_NS{ "ns" };
+    constexpr std::string_view   STR_NS         { "ns" };
 
     //!< The string literal for microseconds.
-    constexpr std::string_view   STR_US{ "us" };
+    constexpr std::string_view   STR_US         { "us" };
 
     //!< The string literal for milliseconds.
-    constexpr std::string_view   STR_MS{ "ms" };
+    constexpr std::string_view   STR_MS         { "ms" };
 
     //!< The string literal for seconds.
-    constexpr std::string_view   STR_SEC{ "sec" };
+    constexpr std::string_view   STR_SEC        { "sec" };
 
     //!< 1 second timeout used to output data rate.
-    constexpr uint32_t           TIMER_TIMEOUT{ 1'000u };
+    constexpr uint32_t           TIMER_TIMEOUT  { 1'000u };
 
     /**
-     * \brief   Converts the data rate value in bytes into bytes, kilobytes or megabytes,
+     * \brief   Converts the data rate value passed in bytes into bytes, kilobytes or megabytes,
      *          depending on the size.
      * \param   dataRate    The data rate in bytes to convert.
      * \return  Returns a pair where the first value contains converted size and
@@ -75,30 +75,30 @@ namespace NELargeData
     //!< The RGB structure of 1 pixel data.
     struct sRBG
     {
-        uint8_t red{ 0 };   //!< The red value of a pixel.
-        uint8_t green{ 0 }; //!< The green value of a pixel.
-        uint8_t blue{ 0 };  //!< The blue value of a pixel.
+        uint8_t red     { 0 }; //!< The red value of a pixel.
+        uint8_t green   { 0 }; //!< The green value of a pixel.
+        uint8_t blue    { 0 }; //!< The blue value of a pixel.
     };
 
     //!< Coordinates.
     struct sCoord
     {
-        uint32_t coordX{ 0 };   //!< X-coordinate.
-        uint32_t coordY{ 0 };   //!< Y-coordinate.
+        uint32_t coordX { 0 }; //!< X-coordinate.
+        uint32_t coordY { 0 }; //!< Y-coordinate.
     };
 
     //!< The structure of an image data.
     struct sImageData
     {
         //!< Specifies the (x, y) starting position coordinate of an image data
-        sCoord      imgStartPos{ 0, 0 };
+        sCoord      imgStartPos { 0, 0 };
         //!< Specifies  the width of an image data.
-        uint32_t    imgWidth{ 0 };
+        uint32_t    imgWidth    { 0 };
         //!< Specifies the height of an image data.
-        uint32_t    imgHeight{ 0 };
+        uint32_t    imgHeight   { 0 };
         //!< Specifies the length in bytes of an image pixels.
-        uint32_t    imgRBGLen{ 0 };
-        //!< This and following RBG values define array of pixels. Each pixel is a combination of RGB values.
+        uint32_t    imgRBGLen   { 0 };
+        //!< The following is array of pixels. Each pixel is a combination of RGB values.
         sRBG        imgRGB[1];
     };
 
@@ -106,15 +106,15 @@ namespace NELargeData
     struct sImageBlock
     {
         //!< The total size of an image block
-        uint32_t    blockSize{ sizeof( sImageBlock ) };
+        uint32_t    blockSize   { sizeof( sImageBlock ) };
         //!< The frame ID of image block. Blocks with same ID belong to same image frame.
-        uint32_t    frameSeqId{ 0 };
+        uint32_t    frameSeqId  { 0 };
         //!< The image data source ID.
-        uint32_t    channelId{ 0 };
+        uint32_t    channelId   { 0 };
         //!< Specifies the total width of the image frame.
-        uint32_t    frameWidth{ 0 };
+        uint32_t    frameWidth  { 0 };
         //!< Specifies the total height of the image frame.
-        uint32_t    frameHeight{ 0 };
+        uint32_t    frameHeight { 0 };
         //!< The image data structure followed by array of pixels.
         sImageData  imageData;
     };

@@ -1,43 +1,55 @@
 ========================================================================
-    CONSOLE APPLICATION : 12_pubsvc Project Overview
+    CONSOLE APPLICATION : 19_pubwatchdog Project Overview
 ========================================================================
 
-This project demonstrates the use of public service in a multi-processing
-environment based on IPC. The demo creates 2 applications, where one
-provides service and the other uses service by calling predefined remote
-requests and receives replies (responses).
+This project demonstrates use of watchdog in punlic service.
+The watchdog is a guard to control threads. When thread is defined in the
+model, developer may set watchdog timeout in milliseconds. The watchdog with
+timeout 0ms is disabling the watchdog for the specified thread.
+-   If during the time the thread does not make a full cycle, the watchdog 
+    manager assumes that the thread is stuck for any reason and kills the thread.
+-   The system notifies all components that client or servers registered in 
+    the thread are lost connection.
+-   The system restarts the thread and instantiates the components defined in
+    the model of the thread.
+-   When components are instantiated, the system notifies clients that the 
+    service is available again.
 
-The project consists of 3 sub-projects:
-    1. generated  (12_generated)    -- generated codes.
-	2. pubservice (12_pubservice)   -- public service provider.
-	3. pubclient  (12_pubclient)    -- public service client.
+In this example, to trigger the watchdog the system puts the thread in a sleep,
+so that when watchdog timeout is expired the system kills and restarts the thread
+with components.
 
-All communications pass through mcrouter (multicasting router). Since in
-AREG SDK the service discovery is automated and it provides fault tolerant
-system, the sequence of processes to start does not play any role.
+The demo creates a public service and the remote client components
 
-It automatically forms mist-network, where components receive connected or
-disconnected notifications to start or stop calling remote methods.
+The project consist of 3 sub-projects:
+    1. generated  (19_generated)      -- generated code.
+    2. pubservice (19_pubservicewdog) -- public service provider.
+    3. pubclient  (19_pubclientwdog)  -- remote client provider.
 
 ////////////////////////////////////////////////////////////////////////
 
-        1. Project 'generated' / 12_generated
-        
-Generated code of the HelloWorld.siml service interface document located
+        1. Project 'generated' / 18_generated
+
+Generated code of the HelloWatchdog.siml service interface document located
 in './res' sub-folder. The document is created by an interface design tool
 and compiled as a static library.
 
 ////////////////////////////////////////////////////////////////////////
 
-        2. Project 'pubservice' / 12_pubservice
-        
-The application provides network discoverable Public service, which 
-predefined methods are called from remote clients.
+        2. Project 'pubservice' / 19_pubservicewdog
+
+The application instantiates the public service to be triggered by the 
+request of the client. The service provider thread of the application has
+registered watchdog timeout. By the request of the client, the thread goes
+in sleep, so that the watchdog kills and restarts the thread. All connected
+clients are notifies that the service is disconnected.
 
 ////////////////////////////////////////////////////////////////////////
 
-        3. Project 'pubclient' / 12_pubclient
-        
-The application contains a Public service client software component.
-It receives connected notification and starts calling remote method of
-the Public service. To make periodic calls, it uses a timer.
+        3. Project 'pubclient' / 19_pubservicewdog
+
+The application instantiates the remote client to connect to the publicservice
+running in the thread with watchdog. The client send a message to the public
+service to put thread to the sleep. When service thread is killed and the servicing
+component is deleted, the client receives notification that the service is disconnected.
+When public service is available, the client is notified that service is avaialble.

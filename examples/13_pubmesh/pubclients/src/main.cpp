@@ -2,7 +2,7 @@
 // Name        : main.cpp
 // Author      : Artak Avetyan
 // Version     :
-// Copyright   : Aregtech (c) 2021
+// Copyright   : (c) 2021-2022 Aregtech UG.All rights reserved.
 // Description : This project contains multiple instances of Public service
 //               clients to invoke remote method calls.The system guarantees
 //               that the each call is delivered to the target and the

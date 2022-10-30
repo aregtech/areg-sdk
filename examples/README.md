@@ -1,7 +1,7 @@
 # Examples
 ```
 This file is part of AREG SDK and describes the examples
-Copyright (c) 2017-2021, Aregtech
+Copyright (c) 2017-2022, Aregtech
 Contact: info[at]aregtech.com
 Website: https://www.aregtech.com
 ```
@@ -41,6 +41,9 @@ Below is the list of examples:
 15. [15_pubworker](./15_pubworker/) -- multiprocessing (**IPC**) application to demonstrate _Worker Thread_ definition in the model and custom event processing.
 16. [16_pubfsm](./16_pubfsm/) -- multiprocessing (**IPC**) application to demonstrate the work of Finite State-Machine (FSM) using AREG framework features.
 17. [17_winchat](./17_winchat/) -- Windows GUI application (**IPC**) to demonstrate dynamic modeling, fault tolerant and distributed system.
+18. [18_locwatchdog](./18_locwatchdog) -- multithreading application to demonstrate watchdog feature with local service.
+19. [19_pubwatchdog](./19_pubwatchdog) -- multiprocessing (**IPC**) application to demonstrate watchdog feature with local service.
+20. [20_largedata](./20_largedata) -- multiprocessing (**IPC**) application to demonstrate the network communication data rate.
 
 The list will be updated. We recommend periodically checking the list.
 

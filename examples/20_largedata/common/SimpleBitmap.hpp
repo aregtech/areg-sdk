@@ -4,8 +4,7 @@
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework examples
  * \author      Artak Avetyan
  * \brief       Collection of AREG SDK examples.
- *              This file contains simple implementation of service client to
- *              request message output
+ *              This file contains simple 24-bit bitmap image class implementation.
  ************************************************************************/
 /************************************************************************
  * Include files.

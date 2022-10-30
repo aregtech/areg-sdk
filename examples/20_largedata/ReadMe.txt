@@ -1,43 +1,45 @@
 ========================================================================
-    CONSOLE APPLICATION : 12_pubsvc Project Overview
+    CONSOLE APPLICATION : 20_largedata Project Overview
 ========================================================================
 
-This project demonstrates the use of public service in a multi-processing
-environment based on IPC. The demo creates 2 applications, where one
-provides service and the other uses service by calling predefined remote
-requests and receives replies (responses).
+This console project demonstrates the network communication data rate.
+Base on the options given by the user, the service generates simple gray
+bitmap image to deliver to connected clients. Bothe, servicing and client
+applications output data rate information, so that the user by measuring
+CPU load and RAM change may check the most optimal data rate for the application.
+This application as well will be used in further versions as a benchmark
+test to demonstrate communication improvements.
 
 The project consists of 3 sub-projects:
-    1. generated  (12_generated)    -- generated codes.
-	2. pubservice (12_pubservice)   -- public service provider.
-	3. pubclient  (12_pubclient)    -- public service client.
+    1. generated  (20_generated)       -- generated codes.
+	2. pubservice (20_svclargedata)    -- public service provider.
+	3. pubclient  (20_clientlargedata) -- public service client.
 
-All communications pass through mcrouter (multicasting router). Since in
-AREG SDK the service discovery is automated and it provides fault tolerant
-system, the sequence of processes to start does not play any role.
-
-It automatically forms mist-network, where components receive connected or
-disconnected notifications to start or stop calling remote methods.
+There is as well common objects used by server and client components.
+The user may type on console commands to change options like
+-   Image width, height and the number of lines per image block. 
+    These parameters change the number of processing items per second.
+-   Pixel dwell time, which is used as a time to generate 1 pixel data.
+    These parameter change image data rate per second.
 
 ////////////////////////////////////////////////////////////////////////
 
-        1. Project 'generated' / 12_generated
+        1. Project 'generated' / 20_generated
         
-Generated code of the HelloWorld.siml service interface document located
+Generated code of Large Data service interface document located
 in './res' sub-folder. The document is created by an interface design tool
 and compiled as a static library.
 
 ////////////////////////////////////////////////////////////////////////
 
-        2. Project 'pubservice' / 12_pubservice
+        2. Project 'pubservice' / 20_svclargedata
         
-The application provides network discoverable Public service, which 
-predefined methods are called from remote clients.
+The application provides public service, which generates data and sends
+to connected lients.
 
 ////////////////////////////////////////////////////////////////////////
 
-        3. Project 'pubclient' / 12_pubclient
+        3. Project 'pubclient' / 20_clientlargedata
         
-The application contains a Public service client software component.
-It receives connected notification and starts calling remote method of
-the Public service. To make periodic calls, it uses a timer.
+The application contains a service client component, which receives the
+data from the service component.

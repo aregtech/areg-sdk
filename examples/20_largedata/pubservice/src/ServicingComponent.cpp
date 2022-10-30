@@ -44,9 +44,9 @@ ServicingComponent::ServicingComponent(const NERegistry::ComponentEntry & entry,
 
     , mBitmap           ( )
     , mBlockList        ( )
-    , mTimer            ( static_cast<IETimerConsumer &>(self()) , TIMER_NAME)
-    , mInputThread      ( static_cast<IEThreadConsumer &>(self()), INPUT_THREAD_NAME)
-    , mImageThread      ( static_cast<IEThreadConsumer &>(self()), IMAGE_THREAD_NAME)
+    , mTimer            ( static_cast<IETimerConsumer &>(self()) , TIMER_NAME )
+    , mInputThread      ( static_cast<IEThreadConsumer &>(self()), THREAD_WAITINPUT )
+    , mImageThread      ( static_cast<IEThreadConsumer &>(self()), THREAD_GENERATE )
     , mOptions          ( )
     , mQuitThread       ( true )
     , mOptionChanged    ( true )
@@ -235,12 +235,12 @@ void ServicingComponent::onThreadRuns(void)
     TRACE_SCOPE(examples_20_pubservice_ServicingComponent_onThreadRuns);
 
     const String& threadName = Thread::getCurrentThreadName();
-    if (threadName == INPUT_THREAD_NAME)
+    if (threadName == THREAD_WAITINPUT )
     {
         TRACE_DBG("Started console input thread.");
         _runInputThread();
     }
-    else if (threadName == IMAGE_THREAD_NAME)
+    else if (threadName == THREAD_GENERATE )
     {
         TRACE_DBG("Started generate image thread.");
         _runImageThread();
@@ -313,9 +313,6 @@ void ServicingComponent::_runImageThread(void)
             }
 
             _updateData(dataGenerated, blockGenerated, wait.waitUntil(timeout));
-
-            // std::chrono::nanoseconds diff = timeout - std::chrono::steady_clock::now();
-            // TRACE_DBG("Difference: %d ", static_cast<int32_t>(diff.count()));
         }
     }
 }

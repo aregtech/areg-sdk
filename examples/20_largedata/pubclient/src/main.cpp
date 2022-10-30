@@ -2,7 +2,7 @@
 // Name        : main.cpp
 // Author      : Artak Avetyan
 // Version     :
-// Copyright   : Aregtech (c) 2021
+// Copyright   : (c) 2021-2022 Aregtech UG.All rights reserved.
 // Description : The application contains a Public service client software
 //               component. It receives connected notification and starts 
 //               calling remote method of the Public service. To make periodic
@@ -29,9 +29,7 @@ const String     _serviceClient  = NEUtilities::generateName("ServiceClient"); /
 
 //////////////////////////////////////////////////////////////////////////
 //
-// The following design will instantiate twice the same implementation
-// of component, but running in different thread and having different
-// role name. Note, no need to make changes in the code.
+// The following design instantiates large data servicing client.
 //
 //////////////////////////////////////////////////////////////////////////
 

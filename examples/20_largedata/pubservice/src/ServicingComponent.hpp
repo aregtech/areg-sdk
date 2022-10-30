@@ -93,13 +93,13 @@ class ServicingComponent    : public    Component
     static constexpr std::string_view   MSG_ITEM_RATE   { "Item rate: sent [ %u ] items / sec. Sleep [ %u ] times, ignored [ %u ] times." };
 
     //!< The option command input thread.
-    static constexpr std::string_view   INPUT_THREAD_NAME   { "ConsoleInputThread" };
+    static constexpr std::string_view   THREAD_WAITINPUT{ "ConsoleInputThread" };
 
     //!< The data generating thread.
-    static constexpr std::string_view   IMAGE_THREAD_NAME   { "GenerateImageThread" };
+    static constexpr std::string_view   THREAD_GENERATE { "GenerateImageThread" };
 
     //!< Timer name.
-    static constexpr std::string_view   TIMER_NAME          { "LargeDataTimer" };
+    static constexpr std::string_view   TIMER_NAME     { "LargeDataTimer" };
 
     using ImageBlock = NELargeData::ImageBlock;
 

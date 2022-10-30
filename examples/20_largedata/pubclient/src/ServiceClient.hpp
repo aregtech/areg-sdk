@@ -37,10 +37,10 @@ class ServiceClient : public    Component
 private:
 
     //!< The coordinates to output client application title / headline.
-    static constexpr Console::Coord     COORD_TITLE{ 0, 0 };
+    static constexpr Console::Coord     COORD_TITLE     { 0, 0 };
 
     //!< Coordinates to output data rate information of large data client.
-    static constexpr Console::Coord     COORD_DATA_RATE{ 0, 1 };
+    static constexpr Console::Coord     COORD_DATA_RATE { 0, 1 };
 
     //!< File name to save bitmap image.
     static constexpr std::string_view   FILE_NAME       { ".\\SimpleImage.bmp" };
@@ -49,7 +49,7 @@ private:
     static constexpr std::string_view   TIMER_NAME      { "DataRateTimer" };
 
     //!< Message to output as application title / headline.
-    static constexpr std::string_view   MSG_APP_TITLE{ "Application to test data rate, service client part..." };
+    static constexpr std::string_view   MSG_APP_TITLE   { "Application to test data rate, service client part..." };
 
     //!< Message to output data rate.
     static constexpr std::string_view   MSG_DATA_RATE   { "Receiving data with rate [ % 7.2f ] %s and [ %u ] blocks per second." };

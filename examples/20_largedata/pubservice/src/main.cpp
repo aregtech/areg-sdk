@@ -2,7 +2,7 @@
 // Name        : main.cpp
 // Author      : Artak Avetyan
 // Version     :
-// Copyright   : Aregtech (c) 2021
+// Copyright   : (c) 2021-2022 Aregtech UG.All rights reserved.
 // Description : The application provides network discoverable Public service,
 //               which predefined methods are called from remote clients.
 //============================================================================
@@ -21,9 +21,7 @@
 
 //////////////////////////////////////////////////////////////////////////
 //
-// The following design will instantiate twice the same implementation
-// of component, but running in different thread and having different
-// role name. Note, no need to make changes in the code.
+// The following design will instantiate servicing component.
 //
 //////////////////////////////////////////////////////////////////////////
 
@@ -57,7 +55,7 @@ DEF_TRACE_SCOPE(example_19_pubservicewdog_main_main);
  **/
 int main()
 {
-    printf("Testing simple remote servicing, run as a ultra-small Server...\n");
+    printf("Testing large data servicing, run as a ultra-small Server...\n");
 
     // force to start logging with default settings
     TRACER_CONFIGURE_AND_START( nullptr );
@@ -86,7 +84,7 @@ int main()
 
     } while (false);
 
-    printf("Completed testing simple remote servicing component. Check the logs...\n");
+    printf("Completed testing large data servicing component. Check the logs...\n");
 
 	return 0;
 }
