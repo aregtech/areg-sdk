@@ -9,69 +9,72 @@ Website: https://www.aregtech.com
 This document is a developer guide and describes how to develop a service enabled application.
 
 ## Table of content
-1. [Service interface prototype](#service-interface-prototype)
+- [Developer guide](#developer-guide)
+  - [Table of content](#table-of-content)
+  - [Service interface prototype](#service-interface-prototype)
     - [Public and Local services](#public-and-local-services)
     - [Data types](#data-types)
-        * [Structures](#structures)
-        * [Enumerations](#enumerations)
-        * [Imported types](#imported-types)
-        * [Defined containers](#defined-containers)
+      - [Structures](#structures)
+      - [Enumerations](#enumerations)
+      - [Imported types](#imported-types)
+      - [Defined containers](#defined-containers)
     - [Attributes](#attributes)
     - [Requests, responses and broadcasts](#requests-responses-and-broadcasts)
-        * [Requests](#requests)
-        * [Responses](#responses)
-        * [Broadcasts](#broadcasts)
+      - [Requests](#requests)
+      - [Responses](#responses)
+      - [Broadcasts](#broadcasts)
     - [Constants](#constants)
     - [Includes](#includes)
-2. [Code generator](#code-generator)
-3. [Generated codes](#generated-codes)
-4. [Modeling and service initialization](#modeling-and-service-initialization)
-5. [Hello Service!](#hello-service)
+  - [Code generator](#code-generator)
+  - [Generated codes](#generated-codes)
+  - [Modeling and service initialization](#modeling-and-service-initialization)
+  - [Hello Service!](#hello-service)
     - [Service Interface](#service-interface)
     - [Generate codes](#generate-codes)
     - [Develop the service](#develop-the-service)
     - [Develop the service client](#develop-the-service-client)
     - [Create and load model](#create-and-load-model)
-        * [Model with single thread](#model-with-single-thread)
-        * [Model with multiple threads](#model-with-multiple-threads)
-        * [Model of separate processes](#model-of-separate-processes)
-6. [Make the build](#make-the-build)
-7. [Contact us!](#contact-us)
+      - [Model with single thread](#model-with-single-thread)
+      - [Model with multiple threads](#model-with-multiple-threads)
+      - [Model of separate processes](#model-of-separate-processes)
+    - [Make the build](#make-the-build)
+  - [Contact us!](#contact-us)
 
 ## Service interface prototype
 
 AREG SDK is an interface-centric communication engine. Before creating a service, there should be service interface designed, which defines API of service, and has following sections:
 1. The overview and type of service interface (_Public_ or _Local_).
-2. The data types specific for the service or exported from any header file.
-3. Attributes, which are the data of services and developers can describe to be notified on value change.
+2. The data types specific for the service or can be exported common types, which are possble to serialize.
+3. Attributes, which are the data of services to subsribe on data set or data change notifications.
 4. Methods, which are _requests_, _responses_ and _broadcasts_.
-5. Constant values, needed by interface.
-6. Any additional file to include.
+5. Constants required in service interface.
+6. Any additional file to include for the service.
 
-The service interfaces can be defined in a prototype XML document used to generate base objects to extend and develop the service or the service client(s). An example of the service interface prototype is [Sample.siml](./Sample.siml), which contains all sections.
+The service interfaces can be defined in a prototype XML document to generate basic servicing and client objects to extend. Developers may extend the generated files and implement required interfaces. An example of the service interface prototype is described in [Sample.siml](./Sample.siml) XML format Service Interface document file, which contains all sections.
 
-> 💡 The design UI tool to define interface is in development state and will be available in next release.
+> 💡 The Service Interface design UI tool is in development state and will be available in next releases as a freeware.
 
 ### Public and Local services
 
-The following example defines _Sample_ service as _Public_ (used in IPC).
+The following example defines a _Public_ (used in IPC) interface defined for _Sample_ service.
 ```xml
 <Overview ID="1" Name="Sample" Version="1.0.0" isRemote="true">
     <Description>This is an example of defining service interface.</Description>
 </Overview>
 ```
-If there is no `isRemote` attribute or it is set to false `isRemote="true"`, the service interface is _Local_, used for multithreading communication and it is not visible outside of the process. Protect sensitive data with _Local_ services.
+If there is no `isRemote` attribute or it is set `false` (`isRemote="false"`) then the service interface is _Local_ and it is used for multithreading communication. The _Local_ services are not visible and are not accessible outside of the process. If `isRemote` attribute is set `true` like in the example (`isRemote="true"`), the service that provides the interface is _Public_ and the API can be accessed from any note of the network. Protect sensitive data with _Local_ services.
 
-> 💡 The _Local_ services are not used in IPC, the system will ignore to forward messages and they will not be visible outside of process.
+> 💡 If the API of the _Local_ service interface is called outside of the process, the system ignores the call and returns error message to the calling clinet component. Only _Public_ interfaces are accessed for _IPC_ and cann be called from any client software component in the netwrok.
 
 ### Data types
 
-Every service interface can have service specific data types. When a new data type is defined, it can be used to declare any variables and parameters of methods. New data types are listed in the section `<DataTypeList> ... </DataTypeList>`. All data types are automatically streamable objects.
+Every service interface can have specific data types. When a new data type is defined, it can be used to declare any variables, service data (attributes) and parameters of methods. New data types are listed in the section `<DataTypeList> ... </DataTypeList>`. All data types are streamable objects. It is possible to import a common data type in the service interface. The importa is done by including header file and by specifying the name of the type, structure or class. Each imported type must be streamable, i.e. there should be `operator >>`or `operator <<` declared and implemented for the type, to serialize data in [EIIOStream](.\..\framework\areg\base\IEIOStream.hpp) object. You'll get compilation error if the imported type does not have operators.
 
 #### Structures
 
-The following example demonstrates how to declare a new structure with the fields. The default values are used to set when the object is created. The fields of structure must have `assigning operator`, `comparing operator`, `copy constructor` (if an object), must be possible explicitly to convert to `unsigned int` and must be possible to `stream`.
+In the _DataTypeList_ section of Service Interface XML document, the developers can declare a new structure with the fields. The _DataType_ tag indicates type _Structure_ and the name of the structure followed by _Description_ and the list of structure fields. Each field has _data type_ and the name. If a structure has default value it should be specified in the _Value_ entry (`<Value IsDefault="true">0</Value>`). Each type of the field of structure must have `assigning operator`, `comparing operator`, `copy constructor` (if an object), must be possible explicitly to convert to `unsigned int` and must be possible to `stream` in [EIIOStream](.\..\framework\areg\base\IEIOStream.hpp) object.
 
+**An example of declaring structure with fields and default values:**
 ```xml
 <DataType ID="2" Name="SomeStruct" Type="Structure">
     <Description>Some structure with data. It will become new type.</Description>
@@ -91,16 +94,20 @@ The following example demonstrates how to declare a new structure with the field
     </FieldList>
 </DataType>
 ```
-In this example, the structure has 3 fields with default values to set when creating the object.
+In this example, the structure has 3 fields with default values to set.
 
 #### Enumerations
 
-The following example demonstrates how to declare enumeration. All enumerations have the `int` type.
+In the _DataTypeList_ section of Service Interface XML document, the developers can declare a new enumeration with the fields. The _DataType_ tag indicates type _Enumerate_ and the name of the enumaration followed by _Description_ and the list of fields. Each field may contain _Value_. The enumrations automatically are streamable.
+
+**An example of declaring enumeration with fields and values:**
 ```xml
 <DataType ID="6" Name="SomeEnum" Type="Enumerate" Values="default">
+    <Description>A new enumration of the service interface.</Description>
     <FieldList>
         <EnumEntry ID="7" Name="Invalid">
             <Value>-1</Value>
+            <Description>The invalid value of enum.</Description>
         </EnumEntry>
         <EnumEntry ID="8" Name="Nothing">
             <Value>0</Value>
@@ -114,11 +121,12 @@ The following example demonstrates how to declare enumeration. All enumerations 
     </FieldList>
 </DataType>
 ```
- The enumeration fields may have explicit values. In this example, the `Invalid` field has value `-1`.
 
  #### Imported types
 
- The following example demonstrates how to import an existing type. The specified `NEMemory::uAlign` is already existing in `areg/base/NEMemory.hpp`. It is imported to be used in the service.
+In the _DataTypeList_ section of Service Interface XML document the developers can import defined types. The _DataType_ tag indicates type _Imported_ and the name of the imported type followed by _Description_, _Namespace_ if present and the location of relative path of the imported file. Any imported type must be possible to `stream` in [EIIOStream](.\..\framework\areg\base\IEIOStream.hpp) object.
+
+**An example of imported type:**
  ```xml
 <DataType ID="11" Name="uAlign" Type="Imported">
     <Description>This example exports NEMemory::uAlign in the service interface.</Description>
@@ -126,12 +134,13 @@ The following example demonstrates how to declare enumeration. All enumerations 
     <Location>areg/base/NEMemory.hpp</Location>
 </DataType>
 ```
+The example imports type `NEMemory::uAlign`, which is declared in `areg/base/NEMemory.hpp` header file and is streamable.
 
 #### Defined containers
 
-The following example demonstrates how to define a container. The container elements must be possible to copy, assign and compare. In case of hash-map, the key must be possible explicitly to convert to `unsigned int`.
+In the _DataTypeList_ section of Service Interface XML document the developers can declare new container types. The _DataType_ tag indicates type _DefinedType_ and the name of the type followed by _Description_. The _Container_ tag specifies the type of container and the _BaseTypeValue_ define the type of values stored in the container, which must be possible to `stream` in [EIIOStream](.\..\framework\areg\base\IEIOStream.hpp) object. If the container is _HashMap_ in addition it has _BaseTypeKey_, which indicates the type of keys in the map and which must be possible to stream.
 
-**New array**:
+**An example of defining new type of array:**
 ```xml
 <DataType ID="12" Name="SomeArray" Type="DefinedType">
     <Description>Defines new type of array</Description>
@@ -139,8 +148,9 @@ The following example demonstrates how to define a container. The container elem
     <BaseTypeValue>uint32</BaseTypeValue>
 </DataType>
 ```
+In this example, the values of array have type `unsigned int`, which is streamable.
 
-**New linked list**:
+**An example of defining new type of linked list:**
 ```xml
 <DataType ID="13" Name="SomeList" Type="DefinedType">
     <Description>New type of linked list.</Description>
@@ -148,8 +158,9 @@ The following example demonstrates how to define a container. The container elem
     <BaseTypeValue>String</BaseTypeValue>
 </DataType>
 ```
+In this example, the values of linked list have type `String`, which is streamable.
 
-**New hash-map**:
+**An example of defining new type of hash map:**
 ```xml
 <DataType ID="14" Name="SomeMap" Type="DefinedType">
     <Description>This example defines hash-map where key is exported and value is new data type.</Description>
@@ -158,21 +169,29 @@ The following example demonstrates how to define a container. The container elem
     <BaseTypeKey>String</BaseTypeKey>
 </DataType>
 ```
+In this example, the values of hash-map have type `SomeStruct` and the key are type `String`. Both types are streamable. The type `SomeStruct` declared in the this Service Interface XML document is automatically declared as streamable, has assigning and compare operators, and has default constructor.
 
 ### Attributes
-_Attributes_ in services are data that clients can subscribe to get update notifications. The attributes are listed in the section `<AttributeList> ... </AttributeList>`. In this example the system notifies connected clients when the value of `SomeAttr1` is changed, i.e. not equal to previous value:
+
+_Attributes_ in services are data that clients can subscribe to get update notifications either each time when data is set of only when data is updated. The attributes are listed in the section `<AttributeList> ... </AttributeList>`.
+
+**An example of declaring attribute to notify only on value change:**
 ```xml
 <Attribute DataType="SomeEnum" ID="15" Name="SomeAttr1" Notify="OnChange">
     <Description>An attribute to notify subscribers only when value is changed.</Description>
 </Attribute>
 ```
+In this example the attribute of `SomeEnum` type has name `SomeAttr1` and it is designed to notify connected clients only if the value is changed. The type `SomeEnum` must be possible to compare.
 
-In this example, the system notifies clients each time when the value is set, i.e. does not compare and check equality:
+**An example of declaring attribute to notify only on value change:**
 ```xml
 <Attribute DataType="SomeStruct" ID="16" Name="SomeAttr2" Notify="Always">
     <Description>Another attribute to notify subscribers any time when value is set (maybe not changed).</Description>
 </Attribute>
 ```
+In this example the attribute of `SomeSruct` type has name `SomeAttr2` and it is designed to notify connected clients each time when value is set.
+
+The difference of _OnChange_ and _Always_ notifications is that _OnChange_ the system sends notifications only if stored value and new value differ, i.e. **it is comparing stored and new values**. In case of _Always_ notifications, the system notifies clients each time when value is set, indifferent whether it has been changed or not,i.e. **it is NOT comparing stored and new values**.
 
 ### Requests, responses and broadcasts
 Service interface may have `Request`, `Response` and `Broadcast` methods. The _Requests_ are called by clients to be executed on the service. The _Responses_ are replies to the requests. _Broadcasts_ are methods acting like events to delive multiple parameters.
