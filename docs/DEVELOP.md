@@ -68,11 +68,11 @@ If there is no `isRemote` attribute or it is set `false` (`isRemote="false"`) th
 
 ### Data types
 
-Every service interface can have specific data types. When a new data type is defined, it can be used to declare any variables, service data (attributes) and parameters of methods. New data types are listed in the section `<DataTypeList> ... </DataTypeList>`. All data types are streamable objects. It is possible to import a common data type in the service interface. The importa is done by including header file and by specifying the name of the type, structure or class. Each imported type must be streamable, i.e. there should be `operator >>`or `operator <<` declared and implemented for the type, to serialize data in [EIIOStream](../framework/areg/base/IEIOStream.hpp) object. You'll get compilation error if the imported type does not have operators.
+Every service interface can have specific data types. When a new data type is defined, it can be used to declare any variables, service data (attributes) and parameters of methods. New data types are listed in the section `<DataTypeList> ... </DataTypeList>`. All data types are streamable objects. It is possible to import a common data type in the service interface. The importa is done by including header file and by specifying the name of the type, structure or class. Each imported type must be streamable, i.e. there should be `operator >>`or `operator <<` declared and implemented for the type, to serialize data in [IEIOStream](../framework/areg/base/IEIOStream.hpp) object. You'll get compilation error if the imported type does not have operators.
 
 #### Structures
 
-In the _DataTypeList_ section of Service Interface XML document, the developers can declare a new structure with the fields. The _DataType_ tag indicates type _Structure_ and the name of the structure followed by _Description_ and the list of structure fields. Each field has _data type_ and the name. If a structure has default value it should be specified in the _Value_ entry (`<Value IsDefault="true">0</Value>`). Each type of the field of structure must have `assigning operator`, `comparing operator`, `copy constructor` (if an object), must be possible explicitly to convert to `unsigned int` and must be possible to `stream` in [EIIOStream](.\..\framework\areg\base\IEIOStream.hpp) object.
+In the _DataTypeList_ section of Service Interface XML document, the developers can declare a new structure with the fields. The _DataType_ tag indicates type _Structure_ and the name of the structure followed by _Description_ and the list of structure fields. Each field has _data type_ and the name. If a structure has default value it should be specified in the _Value_ entry (`<Value IsDefault="true">0</Value>`). Each type of the field of structure must have `assigning operator`, `comparing operator`, `copy constructor` (if an object), must be possible explicitly to convert to `unsigned int` and must be possible to `stream` in [IEIOStream](../framework/areg/base/IEIOStream.hpp) object.
 
 **An example of declaring structure with fields and default values:**
 ```xml
@@ -124,7 +124,7 @@ In the _DataTypeList_ section of Service Interface XML document, the developers 
 
  #### Imported types
 
-In the _DataTypeList_ section of Service Interface XML document the developers can import defined types. The _DataType_ tag indicates type _Imported_ and the name of the imported type followed by _Description_, _Namespace_ if present and the location of relative path of the imported file. Any imported type must be possible to `stream` in [EIIOStream](..\framework\areg\base\IEIOStream.hpp) object.
+In the _DataTypeList_ section of Service Interface XML document the developers can import defined types. The _DataType_ tag indicates type _Imported_ and the name of the imported type followed by _Description_, _Namespace_ if present and the location of relative path of the imported file. Any imported type must be possible to `stream` in [IEIOStream](../framework/areg/base/IEIOStream.hpp) object.
 
 **An example of imported type:**
  ```xml
@@ -138,7 +138,7 @@ The example imports type `NEMemory::uAlign`, which is declared in `areg/base/NEM
 
 #### Defined containers
 
-In the _DataTypeList_ section of Service Interface XML document the developers can declare new container types. The _DataType_ tag indicates type _DefinedType_ and the name of the type followed by _Description_. The _Container_ tag specifies the type of container and the _BaseTypeValue_ define the type of values stored in the container, which must be possible to `stream` in [EIIOStream](.\..\framework\areg\base\IEIOStream.hpp) object. If the container is _HashMap_ in addition it has _BaseTypeKey_, which indicates the type of keys in the map and which must be possible to stream.
+In the _DataTypeList_ section of Service Interface XML document the developers can declare new container types. The _DataType_ tag indicates type _DefinedType_ and the name of the type followed by _Description_. The _Container_ tag specifies the type of container and the _BaseTypeValue_ define the type of values stored in the container, which must be possible to `stream` in [IEIOStream](../framework/areg/base/IEIOStream.hpp) object. If the container is _HashMap_ in addition it has _BaseTypeKey_, which indicates the type of keys in the map and which must be possible to stream.
 
 **An example of defining new type of array:**
 ```xml
@@ -173,7 +173,7 @@ In this example, the values of hash-map have type `SomeStruct` and the key are t
 
 ### Attributes
 
-_Attributes_ in services are data that clients can subscribe to get update notifications either each time when data is set of only when data is updated. The attributes are listed in the section `<AttributeList> ... </AttributeList>`.
+_Attributes_ in services are data that clients can subscribe to get update notifications either each time when data is set of only when data is updated. The attributes are listed in the section `<AttributeList> ... </AttributeList>`. The type of attribute must be possible to stream in [IEIOStream](../framework/areg/base/IEIOStream.hpp) object.
 
 **An example of declaring attribute to notify only on value change:**
 ```xml
