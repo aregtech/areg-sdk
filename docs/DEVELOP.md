@@ -68,7 +68,7 @@ If there is no `isRemote` attribute or it is set `false` (`isRemote="false"`) th
 
 ### Data types
 
-Every service interface can have specific data types. When a new data type is defined, it can be used to declare any variables, service data (attributes) and parameters of methods. New data types are listed in the section `<DataTypeList> ... </DataTypeList>`. All data types are streamable objects. It is possible to import a common data type in the service interface. The importa is done by including header file and by specifying the name of the type, structure or class. Each imported type must be streamable, i.e. there should be `operator >>`or `operator <<` declared and implemented for the type, to serialize data in [EIIOStream](.\..\framework\areg\base\IEIOStream.hpp) object. You'll get compilation error if the imported type does not have operators.
+Every service interface can have specific data types. When a new data type is defined, it can be used to declare any variables, service data (attributes) and parameters of methods. New data types are listed in the section `<DataTypeList> ... </DataTypeList>`. All data types are streamable objects. It is possible to import a common data type in the service interface. The importa is done by including header file and by specifying the name of the type, structure or class. Each imported type must be streamable, i.e. there should be `operator >>`or `operator <<` declared and implemented for the type, to serialize data in [EIIOStream](../framework/areg/base/IEIOStream.hpp) object. You'll get compilation error if the imported type does not have operators.
 
 #### Structures
 
@@ -124,7 +124,7 @@ In the _DataTypeList_ section of Service Interface XML document, the developers 
 
  #### Imported types
 
-In the _DataTypeList_ section of Service Interface XML document the developers can import defined types. The _DataType_ tag indicates type _Imported_ and the name of the imported type followed by _Description_, _Namespace_ if present and the location of relative path of the imported file. Any imported type must be possible to `stream` in [EIIOStream](.\..\framework\areg\base\IEIOStream.hpp) object.
+In the _DataTypeList_ section of Service Interface XML document the developers can import defined types. The _DataType_ tag indicates type _Imported_ and the name of the imported type followed by _Description_, _Namespace_ if present and the location of relative path of the imported file. Any imported type must be possible to `stream` in [EIIOStream](..\framework\areg\base\IEIOStream.hpp) object.
 
 **An example of imported type:**
  ```xml
