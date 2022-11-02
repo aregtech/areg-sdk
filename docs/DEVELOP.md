@@ -44,15 +44,15 @@ This document is a developer guide and describes how to develop a service enable
 
 AREG SDK is an interface-centric communication engine. Before creating a service, there should be service interface designed, which defines API of service, and has following sections:
 1. The overview and type of service interface (_Public_ or _Local_).
-2. The data types specific for the service or can be exported common types, which are possble to serialize.
-3. Attributes, which are the data of services to subsribe on data set or data change notifications.
+2. The data types specific for the service or can be exported common types, which are possible to serialize.
+3. Attributes, which are the data of services to subscribe on data set or data change notifications.
 4. Methods, which are _requests_, _responses_ and _broadcasts_.
 5. Constants required in service interface.
 6. Any additional file to include for the service.
 
 The service interfaces can be defined in a prototype XML document to generate basic servicing and client objects to extend. Developers may extend the generated files and implement required interfaces. An example of the service interface prototype is described in [Sample.siml](./Sample.siml) XML format Service Interface document file, which contains all sections.
 
-> 💡 The Service Interface design UI tool is in development state and will be available in next releases as a freeware.
+> 💡 The Service Interface design UI tool is in development state and will be available in next releases as a free-ware.
 
 ### Public and Local services
 
@@ -64,11 +64,11 @@ The following example defines a _Public_ (used in IPC) interface defined for _Sa
 ```
 If there is no `isRemote` attribute or it is set `false` (`isRemote="false"`) then the service interface is _Local_ and it is used for multithreading communication. The _Local_ services are not visible and are not accessible outside of the process. If `isRemote` attribute is set `true` like in the example (`isRemote="true"`), the service that provides the interface is _Public_ and the API can be accessed from any note of the network. Protect sensitive data with _Local_ services.
 
-> 💡 If the API of the _Local_ service interface is called outside of the process, the system ignores the call and returns error message to the calling clinet component. Only _Public_ interfaces are accessed for _IPC_ and cann be called from any client software component in the netwrok.
+> 💡 If the API of the _Local_ service interface is called outside of the process, the system ignores the call and returns error message to the calling client component. Only _Public_ interfaces are accessed for _IPC_ and can be called from any client software component in the network.
 
 ### Data types
 
-Every service interface can have specific data types. When a new data type is defined, it can be used to declare any variables, service data (attributes) and parameters of methods. New data types are listed in the section `<DataTypeList> ... </DataTypeList>`. All data types are streamable objects. It is possible to import a common data type in the service interface. The importa is done by including header file and by specifying the name of the type, structure or class. Each imported type must be streamable, i.e. there should be `operator >>`or `operator <<` declared and implemented for the type, to serialize data in [IEIOStream](../framework/areg/base/IEIOStream.hpp) object. You'll get compilation error if the imported type does not have operators.
+Every service interface can have specific data types. When a new data type is defined, it can be used to declare any variables, service data (attributes) and parameters of methods. New data types are listed in the section `<DataTypeList> ... </DataTypeList>`. All data types are streamable objects. It is possible to import a common data type in the service interface. The import is done by including header file and by specifying the name of the type, structure or class. Each imported type must be streamable, i.e. there should be `operator >>`or `operator <<` declared and implemented for the type, to serialize data in [IEIOStream](../framework/areg/base/IEIOStream.hpp) object. You'll get compilation error if the imported type does not have operators.
 
 #### Structures
 
@@ -98,12 +98,12 @@ In this example, the structure has 3 fields with default values to set.
 
 #### Enumerations
 
-In the _DataTypeList_ section of Service Interface XML document, the developers can declare a new enumeration with the fields. The _DataType_ tag indicates type _Enumerate_ and the name of the enumaration followed by _Description_ and the list of fields. Each field may contain _Value_. The enumrations automatically are streamable.
+In the _DataTypeList_ section of Service Interface XML document, the developers can declare a new enumeration with the fields. The _DataType_ tag indicates type _Enumerate_ and the name of the enumeration followed by _Description_ and the list of fields. Each field may contain _Value_. The enumerations automatically are streamable.
 
 **An example of declaring enumeration with fields and values:**
 ```xml
 <DataType ID="6" Name="SomeEnum" Type="Enumerate" Values="default">
-    <Description>A new enumration of the service interface.</Description>
+    <Description>A new enumeration of the service interface.</Description>
     <FieldList>
         <EnumEntry ID="7" Name="Invalid">
             <Value>-1</Value>
@@ -194,10 +194,10 @@ In this example the attribute of `SomeSruct` type has name `SomeAttr2` and it is
 The difference of _OnChange_ and _Always_ notifications is that _OnChange_ the system sends notifications only if stored value and new value differ, i.e. **it is comparing stored and new values**. In case of _Always_ notifications, the system notifies clients each time when value is set, indifferent whether it has been changed or not,i.e. **it is NOT comparing stored and new values**.
 
 ### Requests, responses and broadcasts
-Service interface may have `Request`, `Response` and `Broadcast` methods. The _Requests_ are called by clients to be executed on the service. The _Responses_ are replies to the requests. _Broadcasts_ are methods acting like events to delive multiple parameters.
+Service interface may have `Request`, `Response` and `Broadcast` methods. The _Requests_ are called by clients to be executed on the service. The _Responses_ are replies to the requests. _Broadcasts_ are methods acting like events to deliver multiple parameters.
 
 #### Requests
-The requests are called by clients to be executed on the service. The requests may have parameters. The requests may have linked response. If request has a response, then the processing request is blocked until service replies with the response. It is possible manually to unblock the request, but then the response must be manually prepared to reply. Multiple requests can be connected with the same response. The request may have no response at all. 
+The requests are called by clients to be executed on the service. The requests may have parameters. The requests may have linked response. If request has a response, then the processing request is blocked until service replies with the response. It is possible manually to unblock the request, but then the response must be manually prepared to reply. Multiple requests can be linked with the same response. The request may have no response at all and in this case the request can be called one after another.
 
 This example demonstrates the definition of request `SomeRequest1` with no parameter connected with a response `SomeResponse1`:
 ```xml
@@ -263,10 +263,16 @@ The responses are sent to the service clients as a reply to execute one or more 
 </Method>
 ```
 
-> 💡 The system sends only one response per request when the request is in running state. The multiple responses on one request will have no effect, because the first response will mark the request as idle, so that the next replies will have no effect.
+
+> 💡 The request with a response automatically is blocked until inked response is sent. It is important to send response to unblock the request, so that the service can process same request again. Otherwise, if response is not sent, the request remains in _busy_ state and any other attempt to trigger the same request will fail with the error _request is busy_. 
+> 💡 `Request` and `Response` are strictly connected. The `Request` remains in _busy_ state until `Response` is not triggered, and if the `Request` is not in _busy_ state, the call of `Response` is ignored by the system.
+> 💡 It is possible dynamically to subscribe on a certain `Response` without triggering a `Request`. In this case, subscribed client receives the `Response` once when the `Request` is processed and replied.
+
 
 #### Broadcasts
-Broadcasts are methods to fireevent and send multiple  data at the same time. The clients may dynamically subscribe on broadcast to receive multiple data. The broadcasts are not connected to any request or response. This example demonstrates the definition of a broadcast with parameters.
+The broadcasts are special service methods not related neither with requests, nor with response. The broadcasts are used to fire an event and send to the clients multiple data as function parameters at the same time. The clients may dynamically subscribe on a certain broadcast. Each time the broadcast is triggered from the servicing component delivered to all subscribed clients.
+
+This example demonstrates the definition of a broadcast with parameters.
 ```xml
 <Method ID="29" MethodType="broadcast" Name="SomeBroadcast">
     <Description>Broadcast with parameters. Can pass multiple parameters at once.</Description>
@@ -282,7 +288,9 @@ Broadcasts are methods to fireevent and send multiple  data at the same time. Th
 ```
 
 ### Constants
-The constants are listed in `<ConstantList> ... </ConstantList>` of the prototype document, the constants are used to share read-only value between clients and the service. This example demonstrates the definition of service specific constant:
+The Service Interface XML document may contain service specific constants listed in `<ConstantList> ... </ConstantList>` section. The constants are used to share read-only value between clients and the service.
+
+This example demonstrates the definition of service specific constant:
 ```xml
 <Constant DataType="uint16" ID="35" Name="SomeConst">
     <Value>100</Value>
@@ -291,7 +299,9 @@ The constants are listed in `<ConstantList> ... </ConstantList>` of the prototyp
 ```
 
 ### Includes
-The includes are listed in `<IncludeList> ... </IncludeList> of the prototype document. They are used to include headers when buil service interface. For example, a service may include header with algiruthms that are used by service. This example demonstrate the definition of includes:
+The Service Interface XML document may have specific include files, which should be included in the service and they are listed in `<IncludeList> ... </IncludeList> section. For example, a service may include special header with the implementation of algorithms used in the service.
+
+This example demonstrate the definition of includes:
 ```xml
 <IncludeList>
     <Location ID="36" Name="areg/base/NEMath.hpp">
@@ -301,22 +311,25 @@ The includes are listed in `<IncludeList> ... </IncludeList> of the prototype do
 ```
 
 ## Code generator
-When the service interface prototype document is designed, with the help of code-generator developers can generate base objects to extend. This helps to avoid tedious jobs and escape mistakes when type codes. The code generator is located in the [tools](./../tools/) folder of `areg-sdk`. Edit and run `generate.sh` or `generate.bat` file to generate source code or call to run `codegen.jar` from command line.
-Before calling code generator, make sure that there is Java installed on the machine and the `codegen.jar` is included in the `CLASSPATH` environment variable. 
-```bash
-$ java -jar codegen.jar --root=<project_root> --doc=<relative_path_to_siml> --target=<relative_path_to_target_location>
-```
-You may as well excplicitly specify the path of `codegen.jar`
-```bash
-$ java -jar <areg-sdk-root>/tools/codegen.jar --root=<project_root> --doc=<relative_path_to_siml> --target=<relative_path_to_target_location>
-```
-Where:
-- `<project_root>` if the path of your project, for example `~/aregtech/areg-sdk/examples`;
-- `<relative_path_to_siml>` the service interface prototype file path relative to the project root, for example `12_pubsvc/res/SystemShutdown.siml`
-- `<relative_path_to_target_location>` the generated code output folder path relative to the project root, for example `12_pubsvc/generated`
-- `<areg-sdk-root>` is the path to `areg-sdk` sources.
+To avoid tedious jobs and minimize mistakes when coding, AREG SDK provides a code-generator located in [tools](../tools/) folder to generate base objects from Service Interface XML document. The generated files must not be modified. Instead, they should be extended to implement all necessary functions. Normally, the service providers implement `Request` methods and the service clients implement `Response`, `Broadcast` and `Attribute` notification methods by need. Edit and run [generate.sh](../tools/generate.sh) or [generate.bat](../tools/generate.bat) file to generate source code or run `codegen.jar` from command line.
 
-Example of running code generator, copied from [generate.bat](./../examples/12_pubsvc/res/generate.bat) file:
+> 💡 Do not forget to set correct `AREG_SDK_ROOT` folder in `generate.sh` and `generate.bat` file to run code generator. 
+
+Before calling code generator, make sure that there is Java installed on the machine and the `codegen.jar` is included in the `CLASSPATH`. 
+- The `--root` option of the code generator is the root of developer project.
+- The `--doc` option of the code generator is the relative to --root path of the service interface XML document to generate code.
+- The `--target` option of the code generator is the path relative to `--root` to output generated files.
+**Example:**
+```bash
+$ java -jar codegen.jar --root=~/projects/my_project --target=src/generated/ --doc=interface/MyService.siml
+```
+
+You may as well explicitly specify the full path of `codegen.jar`
+```bash
+$ java -jar ~/projects/areg-sdk/codegen.jar --root=~/projects/my_project --target=src/generated/ --doc=interface/MyService.siml
+```
+
+Example of running [generate.bat](./../examples/12_pubsvc/res/generate.bat) file:
 ```bat
 :: set the AREG_SDK_ROOT directory here
 set AREG_SDK_ROOT=E:\Projects\aregtech\areg-sdk
@@ -335,13 +348,15 @@ java com.aregtech.CMFMain --root=%PROJECT_ROOT% --doc=res\HelloService.siml --ta
 
 ## Generated codes
 
-The code generator generates sources to implement service and clients, as well generates helper classes to send, receive and dispatch events. Example of generated codes:
+The code generator generates sources to implement service providers (_server_) and service users (_clients_), as well generates namespace to share common data and other internal objects required by the SDK. Example of generated codes:
 <br><a href="./img/generated-sources.png"><img src="./img/generated-sources.png" alt="File structure after generating codes"/></a><br><br>
-Since the codes are generated for both service and the clients, and both of them may be compiled in different projects, we recommend to compile generated codes as a static library to link with the executables or shared libraries.
+Since the codes are generated for both service providers and the service clients, and these objects may be located in different folders (or projects), it is recommended to include and compile generate codes as a static library to link with service provider and client projects.
 
 ## Modeling and service initialization
 
-After generating codes, the implemented services must be a part of the `Component` object that run in a thread. The services and the clients can be either statically or dynamically defined in a _model_ that is loaded to initialize objects. The example of dynamic model is in [14_pubtraffic](./../examples/14_pubtraffic/). This is an example of static _model_:
+After generating codes, the implemented services must be a part of the `Component` object that run in a _component thread_. The services and the clients can be either statically or dynamically defined in a _model_ that is loaded to initialize objects. An example of _dynamic model_ is in [14_pubtraffic](./../examples/14_pubtraffic/) project. 
+
+**An example of static _model_**:
 ```cpp
 // Describe mode, set model name
 BEGIN_MODEL( "ServiceModel" )
@@ -404,11 +419,15 @@ int main()
 
 ```
 
-The example [10_locsvc](./../examples/10_locsvc/) and higher contain implementations of _Local_ and _Public_ services and the clients. Browse examples to learn more.
+The example [10_locsvc](./../examples/10_locsvc/) and higher contain implementations of _Local_ and _Public_ services and the clients. Browse [examples](../examples/) to learn more.
+
+> 💡 Difference of _Local_ and _Public_ services:
+> - The _Local_ services are used for multithreading communication and cannot be accessed outside of process.
+> - The _Public_ service are used for multithreading and multiprocessing (**IPC**) communication and can be accessed by any process in the network.
 
 ## Hello Service!
 
-This topic is the step-by-step practical example to create a service enabled application(s) based on AREG SDK solution. The application discovers service, sends a request and a response. The source codes of this project are in [00_helloservice](./../examples/00_helloservice). First, download sources of AREG SDK. For simplicity, create the new project inside `examples` folder and name it `helloservice`, so that the `examples/helloservice` is the root of this training.
+This topic is the step-by-step practical example to create a service enabled application(s) based on AREG SDK solution. The application discovers service, sends a request and a response. The source codes of this project are in [00_helloservice](../examples/00_helloservice). First, download sources of AREG SDK. For simplicity, create the new project inside `examples` folder and name it `helloservice`, so that the `examples/helloservice` is the root of this training.
 
 We create 3 types of applications that use same common the service and the client located in `common/src` subfolder of the project, where:
 - service and client run in the same thread of the same application (same as _Local_ service);
@@ -417,7 +436,7 @@ We create 3 types of applications that use same common the service and the clien
 
 The agenda is to demonstrate service and client implementation, as well the posibility to split and the merge services in processes to distribute computing power between processes.
 
-> 💡 More examples are listed in [examples](./../examples/) folder of `areg-sdk`.
+> 💡 More examples are listed in [examples](../examples/) folder of `areg-sdk`.
 
 ### Service Interface
 

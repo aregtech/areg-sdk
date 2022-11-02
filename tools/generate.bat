@@ -14,7 +14,7 @@ set CODE_GEN=generated\src
 set CLASSPATH=%CLASSPATH%;%AREG_SDK_ROOT%\tools;%AREG_SDK_ROOT%\tools\codegen.jar
 
 :: ==========================================================
-:: -- root=<full path>                      - specify the root folder to ouptut generated codes.
+:: --root=<full path>                       - specify the root folder of the project.
 :: --doc=<relative path>/<ServiceName>.siml - specify the relative path to the service interface file to parse.
 :: --target=<relative path>                 - specify the relative path of the target folder to output codes.
 :: ==========================================================
