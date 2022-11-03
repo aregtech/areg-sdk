@@ -74,7 +74,7 @@ Every service interface can have specific data types. When a new data type is de
 
 In the _DataTypeList_ section of Service Interface XML document, the developers can declare a new structure with the fields. The _DataType_ tag indicates type _Structure_ and the name of the structure followed by _Description_ and the list of structure fields. Each field has _data type_ and the name. If a structure has default value it should be specified in the _Value_ entry (`<Value IsDefault="true">0</Value>`). Each type of the field of structure must have `assigning operator`, `comparing operator`, `copy constructor` (if an object), must be possible explicitly to convert to `unsigned int` and must be possible to `stream` in [IEIOStream](../framework/areg/base/IEIOStream.hpp) object.
 
-**An example of declaring structure with fields and default values:**
+*An example of declaring structure with fields and default values:*
 ```xml
 <DataType ID="2" Name="SomeStruct" Type="Structure">
     <Description>Some structure with data. It will become new type.</Description>
@@ -100,7 +100,7 @@ In this example, the structure has 3 fields with default values to set.
 
 In the _DataTypeList_ section of Service Interface XML document, the developers can declare a new enumeration with the fields. The _DataType_ tag indicates type _Enumerate_ and the name of the enumeration followed by _Description_ and the list of fields. Each field may contain _Value_. The enumerations automatically are streamable.
 
-**An example of declaring enumeration with fields and values:**
+*An example of declaring enumeration with fields and values:*
 ```xml
 <DataType ID="6" Name="SomeEnum" Type="Enumerate" Values="default">
     <Description>A new enumeration of the service interface.</Description>
@@ -126,7 +126,7 @@ In the _DataTypeList_ section of Service Interface XML document, the developers 
 
 In the _DataTypeList_ section of Service Interface XML document the developers can import defined types. The _DataType_ tag indicates type _Imported_ and the name of the imported type followed by _Description_, _Namespace_ if present and the location of relative path of the imported file. Any imported type must be possible to `stream` in [IEIOStream](../framework/areg/base/IEIOStream.hpp) object.
 
-**An example of imported type:**
+*An example of imported type:*
  ```xml
 <DataType ID="11" Name="uAlign" Type="Imported">
     <Description>This example exports NEMemory::uAlign in the service interface.</Description>
@@ -140,7 +140,7 @@ The example imports type `NEMemory::uAlign`, which is declared in `areg/base/NEM
 
 In the _DataTypeList_ section of Service Interface XML document the developers can declare new container types. The _DataType_ tag indicates type _DefinedType_ and the name of the type followed by _Description_. The _Container_ tag specifies the type of container and the _BaseTypeValue_ define the type of values stored in the container, which must be possible to `stream` in [IEIOStream](../framework/areg/base/IEIOStream.hpp) object. If the container is _HashMap_ in addition it has _BaseTypeKey_, which indicates the type of keys in the map and which must be possible to stream.
 
-**An example of defining new type of array:**
+*An example of defining new type of array:*
 ```xml
 <DataType ID="12" Name="SomeArray" Type="DefinedType">
     <Description>Defines new type of array</Description>
@@ -150,7 +150,7 @@ In the _DataTypeList_ section of Service Interface XML document the developers c
 ```
 In this example, the values of array have type `unsigned int`, which is streamable.
 
-**An example of defining new type of linked list:**
+*An example of defining new type of linked list:*
 ```xml
 <DataType ID="13" Name="SomeList" Type="DefinedType">
     <Description>New type of linked list.</Description>
@@ -160,7 +160,7 @@ In this example, the values of array have type `unsigned int`, which is streamab
 ```
 In this example, the values of linked list have type `String`, which is streamable.
 
-**An example of defining new type of hash map:**
+*An example of defining new type of hash map:*
 ```xml
 <DataType ID="14" Name="SomeMap" Type="DefinedType">
     <Description>This example defines hash-map where key is exported and value is new data type.</Description>
@@ -175,7 +175,7 @@ In this example, the values of hash-map have type `SomeStruct` and the key are t
 
 _Attributes_ in services are data that clients can subscribe to get update notifications either each time when data is set of only when data is updated. The attributes are listed in the section `<AttributeList> ... </AttributeList>`. The type of attribute must be possible to stream in [IEIOStream](../framework/areg/base/IEIOStream.hpp) object.
 
-**An example of declaring attribute to notify only on value change:**
+*An example of declaring attribute to notify only on value change:*
 ```xml
 <Attribute DataType="SomeEnum" ID="15" Name="SomeAttr1" Notify="OnChange">
     <Description>An attribute to notify subscribers only when value is changed.</Description>
@@ -183,7 +183,7 @@ _Attributes_ in services are data that clients can subscribe to get update notif
 ```
 In this example the attribute of `SomeEnum` type has name `SomeAttr1` and it is designed to notify connected clients only if the value is changed. The type `SomeEnum` must be possible to compare.
 
-**An example of declaring attribute to notify only on value change:**
+*An example of declaring attribute to notify only on value change:*
 ```xml
 <Attribute DataType="SomeStruct" ID="16" Name="SomeAttr2" Notify="Always">
     <Description>Another attribute to notify subscribers any time when value is set (maybe not changed).</Description>
@@ -199,14 +199,25 @@ Service interface may have `Request`, `Response` and `Broadcast` methods. The _R
 #### Requests
 The requests are called by clients to be executed on the service. The requests may have parameters. The requests may have linked response. If request has a response, then the processing request is blocked until service replies with the response. It is possible manually to unblock the request, but then the response must be manually prepared to reply. Multiple requests can be linked with the same response. The request may have no response at all and in this case the request can be called one after another.
 
-This example demonstrates the definition of request `SomeRequest1` with no parameter connected with a response `SomeResponse1`:
+> 💡 When developers implement service provider (server) then must extend the generated `Stub` object and implement all request calls, which are declared in a base `Stub` class as _pure virtual_.
+
+> 💡 For an error handling of a request call, the client side should implement request failed methods, which are generated in the `ClientBase` objects. The passed error code as a parameter, indicates the failure reason. If the developer does not implement the failure method and the failure is triggered, there will be an error message in the logs.
+
+*An example to demonstrate the definition of request with no parameter and linked response:*
 ```xml
 <Method ID="17" MethodType="request" Name="SomeRequest1" Response="SomeResponse1">
     <Description>Request and response with no parameters.</Description>
 </Method>
+<Method ID="19" MethodType="response" Name="SomeResponse1">
+    <Description/>
+</Method>
+<Method ID="19" MethodType="response" Name="SomeResponse1">
+    <Description/>
+</Method>
 ```
+In this example the request `SomeRequest1` has no parameter and it is linked with the response `SomeResponse1`. By default, the request is blocking and it is unblocked when service provider calls response `SomeResponse1`, so that it can process the next call of `SomeRequest1`. In the generated C++ code, the request has semantic `void requestSomeRequest1()` and the response `void responseSomeResponse1()`.
 
-This example demonstrates the definition of request `SomeRequest2` with multiple parameters connected with response `SomeResponse`:
+*An example to demonstrate the request with multiple parameters linked with the response:*
 ```xml
 <Method ID="20" MethodType="request" Name="SomeRequest2" Response="SomeResponse">
     <Description>A request with parameters that is connected to SomeResponse interface.</Description>
@@ -219,9 +230,16 @@ This example demonstrates the definition of request `SomeRequest2` with multiple
         </Parameter>
     </ParamList>
 </Method>
+<Method ID="22" MethodType="response" Name="SomeResponse">
+    <Description>Response, where 2 requests can connect.</Description>
+    <ParamList>
+        <Parameter DataType="bool" ID="26" Name="succeeded"/>
+    </ParamList>
+</Method>
 ```
+In this example the request `SomeRequest2` has 3 parameters, where the last parameter `param3` has default value, and the request is linked the response `SomeResponse` with 1 parameter. By default, the request is blocking and it is unblocked when service provider calls response `SomeResponse`, so that it can process the next call of `SomeRequest1`. In the generated C++ code, the request has semantic `void requestSomeRequest2(int param1, const NESample::SomeStruct & param2, NESample::SomeEnum param3 = NESample::SomeEnum::Nothing)` and the response `void responseSomeResponse(bool succeeded)`.
 
-This example demonstrates the definition of 2 requests `SomeRequest2` and `SomeRequest3` connected with the same response `SomeResponse`:
+*An example to demonstrate 2 different requests linked with the same response:*
 ```xml
 <Method ID="20" MethodType="request" Name="SomeRequest2" Response="SomeResponse">
     <Description>A request with parameters that is connected to SomeResponse interface.</Description>
@@ -240,17 +258,30 @@ This example demonstrates the definition of 2 requests `SomeRequest2` and `SomeR
         <Parameter DataType="NEMemory::uAlign" ID="28" Name="param"/>
     </ParamList>
 </Method>
+<Method ID="22" MethodType="response" Name="SomeResponse">
+    <Description>Response, where 2 requests can connect.</Description>
+    <ParamList>
+        <Parameter DataType="bool" ID="26" Name="succeeded"/>
+    </ParamList>
+</Method>
 ```
 
-This example demonstrates the definition of request `StandAlone` with no response:
+In this example the 2 different requests `SomeRequest2` and `SomeRequest3` are linked the response `SomeResponse`. By default, the requests are blocking, but the call of one request does not block the call of the other. For example, if developer calls request `SomeRequest2`, while it is processing and since the calls are asynchronous, the developer can  call another request `SomeRequest3`, which will be as well processing. If there are 2 requests are processing and the developer calls response `SomeResponse`, then both requests are unblocked and the service provider can continue to process new calls of the same requests. In other words, the response `SomeResponse` unblocks all currently pending linked requests. In the generated C++ code, the request `SomeRequest2` has semantic `void requestSomeRequest2(int param1, const NESample::SomeStruct & param2, NESample::SomeEnum param3 = NESample::SomeEnum::Nothing)`, the request `SomeRequest3` has semantic `void requestSomeRequest3(const NEMemory::uAlign & param)` and the response is `void responseSomeResponse(bool succeeded)`.
+
+*An example to demonstrate request with no response:*
 ```xml
 <Method ID="27" MethodType="request" Name="StandAlone">
     <Description>A request with no response.</Description>
 </Method>
 ```
+In this example there is a request `StandAlone`, which has no response. It means that as soon as service provider processed the request, it is immediately unblocked, so that the service provider can continue processing further calls of the request `StandAlone`. In the generated C++ code, the request `StandAlone` has semantic `void requestStandAlone()`.
 
 #### Responses
-The responses are sent to the service clients as a reply to execute one or more requests. When a client calls a request to execute on the service, the service may reply with response to the client. Clients as can dynamically to subscribe to receive certain response without calling the request. This example demonstrates the definition of response with and without parameters:
+The responses are used by service provider as a result of request calls. Each response must be linked with at least one request. If a response has no request, it is ignored and is never triggered. After calling the response on service provider side, it is triggered on client side. If a client is not interested calling the request, but is interested in the response as a result of call, it can manually and dynamically subscribe on the response.
+
+> 💡 The responses are called by the service provider (server), which are delivered at the client side. Developers need to extend the generated `ClientBase` object and implement responses that are expected. There is no need to implement all response if the client is using certain request calls. It is enough to implement only expected responses, because others are never triggered, unless developer does not manually subscribe on certain response(s).
+
+*An example to demonstrate declaration of the responses.*
 ```xml
 <Method ID="19" MethodType="response" Name="SomeResponse1">
     <Description/>
@@ -262,10 +293,12 @@ The responses are sent to the service clients as a reply to execute one or more 
     </ParamList>
 </Method>
 ```
-
+In this example, the responses are linked with the requests (see chapter [Requests](#requests)), where the response `SomeResponse1` is connected with one request and the response `SomeResponse`. The semantic of the responses are `void responseSomeResponse1()` and the response `SomeResponse` is `void responseSomeResponse(bool succeeded)`.
 
 > 💡 The request with a response automatically is blocked until inked response is sent. It is important to send response to unblock the request, so that the service can process same request again. Otherwise, if response is not sent, the request remains in _busy_ state and any other attempt to trigger the same request will fail with the error _request is busy_. 
+
 > 💡 `Request` and `Response` are strictly connected. The `Request` remains in _busy_ state until `Response` is not triggered, and if the `Request` is not in _busy_ state, the call of `Response` is ignored by the system.
+
 > 💡 It is possible dynamically to subscribe on a certain `Response` without triggering a `Request`. In this case, subscribed client receives the `Response` once when the `Request` is processed and replied.
 
 
