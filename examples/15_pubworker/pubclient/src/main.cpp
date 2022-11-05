@@ -29,13 +29,13 @@ constexpr char const _modelName[]  { "TheModel" };   // The name of model
 BEGIN_MODEL(_modelName)
 
     // define component thread
-    BEGIN_REGISTER_THREAD( "TestPatientMonitoring", NECommon::INVALID_TIMEOUT)
+    BEGIN_REGISTER_THREAD( "TestPatientMonitoring", NECommon::WATCHDOG_IGNORE)
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
         BEGIN_REGISTER_COMPONENT( NECommon::ServiceNameHwManager, PatientClient )
             // register service dependencies
             REGISTER_DEPENDENCY( NECommon::ServiceNamePatientInfo )
             // register HW worker thread
-            REGISTER_WORKER_THREAD( PatientClient::HwWorkerThreadName.data(), PatientClient::HwWorkerThreadConsumer.data(), NECommon::INVALID_TIMEOUT)
+            REGISTER_WORKER_THREAD( PatientClient::HwWorkerThreadName.data(), PatientClient::HwWorkerThreadConsumer.data(), NECommon::WATCHDOG_IGNORE)
         // end of component description
         END_REGISTER_COMPONENT( NECommon::ServiceNameHwManager )
     // end of thread description

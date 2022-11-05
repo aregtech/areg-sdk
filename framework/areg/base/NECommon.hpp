@@ -271,6 +271,12 @@ namespace NECommon
     constexpr unsigned int   INVALID_TIMEOUT        { DO_NOT_WAIT };
 
     /**
+     * \brief   NECommon::WATCHDOG_IGNORE
+     *          A value used when declare component thread. It indicates that watchdog should be ignored.
+     **/
+    constexpr unsigned int   WATCHDOG_IGNORE        { DO_NOT_WAIT };
+
+    /**
      * \brief   NECommon::TIMEOUT_1_MS
      *          Timeout 1 millisecond
      **/

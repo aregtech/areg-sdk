@@ -46,7 +46,7 @@ constexpr char const _mainServiceName[] { "MainService" };  //!< Main component 
 BEGIN_MODEL(_modelName)
 
     // define component thread
-    BEGIN_REGISTER_THREAD( "Test_ServiceThread", NECommon::INVALID_TIMEOUT)
+    BEGIN_REGISTER_THREAD( "Test_ServiceThread", NECommon::WATCHDOG_IGNORE)
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
         BEGIN_REGISTER_COMPONENT( _mainServiceName, MainComponent )
             // register HelloWorld service implementation.
@@ -62,7 +62,7 @@ BEGIN_MODEL(_modelName)
     //
     //////////////////////////////////////////////////////////////////////////
 
-    BEGIN_REGISTER_THREAD( "Test_SecondaryThread", NECommon::INVALID_TIMEOUT)
+    BEGIN_REGISTER_THREAD( "Test_SecondaryThread", NECommon::WATCHDOG_IGNORE)
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
         BEGIN_REGISTER_COMPONENT( "Test_SecondaryComponent", SecondaryComponent )
             // register HelloWorld service implementation and the dependencies.
@@ -75,7 +75,7 @@ BEGIN_MODEL(_modelName)
     END_REGISTER_THREAD("Test_SecondaryThread")
 
     // define component thread
-    BEGIN_REGISTER_THREAD( "Test_MixedThread", NECommon::INVALID_TIMEOUT)
+    BEGIN_REGISTER_THREAD( "Test_MixedThread", NECommon::WATCHDOG_IGNORE)
 
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
         BEGIN_REGISTER_COMPONENT( "Test_ThirdComponent", SecondaryComponent )

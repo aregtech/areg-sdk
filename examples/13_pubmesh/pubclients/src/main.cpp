@@ -28,7 +28,7 @@
 BEGIN_MODEL(NECommon::ModelName)
 
     // define component thread
-    BEGIN_REGISTER_THREAD( "TestClientProcessThread", NECommon::INVALID_TIMEOUT)
+    BEGIN_REGISTER_THREAD( "TestClientProcessThread", NECommon::WATCHDOG_IGNORE)
 
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component

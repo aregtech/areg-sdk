@@ -68,7 +68,7 @@
  *
  * \param   thread_name The name of component thread, which should be unique.
  * \param   timeout             The watchdog timeout in milliseconds of the worker thread.
- *                              The value 0 (NECommon::INVALID_TIMEOUT) ignores the watchdog
+ *                              The value 0 (NECommon::WATCHDOG_IGNORE) ignores the watchdog
  **/
 #define BEGIN_REGISTER_THREAD(thread_name, timeout)                                                             \
         {                                                                                                       \
@@ -167,7 +167,7 @@
  * \param   consumer_name       The consumer name of worker thread. Differentiate consumer
  *                              names if one component has more than one worker thread.
  * \param   timeout             The watchdog timeout in milliseconds of the worker thread.
- *                              The value 0 (NECommon::INVALID_TIMEOUT) ignores the watchdog
+ *                              The value 0 (NECommon::WATCHDOG_IGNORE) ignores the watchdog
  **/
 #define REGISTER_WORKER_THREAD(worker_thread_name, consumer_name, timeout)                                      \
                 /*  Register component worker thread                                */                          \
@@ -245,13 +245,13 @@
  *          BEGIN_REGISTER_COMPONENT_EX("another_component", AnotherCompLoad, AnotherCompUnload)
  *              REGISTER_IMPLEMENT_SERVICE("another_service_1", Version(1, 0, 0))
  *              REGISTER_IMPLEMENT_SERVICE("another_service_2", Version(1, 0, 0))
- *              REGISTER_WORKER_THREAD("another_worker_thread", "consumer_name", , NECommon::INVALID_TIMEOUT)
+ *              REGISTER_WORKER_THREAD("another_worker_thread", "consumer_name", , NECommon::WATCHDOG_IGNORE)
  *              REGISTER_DEPENDENCY("secondary_component")
  *          END_REGISTER_COMPONENT("another_component")
  *
  *      END_REGISTER_THREAD("text_thread")
  *
- *      BEGIN_REGISTER_THREAD("secondary_thread", NECommon::INVALID_TIMEOUT)
+ *      BEGIN_REGISTER_THREAD("secondary_thread", NECommon::WATCHDOG_IGNORE)
  *
  *          BEGIN_REGISTER_COMPONENT_EX("secondary_component", SecondaryCompLoad, SecondaryCompUnload)
  *              REGISTER_IMPLEMENT_SERVICE("secondary_service_1", Version(1, 0, 0))

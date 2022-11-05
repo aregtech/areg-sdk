@@ -36,7 +36,7 @@ IMPLEMENT_RUNTIME(WorkerThread, DispatcherThread)
 WorkerThread::WorkerThread( const String & threadName
                           , Component & bindingComponent
                           , IEWorkerThreadConsumer & threadConsumer
-                          , uint32_t watchdogTimeout /*= NECommon::INVALID_TIMEOUT*/)
+                          , uint32_t watchdogTimeout /*= NECommon::WATCHDOG_IGNORE*/)
     : DispatcherThread      ( threadName )
 
     , mBindingComponent     ( bindingComponent )

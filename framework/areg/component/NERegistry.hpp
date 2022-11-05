@@ -373,7 +373,7 @@ namespace NERegistry
                          , const String & workerThreadName
                          , const String & compRoleName
                          , const String & compConsumerName
-                         , const uint32_t watchdogTimeout = NECommon::INVALID_TIMEOUT);
+                         , const uint32_t watchdogTimeout = NECommon::WATCHDOG_IGNORE);
 
         /**
          * \brief   Copies /move entries from source.
@@ -1316,18 +1316,18 @@ namespace NERegistry
          * \brief   Initialize Thread Entry with given Thread Name.
          * \param   threadName  The Thread Name to assign.
          * \param   watchdogTimeout     The watchdog timeout in milliseconds to guard component thread.
-         *                              The value 0 (NECommon::INVALID_TIMEOUT) ignores watchdog.
+         *                              The value 0 (NECommon::WATCHDOG_IGNORE) ignores watchdog.
          **/
-        explicit ComponentThreadEntry( const String & threadName, const uint32_t watchdogTimeout = NECommon::INVALID_TIMEOUT );
+        explicit ComponentThreadEntry( const String & threadName, const uint32_t watchdogTimeout = NECommon::WATCHDOG_IGNORE);
 
         /**
          * \brief   Initialize Thread Entry with given Thread Name and given Component List.
          * \param   threadName      The Thread Name to assign.
          * \param   componentList   The List of Component Entries to assign.
          * \param   watchdogTimeout     The watchdog timeout in milliseconds to guard component thread.
-         *                              The value 0 (NECommon::INVALID_TIMEOUT) ignores watchdog.
+         *                              The value 0 (NECommon::WATCHDOG_IGNORE) ignores watchdog.
          **/
-        ComponentThreadEntry( const String & threadName, const NERegistry::ComponentList & componentList, const uint32_t watchdogTimeout = NECommon::INVALID_TIMEOUT);
+        ComponentThreadEntry( const String & threadName, const NERegistry::ComponentList & componentList, const uint32_t watchdogTimeout = NECommon::WATCHDOG_IGNORE);
 
         /**
          * \brief   Copies data from given source.

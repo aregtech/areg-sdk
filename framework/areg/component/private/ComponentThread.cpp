@@ -60,7 +60,7 @@ inline ComponentThread* ComponentThread::_getCurrentComponentThread( void )
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
-ComponentThread::ComponentThread( const String & threadName, uint32_t watchdogTimeout /*= NECommon::INVALID_TIMEOUT*/ )
+ComponentThread::ComponentThread( const String & threadName, uint32_t watchdogTimeout /*= NECommon::WATCHDOG_IGNORE*/ )
     : DispatcherThread  ( threadName )
 
     , mCurrentComponent ( nullptr )

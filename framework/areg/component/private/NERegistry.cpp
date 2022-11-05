@@ -157,7 +157,7 @@ bool NERegistry::ServiceList::isValid( void ) const
 NERegistry::WorkerThreadEntry::WorkerThreadEntry(void)
     : mThreadName       ()
     , mConsumerName     ()
-    , mWatchdogTimeout  (NECommon::INVALID_TIMEOUT)
+    , mWatchdogTimeout  (NECommon::WATCHDOG_IGNORE)
 {
 }
 
@@ -165,7 +165,7 @@ NERegistry::WorkerThreadEntry::WorkerThreadEntry( const String & masterThreadNam
                                                 , const String & workerThreadName
                                                 , const String & compRoleName
                                                 , const String & compConsumerName
-                                                , const uint32_t watchdogTimeout /* = NECommon::INVALID_TIMEOUT */)
+                                                , const uint32_t watchdogTimeout /* = NECommon::WATCHDOG_IGNORE */)
     : mThreadName       (NEUtilities::createComponentItemName(masterThreadName, workerThreadName))
     , mConsumerName     (NEUtilities::createComponentItemName(compRoleName, compConsumerName))
     , mWatchdogTimeout  (watchdogTimeout)
@@ -717,18 +717,18 @@ bool NERegistry::ComponentList::setComponentData( const String & roleName, const
 NERegistry::ComponentThreadEntry::ComponentThreadEntry( void )
     : mThreadName       ( )
     , mComponents       ( )
-    , mWatchdogTimeout  (NECommon::INVALID_TIMEOUT)
+    , mWatchdogTimeout  (NECommon::WATCHDOG_IGNORE)
 {
 }
 
-NERegistry::ComponentThreadEntry::ComponentThreadEntry( const String & threadName, const uint32_t watchdogTimeout /*= NECommon::INVALID_TIMEOUT*/)
+NERegistry::ComponentThreadEntry::ComponentThreadEntry( const String & threadName, const uint32_t watchdogTimeout /*= NECommon::WATCHDOG_IGNORE*/)
     : mThreadName       (threadName)
     , mComponents       ( )
     , mWatchdogTimeout  (watchdogTimeout)
 {
 }
 
-NERegistry::ComponentThreadEntry::ComponentThreadEntry( const String & threadName, const NERegistry::ComponentList& supCompList, const uint32_t watchdogTimeout /*= NECommon::INVALID_TIMEOUT*/)
+NERegistry::ComponentThreadEntry::ComponentThreadEntry( const String & threadName, const NERegistry::ComponentList& supCompList, const uint32_t watchdogTimeout /*= NECommon::WATCHDOG_IGNORE*/)
     : mThreadName       (threadName)
     , mComponents       (supCompList)
     , mWatchdogTimeout  (watchdogTimeout)

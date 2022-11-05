@@ -39,7 +39,7 @@ const String     _serviceClient  = NEUtilities::generateName("ServiceClient"); /
 BEGIN_MODEL(_modelName)
 
     // define component thread
-    BEGIN_REGISTER_THREAD( "TestServiceThread", NECommon::INVALID_TIMEOUT)
+    BEGIN_REGISTER_THREAD( "TestServiceThread", NECommon::WATCHDOG_IGNORE)
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
         BEGIN_REGISTER_COMPONENT( _serviceClient, ServiceClient )
             // register service dependency

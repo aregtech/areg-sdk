@@ -27,7 +27,7 @@ Watchdog::GUARD_ID Watchdog::_generateId(void)
     return (++_id);
 }
 
-Watchdog::Watchdog(ComponentThread& thread, uint32_t msTimeout /*= NECommon::INVALID_TIMEOUT*/)
+Watchdog::Watchdog(ComponentThread& thread, uint32_t msTimeout /*= NECommon::WATCHDOG_IGNORE*/)
     : TimerBase         (TimerBase::eTimerType::TimerTypeWatchdog, thread.getName(), msTimeout, TimerBase::ONE_TIME)
     , mGuardId          ( _generateId() )
     , mSequence         ( 0u )
@@ -35,7 +35,7 @@ Watchdog::Watchdog(ComponentThread& thread, uint32_t msTimeout /*= NECommon::INV
 {
 }
 
-Watchdog::Watchdog(WorkerThread& thread, uint32_t msTimeout /*= NECommon::INVALID_TIMEOUT*/)
+Watchdog::Watchdog(WorkerThread& thread, uint32_t msTimeout /*= NECommon::WATCHDOG_IGNORE*/)
     : TimerBase         ( TimerBase::eTimerType::TimerTypeWatchdog, thread.getName(), msTimeout, TimerBase::ONE_TIME)
     , mGuardId          ( _generateId() )
     , mSequence         ( 0u )
@@ -61,7 +61,7 @@ void Watchdog::stopTimer(void)
 
 void Watchdog::startGuard(void)
 {
-    if (mTimeoutInMs != NECommon::INVALID_TIMEOUT)
+    if (mTimeoutInMs != NECommon::WATCHDOG_IGNORE)
     {
         Lock lock(mLock);
         ASSERT(mHandle != nullptr);
@@ -72,7 +72,7 @@ void Watchdog::startGuard(void)
 
 void Watchdog::stopGuard( void )
 {
-    if (mTimeoutInMs != NECommon::INVALID_TIMEOUT)
+    if (mTimeoutInMs != NECommon::WATCHDOG_IGNORE)
     {
         Lock lock(mLock);
         ASSERT(mHandle != nullptr);

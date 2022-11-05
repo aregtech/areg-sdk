@@ -32,7 +32,7 @@ static String _modelName("MCRouterModel");
 BEGIN_MODEL(_modelName)
 
     // define console service thread.
-    BEGIN_REGISTER_THREAD( "ConsoleServiceThread", NECommon::INVALID_TIMEOUT)
+    BEGIN_REGISTER_THREAD( "ConsoleServiceThread", NECommon::WATCHDOG_IGNORE)
         // Define the console service
         BEGIN_REGISTER_COMPONENT( "ConsoleService", ConsoleService)
             // register dummy 'empty service'.

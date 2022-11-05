@@ -34,10 +34,11 @@ This document is a developer guide and describes how to develop a service enable
     - [Develop the service](#develop-the-service)
     - [Develop the service client](#develop-the-service-client)
     - [Create and load model](#create-and-load-model)
-      - [Model with single thread](#model-with-single-thread)
+      - [Model with single thread](#model-single-thread)
       - [Model with multiple threads](#model-with-multiple-threads)
       - [Model of separate processes](#model-of-separate-processes)
     - [Make the build](#make-the-build)
+  - [Testing](#testing)
   - [Contact us!](#contact-us)
 
 ## Service interface prototype
@@ -175,6 +176,10 @@ In this example, the values of hash-map have type `SomeStruct` and the key are t
 
 _Attributes_ in services are data that clients can subscribe to get update notifications either each time when data is set of only when data is updated. The attributes are listed in the section `<AttributeList> ... </AttributeList>`. The type of attribute must be possible to stream in [IEIOStream](../framework/areg/base/IEIOStream.hpp) object.
 
+> 💡 The data of an `Attribute` is always available for the client. As soon as the client subscribes on the attribute data, it will receive at least one notification of the current value and a flag, indicating the validation state of the data. If on first notification the data state is _invalid_ the client may receive second notification with the valid value sent by servicing component.<br>
+> 💡 It is important to check the state flag to make correct reaction. The attribute notification callback has semantic `void onAttributeNameUpdate( const DataType & AttributeName, NEService::eDataStateType state )`, where the _AttributeName_ is the name of and the _DataType_ is the type of the attribute. The attribute data is valid only if `state` parameter is equal to `NEService::eDataStateType::DataIsOK`. In all other cases the data value is invalid and can be ignored or the error can be handled.<br>
+> 💡 All attributes in the same service interface must have unique names and the type of all attributes must be streamable.
+
 *An example of declaring attribute to notify only on value change:*
 ```xml
 <Attribute DataType="SomeEnum" ID="15" Name="SomeAttr1" Notify="OnChange">
@@ -199,8 +204,7 @@ Service interface may have `Request`, `Response` and `Broadcast` methods. The _R
 #### Requests
 The requests are called by clients to be executed on the service. The requests may have parameters. The requests may have linked response. If request has a response, then the processing request is blocked until service replies with the response. It is possible manually to unblock the request, but then the response must be manually prepared to reply. Multiple requests can be linked with the same response. The request may have no response at all and in this case the request can be called one after another.
 
-> 💡 When developers implement service provider (server) then must extend the generated `Stub` object and implement all request calls, which are declared in a base `Stub` class as _pure virtual_.
-
+> 💡 When developers implement service provider (server) then must extend the generated `Stub` object and implement all request calls, which are declared in a base `Stub` class as _pure virtual_.<br>
 > 💡 For an error handling of a request call, the client side should implement request failed methods, which are generated in the `ClientBase` objects. The passed error code as a parameter, indicates the failure reason. If the developer does not implement the failure method and the failure is triggered, there will be an error message in the logs.
 
 *An example to demonstrate the definition of request with no parameter and linked response:*
@@ -266,7 +270,7 @@ In this example the request `SomeRequest2` has 3 parameters, where the last para
 </Method>
 ```
 
-In this example the 2 different requests `SomeRequest2` and `SomeRequest3` are linked the response `SomeResponse`. By default, the requests are blocking, but the call of one request does not block the call of the other. For example, if developer calls request `SomeRequest2`, while it is processing and since the calls are asynchronous, the developer can  call another request `SomeRequest3`, which will be as well processing. If there are 2 requests are processing and the developer calls response `SomeResponse`, then both requests are unblocked and the service provider can continue to process new calls of the same requests. In other words, the response `SomeResponse` unblocks all currently pending linked requests. In the generated C++ code, the request `SomeRequest2` has semantic `void requestSomeRequest2(int param1, const NESample::SomeStruct & param2, NESample::SomeEnum param3 = NESample::SomeEnum::Nothing)`, the request `SomeRequest3` has semantic `void requestSomeRequest3(const NEMemory::uAlign & param)` and the response is `void responseSomeResponse(bool succeeded)`.
+In this example the 2 different requests `SomeRequest2` and `SomeRequest3` are linked the response `SomeResponse`. By default, while requests are processing they are blocked and in busy state. If 2 requests are linked with the same response and while one request is busy, it is not blocking the call of other requests linked with the same response. As soon as the response is called, it unblocks all linked requests. For example, if developer calls request `SomeRequest2`, while it is processing (i.e. it is in busy state) the developer can  call request `SomeRequest3` and it will be processed. When developer calls response `SomeResponse3`, it unblocks both requests `SomeRequest2` and `SomeRequest3`. In other words, the response `SomeResponse` unblocks all linked busy requests. In the generated C++ code, the request `SomeRequest2` has semantic `void requestSomeRequest2(int param1, const NESample::SomeStruct & param2, NESample::SomeEnum param3 = NESample::SomeEnum::Nothing)`, the request `SomeRequest3` has semantic `void requestSomeRequest3(const NEMemory::uAlign & param)` and the response is `void responseSomeResponse(bool succeeded)`.
 
 *An example to demonstrate request with no response:*
 ```xml
@@ -293,19 +297,18 @@ The responses are used by service provider as a result of request calls. Each re
     </ParamList>
 </Method>
 ```
-In this example, the responses are linked with the requests (see chapter [Requests](#requests)), where the response `SomeResponse1` is connected with one request and the response `SomeResponse`. The semantic of the responses are `void responseSomeResponse1()` and the response `SomeResponse` is `void responseSomeResponse(bool succeeded)`.
+In this example, the responses are linked with the requests (see chapter [Requests](#requests)), where the response `SomeResponse1` is connected with one request and the response `SomeResponse` is linked with multiple requests. The semantic of the response `SomeResponse1` is `void responseSomeResponse1()` and the semantic of response `SomeResponse` is `void responseSomeResponse(bool succeeded)`.
 
-> 💡 The request with a response automatically is blocked until inked response is sent. It is important to send response to unblock the request, so that the service can process same request again. Otherwise, if response is not sent, the request remains in _busy_ state and any other attempt to trigger the same request will fail with the error _request is busy_. 
-
-> 💡 `Request` and `Response` are strictly connected. The `Request` remains in _busy_ state until `Response` is not triggered, and if the `Request` is not in _busy_ state, the call of `Response` is ignored by the system.
-
-> 💡 It is possible dynamically to subscribe on a certain `Response` without triggering a `Request`. In this case, subscribed client receives the `Response` once when the `Request` is processed and replied.
-
+> 💡 Any processing request is automatically in _busy_ state. The call of response is automatically unblocks all linked requests. So that, it is very important to send the response to unlock the request(s). Otherwise, while the request is busy and a client calls that busy request, the system generates _request is busy_ failure message and delivers to the client, so that, the service receives the request only once (first calls) and all other calls are rejected by the system.<br>
+> 💡 If a request does not have linked request, it is never blocked and it is never in _busy_ state.<br>
+> 💡 It is possible dynamically to subscribe on a certain `Response` without triggering a `Request`. In this case, subscribed client receives the `Response` each time when the `Request` is processed and the response is replied.
 
 #### Broadcasts
-The broadcasts are special service methods not related neither with requests, nor with response. The broadcasts are used to fire an event and send to the clients multiple data as function parameters at the same time. The clients may dynamically subscribe on a certain broadcast. Each time the broadcast is triggered from the servicing component delivered to all subscribed clients.
+The broadcasts are special service methods to fire an event and pass several data at the same time. Broadcasts are not linked neither with requests, nor with responses. not related neither with requests, nor with response. The broadcasts are fired on service provider side and delivered to every client subscribed for the broadcast. The clients may dynamically subscribe or un-subscribe on a broadcast. If no client is subscribed on the broadcast, the system ignores the event.
 
-This example demonstrates the definition of a broadcast with parameters.
+> 💡 Unlike `Attributes`, the broadcast data is available only once. It means that if a client subscribes on the broadcast, it will not immediately receive notification, but only when the servicing component triggers broadcast after the client is subscribed on the broadcast.
+
+*An example to demonstrate declaration of a broadcast with parameters:*
 ```xml
 <Method ID="29" MethodType="broadcast" Name="SomeBroadcast">
     <Description>Broadcast with parameters. Can pass multiple parameters at once.</Description>
@@ -319,22 +322,27 @@ This example demonstrates the definition of a broadcast with parameters.
     </ParamList>
 </Method>
 ```
+In this example, the broadcast `SomeBroadcast` has 4 parameters as values to deliver together to all subscribed clients. The semantic of this broadcast is `void broadcastSomeBroadcast(NESample::SomeEnum value1, const NEMemory::uAlign & value2, const NESample::SomeStruct & value3, NESample::SomeArray value4);`
+
+> 💡 In the service interface XML document the request, response and the broadcast may have same name.<br>
+> 💡 It is recommended that at least all names of the responses and broadcasts have unique names. If any name is not unique, then must have same type. It means, that there must not be a parameter named `success` having type `bool` in a response or broadcast and having type `int` in the other response or broadcast.
 
 ### Constants
-The Service Interface XML document may contain service specific constants listed in `<ConstantList> ... </ConstantList>` section. The constants are used to share read-only value between clients and the service.
+The Service Interface XML document may have specific constants listed in `<ConstantList> ... </ConstantList>` section. The constants are used to share read-only value between clients and the service provider.
 
-This example demonstrates the definition of service specific constant:
+*An example to demonstrate declaration of a constant:*
 ```xml
 <Constant DataType="uint16" ID="35" Name="SomeConst">
     <Value>100</Value>
     <Description>Define a constant if need.</Description>
 </Constant>
 ```
+In this example, it is declared a constant named `SomeConst` having type `unsigned short` and having value `100`. This values is shared between service provider and clients.
 
 ### Includes
-The Service Interface XML document may have specific include files, which should be included in the service and they are listed in `<IncludeList> ... </IncludeList> section. For example, a service may include special header with the implementation of algorithms used in the service.
+The Service Interface XML document may have specific files, which should be included in the code. The includes are listed in `<IncludeList> ... </IncludeList> section. For example, a service may include special header file with the implementation of algorithms.
 
-This example demonstrate the definition of includes:
+*An example to demonstrate declaration of includes:*
 ```xml
 <IncludeList>
     <Location ID="36" Name="areg/base/NEMath.hpp">
@@ -342,17 +350,18 @@ This example demonstrate the definition of includes:
     </Location>
 </IncludeList>
 ```
+In this example, after generating code, the header file `areg/base/NEMath.hpp` will be included for service providers and service client codes.
 
 ## Code generator
 To avoid tedious jobs and minimize mistakes when coding, AREG SDK provides a code-generator located in [tools](../tools/) folder to generate base objects from Service Interface XML document. The generated files must not be modified. Instead, they should be extended to implement all necessary functions. Normally, the service providers implement `Request` methods and the service clients implement `Response`, `Broadcast` and `Attribute` notification methods by need. Edit and run [generate.sh](../tools/generate.sh) or [generate.bat](../tools/generate.bat) file to generate source code or run `codegen.jar` from command line.
 
-> 💡 Do not forget to set correct `AREG_SDK_ROOT` folder in `generate.sh` and `generate.bat` file to run code generator. 
+> 💡 Do not forget to set correct `AREG_SDK_ROOT` folder in `generate.sh` and `generate.bat` file to run code generator.
 
 Before calling code generator, make sure that there is Java installed on the machine and the `codegen.jar` is included in the `CLASSPATH`. 
 - The `--root` option of the code generator is the root of developer project.
 - The `--doc` option of the code generator is the relative to --root path of the service interface XML document to generate code.
 - The `--target` option of the code generator is the path relative to `--root` to output generated files.
-**Example:**
+*Examples of running code generator from command line:*
 ```bash
 $ java -jar codegen.jar --root=~/projects/my_project --target=src/generated/ --doc=interface/MyService.siml
 ```
@@ -362,7 +371,7 @@ You may as well explicitly specify the full path of `codegen.jar`
 $ java -jar ~/projects/areg-sdk/codegen.jar --root=~/projects/my_project --target=src/generated/ --doc=interface/MyService.siml
 ```
 
-Example of running [generate.bat](./../examples/12_pubsvc/res/generate.bat) file:
+*An example of [generate.bat](./../examples/12_pubsvc/res/generate.bat) file:*
 ```bat
 :: set the AREG_SDK_ROOT directory here
 set AREG_SDK_ROOT=E:\Projects\aregtech\areg-sdk
@@ -381,15 +390,20 @@ java com.aregtech.CMFMain --root=%PROJECT_ROOT% --doc=res\HelloService.siml --ta
 
 ## Generated codes
 
-The code generator generates sources to implement service providers (_server_) and service users (_clients_), as well generates namespace to share common data and other internal objects required by the SDK. Example of generated codes:
-<br><a href="./img/generated-sources.png"><img src="./img/generated-sources.png" alt="File structure after generating codes"/></a><br><br>
-Since the codes are generated for both service providers and the service clients, and these objects may be located in different folders (or projects), it is recommended to include and compile generate codes as a static library to link with service provider and client projects.
+The code generator generates sources to implement service providers (_server_) and service client, as well generates namespace to share common data and other internal objects required by the SDK. 
+
+*An example of folder structure of generated codes:*
+<br><a href="./img/generated-sources.png"><img src="./img/generated-sources.png" alt="File structure after generating codes"/></a><br>
+
+> 💡 Since the codes are generated for both service providers and the service client, and these objects may be located in different folders (or projects), it is recommended to include and compile generate codes as a _static library_ to link with service provider and client projects.
 
 ## Modeling and service initialization
 
-After generating codes, the implemented services must be a part of the `Component` object that run in a _component thread_. The services and the clients can be either statically or dynamically defined in a _model_ that is loaded to initialize objects. An example of _dynamic model_ is in [14_pubtraffic](./../examples/14_pubtraffic/) project. 
+After generating codes, the developer should implement the business logic of the service provider and the service client. The objects must be a part of the `Component`, which runs in a _component thread_. An object can extend service provider / client and the `Component` classes or the implemented provider and client objects can be aggregated in other class derived from `Component`. In other word, the `Component` is the holder of the service provider and service client. Then the service providers and the clients are declared in a _model_, which has a special hierarchy of component threads, components and service dependencies. It is possible to modify model during run-time, i.e. to add components in the model before services are started.
 
-**An example of static _model_**:
+An example of _dynamic model_ is in [14_pubtraffic](../examples/14_pubtraffic/) project. 
+
+*An example of static _model_ and the logic of loading model:*
 ```cpp
 // Describe mode, set model name
 BEGIN_MODEL( "ServiceModel" )
@@ -452,7 +466,7 @@ int main()
 
 ```
 
-The example [10_locsvc](./../examples/10_locsvc/) and higher contain implementations of _Local_ and _Public_ services and the clients. Browse [examples](../examples/) to learn more.
+The example [10_locsvc](../examples/10_locsvc/) and higher contain implementations of _Local_ and _Public_ services and the clients. Browse [examples](../examples/) to learn more.
 
 > 💡 Difference of _Local_ and _Public_ services:
 > - The _Local_ services are used for multithreading communication and cannot be accessed outside of process.
@@ -460,16 +474,32 @@ The example [10_locsvc](./../examples/10_locsvc/) and higher contain implementat
 
 ## Hello Service!
 
-This topic is the step-by-step practical example to create a service enabled application(s) based on AREG SDK solution. The application discovers service, sends a request and a response. The source codes of this project are in [00_helloservice](../examples/00_helloservice). First, download sources of AREG SDK. For simplicity, create the new project inside `examples` folder and name it `helloservice`, so that the `examples/helloservice` is the root of this training.
+This topic is the step-by-step practical example to create a service enabled application(s) based on AREG SDK solution. The application discovers service, sends a request and a response. The source codes of this project are in [00_helloservice](../examples/00_helloservice). 
 
-We create 3 types of applications that use same common the service and the client located in `common/src` subfolder of the project, where:
-- service and client run in the same thread of the same application (same as _Local_ service);
-- service and client run in different thread of the same application (same as _Local_ service);
-- service and client run in different processes (same as _Public_ service).
+At first, download the sources of AREG SDK. For simplicity, create the new project inside `examples` folder and name it `helloservice`, so that the `~/areg-sdk/examples/helloservice` is the root of this training project. This will be the working directory for this example.
 
-The agenda is to demonstrate service and client implementation, as well the posibility to split and the merge services in processes to distribute computing power between processes.
+We create 3 projects with applications that use same service provider and client source codes located in `common/src` subfolder of the project, where:
+- In the project #1 service provider and client run in the same thread (have _Local_ service);
+- In the project #2 service provider and client run in different threads (have _Local_ service);
+- In the project #3 service provider and client run in different processes (have _Public_ service).
 
 > 💡 More examples are listed in [examples](../examples/) folder of `areg-sdk`.
+
+The agenda of this topic is to demonstrate service and client implementation, as well the possibility to split and merge services in processes and threads to distribute computing power. Pay attention that in this example all projects instantiate the same service provider and client source code. The main differences are in _models_ declared and used in `main.cpp` files.
+
+> 💡 Important relationship features between service provider and service client:<br>
+> 1. The `Component` is the holder of the servicing objects (service provider and service client).<br>
+> 2. The `Component` can have implementation of multiple service interfaces.
+> 3. The same service provider can be instantiated multiple times, but instances should run in different threads.<br>
+> 4. The services differ by names of service interfaces and names called _Role_.<br>
+> 5. The clients refer to the service by _interface_ and _role_ names.<br>
+> 6. One object (class) can be an implementation of multiple providers and clients of different interfaces.<br>
+> 7. The instance of a service provider and the client can be instantiated in the same thread.<br>
+> 8. The `Component` can contain mixture of service providers and clients.<br>
+> 9. The _role_ names of a _Local_ services must be unique within same process.<br>
+> 10. The _role_ names of a _Public_ services must be unique within same network.<br>
+> 11. The service clients know availability of service via callback method `void serviceConnected( bool isConnected, ProxyBase & proxy )`, where `isConnected` parameter indicates whether service is available or not.<br>
+> 12. The service provider know new client connection via callback method `void clientConnected( const ProxyAddress & client, bool isConnected )`, where `isConnected` indicates whether client is connected or not.
 
 ### Service Interface
 
@@ -507,22 +537,24 @@ In `helloservice` create another folder called `res` to locate the first service
 
 Open command line terminal in `helloservice` folder and run following command:
 ```bash
-$ java -jar ./../../tools/codegen.jar --root=./ --doc=res/HelloService.siml --target=generated/src
+$ java -jar ../../tools/codegen.jar --root=./ --doc=res/HelloService.siml --target=generated/src
 ```
-This script is valid for Linux and Windows OS. It runs `codegen.jar` and generates files located in the `generated/src` subfolder of `helloservice`.
+This runs `codegen.jar` and generates files located in the `generated/src` subfolder of `helloservice`.
+
+> 💡 Important to know about generated codes:<br>
+> 1. All generated service provider base classes end with `Stub`. The developers should extend and at least implement requests. In current example, the service provider base class is `HelloServiceStub`.<br>
+> 2. All generate service client base classes end with `ClientBase`. The developers should extend and at least implement response methods of used request, and callback / update methods of subscribed attributes and broadcasts. If there is a a request, broadcast or an attribute that are not used by client, the implementation of response, broadcast and attribute notifications can be ignored. If a client calls a request and forgets to develop the linked response, the system triggers an error message in the log, reminding developer to implement the ignored methods.
 
 ### Develop the service
 
-We'll develop the service in the folder `common/src` and include in all projects. Before developing a service, it is important to know that:
-1. The `Component` is the owner of the service object. The `Component` can provide more than one service interface. The component can contain a mixture of services and clients.
-2. All service base class generated from a prototype XML document ends with `Stub` and contains the requests as pure virtual methods. For example, in our case the service base class has the name `HelloServiceStub` and it contains one pure virtual method.
+We'll develop the service provider in the subfolder `common/src` to share in all projects. 
 
-In the `common/src` subfolder let's create file `ServiceComponent.hpp` to create **ServiceComponent** object of service component. 
+In the `common/src` subfolder create file `ServiceComponent.hpp` to develop `ServiceComponent` object as a service provider component. 
 - The `ServiceComponent` extends `Component` and `HelloServiceStub` classes.
-- The `ServiceComponent` contains 2 static methods `Component * CreateComponent( ... )` and `void DeleteComponent( ... )` to instantiate and free  the object.
+- The `ServiceComponent` contains 2 static methods `Component * CreateComponent( ... )` to instantiate and `void DeleteComponent( ... )` to free the component object.
 - The `ServiceComponent` contains the `void requestHelloService( const String & client )` override method.
 
-The declaration of the service in the file [common/src/ServiceComponent.hpp](./../examples/00_helloservice/common/src/ServiceComponent.hpp):
+The declaration of the service provider component `ServiceComponent` is in the file [common/src/ServiceComponent.hpp](../examples/00_helloservice/common/src/ServiceComponent.hpp):
 ```cpp
 /**
  * \file    common/src/ServiceComponent.hpp
@@ -587,7 +619,7 @@ private:
 };
 ```
 
-The implementation of the service in the file [common/src/ServiceComponent.cpp](./../examples/00_helloservice/common/src/ServiceComponent.cpp):
+The implementation of the service provider component `ServiceComponent` is in the file [common/src/ServiceComponent.cpp](../examples/00_helloservice/common/src/ServiceComponent.cpp):
 
 ```cpp
 /**
@@ -622,55 +654,23 @@ void ServiceComponent::requestHelloService(const String & client)
 }
 ```
 In this example:
-* The class `ServiceComponent` is an instance of `Component` and `HelloServiceStub`.
-* The service is created in the **static** method `Component * ServiceComponent::CreateComponent(const NERegistry::ComponentEntry & entry, ComponentThread & owner)`.
-* The service is deleted in the **static** method `void ServiceComponent::DeleteComponent(Component & compObject, const NERegistry::ComponentEntry & entry)`.
-* The service implements virtual method `virtual void requestHelloService(const String & client)` inherited from `HelloServiceStub`.
-* In the request `requestHelloService` replies `responseHelloService` to the client and unlocks the request.
+- The class `ServiceComponent` is an instance of `Component` and `HelloServiceStub`.
+- The service provider is created in the **static** method `Component * ServiceComponent::CreateComponent(const NERegistry::ComponentEntry & entry, ComponentThread & owner)`.
+- The service provider is deleted in the **static** method `void ServiceComponent::DeleteComponent(Component & compObject, const NERegistry::ComponentEntry & entry)`.
+- The service provider implements virtual method `void requestHelloService(const String & client)` inherited from `HelloServiceStub`.
+- In the request `requestHelloService` replies `responseHelloService` to the client and unblocks the request.
 
 ### Develop the service client
 
-We'll develop the client in the folder `common/src` to include in all projects. Before developing a client, it is important to know that:
-1. The `Component` is the owner of the service client object. The `Component` can provide more than one service client. A component can contain a mixture of services and clients.
-2. All service client base classes generated from a prototype XML document end with `ClientBase` and contain base implementations of responses, broadcasts, attribute updates, and request failure callback methods.
-3. Whenever service client is connected with the service, the system triggers `bool serviceConnected( bool isConnected, ProxyBase & proxy )` callback to indicate the connection status and the proxy object that is communicating with the stub. 
-4. Since there might be more than one client in the component, check both, `isConnected` and `proxy` parameters to figure the exact connection status of clients. For example, if there are more than one client implementation in component, the HelloService service client can be checked like this:
-```cpp
-bool HelloServiceClient::serviceConnected( bool isConnected, ProxyBase & proxy )
-{
-    bool result = false;
+We'll develop the service client in the subfolder `common/src` to share in all projects. 
 
-    // Is this a notification of HelloService client proxy object?
-    // This is same 'if (HelloServiceClientBase::getProxy() == &proxy)' condition
-    if ( HelloServiceClientBase::serviceConnected(isConnected, proxy) )
-    {
-        result = true;
-        // it is a connection status of HelloService service
-        if (isConnected)
-        {
-            // we've got a connection, can start sending requests and subscribe on attributes, broadcasts and responses.
-        }
-        else
-        {
-            // we lost connection, make fallback, free subscriptions
-        }
-    }
-    else
-    {
-        // not a relevant service connection.
-    }
-
-    return result;
-}
-```
-
-In the `common/src` subfolder let's create file `ClientComponent.hpp` to create the **ClientComponent** object of service client. 
+In the `common/src` subfolder create file `HelloServiceClient.hpp` to develop `HelloServiceClient` object as a service client component.
 - The `ClientComponent` extends `Component` and `HelloServiceClientBase` classes.
-- The `ClientComponent` contains 2 static methods `Component * CreateComponent( ... )` and `void DeleteComponent( ... )` to instantiate and free the object.
-- The `ClientComponent` waits when it is notified of the service connection and sends the request to run on the service.
-- The `ClientComponent` contains overrides to handle reply and the request failure.
+- The `ClientComponent` contains 2 static methods `Component * CreateComponent( ... )` to create and `void DeleteComponent( ... )` to free the component object.
+- The method `void serviceConnected( bool isConnected, ProxyBase & proxy )` is overwritten to know the service available status. As soon as service is available, the client may make subscriptions and start sending requests.
+- The `ClientComponent` contains overrides to handle response and request failure.
 
-The declaration of the service in the file [common/src/ClientComponent.hpp](./../examples/00_helloservice/common/src/ClientComponent.hpp):
+The declaration of the service client component `ClientComponent` is in the file [common/src/ClientComponent.hpp](../examples/00_helloservice/common/src/ClientComponent.hpp):
 ```cpp
 /**
  * \file    common/src/ClientComponent.hpp
@@ -753,7 +753,8 @@ private:
     DECLARE_NOCOPY_NOMOVE( ClientComponent );
 };
 ```
-The implementation of the service in the file [common/src/ClientComponent.cpp](./../examples/00_helloservice/common/src/ClientComponent.cpp):
+
+The implementation of the service client component `ClientComponent` is in the file  [common/src/ClientComponent.cpp](../examples/00_helloservice/common/src/ClientComponent.cpp):
 
 ```cpp
 /**
@@ -833,28 +834,36 @@ void ClientComponent::requestHelloServiceFailed(NEService::eResultType FailureRe
 }
 ```
 In this example:
-* The `ServiceClient` is an instance of `Component` and `HelloServiceClientBase`.
-* The service client is created in the **static** method `Component * ServiceClient::CreateComponent(const NERegistry::ComponentEntry & entry, ComponentThread & owner)`.
-* The service client is deleted in the **static** method `void ServiceClient::DeleteComponent(Component & compObject, const NERegistry::ComponentEntry & entry)`.
-* The service client overrides virtual method `virtual bool serviceConnected(bool isConnected, ProxyBase & proxy)` to react on service connect / disconnect events.
-* The service client overrides virtual method `virtual void responseHelloService( bool success )` to react on service reply.
-* The service client overrides virtual method `virtual requestHelloServiceFailed(NEService::eResultType FailureReason)` to react on request failure (error handling).
-* In the `serviceConnected` when clients establishes the connection, it calls method `requestHelloWorl` to run on remote service.
+- The `ServiceClient` is an instance of `Component` and `HelloServiceClientBase`.
+- The service client is created in the **static** method `Component * ServiceClient::CreateComponent(const NERegistry::ComponentEntry & entry, ComponentThread & owner)`.
+- The service client is deleted in the **static** method `void ServiceClient::DeleteComponent(Component & compObject, const NERegistry::ComponentEntry & entry)`.
+- The service client overrides virtual method `bool serviceConnected(bool isConnected, ProxyBase & proxy)` to react on service connect / disconnect events. It calls request when service is connected and initiates to quit application when service is disconnected.
+* The service client overrides virtual method `void responseHelloService( bool success )` to react on request reply. It initiates quit application when service responds.
+* The service client overrides virtual method `requestHelloServiceFailed(NEService::eResultType FailureReason)` to make error handling.
 
 ### Create and load model
 
-When services and clients are created, the developers can decide how to distribute service and client objects.
-* The service and the client can run in the same thread of the same process.
-* The service and the client can run in separate threads of the same process.
-* The service and the client can run in separate processes (_Public_ service case).
+When service provider and client are created, the developers can decide how to distribute service and client objects. In the next examples there is implementation of applications where:
+* The service and the client run in the same thread of the same process.
+* The service and the client run in the separate threads of the same process.
+* The service and the client run in separate processes (_Public_ service case).
 
-We'll consider each case and for each case we create a new project to run. The _model_ can be created either statically (fixed) or dynamically (can vary). Here we create static models.
+Each application is implemented in separate project. The distribution of components and relationship between service provider and client is defined in the _model_.
 
-#### Model with single thread
+In the examples, the macro:
+- `BEGIN_MODEL` is a declaration of the model. There can be multiple models in the application. Each model must have unique name.
+- `BEGIN_REGISTER_THREAD` is a declaration of a thread containing name (for example, _Thread1_) and watchdog timeout in milliseconds. The timeout `NECommon::WATCHDOG_IGNORE` ignores the watchdog.
+- `BEGIN_REGISTER_COMPONENT` is a declaration of a component with role name (for example, `"ServiceComponent"`) and the component object to instantiate (for example, `ServiceComponent`) and the component should have static methods `CreateComponent` and `DeleteComponent`.
+- `REGISTER_IMPLEMENT_SERVICE` is a declaration of provided service interface. The component may provide more service interfaces and each must be listed in `REGISTER_IMPLEMENT_SERVICE` macro.
+- `REGISTER_DEPENDENCY` is a declaration of service dependency, i.e. it is a declaration of service client. The macro requires declaration of service _role_ name instead of _service interface_ name. Because the application may have multiple instances of the same service interface and they differ by _role_ name.
 
-This example demonstrates how to instantiate service and client in **one thread** to act as _Local_ service. Create `onethread/src` subfolder in the `helloservice`, and create the `main.cpp` source file to implement the _model_ and application. File [./onethread/src/main.cpp](./../examples/00_helloservice/onethread/src/main.cpp).
+#### Model single thread
 
-> 💡 In the example, there are 2 components declared in one thread.
+> 💡 The sources of this example are available in the file [./onethread/src/main.cpp](../examples/00_helloservice/onethread/src/main.cpp).
+
+An example to demonstrate how to design a model and start application that contains service provider and service client running in the same thread of the same process. It acts as a _Local_ service:
+- Create `onethread/src` subfolder in the `helloservice`
+- Create the `main.cpp` file to implement the _model_ and `main()` function.
 
 ```cpp
 /**
@@ -891,7 +900,7 @@ const std::string   _client( NEUtilities::generateName("ServiceClient").getStrin
 // Describe model, register the service and the client in one thread "Thread1"
 BEGIN_MODEL(_modelName)
 
-    BEGIN_REGISTER_THREAD( "Thread1", NECommon::INVALID_TIMEOUT )
+    BEGIN_REGISTER_THREAD( "Thread1", NECommon::WATCHDOG_IGNORE )
         // register service in the thread
         BEGIN_REGISTER_COMPONENT( _service, ServiceComponent )
             REGISTER_IMPLEMENT_SERVICE( NEHelloService::ServiceName, NEHelloService::InterfaceVersion )
@@ -930,10 +939,27 @@ int main( void )
     return 0;
 }
 ```
+In this example, the application declares 
+- a model named `"ServiceModel"`;
+- a thread with name `"Thread1"` and no watchdog;
+- a component `ServiceComponent` with role name `"ServiceComponent"`;
+- a declaration of provided `NEHelloService::ServiceName` service interface;
+- a dependency on provided service `"ServiceComponent"`.
+
+In the `main()` function:
+1. The application initializes internal objects in `Application::initApplication( )`.
+2. The components in model are instantiated by calling `Application::loadModel(_modelName)`.
+3. The application wait for _quit_ signal in `Application::waitAppQuit(NECommon::WAIT_INFINITE)`.
+4. The application unloads model and makes cleanups in `Application::unloadModel(_modelName)`.
+5. The application releases internal objects and makes cleanups in `Application::releaseApplication()` and exits with result 0.
 
 #### Model with multiple threads
 
-This example demonstrates how to instantiate service and client in **two threads** to act as _Local_ service. Create `twothreads/src` subfolder in the `helloservice`, and create the `main.cpp` source file to implement the _model_ and application. File [./twothreads/src/main.cpp](./../examples/00_helloservice/twothreads/src/main.cpp).
+> 💡 The sources of this example are available in the file [./twothreads/src/main.cpp](../examples/00_helloservice/twothreads/src/main.cpp).
+
+An example to demonstrate how to design a model and start application that contains service provider and service client running in the different threads of the same process. It acts as a _Local_ service.
+- Create `twothreads/src` subfolder in the `helloservice`
+- Create the `main.cpp` file to implement the _model_ and `main()` function.
 
 ```cpp
 /**
@@ -961,24 +987,24 @@ namespace
 {
 //!< The name of model
 constexpr char const _modelName[]   { "ServiceModel" };
-//! Service component role
+//! Service component role name.
 constexpr char const _service[]     { "ServiceComponent" };
-//!< Client component name. Let's generate the name for client service, we'll use it later.
-const std::string   _client( NEUtilities::generateName("ServiceClient").getString() );
+//!< Client component role name.
+constexpr char const _client[]      { "ServiceClient" };
 }
 
 // Describe model, register the service and the client in 2 different threads "Thread1" and "Thread2"
 BEGIN_MODEL(_modelName)
     // Thread 1, provides a service
-    BEGIN_REGISTER_THREAD( "Thread1", NECommon::INVALID_TIMEOUT )
+    BEGIN_REGISTER_THREAD( "Thread1", NECommon::WATCHDOG_IGNORE )
         BEGIN_REGISTER_COMPONENT( _service, ServiceComponent )
             REGISTER_IMPLEMENT_SERVICE( NEHelloService::ServiceName, NEHelloService::InterfaceVersion )
         END_REGISTER_COMPONENT( _service )
     END_REGISTER_THREAD( "Thread1" )
 
     // Thread 2, is a client / service consumer.
-    BEGIN_REGISTER_THREAD( "Thread2", NECommon::INVALID_TIMEOUT )
-        BEGIN_REGISTER_COMPONENT( _client.c_str(), ClientComponent )
+    BEGIN_REGISTER_THREAD( "Thread2", NECommon::WATCHDOG_IGNORE )
+        BEGIN_REGISTER_COMPONENT( _client, ClientComponent )
             REGISTER_DEPENDENCY( _service ) /* reference to the service*/
         END_REGISTER_COMPONENT( _client )
     END_REGISTER_THREAD( "Thread2" )
@@ -1011,14 +1037,32 @@ int main( void )
     return 0;
 }
 ```
+In this example, the application declares: 
+- a model named `"ServiceModel"`;
+- 2 threads with name `"Thread1"` and `"Thread2"`, and no watchdog;
+- 2 components: a component `ServiceComponent` with role name `"ServiceComponent"`, and component `ServiceClient` with role name `"ServiceClient"`;
+- the component `ServiceComponent` has declaration of provided `NEHelloService::ServiceName` service interface;
+- the component `ServiceClient` has declaration of dependency on provided service `"ServiceComponent"`.
+
+Similar to previous example, in the `main()` function the application initializes internals, loads model and instantiates services, waits for quit and makes cleanups to exit application.
 
 #### Model of separate processes
 
-This example demonstrates how to instantiate service and client in **two separate processes** to act as _Public_ service. This requires 2 projects for each process. Create empty `main.cpp` source file in 2 `multiprocess\serviceproc\src` and `multiprocess\clientproc\src` subfolder of the `helloservice`.
+> 💡 To be able to create _Public_ service (i.e. to support **IPC**), the service interface must be declared as _Public_ by defining `isRemote="true"` attribute of `ServiceInterface` entry in the XML document file as it is defined in [HelloService.siml](../examples/00_helloservice/res/HelloService.siml) file (see `<Overview ID="1" Name="HelloService" Version="1.0.0" isRemote="true">` in line 3).
 
-> 💡 Note, the model and thread names in these 2 processes have same name, but the service roles differ.
+This example requires 2 processes to demonstrate _Public_ service, where one process provides and the other process uses the service. It requires one project per process. Create empty `main.cpp` source file in 2 `multiprocess\serviceproc\src` and `multiprocess\clientproc\src` subfolder of the `helloservice`. 
 
-In file [./multiprocess/serviceproc/src/main.cpp](./../examples/00_helloservice/multiprocess/serviceproc/src/main.cpp) we declare and instantiate the _Public_ service.
+> 💡 To run this example, start `mcrouter` process that will connect server and client nodes, and ensure messaging between components. 
+
+*Service provider process*
+
+> 💡 The sources of this example are available in the file [./multiprocess/serviceproc/src/main.cpp](../examples/00_helloservice/multiprocess/serviceproc/src/main.cpp). It provides _Public_ service.
+
+An example to demonstrate how to design a model and start application that provides a _Public_ service. 
+- In the created `multiprocess\serviceproc\src` folder, create `main.cpp` file.
+- Design model that provides service.
+- Implement `main()` function to load model.
+
 ```cpp
 /**
  * \file    multiprocess/serviceproc/src/main.cpp
@@ -1052,7 +1096,7 @@ constexpr char const _service[]     { "ServiceComponent" };
 // Describe model, register the provided service in this model
 BEGIN_MODEL(_modelName)
 
-    BEGIN_REGISTER_THREAD( "Thread1, NECommon::INVALID_TIMEOUT" )
+    BEGIN_REGISTER_THREAD( "Thread1", NECommon::WATCHDOG_IGNORE )
         BEGIN_REGISTER_COMPONENT( _service, ServiceComponent )
             REGISTER_IMPLEMENT_SERVICE( NEHelloService::ServiceName, NEHelloService::InterfaceVersion )
         END_REGISTER_COMPONENT( _service )
@@ -1087,7 +1131,19 @@ int main( void )
 }
 ```
 
-In file [./multiprocess/clientproc/src/main.cpp](./../examples/00_helloservice/multiprocess/clientproc/src/main.cpp) we declare and instantiate the client of _Public_ service.
+In this example:
+- Defined model.
+- In the function `main()` initialized internals and instantiated _Public_ service provider component.
+- Wait for _quit_ signal to exit application.
+
+*Service user process*
+
+> 💡 The sources of this example are available in the file [./multiprocess/clientproc/src/main.cpp](../examples/00_helloservice/multiprocess/clientproc/src/main.cpp). It uses _Public_ service.
+
+An example to demonstrate how to design a model and start application that uses a _Public_ service. 
+- In the created `multiprocess\clientproc\src` folder, create `main.cpp` file.
+- Design model that uses service.
+- Implement `main()` function to load model.
 
 ```cpp
 /**
@@ -1125,7 +1181,7 @@ const std::string   _client( NEUtilities::generateName("ServiceClient").getStrin
 // Describe model, register the service consumer (client)
 BEGIN_MODEL(_modelName)
 
-    BEGIN_REGISTER_THREAD( "Thread1", NECommon::INVALID_TIMEOUT )
+    BEGIN_REGISTER_THREAD( "Thread1", NECommon::WATCHDOG_IGNORE )
         BEGIN_REGISTER_COMPONENT( _client.c_str(), ClientComponent )
             REGISTER_DEPENDENCY( _service ) /* reference to the service*/
         END_REGISTER_COMPONENT( _client )
@@ -1160,11 +1216,16 @@ int main( void )
 }
 ```
 
-For this particular project, there can be multiple instances of service clients to start, because the role is generated and it is unique. The application will work if a client runs on another machine(s) within the network connected to the `mcrouter`.
+In this example:
+- Defined model, with dynamic _role_ name. 
+- In the function `main()` initialized internals and instantiated component that uses _Public_ service.
+- Wait for _quit_ signal to exit application.
+
+> 💡 For this particular project, multiple instances of service clients can be started. Each process generates unique _role_ name of the component when runs code `const std::string   _client( NEUtilities::generateName("ServiceClient").getString() )`. This makes possible to start multiple client applications, where each of them uses `"ServiceComponent"` service provided in process `serviceproc`. The _Public_ components must have unique names within same network formed by `mcrouter`.
 
 ### Make the build
 
-The builds can be done with the help of MS Visual Studio, Eclipse or Makefile. We do not consider in details all cases and hope that developers will be able to creae projects for MS Visual Studio and Eclipse. You can also use project files in [00_helloservice](./../examples/00_helloservice) and subfodels to use them as templates. Here are the Makefiles to place in folders to compile. The Makefile should be present in following folrders
+The created projects can be built with the help of `MS Visual Studio`, `Eclipse`, `Make` command line tool, `CMake` command line tool, etc. Here it is not considered creating projects for MS Visual Studio and Eclipse. The appropriate project files for the mentioned IDE can be found in each project folder of [00_helloservice](../examples/00_helloservice). Here is considered how to create `Makefiles` and compile projects. The following folders should have `Makefile` file:
 ```
 helloservice/Makefile
 
@@ -1184,7 +1245,7 @@ helloservice/twothreads/Makefile
 helloservice/twothreads/src/Makefile
 ```
 
-We'll use `Makefile` settings of `areg-sdk` to build the projects, but will not go to much into the details. To escape flooding of this manual, I'll not output each Makefile of `helloservice` project. Instead, use identical structure of [00_helloservice](./../examples/00_helloservice), copy Makefiles and remove everywhere string `00_`, so that for example the `Makefile` in `helloservice` will look like this:
+We'll use `make` default settings of `areg-sdk` to build the projects, but will not go deep and escape flooding by demonstrating only one case. For more details, see identical content of every `Makefile` in the [00_helloservice](../examples/00_helloservice) and make a copy by removing _"00_"_ prefix:
 
 ```shell
 helloservice_BASE       := $(AREG_EXAMPLES)/helloservice
@@ -1204,7 +1265,8 @@ helloservice: $(AREG_OUTPUT_BIN)/$(onethread_TARGET_BIN) $(AREG_OUTPUT_BIN)/$(tw
 
 .PHONY: helloservice
 ```
-When go through all subfolders, do not forget to include new projects of `helloservice` in the `examples/Makefile`. To to so, let's make the last step in [example/Makefile](./../examples/Makefile) and modify followings:
+
+When ready, include new `helloservice` projects of in the [examples/Makefile](../examples/Makefile):
 
 **Step #1:** Include `Makefile` of `helloservice`:
 ```shell
@@ -1212,25 +1274,33 @@ include $(AREG_EXAMPLES)/helloservice/Makefile
 ```
 **Step #2:** Include `helloservice` in build (project added at the end):
 ```shell
-examples: 00_helloservice 01_hello 02_buffer 03_file 04_trace \
-    05_timer 06_threads 07_synch 08_service 09_svcmulti \
-    10_locsvc 11_locmesh 12_pubsvc 13_pubmesh \
+examples: 00_helloservice 01_hello 02_buffer 03_file 04_trace   \
+    05_timer 06_threads 07_synch 08_service 09_svcmulti         \
+    10_locsvc 11_locmesh 12_pubsvc 13_pubmesh                   \
     14_pubtraffic 15_pubworker 16_pubfsm helloservice
 ```
-Now the projects are ready for compilation. Open the Terminal and if already have build `areg` library, call from commandline to build only examples:
+Now the projects are ready, open the Terminal in _areg-sdk_ root folder and call:
 ```shell
 $ make examples
 ```
-or if you want to build all, just call `make` with or without optional `all` option:
+or if build all projects, call:
 ```shell
 $make
 ```
 
-The compiled binaries you find in <areg-sdk>/product/build/<compiler-platform-path>/bin. You can run them ans see the results. 
+The compiled binaries are located in `<areg-sdk>/product/build/<compiler-platform-path>/bin`.
 
-> 💡 When testing _Public_ service implemented in `serviceproc` and the client `clientproc` do not forget to start `mcrouter`. The sequence of process startup has no dependency, the client and service communicate as soon as _Automatic Service Discovery_ detects the availability of service and the client.
+## Testing
+
+1. To compile all projects, call `make all` in command line.
+2. To compile example projects, call `make examples` in command line
+3. All compiled files are located in `<areg-sdk>/product/build/<compiler-platform-path>/bin` folder.
+4. If run application with a _Public_ service (**IPC** projects or examples), start `mcrouter`.
+5. There is no need to start _mcrouter_ if testing application with no _Public_ service.
+6. All compiled files are in the `bin` folder, switch there to start applications.
+7. Some application may create logs in the `logs` folder of binary location. Open to analyze logs.
 
 ## Contact us!
 
-Contact us at info[at]aregtech.com for any reason.
-Do not forget to ![star us](https://img.shields.io/github/stars/aregtech/areg-sdk.svg?style=social&label=staring%20us) at GitHub.
+Contact us at info[at]aregtech.com if need help or more information.
+If you linked the project and the idea behind that, please ![star us](https://img.shields.io/github/stars/aregtech/areg-sdk.svg?style=social&label=staring%20us) at GitHub, so that contributors feel being appreciated for the job.

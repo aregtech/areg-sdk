@@ -33,7 +33,7 @@ const std::string   _client( NEUtilities::generateName("ServiceClient").getStrin
 // Describe model, register the service consumer (client)
 BEGIN_MODEL(_modelName)
 
-    BEGIN_REGISTER_THREAD( "Thread1", NECommon::INVALID_TIMEOUT )
+    BEGIN_REGISTER_THREAD( "Thread1", NECommon::WATCHDOG_IGNORE)
         BEGIN_REGISTER_COMPONENT( _client.c_str(), ClientComponent )
             REGISTER_DEPENDENCY( _service ) /* reference to the service*/
         END_REGISTER_COMPONENT( _client )

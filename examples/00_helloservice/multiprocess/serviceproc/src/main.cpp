@@ -30,7 +30,7 @@ constexpr char const _service[]     { "ServiceComponent" };
 // Describe model, register the provided service in this model
 BEGIN_MODEL(_modelName)
 
-    BEGIN_REGISTER_THREAD( "Thread1", NECommon::INVALID_TIMEOUT)
+    BEGIN_REGISTER_THREAD( "Thread1", NECommon::WATCHDOG_IGNORE)
         BEGIN_REGISTER_COMPONENT( _service, ServiceComponent )
             REGISTER_IMPLEMENT_SERVICE( NEHelloService::ServiceName, NEHelloService::InterfaceVersion )
         END_REGISTER_COMPONENT( _service )

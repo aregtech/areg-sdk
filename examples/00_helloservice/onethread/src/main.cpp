@@ -32,7 +32,7 @@ const std::string   _client( NEUtilities::generateName("ServiceClient").getStrin
 // Describe model, register the service and the client in one thread "Thread1"
 BEGIN_MODEL(_modelName)
 
-    BEGIN_REGISTER_THREAD( "Thread1", NECommon::INVALID_TIMEOUT)
+    BEGIN_REGISTER_THREAD( "Thread1", NECommon::WATCHDOG_IGNORE)
         // register service in the thread
         BEGIN_REGISTER_COMPONENT( _service, ServiceComponent )
             REGISTER_IMPLEMENT_SERVICE( NEHelloService::ServiceName, NEHelloService::InterfaceVersion )

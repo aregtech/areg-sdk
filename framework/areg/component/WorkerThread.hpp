@@ -92,11 +92,12 @@ public:
      *                              If timeout is not zero and it expires before the thread processed
      *                              an event, it terminates and restarts the thread again.
      *                              There is no guarantee that terminated thread will make all cleanups properly.
+     *                              Watchdog timeout is ignored if it is equal to NECommon::WATCHDOG_IGNORE.
      **/
     WorkerThread( const String & threadName
                 , Component & bindingComponent
                 , IEWorkerThreadConsumer & threadConsumer
-                , uint32_t watchdogTimeout = NECommon::INVALID_TIMEOUT);
+                , uint32_t watchdogTimeout = NECommon::WATCHDOG_IGNORE);
 
     /**
      * \brief   Destructor
@@ -124,7 +125,7 @@ public:
 
     /**
      * \brief   Returns the watchdog timeout value in milliseconds. The value 0
-     *          (NECommon::INVALID_TIMEOUT) means the watchdog is ignored by the worker thread.
+     *          (NECommon::WATCHDOG_IGNORE) means the watchdog is ignored by the worker thread.
      **/
     inline uint32_t getWatchdogTimeout(void) const;
 
