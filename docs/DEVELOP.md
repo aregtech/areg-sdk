@@ -1054,7 +1054,7 @@ This example requires 2 processes to demonstrate _Public_ service, where one pro
 
 > 💡 To run this example, start `mcrouter` process that will connect server and client nodes, and ensure messaging between components. 
 
-*Service provider process*
+**Service provider process**
 
 > 💡 The sources of this example are available in the file [./multiprocess/serviceproc/src/main.cpp](../examples/00_helloservice/multiprocess/serviceproc/src/main.cpp). It provides _Public_ service.
 
@@ -1136,7 +1136,7 @@ In this example:
 - In the function `main()` initialized internals and instantiated _Public_ service provider component.
 - Wait for _quit_ signal to exit application.
 
-*Service user process*
+**Service user process**
 
 > 💡 The sources of this example are available in the file [./multiprocess/clientproc/src/main.cpp](../examples/00_helloservice/multiprocess/clientproc/src/main.cpp). It uses _Public_ service.
 
