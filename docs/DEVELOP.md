@@ -34,7 +34,7 @@ This document is a developer guide and describes how to develop a service enable
     - [Develop the service](#develop-the-service)
     - [Develop the service client](#develop-the-service-client)
     - [Create and load model](#create-and-load-model)
-      - [Model with single thread](#model-single-thread)
+      - [Model with single thread](#model-with-single-thread)
       - [Model with multiple threads](#model-with-multiple-threads)
       - [Model of separate processes](#model-of-separate-processes)
     - [Make the build](#make-the-build)
@@ -857,7 +857,7 @@ In the examples, the macro:
 - `REGISTER_IMPLEMENT_SERVICE` is a declaration of provided service interface. The component may provide more service interfaces and each must be listed in `REGISTER_IMPLEMENT_SERVICE` macro.
 - `REGISTER_DEPENDENCY` is a declaration of service dependency, i.e. it is a declaration of service client. The macro requires declaration of service _role_ name instead of _service interface_ name. Because the application may have multiple instances of the same service interface and they differ by _role_ name.
 
-#### Model single thread
+#### Model with single thread
 
 > 💡 The sources of this example are available in the file [./onethread/src/main.cpp](../examples/00_helloservice/onethread/src/main.cpp).
 
@@ -1046,7 +1046,7 @@ In this example, the application declares:
 
 Similar to previous example, in the `main()` function the application initializes internals, loads model and instantiates services, waits for quit and makes cleanups to exit application.
 
-#### Model of separate processes
+#### Model with separate processes
 
 > 💡 To be able to create _Public_ service (i.e. to support **IPC**), the service interface must be declared as _Public_ by defining `isRemote="true"` attribute of `ServiceInterface` entry in the XML document file as it is defined in [HelloService.siml](../examples/00_helloservice/res/HelloService.siml) file (see `<Overview ID="1" Name="HelloService" Version="1.0.0" isRemote="true">` in line 3).
 
