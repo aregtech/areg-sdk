@@ -1,7 +1,7 @@
 # Developer guide
 ```
 This file is part of AREG SDK
-Copyright (c) 2017-2022, Aregtech
+Copyright (c) 2021-2022, Aregtech
 Contact: info[at]aregtech.com
 Website: https://www.aregtech.com
 ```
@@ -43,37 +43,37 @@ This document is a developer guide and describes how to develop a service enable
 
 ## Service interface prototype
 
-AREG SDK is an interface-centric communication engine. Before creating a service, there should be service interface designed, which defines API of service, and has following sections:
-1. The overview and type of service interface (_Public_ or _Local_).
-2. The data types specific for the service or can be exported common types, which are possible to serialize.
-3. Attributes, which are the data of services to subscribe on data set or data change notifications.
-4. Methods, which are _requests_, _responses_ and _broadcasts_.
-5. Constants required in service interface.
-6. Any additional file to include for the service.
+AREG SDK is an interface-centric real-time communication engine where connected Things provide services, so that they act as ultra-small servers and automatically form a network of meshed services, where service clients automatically find and connect with required service provider nodes. The service clients communicate with the service providers via predefined API. The services provide data called _attributes_ and process requests. The service clients receive responses as a reply on requests, and can dynamically subscribe and unsubscribe on service data. These all are service API, which can be defined in XML format _service interface_ prototype document, and has following sections:
+1. The service interface overview.
+2. The service specific data types.
+3. The service specific data called _service attributes_.
+4. The service specific methods, which consists of _requests_, _responses_ and _broadcasts_.
+5. The service specific constants.
+6. Mandatory includes required to develop the service.
 
-The service interfaces can be defined in a prototype XML document to generate basic servicing and client objects to extend. Developers may extend the generated files and implement required interfaces. An example of the service interface prototype is described in [Sample.siml](./Sample.siml) XML format Service Interface document file, which contains all sections.
+The service interfaces defined in prototype XML document is used to generate servicing base objects, which developers can extend to implement service specific functionalities. An example of the _service interface_ prototype with sections is described in [Sample.siml](./Sample.siml) file.
 
-> 💡 The Service Interface design UI tool is in development state and will be available in next releases as a free-ware.
+> 💡 The Service Interface design GUI tool is in development state and will be available in next releases as a free-ware.
 
 ### Public and Local services
 
-The following example defines a _Public_ (used in IPC) interface defined for _Sample_ service.
+The following example defines a _Public_ (used for IPC) interface defined for _Sample_ service.
 ```xml
 <Overview ID="1" Name="Sample" Version="1.0.0" isRemote="true">
     <Description>This is an example of defining service interface.</Description>
 </Overview>
 ```
-If there is no `isRemote` attribute or it is set `false` (`isRemote="false"`) then the service interface is _Local_ and it is used for multithreading communication. The _Local_ services are not visible and are not accessible outside of the process. If `isRemote` attribute is set `true` like in the example (`isRemote="true"`), the service that provides the interface is _Public_ and the API can be accessed from any note of the network. Protect sensitive data with _Local_ services.
+The `<Overview>` section contains service interface name, interface version and the flag, indicating whether the interface is _Public_ or _Local_. If `isRemote` attribute is `true` (`isRemote="true"`) it is a _Public_ service interface, visible in the network and can be used by any node in the network. Otherwise, it is _Local_ and not visible in the network. The _Local_ services are used to protect sensitive data and enable multithreading asynchronous communication in the application. The _Public_ services are used for multiprocessing communication and they enable connected Things act as ultra-small servers.
 
-> 💡 If the API of the _Local_ service interface is called outside of the process, the system ignores the call and returns error message to the calling client component. Only _Public_ interfaces are accessed for _IPC_ and can be called from any client software component in the network.
+> 💡 If an API of the _Local_ service interface is called outside of the process, the system ignores the call and responses with error code to the caller. Only _Public_ interfaces are accessed for _IPC_ and can be called from any client software component in the network.
 
 ### Data types
 
-Every service interface can have specific data types. When a new data type is defined, it can be used to declare any variables, service data (attributes) and parameters of methods. New data types are listed in the section `<DataTypeList> ... </DataTypeList>`. All data types are streamable objects. It is possible to import a common data type in the service interface. The import is done by including header file and by specifying the name of the type, structure or class. Each imported type must be streamable, i.e. there should be `operator >>`or `operator <<` declared and implemented for the type, to serialize data in [IEIOStream](../framework/areg/base/IEIOStream.hpp) object. You'll get compilation error if the imported type does not have operators.
+Every service interface can have specific data types. When a new data type is defined, it can be used to declare any variables, service data (attributes) and parameters of methods. New data types are listed in the section `<DataTypeList>`. All data types should be streamable. It is possible to import a external data types in the service interface and there should be `operator >>`or `operator <<` implemented for the imported types to serialize data in [IEIOStream](../framework/areg/base/IEIOStream.hpp) object.
 
 #### Structures
 
-In the _DataTypeList_ section of Service Interface XML document, the developers can declare a new structure with the fields. The _DataType_ tag indicates type _Structure_ and the name of the structure followed by _Description_ and the list of structure fields. Each field has _data type_ and the name. If a structure has default value it should be specified in the _Value_ entry (`<Value IsDefault="true">0</Value>`). Each type of the field of structure must have `assigning operator`, `comparing operator`, `copy constructor` (if an object), must be possible explicitly to convert to `unsigned int` and must be possible to `stream` in [IEIOStream](../framework/areg/base/IEIOStream.hpp) object.
+In the `<DataTypeList>` section of the service interface XML document can be declared a structure. The `DataType` tag indicates type `Structure` and the name of the structure followed by the list of structure fields. Each field refers to another predefined or new defined `DataType` and has a name. The field of structure may have default value, which is specified in the `<Value>` entry (`<Value IsDefault="true">0</Value>`). Each type of the field must have _assigning operator_, _comparing operator_, and _default and copy constructor_ if the type is an object. The field must be possible explicitly to convert to `unsigned int` and must be possible to _stream_ in [IEIOStream](../framework/areg/base/IEIOStream.hpp) object. There is no need manually to implement operators if the type of the fields are primitives, predefined objects or types defined in the documents. Only imported types may need to have manually implemented operators.
 
 *An example of declaring structure with fields and default values:*
 ```xml
@@ -95,11 +95,11 @@ In the _DataTypeList_ section of Service Interface XML document, the developers 
     </FieldList>
 </DataType>
 ```
-In this example, the structure has 3 fields with default values to set.
+In this example, the structure `SomeStruct` has 3 fields with default values to set.
 
 #### Enumerations
 
-In the _DataTypeList_ section of Service Interface XML document, the developers can declare a new enumeration with the fields. The _DataType_ tag indicates type _Enumerate_ and the name of the enumeration followed by _Description_ and the list of fields. Each field may contain _Value_. The enumerations automatically are streamable.
+In the `<DataTypeList>` section of the service interface XML document can be declared an enumeration. The `DataType` tag indicates type `Enumerate` and the name of the enumeration followed by the list of fields. Each field may have `Value`. The enumerations are automatically streamable.
 
 *An example of declaring enumeration with fields and values:*
 ```xml
@@ -122,10 +122,11 @@ In the _DataTypeList_ section of Service Interface XML document, the developers 
     </FieldList>
 </DataType>
 ```
+In this example, the enumeration `SomeEnum` has 4 fields, where first 2 fields have values.
 
  #### Imported types
 
-In the _DataTypeList_ section of Service Interface XML document the developers can import defined types. The _DataType_ tag indicates type _Imported_ and the name of the imported type followed by _Description_, _Namespace_ if present and the location of relative path of the imported file. Any imported type must be possible to `stream` in [IEIOStream](../framework/areg/base/IEIOStream.hpp) object.
+In the `<DataTypeList>` section of the service interface XML document can be imported external types. The `DataType` tag indicates type `Imported` and the name of the new type followed by _Namespace_ (if there is a need) and the relative path to header file where the imported type is declared. The imported types must be possible to `stream` in [IEIOStream](../framework/areg/base/IEIOStream.hpp) object, they should have assigning and comparing operators, default and copy constructors.
 
 *An example of imported type:*
  ```xml
@@ -135,11 +136,11 @@ In the _DataTypeList_ section of Service Interface XML document the developers c
     <Location>areg/base/NEMemory.hpp</Location>
 </DataType>
 ```
-The example imports type `NEMemory::uAlign`, which is declared in `areg/base/NEMemory.hpp` header file and is streamable.
+The example imports type `NEMemory::uAlign`, which is declared in `areg/base/NEMemory.hpp` header file and it is streamable.
 
 #### Defined containers
 
-In the _DataTypeList_ section of Service Interface XML document the developers can declare new container types. The _DataType_ tag indicates type _DefinedType_ and the name of the type followed by _Description_. The _Container_ tag specifies the type of container and the _BaseTypeValue_ define the type of values stored in the container, which must be possible to `stream` in [IEIOStream](../framework/areg/base/IEIOStream.hpp) object. If the container is _HashMap_ in addition it has _BaseTypeKey_, which indicates the type of keys in the map and which must be possible to stream.
+In the `<DataTypeList>` section of the service interface XML document can be declared new types of standard containers. The `DataType` tag indicates type `DefinedType` and the name of new type. The `Container` tag specifies the type, the `BaseTypeValue` specifies the type of values and in case of _maps_ the `BaseTypeKey` specifies the type of keys. All types must be possible to `stream` in [IEIOStream](../framework/areg/base/IEIOStream.hpp) object.
 
 *An example of defining new type of array:*
 ```xml
@@ -170,11 +171,11 @@ In this example, the values of linked list have type `String`, which is streamab
     <BaseTypeKey>String</BaseTypeKey>
 </DataType>
 ```
-In this example, the values of hash-map have type `SomeStruct` and the key are type `String`. Both types are streamable. The type `SomeStruct` declared in the this Service Interface XML document is automatically declared as streamable, has assigning and compare operators, and has default constructor.
+In this example, the values of hash-map have type `SomeStruct` and the key are type `String`. Both types are streamable. The type `SomeStruct` declared in the this Service Interface XML document is automatically declared as streamable, has assigning and compare operators, and has default and copy constructor.
 
 ### Attributes
 
-_Attributes_ in services are data that clients can subscribe to get update notifications either each time when data is set of only when data is updated. The attributes are listed in the section `<AttributeList> ... </AttributeList>`. The type of attribute must be possible to stream in [IEIOStream](../framework/areg/base/IEIOStream.hpp) object.
+_Attributes_ in services are data that clients can subscribe to get update notifications when data is changed. The attributes are listed in the section `<AttributeList>`. The type of attribute must be possible to stream in [IEIOStream](../framework/areg/base/IEIOStream.hpp) object.
 
 > 💡 The data of an `Attribute` is always available for the client. As soon as the client subscribes on the attribute data, it will receive at least one notification of the current value and a flag, indicating the validation state of the data. If on first notification the data state is _invalid_ the client may receive second notification with the valid value sent by servicing component.<br>
 > 💡 It is important to check the state flag to make correct reaction. The attribute notification callback has semantic `void onAttributeNameUpdate( const DataType & AttributeName, NEService::eDataStateType state )`, where the _AttributeName_ is the name of and the _DataType_ is the type of the attribute. The attribute data is valid only if `state` parameter is equal to `NEService::eDataStateType::DataIsOK`. In all other cases the data value is invalid and can be ignored or the error can be handled.<br>
