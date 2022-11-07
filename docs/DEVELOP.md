@@ -458,7 +458,7 @@ int main()
     
     printf("Completed testing simple remote servicing component. Check the logs...\n");
 
-	return 0;
+    return 0;
 }
 
 ```
