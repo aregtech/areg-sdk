@@ -49,7 +49,7 @@ AREG SDK is an interface-centric real-time communication engine where connected 
 3. The service specific data called _service attributes_.
 4. The service specific methods, which consists of _requests_, _responses_ and _broadcasts_.
 5. The service specific constants.
-6. Mandatory includes required to develop the service.
+6. The includes required to develop the service.
 
 The service interfaces defined in prototype XML document is used to generate servicing base objects, which developers can extend to implement service specific functionalities. An example of the _service interface_ prototype with sections is described in [Sample.siml](./Sample.siml) file.
 
@@ -73,7 +73,7 @@ Every service interface can have specific data types. When a new data type is de
 
 #### Structures
 
-In the `<DataTypeList>` section of the service interface XML document can be declared a structure. The `DataType` tag indicates type `Structure` and the name of the structure followed by the list of structure fields. Each field refers to another predefined or new defined `DataType` and has a name. The field of structure may have default value, which is specified in the `<Value>` entry (`<Value IsDefault="true">0</Value>`). Each type of the field must have _assigning operator_, _comparing operator_, and _default and copy constructor_ if the type is an object. The field must be possible explicitly to convert to `unsigned int` and must be possible to _stream_ in [IEIOStream](../framework/areg/base/IEIOStream.hpp) object. There is no need manually to implement operators if the type of the fields are primitives, predefined objects or types defined in the documents. Only imported types may need to have manually implemented operators.
+In the `<DataTypeList>` section of the service interface XML document can be declared a structure. The `DataType` tag indicates type `Structure` and the name of the structure followed by the list of structure fields. Each field refers to another predefined or new defined `DataType` and has a name. The field of structure may have default value, which is specified in the `<Value>` entry (`<Value IsDefault="true">0</Value>`). Each type of the field must have _assigning operator_, _comparing operator_, and _default and copy constructor_ if the type is an object. The field must be possible explicitly to convert to `unsigned int` and must be possible to serialize in [IEIOStream](../framework/areg/base/IEIOStream.hpp) object. There is no need manually to implement operators if the type of the fields are primitives, predefined objects or types defined in the documents. Only imported types may need to have manually implemented operators.
 
 *An example of declaring structure with fields and default values:*
 ```xml
@@ -126,7 +126,7 @@ In this example, the enumeration `SomeEnum` has 4 fields, where first 2 fields h
 
  #### Imported types
 
-In the `<DataTypeList>` section of the service interface XML document can be imported external types. The `DataType` tag indicates type `Imported` and the name of the new type followed by _Namespace_ (if there is a need) and the relative path to header file where the imported type is declared. The imported types must be possible to `stream` in [IEIOStream](../framework/areg/base/IEIOStream.hpp) object, they should have assigning and comparing operators, default and copy constructors.
+In the `<DataTypeList>` section of the service interface XML document can be imported external types. The `DataType` tag indicates type `Imported` and the name of the new type followed by _Namespace_ (if there is a need) and the relative path to header file where the imported type is declared. The imported types must be possible to serialize in [IEIOStream](../framework/areg/base/IEIOStream.hpp) object, they should have assigning and comparing operators, default and copy constructors.
 
 *An example of imported type:*
  ```xml
@@ -175,11 +175,10 @@ In this example, the values of hash-map have type `SomeStruct` and the key are t
 
 ### Attributes
 
-_Attributes_ in services are data that clients can subscribe to get update notifications when data is changed. The attributes are listed in the section `<AttributeList>`. The type of attribute must be possible to stream in [IEIOStream](../framework/areg/base/IEIOStream.hpp) object.
+_Attributes_ in services are data, which is similar to Publisher-Subscriber (PubSub / data centric solution). The clients may dynamically subscribe and unsubscribe on data update and get notifications. The attributes are listed in the section `<AttributeList>`. The type of attribute must be possible to serialize in [IEIOStream](../framework/areg/base/IEIOStream.hpp) object.
 
-> 💡 The data of an `Attribute` is always available for the client. As soon as the client subscribes on the attribute data, it will receive at least one notification of the current value and a flag, indicating the validation state of the data. If on first notification the data state is _invalid_ the client may receive second notification with the valid value sent by servicing component.<br>
-> 💡 It is important to check the state flag to make correct reaction. The attribute notification callback has semantic `void onAttributeNameUpdate( const DataType & AttributeName, NEService::eDataStateType state )`, where the _AttributeName_ is the name of and the _DataType_ is the type of the attribute. The attribute data is valid only if `state` parameter is equal to `NEService::eDataStateType::DataIsOK`. In all other cases the data value is invalid and can be ignored or the error can be handled.<br>
-> 💡 All attributes in the same service interface must have unique names and the type of all attributes must be streamable.
+> 💡 The data of an `Attribute` is always available for the clients. As soon as the client subscribes on the attribute data, it receives at least one notification with current cached value and a flag of validation state. If data was not cached or invalidated, the first notification may indicated _invalid data_ state then shortly receive second notification directly from the serverindicating the actual value and data state.<br>
+> 💡 It is important to check the data state to make correct reaction. The attribute update callback has semantic `void onAttributeNameUpdate( const DataType & AttributeName, NEService::eDataStateType state )`, where _AttributeName_ is the name and _DataType_ is the type of the attribute. The attribute data is valid only if `state` parameter is `NEService::eDataStateType::DataIsOK`. In all other cases it should be eithered ignored or the error should be handled.<br>
 
 *An example of declaring attribute to notify only on value change:*
 ```xml
@@ -187,28 +186,28 @@ _Attributes_ in services are data that clients can subscribe to get update notif
     <Description>An attribute to notify subscribers only when value is changed.</Description>
 </Attribute>
 ```
-In this example the attribute of `SomeEnum` type has name `SomeAttr1` and it is designed to notify connected clients only if the value is changed. The type `SomeEnum` must be possible to compare.
+In this example the attribute `SomeAttr1` has type `SomeEnum` and it is designed to notify only if the value is changed.
 
-*An example of declaring attribute to notify only on value change:*
+*An example of declaring attribute to notify when value set:*
 ```xml
 <Attribute DataType="SomeStruct" ID="16" Name="SomeAttr2" Notify="Always">
     <Description>Another attribute to notify subscribers any time when value is set (maybe not changed).</Description>
 </Attribute>
 ```
-In this example the attribute of `SomeSruct` type has name `SomeAttr2` and it is designed to notify connected clients each time when value is set.
+In this example the attribute `SomeAttr2` has type `SomeSruct` and it is designed to notify each time when value is set.
 
-The difference of _OnChange_ and _Always_ notifications is that _OnChange_ the system sends notifications only if stored value and new value differ, i.e. **it is comparing stored and new values**. In case of _Always_ notifications, the system notifies clients each time when value is set, indifferent whether it has been changed or not,i.e. **it is NOT comparing stored and new values**.
+The difference of _OnChange_ and _Always_ notifications is that in one case the notification is sent when value is changed, i.e. **it is compares stored and new values, and notifies if values are not equal**, and on second case the notificatin is sent whenever value is set, i.e. **it does not compare stored and new values, and notifies immediately when value is set**.
 
 ### Requests, responses and broadcasts
-Service interface may have `Request`, `Response` and `Broadcast` methods. The _Requests_ are called by clients to be executed on the service. The _Responses_ are replies to the requests. _Broadcasts_ are methods acting like events to deliver multiple parameters.
+_Requests_ and _Responses_ in services are methods, which is similar to Request-Reply (action centric solution). The clients send requests to process on server component and as a reply receive response. In addition, there are _Broadcasts_, which act as methods and have logic of PubSub, where clients dynamically subsribe on the event to receive a _Broadcast_. The _Broadcasts_ act as events, are trigered as callbacs that can deliver multiple data as parameters. _Requests_, _Responses_ and _Broadcasts_ are defined in the `<MethodList>` section of service interface XML document.
 
 #### Requests
-The requests are called by clients to be executed on the service. The requests may have parameters. The requests may have linked response. If request has a response, then the processing request is blocked until service replies with the response. It is possible manually to unblock the request, but then the response must be manually prepared to reply. Multiple requests can be linked with the same response. The request may have no response at all and in this case the request can be called one after another.
+The _Requests_ are called by clients to execute on the service provider (server) side. The requests may have parameters. The requests may have linked response. If request has a response, then the processing request is blocked until service replies response. It is possible manually to unblock the request, but then the response must be manually prepared to reply. Multiple requests can be linked with the same response. The request may have no response and in this case it is always unblocked and can be called one after another.
 
-> 💡 When developers implement service provider (server) then must extend the generated `Stub` object and implement all request calls, which are declared in a base `Stub` class as _pure virtual_.<br>
-> 💡 For an error handling of a request call, the client side should implement request failed methods, which are generated in the `ClientBase` objects. The passed error code as a parameter, indicates the failure reason. If the developer does not implement the failure method and the failure is triggered, there will be an error message in the logs.
+> 💡 When developers implement service provider (server) they extend the generated `Stub` object and implement request calls, which are declared in a base `Stub` class as _pure virtual functions_.<br>
+> 💡 If request fails (for example, it is in busy state), the client receives failure notification. For proper error handling, the clients should override and implement failure callbacks of all used requests. The error code is passed as a parameter in request failure callback. If request failure happens and the developer does not override the failure calback, automatically error message in logged.
 
-*An example to demonstrate the definition of request with no parameter and linked response:*
+*An example to demonstrate a request with no parameter linked with a response:*
 ```xml
 <Method ID="17" MethodType="request" Name="SomeRequest1" Response="SomeResponse1">
     <Description>Request and response with no parameters.</Description>
@@ -216,13 +215,10 @@ The requests are called by clients to be executed on the service. The requests m
 <Method ID="19" MethodType="response" Name="SomeResponse1">
     <Description/>
 </Method>
-<Method ID="19" MethodType="response" Name="SomeResponse1">
-    <Description/>
-</Method>
 ```
-In this example the request `SomeRequest1` has no parameter and it is linked with the response `SomeResponse1`. By default, the request is blocking and it is unblocked when service provider calls response `SomeResponse1`, so that it can process the next call of `SomeRequest1`. In the generated C++ code, the request has semantic `void requestSomeRequest1()` and the response `void responseSomeResponse1()`.
+In this example, the request `SomeRequest1` has no parameter and it is linked with the response `SomeResponse1`. The request is blocking and it is unblocked when response `SomeResponse1` is called, so that the next call of `SomeRequest1` can be processed. In the generated C++ code, the request has semantic `void requestSomeRequest1()`.
 
-*An example to demonstrate the request with multiple parameters linked with the response:*
+*An example to demonstrate a request with multiple parameters linked with a response:*
 ```xml
 <Method ID="20" MethodType="request" Name="SomeRequest2" Response="SomeResponse">
     <Description>A request with parameters that is connected to SomeResponse interface.</Description>
@@ -242,7 +238,7 @@ In this example the request `SomeRequest1` has no parameter and it is linked wit
     </ParamList>
 </Method>
 ```
-In this example the request `SomeRequest2` has 3 parameters, where the last parameter `param3` has default value, and the request is linked the response `SomeResponse` with 1 parameter. By default, the request is blocking and it is unblocked when service provider calls response `SomeResponse`, so that it can process the next call of `SomeRequest1`. In the generated C++ code, the request has semantic `void requestSomeRequest2(int param1, const NESample::SomeStruct & param2, NESample::SomeEnum param3 = NESample::SomeEnum::Nothing)` and the response `void responseSomeResponse(bool succeeded)`.
+In this example, the request `SomeRequest2` has 3 parameters, where the last parameter `param3` has default value, and the request is linked with response `SomeResponse` with 1 parameter. The request is blocking and it is unblocked when response `SomeResponse` is called, so the next call of `SomeRequest1` can be processed. In the generated C++ code, the request has semantic `void requestSomeRequest2(int param1, const NESample::SomeStruct & param2, NESample::SomeEnum param3 = NESample::SomeEnum::Nothing)`.
 
 *An example to demonstrate 2 different requests linked with the same response:*
 ```xml
@@ -271,20 +267,20 @@ In this example the request `SomeRequest2` has 3 parameters, where the last para
 </Method>
 ```
 
-In this example the 2 different requests `SomeRequest2` and `SomeRequest3` are linked the response `SomeResponse`. By default, while requests are processing they are blocked and in busy state. If 2 requests are linked with the same response and while one request is busy, it is not blocking the call of other requests linked with the same response. As soon as the response is called, it unblocks all linked requests. For example, if developer calls request `SomeRequest2`, while it is processing (i.e. it is in busy state) the developer can  call request `SomeRequest3` and it will be processed. When developer calls response `SomeResponse3`, it unblocks both requests `SomeRequest2` and `SomeRequest3`. In other words, the response `SomeResponse` unblocks all linked busy requests. In the generated C++ code, the request `SomeRequest2` has semantic `void requestSomeRequest2(int param1, const NESample::SomeStruct & param2, NESample::SomeEnum param3 = NESample::SomeEnum::Nothing)`, the request `SomeRequest3` has semantic `void requestSomeRequest3(const NEMemory::uAlign & param)` and the response is `void responseSomeResponse(bool succeeded)`.
+In this example, 2 different requests `SomeRequest2` and `SomeRequest3` are linked with response `SomeResponse`. Here one request does not block the other while it is processing (i.e. in _busy_ state). For example, when `SomeRequest2` is called and it is in _busy_ state, the `SomeRequest3` can be also called, and when servicing component replies with the response `SomeResponse`, it automatically unblocks both requests, because both requests are linked with the same response. In other words, the call of response unblocks all linked requests in _busy_ state. In the generated C++ code, the request `SomeRequest2` has semantic `void requestSomeRequest2(int param1, const NESample::SomeStruct & param2, NESample::SomeEnum param3 = NESample::SomeEnum::Nothing)`, and the request `SomeRequest3` has semantic `void requestSomeRequest3(const NEMemory::uAlign & param)`.
 
-*An example to demonstrate request with no response:*
+*An example to demonstrate a request with no response:*
 ```xml
 <Method ID="27" MethodType="request" Name="StandAlone">
     <Description>A request with no response.</Description>
 </Method>
 ```
-In this example there is a request `StandAlone`, which has no response. It means that as soon as service provider processed the request, it is immediately unblocked, so that the service provider can continue processing further calls of the request `StandAlone`. In the generated C++ code, the request `StandAlone` has semantic `void requestStandAlone()`.
+In this example, the request `StandAlone` has no response. It means when request is processed, the service provider can continue receiving further calls of the request `StandAlone`. In the generated C++ code, the request `StandAlone` has semantic `void requestStandAlone()`.
 
 #### Responses
-The responses are used by service provider as a result of request calls. Each response must be linked with at least one request. If a response has no request, it is ignored and is never triggered. After calling the response on service provider side, it is triggered on client side. If a client is not interested calling the request, but is interested in the response as a result of call, it can manually and dynamically subscribe on the response.
+The _Responses_ are replies to request calls sent from service providers (servers) to the clients. Each response is linked at least with one request. If a response has no request, it is ignored and never triggered. When response is called on service provider side, it is automatically triggered on client side as a callback. Any client can manually subscribe and unsubscribe on the response without calling a request. This normally happens if a client is interested only on the reply to a certain request. For example, is interested on the result of a certain action.
 
-> 💡 The responses are called by the service provider (server), which are delivered at the client side. Developers need to extend the generated `ClientBase` object and implement responses that are expected. There is no need to implement all response if the client is using certain request calls. It is enough to implement only expected responses, because others are never triggered, unless developer does not manually subscribe on certain response(s).
+> 💡 The responses are virtual callbacks triggered by system when appropriate reply received from service provider (server). The developers need to extend the generated `ClientBase` object and implement those responses, which request is called or is manually subscribed. For example, if a client does not call the request `SomeRequest1` and is not manually subscribed on the response `SomeResponse1`, the response `SomeResponse1` is never triggered for that client, so that there is no need to override the default implementation in `ClientBase` class. Otherwise, the client should implement the response.
 
 *An example to demonstrate declaration of the responses.*
 ```xml
@@ -298,18 +294,18 @@ The responses are used by service provider as a result of request calls. Each re
     </ParamList>
 </Method>
 ```
-In this example, the responses are linked with the requests (see chapter [Requests](#requests)), where the response `SomeResponse1` is connected with one request and the response `SomeResponse` is linked with multiple requests. The semantic of the response `SomeResponse1` is `void responseSomeResponse1()` and the semantic of response `SomeResponse` is `void responseSomeResponse(bool succeeded)`.
+In this example, the responses are linked with the requests (see chapter [Requests](#requests)), where the response `SomeResponse1` is connected with one request and the response `SomeResponse` is linked with 2 requests. The semantic of the response `SomeResponse1` is `void responseSomeResponse1()` and the semantic of response `SomeResponse` is `void responseSomeResponse(bool succeeded)`.
 
-> 💡 Any processing request is automatically in _busy_ state. The call of response is automatically unblocks all linked requests. So that, it is very important to send the response to unlock the request(s). Otherwise, while the request is busy and a client calls that busy request, the system generates _request is busy_ failure message and delivers to the client, so that, the service receives the request only once (first calls) and all other calls are rejected by the system.<br>
-> 💡 If a request does not have linked request, it is never blocked and it is never in _busy_ state.<br>
-> 💡 It is possible dynamically to subscribe on a certain `Response` without triggering a `Request`. In this case, subscribed client receives the `Response` each time when the `Request` is processed and the response is replied.
+> 💡 When request is processing, it is in _busy_ state and it is blocked. The call of response automatically unblocks all linked requests. It is very important to send the response after processing request(s). Otherwise, while the request is _busy_ and any client calls same request, the system generates _request is busy_ failure message and delivers to the client. So that, if the response of a request is not called, the request is processed only once (for first calle), where all other calls are rejected by the system.<br>
+> 💡 If a request does not have linked response, it is never blocked and it is never in _busy_ state.<br>
+> 💡 Clients can dynamically subscribe to a certain response without calling linked request. In this case, each time the service provider replies response, it is called not only on the request caller side, but also on the subscribed client side.
 
 #### Broadcasts
-The broadcasts are special service methods to fire an event and pass several data at the same time. Broadcasts are not linked neither with requests, nor with responses. not related neither with requests, nor with response. The broadcasts are fired on service provider side and delivered to every client subscribed for the broadcast. The clients may dynamically subscribe or un-subscribe on a broadcast. If no client is subscribed on the broadcast, the system ignores the event.
+The _Broadcasts_ are special service methods to fire an event and pass several data at the same time. Broadcasts have no linked request and act like events fired by service provider, which may deliver multiple data. During runtime the clients need manually to subscribe for the broadcast to receive.
 
-> 💡 Unlike `Attributes`, the broadcast data is available only once. It means that if a client subscribes on the broadcast, it will not immediately receive notification, but only when the servicing component triggers broadcast after the client is subscribed on the broadcast.
+> 💡 Unlike _Attribute_, the _Broadcast_ data is available only during call. It means that if a client subscribes on the broadcast, it receives notification only when the service provider calls broadcast. In case of _Attribute_, the client receives first cached data, then the actual data, even if it was not changed.
 
-*An example to demonstrate declaration of a broadcast with parameters:*
+*An example to demonstrate declaration of the broadcast with parameters:*
 ```xml
 <Method ID="29" MethodType="broadcast" Name="SomeBroadcast">
     <Description>Broadcast with parameters. Can pass multiple parameters at once.</Description>
@@ -323,13 +319,13 @@ The broadcasts are special service methods to fire an event and pass several dat
     </ParamList>
 </Method>
 ```
-In this example, the broadcast `SomeBroadcast` has 4 parameters as values to deliver together to all subscribed clients. The semantic of this broadcast is `void broadcastSomeBroadcast(NESample::SomeEnum value1, const NEMemory::uAlign & value2, const NESample::SomeStruct & value3, NESample::SomeArray value4);`
+In this example, the broadcast `SomeBroadcast` has 4 parameters to deliver together subscribed clients. The semantic of this broadcast is `void broadcastSomeBroadcast(NESample::SomeEnum value1, const NEMemory::uAlign & value2, const NESample::SomeStruct & value3, NESample::SomeArray value4)`.
 
 > 💡 In the service interface XML document the request, response and the broadcast may have same name.<br>
-> 💡 It is recommended that at least all names of the responses and broadcasts have unique names. If any name is not unique, then must have same type. It means, that there must not be a parameter named `success` having type `bool` in a response or broadcast and having type `int` in the other response or broadcast.
+> 💡 It is recommended that at all **paramter** names at least in _responses_ and _broadcasts_ have unique names. If any parameter name is not unique, then it must have same type in all methods. For example, it a broadcast and a response have parameter named `success`, that parameter should have same type, and if `success` in the response has type `bool`, it should not have type `int` in the broadcast.
 
 ### Constants
-The Service Interface XML document may have specific constants listed in `<ConstantList> ... </ConstantList>` section. The constants are used to share read-only value between clients and the service provider.
+The Service Interface XML document may have specific constants listed in `<ConstantList>` section. The constants are used to share read-only value between clients and the service provider.
 
 *An example to demonstrate declaration of a constant:*
 ```xml
@@ -338,10 +334,10 @@ The Service Interface XML document may have specific constants listed in `<Const
     <Description>Define a constant if need.</Description>
 </Constant>
 ```
-In this example, it is declared a constant named `SomeConst` having type `unsigned short` and having value `100`. This values is shared between service provider and clients.
+In this example, it is declared a constant named `SomeConst` having type `unsigned short` and value `100`. This value is shared between service provider and clients.
 
 ### Includes
-The Service Interface XML document may have specific files, which should be included in the code. The includes are listed in `<IncludeList> ... </IncludeList> section. For example, a service may include special header file with the implementation of algorithms.
+The Service Interface XML document may have special included in the code. For example, a service may include special header file with the implementation of algorithms. The includes are listed in `<IncludeList>` section.
 
 *An example to demonstrate declaration of includes:*
 ```xml
@@ -351,28 +347,28 @@ The Service Interface XML document may have specific files, which should be incl
     </Location>
 </IncludeList>
 ```
-In this example, after generating code, the header file `areg/base/NEMath.hpp` will be included for service providers and service client codes.
+In this example, after generating code, the header file `areg/base/NEMath.hpp` is included for service providers and service client codes.
 
 ## Code generator
-To avoid tedious jobs and minimize mistakes when coding, AREG SDK provides a code-generator located in [tools](../tools/) folder to generate base objects from Service Interface XML document. The generated files must not be modified. Instead, they should be extended to implement all necessary functions. Normally, the service providers implement `Request` methods and the service clients implement `Response`, `Broadcast` and `Attribute` notification methods by need. Edit and run [generate.sh](../tools/generate.sh) or [generate.bat](../tools/generate.bat) file to generate source code or run `codegen.jar` from command line.
+To avoid tedious jobs and minimize mistakes when coding, AREG SDK provides a code-generator located in [tools](../tools/) folder to generate base objects using definitions in Service Interface XML document. The generated files must not be modified. Instead, they should be extended to implement all necessary functions. Normally, the service providers implement _Request_ methods and the service clients implement _Response_, _Broadcast_ and _Attribute update_ notification methods by need. Edit and run [generate.sh](../tools/generate.sh) or [generate.bat](../tools/generate.bat) file to generate source code or run `codegen.jar` from command line.
 
-> 💡 Do not forget to set correct `AREG_SDK_ROOT` folder in `generate.sh` and `generate.bat` file to run code generator.
+> 💡 Before running scripts in `generate.sh` and `generate.bat` files, set correct `AREG_SDK_ROOT` folder path.
 
 Before calling code generator, make sure that there is Java installed on the machine and the `codegen.jar` is included in the `CLASSPATH`. 
-- The `--root` option of the code generator is the root of developer project.
+- The `--root` option of the code generator is the root of development project.
 - The `--doc` option of the code generator is the relative to --root path of the service interface XML document to generate code.
 - The `--target` option of the code generator is the path relative to `--root` to output generated files.
+
 *Examples of running code generator from command line:*
 ```bash
 $ java -jar codegen.jar --root=~/projects/my_project --target=src/generated/ --doc=interface/MyService.siml
 ```
-
 You may as well explicitly specify the full path of `codegen.jar`
 ```bash
 $ java -jar ~/projects/areg-sdk/codegen.jar --root=~/projects/my_project --target=src/generated/ --doc=interface/MyService.siml
 ```
 
-*An example of [generate.bat](./../examples/12_pubsvc/res/generate.bat) file:*
+*An example of [generate.bat](../examples/12_pubsvc/res/generate.bat) file:*
 ```bat
 :: set the AREG_SDK_ROOT directory here
 set AREG_SDK_ROOT=E:\Projects\aregtech\areg-sdk
