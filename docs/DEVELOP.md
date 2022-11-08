@@ -54,7 +54,7 @@ Brief description of AREG SDK file structure:
 7. The configuration files to customize compilation are in [conf](../conf) directory.
 8. The documentation is in the [docs](../docs) directory.
 
-Some more information about file structure is in [README.md](./readme.md).
+Some more information about file structure is in [this](./readme.md) document.
 
 ## Service interface prototype
 
