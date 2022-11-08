@@ -1329,4 +1329,4 @@ The compiled binaries are located in `<areg-sdk>/product/build/<compiler-platfor
 ## Contact us!
 
 Contact us at info[at]aregtech.com if you need help, training or more information.
-If you linked the project and the idea behind that, please ![star us](https://img.shields.io/github/stars/aregtech/areg-sdk.svg?style=social&label=staring%20us) at GitHub, so that contributors feel appreciated for the job.
+If you linked the project and the idea behind that, please ![star the AREG SDK project](https://img.shields.io/github/stars/aregtech/areg-sdk.svg?style=social&label=star%20the%20project) at GitHub, so that contributors feel appreciated for the job.
