@@ -144,7 +144,7 @@ public:
      * \brief   Request call.
      *          The request to output greeting.
      * \param   caller  The reference of caller object to get response.
-     * \param   client  The name of client to output greeting.
+     * \param   client  The name of the client to output greeting.
      * \return  The sequence count number of call
      * \see     responseHelloService
      **/
