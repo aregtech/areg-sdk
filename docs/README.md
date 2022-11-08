@@ -1,7 +1,7 @@
 # Information
 ```
 This file is part of AREG SDK
-Copyright (c) Aregtech, 2017-2022
+Copyright (c) Aregtech, 2021-2022
 Contact: info[at]aregtech.com
 Website: https://www.aregtech.com
 ```
@@ -33,6 +33,8 @@ areg-sdk  ......... --> the root folder of AREG SDK.
     +- README.md  . --> the project description ReadMe file.
 
 ```
+The classes defined inside each subdirectory of `framework/areg` folder can be used to develop an application, but the classes declared in `private` subdirectory inside each of them are designed for internal use and should not be used by developers.
+
 After compiling using _CMake_, _Make_ or _MS Visual Studio_, the root folder _areg-sdk_ will contain a recoverable _product_ subfolder that contains build binaries.
 
 ## The structure of _the document folder_:

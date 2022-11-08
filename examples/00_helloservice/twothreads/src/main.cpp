@@ -19,30 +19,23 @@
     #pragma comment(lib, "00_generated.lib")
 #endif // WINDOWS
 
-namespace
-{
 //!< The name of model
-constexpr char const _modelName[]   { "ServiceModel" };
-//! Service component role name.
-constexpr char const _service[]     { "ServiceComponent" };
-//!< Client component role name.
-constexpr char const _client[]      { "ServiceClient" };
-}
+constexpr char const _modelName[]{ "ServiceModel" };
 
 // Describe model, register the service and the client in 2 different threads "Thread1" and "Thread2"
 BEGIN_MODEL(_modelName)
     // Thread 1, provides a service
-    BEGIN_REGISTER_THREAD( "Thread1", NECommon::WATCHDOG_IGNORE)
-        BEGIN_REGISTER_COMPONENT( _service, ServiceComponent )
+    BEGIN_REGISTER_THREAD( "Thread1", NECommon::WATCHDOG_IGNORE )
+        BEGIN_REGISTER_COMPONENT( "ServiceComponent", ServiceComponent )
             REGISTER_IMPLEMENT_SERVICE( NEHelloService::ServiceName, NEHelloService::InterfaceVersion )
-        END_REGISTER_COMPONENT( _service )
+        END_REGISTER_COMPONENT( "ServiceComponent" )
     END_REGISTER_THREAD( "Thread1" )
 
-    // Thread 2, is a client / service consumer.
-    BEGIN_REGISTER_THREAD( "Thread2", NECommon::WATCHDOG_IGNORE)
-        BEGIN_REGISTER_COMPONENT( _client, ClientComponent )
-            REGISTER_DEPENDENCY( _service ) /* reference to the service*/
-        END_REGISTER_COMPONENT( _client )
+    // Thread 2, is a service client.
+    BEGIN_REGISTER_THREAD( "Thread2", NECommon::WATCHDOG_IGNORE )
+        BEGIN_REGISTER_COMPONENT( "ServiceClient", ClientComponent )
+            REGISTER_DEPENDENCY( "ServiceComponent" ) /* reference to the service*/
+        END_REGISTER_COMPONENT( "ServiceClient" )
     END_REGISTER_THREAD( "Thread2" )
 
 // end of model description

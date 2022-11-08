@@ -19,23 +19,17 @@
     #pragma comment(lib, "00_generated.lib")
 #endif // WINDOWS
 
-
-namespace
-{
 //!< The name of model
-constexpr char const _modelName[]   { "ServiceModel" };
-//! Service component role
-constexpr char const _service[]     { "ServiceComponent" };
+constexpr char const _modelName[]{ "ServiceModel" };
 //!< Client component name. Let's generate the name for client service, we'll use it later.
-const std::string   _client( NEUtilities::generateName("ServiceClient").getString() );
-}
+const std::string   _client(NEUtilities::generateName("ServiceClient").getString());
 
 // Describe model, register the service consumer (client)
 BEGIN_MODEL(_modelName)
 
     BEGIN_REGISTER_THREAD( "Thread1", NECommon::WATCHDOG_IGNORE)
         BEGIN_REGISTER_COMPONENT( _client.c_str(), ClientComponent )
-            REGISTER_DEPENDENCY( _service ) /* reference to the service*/
+            REGISTER_DEPENDENCY( "ServiceComponent" ) /* reference to the service*/
         END_REGISTER_COMPONENT( _client )
     END_REGISTER_THREAD( "Thread1" )
 
