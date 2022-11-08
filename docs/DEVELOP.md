@@ -1316,7 +1316,7 @@ The compiled binaries are located in `<areg-sdk>/product/build/<compiler-platfor
 
 ## Testing
 
-> 💡 More testing examples are listed in [examples](../examples/) folder of `areg-sdk`.
+> 💡 More testing examples are listed in the [examples](../examples/) folder of `areg-sdk`.
 
 1. To compile all projects, call `make all` in command line.
 2. To compile example projects, call `make examples` in the command line.
