@@ -44,7 +44,7 @@ This document is a developer guide and describes how to develop a service enable
 
 ## File structure
 
-Brief description of [AREG SDK](..) file structure:
+Brief description of AREG SDK file structure:
 1. The framework of AREG SDK is in [framework/areg](../framework/areg) directory.
 2. All high level subdirectories in [framework/areg](../framework/areg) contain classes that can be used by developers.
 3. All subdirectories named `private` contain code implementations and class declarations that are for internal use and not designed to be used outside of AREG framework.
