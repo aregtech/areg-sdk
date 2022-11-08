@@ -1,7 +1,0 @@
-{
-    "threshold": 40,
-    "reporters": ["html", "markdown"],
-    "ignore": [
-      "**/*.md"
-    ]
-  }
