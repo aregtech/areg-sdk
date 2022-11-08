@@ -58,7 +58,7 @@ Some more information about file structure is in [README.md](./readme.md).
 
 ## Service interface prototype
 
-AREG SDK is an interface-centric real-time communication engine where connected Things provide services, so that they act as ultra-small servers and automatically form a network of distributed services. The service providers (servers) and service clients are software components, which physical locations, discovery and connection is transparent, automated and fully handled by the AREG framework. The services provide data and process requests. The service clients receive responses as a reply on requests, and can dynamically subscribe and unsubscribe on service data. The data, request and responses are defined as service interface (service API), which can be defined in XML format _service interface_ prototype document, and has following sections:
+AREG SDK is an interface-centric real-time communication engine where connected Things provide services, so that they act as ultra-small servers and automatically form a network of distributed services. The service providers (servers) and service clients are software components, which physical location, discovery and connection are transparent, automated and fully handled by the AREG framework. The services provide data and process requests. The service clients receive responses as a reply on requests, and can dynamically subscribe and unsubscribe on service data. The data, request and responses are defined as service interface (service API), which can be defined in XML format _service interface_ prototype document, and has following sections:
 1. The service interface overview.
 2. The service specific data types.
 3. The service specific data called _service attributes_.
