@@ -44,17 +44,17 @@ This document is a developer guide and describes how to develop a service enable
 
 ## File structure
 
-Here is the brief description of AREG SDK file structure
-1. The framework of AREG SDK is declared in `framework/areg` directory.
-2. All high level subdirectories of `framework/areg` contain classes that can be used by developers.
-3. All `private` subdirectories inside subdirectories contain implementation sources and classes for internal use and are not designed to be used by developers.
-4. The multicast router of AREG SDK is declared in `framework/mcrouter` directory.
-5. The examples to demonstrate AREG SDK features are in `examples` directory.
-6. The tools to use are declared in `tools` directory.
-7. The configurations files to customize compilation are in `conf` directory.
-8. The documents are in `docs` directory.
+Brief description of [AREG SDK](..) file structure:
+1. The framework of AREG SDK is in [framework/areg](../framework/areg) directory.
+2. All high level subdirectories in [framework/areg](../framework/areg) contain classes that can be used by developers.
+3. All subdirectories named `private` contain code implementations and class declarations that are for internal use and not designed to be used outside of AREG framework.
+4. The multicast router of AREG SDK is in [framework/mcrouter](../framework/mcrouter) directory.
+5. The examples to demonstrate AREG SDK features are in [examples](../examples) directory.
+6. The tools to use are declared in [tools](../tools) directory.
+7. The configurations files to customize compilation are in [conf](../conf) directory.
+8. The documentations are in [docs](../docs) directory.
 
-Some more file structure information is in [README.md](./readme.md).
+Some more information about file structure is in [README.md](./readme.md).
 
 ## Service interface prototype
 
