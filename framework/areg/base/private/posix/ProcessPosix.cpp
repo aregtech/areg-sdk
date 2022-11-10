@@ -32,7 +32,7 @@ Process & Process::initilize( void )
     if ( mIsInitialized == false )
     {
         mIsInitialized = true;
-        mProcessId = getpid( );
+        mProcessId = ::getpid( );
         mProcessHandle = static_cast<void *>(&mProcessId);
 
         char buffer[File::MAXIMUM_PATH];
@@ -41,8 +41,8 @@ Process & Process::initilize( void )
         buffer[0] = path[0] = '\0';
 
         sprintf( path, "/proc/%lu/cmdLine", static_cast<uint64_t>(mProcessId) );
-        FILE * file = fopen( path, "r" );
-        if ( (file == nullptr) || (fgets( buffer, File::MAXIMUM_PATH, file ) == nullptr))
+        FILE * file = ::fopen( path, "r" );
+        if ( (file == nullptr) || (::fgets( buffer, File::MAXIMUM_PATH, file ) == nullptr))
         {
             sprintf( path, "/proc/%lu/exe", static_cast<uint64_t>(mProcessId) );
             readlink( path, buffer, File::MAXIMUM_PATH );
@@ -50,7 +50,7 @@ Process & Process::initilize( void )
 
         if (file != nullptr)
         {
-            fclose(file);
+            ::fclose(file);
         }
 
         _initPaths( buffer );
@@ -62,7 +62,7 @@ Process & Process::initilize( void )
 
 String Process::getSafeEnvVariable( const char* var ) const
 {
-    return String(var != nullptr ? getenv(var) : String::EmptyString);
+    return String(var != nullptr ? ::getenv(var) : String::EmptyString);
 }
 
 #endif // defined(_POSIX) || defined(POSIX)

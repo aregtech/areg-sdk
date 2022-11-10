@@ -455,7 +455,7 @@ bool FileBase::writeLine(const WideString& buffer)
     return _writeLine<wchar_t>(self(), buffer);
 }
 
-unsigned int FileBase::resizeAndFill( int newSize, unsigned char fillValue )
+unsigned int FileBase::resizeAndFill(unsigned int newSize, unsigned char fillValue )
 {
     unsigned int curPos = getPosition();
     unsigned int result = curPos;

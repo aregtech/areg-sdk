@@ -52,13 +52,13 @@ void * Thread::_posixThreadRoutine( void * data )
 {
     int oldState{ 0 };
     int oldType{ 0 };
-    pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, &oldState);
+    ::pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, &oldState);
     pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, &oldType);
 
     Thread::_defaultThreadFunction(data);
 
-    pthread_setcancelstate(oldState, nullptr);
-    pthread_setcanceltype(oldType, nullptr);
+    ::pthread_setcancelstate(oldState, nullptr);
+    ::pthread_setcanceltype(oldType, nullptr);
 
     return nullptr;
 }
@@ -178,9 +178,9 @@ bool Thread::_createSystemThread( void )
             mWaitForRun.resetEvent();
             mWaitForExit.resetEvent( );
 
-            if ((RETURNED_OK == pthread_attr_init(&handle->pthreadAttr)) &&
-                (RETURNED_OK == pthread_attr_setdetachstate(&handle->pthreadAttr, PTHREAD_CREATE_DETACHED)) &&
-                (RETURNED_OK == pthread_create(&handle->pthreadId, &handle->pthreadAttr, &Thread::_posixThreadRoutine, static_cast<void *>(this))) )
+            if ((RETURNED_OK == ::pthread_attr_init(&handle->pthreadAttr)) &&
+                (RETURNED_OK == ::pthread_attr_setdetachstate(&handle->pthreadAttr, PTHREAD_CREATE_DETACHED)) &&
+                (RETURNED_OK == ::pthread_create(&handle->pthreadId, &handle->pthreadAttr, &Thread::_posixThreadRoutine, static_cast<void *>(this))) )
             {
                 result          = true;
                 mThreadHandle   = static_cast<THREADHANDLE>(handle);
@@ -250,7 +250,7 @@ Thread::eThreadPriority Thread::setPriority( eThreadPriority newPriority )
         struct sched_param schedParam;
         schedParam.sched_priority   = schedPrio;
 
-        if ((MIN_INT_32 != schedPrio) && (RETURNED_OK == pthread_setschedparam(threadId, schedPolicy, &schedParam)))
+        if ((MIN_INT_32 != schedPrio) && (RETURNED_OK == ::pthread_setschedparam(threadId, schedPolicy, &schedParam)))
         {
             mThreadPriority = newPriority;
         }

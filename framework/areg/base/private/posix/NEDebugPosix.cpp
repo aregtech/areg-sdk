@@ -27,8 +27,8 @@ void AREG_API_IMPL NEDebug::outputMessageOS( const char * msg )
 {
     if ( NEString::isEmpty<char>( msg ) == false )
     {
-        fprintf( stdout, "%s", msg );
-        fflush( stdout );
+        ::fprintf( stdout, "%s", msg );
+        ::fflush( stdout );
     }
 }
 

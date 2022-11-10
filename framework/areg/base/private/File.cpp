@@ -50,7 +50,7 @@ File::File(const String& fileName, unsigned int mode /* = (FileBase::FO_MODE_WRI
 
 File::~File( void )
 {
-    _closeFile();
+    _osCloseFile();
 
     mFileHandle = File::INVALID_HANDLE;
     mFileMode   = FileBase::FO_MODE_INVALID;
@@ -74,7 +74,18 @@ bool File::open(const String& fileName, unsigned int mode)
     {
         OUTPUT_WARN("File is already opened. Close file.");
     }
+
     return result;
+}
+
+bool File::open(void)
+{
+    return _osOpenFile();
+}
+
+void File::close(void)
+{
+    _osCloseFile();
 }
 
 unsigned int File::getSizeReadable( void ) const
@@ -83,8 +94,8 @@ unsigned int File::getSizeReadable( void ) const
     unsigned int lenUsed = 0;
     if (isOpened())
     {
-        lenRead = getPosition();
-        lenUsed = getLength();
+        lenRead = _osGetPositionFile();
+        lenUsed = _osGetLengthFile();
     }
     ASSERT(lenRead <= lenUsed);
     return (lenUsed - lenRead);
@@ -96,8 +107,8 @@ unsigned int File::getSizeWritable( void ) const
     unsigned int lenAvailable   = 0;
     if (isOpened())
     {
-        lenWritten  = getPosition();
-        lenAvailable= getLength();
+        lenWritten  = _osGetPositionFile();
+        lenAvailable= _osGetLengthFile();
     }
     ASSERT(lenWritten <= lenAvailable);
     return (lenAvailable - lenWritten);
@@ -112,7 +123,7 @@ bool File::remove( void )
         ASSERT(mFileName.isEmpty() == false);
 
         close();
-        result = File::deleteFile(mFileName);
+        result = _osDeleteFile(mFileName);
     }
 
     mFileHandle = File::INVALID_HANDLE;
@@ -155,6 +166,29 @@ inline bool File::_nameHasParentFolder(const char * filePath, bool skipSep)
             result = (skipSep && filePath[2] == NEString::EndOfString) || (filePath[2] == File::UNIX_SEPARATOR) ||  (filePath[2] == File::DOS_SEPARATOR);
         }
     }
+
+    return result;
+}
+
+String File::genTempFileName(const char* prefix, bool unique, bool inTempFolder)
+{
+    String result;
+
+    result.reserve(File::MAXIMUM_PATH);
+    unsigned int space{ 0 };
+    if (result.getCapacity() != 0)
+    {
+        char* buffer = result.getBuffer();
+        unsigned int ticks = unique ? 0 : static_cast<unsigned int>(DateTime::getSystemTickCount());
+        prefix = prefix == nullptr ? File::TEMP_FILE_PREFIX.data() : prefix;
+        space = inTempFolder ? File::_osGetTempDir(buffer, File::MAXIMUM_PATH) : File::_osGetCurrentDir(buffer, File::MAXIMUM_PATH);
+        if (space != 0)
+        {
+            space = _osCreateTempFile(buffer, buffer, prefix, ticks);
+        }
+    }
+
+    result.resize(space);
 
     return result;
 }
@@ -221,37 +255,7 @@ String File::getFileDirectory(const char* filePath)
 
 bool File::createDirCascaded( const char* dirPath )
 {
-    bool result = false;
-    if ( NEString::isEmpty<char>(dirPath) == false )
-    {
-        uint32_t size = static_cast<uint32_t>(File::MAXIMUM_PATH) + 1;
-        char * buffer = DEBUG_NEW char[size];
-        if ( buffer != nullptr )
-        {
-            const char * src    = dirPath;
-            char *       dst    = buffer;
-            bool doCreate       = false;
-
-            do 
-            {
-                if (*src == File::PATH_SEPARATOR)
-                    *dst ++ = *src++;
-
-                while (*src != File::PATH_SEPARATOR && *src != '\0')
-                    *dst ++ = *src ++;
-
-                *dst    = '\0';
-
-                doCreate = File::existDir(buffer) || File::_createFolder(buffer);
-
-            } while (doCreate && (*src != '\0'));
-
-            result = doCreate;
-            delete [] buffer;
-        }
-    }
-
-    return result;
+    return (NEString::isEmpty<char>(dirPath) == false ? std::filesystem::create_directories(dirPath) : false);
 }
 
 String File::normalizePath(const char* fileName)
@@ -357,6 +361,28 @@ unsigned int File::read(WideString & wideString) const
     return FileBase::read(wideString);
 }
 
+unsigned int File::read(unsigned char* buffer, unsigned int size) const
+{
+    unsigned int result = 0;
+    if (isOpened() && canRead())
+    {
+        if ((buffer != nullptr) && (size > 0))
+        {
+            result = _osReadFile(buffer, size);
+        }
+        else
+        {
+            OUTPUT_WARN("The length is zero, do not copy data.");
+        }
+    }
+    else
+    {
+        OUTPUT_ERR("Either file [ %s ] is not opened [ %s ], or reading mode is not set (mode = [ %d ]).", mFileName.getString(), isOpened() ? "true" : "false", mFileMode);
+    }
+
+    return result;
+}
+
 unsigned int File::write(const IEByteBuffer & buffer)
 {
     return FileBase::write(buffer);
@@ -370,4 +396,150 @@ unsigned int File::write(const String & asciiString)
 unsigned int File::write(const WideString & wideString)
 {
     return FileBase::write(wideString);
+}
+
+unsigned int File::write(const unsigned char* buffer, unsigned int size)
+{
+    unsigned int result = 0;
+    if (isOpened() && canWrite())
+    {
+        if ((buffer != nullptr) && (size > 0))
+        {
+            result = _osWriteFile(buffer, size);
+        }
+        else
+        {
+            OUTPUT_WARN("The size of data is zero, ignoring to write data.");
+        }
+    }
+    else
+    {
+        OUTPUT_ERR("Either file [ %s ] is not opened [ %s ], or writting mode is not set (mode = [ %d ]).", mFileName.getString(), isOpened() ? "true" : "false", mFileMode);
+    }
+
+    return result;
+}
+
+unsigned int File::setPosition(int offset, IECursorPosition::eCursorPosition startAt) const
+{
+    return (isOpened() ? _osSetPositionFile(offset, startAt) : IECursorPosition::INVALID_CURSOR_POSITION);
+}
+
+unsigned int File::getPosition(void) const
+{
+    return (isOpened() ? _osGetPositionFile() : IECursorPosition::INVALID_CURSOR_POSITION);
+}
+
+unsigned int File::getLength(void) const
+{
+    return (isOpened() ? _osGetLengthFile() : 0);
+}
+
+unsigned int File::reserve(unsigned int newSize)
+{
+    OUTPUT_DBG("Going to reserve [ %u ] of data for file [ %s ].", newSize, mFileName.isValid() ? static_cast<const char*>(mFileName) : "null");
+    unsigned int result = IECursorPosition::INVALID_CURSOR_POSITION;
+    return (isOpened() && canWrite() ? _osReserveFile(newSize) : IECursorPosition::INVALID_CURSOR_POSITION);
+}
+
+bool File::truncate(void)
+{
+    return (isOpened() && canWrite() ? _osTruncateFile() : false);
+}
+
+void File::flush(void)
+{
+    if (isOpened())
+    {
+        _osFlushFile();
+    }
+}
+
+//////////////////////////////////////////////////////////////////////////
+// Static methods
+//////////////////////////////////////////////////////////////////////////
+
+bool File::deleteFile(const char* filePath)
+{
+    return (NEString::isEmpty<char>(filePath) == false ? _osDeleteFile(filePath) : false);
+}
+
+bool File::createDir(const char* dirPath)
+{
+    return (NEString::isEmpty<char>(dirPath) == false ? _osCreateDir(dirPath) : false);
+}
+
+bool File::deleteDir(const char* dirPath)
+{
+    return (NEString::isEmpty<char>(dirPath) == false ? _osDeleteDir(dirPath) : false);
+}
+
+bool File::moveFile(const char* oldPath, const char* newPath)
+{
+    return (NEString::isEmpty<char>(oldPath) == false && (NEString::isEmpty<char>(newPath) == false) ? _osMoveFile(oldPath, newPath) : false);
+}
+
+String File::getCurrentDir(void)
+{
+    String result;
+
+    result.reserve(File::MAXIMUM_PATH);
+    unsigned int pathSize = result.getCapacity() != 0 ? _osGetCurrentDir(result.getBuffer(), File::MAXIMUM_PATH) : 0;
+    result.resize(pathSize);
+
+    return result;
+}
+
+bool File::setCurrentDir(const char* dirPath)
+{
+    return (NEString::isEmpty<char>(dirPath) == false ? _osSetCurrentDir(dirPath) : false);
+}
+
+bool File::copyFile( const char* originPath, const char* newPath, bool copyForce )
+{
+    return ((NEString::isEmpty<char>(originPath) == false) && (NEString::isEmpty<char>(newPath) == false) ? _osCopyFile(originPath, newPath, copyForce) : false);
+}
+
+String File::getTempDir(void)
+{
+    String result;
+    
+    result.reserve(File::MAXIMUM_PATH);
+    unsigned int pathSize = result.getCapacity() != 0 ? _osGetTempDir(result.getBuffer(), File::MAXIMUM_PATH) : 0;
+    result.resize(pathSize);
+
+    return result;
+}
+
+bool File::existDir(const char* dirPath)
+{
+    return (NEString::isEmpty<char>(dirPath) == false ? _osExistDir(dirPath) : false);
+}
+
+bool File::existFile(const char* filePath)
+{
+    return (NEString::isEmpty<char>(filePath) == false ? _osExistFile(filePath) : false);
+}
+
+String File::getFileFullPath(const char* filePath)
+{
+    String result{ NEString::isEmpty<char>(filePath) == false ? filePath : String::EmptyString };
+    if (result.isEmpty() == false)
+    {
+        std::filesystem::path fp = filePath;
+        result = std::filesystem::absolute(fp).string();
+    }
+
+    return result;
+}
+
+String File::getSpecialDir(File::eSpecialFolder specialFolder)
+{
+    String result;
+    
+    result.reserve(File::MAXIMUM_PATH);
+    unsigned int space = result.getCapacity() != 0 ? _osGetSpecialDir(result.getBuffer(), File::MAXIMUM_PATH, specialFolder) : 0;
+    result.resize(space);
+
+    return result;
 }

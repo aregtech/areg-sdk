@@ -399,11 +399,11 @@ public:
      *          If new size is less than the current size of file object, data will be truncated until 
      *          the new size, and if needed the pointer position will be moved to the end of file.
      * 
-     * \param	newSize     New Size is bytes to reserve or set. Negative value will set size zero.
+     * \param	newSize     New Size is bytes to reserve or set.
      * \param   fillValue   The value to fill reserved space
-     * \return  If succeeds, returns the current position of file pointer. Otherwise it returns value INVALID_POINTER_POSITION.
+     * \return  If succeeds, returns the current position of file pointer. Otherwise it returns value IECursorPosition::INVALID_CURSOR_POSITION.
      **/
-    unsigned int resizeAndFill(int newSize, unsigned char fillValue);
+    unsigned int resizeAndFill(unsigned int newSize, unsigned char fillValue);
 
 /************************************************************************/
 // Read / Write simple types
@@ -680,11 +680,11 @@ public:
      *          size of file object, data will be truncated until the new size, and if needed 
      *          the pointer position will be moved to the end of file.
      *
-     * \param	newSize     New Size is bytes to set. Positive value will set the size. Negative value will set size zero.
+     * \param	newSize     New Size is bytes to set.
      *
-     * \return  If succeeds, returns the current position of file pointer. Otherwise it returns value INVALID_POINTER_POSITION.
+     * \return  If succeeds, returns the current position of file pointer. Otherwise it returns value IECursorPosition::INVALID_CURSOR_POSITION.
      **/
-    virtual unsigned int reserve(int newSize) = 0;
+    virtual unsigned int reserve(unsigned int newSize) = 0;
 
     /**
      * \brief   Purge file object data, sets the size zero and if succeeds, return true

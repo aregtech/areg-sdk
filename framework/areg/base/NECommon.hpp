@@ -114,6 +114,12 @@ namespace NECommon
     constexpr ElemCount     DEFAULT_BLOCK_SIZE      { 32 };
 
     /**
+     * \brief   NECommon::INVALID_POSITIOIN
+     *          The invalid position as unsigned int.
+     */
+    constexpr unsigned int  INVALID_POSITION        { static_cast<unsigned int>(~0) };
+
+    /**
      * \brief   NECommon::MAXIMUM_WAITING_OBJECTS
      *          The maximum number of synchronization objects that is able to lock. 
      **/

@@ -216,14 +216,14 @@ public:
      *                  IECursorPosition::eCursorPosition::PositionCurrent -- from current pointer position
      *                  IECursorPosition::eCursorPosition::PositionEnd     -- from end of file
      *
-     * \return	If succeeds, returns the current position of pointer in bytes or value INVALID_POINTER_POSITION if fails.
+     * \return	If succeeds, returns the current position of pointer in bytes or value IECursorPosition::INVALID_CURSOR_POSITION if fails.
      **/
     virtual unsigned int setPosition(int offset, IECursorPosition::eCursorPosition startAt) const override;
 
     /**
-     * \brief	If succeeds, returns the current position of pointer in bytes or value INVALID_POINTER_POSITION if fails.
+     * \brief	If succeeds, returns the current position of pointer in bytes or value IECursorPosition::INVALID_CURSOR_POSITION if fails.
      *          Before calling function, the file object should be opened.
-     * \return	If succeeds, returns the current position of pointer in bytes or value INVALID_POINTER_POSITION if fails.
+     * \return	If succeeds, returns the current position of pointer in bytes or value IECursorPosition::INVALID_CURSOR_POSITION if fails.
      **/
     virtual unsigned int getPosition( void ) const override;
 
@@ -244,11 +244,11 @@ public:
      *          If new size is less than the current size of file object, data will be truncated until the new size, 
      *          and if the new size is less than the current pointer position, the pointer will be move at the end of file.
      * 
-     * \param	size	New Size is bytes to reserve or set. Positive value will set the size. Negative value will set size zero.
+     * \param	size	New Size is bytes to reserve or set.
      *
-     * \return  If succeeds, returns the current position of file pointer. Otherwise it returns value INVALID_POINTER_POSITION.
+     * \return  If succeeds, returns the current position of file pointer. Otherwise it returns value IECursorPosition::INVALID_CURSOR_POSITION.
      **/
-    virtual unsigned int reserve(int newSize) override;
+    virtual unsigned int reserve(unsigned int newSize) override;
 
     /**
      * \brief   Purge file object data, sets the size zero and if succeeds, return true
@@ -613,21 +613,55 @@ private:
      **/
     static inline bool _nameHasParentFolder( const char * filePath, bool skipSep );
 
-    /**
-     * \brief   OS specific wrapper to create directory.
-     * \param   dirPath     The full path to directory to create.
-     *                      The parent directory must already exist.
-     * \return  If succeeds, returns true.
-     **/
-    static bool _createFolder( const char * dirPath );
-
 //////////////////////////////////////////////////////////////////////////
 // OS specific methods
 //////////////////////////////////////////////////////////////////////////
     /**
      * \brief   Free OS specific resources and close currently opened file.
      */
-    void _closeFile( void );
+    void _osCloseFile( void );
+
+    bool _osOpenFile( void );
+
+    unsigned int _osReadFile(unsigned char* buffer, unsigned int size) const;
+
+    unsigned int _osWriteFile( const unsigned char* buffer, unsigned int size );
+
+    unsigned int _osSetPositionFile(int offset, IECursorPosition::eCursorPosition startAt) const;
+
+    unsigned int _osGetPositionFile(void) const;
+
+    unsigned int _osGetLengthFile(void) const;
+
+    unsigned int _osReserveFile(unsigned int newSize);
+
+    bool _osTruncateFile(void);
+
+    void _osFlushFile(void);
+
+    static bool _osDeleteFile(const char* filePath);
+
+    static bool _osCreateDir(const char* dirPath);
+
+    static bool _osDeleteDir(const char* dirPath);
+
+    static bool _osMoveFile(const char* oldPath, const char* newPath);
+
+    static unsigned int _osGetCurrentDir(char * buffer, unsigned int length);
+
+    static bool _osSetCurrentDir(const char* dirPath);
+
+    static bool _osCopyFile(const char* srcPath, const char* newPath, bool copyForce);
+
+    static unsigned int _osGetTempDir(char* buffer, unsigned int length);
+
+    static unsigned int _osCreateTempFile(char* buffer, const char* folder, const char * prefix, unsigned int unique);
+
+    static bool _osExistDir(const char* dirPath);
+
+    static bool _osExistFile(const char* filePath);
+
+    static unsigned int _osGetSpecialDir(char* buffer, unsigned int length, const eSpecialFolder specialFolder);
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables

@@ -59,7 +59,7 @@ WaitableTimerIX::WaitableTimerIX(bool isAutoReset /*= false*/, const char * name
     sigEvent.sigev_notify_function  = &WaitableTimerIX::_posixTimerRoutine;
     sigEvent.sigev_notify_attributes= nullptr;
 
-    if (RETURNED_OK != timer_create(CLOCK_MONOTONIC, &sigEvent, &mTimerId))
+    if (RETURNED_OK != ::timer_create(CLOCK_MONOTONIC, &sigEvent, &mTimerId))
     {
         mTimerId = static_cast<timer_t>(0);
     }
@@ -93,7 +93,7 @@ bool WaitableTimerIX::setTimer(unsigned int msTimeout, bool isPeriodic)
         mIsSignaled     = false;
         mThreadId       = Thread::getCurrentThreadId();
         result          = true;
-        if ( RETURNED_OK != timer_settime(mTimerId, 0, &interval, nullptr) )
+        if ( RETURNED_OK != ::timer_settime(mTimerId, 0, &interval, nullptr) )
         {
             result = false;
             _resetTimer();
@@ -184,7 +184,7 @@ inline void WaitableTimerIX::_resetTimer( void )
     _stopTimer();
     if (mTimerId != static_cast<timer_t>(0))
     {
-        timer_delete(mTimerId);
+        ::timer_delete(mTimerId);
     }
 
     mTimerId    = static_cast<timer_t>(0);
@@ -199,7 +199,7 @@ inline void WaitableTimerIX::_stopTimer( void )
         mDueTime.tv_nsec= 0;
         itimerspec cancelSpec;
         NEMemory::memZero(static_cast<void *>(&cancelSpec), sizeof(itimerspec));
-        timer_settime(mTimerId, 0, &cancelSpec, nullptr);
+        ::timer_settime(mTimerId, 0, &cancelSpec, nullptr);
     }
 
     mTimeout    = 0;

@@ -302,7 +302,7 @@ public:
      * \param   Value       The element value to search in the stack.
      * \param	searchAfter	If valid position, the searching starts from next element specified by position.
      *                      If invalid position, the searching starts from the beginning of the linked list.
-     * \return  If found element, returns valid position. Otherwise, it returns NECommon::INVALID_POSITION.
+     * \return  If found element, returns valid position. Otherwise, it returns invalid position.
      **/
     inline STACKPOS find(const VALUE & Value) const;
     inline STACKPOS find(const VALUE& Value, STACKPOS searchAfter) const;

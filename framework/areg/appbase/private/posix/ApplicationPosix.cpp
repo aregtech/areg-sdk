@@ -21,61 +21,61 @@
 
 namespace
 {
-int _getProcIdByName(const char * procName)
-{
-    constexpr char const fmt[]        { "/proc/%s/cmdline" };
-    constexpr char const dirProc[]    { "/proc" };
-    int pid = -1;
-
-    DIR* dir = opendir(dirProc);
-    char* buffer = dir != nullptr ? DEBUG_NEW char[File::MAXIMUM_PATH + 1] : nullptr;
-    if ((buffer == nullptr) || NEString::isEmpty<char>(procName))
-        return pid;
-
-    for (struct dirent* dirEntry = readdir(dir); (pid < 0) && (dirEntry != nullptr); dirEntry = readdir(dir))
+    int _getProcIdByName(const char * procName)
     {
-        // skip non-numeric directories.
-        if ((dirEntry->d_type == DT_REG) && (NEString::isNumeric<char>(dirEntry->d_name[0])))
+        constexpr char const fmt[]        { "/proc/%s/cmdline" };
+        constexpr char const dirProc[]    { "/proc" };
+        int pid = -1;
+
+        DIR* dir = opendir(dirProc);
+        char* buffer = dir != nullptr ? DEBUG_NEW char[File::MAXIMUM_PATH + 1] : nullptr;
+        if ((buffer == nullptr) || NEString::isEmpty<char>(procName))
+            return pid;
+
+        for (struct dirent* dirEntry = readdir(dir); (pid < 0) && (dirEntry != nullptr); dirEntry = readdir(dir))
         {
-            String name;
-            name.format(fmt, dirEntry->d_name);
-            FILE* file = fopen(name.getBuffer(), "r");
-            if (file != nullptr)
+            // skip non-numeric directories.
+            if ((dirEntry->d_type == DT_REG) && (NEString::isNumeric<char>(dirEntry->d_name[0])))
             {
-                if (fgets(buffer, File::MAXIMUM_PATH + 1, file) != nullptr)
+                String name;
+                name.format(fmt, dirEntry->d_name);
+                FILE* file = fopen(name.getBuffer(), "r");
+                if (file != nullptr)
                 {
-                    NEString::CharPos pos = NEString::findLast<char>(File::PATH_SEPARATOR, buffer);
-                    if (NEString::isPositionValid(pos))
+                    if (fgets(buffer, File::MAXIMUM_PATH + 1, file) != nullptr)
                     {
-                        char* name = buffer + pos + 1;
-                        if (NEString::compareFastIgnoreCase<char, char>(procName, name) == NEMath::eCompare::Equal)
+                        NEString::CharPos pos = NEString::findLast<char>(File::PATH_SEPARATOR, buffer);
+                        if (NEString::isPositionValid(pos))
                         {
-                            pid = NEString::makeInteger<char>(dirEntry->d_name, nullptr);
+                            char* name = buffer + pos + 1;
+                            if (NEString::compareFastIgnoreCase<char, char>(procName, name) == NEMath::eCompare::Equal)
+                            {
+                                pid = NEString::makeInteger<char>(dirEntry->d_name, nullptr);
+                            }
                         }
                     }
-                }
 
-                fclose(file);
+                    fclose(file);
+                }
             }
         }
+
+        return pid;
     }
 
-    return pid;
-}
+    DEF_TRACE_SCOPE(areg_appbase_ApplicationPosix__handleSignalBrokenPipe);
+    void _handleSignalBrokenPipe(int s)
+    {
+        TRACE_SCOPE(areg_appbase_ApplicationPosix__handleSignalBrokenPipe);
+        TRACE_WARN("Caught SIGPIPE signal [ %d ]", s);
+    }
 
-DEF_TRACE_SCOPE(areg_appbase_ApplicationPosix_handleSignalBrokenPipe);
-void handleSignalBrokenPipe(int s)
-{
-    TRACE_SCOPE(areg_appbase_ApplicationPosix_handleSignalBrokenPipe);
-    TRACE_WARN("Caught SIGPIPE signal [ %d ]", s);
-}
-
-DEF_TRACE_SCOPE(areg_appbase_ApplicationPosix_handleSignalSegmentationFault);
-void handleSignalSegmentationFault(int s)
-{
-    TRACE_SCOPE(areg_appbase_ApplicationPosix_handleSignalSegmentationFault);
-    TRACE_ERR("Caught segmentation fault!!! Parameter [ %d ]", s);
-}
+    DEF_TRACE_SCOPE(areg_appbase_ApplicationPosix__handleSignalSegmentationFault);
+    void _handleSignalSegmentationFault(int s)
+    {
+        TRACE_SCOPE(areg_appbase_ApplicationPosix__handleSignalSegmentationFault);
+        TRACE_ERR("Caught segmentation fault!!! Parameter [ %d ]", s);
+    }
 
 } // namespace
 
@@ -87,8 +87,8 @@ void Application::_osSetupHandlers( void )
     if ( theApp.mSetup == false )
     {
 
-        signal(SIGPIPE, &handleSignalBrokenPipe);
-        signal(SIGSEGV, &handleSignalSegmentationFault);
+        signal(SIGPIPE, &_handleSignalBrokenPipe);
+        signal(SIGSEGV, &_handleSignalSegmentationFault);
 
         theApp.mSetup = true;
     }

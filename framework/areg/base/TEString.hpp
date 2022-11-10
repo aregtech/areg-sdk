@@ -306,9 +306,9 @@ public:
     inline NEString::CharCount getLength(void) const;
 
     /**
-     * \brief   Returns the actual maximum number of characters to store in the string.
+     * \brief   Returns the number of characters that can store in the string.
      **/
-    inline NEString::CharCount getSize(void) const;
+    inline NEString::CharCount getCapacity(void) const;
 
     /**
      * \brief   Return the size of string in bytes including the end of the string character.
@@ -371,12 +371,12 @@ public:
     inline void clear(void);
 
     /**
-     * \brief   Delete unused capacity in the string.
+     * \brief   Delete unused space in the string.
      **/
     inline void freeExtra(void);
 
     /**
-     * \brief   Sets the size of string to zero and deletes all unused capacity of the string.
+     * \brief   Sets the size of string to zero and deletes the space.
      */
     inline void release(void);
 
@@ -1466,9 +1466,9 @@ inline NEString::CharCount TEString<CharType>::getLength(void) const
 }
 
 template<typename CharType>
-inline NEString::CharCount TEString<CharType>::getSize(void) const
+inline NEString::CharCount TEString<CharType>::getCapacity(void) const
 {
-    return static_cast<NEString::CharCount>(mData.max_size());
+    return static_cast<NEString::CharCount>(mData.capacity());
 }
 
 template<typename CharType>

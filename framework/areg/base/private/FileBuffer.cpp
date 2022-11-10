@@ -183,9 +183,9 @@ bool FileBuffer::isOpened() const
     return mIsOpened;
 }
 
-unsigned int FileBuffer::reserve(int newSize)
+unsigned int FileBuffer::reserve(unsigned int newSize)
 {
-    return (isOpened() && (newSize >= 0) ? mSharedBuffer.reserve(static_cast<unsigned int>(newSize), false) : NEMemory::INVALID_SIZE);
+    return (isOpened() ? mSharedBuffer.reserve(newSize, false) : NEMemory::INVALID_SIZE);
 }
 
 bool FileBuffer::truncate( void )

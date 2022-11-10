@@ -93,12 +93,12 @@ The framework contains a dynamic and configurable logging service. More tools an
 ## Software build[![](./docs/img/pin.svg)](#software-build)
 
 An example to get source codes and compile under **Linux**. You'd need at least C++17 `g++` (default) compiler. Open _Terminal_ console in your `projects` folder and take the following steps:
-```shell
+```bash
 # Step 1: Get sources from GitHub
 $ git clone https://github.com/aregtech/areg-sdk.git
 $ cd areg-sdk
 ```
-```shell
+```bash
 # Step 2: Compile sources from terminal by calling: make [all] [framework] [examples]
 $ make all
 ```

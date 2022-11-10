@@ -159,7 +159,7 @@ namespace NESynchTypesIX
 inline bool NESynchTypesIX::timeoutFromNow( timespec & out_result, unsigned int msTimeout )
 {
     bool result = false;
-    if ( NESynchTypesIX::POSIX_SUCCESS == clock_gettime(CLOCK_MONOTONIC, &out_result ) )
+    if ( NESynchTypesIX::POSIX_SUCCESS == ::clock_gettime(CLOCK_MONOTONIC, &out_result ) )
     {
         convTimeout(out_result, msTimeout);
         result = true;

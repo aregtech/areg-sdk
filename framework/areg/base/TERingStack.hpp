@@ -235,7 +235,7 @@ public:
      * \param   newCapacity     New capacity to set for Ring Stack.
      * \return  Returns capacity size of resized ring stack.
      **/
-    int reserve( int newCapacity );
+    int reserve( uint32_t newCapacity );
 
     /**
      * \brief   Searches element in the stack starting at given position (index).
@@ -488,7 +488,7 @@ TERingStack<VALUE> & TERingStack<VALUE>::operator = ( const TERingStack<VALUE> &
 
         if ( mCapacity < source.mElemCount )
         {
-        	reserve( source.mElemCount );
+        	reserve( static_cast<uint32_t>(source.mElemCount) );
         }
 
         int pos = source.mStartPosition;
@@ -589,7 +589,7 @@ int TERingStack<VALUE>::pushLast( const VALUE& newElement )
             break;
 
         case NECommon::eRingOverlap::ResizeOnOvelap:
-            if ( reserve( (mCapacity > 0 ? mCapacity : 1) * 2 ) > (mElemCount + 1 ))
+            if ( reserve( static_cast<uint32_t>(mCapacity > 0 ? mCapacity : 1) * 2 ) > (mElemCount + 1 ))
             {
                 ASSERT(mCapacity >= mElemCount + 1);
                 VALUE * block = mStackList + mLastPosition;
@@ -655,7 +655,7 @@ int TERingStack<VALUE>::pushFirst( const VALUE& newElement )
             break;
 
         case NECommon::eRingOverlap::ResizeOnOvelap:
-            if ( reserve( (mCapacity > 0 ? mCapacity : 1) * 2 ) > (mElemCount + 1 ))
+            if ( reserve( static_cast<uint32_t>(mCapacity > 0 ? mCapacity : 1) * 2 ) > (mElemCount + 1 ))
             {
                 ASSERT(mCapacity >= mElemCount + 1);
                 mStartPosition = mStartPosition > 0 ? mStartPosition - 1 : mCapacity - 1;
@@ -755,7 +755,7 @@ int TERingStack<VALUE>::copy( const TERingStack<VALUE> & source )
                 break;
 
             case NECommon::eRingOverlap::ResizeOnOvelap:
-                if ( reserve( (mCapacity > 0 ? mCapacity : 1) * 2 ) > (mElemCount + 1 ))
+                if ( reserve( static_cast<uint32_t>(mCapacity > 0 ? mCapacity : 1) * 2 ) > (mElemCount + 1 ))
                 {
                     ASSERT(mCapacity >= mElemCount + 1);
                     for ( int i = 0; i < source.mElemCount; i ++, result ++ )
@@ -790,7 +790,7 @@ int TERingStack<VALUE>::copy( const TERingStack<VALUE> & source )
 }
 
 template <typename VALUE>
-int TERingStack<VALUE>::reserve( int newCapacity )
+int TERingStack<VALUE>::reserve(unsigned int newCapacity )
 {
     Lock lock(mSynchObject);
 
@@ -959,7 +959,7 @@ const IEInStream & operator >> ( const IEInStream & stream, TERingStack<V> & inp
     stream >> size;
 
     input.clear();
-    input.reserve(size);
+    input.reserve(static_cast<uint32_t>(size));
 
     for (int i = 0; i < size; i ++)
     {

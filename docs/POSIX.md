@@ -1,7 +1,7 @@
 ﻿# Build with POSIX API
 ```
 This file is part of AREG SDK.
-Copyright (c) Aregtech, 2017-2022
+Copyright (c) Aregtech, 2021-2022
 Contact: info[at]aregtech.com
 Website: https://www.aregtech.com
 ```
@@ -22,31 +22,37 @@ To build AREG framework with _POSIX_ API, define **POSIX** (or **_POSIX**) prepr
 - **NDEBUG** to compile with release configuration.
 - **ENABLE_TRACES** to compile with enabled logging.
 - **EXP_AREG_LIB** to compile the AREG framework as a _static_ library.
-- **EXP_AREG_DLL** to compile the AREG frmework as a _shared_ library.
+- **EXP_AREG_DLL** to compile the AREG framework as a _shared_ library.
 - **IMP_AREG_LIB** to link a project with the AREG framework _static_ library.
 - **IMP_AREG_DLL** to link a project with the AREG framework _shared_ library.
 
-AREG SDK requires _POSIX1.c_ API for multithreading and synchronization.
+AREG SDK requires _POSIX1.c_ API for multithreading and synchronization. The AREG framework beside standard runtime library, uses `pthread` and `ncurses`.
 
-## The list of POSIX API used in AREG SDK (including multicast message router)
+## The list of POSIX API and macro used in AREG framework (including multicast message router)
 
 ```
 accept
 access
 bind
+cbreak
 ceil
 chdir
+clear
 clock_gettime
 close
 connect
 execl
+delwin
+endwin
 fclose
 FD_ISSET
 FD_SET
 FD_ZERO
+fflush
 fgets
 floor
 fopen
+fprintf
 free
 freeaddrinfo
 fsync
@@ -56,7 +62,9 @@ getcwd
 getenv
 getpeername
 getpid
+getpwuid
 getsockopt
+getyx
 gmtime
 gmtime_r
 htons
@@ -70,8 +78,9 @@ localtime
 localtime_r
 lseek
 mkdir
-mkstemp
+mkdtemp
 mktime
+mvwaddstr
 nanosleep
 ntohs
 open
@@ -102,6 +111,7 @@ pthread_mutexattr_init
 pthread_mutexattr_settype
 pthread_self
 pthread_setcancelstate
+pthread_setcanceltype
 pthread_setname_np (Linux)
 pthread_setschedparam
 pthread_spin_destroy
@@ -113,8 +123,10 @@ read
 readdir
 realpath
 recv
+refresh
 rename
 rmdir
+S_ISDIR
 scanf
 sched_get_priority_max
 sched_get_priority_min
@@ -127,7 +139,9 @@ snprintf
 socket
 sprintf
 stat
+strcpy
 strftime
+strlen
 strtod
 strtof
 strtol
@@ -142,11 +156,17 @@ unlink
 va_end
 va_start
 vsnprintf
+vw_scanw
+waddstr
+wclrtoeol
 wcstof
 wcstol
 wcstoll
 wcstoul
 wcstoull
 write
+wmove
+wrefresh
+wscanw
 ```
 Make sure that the target platform supports all of these functions and macro.

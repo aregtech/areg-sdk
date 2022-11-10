@@ -219,11 +219,11 @@ public:
      *          size of file object, data will be truncated until the new size, and if needed 
      *          the pointer position will be moved to the end of file.
      *
-     * \param	newSize     New Size is bytes to set. Positive value will set the size. Negative value will set size zero.
+     * \param	newSize     New Size is bytes to set.
      *
-     * \return  If succeeds, returns the current position of file pointer. Otherwise it returns value INVALID_POINTER_POSITION.
+     * \return  If succeeds, returns the current position of file pointer. Otherwise it returns value IECursorPosition::INVALID_CURSOR_POSITION.
      **/
-    virtual unsigned int reserve(int newSize) override;
+    virtual unsigned int reserve(unsigned int newSize) override;
 
     /**
      * \brief   Purge file object data, sets the size zero and if succeeds, returns true.
@@ -323,14 +323,14 @@ public:
      *                  IECursorPosition::eCursorPosition::PositionCurrent -- from current pointer position
      *                  IECursorPosition::eCursorPosition::PositionEnd     -- from end of file
      *
-     * \return	If succeeds, returns the current position of pointer in bytes or value INVALID_POINTER_POSITION if fails.
+     * \return	If succeeds, returns the current position of pointer in bytes or value IECursorPosition::INVALID_CURSOR_POSITION if fails.
      **/
     virtual unsigned int setPosition(int offset, IECursorPosition::eCursorPosition startAt) const override;
 
     /**
-     * \brief	If succeeds, returns the current position of pointer in bytes or value INVALID_POINTER_POSITION if fails.
+     * \brief	If succeeds, returns the current position of pointer in bytes or value IECursorPosition::INVALID_CURSOR_POSITION if fails.
      *          Before calling function, the file object should be opened.
-     * \return	If succeeds, returns the current position of pointer in bytes or value INVALID_POINTER_POSITION if fails.
+     * \return	If succeeds, returns the current position of pointer in bytes or value IECursorPosition::INVALID_CURSOR_POSITION if fails.
      **/
     virtual unsigned int getPosition( void ) const override;
 

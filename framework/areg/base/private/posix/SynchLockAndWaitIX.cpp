@@ -387,22 +387,22 @@ inline bool SynchLockAndWaitIX::_notifyEvent( void )
 inline bool SynchLockAndWaitIX::_initPosixSynchObjects( void )
 {
     // Init POSIX mutex
-    if (RETURNED_OK == pthread_mutexattr_init( &mPosixMutexAttr ))
+    if (RETURNED_OK == ::pthread_mutexattr_init( &mPosixMutexAttr ))
     {
         mMutexAttrValid = true;
-        if (RETURNED_OK == pthread_mutexattr_settype( &mPosixMutexAttr, PTHREAD_MUTEX_NORMAL ))
+        if (RETURNED_OK == ::pthread_mutexattr_settype( &mPosixMutexAttr, PTHREAD_MUTEX_NORMAL ))
         {
-            mMutexValid = (RETURNED_OK == pthread_mutex_init( &mPosixMutex, &mPosixMutexAttr ));
+            mMutexValid = (RETURNED_OK == ::pthread_mutex_init( &mPosixMutex, &mPosixMutexAttr ));
         }
     }
 
     // Init POSIX condition variable
-    if (RETURNED_OK == pthread_condattr_init( &mCondAttribute ))
+    if (RETURNED_OK == ::pthread_condattr_init( &mCondAttribute ))
     {
         mCondAttrValid = true;
-        if (RETURNED_OK == pthread_condattr_setpshared( &mCondAttribute, PTHREAD_PROCESS_PRIVATE ))
+        if (RETURNED_OK == ::pthread_condattr_setpshared( &mCondAttribute, PTHREAD_PROCESS_PRIVATE ))
         {
-            mCondVarValid = (RETURNED_OK == pthread_cond_init( &mCondVariable, &mCondAttribute ));
+            mCondVarValid = (RETURNED_OK == ::pthread_cond_init( &mCondVariable, &mCondAttribute ));
         }
     }
 
@@ -413,25 +413,25 @@ inline void SynchLockAndWaitIX::_releasePosixSynchObjects( void )
 {
     if (mMutexValid)
     {
-        pthread_mutex_destroy(&mPosixMutex);
+        ::pthread_mutex_destroy(&mPosixMutex);
         mMutexValid = false;
     }
 
     if (mMutexAttrValid)
     {
-        pthread_mutexattr_destroy(&mPosixMutexAttr);
+        ::pthread_mutexattr_destroy(&mPosixMutexAttr);
         mMutexAttrValid = false;
     }
 
     if (mCondVarValid)
     {
-        pthread_cond_destroy(&mCondVariable);
+        ::pthread_cond_destroy(&mCondVariable);
         mCondVarValid = false;
     }
 
     if (mCondAttrValid)
     {
-        pthread_condattr_destroy(&mCondAttribute);
+        ::pthread_condattr_destroy(&mCondAttribute);
         mCondAttrValid = false;
     }
 }
@@ -450,7 +450,7 @@ inline void SynchLockAndWaitIX::_unlock( void )
 {
     if (mMutexValid)
     {
-        pthread_mutex_unlock( &mPosixMutex );
+        ::pthread_mutex_unlock( &mPosixMutex );
     }
 }
 
@@ -458,13 +458,13 @@ inline int SynchLockAndWaitIX::_waitCondition( void )
 {
     if ( mWaitTimeout == NECommon::WAIT_INFINITE)
     {
-        return pthread_cond_wait(&mCondVariable, &mPosixMutex);
+        return ::pthread_cond_wait(&mCondVariable, &mPosixMutex);
     }
     else
     {
         timespec waitTimeout;
         NESynchTypesIX::timeoutFromNow(waitTimeout, mWaitTimeout);
-        return pthread_cond_timedwait( &mCondVariable, &mPosixMutex, &waitTimeout );
+        return ::pthread_cond_timedwait( &mCondVariable, &mPosixMutex, &waitTimeout );
     }
 }
 

@@ -143,7 +143,7 @@ bool TimerPosix::_createTimer( FuncPosixTimerRoutine funcTimer )
     sigEvent.sigev_notify_function  = funcTimer;
     sigEvent.sigev_notify_attributes= nullptr;
 
-    return (RETURNED_OK == timer_create(CLOCK_MONOTONIC, &sigEvent, &mTimerId));
+    return (RETURNED_OK == ::timer_create(CLOCK_MONOTONIC, &sigEvent, &mTimerId));
 }
 
 inline bool TimerPosix::_startTimer( TimerBase * context, id_type contextId )
@@ -175,10 +175,10 @@ inline bool TimerPosix::_startTimer( TimerBase * context, id_type contextId )
                 interval.it_interval.tv_nsec= interval.it_value.tv_nsec;
             }
 
-            clock_gettime(CLOCK_MONOTONIC, &mDueTime);
+            ::clock_gettime(CLOCK_MONOTONIC, &mDueTime);
             NESynchTypesIX::convTimeout(mDueTime, msTimeout);
 
-            if (RETURNED_OK != timer_settime(mTimerId, 0, &interval, nullptr))
+            if (RETURNED_OK != ::timer_settime(mTimerId, 0, &interval, nullptr))
             {
                 result          = false;
                 mDueTime.tv_sec = 0;
@@ -200,7 +200,7 @@ void TimerPosix::_stopTimer(void)
 
     mDueTime.tv_sec = 0;
     mDueTime.tv_nsec= 0;
-    timer_settime(mTimerId, 0, &interval, nullptr);
+    ::timer_settime(mTimerId, 0, &interval, nullptr);
 }
 
 void TimerPosix::_destroyTimer(void)
@@ -212,7 +212,7 @@ void TimerPosix::_destroyTimer(void)
 
     if (mTimerId != INVALID_POSIX_TIMER_ID)
     {
-        timer_delete(mTimerId);
+        ::timer_delete(mTimerId);
         mTimerId    = INVALID_POSIX_TIMER_ID;
     }
 }

@@ -62,8 +62,8 @@ AREG_API_IMPL void NESocket::socketClose(SOCKETHANDLE hSocket)
     {
         TRACE_WARN("Closing socket [ %p ]", hSocket);
 
-        shutdown(hSocket, SHUT_RDWR);
-        close( hSocket );
+        ::shutdown(hSocket, SHUT_RDWR);
+        ::close( hSocket );
     }
     else
     {
@@ -91,7 +91,7 @@ AREG_API_IMPL int NESocket::sendData(SOCKETHANDLE hSocket, const unsigned char *
             {
                 int remain = dataLength > blockMaxSize ? blockMaxSize : dataLength;
                 TRACE_DBG("Sending [ %d ] bytes of data", remain);
-                int written= send(hSocket, reinterpret_cast<const char *>(dataBuffer), remain, 0);
+                int written= ::send(hSocket, reinterpret_cast<const char *>(dataBuffer), remain, 0);
                 if ( written > 0 )
                 {
                     dataLength -= written;
@@ -147,7 +147,7 @@ AREG_API_IMPL int NESocket::receiveData(SOCKETHANDLE hSocket, unsigned char * da
             {
                 int remain = dataLength > blockMaxSize ? blockMaxSize : dataLength;
                 TRACE_DBG("Receiving [ %d ] bytes of data", remain);
-                int read   = recv(hSocket, dataBuffer + result, remain, 0);
+                int read   = ::recv(hSocket, dataBuffer + result, remain, 0);
                 if ( read > 0 )
                 {
                     dataLength -= read;
@@ -184,12 +184,12 @@ AREG_API_IMPL int NESocket::receiveData(SOCKETHANDLE hSocket, unsigned char * da
 
 AREG_API_IMPL bool NESocket::disableSend(SOCKETHANDLE hSocket)
 {
-    return ( hSocket != NESocket::InvalidSocketHandle ? RETURNED_OK == shutdown( hSocket, SHUT_WR) : false );
+    return ( hSocket != NESocket::InvalidSocketHandle ? RETURNED_OK == ::shutdown( hSocket, SHUT_WR) : false );
 }
 
 AREG_API_IMPL bool NESocket::disableReceive(SOCKETHANDLE hSocket)
 {
-    return ( hSocket != NESocket::InvalidSocketHandle ? RETURNED_OK == shutdown(hSocket, SHUT_RD ) : false );
+    return ( hSocket != NESocket::InvalidSocketHandle ? RETURNED_OK == ::shutdown(hSocket, SHUT_RD ) : false );
 }
 
 AREG_API_IMPL unsigned int NESocket::remainDataRead( SOCKETHANDLE hSocket )
@@ -200,7 +200,7 @@ AREG_API_IMPL unsigned int NESocket::remainDataRead( SOCKETHANDLE hSocket )
     if ( hSocket != NESocket::InvalidSocketHandle )
     {
     	unsigned long arg = 0L;
-        if ( RETURNED_OK  == ioctl( hSocket, FIONREAD, &arg) )
+        if ( RETURNED_OK  == ::ioctl( hSocket, FIONREAD, &arg) )
         {
             result = static_cast<unsigned int>(arg);
         }

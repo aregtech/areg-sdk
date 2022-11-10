@@ -53,7 +53,7 @@ bool TimerManager::_systemTimerStart( Timer & timer )
     ASSERT(posixTimer != nullptr);
 
     struct timespec startTime;
-    clock_gettime( CLOCK_MONOTONIC, &startTime );
+    ::clock_gettime( CLOCK_MONOTONIC, &startTime );
     timer.timerStarting(startTime.tv_sec, startTime.tv_nsec, reinterpret_cast<ptr_type>(posixTimer));
 
     if (posixTimer->startTimer(timer, 0, &TimerManager::_defaultPosixTimerExpiredRoutine))

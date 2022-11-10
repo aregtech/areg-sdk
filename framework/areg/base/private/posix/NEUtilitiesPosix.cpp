@@ -45,7 +45,7 @@ namespace NEUtilities
             const char * spec = specChar != nullptr ? specChar : NECommon::DEFAULT_SPECIAL_CHAR.data();
             *out_buffer = '\0';
             struct timespec now;
-            clock_gettime(CLOCK_MONOTONIC, &now);
+            ::clock_gettime(CLOCK_MONOTONIC, &now);
             String::formatString( out_buffer, length, strFormat
                                 , prefix != nullptr ? prefix : NEUtilities::DEFAULT_GENERATED_NAME.data()
                                 , spec
@@ -88,7 +88,7 @@ AREG_API_IMPL bool NEUtilities::convToLocalTime( const TIME64 & inUtcTime, sSyst
     unsigned short milli, micro;
     _convertMicrosecs(inUtcTime, secs, milli, micro);
 
-    struct tm * conv = localtime(&secs);
+    struct tm * conv = ::localtime(&secs);
     if (conv != nullptr)
     {
         outLocalTime.stYear      = conv->tm_year + 1900;
@@ -121,7 +121,7 @@ AREG_API_IMPL bool NEUtilities::convToLocalTime( const sSystemTime &inUtcTime, s
     unsigned short milli, micro;
     _convertMicrosecs(quad, secs, milli, micro);
 
-    struct tm * conv = localtime(&secs);
+    struct tm * conv = ::localtime(&secs);
     if (conv != nullptr)
     {
         outLocalTime.stYear      = conv->tm_year + 1900;
@@ -143,7 +143,7 @@ AREG_API_IMPL bool NEUtilities::convToLocalTime( const sSystemTime &inUtcTime, s
 AREG_API_IMPL uint64_t NEUtilities::getTickCount( void )
 {
     struct timespec ts;
-    clock_gettime(CLOCK_MONOTONIC, &ts);
+    ::clock_gettime(CLOCK_MONOTONIC, &ts);
 
     TIME64 result = (ts.tv_sec * SEC_TO_MILLISECS) + ts.tv_nsec / MILLISEC_TO_NS;
     return result;
@@ -154,7 +154,7 @@ AREG_API_IMPL void NEUtilities::systemTimeNow( NEUtilities::sSystemTime & OUT ou
     struct timespec ts;
     struct tm now;
 
-    clock_gettime(CLOCK_REALTIME, &ts);
+    ::clock_gettime(CLOCK_REALTIME, &ts);
     if (localTime)
     {
         ::localtime_r(&ts.tv_sec, &now);
@@ -184,7 +184,7 @@ AREG_API_IMPL void NEUtilities::systemTimeNow( NEUtilities::sSystemTime & OUT ou
 AREG_API_IMPL void NEUtilities::systemTimeNow( NEUtilities::sFileTime & OUT out_fileTime, bool localTime )
 {
     struct timespec ts;
-    clock_gettime(CLOCK_REALTIME, &ts);
+    ::clock_gettime(CLOCK_REALTIME, &ts);
 
     if (localTime)
     {
@@ -206,7 +206,7 @@ AREG_API_IMPL void NEUtilities::systemTimeNow( NEUtilities::sFileTime & OUT out_
 AREG_API_IMPL TIME64 NEUtilities::systemTimeNow( void )
 {
     struct timespec ts;
-    clock_gettime(CLOCK_REALTIME, &ts);
+    ::clock_gettime(CLOCK_REALTIME, &ts);
 
     TIME64 quad = ts.tv_sec * SEC_TO_MICROSECS + ts.tv_nsec / MICROSEC_TO_NS;
     return quad;
@@ -226,7 +226,7 @@ AREG_API_IMPL TIME64 NEUtilities::convToTime( const NEUtilities::sSystemTime & s
     sys.tm_wday     = sysTime.stDayOfWeek;
     sys.tm_isdst    = 0;
 
-    time_t secs = mktime(&sys);
+    time_t secs = ::mktime(&sys);
     if (secs != static_cast<time_t>(-1))
     {
         quad = (secs * SEC_TO_MICROSECS) + (sysTime.stMillisecs * MILLISEC_TO_MICROSECS) + sysTime.stMicrosecs;
@@ -248,7 +248,7 @@ AREG_API_IMPL void NEUtilities::convToSystemTime( const TIME64 &  timeValue, NEU
     unsigned short milli, micro;
     _convertMicrosecs(timeValue, secs, milli, micro);
 
-    struct tm * conv = gmtime(&secs);
+    struct tm * conv = ::gmtime(&secs);
     if (conv != nullptr)
     {
         out_sysTime.stYear      = conv->tm_year + 1900;

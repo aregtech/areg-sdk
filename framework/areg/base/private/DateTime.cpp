@@ -71,7 +71,7 @@ uint64_t DateTime::getProcessTickCount(void)
 #else   // _POSIX
 
     struct timespec ts;
-    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &ts);
+    ::clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &ts);
     return ((ts.tv_sec * NEUtilities::SEC_TO_MILLISECS)+ (ts.tv_nsec / NEUtilities::MILLISEC_TO_NS));
 
 #endif // WINDOWS
