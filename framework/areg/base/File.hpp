@@ -631,35 +631,11 @@ private:
 
     unsigned int _osGetPositionFile(void) const;
 
-    unsigned int _osGetLengthFile(void) const;
-
-    unsigned int _osReserveFile(unsigned int newSize);
-
     bool _osTruncateFile(void);
 
     void _osFlushFile(void);
 
-    static bool _osDeleteFile(const char* filePath);
-
-    static bool _osCreateDir(const char* dirPath);
-
-    static bool _osDeleteDir(const char* dirPath);
-
-    static bool _osMoveFile(const char* oldPath, const char* newPath);
-
-    static unsigned int _osGetCurrentDir(char * buffer, unsigned int length);
-
-    static bool _osSetCurrentDir(const char* dirPath);
-
-    static bool _osCopyFile(const char* srcPath, const char* newPath, bool copyForce);
-
-    static unsigned int _osGetTempDir(char* buffer, unsigned int length);
-
     static unsigned int _osCreateTempFile(char* buffer, const char* folder, const char * prefix, unsigned int unique);
-
-    static bool _osExistDir(const char* dirPath);
-
-    static bool _osExistFile(const char* filePath);
 
     static unsigned int _osGetSpecialDir(char* buffer, unsigned int length, const eSpecialFolder specialFolder);
 

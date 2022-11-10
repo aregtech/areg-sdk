@@ -86,49 +86,6 @@ static String _searchFile( const char* fileName, const char* fileExtension, cons
 
 #endif
 
-/**
- * \brief   Returns special folder path. The type of required folder is defined in
- *          specialFolder parameter.
- * \param   specialFolder   The type of special folder in the system.
- * \return  If function succeeds, the return value is full path of special folder.
- *          Otherwise, it returns empty string.
- **/
-unsigned int File::_osGetSpecialDir(char* buffer, unsigned int length, const eSpecialFolder specialFolder)
-{
-    ASSERT(buffer != nullptr);
-    buffer[0] = NEString::EndOfString;
-
-    int csidl = -1;
-    switch (specialFolder)
-    {
-    case File::eSpecialFolder::SpecialUserHome:
-        csidl = CSIDL_PROFILE;
-        break;
-
-    case File::eSpecialFolder::SpecialPersonal:
-        csidl = CSIDL_PERSONAL;
-        break;
-
-    case File::eSpecialFolder::SpecialAppData:
-        csidl = CSIDL_APPDATA;
-        break;
-
-    case File::eSpecialFolder::SpecialTemp:
-        GetTempPathA(length, buffer);
-        break;
-
-    default:
-        break;
-    }
-
-    if (csidl != -1)
-    {
-        SHGetFolderPathA(nullptr, csidl, nullptr, SHGFP_TYPE_CURRENT, buffer);
-    }
-
-    return static_cast<unsigned int>(strlen(buffer));
-}
-
 void File::_osCloseFile( void )
 {
     if ( isOpened( ) )
@@ -273,40 +230,6 @@ unsigned int File::_osGetPositionFile( void ) const
     return static_cast<unsigned int>( SetFilePointer(static_cast<HANDLE>(mFileHandle), 0, nullptr, FILE_CURRENT) );
 }
 
-unsigned int File::_osGetLengthFile( void ) const
-{
-    return static_cast<unsigned int>( GetFileSize(static_cast<HANDLE>(mFileHandle), nullptr ) );
-}
-
-unsigned int File::_osReserveFile(unsigned int newSize)
-{
-    ASSERT(mFileHandle != nullptr);
-
-    unsigned int result = IECursorPosition::INVALID_CURSOR_POSITION;
-    unsigned int curPos = newSize <= 0 ? 0 : _osGetPositionFile();
-    curPos = newSize > static_cast<int>(curPos) ? curPos : newSize;
-    if (newSize != 0)
-    {
-        LARGE_INTEGER li;
-        li.QuadPart = static_cast<int64_t>(newSize);
-        if (::SetFilePointer(static_cast<HANDLE>(mFileHandle), static_cast<LONG>(li.LowPart), static_cast<PLONG>(&li.HighPart), FILE_BEGIN) != IECursorPosition::INVALID_CURSOR_POSITION)
-        {
-            ::SetEndOfFile(static_cast<HANDLE>(mFileHandle));
-            result = static_cast<unsigned int>(::SetFilePointer(static_cast<HANDLE>(mFileHandle), static_cast<LONG>(curPos), nullptr, FILE_BEGIN));
-        }
-    }
-    else if (::SetFilePointer(static_cast<HANDLE>(mFileHandle), 0, nullptr, FILE_BEGIN) != IECursorPosition::INVALID_CURSOR_POSITION)
-    {
-        result = ::SetEndOfFile(static_cast<HANDLE>(mFileHandle)) ? 0 : IECursorPosition::INVALID_CURSOR_POSITION;
-    }
-    else
-    {
-        OUTPUT_ERR("Failed to set file pointer new position.");
-    }
-
-    return result;
-}
-
 bool File::_osTruncateFile( void )
 {
     bool result{ false };
@@ -332,56 +255,6 @@ void File::_osFlushFile( void )
 // Static methods
 //////////////////////////////////////////////////////////////////////////
 
-bool File::_osDeleteFile( const char* filePath )
-{
-    ASSERT(filePath != nullptr);
-    return (::DeleteFileA(filePath) == TRUE);
-}
-
-bool File::_osCreateDir( const char* dirPath )
-{
-    ASSERT(dirPath != nullptr);
-    return (::CreateDirectoryA(dirPath, nullptr) == TRUE);
-}
-
-bool File::_osDeleteDir( const char* dirPath )
-{
-    ASSERT(dirPath != nullptr);
-    return (::RemoveDirectoryA(dirPath) == TRUE);
-}
-
-bool File::_osMoveFile( const char* oldPath, const char* newPath )
-{
-    ASSERT(oldPath != nullptr);
-    ASSERT(newPath != nullptr);
-    return (::MoveFileA(oldPath, newPath) == TRUE);
-}
-
-unsigned int File::_osGetCurrentDir(char* buffer, unsigned int length)
-{
-    ASSERT(buffer != nullptr);
-    return static_cast<unsigned int>(::GetCurrentDirectoryA(length, buffer));
-}
-
-bool File::_osSetCurrentDir( const char* dirPath )
-{
-    ASSERT(dirPath != nullptr);
-    return (::SetCurrentDirectoryA(dirPath) == TRUE);
-}
-
-bool File::_osCopyFile( const char* originPath, const char* newPath, bool copyForce )
-{
-    ASSERT(originPath != nullptr);
-    ASSERT(newPath != nullptr);
-    return (::CopyFileA(originPath, newPath, copyForce ? FALSE : TRUE) == TRUE);
-}
-
-unsigned int File::_osGetTempDir(char* buffer, unsigned int length)
-{
-    ASSERT(buffer);
-    return static_cast<unsigned int>(::GetTempPathA(length, buffer));
-}
-
 unsigned int File::_osCreateTempFile(char* buffer, const char* folder, const char* prefix, unsigned int unique)
 {
     ASSERT(buffer != nullptr);
@@ -391,18 +264,47 @@ unsigned int File::_osCreateTempFile(char* buffer, const char* folder, const cha
     return static_cast<unsigned int>(::GetTempFileNameA(folder, prefix, unique, buffer) != 0 ? strlen(buffer) : 0);
 }
 
-bool File::_osExistDir(const char* dirPath)
+/**
+ * \brief   Returns special folder path. The type of required folder is defined in
+ *          specialFolder parameter.
+ * \param   specialFolder   The type of special folder in the system.
+ * \return  If function succeeds, the return value is full path of special folder.
+ *          Otherwise, it returns empty string.
+ **/
+unsigned int File::_osGetSpecialDir(char* buffer, unsigned int length, const eSpecialFolder specialFolder)
 {
-    ASSERT(dirPath != nullptr);
-    unsigned long attr = ::GetFileAttributesA(dirPath);
-    return (attr != INVALID_FILE_ATTRIBUTES) && ((attr & FILE_ATTRIBUTE_DIRECTORY) != 0);
-}
+    ASSERT(buffer != nullptr);
+    buffer[0] = NEString::EndOfString;
 
-bool File::_osExistFile(const char* filePath)
-{
-    ASSERT(filePath != nullptr);
-    unsigned long attr = ::GetFileAttributesA(filePath);
-    return (attr != INVALID_FILE_ATTRIBUTES) && ((attr & FILE_ATTRIBUTE_DIRECTORY) == 0);
+    int csidl = -1;
+    switch (specialFolder)
+    {
+    case File::eSpecialFolder::SpecialUserHome:
+        csidl = CSIDL_PROFILE;
+        break;
+
+    case File::eSpecialFolder::SpecialPersonal:
+        csidl = CSIDL_PERSONAL;
+        break;
+
+    case File::eSpecialFolder::SpecialAppData:
+        csidl = CSIDL_APPDATA;
+        break;
+
+    case File::eSpecialFolder::SpecialTemp:
+        GetTempPathA(length, buffer);
+        break;
+
+    default:
+        break;
+    }
+
+    if (csidl != -1)
+    {
+        SHGetFolderPathA(nullptr, csidl, nullptr, SHGFP_TYPE_CURRENT, buffer);
+    }
+
+    return static_cast<unsigned int>(strlen(buffer));
 }
 
 #endif // _WINDOWS

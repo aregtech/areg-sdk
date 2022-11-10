@@ -94,9 +94,13 @@ unsigned int File::getSizeReadable( void ) const
     unsigned int lenUsed = 0;
     if (isOpened())
     {
+        std::error_code err;
+        std::uintmax_t sz = std::filesystem::file_size(mFileName.getObject(), err);
+
         lenRead = _osGetPositionFile();
-        lenUsed = _osGetLengthFile();
+        lenUsed = !err ? static_cast<unsigned int>(sz) : 0;
     }
+
     ASSERT(lenRead <= lenUsed);
     return (lenUsed - lenRead);
 }
@@ -107,9 +111,13 @@ unsigned int File::getSizeWritable( void ) const
     unsigned int lenAvailable   = 0;
     if (isOpened())
     {
+        std::error_code err;
+        std::uintmax_t sz = std::filesystem::file_size(mFileName.getObject(), err);
+
         lenWritten  = _osGetPositionFile();
-        lenAvailable= _osGetLengthFile();
+        lenAvailable = !err ? static_cast<unsigned int>(sz) : 0;
     }
+
     ASSERT(lenWritten <= lenAvailable);
     return (lenAvailable - lenWritten);
 }
@@ -123,7 +131,8 @@ bool File::remove( void )
         ASSERT(mFileName.isEmpty() == false);
 
         close();
-        result = _osDeleteFile(mFileName);
+        std::error_code err;
+        result = std::filesystem::remove(mFileName.getObject(), err);
     }
 
     mFileHandle = File::INVALID_HANDLE;
@@ -181,10 +190,10 @@ String File::genTempFileName(const char* prefix, bool unique, bool inTempFolder)
         char* buffer = result.getBuffer();
         unsigned int ticks = unique ? 0 : static_cast<unsigned int>(DateTime::getSystemTickCount());
         prefix = prefix == nullptr ? File::TEMP_FILE_PREFIX.data() : prefix;
-        space = inTempFolder ? File::_osGetTempDir(buffer, File::MAXIMUM_PATH) : File::_osGetCurrentDir(buffer, File::MAXIMUM_PATH);
-        if (space != 0)
+        String dir = inTempFolder ? File::getTempDir() : File::getCurrentDir();
+        if (dir.isEmpty() == false)
         {
-            space = _osCreateTempFile(buffer, buffer, prefix, ticks);
+            space = _osCreateTempFile(buffer, dir.getString(), prefix, ticks);
         }
     }
 
@@ -255,15 +264,24 @@ String File::getFileDirectory(const char* filePath)
 
 bool File::createDirCascaded( const char* dirPath )
 {
-    return (NEString::isEmpty<char>(dirPath) == false ? std::filesystem::create_directories(dirPath) : false);
+    std::error_code err;
+    return (NEString::isEmpty<char>(dirPath) == false ? std::filesystem::create_directories(dirPath, err) : false);
 }
 
 String File::normalizePath(const char* fileName)
 {
-    String result = fileName != nullptr ? fileName : String::EmptyString;
-    FileBase::normalizeName(result);
-    result = std::filesystem::absolute(std::filesystem::path(result.getObject())).string();
-
+    String result;
+    if (NEString::isEmpty<char>(fileName) == false)
+    {
+        result = fileName;
+        FileBase::normalizeName(result);
+        std::error_code err;
+        std::filesystem::path fp = std::filesystem::absolute(result.getObject(), err);
+        if (!err)
+        {
+            result = fp.string();
+        }
+    }
     return result;
 }
 
@@ -414,7 +432,7 @@ unsigned int File::write(const unsigned char* buffer, unsigned int size)
     }
     else
     {
-        OUTPUT_ERR("Either file [ %s ] is not opened [ %s ], or writting mode is not set (mode = [ %d ]).", mFileName.getString(), isOpened() ? "true" : "false", mFileMode);
+        OUTPUT_ERR("Either file [ %s ] is not opened [ %s ], or writing mode is not set (mode = [ %d ]).", mFileName.getString(), isOpened() ? "true" : "false", mFileMode);
     }
 
     return result;
@@ -432,14 +450,51 @@ unsigned int File::getPosition(void) const
 
 unsigned int File::getLength(void) const
 {
-    return (isOpened() ? _osGetLengthFile() : 0);
+    unsigned int result{ 0 };
+    if (isOpened())
+    {
+        std::error_code err;
+        std::uintmax_t sz = std::filesystem::file_size(mFileName.getObject(), err);
+        result = !err ? static_cast<unsigned int>(sz) : 0;
+    }
+    return result;
 }
 
 unsigned int File::reserve(unsigned int newSize)
 {
     OUTPUT_DBG("Going to reserve [ %u ] of data for file [ %s ].", newSize, mFileName.isValid() ? static_cast<const char*>(mFileName) : "null");
     unsigned int result = IECursorPosition::INVALID_CURSOR_POSITION;
-    return (isOpened() && canWrite() ? _osReserveFile(newSize) : IECursorPosition::INVALID_CURSOR_POSITION);
+    if (isOpened() && canWrite())
+    {
+        unsigned int curPos = _osGetPositionFile();
+        close();
+
+        std::error_code err;
+        std::filesystem::resize_file(mFileName.getObject(), newSize, err);
+        if (open() && !err)
+        {
+            if (newSize == 0)
+            {
+                if (moveToBegin())
+                {
+                    result = IECursorPosition::START_CURSOR_POSITION;
+                }
+            }
+            else if (newSize <= curPos)
+            {
+                if (moveToEnd())
+                {
+                    result = newSize;
+                }
+            }
+            else
+            {
+                result = setPosition(static_cast<int>(curPos), IECursorPosition::eCursorPosition::PositionBegin);
+            }
+        }
+    }
+
+    return result;
 }
 
 bool File::truncate(void)
@@ -461,73 +516,99 @@ void File::flush(void)
 
 bool File::deleteFile(const char* filePath)
 {
-    return (NEString::isEmpty<char>(filePath) == false ? _osDeleteFile(filePath) : false);
+    std::error_code err;
+    return (NEString::isEmpty<char>(filePath) == false ? std::filesystem::remove(filePath, err) : false);
 }
 
 bool File::createDir(const char* dirPath)
 {
-    return (NEString::isEmpty<char>(dirPath) == false ? _osCreateDir(dirPath) : false);
+    std::error_code err;
+    return (NEString::isEmpty<char>(dirPath) == false ? std::filesystem::create_directory(dirPath, err) : false);
 }
 
 bool File::deleteDir(const char* dirPath)
 {
-    return (NEString::isEmpty<char>(dirPath) == false ? _osDeleteDir(dirPath) : false);
+    bool result{ false };
+    if (NEString::isEmpty<char>(dirPath) == false)
+    {
+        std::error_code err;
+        std::filesystem::remove_all(dirPath, err);
+        result = !err;
+    }
+
+    return result;
 }
 
 bool File::moveFile(const char* oldPath, const char* newPath)
 {
-    return (NEString::isEmpty<char>(oldPath) == false && (NEString::isEmpty<char>(newPath) == false) ? _osMoveFile(oldPath, newPath) : false);
+    bool result{ false };
+    if ( (NEString::isEmpty<char>(oldPath) == false) && (NEString::isEmpty<char>(newPath) == false) )
+    {
+        std::error_code err;
+        std::filesystem::rename(oldPath, newPath, err);
+        result = !err;
+    }
+    return result;
 }
 
 String File::getCurrentDir(void)
 {
-    String result;
-
-    result.reserve(File::MAXIMUM_PATH);
-    unsigned int pathSize = result.getCapacity() != 0 ? _osGetCurrentDir(result.getBuffer(), File::MAXIMUM_PATH) : 0;
-    result.resize(pathSize);
-
-    return result;
+    std::error_code err;
+    return String(std::filesystem::current_path(err).string());
 }
 
 bool File::setCurrentDir(const char* dirPath)
 {
-    return (NEString::isEmpty<char>(dirPath) == false ? _osSetCurrentDir(dirPath) : false);
-}
-
-bool File::copyFile( const char* originPath, const char* newPath, bool copyForce )
-{
-    return ((NEString::isEmpty<char>(originPath) == false) && (NEString::isEmpty<char>(newPath) == false) ? _osCopyFile(originPath, newPath, copyForce) : false);
-}
-
-String File::getTempDir(void)
-{
-    String result;
-    
-    result.reserve(File::MAXIMUM_PATH);
-    unsigned int pathSize = result.getCapacity() != 0 ? _osGetTempDir(result.getBuffer(), File::MAXIMUM_PATH) : 0;
-    result.resize(pathSize);
+    bool result{ false };
+    if (NEString::isEmpty<char>(dirPath) == false)
+    {
+        std::error_code err;
+        std::filesystem::current_path(dirPath, err);
+        result = !err;
+    }
 
     return result;
 }
 
+bool File::copyFile( const char* originPath, const char* newPath, bool copyForce )
+{
+    bool result{ false };
+    if ( (NEString::isEmpty<char>(originPath) == false) && (NEString::isEmpty<char>(newPath) == false) )
+    {
+        std::filesystem::copy_options opt = copyForce ? std::filesystem::copy_options::overwrite_existing : std::filesystem::copy_options::skip_existing;
+        std::error_code err;
+        result = std::filesystem::copy_file(originPath, newPath, opt, err);
+    }
+
+    return result;
+}
+
+String File::getTempDir(void)
+{
+    std::error_code err;
+    return String(std::filesystem::temp_directory_path(err).string());
+}
+
 bool File::existDir(const char* dirPath)
 {
-    return (NEString::isEmpty<char>(dirPath) == false ? _osExistDir(dirPath) : false);
+    std::error_code err;
+    return (NEString::isEmpty<char>(dirPath) == false ? std::filesystem::is_directory(dirPath, err) : false);
 }
 
 bool File::existFile(const char* filePath)
 {
-    return (NEString::isEmpty<char>(filePath) == false ? _osExistFile(filePath) : false);
+    std::error_code err;
+    return (NEString::isEmpty<char>(filePath) == false ? std::filesystem::is_regular_file(filePath, err) : false);
 }
 
 String File::getFileFullPath(const char* filePath)
 {
-    String result{ NEString::isEmpty<char>(filePath) == false ? filePath : String::EmptyString };
-    if (result.isEmpty() == false)
+    String result;
+    if (NEString::isEmpty<char>(filePath) == false)
     {
-        std::filesystem::path fp = filePath;
-        result = std::filesystem::absolute(fp).string();
+        std::error_code err;
+        std::filesystem::path fp = std::filesystem::absolute(filePath, err);
+        result = !err ? fp.string() : filePath;
     }
 
     return result;

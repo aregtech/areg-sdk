@@ -124,6 +124,7 @@ bool File::_osOpenFile( void )
 
     if (isOpened() == false)
     {
+        std::error_code err;
         file = DEBUG_NEW sPosixFile;
         if ( (mFileName.isEmpty() == false) && (file != nullptr) )
         {
@@ -178,7 +179,7 @@ bool File::_osOpenFile( void )
 
             if ( (flag & O_CREAT) != 0 )
             {
-                if (_osExistFile(mFileName.getString()))
+                if (std::filesystem::exists(mFileName.getObject(), err))
                 {
                     flag &= ~O_CREAT;
                     if (dirName == mFileName)
@@ -306,52 +307,6 @@ unsigned int File::_osGetPositionFile( void ) const
     return static_cast<unsigned int>( lseek(reinterpret_cast<sPosixFile*>(mFileHandle)->fd, 0, SEEK_CUR) );
 }
 
-unsigned int File::getLength( void ) const
-{
-    ASSERT(mFileHandle != nullptr);
-
-    sPosixFile* file = reinterpret_cast<sPosixFile*>(mFileHandle);
-    unsigned int curPos = static_cast<unsigned int>(lseek(file->fd, 0, SEEK_CUR));
-    unsigned int endPos = static_cast<unsigned int>(lseek(file->fd, 0, SEEK_END));
-    if (curPos != IECursorPosition::INVALID_CURSOR_POSITION)
-    {
-        lseek(file->fd, curPos, SEEK_SET);
-    }
-
-    return endPos;
-}
-
-unsigned int File::_osReserveFile(unsigned int newSize)
-{
-    ASSERT(mFileHandle != nullptr);
-
-    sPosixFile * file = reinterpret_cast<sPosixFile *>(mFileHandle);
-    unsigned int curPos = ::lseek(file->fd, 0, SEEK_CUR);
-    unsigned int oldSize= ::lseek(file->fd, 0, SEEK_END);
-
-    // move begin
-    lseek(file->fd, 0, SEEK_SET);
-
-    unsigned int result = curPos;
-    if ( RETURNED_OK != ::ftruncate(file->fd, newSize) )
-    {
-        newSize = oldSize;
-        result  = IECursorPosition::INVALID_CURSOR_POSITION;
-    }
-
-    if (curPos > newSize)
-    {
-        ::lseek(file->fd, 0, SEEK_END);
-        result = newSize;
-    }
-    else if (curPos != 0)
-    {
-        ::lseek(file->fd, curPos, SEEK_SET);
-    }
-
-    return result;
-}
-
 bool File::_osTruncateFile( void )
 {
     ASSERT(mFileHandle != nullptr);
@@ -368,134 +323,6 @@ void File::_osFlushFile( void )
 // Static methods
 //////////////////////////////////////////////////////////////////////////
 
-bool File::_osDeleteFile( const char* filePath )
-{
-    ASSERT(filePath != nullptr);
-    return (RETURNED_OK == ::unlink(filePath));
-}
-
-bool File::_osCreateDir( const char* dirPath )
-{
-    ASSERT(dirPath != nullptr);
-    return (RETURNED_OK == ::mkdir(dirPath, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH));
-}
-
-bool File::_osDeleteDir( const char* dirPath )
-{
-    ASSERT(dirPath != nullptr);
-    return (RETURNED_OK == ::rmdir(dirPath));
-}
-
-bool File::_osMoveFile( const char* oldPath, const char* newPath )
-{
-    ASSERT(oldPath != nullptr);
-    ASSERT(newPath != nullptr);
-    return (RETURNED_OK == ::rename(oldPath, newPath));
-}
-
-unsigned int File::_osGetCurrentDir(char* buffer, unsigned int length)
-{
-    ASSERT(buffer != nullptr);
-    char *path = ::getcwd(buffer, length);
-    return static_cast<unsigned int>(path != nullptr ? ::strlen(path) : 0);
-}
-
-bool File::_osSetCurrentDir( const char* dirPath )
-{
-    ASSERT(dirPath != nullptr);
-    return (RETURNED_OK == ::chdir(dirPath));
-}
-
-bool File::_osCopyFile( const char* originPath, const char* newPath, bool copyForce )
-{
-    static constexpr const int BUF_SIZE{ 4 * 1024 };
-
-    ASSERT(originPath != nullptr);
-    ASSERT(newPath != nullptr);
-
-    bool result{ false };;
-    mode_t mode{ 0 };
-    int flag{ 0 };
-
-    struct stat buf;
-    if (RETURNED_OK == ::stat(newPath, &buf))
-    {
-        if (S_ISREG(buf.st_mode) && copyForce)
-        {
-            // keep current mode, add read-write permission for owner and group
-            mode = (buf.st_mode & (~S_IFREG)) | S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH;
-            flag = buf.st_size != 0 ? O_WRONLY | O_TRUNC : O_WRONLY; // for file with zero size, there is no need to truncate.
-        }
-    }
-    else
-    {
-        // set default mode rw-rw-r--
-        mode = S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH;
-        flag = O_WRONLY | O_CREAT | O_TRUNC;
-        if (copyForce)
-        {
-            String dir = File::getFileDirectory(newPath);
-            File::createDirCascaded(dir);
-        }
-    }
-
-    if (mode != 0)
-    {
-        int fdRead = ::open(originPath, O_RDONLY);
-        int fdWrite = ::open(newPath, flag, mode);
-        unsigned char* buffer = DEBUG_NEW unsigned char[BUF_SIZE];
-
-        if (buffer != nullptr)
-        {
-            if ((fdRead != POSIX_INVALID_FD) && (fdWrite != POSIX_INVALID_FD))
-            {
-                int readSize = 0;
-                result = true;
-                while ((readSize = ::read(fdRead, buffer, BUF_SIZE)) > 0)
-                {
-                    if (::write(fdWrite, buffer, readSize) < 0)
-                    {
-                        OUTPUT_ERR("Failed to copy [ %s ] into [ %s ], error code [ %p ]", originPath, newPath, static_cast<id_type>(errno));
-                        result = false;
-                        break;
-                    }
-                }
-            }
-            else
-            {
-                OUTPUT_ERR("Error during copying file. Read fd [ %d ], write fd [ %d ], error [ %p ]", buffer, fdRead, fdWrite, static_cast<id_type>(errno));
-            }
-
-            if (fdRead != POSIX_INVALID_FD)
-            {
-                ::close(fdRead);
-            }
-
-            if (fdWrite != POSIX_INVALID_FD)
-            {
-                ::close(fdWrite);
-            }
-
-            delete[] buffer;
-        }
-        else
-        {
-            OUTPUT_ERR("Failed to allocate buffer to copy files.");
-        }
-    }
-
-    return result;
-}
-
-unsigned int File::_osGetTempDir(char* buffer, unsigned int /*length*/)
-{
-    ASSERT(buffer);
-
-    char const * dirTemp = _getTempDir();
-    strcpy(buffer, dirTemp);
-    return static_cast<unsigned int>(strlen(buffer));
-}
-
 unsigned int File::_osCreateTempFile(char* buffer, const char* folder, const char* prefix, unsigned int unique)
 {
     ASSERT(buffer != nullptr);
@@ -505,19 +332,6 @@ unsigned int File::_osCreateTempFile(char* buffer, const char* folder, const cha
     sprintf(buffer, "%s%c%s%d.tmp", folder, File::PATH_SEPARATOR, prefix, unique);
 
     return static_cast<unsigned int>(::mkdtemp(buffer) == buffer ? strlen(buffer) : 0);
-}
-
-bool File::_osExistDir( const char* dirPath )
-{
-    ASSERT(dirPath != nullptr);
-    struct stat buf;
-    return (RETURNED_OK == ::stat(dirPath, &buf) ? S_ISDIR(buf.st_mode) : false);
-}
-
-bool File::_osExistFile( const char* filePath )
-{
-    ASSERT(filePath != nullptr);
-    return (RETURNED_OK == ::access(filePath, R_OK));
 }
 
 unsigned int File::_osGetSpecialDir(char* buffer, unsigned int /*length*/, const eSpecialFolder specialFolder)
