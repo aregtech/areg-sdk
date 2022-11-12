@@ -17,11 +17,12 @@ project(${PROJECT_NAME} VERSION ${PROJECT_VERSION} LANGUAGES C CXX)
 
 include(${CMAKE_CONFIG_DIR}/common.cmake)
 
-option(BUILD_TESTS "Build examples" ON)
+option(BUILD_TESTS "Build unit tests")
+option(BUILD_EXAMPLES "Build examples")
 
 include_directories(framework/)
 include(${AREG_BASE}/CMakeLists.txt)
 
-if(BUILD_TESTS)
+if(BUILD_EXAMPLES)
     include(${AREG_EXAMPLES}/CMakeLists.txt)
 endif()

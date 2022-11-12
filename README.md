@@ -98,10 +98,20 @@ An example to get source codes and compile under **Linux**. You'd need at least 
 $ git clone https://github.com/aregtech/areg-sdk.git
 $ cd areg-sdk
 ```
+
 ```bash
-# Step 2: Compile sources from terminal by calling: make [all] [framework] [examples]
-$ make all
+# Step 2: Create a subdirectory for CMake cache files and change directory to it.
+$ mkdir build && cd build
+
+# Step 3: Initialize CMake cache and build systems configuration.
+# Enable examples compilation by using BUILD_EXAMPLES flag.
+$ cmake .. -DBUILD_EXAMPLES=ON
 ```
+
+```bash
+# Step 4: Compile sources by calling: cmake --build [CMake cache dir] <optional> -j [concurrent jobs]
+$ cmake --build . -j 8
+ ```
 After compilation, the binaries are located in `<areg-sdk>/product/build/<compiler-platform-path>/bin` folder.
 
 _AREG SDK sources are developed for:_
@@ -130,7 +140,7 @@ _Compile AREG SDK sources and examples:_
 |**Linux**| Open gnome-terminal in Linux and call “_make_” to compile with POSIX API.|
 
 > 💡 Compilation with _Eclipse_ under Windows might require to switch the Toolchain. For example, `Cygwin GCC`.<br>
-> 💡 For Linux the default compiler is `g++`. Set preferred C++17 compiler in [conf/make/user.mk](./conf/make/user.mk) file.
+> 💡 For Linux the default compiler is `g++`. Set preferred C++17 compiler in [conf/cmake/pre-project.cmake](./conf/make/user.mk) file.
 
 Details on how to change compiler, load and compile sources for various targets are described in [HOWTO](./docs/HOWTO.md).
 
