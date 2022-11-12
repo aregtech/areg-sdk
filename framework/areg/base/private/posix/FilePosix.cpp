@@ -38,6 +38,8 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
+#include <filesystem>
+
 //////////////////////////////////////////////////////////////////////////
 // File class implementation
 //////////////////////////////////////////////////////////////////////////
@@ -338,6 +340,7 @@ unsigned int File::_osGetSpecialDir(char* buffer, unsigned int /*length*/, const
 {
     ASSERT(buffer != nullptr);
     buffer[0] = NEString::EndOfString;
+    const char * filePath = nullptr;
 
     switch (specialFolder)
     {

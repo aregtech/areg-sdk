@@ -244,6 +244,16 @@ public:
      **/
     unsigned int remainRead( void ) const;
 
+    /**
+     * \brief   Returns the segment size in bytes to send data.
+     **/
+    inline unsigned int getSendSegmentSize(void) const;
+
+    /**
+     * \brief   Returns the segment size in bytes to receive data.
+     **/
+    inline unsigned int getRecvSegmentSize(void) const;
+
 protected:
 /************************************************************************/
 // Socket protected overrides
@@ -262,6 +272,38 @@ protected:
      * \brief   Decreases lock counter and if it is zero, the calls method to close socket.
      **/
     void decreaseLock( void );
+
+    /**
+     * \brief   Sets the segment size in bytes of socket to send data. Before checking, the method checks
+     *          that new size of segment is between NESocket::MIN_SEGMENT_SIZE and NESocket::MAX_SEGMENT_SIZE.
+     *          If value is NESocket::SEGMENT_INVALID_SIZE, it will set the size NESocket::DEFAULT_SEGMENT_SIZE.
+     *          It updates the segment size only if the new value is bigger than the actual or it 'force' value is true.
+     * 
+     * \param   sendSize    The new size of segment in bytes to set for sending data.
+     *                      The function checks and normalizes value if it is not in the range
+     *                      between NESocket::MIN_SEGMENT_SIZE and NESocket::MAX_SEGMENT_SIZE.
+     * \param   force       If set true, it forces to update the segment size. Otherwise, the segment size
+     *                      is update only if new size is bigger than the actual.
+     * \return  Returns the actual size of the segment in bytes to send data.
+     *          Returns NESocket::SEGMENT_INVALID_SIZE if socket is not valid.
+     **/
+    unsigned int setSendSegmentSize(unsigned int sendSize, bool force = false) const;
+
+    /**
+     * \brief   Sets the segment size in bytes of socket to receive data. Before checking, the method checks
+     *          that new size of segment is between NESocket::MIN_SEGMENT_SIZE and NESocket::MAX_SEGMENT_SIZE.
+     *          If value is NESocket::SEGMENT_INVALID_SIZE, it will set the size NESocket::DEFAULT_SEGMENT_SIZE.
+     *          It updates the segment size only if the new value is bigger than the actual or it 'force' value is true.
+     *
+     * \param   recvSize    The new size of segment in bytes to set for receiving data.
+     *                      The function checks and normalizes value if it is not in the range
+     *                      between NESocket::MIN_SEGMENT_SIZE and NESocket::MAX_SEGMENT_SIZE.
+     * \param   force       If set true, it forces to update the segment size. Otherwise, the segment size
+     *                      is update only if new size is bigger than the actual.
+     * \return  Returns the actual size of the segment in bytes to receive data.
+     *          Returns NESocket::SEGMENT_INVALID_SIZE if socket is not valid.
+     **/
+    unsigned int setRecvSegmentSize(unsigned int recvSize, bool force = false) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -285,6 +327,22 @@ protected:
      * \brief   The address of socket
      **/
     NESocket::SocketAddress mAddress;
+
+    /**
+     * \brief   The size in bytes of segment to send data.
+     *          It should not be less than NESocket::MIN_SEGMENT_SIZE and
+     *          more than NESocket::MAX_SEGMENT_SIZE.
+     *          The default value is NESocket::DEFAULT_SEGMENT_SIZE
+     **/
+    mutable unsigned int    mSendSize;
+
+    /**
+     * \brief   The size in bytes of segment to receive data.
+     *          It should not be less than NESocket::MIN_SEGMENT_SIZE and
+     *          more than NESocket::MAX_SEGMENT_SIZE.
+     *          The default value is NESocket::DEFAULT_SEGMENT_SIZE
+     **/
+    mutable unsigned int    mRecvSize;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -329,6 +387,16 @@ inline bool Socket::disableSend( void ) const
 inline bool Socket::disableReceive( void ) const
 {
     return (mSocket.get() != nullptr) && NESocket::disableReceive(*mSocket);
+}
+
+inline unsigned int Socket::getSendSegmentSize(void) const
+{
+    return (isValid() ? mSendSize : NESocket::SEGMENT_INVALID_SIZE);
+}
+
+unsigned int Socket::getRecvSegmentSize(void) const
+{
+    return (isValid() ? mRecvSize : NESocket::SEGMENT_INVALID_SIZE);
 }
 
 #endif  // AREG_BASE_SOCKET_HPP

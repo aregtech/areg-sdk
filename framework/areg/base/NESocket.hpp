@@ -218,7 +218,22 @@ namespace NESocket
      * \brief   NESocket::DEFAULT_SEGMENT_SIZE
      *          The default size of segment when sends or receives data.
      **/
-    constexpr int                       DEFAULT_SEGMENT_SIZE        { 16384 };
+    constexpr unsigned int              DEFAULT_SEGMENT_SIZE        { 16384 };
+    /**
+     * \brief   NESocket::MAX_SEGMENT_SIZE
+     *          The maximum size of segment when sends or receives data.
+     **/
+    constexpr unsigned int              MAX_SEGMENT_SIZE            { 8 * NECommon::ONE_MEGABYTE };
+    /**
+     * \brief   NESocket::MIN_SEGMENT_SIZE
+     *          The minimum size of segment when sends or receives data.
+     **/
+    constexpr unsigned int              MIN_SEGMENT_SIZE            { 8 * NECommon::ONE_KILOBYTE };
+    /**
+     * \brief   NESocket::SEGMENT_INVALID_SIZE
+     *          The invalid size of segment.
+     **/
+    constexpr unsigned int              SEGMENT_INVALID_SIZE        { 0 };
 
     /**
      * \brief   NESocket::MAXIMUM_LISTEN_QUEUE_SIZE
@@ -354,11 +369,21 @@ namespace NESocket
 
     /**
      * \brief   NESocket::getMaxSendSize
-     *          Calculated the maximum number of package size in bytes, which can be sent.
+     *          Returns the socket buffer size in bytes to send the packet at once.
      *          This value may vary by protocol.
      * \param   hSocket     The valid socket descriptor to retrieve value.
      **/
-    AREG_API int getMaxSendSize( SOCKETHANDLE hSocket );
+    AREG_API unsigned int getMaxSendSize( SOCKETHANDLE hSocket );
+
+    /**
+     * \brief   NESocket::setMaxSendSize
+     *          Sets the socket buffer size in bytes to send the packet at once.
+     * \param   hSocket     The valid socket descriptor to set the value.
+     * \param   sendSize    The size in bytes to sent the packet at once.
+     *                      The minimum size is NESocket::MIN_SEGMENT_SIZE,
+     *                      the maximum is NESocket::MAX_SEGMENT_SIZE.
+     **/
+    AREG_API unsigned int setMaxSendSize(SOCKETHANDLE hSocket, unsigned int sendSize);
 
     /**
      * \brief   NESocket::getMaxReceiveSize
@@ -366,7 +391,17 @@ namespace NESocket
      *          This value may vary by protocol.
      * \param   hSocket     The valid socket descriptor to retrieve value.
      **/
-    AREG_API int getMaxReceiveSize( SOCKETHANDLE hSocket );
+    AREG_API unsigned int getMaxReceiveSize( SOCKETHANDLE hSocket );
+
+    /**
+     * \brief   NESocket::setMaxReceiveSize
+     *          Sets the socket buffer size in bytes to receive the packet at once.
+     * \param   hSocket     The valid socket descriptor to set the value.
+     * \param   recvSize    The size in bytes to receive the packet at once.
+     *                      The minimum size is NESocket::MIN_SEGMENT_SIZE,
+     *                      the maximum is NESocket::MAX_SEGMENT_SIZE.
+     **/
+    AREG_API unsigned int setMaxReceiveSize(SOCKETHANDLE hSocket, unsigned int recvSize);
 
     /**
      * \brief   NESocket::sendData
@@ -377,12 +412,12 @@ namespace NESocket
      * \param   dataBuffer      The pointer to data buffer, which should be sent.
      * \param   dataLength      The length of buffer in bytes.
      * \param   blockMaxSize    The maximum size of package in bytes to sent at once.
-     *                          If negative value, it will first retrieve value and sent data.
+     *                          If negative or zero value, it will first retrieve value and sent data.
      * \return  If succeeds, returns number of bytes sent.
      *          If failles, returns negative number.
      *          Returns zero if buffer is empty and nothing to sent.
      **/
-    AREG_API int sendData( SOCKETHANDLE hSocket, const unsigned char * dataBuffer, int dataLength, int blockMaxSize = NECommon::DEFAULT_SIZE );
+    AREG_API int sendData( SOCKETHANDLE hSocket, const unsigned char * dataBuffer, int dataLength, int blockMaxSize );
 
     /**
      * \brief   NESocket::receiveData
@@ -393,13 +428,13 @@ namespace NESocket
      * \param   dataBuffer      The pointer to data buffer, which should be filled.
      * \param   dataLength      The length of buffer in bytes.
      * \param   blockMaxSize    The maximum size of package in bytes to receive at once.
-     *                          If negative value, it will first retrieve value and start receive data.
+     *                          If negative or zero value, it will first retrieve value and start receive data.
      * \return  If succeeds, returns number of bytes received.
      *          If failles, returns negative number. Failure might happen if opposite side closes connection.
      *          In case of failure, the specified socket should be closed.
      *          Returns zero if buffer is empty and nothing to receive.
      **/
-    AREG_API int receiveData( SOCKETHANDLE hSocket, unsigned char * dataBuffer, int dataLength, int blockMaxSize  = NECommon::DEFAULT_SIZE );
+    AREG_API int receiveData( SOCKETHANDLE hSocket, unsigned char * dataBuffer, int dataLength, int blockMaxSize );
 
     /**
      * \brief   NESocket::disableSend

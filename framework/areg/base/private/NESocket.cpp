@@ -36,6 +36,41 @@
 
 #include <utility>
 
+namespace NESocket
+{
+    // OS specific methods
+
+    /**
+     * \brief   OS specific socket initialization. Required in Win32 to initialize resources.
+     * \return  Returns true if initialization succeeded.
+     **/
+    bool _osInitSocket(void);
+
+    /**
+     * \brief   OS specific socket release. Required in Win32 to release resources.
+     */
+    void _osReleaseSocket(void);
+
+    /**
+     * \brief   OS specific socket close.
+     */
+    void _osCloseSocket(SOCKETHANDLE hSocket);
+
+    /**
+     * \brief   OS specific send data implementation. All checkups and validations should
+     *          be done before calling the method.
+     * \return  Returns number of bytes sent via network.
+     */
+    int _osSendData(SOCKETHANDLE hSocket, const unsigned char* dataBuffer, int dataLength, int blockMaxSize);
+
+    /**
+     * \brief   OS specific receive data implementation. All checkups and validations should
+     *          be done before calling the method.
+     * \return  Returns number of bytes received via network.
+     */
+    int _osRecvData(SOCKETHANDLE hSocket, unsigned char* dataBuffer, int dataLength, int blockMaxSize);
+}
+
 DEF_TRACE_SCOPE(areg_base_NESocket_clientSocketConnect);
 DEF_TRACE_SCOPE(areg_base_NESocket_serverSocketConnect);
 DEF_TRACE_SCOPE(areg_base_NESocket_serverAcceptConnection);
@@ -272,40 +307,84 @@ AREG_API_IMPL SOCKETHANDLE NESocket::socketCreate( void )
     return static_cast<SOCKETHANDLE>( socket(AF_INET, SOCK_STREAM, IPPROTO_TCP) );
 }
 
-AREG_API_IMPL int NESocket::getMaxSendSize( SOCKETHANDLE hSocket )
+AREG_API_IMPL unsigned int NESocket::getMaxSendSize( SOCKETHANDLE hSocket )
 {
-    long maxData= NESocket::DEFAULT_SEGMENT_SIZE;
+    ASSERT(hSocket != NESocket::InvalidSocketHandle);
+
+    unsigned long maxData= NESocket::DEFAULT_SEGMENT_SIZE;
 
 #ifdef  _WINDOWS
-        int len = sizeof(long);
+        int len = sizeof(unsigned long);
 #else   // !_WINDOWS
-        socklen_t len = sizeof(long);
+        socklen_t len = sizeof(unsigned long);
 #endif  // _WINDOWS
 
-    if ( (RETURNED_OK == ::getsockopt(hSocket, SOL_SOCKET, SO_SNDBUF, reinterpret_cast<char *>(&maxData), &len))  || (maxData < 0) )
+    if ( RETURNED_OK != ::getsockopt(hSocket, SOL_SOCKET, SO_SNDBUF, reinterpret_cast<char *>(&maxData), &len) )
     {
         maxData = NESocket::DEFAULT_SEGMENT_SIZE;
     }
 
-    return static_cast<int>(maxData);
+    return static_cast<unsigned int>(maxData);
 }
 
-AREG_API_IMPL int NESocket::getMaxReceiveSize( SOCKETHANDLE hSocket )
+AREG_API_IMPL unsigned int NESocket::setMaxSendSize(SOCKETHANDLE hSocket, unsigned int sendSize)
 {
-    long maxData= NESocket::DEFAULT_SEGMENT_SIZE;
+    ASSERT(hSocket != NESocket::InvalidSocketHandle);
+
+    if (sendSize == 0)
+    {
+        sendSize = NESocket::DEFAULT_SEGMENT_SIZE;
+    }
+    else if (sendSize < NESocket::MIN_SEGMENT_SIZE)
+    {
+        sendSize = NESocket::MIN_SEGMENT_SIZE;
+    }
+    else if (sendSize > NESocket::MAX_SEGMENT_SIZE)
+    {
+        sendSize = NESocket::MAX_SEGMENT_SIZE;
+    }
+
+    return (RETURNED_OK == ::setsockopt(hSocket, SOL_SOCKET, SO_SNDBUF, reinterpret_cast<const char*>(&sendSize), sizeof(sendSize)) ? sendSize : NESocket::MIN_SEGMENT_SIZE);
+}
+
+AREG_API_IMPL unsigned int NESocket::getMaxReceiveSize( SOCKETHANDLE hSocket )
+{
+    ASSERT(hSocket != NESocket::InvalidSocketHandle);
+
+    unsigned long maxData= NESocket::DEFAULT_SEGMENT_SIZE;
 
 #ifdef  _WINDOWS
-        int len = sizeof(long);
+        int len = sizeof(unsigned long);
 #else   // !_WINDOWS
-        socklen_t len = sizeof(long);
+        socklen_t len = sizeof(unsigned long);
 #endif  // _WINDOWS
 
-    if ( (RETURNED_OK == ::getsockopt(hSocket, SOL_SOCKET, SO_RCVBUF, reinterpret_cast<char *>(&maxData), &len)) || (maxData < 0) )
+    if ( RETURNED_OK != ::getsockopt(hSocket, SOL_SOCKET, SO_RCVBUF, reinterpret_cast<char *>(&maxData), &len) )
     {
         maxData = NESocket::DEFAULT_SEGMENT_SIZE;
     }
 
-    return static_cast<int>(maxData);
+    return static_cast<unsigned int>(maxData);
+}
+
+AREG_API_IMPL unsigned int NESocket::setMaxReceiveSize(SOCKETHANDLE hSocket, unsigned int recvSize)
+{
+    ASSERT(hSocket != NESocket::InvalidSocketHandle);
+
+    if (recvSize == 0)
+    {
+        recvSize = NESocket::DEFAULT_SEGMENT_SIZE;
+    }
+    else if (recvSize < NESocket::MIN_SEGMENT_SIZE)
+    {
+        recvSize = NESocket::MIN_SEGMENT_SIZE;
+    }
+    else if (recvSize > NESocket::MAX_SEGMENT_SIZE)
+    {
+        recvSize = NESocket::MAX_SEGMENT_SIZE;
+    }
+
+    return (RETURNED_OK == ::setsockopt(hSocket, SOL_SOCKET, SO_RCVBUF, reinterpret_cast<const char*>(&recvSize), sizeof(recvSize)) ? recvSize : NESocket::MIN_SEGMENT_SIZE);
 }
 
 AREG_API_IMPL SOCKETHANDLE NESocket::clientSocketConnect(const std::string_view & hostName, unsigned short portNr, NESocket::SocketAddress * out_socketAddr /*= nullptr*/)
@@ -607,4 +686,90 @@ AREG_API_IMPL int NESocket::pendingRead(SOCKETHANDLE hSocket)
 #endif  // !_WINDOWS
 
     return static_cast<int>(result);
+}
+
+AREG_API_IMPL bool NESocket::socketInitialize(void)
+{
+    return _osInitSocket();
+}
+
+AREG_API_IMPL void NESocket::socketRelease(void)
+{
+    _osReleaseSocket();
+}
+
+AREG_API_IMPL void NESocket::socketClose(SOCKETHANDLE hSocket)
+{
+    if (hSocket != NESocket::InvalidSocketHandle)
+    {
+        _osCloseSocket(hSocket);
+    }
+}
+
+AREG_API_IMPL int NESocket::sendData(SOCKETHANDLE hSocket, const unsigned char* dataBuffer, int dataLength, int blockMaxSize /*= NECommon::DEFAULT_SIZE*/)
+{
+    int result = -1;
+    if (hSocket != NESocket::InvalidSocketHandle)
+    {
+        result = 0;
+        if ((dataBuffer != nullptr) && (dataLength > 0))
+        {
+            result = _osSendData(hSocket, dataBuffer, dataLength, blockMaxSize > 0 ? blockMaxSize : NESocket::getMaxSendSize(hSocket));
+        }
+    }
+
+    return result;
+}
+
+AREG_API_IMPL int NESocket::receiveData(SOCKETHANDLE hSocket, unsigned char* dataBuffer, int dataLength, int blockMaxSize )
+{
+    int result = -1;
+
+    if (hSocket != NESocket::InvalidSocketHandle)
+    {
+        result = 0;
+        if ((dataBuffer != nullptr) && (dataLength > 0))
+        {
+            result = _osRecvData(hSocket, dataBuffer, dataLength, blockMaxSize > 0 ? blockMaxSize : NESocket::getMaxReceiveSize(hSocket));
+        }
+    }
+
+    return result;
+}
+
+AREG_API_IMPL bool NESocket::disableSend(SOCKETHANDLE hSocket)
+{
+#ifdef WINDOWS
+    int flag{ SD_SEND };
+#else
+    int flag{ SHUT_WR };
+#endif // WINDOWS
+
+    return (hSocket != NESocket::InvalidSocketHandle ? RETURNED_OK == shutdown(hSocket, flag) : false);
+}
+
+AREG_API_IMPL bool NESocket::disableReceive(SOCKETHANDLE hSocket)
+{
+#ifdef WINDOWS
+    int flag{ SD_RECEIVE };
+#else
+    int flag{ SHUT_RD };
+#endif // WINDOWS
+
+    return (hSocket != NESocket::InvalidSocketHandle ? RETURNED_OK == ::shutdown(hSocket, flag) : false);
+}
+
+AREG_API_IMPL unsigned int NESocket::remainDataRead(SOCKETHANDLE hSocket)
+{
+    unsigned long result = 0L;
+    if (hSocket != NESocket::InvalidSocketHandle)
+    {
+#ifdef WINDOWS
+        ioctlsocket(hSocket, FIONREAD, &result);
+#else   // WINDOWS
+        ::ioctl(hSocket, FIONREAD, &result);
+#endif  // WINDOWS
+    }
+
+    return result;
 }

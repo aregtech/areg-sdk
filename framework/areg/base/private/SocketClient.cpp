@@ -41,6 +41,8 @@ bool SocketClient::createSocket( void )
         if ( hSocket != NESocket::InvalidSocketHandle )
         {
         	mSocket = std::make_shared<SOCKETHANDLE>(hSocket);
+            setRecvSegmentSize(NESocket::DEFAULT_SEGMENT_SIZE);
+            setSendSegmentSize(NESocket::DEFAULT_SEGMENT_SIZE);
         }
     }
 

@@ -47,170 +47,122 @@ namespace
 // NESocket namespace functions implementation
 //////////////////////////////////////////////////////////////////////////
 
-AREG_API_IMPL bool NESocket::socketInitialize(void)
+namespace NESocket
 {
-    bool result = true;
-    if ( _instanceCount.fetch_add(1) == 0 )
+    bool _osInitSocket(void)
     {
-        WSADATA wsaData;
-        ::memset(&wsaData, 0, sizeof(WSADATA));
-        if ( ::WSAStartup(MAKEWORD( 2, 2 ), &wsaData) != 0 )
+        bool result = true;
+        if (_instanceCount.fetch_add(1) == 0)
         {
-            OUTPUT_ERR("Failed to initialize Windows Socket of version 2.2, error code [ %p ]", static_cast<id_type>(::WSAGetLastError()));
+            WSADATA wsaData;
+            ::memset(&wsaData, 0, sizeof(WSADATA));
+            if (::WSAStartup(MAKEWORD(2, 2), &wsaData) != 0)
+            {
+                OUTPUT_ERR("Failed to initialize Windows Socket of version 2.2, error code [ %p ]", static_cast<id_type>(::WSAGetLastError()));
 
-            result = false;
-            _instanceCount.fetch_sub(1);
+                result = false;
+                _instanceCount.fetch_sub(1);
+            }
+        }
+
+        return result;
+    }
+
+    void _osReleaseSocket(void)
+    {
+        if (_instanceCount.fetch_sub(1) == 1)
+        {
+            OUTPUT_INFO("Releasing socket, no more instances are created");
+            ::WSACleanup();
         }
     }
 
-    return result;
-}
-
-AREG_API_IMPL void NESocket::socketRelease(void)
-{
-    if ( _instanceCount.fetch_sub(1) == 1 )
-    {
-        OUTPUT_INFO("Releasing socket, no more instances are created");
-        ::WSACleanup();
-    }
-}
-
-AREG_API_IMPL void NESocket::socketClose(SOCKETHANDLE hSocket)
-{
-    if ( hSocket != NESocket::InvalidSocketHandle )
+    void _osCloseSocket(SOCKETHANDLE hSocket)
     {
         shutdown(hSocket, SD_BOTH);
-        closesocket( hSocket );
+        closesocket(hSocket);
     }
-}
 
-AREG_API_IMPL int NESocket::sendData(SOCKETHANDLE hSocket, const unsigned char * dataBuffer, int dataLength, int blockMaxSize /*= NECommon::DEFAULT_SIZE*/ )
-{
-    int result = -1;
-    if ( hSocket != NESocket::InvalidSocketHandle )
+
+    int _osSendData(SOCKETHANDLE hSocket, const unsigned char* dataBuffer, int dataLength, int blockMaxSize)
     {
-        result = 0;
-        if ( (dataBuffer != nullptr) && (dataLength > 0) )
+        ASSERT(hSocket != NESocket::InvalidSocketHandle);
+        ASSERT((dataBuffer != nullptr) && (dataLength > 0));
+        ASSERT(blockMaxSize > 0);
+
+        int result{ dataLength };
+
+        while (dataLength > 0)
         {
-            blockMaxSize    = blockMaxSize > 0 ? blockMaxSize : NESocket::getMaxSendSize(hSocket);
-            result          = dataLength;
-            while ( dataLength > 0 )
+            int remain = dataLength > blockMaxSize ? blockMaxSize : dataLength;
+            int written = send(hSocket, reinterpret_cast<const char*>(dataBuffer), remain, 0);
+            if (written > 0)
             {
-                int remain = dataLength > blockMaxSize ? blockMaxSize : dataLength;
-                int written= send(hSocket, reinterpret_cast<const char *>(dataBuffer), remain, 0);
-                if ( written > 0 )
+                dataLength -= written;
+                dataBuffer += written;
+            }
+            else
+            {
+                int errCode = ::WSAGetLastError();
+                if (errCode == static_cast<int>(WSAEMSGSIZE))
                 {
-                    dataLength -= written;
-                    dataBuffer += written;
+                    // try again with other package size
+                    blockMaxSize = NESocket::getMaxSendSize(hSocket);
                 }
                 else
                 {
-                    int errCode =  ::WSAGetLastError();
-                    if ( errCode == static_cast<int>(WSAEMSGSIZE))
-                    {
-                        // try again with other package size
-                        blockMaxSize = NESocket::getMaxSendSize(hSocket);
-                    }
-                    else
-                    {
-                        // in all other cases
-                        dataLength  = 0;    // break loop
-                        result      = -1;   // notify failure
-                    }
+                    // in all other cases
+                    dataLength = 0;    // break loop
+                    result = -1;   // notify failure
                 }
             }
         }
-        else
-        {
-            ; // no data to sent
-        }
-    }
-    else
-    {
-        ; // invalid socket
+
+        return result;
     }
 
-    return result;
-}
-
-AREG_API_IMPL int NESocket::receiveData(SOCKETHANDLE hSocket, unsigned char * dataBuffer, int dataLength, int blockMaxSize /*= NECommon::DEFAULT_SIZE*/ )
-{
-    int result = -1;
-
-    if ( hSocket != NESocket::InvalidSocketHandle )
+    int _osRecvData(SOCKETHANDLE hSocket, unsigned char* dataBuffer, int dataLength, int blockMaxSize)
     {
-        result = 0;
-        if ( (dataBuffer != nullptr) && (dataLength > 0) )
+        ASSERT(hSocket != NESocket::InvalidSocketHandle);
+        ASSERT((dataBuffer != nullptr) && (dataLength > 0));
+        ASSERT(blockMaxSize > 0);
+
+        int result{ 0 };
+
+        while (dataLength > 0)
         {
-            blockMaxSize    = blockMaxSize > 0 ? blockMaxSize : NESocket::getMaxReceiveSize(hSocket);
-            while ( dataLength > 0 )
+            int remain = dataLength > blockMaxSize ? blockMaxSize : dataLength;
+            int read = recv(hSocket, reinterpret_cast<char*>(dataBuffer) + result, remain, 0);
+            if (read > 0)
             {
-                int remain = dataLength > blockMaxSize ? blockMaxSize : dataLength;
-                int read   = recv(hSocket, reinterpret_cast<char *>(dataBuffer) + result, remain, 0);
-                if ( read > 0 )
+                dataLength -= read;
+                result += read;
+            }
+            else if (read == 0)
+            {
+                dataLength = 0;    // break loop. the other side disconnected
+                result = 0;    // no data could read. specified socket is closed
+            }
+            else
+            {
+                int errCode = ::WSAGetLastError();
+                if (errCode == static_cast<int>(WSAEMSGSIZE))
                 {
-                    dataLength -= read;
-                    result     += read;
-                }
-                else if ( read == 0 )
-                {
-                    dataLength  = 0;    // break loop. the other side disconnected
-                    result      = 0;    // no data could read. specified socket is closed
+                    // try again with other package size
+                    blockMaxSize = NESocket::getMaxReceiveSize(hSocket);
                 }
                 else
                 {
-                    int errCode =  ::WSAGetLastError();
-                    if ( errCode == static_cast<int>(WSAEMSGSIZE))
-                    {
-                        // try again with other package size
-                        blockMaxSize = NESocket::getMaxReceiveSize(hSocket);
-                    }
-                    else
-                    {
-                        // in all other cases
-                        dataLength  = 0;    // break loop
-                        result      = -1;   // notify failure
-                    }
+                    // in all other cases
+                    dataLength = 0;    // break loop
+                    result = -1;   // notify failure
                 }
             }
         }
-        else
-        {
-            ; // no data to receive
-        }
-    }
-    else
-    {
-        ; // invalid socket
+
+        return result;
     }
 
-    return result;
-}
-
-AREG_API_IMPL bool NESocket::disableSend(SOCKETHANDLE hSocket)
-{
-    return ( hSocket != NESocket::InvalidSocketHandle ? RETURNED_OK == shutdown(hSocket, SD_SEND    ) : false );
-}
-
-AREG_API_IMPL bool NESocket::disableReceive(SOCKETHANDLE hSocket)
-{
-    return ( hSocket != NESocket::InvalidSocketHandle ? RETURNED_OK == shutdown( hSocket, SD_RECEIVE) : false );
-}
-
-AREG_API_IMPL unsigned int NESocket::remainDataRead( SOCKETHANDLE hSocket )
-{
-    unsigned int result = 0;
-
-    if ( hSocket != NESocket::InvalidSocketHandle )
-    {
-        u_long arg = 0L;
-        if ( RETURNED_OK == ioctlsocket( hSocket, FIONREAD, &arg) )
-        {
-            result = static_cast<unsigned int>(arg);
-        }
-    }
-
-    return result;
-}
+} // namespace NESocket
 
 #endif  // _WINDOWS
