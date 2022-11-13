@@ -150,6 +150,19 @@ namespace NESocket
         return result;
     }
 
+    bool _osControl(SOCKETHANDLE hSocket, int cmd, unsigned long& arg)
+    {
+        ASSERT(hSocket != NESocket::InvalidSocketHandle);
+        return (RETURNED_OK == ::ioctl(hSocket, cmd, &arg));
+    }
+
+    bool _osGetOption(SOCKETHANDLE hSocket, int level, int name, unsigned long& value)
+    {
+        ASSERT(hSocket != NESocket::InvalidSocketHandle);
+        int len{ sizeof(unsigned long) };
+        return (RETURNED_OK == ::getsockopt(static_cast<int>(hSocket), level, name, reinterpret_cast<char*>(&value), &len));
+    }
+
 } // namespace NESocket
 
 #endif  // defined(_POSIX) || defined(POSIX)

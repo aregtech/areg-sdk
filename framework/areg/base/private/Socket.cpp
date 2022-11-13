@@ -160,11 +160,6 @@ void Socket::closeSocketHandle( SOCKETHANDLE hSocket )
     }
 }
 
-unsigned int Socket::remainRead( void ) const
-{
-    return (mSocket.get() != nullptr ? NESocket::remainDataRead(*mSocket) : 0);
-}
-
 unsigned int Socket::setSendSegmentSize(unsigned int sendSize, bool force /*= false*/) const
 {
     if (isValid() == false)

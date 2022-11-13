@@ -198,7 +198,7 @@ public:
      *          Returns negative value if socket is invalid.
      * \return  Returns number of bytes available to read from socket buffer.
      **/
-    inline int pendindRead( void ) const;
+    inline int pendingRead( void ) const;
 
     /**
      * \brief   Sets socket in read-only more, i.e. no send message is possible anymore.
@@ -238,11 +238,6 @@ public:
      * \return  Returns true if succeeded to resolve and set Socket Address.
      **/
     bool setAddress( const char * hostName, unsigned short portNr, bool isServer );
-
-    /**
-     * \brief   Returns the amount of data in bytes remaining to read in a single receive data call.
-     **/
-    unsigned int remainRead( void ) const;
 
     /**
      * \brief   Returns the segment size in bytes to send data.
@@ -374,7 +369,7 @@ inline bool Socket::isAlive(void) const
     return (mSocket.get() != nullptr) && NESocket::isSocketAlive(*mSocket);
 }
 
-inline int Socket::pendindRead(void) const
+inline int Socket::pendingRead(void) const
 {
     return (mSocket.get() != nullptr) && NESocket::pendingRead(*mSocket);
 }
