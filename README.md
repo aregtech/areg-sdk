@@ -142,14 +142,17 @@ _AREG SDK sources are developed for:_
 > 💡 The other POSIX-compliant OS and compilers are not tested yet.
 
 _Compile AREG SDK sources and examples:_
-| Operating System | Quick actions to use tools and compile|
-| --- | --- |
-|**Linux or Windows**| Import projects in _Eclipse_ to compile with POSIX API (you may need to change Toolchain).|
-|**Windows**| Open `areg-sdk.sln` file in _MS Visual Studio_ (VS2019 and higher) to compile with Win32 API.|
-|**Linux**| Open gnome-terminal in Linux and call “_make_” to compile with POSIX API.|
+| Solution | Platforms | API | Quick actions to compile |
+| --- | --- | --- | --- |
+| `CMakeLists.txt` | **Linux, Windows** | _POSIX_, _Win32_ | It is used to compile applications using following tools:<br> &nbsp;&nbsp; - call `cmake` in _command line_;<br> &nbsp;&nbsp; - configure and build in _Visual Studio Code_ IDE;<br> &nbsp;&nbsp; - build in _Microsoft Visual Studio_ IDE (VS2019 and higher). |
+| `Makefile` | **Linux**| _POSIX_ | It is used to compile application by calling `make` in _command line_. |
+| `areg-sdk.sln` | **Windows** | _Win32_ | It is used to make a build in _Microsof Visual Studio_ IDE (VS2019 and higher). |
+| `.project` | **Linux, Windows** | _POSIX_ | To import and build projects in _Eclipes_ IDE. |
 
-> 💡 Compilation with _Eclipse_ under Windows might require to switch the Toolchain. For example, `Cygwin GCC`.<br>
-> 💡 For Linux the default compiler is `g++`. Set preferred C++17 compiler in [conf/cmake/pre-project.cmake](./conf/make/user.mk) file.
+> 💡 Compilation with _Eclipse_ under **Windows** platform might require to switch the Toolchain. For example, `Cygwin GCC`.<br>
+> 💡 For **Linux** platform the default compiler is `g++`. To change the compiler to build with:<br>
+> - `cmake`, update [conf/cmake/pre-project.cmake](./conf/cmake/pre-project.cmake) file. For example, `set(CMAKE_CXX_COMPILER /usr/bin/g++-4.2)`<br>
+> - `make`, update [conf/make/user.mk](./conf/make/user.mk) file. For example, `Toolset := clang++-13`.
 
 Details on how to change compiler, load and compile sources for various targets are described in [HOWTO](./docs/HOWTO.md).
 
