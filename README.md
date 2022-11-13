@@ -93,25 +93,34 @@ The framework contains a dynamic and configurable logging service. More tools an
 ## Software build[![](./docs/img/pin.svg)](#software-build)
 
 An example to get source codes and compile under **Linux**. You'd need at least C++17 `g++` (default) compiler. Open _Terminal_ console in your `projects` folder and take the following steps:
+
+_To build the project using `cmake`_
 ```bash
 # Step 1: Get sources from GitHub
 $ git clone https://github.com/aregtech/areg-sdk.git
 $ cd areg-sdk
-```
 
-```bash
 # Step 2: Create a subdirectory for CMake cache files and change directory to it.
 $ mkdir build && cd build
 
 # Step 3: Initialize CMake cache and build systems configuration.
-# Enable examples compilation by using BUILD_EXAMPLES flag.
+#         Enable examples compilation by using BUILD_EXAMPLES flag.
 $ cmake .. -DBUILD_EXAMPLES=ON
-```
 
-```bash
 # Step 4: Compile sources by calling: cmake --build [CMake cache dir] <optional> -j [concurrent jobs]
 $ cmake --build . -j 8
  ```
+
+_To build the project using `make`_
+```bash
+# Step 1: Get sources from GitHub
+$ git clone https://github.com/aregtech/areg-sdk.git
+$ cd areg-sdk
+
+# Step 2: Compile sources from terminal by calling: make [all] [framework] [examples]
+$ make
+```
+
 After compilation, the binaries are located in `<areg-sdk>/product/build/<compiler-platform-path>/bin` folder.
 
 _AREG SDK sources are developed for:_
