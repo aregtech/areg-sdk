@@ -14,7 +14,7 @@
 #include "areg/appbase/Application.hpp"
 #include "areg/appbase/Console.hpp"
 
-DEF_TRACE_SCOPE(examples_20_clientlargedata_ServiceClient_serviceConnected);
+DEF_TRACE_SCOPE(examples_20_clientdatarate_ServiceClient_serviceConnected);
 
 Component * ServiceClient::CreateComponent(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
 {
@@ -75,7 +75,7 @@ void ServiceClient::broadcastServiceStopping(void)
 
 bool ServiceClient::serviceConnected(bool isConnected, ProxyBase & proxy)
 {
-    TRACE_SCOPE(examples_20_clientlargedata_ServiceClient_serviceConnected);
+    TRACE_SCOPE(examples_20_clientdatarate_ServiceClient_serviceConnected);
     bool result = LargeDataClientBase::serviceConnected(isConnected, proxy);
 
     TRACE_DBG("Client [ %s ] of [ %s ] service is [ %s ]"

@@ -24,7 +24,7 @@
     #pragma comment(lib, "20_generated.lib")
 #endif // WINDOWS
 
-constexpr char const _modelName[]= { "LargeData" };  //!< The name of model
+constexpr char const _modelName[]= { "DataRate" };  //!< The name of model
 const String     _serviceClient  = NEUtilities::generateName("ServiceClient"); //!< Generated name of service client component
 
 //////////////////////////////////////////////////////////////////////////
@@ -53,7 +53,7 @@ END_MODEL(_modelName)
 //////////////////////////////////////////////////////////////////////////
 // main method.
 //////////////////////////////////////////////////////////////////////////
-DEF_TRACE_SCOPE(example_20_clientlargedata_main_main);
+DEF_TRACE_SCOPE(example_20_clientdatarate_main_main);
 /**
  * \brief   The main method enables logging, service manager and timer.
  *          it loads and unloads the services, releases application.
@@ -69,7 +69,7 @@ int main()
 
     do
     {
-        TRACE_SCOPE(example_20_clientlargedata_main_main);
+        TRACE_SCOPE(example_20_clientdatarate_main_main);
         TRACE_DBG("The application has been initialized, loading model [ %s ]", _modelName);
 
         // load model to initialize components

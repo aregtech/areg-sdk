@@ -73,7 +73,7 @@ include(${AREG_EXAMPLES}/15_pubworker/CMakeLists.txt)
 include(${AREG_EXAMPLES}/16_pubfsm/CMakeLists.txt)
 include(${AREG_EXAMPLES}/18_locwatchdog/CMakeLists.txt)
 include(${AREG_EXAMPLES}/19_pubwatchdog/CMakeLists.txt)
-include(${AREG_EXAMPLES}/20_largedata/CMakeLists.txt)
+include(${AREG_EXAMPLES}/20_pubdatarate/CMakeLists.txt)
 
 
 # Iterating over projectList and extract each source file,
