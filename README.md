@@ -35,7 +35,7 @@ The latest development sources can be cloned from [20220701-candidate](https://g
 ## Table of contents[![](./docs/img/pin.svg)](#table-of-contents)
 1. [Motivation](#motivation)
 2. [More than embedded](#more-than-embedded)
-3. [Break the complication](#break-the-complication]
+3. [Break the complication](#break-the-complication)
 4. [Composition](#composition)
 5. [Software build](#software-build)
 6. [Software integration](#software-integration)
