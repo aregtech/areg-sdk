@@ -35,7 +35,7 @@ The latest development sources can be cloned from [20220701-candidate](https://g
 ## Table of contents[![](./docs/img/pin.svg)](#table-of-contents)
 1. [Motivation](#motivation)
 2. [More than embedded](#more-than-embedded)
-3. [Break the complication](#break-the-complication)
+3. [Flexible and self-sufficient](#flexible-and-self-sufficient)
 4. [Composition](#composition)
 5. [Software build](#software-build)
 6. [Software integration](#software-integration)
@@ -79,13 +79,16 @@ The AREG engine forms a fault-tolerant system, automatically discovers services,
 * The subscriptions on data, responses and broadcasts are automatically invoked on the client when service triggers a call.
 
 ---
-## Break the complication
+## Flexible and self-sufficient[![](./docs/img/pin.svg)](#flexible-and-self-sufficient)
 
-_AREG SDK_ is an ideal solution to break complications when developing complex multiprocessing **Desktop** and/or **Embedded** applications. It requires modularity of the application, the communication is passes via predefined _Service Interfaces_. The simplifications are in the features of services and in the business logic of the communication engine, when the startup priorities of the processes and compoenents are transparent, when locations of the services and the service discovery is automated, when developers have powerful and simple ways to trigger the methods and being notified via callback APIs.
+_AREG SDK_ is ideal to develop _multiprocessing_ and _multithreading_ **Desktop** and/or **Embedded** applications. The _interface-centric_ solution of AREG framework includes all features of _action-centric_ (Request-Reply) and _data-centric_ (Publisher-Subscriber) solutions:
+* The request and response mechanisms are as simple as calling an ordinary method of an object.
+* The subscriptions are dynamic and the latest data is delivered immediately after subscribing.
+* Clients may subscribe and unsubscribe on data and events at any time during runtime.
 
-The _interface-centric_ solution of the _AREG SDK_ includes features of _action-centric_ (**Request-Reply**) and _data-centric_ (**Publisher-Subscriber**) solutions. The API calls are as simple as calling an ordinary method of the object. The subscriptions are dynamic, can be changed during runtime, and immediately after subscription, the system delivers the last actual data, so that components are aware of the last status of the data.
+The framework ensures to keep applications modular, where components communicate via predefined _Service Interfaces_, which are invoked in the thread-safe environment. It easily handles cross-dependencies, where applications do not need to have special startup sequences and priorities.
 
-The [examples](./examples) of _AREG SDK_ contain multiple projects to check the features and fault tolerant behavior of AREG engine.
+> 💡 The [examples](./examples) of _AREG SDK_ contain multiple projects to check the features and fault tolerant behavior of AREG communication engine.
 
 ---
 
