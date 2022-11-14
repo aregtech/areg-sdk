@@ -35,21 +35,22 @@ The latest development sources can be cloned from [20220701-candidate](https://g
 ## Table of contents[![](./docs/img/pin.svg)](#table-of-contents)
 1. [Motivation](#motivation)
 2. [More than embedded](#more-than-embedded)
-3. [Composition](#composition)
-4. [Software build](#software-build)
-5. [Software integration](#software-integration)
+3. [Break the complication](#break-the-complication]
+4. [Composition](#composition)
+5. [Software build](#software-build)
+6. [Software integration](#software-integration)
    - [Multicast router](#multicast-router)
    - [Logging service](#logging-service)
    - [Development](#development)
-6. [Use cases and benefits](#use-cases-and-benefits)
+7. [Use cases and benefits](#use-cases-and-benefits)
    - [Distributes solutions](#distributed-solution)
    - [Driverless devices](#driverless-devices)
    - [Real-time solutions](#real-time-solutions)
    - [Digital twin](#digital-twin)
    - [Simulation and test automations](#simulation-and-test-automations)
-7. [Examples](#examples)
-8. [Licensing](#licensing)
-9. [Call for action](#call-for-action)
+8. [Examples](#examples)
+9. [Licensing](#licensing)
+10. [Call for action](#call-for-action)
 
 ---
 
@@ -76,6 +77,15 @@ The AREG engine forms a fault-tolerant system, automatically discovers services,
 * The client requests are automatically invoked to run on the service component.
 * The service responses are automatically invoked on the exact client, and they are not mixed or missed.
 * The subscriptions on data, responses and broadcasts are automatically invoked on the client when service triggers a call.
+
+---
+## Break the complication
+
+_AREG SDK_ is an ideal solution to break complications when developing complex multiprocessing **Desktop** and/or **Embedded** applications. It requires modularity of the application, the communication is passes via predefined _Service Interfaces_. The simplifications are in the features of services and in the business logic of the communication engine, when the startup priorities of the processes and compoenents are transparent, when locations of the services and the service discovery is automated, when developers have powerful and simple ways to trigger the methods and being notified via callback APIs.
+
+The _interface-centric_ solution of the _AREG SDK_ includes features of _action-centric_ (**Request-Reply**) and _data-centric_ (**Publisher-Subscriber**) solutions. The API calls are as simple as calling an ordinary method of the object. The subscriptions are dynamic, can be changed during runtime, and immediately after subscription, the system delivers the last actual data, so that components are aware of the last status of the data.
+
+The [examples](./examples) of _AREG SDK_ contain multiple projects to check the features and fault tolerant behavior of AREG engine.
 
 ---
 
