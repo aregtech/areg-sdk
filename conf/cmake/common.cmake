@@ -17,8 +17,21 @@ else()
     set(AREG_BINARY "static")
 endif()
 
+# CPP standard for the project
+set(aregCXXStandard "17")
+
+add_definitions(-DUNICODE)
+if(Config MATCHES "Release")
+    set(CMAKE_BUILD_TYPE "Release")
+    add_definitions(-DNDEBUG)
+else()
+    set(CMAKE_BUILD_TYPE "Debug")
+    add_definitions(-DDEBUG)
+endif()
+
 # Checking Compiler for adding corresponded tweaks and flags
 if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+
     # POSIX API
     add_definitions(-DPOSIX)
     set(AREG_DEVELOP_ENV "Posix")
@@ -31,7 +44,8 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     # Clang compile options
     list(APPEND CompileOptions -pthread -Wall -c -std=c++17 -fmessage-length=0 -MMD -stdlib=libc++ ${UserDefines})
 
-    elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+
     # POSIX API
     add_definitions(-DPOSIX)
     set(AREG_DEVELOP_ENV "Posix")
@@ -44,7 +58,8 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     # GNU compile options
     list(APPEND CompileOptions -pthread -Wall -c -std=c++17 -fmessage-length=0 -MMD ${UserDefines})
 
-    elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+
     # Visual Studio C++
     # Windows / Win32 API
     add_definitions(-DWINDOWS)
@@ -52,16 +67,7 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     if(NOT Config MATCHES "Release")
         list(APPEND CompileOptions -Od -RTC1 -c)
     endif()
-endif()
 
-# CPP standard for the project
-set(aregCXXStandard "17")
-
-add_definitions(-DUNICODE)
-if(Config MATCHES "Release")
-    add_definitions(-DNDEBUG)
-else()
-    add_definitions(-DDEBUG)
 endif()
 
 # flags for bitness

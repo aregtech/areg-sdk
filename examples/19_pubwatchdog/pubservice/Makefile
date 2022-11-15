@@ -1,4 +1,4 @@
-19_pubservice_PROJECT_NAME := 19_pubservicewdog
+19_pubservice_PROJECT_NAME := 19_pubservice
 
 19_pubservice_TARGET_BIN := $(19_pubservice_PROJECT_NAME)$(AREG_BIN_EXT)
 19_pubservice_OUTPUT_OBJ := $(19_pubwatchdog_OUTPUT_OBJ)/pubservice

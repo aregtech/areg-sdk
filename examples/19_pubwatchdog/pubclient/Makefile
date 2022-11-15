@@ -1,4 +1,4 @@
-19_pubclient_PROJECT_NAME := 19_pubclientwdog
+19_pubclient_PROJECT_NAME := 19_pubclient
 
 19_pubclient_TARGET_BIN := $(19_pubclient_PROJECT_NAME)$(AREG_BIN_EXT)
 19_pubclient_OUTPUT_OBJ := $(19_pubwatchdog_OUTPUT_OBJ)/pubclient

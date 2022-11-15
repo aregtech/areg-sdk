@@ -9,6 +9,6 @@ include $(20_pubdatarate_BASE)/generated/Makefile
 include $(20_pubdatarate_BASE)/pubservice/Makefile
 include $(20_pubdatarate_BASE)/pubclient/Makefile
 
-20_pubdatarate: $(AREG_OUTPUT_BIN)/$(20_pubclientdatarate_TARGET_BIN) $(AREG_OUTPUT_BIN)/$(20_pubsvcdatarate_TARGET_BIN)
+20_pubdatarate: $(AREG_OUTPUT_BIN)/$(20_pubclient_TARGET_BIN) $(AREG_OUTPUT_BIN)/$(20_pubservice_TARGET_BIN)
 
 .PHONY: 20_pubdatarate

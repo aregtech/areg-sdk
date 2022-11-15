@@ -125,9 +125,8 @@ void TimerPosix::timerExpired(void)
         {
             NESynchTypesIX::convTimeout(mDueTime, mContext->getTimeout());
         }
-        else
+        else if (_isStarted())
         {
-            ASSERT(_isStarted());
             _stopTimer();
         }
     }
