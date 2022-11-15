@@ -6,29 +6,87 @@ Contact: info[at]aregtech.com
 Website: https://www.aregtech.com
 ```
 
-This document describes the instruction to compile **AREG SDK** and example source codes under _Linux_ or any other POSIX_ 32- or 64-bit platform. The minimum requirement to run an application built with the AREG SDK on the target device are 256KB of free RAM and 2MB of free storage space.
+This document describes the instruction to compile **AREG SDK** and example source codes under _Linux_ or other _POSIX_ compatible 32- or 64-bit platform. The minimum requirement to run an application built with the AREG SDK on the target device are 256KB of free RAM and 2MB of free storage space.
 
-The AREG SDK sources can be compiled under Linux or any other POSIX platform by using _Eclipse IDE_. Open _Eclipse IDE for C/C++_ and **import** one or all projects located in:
+The AREG SDK sources can be compiled under Linux or any other POSIX platform by using `cmake`, `make` or `Eclipse IDE`. 
+
+---
+
+## Compile with CMake in 4 steps
+
+In the opened _Terminal_ make following steps to compile with `cmake`:
+```bash
+# Step 1: Get sources from GitHub
+$ git clone https://github.com/aregtech/areg-sdk.git
+$ cd areg-sdk
+
+# Step 2: Create a subdirectory for CMake cache files and change directory to it.
+$ mkdir build && cd build
+
+# Step 3: Initialize CMake cache and build systems configuration.
+#         Enable examples compilation by using BUILD_EXAMPLES flag.
+$ cmake .. -DBUILD_EXAMPLES=ON
+
+# Step 4: Compile sources by calling: cmake --build [CMake cache dir] <optional> -j [concurrent jobs]
+$ cmake --build . -j 8
+ ```
+After compilation you'll have 2 new folders: `build` and `product`. The compiled binaries are located in the new created folder `product`. The path to binaries depends on compile, platform and build configuration. It will look like `product/build/g++/linux-x86_64-debug/bin`.
+
+---
+
+## Compile with Make in 2 steps
+
+In the opened _Terminal_ make following steps to compile with `cmake`:
+```bash
+# Step 1: Get sources from GitHub
+$ git clone https://github.com/aregtech/areg-sdk.git
+$ cd areg-sdk
+
+# Step 2: Compile sources from terminal by calling: make [all] [framework] [examples]
+$ make
+ ```
+After compilation you'll have 1 new folder `product`. The compiled binaries are located in the new created folder `product`. The path to binaries depends on compile, platform and build configuration. It will look like `product/build/g++/linux-x86_64-debug/bin`.
+
+---
+
+## Compile with Eclipse IDE
+
+Clone the source codes from `areg-sdk` reponsitory:
+```bash
+$ git clone https://github.com/aregtech/areg-sdk.git
+$ cd areg-sdk
+```
+Open _Eclipse IDE for C/C++_ and **import** projects located in:
 - `<areg-sdk-root>/framework/areg/` to build the AREG framework.
 - `<areg-sdk-root>/framework/mcrouter/` to build the multicast router.
-- `<areg-sdk-root>/examples/xxx` to build examples.
+- `<areg-sdk-root>/examples/` to build all examples.
 
-Select preferred toolchain to build project(s). By default, it is set _GNU GCC_ compile with the GCC compiler under Linux. AREG SDK sources can be compiled as a static or a shared library. By default, it is a static library. Integrate AREG framework in your project(s) and make sure that you link with _areg_ library. The [HOWTO.md](./HOWTO.md) document contains detailed description [to import Eclipse projects](./HOWTO.md#eclipse-for-cc-developer) and [to integrate AREG framework](./HOWTO.md#how-to-create-a-project-or-integrate-in-project) in the existing or new project.
+By default, _Eclipse_ will compile with _GNU GCC_ compiler. If you prefer other toolchain, for each project select settings and change to compile with preferred toolchain.
+
+## Compile areg framework library
+
+The sources of AREG framework can be compiled as a static or a shared library. By default, it is a static library. Integrate AREG framework in your project(s) and make sure that you link with _areg_ library. The [HOWTO.md](./HOWTO.md) document contains detailed description [to import Eclipse projects](./HOWTO.md#eclipse-for-cc-developer) and [to integrate AREG framework](./HOWTO.md#how-to-create-a-project-or-integrate-in-project) in the existing or new project.
 
 To build AREG framework with _POSIX_ API, define **POSIX** (or **_POSIX**) preprocessor directive. 
 
-**Other preprocessor directives to compile:**
-- **DEBUG** to compile with debug configuration.
-- **NDEBUG** to compile with release configuration.
-- **ENABLE_TRACES** to compile with enabled logging.
-- **EXP_AREG_LIB** to compile the AREG framework as a _static_ library.
-- **EXP_AREG_DLL** to compile the AREG framework as a _shared_ library.
-- **IMP_AREG_LIB** to link a project with the AREG framework _static_ library.
-- **IMP_AREG_DLL** to link a project with the AREG framework _shared_ library.
+**Other preprocessor directives used to compile:**
+| Directive | Description |
+| --- | --- |
+| **DEBUG** | Compile and build debug configuration. |
+| **NDEBUG** | Compile and build release configuration. |
+| **ENABLE_TRACES** | Compile with enabled logging. |
+| **EXP_AREG_LIB** | Compile and build the AREG framework as a _static_ library. |
+| **EXP_AREG_DLL** | Compile and build the AREG framework as a _shared_ library. |
+| **IMP_AREG_LIB** | Link your project with the AREG framework _static_ library. |
+| **IMP_AREG_DLL** | Link a project with the AREG framework _shared_ library. |
 
 AREG SDK requires _POSIX1.c_ API for multithreading and synchronization. The AREG framework beside standard runtime library, uses `pthread` and `ncurses`.
 
-## The list of POSIX API and macro used in AREG framework (including multicast message router)
+---
+
+## POSIX API
+
+The list of POSIX API and macro used in AREG framework (including multicast message router)
 
 ```
 accept
