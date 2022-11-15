@@ -9,14 +9,14 @@ env:
   # Configuration type to build.
   # You can convert this to a build matrix if you need coverage of multiple configuration types.
   # https://docs.github.com/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
-  BUILD_CONFIGURATION: rls_vc142
+  BUILD_CONFIGURATION: Release|x64
 
 jobs:
   build:
     runs-on: windows-latest
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: microsoft/setup-msbuild@v1.0.2
 
     - name: Add MSBuild to PATH
       uses: microsoft/setup-msbuild@v1.0.2
